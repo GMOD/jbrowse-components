@@ -95,7 +95,7 @@ test('right-click offers the row-order sort, and the reset once it has run', asy
   )
   const container = await findDisplayPainted('wiggle-display', delay)
   const display = view.tracks[0]!.displays[0] as LinearWiggleDisplayModel
-  const before = display.sources.map(s => s.name)
+  const before = display.drawnRows.map(s => s.name)
 
   // jsdom reports a zero rect, so clientX lands as the track-local offset
   fireEvent.contextMenu(container, { clientX: 400, clientY: 50 })
@@ -103,12 +103,14 @@ test('right-click offers the row-order sort, and the reset once it has run', asy
 
   // the resulting order is whatever the scores at that column say — what this
   // asserts is that a real one was written, over the same rows
-  expect(display.sources.map(s => s.name).toSorted()).toEqual(before.toSorted())
+  expect(display.drawnRows.map(s => s.name).toSorted()).toEqual(
+    before.toSorted(),
+  )
 
   // "Reset row order" is gated on a written order, so its appearing is the
   // proof the sort landed
   fireEvent.contextMenu(container, { clientX: 400, clientY: 50 })
   fireEvent.click(await findByText('Reset row order', ...opts))
 
-  expect(display.sources.map(s => s.name)).toEqual(before)
+  expect(display.drawnRows.map(s => s.name)).toEqual(before)
 }, 60000)

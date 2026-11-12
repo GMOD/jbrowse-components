@@ -2,6 +2,29 @@
 
 exports[`overlay: adapter colors paint the plot 1`] = `
 {
+  "drawnRows": [
+    {
+      "color": "#f00",
+      "group": undefined,
+      "label": undefined,
+      "name": "Grain1",
+      "rowColor": "#f00",
+    },
+    {
+      "color": "#f60",
+      "group": undefined,
+      "label": undefined,
+      "name": "Grain2",
+      "rowColor": "#f60",
+    },
+    {
+      "color": "#fa0",
+      "group": undefined,
+      "label": undefined,
+      "name": "Grain3",
+      "rowColor": "#fa0",
+    },
+  ],
   "effectiveColor": {
     "field": "score",
     "legend": {
@@ -44,34 +67,41 @@ exports[`overlay: adapter colors paint the plot 1`] = `
     },
   ],
   "rowTree": undefined,
-  "sources": [
-    {
-      "color": "#f00",
-      "group": undefined,
-      "label": undefined,
-      "name": "Grain1",
-      "rowColor": "#f00",
-    },
-    {
-      "color": "#f60",
-      "group": undefined,
-      "label": undefined,
-      "name": "Grain2",
-      "rowColor": "#f60",
-    },
-    {
-      "color": "#fa0",
-      "group": undefined,
-      "label": undefined,
-      "name": "Grain3",
-      "rowColor": "#fa0",
-    },
-  ],
 }
 `;
 
 exports[`overlay: rows.color's spare range leads the palette 1`] = `
 {
+  "drawnRows": [
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "name": "Grain1",
+      "rowColor": "#f00",
+    },
+    {
+      "color": undefined,
+      "group": "Islet",
+      "label": undefined,
+      "name": "Grain2",
+      "rowColor": "#111111",
+    },
+    {
+      "color": undefined,
+      "group": "Liver",
+      "label": undefined,
+      "name": "Grain3",
+      "rowColor": "#222222",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "name": "Grain4",
+      "rowColor": "#4e79a7",
+    },
+  ],
   "effectiveColor": {
     "field": "score",
     "legend": {
@@ -120,7 +150,12 @@ exports[`overlay: rows.color's spare range leads the palette 1`] = `
     },
   ],
   "rowTree": undefined,
-  "sources": [
+}
+`;
+
+exports[`overlay: tableau10 by name, grouped or not 1`] = `
+{
+  "drawnRows": [
     {
       "color": "#f00",
       "group": "Islet",
@@ -133,28 +168,23 @@ exports[`overlay: rows.color's spare range leads the palette 1`] = `
       "group": "Islet",
       "label": undefined,
       "name": "Grain2",
-      "rowColor": "#111111",
+      "rowColor": "#4e79a7",
     },
     {
       "color": undefined,
       "group": "Liver",
       "label": undefined,
       "name": "Grain3",
-      "rowColor": "#222222",
+      "rowColor": "#f28e2c",
     },
     {
       "color": undefined,
       "group": undefined,
       "label": undefined,
       "name": "Grain4",
-      "rowColor": "#4e79a7",
+      "rowColor": "#e15759",
     },
   ],
-}
-`;
-
-exports[`overlay: tableau10 by name, grouped or not 1`] = `
-{
   "effectiveColor": {
     "field": "score",
     "legend": {
@@ -203,7 +233,12 @@ exports[`overlay: tableau10 by name, grouped or not 1`] = `
     },
   ],
   "rowTree": undefined,
-  "sources": [
+}
+`;
+
+exports[`rows, density: a dialog edit tints the label 1`] = `
+{
+  "drawnRows": [
     {
       "color": "#f00",
       "group": "Islet",
@@ -216,28 +251,23 @@ exports[`overlay: tableau10 by name, grouped or not 1`] = `
       "group": "Islet",
       "label": undefined,
       "name": "Grain2",
-      "rowColor": "#4e79a7",
+      "rowColor": "#00f",
     },
     {
       "color": undefined,
       "group": "Liver",
       "label": undefined,
       "name": "Grain3",
-      "rowColor": "#f28e2c",
+      "rowColor": undefined,
     },
     {
       "color": undefined,
       "group": undefined,
       "label": undefined,
       "name": "Grain4",
-      "rowColor": "#e15759",
+      "rowColor": undefined,
     },
   ],
-}
-`;
-
-exports[`rows, density: a dialog edit tints the label 1`] = `
-{
   "effectiveColor": {
     "field": "score",
     "legend": {
@@ -269,7 +299,12 @@ exports[`rows, density: a dialog edit tints the label 1`] = `
   "rowArrangementIsCustom": true,
   "rowColorKey": [],
   "rowTree": undefined,
-  "sources": [
+}
+`;
+
+exports[`rows, density: identity moves to the label tint 1`] = `
+{
+  "drawnRows": [
     {
       "color": "#f00",
       "group": "Islet",
@@ -282,7 +317,7 @@ exports[`rows, density: a dialog edit tints the label 1`] = `
       "group": "Islet",
       "label": undefined,
       "name": "Grain2",
-      "rowColor": "#00f",
+      "rowColor": undefined,
     },
     {
       "color": undefined,
@@ -299,11 +334,6 @@ exports[`rows, density: a dialog edit tints the label 1`] = `
       "rowColor": undefined,
     },
   ],
-}
-`;
-
-exports[`rows, density: identity moves to the label tint 1`] = `
-{
   "effectiveColor": {
     "field": "score",
     "legend": {
@@ -335,69 +365,12 @@ exports[`rows, density: identity moves to the label tint 1`] = `
   "rowArrangementIsCustom": false,
   "rowColorKey": [],
   "rowTree": undefined,
-  "sources": [
-    {
-      "color": "#f00",
-      "group": "Islet",
-      "label": undefined,
-      "name": "Grain1",
-      "rowColor": "#f00",
-    },
-    {
-      "color": undefined,
-      "group": "Islet",
-      "label": undefined,
-      "name": "Grain2",
-      "rowColor": undefined,
-    },
-    {
-      "color": undefined,
-      "group": "Liver",
-      "label": undefined,
-      "name": "Grain3",
-      "rowColor": undefined,
-    },
-    {
-      "color": undefined,
-      "group": undefined,
-      "label": undefined,
-      "name": "Grain4",
-      "rowColor": undefined,
-    },
-  ],
 }
 `;
 
 exports[`rows, line: dialog edits reorder, recolor the plot and relabel 1`] = `
 {
-  "effectiveColor": {
-    "field": "score",
-    "legend": {
-      "title": undefined,
-    },
-    "scale": {
-      "domain": [],
-      "domainMid": undefined,
-      "names": [],
-      "range": [],
-      "reverse": undefined,
-      "scheme": undefined,
-      "type": undefined,
-    },
-    "value": undefined,
-  },
-  "isOverlay": false,
-  "markColors": [
-    undefined,
-    "#00f",
-    undefined,
-    "#f00",
-  ],
-  "numRows": 4,
-  "rowArrangementIsCustom": true,
-  "rowColorKey": [],
-  "rowTree": undefined,
-  "sources": [
+  "drawnRows": [
     {
       "color": undefined,
       "group": "Liver",
@@ -427,39 +400,39 @@ exports[`rows, line: dialog edits reorder, recolor the plot and relabel 1`] = `
       "rowColor": "#f00",
     },
   ],
+  "effectiveColor": {
+    "field": "score",
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "markColors": [
+    undefined,
+    "#00f",
+    undefined,
+    "#f00",
+  ],
+  "numRows": 4,
+  "rowArrangementIsCustom": true,
+  "rowColorKey": [],
+  "rowTree": undefined,
 }
 `;
 
 exports[`rows, line: dialog edits reorder, recolor the plot and relabel 2`] = `
 {
-  "effectiveColor": {
-    "field": "score",
-    "legend": {
-      "title": undefined,
-    },
-    "scale": {
-      "domain": [],
-      "domainMid": undefined,
-      "names": [],
-      "range": [],
-      "reverse": undefined,
-      "scheme": undefined,
-      "type": undefined,
-    },
-    "value": undefined,
-  },
-  "isOverlay": false,
-  "markColors": [
-    "#f00",
-    undefined,
-    undefined,
-    undefined,
-  ],
-  "numRows": 4,
-  "rowArrangementIsCustom": false,
-  "rowColorKey": [],
-  "rowTree": undefined,
-  "sources": [
+  "drawnRows": [
     {
       "color": "#f00",
       "group": "Islet",
@@ -489,39 +462,39 @@ exports[`rows, line: dialog edits reorder, recolor the plot and relabel 2`] = `
       "rowColor": undefined,
     },
   ],
+  "effectiveColor": {
+    "field": "score",
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "markColors": [
+    "#f00",
+    undefined,
+    undefined,
+    undefined,
+  ],
+  "numRows": 4,
+  "rowArrangementIsCustom": false,
+  "rowColorKey": [],
+  "rowTree": undefined,
 }
 `;
 
 exports[`rows, line: the adapter color, else the plot color 1`] = `
 {
-  "effectiveColor": {
-    "field": "score",
-    "legend": {
-      "title": undefined,
-    },
-    "scale": {
-      "domain": [],
-      "domainMid": undefined,
-      "names": [],
-      "range": [],
-      "reverse": undefined,
-      "scheme": undefined,
-      "type": undefined,
-    },
-    "value": undefined,
-  },
-  "isOverlay": false,
-  "markColors": [
-    "#f00",
-    undefined,
-    undefined,
-    undefined,
-  ],
-  "numRows": 4,
-  "rowArrangementIsCustom": false,
-  "rowColorKey": [],
-  "rowTree": undefined,
-  "sources": [
+  "drawnRows": [
     {
       "color": "#f00",
       "group": "Islet",
@@ -551,11 +524,54 @@ exports[`rows, line: the adapter color, else the plot color 1`] = `
       "rowColor": undefined,
     },
   ],
+  "effectiveColor": {
+    "field": "score",
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "markColors": [
+    "#f00",
+    undefined,
+    undefined,
+    undefined,
+  ],
+  "numRows": 4,
+  "rowArrangementIsCustom": false,
+  "rowColorKey": [],
+  "rowTree": undefined,
 }
 `;
 
 exports[`rows: a focus hides rows without recoloring the kept ones 1`] = `
 {
+  "drawnRows": [
+    {
+      "color": undefined,
+      "group": "Islet",
+      "label": undefined,
+      "name": "Grain2",
+      "rowColor": "#4e79a7",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "name": "Grain4",
+      "rowColor": undefined,
+    },
+  ],
   "effectiveColor": {
     "field": "score",
     "legend": {
@@ -592,13 +608,32 @@ exports[`rows: a focus hides rows without recoloring the kept ones 1`] = `
     },
   ],
   "rowTree": undefined,
-  "sources": [
+}
+`;
+
+exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 1`] = `
+{
+  "drawnRows": [
     {
       "color": undefined,
       "group": "Islet",
       "label": undefined,
       "name": "Grain2",
-      "rowColor": "#4e79a7",
+      "rowColor": undefined,
+    },
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "name": "Grain1",
+      "rowColor": "#f00",
+    },
+    {
+      "color": undefined,
+      "group": "Liver",
+      "label": undefined,
+      "name": "Grain3",
+      "rowColor": undefined,
     },
     {
       "color": undefined,
@@ -608,11 +643,6 @@ exports[`rows: a focus hides rows without recoloring the kept ones 1`] = `
       "rowColor": undefined,
     },
   ],
-}
-`;
-
-exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 1`] = `
-{
   "effectiveColor": {
     "field": "score",
     "legend": {
@@ -640,20 +670,25 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
   "rowArrangementIsCustom": true,
   "rowColorKey": [],
   "rowTree": "((Grain2,Grain1),(Grain3,Grain4));",
-  "sources": [
-    {
-      "color": undefined,
-      "group": "Islet",
-      "label": undefined,
-      "name": "Grain2",
-      "rowColor": undefined,
-    },
+}
+`;
+
+exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 2`] = `
+{
+  "drawnRows": [
     {
       "color": "#f00",
       "group": "Islet",
       "label": undefined,
       "name": "Grain1",
       "rowColor": "#f00",
+    },
+    {
+      "color": undefined,
+      "group": "Islet",
+      "label": undefined,
+      "name": "Grain2",
+      "rowColor": undefined,
     },
     {
       "color": undefined,
@@ -670,11 +705,6 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
       "rowColor": undefined,
     },
   ],
-}
-`;
-
-exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 2`] = `
-{
   "effectiveColor": {
     "field": "score",
     "legend": {
@@ -702,69 +732,12 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
   "rowArrangementIsCustom": true,
   "rowColorKey": [],
   "rowTree": undefined,
-  "sources": [
-    {
-      "color": "#f00",
-      "group": "Islet",
-      "label": undefined,
-      "name": "Grain1",
-      "rowColor": "#f00",
-    },
-    {
-      "color": undefined,
-      "group": "Islet",
-      "label": undefined,
-      "name": "Grain2",
-      "rowColor": undefined,
-    },
-    {
-      "color": undefined,
-      "group": "Liver",
-      "label": undefined,
-      "name": "Grain3",
-      "rowColor": undefined,
-    },
-    {
-      "color": undefined,
-      "group": undefined,
-      "label": undefined,
-      "name": "Grain4",
-      "rowColor": undefined,
-    },
-  ],
 }
 `;
 
 exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 3`] = `
 {
-  "effectiveColor": {
-    "field": "score",
-    "legend": {
-      "title": undefined,
-    },
-    "scale": {
-      "domain": [],
-      "domainMid": undefined,
-      "names": [],
-      "range": [],
-      "reverse": undefined,
-      "scheme": undefined,
-      "type": undefined,
-    },
-    "value": undefined,
-  },
-  "isOverlay": false,
-  "markColors": [
-    undefined,
-    "#f00",
-    undefined,
-    undefined,
-  ],
-  "numRows": 4,
-  "rowArrangementIsCustom": false,
-  "rowColorKey": [],
-  "rowTree": undefined,
-  "sources": [
+  "drawnRows": [
     {
       "color": undefined,
       "group": "Liver",
@@ -794,39 +767,39 @@ exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the 
       "rowColor": undefined,
     },
   ],
+  "effectiveColor": {
+    "field": "score",
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "markColors": [
+    undefined,
+    "#f00",
+    undefined,
+    undefined,
+  ],
+  "numRows": 4,
+  "rowArrangementIsCustom": false,
+  "rowColorKey": [],
+  "rowTree": undefined,
 }
 `;
 
 exports[`rows: the declared order leads and the rest keep adapter order 1`] = `
 {
-  "effectiveColor": {
-    "field": "score",
-    "legend": {
-      "title": undefined,
-    },
-    "scale": {
-      "domain": [],
-      "domainMid": undefined,
-      "names": [],
-      "range": [],
-      "reverse": undefined,
-      "scheme": undefined,
-      "type": undefined,
-    },
-    "value": undefined,
-  },
-  "isOverlay": false,
-  "markColors": [
-    undefined,
-    "#f00",
-    undefined,
-    undefined,
-  ],
-  "numRows": 4,
-  "rowArrangementIsCustom": false,
-  "rowColorKey": [],
-  "rowTree": undefined,
-  "sources": [
+  "drawnRows": [
     {
       "color": undefined,
       "group": "Liver",
@@ -856,5 +829,32 @@ exports[`rows: the declared order leads and the rest keep adapter order 1`] = `
       "rowColor": undefined,
     },
   ],
+  "effectiveColor": {
+    "field": "score",
+    "legend": {
+      "title": undefined,
+    },
+    "scale": {
+      "domain": [],
+      "domainMid": undefined,
+      "names": [],
+      "range": [],
+      "reverse": undefined,
+      "scheme": undefined,
+      "type": undefined,
+    },
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "markColors": [
+    undefined,
+    "#f00",
+    undefined,
+    undefined,
+  ],
+  "numRows": 4,
+  "rowArrangementIsCustom": false,
+  "rowColorKey": [],
+  "rowTree": undefined,
 }
 `;

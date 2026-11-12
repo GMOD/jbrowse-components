@@ -5,7 +5,7 @@ import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import { runMafClustering } from './runMafClustering.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 import type { LinearMafDisplayModel } from './stateModel.ts'
 
 beforeEach(() => {
@@ -56,8 +56,8 @@ test('what each row step recomputes', async () => {
   const { display, view } = createMafTestEnvironment().createDisplay({
     regions: REGIONS,
   })
-  const firstEdited = (edit: Partial<MafSource>) => {
-    const [first, ...rest] = display.editableSources
+  const firstEdited = (edit: Partial<MafRow>) => {
+    const [first, ...rest] = display.arrangedRows
     return [{ ...first!, ...edit }, ...rest]
   }
   const table = await workCensus(display, [
@@ -82,7 +82,7 @@ test('what each row step recomputes', async () => {
     {
       name: 'drag reorder',
       run: () => {
-        const [a, b, ...rest] = display.editableSources
+        const [a, b, ...rest] = display.arrangedRows
         display.setRowOrder([b!, a!, ...rest])
       },
     },
@@ -101,8 +101,8 @@ test('what each row step recomputes', async () => {
     {
       name: 'recolor',
       run: () => {
-        const [first] = display.editableSources
-        display.applyRowEdits(display.editableSources, {
+        const [first] = display.arrangedRows
+        display.applyRowEdits(display.arrangedRows, {
           color: { field: 'name' },
           colors: { [first!.name]: '#123456' },
         })

@@ -5,7 +5,7 @@ import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import { runMafClustering } from './runMafClustering.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 import type { LinearMafDisplayModel } from './stateModel.ts'
 
 type Display = LinearMafDisplayModel
@@ -80,14 +80,14 @@ async function cluster(display: Display, order: number[], tree: string) {
   })
 }
 
-function row({ name, label, rowColor }: MafSource) {
+function row({ name, label, rowColor }: MafRow) {
   return { name, label, rowColor }
 }
 
 function derived(display: Display) {
   return {
-    sources: display.sources.map(row),
-    editableSources: display.editableSources.map(row),
+    drawnRows: display.drawnRows.map(row),
+    arrangedRows: display.arrangedRows.map(row),
     rowTree: display.rowTree,
     treeLeaves: display.root && getLeafNames(display.root),
     treeDrawn: display.hierarchy !== undefined,
@@ -118,7 +118,7 @@ test('a declared order leads with no tree', () => {
 
 test('a reorder no rotation of the supplied tree produces drops it, and a reset restores it', () => {
   const display = loaded({ tree: true, domain: ['mm10'] })
-  const [mm10, hg38, panTro4] = display.editableSources
+  const [mm10, hg38, panTro4] = display.arrangedRows
   display.setRowOrder([hg38!, mm10!, panTro4!])
   expect(derived(display)).toMatchSnapshot()
   display.resetRowArrangement()
@@ -181,7 +181,7 @@ test('hiding the reference row prunes it from the rows and the tree', () => {
 
 test('a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolor, and a reset returns', () => {
   const display = loaded({ tree: true })
-  const [hg38, panTro4, mm10] = display.editableSources
+  const [hg38, panTro4, mm10] = display.arrangedRows
   display.applyRowEdits([{ ...mm10!, label: 'House mouse' }, hg38!, panTro4!], {
     color: { field: 'name' },
     colors: { panTro4: '#123456' },
@@ -193,7 +193,7 @@ test('a dialog reorder to a rotation keeps the supplied tree beside a relabel an
 
 test('a dialog recolor over an adapter color, in place', () => {
   const display = loaded()
-  display.applyRowEdits(display.editableSources, {
+  display.applyRowEdits(display.arrangedRows, {
     color: { field: 'name' },
     colors: { hg38: '#00ff00' },
   })

@@ -15,7 +15,7 @@ import type { SidebarBounds } from '@jbrowse/display-ui'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
   ClusterProvenance,
-  RowSource,
+  Row,
   SvgSidebarProps,
   TreeSidebarModel,
 } from '@jbrowse/tree-sidebar'
@@ -48,7 +48,7 @@ export interface MarkDisplayModel
   drawsRows: boolean
   sidebarBounds: SidebarBounds
   svgSidebar: SvgSidebarProps | undefined
-  sources: RowSource[]
+  drawnRows: Row[]
   effectiveRowHeight: number
   nrow: number
   rowsTopOffset: number

@@ -111,7 +111,7 @@ more than eleven parts erases every prop rather than failing:
   CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
   LegendMixin(),
   ColorWritesMixin(),
-  TreeSidebarMixin<MafSource>(),
+  TreeSidebarMixin<MafRow>(),
   ContextMenuMixin<MafContextMenuInfo>(),
   ScoreScaleMixin(COVERAGE_Y_PATHS),
   types.model({

@@ -1,4 +1,4 @@
-import type { RowSource } from '@jbrowse/tree-sidebar'
+import type { Row } from '@jbrowse/tree-sidebar'
 
 /** The row attribute a `rows.groups` entry writes. */
 export const ROW_GROUP_FIELD = 'group'
@@ -38,9 +38,9 @@ function rowGroupOf(compiled: readonly CompiledRowGroup[], name: string) {
  * `group` reads like any other row attribute.
  */
 export function tagRowGroups(
-  rows: RowSource[],
+  rows: Row[],
   compiled: readonly CompiledRowGroup[],
-): RowSource[] {
+): Row[] {
   return compiled.length
     ? rows.map(row => {
         const hit = rowGroupOf(compiled, row.name)

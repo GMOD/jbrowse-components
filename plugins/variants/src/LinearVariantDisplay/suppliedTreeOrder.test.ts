@@ -27,7 +27,7 @@ function displayWith(rows: Record<string, unknown>, phased: boolean) {
 }
 
 function rowNames(display: LinearVariantDisplayModel) {
-  return display.sources.map(s => s.name)
+  return display.drawnRows.map(s => s.name)
 }
 
 test('a supplied tree orders the sample rows by its leaves', () => {

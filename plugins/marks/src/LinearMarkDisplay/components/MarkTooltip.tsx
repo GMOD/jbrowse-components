@@ -31,7 +31,7 @@ export interface MarkTooltipModel {
   encodings: MarkEncoding[]
   legendSections: MarkLegendSection[]
   facetLayout: FacetLayout
-  sources: readonly { label?: string }[]
+  drawnRows: readonly { label?: string }[]
   rowTable: RowTable | undefined
 }
 
@@ -127,7 +127,7 @@ function rowRow(
   hit: MarkHitInfo,
   encoding: MarkEncoding | undefined,
   facetLayout: FacetLayout,
-  sources: readonly { label?: string }[],
+  rows: readonly { label?: string }[],
   rowTable: RowTable | undefined,
 ): ChannelRow | undefined {
   const band = hit.row === undefined ? undefined : keySlot(hit.row, rowTable)
@@ -141,7 +141,7 @@ function rowRow(
     return {
       channel: 'row',
       value:
-        (facetLayout.rows ? sources[band]?.label : undefined) ?? section.label,
+        (facetLayout.rows ? rows[band]?.label : undefined) ?? section.label,
     }
   }
   return encoding?.row === undefined
@@ -159,7 +159,7 @@ function markTooltipRows(
   encoding: MarkEncoding | undefined,
   sections: MarkLegendSection[],
   facetLayout: FacetLayout,
-  sources: readonly { label?: string }[],
+  rows: readonly { label?: string }[],
   rowTable: RowTable | undefined,
 ): ChannelRow[] {
   const { y } = hit
@@ -173,7 +173,7 @@ function markTooltipRows(
       : undefined,
     colorRow(hit, encoding, sections),
     shapeRow(hit, encoding, sections),
-    rowRow(hit, encoding, facetLayout, sources, rowTable),
+    rowRow(hit, encoding, facetLayout, rows, rowTable),
   ].filter(row => row !== undefined)
 }
 
@@ -201,7 +201,7 @@ const MarkTooltip = observer(function MarkTooltip({
             encodings[hit.markIndex],
             legendSections,
             model.facetLayout,
-            model.sources,
+            model.drawnRows,
             model.rowTable,
           ).map(({ channel, field, value, swatch }) => (
             <div key={channel}>

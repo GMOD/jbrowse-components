@@ -183,7 +183,7 @@ test('haplotype rows count their sample once', () => {
   const display = recordsDisplay()
   display.setRowsField('haplotype')
   display.setCellData(cellData([1, 2, 3, 4]), [0])
-  expect(display.sources.length).toBe(8)
+  expect(display.drawnRows.length).toBe(8)
   expect(display.recordCarrierSamples).toEqual(SAMPLES)
   expect(display.recordCarriersOf?.(display.featureInfoById('sv1')!)).toEqual({
     carriers: 2,

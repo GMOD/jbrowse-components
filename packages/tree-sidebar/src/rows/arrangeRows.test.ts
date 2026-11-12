@@ -1,10 +1,10 @@
 import { arrangeRows, rowAliasOver } from './arrangeRows.ts'
 import { keptRows } from './narrowRows.ts'
 
-import type { RowSource } from '../types.ts'
+import type { Row } from '../types.ts'
 import type { ArrangeRowsHooks, RowAlias, RowParent } from './arrangeRows.ts'
 
-interface HaplotypeRow extends RowSource {
+interface HaplotypeRow extends Row {
   sampleName: string
   HP?: number
 }
@@ -55,7 +55,7 @@ function sampleHooks(
   }
 }
 
-const hooks: ArrangeRowsHooks<RowSource> = {
+const hooks: ArrangeRowsHooks<Row> = {
   rowAlias: undefined,
   rowParent: () => undefined,
 }
@@ -64,7 +64,7 @@ const names = (rows: { name: string }[]) => rows.map(r => r.name)
 
 // The rows ordered by `domain` alone, as a display with no labels arranges
 // them
-function byDomain<S extends RowSource>(
+function byDomain<S extends Row>(
   rows: S[],
   domain: string[],
   rowAlias?: RowAlias,
@@ -224,7 +224,7 @@ describe('sort across the haplotype switch', () => {
 })
 
 describe('arrangeRows', () => {
-  const rows: RowSource[] = [
+  const rows: Row[] = [
     { name: 'a', color: 'red' },
     { name: 'b', label: 'Bee' },
     { name: 'c' },
@@ -302,7 +302,7 @@ describe('arrangeRows', () => {
   })
 
   test('a row called constructor reads no inherited label', () => {
-    const [row] = arrangeRows<RowSource>(
+    const [row] = arrangeRows<Row>(
       [{ name: 'constructor' }],
       { ...none, labels: { other: 'x' } },
       hooks,

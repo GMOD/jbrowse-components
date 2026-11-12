@@ -28,7 +28,7 @@ import {
   MAF_COLOR_FIELD_LABELS,
 } from './rowPlan.ts'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 import type { ConservationUnit } from './conservationUnits.ts'
 import type {
   MafBasesField,
@@ -64,7 +64,7 @@ interface MafMenuSelf
   extends
     IStateTreeNode,
     MafClusterSelf,
-    RowArrangementModel<MafSource>,
+    RowArrangementModel<MafRow>,
     CoverageMenuModel {
   hasLegendKey: boolean
   showLegend: boolean
@@ -103,8 +103,8 @@ interface MafMenuSelf
   setYField: (field: MafYField | undefined) => void
   colorScheme: ColorSchemeName | undefined
   setColorScheme: (scheme: ColorSchemeName) => void
-  editableSources: MafSource[]
-  sources: MafSource[]
+  arrangedRows: MafRow[]
+  drawnRows: MafRow[]
   sourcesKnown: boolean
   setShowTree: (f: boolean) => void
   setShowBranchLength: (f: boolean) => void
@@ -336,11 +336,11 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
     ...conservationResolutionMenuItems(self),
     ...makeShowSubMenu(showMenuItems(self)),
     ...rowOrderMenuItems(self, {
-      arrangement: { ready: !!self.editableSources.length },
+      arrangement: { ready: !!self.arrangedRows.length },
       cluster: {
         runItem: {
           label: 'Cluster rows by identity...',
-          // `sources` is the post-filter list, so one row is as often a clade
+          // `drawnRows` is the post-filter list, so one row is as often a clade
           // focused to one species as a track still loading.
           disabled: !self.sourcesKnown,
           disabledHelpText: 'Loading rows...',
@@ -351,7 +351,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
             ])
           },
         },
-        rowCount: self.sources.length,
+        rowCount: self.drawnRows.length,
       },
     }),
   ]

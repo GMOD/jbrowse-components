@@ -74,10 +74,10 @@ export function loadedRegionIndexAt(
 // through.
 export interface RowSortColumnHost<S> {
   loadedRegions: { entries: () => Iterable<[number, LoadedRegionSpan]> }
-  // `editableSources`, never `sources`: unfiltered by the subtree, so a
+  // `arrangedRows`, never `drawnRows`: unfiltered by the subtree, so a
   // focused clade doesn't persist itself as the whole row order and drop
   // everything it was hiding.
-  editableSources: S[]
+  arrangedRows: S[]
   setRowOrder: (rows: S[]) => void
 }
 
@@ -88,7 +88,7 @@ export interface RowSortColumnHost<S> {
  * Declines twice, and neither is a no-op. A column no loaded region covers has
  * no value to sort by at all — see `loadedRegionIndexAt`. And fewer than two
  * rows has nothing to order, but `setRowOrder` drops the cluster tree whenever the
- * row set changes, so an adapter that reported no sources for the loaded region
+ * row set changes, so an adapter that reported no rows for the loaded region
  * would trade a dendrogram for an empty layout. The right-click item is gated on
  * the same count already; the declarative `sortRowsBy` entry point is not, and
  * lands here.
@@ -96,14 +96,14 @@ export interface RowSortColumnHost<S> {
  * Returns whether it sorted, which is what `setupRowSortAutorun`'s `sortRows`
  * reads to decide whether to clear the trigger or leave it for a later fetch.
  *
- * **`order` is handed `editableSources`, which the subtree filter has not
+ * **`order` is handed `arrangedRows`, which the subtree filter has not
  * touched** — the list whose order is written, not the rows on screen. So an
  * `order` that derives a STATISTIC from the row set it is given (block sizes,
  * ranks, a median) is computing it over rows a focused clade is hiding, which
  * is a different answer from the one the user is looking at. That is deliberate
- * for the ordering itself, for the reason on `RowSortColumnHost.editableSources`
+ * for the ordering itself, for the reason on `RowSortColumnHost.arrangedRows`
  * — a hidden row must keep its place. A display that wants the
- * drawn set for the statistic reads its own `sources` in the closure it passes
+ * drawn set for the statistic reads its own `drawnRows` in the closure it passes
  * as `order`; nothing here can hand it over, because "which rows are drawn" is
  * downstream of decorations this module does not see.
  */
@@ -112,19 +112,19 @@ export function sortRowsAtColumn<S extends { name: string }, D>(
   refName: string,
   pos: number,
   dataAt: (regionIndex: number) => D | undefined,
-  order: (sources: S[], data: D) => S[],
+  order: (rows: S[], data: D) => S[],
 ) {
   const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
   const data = index === undefined ? undefined : dataAt(index)
-  const sortable = data !== undefined && self.editableSources.length > 1
+  const sortable = data !== undefined && self.arrangedRows.length > 1
   if (sortable) {
-    self.setRowOrder(order(self.editableSources, data))
+    self.setRowOrder(order(self.arrangedRows, data))
   }
   return sortable
 }
 
 /**
- * Order `sources` by the value each carries at the column, newly-ranked rows
+ * Order `rows` by the value each carries at the column, newly-ranked rows
  * first and valueless rows last.
  *
  * `compare` sees only the values that are actually there, so it never has to
@@ -142,15 +142,15 @@ export function sortRowsAtColumn<S extends { name: string }, D>(
  * result straight to `setRowOrder`.
  */
 export function orderRowsByValueAt<T extends { name: string }, V>(
-  sources: T[],
+  rows: T[],
   valueByName: ReadonlyMap<string, V>,
   compare: (a: V, b: V) => number,
 ): T[] {
-  return sources
-    .map((source, idx) => ({
-      source,
+  return rows
+    .map((row, idx) => ({
+      row,
       idx,
-      value: valueByName.get(source.name),
+      value: valueByName.get(row.name),
     }))
     .sort((a, b) => {
       if (a.value === undefined || b.value === undefined) {
@@ -164,7 +164,7 @@ export function orderRowsByValueAt<T extends { name: string }, V>(
       }
       return compare(a.value, b.value) || a.idx - b.idx
     })
-    .map(x => x.source)
+    .map(x => x.row)
 }
 
 /**

@@ -40,8 +40,8 @@ function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
   return {
     siteFilter: [],
     sourcesBase: THREE,
-    clusterableSources: THREE,
-    editableSources: THREE,
+    shownRows: THREE,
+    arrangedRows: THREE,
     adapterConfig,
     rowsField: 'sample',
     rowSort: [],
@@ -80,7 +80,7 @@ describe('runGenotypeClustering', () => {
       'MultiSampleVariantClusterGenotypeMatrix',
       expect.objectContaining({
         regions,
-        sources: model.clusterableSources,
+        sources: model.shownRows,
         siteFilter: [],
         rowsField: 'sample',
       }),
@@ -177,8 +177,8 @@ describe('runGenotypeClustering', () => {
       { name: `${sampleName} HP2`, sampleName, HP: 1 },
     ])
     const model = makeModel({
-      clusterableSources: haplotypes,
-      editableSources: haplotypes,
+      shownRows: haplotypes,
+      arrangedRows: haplotypes,
       rowsField: 'haplotype',
       samplePloidy: {
         sampleA: 2,
@@ -208,7 +208,8 @@ describe('runGenotypeClustering', () => {
       ],
       {
         tree: '(...);',
-        provenance: // the recorded mode follows the run, since a phased tree clusters
+        // the recorded mode follows the run, since a phased tree clusters
+        provenance:
           // haplotype rows rather than sample rows
           { ...PROVENANCE, settings: withRowsField('haplotype') },
       },
@@ -221,7 +222,7 @@ describe('runGenotypeClustering', () => {
     // in the tree — but dropping it from the order would move it to the end
     // once the focus is cleared.
     const model = makeModel({
-      clusterableSources: THREE.slice(0, 2),
+      shownRows: THREE.slice(0, 2),
     })
     const rpcManager = makeRpcManager(async () => ({
       order: [1, 0],
@@ -240,7 +241,7 @@ describe('runGenotypeClustering', () => {
     expect(rpcManager.call).toHaveBeenCalledWith(
       'session-1',
       'MultiSampleVariantClusterGenotypeMatrix',
-      expect.objectContaining({ sources: model.clusterableSources }),
+      expect.objectContaining({ sources: model.shownRows }),
     )
     expect(model.setRowOrder).toHaveBeenCalledWith(
       ['sampleB', 'sampleA', 'sampleC'].map(name =>

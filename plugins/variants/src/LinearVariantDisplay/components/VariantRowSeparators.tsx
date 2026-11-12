@@ -11,7 +11,7 @@ import type { LinearVariantDisplayModel } from '../model.ts'
 //
 // Drawn once `cellData` lands, the payload the cells paint from: the sample
 // list arrives first, and a phased track's rows double only when the payload's
-// ploidy does, so a grid off `sources` alone showed over an empty canvas and
+// ploidy does, so a grid off `drawnRows` alone showed over an empty canvas and
 // then jumped as the cells drew.
 const VariantRowSeparators = observer(function VariantRowSeparators({
   model,
@@ -22,7 +22,7 @@ const VariantRowSeparators = observer(function VariantRowSeparators({
     availableHeight,
     showRowSeparators,
     cellData,
-    sources,
+    drawnRows,
     effectiveRowHeight,
     scrollTop,
     canvasWidthPx,
@@ -41,7 +41,7 @@ const VariantRowSeparators = observer(function VariantRowSeparators({
       }}
     >
       <RowSeparatorLines
-        numRows={sources.length}
+        numRows={drawnRows.length}
         rowHeight={effectiveRowHeight}
         width={canvasWidthPx}
         opacity={SEPARATOR_OPACITY}

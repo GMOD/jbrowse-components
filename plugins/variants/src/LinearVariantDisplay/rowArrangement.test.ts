@@ -31,8 +31,8 @@ function clusteredDisplay() {
   return display
 }
 
-function rowNames(display: { sources: { name: string }[] }) {
-  return display.sources.map(s => s.name)
+function rowNames(display: { drawnRows: { name: string }[] }) {
+  return display.drawnRows.map(s => s.name)
 }
 
 describe('recoloring does not disturb the arrangement', () => {
@@ -44,7 +44,7 @@ describe('recoloring does not disturb the arrangement', () => {
     expect(display.rowTree).toBe(CLUSTERED_TREE)
     // the dendrogram still positions, i.e. its leaves are still these rows
     expect(display.hierarchy).toBeDefined()
-    expect(display.sources.every(s => s.rowColor)).toBe(true)
+    expect(display.drawnRows.every(s => s.rowColor)).toBe(true)
   })
 
   it('clearing the coloring strips the palette without resetting the order', () => {
@@ -54,7 +54,7 @@ describe('recoloring does not disturb the arrangement', () => {
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.rowTree).toBe(CLUSTERED_TREE)
-    expect(display.sources.some(s => s.rowColor)).toBe(false)
+    expect(display.drawnRows.some(s => s.rowColor)).toBe(false)
   })
 
   // Rows are haplotypes after a phased clustering run, while `adapterSamples`
@@ -420,7 +420,7 @@ describe('a rows.field switch keeps the arrangement', () => {
     landPloidy(display)
 
     expect(
-      display.sources.slice(0, 3).map(s => [s.name, s.label, s.rowColor]),
+      display.drawnRows.slice(0, 3).map(s => [s.name, s.label, s.rowColor]),
     ).toEqual([
       ['S1 HP2', 'One hap2', '#123456'],
       ['S0 HP1', 'Zero hap1', undefined],
@@ -457,7 +457,8 @@ describe('a rows.field switch keeps the arrangement', () => {
       S1: 'Mother',
     })
     setConf(display, ['rows', 'colors'], { 'S2 HP2': '#0000ff' })
-    const phased = () => display.sources.map(s => [s.name, s.label, s.rowColor])
+    const phased = () =>
+      display.drawnRows.map(s => [s.name, s.label, s.rowColor])
     const before = phased()
     expect(rowNames(display)).toEqual(phasedOrder)
     expect(display.hierarchy).toBeDefined()
@@ -465,12 +466,12 @@ describe('a rows.field switch keeps the arrangement', () => {
     display.setRowsField('sample')
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
-    expect(display.sources.map(s => s.label)).toEqual([
+    expect(display.drawnRows.map(s => s.label)).toEqual([
       undefined,
       undefined,
       'Mother',
     ])
-    expect(display.sources.map(s => s.rowColor)).toEqual([
+    expect(display.drawnRows.map(s => s.rowColor)).toEqual([
       undefined,
       undefined,
       undefined,
@@ -564,7 +565,7 @@ describe('an adapter swap to a new cohort', () => {
     expect(display.rowTree).toBeUndefined()
     expect(rowNames(display)).toEqual(['T0', 'T1'])
     // the configured coloring is re-seeded against the new cohort
-    expect(display.sources.every(s => s.rowColor)).toBe(true)
+    expect(display.drawnRows.every(s => s.rowColor)).toBe(true)
   })
 
   it('keeps the arrangement when the cohorts overlap', () => {
@@ -613,16 +614,16 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   it('keeps the colorBy palette through a sort', () => {
     const display = sortableDisplay()
     display.setRowColorChoice('population')
-    const before = new Map(display.sources.map(s => [s.name, s.rowColor]))
+    const before = new Map(display.drawnRows.map(s => [s.name, s.rowColor]))
     expect([...before.values()].every(Boolean)).toBe(true)
 
     display.sortByGenotype('v1')
 
     // hom-alt leads, no-call last — so the order really did change
     expect(rowNames(display)).toEqual(['S2', 'S1', 'S0'])
-    expect(display.sources.every(s => s.rowColor)).toBe(true)
+    expect(display.drawnRows.every(s => s.rowColor)).toBe(true)
     // ...and each row kept ITS color, not merely some color
-    for (const s of display.sources) {
+    for (const s of display.drawnRows) {
       expect(s.rowColor).toBe(before.get(s.name))
     }
   })
@@ -644,15 +645,15 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
       },
     } as unknown as Parameters<typeof display.setCellData>[0])
     display.setRowColorChoice('population')
-    const before = new Map(display.sources.map(s => [s.name, s.rowColor]))
-    expect(display.sources).toHaveLength(6)
+    const before = new Map(display.drawnRows.map(s => [s.name, s.rowColor]))
+    expect(display.drawnRows).toHaveLength(6)
     expect([...before.values()].every(Boolean)).toBe(true)
 
     display.sortByGenotype('v1')
 
-    expect(display.sources).toHaveLength(6)
-    expect(display.sources.every(s => s.rowColor)).toBe(true)
-    for (const s of display.sources) {
+    expect(display.drawnRows).toHaveLength(6)
+    expect(display.drawnRows.every(s => s.rowColor)).toBe(true)
+    for (const s of display.drawnRows) {
       expect(s.rowColor).toBe(before.get(s.name))
     }
   })
@@ -662,7 +663,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   // row.
   it('keeps a hand-set label and color through a sort', () => {
     const display = sortableDisplay()
-    const [s0, s1, s2] = display.editableSources
+    const [s0, s1, s2] = display.arrangedRows
     display.applyRowEdits([{ ...s0!, label: 'first' }, s1!, s2!], {
       color: { field: 'name' },
       colors: { S0: 'red' },
@@ -671,7 +672,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     display.sortByGenotype('v1')
 
     expect(rowNames(display)).toEqual(['S2', 'S1', 'S0'])
-    expect(display.sources.find(s => s.name === 'S0')).toMatchObject({
+    expect(display.drawnRows.find(s => s.name === 'S0')).toMatchObject({
       label: 'first',
       rowColor: 'red',
     })
@@ -709,7 +710,7 @@ describe('the tooltip over a haplotype row', () => {
     display.setCellData({
       samplePloidy: { S0: 2, S1: 2, S2: 2 },
     } as unknown as Parameters<typeof display.setCellData>[0])
-    const headings = display.sources.map(
+    const headings = display.drawnRows.map(
       source => tooltipPlainText(source).split('\n')[0],
     )
     expect(headings).toEqual([
@@ -742,7 +743,7 @@ describe('haplotype row labels', () => {
     return display
   }
   const labelsOf = (display: ReturnType<typeof phased>) =>
-    display.sources.map(s => [s.name, s.label])
+    display.drawnRows.map(s => [s.name, s.label])
 
   // chrX: haploid here, with a second haplotype the order still names
   it('a haploid sample beside a named second haplotype composes both', () => {
@@ -790,10 +791,10 @@ describe('haplotype row labels', () => {
       {},
       { S0: 2, S1: 2 },
     )
-    const [hp1, ...rest] = display.editableSources
+    const [hp1, ...rest] = display.arrangedRows
     display.applyRowEdits([{ ...hp1!, label: 'paternal' }, ...rest])
     expect(display.rowLabels).toEqual({ 'S0 HP1': 'paternal' })
-    const [edited, ...others] = display.editableSources
+    const [edited, ...others] = display.arrangedRows
     display.applyRowEdits([{ ...edited!, label: 'Mom HP1' }, ...others])
     expect(display.rowLabels).toEqual({})
   })

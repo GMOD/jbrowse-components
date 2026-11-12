@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface HoverHighlight {
@@ -32,7 +32,7 @@ export function stateModelFactory() {
       // declining to act (force-load, or an ungated display) and measures
       // nothing.
       byteLimit: types.frozen<number | undefined>(undefined),
-      samples: types.frozen<MafSource[] | undefined>(undefined),
+      samples: types.frozen<MafRow[] | undefined>(undefined),
       regions: types.frozen<
         | {
             refName: string

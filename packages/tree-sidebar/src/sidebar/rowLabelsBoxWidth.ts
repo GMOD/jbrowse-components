@@ -2,7 +2,7 @@ import { max, measureText } from '@jbrowse/core/util'
 
 import { fittedLabel } from './fittedLabel.ts'
 
-import type { RowAnnotationColumn, RowLabelSource } from '../types.ts'
+import type { RowAnnotationColumn, LabelledRow } from '../types.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 /**
@@ -36,11 +36,11 @@ const TEXT_INSET = 4
  * annotations beside it, which is its swatch where no name draws.
  */
 export function rowColorWidth(
-  sources: readonly RowLabelSource[],
+  rows: readonly LabelledRow[],
   rowHeight: number,
   annotations: readonly RowAnnotationColumn[] = [],
 ) {
-  return sources.some(s => s.rowColor)
+  return rows.some(s => s.rowColor)
     ? rowLabelsCarryText(rowHeight) && annotations.length === 0
       ? ROW_COLOR_BAR_WIDTH
       : ROW_SWATCH_WIDTH
@@ -53,12 +53,12 @@ export function rowColorWidth(
  * widths, since the labels cover the plot's first region.
  */
 function rowColorsWidth(
-  sources: readonly RowLabelSource[],
+  rows: readonly LabelledRow[],
   rowHeight: number,
   annotations: readonly RowAnnotationColumn[] = [],
 ) {
   return (
-    rowColorWidth(sources, rowHeight, annotations) +
+    rowColorWidth(rows, rowHeight, annotations) +
     annotations.length * ROW_SWATCH_WIDTH
   )
 }
@@ -68,11 +68,11 @@ function rowColorsWidth(
  * color's where a row has one, then each annotation's.
  */
 export function rowColorColumnCenters(
-  sources: readonly RowLabelSource[],
+  rows: readonly LabelledRow[],
   rowHeight: number,
   annotations: readonly RowAnnotationColumn[] = [],
 ) {
-  const rowColor = rowColorWidth(sources, rowHeight, annotations)
+  const rowColor = rowColorWidth(rows, rowHeight, annotations)
   return [
     ...(rowColor > 0 ? [rowColor / 2] : []),
     ...annotations.map(
@@ -94,10 +94,10 @@ export function rowColumnLabelsHeight(labels: readonly string[] = []) {
  * columns, so every name in the column starts at the same x.
  */
 export function rowLabelTextX(
-  sources: readonly RowLabelSource[],
+  rows: readonly LabelledRow[],
   annotations?: readonly RowAnnotationColumn[],
 ) {
-  return rowColorsWidth(sources, MIN_TEXT_ROW_HEIGHT, annotations) + TEXT_INSET
+  return rowColorsWidth(rows, MIN_TEXT_ROW_HEIGHT, annotations) + TEXT_INSET
 }
 
 /**
@@ -118,18 +118,18 @@ export function rowLabelFontSize(rowHeight: number, text?: ExportTextStyle) {
   return Math.min(rowHeight, sidebarFontSize(text))
 }
 
-export function rowLabelFullText(source: RowLabelSource) {
-  return source.label ?? source.name
+export function rowLabelFullText(row: LabelledRow) {
+  return row.label ?? row.name
 }
 
 export function rowLabelText(
-  source: RowLabelSource,
+  row: LabelledRow,
   rowHeight: number,
   text?: ExportTextStyle,
 ) {
   const fontSize = rowLabelFontSize(rowHeight, text)
   return fittedLabel(
-    rowLabelFullText(source),
+    rowLabelFullText(row),
     ROW_LABEL_MAX_EMS * fontSize,
     fontSize,
     text?.fontFamily,
@@ -137,7 +137,7 @@ export function rowLabelText(
 }
 
 export function rowLabelsBoxWidth(
-  sources: RowLabelSource[],
+  rows: LabelledRow[],
   rowHeight: number,
   text?: ExportTextStyle,
   annotations?: readonly RowAnnotationColumn[],
@@ -145,7 +145,7 @@ export function rowLabelsBoxWidth(
   const fontSize = rowLabelFontSize(rowHeight, text)
   return rowLabelsCarryText(rowHeight)
     ? max(
-        sources.map(s =>
+        rows.map(s =>
           Math.min(
             measureText(rowLabelFullText(s), fontSize, text?.fontFamily),
             ROW_LABEL_MAX_EMS * fontSize,
@@ -154,10 +154,7 @@ export function rowLabelsBoxWidth(
         0,
       ) +
         ROW_LABEL_PAD +
-        rowLabelTextX(sources, annotations) -
+        rowLabelTextX(rows, annotations) -
         TEXT_INSET
-    : Math.max(
-        rowColorsWidth(sources, rowHeight, annotations),
-        ROW_SWATCH_WIDTH,
-      )
+    : Math.max(rowColorsWidth(rows, rowHeight, annotations), ROW_SWATCH_WIDTH)
 }

@@ -119,8 +119,8 @@ const ClusterManualTab = observer(function ClusterManualTab<
           // the matrix in hand — which it also has to describe.
           model.setRowOrder(
             clusteredCladeLayout({
-              rows: model.clusterableSources,
-              editableSources: model.editableSources,
+              rows: model.shownRows,
+              arrangedRows: model.arrangedRows,
               order: parseClusterOrder(paste).map(idx => idx - 1),
               matrixRowNames: exportedRowNames ?? matrixRowNames,
             }),

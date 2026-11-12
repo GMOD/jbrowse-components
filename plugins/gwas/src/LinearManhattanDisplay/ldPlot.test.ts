@@ -524,7 +524,7 @@ test('the top hit reads every loaded row, focused out or not', () => {
   )
   expect(display.topSnp).toBe('ctgA:501')
   display.setRowFocus(['p1'])
-  expect(display.sources.map(s => s.name)).toEqual(['p1'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['p1'])
   expect(display.topSnp).toBe('ctgA:501')
 })
 

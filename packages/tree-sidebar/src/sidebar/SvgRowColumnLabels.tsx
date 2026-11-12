@@ -7,7 +7,7 @@ import {
   rowLabelFontSize,
 } from './rowLabelsBoxWidth.ts'
 
-import type { RowAnnotationColumn, RowLabelSource } from '../types.ts'
+import type { RowAnnotationColumn, LabelledRow } from '../types.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 const TICK_LENGTH = 4
@@ -24,21 +24,21 @@ const TEXT_GAP = 2
  */
 export function SvgRowColumnLabels({
   labels,
-  sources,
+  rows,
   rowHeight,
   labelOffset,
   annotations,
   text,
 }: {
   labels: readonly string[]
-  sources: readonly RowLabelSource[]
+  rows: readonly LabelledRow[]
   rowHeight: number
   labelOffset: number
   annotations?: readonly RowAnnotationColumn[]
   text?: ExportTextStyle
 }) {
   const palette = usePalette()
-  const centers = rowColorColumnCenters(sources, rowHeight, annotations)
+  const centers = rowColorColumnCenters(rows, rowHeight, annotations)
   const textX = (centers.at(-1) ?? 0) + TICK_LENGTH + TEXT_GAP
   const columns = labels.flatMap((label, column) => {
     const x = centers[column]

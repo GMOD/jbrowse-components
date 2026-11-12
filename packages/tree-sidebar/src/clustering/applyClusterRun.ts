@@ -3,7 +3,7 @@ import { rotateClusterRun } from './rotateClusterRun.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
 
 export interface ClusterRunModel<S extends { name: string }> {
-  editableSources: S[]
+  arrangedRows: S[]
   rowSort: string[]
   setRowOrder: (
     rows: S[],
@@ -32,13 +32,13 @@ export async function applyClusterRun<S extends { name: string }>({
   provenance: ClusterProvenance
   matrix: () => Promise<{ order: number[]; tree?: string }>
 }) {
-  const { editableSources, rowSort } = model
+  const { arrangedRows, rowSort } = model
   const { order, tree } = rotateClusterRun({
     rows,
     domain: rowSort,
     ...(await matrix()),
   })
-  model.setRowOrder(clusteredCladeLayout({ rows, editableSources, order }), {
+  model.setRowOrder(clusteredCladeLayout({ rows, arrangedRows, order }), {
     tree,
     provenance,
   })
@@ -46,7 +46,7 @@ export async function applyClusterRun<S extends { name: string }>({
 
 // Parse pasted R hclust output (a sequence of 1-based row indices, one per
 // line, with possible blank/whitespace lines) into a numeric array. Callers map
-// these 1-based indices into their source list.
+// these 1-based indices into their row list.
 export function parseClusterOrder(paste: string): number[] {
   return paste
     .split('\n')
@@ -142,11 +142,11 @@ function validateClusterOrder(
  * only one `computeClusterHierarchy` will draw, since it refuses a tree whose
  * leaves are not exactly the drawn rows in order (per band, under bands).
  *
- * **Undecorated rows, not the drawn `sources`.** Every display decorates on the
+ * **Undecorated rows, not `drawnRows`.** Every display decorates on the
  * way to the painting — multi-wiggle synthesizes a palette, the multi-row
  * feature display tags `rows.groups` groups — and
  * the arrangement holds whatever it is handed, which is meant to be only what
- * the user chose. `editableSources` narrowed by the focus is the list.
+ * the user chose. `arrangedRows` narrowed by the focus is the list.
  *
  * The rows the focus is hiding are re-appended rather than dropped:
  * `rows.sort` records every row's position, so losing them here would erase
@@ -161,12 +161,12 @@ function validateClusterOrder(
  */
 export function clusteredCladeLayout<S extends { name: string }>({
   rows,
-  editableSources,
+  arrangedRows,
   order,
   matrixRowNames,
 }: {
   rows: readonly S[]
-  editableSources: readonly S[]
+  arrangedRows: readonly S[]
   order: number[]
   matrixRowNames?: string[]
 }): S[] {
@@ -175,6 +175,6 @@ export function clusteredCladeLayout<S extends { name: string }>({
   const clusteredNames = new Set(clustered.map(s => s.name))
   return [
     ...clustered,
-    ...editableSources.filter(s => !clusteredNames.has(s.name)),
+    ...arrangedRows.filter(s => !clusteredNames.has(s.name)),
   ]
 }

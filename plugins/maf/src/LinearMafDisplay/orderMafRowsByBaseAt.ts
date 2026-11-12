@@ -27,7 +27,7 @@ const GAP = '-'
  * locale-dependent.
  *
  * `drawnRows` are the rows the region's `rowIndex` numbering names (the
- * display's `sources`), and `rows` are what gets ordered (`editableSources`,
+ * display's `drawnRows`), and `rows` are what gets ordered (`arrangedRows`,
  * unfiltered by the subtree so a focused clade does not persist itself as the
  * whole order). Case is folded: a soft-masked base is the same base.
  */

@@ -15,7 +15,7 @@ through `applyClusterRun`, which calls `model.setRowOrder(rows, { tree,
 provenance })`. The Manual tab's pasted order lands through
 `clusteredCladeLayout`, the step a run ends with. Every family composes
 `TreeSidebarMixin` (`packages/tree-sidebar`), which stores the arrangement in the
-display's `rows` config object (ADR-157) and derives `clusterableSources`; the
+display's `rows` config object (ADR-157) and derives `shownRows`; the
 mixin's rules are in [TREE_SIDEBAR](TREE_SIDEBAR.md).
 
 ## Matrix construction
@@ -59,7 +59,7 @@ values are diploid-scale dosage with `NaN` for a no-call
 (`genotypeMatrixEncoding.ts` says why). hclust rejects non-finite input, so the
 in-app path runs `imputeMissingToSiteMean` first; the R/TSV export writes `NA`
 and the R script imputes it the same way. Phased mode gives one row per
-haplotype. The dialog commits a pasted order over `clusterableSources`, checked
+haplotype. The dialog commits a pasted order over `shownRows`, checked
 against the exported matrix's row names, so phased and unphased paths commit
 identically.
 
@@ -74,7 +74,7 @@ mixin-side rules are in
   so every action that moves rows routes through `setRowOrder`.
 - **`computeClusterHierarchy`** takes the drawn rows and returns `undefined`
   unless the tree's leaves are exactly those names in that order. It backstops
-  rows that move with no order write (a `sources` decoration, a discovered row
+  rows that move with no order write (a `drawnRows` decoration, a discovered row
   set growing, phased expansion switching on).
 
 The focus (`rows.kept`) is matched by name without a tree, so a reorder keeps it

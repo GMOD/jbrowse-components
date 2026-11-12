@@ -16,7 +16,7 @@ const MarkClusterDialog = observer(function MarkClusterDialog({
   model: MarkClusterDialogModel
   handleClose: () => void
 }) {
-  const { clusterableSources } = model
+  const { shownRows } = model
   return (
     <ClusterDialog
       model={model}
@@ -26,8 +26,7 @@ const MarkClusterDialog = observer(function MarkClusterDialog({
       matrixLabel="value matrix"
       tsvFilename="rows.tsv"
       canRun={
-        clusterableSources.length >= MIN_CLUSTER_ROWS &&
-        model.rowCompare !== undefined
+        shownRows.length >= MIN_CLUSTER_ROWS && model.rowCompare !== undefined
       }
       matrixKey={rowMatrixKey(model)}
       run={args => runMarkClustering({ model, ...args })}

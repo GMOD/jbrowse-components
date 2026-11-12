@@ -102,7 +102,7 @@ const suite: TestSuite = {
     },
 
     // rows.color:'population' + samplesTsvLocation end to end: the
-    // sample-metadata TSV must parse, reach the display's sources, and drive
+    // sample-metadata TSV must parse, reach the display's rows, and drive
     // the palette so same-population rows share a color and different
     // populations differ. A source's resolved color is its `rowColor`, which
     // tree-sidebar draws a row's label bar in.
@@ -123,7 +123,7 @@ const suite: TestSuite = {
               JBrowseSession: {
                 views: {
                   tracks: {
-                    displays: { rowColorField: string; sources?: Src[] }[]
+                    displays: { rowColorField: string; drawnRows?: Src[] }[]
                   }[]
                 }[]
               }
@@ -132,7 +132,7 @@ const suite: TestSuite = {
           const display = session.views[0]!.tracks[0]!.displays[0]!
           return {
             rowColorField: display.rowColorField,
-            sources: (display.sources ?? []).map(s => ({
+            rows: (display.drawnRows ?? []).map(s => ({
               name: s.name,
               population: s.population,
               rowColor: s.rowColor,
@@ -144,19 +144,19 @@ const suite: TestSuite = {
             `expected rows.color.field 'population', got '${info.rowColorField}'`,
           )
         }
-        if (info.sources.length === 0) {
-          throw new Error('no sample sources loaded from samplesTsv')
+        if (info.rows.length === 0) {
+          throw new Error('no sample rows loaded from samplesTsv')
         }
         // every source carries a population attribute and a resolved tint
-        const missing = info.sources.filter(s => !s.population || !s.rowColor)
+        const missing = info.rows.filter(s => !s.population || !s.rowColor)
         if (missing.length) {
           throw new Error(
-            `sources missing population/rowColor: ${JSON.stringify(missing.slice(0, 3))}`,
+            `rows missing population/rowColor: ${JSON.stringify(missing.slice(0, 3))}`,
           )
         }
         // one color per population: same pop => same color, and >1 distinct color
         const colorByPop = new Map<string, string>()
-        for (const s of info.sources) {
+        for (const s of info.rows) {
           const prev = colorByPop.get(s.population!)
           if (prev && prev !== s.rowColor) {
             throw new Error(

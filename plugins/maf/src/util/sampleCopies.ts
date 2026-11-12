@@ -1,4 +1,4 @@
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 
 /**
  * A block can hold several rows of one sample: Cactus writes one per copy of a
@@ -75,9 +75,9 @@ export function placeCopyRows<T extends { name: string }>(rows: readonly T[]) {
  * list joins the end.
  */
 export function withCopyRows(
-  samples: readonly MafSource[],
+  samples: readonly MafRow[],
   discovered: Iterable<string>,
-): MafSource[] {
+): MafRow[] {
   const copiesOf = new Map<string, string[]>()
   for (const id of discovered) {
     const parent = copyParent(id)
@@ -94,8 +94,8 @@ export function withCopyRows(
     return [...samples]
   }
   const listed = new Set(samples.map(s => s.name))
-  const out: MafSource[] = []
-  const placeCopies = (sample: MafSource | undefined, parent: string) => {
+  const out: MafRow[] = []
+  const placeCopies = (sample: MafRow | undefined, parent: string) => {
     for (const name of copiesOf.get(parent) ?? []) {
       out.push({
         ...sample,

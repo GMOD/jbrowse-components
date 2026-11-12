@@ -128,7 +128,7 @@ import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
 import type {
   MafFrameRecord,
   MafRegionPayload,
-  MafSource,
+  MafRow,
   MafSummaryRecord,
 } from '../types.ts'
 import type { CodonGlyph } from './codons.ts'
@@ -182,9 +182,9 @@ export interface MafContextMenuInfo extends ContextMenuAnchor {
  * without the copy must not drop it.
  */
 function withKnownCopies(
-  known: readonly MafSource[],
-  incoming: readonly MafSource[],
-): MafSource[] {
+  known: readonly MafRow[],
+  incoming: readonly MafRow[],
+): MafRow[] {
   const names = new Set(incoming.map(s => s.name))
   const kept = known.filter(s => {
     const parent = copyParent(s.name)
@@ -244,7 +244,7 @@ export default function stateModelFactory(
         CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
         LegendMixin(),
         ColorWritesMixin(),
-        TreeSidebarMixin<MafSource>(),
+        TreeSidebarMixin<MafRow>(),
         ContextMenuMixin<MafContextMenuInfo>(),
         ScoreScaleMixin(COVERAGE_Y_PATHS),
         types.model({
@@ -272,10 +272,10 @@ export default function stateModelFactory(
         /**
          * #volatile
          * The worker's authoritative row set, in tree (leaf) order.
-         * `editableSources` arranges and colors it by `rows`, and `sources`
+         * `arrangedRows` arranges and colors it by `rows`, and `drawnRows`
          * narrows that by the focus.
          */
-        sourcesVolatile: [] as MafSource[],
+        sourcesVolatile: [] as MafRow[],
         /**
          * #volatile
          * The adapter's guide tree as newick, which `rowTree` draws while some
@@ -349,7 +349,7 @@ export default function stateModelFactory(
           samplesCanonical,
           sampleWarnings = [],
         }: {
-          samples: MafSource[]
+          samples: MafRow[]
           treeNewick: string | undefined
           samplesCanonical: boolean
           sampleWarnings?: string[]
@@ -434,7 +434,7 @@ export default function stateModelFactory(
          * reported them. Empty until the first fetch populates the set;
          * `sourcesKnown` is the readiness question.
          */
-        get discoveredRows(): MafSource[] {
+        get discoveredRows(): MafRow[] {
           return self.sourcesVolatile
         },
         /**
@@ -476,7 +476,7 @@ export default function stateModelFactory(
          * label written against the sample reaches its copies as
          * `Mouse copy 2`, as the copy's own label reads.
          */
-        rowParent(row: MafSource): RowParent | undefined {
+        rowParent(row: MafRow): RowParent | undefined {
           const parent = copyParent(row.name)
           return parent === undefined
             ? undefined
@@ -507,26 +507,26 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * `editableSources` narrowed to the focus by the worker's own rule,
+         * `arrangedRows` narrowed to the focus by the worker's own rule,
          * `visibleSamples`, so the rows drawn are the rows shipped.
          */
-        get clusterableSources(): MafSource[] {
-          const { editableSources, rowFocus } = self
+        get shownRows(): MafRow[] {
+          const { arrangedRows, rowFocus } = self
           const visible = visibleSamples(rowFocus)
           return visible
-            ? editableSources.filter(r => isRowVisible(r.name, visible))
-            : editableSources
+            ? arrangedRows.filter(r => isRowVisible(r.name, visible))
+            : arrangedRows
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * The display rows: `clusterableSources`, less the reference row when
+         * The display rows: `shownRows`, less the reference row when
          * `showReferenceRow` is off. An empty array means no fetch yet or a
          * focus with no rows; `sourcesKnown` tells them apart.
          */
-        get sources(): MafSource[] {
-          const rows = self.clusterableSources
+        get drawnRows(): MafRow[] {
+          const rows = self.shownRows
           if (self.showReferenceRow) {
             return rows
           }
@@ -549,14 +549,14 @@ export default function stateModelFactory(
          * Two or more display rows, so a hidden reference row does not count.
          */
         get autoClusterReady(): boolean {
-          return this.sources.length > 1
+          return this.drawnRows.length > 1
         },
 
         /**
          * #getter
          * Whether the species list has arrived from the adapter. `rowsVisible`
          * and the render callback's first-paint gate read this, since an empty
-         * `sources` is ambiguous.
+         * `drawnRows` is ambiguous.
          */
         get sourcesKnown(): boolean {
           return self.sourcesVolatile.length > 0
@@ -657,7 +657,7 @@ export default function stateModelFactory(
           get rowIndexBySrc(): Map<string, number> {
             return keepRowIndex(
               new Map(
-                self.sources.map((s, i): [string, number] => [s.name, i]),
+                self.drawnRows.map((s, i): [string, number] => [s.name, i]),
               ),
             )
           },
@@ -823,7 +823,7 @@ export default function stateModelFactory(
          * by it is safe).
          */
         get nrow() {
-          return Math.max(1, self.sources.length)
+          return Math.max(1, self.drawnRows.length)
         },
         /**
          * #getter
@@ -913,7 +913,7 @@ export default function stateModelFactory(
           return self.root && !self.showReferenceRow
             ? treeOfLeaves(
                 self.root,
-                self.sources.map(s => s.name),
+                self.drawnRows.map(s => s.name),
               )
             : self.root
         },
@@ -975,8 +975,8 @@ export default function stateModelFactory(
             refName,
             pos,
             index => self.detailOnScreen.get(index),
-            (sources, region) =>
-              orderMafRowsByBaseAt(sources, self.sources, region, pos),
+            (rows, region) =>
+              orderMafRowsByBaseAt(rows, self.drawnRows, region, pos),
           )
         },
       }))
@@ -1023,7 +1023,7 @@ export default function stateModelFactory(
                 zoomGatedItem(
                   sortRowsHereMenuItem({
                     label: withHint('Sort rows by base here', zoomHint),
-                    rowCount: self.editableSources.length,
+                    rowCount: self.arrangedRows.length,
                     onClick: () => {
                       self.sortRowsByBaseAt(info.refName, info.pos)
                     },
@@ -1159,7 +1159,7 @@ export default function stateModelFactory(
          * the reference bp range `[startBp, endBp)`, the loci an "open this
          * species here" navigation targets. A row contributes nothing with no
          * aligned base in the range, no fetched block covering it, or a genome
-         * not loaded as an assembly (`MafSource.assemblyName` unset).
+         * not loaded as an assembly (`MafRow.assemblyName` unset).
          *
          * Takes the whole row range at once, since the menu builds an entry per
          * row on every open.
@@ -1172,7 +1172,7 @@ export default function stateModelFactory(
           endRow: number,
         ) {
           return rowNavigationTargetsOf({
-            sources: self.sources,
+            rows: self.drawnRows,
             assemblies: getSession(self).assemblyManager,
             detail: self.detailOnScreen,
             displayedRegionIndex,
@@ -1382,7 +1382,7 @@ export default function stateModelFactory(
          * `rowsTop` and `rowsHeight` are the rows band inside it.
          */
         get renderState(): MafGPURenderState {
-          // Never undefined: zero sources over a region with no blocks is valid
+          // Never undefined: zero rows over a region with no blocks is valid
           // state, and withholding it leaves the loading overlay spinning. The
           // first-paint gate is `hasFetched`.
           return {
@@ -1413,9 +1413,9 @@ export default function stateModelFactory(
           rowIndex: number,
           bpPerPx: number,
         ) {
-          const { sources } = self
+          const { drawnRows } = self
           const region =
-            rowIndex >= 0 && rowIndex < sources.length
+            rowIndex >= 0 && rowIndex < drawnRows.length
               ? self.detailOnScreen.get(displayedRegionIndex)
               : undefined
           const hit = region
@@ -1431,10 +1431,10 @@ export default function stateModelFactory(
           if (!hit) {
             return undefined
           }
-          const source = sources[rowIndex]!
+          const row = drawnRows[rowIndex]!
           return {
             ...hit,
-            sampleLabel: source.label,
+            sampleLabel: row.label,
           }
         },
         /**

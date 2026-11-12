@@ -773,7 +773,7 @@ export function stateModelFactory(
         exportedFeatures(features: Feature[]) {
           const hidden = self.hiddenGroups
           const rows = self.drawsRows
-            ? new Set(self.sources.map(row => row.name))
+            ? new Set(self.drawnRows.map(row => row.name))
             : undefined
           return exportedMarkFeatures({
             features,
@@ -834,7 +834,7 @@ export function stateModelFactory(
         get autoClusterReady(): boolean {
           return (
             self.rowListingSettled &&
-            self.clusterableSources.length > 1 &&
+            self.shownRows.length > 1 &&
             this.rowCompare !== undefined
           )
         },

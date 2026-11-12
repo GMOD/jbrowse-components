@@ -66,7 +66,7 @@ test('a phased clustering run leaves a drawable dendrogram', async () => {
   const display = await clusterPhased()
 
   expect(display.rowTree).toBe(HAPLOTYPE_TREE)
-  expect(display.sources.map(s => s.name)).toEqual([
+  expect(display.drawnRows.map(s => s.name)).toEqual([
     'S2 HP1',
     'S2 HP2',
     'S0 HP1',

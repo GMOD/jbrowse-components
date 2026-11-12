@@ -85,7 +85,7 @@ import type {
   MarkColorScale,
   RowTable,
 } from '@jbrowse/render-core/marks'
-import type { RowSource, SvgSidebarProps } from '@jbrowse/tree-sidebar'
+import type { Row, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type {
   ScaleType,
   ValueScale,
@@ -199,7 +199,7 @@ export function markDiscoveredRowViews(self: MarkRegionsHost) {
       }
     }
     return [...listed.keys(), ...[...found].sort(field.compare)].map(
-      (name): RowSource => {
+      (name): Row => {
         const own = listed.get(name)
         const label = own?.label ?? field.label(name)
         return {
@@ -223,7 +223,7 @@ export function markDiscoveredRowViews(self: MarkRegionsHost) {
      * fetch reaches past the screen on each side, and a row it met only
      * there would stand empty.
      */
-    get discoveredRows(): RowSource[] {
+    get discoveredRows(): Row[] {
       return discoveredRows.get()
     },
   }
@@ -263,7 +263,7 @@ export function markRowKeySpaceViews(self: MarkRegionsHost) {
 /** What {@link markRegionViews} reads beside the key space. */
 export type MarkKeySpaceHost = MarkRegionsHost &
   ReturnType<typeof markRowKeySpaceViews> & {
-    sources: RowSource[]
+    drawnRows: Row[]
     hiddenGroups: ReadonlySet<string>
     rowColorPaintsMarks: boolean
     resolvedRowColors: ReadonlyMap<string, string>
@@ -277,7 +277,7 @@ export type MarkKeySpaceHost = MarkRegionsHost &
 export function markRegionViews(self: MarkKeySpaceHost) {
   const layout = stableIdentityComputed(() => {
     if (self.drawsRows) {
-      return rowsLayout(self.sources, categoricalField(self.rowsField))
+      return rowsLayout(self.drawnRows, categoricalField(self.rowsField))
     }
     const { field = '', sort: domain = [] } = self.facet ?? {}
     return facetLayout(
@@ -392,7 +392,9 @@ export function markRowTableViews(self: MarkLaidOutHost) {
     void self.rpcDataMap
     return self.rowKeySpace.rowKeys.names.slice()
   })
-  const order = stableIdentityComputed(() => self.sources.map(row => row.name))
+  const order = stableIdentityComputed(() =>
+    self.drawnRows.map(row => row.name),
+  )
   // A row's quartile gap is the data's; only its comparison is the zoom's, so
   // a zoom rebuilds the table only where a row crosses the threshold.
   const rowGaps = computed(() =>
@@ -760,7 +762,7 @@ export function markAutoscaleViews(self: MarkStatsHost) {
 export type MarkAutoscaleHost = MarkStatsHost &
   ReturnType<typeof markAutoscaleViews> & {
     autoscaledDomain: [number, number] | undefined
-    editableSources: RowSource[]
+    arrangedRows: Row[]
     rowColorScales: ColorScale[]
   }
 
@@ -810,7 +812,7 @@ export function markDomainViews(self: MarkAutoscaleHost) {
             ? categoricalField(self.facet.field, { domain: self.facet.sort })
             : self.drawsRows
               ? categoricalField(self.rowsField, {
-                  domain: self.editableSources.map(row => row.name),
+                  domain: self.arrangedRows.map(row => row.name),
                 })
               : undefined,
         ),

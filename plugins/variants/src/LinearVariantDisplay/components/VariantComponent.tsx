@@ -90,18 +90,18 @@ function getHoveredFeature(
   const { rowIndex, cellIndex, genomicStart, genomicEnd, insertedBp } = picked
   const info = regionCellData.featureInfo[picked.featureIndex]!
   const { featureId } = info
-  // The cell row index maps directly into model.sources (same effectiveSources
+  // The cell row index maps directly into model.drawnRows (same effectiveSources
   // ordering used to compute the cells), so no per-region sourceNameList is
   // shipped over RPC.
-  const source = model.sources[rowIndex]
-  if (!source) {
+  const row = model.drawnRows[rowIndex]
+  if (!row) {
     return undefined
   }
   const genotype = decodeGenotype(
     cellData.genotypeDict,
     model.genotypeSampleIndex!,
     info.genotypeCodes,
-    source.sampleName,
+    row.sampleName,
   )
   // a row named outside the payload's sample order decodes to nothing
   if (genotype === undefined) {
@@ -111,8 +111,8 @@ function getHoveredFeature(
     fields: buildVariantHit({
       info,
       genotype,
-      sampleName: source.sampleName,
-      name: source.name,
+      sampleName: row.sampleName,
+      name: row.name,
       featureId,
       insertedBp,
       displayedRegionIndex: region.displayedRegionIndex,

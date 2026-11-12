@@ -10,8 +10,8 @@ const rows = (...names: string[]) =>
   names.map(name => ({ name, label: `${name} label` }))
 
 interface DisplayOverrides {
-  sources?: { name: string; label?: string }[]
-  bandedSources?: { name: string; label?: string }[]
+  drawnRows?: { name: string; label?: string }[]
+  stackedRows?: { name: string; label?: string }[]
   rowBands?: { key: string; label: string; start: number; end: number }[]
   rowsTopOffset?: number
   effectiveRowHeight?: number
@@ -20,10 +20,10 @@ interface DisplayOverrides {
 }
 
 function setSession(overrides: DisplayOverrides = {}) {
-  const sources = overrides.sources ?? rows('a', 'b', 'c', 'd')
+  const drawnRows = overrides.drawnRows ?? rows('a', 'b', 'c', 'd')
   const display = {
-    sources,
-    bandedSources: overrides.bandedSources ?? sources,
+    drawnRows,
+    stackedRows: overrides.stackedRows ?? drawnRows,
     rowBands: [],
     rowsTopOffset: 40,
     effectiveRowHeight: 20,
@@ -50,7 +50,7 @@ function setSession(overrides: DisplayOverrides = {}) {
         tracks: [
           {
             configuration: { trackId: 'vcf' },
-            displays: [{ sources: 'not rows' }, display],
+            displays: [{ drawnRows: 'not rows' }, display],
           },
         ],
       },
@@ -113,12 +113,12 @@ test('a row past the bottom of the track misses', () => {
 })
 
 test('a name no drawn row has misses', () => {
-  setSession({ sources: rows('a', 'c') })
+  setSession({ drawnRows: rows('a', 'c') })
   expect(rect('b')).toBeUndefined()
 })
 
 test('a name two rows answer to misses rather than picking one', () => {
-  setSession({ sources: [{ name: 'a' }, { name: 'b', label: 'a' }] })
+  setSession({ drawnRows: [{ name: 'a' }, { name: 'b', label: 'a' }] })
   expect(rect('a')).toBeUndefined()
 })
 
@@ -140,8 +140,8 @@ test('a band is the strip its drawn rows take', () => {
 
 test('a band spans only its drawn rows where the display drops one', () => {
   setSession({
-    sources: rows('b', 'c'),
-    bandedSources: rows('ref', 'b', 'c'),
+    drawnRows: rows('b', 'c'),
+    stackedRows: rows('ref', 'b', 'c'),
     rowBands: [
       { key: 'one', label: 'One', start: 0, end: 2 },
       { key: 'two', label: 'Two', start: 2, end: 3 },

@@ -129,8 +129,8 @@ describe('the declared hooks', () => {
   it('derive empty rows before a display supplies any', () => {
     const display = makeDisplay({ rows: { sort: ['a'] } })
     expect(display.discoveredRows).toEqual([])
-    expect(display.editableSources).toEqual([])
-    expect(display.clusterableSources).toEqual([])
+    expect(display.arrangedRows).toEqual([])
+    expect(display.shownRows).toEqual([])
     expect(display.rowOrder).toEqual(['a'])
   })
 })
@@ -169,12 +169,12 @@ describe('a display supplying the hooks', () => {
 
   it('derives the arranged and the focused rows from them', () => {
     const display = makeSupplied()
-    expect(display.editableSources).toEqual([
+    expect(display.arrangedRows).toEqual([
       { name: 'c' },
       { name: 'a', label: 'Ay' },
       { name: 'b', rowColor: '#00f' },
     ])
-    expect(display.clusterableSources.map(r => r.name)).toEqual(['c', 'a'])
+    expect(display.shownRows.map(r => r.name)).toEqual(['c', 'a'])
   })
 
   it('refuses a volatile over a declared hook', () => {
@@ -299,8 +299,8 @@ const namesOf = (rows: readonly { name: string }[]) => rows.map(r => r.name)
 describe('rows.kept and rows.filter narrow the rows', () => {
   it('a kept list naming no row draws no row, and names what it missed', () => {
     const display = makeFiltered({ kept: ['zz', 'yy'] })
-    expect(display.clusterableSources).toEqual([])
-    expect(display.sources).toEqual([])
+    expect(display.shownRows).toEqual([])
+    expect(display.drawnRows).toEqual([])
     expect(display.rowNarrowingHint?.text).toBe(
       'Showing 0 of 4 rows · Show all',
     )
@@ -312,7 +312,7 @@ describe('rows.kept and rows.filter narrow the rows', () => {
   // Rows found per window: a name missing here may be a row elsewhere.
   it('where rows are found per window the notice names nothing', () => {
     const display = makeFiltered({ kept: ['zz'] }, false)
-    expect(display.clusterableSources).toEqual([])
+    expect(display.shownRows).toEqual([])
     expect(display.rowNarrowingNotices).toEqual([
       'rows.kept names no row here, so no row shows',
     ])
@@ -320,7 +320,7 @@ describe('rows.kept and rows.filter narrow the rows', () => {
 
   it('names the kept names no row has while others match', () => {
     const display = makeFiltered({ kept: ['a', 'zz'] })
-    expect(namesOf(display.clusterableSources)).toEqual(['a'])
+    expect(namesOf(display.shownRows)).toEqual(['a'])
     expect(display.rowNarrowingNotices).toEqual([
       'rows.kept names zz, which no row has',
     ])
@@ -330,7 +330,7 @@ describe('rows.kept and rows.filter narrow the rows', () => {
     const display = makeFiltered({
       filter: [{ field: 'population', oneOf: ['EUR'] }],
     })
-    expect(namesOf(display.clusterableSources)).toEqual(['a', 'c'])
+    expect(namesOf(display.shownRows)).toEqual(['a', 'c'])
     expect(display.rowNarrowingHint?.text).toBe(
       'Showing 2 of 4 rows · Show all',
     )
@@ -340,7 +340,7 @@ describe('rows.kept and rows.filter narrow the rows', () => {
     const display = makeFiltered({
       filter: [{ field: 'population', valid: false }],
     })
-    expect(namesOf(display.clusterableSources)).toEqual(['d'])
+    expect(namesOf(display.shownRows)).toEqual(['d'])
   })
 
   it('filters, then keeps', () => {
@@ -348,7 +348,7 @@ describe('rows.kept and rows.filter narrow the rows', () => {
       filter: [{ field: 'population', equal: 'EUR' }],
       kept: ['a', 'b'],
     })
-    expect(namesOf(display.clusterableSources)).toEqual(['a'])
+    expect(namesOf(display.shownRows)).toEqual(['a'])
   })
 
   it('says which half emptied the rows, stating the filter', () => {
@@ -403,7 +403,7 @@ describe('rows.kept and rows.filter narrow the rows', () => {
       filter: [{ field: 'population', oneOf: ['EUR', 'AFR'] }],
       kept: ['a', 'b', 'd'],
     })
-    expect(namesOf(display.clusterableSources)).toEqual(['a', 'b'])
+    expect(namesOf(display.shownRows)).toEqual(['a', 'b'])
     expect(getLeafNames(display.root!)).toEqual(['a', 'b'])
     expect(display.rowNarrowingHint?.text).toBe(
       'Showing 2 of 4 rows · Show all',
@@ -466,7 +466,7 @@ describe('rows.kept and rows.filter narrow the rows', () => {
     const display = makeFiltered({ filter: [entry] })
     expect(display.rowFilter).toEqual([])
     expect(display.rowNarrowingHint).toBeUndefined()
-    expect(namesOf(display.clusterableSources)).toEqual(['a', 'b', 'c', 'd'])
+    expect(namesOf(display.shownRows)).toEqual(['a', 'b', 'c', 'd'])
     expect(warn).toHaveBeenCalled()
     warn.mockRestore()
   })
@@ -688,7 +688,7 @@ describe('a focus written against a row alias', () => {
           },
         },
       })
-    expect(display.sources.map(r => r.name)).toEqual(['A HP1', 'A HP2'])
+    expect(display.drawnRows.map(r => r.name)).toEqual(['A HP1', 'A HP2'])
     expect(getLeafNames(display.root!)).toEqual(['A HP1', 'A HP2'])
     expect(display.hierarchy).toBeDefined()
   })
@@ -724,13 +724,13 @@ describe('a dialog submit after a region adds a row', () => {
 
   it('reads the rows left in place as no move', () => {
     const display = makeGrowing()
-    const dialog = display.editableSources
+    const dialog = display.arrangedRows
     display.reveal('a')
     expect(display.rowOrderWillDropTree(dialog)).toBe(false)
     display.applyRowEdits(dialog)
     expect(display.rowSort).toEqual([])
     expect(display.rowTree).toBe('(b:1,c:1);')
-    expect(display.editableSources.map(r => r.name)).toEqual(['b', 'c', 'a'])
+    expect(display.arrangedRows.map(r => r.name)).toEqual(['b', 'c', 'a'])
   })
 })
 
@@ -1037,7 +1037,7 @@ describe('the row palette', () => {
     display.setRowOrder([{ name: 'c' }, { name: 'b' }, { name: 'a' }])
     display.setRowFocus(['a'])
     display.applyRowEdits(
-      display.editableSources.map(r => ({ ...r, label: r.name.toUpperCase() })),
+      display.arrangedRows.map(r => ({ ...r, label: r.name.toUpperCase() })),
     )
     expect(display.rowLabels).toEqual({ a: 'A', b: 'B', c: 'C' })
     expect(display.resolvedRowColors).toBe(palette)
@@ -1064,7 +1064,7 @@ describe('a dialog submit of the row colors', () => {
   it('reads no color off the rows', () => {
     const display = makeGrouped({ rows: { color: 'group' } })
     const before = colorsOf(display)
-    const [a, b, c] = display.editableSources
+    const [a, b, c] = display.arrangedRows
     display.applyRowEdits([a!, { ...b!, rowColor: '#123456' }, c!])
     expect(display.rowColorChoice).toBe('group')
     expect(colorsOf(display)).toEqual(before)
@@ -1072,7 +1072,7 @@ describe('a dialog submit of the row colors', () => {
 
   it("writes an attribute's colors as the dialog shows them", () => {
     const display = makeGrouped({ rows: { color: 'group' } })
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: { field: 'group', scale: { domain: ['y'], range: ['#abcdef'] } },
     })
     expect(display.resolvedRowColors.get('b')).toBe('#abcdef')
@@ -1081,7 +1081,7 @@ describe('a dialog submit of the row colors', () => {
 
   it("writes Each row's picks as the dialog shows them", () => {
     const display = makeGrouped({ rows: { color: 'group' } })
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: { field: 'name' },
       colors: { b: '#123456' },
     })
@@ -1117,7 +1117,7 @@ describe('a dialog submit of the row colors', () => {
   // None is rows.color alone: it colors no row but the pins.
   it('paints only the pins under None', () => {
     const display = makeGrouped()
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: { field: 'name', scale: { unknown: '' } },
       colors: { b: '#123456' },
     })
@@ -1128,7 +1128,7 @@ describe('a dialog submit of the row colors', () => {
   it('None colors no row', () => {
     const display = makeGrouped({ rows: { colors: { b: '#00f' } } })
     expect(display.resolvedRowColors.size).toBe(3)
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: { field: 'name', scale: { unknown: '' } },
       colors: {},
     })
@@ -1142,7 +1142,7 @@ describe('a dialog submit of the row colors', () => {
       scale: { domain: ['y'], range: ['#abcdef'], unknown: '' },
     }
     const display = makeGrouped({ rows: { color: listed } })
-    display.applyRowEdits([...display.editableSources].reverse())
+    display.applyRowEdits([...display.arrangedRows].reverse())
     expect(display.rowColorSetting).toEqual(listed)
     expect(display.rowColorChoice).toBe('group')
   })
@@ -1152,7 +1152,7 @@ describe('a dialog submit of the row colors', () => {
       rows: { colors: { b: '#00f' }, color: { scale: { unknown: '#ccc' } } },
     })
     display.applyRowEdits(
-      display.editableSources.map(r => ({ ...r, label: r.name.toUpperCase() })),
+      display.arrangedRows.map(r => ({ ...r, label: r.name.toUpperCase() })),
     )
     expect(display.rowColorSetting.scale.unknown).toBe('#ccc')
     expect(colorsOf(display)).toEqual({ a: '#ccc', b: '#00f', c: '#ccc' })
@@ -1160,7 +1160,7 @@ describe('a dialog submit of the row colors', () => {
 
   it('counts None as no custom arrangement, which a reset keeps', () => {
     const display = makeGrouped()
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: { field: 'name', scale: { unknown: '' } },
     })
     expect(display.resolvedRowColors.size).toBe(0)
@@ -1171,7 +1171,7 @@ describe('a dialog submit of the row colors', () => {
 
   it('counts a pick under Each row as custom, and a reset deals the palette again', () => {
     const display = makeGrouped()
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       colors: { b: '#123456' },
     })
     expect(display.rowColorIsCustom).toBe(false)
@@ -1183,11 +1183,11 @@ describe('a dialog submit of the row colors', () => {
 
   it('counts a value recolor as custom, and a reset keeps the color by', () => {
     const display = makeGrouped()
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: { field: 'group' },
     })
     expect(display.rowColorIsCustom).toBe(false)
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: { field: 'group', scale: { domain: ['y'], range: ['#abcdef'] } },
     })
     expect(display.rowColorIsCustom).toBe(true)
@@ -1203,7 +1203,7 @@ describe('a dialog submit of the row colors', () => {
       },
     })
     const before = getSnapshot(display.configuration)
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: { field: 'group', scale: { domain: ['y'], range: ['#abcdef'] } },
       colors: {},
     })

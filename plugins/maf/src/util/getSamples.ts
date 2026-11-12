@@ -5,7 +5,7 @@ import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 import { writeNewick } from '@jbrowse/tree-sidebar'
 import { pruneNewickToLeaves } from '@jbrowse/tree-sidebar/newick'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 import type { MafAdapterConfigModel } from './mafAdapterConfigSchemaFields.ts'
 import type { NewickNode } from '@gmod/newick'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -41,7 +41,7 @@ export type SampleConfig = (string | SampleConfigEntry)[]
  * An entry naming nothing is dropped rather than becoming a nameless row — it
  * used to throw out of sample resolution, which fails the whole track.
  */
-export function normalizeSamples(r: SampleConfig): MafSource[] {
+export function normalizeSamples(r: SampleConfig): MafRow[] {
   return r.flatMap(s => {
     // `Partial`, because `samples` is a frozen slot: nothing has checked that
     // an object entry carries an id at all, and the declared `string` is the
@@ -102,8 +102,8 @@ export function collectLeafNames(node: NewickNode) {
  */
 export function resolveSamplesFromTree(
   treeNewick: string,
-  configSamples: MafSource[],
-): MafSource[] {
+  configSamples: MafRow[],
+): MafRow[] {
   const overrides = new Map(configSamples.map(s => [s.name, s]))
   return collectLeafNames(parseNewick(treeNewick)).map(
     name => overrides.get(name) ?? { name, label: name },
@@ -174,7 +174,7 @@ export async function getSamplesFromConfig(
   }
 }
 
-function mergeSamplesTsv(samples: MafSource[], rows: SamplesTsvRow[]) {
+function mergeSamplesTsv(samples: MafRow[], rows: SamplesTsvRow[]) {
   const byName = new Map(rows.map(row => [row.name, row]))
   const base = samples.length
     ? samples.filter(s => byName.has(s.name))
@@ -190,7 +190,7 @@ function mergeSamplesTsv(samples: MafSource[], rows: SamplesTsvRow[]) {
   })
 }
 
-function pruneTree(treeNewick: string, samples: MafSource[]) {
+function pruneTree(treeNewick: string, samples: MafRow[]) {
   const pruned = pruneNewickToLeaves(
     parseNewick(treeNewick),
     new Set(samples.map(s => s.name)),

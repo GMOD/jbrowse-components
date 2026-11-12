@@ -18,7 +18,7 @@ export interface PickCellData extends CellLookupData, VariantUploadData {
 interface PickedCell {
   cellIndex: number
   featureIndex: number
-  // Screen row, so it indexes `model.sources` and positions the hover highlight
+  // Screen row, so it indexes `model.drawnRows` and positions the hover highlight
   // directly.
   rowIndex: number
   genomicStart: number

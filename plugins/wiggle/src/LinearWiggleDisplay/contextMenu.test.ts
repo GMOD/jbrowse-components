@@ -70,7 +70,7 @@ test('sorts the rows by their score at the clicked column', () => {
 
   click(display.contextMenuItems(), 'Sort rows by score here')
 
-  expect(display.sources.map(s => s.name)).toEqual(['b', 'c', 'a'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['b', 'c', 'a'])
 })
 
 test('acts on the column the menu was opened over, not the one it is closed from', () => {
@@ -87,7 +87,7 @@ test('acts on the column the menu was opened over, not the one it is closed from
 
   click(items, 'Sort rows by score here')
 
-  expect(display.sources.map(s => s.name)).toEqual(['b', 'a'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['b', 'a'])
 })
 
 test('keeps a per-source color across the reorder', () => {
@@ -128,7 +128,7 @@ test('offers the reset only once an order has been written', () => {
   ])
 
   click(display.contextMenuItems(), 'Reset row order')
-  expect(display.sources.map(s => s.name)).toEqual(['a', 'b'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['a', 'b'])
 })
 
 test('drops the sort where the sources share one plot and there is no row axis', () => {

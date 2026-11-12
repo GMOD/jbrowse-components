@@ -49,7 +49,7 @@ export interface WiggleRowsBoxHost {
   rowsTopOffset: number
   isDensityMode: boolean
   scoreGradientPaints: boolean
-  sources: readonly unknown[]
+  drawnRows: readonly unknown[]
 }
 
 /**
@@ -60,7 +60,7 @@ export interface WiggleRowsBoxHost {
 export function wiggleRowsBoxViews(self: WiggleRowsBoxHost) {
   return {
     get numSources() {
-      return self.sources.length
+      return self.drawnRows.length
     },
 
     /**

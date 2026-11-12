@@ -8,7 +8,7 @@ describe('bandRows', () => {
     rows: { name: string; pop?: string }[],
     domain: string[] = [],
   ) => bandRows(rows, pop, { field: 'pop', sort: domain })
-  const sources = [
+  const samples = [
     { name: 's1', pop: 'EUR' },
     { name: 's2', pop: 'AFR' },
     { name: 's3', pop: 'EUR' },
@@ -17,7 +17,7 @@ describe('bandRows', () => {
   ]
 
   test('stacks each band contiguous, in sorted value order, arranged within', () => {
-    const { rows, bands } = band(sources)
+    const { rows, bands } = band(samples)
     expect(names(rows)).toEqual(['s2', 's4', 's5', 's1', 's3'])
     expect(bands).toEqual([
       { key: 'AFR', label: 'AFR', start: 0, end: 3 },
@@ -35,7 +35,7 @@ describe('bandRows', () => {
   })
 
   test('stacks the bands a domain lists first, the rest sorted behind', () => {
-    expect(names(band(sources, ['EUR']).rows)).toEqual([
+    expect(names(band(samples, ['EUR']).rows)).toEqual([
       's1',
       's3',
       's2',

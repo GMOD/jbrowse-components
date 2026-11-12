@@ -115,11 +115,11 @@ export type {
   ClusterNodeData,
   HoveredTreeNode,
   RowAnnotationColumn,
-  RowLabelSource,
-  RowSource,
+  LabelledRow,
+  Row,
   TreeDrawingModel,
   TreeSidebarModel,
-  TreeSource,
+  TreeRow,
 } from './types.ts'
 export { default as ClusterDialog } from './clustering/dialog/ClusterDialog.tsx'
 export type {

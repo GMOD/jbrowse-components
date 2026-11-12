@@ -99,7 +99,7 @@ function wiggleParity(
     modelDecisions: m => {
       const key = colorKeyTables(m.colorScales)
       return {
-        rows: m.sources.map(s => ({
+        rows: m.drawnRows.map(s => ({
           name: s.name,
           label: s.label ?? s.name,
           group: s.group ?? '',
@@ -145,7 +145,7 @@ function wiggleParity(
                         end > window.start &&
                         start < window.end
                         ? [
-                            `${m.sources[layer.rowIndex]?.name} ${start}-${end} ${side}`,
+                            `${m.drawnRows[layer.rowIndex]?.name} ${start}-${end} ${side}`,
                           ]
                         : []
                     }).flat()

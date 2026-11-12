@@ -4,7 +4,7 @@ import { rowNavigationTargetsOf } from './rowNavigationTargets.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 
 const enc = new TextEncoder()
 
@@ -27,7 +27,7 @@ const region: MafRegionData = {
   ],
 }
 
-const sources: MafSource[] = [
+const rows: MafRow[] = [
   { name: 'hg38', label: 'Human' },
   {
     name: 'mm10',
@@ -45,7 +45,7 @@ function targets(
   overrides: Partial<Parameters<typeof rowNavigationTargetsOf>[0]> = {},
 ) {
   return rowNavigationTargetsOf({
-    sources,
+    rows,
     assemblies: {
       has: name => name === 'hg38',
       getCanonicalAssemblyName: name => (name === 'hg38' ? name : undefined),
@@ -78,17 +78,17 @@ test('a target carries the span in its own genome and the sample label', () => {
 })
 
 test('an assemblyName the session lacks, with no config to load it from, is no target', () => {
-  const unloadable: MafSource = {
+  const unloadable: MafRow = {
     name: 'mm10',
     label: 'mm10',
     assemblyName: 'mouse',
   }
   expect(
-    targets({ sources: [sources[0]!, unloadable] }).map(t => t.rowIndex),
+    targets({ rows: [rows[0]!, unloadable] }).map(t => t.rowIndex),
   ).toEqual([0])
   expect(
     targets({
-      sources: [sources[0]!, unloadable],
+      rows: [rows[0]!, unloadable],
       assemblies: { has: () => true, getCanonicalAssemblyName: name => name },
     }).map(t => t.assemblyName),
   ).toEqual(['hg38', 'mouse'])
@@ -109,7 +109,7 @@ test('no row naming a loaded assembly means no targets', () => {
         has: () => false,
         getCanonicalAssemblyName: () => undefined,
       },
-      sources: [sources[2]!],
+      rows: [rows[2]!],
     }),
   ).toEqual([])
 })

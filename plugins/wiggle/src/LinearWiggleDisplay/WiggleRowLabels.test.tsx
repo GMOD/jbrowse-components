@@ -7,7 +7,7 @@ test('the live row labels sit on the wash over the plot', () => {
     <svg>
       <WiggleRowLabels
         model={{
-          sources: [{ name: 'a' }, { name: 'b' }],
+          drawnRows: [{ name: 'a' }, { name: 'b' }],
           effectiveRowHeight: 40,
           drawsRowLabels: true,
           rowAnnotationColors: [],

@@ -190,7 +190,7 @@ export function sortRowsHereMenuItem({
   onClick,
 }: {
   label: string
-  // `editableSources.length`: the list the sort orders, unfiltered by the
+  // `arrangedRows.length`: the list the sort orders, unfiltered by the
   // subtree, so a clade focused to one row still has rows to sort
   rowCount: number
   onClick: () => void

@@ -22,7 +22,7 @@ test('a configured colorBy writes no order and is not a custom row order', () =>
   const display = colored()
   expect(display.rowSort).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
-  expect(display.sources.every(s => s.rowColor)).toBe(true)
+  expect(display.drawnRows.every(s => s.rowColor)).toBe(true)
 })
 
 test('a configured facet writes no order and is not a custom row order', () => {
@@ -32,7 +32,7 @@ test('a configured facet writes no order and is not a custom row order', () => {
 
   expect(display.rowSort).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
-  expect(display.sources.map(s => s.name)).toEqual(['HG002', 'HG001'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['HG002', 'HG001'])
 })
 
 // The palette is a pure function of the attribute, so persisting it would buy
@@ -46,13 +46,13 @@ test('the config after setColorBy carries no palette colors', () => {
 
 test('a reorder is custom, and the reset clears it', () => {
   const display = colored()
-  display.setRowOrder([...display.sources].reverse())
+  display.setRowOrder([...display.drawnRows].reverse())
   expect(display.rowArrangementIsCustom).toBe(true)
 
   display.resetRowArrangement()
 
   expect(display.rowArrangementIsCustom).toBe(false)
-  expect(display.sources.map(s => s.name)).toEqual(['HG001', 'HG002'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['HG001', 'HG002'])
 })
 
 test('a second color-by still writes no order', () => {

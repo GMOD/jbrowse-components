@@ -175,7 +175,7 @@ function makeModel(
     svgSidebar: {
       showTree: false,
       hierarchy: undefined,
-      sources: [{ name: 'a' }, { name: 'b' }],
+      rows: [{ name: 'a' }, { name: 'b' }],
       rowHeight: 50,
       treeAreaWidth: 40,
       leftInset: leftAxisGutterWidth(overrides.axes ?? axes()),

@@ -22,8 +22,8 @@ const dog = '#f4a582'
 
 describe('SvgRowLabels', () => {
   it("draws a row's color as a 4px bar at its label's left, the text past it", () => {
-    const sources = [{ name: 'COLL000001', label: 'Collie 1', rowColor: dog }]
-    const c = draw({ sources, rowHeight: 20, labelOffset: 0, backdrop: 'wash' })
+    const rows = [{ name: 'COLL000001', label: 'Collie 1', rowColor: dog }]
+    const c = draw({ rows, rowHeight: 20, labelOffset: 0, backdrop: 'wash' })
     const bars = c.querySelectorAll('[data-testid="row-color-bar"]')
     expect(bars).toHaveLength(1)
     const bar = bars[0]!
@@ -37,14 +37,14 @@ describe('SvgRowLabels', () => {
     expect(text.textContent).toBe('Collie 1')
     expect(Number(text.getAttribute('x'))).toBeGreaterThan(4)
     expect(text.getAttribute('fill')).not.toBe(dog)
-    const w = rowLabelsBoxWidth(sources, 20)
+    const w = rowLabelsBoxWidth(rows, 20)
     expect(w).toBe(rowLabelsBoxWidth([{ name: 'Collie 1' }], 20) + 4)
     expect(c.querySelector('path')?.getAttribute('d')).toContain(`h${w}`)
   })
 
   it('draws no bar for a row with no color, beside one that has one', () => {
     const c = draw({
-      sources: [{ name: 'a', rowColor: wolf }, { name: 'b' }],
+      rows: [{ name: 'a', rowColor: wolf }, { name: 'b' }],
       rowHeight: 20,
       labelOffset: 0,
     })
@@ -58,7 +58,7 @@ describe('SvgRowLabels', () => {
 
   it('draws no bar, and starts the text at the box edge, when no row has a color', () => {
     const c = draw({
-      sources: [{ name: 'a' }, { name: 'b' }],
+      rows: [{ name: 'a' }, { name: 'b' }],
       rowHeight: 20,
       labelOffset: 0,
     })
@@ -67,9 +67,9 @@ describe('SvgRowLabels', () => {
   })
 
   it('boxes each label to its whole row, with a separator between rows', () => {
-    const sources = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
-    const c = draw({ sources, rowHeight: 40, labelOffset: 0, backdrop: 'wash' })
-    const w = rowLabelsBoxWidth(sources, 40)
+    const rows = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
+    const c = draw({ rows, rowHeight: 40, labelOffset: 0, backdrop: 'wash' })
+    const w = rowLabelsBoxWidth(rows, 40)
     expect(c.querySelector('path')?.getAttribute('d')).toBe(
       [0, 40, 80].map(y => `M0 ${y}h${w}v40h${-w}z`).join(''),
     )
@@ -79,19 +79,19 @@ describe('SvgRowLabels', () => {
   })
 
   it('draws no box without a backdrop, as the export beside its plot does', () => {
-    const sources = [{ name: 'a' }, { name: 'b' }]
-    const bare = draw({ sources, rowHeight: 40, labelOffset: 0 })
+    const rows = [{ name: 'a' }, { name: 'b' }]
+    const bare = draw({ rows, rowHeight: 40, labelOffset: 0 })
     expect(bare.querySelectorAll('path')).toHaveLength(0)
     expect(bare.querySelectorAll('text')).toHaveLength(2)
     const paper = draw({
-      sources,
+      rows,
       rowHeight: 40,
       labelOffset: 0,
       backdrop: 'paper',
     })
     expect(paper.querySelectorAll('path')).toHaveLength(2)
     const wash = draw({
-      sources,
+      rows,
       rowHeight: 40,
       labelOffset: 0,
       backdrop: 'wash',
@@ -101,7 +101,7 @@ describe('SvgRowLabels', () => {
 
   it('fills the label run with the color, and draws no text, below the text threshold', () => {
     const c = draw({
-      sources: [{ name: 'a', label: 'Collie 1', rowColor: dog }],
+      rows: [{ name: 'a', label: 'Collie 1', rowColor: dog }],
       rowHeight: 0.32,
       labelOffset: 0,
     })
@@ -121,7 +121,7 @@ describe('SvgRowLabels', () => {
 
   it('keeps a sub-pixel mark on its own row rather than shifting it', () => {
     const c = draw({
-      sources: [{ name: 'a' }, { name: 'b' }, { name: 'c', rowColor: wolf }],
+      rows: [{ name: 'a' }, { name: 'b' }, { name: 'c', rowColor: wolf }],
       rowHeight: 0.32,
       labelOffset: 0,
     })
@@ -133,7 +133,7 @@ describe('SvgRowLabels', () => {
 
   it('draws nothing below the threshold when no row carries a color', () => {
     const c = draw({
-      sources: [{ name: 'a' }, { name: 'b' }],
+      rows: [{ name: 'a' }, { name: 'b' }],
       rowHeight: 0.32,
       labelOffset: 0,
     })
@@ -142,7 +142,7 @@ describe('SvgRowLabels', () => {
 
   it('merges consecutive same-color rows into one rect spanning them', () => {
     const c = draw({
-      sources: [
+      rows: [
         { name: 'a', rowColor: dog },
         { name: 'b', rowColor: dog },
         { name: 'c', rowColor: dog },
@@ -161,7 +161,7 @@ describe('SvgRowLabels', () => {
 
   it('does not bridge a run across an uncolored row', () => {
     const c = draw({
-      sources: [
+      rows: [
         { name: 'a', rowColor: dog },
         { name: 'b' },
         { name: 'c', rowColor: dog },
@@ -178,7 +178,7 @@ describe('SvgRowLabels', () => {
   it('paints a rare mark last so a common run cannot bury it', () => {
     // one wolf row sandwiched in a long village-dog block: floored to a pixel,
     // whichever paints later wins the overlap, and it must be the single row
-    const sources = [
+    const rows = [
       ...Array.from({ length: 20 }, (_, i) => ({
         name: `village${i}`,
         rowColor: dog,
@@ -190,7 +190,7 @@ describe('SvgRowLabels', () => {
       })),
     ]
     const rects = [
-      ...draw({ sources, rowHeight: 0.32, labelOffset: 0 }).querySelectorAll(
+      ...draw({ rows, rowHeight: 0.32, labelOffset: 0 }).querySelectorAll(
         'rect',
       ),
     ]
@@ -199,7 +199,7 @@ describe('SvgRowLabels', () => {
 
   it('culls swatch runs outside the available height', () => {
     const c = draw({
-      sources: [
+      rows: [
         { name: 'onscreen', rowColor: dog },
         { name: 'offscreen', rowColor: wolf },
       ],
@@ -215,14 +215,14 @@ describe('SvgRowLabels', () => {
 
   it('cuts a label past the cap with an ellipsis, whole in its title, and stops the strip at the cap', () => {
     const long = 'protein_coding_primary_transcript_variant_1'
-    const sources = [{ name: 'a' }, { name: long }]
-    const c = draw({ sources, rowHeight: 20, labelOffset: 0, backdrop: 'wash' })
+    const rows = [{ name: 'a' }, { name: long }]
+    const c = draw({ rows, rowHeight: 20, labelOffset: 0, backdrop: 'wash' })
     const texts = [...c.querySelectorAll('text')]
     expect(texts[0]?.textContent).toBe('a')
     expect(texts[0]?.querySelector('title')).toBeNull()
     expect(texts[1]?.querySelector('title')?.textContent).toBe(long)
     expect(texts[1]?.lastChild?.textContent).toMatch(/^protein_coding.*…$/)
-    expect(rowLabelsBoxWidth(sources, 20)).toBe(ROW_LABEL_MAX_TEXT_WIDTH + 10)
+    expect(rowLabelsBoxWidth(rows, 20)).toBe(ROW_LABEL_MAX_TEXT_WIDTH + 10)
     expect(c.querySelector('path')?.getAttribute('d')).toContain(
       `h${ROW_LABEL_MAX_TEXT_WIDTH + 10}`,
     )
@@ -260,7 +260,7 @@ describe('annotation columns', () => {
 
   it('draws a column as one rect per run, a row with no value breaking the run', () => {
     const c = draw({
-      sources: plain,
+      rows: plain,
       rowHeight: 20,
       labelOffset: 0,
       annotations: [population],
@@ -276,14 +276,14 @@ describe('annotation columns', () => {
     const textX = (c: HTMLElement) =>
       [...c.querySelectorAll('text')].map(t => t.getAttribute('x'))
     const one = draw({
-      sources: plain,
+      rows: plain,
       rowHeight: 20,
       labelOffset: 0,
       annotations: [population],
     })
     expect(new Set(textX(one))).toEqual(new Set(['12']))
     const two = draw({
-      sources: colored,
+      rows: colored,
       rowHeight: 20,
       labelOffset: 0,
       annotations: [population, sex],
@@ -317,7 +317,7 @@ describe('annotation columns', () => {
 
   it('culls a run outside the available height', () => {
     const c = draw({
-      sources: plain,
+      rows: plain,
       rowHeight: 20,
       labelOffset: 0,
       annotations: [population],
@@ -328,7 +328,7 @@ describe('annotation columns', () => {
 
   it('draws 8px columns after the 8px swatch below the text threshold', () => {
     const c = draw({
-      sources: colored,
+      rows: colored,
       rowHeight: 2,
       labelOffset: 0,
       annotations: [population, sex],
@@ -352,7 +352,7 @@ describe('annotation columns', () => {
 
   it('draws the columns alone below the text threshold where no row has a color', () => {
     const c = draw({
-      sources: plain,
+      rows: plain,
       rowHeight: 0.32,
       labelOffset: 0,
       annotations: [population, sex, population],
@@ -372,7 +372,7 @@ describe('annotation columns', () => {
     rowHeight => {
       const screen = render(
         <RowLabelsOverlay
-          sources={colored}
+          rows={colored}
           rowHeight={rowHeight}
           labelOffset={0}
           width={400}
@@ -387,7 +387,7 @@ describe('annotation columns', () => {
             sidebar={{
               showTree: false,
               hierarchy: undefined,
-              sources: colored,
+              rows: colored,
               rowHeight,
               treeAreaWidth: 0,
               annotations: [population, sex],
@@ -404,7 +404,7 @@ describe('annotation columns', () => {
     const sidebar = {
       showTree: false,
       hierarchy: undefined,
-      sources: plain,
+      rows: plain,
       rowHeight: 20,
       treeAreaWidth: 0,
     }
@@ -417,7 +417,7 @@ describe('annotation columns', () => {
 // The screen and the export draw the same labels: `RowLabelsOverlay` on
 // screen, `SvgTreeSidebar` in the export, both through `SvgRowLabels`.
 describe('the label bar on screen and in the export', () => {
-  const sources = [
+  const rows = [
     { name: 'a', rowColor: dog },
     { name: 'b' },
     { name: 'c', rowColor: wolf },
@@ -426,7 +426,7 @@ describe('the label bar on screen and in the export', () => {
   function onScreen(rowHeight: number) {
     return render(
       <RowLabelsOverlay
-        sources={sources}
+        rows={rows}
         rowHeight={rowHeight}
         labelOffset={0}
         width={400}
@@ -443,7 +443,7 @@ describe('the label bar on screen and in the export', () => {
           sidebar={{
             showTree: false,
             hierarchy: undefined,
-            sources,
+            rows,
             rowHeight,
             treeAreaWidth: 0,
           }}
@@ -474,22 +474,20 @@ describe('the label bar on screen and in the export', () => {
       [dog, wolf].sort(),
     )
     for (const run of runs) {
-      expect(run.getAttribute('width')).toBe(
-        String(rowLabelsBoxWidth(sources, 2)),
-      )
+      expect(run.getAttribute('width')).toBe(String(rowLabelsBoxWidth(rows, 2)))
     }
   })
 })
 
 test('the export sidebar clips to the rows viewport, as the screen does', () => {
-  const sources = ['a', 'b', 'c', 'd'].map(name => ({ name }))
+  const rows = ['a', 'b', 'c', 'd'].map(name => ({ name }))
   const { container } = render(
     <svg>
       <SvgTreeSidebar
         sidebar={{
           showTree: false,
           hierarchy: undefined,
-          sources,
+          rows,
           rowHeight: 20,
           treeAreaWidth: 0,
         }}

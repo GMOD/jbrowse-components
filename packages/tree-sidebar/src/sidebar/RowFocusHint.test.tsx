@@ -12,7 +12,7 @@ function model(
     rowNarrowingHint: hint,
     rowNarrowingClears: clears,
     rowFocusLineHeight: 16,
-    sources: [],
+    drawnRows: [],
     showAllRows: jest.fn(),
     setRowFocus: jest.fn(),
     setScrollTop: jest.fn(),

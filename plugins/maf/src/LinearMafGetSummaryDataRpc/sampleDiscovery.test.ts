@@ -3,7 +3,7 @@ import { of } from 'rxjs'
 
 import { executeMafSummaryData } from './executeMafSummaryData.ts'
 
-import type { MafSummaryRecord, MafSource } from '../types.ts'
+import type { MafSummaryRecord, MafRow } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
@@ -44,7 +44,7 @@ async function run({
   rowFocus,
   records = RECORDS,
 }: {
-  samples: MafSource[]
+  samples: MafRow[]
   rowFocus?: string[]
   records?: MafSummaryRecord[]
 }) {
@@ -71,7 +71,7 @@ async function run({
 // A sample-discovery track has no `samples` and no `nhLocation`, so nothing
 // names its rows until a fetch does. Only the alignment path used to, and the
 // summary path is exactly where that fetch does not happen: opened already
-// zoomed out past the force-load floor, the display resolved zero sources, so
+// zoomed out past the force-load floor, the display resolved zero rows, so
 // `rowIndexBySrc` matched no `src` and the summary overlay drew nothing at all —
 // a blank track that reported itself fully loaded, until the user zoomed in far
 // enough to trigger the detail fetch.

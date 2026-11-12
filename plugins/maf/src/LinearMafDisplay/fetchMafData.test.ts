@@ -4,7 +4,7 @@ import {
   unionSampleSets,
 } from './fetchMafData.ts'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { RegionFetchContext } from '@jbrowse/display-kit/regionCommit'
 
@@ -21,7 +21,7 @@ jest.mock('@jbrowse/core/util/tracks', () => ({
   getRpcSessionId: () => 'session-1',
 }))
 
-function sample(id: string): MafSource {
+function sample(id: string): MafRow {
   return { name: id, label: id }
 }
 

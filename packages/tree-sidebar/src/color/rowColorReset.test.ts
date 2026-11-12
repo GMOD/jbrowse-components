@@ -47,7 +47,7 @@ test("one reset returns a value recolor to the base's grey", () => {
     rows: { color: { field: 'group', scale: { unknown: '#ccc' } } },
   })
   expect(display.rowColorIsCustom).toBe(false)
-  display.applyRowEdits(display.editableSources, {
+  display.applyRowEdits(display.arrangedRows, {
     color: {
       field: 'group',
       scale: { domain: ['y'], range: ['#abcdef'], unknown: '#ccc' },
@@ -67,7 +67,7 @@ test('a color by picked over name pairs survives a reset', () => {
   const display = makeDisplay({
     rows: { colors: { a: '#f00' } },
   })
-  display.applyRowEdits(display.editableSources, {
+  display.applyRowEdits(display.arrangedRows, {
     color: { field: 'group' },
   })
   expect(display.rowColorIsCustom).toBe(false)
@@ -81,7 +81,7 @@ test("a row recolored under name resets to the base's pairs", () => {
   const display = makeDisplay({
     rows: { colors: { a: '#f00' } },
   })
-  display.applyRowEdits(display.editableSources, {
+  display.applyRowEdits(display.arrangedRows, {
     colors: { a: '#f00', b: '#00f' },
   })
   expect(display.rowArrangementIsCustom).toBe(true)

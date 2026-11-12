@@ -1886,7 +1886,7 @@ TASKS.push(
         const filters = JSON.stringify(d('hg38-clinvarMain')?.plot?.filter ?? '')
         const checks = {
           at,
-          haplotypes: hprc?.type === 'LinearVariantDisplay' && hprc.rowsField === 'haplotype' && (hprc.sources ?? []).some(s => s.HP === 1),
+          haplotypes: hprc?.type === 'LinearVariantDisplay' && hprc.rowsField === 'haplotype' && (hprc.drawnRows ?? []).some(s => s.HP === 1),
           line: (typeof mark === 'string' ? mark : mark?.type) === 'line' && phylo?.domain?.[0] === -4 && phylo?.domain?.[1] === 8,
           compact: genes?.displayMode === 'compact',
           pathogenic: /clinSign|_clinSignCode|aggrGermClass/.test(filters) && /Pathogenic|PATH|\\bP\\b|'PG'|"PG"/.test(filters),

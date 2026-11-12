@@ -53,7 +53,7 @@ function loaded(
 
 function reorder(display: LinearMarkDisplayModel, order: string[]) {
   display.setRowOrder(
-    order.map(name => display.editableSources.find(row => row.name === name)!),
+    order.map(name => display.arrangedRows.find(row => row.name === name)!),
   )
 }
 
@@ -241,7 +241,7 @@ test('a facet on the group rows.groups writes stacks the rows in bands, split by
   expect(display.drawsRows).toBe(true)
   expect(display.rpcProps().facet).toEqual({ field: 'source' })
   expect(display.rowBands.map(b => b.label)).toEqual(['parents', 'children'])
-  expect(display.sources.map(row => row.name)).toEqual([
+  expect(display.drawnRows.map(row => row.name)).toEqual([
     'dad',
     'mom',
     's2',
@@ -278,8 +278,8 @@ test('rows.filter keeps the rows whose group passes', () => {
     },
     [{ mark: 'rect' }],
   )
-  expect(display.sources.map(row => row.name)).toEqual(['s2', 's10'])
-  expect(display.clusterableSources.map(row => row.name)).toEqual(['s2', 's10'])
+  expect(display.drawnRows.map(row => row.name)).toEqual(['s2', 's10'])
+  expect(display.shownRows.map(row => row.name)).toEqual(['s2', 's10'])
   expect(display.rowNarrowingHint?.text).toBe('Showing 2 of 4 rows')
 })
 
@@ -289,7 +289,7 @@ test('a kept list naming no row in the window draws none, naming nothing', () =>
   const display = loaded({ rows: { field: 'source', kept: ['uncle'] } }, [
     { mark: 'rect' },
   ])
-  expect(display.sources).toEqual([])
+  expect(display.drawnRows).toEqual([])
   expect(display.rowNarrowingHint?.text).toBe('Showing 0 of 4 rows · Show all')
   expect(display.liveNotices).toContain(
     'rows.kept names no row here, so no row shows',
@@ -597,7 +597,7 @@ test('the tooltip names the hovered row by its key after a reorder', async () =>
   const display = loaded({ rows: 'source' })
   reorder(display, ['s10', 's2', 'dad', 'mom'])
   const hit = sweepHits(display).find(
-    h => rowNameOf(display, h) !== display.sources[h.row!]!.name,
+    h => rowNameOf(display, h) !== display.drawnRows[h.row!]!.name,
   )!
   const name = rowNameOf(display, hit)
   display.setHoveredFeature(hit)
@@ -712,7 +712,7 @@ test('a value only a departed load knew hides nothing', () => {
   )
   void display.rpcDataMap
   expect(display.rowKeys.names).toEqual(['dad', 'mom', 's2', 's10', 'aunt'])
-  expect(display.sources.map(row => row.name)).toEqual(['aunt', 'mom'])
+  expect(display.drawnRows.map(row => row.name)).toEqual(['aunt', 'mom'])
   expect(display.drawnKeys).toBeUndefined()
   expect(display.scaleDataMap).toBe(display.rpcDataMap)
   display.setRowFocus(['mom'])

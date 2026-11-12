@@ -46,7 +46,7 @@ function clusteredDisplay() {
     treeNewick: undefined,
     samplesCanonical: true,
   })
-  display.setRowOrder([...display.sources], {
+  display.setRowOrder([...display.drawnRows], {
     tree: '(hg38:1,mm10:1);',
     provenance: {
       regions: [{ refName: 'ctgA', start: 0, end: 1000 }],

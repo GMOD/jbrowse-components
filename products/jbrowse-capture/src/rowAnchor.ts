@@ -8,7 +8,7 @@ import type { Page } from 'puppeteer'
 // row sits in, across the track, or across `region` where one is given. A
 // fraction of the track's height moves whenever a band is added above the
 // rows, and nothing fails: the callout lands on another row. The display
-// already places its rows (`sources` from `rowsTopOffset`, a row each
+// already places its rows (`drawnRows` from `rowsTopOffset`, a row each
 // `effectiveRowHeight`, scrolled by `scrollTop` inside `scrollViewportHeight`),
 // so ask it.
 //
@@ -36,8 +36,8 @@ export function rowRectInPage(
     end: number
   }
   interface RowDisplay {
-    sources: Row[]
-    bandedSources: Row[]
+    drawnRows: Row[]
+    stackedRows: Row[]
     rowBands: readonly Band[]
     rowsTopOffset: number
     effectiveRowHeight: number
@@ -60,8 +60,8 @@ export function rowRectInPage(
     }) => { left: number; width: number } | undefined
   }
   const isRowDisplay = (d: Partial<RowDisplay>): d is RowDisplay =>
-    Array.isArray(d.sources) &&
-    Array.isArray(d.bandedSources) &&
+    Array.isArray(d.drawnRows) &&
+    Array.isArray(d.stackedRows) &&
     Array.isArray(d.rowBands) &&
     typeof d.rowsTopOffset === 'number' &&
     typeof d.effectiveRowHeight === 'number' &&
@@ -69,17 +69,17 @@ export function rowRectInPage(
     typeof d.scrollViewportHeight === 'number'
 
   function namedSpans(display: RowDisplay) {
-    const { sources, bandedSources, rowBands } = display
-    const rows = sources.flatMap((row, i) =>
+    const { drawnRows, stackedRows, rowBands } = display
+    const rows = drawnRows.flatMap((row, i) =>
       row.name === name || row.label === name ? [{ start: i, end: i + 1 }] : [],
     )
     const bands = rowBands
       .filter(band => band.label === name || band.key === name)
       .flatMap(band => {
         const members = new Set(
-          bandedSources.slice(band.start, band.end).map(row => row.name),
+          stackedRows.slice(band.start, band.end).map(row => row.name),
         )
-        const drawn = sources.flatMap((row, i) =>
+        const drawn = drawnRows.flatMap((row, i) =>
           members.has(row.name) ? [i] : [],
         )
         return drawn.length

@@ -25,7 +25,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // owns the re-entrancy guard, the view.initialized gate, the signal lifecycle,
 // and the status channel. Only the reads before the first await are tracked —
 // the trigger, `autoClusterReady`, `view.initialized` and what `clusterRegions`
-// reads before its own await — so the autorun re-fires when sources arrive or
+// reads before its own await — so the autorun re-fires when rows arrive or
 // the view initializes; `run` itself starts after the regions resolve, so
 // nothing it reads is tracked.
 //

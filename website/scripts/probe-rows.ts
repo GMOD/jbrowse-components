@@ -31,7 +31,7 @@ await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 })
 await waitForAppSettled(page, { timeout: 240000 })
 const out = await page.evaluate(id => {
   interface Display {
-    sources?: { name: string; label?: string }[]
+    drawnRows?: { name: string; label?: string }[]
     rowBands?: readonly {
       key: string
       label: string
@@ -60,8 +60,8 @@ const out = await page.evaluate(id => {
   const types = d
     ? Object.fromEntries(
         [
-          'sources',
-          'bandedSources',
+          'drawnRows',
+          'stackedRows',
           'rowBands',
           'rowsTopOffset',
           'effectiveRowHeight',
@@ -80,7 +80,7 @@ const out = await page.evaluate(id => {
         rowsTop: d.rowsTopOffset,
         height: d.height,
         bands: (d.rowBands ?? []).map(b => `${b.label} [${b.start},${b.end})`),
-        rows: (d.sources ?? []).map(
+        rows: (d.drawnRows ?? []).map(
           (r, i) => `${i}: ${r.name}${r.label ? ` (${r.label})` : ''}`,
         ),
       }

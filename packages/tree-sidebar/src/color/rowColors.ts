@@ -5,7 +5,7 @@ import { rowFieldValue } from '../rows/rowFields.ts'
 import { withPairs } from './rowColorChoice.ts'
 
 import type { RowAlias } from '../rows/arrangeRows.ts'
-import type { RowSource } from '../types.ts'
+import type { Row } from '../types.ts'
 
 /** The `rows.color.scale` as read: the values paired with a color, and what an unpaired value takes. */
 export interface RowColorScaleSetting {
@@ -86,7 +86,7 @@ const NONE: ReadonlyMap<string, string> = new Map()
  */
 export function dealValueColors(
   setting: RowColorSetting,
-  rowsOf: () => readonly RowSource[],
+  rowsOf: () => readonly Row[],
   namesDeal: boolean,
   declared: readonly string[] = [],
   deck?: (position: number) => string,
@@ -124,7 +124,7 @@ export function dealValueColors(
  * own `color`.
  */
 export function resolveRowColors(
-  rows: readonly RowSource[],
+  rows: readonly Row[],
   field: string,
   dealt: ReadonlyMap<string, string>,
   pinned: ReadonlyMap<string, string>,
@@ -149,7 +149,7 @@ export function resolveRowColors(
  * Each row carrying its resolved color from `colors` as `rowColor`; `rows`
  * itself while every row already does.
  */
-export function withRowColors<S extends RowSource>(
+export function withRowColors<S extends Row>(
   rows: S[],
   colors: ReadonlyMap<string, string>,
 ): S[] {

@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import type { RowAnnotationColumn } from '@jbrowse/tree-sidebar'
 
 interface LabelModel {
-  sources: {
+  drawnRows: {
     name: string
     label?: string
     rowColor?: string
@@ -24,12 +24,12 @@ export default observer(function WiggleRowLabels({
   model: LabelModel
   labelOffset: number
 }) {
-  const { sources, effectiveRowHeight, drawsRowLabels, rowAnnotationColors } =
+  const { drawnRows, effectiveRowHeight, drawsRowLabels, rowAnnotationColors } =
     model
   return drawsRowLabels ? (
     <>
       <SvgRowLabels
-        sources={sources}
+        rows={drawnRows}
         rowHeight={effectiveRowHeight}
         labelOffset={labelOffset}
         backdrop="wash"
@@ -37,7 +37,7 @@ export default observer(function WiggleRowLabels({
       />
       <SvgRowColumnLabels
         labels={model.rowColumnLabels}
-        sources={sources}
+        rows={drawnRows}
         rowHeight={effectiveRowHeight}
         labelOffset={labelOffset}
         annotations={rowAnnotationColors}

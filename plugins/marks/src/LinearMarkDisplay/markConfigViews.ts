@@ -48,7 +48,7 @@ import type {
 } from '@jbrowse/core/util/markEncoding'
 import type { RowStep } from '@jbrowse/core/util/resolveRowHeight'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
-import type { RowBanding, RowSource } from '@jbrowse/tree-sidebar'
+import type { RowBanding, Row } from '@jbrowse/tree-sidebar'
 
 /**
  * The row attributes a config gives its rows: `group` where `rows.groups`
@@ -499,7 +499,7 @@ export function markRowsViews(self: MarkEntryHost) {
      * `TreeSidebarMixin`'s hook: each row tagged with the group of the
      * first `rows.groups` entry its name matches.
      */
-    expandRows(rows: RowSource[]): RowSource[] {
+    expandRows(rows: Row[]): Row[] {
       return tagRowGroups(rows, self.rowGroupMatchers)
     },
     /**

@@ -14,12 +14,12 @@ import type {
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   ClusterRunModel,
-  RowSource,
+  Row,
   RpcMethodCaller,
 } from '@jbrowse/tree-sidebar'
 
-export interface MarkClusterModel extends ClusterRunModel<RowSource> {
-  clusterableSources: RowSource[]
+export interface MarkClusterModel extends ClusterRunModel<Row> {
+  shownRows: Row[]
   adapterConfig: Record<string, unknown>
   rowsField: string
   rowCompare: RowCompare | undefined
@@ -61,7 +61,7 @@ export async function markRowMatrixArgs(
   return {
     adapterConfig: model.adapterConfig,
     regions,
-    rows: model.clusterableSources.map(row => row.name),
+    rows: model.shownRows.map(row => row.name),
     transform,
     facet,
     bpPerPx: model.host.bpPerPx,
@@ -82,11 +82,11 @@ export async function markRowMatrixArgs(
 
 /** The dialog's fetch key: the run's inputs, never the model node. */
 export function rowMatrixKey(model: MarkClusterModel) {
-  const { clusterableSources, rowCompare } = model
-  return clusterableSources.length && rowCompare
+  const { shownRows, rowCompare } = model
+  return shownRows.length && rowCompare
     ? ([
         'markRowMatrix',
-        clusterableSources.map(row => row.name).join('\t'),
+        shownRows.map(row => row.name).join('\t'),
         JSON.stringify(model.rpcProps()),
         rowCompare.mark,
         rowCompare.by,
@@ -112,7 +112,7 @@ export async function runMarkClustering({
   const args = await markRowMatrixArgs(model, regions, signal)
   await applyClusterRun({
     model,
-    rows: model.clusterableSources,
+    rows: model.shownRows,
     provenance: clusterProvenanceFromRegions(regions, [
       { name: 'rows', value: model.rowsField },
       args.compare === 'y'

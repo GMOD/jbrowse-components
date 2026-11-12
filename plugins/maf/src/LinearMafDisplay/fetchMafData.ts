@@ -14,7 +14,7 @@ import type {
   MafFrameRecord,
   MafRegionPayload,
   MafSummaryRecord,
-  MafSource,
+  MafRow,
 } from '../types.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
@@ -40,7 +40,7 @@ interface MafFetchSelf extends FetchEachRegionModel {
 }
 
 interface SampleSet {
-  samples: MafSource[]
+  samples: MafRow[]
   treeNewick: string | undefined
   samplesCanonical: boolean
   sampleWarnings?: string[]
@@ -50,8 +50,8 @@ interface SampleSet {
  * Row sets merged by name in first-seen order, a later entry supplying the
  * label and color.
  */
-export function unionSources(lists: readonly (readonly MafSource[])[]) {
-  const byName = new Map<string, MafSource>()
+export function unionSources(lists: readonly (readonly MafRow[])[]) {
+  const byName = new Map<string, MafRow>()
   for (const list of lists) {
     for (const source of list) {
       byName.set(source.name, source)

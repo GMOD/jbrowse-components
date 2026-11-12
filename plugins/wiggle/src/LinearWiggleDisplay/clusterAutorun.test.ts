@@ -90,7 +90,7 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
       end: 1000,
       assemblyName: 'volvox',
     })
-    expect(display.clusterableSources.length).toBe(2)
+    expect(display.shownRows.length).toBe(2)
     expect(display.domain).toBeUndefined()
     expect(display.autoClusterReady).toBe(false)
   })

@@ -2,10 +2,10 @@ import { render } from '@testing-library/react'
 
 import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 
-const sources = [{ name: 'a' }, { name: 'b' }]
+const rows = [{ name: 'a' }, { name: 'b' }]
 
 const props = {
-  sources,
+  rows,
   rowHeight: 20,
   labelOffset: 0,
   width: 400,
@@ -40,9 +40,7 @@ describe('RowLabelsOverlay', () => {
   })
 
   it('renders nothing at all when there are no rows', () => {
-    const { queryByTestId } = render(
-      <RowLabelsOverlay {...props} sources={[]} />,
-    )
+    const { queryByTestId } = render(<RowLabelsOverlay {...props} rows={[]} />)
     expect(queryByTestId('labels')).toBeNull()
   })
 })

@@ -5,14 +5,14 @@ import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
 
 import type { MafAlignedRow } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 
 // A LinearMafGetAlignmentData result with no blocks; `samples` is what each test
 // varies, since that (not the block content) is what drives the cache key here.
 // `samplesCanonical` false makes it a sample-discovery result, which the display
 // unions rather than replaces.
 function makeMafResult(
-  samples: MafSource[],
+  samples: MafRow[],
   samplesCanonical = true,
   // Sample ids to emit one aligned row for, in the worker's own order. Left
   // empty except where a test is about placement — the worker names rows and
@@ -106,7 +106,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
     await settle(display)
 
     expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
-    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.drawnRows.map((s: { name: string }) => s.name)).toEqual([
       'hg38',
       'mm10',
     ])
@@ -146,7 +146,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
     display.reload()
     await settle(display)
 
-    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.drawnRows.map((s: { name: string }) => s.name)).toEqual([
       'rn6',
       'hg38',
       'mm10',
@@ -193,7 +193,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
     })
     await settle(display, 2)
 
-    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.drawnRows.map((s: { name: string }) => s.name)).toEqual([
       'hg38',
       'mm10',
       'rn6',
@@ -262,7 +262,7 @@ describe('LinearMafDisplay row placement', () => {
     const calls = alignmentCalls(mockRpcCall)
     expect(calls).toHaveLength(1)
     expect(calls[0]![2]).not.toHaveProperty('orderedSampleIds')
-    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.drawnRows.map((s: { name: string }) => s.name)).toEqual([
       'mm10',
       'hg38',
     ])
@@ -324,7 +324,7 @@ describe('LinearMafDisplay row placement', () => {
 
     // rn6 is in the order but not in the sample set, so it is not a drawn row;
     // the two that are drawn keep their ordered positions rather than sliding up
-    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.drawnRows.map((s: { name: string }) => s.name)).toEqual([
       'mm10',
       'hg38',
     ])
@@ -350,7 +350,7 @@ describe('LinearMafDisplay row placement', () => {
 
     const [first] = alignmentCalls(mockRpcCall)
     expect(first![2].rowFocus).toEqual(['hg38'])
-    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.drawnRows.map((s: { name: string }) => s.name)).toEqual([
       'hg38',
     ])
   })
@@ -372,7 +372,7 @@ describe('LinearMafDisplay row placement', () => {
 
     expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
     expect(alignmentCalls(mockRpcCall)[0]![2].rowFocus).toEqual(['rn6'])
-    expect(display.sources).toEqual([])
+    expect(display.drawnRows).toEqual([])
   })
 
   // The frames ride the alignment fetch whenever a frames adapter is

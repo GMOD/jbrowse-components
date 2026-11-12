@@ -40,7 +40,7 @@ export const StaleTreeHint = observer(function StaleTreeHint({
   // its sibling in that gutter.
   top?: number
 }) {
-  const { root, sources, showTree } = model
+  const { root, drawnRows, showTree } = model
   const bands = model.rowBands.length
   const treeless = model.treelessBandCount
   // `hierarchy` being undefined is not enough on its own — multi-wiggle's
@@ -48,10 +48,10 @@ export const StaleTreeHint = observer(function StaleTreeHint({
   const stale =
     showTree &&
     !!root &&
-    sources.length > 0 &&
+    drawnRows.length > 0 &&
     (bands
       ? treeless > 0
-      : !model.hierarchy && !treeDescribesRows(root, sources))
+      : !model.hierarchy && !treeDescribesRows(root, drawnRows))
   return (
     <SidebarHintChip
       top={top}

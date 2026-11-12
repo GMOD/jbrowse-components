@@ -16,7 +16,7 @@ export function genotypeMatrixKey(model: ReducedModel) {
   return model.sourcesBase
     ? ([
         'genotypeMatrix',
-        model.clusterableSources.map(s => s.name).join('\t'),
+        model.shownRows.map(s => s.name).join('\t'),
         model.siteFilter,
         model.rowsField,
         // a SerializableFilterChain, whose toJSON is its expression list

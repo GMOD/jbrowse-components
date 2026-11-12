@@ -186,7 +186,7 @@ score above the min draws at the top, anything else on the baseline.
 `wiggleCommon` keeps `scoreToY`, the plot-box wrapper, and `js-skip`s it — the
 Canvas2D side composes the normalizer with its own box.
 
-## One fetch, and `rowIndex` is the position in the display's own `sources`
+## One fetch, and `rowIndex` is the position in the display's own `drawnRows`
 
 `RenderMultiWiggleData` serves every quantitative adapter. An adapter handing
 back typed arrays (BigWig, GCContent) carries one signal and no source column,

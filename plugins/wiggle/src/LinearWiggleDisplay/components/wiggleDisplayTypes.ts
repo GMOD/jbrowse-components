@@ -24,7 +24,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   configuration: { displayId: string }
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   notices: readonly string[]
-  sources: { name: string; color?: string; rowColor?: string }[]
+  drawnRows: { name: string; color?: string; rowColor?: string }[]
   markSources: { name: string; label?: string; color?: string }[]
   discoveredRows: { name: string }[]
   domain: [number, number] | undefined

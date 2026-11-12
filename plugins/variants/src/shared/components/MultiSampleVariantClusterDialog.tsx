@@ -43,7 +43,7 @@ const MultiSampleVariantClusterDialog = observer(
         // sample set than "Run clustering" would have produced.
         fetchMatrix={({ rpcManager, sessionId, ...args }) =>
           rpcManager.call(sessionId, 'MultiSampleVariantGetGenotypeMatrix', {
-            sources: model.clusterableSources,
+            sources: model.shownRows,
             siteFilter: model.siteFilter,
             filters: model.filters,
             adapterConfig: model.adapterConfig,

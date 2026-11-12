@@ -15,7 +15,7 @@ import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
  */
 describe('sidebar chrome escapes the display sandbox', () => {
   const props = {
-    sources: [{ name: 'a' }, { name: 'b' }],
+    rows: [{ name: 'a' }, { name: 'b' }],
     rowHeight: 20,
     labelOffset: 0,
     width: 400,

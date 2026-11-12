@@ -22,7 +22,7 @@ const GROUPED = [
 ] as WiggleSourceData[]
 
 function byGroup(display: ReturnType<typeof makeDisplay>) {
-  display.applyRowEdits(display.editableSources, { color: { field: 'group' } })
+  display.applyRowEdits(display.arrangedRows, { color: { field: 'group' } })
 }
 
 const rowColorKey = (display: ReturnType<typeof makeDisplay>) =>
@@ -58,7 +58,7 @@ it('focuses the subtracks a key entry lists', () => {
   const display = makeDisplay(GROUPED, { rows: true })
   byGroup(display)
   display.focusLegendEntry('rows.color', 'T cell')
-  expect(display.sources.map(s => s.name)).toEqual(['a', 'c'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['a', 'c'])
 })
 
 describe('a subtrack with no value of the color field', () => {

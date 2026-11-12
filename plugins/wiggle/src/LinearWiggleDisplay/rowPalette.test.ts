@@ -136,7 +136,7 @@ describe('a row per subtrack deals no palette', () => {
 
   it('plots a color set on one subtrack, the rest unchanged', () => {
     const display = makeDisplay()
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: { field: 'name' },
       colors: { b: '#123456' },
     })
@@ -148,7 +148,7 @@ describe('a row per subtrack deals no palette', () => {
 // A drag passes no color object, so the config's own stands.
 it('a reorder writes no color', () => {
   const display = makeDisplay({ rows: false })
-  display.applyRowEdits([...display.editableSources].reverse())
+  display.applyRowEdits([...display.arrangedRows].reverse())
   expect(display.rowColorIsCustom).toBe(false)
   expect(display.markSources.map(s => s.color)).toEqual([...TABLEAU].reverse())
 })

@@ -320,13 +320,13 @@ export type VariantLayoutBackend =
  *    `sampleFilter`),
  * 2. phased mode expands each sample to its haplotypes (`expandedRows`), and
  *    `rows.sort` orders them, `rows.labels` relabels them and each row has
- *    its resolved color (`editableSources`, the dialog's list), each from
+ *    its resolved color (`arrangedRows`, the dialog's list), each from
  *    `TreeSidebarMixin` over this display's hooks,
- * 3. the same narrowing narrows those (`clusterableSources`, what a run
+ * 3. the same narrowing narrows those (`shownRows`, what a run
  *    clusters),
- * 4. `facet` stacks those in bands (`bandedSources`), each band's rows in their
+ * 4. `facet` stacks those in bands (`stackedRows`), each band's rows in their
  *    arranged order,
- * 5. the result is `sources`, each row's resolved color its label bar.
+ * 5. the result is `drawnRows`, each row's resolved color its label bar.
  *
  * **`rows.color` wins over a color the row already has**, a `samplesTsv`
  * `color` column: a channel bound to a variable beats a per-row constant, so
@@ -935,7 +935,7 @@ export function stateModelFactory(
           /**
            * #action
            * The mixin's, then a warning naming a metadata field no sample
-           * carries. The tint is resolved on every read of `sources`, so a
+           * carries. The tint is resolved on every read of `drawnRows`, so a
            * recolor moves no rows and drops no cluster tree.
            */
           setRowColorChoice(choice: string) {
@@ -1136,10 +1136,10 @@ export function stateModelFactory(
         /**
          * #getter
          * Whether there are at least two rows on screen to put in an order,
-         * counted over `clusterableSources`, the list a run clusters.
+         * counted over `shownRows`, the list a run clusters.
          */
         get hasClusterableRows() {
-          return self.clusterableSources.length > 1
+          return self.shownRows.length > 1
         },
         /**
          * #getter
@@ -1206,7 +1206,7 @@ export function stateModelFactory(
            * `constructor` resolves to something inherited rather than to a miss.
            */
           get sourceMap() {
-            return new Map(self.sources.map(source => [source.name, source]))
+            return new Map(self.drawnRows.map(source => [source.name, source]))
           },
           /**
            * #getter
@@ -1222,10 +1222,10 @@ export function stateModelFactory(
             if (!rowNames) {
               return undefined
             }
-            const sources = self.sources
+            const drawnRows = self.drawnRows
             const screenRowByName = new Map<string, number>()
-            for (let i = 0; i < sources.length; i++) {
-              screenRowByName.set(sources[i]!.name, i)
+            for (let i = 0; i < drawnRows.length; i++) {
+              screenRowByName.set(drawnRows[i]!.name, i)
             }
             const out = new Uint32Array(rowNames.length)
             for (let i = 0; i < rowNames.length; i++) {
@@ -1288,7 +1288,7 @@ export function stateModelFactory(
            */
           get rowUnmap(): Int32Array | undefined {
             const remap = self.rowRemap
-            return remap ? unmapOf(remap, self.sources.length) : undefined
+            return remap ? unmapOf(remap, self.drawnRows.length) : undefined
           },
           /**
            * #method
@@ -1328,12 +1328,12 @@ export function stateModelFactory(
          * Order the rows by their genotype at one variant, then at the other
          * records spanning its reference interval (a site split one record
          * per ALT), then by how far each row agrees with its neighbours to
-         * either side. Sorts `editableSources`, so the order written names
+         * either side. Sorts `arrangedRows`, so the order written names
          * every row.
          */
         sortByGenotype(featureId: string) {
           const { cellData } = self
-          const sources = self.editableSources
+          const sources = self.arrangedRows
           // fewer than two rows has nothing to order, and `setRowOrder` would
           // drop the cluster tree
           let sorted: ProcessedSource[] | undefined

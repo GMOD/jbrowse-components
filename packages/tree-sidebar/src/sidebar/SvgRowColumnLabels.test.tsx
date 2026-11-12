@@ -55,7 +55,7 @@ describe('SvgRowColumnLabels', () => {
   it('draws nothing without labels', () => {
     const c = draw({
       labels: [],
-      sources: colored,
+      rows: colored,
       rowHeight: 20,
       labelOffset: 0,
       annotations: [population],
@@ -67,7 +67,7 @@ describe('SvgRowColumnLabels', () => {
     const { labels } = partsOf(
       draw({
         labels: ['Superpopulation', 'Population', 'Sex'],
-        sources: colored,
+        rows: colored,
         rowHeight: 20,
         labelOffset: 0,
         annotations: [population, sex],
@@ -89,7 +89,7 @@ describe('SvgRowColumnLabels', () => {
     const { labels, leaders } = partsOf(
       draw({
         labels: ['Superpopulation', 'Population', 'Sex'],
-        sources: colored,
+        rows: colored,
         rowHeight: 20,
         labelOffset: 0,
         annotations: [population, sex],
@@ -109,7 +109,7 @@ describe('SvgRowColumnLabels', () => {
     const { leaders } = partsOf(
       draw({
         labels: ['Superpopulation', 'Population', 'Sex'],
-        sources: colored,
+        rows: colored,
         rowHeight: 0.32,
         labelOffset: 0,
         annotations: [population, sex],
@@ -122,7 +122,7 @@ describe('SvgRowColumnLabels', () => {
     const { leaders } = partsOf(
       draw({
         labels: ['Population', 'Sex'],
-        sources: plain,
+        rows: plain,
         rowHeight: 20,
         labelOffset: 30,
         annotations: [population, sex],
@@ -134,7 +134,7 @@ describe('SvgRowColumnLabels', () => {
   it("takes the export's text size up to its line, and swallows no pointer", () => {
     const props = {
       labels: ['Population', 'Sex'],
-      sources: plain,
+      rows: plain,
       rowHeight: 20,
       labelOffset: 30,
       annotations: [population, sex],
@@ -158,7 +158,7 @@ describe('the column labels on screen and in the export', () => {
     rowHeight => {
       const screen = render(
         <RowLabelsOverlay
-          sources={colored}
+          rows={colored}
           rowHeight={rowHeight}
           labelOffset={0}
           width={400}
@@ -184,7 +184,7 @@ describe('the column labels on screen and in the export', () => {
       const sidebar = {
         showTree: false,
         hierarchy: undefined,
-        sources: colored,
+        rows: colored,
         rowHeight,
         treeAreaWidth: 0,
         annotations,
@@ -217,7 +217,7 @@ describe('the column labels on screen and in the export', () => {
     const overlay = (columnLabels: string[], showLabels: boolean) =>
       render(
         <RowLabelsOverlay
-          sources={colored}
+          rows={colored}
           rowHeight={20}
           labelOffset={0}
           width={400}
@@ -236,7 +236,7 @@ describe('the column labels on screen and in the export', () => {
           sidebar={{
             showTree: false,
             hierarchy: undefined,
-            sources: colored,
+            rows: colored,
             rowHeight: 20,
             treeAreaWidth: 0,
             annotations,

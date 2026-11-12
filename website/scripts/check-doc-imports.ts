@@ -553,7 +553,7 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // for splitting the family in two did not survive. `GlobalFetchMixin` is the
   // whole family now, so the name must stay unwritten.
   'GlobalDataDisplayMixin',
-  // `agent-docs/reference/TREE_SIDEBAR.md` §"`RowSource` is the row vocabulary": the
+  // `agent-docs/reference/TREE_SIDEBAR.md` §"`Row` is the row vocabulary": the
   // computed MAF bridged its own `color` field with, named because that bridge
   // is why three adapter schemas advertised a slot reaching no renderer.
   'labelSources',
@@ -567,7 +567,7 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // prune": the HAL method the per-key release replaced, named to say why the
   // prune shape cannot come back on a shared canvas.
   'pruneRegions',
-  // `agent-docs/reference/TREE_SIDEBAR.md` §"`RowSource` is the row vocabulary": the
+  // `agent-docs/reference/TREE_SIDEBAR.md` §"`Row` is the row vocabulary": the
   // misspelling one display shipped for `showRowLabels`, named to say why the
   // mixin now declares the accessors — the name must stay unwritten.
   'showSidebarLabels',

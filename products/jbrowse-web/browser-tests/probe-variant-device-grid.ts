@@ -236,7 +236,7 @@ async function captureScene(page: Page, scene: (typeof SCENES)[number]) {
       backing: canvas ? `${canvas.width}x${canvas.height}` : '-',
       antialias: gl ? String(gl.getContextAttributes()?.antialias) : 'n/a',
       rows: (window as any).JBrowseSession.views[0].tracks[0].displays[0]
-        .sources.length,
+        .drawnRows.length,
     }
   }, selector)
   // A headed Firefox's real cursor can rest over the rows and raise a tooltip.

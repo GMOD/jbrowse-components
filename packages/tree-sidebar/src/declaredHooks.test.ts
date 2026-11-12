@@ -51,7 +51,7 @@ function definedMembers(src: string) {
 test('a display overrides only the members the mixin declares as hooks', () => {
   const members = mixinMembers()
   expect(members.get('discoveredRows')).toBe(true)
-  for (const hook of ['sources', 'treeRoot', 'drawsTree']) {
+  for (const hook of ['drawnRows', 'treeRoot', 'drawsTree']) {
     expect(members.get(hook)).toBe(true)
   }
   expect(members.get('hierarchy')).toBe(false)

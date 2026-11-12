@@ -133,7 +133,7 @@ const TreeSidebar = observer(function TreeSidebar({
     treeAreaWidth,
     rowsTopOffset,
     scrollTop = 0,
-    sources,
+    drawnRows,
     spatialIndex,
   } = model
 
@@ -229,7 +229,7 @@ const TreeSidebar = observer(function TreeSidebar({
         // Disabled where it would hide nothing (`subtreeCoversEveryRow`), not
         // hidden, so the count still answers "how many are under here".
         <MenuItem
-          disabled={subtreeCoversEveryRow(menuAnchor.names, sources.length)}
+          disabled={subtreeCoversEveryRow(menuAnchor.names, drawnRows.length)}
           onClick={() => {
             applyFilter(menuAnchor.names)
           }}
@@ -242,7 +242,7 @@ const TreeSidebar = observer(function TreeSidebar({
 
   // the same gate `treeSidebarOffset` reserves the gutter under, so the
   // painting and the space kept for it cannot come apart
-  if (!treeIsShowing(model) || !sources.length) {
+  if (!treeIsShowing(model) || !drawnRows.length) {
     // one of those is "there IS a tree, it just doesn't describe these rows any
     // more" — which needs saying rather than silently drawing nothing. Portaled
     // for the same reason the panel is: it is text in the gutter. The filter

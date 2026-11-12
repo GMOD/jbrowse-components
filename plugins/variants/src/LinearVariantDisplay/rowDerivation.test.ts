@@ -128,8 +128,8 @@ function row({
 
 function derived(display: Display) {
   return {
-    sources: display.sources.map(row),
-    editableSources: display.editableSources.map(row),
+    drawnRows: display.drawnRows.map(row),
+    arrangedRows: display.arrangedRows.map(row),
     sampleFilter: display.sampleFilter,
     rowTree: display.rowTree,
     treeDrawn: display.hierarchy !== undefined,
@@ -138,7 +138,7 @@ function derived(display: Display) {
   }
 }
 
-const names = (display: Display) => display.sources.map(s => s.name)
+const names = (display: Display) => display.drawnRows.map(s => s.name)
 
 describe('allele count', () => {
   test('samplesTsv colors and labels are the rows own', () => {
@@ -171,7 +171,7 @@ describe('allele count', () => {
 
   test('dialog edits relabel, recolor and reorder, and a reset returns', () => {
     const display = loaded()
-    const [s0, s1, s2, s3] = display.editableSources
+    const [s0, s1, s2, s3] = display.arrangedRows
     display.applyRowEdits([{ ...s2!, label: 'Two' }, s0!, s3!, s1!], {
       color: { field: 'name' },
       colors: { [s3!.name]: '#123456', [s1!.name]: '#654321' },
@@ -185,20 +185,20 @@ describe('allele count', () => {
   // the rows' own swatches are not read: the Color by and its legend stay.
   test("a dialog recolors a population's rows, and keeps the Color by", () => {
     const display = loaded({ color: 'population' })
-    const [s0, s1, ...rest] = display.editableSources
+    const [s0, s1, ...rest] = display.arrangedRows
     display.applyRowEdits([s0!, { ...s1!, rowColor: '#123456' }, ...rest])
     expect(display.rowColorChoice).toBe('population')
-    expect(display.sources.find(s => s.name === s1!.name)!.rowColor).not.toBe(
+    expect(display.drawnRows.find(s => s.name === s1!.name)!.rowColor).not.toBe(
       '#123456',
     )
 
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: {
         field: 'population',
         scale: { domain: ['AFR'], range: ['#123456'] },
       },
     })
-    const afr = display.sources.filter(s => s.population === 'AFR')
+    const afr = display.drawnRows.filter(s => s.population === 'AFR')
     expect(afr.length).toBeGreaterThan(1)
     expect(afr.every(s => s.rowColor === '#123456')).toBe(true)
     expect(derived(display).rowColorLegend?.title).toBe('Population')
@@ -240,7 +240,7 @@ describe('allele count', () => {
 
   test('a switch to phased mode keeps the arrangement', async () => {
     const display = loaded({ domain: ['S3'] })
-    const [s3, s0, s1, s2] = display.editableSources
+    const [s3, s0, s1, s2] = display.arrangedRows
     display.applyRowEdits([s0!, { ...s1!, label: 'One' }, s2!, s3!])
     landCells(display)
     await cluster(display, [2, 0, 3, 1], '((S2,S0),(S3,S1));')
@@ -260,14 +260,14 @@ describe('phased', () => {
     color => {
       const display = loaded({ phased: true, color })
       landCells(display)
-      display.applyRowEdits(display.editableSources, {
+      display.applyRowEdits(display.arrangedRows, {
         colors: { S1: '#123456' },
       })
-      const s1 = display.sources.filter(s => s.name.startsWith('S1 '))
+      const s1 = display.drawnRows.filter(s => s.name.startsWith('S1 '))
       expect(s1.map(s => s.name)).toEqual(['S1 HP1', 'S1 HP2'])
       expect(s1.map(s => s.rowColor)).toEqual(['#123456', '#123456'])
       expect(
-        display.sources.filter(s => s.rowColor === '#123456'),
+        display.drawnRows.filter(s => s.rowColor === '#123456'),
       ).toHaveLength(2)
     },
   )
@@ -277,16 +277,16 @@ describe('phased', () => {
   test("a sample's pin beats the unknown color its haplotype rows' names are dealt", () => {
     const display = loaded({ phased: true })
     landCells(display)
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       color: { scale: { unknown: '#cccccc' } },
       colors: { S1: '#123456' },
     })
     expect(
-      display.sources
+      display.drawnRows
         .filter(s => s.name.startsWith('S1 '))
         .map(s => s.rowColor),
     ).toEqual(['#123456', '#123456'])
-    expect(display.sources.some(s => s.rowColor === '#cccccc')).toBe(true)
+    expect(display.drawnRows.some(s => s.rowColor === '#cccccc')).toBe(true)
   })
 
   test('sample rows until the ploidy lands, then haplotypes', () => {
@@ -318,7 +318,7 @@ describe('phased', () => {
   test('dialog edits at haplotype granularity', () => {
     const display = loaded({ phased: true })
     landCells(display)
-    const [h0, h1, h2, h3, h4, h5, h6] = display.editableSources
+    const [h0, h1, h2, h3, h4, h5, h6] = display.arrangedRows
     display.applyRowEdits(
       [h6!, { ...h1!, label: 'Zero, second' }, h0!, h4!, h2!, h3!, h5!],
       { color: { field: 'name' }, colors: { [h4!.name]: '#123456' } },

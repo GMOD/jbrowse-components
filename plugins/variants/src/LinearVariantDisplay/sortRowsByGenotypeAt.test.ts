@@ -53,10 +53,10 @@ test('anchors the genotype sort on the record covering the column', () => {
   const display = displayWithCells()
   display.sortRowsByGenotypeAt('ctgA', 500)
   // the carrier at 500 is S1
-  expect(display.sources[0]!.name).toBe('S1')
+  expect(display.drawnRows[0]!.name).toBe('S1')
 
   display.sortRowsByGenotypeAt('ctgA', 700)
-  expect(display.sources[0]!.name).toBe('S0')
+  expect(display.drawnRows[0]!.name).toBe('S0')
 })
 
 // A click inside a large deletion picks the shortest record under it, so a
@@ -91,7 +91,7 @@ test('anchors on the shortest record covering the column', () => {
     },
   } as unknown as Parameters<typeof display.setCellData>[0])
   display.sortRowsByGenotypeAt('ctgA', 500)
-  expect(display.sources[0]!.name).toBe('S2')
+  expect(display.drawnRows[0]!.name).toBe('S2')
 })
 
 test('leaves the rows alone at a column no record covers', () => {
@@ -155,7 +155,7 @@ test('sortRowsBy at a bare column waits for a record there', async () => {
   await waitFor(() => {
     expect(display.sortRowsBy).toBeUndefined()
   })
-  expect(display.sources[0]!.name).toBe('S2')
+  expect(display.drawnRows[0]!.name).toBe('S2')
 })
 
 // The declarative half: a session names the column and the autorun applies it
@@ -167,5 +167,5 @@ test('sortRowsBy applies once and clears', async () => {
   await waitFor(() => {
     expect(display.sortRowsBy).toBeUndefined()
   })
-  expect(display.sources[0]!.name).toBe('S1')
+  expect(display.drawnRows[0]!.name).toBe('S1')
 })

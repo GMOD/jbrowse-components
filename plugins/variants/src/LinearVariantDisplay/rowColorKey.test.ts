@@ -34,7 +34,7 @@ test('a legend click on the population key focuses it, on the genotype key nothi
   expect(d.rowFocus).toBeUndefined()
   d.focusLegendEntry('rows.color', 'AFR')
   expect(d.rowFocus).toEqual(['S0', 'S2'])
-  expect(d.sources.map(s => s.name)).toEqual(['S0', 'S2'])
+  expect(d.drawnRows.map(s => s.name)).toEqual(['S0', 'S2'])
 })
 
 // The focus names the rows drawn, haplotypes here, and the fetch asks for their

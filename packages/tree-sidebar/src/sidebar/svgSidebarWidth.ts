@@ -6,7 +6,7 @@ import type { RowBand } from '../rows/bandRows.ts'
 import type {
   ClusterHierarchyNode,
   RowAnnotationColumn,
-  RowLabelSource,
+  LabelledRow,
 } from '../types.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
@@ -14,7 +14,7 @@ import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 export interface SvgSidebarProps {
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
-  sources: RowLabelSource[]
+  rows: LabelledRow[]
   rowHeight: number
   treeAreaWidth: number
   showLabels?: boolean
@@ -35,7 +35,7 @@ export function sidebarPanelWidth(
   {
     showTree,
     hierarchy,
-    sources,
+    rows,
     rowHeight,
     treeAreaWidth,
     showLabels = true,
@@ -45,8 +45,8 @@ export function sidebarPanelWidth(
   text?: ExportTextStyle,
 ) {
   const labels =
-    showLabels && sources.length
-      ? rowLabelsBoxWidth(sources, rowHeight, text, annotations)
+    showLabels && rows.length
+      ? rowLabelsBoxWidth(rows, rowHeight, text, annotations)
       : 0
   return (
     treeSidebarOffset({ showTree, hierarchy, treeAreaWidth }) +

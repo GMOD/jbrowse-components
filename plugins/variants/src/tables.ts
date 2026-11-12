@@ -280,7 +280,7 @@ async function fetchedVariantHost(
   host.setCellData(value)
   const fetched = new Set(value.rowNames)
   const drawn = runInAction(() =>
-    host.sources.filter(row => fetched.has(row.name)),
+    host.drawnRows.filter(row => fetched.has(row.name)),
   )
   return {
     host,

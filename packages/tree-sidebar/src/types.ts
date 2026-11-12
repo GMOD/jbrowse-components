@@ -23,7 +23,7 @@ export interface HoveredTreeNode {
  * row type must extend it, and a field the sidebar draws carried under the
  * wrong name is a compile error rather than a blank label.
  */
-export interface RowSource {
+export interface Row {
   /** Identity: the React key, and what the tree's leaves are matched against. */
   name: string
   /** Displayed instead of `name` when the adapter config supplied one. */
@@ -40,13 +40,13 @@ export interface RowSource {
 }
 
 /** What the dendrogram itself reads: a name to match. */
-export type TreeSource = Pick<RowSource, 'name'>
+export type TreeRow = Pick<Row, 'name'>
 
 /**
  * What the sidebar's label half draws — `SvgRowLabels`, its on-screen wrapper
  * `RowLabelsOverlay`, and `SvgTreeSidebar`.
  */
-export type RowLabelSource = Pick<RowSource, 'name' | 'label' | 'rowColor'>
+export type LabelledRow = Pick<Row, 'name' | 'label' | 'rowColor'>
 
 /**
  * One `rows.annotations` column as the label half draws it: a row's color by
@@ -74,7 +74,7 @@ export interface TreeSidebarModel extends IStateTreeNode {
   rowFocusLineHeight: number
   scrollTop?: number
   showTree: boolean
-  sources: TreeSource[]
+  drawnRows: TreeRow[]
   rowBands: readonly RowBand[]
   rowAnnotationColors?: readonly RowAnnotationColumn[]
   // The label over each color column, whose lines sit between the focus
@@ -124,6 +124,6 @@ export interface TreeDrawingModel extends IStateTreeNode {
   // agent-docs/reference/ROW_HEIGHT_AND_FIT.
   effectiveRowHeight: number
   hoveredTreeNode?: HoveredTreeNode
-  sources: TreeSource[]
+  drawnRows: TreeRow[]
   isMinimized?: boolean
 }

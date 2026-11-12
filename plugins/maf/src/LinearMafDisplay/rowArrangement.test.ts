@@ -8,8 +8,8 @@ function sample(id: string) {
   return { name: id, label: id }
 }
 
-function rowNames(display: { sources?: { name: string }[] }) {
-  return display.sources?.map(s => s.name)
+function rowNames(display: { drawnRows?: { name: string }[] }) {
+  return display.drawnRows?.map(s => s.name)
 }
 
 describe('a discovered row set widens under a custom arrangement', () => {
@@ -54,7 +54,7 @@ describe('a discovered row set widens under a custom arrangement', () => {
     })
 
     expect(rowNames(display)).toEqual(['hg38', 'panTro4'])
-    expect(display.sources[1]).toMatchObject({
+    expect(display.drawnRows[1]).toMatchObject({
       name: 'panTro4',
       label: 'Chimp',
       rowColor: 'red',
@@ -153,7 +153,7 @@ describe('the guide tree draws while a rotation of it lists `rows.sort`', () => 
   // leaves behind.
   it('keeps drawing after a relabel-only dialog submit', () => {
     const display = treedDisplay()
-    const [hg38, ...rest] = display.editableSources
+    const [hg38, ...rest] = display.arrangedRows
     display.applyRowEdits([{ ...hg38!, label: 'Human' }, ...rest])
 
     expect(display.rowSort).toEqual([])
@@ -340,18 +340,18 @@ describe('the configured per-sample color reaches the sidebar', () => {
       treeNewick: undefined,
       samplesCanonical: true,
     })
-    expect(display.sources).toEqual([
+    expect(display.drawnRows).toEqual([
       { name: 'hg38', label: 'Human', color: 'red', rowColor: 'red' },
       { name: 'mm10', label: 'Mouse', color: undefined },
     ])
   })
 
-  // Resolved, like `sources` it is derived from — an empty row list, not an
+  // Resolved, like `drawnRows` it is derived from — an empty row list, not an
   // absent one. "Has the species list arrived" is `sourcesKnown`, and the
   // label components take an array either way.
-  it('is empty before any fetch, like `sources`', () => {
+  it('is empty before any fetch, like `drawnRows`', () => {
     const { display } = createMafTestEnvironment().createDisplay()
-    expect(display.sources).toEqual([])
+    expect(display.drawnRows).toEqual([])
     expect(display.sourcesKnown).toBe(false)
   })
 })
@@ -374,8 +374,8 @@ describe('rows.colors tints a row over the adapter color', () => {
     return display
   }
 
-  const tints = (display: { sources: { rowColor?: string }[] }) =>
-    display.sources.map(s => s.rowColor)
+  const tints = (display: { drawnRows: { rowColor?: string }[] }) =>
+    display.drawnRows.map(s => s.rowColor)
 
   it('paints a declared entry ahead of the adapter color', () => {
     const display = tinted({ hg38: '#00ff00' })
@@ -385,7 +385,7 @@ describe('rows.colors tints a row over the adapter color', () => {
 
   it('writes the colors submitted over the declared ones, and a reset returns', () => {
     const display = tinted({ hg38: '#00ff00' })
-    display.applyRowEdits(display.editableSources, {
+    display.applyRowEdits(display.arrangedRows, {
       colors: { hg38: 'red', mm10: '#0000ff' },
     })
     expect(getConf(display, ['rows', 'colors'])).toEqual({
@@ -421,7 +421,7 @@ describe('rows.colors tints a row over the adapter color', () => {
     })
     expect(display.rowArrangementIsCustom).toBe(false)
 
-    display.applyRowEdits(display.editableSources)
+    display.applyRowEdits(display.arrangedRows)
 
     expect(display.rowLabels).toEqual({ hg38: 'Human' })
     expect(getConf(display, ['rows', 'colors'])).toEqual({ hg38: 'red' })

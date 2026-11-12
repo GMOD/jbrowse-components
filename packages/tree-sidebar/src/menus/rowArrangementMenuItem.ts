@@ -6,7 +6,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import { clusteringMenuItem, resetRowOrderMenuItems } from './treeMenuItems.ts'
 
 import type { RowArrangementModel } from '../rowArrangementDialog/RowArrangementDialog.tsx'
-import type { RowSource } from '../types.ts'
+import type { Row } from '../types.ts'
 import type { ClusteringMenuModel, RowOrderMenuModel } from './treeMenuItems.ts'
 import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -23,7 +23,7 @@ const RowArrangementDialog = lazy(
  * display whose dialog carries more than the rows, as wiggle's plot colors
  * do, passes its own `onOpen`.
  */
-export function rowArrangementMenuItem<S extends RowSource>(
+export function rowArrangementMenuItem<S extends Row>(
   model: RowArrangementModel<S> & IAnyStateTreeNode,
   { ready, onOpen }: { ready: boolean; onOpen?: () => void },
 ): MenuItem {
@@ -48,7 +48,7 @@ export function rowArrangementMenuItem<S extends RowSource>(
  * colors/arrangement...", "Reset row order" once the order is custom, and
  * "Clustering" where the display clusters. Spread, don't insert.
  */
-export function rowOrderMenuItems<S extends RowSource>(
+export function rowOrderMenuItems<S extends Row>(
   model: RowArrangementModel<S> &
     IAnyStateTreeNode &
     RowOrderMenuModel &

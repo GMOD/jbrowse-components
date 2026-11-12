@@ -407,7 +407,7 @@ interface RecordsRenderHost
     Pick<RecordsSettingsHost, 'recordsOnly' | 'drawsGenotypeRows'> {
   cellData: CellDataResult | undefined
   regionRecordColors: ReadonlyMap<number, Uint32Array>
-  sources: ProcessedSource[]
+  drawnRows: ProcessedSource[]
   view: LinearGenomeViewModel
   host: { showsCanvasOnly?: boolean }
   canRender: boolean
@@ -416,7 +416,7 @@ interface RecordsRenderHost
 export function recordsRenderViews(self: RecordsRenderHost) {
   // sorted, and kept while the set holds, so a reorder recounts nothing
   const carrierSamples = stableIdentityComputed(() =>
-    [...new Set(self.sources.map(resolveSampleName))].sort(),
+    [...new Set(self.drawnRows.map(resolveSampleName))].sort(),
   )
   const onScreenIdsMemo = createMembershipMemo()
   const keepVisibleLabels = sameAsLast<RecordsLabels>()

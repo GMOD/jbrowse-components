@@ -80,7 +80,7 @@ export type RowTargets = ReturnType<typeof selectedRowTargets>
 export function visibleRowTargets(
   session: RowTargetHost,
   model: SampleNavigationModel & {
-    sources: unknown[]
+    drawnRows: unknown[]
     view: { width: number }
   },
 ) {
@@ -88,7 +88,7 @@ export function visibleRowTargets(
     leftPx: 0,
     rightPx: model.view.width - 1,
     startRow: 0,
-    endRow: model.sources.length,
+    endRow: model.drawnRows.length,
   })
 }
 

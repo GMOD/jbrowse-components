@@ -1,6 +1,6 @@
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region, UriLocation } from '@jbrowse/core/util'
-import type { RowSource } from '@jbrowse/tree-sidebar'
+import type { Row } from '@jbrowse/tree-sidebar'
 
 /**
  * Shared types for MAF alignment data
@@ -160,12 +160,12 @@ export interface MafRegionPayload<T> {
 
 /**
  * One species row, in the worker's reply, the display's rows and the sequence
- * widget alike: `RowSource` plus the two navigation fields only MAF has. Every
+ * widget alike: `Row` plus the two navigation fields only MAF has. Every
  * producer fills `label`, with the name when the config gives none. The
  * adapter's `samples[].color` is the row's own `color`, which a `rows.colors`
  * entry overrides.
  */
-export interface MafSource extends RowSource {
+export interface MafRow extends Row {
   label: string
   /**
    * The assembly this row's own genome is loaded as, making the row navigable

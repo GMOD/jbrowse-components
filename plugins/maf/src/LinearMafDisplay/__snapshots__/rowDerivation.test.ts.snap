@@ -2,7 +2,24 @@
 
 exports[`a cluster run lands its tree with provenance, and a reset restores the supplied one 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Mouse",
       "name": "mm10",
@@ -35,23 +52,6 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "mm10",
@@ -76,7 +76,24 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
 
 exports[`a cluster run lands its tree with provenance, and a reset restores the supplied one 3`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -109,23 +126,6 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -137,7 +137,24 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
 
 exports[`a cluster run rotates towards the declared order 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Chimp",
       "name": "panTro4",
@@ -170,23 +187,6 @@ exports[`a cluster run rotates towards the declared order 1`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "panTro4",
@@ -198,7 +198,24 @@ exports[`a cluster run rotates towards the declared order 1`] = `
 
 exports[`a declared order leads with no tree 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Mouse",
       "name": "mm10",
@@ -231,23 +248,6 @@ exports[`a declared order leads with no tree 1`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-  ],
   "treeDrawn": false,
   "treeLeaves": undefined,
 }
@@ -255,7 +255,24 @@ exports[`a declared order leads with no tree 1`] = `
 
 exports[`a declared order rotates a supplied tree 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Mouse",
       "name": "mm10",
@@ -288,23 +305,6 @@ exports[`a declared order rotates a supplied tree 1`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "mm10",
@@ -316,7 +316,24 @@ exports[`a declared order rotates a supplied tree 1`] = `
 
 exports[`a declared order rotates a supplied tree 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Chimp",
       "name": "panTro4",
@@ -349,23 +366,6 @@ exports[`a declared order rotates a supplied tree 2`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "panTro4",
@@ -377,7 +377,24 @@ exports[`a declared order rotates a supplied tree 2`] = `
 
 exports[`a dialog recolor over an adapter color, in place 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#00ff00",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -410,23 +427,6 @@ exports[`a dialog recolor over an adapter color, in place 1`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#00ff00",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-  ],
   "treeDrawn": false,
   "treeLeaves": undefined,
 }
@@ -434,7 +434,24 @@ exports[`a dialog recolor over an adapter color, in place 1`] = `
 
 exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolor, and a reset returns 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "House mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": "#123456",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "House mouse",
       "name": "mm10",
@@ -467,23 +484,6 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "House mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": "#123456",
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "mm10",
@@ -495,7 +495,24 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
 
 exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolor, and a reset returns 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -528,23 +545,6 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -556,7 +556,29 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
 
 exports[`a discovered row joins after a reorder 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Rat",
+      "name": "rn6",
+      "rowColor": undefined,
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Mouse",
       "name": "mm10",
@@ -594,28 +616,6 @@ exports[`a discovered row joins after a reorder 1`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Rat",
-      "name": "rn6",
-      "rowColor": undefined,
-    },
-  ],
   "treeDrawn": false,
   "treeLeaves": undefined,
 }
@@ -623,7 +623,7 @@ exports[`a discovered row joins after a reorder 1`] = `
 
 exports[`a focus narrows the rows and the fetch key 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -638,6 +638,18 @@ exports[`a focus narrows the rows and the fetch key 1`] = `
       "label": "Mouse",
       "name": "mm10",
       "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "rowArrangementIsCustom": false,
@@ -662,18 +674,6 @@ exports[`a focus narrows the rows and the fetch key 1`] = `
       "panTro4",
     ],
   },
-  "sources": [
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -684,7 +684,7 @@ exports[`a focus narrows the rows and the fetch key 1`] = `
 
 exports[`a focus narrows the rows and the fetch key 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -694,6 +694,18 @@ exports[`a focus narrows the rows and the fetch key 2`] = `
       "label": "Chimp",
       "name": "panTro4",
       "rowColor": undefined,
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
     },
     {
       "label": "Mouse",
@@ -723,18 +735,6 @@ exports[`a focus narrows the rows and the fetch key 2`] = `
       "mm10",
     ],
   },
-  "sources": [
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -745,7 +745,24 @@ exports[`a focus narrows the rows and the fetch key 2`] = `
 
 exports[`a focus narrows the rows and the fetch key 3`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -778,23 +795,6 @@ exports[`a focus narrows the rows and the fetch key 3`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -806,7 +806,7 @@ exports[`a focus narrows the rows and the fetch key 3`] = `
 
 exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "label": "Chimp",
       "name": "panTro4",
@@ -821,6 +821,18 @@ exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
       "label": "Mouse",
       "name": "mm10",
       "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
     },
   ],
   "rowArrangementIsCustom": true,
@@ -845,18 +857,6 @@ exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
       "panTro4",
     ],
   },
-  "sources": [
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "panTro4",
@@ -867,7 +867,24 @@ exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
 
 exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Chimp",
       "name": "panTro4",
@@ -900,23 +917,6 @@ exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-  ],
   "treeDrawn": false,
   "treeLeaves": [
     "panTro4",
@@ -927,7 +927,24 @@ exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
 
 exports[`a reorder no rotation of the supplied tree produces drops it, and a reset restores it 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -960,23 +977,6 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-  ],
   "treeDrawn": false,
   "treeLeaves": undefined,
 }
@@ -984,7 +984,24 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
 
 exports[`a reorder no rotation of the supplied tree produces drops it, and a reset restores it 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Mouse",
       "name": "mm10",
@@ -1017,23 +1034,6 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "mm10",
@@ -1045,7 +1045,24 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
 
 exports[`a supplied guide tree leads the rows 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -1078,7 +1095,18 @@ exports[`a supplied guide tree leads the rows 1`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
+  "treeDrawn": true,
+  "treeLeaves": [
+    "hg38",
+    "panTro4",
+    "mm10",
+  ],
+}
+`;
+
+exports[`adapter labels and colors are the rows own 1`] = `
+{
+  "arrangedRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -1095,18 +1123,7 @@ exports[`a supplied guide tree leads the rows 1`] = `
       "rowColor": "#0000aa",
     },
   ],
-  "treeDrawn": true,
-  "treeLeaves": [
-    "hg38",
-    "panTro4",
-    "mm10",
-  ],
-}
-`;
-
-exports[`adapter labels and colors are the rows own 1`] = `
-{
-  "editableSources": [
+  "drawnRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -1139,7 +1156,14 @@ exports[`adapter labels and colors are the rows own 1`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
+  "treeDrawn": false,
+  "treeLeaves": undefined,
+}
+`;
+
+exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
+{
+  "arrangedRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -1156,19 +1180,7 @@ exports[`adapter labels and colors are the rows own 1`] = `
       "rowColor": "#0000aa",
     },
   ],
-  "treeDrawn": false,
-  "treeLeaves": undefined,
-}
-`;
-
-exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
-{
-  "editableSources": [
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
+  "drawnRows": [
     {
       "label": "Chimp",
       "name": "panTro4",
@@ -1196,18 +1208,6 @@ exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -1219,7 +1219,7 @@ exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
 
 exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "label": "Human",
       "name": "hg38",
@@ -1234,6 +1234,13 @@ exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
       "label": "Mouse",
       "name": "mm10",
       "rowColor": "#0000aa",
+    },
+  ],
+  "drawnRows": [
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
     },
   ],
   "rowArrangementIsCustom": false,
@@ -1258,13 +1265,6 @@ exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
       "panTro4",
     ],
   },
-  "sources": [
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-  ],
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -1275,7 +1275,24 @@ exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
 
 exports[`sort at a column orders the rows by base and drops the supplied tree 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "label": "Chimp",
+      "name": "panTro4",
+      "rowColor": undefined,
+    },
+    {
+      "label": "Mouse",
+      "name": "mm10",
+      "rowColor": "#0000aa",
+    },
+    {
+      "label": "Human",
+      "name": "hg38",
+      "rowColor": "#aa0000",
+    },
+  ],
+  "drawnRows": [
     {
       "label": "Chimp",
       "name": "panTro4",
@@ -1308,23 +1325,6 @@ exports[`sort at a column orders the rows by base and drops the supplied tree 1`
     },
     "rowFocus": undefined,
   },
-  "sources": [
-    {
-      "label": "Chimp",
-      "name": "panTro4",
-      "rowColor": undefined,
-    },
-    {
-      "label": "Mouse",
-      "name": "mm10",
-      "rowColor": "#0000aa",
-    },
-    {
-      "label": "Human",
-      "name": "hg38",
-      "rowColor": "#aa0000",
-    },
-  ],
   "treeDrawn": false,
   "treeLeaves": undefined,
 }

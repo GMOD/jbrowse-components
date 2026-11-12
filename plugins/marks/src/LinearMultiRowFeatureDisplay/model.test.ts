@@ -103,7 +103,7 @@ const VARIANTS = features([
 
 test('rows default to the features type, one labelled row per type in view', () => {
   const model = loaded(display({}), VARIANTS)
-  expect(model.sources.map(s => s.name)).toEqual([
+  expect(model.drawnRows.map(s => s.name)).toEqual([
     'Deletion',
     'single nucleotide variant',
   ])
@@ -138,7 +138,7 @@ test('features carrying none of the rows field in force draw in one row, and the
   loaded(model)
   expect(model.rowsField).toBe('type')
   expect(model.featuresCarryRowsField).toBe(false)
-  expect(model.sources.map(s => s.name)).toEqual([''])
+  expect(model.drawnRows.map(s => s.name)).toEqual([''])
   expect(model.rowsHint?.text).toBe('One row per...')
   expect(getSnapshot(model.conf.rows)).toEqual({})
   expect(queueDialog).toHaveBeenCalledTimes(1)

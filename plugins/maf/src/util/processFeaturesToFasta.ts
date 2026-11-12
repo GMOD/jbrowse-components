@@ -1,6 +1,6 @@
 import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
 
-import type { AlignmentRecord, MafSource } from '../types.ts'
+import type { AlignmentRecord, MafRow } from '../types.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 interface InsertionInfo {
@@ -41,7 +41,7 @@ export function processFeaturesToFasta({
   includeInsertions,
 }: {
   regions: Region[]
-  samples: MafSource[]
+  samples: MafRow[]
   showAllLetters?: boolean
   includeInsertions?: boolean
   features: Iterable<Feature>

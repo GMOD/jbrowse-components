@@ -42,7 +42,7 @@ resultClusters<-hclust(dist(inputMatrix), method='${method}')
 cat(resultClusters$order,sep='\n')`
 }
 
-// Serialize the matrix to a name-prefixed TSV (one row per source).
+// Serialize the matrix to a name-prefixed TSV (one line per row).
 export function matrixToTsv(matrix: ClusterMatrix) {
   const lines: string[] = []
   for (const [name, row] of matrix) {

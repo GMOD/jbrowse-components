@@ -185,7 +185,7 @@ export async function wiggleTables(
   } = runInAction(() => {
     const { rampLut, rampMid } = model.wiggleColor
     return {
-      sources: model.sources,
+      sources: model.drawnRows,
       markSources: model.markSources,
       wiggleColor: model.wiggleColor,
       scoreRamp:
@@ -396,7 +396,7 @@ export async function wiggleScoreMatrix(
   const { adapterConfig, regions, bpPerPx } = args
   const { model } = await fetchedWiggleHost(pluginManager, args)
   const { sources, yField, scale } = runInAction(() => ({
-    sources: model.sources,
+    sources: model.drawnRows,
     yField: model.yField,
     scale: matrixScale(model),
   }))

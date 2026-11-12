@@ -75,7 +75,7 @@ function displayCellColors(
   regions: readonly TablesRegion[],
 ) {
   const { cellData, regionCellColors } = m
-  const drawn = new Set(m.drawsGenotypeRows ? m.sources.map(s => s.name) : [])
+  const drawn = new Set(m.drawsGenotypeRows ? m.drawnRows.map(s => s.name) : [])
   const out: string[] = []
   for (const [k, data] of Object.entries(cellData?.perRegionCellData ?? {})) {
     const colors = regionCellColors.get(Number(k))!
@@ -137,7 +137,7 @@ function variantParity(
       )
       const rowKey = m.colorScales.filter(scale => scale.id === ROW_KEY)
       const { legend } = colorKeyTables(rowKey)
-      const drawn = m.drawsGenotypeRows ? m.sources : []
+      const drawn = m.drawsGenotypeRows ? m.drawnRows : []
       return {
         rows: drawn.map(s => ({
           name: s.name,

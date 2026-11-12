@@ -350,7 +350,7 @@ export default function stateModelFactory(
        * keeps every feature.
        */
       exportedFeatures(features: Feature[]) {
-        const shown = new Set(self.sources.map(row => row.name))
+        const shown = new Set(self.drawnRows.map(row => row.name))
         return exportedWiggleFeatures({
           features,
           hidden: new Set(
@@ -383,7 +383,7 @@ export default function stateModelFactory(
        */
       get autoClusterReady(): boolean {
         return (
-          self.clusterableSources.length > 1 &&
+          self.shownRows.length > 1 &&
           (self.scaleType === 'linear' ||
             self.domain !== undefined ||
             ![...self.rpcDataMap.values()].some(d =>
@@ -595,7 +595,7 @@ export default function stateModelFactory(
                       ])
                     },
                   },
-                  rowCount: self.clusterableSources.length,
+                  rowCount: self.shownRows.length,
                 }
               : undefined,
           }),
@@ -626,7 +626,7 @@ export default function stateModelFactory(
                 // compares), so "by score" stands.
                 sortRowsHereMenuItem({
                   label: 'Sort rows by score here',
-                  rowCount: self.editableSources.length,
+                  rowCount: self.arrangedRows.length,
                   onClick: () => {
                     self.sortRowsByScoreAt(info.refName, info.bp)
                   },

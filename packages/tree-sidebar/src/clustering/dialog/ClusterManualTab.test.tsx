@@ -34,8 +34,8 @@ const View = types
 const rowsAB = [{ name: 'a' }, { name: 'b' }]
 
 const Display = types.model('Display', {}).volatile(() => ({
-  clusterableSources: rowsAB,
-  editableSources: rowsAB,
+  shownRows: rowsAB,
+  arrangedRows: rowsAB,
   setRowOrder: jest.fn<undefined, [{ name: string }[]]>(),
 }))
 

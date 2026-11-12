@@ -42,7 +42,7 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
 
     jest.advanceTimersByTime(700)
     await waitFor(() => {
-      expect(display.sources.map(s => s.name)).toEqual(['b', 'c', 'a'])
+      expect(display.drawnRows.map(s => s.name)).toEqual(['b', 'c', 'a'])
     })
 
     // one-shot: the trigger clears itself, so a saved session keeps the row
@@ -65,7 +65,7 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
 
     jest.advanceTimersByTime(700)
     await waitFor(() => {
-      expect(display.sources.map(s => s.name)).toEqual(['b', 'c', 'a'])
+      expect(display.drawnRows.map(s => s.name)).toEqual(['b', 'c', 'a'])
     })
 
     expect(display.sortRowsBy).toBeUndefined()

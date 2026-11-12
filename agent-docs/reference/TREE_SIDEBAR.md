@@ -1,6 +1,6 @@
 ---
 name: tree-sidebar
-description: How does tree-sidebar own clustering, row arrangement, Newick trees, row labels and their SVG export? Read before touching a tree, a row order or RowSource.
+description: How does tree-sidebar own clustering, row arrangement, Newick trees, row labels and their SVG export? Read before touching a tree, a row order or Row.
 kind: spec
 ---
 
@@ -33,7 +33,7 @@ canvas and SVG.
 ## `ClusterMatrix` is a `Map` because its key order _is_ the result
 
 A plain object hoists integer-like keys, so rows built as `10, 2, 1` reach hclust
-as `1, 2, 10` and the returned indices name the wrong sources (numbered bigWig
+as `1, 2, 10` and the returned indices name the wrong rows (numbered bigWig
 filenames, numeric sample IDs). Build in row order and keep a `Map` the whole
 way, through the RPC return type: `generateClusterRScript` writes the same order
 into `rownames` and the user pastes `resultClusters$order` back against it.
@@ -48,7 +48,7 @@ silently. When writing a display:
 
 - **Every action that moves rows routes through `setRowOrder`**, never a bare
   write to `rows.sort`.
-- **Pass `sources` to `computeClusterHierarchy`** after every reorder, filter
+- **Pass `drawnRows` to `computeClusterHierarchy`** after every reorder, filter
   and decoration, never the pre-layout list, and `rowBands` beside it on a
   display that bands.
 
@@ -150,17 +150,17 @@ only the stages downstream of it:
   themselves elsewhere. Variants' `sourcesBase`, the focused samples the fetch
   asks for, is a stage of the display's beside this one and never reads it, since
   expansion reads `samplePloidy`, a fetch result.
-- `editableSources`: `arrangeRows` orders by `rowOrder` and relabels by
+- `arrangedRows`: `arrangeRows` orders by `rowOrder` and relabels by
   `rows.labels`, and `withRowColors` stamps each row's `resolvedRowColors` color
   as `rowColor`. It hands back `expandedRows` itself while nothing is arranged or
   colored, which the `!==` caches downstream (`encodeInputs`, `createEncodeMemo`)
   key on.
-- `clusterableSources`: `rowNarrowing` (`narrowRows`: `rows.filter` over row
+- `shownRows`: `rowNarrowing` (`narrowRows`: `rows.filter` over row
   attributes, then `rows.kept` by name).
-- `bandedSources`: the bands `rowBanding` names (`bandRows`), each band's rows in
-  their arranged order; `clusterableSources` itself while nothing bands.
+- `stackedRows`: the bands `rowBanding` names (`bandRows`), each band's rows in
+  their arranged order; `shownRows` itself while nothing bands.
   `rowBands` is each band's value, label and row span.
-- `sources`, the display's: palette, MAF's reference row.
+- `drawnRows`, the display's: palette, MAF's reference row.
 
 The stages, the hook defaults, the `rows` reads they start from, the row
 colors and key, where the rows start (`rowNarrowingShows`,
@@ -177,10 +177,10 @@ through `this`:
 - `rowArrangementInputViews`: what arranging reads off the hooks and the
   config, `expandedRows`, the trees and the color deals, and declares
   `rowAlias`, `rowOrder` and `rowBand`.
-- `arrangedRowViews`: `editableSources`, the narrowing, the resolved colors
-  and the row color's key, and `root`; declares `clusterableSources`,
+- `arrangedRowViews`: `arrangedRows`, the narrowing, the resolved colors
+  and the row color's key, and `root`; declares `shownRows`,
   `treeRoot` and `drawsTree`.
-- `bandedRowViews`: the bands, and declares `sources`.
+- `bandedRowViews`: the bands, and declares `drawnRows`.
 - `drawnRowViews`: what reads the rows drawn, the annotation columns, the
   keys, the column labels and `rowsTopOffset`.
 
@@ -230,7 +230,7 @@ hook's name throws at `create`:
   `rows.groups` tag); variants' are its samplesTsv columns; MAF and the mark
   display offer none.
 
-MAF also overrides `clusterableSources`, since on a track that discovers its
+MAF also overrides `shownRows`, since on a track that discovers its
 species a focus applies as given, as the worker's does.
 
 **A row's color is one getter, `resolvedRowColors`**: its `rows.colors` pin, else
@@ -282,7 +282,7 @@ earlier entry comes and goes. So a reader of the row color's key finds it by
   took it; a `scale.unknown` of `''` adds nothing.
 - The scale declares `focusesRows`, and the mixin's `focusLegendEntry` answers
   it: a click focuses the rows `rowColorKeyValue` lists under the entry, out of
-  `editableSources`, so a second click reaches the rows the first hid. Every
+  `arrangedRows`, so a second click reaches the rows the first hid. Every
   other scale's entries name colors and stay inert.
 - Wiggle drops the key in an overlay painting a score gradient, where no row
   color shows.
@@ -416,10 +416,10 @@ axes do, so a narrowed track exports its rows flush under its bands.
 - Whitespace is deliberately outside the quoted set on both sides (variants'
   `NA18536 HP1` rows).
 
-## `RowSource` is the row vocabulary, and the mixin's bound
+## `Row` is the row vocabulary, and the mixin's bound
 
-`TreeSidebarMixin<S extends RowSource>`. Every field this package draws with is on
-`RowSource`; `TreeSource` / `RowLabelSource` are picks of it rather than separate
+`TreeSidebarMixin<S extends Row>`. Every field this package draws with is on
+`Row`; `TreeRow` / `LabelledRow` are picks of it rather than separate
 declarations.
 
 **A row has two colors, never more.** `color` is the row's own, an attribute the
@@ -427,7 +427,7 @@ file gave it (MAF's `samples[].color`, a samplesTsv `color` column, a multi-wigg
 subtrack's color). `rowColor` is the resolved one the mixin stamps, which
 `SvgRowLabels` draws and the dialog edits. A display needing a third color for its
 marks derives it (wiggle's `markSources`) rather than storing it on the row.
-`RowLabelSource` is satisfied structurally, so a row type carrying the color under
+`LabelledRow` is satisfied structurally, so a row type carrying the color under
 any other name type-checks and paints nothing.
 
 **The annotation columns are not a third color on the row.**
@@ -470,7 +470,7 @@ adds `grid`, the row separators, on every row display but MAF.
   for the resolved value.
 - **`computeClusterHierarchy` takes `rowsContentHeight`** =
   `rows.length × effectiveRowHeight`, which `TreeSidebarMixin` computes once from
-  `sources`, **never the viewport they scroll inside**. Pass the viewport and the
+  `drawnRows`, **never the viewport they scroll inside**. Pass the viewport and the
   dendrogram still draws, still looks plausible, and names the wrong rows.
 
 ## Drawing rows
@@ -496,7 +496,7 @@ adds `grid`, the row separators, on every row display but MAF.
   `rowAnnotationDeals` are empty, and an entry on the `rows.color` field is
   dropped there too, since the row color is that column.
 - **One decision says which columns draw.** `rowAnnotationColumns`, a stage
-  after `sources`, keeps each deal that colors one of the rows drawn (after
+  after `drawnRows`, keeps each deal that colors one of the rows drawn (after
   `filter` and `kept`) while the `drawsRowAnnotations` hook holds (wiggle's
   is `drawsRowLabels`, so one row draws none). The columns, `rowColumnLabels`
   and so the reserved lines, and the annotation keys all read it, never the

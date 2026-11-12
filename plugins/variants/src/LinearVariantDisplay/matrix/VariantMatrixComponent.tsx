@@ -59,9 +59,9 @@ function getHoveredMatrixCell(
   mouseX: number,
   mouseY: number,
 ): MatrixHit | undefined {
-  const { cellData, sources } = model
+  const { cellData, drawnRows } = model
   const placed = model.paintedRegionRows.get(0)
-  if (!cellData || !placed || !sources.length) {
+  if (!cellData || !placed || !drawnRows.length) {
     return undefined
   }
   const { featureIdx, nearest, lowest } = matrixCellAt(
@@ -79,11 +79,11 @@ function getHoveredMatrixCell(
     return undefined
   }
   const top = topDrawnCell(model, placed, featureIdx, lowest, nearest)
-  const source = top && sources[top.rowIdx]
-  if (!top || !source) {
+  const row = top && drawnRows[top.rowIdx]
+  if (!top || !row) {
     return undefined
   }
-  const { sampleName } = source
+  const { sampleName } = row
   const genotype = decodeGenotype(
     cellData.genotypeDict,
     model.genotypeSampleIndex!,
@@ -97,7 +97,7 @@ function getHoveredMatrixCell(
           info: feature,
           genotype,
           sampleName,
-          name: source.name,
+          name: row.name,
           featureId: feature.featureId,
           insertedBp: placed.cellAltDosage[top.cellIndex]
             ? feature.insertedBp

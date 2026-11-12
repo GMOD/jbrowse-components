@@ -7,7 +7,7 @@ test('lands the layout from the row lists the run started with', async () => {
   const b = row('b')
   const c = row('c')
   const model = {
-    editableSources: [a, b, c],
+    arrangedRows: [a, b, c],
     rowSort: [] as string[],
     setRowOrder: jest.fn(),
   }
@@ -16,7 +16,7 @@ test('lands the layout from the row lists the run started with', async () => {
     rows: [a, b],
     provenance: { regions: [], settings: [] },
     matrix: async () => {
-      model.editableSources = [a, b]
+      model.arrangedRows = [a, b]
       return { order: [1, 0], tree: '(b,a);' }
     },
   })
@@ -34,7 +34,7 @@ test('rotates the run towards the config domain', async () => {
   const b = row('b')
   const c = row('c')
   const model = {
-    editableSources: [a, b, c],
+    arrangedRows: [a, b, c],
     rowSort: ['c'],
     setRowOrder: jest.fn(),
   }
@@ -60,7 +60,7 @@ test('clusteredCladeLayout reorders the rows it indexes', () => {
   ]
   const result = clusteredCladeLayout({
     rows: base,
-    editableSources: base,
+    arrangedRows: base,
     order: [2, 0, 1],
   })
   expect(result.map(r => r.name)).toEqual(['C', 'A', 'B'])
@@ -72,7 +72,7 @@ test('clusteredCladeLayout reorders the rows it indexes', () => {
 // they sit and what they were named, and dropping them would erase that the
 // moment the focus cleared.
 test('clusteredCladeLayout re-appends the rows the filter is hiding', () => {
-  const editableSources = [
+  const arrangedRows = [
     { name: 'A' },
     { name: 'B', color: 'yellow' },
     { name: 'C' },
@@ -80,7 +80,7 @@ test('clusteredCladeLayout re-appends the rows the filter is hiding', () => {
   ]
   const result = clusteredCladeLayout({
     rows: [{ name: 'A' }, { name: 'C' }],
-    editableSources,
+    arrangedRows,
     order: [1, 0],
   })
 
@@ -92,7 +92,7 @@ test('clusteredCladeLayout rejects an order that misses a clustered row', () => 
   expect(() =>
     clusteredCladeLayout({
       rows: abc,
-      editableSources: abc,
+      arrangedRows: abc,
       order: [0, 1],
     }),
   ).toThrow(/expected 3 entries/)
@@ -103,7 +103,7 @@ const abc = [{ name: 'A' }, { name: 'B' }, { name: 'C' }]
 function layoutAbc(order: number[], matrixRowNames?: string[]) {
   clusteredCladeLayout({
     rows: abc,
-    editableSources: abc,
+    arrangedRows: abc,
     order,
     matrixRowNames,
   })

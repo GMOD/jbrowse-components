@@ -1,7 +1,7 @@
 import { rowFieldValue } from '../rows/rowFields.ts'
 import { rowColumnLabelsHeight } from '../sidebar/rowLabelsBoxWidth.ts'
 
-import type { RowSource } from '../types.ts'
+import type { Row } from '../types.ts'
 import type { RowAnnotationSetting } from './rowAnnotations.ts'
 
 /**
@@ -11,7 +11,7 @@ import type { RowAnnotationSetting } from './rowAnnotations.ts'
  */
 const CONTINUOUS_DISTINCT_VALUES = 10
 
-function continuousValueCount(rows: readonly RowSource[], field: string) {
+function continuousValueCount(rows: readonly Row[], field: string) {
   const values = rows
     .map(row => rowFieldValue(row, field))
     .filter(value => value !== '')
@@ -35,7 +35,7 @@ export function rowAnnotationNotices({
   columnLabels,
   height,
 }: {
-  rows: readonly RowSource[]
+  rows: readonly Row[]
   settings: readonly RowAnnotationSetting[]
   columnLabels: readonly string[]
   height: number

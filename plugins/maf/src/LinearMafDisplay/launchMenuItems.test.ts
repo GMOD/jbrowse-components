@@ -41,12 +41,12 @@ function model(
 ) {
   return {
     id: 'display1',
-    clusterableSources: [
+    shownRows: [
       { name: 's0', label: 's0' },
       { name: 's1', label: 's1' },
       { name: 's2', label: 's2' },
     ],
-    sources: [{ name: 's0' }, { name: 's1' }, { name: 's2' }],
+    drawnRows: [{ name: 's0' }, { name: 's1' }, { name: 's2' }],
     adapterConfig: { type: 'MafTabixAdapter' },
     coarseTierActive,
     resolvedByteLimit: () => 1_000_000,

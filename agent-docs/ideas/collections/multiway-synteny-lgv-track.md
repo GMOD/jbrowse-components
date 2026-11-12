@@ -65,7 +65,7 @@ names every haplotype, grouped by sample and labelled by PanSN prefix) plus any
 lane the window places. What stays parked is the sidebar itself: the removed
 `884a126861` display had `GenomeSubsetSelector` and the cluster-identity-matrix
 RPC that ordered genomes by similarity over the visible window, and the shipped
-`TreeSidebarMixin` (MAF/variants/wiggle) is where lanes-as-`sources` with
+`TreeSidebarMixin` (MAF/variants/wiggle) is where lanes-as-rows with
 cluster-by-identity as the `run` callback would go, once a placement source
 answers "which haplotypes differ here" cheaply — the wave VCF's genotype
 matrix, not the alignment. The lane stack has its own geometry and headers, so

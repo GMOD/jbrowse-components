@@ -3,7 +3,7 @@ import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { rowFieldValue } from '../rows/rowFields.ts'
 import { rowColorKeyEntries } from './rowColorKey.ts'
 
-import type { RowAnnotationColumn, RowSource } from '../types.ts'
+import type { RowAnnotationColumn, Row } from '../types.ts'
 import type { RowColorSetting } from './rowColors.ts'
 import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 
@@ -43,7 +43,7 @@ export interface RowAnnotationDrawn extends RowAnnotationDeal {
  * no entry.
  */
 export function annotationColumn(
-  rows: readonly RowSource[],
+  rows: readonly Row[],
   { setting, dealt }: RowAnnotationDeal,
 ): RowAnnotationColumn {
   return new Map(
@@ -69,7 +69,7 @@ function rowAnnotationScaleId(position: number) {
  * an attribute's.
  */
 export function rowAnnotationScales(
-  rows: readonly RowSource[],
+  rows: readonly Row[],
   drawn: readonly RowAnnotationDrawn[],
 ): CategoricalScale[] {
   return drawn.map(({ setting, dealt, colors }) => ({

@@ -46,7 +46,7 @@ function landRegion(
 }
 
 function rowNames(d: ReturnType<typeof makeDisplay>) {
-  return d.sources.map(s => s.name)
+  return d.drawnRows.map(s => s.name)
 }
 
 // Names of the positioned dendrogram's leaves, in draw order. `leaves` is
@@ -74,7 +74,7 @@ test('a hidden reference drops its row before any detail region lands', () => {
     treeNewick: undefined,
     samplesCanonical: false,
   })
-  expect(display.sources.map(s => s.name)).toEqual(['HG002.1', 'HG002.2'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['HG002.1', 'HG002.2'])
 })
 
 // Under the default mismatch coloring the reference's own row matches at every
@@ -84,11 +84,7 @@ test('a hidden reference stays in the export', () => {
   const display = makeDisplay([REF, 'panTro4', 'mm10'], false)
   landRegion(display)
   expect(rowNames(display)).toEqual(['panTro4', 'mm10'])
-  expect(display.clusterableSources.map(s => s.name)).toEqual([
-    REF,
-    'panTro4',
-    'mm10',
-  ])
+  expect(display.shownRows.map(s => s.name)).toEqual([REF, 'panTro4', 'mm10'])
 })
 
 test('hiding the reference drops its row and leaves the others in order', () => {

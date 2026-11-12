@@ -12,7 +12,7 @@ const rows = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
 function model(props: Partial<TreeSidebarModel>): TreeSidebarModel {
   return {
     showTree: true,
-    sources: rows,
+    drawnRows: rows,
     treeAreaWidth: 80,
     height: 100,
     rowsTopOffset: 0,

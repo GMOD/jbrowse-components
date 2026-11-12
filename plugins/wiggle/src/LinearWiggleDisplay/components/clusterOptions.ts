@@ -40,7 +40,7 @@ export function clusterScoreMatrixArgs(
   const span = regions.reduce((a, r) => a + (r.end - r.start), 0)
   return {
     regions,
-    sources: model.clusterableSources,
+    sources: model.shownRows,
     adapterConfig: model.adapterConfig,
     yField: model.yField,
     bpPerPx: span / width / density,

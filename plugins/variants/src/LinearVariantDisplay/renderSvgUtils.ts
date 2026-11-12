@@ -11,7 +11,7 @@ export interface RenderSvgBaseModel extends LgvSvgExportable {
   scrollTop: number
   availableHeight: number
   effectiveRowHeight: number
-  sources: Source[]
+  drawnRows: Source[]
   showRowSeparators: boolean
   recordsOnly: boolean
   canvasWidthPx: number

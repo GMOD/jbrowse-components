@@ -308,11 +308,11 @@ test('a gradient keys its ramp over rows with their own colors, which keep their
   ])
   expect(scoreKey(display)).toBeUndefined()
   expect(display.rowColorPaintsMarks).toBe(true)
-  expect(display.sources.map(s => s.rowColor)).toEqual(['#ff0000', '#0000ff'])
+  expect(display.drawnRows.map(s => s.rowColor)).toEqual(['#ff0000', '#0000ff'])
   display.applyPlot({ encoding: { color: viridis } })
   expect(scoreKey(display)?.kind).toBe('ramp')
   expect(display.rowColorPaintsMarks).toBe(false)
-  expect(display.sources.map(s => s.rowColor)).toEqual(['#ff0000', '#0000ff'])
+  expect(display.drawnRows.map(s => s.rowColor)).toEqual(['#ff0000', '#0000ff'])
 })
 
 // A line reads the ramp along itself, so it keys the ramp as bars do.

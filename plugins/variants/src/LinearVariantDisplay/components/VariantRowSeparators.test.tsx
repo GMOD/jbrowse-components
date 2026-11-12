@@ -40,7 +40,7 @@ function createDisplay({ loaded = true } = {}) {
 // to twice the rows once the payload's ploidy landed.
 test('the separators wait for the payload the cells draw', () => {
   const display = createDisplay({ loaded: false })
-  expect(display.sources).toHaveLength(80)
+  expect(display.drawnRows).toHaveLength(80)
   const { container, rerender } = render(
     <VariantRowSeparators model={display} />,
   )

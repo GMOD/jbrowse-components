@@ -5,7 +5,7 @@ import { bandLabelWidth } from './SvgBandLabels.tsx'
 import { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 import { fittedLabel } from './fittedLabel.ts'
 
-const sources = ['a', 'b', 'c', 'd'].map(name => ({ name }))
+const rows = ['a', 'b', 'c', 'd'].map(name => ({ name }))
 
 // AFR's three rows hold its name; EUR's one row holds only a cut of it.
 const bands = [
@@ -20,7 +20,7 @@ function exported(showLabels = true) {
         sidebar={{
           showTree: true,
           hierarchy: undefined,
-          sources,
+          rows,
           rowHeight: 20,
           treeAreaWidth: 80,
           showLabels,
@@ -35,7 +35,7 @@ function exported(showLabels = true) {
 function onScreen(showLabels = true) {
   const { getByTestId } = render(
     <RowLabelsOverlay
-      sources={sources}
+      rows={rows}
       rowHeight={20}
       labelOffset={0}
       width={400}

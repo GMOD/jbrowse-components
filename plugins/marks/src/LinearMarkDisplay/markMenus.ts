@@ -55,7 +55,7 @@ function rowsMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
   return [
     rowHeightMenuItem(self, ROW_HEIGHT_PRESETS),
     ...rowOrderMenuItems(self, {
-      arrangement: { ready: self.editableSources.length > 0 },
+      arrangement: { ready: self.arrangedRows.length > 0 },
       cluster: {
         runItem: {
           label: 'Cluster rows by similarity...',
@@ -68,7 +68,7 @@ function rowsMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
             ])
           },
         },
-        rowCount: self.clusterableSources.length,
+        rowCount: self.shownRows.length,
       },
     }),
     ...groupByRowAttributeMenuItems(self, self.rowAttributeFields),
@@ -209,7 +209,7 @@ export function markContextMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
           ? [
               sortRowsHereMenuItem({
                 label: `Sort rows by ${self.rowCompareLabel} here`,
-                rowCount: self.editableSources.length,
+                rowCount: self.arrangedRows.length,
                 onClick: () => {
                   self.sortRowsByValueAt(hit.refName, hit.bp)
                 },

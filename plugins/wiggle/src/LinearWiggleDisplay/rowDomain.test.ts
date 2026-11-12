@@ -25,8 +25,8 @@ async function loadedDisplay(domain: string[]) {
   return display
 }
 
-const rowNames = (display: { sources: { name: string }[] }) =>
-  display.sources.map(s => s.name)
+const rowNames = (display: { drawnRows: { name: string }[] }) =>
+  display.drawnRows.map(s => s.name)
 
 describe('`rows.sort` is the subtrack order', () => {
   it('leads with the subtracks it names and leaves the rest in adapter order', async () => {

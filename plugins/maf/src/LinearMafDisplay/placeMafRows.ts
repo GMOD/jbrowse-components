@@ -10,7 +10,7 @@ import type {
 
 /**
  * Rehydrate the columnar wire into per-block row objects, assigning each row
- * its on-screen row index from `rowIndexBySrc`, the `sources`-to-row projection
+ * its on-screen row index from `rowIndexBySrc`, the `drawnRows`-to-index projection
  * that labels, overlays and hit tests share. A reorder re-places cached data
  * without refetching.
  *

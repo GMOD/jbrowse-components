@@ -70,7 +70,7 @@ test('a row reorder lands in the session at once and stays undone across the def
     'k2',
     'k1',
   ])
-  expect(display.sources.map(s => s.name)).toEqual(['k2', 'k1'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['k2', 'k1'])
 
   await sleep(350)
   expect(history.undoIdx).toBe(stepsBefore + 1)
@@ -82,7 +82,7 @@ test('a row reorder lands in the session at once and stays undone across the def
   expect(rowsDomainInDelta(session.trackConfigDeltas[TRACK_ID])).toBeUndefined()
   const undone = view.tracks[0]!.displays[0] as LinearWiggleDisplayModel
   expect(undone.rowSort).toEqual([])
-  expect(undone.sources.map(s => s.name)).toEqual(['k1', 'k2'])
+  expect(undone.drawnRows.map(s => s.name)).toEqual(['k1', 'k2'])
 }, 60000)
 
 // The same on the variant display, whose rows are its samples and
@@ -95,12 +95,12 @@ test('a variant row reorder lands in the session at once and undoes', async () =
   await findDisplayPainted('variant-display', delay)
   const display = view.tracks[0]!.displays[0] as LinearVariantDisplayModel
   await waitFor(() => {
-    expect(display.sources.length).toBeGreaterThan(2)
+    expect(display.drawnRows.length).toBeGreaterThan(2)
   }, delay)
   await sleep(700)
   const { displayId } = display.configuration
   const stepsBefore = history.undoIdx
-  const before = display.sources.map(s => s.name)
+  const before = display.drawnRows.map(s => s.name)
   const reversed = [...before].reverse()
 
   display.setRowOrder(reversed.map(name => ({ name })))
@@ -108,7 +108,7 @@ test('a variant row reorder lands in the session at once and undoes', async () =
   expect(
     rowsDomainInDelta(session.trackConfigDeltas.volvox_test_vcf, displayId),
   ).toEqual(reversed)
-  expect(display.sources.map(s => s.name)).toEqual(reversed)
+  expect(display.drawnRows.map(s => s.name)).toEqual(reversed)
 
   await sleep(350)
   expect(history.undoIdx).toBe(stepsBefore + 1)
@@ -121,14 +121,14 @@ test('a variant row reorder lands in the session at once and undoes', async () =
   ).toBeUndefined()
   const undone = view.tracks[0]!.displays[0] as LinearVariantDisplayModel
   expect(undone.rowSort).toEqual([])
-  expect(undone.sources.map(s => s.name)).toEqual(before)
+  expect(undone.drawnRows.map(s => s.name)).toEqual(before)
 }, 60000)
 
 // The multi-row feature display's model type is not a published export, so
 // the test names the four members it drives.
 interface MultiRowDisplay {
   configuration: { displayId: string }
-  sources: { name: string }[]
+  drawnRows: { name: string }[]
   rowSort: string[]
   setRowOrder: (rows: { name: string }[]) => void
 }
@@ -150,12 +150,12 @@ test('a multi-row reorder lands in the session at once and undoes', async () => 
   await findDisplayPainted('mark-display', delay)
   const display = multiRowDisplay(view)
   await waitFor(() => {
-    expect(display.sources.length).toBeGreaterThan(2)
+    expect(display.drawnRows.length).toBeGreaterThan(2)
   }, delay)
   await sleep(700)
   const { displayId } = display.configuration
   const stepsBefore = history.undoIdx
-  const before = display.sources.map(s => s.name)
+  const before = display.drawnRows.map(s => s.name)
   const reversed = [...before].reverse()
 
   display.setRowOrder(reversed.map(name => ({ name })))
@@ -163,7 +163,7 @@ test('a multi-row reorder lands in the session at once and undoes', async () => 
   expect(
     rowsDomainInDelta(session.trackConfigDeltas[PAINTING], displayId),
   ).toEqual(reversed)
-  expect(display.sources.map(s => s.name)).toEqual(reversed)
+  expect(display.drawnRows.map(s => s.name)).toEqual(reversed)
 
   await sleep(350)
   expect(history.undoIdx).toBe(stepsBefore + 1)
@@ -176,7 +176,7 @@ test('a multi-row reorder lands in the session at once and undoes', async () => 
   ).toBeUndefined()
   const undone = multiRowDisplay(view)
   expect(undone.rowSort).toEqual([])
-  expect(undone.sources.map(s => s.name)).toEqual(before)
+  expect(undone.drawnRows.map(s => s.name)).toEqual(before)
 }, 60000)
 
 // The MAF display's model type is not a published export either.
@@ -203,13 +203,13 @@ test('a MAF reorder lands in the session at once and undoes', async () => {
   await findDisplayPainted('maf-display', delay)
   const display = mafDisplay(view)
   await waitFor(() => {
-    expect(display.sources.length).toBeGreaterThan(2)
+    expect(display.drawnRows.length).toBeGreaterThan(2)
     expect(display.rowTree).toBeDefined()
   }, delay)
   await sleep(700)
   const { displayId } = display.configuration
   const stepsBefore = history.undoIdx
-  const before = display.sources.map(s => s.name)
+  const before = display.drawnRows.map(s => s.name)
   const parted = [...before.filter(name => name !== 'simvolvox'), 'simvolvox']
 
   display.setRowOrder(parted.map(name => ({ name })))
@@ -217,7 +217,7 @@ test('a MAF reorder lands in the session at once and undoes', async () => {
   expect(rowsDomainInDelta(session.trackConfigDeltas[MAF], displayId)).toEqual(
     parted,
   )
-  expect(display.sources.map(s => s.name)).toEqual(parted)
+  expect(display.drawnRows.map(s => s.name)).toEqual(parted)
   expect(display.rowTree).toBeUndefined()
 
   await sleep(350)
@@ -231,7 +231,7 @@ test('a MAF reorder lands in the session at once and undoes', async () => {
   ).toBeUndefined()
   const undone = mafDisplay(view)
   expect(undone.rowSort).toEqual([])
-  expect(undone.sources.map(s => s.name)).toEqual(before)
+  expect(undone.drawnRows.map(s => s.name)).toEqual(before)
   expect(undone.rowTree).toBeDefined()
 }, 60000)
 
@@ -265,12 +265,12 @@ test('a mark display row reorder lands in the session at once and undoes', async
   await findDisplayPainted('mark-display', delay)
   const display = multiRowDisplay(view)
   await waitFor(() => {
-    expect(display.sources.length).toBeGreaterThan(2)
+    expect(display.drawnRows.length).toBeGreaterThan(2)
   }, delay)
   await sleep(700)
   const { displayId } = display.configuration
   const stepsBefore = history.undoIdx
-  const before = display.sources.map(s => s.name)
+  const before = display.drawnRows.map(s => s.name)
   const reversed = [...before].reverse()
 
   display.setRowOrder(reversed.map(name => ({ name })))
@@ -278,7 +278,7 @@ test('a mark display row reorder lands in the session at once and undoes', async
   expect(
     rowsDomainInDelta(session.trackConfigDeltas[MARKS], displayId),
   ).toEqual(reversed)
-  expect(display.sources.map(s => s.name)).toEqual(reversed)
+  expect(display.drawnRows.map(s => s.name)).toEqual(reversed)
 
   await sleep(350)
   expect(history.undoIdx).toBe(stepsBefore + 1)
@@ -291,5 +291,5 @@ test('a mark display row reorder lands in the session at once and undoes', async
   ).toBeUndefined()
   const undone = multiRowDisplay(view)
   expect(undone.rowSort).toEqual([])
-  expect(undone.sources.map(s => s.name)).toEqual(before)
+  expect(undone.drawnRows.map(s => s.name)).toEqual(before)
 }, 60000)

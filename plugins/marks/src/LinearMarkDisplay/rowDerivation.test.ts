@@ -104,10 +104,12 @@ test('a facet domain leads the bands and the key', () => {
 
 function sidebar(display: LinearMarkDisplayModel) {
   return {
-    editableSources: display.editableSources.map(
-      ({ name, label, rowColor }) => ({ name, label, rowColor }),
-    ),
-    sources: display.sources.map(row => row.name),
+    arrangedRows: display.arrangedRows.map(({ name, label, rowColor }) => ({
+      name,
+      label,
+      rowColor,
+    })),
+    drawnRows: display.drawnRows.map(row => row.name),
     rowTree: display.rowTree,
     treeDrawn: display.hierarchy !== undefined,
     rowArrangementIsCustom: display.rowArrangementIsCustom,
@@ -159,7 +161,7 @@ test('a rows domain leads the rows as a facet domain leads the bands', () => {
 
 test('a reorder moves the drawn rows and the key with them', () => {
   const display = loaded({ rows: 'source' })
-  const [dad, mom, s2, s10] = display.editableSources
+  const [dad, mom, s2, s10] = display.arrangedRows
   display.setRowOrder([s10!, s2!, dad!, mom!])
   expect(display.rowSort).toEqual(['s10', 's2', 'dad', 'mom'])
   expect(drawn(display)).toEqual(
@@ -180,7 +182,7 @@ test('a cluster run lands its tree turned towards the seed, and orders the rows'
 })
 
 // The tree outlives a switch to a facet, but with no rows drawn there are no
-// sources to position it against, so no sidebar is reserved at the left.
+// rows to position it against, so no sidebar is reserved at the left.
 test('a facet in the rows place keeps the tree but reserves no sidebar for it', async () => {
   const display = loaded({ rows: 'source' })
   await clusterRun(display, '((dad,s2),(mom,s10));')
@@ -257,7 +259,7 @@ test('a region arriving with a new value adds its row, and the arranged rows kee
     nextRegion,
   ]).createDisplay()
   display.setRpcData(0, workerResult(display, FAMILY), REGION)
-  const [dad, mom, s2, s10] = display.editableSources
+  const [dad, mom, s2, s10] = display.arrangedRows
   display.applyRowEdits([s10!, { ...mom!, label: 'Mother' }, dad!, s2!])
   const before = display.discoveredRows
   display.setRpcData(0, workerResult(display, FAMILY), REGION)
@@ -274,9 +276,13 @@ test('a region arriving with a new value adds its row, and the arranged rows kee
     ),
     nextRegion,
   )
-  expect(
-    display.editableSources.map(({ name, label }) => label ?? name),
-  ).toEqual(['s10', 'Mother', 'dad', 's2', 'aunt'])
+  expect(display.arrangedRows.map(({ name, label }) => label ?? name)).toEqual([
+    's10',
+    'Mother',
+    'dad',
+    's2',
+    'aunt',
+  ])
   expect(rowOfEach(display, 1)).toEqual(['6@4', '1@1'])
 })
 
@@ -342,7 +348,7 @@ async function listingOf(
 
 test('a listing over the field a flatten keyed the rows by names them, in its order, and its tree draws', async () => {
   const display = await listingOf(SPECIES_ROWS, SPECIES_LISTING, BLOCKS)
-  expect(display.sources.map(row => row.name)).toEqual([
+  expect(display.drawnRows.map(row => row.name)).toEqual([
     's10',
     'mom',
     'dad',
@@ -381,7 +387,7 @@ test("a listed row carries the listing's attributes, and the listing's warnings 
     },
     listing,
   )
-  expect(display.sources.map(row => row.name)).toEqual(['mom', 'dad'])
+  expect(display.drawnRows.map(row => row.name)).toEqual(['mom', 'dad'])
   expect(display.rowColorFields).toContain('tissue')
   expect(display.liveNotices).toContain(listing.warnings[0])
 })
@@ -412,7 +418,7 @@ test('a listing over a field the rows are not on, directly or through a flatten,
   const bySource = await listingOf({ rows: 'source' }, SPECIES_LISTING)
   expect(bySource.adapterSources).toBeUndefined()
   expect(bySource.guideTreeNewick).toBeUndefined()
-  expect(bySource.sources.map(row => row.name)).toEqual([
+  expect(bySource.drawnRows.map(row => row.name)).toEqual([
     'dad',
     'mom',
     's2',
@@ -429,7 +435,7 @@ test('a listing over a field the rows are not on, directly or through a flatten,
 test("under rows: 'source' every source the adapter lists has a row, with its label and color", async () => {
   const display = await listingSources({ rows: 'source' })
   expect(
-    display.editableSources.map(({ name, label, rowColor }) => ({
+    display.arrangedRows.map(({ name, label, rowColor }) => ({
       name,
       label,
       rowColor,
@@ -448,7 +454,7 @@ test('a window where one source is empty keeps its row and the tree', async () =
   const display = await listingSources({ rows: 'source' })
   await clusterRun(display, '(((dad,s2),(mom,s10)),s99);')
   const rows = display.discoveredRows
-  const order = display.sources.map(row => row.name)
+  const order = display.drawnRows.map(row => row.name)
   expect(display.hierarchy).toBeDefined()
 
   display.setRpcData(
@@ -460,7 +466,7 @@ test('a window where one source is empty keeps its row and the tree', async () =
     REGION,
   )
   expect(display.discoveredRows).toBe(rows)
-  expect(display.sources.map(row => row.name)).toEqual(order)
+  expect(display.drawnRows.map(row => row.name)).toEqual(order)
   expect(display.hierarchy).toBeDefined()
 })
 
@@ -478,7 +484,7 @@ test('a reset returns the order, labels, tree and focus to the config', async ()
   const seed = { rows: { field: 'source', sort: ['s10'] } }
   const display = loaded(seed)
   await clusterRun(display, '((dad,s2),(mom,s10));')
-  const [first, ...rest] = display.editableSources
+  const [first, ...rest] = display.arrangedRows
   display.applyRowEdits([...rest, { ...first!, label: 'Last' }], {
     color: { field: 'name' },
     colors: { [first!.name]: '#0000ff' },
@@ -493,7 +499,7 @@ test('a reset returns the order, labels, tree and focus to the config', async ()
 test('rows beside a facet leave the facet drawing, and say so on another field', () => {
   const same = loaded({ facet: 'source', rows: 'source' })
   expect(drawn(same)).toEqual(drawn(loaded({ facet: 'source' })))
-  expect(same.sources).toEqual([])
+  expect(same.drawnRows).toEqual([])
   expect(same.notices).toEqual([])
   const other = loaded({ facet: 'tissue', rows: 'source' })
   expect(drawn(other)).toEqual(drawn(loaded({ facet: 'tissue' })))
@@ -522,7 +528,12 @@ test('the default plot draws a row per source, and leaves a facet or rows alone'
   rows.applyDefaultPlot(plot)
   expect(rows.facet).toBeUndefined()
   expect(rows.drawsRows).toBe(true)
-  expect(rows.sources.map(row => row.name)).toEqual(['dad', 'mom', 's2', 's10'])
+  expect(rows.drawnRows.map(row => row.name)).toEqual([
+    'dad',
+    'mom',
+    's2',
+    's10',
+  ])
 })
 
 test("under rows: 'source' the listed sources keep the adapter's order, and values it does not list follow", async () => {
@@ -531,7 +542,7 @@ test("under rows: 'source' the listed sources keep the adapter's order, and valu
     { name: 'mom' },
     { name: 'dad' },
   ])
-  expect(display.sources.map(row => row.name)).toEqual([
+  expect(display.drawnRows.map(row => row.name)).toEqual([
     's10',
     'mom',
     'dad',
@@ -547,20 +558,20 @@ test("rows on a field with a vocabulary stack in the order the facet's sections 
   ])
   const rows = loaded({ rows: 'strand' }, stranded)
   const facet = loaded({ facet: 'strand' }, stranded)
-  expect(rows.sources.map(row => row.name)).toEqual(
+  expect(rows.drawnRows.map(row => row.name)).toEqual(
     facet.facetLayout.sections.map(section => section.key),
   )
 })
 
 test('a listing that answers another adapter config lists no rows', async () => {
   const display = await listingSources({ rows: 'source' })
-  expect(display.sources.map(row => row.name)).toContain('s99')
+  expect(display.drawnRows.map(row => row.name)).toContain('s99')
   display.setSourceListing({
     adapterConfig: { type: 'BedAdapter', uri: 'another.bed' },
     value: { field: 'source', sources: LISTED },
   })
   expect(display.adapterSources).toBeUndefined()
-  expect(display.sources.map(row => row.name)).toEqual([
+  expect(display.drawnRows.map(row => row.name)).toEqual([
     'dad',
     'mom',
     's2',
@@ -585,9 +596,9 @@ test('a value the fetch met only past the screen takes no row', () => {
     ),
     REGION,
   )
-  expect(display.sources.map(row => row.name)).toEqual(['mom'])
+  expect(display.drawnRows.map(row => row.name)).toEqual(['mom'])
   view.setNewView(1, 8800)
-  expect(display.sources.map(row => row.name)).toEqual(['far'])
+  expect(display.drawnRows.map(row => row.name)).toEqual(['far'])
 })
 
 test('rows fill the plot, a fraction of a px each where the count does not divide it', () => {
@@ -601,7 +612,7 @@ test('rows fill the plot, a fraction of a px each where the count does not divid
 test('a supplied tree orders the rows by its leaves, and a sort turns it', () => {
   const tree = '((dad,s2),(mom,s10));'
   const supplied = loaded({ rows: { field: 'source', tree } })
-  expect(supplied.sources.map(row => row.name)).toEqual([
+  expect(supplied.drawnRows.map(row => row.name)).toEqual([
     'dad',
     's2',
     'mom',
@@ -611,7 +622,7 @@ test('a supplied tree orders the rows by its leaves, and a sort turns it', () =>
   expect(supplied.rpcProps()).toEqual(loaded({ rows: 'source' }).rpcProps())
 
   const turned = loaded({ rows: { field: 'source', tree, sort: ['s10'] } })
-  expect(turned.sources.map(row => row.name)).toEqual([
+  expect(turned.drawnRows.map(row => row.name)).toEqual([
     's10',
     'mom',
     'dad',

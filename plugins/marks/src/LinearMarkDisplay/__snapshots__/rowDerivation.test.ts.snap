@@ -2,26 +2,7 @@
 
 exports[`a cluster run lands its tree turned towards the seed, and orders the rows 1`] = `
 {
-  "bands": [
-    {
-      "firstRow": 0,
-      "label": "source: s10",
-    },
-    {
-      "firstRow": 1,
-      "label": "source: mom",
-    },
-    {
-      "firstRow": 2,
-      "label": "source: dad",
-    },
-    {
-      "firstRow": 3,
-      "label": "source: s2",
-    },
-  ],
-  "chips": false,
-  "editableSources": [
+  "arrangedRows": [
     {
       "label": undefined,
       "name": "s10",
@@ -43,14 +24,33 @@ exports[`a cluster run lands its tree turned towards the seed, and orders the ro
       "rowColor": undefined,
     },
   ],
-  "rowArrangementIsCustom": true,
-  "rowTree": "((s10,mom),(dad,s2));",
-  "sources": [
+  "bands": [
+    {
+      "firstRow": 0,
+      "label": "source: s10",
+    },
+    {
+      "firstRow": 1,
+      "label": "source: mom",
+    },
+    {
+      "firstRow": 2,
+      "label": "source: dad",
+    },
+    {
+      "firstRow": 3,
+      "label": "source: s2",
+    },
+  ],
+  "chips": false,
+  "drawnRows": [
     "s10",
     "mom",
     "dad",
     "s2",
   ],
+  "rowArrangementIsCustom": true,
+  "rowTree": "((s10,mom),(dad,s2));",
   "treeDrawn": true,
 }
 `;
@@ -176,18 +176,7 @@ exports[`a facet domain leads the bands and the key 1`] = `
 
 exports[`a focus draws the rows it keeps and leaves the rest out of the plot 1`] = `
 {
-  "bands": [
-    {
-      "firstRow": 0,
-      "label": "source: mom",
-    },
-    {
-      "firstRow": 1,
-      "label": "source: s10",
-    },
-  ],
-  "chips": false,
-  "editableSources": [
+  "arrangedRows": [
     {
       "label": undefined,
       "name": "dad",
@@ -209,12 +198,23 @@ exports[`a focus draws the rows it keeps and leaves the rest out of the plot 1`]
       "rowColor": undefined,
     },
   ],
-  "rowArrangementIsCustom": false,
-  "rowTree": undefined,
-  "sources": [
+  "bands": [
+    {
+      "firstRow": 0,
+      "label": "source: mom",
+    },
+    {
+      "firstRow": 1,
+      "label": "source: s10",
+    },
+  ],
+  "chips": false,
+  "drawnRows": [
     "mom",
     "s10",
   ],
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
   "treeDrawn": false,
 }
 `;
@@ -349,26 +349,7 @@ exports[`bars faceted by source draw a band per source under its chip 2`] = `
 
 exports[`rows draw what the facet drew, one labelled row per source and no chips 1`] = `
 {
-  "bands": [
-    {
-      "firstRow": 0,
-      "label": "source: dad",
-    },
-    {
-      "firstRow": 1,
-      "label": "source: mom",
-    },
-    {
-      "firstRow": 2,
-      "label": "source: s2",
-    },
-    {
-      "firstRow": 3,
-      "label": "source: s10",
-    },
-  ],
-  "chips": false,
-  "editableSources": [
+  "arrangedRows": [
     {
       "label": undefined,
       "name": "dad",
@@ -390,14 +371,33 @@ exports[`rows draw what the facet drew, one labelled row per source and no chips
       "rowColor": undefined,
     },
   ],
-  "rowArrangementIsCustom": false,
-  "rowTree": undefined,
-  "sources": [
+  "bands": [
+    {
+      "firstRow": 0,
+      "label": "source: dad",
+    },
+    {
+      "firstRow": 1,
+      "label": "source: mom",
+    },
+    {
+      "firstRow": 2,
+      "label": "source: s2",
+    },
+    {
+      "firstRow": 3,
+      "label": "source: s10",
+    },
+  ],
+  "chips": false,
+  "drawnRows": [
     "dad",
     "mom",
     "s2",
     "s10",
   ],
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
   "treeDrawn": false,
 }
 `;

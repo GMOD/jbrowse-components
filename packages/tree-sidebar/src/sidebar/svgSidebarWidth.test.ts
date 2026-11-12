@@ -2,17 +2,17 @@ import { bandLabelWidth } from './SvgBandLabels.tsx'
 import { rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
 import { sidebarPanelWidth, svgSidebarWidth } from './svgSidebarWidth.ts'
 
-const sources = [{ name: 'a' }, { name: 'longer name' }]
+const rows = [{ name: 'a' }, { name: 'longer name' }]
 const base = {
   showTree: false,
   hierarchy: undefined,
-  sources,
+  rows,
   rowHeight: 20,
   treeAreaWidth: 80,
 }
 
 test('the labels alone reserve the widest label box', () => {
-  expect(svgSidebarWidth(base)).toBe(rowLabelsBoxWidth(sources, 20))
+  expect(svgSidebarWidth(base)).toBe(rowLabelsBoxWidth(rows, 20))
 })
 
 test('hidden labels and no tree reserve nothing, whatever the inset', () => {
@@ -20,20 +20,20 @@ test('hidden labels and no tree reserve nothing, whatever the inset', () => {
 })
 
 test('the inset sits past the sidebar, and only when there is one', () => {
-  const labels = rowLabelsBoxWidth(sources, 20)
+  const labels = rowLabelsBoxWidth(rows, 20)
   expect(svgSidebarWidth({ ...base, leftInset: 50 })).toBe(labels + 50)
 })
 
 test('the panel an on-screen axis sits past leaves the inset out', () => {
   expect(sidebarPanelWidth({ ...base, leftInset: 50 })).toBe(
-    rowLabelsBoxWidth(sources, 20),
+    rowLabelsBoxWidth(rows, 20),
   )
 })
 
 test('a band strip adds its column ahead of the labels', () => {
   const bands = [{ key: 'x', label: 'x', start: 0, end: 2 }]
   expect(svgSidebarWidth({ ...base, bands })).toBe(
-    rowLabelsBoxWidth(sources, 20) + bandLabelWidth(),
+    rowLabelsBoxWidth(rows, 20) + bandLabelWidth(),
   )
 })
 
@@ -56,6 +56,6 @@ test('the labels measure in the export text', () => {
   )
   expect(svgSidebarWidth(base, { fontSize: 18 })).toBeGreaterThan(plain)
   expect(svgSidebarWidth(base, { fontSize: 18 })).toBe(
-    rowLabelsBoxWidth(sources, 20, { fontSize: 18 }),
+    rowLabelsBoxWidth(rows, 20, { fontSize: 18 }),
   )
 })

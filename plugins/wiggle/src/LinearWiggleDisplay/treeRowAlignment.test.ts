@@ -42,7 +42,7 @@ test('a supplied tree orders the rows by its leaves and draws', () => {
   )
   display.setRowLayout(true)
   setConf(display.configuration, ['rows', 'tree'], '((d,c),(b,a));')
-  expect(display.sources.map(s => s.name)).toEqual(['d', 'c', 'b', 'a'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['d', 'c', 'b', 'a'])
   expect(display.hierarchy).toBeDefined()
 })
 
@@ -56,6 +56,6 @@ test('a supplied tree turns towards rows.sort and the unlisted rows follow its l
   display.setRowLayout(true)
   setConf(display.configuration, ['rows', 'tree'], '((a,b),(c,d));')
   setConf(display.configuration, ['rows', 'sort'], ['d'])
-  expect(display.sources.map(s => s.name)).toEqual(['d', 'c', 'a', 'b'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['d', 'c', 'a', 'b'])
   expect(display.hierarchy).toBeDefined()
 })

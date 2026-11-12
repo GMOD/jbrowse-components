@@ -43,7 +43,7 @@ const SvgVariantOverlay = ({
   children: React.ReactNode
 }) => {
   const {
-    sources,
+    drawnRows,
     effectiveRowHeight: rowHeight,
     scrollTop,
     showRowSeparators,
@@ -64,7 +64,7 @@ const SvgVariantOverlay = ({
         {children}
         {overlays && showRowSeparators ? (
           <RowSeparatorLines
-            numRows={sources.length}
+            numRows={drawnRows.length}
             rowHeight={rowHeight}
             width={width}
             opacity={SEPARATOR_OPACITY}

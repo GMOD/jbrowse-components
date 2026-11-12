@@ -47,13 +47,13 @@ test('rows.filter keeps the subtracks whose field passes', async () => {
   const display = await loaded({
     filter: [{ field: 'group', equal: 'Islet' }],
   })
-  expect(namesOf(display.sources)).toEqual(['Grain1', 'Grain2'])
+  expect(namesOf(display.drawnRows)).toEqual(['Grain1', 'Grain2'])
   expect(display.rowNarrowingHint?.text).toBe('Showing 2 of 4 rows')
 })
 
 test('a kept list naming no subtrack draws none and names the miss', async () => {
   const display = await loaded({ kept: ['Grain9'] })
-  expect(display.sources).toEqual([])
+  expect(display.drawnRows).toEqual([])
   expect(display.rowNarrowingHint?.text).toBe('Showing 0 of 4 rows · Show all')
   expect(display.notices).toContain(
     'rows.kept names no row (Grain9), so no row shows',
@@ -68,11 +68,11 @@ test('the overlay toggle keeps filter and kept', async () => {
     filter: [{ field: 'group', equal: 'Islet' }],
     kept: ['Grain1'],
   })
-  expect(namesOf(display.sources)).toEqual(['Grain1'])
+  expect(namesOf(display.drawnRows)).toEqual(['Grain1'])
   setConf(display, ['rows', 'field'], '')
   setConf(display, ['rows', 'field'], 'source')
   expect(getConf(display, ['rows', 'kept'])).toEqual(['Grain1'])
-  expect(namesOf(display.sources)).toEqual(['Grain1'])
+  expect(namesOf(display.drawnRows)).toEqual(['Grain1'])
 })
 
 test('rows.filter refuses a row name, pointing at rows.kept', async () => {

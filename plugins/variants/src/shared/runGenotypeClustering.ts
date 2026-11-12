@@ -31,7 +31,7 @@ export async function runGenotypeClustering({
   statusCallback: (status: RpcStatus) => void
 }) {
   const {
-    clusterableSources: rows,
+    shownRows: rows,
     siteFilter,
     filters,
     adapterConfig,

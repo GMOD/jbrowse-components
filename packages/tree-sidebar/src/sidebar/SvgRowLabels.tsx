@@ -14,7 +14,7 @@ import {
   rowLabelsCarryText,
 } from './rowLabelsBoxWidth.ts'
 
-import type { RowAnnotationColumn, RowLabelSource } from '../types.ts'
+import type { RowAnnotationColumn, LabelledRow } from '../types.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 // Each annotation's consecutive rows sharing a color, as one
@@ -22,12 +22,12 @@ import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 // with no color contributes nothing, so a column draws gaps rather than a run
 // bridging them), the columns side by side from `x` on.
 function annotationRuns(
-  sources: RowLabelSource[],
+  rows: LabelledRow[],
   annotations: readonly RowAnnotationColumn[],
   x: number,
 ) {
   return annotations.flatMap((colors, column) =>
-    rowRuns(sources, source => colors.get(source.name)).map(run => ({
+    rowRuns(rows, row => colors.get(row.name)).map(run => ({
       ...run,
       x: x + column * ROW_SWATCH_WIDTH,
       width: ROW_SWATCH_WIDTH,
@@ -47,11 +47,11 @@ function annotationRuns(
 // mark survives. Painting order is all this changes; every rect keeps its true
 // `y`.
 function swatchRuns(
-  sources: RowLabelSource[],
+  rows: LabelledRow[],
   columns: ReturnType<typeof annotationRuns>,
 ) {
   return [
-    ...rowRuns(sources, source => source.rowColor).map(run => ({
+    ...rowRuns(rows, row => row.rowColor).map(run => ({
       ...run,
       x: 0,
       width: ROW_SWATCH_WIDTH,
@@ -62,7 +62,7 @@ function swatchRuns(
 }
 
 export function SvgRowLabels({
-  sources,
+  rows,
   rowHeight,
   labelOffset,
   scrollTop = 0,
@@ -71,7 +71,7 @@ export function SvgRowLabels({
   text,
   annotations = [],
 }: {
-  sources: RowLabelSource[]
+  rows: LabelledRow[]
   rowHeight: number
   labelOffset: number
   scrollTop?: number
@@ -85,14 +85,14 @@ export function SvgRowLabels({
   const separator = alpha(palette.text.primary, 0.12)
   const textFits = rowLabelsCarryText(rowHeight)
   const columns = annotationRuns(
-    sources,
+    rows,
     annotations,
-    rowColorWidth(sources, rowHeight, annotations),
+    rowColorWidth(rows, rowHeight, annotations),
   )
   // Without a color there is nothing left once the text is gone, so a track
   // whose rows carry no color draws nothing rather than a bare stripe of the
   // default background.
-  const runs = textFits ? [] : swatchRuns(sources, columns)
+  const runs = textFits ? [] : swatchRuns(rows, columns)
 
   function offscreen(y: number, height: number) {
     return (
@@ -100,17 +100,17 @@ export function SvgRowLabels({
     )
   }
 
-  const boxWidth = rowLabelsBoxWidth(sources, rowHeight, text, annotations)
-  const textX = rowLabelTextX(sources, annotations)
-  const rows = textFits
-    ? sources
-        .map((source, idx) => ({ source, idx, y: idx * rowHeight - scrollTop }))
+  const boxWidth = rowLabelsBoxWidth(rows, rowHeight, text, annotations)
+  const textX = rowLabelTextX(rows, annotations)
+  const visible = textFits
+    ? rows
+        .map((row, idx) => ({ row, idx, y: idx * rowHeight - scrollTop }))
         .filter(({ y }) => !offscreen(y, rowHeight))
     : []
-  const boxes = rows
+  const boxes = visible
     .map(({ y }) => `M0 ${y}h${boxWidth}v${rowHeight}h${-boxWidth}z`)
     .join('')
-  const separators = rows
+  const separators = visible
     .filter(({ idx }) => backdrop && idx > 0)
     .map(({ y }) => `M0 ${y}h${boxWidth}v1h${-boxWidth}z`)
     .join('')
@@ -133,16 +133,16 @@ export function SvgRowLabels({
           ) : null}
         </>
       ) : null}
-      {rows.map(({ source, y }) =>
-        source.rowColor ? (
+      {visible.map(({ row, y }) =>
+        row.rowColor ? (
           <rect
-            key={source.name}
+            key={row.name}
             data-testid="row-color-bar"
             x={0}
             y={y}
-            width={rowColorWidth(sources, rowHeight, annotations)}
+            width={rowColorWidth(rows, rowHeight, annotations)}
             height={rowHeight}
-            {...getFillProps(source.rowColor)}
+            {...getFillProps(row.rowColor)}
           />
         ) : null,
       )}
@@ -151,7 +151,7 @@ export function SvgRowLabels({
         const height = (run.end - run.start) * rowHeight
         return offscreen(y, height) ? null : (
           <rect
-            key={`${run.x}:${sources[run.start]!.name}`}
+            key={`${run.x}:${rows[run.start]!.name}`}
             data-testid={run.testId}
             x={run.x}
             y={y}
@@ -162,12 +162,12 @@ export function SvgRowLabels({
         )
       })}
       {separators ? <path d={separators} {...getFillProps(separator)} /> : null}
-      {rows.map(({ source, y }) => {
-        const full = rowLabelFullText(source)
-        const shown = rowLabelText(source, rowHeight, text)
+      {visible.map(({ row, y }) => {
+        const full = rowLabelFullText(row)
+        const shown = rowLabelText(row, rowHeight, text)
         return (
           <text
-            key={source.name}
+            key={row.name}
             x={textX}
             y={y + rowHeight / 2}
             fontSize={fontSize}
@@ -195,7 +195,7 @@ export function SvgRowLabels({
           // the run's first row names it: stable across a re-sort, unlike the
           // array index the sorted list would otherwise supply
           <rect
-            key={`${run.x}:${sources[run.start]!.name}`}
+            key={`${run.x}:${rows[run.start]!.name}`}
             data-testid={run.testId}
             x={run.x}
             y={y}

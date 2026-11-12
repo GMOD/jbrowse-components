@@ -2,7 +2,45 @@
 
 exports[`allele count a cluster run lands its order and tree, and a facet keeps each band clade 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": "#e15759",
+      "sampleName": "S3",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": undefined,
       "color": "#00aa00",
@@ -70,44 +108,6 @@ exports[`allele count a cluster run lands its order and tree, and a facet keeps 
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": "#e15759",
-      "sampleName": "S3",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
   ],
   "treeDrawn": true,
 }
@@ -115,7 +115,45 @@ exports[`allele count a cluster run lands its order and tree, and a facet keeps 
 
 exports[`allele count a cluster run lands its order and tree, and a facet keeps each band clade 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": "#e15759",
+      "sampleName": "S3",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": undefined,
       "color": "#00aa00",
@@ -184,32 +222,20 @@ exports[`allele count a cluster run lands its order and tree, and a facet keeps 
     "S2",
     "S3",
   ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
+  "treeDrawn": true,
+}
+`;
+
+exports[`allele count a cluster run rotates towards the declared order 1`] = `
+{
+  "arrangedRows": [
     {
       "HP": undefined,
       "color": undefined,
       "label": "Sample three",
       "name": "S3",
       "population": "EAS",
-      "rowColor": "#e15759",
+      "rowColor": undefined,
       "sampleName": "S3",
     },
     {
@@ -218,17 +244,29 @@ exports[`allele count a cluster run lands its order and tree, and a facet keeps 
       "label": undefined,
       "name": "S1",
       "population": "EUR",
-      "rowColor": "#f28e2c",
+      "rowColor": undefined,
       "sampleName": "S1",
     },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
   ],
-  "treeDrawn": true,
-}
-`;
-
-exports[`allele count a cluster run rotates towards the declared order 1`] = `
-{
-  "editableSources": [
+  "drawnRows": [
     {
       "HP": undefined,
       "color": undefined,
@@ -275,7 +313,13 @@ exports[`allele count a cluster run rotates towards the declared order 1`] = `
     "S2",
     "S3",
   ],
-  "sources": [
+  "treeDrawn": true,
+}
+`;
+
+exports[`allele count a declared order leads and a facet bands within it 1`] = `
+{
+  "arrangedRows": [
     {
       "HP": undefined,
       "color": undefined,
@@ -296,15 +340,6 @@ exports[`allele count a cluster run rotates towards the declared order 1`] = `
     },
     {
       "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
       "color": "#aa0000",
       "label": "Sample zero",
       "name": "S0",
@@ -312,14 +347,17 @@ exports[`allele count a cluster run rotates towards the declared order 1`] = `
       "rowColor": "#aa0000",
       "sampleName": "S0",
     },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
   ],
-  "treeDrawn": true,
-}
-`;
-
-exports[`allele count a declared order leads and a facet bands within it 1`] = `
-{
-  "editableSources": [
+  "drawnRows": [
     {
       "HP": undefined,
       "color": undefined,
@@ -365,44 +403,6 @@ exports[`allele count a declared order leads and a facet bands within it 1`] = `
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
   ],
   "treeDrawn": false,
 }
@@ -410,7 +410,7 @@ exports[`allele count a declared order leads and a facet bands within it 1`] = `
 
 exports[`allele count a declared order leads and a facet bands within it 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": undefined,
       "color": undefined,
@@ -446,6 +446,44 @@ exports[`allele count a declared order leads and a facet bands within it 2`] = `
       "population": "AFR",
       "rowColor": "#00aa00",
       "sampleName": "S2",
+    },
+  ],
+  "drawnRows": [
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": undefined,
+      "sampleName": "S3",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -456,44 +494,6 @@ exports[`allele count a declared order leads and a facet bands within it 2`] = `
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
   ],
   "treeDrawn": false,
 }
@@ -501,7 +501,7 @@ exports[`allele count a declared order leads and a facet bands within it 2`] = `
 
 exports[`allele count a facet bands the rows 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": undefined,
       "color": "#aa0000",
@@ -537,6 +537,44 @@ exports[`allele count a facet bands the rows 1`] = `
       "population": "EAS",
       "rowColor": undefined,
       "sampleName": "S3",
+    },
+  ],
+  "drawnRows": [
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": undefined,
+      "sampleName": "S3",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -547,44 +585,6 @@ exports[`allele count a facet bands the rows 1`] = `
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
   ],
   "treeDrawn": false,
 }
@@ -592,7 +592,7 @@ exports[`allele count a facet bands the rows 1`] = `
 
 exports[`allele count a focus narrows the rows and the fetch 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": undefined,
       "color": "#aa0000",
@@ -630,6 +630,26 @@ exports[`allele count a focus narrows the rows and the fetch 1`] = `
       "sampleName": "S3",
     },
   ],
+  "drawnRows": [
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+  ],
   "rowArrangementIsCustom": false,
   "rowColorLegend": {
     "entries": [
@@ -658,26 +678,6 @@ exports[`allele count a focus narrows the rows and the fetch 1`] = `
   "sampleFilter": [
     "S0",
     "S2",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
-    },
   ],
   "treeDrawn": false,
 }
@@ -685,7 +685,7 @@ exports[`allele count a focus narrows the rows and the fetch 1`] = `
 
 exports[`allele count a focus narrows the rows and the fetch 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": undefined,
       "color": "#aa0000",
@@ -723,6 +723,17 @@ exports[`allele count a focus narrows the rows and the fetch 2`] = `
       "sampleName": "S3",
     },
   ],
+  "drawnRows": [
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+  ],
   "rowArrangementIsCustom": false,
   "rowColorLegend": {
     "entries": [
@@ -750,17 +761,6 @@ exports[`allele count a focus narrows the rows and the fetch 2`] = `
   "rowTree": undefined,
   "sampleFilter": [
     "S1",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
   ],
   "treeDrawn": false,
 }
@@ -768,7 +768,7 @@ exports[`allele count a focus narrows the rows and the fetch 2`] = `
 
 exports[`allele count a focused cluster run keeps the hidden rows after the clade 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": undefined,
       "color": undefined,
@@ -806,15 +806,7 @@ exports[`allele count a focused cluster run keeps the hidden rows after the clad
       "sampleName": "S3",
     },
   ],
-  "rowArrangementIsCustom": true,
-  "rowColorLegend": undefined,
-  "rowTree": "(S1,(S2,S0));",
-  "sampleFilter": [
-    "S0",
-    "S1",
-    "S2",
-  ],
-  "sources": [
+  "drawnRows": [
     {
       "HP": undefined,
       "color": undefined,
@@ -842,6 +834,14 @@ exports[`allele count a focused cluster run keeps the hidden rows after the clad
       "rowColor": "#aa0000",
       "sampleName": "S0",
     },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowColorLegend": undefined,
+  "rowTree": "(S1,(S2,S0));",
+  "sampleFilter": [
+    "S0",
+    "S1",
+    "S2",
   ],
   "treeDrawn": true,
 }
@@ -849,7 +849,45 @@ exports[`allele count a focused cluster run keeps the hidden rows after the clad
 
 exports[`allele count a focused cluster run keeps the hidden rows after the clade 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
+    },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": undefined,
+      "sampleName": "S3",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": undefined,
       "color": undefined,
@@ -896,14 +934,29 @@ exports[`allele count a focused cluster run keeps the hidden rows after the clad
     "S2",
     "S3",
   ],
-  "sources": [
+  "treeDrawn": false,
+}
+`;
+
+exports[`allele count a rows.color attribute tints every row over its own color 1`] = `
+{
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
     {
       "HP": undefined,
       "color": undefined,
       "label": undefined,
       "name": "S1",
       "population": "EUR",
-      "rowColor": undefined,
+      "rowColor": "#f28e2c",
       "sampleName": "S1",
     },
     {
@@ -912,17 +965,8 @@ exports[`allele count a focused cluster run keeps the hidden rows after the clad
       "label": undefined,
       "name": "S2",
       "population": "AFR",
-      "rowColor": "#00aa00",
+      "rowColor": "#4e79a7",
       "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
     },
     {
       "HP": undefined,
@@ -930,17 +974,11 @@ exports[`allele count a focused cluster run keeps the hidden rows after the clad
       "label": "Sample three",
       "name": "S3",
       "population": "EAS",
-      "rowColor": undefined,
+      "rowColor": "#e15759",
       "sampleName": "S3",
     },
   ],
-  "treeDrawn": false,
-}
-`;
-
-exports[`allele count a rows.color attribute tints every row over its own color 1`] = `
-{
-  "editableSources": [
+  "drawnRows": [
     {
       "HP": undefined,
       "color": "#aa0000",
@@ -1008,44 +1046,6 @@ exports[`allele count a rows.color attribute tints every row over its own color 
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": "#e15759",
-      "sampleName": "S3",
-    },
   ],
   "treeDrawn": false,
 }
@@ -1053,7 +1053,45 @@ exports[`allele count a rows.color attribute tints every row over its own color 
 
 exports[`allele count a switch to phased mode keeps the arrangement 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "One",
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": undefined,
+      "sampleName": "S3",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": undefined,
       "color": "#aa0000",
@@ -1099,44 +1137,6 @@ exports[`allele count a switch to phased mode keeps the arrangement 1`] = `
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "One",
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
   ],
   "treeDrawn": true,
 }
@@ -1144,7 +1144,72 @@ exports[`allele count a switch to phased mode keeps the arrangement 1`] = `
 
 exports[`allele count a switch to phased mode keeps the arrangement 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": 0,
+      "color": "#aa0000",
+      "label": "Sample zero HP1",
+      "name": "S0 HP1",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 1,
+      "color": "#aa0000",
+      "label": "Sample zero HP2",
+      "name": "S0 HP2",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 0,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP1",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 1,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": "One HP1",
+      "name": "S1 HP1",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
+    },
+    {
+      "HP": 1,
+      "color": undefined,
+      "label": "One HP2",
+      "name": "S1 HP2",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3 HP1",
+      "population": "EAS",
+      "rowColor": undefined,
+      "sampleName": "S3",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": 0,
       "color": "#aa0000",
@@ -1218,78 +1283,51 @@ exports[`allele count a switch to phased mode keeps the arrangement 2`] = `
     "S2",
     "S3",
   ],
-  "sources": [
-    {
-      "HP": 0,
-      "color": "#aa0000",
-      "label": "Sample zero HP1",
-      "name": "S0 HP1",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 1,
-      "color": "#aa0000",
-      "label": "Sample zero HP2",
-      "name": "S0 HP2",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 0,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP1",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 1,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": "One HP1",
-      "name": "S1 HP1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": 1,
-      "color": undefined,
-      "label": "One HP2",
-      "name": "S1 HP2",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3 HP1",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
-  ],
   "treeDrawn": true,
 }
 `;
 
 exports[`allele count dialog edits relabel, recolor and reorder, and a reset returns 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": "Two",
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": "#123456",
+      "sampleName": "S3",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": "#654321",
+      "sampleName": "S1",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": undefined,
       "color": "#00aa00",
@@ -1335,44 +1373,6 @@ exports[`allele count dialog edits relabel, recolor and reorder, and a reset ret
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": "Two",
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": "#123456",
-      "sampleName": "S3",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": "#654321",
-      "sampleName": "S1",
-    },
   ],
   "treeDrawn": false,
 }
@@ -1380,7 +1380,45 @@ exports[`allele count dialog edits relabel, recolor and reorder, and a reset ret
 
 exports[`allele count dialog edits relabel, recolor and reorder, and a reset returns 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
+    },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": undefined,
+      "sampleName": "S3",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": undefined,
       "color": "#aa0000",
@@ -1426,44 +1464,6 @@ exports[`allele count dialog edits relabel, recolor and reorder, and a reset ret
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
   ],
   "treeDrawn": false,
 }
@@ -1471,7 +1471,45 @@ exports[`allele count dialog edits relabel, recolor and reorder, and a reset ret
 
 exports[`allele count samplesTsv colors and labels are the rows own 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
+    },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": undefined,
+      "sampleName": "S3",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": undefined,
       "color": "#aa0000",
@@ -1517,44 +1555,6 @@ exports[`allele count samplesTsv colors and labels are the rows own 1`] = `
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
   ],
   "treeDrawn": false,
 }
@@ -1562,7 +1562,45 @@ exports[`allele count samplesTsv colors and labels are the rows own 1`] = `
 
 exports[`allele count sort by genotype orders the rows at a variant 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": "#e15759",
+      "sampleName": "S3",
+    },
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": undefined,
       "color": undefined,
@@ -1630,44 +1668,6 @@ exports[`allele count sort by genotype orders the rows at a variant 1`] = `
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": "#e15759",
-      "sampleName": "S3",
-    },
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
-    },
   ],
   "treeDrawn": false,
 }
@@ -1675,7 +1675,7 @@ exports[`allele count sort by genotype orders the rows at a variant 1`] = `
 
 exports[`phased a declared sample order and a facet over the haplotypes 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": 0,
       "color": undefined,
@@ -1738,6 +1738,71 @@ exports[`phased a declared sample order and a facet over the haplotypes 1`] = `
       "population": "AFR",
       "rowColor": "#00aa00",
       "sampleName": "S2",
+    },
+  ],
+  "drawnRows": [
+    {
+      "HP": 0,
+      "color": "#aa0000",
+      "label": "Sample zero HP1",
+      "name": "S0 HP1",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 1,
+      "color": "#aa0000",
+      "label": "Sample zero HP2",
+      "name": "S0 HP2",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 0,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP1",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 1,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3 HP1",
+      "population": "EAS",
+      "rowColor": undefined,
+      "sampleName": "S3",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP1",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
+    },
+    {
+      "HP": 1,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP2",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
     },
   ],
   "rowArrangementIsCustom": false,
@@ -1748,71 +1813,6 @@ exports[`phased a declared sample order and a facet over the haplotypes 1`] = `
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": 0,
-      "color": "#aa0000",
-      "label": "Sample zero HP1",
-      "name": "S0 HP1",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 1,
-      "color": "#aa0000",
-      "label": "Sample zero HP2",
-      "name": "S0 HP2",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 0,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP1",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 1,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3 HP1",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": 1,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP2",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
   ],
   "treeDrawn": false,
 }
@@ -1820,7 +1820,7 @@ exports[`phased a declared sample order and a facet over the haplotypes 1`] = `
 
 exports[`phased a legend focus keeps whole samples 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": undefined,
       "color": "#aa0000",
@@ -1858,6 +1858,26 @@ exports[`phased a legend focus keeps whole samples 1`] = `
       "sampleName": "S3",
     },
   ],
+  "drawnRows": [
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+  ],
   "rowArrangementIsCustom": false,
   "rowColorLegend": {
     "entries": [
@@ -1886,26 +1906,6 @@ exports[`phased a legend focus keeps whole samples 1`] = `
   "sampleFilter": [
     "S0",
     "S2",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
-    },
   ],
   "treeDrawn": false,
 }
@@ -1913,7 +1913,7 @@ exports[`phased a legend focus keeps whole samples 1`] = `
 
 exports[`phased a legend focus keeps whole samples 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": 0,
       "color": "#aa0000",
@@ -1978,36 +1978,7 @@ exports[`phased a legend focus keeps whole samples 2`] = `
       "sampleName": "S3",
     },
   ],
-  "rowArrangementIsCustom": false,
-  "rowColorLegend": {
-    "entries": [
-      {
-        "color": "#4e79a7",
-        "label": "AFR",
-        "value": "AFR",
-      },
-      {
-        "color": "#f28e2c",
-        "label": "EUR",
-        "value": "EUR",
-      },
-      {
-        "color": "#e15759",
-        "label": "EAS",
-        "value": "EAS",
-      },
-    ],
-    "focusesRows": true,
-    "id": "rows.color",
-    "kind": "categorical",
-    "title": "Population",
-  },
-  "rowTree": undefined,
-  "sampleFilter": [
-    "S0",
-    "S2",
-  ],
-  "sources": [
+  "drawnRows": [
     {
       "HP": 0,
       "color": "#aa0000",
@@ -2044,6 +2015,35 @@ exports[`phased a legend focus keeps whole samples 2`] = `
       "rowColor": "#4e79a7",
       "sampleName": "S2",
     },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rows.color",
+    "kind": "categorical",
+    "title": "Population",
+  },
+  "rowTree": undefined,
+  "sampleFilter": [
+    "S0",
+    "S2",
   ],
   "treeDrawn": false,
 }
@@ -2051,7 +2051,7 @@ exports[`phased a legend focus keeps whole samples 2`] = `
 
 exports[`phased after a cluster run lands haplotype rows a clade focus 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": 0,
       "color": "#00aa00",
@@ -2116,36 +2116,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 1`] = `
       "sampleName": "S1",
     },
   ],
-  "rowArrangementIsCustom": true,
-  "rowColorLegend": {
-    "entries": [
-      {
-        "color": "#4e79a7",
-        "label": "AFR",
-        "value": "AFR",
-      },
-      {
-        "color": "#f28e2c",
-        "label": "EUR",
-        "value": "EUR",
-      },
-      {
-        "color": "#e15759",
-        "label": "EAS",
-        "value": "EAS",
-      },
-    ],
-    "focusesRows": true,
-    "id": "rows.color",
-    "kind": "categorical",
-    "title": "Population",
-  },
-  "rowTree": "(((S2 HP1,S2 HP2),(S0 HP1,S0 HP2)),(S3 HP1,(S1 HP1,S1 HP2)));",
-  "sampleFilter": [
-    "S0",
-    "S2",
-  ],
-  "sources": [
+  "drawnRows": [
     {
       "HP": 0,
       "color": "#00aa00",
@@ -2182,6 +2153,35 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 1`] = `
       "rowColor": "#4e79a7",
       "sampleName": "S0",
     },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rows.color",
+    "kind": "categorical",
+    "title": "Population",
+  },
+  "rowTree": "(((S2 HP1,S2 HP2),(S0 HP1,S0 HP2)),(S3 HP1,(S1 HP1,S1 HP2)));",
+  "sampleFilter": [
+    "S0",
+    "S2",
   ],
   "treeDrawn": true,
 }
@@ -2189,7 +2189,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 1`] = `
 
 exports[`phased after a cluster run lands haplotype rows a clade focus 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": 0,
       "color": "#00aa00",
@@ -2254,36 +2254,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 2`] = `
       "sampleName": "S1",
     },
   ],
-  "rowArrangementIsCustom": true,
-  "rowColorLegend": {
-    "entries": [
-      {
-        "color": "#4e79a7",
-        "label": "AFR",
-        "value": "AFR",
-      },
-      {
-        "color": "#f28e2c",
-        "label": "EUR",
-        "value": "EUR",
-      },
-      {
-        "color": "#e15759",
-        "label": "EAS",
-        "value": "EAS",
-      },
-    ],
-    "focusesRows": true,
-    "id": "rows.color",
-    "kind": "categorical",
-    "title": "Population",
-  },
-  "rowTree": "(((S2 HP1,S2 HP2),(S0 HP1,S0 HP2)),(S3 HP1,(S1 HP1,S1 HP2)));",
-  "sampleFilter": [
-    "S0",
-    "S2",
-  ],
-  "sources": [
+  "drawnRows": [
     {
       "HP": 0,
       "color": "#00aa00",
@@ -2321,13 +2292,42 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 2`] = `
       "sampleName": "S0",
     },
   ],
+  "rowArrangementIsCustom": true,
+  "rowColorLegend": {
+    "entries": [
+      {
+        "color": "#4e79a7",
+        "label": "AFR",
+        "value": "AFR",
+      },
+      {
+        "color": "#f28e2c",
+        "label": "EUR",
+        "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rows.color",
+    "kind": "categorical",
+    "title": "Population",
+  },
+  "rowTree": "(((S2 HP1,S2 HP2),(S0 HP1,S0 HP2)),(S3 HP1,(S1 HP1,S1 HP2)));",
+  "sampleFilter": [
+    "S0",
+    "S2",
+  ],
   "treeDrawn": true,
 }
 `;
 
 exports[`phased after a cluster run lands haplotype rows a focus on one haplotype of one sample still fetches the sample 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": 0,
       "color": "#00aa00",
@@ -2392,6 +2392,17 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
       "sampleName": "S1",
     },
   ],
+  "drawnRows": [
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+  ],
   "rowArrangementIsCustom": true,
   "rowColorLegend": {
     "entries": [
@@ -2419,17 +2430,6 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
   "rowTree": "(((S2 HP1,S2 HP2),(S0 HP1,S0 HP2)),(S3 HP1,(S1 HP1,S1 HP2)));",
   "sampleFilter": [
     "S1",
-  ],
-  "sources": [
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP1",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
   ],
   "treeDrawn": true,
 }
@@ -2437,7 +2437,7 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
 
 exports[`phased after a cluster run lands haplotype rows a focus on one haplotype of one sample still fetches the sample 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
     {
       "HP": 0,
       "color": "#00aa00",
@@ -2502,6 +2502,17 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
       "sampleName": "S1",
     },
   ],
+  "drawnRows": [
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+  ],
   "rowArrangementIsCustom": true,
   "rowColorLegend": {
     "entries": [
@@ -2529,17 +2540,6 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
   "rowTree": "(((S2 HP1,S2 HP2),(S0 HP1,S0 HP2)),(S3 HP1,(S1 HP1,S1 HP2)));",
   "sampleFilter": [
     "S1",
-  ],
-  "sources": [
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP1",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
   ],
   "treeDrawn": true,
 }
@@ -2547,7 +2547,45 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
 
 exports[`phased after a cluster run lands haplotype rows a switch back to allele count keeps the arrangement, read as samples 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": "#e15759",
+      "sampleName": "S3",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": undefined,
       "color": "#00aa00",
@@ -2615,44 +2653,6 @@ exports[`phased after a cluster run lands haplotype rows a switch back to allele
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": "#e15759",
-      "sampleName": "S3",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
   ],
   "treeDrawn": false,
 }
@@ -2660,7 +2660,72 @@ exports[`phased after a cluster run lands haplotype rows a switch back to allele
 
 exports[`phased after a cluster run lands haplotype rows the tree describes the haplotype rows 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": 0,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP1",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 1,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 0,
+      "color": "#aa0000",
+      "label": "Sample zero HP1",
+      "name": "S0 HP1",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 1,
+      "color": "#aa0000",
+      "label": "Sample zero HP2",
+      "name": "S0 HP2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3 HP1",
+      "population": "EAS",
+      "rowColor": "#e15759",
+      "sampleName": "S3",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+    {
+      "HP": 1,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP2",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": 0,
       "color": "#00aa00",
@@ -2755,71 +2820,6 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": 0,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP1",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 1,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 0,
-      "color": "#aa0000",
-      "label": "Sample zero HP1",
-      "name": "S0 HP1",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 1,
-      "color": "#aa0000",
-      "label": "Sample zero HP2",
-      "name": "S0 HP2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3 HP1",
-      "population": "EAS",
-      "rowColor": "#e15759",
-      "sampleName": "S3",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP1",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
-    {
-      "HP": 1,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP2",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
   ],
   "treeDrawn": true,
 }
@@ -2827,7 +2827,72 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
 
 exports[`phased after a cluster run lands haplotype rows the tree describes the haplotype rows 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": 0,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP1",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 1,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 0,
+      "color": "#aa0000",
+      "label": "Sample zero HP1",
+      "name": "S0 HP1",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 1,
+      "color": "#aa0000",
+      "label": "Sample zero HP2",
+      "name": "S0 HP2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3 HP1",
+      "population": "EAS",
+      "rowColor": "#e15759",
+      "sampleName": "S3",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+    {
+      "HP": 1,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP2",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": 0,
       "color": "#00aa00",
@@ -2923,24 +2988,30 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
     "S2",
     "S3",
   ],
-  "sources": [
+  "treeDrawn": true,
+}
+`;
+
+exports[`phased dialog edits at haplotype granularity 1`] = `
+{
+  "arrangedRows": [
     {
       "HP": 0,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP1",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3 HP1",
+      "population": "EAS",
+      "rowColor": undefined,
+      "sampleName": "S3",
     },
     {
       "HP": 1,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP2",
+      "color": "#aa0000",
+      "label": "Zero, second",
+      "name": "S0 HP2",
       "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
     },
     {
       "HP": 0,
@@ -2948,26 +3019,17 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
       "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 1,
-      "color": "#aa0000",
-      "label": "Sample zero HP2",
-      "name": "S0 HP2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
+      "rowColor": "#aa0000",
       "sampleName": "S0",
     },
     {
       "HP": 0,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3 HP1",
-      "population": "EAS",
-      "rowColor": "#e15759",
-      "sampleName": "S3",
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP1",
+      "population": "AFR",
+      "rowColor": "#123456",
+      "sampleName": "S2",
     },
     {
       "HP": 0,
@@ -2975,7 +3037,7 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
       "label": undefined,
       "name": "S1 HP1",
       "population": "EUR",
-      "rowColor": "#f28e2c",
+      "rowColor": undefined,
       "sampleName": "S1",
     },
     {
@@ -2984,17 +3046,20 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
       "label": undefined,
       "name": "S1 HP2",
       "population": "EUR",
-      "rowColor": "#f28e2c",
+      "rowColor": undefined,
       "sampleName": "S1",
     },
+    {
+      "HP": 1,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
   ],
-  "treeDrawn": true,
-}
-`;
-
-exports[`phased dialog edits at haplotype granularity 1`] = `
-{
-  "editableSources": [
+  "drawnRows": [
     {
       "HP": 0,
       "color": undefined,
@@ -3067,71 +3132,6 @@ exports[`phased dialog edits at haplotype granularity 1`] = `
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3 HP1",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
-    {
-      "HP": 1,
-      "color": "#aa0000",
-      "label": "Zero, second",
-      "name": "S0 HP2",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 0,
-      "color": "#aa0000",
-      "label": "Sample zero HP1",
-      "name": "S0 HP1",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 0,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP1",
-      "population": "AFR",
-      "rowColor": "#123456",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": 1,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP2",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": 1,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
   ],
   "treeDrawn": false,
 }
@@ -3139,7 +3139,72 @@ exports[`phased dialog edits at haplotype granularity 1`] = `
 
 exports[`phased dialog edits at haplotype granularity 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": 0,
+      "color": "#aa0000",
+      "label": "Sample zero HP1",
+      "name": "S0 HP1",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 1,
+      "color": "#aa0000",
+      "label": "Sample zero HP2",
+      "name": "S0 HP2",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP1",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
+    },
+    {
+      "HP": 1,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP2",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
+    },
+    {
+      "HP": 0,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP1",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 1,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP2",
+      "population": "AFR",
+      "rowColor": "#00aa00",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3 HP1",
+      "population": "EAS",
+      "rowColor": undefined,
+      "sampleName": "S3",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": 0,
       "color": "#aa0000",
@@ -3213,78 +3278,51 @@ exports[`phased dialog edits at haplotype granularity 2`] = `
     "S2",
     "S3",
   ],
-  "sources": [
-    {
-      "HP": 0,
-      "color": "#aa0000",
-      "label": "Sample zero HP1",
-      "name": "S0 HP1",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 1,
-      "color": "#aa0000",
-      "label": "Sample zero HP2",
-      "name": "S0 HP2",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": 1,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP2",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": 0,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP1",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 1,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3 HP1",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
-  ],
   "treeDrawn": false,
 }
 `;
 
 exports[`phased sample rows until the ploidy lands, then haplotypes 1`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": undefined,
+      "color": "#aa0000",
+      "label": "Sample zero",
+      "name": "S0",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+    {
+      "HP": undefined,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+    {
+      "HP": undefined,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3",
+      "population": "EAS",
+      "rowColor": "#e15759",
+      "sampleName": "S3",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": undefined,
       "color": "#aa0000",
@@ -3352,44 +3390,6 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 1`] = `
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": undefined,
-      "color": "#aa0000",
-      "label": "Sample zero",
-      "name": "S0",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
-    {
-      "HP": undefined,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S2",
-    },
-    {
-      "HP": undefined,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3",
-      "population": "EAS",
-      "rowColor": "#e15759",
-      "sampleName": "S3",
-    },
   ],
   "treeDrawn": false,
 }
@@ -3397,7 +3397,72 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 1`] = `
 
 exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
 {
-  "editableSources": [
+  "arrangedRows": [
+    {
+      "HP": 0,
+      "color": "#aa0000",
+      "label": "Sample zero HP1",
+      "name": "S0 HP1",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 1,
+      "color": "#aa0000",
+      "label": "Sample zero HP2",
+      "name": "S0 HP2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP1",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+    {
+      "HP": 1,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP2",
+      "population": "EUR",
+      "rowColor": "#f28e2c",
+      "sampleName": "S1",
+    },
+    {
+      "HP": 0,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP1",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 1,
+      "color": "#00aa00",
+      "label": undefined,
+      "name": "S2 HP2",
+      "population": "AFR",
+      "rowColor": "#4e79a7",
+      "sampleName": "S2",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": "Sample three",
+      "name": "S3 HP1",
+      "population": "EAS",
+      "rowColor": "#e15759",
+      "sampleName": "S3",
+    },
+  ],
+  "drawnRows": [
     {
       "HP": 0,
       "color": "#aa0000",
@@ -3493,42 +3558,21 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
     "S2",
     "S3",
   ],
-  "sources": [
+  "treeDrawn": false,
+}
+`;
+
+exports[`phased sort by genotype orders haplotypes 1`] = `
+{
+  "arrangedRows": [
     {
       "HP": 0,
       "color": "#aa0000",
       "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
-      "rowColor": "#4e79a7",
+      "rowColor": "#aa0000",
       "sampleName": "S0",
-    },
-    {
-      "HP": 1,
-      "color": "#aa0000",
-      "label": "Sample zero HP2",
-      "name": "S0 HP2",
-      "population": "AFR",
-      "rowColor": "#4e79a7",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP1",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
-    },
-    {
-      "HP": 1,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP2",
-      "population": "EUR",
-      "rowColor": "#f28e2c",
-      "sampleName": "S1",
     },
     {
       "HP": 0,
@@ -3536,7 +3580,7 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
       "label": undefined,
       "name": "S2 HP1",
       "population": "AFR",
-      "rowColor": "#4e79a7",
+      "rowColor": "#00aa00",
       "sampleName": "S2",
     },
     {
@@ -3545,8 +3589,35 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
       "label": undefined,
       "name": "S2 HP2",
       "population": "AFR",
-      "rowColor": "#4e79a7",
+      "rowColor": "#00aa00",
       "sampleName": "S2",
+    },
+    {
+      "HP": 1,
+      "color": "#aa0000",
+      "label": "Sample zero HP2",
+      "name": "S0 HP2",
+      "population": "AFR",
+      "rowColor": "#aa0000",
+      "sampleName": "S0",
+    },
+    {
+      "HP": 0,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP1",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
+    },
+    {
+      "HP": 1,
+      "color": undefined,
+      "label": undefined,
+      "name": "S1 HP2",
+      "population": "EUR",
+      "rowColor": undefined,
+      "sampleName": "S1",
     },
     {
       "HP": 0,
@@ -3554,17 +3625,11 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
       "label": "Sample three",
       "name": "S3 HP1",
       "population": "EAS",
-      "rowColor": "#e15759",
+      "rowColor": undefined,
       "sampleName": "S3",
     },
   ],
-  "treeDrawn": false,
-}
-`;
-
-exports[`phased sort by genotype orders haplotypes 1`] = `
-{
-  "editableSources": [
+  "drawnRows": [
     {
       "HP": 0,
       "color": "#aa0000",
@@ -3637,71 +3702,6 @@ exports[`phased sort by genotype orders haplotypes 1`] = `
     "S1",
     "S2",
     "S3",
-  ],
-  "sources": [
-    {
-      "HP": 0,
-      "color": "#aa0000",
-      "label": "Sample zero HP1",
-      "name": "S0 HP1",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 0,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP1",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 1,
-      "color": "#00aa00",
-      "label": undefined,
-      "name": "S2 HP2",
-      "population": "AFR",
-      "rowColor": "#00aa00",
-      "sampleName": "S2",
-    },
-    {
-      "HP": 1,
-      "color": "#aa0000",
-      "label": "Sample zero HP2",
-      "name": "S0 HP2",
-      "population": "AFR",
-      "rowColor": "#aa0000",
-      "sampleName": "S0",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP1",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": 1,
-      "color": undefined,
-      "label": undefined,
-      "name": "S1 HP2",
-      "population": "EUR",
-      "rowColor": undefined,
-      "sampleName": "S1",
-    },
-    {
-      "HP": 0,
-      "color": undefined,
-      "label": "Sample three",
-      "name": "S3 HP1",
-      "population": "EAS",
-      "rowColor": undefined,
-      "sampleName": "S3",
-    },
   ],
   "treeDrawn": false,
 }

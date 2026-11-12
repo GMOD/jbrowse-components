@@ -1,4 +1,4 @@
-import type { RowSource } from '../types.ts'
+import type { Row } from '../types.ts'
 
 /**
  * The name a row also answers to — a haplotype row's sample, and a sample
@@ -114,7 +114,7 @@ function inheritedLabel(
  * never showed keeps its entry, and a dialog row the current rows no longer
  * hold writes nothing.
  */
-export function labelEdits<S extends RowSource>({
+export function labelEdits<S extends Row>({
   rows,
   shown,
   adapter,
@@ -229,7 +229,7 @@ function orderByRank<S extends { name: string }>(
   return moved ? ordered : rows
 }
 
-function relabelRows<S extends RowSource>(
+function relabelRows<S extends Row>(
   rows: S[],
   labels: Readonly<Record<string, string>>,
   rowParent: RowParentOf<S>,
@@ -268,7 +268,7 @@ function relabelRows<S extends RowSource>(
  * Hands back `rows` itself whenever nothing moves or changes, so a consumer
  * keyed on identity sees no change.
  */
-export function arrangeRows<S extends RowSource>(
+export function arrangeRows<S extends Row>(
   rows: S[],
   { domain, labels }: RowArrangementInput,
   hooks: ArrangeRowsHooks<S>,

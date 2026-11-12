@@ -44,7 +44,7 @@ test('a region split on the outgoing rows field leaves the axis and the row list
     REGION,
   )
   expect(display.domain![1]).toBeGreaterThanOrEqual(1000)
-  expect(display.sources.map(r => r.name)).toEqual(['a', 'b'])
+  expect(display.drawnRows.map(r => r.name)).toEqual(['a', 'b'])
   setConf(display.conf, ['rows', 'field'], 'type')
   const { rowTable } = display.renderState
   const drawn = [...display.rpcDataMap.values()]
@@ -57,7 +57,7 @@ test('a region split on the outgoing rows field leaves the axis and the row list
       0,
     )
   expect(drawn).toBe(0)
-  expect(display.sources).toEqual([])
+  expect(display.drawnRows).toEqual([])
   expect(display.domain).toBeUndefined()
 })
 

@@ -2,9 +2,9 @@ import { render } from '@testing-library/react'
 
 import SequenceTooltip from './SequenceTooltip.tsx'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 
-const sample: MafSource = { label: 'panTro6', name: 'panTro6' }
+const sample: MafRow = { label: 'panTro6', name: 'panTro6' }
 
 function tooltipText(props: { base?: string; genomicPos?: number }) {
   render(<SequenceTooltip x={0} y={0} sample={sample} {...props} />)

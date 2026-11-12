@@ -4,7 +4,7 @@ import { rowFieldValue } from '../rows/rowFields.ts'
 import { colorKeyOf } from './rowColors.ts'
 
 import type { RowAlias } from '../rows/arrangeRows.ts'
-import type { RowSource } from '../types.ts'
+import type { Row } from '../types.ts'
 import type { RowColorSetting } from './rowColors.ts'
 import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
 
@@ -28,7 +28,7 @@ export interface RowColorKeyInputs {
   alias: RowAlias | undefined
 }
 
-function keyColor(row: RowSource, value: string, key: RowColorKeyInputs) {
+function keyColor(row: Row, value: string, key: RowColorKeyInputs) {
   return key.setting.field === 'name' || value === ''
     ? key.resolved.get(row.name)
     : key.dealt.get(value)
@@ -36,7 +36,7 @@ function keyColor(row: RowSource, value: string, key: RowColorKeyInputs) {
 
 // Under an attribute, the `rows.colors` entry a row takes its color from,
 // which lists it apart from its value's entry
-function pinnedKey(row: RowSource, key: RowColorKeyInputs) {
+function pinnedKey(row: Row, key: RowColorKeyInputs) {
   return key.setting.field === 'name'
     ? undefined
     : colorKeyOf(key.pinned, row.name, key.alias)
@@ -48,7 +48,7 @@ function pinnedKey(row: RowSource, key: RowColorKeyInputs) {
  * field, the "(no value)" entry where it has none, the "Other" entry where it
  * took the `scale.unknown` color, or undefined where it has no color.
  */
-export function rowColorKeyValue(row: RowSource, key: RowColorKeyInputs) {
+export function rowColorKeyValue(row: Row, key: RowColorKeyInputs) {
   const { field, scale } = key.setting
   const { unknown } = scale
   const pinned = pinnedKey(row, key)
@@ -73,7 +73,7 @@ export function rowColorKeyValue(row: RowSource, key: RowColorKeyInputs) {
  * trailing "Other" in the `scale.unknown` color where a row took it.
  */
 export function rowColorKeyEntries(
-  rows: readonly RowSource[],
+  rows: readonly Row[],
   key: RowColorKeyInputs,
   labelOf: (name: string) => string,
 ): CategoricalEntry[] {

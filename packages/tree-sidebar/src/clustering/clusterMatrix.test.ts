@@ -50,7 +50,7 @@ test('serializes row names that carry newick metacharacters', async () => {
 // The other way the same invariant breaks, and the reason the matrix is a Map:
 // a plain object hoists integer-like keys into numeric order, so the rows a
 // caller built as 10, 2, 1 reached hclust as 1, 2, 10 and the indices it handed
-// back pointed at the wrong sources. Reachable from numbered bigWig filenames,
+// back pointed at the wrong rows. Reachable from numbered bigWig filenames,
 // numeric VCF sample IDs, or a numeric partition field.
 test('keeps numeric-looking row names in the caller order', async () => {
   const names = ['10', '2', '1']

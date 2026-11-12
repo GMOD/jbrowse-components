@@ -47,7 +47,7 @@ async function tooltip(model: Partial<MarkTooltipModel>) {
         encodings: [{}],
         legendSections: [],
         facetLayout: NO_FACET,
-        sources: [],
+        drawnRows: [],
         rowTable: undefined,
         ...model,
       }}
@@ -162,33 +162,33 @@ test('a jexl channel prints its value under the label jexl', async () => {
 })
 
 test("under rows the band reads as the row's label, the reader's where one is written", async () => {
-  const sources = [{ name: 'mom', label: 'Mother' }, { name: 'dad' }]
-  const facetLayout = rowsLayout(sources, categoricalField('source'))
+  const drawnRows = [{ name: 'mom', label: 'Mother' }, { name: 'dad' }]
+  const facetLayout = rowsLayout(drawnRows, categoricalField('source'))
   const relabelled = await tooltip({
     hoveredFeature: { ...HIT, row: 0 },
     facetLayout,
-    sources,
+    drawnRows,
   })
   expect(relabelled.textContent).toContain('Mother')
   expect(relabelled.textContent).not.toContain('source: mom')
 })
 
 test('under rows a row no one labelled reads as its value', async () => {
-  const sources = [{ name: 'mom', label: 'Mother' }, { name: 'dad' }]
+  const drawnRows = [{ name: 'mom', label: 'Mother' }, { name: 'dad' }]
   const box = await tooltip({
     hoveredFeature: { ...HIT, row: 1 },
-    facetLayout: rowsLayout(sources, categoricalField('source')),
-    sources,
+    facetLayout: rowsLayout(drawnRows, categoricalField('source')),
+    drawnRows,
   })
   expect(box.textContent).toContain('source: dad')
 })
 
 test('under rows the hit names its row by its key, wherever the table has moved it', async () => {
-  const sources = [{ name: 'dad' }, { name: 'mom', label: 'Mother' }]
+  const drawnRows = [{ name: 'dad' }, { name: 'mom', label: 'Mother' }]
   const box = await tooltip({
     hoveredFeature: { ...HIT, row: 0 },
-    facetLayout: rowsLayout(sources, categoricalField('source')),
-    sources,
+    facetLayout: rowsLayout(drawnRows, categoricalField('source')),
+    drawnRows,
     rowTable: buildRowTable(Uint32Array.of(1, 0)),
   })
   expect(box.textContent).toContain('Mother')
@@ -228,7 +228,7 @@ test('tooltip.show off opens no box', async () => {
         encodings: [{}],
         legendSections: [],
         facetLayout: NO_FACET,
-        sources: [],
+        drawnRows: [],
         rowTable: undefined,
       }}
       mouseState={at}

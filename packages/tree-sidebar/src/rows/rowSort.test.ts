@@ -129,7 +129,7 @@ describe('sortRowsAtColumn', () => {
     const written: string[][] = []
     return {
       loadedRegions: regions([0, 'chr1', 0, 1000]),
-      editableSources: rows(...names),
+      arrangedRows: rows(...names),
       setRowOrder: (next: { name: string }[]) => {
         written.push(next.map(s => s.name))
       },
@@ -137,7 +137,7 @@ describe('sortRowsAtColumn', () => {
     }
   }
 
-  const reversed = (sources: { name: string }[]) => [...sources].reverse()
+  const reversed = (given: { name: string }[]) => [...given].reverse()
 
   test('orders the rows and says it sorted', () => {
     const self = host(['a', 'b', 'c'])
@@ -147,7 +147,7 @@ describe('sortRowsAtColumn', () => {
     expect(self.written).toEqual([['c', 'b', 'a']])
   })
 
-  // The list handed to `order` is `editableSources`, which the subtree filter
+  // The list handed to `order` is `arrangedRows`, which the subtree filter
   // has not touched: a hidden row must keep its place and its overrides rather
   // than being dropped from `layout` for good. An `order` deriving a statistic
   // from what it is given is therefore counting rows that are not on screen.
@@ -159,9 +159,9 @@ describe('sortRowsAtColumn', () => {
       'chr1',
       500,
       () => 'data',
-      sources => {
-        seen.push(sources.map(s => s.name))
-        return sources
+      given => {
+        seen.push(given.map(s => s.name))
+        return given
       },
     )
     expect(seen).toEqual([['a', 'hidden', 'c']])

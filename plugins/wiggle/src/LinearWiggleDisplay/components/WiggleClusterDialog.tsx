@@ -26,7 +26,7 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
   // the key, so passing the node stringified the whole display snapshot on
   // every render and re-fetched the matrix for a row relabel that cannot move a
   // score.
-  const sourceNames = model.clusterableSources.map(s => s.name).join('\t')
+  const sourceNames = model.shownRows.map(s => s.name).join('\t')
   return (
     <ClusterDialog
       model={model}
@@ -35,9 +35,9 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
       maxWidth="xl"
       matrixLabel="score matrix"
       tsvFilename="scores.tsv"
-      canRun={model.clusterableSources.length >= MIN_CLUSTER_ROWS}
+      canRun={model.shownRows.length >= MIN_CLUSTER_ROWS}
       matrixKey={
-        model.clusterableSources.length
+        model.shownRows.length
           ? [
               'scoreMatrix',
               sourceNames,

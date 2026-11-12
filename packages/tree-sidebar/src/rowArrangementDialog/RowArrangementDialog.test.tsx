@@ -81,14 +81,14 @@ function fakeModel({
   rowColorFields = [],
   ...overrides
 }: FakeOptions = {}): RowArrangementModel<Src> {
-  const editableSources = overrides.editableSources ?? [
+  const arrangedRows = overrides.arrangedRows ?? [
     { name: 'a', rowColor: '#f00' },
     { name: 'b' },
   ]
   const rowPaletteDeals = overrides.rowPaletteDeals ?? true
   const current = rowColorChoiceOf(rowColorSetting, rowPaletteDeals)
   return {
-    editableSources,
+    arrangedRows,
     applyRowEdits: jest.fn(),
     resetRowArrangement: jest.fn(),
     rowOrderWillDropTree: jest.fn(() => false),
@@ -107,7 +107,7 @@ function fakeModel({
     rowPaletteDeals,
     rowAlias: undefined,
     internalRowFields: [],
-    dealtValueColorsFor: previewOf(editableSources, rowPaletteDeals),
+    dealtValueColorsFor: previewOf(arrangedRows, rowPaletteDeals),
     ...overrides,
   }
 }
@@ -170,7 +170,7 @@ test('Submit persists the layout and closes when no tree would be cleared', () =
   fireEvent.click(screen.getByText('Submit'))
 
   expect(model.applyRowEdits).toHaveBeenCalledWith(
-    model.editableSources,
+    model.arrangedRows,
     undefined,
   )
   expect(handleClose).toHaveBeenCalled()
@@ -355,7 +355,7 @@ test('a paste keeps the picks of rows it does not name', () => {
 
 test('a label paste leaves an attribute coloring chosen', () => {
   const model = fakeModel({
-    editableSources: GROUPED,
+    arrangedRows: GROUPED,
     rowColorFields: ['group'],
     rowColorSetting: { field: 'group', scale: { domain: [], range: [] } },
     rowColorPins: new Map([['unshown', '#0f0']]),
@@ -369,7 +369,7 @@ test('a label paste leaves an attribute coloring chosen', () => {
 })
 
 test('a pasted column the dialog does not write warns and changes nothing', () => {
-  const model = fakeModel({ editableSources: GROUPED })
+  const model = fakeModel({ arrangedRows: GROUPED })
   setup(model)
   paste('name,group\na,g2')
   expect(screen.getByText(/changes to group will be ignored/)).toBeVisible()
@@ -382,7 +382,7 @@ test('a pasted column the dialog does not write warns and changes nothing', () =
 describe('colored by an attribute', () => {
   const byGroup = () =>
     fakeModel({
-      editableSources: GROUPED,
+      arrangedRows: GROUPED,
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
@@ -460,7 +460,7 @@ describe('colored by an attribute', () => {
 
   test('Clear keeps the palette past the pairs, which the unpaired values take', () => {
     const model = fakeModel({
-      editableSources: GROUPED,
+      arrangedRows: GROUPED,
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
@@ -492,7 +492,7 @@ describe('colored by an attribute', () => {
 
   test('Clear keeps the Other color the config sets', () => {
     const model = fakeModel({
-      editableSources: GROUPED,
+      arrangedRows: GROUPED,
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
@@ -515,7 +515,7 @@ describe('None', () => {
   test('offers no Other swatch, and the rows show their own colors', () => {
     setup(
       fakeModel({
-        editableSources: [{ name: 'a', color: '#00ff00' }, { name: 'b' }],
+        arrangedRows: [{ name: 'a', color: '#00ff00' }, { name: 'b' }],
         rowColorSetting: { ...EMPTY, scale: { ...EMPTY.scale, unknown: '' } },
       }),
     )
@@ -546,7 +546,7 @@ describe('None', () => {
 
   test('on a display dealing no palette writes no unknown', () => {
     const model = fakeModel({
-      editableSources: GROUPED,
+      arrangedRows: GROUPED,
       rowColorFields: ['group'],
       rowColorSetting: { ...EMPTY, field: 'group' },
       rowPaletteDeals: false,
@@ -565,7 +565,7 @@ describe('None', () => {
 describe('the colors a choice starts from', () => {
   const overBase = () =>
     fakeModel({
-      editableSources: GROUPED,
+      arrangedRows: GROUPED,
       rowColorFields: ['group'],
       rowColorSetting: { ...EMPTY, scale: { ...EMPTY.scale, unknown: '' } },
       baseRowColorSetting: {
@@ -621,7 +621,7 @@ describe('the colors a choice starts from', () => {
 test('a color by the display does not offer still shows as chosen', () => {
   setup(
     fakeModel({
-      editableSources: GROUPED,
+      arrangedRows: GROUPED,
       rowColorFields: ['group'],
       rowColorSetting: { ...EMPTY, field: 'tissue' },
     }),
@@ -734,7 +734,7 @@ describe('the plot color line', () => {
 test('showRows false drops the row choice, the grid, the bulk editor and the reset', () => {
   render(
     <RowArrangementDialog
-      model={fakeModel({ editableSources: [{ name: 'a' }] })}
+      model={fakeModel({ arrangedRows: [{ name: 'a' }] })}
       handleClose={jest.fn()}
       showRows={false}
       plotColor={{
@@ -815,7 +815,7 @@ describe('the Other rows swatch on a stacked display', () => {
 
 test('an attribute lists Other values with the rows no pair names, and colors them', () => {
   const model = fakeModel({
-    editableSources: GROUPED,
+    arrangedRows: GROUPED,
     rowColorFields: ['group'],
     rowColorSetting: {
       field: 'group',
@@ -842,7 +842,7 @@ test('an attribute lists Other values with the rows no pair names, and colors th
 
 test('the value table lists the values in the order the key does', () => {
   const model = fakeModel({
-    editableSources: [
+    arrangedRows: [
       { name: 'a', group: 'g1' },
       { name: 'b', group: 'g2' },
       { name: 'c', group: 'g2' },
@@ -866,7 +866,7 @@ describe('the Other values swatch', () => {
   // A stacked display, whose None writes no unknown of its own.
   const byGroupPair = () =>
     fakeModel({
-      editableSources: GROUPED,
+      arrangedRows: GROUPED,
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',
@@ -926,7 +926,7 @@ describe('the Other values swatch', () => {
 
   test("a config's '' shows None pressed, and Auto deals the palette", () => {
     const model = fakeModel({
-      editableSources: GROUPED,
+      arrangedRows: GROUPED,
       rowColorFields: ['group'],
       rowColorSetting: {
         field: 'group',

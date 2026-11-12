@@ -69,7 +69,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           effectiveRowHeight,
           hoveredTreeNode,
           scrollTop = 0,
-          sources,
+          drawnRows,
         } = self
         if (!mouseoverCanvas) {
           return
@@ -103,8 +103,8 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           // A hovered subtree is contiguous whenever the tree is drawn at all
           // (`treeDescribesRows`), so this is normally a single rect.
           const descendantSet = new Set(hoveredTreeNode.descendantNames)
-          const runs = rowRuns(sources, source =>
-            descendantSet.has(source.name) ? true : undefined,
+          const runs = rowRuns(drawnRows, row =>
+            descendantSet.has(row.name) ? true : undefined,
           )
           for (const { start, end } of runs) {
             ctx.fillRect(

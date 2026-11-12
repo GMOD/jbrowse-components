@@ -62,7 +62,7 @@ test('real bigMafSummary records render to positioned bars on their species rows
   )
   expect(records.length).toBeGreaterThan(0)
 
-  // Real species names — what the track's `sources`/`rowIndexBySrc` resolve
+  // Real species names — what the track's `drawnRows`/`rowIndexBySrc` resolve
   // against in production. Take a subset so the test also proves src-filtering
   // (rows whose src isn't listed are dropped).
   const allSrcs = [...new Set(records.map(r => r.src))]

@@ -36,7 +36,7 @@ describe('variant display colorBy', () => {
     ).toBe('population')
     // same population => same color, different => different
     const byName = Object.fromEntries(
-      model.sources.map(s => [s.name, s.rowColor]),
+      model.drawnRows.map(s => [s.name, s.rowColor]),
     )
     expect(byName.HG001).toBe(byName.HG003)
     expect(byName.HG001).not.toBe(byName.HG002)
@@ -62,11 +62,19 @@ describe('variant display colorBy', () => {
     model.setSources(sources)
     // band by population: with no domain the bands sort, AFR ahead of EUR
     model.facetByField('population')
-    expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
+    expect(model.drawnRows.map(s => s.name)).toEqual([
+      'HG002',
+      'HG001',
+      'HG003',
+    ])
 
     // both channels resolve on the same read, so one cannot displace the other
     model.setRowColorChoice('sex')
-    expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
+    expect(model.drawnRows.map(s => s.name)).toEqual([
+      'HG002',
+      'HG001',
+      'HG003',
+    ])
   })
 
   // Set to empty, the tint goes and the banding stays: a recolor is not a
@@ -79,8 +87,12 @@ describe('variant display colorBy', () => {
     model.setRowColorChoice('')
 
     expect(model.rowColorField).toBe('')
-    expect(model.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
-    expect(model.sources.some(s => s.rowColor)).toBe(false)
+    expect(model.drawnRows.map(s => s.name)).toEqual([
+      'HG002',
+      'HG001',
+      'HG003',
+    ])
+    expect(model.drawnRows.some(s => s.rowColor)).toBe(false)
   })
 
   // While a channel is bound to a variable it beats a per-row constant — the
@@ -90,10 +102,14 @@ describe('variant display colorBy', () => {
     const model = makeModel()
     model.setSources(sources.map(s => ({ ...s, color: 'rebeccapurple' })))
     model.setRowColorChoice('population')
-    expect(model.sources.some(s => s.rowColor === 'rebeccapurple')).toBe(false)
+    expect(model.drawnRows.some(s => s.rowColor === 'rebeccapurple')).toBe(
+      false,
+    )
 
     model.setRowColorChoice('')
-    expect(model.sources.every(s => s.rowColor === 'rebeccapurple')).toBe(true)
+    expect(model.drawnRows.every(s => s.rowColor === 'rebeccapurple')).toBe(
+      true,
+    )
   })
 
   it('writes no arrangement at all', () => {
@@ -111,12 +127,12 @@ describe('variant display colorBy', () => {
     const model = makeModel()
     model.setSources(sources)
     model.setRowColorChoice('population')
-    const before = new Map(model.sources.map(s => [s.name, s.rowColor]))
+    const before = new Map(model.drawnRows.map(s => [s.name, s.rowColor]))
 
     model.setRowFocus(['HG002'])
 
-    expect(model.sources.map(s => s.name)).toEqual(['HG002'])
-    expect(model.sources[0]!.rowColor).toBe(before.get('HG002'))
+    expect(model.drawnRows.map(s => s.name)).toEqual(['HG002'])
+    expect(model.drawnRows[0]!.rowColor).toBe(before.get('HG002'))
   })
 
   // A pin is no choice: it colors its row under every one, None included.
@@ -125,18 +141,18 @@ describe('variant display colorBy', () => {
     model.setSources(sources)
     expect(model.rowPaletteDeals).toBe(false)
     expect(model.rowColorChoice).toBe('')
-    model.applyRowEdits(model.editableSources, { colors: { HG001: '#123456' } })
+    model.applyRowEdits(model.arrangedRows, { colors: { HG001: '#123456' } })
     expect(model.rowColorChoice).toBe('')
-    expect(model.sources[0]!.rowColor).toBe('#123456')
-    expect(model.sources[1]!.rowColor).toBeUndefined()
+    expect(model.drawnRows[0]!.rowColor).toBe('#123456')
+    expect(model.drawnRows[1]!.rowColor).toBeUndefined()
 
     model.setRowColorChoice('population')
     expect(model.rowColorChoice).toBe('population')
-    expect(model.sources[0]!.rowColor).toBe('#123456')
-    expect(model.sources[1]!.rowColor).not.toBe('#123456')
+    expect(model.drawnRows[0]!.rowColor).toBe('#123456')
+    expect(model.drawnRows[1]!.rowColor).not.toBe('#123456')
     model.setRowColorChoice('')
     expect(model.rowColorChoice).toBe('')
-    expect(model.sources.map(s => s.rowColor)).toEqual([
+    expect(model.drawnRows.map(s => s.rowColor)).toEqual([
       '#123456',
       undefined,
       undefined,
@@ -176,5 +192,5 @@ test('the Samples menu ticks None over the colors the dialog pinned', () => {
   )
   expect(ticked).toContain('None')
   expect(ticked).not.toContain('Each row')
-  expect(display.sources[0]!.rowColor).toBe('#f00')
+  expect(display.drawnRows[0]!.rowColor).toBe('#f00')
 })

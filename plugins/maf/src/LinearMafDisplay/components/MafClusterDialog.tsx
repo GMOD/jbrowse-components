@@ -19,7 +19,7 @@ const MafClusterDialog = observer(function MafClusterDialog({
   model: MafClusterSelf
   handleClose: () => void
 }) {
-  const sources = model.clusterableSources.map(s => s.name)
+  const sources = model.shownRows.map(s => s.name)
   return (
     <ClusterDialog
       model={model}

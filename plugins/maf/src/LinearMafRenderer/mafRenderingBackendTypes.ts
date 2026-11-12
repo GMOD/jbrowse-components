@@ -166,7 +166,7 @@ export interface MafWireRegionData {
 }
 
 // Placed counterparts: `rowIndex` is the on-screen row, valid only against the
-// `sources` list it was placed with. Everything that draws, hit-tests or
+// `drawnRows` list it was placed with. Everything that draws, hit-tests or
 // measures rows consumes these, and keys on `rowIndex` alone — `sampleId` rides
 // along as provenance, so it stays optional here rather than becoming a second
 // row identity the render path could disagree with.

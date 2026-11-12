@@ -1,19 +1,19 @@
 import { labelEdits } from './arrangeRows.ts'
 
-import type { RowSource } from '../types.ts'
+import type { Row } from '../types.ts'
 
 // The adapter says `a` is "Ay"; the config relabels `c` "Sea".
-const adapter: RowSource[] = [
+const adapter: Row[] = [
   { name: 'a', label: 'Ay' },
   { name: 'b' },
   { name: 'c' },
 ]
-const shown: RowSource[] = [
+const shown: Row[] = [
   { name: 'a', label: 'Ay' },
   { name: 'b' },
   { name: 'c', label: 'Sea' },
 ]
-function haplotypeParent(row: RowSource) {
+function haplotypeParent(row: Row) {
   const match = / HP\d+$/.exec(row.name)
   return match
     ? { name: row.name.slice(0, match.index), labelSuffix: match[0] }
@@ -47,7 +47,7 @@ test('a row the dialog never showed keeps its label', () => {
 
 // A variant dialog opened before the first genotypes land shows sample rows.
 test('a dialog row the current rows no longer hold writes nothing', () => {
-  const haplotypes: RowSource[] = ['S0 HP1', 'S0 HP2'].map(name => ({
+  const haplotypes: Row[] = ['S0 HP1', 'S0 HP2'].map(name => ({
     name,
     label: 'Sample zero',
   }))

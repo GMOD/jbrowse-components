@@ -72,7 +72,7 @@ describe('the rows always fit the track height', () => {
       treeNewick: undefined,
       samplesCanonical: false,
     })
-    expect(display.sources.length).toBe(50)
+    expect(display.drawnRows.length).toBe(50)
     expect(display.height).toBeCloseTo(before)
   })
 

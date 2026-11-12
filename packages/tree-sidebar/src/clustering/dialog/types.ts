@@ -19,13 +19,13 @@ export interface ClusterRunArgs {
 
 /**
  * The display a dialog clusters: an R order pasted back indexes
- * `clusterableSources` and lands through `setRowOrder`, as a run's does.
+ * `shownRows` and lands through `setRowOrder`, as a run's does.
  */
 export interface ClusterDialogModel<
   S extends { name: string },
 > extends IStateTreeNode {
-  clusterableSources: S[]
-  editableSources: S[]
+  shownRows: S[]
+  arrangedRows: S[]
   setRowOrder: (rows: S[]) => void
 }
 

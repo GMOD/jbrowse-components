@@ -37,7 +37,7 @@ export function SvgTreeSidebar({
   const {
     showTree,
     hierarchy,
-    sources,
+    rows,
     rowHeight,
     treeAreaWidth,
     showLabels = true,
@@ -61,9 +61,9 @@ export function SvgTreeSidebar({
         availableHeight={availableHeight}
         text={text}
       />
-      {showLabels && sources.length ? (
+      {showLabels && rows.length ? (
         <SvgRowLabels
-          sources={sources}
+          rows={rows}
           rowHeight={rowHeight}
           labelOffset={rowLabelOffset}
           scrollTop={scrollTop}
@@ -79,10 +79,10 @@ export function SvgTreeSidebar({
   )
   return (
     <g transform={`translate(${-width} 0)`}>
-      {showLabels && sources.length ? (
+      {showLabels && rows.length ? (
         <SvgRowColumnLabels
           labels={columnLabels}
-          sources={sources}
+          rows={rows}
           rowHeight={rowHeight}
           labelOffset={rowLabelOffset}
           annotations={annotations}

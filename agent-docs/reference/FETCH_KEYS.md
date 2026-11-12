@@ -122,7 +122,7 @@ value, `rpcProps()` changes, `SettingsInvalidate` runs `invalidateSettings`, whi
 `samplePloidy` or any getter that reads them. Split the computation: `rpcProps()` gets a
 cache-key version from user inputs only, and the part needing fetch-result data stays in
 a separate view used for rendering. In the variant case, `rpcProps().sampleFilter` reads
-`sourcesBase` (before haplotype expansion); the client's `sources` view reads
+`sourcesBase` (before haplotype expansion); the client's `drawnRows` view reads
 `samplePloidy` for rendering only, and the worker expands haplotype rows itself.
 
 ## Row order is not a fetch input

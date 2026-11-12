@@ -1,7 +1,7 @@
 import { findRowSpans } from './components/findRowSpan.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 import type { RowSpan } from './components/findRowSpan.ts'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { SessionAssemblies } from '@jbrowse/core/util/tracks'
@@ -14,7 +14,7 @@ export interface RowNavigationTarget extends RowSpan {
 }
 
 export interface RowNavigationInputs {
-  sources: readonly MafSource[]
+  rows: readonly MafRow[]
   assemblies: SessionAssemblies
   detail: ReadonlyMap<number, MafRegionData>
   displayedRegionIndex: number
@@ -35,7 +35,7 @@ export interface RowNavigationInputs {
  * from its `assemblyConfigLocation` keeps the spelling that config uses.
  */
 export function rowNavigationTargetsOf({
-  sources,
+  rows,
   assemblies,
   detail,
   displayedRegionIndex,
@@ -47,10 +47,10 @@ export function rowNavigationTargetsOf({
   const assemblyNames = new Map<number, string>()
   for (
     let row = Math.max(0, startRow);
-    row < Math.min(endRow, sources.length);
+    row < Math.min(endRow, rows.length);
     row++
   ) {
-    const { name, assemblyName: named, assemblyConfigLocation } = sources[row]!
+    const { name, assemblyName: named, assemblyConfigLocation } = rows[row]!
     const assemblyName = named ?? name
     if (
       assemblies.has(assemblyName) ||
@@ -71,13 +71,13 @@ export function rowNavigationTargetsOf({
   const targets: RowNavigationTarget[] = []
   for (const [rowIndex, assemblyName] of assemblyNames) {
     const span = spans?.get(rowIndex)
-    const source = sources[rowIndex]!
+    const row = rows[rowIndex]!
     if (span) {
       targets.push({
         ...span,
         assemblyName,
-        assemblyConfigLocation: source.assemblyConfigLocation,
-        sampleLabel: source.label,
+        assemblyConfigLocation: row.assemblyConfigLocation,
+        sampleLabel: row.label,
         rowIndex,
       })
     }

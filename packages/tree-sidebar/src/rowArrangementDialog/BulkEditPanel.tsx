@@ -65,8 +65,9 @@ export default observer(function BulkEditPanel<S extends { name: string }>({
       <DialogContent>
         <Typography>
           Paste CSV or TSV. The first line is the header. A{' '}
-          <strong>name</strong> column joins rows to existing sources, and the{' '}
-          <strong>label</strong> and <strong>rowColor</strong> columns set them.
+          <strong>name</strong> column matches each pasted line to a row, and
+          the <strong>label</strong> and <strong>rowColor</strong> columns set
+          them.
           <br />
           <strong>Update rows</strong> sets only the pasted columns.{' '}
           <strong>Replace rows</strong> also clears a matched row&apos;s label
@@ -86,7 +87,7 @@ export default observer(function BulkEditPanel<S extends { name: string }>({
           <Alert severity="warning" style={{ marginTop: 8 }}>
             {unmatched.length} name
             {unmatched.length === 1 ? '' : 's'} in the paste did not match any
-            source and will be ignored: {unmatched.slice(0, 5).join(', ')}
+            row and will be ignored: {unmatched.slice(0, 5).join(', ')}
             {unmatched.length > 5 ? ` … (${unmatched.length - 5} more)` : ''}
           </Alert>
         ) : null}

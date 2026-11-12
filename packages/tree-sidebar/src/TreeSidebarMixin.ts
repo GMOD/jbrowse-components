@@ -66,7 +66,7 @@ import type { RowSortSpec } from './rows/rowSort.ts'
 import type { TreeSidebarConfigModel } from './rows/treeSidebarRowViews.ts'
 import type { SvgSidebarProps } from './sidebar/svgSidebarWidth.ts'
 import type { TreeSpatialIndex } from './tree/spatialIndex.ts'
-import type { HoveredTreeNode, RowSource } from './types.ts'
+import type { HoveredTreeNode, Row } from './types.ts'
 import type {
   AnyConfigurationModel,
   KeyedWrites,
@@ -232,13 +232,13 @@ export interface ClusterRun {
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement and its row colors the display's `rows` config object (`rows.colors` pinned on rows, `rows.color` mapped from an attribute), each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows`, and `guideTreeNewick` where its adapter has a tree, and overrides the hooks its rows need
+ * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement and its row colors the display's `rows` config object (`rows.colors` pinned on rows, `rows.color` mapped from an attribute), each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`arrangedRows`, `shownRows`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows`, and `guideTreeNewick` where its adapter has a tree, and overrides the hooks its rows need
  *
  * The rows are derived in stages, each a separate computed: the display's
  * `discoveredRows`, then `expandedRows` (`expandRows`: a variant display's
- * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
+ * haplotypes), then `arrangedRows`, ordered by `rowOrder`, relabelled by
  * `rows.labels` and each with its resolved color as `rowColor`, then
- * `clusterableSources`, narrowed to the focus, then `bandedSources`, stacked
+ * `shownRows`, narrowed to the focus, then `stackedRows`, stacked
  * in the bands `rowBanding` names. The stages, the row colors, where
  * the rows start (`rowsTopOffset`) and the dendrogram positioned against them
  * (`hierarchy`) are written in `treeSidebarRowViews.ts`,
@@ -260,7 +260,7 @@ export interface ClusterRun {
  * or what a track the session owns was added with, and never touches
  * `rows.field`.
  */
-export function TreeSidebarMixin<S extends RowSource = RowSource>() {
+export function TreeSidebarMixin<S extends Row = Row>() {
   const base = types
     .model({
       /**
@@ -542,17 +542,17 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       rowOrderWillDropTree(next: readonly { name: string }[]) {
         return (
-          !movesNoRow(next, self.editableSources) &&
+          !movesNoRow(next, self.arrangedRows) &&
           self.orderDropsRowTree(orderOver(self.rowSort, next))
         )
       },
       /**
        * #getter
        * Overridable hook: whether the declarative `runClustering` run may
-       * start, two or more `clusterableSources` by default.
+       * start, two or more `shownRows` by default.
        */
       get autoClusterReady(): boolean {
-        return self.clusterableSources.length > 1
+        return self.shownRows.length > 1
       },
     }))
     .views(self => rowsContentHeightViews(withRowHeight(self)))
@@ -598,10 +598,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * than two bands stack.
        */
       get clusterPartition(): string[][] | undefined {
-        const { rowBands, bandedSources } = self
+        const { rowBands, stackedRows } = self
         return rowBands.length > 1
           ? rowBands.map(({ start, end }) =>
-              bandedSources.slice(start, end).map(row => row.name),
+              stackedRows.slice(start, end).map(row => row.name),
             )
           : undefined
       },
@@ -614,7 +614,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get treelessBandCount(): number {
         const { root, rowBands } = self
         return root && rowBands.length
-          ? matchBandClades(root, self.bandedSources, rowBands).filter(
+          ? matchBandClades(root, self.stackedRows, rowBands).filter(
               clade => !clade,
             ).length
           : 0
@@ -648,7 +648,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         const narrowing = self.rowNarrowing
         const unread = unreadRowFields(rows, narrowing.filter)
         const emptiedBy =
-          rows.length > 0 && self.clusterableSources.length === 0
+          rows.length > 0 && self.shownRows.length === 0
             ? filteredRows(rows, narrowing.filter).length === 0
               ? 'filter'
               : keptRows(rows, narrowing.kept, narrowing.rowAlias).length > 0
@@ -718,7 +718,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         const clears = self.rowNarrowingClears
         return self.rowNarrowingShows
           ? {
-              text: `Showing ${self.clusterableSources.length} of ${self.expandedRows.length} rows${clears ? ' · Show all' : ''}`,
+              text: `Showing ${self.shownRows.length} of ${self.expandedRows.length} rows${clears ? ' · Show all' : ''}`,
               title: [
                 ...(clears ? ['Click to show every row again'] : []),
                 ...(base
@@ -906,13 +906,13 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             'labels',
             labelEdits({
               rows,
-              shown: self.editableSources,
+              shown: self.arrangedRows,
               adapter: self.expandedRows,
               labels: self.rowLabels,
               rowParent: row => self.rowParent(row),
             }),
           )
-          if (!movesNoRow(rows, self.editableSources)) {
+          if (!movesNoRow(rows, self.arrangedRows)) {
             writeOrder(rows)
           }
           persist()
@@ -969,7 +969,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         const key = self.rowColorKeyInputs
         const names =
           scaleId === ROW_COLOR_SCALE_ID
-            ? filteredRows(self.editableSources, self.rowFilter)
+            ? filteredRows(self.arrangedRows, self.rowFilter)
                 .filter(row => rowColorKeyValue(row, key) === value)
                 .map(row => row.name)
             : []

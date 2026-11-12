@@ -15,11 +15,11 @@ import type { RpcStatus, StatusCallback } from '@jbrowse/core/util'
 export type NumericRow = ArrayLike<number> & Iterable<number>
 
 // A Map, not a Record, because the row order IS the contract: `order` comes back
-// as indices into it and every caller maps those straight into its own source
+// as indices into it and every caller maps those straight into its own row
 // list. A plain object cannot carry that — it hoists integer-like keys ahead of
 // the rest, so rows named "1", "2", "10" (numbered bigWigs, numeric VCF sample
 // IDs, a numeric partition field) arrived at the clusterer in numeric order and
-// the indices it returned pointed at the wrong sources. What made that expensive
+// the indices it returned pointed at the wrong rows. What made that expensive
 // to notice is that it fails twice over: the rows reorder to the wrong
 // identities, and the tree's leaf names then disagree with them, so
 // `treeDescribesRows` refuses to draw the dendrogram that would have shown it.

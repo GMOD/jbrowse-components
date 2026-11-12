@@ -63,13 +63,15 @@ function derived(display: LinearWiggleDisplayModel) {
     isOverlay: display.isOverlay,
     numRows: display.numRows,
     effectiveColor: display.effectiveColor,
-    sources: display.sources.map(({ name, label, color, rowColor, group }) => ({
-      name,
-      label,
-      color,
-      rowColor,
-      group,
-    })),
+    drawnRows: display.drawnRows.map(
+      ({ name, label, color, rowColor, group }) => ({
+        name,
+        label,
+        color,
+        rowColor,
+        group,
+      }),
+    ),
     markColors: display.markSources.map(s => s.color),
     rowColorKey:
       display.legendSpec.sections.find(s => s.id === 'rows.color')?.items ?? [],
@@ -255,7 +257,7 @@ test('rows: a focus hides rows without recoloring the kept ones', async () => {
   display.setRowFocus(['Grain2', 'Grain4'])
   expect(derived(display)).toMatchSnapshot()
   display.setRowFocus(undefined)
-  expect(display.sources.map(s => s.name)).toEqual([
+  expect(display.drawnRows.map(s => s.name)).toEqual([
     'Grain1',
     'Grain2',
     'Grain3',
@@ -269,7 +271,7 @@ test('rows: a legend click focuses the group it names', async () => {
     rows: { field: 'source', color: 'group' },
   })
   display.focusLegendEntry('rows.color', 'Islet')
-  expect(display.sources.map(s => s.name)).toEqual(['Grain1', 'Grain2'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['Grain1', 'Grain2'])
 })
 
 test('rows, line: dialog edits reorder, recolor the plot and relabel', async () => {
@@ -277,7 +279,7 @@ test('rows, line: dialog edits reorder, recolor the plot and relabel', async () 
     ...rowsPerSource(),
     defaultRendering: 'line',
   })
-  const [g1, g2, g3, g4] = display.editableSources
+  const [g1, g2, g3, g4] = display.arrangedRows
   display.applyRowEdits([{ ...g3!, label: 'Liver 3' }, g2!, g4!, g1!], {
     color: { field: 'name' },
     colors: { [g2!.name]: '#00f' },
@@ -292,8 +294,8 @@ test('rows, density: a dialog edit tints the label', async () => {
     ...rowsPerSource(),
     defaultRendering: 'density',
   })
-  const [, g2] = display.editableSources
-  display.applyRowEdits(display.editableSources, {
+  const [, g2] = display.arrangedRows
+  display.applyRowEdits(display.arrangedRows, {
     color: { field: 'name' },
     colors: { [g2!.name]: '#00f' },
   })
@@ -306,7 +308,7 @@ test('rows: a run lands its tree, a reorder drops it, a reset returns to the see
     regions: [{ refName: 'ctgA', start: 0, end: 4000 }],
     settings: [],
   }
-  const [g3, g1, g2, g4] = display.editableSources
+  const [g3, g1, g2, g4] = display.arrangedRows
   display.setRowOrder([g2!, g1!, g3!, g4!], {
     tree: '((Grain2,Grain1),(Grain3,Grain4));',
     provenance,
@@ -327,7 +329,7 @@ test('rows: a run lands its tree, a reorder drops it, a reset returns to the see
 // on `rows.colors` and paints no strip; an overlaid heatmap says to use rows.
 test('overlay, density: a dialog edit is kept and paints no strip', async () => {
   const display = await loaded(GROUPED, { defaultRendering: 'density' })
-  display.applyRowEdits(display.editableSources, {
+  display.applyRowEdits(display.arrangedRows, {
     color: { field: 'name' },
     colors: { Grain1: '#00f' },
   })
@@ -343,7 +345,7 @@ test('overlay, density: a dialog edit is kept and paints no strip', async () => 
 // one, and the tree rotates to the order rather than going with it.
 test('rows: the plot box writes the members it names', async () => {
   const display = await loaded(GROUPED, rowsPerSource())
-  const [g1, g2, g3, g4] = display.editableSources
+  const [g1, g2, g3, g4] = display.arrangedRows
   display.applyRowEdits([{ ...g1!, label: 'One' }, g2!, g3!, g4!])
   display.setRowFocus(['Grain1', 'Grain2'])
   display.setRowOrder([g1!, g2!, g3!, g4!], {
@@ -353,14 +355,14 @@ test('rows: the plot box writes the members it names', async () => {
   const draft = structuredClone(display.plot) as { rows: { sort: string[] } }
   draft.rows.sort = ['Grain2', 'Grain1']
   display.applyPlot(draft)
-  expect(display.sources.map(s => s.name)).toEqual(['Grain2', 'Grain1'])
+  expect(display.drawnRows.map(s => s.name)).toEqual(['Grain2', 'Grain1'])
   expect(display.rowLabels).toEqual({ Grain1: 'One' })
   expect(display.rowFocus).toEqual(['Grain1', 'Grain2'])
 
   display.applyPlot({
     rows: { field: 'source', sort: ['Grain2', 'Grain1'], kept: null },
   })
-  expect(display.sources.map(s => s.name)).toEqual([
+  expect(display.drawnRows.map(s => s.name)).toEqual([
     'Grain2',
     'Grain1',
     'Grain3',
@@ -385,7 +387,7 @@ test('rows: a reorder keeps the declared rows.colors as they were', async () => 
     rows: { field: 'source', colors: { Grain3: '#0f0', Grain1: '#00f' } },
   })
   expect(display.rowColorIsCustom).toBe(false)
-  const [g1, g2, g3, g4] = display.editableSources
+  const [g1, g2, g3, g4] = display.arrangedRows
   display.applyRowEdits([g1!, g3!, g2!, g4!])
   expect(getConf(display, ['rows', 'colors'])).toEqual({
     Grain3: '#0f0',

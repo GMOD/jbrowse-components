@@ -202,7 +202,7 @@ all spanning one reference interval.
   is (`sampleFilter`, sent **sorted**). **Nothing may wait on the refetch this
   removed** — the cluster tree did and silently drew nothing.
 - **`rpcProps()` must not read fetch-derived state** — `sampleFilter` reads
-  `sourcesBase`, not `sources`.
+  `sourcesBase`, not `drawnRows`.
 - **Feature filters are the `filter` config slot alone**
   (`@jbrowse/core/util/jexlFilters`): the dialog, a feature's filter actions and
   "Edit plot..." all write it, and "Clear all filters" returns it to what the
@@ -218,7 +218,7 @@ all spanning one reference interval.
 `rows` (`VariantRows`: `rows.field` is `sample` or `haplotype`) holds the order,
 labels, tints, tree, provenance and focus, all config, written as session deltas
 (ADR-157). The stages that derive the rows from it (`discoveredRows`,
-`expandRows`, `editableSources`, `clusterableSources`, `bandedSources`), the row
+`expandRows`, `arrangedRows`, `shownRows`, `stackedRows`), the row
 color getter (`resolvedRowColors`), the color key (`rowColorScales`) and the
 reset rules are [TREE_SIDEBAR.md](TREE_SIDEBAR.md)'s. What is specific here:
 

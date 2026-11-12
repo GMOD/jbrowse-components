@@ -23,7 +23,7 @@ const namesOf = (rows: readonly { name: string }[]) => rows.map(r => r.name)
 
 test('a kept list naming no sample draws and fetches no row, and names the miss', () => {
   const display = loaded({ kept: ['NA0001'] })
-  expect(display.sources).toEqual([])
+  expect(display.drawnRows).toEqual([])
   expect(display.sampleFilter).toEqual([])
   expect(display.rowNarrowingHint?.text).toBe('Showing 0 of 4 rows · Show all')
   expect(display.notices).toContain(
@@ -36,7 +36,7 @@ test('rows.filter on a samplesTsv column narrows the fetch and the rows', () => 
     filter: [{ field: 'population', equal: 'EUR' }],
   })
   expect(display.sampleFilter).toEqual(['S1', 'S3'])
-  expect(namesOf(display.sources)).toEqual(['S1', 'S3'])
+  expect(namesOf(display.drawnRows)).toEqual(['S1', 'S3'])
   expect(display.rowNarrowingHint?.text).toBe('Showing 2 of 4 rows')
 })
 
@@ -65,13 +65,13 @@ test('Show all lets a filter the config states show through', () => {
   )
   setConf(display, ['rows', 'filter'], [{ field: 'population', equal: 'AFR' }])
   display.setRowFocus(['S0'])
-  expect(namesOf(display.sources)).toEqual(['S0'])
+  expect(namesOf(display.drawnRows)).toEqual(['S0'])
   expect(display.rowNarrowingClears).toBe(true)
   expect(display.rowNarrowingHint?.text).toBe('Showing 1 of 4 rows · Show all')
 
   display.showAllRows()
   expect(getConf(display, ['rows', 'kept'])).toEqual([])
-  expect(namesOf(display.sources)).toEqual(['S1', 'S3'])
+  expect(namesOf(display.drawnRows)).toEqual(['S1', 'S3'])
   expect(display.rowNarrowingClears).toBe(false)
 })
 
@@ -82,9 +82,9 @@ test('Reset row order restores the config’s kept and filter', () => {
   })
   setConf(display, ['rows', 'filter'], [])
   display.setRowFocus(['S0', 'S2'])
-  expect(namesOf(display.sources)).toEqual(['S0', 'S2'])
+  expect(namesOf(display.drawnRows)).toEqual(['S0', 'S2'])
   display.resetRowArrangement()
-  expect(namesOf(display.sources)).toEqual(['S1'])
+  expect(namesOf(display.drawnRows)).toEqual(['S1'])
 })
 
 // "Show all rows" clears what a clade pick wrote, never the filter.
@@ -93,7 +93,7 @@ test('clearing the subtree filter leaves rows.filter', () => {
   setConf(display, ['rows', 'filter'], [{ field: 'population', equal: 'AFR' }])
   display.setRowFocus(['S0'])
   display.setRowFocus(undefined)
-  expect(namesOf(display.sources)).toEqual(['S0', 'S2'])
+  expect(namesOf(display.drawnRows)).toEqual(['S0', 'S2'])
 })
 
 // The rows a run clusters, the tree pruned beside them, the chip's count and
@@ -104,7 +104,7 @@ test('clustering, the tree, the chip and the fetch agree', () => {
     filter: [{ field: 'population', equal: 'AFR' }],
     kept: ['S0', 'S1', 'S2'],
   })
-  expect(namesOf(display.clusterableSources)).toEqual(['S0', 'S2'])
+  expect(namesOf(display.shownRows)).toEqual(['S0', 'S2'])
   expect(getLeafNames(display.root!)).toEqual(['S0', 'S2'])
   expect(display.sampleFilter).toEqual(['S0', 'S2'])
   expect(display.rowNarrowingHint?.text).toBe('Showing 2 of 4 rows · Show all')
@@ -119,7 +119,7 @@ test('a phased sample name keeps its haplotype rows under a filter', () => {
     kept: ['S1'],
   })
   display.setRowsField('haplotype')
-  expect(namesOf(display.sources)).toEqual(['S1 HP1', 'S1 HP2'])
+  expect(namesOf(display.drawnRows)).toEqual(['S1 HP1', 'S1 HP2'])
   expect(display.sampleFilter).toEqual(['S1'])
 })
 
@@ -155,6 +155,6 @@ test('a settings bag refuses rows.filter on a row name; a config loads without i
   const loadedWithIt = loaded({ filter: [{ field: 'sample', equal: 'S0' }] })
   expect(loadedWithIt.rowFilter).toEqual([])
   expect(loadedWithIt.rowNarrowingHint).toBeUndefined()
-  expect(namesOf(loadedWithIt.sources)).toEqual(['S0', 'S1', 'S2', 'S3'])
+  expect(namesOf(loadedWithIt.drawnRows)).toEqual(['S0', 'S1', 'S2', 'S3'])
   warn.mockRestore()
 })

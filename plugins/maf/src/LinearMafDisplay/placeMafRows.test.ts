@@ -67,7 +67,7 @@ test('places e-line rows the same way', () => {
 test('a genome the display is not drawing is dropped, not shifted', () => {
   const { blocks } = placeMafRegionData(
     wireData(['hg38', 'rn6', 'mm10']),
-    // rn6 is in the file but not in `sources`
+    // rn6 is in the file but not in `drawnRows`
     new Map([
       ['hg38', 0],
       ['mm10', 1],

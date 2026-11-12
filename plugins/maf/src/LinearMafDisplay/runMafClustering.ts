@@ -3,7 +3,7 @@ import {
   clusterProvenanceFromRegions,
 } from '@jbrowse/tree-sidebar'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ClusterRunModel, RpcMethodCaller } from '@jbrowse/tree-sidebar'
@@ -18,12 +18,12 @@ export type ClusterIdentityMatrixCaller =
  * `IAnyStateTreeNode`, which is `any`.
  */
 export interface MafClusterSelf
-  extends IStateTreeNode, ClusterRunModel<MafSource> {
-  clusterableSources: MafSource[]
+  extends IStateTreeNode, ClusterRunModel<MafRow> {
+  shownRows: MafRow[]
   autoClusterReady: boolean
   adapterConfig: Record<string, unknown>
   resolvedByteLimit: () => number | undefined
-  setRowOrder: (rows: MafSource[]) => void
+  setRowOrder: (rows: MafRow[]) => void
 }
 
 /**
@@ -46,18 +46,18 @@ export async function runMafClustering({
   signal: AbortSignal
   statusCallback: (status: RpcStatus) => void
 }) {
-  const { clusterableSources: sources, adapterConfig } = model
+  const { shownRows: rows, adapterConfig } = model
   const byteLimit = model.resolvedByteLimit()
   await applyClusterRun({
     model,
-    rows: sources,
+    rows,
     // The locus is the whole provenance: the bin count is fixed and every row
     // of the window is scored.
     provenance: clusterProvenanceFromRegions(regions),
     matrix: () =>
       rpcManager.call(sessionId, 'LinearMafClusterIdentityMatrix', {
         regions,
-        sources: sources.map(s => s.name),
+        sources: rows.map(s => s.name),
         adapterConfig,
         byteLimit,
         signal,

@@ -13,7 +13,7 @@ export interface ReducedModel
   // The rows the display is showing, at the mode's granularity and narrowed to
   // the focus: what both clustering paths cluster, so a re-run inside a
   // focused clade resolves that clade rather than the whole cohort.
-  clusterableSources: ProcessedSource[]
+  shownRows: ProcessedSource[]
   // The display filter's site fields, so both clustering entry points forward
   // the display's own rather than restating "off" defaults of their own.
   siteFilter: FieldPredicate[]

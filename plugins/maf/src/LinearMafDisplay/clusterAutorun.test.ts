@@ -58,7 +58,7 @@ describe('LinearMafDisplay declarative runClustering', () => {
     await waitFor(() => {
       expect(display.rowTree).toBe('(panTro4,hg38);')
     })
-    expect(display.sources.map(s => s.name)).toEqual(['panTro4', 'hg38'])
+    expect(display.drawnRows.map(s => s.name)).toEqual(['panTro4', 'hg38'])
 
     // one-shot: the flag clears itself so a saved session never re-triggers it
     expect(display.runClustering).toBeUndefined()

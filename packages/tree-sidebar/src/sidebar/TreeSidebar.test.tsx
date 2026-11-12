@@ -24,7 +24,7 @@ const rows = [{ name: 'a' }, { name: 'b' }]
 function model(props: Partial<TreeSidebarModel> = {}): TreeSidebarModel {
   return {
     showTree: true,
-    sources: rows,
+    drawnRows: rows,
     hierarchy: { x: 0, y: 0 } as never,
     root: buildTree('(a,b);'),
     treeAreaWidth: 80,

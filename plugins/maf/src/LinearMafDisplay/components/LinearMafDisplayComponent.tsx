@@ -32,7 +32,7 @@ function rowUnder(model: LinearMafDisplayModel, x: number, y: number) {
   const { pos, rowIndex, inBands } = mafPointerAt(model, x, y)
   const row =
     !sidebarCovers(model.sidebarBounds, x, y) && !inBands && !pos.oob
-      ? model.sources[rowIndex]
+      ? model.drawnRows[rowIndex]
       : undefined
   return row ? { name: row.name } : undefined
 }

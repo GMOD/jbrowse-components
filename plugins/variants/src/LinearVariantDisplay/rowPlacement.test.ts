@@ -110,10 +110,10 @@ describe('variant display row placement', () => {
     })
     const before = display.perRegionCellMap.get(0)
     display.applyRowEdits(
-      display.editableSources.map((s, i) =>
+      display.arrangedRows.map((s, i) =>
         i === 0 ? { ...s, label: 'Renamed' } : s,
       ),
-      { colors: { [display.editableSources[0]!.name]: '#123456' } },
+      { colors: { [display.arrangedRows[0]!.name]: '#123456' } },
     )
     expect(display.perRegionCellMap.get(0)).toBe(before)
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
@@ -179,7 +179,7 @@ describe('variant display row placement', () => {
       regularCellData(['S1 HP2', 'S0 HP1', 'S1 HP1', 'S0 HP2']),
     )
 
-    expect(display.sources.map(s => s.name)).toEqual([
+    expect(display.drawnRows.map(s => s.name)).toEqual([
       'S0 HP1',
       'S0 HP2',
       'S1 HP1',

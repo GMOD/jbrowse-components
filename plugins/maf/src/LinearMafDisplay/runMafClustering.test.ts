@@ -2,7 +2,7 @@ import { clusteredCladeLayout } from '@jbrowse/tree-sidebar'
 
 import { runMafClustering } from './runMafClustering.ts'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 import type {
   ClusterIdentityMatrixCaller,
   MafClusterSelf,
@@ -10,7 +10,7 @@ import type {
 
 const regions = [{ assemblyName: 'hg38', refName: 'chr6', start: 0, end: 100 }]
 
-function src(name: string): MafSource {
+function src(name: string): MafRow {
   return { name, label: name }
 }
 
@@ -20,8 +20,8 @@ function src(name: string): MafSource {
 // stands in.
 function makeModel(overrides: Partial<MafClusterSelf> = {}) {
   return {
-    clusterableSources: [src('GRCh38'), src('HG00099.1'), src('HG00099.2')],
-    editableSources: [
+    shownRows: [src('GRCh38'), src('HG00099.1'), src('HG00099.2')],
+    arrangedRows: [
       src('GRCh38'),
       src('HG00099.1'),
       src('HG00099.2'),
@@ -75,7 +75,7 @@ describe('runMafClustering', () => {
       adapterConfig: { type: 'BgzipTaffyAdapter' },
     })
     const [layout, { tree }] = model.setRowOrder.mock.calls[0]!
-    expect(layout.slice(0, 3).map((s: MafSource) => s.name)).toEqual([
+    expect(layout.slice(0, 3).map((s: MafRow) => s.name)).toEqual([
       'HG00099.2',
       'GRCh38',
       'HG00099.1',
@@ -90,7 +90,7 @@ describe('runMafClustering', () => {
     const model = makeModel()
     await run(model, makeRpcManager([0, 1, 2], '(a,b,c);'))
     const [layout] = model.setRowOrder.mock.calls[0]!
-    expect(layout.map((s: MafSource) => s.name)).toEqual([
+    expect(layout.map((s: MafRow) => s.name)).toEqual([
       'GRCh38',
       'HG00099.1',
       'HG00099.2',
@@ -116,7 +116,7 @@ describe('runMafClustering', () => {
     expect(() =>
       clusteredCladeLayout({
         rows: [src('a'), src('b'), src('c')],
-        editableSources: [],
+        arrangedRows: [],
         order: [0, 1],
       }),
     ).toThrow()

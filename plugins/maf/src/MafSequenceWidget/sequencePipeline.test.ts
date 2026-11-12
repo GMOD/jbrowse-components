@@ -8,7 +8,7 @@ import MafTabixConfigSchema from '../MafTabixAdapter/configSchema.ts'
 import { formatFastaSequences } from '../util/formatFastaSequences.ts'
 import { processFeaturesToFasta } from '../util/processFeaturesToFasta.ts'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 
@@ -53,7 +53,7 @@ const REGION: Region = {
   assemblyName: 'volvox',
 }
 
-const SAMPLES: MafSource[] = [
+const SAMPLES: MafRow[] = [
   { name: 'volvox', label: 'volvox' },
   { name: 'simvolvox', label: 'simvolvox' },
   { name: 'absentvolvox', label: 'absentvolvox' },

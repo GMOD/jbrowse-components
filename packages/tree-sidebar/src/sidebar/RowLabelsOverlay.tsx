@@ -7,7 +7,7 @@ import { SvgRowLabels } from './SvgRowLabels.tsx'
 import { rowColumnLabelsHeight } from './rowLabelsBoxWidth.ts'
 
 import type { RowBand } from '../rows/bandRows.ts'
-import type { RowAnnotationColumn, RowLabelSource } from '../types.ts'
+import type { RowAnnotationColumn, LabelledRow } from '../types.ts'
 
 /**
  * The on-screen half of the sidebar's row labels: `SvgRowLabels` in the overlay
@@ -48,7 +48,7 @@ import type { RowAnnotationColumn, RowLabelSource } from '../types.ts'
  * display body re-renders on every animation frame of a wheel zoom — its
  * `visible*` getters are all derived from the view's coordinates — and dragged
  * this whole overlay along with it: one `measureText` per row to size the label
- * box and N rects and texts to reconcile, none of which a zoom changes. `sources` is a MobX computed, so its identity is stable
+ * box and N rects and texts to reconcile, none of which a zoom changes. `rows` is a MobX computed, so its identity is stable
  * for exactly as long as the row list is.
  *
  * `showLabels: false` keeps that `<svg>` and drops only the labels inside it,
@@ -63,7 +63,7 @@ import type { RowAnnotationColumn, RowLabelSource } from '../types.ts'
  * scroll and no scrolled row draws into them.
  */
 export const RowLabelsOverlay = observer(function RowLabelsOverlay({
-  sources,
+  rows,
   rowHeight,
   labelOffset,
   width,
@@ -76,10 +76,10 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
   annotations,
   columnLabels = [],
 }: {
-  // Resolved, never absent: every display's `sources` getter answers `[]`
+  // Resolved, never absent: every display's `drawnRows` getter answers `[]`
   // before a fetch has landed, and "no rows yet" is its loading state to
   // report, not a missing array to render around.
-  sources: RowLabelSource[]
+  rows: LabelledRow[]
   // Resolved px row height, never a fit-to-height sentinel — same contract as
   // `TreeDrawingModel.effectiveRowHeight`.
   rowHeight: number
@@ -105,7 +105,7 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
 }) {
   const rowLabelOffset = labelOffset + (bands.length ? bandLabelWidth() : 0)
   const columnLabelsHeight = rowColumnLabelsHeight(columnLabels)
-  return sources.length ? (
+  return rows.length ? (
     <TrackOverlayPortal>
       {showLabels && columnLabelsHeight > 0 ? (
         <svg
@@ -123,7 +123,7 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
           <g transform={`translate(0 ${columnLabelsHeight})`}>
             <SvgRowColumnLabels
               labels={columnLabels}
-              sources={sources}
+              rows={rows}
               rowHeight={rowHeight}
               labelOffset={rowLabelOffset}
               annotations={annotations}
@@ -152,7 +152,7 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
         />
         {showLabels ? (
           <SvgRowLabels
-            sources={sources}
+            rows={rows}
             rowHeight={rowHeight}
             labelOffset={rowLabelOffset}
             scrollTop={scrollTop}

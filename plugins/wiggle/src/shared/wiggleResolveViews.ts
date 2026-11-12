@@ -35,7 +35,7 @@ export interface WiggleResolveHost {
   summaryField: SummaryField
   renderingType: WiggleRendering
   isRowLayout: boolean
-  sources: readonly { name: string; label?: string; rowColor?: string }[]
+  drawnRows: readonly { name: string; label?: string; rowColor?: string }[]
   resolution: number
   yField: string
   rowPaletteDeals: boolean
@@ -130,7 +130,7 @@ export function wiggleResolveViews(self: WiggleResolveHost) {
      * (`wiggleMarkSources`), which the encoder and the tooltip read.
      */
     get markSources(): { name: string; label?: string; color?: string }[] {
-      return wiggleMarkSources(self.sources, {
+      return wiggleMarkSources(self.drawnRows, {
         rowColorPaintsMarks: this.rowColorPaintsMarks,
         paletteDeals: self.rowPaletteDeals,
         anyRowColored: self.resolvedRowColors.size > 0,
@@ -154,7 +154,7 @@ export function wiggleResolveViews(self: WiggleResolveHost) {
      * that hides sources leaves the axis scaled to the ones shown.
      */
     get autoscaleSourceNames(): Set<string> {
-      return new Set(self.sources.map(s => s.name))
+      return new Set(self.drawnRows.map(s => s.name))
     },
 
     /**

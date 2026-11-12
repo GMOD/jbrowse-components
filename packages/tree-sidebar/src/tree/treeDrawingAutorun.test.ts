@@ -70,14 +70,14 @@ const Display = types
     get scrollTop() {
       return 0
     },
-    get sources() {
+    get drawnRows() {
       return [{ name: 'a' }, { name: 'b' }, { name: 'c' }, { name: 'd' }]
     },
     get hierarchy(): ClusterHierarchyNode {
       return self.banded
         ? computeClusterHierarchy(
             buildTree(nwk),
-            this.sources,
+            this.drawnRows,
             self.height,
             self.treeAreaWidth,
             false,
@@ -202,7 +202,7 @@ test('subtree hover highlights the rows as one rect at the resolved row height',
 
 // A hover whose rows are NOT contiguous still has to mark each block where it
 // really is. Reachable while the row set is mid-change: the tree is still drawn
-// (the names all match) but a display decorating `sources` can interleave them.
+// (the names all match) but a display decorating `drawnRows` can interleave them.
 test('subtree hover paints one rect per contiguous block of rows', () => {
   const { display } = createDisplay('view5').view
   setupTreeDrawingAutorun(display)

@@ -8,7 +8,7 @@ import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
 import { MafRegionSink } from './mafRegionSink.ts'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { BaseMafRpcArgs, MafSource } from '../types.ts'
+import type { BaseMafRpcArgs, MafRow } from '../types.ts'
 import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -23,7 +23,7 @@ export interface LinearMafGetAlignmentDataArgs extends BaseMafRpcArgs {
 }
 
 export interface LinearMafGetAlignmentDataResult {
-  samples: MafSource[]
+  samples: MafRow[]
   treeNewick: string | undefined
   /**
    * True when `samples` came from config or the guide tree: the same complete

@@ -24,18 +24,18 @@ const Rows = types
     },
   }))
   .views(self => ({
-    get editableSources() {
+    get arrangedRows() {
       return self.names.map(name => ({ name, sample: self.rowAlias(name) }))
     },
   }))
   .views(self => ({
-    get clusterableSources() {
-      return self.editableSources
+    get shownRows() {
+      return self.arrangedRows
     },
   }))
   .views(self => ({
-    get sources() {
-      return self.clusterableSources.map(row => ({ ...row, label: self.label }))
+    get drawnRows() {
+      return self.shownRows.map(row => ({ ...row, label: self.label }))
     },
   }))
   .actions(self => ({
@@ -52,8 +52,8 @@ const cells = (table: string) =>
 
 test('counts recomputes, alias calls and named reaction runs, never reads', async () => {
   const rows = Rows.create()
-  namedAutorun(rows, () => void rows.sources, { name: 'Rows:draw' })
-  const unnamed = autorun(() => void rows.sources)
+  namedAutorun(rows, () => void rows.drawnRows, { name: 'Rows:draw' })
+  const unnamed = autorun(() => void rows.drawnRows)
   const table = await workCensus(rows, [
     {
       name: 'rows land',
@@ -70,23 +70,23 @@ test('counts recomputes, alias calls and named reaction runs, never reads', asyn
     {
       name: 'read twice',
       run: () => {
-        void rows.sources
-        void rows.editableSources
+        void rows.drawnRows
+        void rows.arrangedRows
       },
     },
   ])
   unnamed()
   destroy(rows)
   expect(cells(table)).toEqual([
-    'rows land arrange 1 (3 rows) alias 3 clusterable 1 sources 1 Rows:draw 1',
-    'relabel arrange 0 alias 0 clusterable 0 sources 1 Rows:draw 1',
-    'read twice arrange 0 alias 0 clusterable 0 sources 0 -',
+    'rows land arrange 1 (3 rows) alias 3 shown 1 drawn 1 Rows:draw 1',
+    'relabel arrange 0 alias 0 shown 0 drawn 1 Rows:draw 1',
+    'read twice arrange 0 alias 0 shown 0 drawn 0 -',
   ])
 })
 
 test('an alias held from before the census fails the step it went uncounted in', async () => {
   const rows = Rows.create({ names: ['a HP1', 'b'] })
-  namedAutorun(rows, () => void rows.sources, { name: 'Rows:draw' })
+  namedAutorun(rows, () => void rows.drawnRows, { name: 'Rows:draw' })
   await expect(
     workCensus(rows, [
       {

@@ -21,7 +21,7 @@ describe('treeIsShowing', () => {
 
   // Gating on `clusterTree` instead reserved a gutter with nothing in it: a
   // tree that no longer describes the rows on screen is deliberately not
-  // positioned, and for a display that regroups `sources` downstream of
+  // positioned, and for a display that regroups `drawnRows` downstream of
   // `layout` that state is permanent rather than transient.
   it('is false with a tree that could not be positioned', () => {
     expect(treeIsShowing({ showTree: true, hierarchy: undefined })).toBe(false)

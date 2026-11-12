@@ -412,7 +412,7 @@ export function treeDescribesRows(
 // the empty-state guard and the staleness gate can't drift between display
 // types.
 //
-// `rows` are the rows actually drawn — the display's `sources`, after every
+// `rows` are the rows actually drawn — the display's `drawnRows`, after every
 // reorder, filter and decoration it applies — never the pre-filter or pre-layout
 // list.
 //

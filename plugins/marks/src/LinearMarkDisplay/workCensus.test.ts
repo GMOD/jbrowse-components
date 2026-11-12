@@ -8,7 +8,7 @@ import {
   workerResult,
 } from './testEnv.ts'
 
-import type { RowSource } from '@jbrowse/tree-sidebar'
+import type { Row } from '@jbrowse/tree-sidebar'
 
 beforeEach(() => {
   jest.useFakeTimers()
@@ -38,8 +38,8 @@ test('what each row step recomputes', async () => {
     REGIONS,
   ).createDisplay()
   view.zoomTo(view.bpPerPx / 2)
-  const firstEdited = (edit: Partial<RowSource>) => {
-    const [first, ...rest] = display.editableSources
+  const firstEdited = (edit: Partial<Row>) => {
+    const [first, ...rest] = display.arrangedRows
     return [{ ...first!, ...edit }, ...rest]
   }
   const table = await workCensus(display, [
@@ -64,7 +64,7 @@ test('what each row step recomputes', async () => {
     {
       name: 'drag reorder',
       run: () => {
-        const [a, b, ...rest] = display.editableSources
+        const [a, b, ...rest] = display.arrangedRows
         display.setRowOrder([b!, a!, ...rest])
       },
     },
@@ -83,8 +83,8 @@ test('what each row step recomputes', async () => {
     {
       name: 'recolor',
       run: () => {
-        const [first] = display.editableSources
-        display.applyRowEdits(display.editableSources, {
+        const [first] = display.arrangedRows
+        display.applyRowEdits(display.arrangedRows, {
           color: { field: 'name' },
           colors: { [first!.name]: '#123456' },
         })

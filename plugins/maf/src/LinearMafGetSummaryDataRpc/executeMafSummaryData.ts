@@ -5,7 +5,7 @@ import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 import { isRowVisible } from '../util/sampleCopies.ts'
 import { visibleSamples } from '../util/visibleSamples.ts'
 
-import type { BaseMafRpcArgs, MafSummaryRecord, MafSource } from '../types.ts'
+import type { BaseMafRpcArgs, MafSummaryRecord, MafRow } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
@@ -17,7 +17,7 @@ export interface LinearMafGetSummaryDataArgs extends BaseMafRpcArgs {
 }
 
 export interface LinearMafGetSummaryDataResult {
-  samples: MafSource[]
+  samples: MafRow[]
   treeNewick: string | undefined
   /**
    * Whether `samples` is the authoritative row set (see the alignment RPC's
@@ -129,7 +129,7 @@ export async function executeMafSummaryData({
     // A sample-discovery track (no `samples`, no `nhLocation`) has no row set
     // until something names one, and only the alignment path used to. A track
     // opened already zoomed out past the summary threshold therefore resolved
-    // zero sources, so `rowIndexBySrc` matched no `src` and the summary bars
+    // zero rows, so `rowIndexBySrc` matched no `src` and the summary bars
     // drew nothing at all — a blank, fully-"loaded" track until the user zoomed
     // in far enough to fetch detail. The records name their species, so this
     // path can answer for itself.

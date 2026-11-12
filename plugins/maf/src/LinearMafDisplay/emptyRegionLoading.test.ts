@@ -26,7 +26,7 @@ afterEach(() => {
 
 describe('LinearMafDisplay zero-block loading', () => {
   // Regression: a sample-discovery MAF track (no configured `samples`) over a
-  // region with no alignment blocks resolves to zero sources. The render
+  // region with no alignment blocks resolves to zero rows. The render
   // callback's first-paint gate must therefore key off "a region has loaded",
   // not off the row list being non-empty — gating on the rows alone kept the
   // callback returning false after the fetch completed, so canvasDrawn never
@@ -34,7 +34,7 @@ describe('LinearMafDisplay zero-block loading', () => {
   // callback runs and the canvas clears, even with nothing to draw.
   //
   // This is also why `sourcesKnown` exists rather than the gate testing
-  // `sources` for truthiness: `sources` is a resolved array now, and an empty
+  // `drawnRows` for truthiness: `drawnRows` is a resolved array now, and an empty
   // one arrives both from "no fetch yet" and from "a fetch that found no rows"
   // — this test's state, and the one where the gate must open.
   it('releases the first-paint gate after a fetch that returns no blocks/samples', async () => {
@@ -58,7 +58,7 @@ describe('LinearMafDisplay zero-block loading', () => {
 
     // resolved, and empty — the row list never went `undefined`, so a consumer
     // cannot mistake "found no rows" for "not loaded"; that is `sourcesKnown`
-    expect(display.sources).toEqual([])
+    expect(display.drawnRows).toEqual([])
     expect(display.sourcesKnown).toBe(false)
     expect(display.sourcesKnown || display.loadedRegions.size > 0).toBe(true)
     expect(display.renderState).toBeDefined()

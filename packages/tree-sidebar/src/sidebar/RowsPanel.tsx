@@ -9,7 +9,7 @@ import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 import TreeSidebar from './TreeSidebar.tsx'
 import { treeSidebarOffset } from './treeSidebarGeometry.ts'
 
-import type { RowLabelSource, TreeSidebarModel } from '../types.ts'
+import type { LabelledRow, TreeSidebarModel } from '../types.ts'
 import type { VirtualScrollModel } from '@jbrowse/core/util/useRowVirtualScroll'
 import type { ReactNode } from 'react'
 
@@ -21,7 +21,7 @@ import type { ReactNode } from 'react'
 export interface RowsPanelModel extends TreeSidebarModel, VirtualScrollModel {
   scrollTop: number
   effectiveRowHeight: number
-  sources: RowLabelSource[]
+  drawnRows: LabelledRow[]
   showRowLabels: boolean
   canvasWidthPx: number
 }
@@ -69,7 +69,7 @@ export const RowsPanel = observer(function RowsPanel({
       </div>
       <RowLabelsOverlay
         testId={`${testIdPrefix}-row-labels`}
-        sources={model.sources}
+        rows={model.drawnRows}
         rowHeight={model.effectiveRowHeight}
         labelOffset={labelOffset}
         width={width}

@@ -27,7 +27,7 @@ import type {
 } from '../color/rowColorChoice.ts'
 import type { RowColorSetting } from '../color/rowColors.ts'
 import type { RowAlias } from '../rows/arrangeRows.ts'
-import type { RowSource } from '../types.ts'
+import type { Row } from '../types.ts'
 import type { ValueColor } from './RowColorPanel.tsx'
 
 const useStyles = makeStyles()({
@@ -45,10 +45,10 @@ const useStyles = makeStyles()({
 })
 
 // The slice of a TreeSidebarMixin display the dialog drives, which every plugin
-// passes as the model itself. The dialog snapshots `editableSources` on open
+// passes as the model itself. The dialog snapshots `arrangedRows` on open
 // and holds every edit until Submit.
-export interface RowArrangementModel<S extends RowSource> {
-  editableSources: S[]
+export interface RowArrangementModel<S extends Row> {
+  arrangedRows: S[]
   applyRowEdits: (s: S[], colors?: RowColorEdits) => void
   resetRowArrangement: () => void
   // Whether submitting `next` would invalidate a loaded cluster tree; when true
@@ -66,7 +66,7 @@ export interface RowArrangementModel<S extends RowSource> {
   ) => ReadonlyMap<string, string>
 }
 
-export interface RowArrangementDialogProps<S extends RowSource> {
+export interface RowArrangementDialogProps<S extends Row> {
   model: RowArrangementModel<S>
   handleClose: () => void
   title?: string
@@ -119,7 +119,7 @@ function valueColors(
   }))
 }
 
-export default observer(function RowArrangementDialog<S extends RowSource>({
+export default observer(function RowArrangementDialog<S extends Row>({
   model,
   handleClose,
   title = 'Color/arrangement editor',
@@ -134,7 +134,7 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
     below: string
   }>()
   const [showBulkEditor, setShowBulkEditor] = useState(false)
-  const [currLayout, setCurrLayout] = useState(model.editableSources)
+  const [currLayout, setCurrLayout] = useState(model.arrangedRows)
   const [choice, setChoice] = useState(model.rowColorChoice)
   // The `rows.color` object each choice the reader edited in this sitting
   // writes; an unedited one writes what it starts from.

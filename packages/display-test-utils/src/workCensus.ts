@@ -101,7 +101,7 @@ export function callColumn(
 }
 
 /**
- * Arranger runs and the rows they were handed: `editableSources` is the
+ * Arranger runs and the rows they were handed: `arrangedRows` is the
  * mixin's one `arrangeRows` call, so its recomputes are the arranger's runs.
  */
 function arrangeColumn(display: object): CensusColumn {
@@ -109,7 +109,7 @@ function arrangeColumn(display: object): CensusColumn {
   let rows = 0
   const stop = wrapDerivation(
     display,
-    'editableSources',
+    'arrangedRows',
     original =>
       function (this: unknown) {
         const out = original.call(this) as readonly unknown[]
@@ -283,9 +283,9 @@ export async function runCensus(
 }
 
 const ROW_GETTERS = [
-  'clusterableSources',
-  'bandedSources',
-  'sources',
+  'shownRows',
+  'stackedRows',
+  'drawnRows',
   'dealtValueColors',
   'resolvedRowColors',
 ] as const
@@ -293,7 +293,7 @@ const ROW_GETTERS = [
 /**
  * The work a `TreeSidebarMixin` display does per step, counted: arranger runs
  * and the rows handed to them, calls into `rowAlias`, recomputes of the row
- * getters after `editableSources`, and runs of the display's named reactions.
+ * getters after `arrangedRows`, and runs of the display's named reactions.
  *
  * The getters are held observed through the census, as the mounted sidebar
  * and labels hold them, so a count is a recompute rather than a read. Start it
@@ -311,14 +311,14 @@ export async function workCensus(
     arrangeColumn(display),
     aliasColumn(display),
     ...getters.map(key =>
-      recomputeColumn(display, key, key.replace(/Sources$/, '')),
+      recomputeColumn(display, key, key.replace(/Rows$/, '')),
     ),
     reactionColumn([display]),
   ]
   const held = display as Record<string, unknown>
   const observe = autorun(
     () => {
-      for (const key of ['editableSources', ...getters]) {
+      for (const key of ['arrangedRows', ...getters]) {
         void held[key]
       }
     },

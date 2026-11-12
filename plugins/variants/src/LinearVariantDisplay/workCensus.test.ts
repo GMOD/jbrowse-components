@@ -71,7 +71,7 @@ test('what each row step recomputes, phased', async () => {
     displayConfig: { ...RECORDS_BAND_OFF, rows: { field: 'haplotype' } },
   }).createDisplay()
   const firstEdited = (edit: Partial<ProcessedSource>) => {
-    const [first, ...rest] = display.editableSources
+    const [first, ...rest] = display.arrangedRows
     return [{ ...first!, ...edit }, ...rest]
   }
   const table = await workCensus(display, [
@@ -97,7 +97,7 @@ test('what each row step recomputes, phased', async () => {
     {
       name: 'drag reorder',
       run: () => {
-        const [a, b, ...rest] = display.editableSources
+        const [a, b, ...rest] = display.arrangedRows
         display.setRowOrder([b!, a!, ...rest])
       },
     },
@@ -116,8 +116,8 @@ test('what each row step recomputes, phased', async () => {
     {
       name: 'recolor',
       run: () => {
-        const [first] = display.editableSources
-        display.applyRowEdits(display.editableSources, {
+        const [first] = display.arrangedRows
+        display.applyRowEdits(display.arrangedRows, {
           color: { field: 'name' },
           colors: { [first!.name]: '#123456' },
         })
@@ -184,7 +184,7 @@ test('what each row step recomputes, phased and colored by population', async ()
     {
       name: 'drag reorder',
       run: () => {
-        const [a, b, ...rest] = display.editableSources
+        const [a, b, ...rest] = display.arrangedRows
         display.setRowOrder([b!, a!, ...rest])
       },
     },
@@ -195,7 +195,7 @@ test('what each row step recomputes, phased and colored by population', async ()
       },
     },
   ])
-  expect(display.sources.every(row => row.rowColor)).toBe(true)
+  expect(display.drawnRows.every(row => row.rowColor)).toBe(true)
   expect(table).toMatchSnapshot()
 })
 
@@ -226,7 +226,7 @@ test('what each row step recomputes, phased and banded by population', async () 
     {
       name: 'drag reorder',
       run: () => {
-        const [a, b, ...rest] = display.editableSources
+        const [a, b, ...rest] = display.arrangedRows
         display.setRowOrder([b!, a!, ...rest])
       },
     },

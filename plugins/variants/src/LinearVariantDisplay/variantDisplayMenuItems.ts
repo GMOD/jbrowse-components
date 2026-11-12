@@ -535,7 +535,7 @@ export function variantTrackMenuItems(
                 ])
               },
             },
-            rowCount: self.sources.length,
+            rowCount: self.drawnRows.length,
           },
         })
       : []),
@@ -598,7 +598,7 @@ export function variantContextMenuItems(
           ? [
               sortRowsHereMenuItem({
                 label: 'Sort rows by genotype here',
-                rowCount: self.editableSources.length,
+                rowCount: self.arrangedRows.length,
                 onClick: () => {
                   self.sortByGenotype(feat.id())
                 },

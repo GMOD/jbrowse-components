@@ -357,7 +357,7 @@ export function variantFetchViews(self: VariantFetchHost) {
      * draws, so the worker reads no genotype and tests no site field, as
      * for a sites-only VCF. `undefined` means the sources haven't loaded
      * and is never reused for "all of them", or the fetch would not wake
-     * when they land. Reads `sourcesBase`, never `sources`, which reads the
+     * when they land. Reads `sourcesBase`, never `drawnRows`, which reads the
      * fetch-derived `samplePloidy`.
      */
     get sampleFilter(): string[] | undefined {
@@ -448,7 +448,7 @@ export interface VariantRowsHeightHost {
   drawsGenotypeRows: boolean
   height: number
   rowsTopOffset: number
-  sources: readonly unknown[]
+  drawnRows: readonly unknown[]
 }
 
 /**
@@ -473,7 +473,7 @@ export function variantRowsHeightViews(self: VariantRowsHeightHost) {
      * #getter
      */
     get nrow() {
-      return Math.max(1, self.sources.length)
+      return Math.max(1, self.drawnRows.length)
     },
     /**
      * #getter

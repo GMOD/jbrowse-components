@@ -30,27 +30,27 @@ function displayListing(
 test('the export waits for the row listing, which adds the rows no feature in view names', async () => {
   let land!: (value: unknown) => void
   const display = displayListing(new Promise(resolve => (land = resolve)))
-  expect(display.sources.map(row => row.name)).toEqual(['dad', 'mom'])
+  expect(display.drawnRows.map(row => row.name)).toEqual(['dad', 'mom'])
   expect(display.svgReady).toBe(false)
 
   land({ field: 'source', sources: LISTED })
   await waitFor(() => {
     expect(display.svgReady).toBe(true)
   })
-  expect(display.sources.map(row => row.name)).toEqual(['dad', 'mom', 's2'])
+  expect(display.drawnRows.map(row => row.name)).toEqual(['dad', 'mom', 's2'])
 })
 
 test('a declared run does not start on the rows the features alone name', async () => {
   let land!: (value: unknown) => void
   const display = displayListing(new Promise(resolve => (land = resolve)))
-  expect(display.clusterableSources).toHaveLength(2)
+  expect(display.shownRows).toHaveLength(2)
   expect(display.autoClusterReady).toBe(false)
 
   land({ field: 'source', sources: LISTED })
   await waitFor(() => {
     expect(display.autoClusterReady).toBe(true)
   })
-  expect(display.clusterableSources).toHaveLength(3)
+  expect(display.shownRows).toHaveLength(3)
 })
 
 test('a failed listing lets the export draw the rows the features name', async () => {
@@ -60,7 +60,7 @@ test('a failed listing lets the export draw the rows the features name', async (
   await waitFor(() => {
     expect(display.svgReady).toBe(true)
   })
-  expect(display.sources.map(row => row.name)).toEqual(['dad', 'mom'])
+  expect(display.drawnRows.map(row => row.name)).toEqual(['dad', 'mom'])
   expect(display.autoClusterReady).toBe(true)
   warn.mockRestore()
   error.mockRestore()
@@ -72,7 +72,7 @@ test('an adapter that lists no rows lets the export draw the rows the features n
     expect(display.svgReady).toBe(true)
   })
   expect(display.dataSuperseded).toBe(false)
-  expect(display.sources.map(row => row.name)).toEqual(['dad', 'mom'])
+  expect(display.drawnRows.map(row => row.name)).toEqual(['dad', 'mom'])
 })
 
 test('a display drawing no rows from a listing never waits on one', () => {

@@ -4,7 +4,7 @@ import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import type { MafSource } from '../types.ts'
+import type { MafRow } from '../types.ts'
 
 const useStyles = makeStyles()(theme => ({
   insertion: {
@@ -18,7 +18,7 @@ const GAP = '-'
 interface SequenceTooltipProps {
   x: number
   y: number
-  sample: MafSource
+  sample: MafRow
   base?: string
   genomicPos?: number
 }

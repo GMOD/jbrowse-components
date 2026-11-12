@@ -18,7 +18,7 @@ export type Placed<T> = T & {
  * The worker names its rows (`rowNames`) and knows nothing about display order,
  * so this is where a fetched cell becomes a *placed* cell. Placement runs
  * against `rowRemap` — the same `rowNames`→row projection the whole display
- * derives from `sources` — so the cells and the sidebar labels can't disagree
+ * derives from `drawnRows` — so the cells and the sidebar labels can't disagree
  * about which row is which. It is also what lets a reorder, a regroup, a
  * clustering run or a genotype sort re-place cached data instead of refetching
  * it: none of them changes a single byte the worker produced.
