@@ -1,10 +1,12 @@
+import { Suspense, createElement } from 'react'
+
 import { getSession } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 import { DEFAULT_MARK_COLOR, colorAt } from '@jbrowse/core/util/markEncoding'
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { waitFor } from '@testing-library/react'
+import { getSnapshot, onPatch } from '@jbrowse/mobx-state-tree'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import { paintedColorNode } from '../LinearMarkDisplay/inheritedColor.ts'
 import { keySettingOf } from '../LinearMarkDisplay/legend.ts'
@@ -450,6 +452,57 @@ test("Row height sizes a spliced painting's blocks and leaves the line under the
   expect(model.rowProportion).toBe(NORMAL_ROW_PROPORTION)
   model.setRowProportion(0.5)
   expect(model.markRowProportions).toEqual([0, 0.5])
+})
+
+function clickRowHeight(
+  model: LinearMultiRowFeatureDisplayModel,
+  label: string,
+) {
+  const item = subMenu(model.trackMenuItems(), 'Row height').find(
+    i => 'label' in i && i.label === label,
+  )
+  if (item && 'onClick' in item) {
+    item.onClick()
+  }
+}
+
+test("Row height keeps the transcript plot's UTR thinner than its coding exons, in the ratio the plot states", () => {
+  const model = display(TRANSCRIPT_PROTEIN_PLOT)
+  const stated = model.markRowProportions
+  const [line, utr, cds] = stated
+  clickRowHeight(model, 'Normal')
+  expect(model.markRowProportions).toEqual(stated)
+  clickRowHeight(model, 'Compact')
+  const [compactLine, compactUtr, compactCds, compactMatch] =
+    model.markRowProportions
+  expect(compactLine).toBe(line)
+  expect(compactCds).not.toBe(cds)
+  expect(compactMatch).toBe(compactCds)
+  expect(compactUtr! / compactCds!).toBeCloseTo(utr! / cds!)
+  expect(model.rowProportion).toBe(compactCds)
+  expect(ticked(subMenu(model.trackMenuItems(), 'Row height'))).toEqual([
+    'Compact',
+  ])
+  clickRowHeight(model, 'Normal')
+  expect(model.markRowProportions).toEqual(stated)
+})
+
+test("the Custom row height dialog offers the transcript plot's tallest span, and submitting it unchanged writes no band", async () => {
+  const model = display(TRANSCRIPT_PROTEIN_PLOT)
+  const stated = model.markRowProportions
+  expect(model.rowProportion).toBe(Math.max(...stated))
+  const queueDialog = jest.spyOn(getSession(model), 'queueDialog')
+  clickRowHeight(model, 'Custom...')
+  const [Dialog, props] = queueDialog.mock.calls[0]![0](() => {})
+  render(createElement(Suspense, null, createElement(Dialog, props)))
+  const submit = await screen.findByText('Submit')
+  const inputs = document.querySelectorAll('input')
+  expect(inputs[1]!.value).toBe(String(model.rowProportion))
+  const patches: unknown[] = []
+  onPatch(model.configuration, patch => patches.push(patch))
+  fireEvent.click(submit)
+  expect(model.markRowProportions).toEqual(stated)
+  expect(patches).toEqual([])
 })
 
 test('an identity color over a field paints the colors the field holds, with no notice', () => {

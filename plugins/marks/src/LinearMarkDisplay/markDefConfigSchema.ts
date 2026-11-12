@@ -15,7 +15,7 @@ const markHeightSchema = ConfigurationSchema(
      * #slot height.band
      * The fraction of its band a rect fills, centred in the band, so below 1
      * the rows stand apart. Read by a rect alone; the track menu's Row height
-     * presets write every rect's.
+     * presets set the tallest rect's and scale the others with it.
      */
     band: {
       type: 'number',

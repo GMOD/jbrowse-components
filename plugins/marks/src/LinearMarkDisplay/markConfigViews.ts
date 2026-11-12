@@ -151,11 +151,15 @@ export function markConfigViews(self: MarkConfHost) {
     },
     /**
      * #getter
-     * The proportion the Row height dialog shows: the first sized span's,
-     * or undefined where no span has a height, so the dialog asks for none.
+     * The display's row proportion, which the Row height presets set and
+     * its dialog shows: the tallest sized span's band, or undefined where no
+     * span has a height, so the dialog asks for none.
      */
     get rowProportion(): number | undefined {
-      return self.configuration.marks.find(isSizedRect)?.mark.height.band
+      const bands = self.configuration.marks
+        .filter(isSizedRect)
+        .map(m => m.mark.height.band)
+      return bands.length > 0 ? Math.max(...bands) : undefined
     },
     /**
      * #getter

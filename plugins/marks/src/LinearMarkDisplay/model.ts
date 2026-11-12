@@ -722,13 +722,22 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Write every sized span's `mark.height.band`; a band-0 span stays
-         * the line it draws.
+         * Make `n` the tallest sized span's `mark.height.band`, scaling every
+         * other sized span by the same factor so a thin span stays as much
+         * thinner; a band-0 span stays the line it draws.
          */
         setRowProportion(n: number) {
-          for (const mark of self.conf.marks) {
-            if (isSizedRect(mark)) {
-              setConf(mark, ['mark', 'height', 'band'], n)
+          const tallest = self.rowProportion
+          if (tallest !== undefined && tallest !== n) {
+            for (const mark of self.conf.marks) {
+              if (isSizedRect(mark)) {
+                const { band } = mark.mark.height
+                setConf(
+                  mark,
+                  ['mark', 'height', 'band'],
+                  band === tallest ? n : (band / tallest) * n,
+                )
+              }
             }
           }
         },

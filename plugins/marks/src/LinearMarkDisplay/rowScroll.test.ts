@@ -2,6 +2,7 @@ import { createElement } from 'react'
 
 import { exportedY } from '@jbrowse/display-kit/renderDisplaySvg'
 import { axisPlotBox } from '@jbrowse/display-ui'
+import { onPatch } from '@jbrowse/mobx-state-tree'
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
 import * as spanShader from '@jbrowse/render-core/shaders/spanMarkIface'
@@ -143,17 +144,39 @@ function spanProportionUniform(display: LinearMarkDisplayModel, i: number) {
   return hal.getLastUniformsF32()![spanShader.UNIFORM_OFFSET_F32.rowProportion]
 }
 
-test('each span reads its own height band, and setRowProportion writes every span', () => {
+test('each span reads its own height band, and setRowProportion sets the tallest and keeps the thinner one in ratio', () => {
+  const display = loaded(PINNED, [
+    { mark: { type: 'rect', height: { band: 0.25 } } },
+    { mark: { type: 'rect', height: { band: 0.5 } } },
+  ])
+  expect(spanProportionUniform(display, 0)).toBe(0.25)
+  expect(spanProportionUniform(display, 1)).toBe(0.5)
+  expect(display.rowProportion).toBe(0.5)
+  display.setRowProportion(0.75)
+  expect(spanProportionUniform(display, 0)).toBe(0.375)
+  expect(spanProportionUniform(display, 1)).toBe(0.75)
+  expect(display.rowProportion).toBe(0.75)
+})
+
+test('setRowProportion writes the same band to spans that share one', () => {
   const display = loaded(PINNED, [
     { mark: { type: 'rect', height: { band: 0.75 } } },
-    { mark: { type: 'rect', height: { band: 0.25 } } },
+    { mark: { type: 'rect', height: { band: 0.75 } } },
   ])
-  expect(spanProportionUniform(display, 0)).toBe(0.75)
-  expect(spanProportionUniform(display, 1)).toBe(0.25)
-  expect(display.rowProportion).toBe(0.75)
   display.setRowProportion(0.5)
-  expect(spanProportionUniform(display, 0)).toBe(0.5)
-  expect(spanProportionUniform(display, 1)).toBe(0.5)
+  expect(display.markRowProportions).toEqual([0.5, 0.5])
+})
+
+test('setRowProportion to the tallest band already in effect writes nothing', () => {
+  const display = loaded(PINNED, [
+    { mark: { type: 'rect', height: { band: 0.11 } } },
+    { mark: { type: 'rect', height: { band: 0.8 } } },
+  ])
+  const patches: unknown[] = []
+  onPatch(display.configuration, patch => patches.push(patch))
+  display.setRowProportion(0.8)
+  expect(patches).toEqual([])
+  expect(display.markRowProportions).toEqual([0.11, 0.8])
 })
 
 test('a display with no span answers no rowProportion, so the dialog asks for none', () => {
