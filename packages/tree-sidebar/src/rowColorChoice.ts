@@ -175,19 +175,17 @@ export function withPair(
 
 /**
  * What the dialog and a menu show `setting`, `rows.color`, as: its field,
- * `name` for Each row, or '' for None where it colors no row: `name` with no
- * pair and an `scale.unknown` of '', or unset where no palette deals
- * (`paletteDeals`). The pins (`rows.colors`) are no choice: they color their
- * rows under any.
+ * `name` for Each row, or '' for None where it colors no row: `name` with a
+ * `scale.unknown` of '', or unset where no palette deals (`paletteDeals`).
+ * The pins (`rows.colors`) are no choice: they color their rows under any.
  */
 export function rowColorChoiceOf(
   setting: RowColorSetting,
   paletteDeals: boolean,
 ): string {
-  const { field, scale } = setting
-  const { unknown } = scale
+  const { field } = setting
+  const { unknown } = setting.scale
   return field === 'name' &&
-    pairedColorsOf(scale).size === 0 &&
     (unknown === '' || (unknown === undefined && !paletteDeals))
     ? ''
     : field

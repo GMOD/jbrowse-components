@@ -2,16 +2,13 @@ import '@testing-library/jest-dom'
 
 import React from 'react'
 
-import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 
 import {
   liftRowColor,
   rowColorChoiceOf,
-  rowColorMembers,
   startingRowColor,
 } from '../rowColorChoice.ts'
-import { withPinnedColors } from '../rowColorScale.ts'
 import RowArrangementDialog from './RowArrangementDialog.tsx'
 
 import type { RowColorEdits, RowColorSnapshot } from '../rowColorChoice.ts'
@@ -72,28 +69,9 @@ interface FakeOptions extends Partial<RowArrangementModel<Src>> {
   rowColorFields?: string[]
 }
 
-// `rows.color` and `rows.colors` as one setting, the pins its pairs under
-// `name`, split back apart as the mixin reads the two
-function channelOf(setting: RowColorSetting): RowColorSetting {
-  return setting.field === 'name'
-    ? {
-        ...setting,
-        scale: {
-          ...setting.scale,
-          domain: [],
-          range: setting.scale.range.slice(setting.scale.domain.length),
-        },
-      }
-    : setting
-}
-
-function pinsOf(setting: RowColorSetting): ReadonlyMap<string, string> {
-  return setting.field === 'name' ? pairedColorsOf(setting.scale) : new Map()
-}
-
-// The model members the dialog reads, derived from a config's `rows.color`
-// with its pins folded in, its base and the attributes on offer as the mixin
-// derives them.
+// The model members the dialog reads, derived from a config's `rows.color`,
+// its base and the attributes on offer as the mixin derives them; the pins,
+// `rows.colors`, are `rowColorPins`.
 function fakeModel({
   rowColorSetting = EMPTY,
   baseRowColorSetting = EMPTY,
@@ -105,7 +83,7 @@ function fakeModel({
     { name: 'b' },
   ]
   const rowPaletteDeals = overrides.rowPaletteDeals ?? true
-  const current = rowColorChoiceOf(channelOf(rowColorSetting), rowPaletteDeals)
+  const current = rowColorChoiceOf(rowColorSetting, rowPaletteDeals)
   return {
     editableSources,
     applyRowEdits: jest.fn(),
@@ -119,10 +97,10 @@ function fakeModel({
     rowColorFor: choice =>
       startingRowColor(
         choice,
-        [channelOf(rowColorSetting), channelOf(baseRowColorSetting)],
+        [rowColorSetting, baseRowColorSetting],
         rowPaletteDeals,
       ),
-    rowColorPins: pinsOf(rowColorSetting),
+    rowColorPins: new Map(),
     rowPaletteDeals,
     rowAlias: undefined,
     internalRowFields: [],
@@ -148,19 +126,10 @@ function submittedEdits(model: RowArrangementModel<Src>) {
   return calls[calls.length - 1] as [Src[], RowColorEdits | undefined]
 }
 
-// The submit's colors as one setting, the pins its pairs under `name`
+// The submit's `rows.color` object
 function submitted(model: RowArrangementModel<Src>) {
   const [rows, edits] = submittedEdits(model)
-  return [
-    rows,
-    edits &&
-      rowColorMembers(
-        withPinnedColors(
-          liftRowColor(edits.color),
-          new Map(Object.entries(edits.colors ?? {})),
-        ),
-      ),
-  ] as const
+  return [rows, edits?.color] as const
 }
 
 // Picks `to` in the swatch's popover and closes it, as a reader does.
@@ -237,9 +206,9 @@ describe('Each row', () => {
     pickColor(gridRow('b').getByTitle(AUTO), '#222222', '#00ff00')
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({
-      field: 'name',
-      scale: { domain: ['b'], range: ['rgb(0, 255, 0)'] },
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'name' },
+      colors: { b: 'rgb(0, 255, 0)' },
     })
   })
 
@@ -247,17 +216,18 @@ describe('Each row', () => {
     const model = fakeModel({
       rowColorSetting: {
         field: 'name',
-        scale: { domain: ['a'], range: ['#f00'], unknown: '#cccccc' },
+        scale: { domain: [], range: [], unknown: '#cccccc' },
       },
+      rowColorPins: new Map([['a', '#f00']]),
     })
     setup(model)
 
     fireEvent.click(screen.getByText('Clear row colors'))
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({
-      field: 'name',
-      scale: { unknown: '#cccccc' },
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'name', scale: { unknown: '#cccccc' } },
+      colors: {},
     })
   })
 
@@ -288,9 +258,9 @@ describe('Each row', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Other rows: none' }))
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({
-      field: 'name',
-      scale: { domain: ['b'], range: ['rgb(0, 255, 0)'], unknown: '' },
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'name', scale: { unknown: '' } },
+      colors: { b: 'rgb(0, 255, 0)' },
     })
   })
 
@@ -308,9 +278,9 @@ describe('Each row', () => {
     pickColor(gridRow('b').getByTitle(AUTO), 'blue', '#00ff00')
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({
-      field: 'name',
-      scale: { domain: ['b'], range: ['rgb(0, 255, 0)'] },
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'name' },
+      colors: { b: 'rgb(0, 255, 0)' },
     })
   })
 
@@ -337,10 +307,7 @@ describe('Each row', () => {
 // drops that pick.
 test('a pasted color column replaces the picks', () => {
   const model = fakeModel({
-    rowColorSetting: {
-      field: 'name',
-      scale: { domain: ['a'], range: ['#f00'] },
-    },
+    rowColorPins: new Map([['a', '#f00']]),
     rowPaletteDeals: false,
   })
   setup(model)
@@ -352,9 +319,9 @@ test('a pasted color column replaces the picks', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
   fireEvent.click(screen.getByText('Submit'))
 
-  expect(submitted(model)[1]).toEqual({
-    field: 'name',
-    scale: { domain: ['b'], range: ['#00ff00'] },
+  expect(submittedEdits(model)[1]).toEqual({
+    color: { field: 'name' },
+    colors: { b: '#00ff00' },
   })
 })
 
@@ -367,10 +334,10 @@ function paste(text: string) {
 
 test('a paste keeps the picks of rows it does not name', () => {
   const model = fakeModel({
-    rowColorSetting: {
-      field: 'name',
-      scale: { domain: ['a', 'unshown'], range: ['#f00', '#0f0'] },
-    },
+    rowColorPins: new Map([
+      ['a', '#f00'],
+      ['unshown', '#0f0'],
+    ]),
     rowPaletteDeals: false,
   })
   setup(model)
@@ -378,9 +345,9 @@ test('a paste keeps the picks of rows it does not name', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
   fireEvent.click(screen.getByText('Submit'))
 
-  const [rows, rowColor] = submitted(model)
+  const [rows, edits] = submittedEdits(model)
   expect(rows.find(row => row.name === 'b')?.label).toBe('Bee')
-  expect(rowColor).toBeUndefined()
+  expect(edits).toBeUndefined()
 })
 
 test('a label paste leaves an attribute coloring chosen', () => {
@@ -388,17 +355,14 @@ test('a label paste leaves an attribute coloring chosen', () => {
     editableSources: GROUPED,
     rowColorFields: ['group'],
     rowColorSetting: { field: 'group', scale: { domain: [], range: [] } },
-    baseRowColorSetting: {
-      field: 'name',
-      scale: { domain: ['unshown'], range: ['#0f0'] },
-    },
+    rowColorPins: new Map([['unshown', '#0f0']]),
   })
   setup(model)
   paste('name,label\na,Ay')
   fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
   fireEvent.click(screen.getByText('Submit'))
 
-  expect(submitted(model)[1]).toBeUndefined()
+  expect(submittedEdits(model)[1]).toBeUndefined()
 })
 
 test('a pasted column the dialog does not write warns and changes nothing', () => {
@@ -795,8 +759,9 @@ describe('the Other rows swatch on a stacked display', () => {
     fakeModel({
       rowColorSetting: {
         field: 'name',
-        scale: { domain: ['a'], range: ['#f00'], unknown: '#cccccc' },
+        scale: { domain: [], range: [], unknown: '#cccccc' },
       },
+      rowColorPins: new Map([['a', '#f00']]),
       rowPaletteDeals: false,
     })
 
@@ -812,13 +777,9 @@ describe('the Other rows swatch on a stacked display', () => {
     pickColor(gridRow('b').getByTitle(AUTO), '#cccccc', '#00ff00')
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({
-      field: 'name',
-      scale: {
-        domain: ['a', 'b'],
-        range: ['#f00', 'rgb(0, 255, 0)'],
-        unknown: '#cccccc',
-      },
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'name', scale: { unknown: '#cccccc' } },
+      colors: { a: '#f00', b: 'rgb(0, 255, 0)' },
     })
   })
 
@@ -829,9 +790,9 @@ describe('the Other rows swatch on a stacked display', () => {
     const other = screen.getByText('Other rows').previousElementSibling!
     pickColor(other.firstElementChild!, '#cccccc', '#0000ff')
     fireEvent.click(screen.getByText('Submit'))
-    expect(submitted(model)[1]).toEqual({
-      field: 'name',
-      scale: { domain: ['a'], range: ['#f00'], unknown: 'rgb(0, 0, 255)' },
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'name', scale: { unknown: 'rgb(0, 0, 255)' } },
+      colors: { a: '#f00' },
     })
   })
 
@@ -842,9 +803,9 @@ describe('the Other rows swatch on a stacked display', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Other rows: auto' }))
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({
-      field: 'name',
-      scale: { domain: ['a'], range: ['#f00'] },
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'name' },
+      colors: { a: '#f00' },
     })
   })
 })

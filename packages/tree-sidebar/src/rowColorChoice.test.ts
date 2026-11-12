@@ -40,23 +40,11 @@ describe('rowColorChoiceOf', () => {
     expect(rowColorChoiceOf(lift({ scale: { unknown: '' } }), true)).toBe('')
   })
 
-  it('is Each row where a pick, an Other color or the palette colors a row', () => {
+  it('is Each row where an Other color or the palette colors a row', () => {
     expect(rowColorChoiceOf(lift({}), true)).toBe('name')
     expect(rowColorChoiceOf(lift({ scale: { unknown: '#ccc' } }), false)).toBe(
       'name',
     )
-    expect(
-      rowColorChoiceOf(
-        lift({ scale: { domain: ['a'], range: ['#f00'] } }),
-        false,
-      ),
-    ).toBe('name')
-    expect(
-      rowColorChoiceOf(
-        lift({ scale: { domain: ['a'], range: ['#f00'], unknown: '' } }),
-        true,
-      ),
-    ).toBe('name')
   })
 
   it('is the attribute', () => {
@@ -69,7 +57,10 @@ describe('rowColorChoiceOf', () => {
 
 describe('withPair', () => {
   it('replaces a pair in place and appends a new one', () => {
-    const two = lift({ scale: { domain: ['a', 'b'], range: ['#f00', '#0f0'] } })
+    const two = lift({
+      field: 'group',
+      scale: { domain: ['a', 'b'], range: ['#f00', '#0f0'] },
+    })
     expect(withPair(two, 'a', '#00f').scale).toMatchObject({
       domain: ['a', 'b'],
       range: ['#00f', '#0f0'],
