@@ -4,7 +4,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import { render } from '@testing-library/react'
 
 import { Slice } from '../slices.ts'
-import Ruler from './Ruler.tsx'
+import { Ruler } from './Ruler.tsx'
 
 import type { CircularViewModel } from '../model.ts'
 

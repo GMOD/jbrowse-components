@@ -21,6 +21,7 @@ import {
   labelPlacement,
   labelsRunAlongArcs,
   middleTitle,
+  sliceArcWidthPx,
   sliceLabelText,
   tickFontSizePx,
   tickLabelGapPx,
@@ -37,7 +38,7 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 const middleTitleFontSizePx = 16
 
-const RulerLabel = observer(function RulerLabel({
+function RulerLabel({
   offsetRadians,
   text,
   maxWidthPx,
@@ -83,7 +84,7 @@ const RulerLabel = observer(function RulerLabel({
       {title ? <title>{title}</title> : null}
     </text>
   )
-})
+}
 
 function regionColor(
   model: CircularViewModel,
@@ -207,7 +208,7 @@ const RulerTicks = observer(function RulerTicks({
   )
 })
 
-const Ruler = observer(function Ruler({
+export const Ruler = observer(function Ruler({
   model,
   slice,
   alongArc,
@@ -218,7 +219,7 @@ const Ruler = observer(function Ruler({
 }) {
   const palette = usePalette()
   const { radiusPx, offsetRadians } = model
-  const { region, endRadians, startRadians } = slice
+  const { region } = slice
   const { innerPx, outerPx } = ideogramBand(radiusPx)
   return (
     <>
@@ -231,8 +232,8 @@ const Ruler = observer(function Ruler({
         }
         alongArc={alongArc}
         offsetRadians={offsetRadians}
-        maxWidthPx={(endRadians - startRadians) * radiusPx}
-        radians={(endRadians + startRadians) / 2}
+        maxWidthPx={sliceArcWidthPx(slice, radiusPx)}
+        radians={(slice.endRadians + slice.startRadians) / 2}
         radiusPx={radiusPx}
         color={palette.text.primary}
       />
@@ -380,5 +381,3 @@ export const Rulers = observer(function Rulers({
     </>
   )
 })
-
-export default Ruler
