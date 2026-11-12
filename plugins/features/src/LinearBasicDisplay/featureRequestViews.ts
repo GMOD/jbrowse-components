@@ -67,13 +67,13 @@ export function featureRequestViews(self: FeatureRequestHost) {
      * #getter
      * Each slot the worker reads, named member by member, so an unrelated
      * slot write — `height` on every resize-drag frame — stays out of the
-     * RPC cache key. The gate budgets are not cache keys; as one,
-     * `maxFeatureDensity` made zooming across the 20 kb floor a full clear
-     * and refetch, and a raised budget already reaches the verdict through
-     * the tracked `regionTooLarge`. The `field` slots and the `filter` list
-     * are read raw: a `jexl:` expression there is the worker's to evaluate
-     * per feature. The label fields alone: the `show` switches are the main
-     * thread's, so a label toggle never refetches.
+     * RPC cache key. The gate budgets are not cache keys: a raised budget
+     * reaches the verdict through the tracked `regionTooLarge`, and as a key
+     * one would clear and refetch on every zoom across the 20 kb floor. The
+     * `field` slots and the `filter` list are read raw: a `jexl:` expression
+     * there is the worker's to evaluate per feature. The label fields alone:
+     * the `show` switches are the main thread's, so a label toggle never
+     * refetches.
      */
     get renderSettings(): RenderFeatureDataArgs['displayConfig'] {
       const { filter, tooltip, mark, labels } = self.conf
