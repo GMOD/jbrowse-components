@@ -1,10 +1,5 @@
-import type { ClusterProvenance } from './clustering/clusterProvenance.ts'
-import type { RowBand } from './rows/bandRows.ts'
-import type {
-  HierarchyNode,
-  PositionedHierarchyNode,
-} from './tree/hierarchy.ts'
-import type { TreeSpatialIndex } from './tree/spatialIndex.ts'
+import type { TreeSidebarMixinModel } from './TreeSidebarMixin.ts'
+import type { PositionedHierarchyNode } from './tree/hierarchy.ts'
 import type { NewickNode } from '@gmod/newick'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -54,76 +49,76 @@ export type LabelledRow = Pick<Row, 'name' | 'label' | 'rowColor'>
  */
 export type RowAnnotationColumn = ReadonlyMap<string, string>
 
-export interface TreeSidebarModel extends IStateTreeNode {
-  hierarchy?: ClusterHierarchyNode
-  // The parsed (and subtree-filtered) tree, from TreeSidebarMixin. `hierarchy`
-  // is this *positioned*, and is undefined both when there is no tree and when
-  // the tree no longer describes the rows — having the unpositioned one lets
-  // `StaleTreeHint` tell those apart.
-  root?: HierarchyNode<ClusterNodeData>
-  // What the tree was computed from, when this app computed it. Undefined for
-  // a supplied phylogeny (maf's `.nh`) and for a session that predates the
-  // field.
-  rowTreeProvenance?: ClusterProvenance
-  treeAreaWidth: number
+/**
+ * What the sidebar, its hints and its chip read off a display composing
+ * `TreeSidebarMixin`: the mixin's members, the ones a double may leave out
+ * optional, and the height and scroll every host takes from
+ * `TrackHeightMixin`.
+ */
+export interface TreeSidebarModel
+  extends
+    IStateTreeNode,
+    Pick<
+      TreeSidebarMixinModel,
+      | 'treeAreaWidth'
+      | 'rowsTopOffset'
+      | 'rowFocusLineHeight'
+      | 'showTree'
+      | 'drawnRows'
+      | 'rowBands'
+      | 'treelessBandCount'
+      | 'rowNarrowingClears'
+      | 'setTreeCanvasRef'
+      | 'setMouseoverCanvasRef'
+      | 'setHoveredTreeNode'
+      | 'setTreeAreaWidth'
+      | 'setRowFocus'
+      | 'showAllRows'
+    >,
+    Partial<
+      Pick<
+        TreeSidebarMixinModel,
+        | 'hierarchy'
+        | 'root'
+        | 'rowTreeProvenance'
+        | 'rowAnnotationColors'
+        | 'rowColumnLabels'
+        | 'treeOnFinerRows'
+        | 'finerTreeHint'
+        | 'rowFocus'
+        | 'rowNarrowingHint'
+        | 'hoveredTreeNode'
+        | 'spatialIndex'
+      >
+    > {
   height: number
-  // Px above the rows, so the sidebar starts where the rows do: the mixin's
-  // sum of the display's own bands and the focus chip's line.
-  rowsTopOffset: number
-  // The focus chip's line, the part of `rowsTopOffset` the chip sits in.
-  rowFocusLineHeight: number
   scrollTop?: number
-  showTree: boolean
-  drawnRows: TreeRow[]
-  rowBands: readonly RowBand[]
-  rowAnnotationColors?: readonly RowAnnotationColumn[]
-  // The label over each color column, whose lines sit between the focus
-  // chip's line and the rows.
-  rowColumnLabels?: readonly string[]
-  treelessBandCount: number
-  // Whether the tree's leaves are rows a finer field draws, and what the hint
-  // says then.
-  treeOnFinerRows?: boolean
-  finerTreeHint?: { text: string; title: string }
-  rowFocus?: readonly string[]
-  // The "Showing N of M rows" chip, undefined while nothing narrows the rows
-  // or they are not known yet.
-  rowNarrowingHint?: { text: string; title: string }
-  rowNarrowingClears: boolean
-  hoveredTreeNode?: HoveredTreeNode
-  // exactly what `buildSpatialIndex` returns, named rather than restructured:
-  // the array and the index into it are only meaningful together
-  spatialIndex?: TreeSpatialIndex
-  setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
-  setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
-  setHoveredTreeNode: (node?: HoveredTreeNode) => void
-  setTreeAreaWidth: (width: number) => void
-  setRowFocus: (names?: readonly string[]) => void
-  showAllRows: () => void
-  // Every host composes TrackHeightMixin, which is where this comes from.
-  // Displays with a virtual scroll reset it when the subtree filter
-  // re-lays-out the tree, so it shows from the top instead of a stale offset.
   setScrollTop: (scrollTop: number) => void
 }
 
-// `IStateTreeNode`, because `setupTreeDrawingAutorun` hands it to
-// `addDisposer`, `isAlive`, `getContainingView` and `getPaletteHost`: it is the
-// display node itself, narrowed to what the drawing reads. Never
-// `IAnyStateTreeNode`, which is `any` and would check none of the rest.
-export interface TreeDrawingModel extends IStateTreeNode {
-  treeCanvas?: HTMLCanvasElement | null
-  mouseoverCanvas?: HTMLCanvasElement | null
-  hierarchy?: ClusterHierarchyNode
-  treeAreaWidth: number
+/**
+ * What the tree's canvas autorun reads: the display node itself, since
+ * `setupTreeDrawingAutorun` hands it to `addDisposer`, `isAlive`,
+ * `getContainingView` and `getPaletteHost` (never `IAnyStateTreeNode`, which
+ * is `any` and would check none of the rest), narrowed to the mixin's members
+ * the drawing reads and the resolved `effectiveRowHeight`
+ * (agent-docs/reference/ROW_HEIGHT_AND_FIT).
+ */
+export interface TreeDrawingModel
+  extends
+    IStateTreeNode,
+    Pick<
+      TreeSidebarMixinModel,
+      'treeAreaWidth' | 'rowsTopOffset' | 'drawnRows'
+    >,
+    Partial<
+      Pick<
+        TreeSidebarMixinModel,
+        'treeCanvas' | 'mouseoverCanvas' | 'hierarchy' | 'hoveredTreeNode'
+      >
+    > {
   height: number
-  rowsTopOffset: number
   scrollTop?: number
-  // Resolved px row height, never a fit-to-height sentinel. Every row display
-  // spells the raw setting `rowHeight` (0 = fit to display height) and the
-  // resolved value `effectiveRowHeight`, which is the one to pass here — see
-  // agent-docs/reference/ROW_HEIGHT_AND_FIT.
   effectiveRowHeight: number
-  hoveredTreeNode?: HoveredTreeNode
-  drawnRows: TreeRow[]
   isMinimized?: boolean
 }

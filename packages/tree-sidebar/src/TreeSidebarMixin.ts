@@ -48,6 +48,7 @@ import type { HoveredTreeNode, Row } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 import type { SidebarBounds } from '@jbrowse/display-ui'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export type { TreeSidebarConfigModel } from './rows/treeSidebarRowViews.ts'
 
@@ -660,3 +661,8 @@ export function TreeSidebarMixin<S extends Row = Row>() {
       },
     }))
 }
+
+/** A display composing `TreeSidebarMixin`, its rows at the base `Row`. */
+export interface TreeSidebarMixinModel extends Instance<
+  ReturnType<typeof TreeSidebarMixin>
+> {}

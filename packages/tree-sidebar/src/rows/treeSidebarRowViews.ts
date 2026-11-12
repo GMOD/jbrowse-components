@@ -811,7 +811,7 @@ export function drawnRowViews<S extends Row>(self: BandedRowsHost<S>) {
      * The color columns the sidebar draws beside the row labels, one per
      * `rowAnnotationColumns` entry, each a row's color by name.
      */
-    get rowAnnotationColors(): RowAnnotationColumn[] {
+    get rowAnnotationColors(): readonly RowAnnotationColumn[] {
       return this.rowAnnotationColumns.map(column => column.colors)
     },
     /**
@@ -835,7 +835,7 @@ export function drawnRowViews<S extends Row>(self: BandedRowsHost<S>) {
      * the title of its key. None under two columns, where the one key's
      * title names the one column.
      */
-    get rowColumnLabels(): string[] {
+    get rowColumnLabels(): readonly string[] {
       const titles = [
         ...(self.drawnRows.some(row => row.rowColor)
           ? [self.rowColorTitle]

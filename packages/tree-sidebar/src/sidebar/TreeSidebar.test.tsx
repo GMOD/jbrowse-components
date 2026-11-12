@@ -8,7 +8,7 @@ import { buildSpatialIndex } from '../tree/spatialIndex.ts'
 import TreeSidebar from './TreeSidebar.tsx'
 import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
-import type { TreeSidebarModel } from '../types.ts'
+import type { ClusterHierarchyNode, TreeSidebarModel } from '../types.ts'
 
 jest.mock('@jbrowse/core/util', () => ({
   ...jest.requireActual('@jbrowse/core/util'),
@@ -121,11 +121,15 @@ describe('TreeSidebar', () => {
 
   it('keeps the subtree menu open while the tree goes stale', () => {
     const hierarchy = clusterLayout(buildTree('(a,b);'), 200, 80)
-    const sidebar = observable(
-      model({ hierarchy, spatialIndex: buildSpatialIndex(hierarchy) }),
-      {},
-      { deep: false },
-    )
+    const tree = observable.box<ClusterHierarchyNode | undefined>(hierarchy, {
+      deep: false,
+    })
+    const sidebar = {
+      ...model({ spatialIndex: buildSpatialIndex(hierarchy) }),
+      get hierarchy() {
+        return tree.get()
+      },
+    }
     const { container } = render(
       <TrackOverlayContext value={null}>
         <TreeSidebar model={sidebar} />
@@ -139,7 +143,7 @@ describe('TreeSidebar', () => {
 
     act(() => {
       runInAction(() => {
-        sidebar.hierarchy = undefined
+        tree.set(undefined)
       })
     })
     expect(screen.getByText('Show only subtree (2 rows)')).toBeTruthy()

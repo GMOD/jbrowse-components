@@ -9,7 +9,8 @@ import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 import TreeSidebar from './TreeSidebar.tsx'
 import { treeSidebarOffset } from './treeSidebarGeometry.ts'
 
-import type { LabelledRow, TreeSidebarModel } from '../types.ts'
+import type { TreeSidebarMixinModel } from '../TreeSidebarMixin.ts'
+import type { TreeSidebarModel } from '../types.ts'
 import type { VirtualScrollModel } from '@jbrowse/core/util/useRowVirtualScroll'
 import type { ReactNode } from 'react'
 
@@ -18,11 +19,13 @@ import type { ReactNode } from 'react'
  * `shift`+wheel row resizing. An always-fit display's rows never overflow,
  * so the wheel over them is the view's.
  */
-export interface RowsPanelModel extends TreeSidebarModel, VirtualScrollModel {
+export interface RowsPanelModel
+  extends
+    TreeSidebarModel,
+    VirtualScrollModel,
+    Pick<TreeSidebarMixinModel, 'showRowLabels'> {
   scrollTop: number
   effectiveRowHeight: number
-  drawnRows: LabelledRow[]
-  showRowLabels: boolean
   canvasWidthPx: number
 }
 
