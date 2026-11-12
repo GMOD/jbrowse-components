@@ -42,9 +42,8 @@ long name can clip in a square export; the view's px layout words
 (`spacingPx`, `paddingPx`, `minimumRadiusPx`, `minVisibleWidth`) wait on the
 app-wide layout respelling.
 
-**Parked:** the route clip, the polyploid circle, the track-management mixin, a
-worker-side length filter, and lifting `shapeFor`/`shapePathFor` into
-`BaseChordDisplay` (a few duplicated lines, not worth an abstract MST method).
+**Parked:** the route clip, the polyploid circle, the track-management mixin,
+and a worker-side length filter.
 
 **Accepted as is:** a closed ring's axis sits on the origin over the data; the
 field-painted chord key fades its swatches by the chords' `opacity`; a ring's
