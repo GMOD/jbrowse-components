@@ -32,6 +32,7 @@ import {
   labelFontSize,
   labelVisibility,
   maxBottom,
+  sectionHeadPxOn,
 } from '@jbrowse/plugin-features/band'
 import { computed } from 'mobx'
 
@@ -408,6 +409,7 @@ interface RecordsRenderHost
   regionRecordColors: ReadonlyMap<number, Uint32Array>
   sources: ProcessedSource[]
   view: LinearGenomeViewModel
+  host: { showsCanvasOnly?: boolean }
   canRender: boolean
 }
 
@@ -453,6 +455,7 @@ export function recordsRenderViews(self: RecordsRenderHost) {
         pinnedFeatureIds: NO_FEATURE_IDS,
         expandedGeneIds: NO_FEATURE_IDS,
         facet: self.recordsFacet,
+        sectionHeadPx: sectionHeadPxOn(self.host),
         hiddenGroupKeys: self.recordsHiddenGroups,
       }
     },
@@ -693,7 +696,6 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     get facet() {
       return self.recordsFacet
     },
-    sectionHeadPx: GROUP_LABEL_HEIGHT,
     get fitMeasureFeatureIds() {
       return self.recordsMeasureIds
     },

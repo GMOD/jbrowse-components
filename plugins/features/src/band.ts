@@ -22,7 +22,10 @@ export {
   FEATURE_DESCRIPTION_FIELD,
   FEATURE_NAME_FIELD,
 } from './RenderFeatureDataRPC/featureNameField.ts'
-export { hiddenSectionFeatureIds } from './LinearBasicDisplay/facet.ts'
+export {
+  hiddenSectionFeatureIds,
+  sectionHeadPxOn,
+} from './LinearBasicDisplay/facet.ts'
 export {
   featureHeightMenuItem,
   labelCheckboxItems,

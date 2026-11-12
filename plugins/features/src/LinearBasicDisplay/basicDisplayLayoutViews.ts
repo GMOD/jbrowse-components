@@ -1,13 +1,9 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
-import {
-  CHIPLESS_SECTION_GAP_PX,
-  GROUP_LABEL_HEIGHT,
-} from '@jbrowse/display-kit/groupLabelStyle'
 
 import { subfeatureLabelsOf } from '../RenderFeatureDataRPC/displayModes.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-import { hiddenSectionFeatureIds } from './facet.ts'
+import { hiddenSectionFeatureIds, sectionHeadPxOn } from './facet.ts'
 import { resolvedGeneGlyphMode } from './geneGlyphMode.ts'
 import { labelVisibility } from './showLabelsMode.ts'
 
@@ -313,9 +309,7 @@ export function basicDisplayLayoutViews(self: BasicDisplayLayoutHost) {
      * on a host that draws no chips.
      */
     get sectionHeadPx() {
-      return self.host.showsCanvasOnly
-        ? CHIPLESS_SECTION_GAP_PX
-        : GROUP_LABEL_HEIGHT
+      return sectionHeadPxOn(self.host)
     },
 
     /**

@@ -1,4 +1,9 @@
 import { resolveSubMenu } from '@jbrowse/core/ui'
+import {
+  CHIPLESS_SECTION_GAP_PX,
+  GROUP_LABEL_HEIGHT,
+} from '@jbrowse/display-kit/groupLabelStyle'
+import { getRoot, unprotect } from '@jbrowse/mobx-state-tree'
 import { maxBottom } from '@jbrowse/plugin-features/band'
 
 import { NO_RECORD_FIELD_READS } from '../shared/recordFields.ts'
@@ -102,6 +107,25 @@ describe('records.facet', () => {
     expect(top('b').topPx).toBeGreaterThanOrEqual(pathogenic!.top)
     expect(top('a').topPx).toBeLessThan(pathogenic!.top)
     expect(benign!.top).toBe(0)
+  })
+
+  // a ring draws the band's canvas and none of its chips
+  test('on a host drawing no chips, sections part by a gap in place of the chip row', () => {
+    const { display } = recordsDisplayAt(
+      SECTIONED,
+      10,
+      { facet: 'INFO.CLNSIG' },
+      false,
+    )
+    const chipTops = display.recordsGroupSections.map(s => s.top)
+
+    unprotect(getRoot(display))
+    Object.defineProperty(display.host, 'showsCanvasOnly', { value: true })
+    const gapTops = display.recordsGroupSections.map(s => s.top)
+    expect(gapTops[0]).toBe(0)
+    expect(gapTops[1]).toBe(
+      chipTops[1]! - (GROUP_LABEL_HEIGHT - CHIPLESS_SECTION_GAP_PX),
+    )
   })
 
   test('a hidden section leaves the stack, and comes back', () => {

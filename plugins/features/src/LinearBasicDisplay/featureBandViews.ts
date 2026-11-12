@@ -73,22 +73,22 @@ export interface FeatureBandHost {
   layoutReady: boolean
   // `expandedGeneIds` is Required, not merely picked: every rung spreads
   // these inputs, and a host that could omit it re-collapses the gene the
-  // user opened at the `full` rung.
+  // user opened at the `full` rung. `sectionHeadPx` too, since the band lays
+  // its sections out with the chip row the packer reserved: left to the
+  // packer's default, the two could part.
   layoutInputs: Pick<
     LayoutInputs,
     | 'bpPerPx'
     | 'displayMode'
     | 'pinnedFeatureIds'
     | 'facet'
-    | 'sectionHeadPx'
     | 'hiddenGroupKeys'
     | 'geneNamesOnly'
   > &
-    Required<Pick<LayoutInputs, 'expandedGeneIds'>>
+    Required<Pick<LayoutInputs, 'expandedGeneIds' | 'sectionHeadPx'>>
   showLabels: boolean
   effectiveShowDescriptions: boolean
   facet: FeatureFacet | undefined
-  sectionHeadPx: number
   fitMeasureFeatureIds: ReadonlySet<string> | undefined
   fitHeightToDisplay: boolean
   autoHeight: boolean
@@ -694,7 +694,8 @@ export function featureBandViews(self: FeatureBandHost) {
         // The chip rows keep their height under the squeeze, so the scale is
         // solved over the rows alone.
         layout => {
-          const { facet, sectionHeadPx } = self
+          const { facet } = self
+          const { sectionHeadPx } = self.layoutInputs
           return facet
             ? featureGroupSections(layout, facet, sectionHeadPx).length *
                 sectionHeadPx
@@ -731,7 +732,7 @@ export function featureBandViews(self: FeatureBandHost) {
           out: scaleLaidOutData(
             layout,
             scale,
-            facet && { facet, chipPx: self.sectionHeadPx },
+            facet && { facet, chipPx: self.layoutInputs.sectionHeadPx },
           ),
         }
       }
@@ -761,7 +762,11 @@ export function featureBandViews(self: FeatureBandHost) {
     get groupSections(): FeatureGroupSection[] {
       const { facet } = self
       return facet
-        ? featureGroupSections(this.laidOutDataMap, facet, self.sectionHeadPx)
+        ? featureGroupSections(
+            this.laidOutDataMap,
+            facet,
+            self.layoutInputs.sectionHeadPx,
+          )
         : []
     },
     /**

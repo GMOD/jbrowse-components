@@ -2,6 +2,10 @@ import {
   STRAND_FIELD,
   categoricalField,
 } from '@jbrowse/core/util/categoricalField'
+import {
+  CHIPLESS_SECTION_GAP_PX,
+  GROUP_LABEL_HEIGHT,
+} from '@jbrowse/display-kit/groupLabelStyle'
 
 import { isPlacedRow } from './rowPlacement.ts'
 
@@ -56,6 +60,14 @@ export function hiddenSectionFeatureIds(
         ),
       )
     : undefined
+}
+
+/**
+ * The px above each section's first row: its chip's row, or a gap on a host
+ * that draws no chips.
+ */
+export function sectionHeadPxOn(host: { showsCanvasOnly?: boolean }) {
+  return host.showsCanvasOnly ? CHIPLESS_SECTION_GAP_PX : GROUP_LABEL_HEIGHT
 }
 
 export interface FeatureGroupSection extends GroupId {
