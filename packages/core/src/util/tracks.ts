@@ -11,6 +11,7 @@ export { getFileName } from './getFileName.ts'
 export { getRpcSessionId } from './parentWalk.ts'
 export { makeIndex } from './formatGuessers.ts'
 export { pickDisplayForView } from './displayChoice.ts'
+export { adapterAssemblyNames } from './adapterAssemblyNames.ts'
 
 export {
   isLooseTrackConfig,

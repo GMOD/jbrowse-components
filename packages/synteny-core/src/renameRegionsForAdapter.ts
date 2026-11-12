@@ -1,9 +1,7 @@
 import { renameComparativeRegions } from '@jbrowse/core/util'
+import { adapterAssemblyNames } from '@jbrowse/core/util/tracks'
 
-import {
-  adapterAssemblyNames,
-  regionsInAssemblyNamespace,
-} from './regionsInAssemblyNamespace.ts'
+import { regionsInAssemblyNamespace } from './regionsInAssemblyNamespace.ts'
 
 import type { AssemblyManager, Region } from '@jbrowse/core/util'
 

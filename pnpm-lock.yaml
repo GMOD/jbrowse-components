@@ -3063,6 +3063,9 @@ importers:
       '@jbrowse/launch-args':
         specifier: workspace:*
         version: link:../../packages/launch-args
+      '@jbrowse/synteny-core':
+        specifier: workspace:^
+        version: link:../../packages/synteny-core
       generic-filehandle2:
         specifier: ^2.5.1
         version: 2.5.1

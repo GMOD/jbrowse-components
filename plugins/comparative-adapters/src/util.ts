@@ -2,6 +2,7 @@ import { csToCigar, pafIdentity } from '@jbrowse/cigar-utils'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createStatusFanOut, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
+import { adapterAssemblyNames } from '@jbrowse/core/util/tracks'
 
 import SyntenyFeature from './SyntenyFeature/index.ts'
 import { panSNMatchesPrefix, panSNPrefixes } from './pansn.ts'
@@ -23,13 +24,11 @@ import type { GenericFilehandle } from 'generic-filehandle2'
 // fields are an explicit alternative to the positional array. Do not reorder
 // without updating PAFAdapter and the synteny docs.
 export function getAssemblyNamesFromConf(conf: PairwiseAssemblyConfigModel) {
-  const assemblyNames = readConfObject(conf, 'assemblyNames')
-  return assemblyNames.length === 0
-    ? [
-        readConfObject(conf, 'queryAssembly'),
-        readConfObject(conf, 'targetAssembly'),
-      ]
-    : assemblyNames
+  return adapterAssemblyNames({
+    assemblyNames: readConfObject(conf, 'assemblyNames'),
+    queryAssembly: readConfObject(conf, 'queryAssembly'),
+    targetAssembly: readConfObject(conf, 'targetAssembly'),
+  })
 }
 
 // The two multi-genome PAF adapters (in-memory MultiGenomePAFAdapter and

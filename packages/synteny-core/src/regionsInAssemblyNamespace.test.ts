@@ -1,9 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import {
-  adapterAssemblyNames,
-  regionsInAssemblyNamespace,
-} from './regionsInAssemblyNamespace.ts'
+import { regionsInAssemblyNamespace } from './regionsInAssemblyNamespace.ts'
 import { assemblyManager } from './testUtils.ts'
 
 const region = { assemblyName: 'a', refName: 'chr1', start: 0, end: 10 }
@@ -62,19 +59,4 @@ test('an MST region is respelled as a plain snapshot', () => {
   )
   expect(out).toEqual({ ...region, assemblyName: 'aliasOfA' })
   expect(out).not.toBe(row.regions[0])
-})
-
-test('adapterAssemblyNames reads the array, else the named pair', () => {
-  expect(adapterAssemblyNames({ assemblyNames: ['q', 't'] })).toEqual([
-    'q',
-    't',
-  ])
-  expect(
-    adapterAssemblyNames({
-      assemblyNames: [],
-      queryAssembly: 'q',
-      targetAssembly: 't',
-    }),
-  ).toEqual(['q', 't'])
-  expect(adapterAssemblyNames({ type: 'MCScanBlocksAdapter' })).toEqual([])
 })

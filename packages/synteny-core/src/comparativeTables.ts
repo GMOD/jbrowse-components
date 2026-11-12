@@ -9,6 +9,7 @@ import {
   abgrToHex,
   cssColorToHex,
 } from '@jbrowse/core/util/colorBits'
+import { adapterAssemblyNames } from '@jbrowse/core/util/tracks'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { fieldPredicateArray } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -24,7 +25,6 @@ import { colorPaintOf, hasColorKey, isAttributeLabels } from './colorRamps.ts'
 import { legendChipAlpha } from './colorUtils.ts'
 import { liftSyntenyViewSettings } from './liftSyntenyViewSettings.ts'
 import { opacityFadeOf, opacityLevel } from './opacityChannel.ts'
-import { adapterAssemblyNames } from './regionsInAssemblyNamespace.ts'
 import { paintedField } from './syntenyColorBy.ts'
 import { syntenyEncodingConfigSchema } from './syntenyEncodingConfigSchema.ts'
 import { syntenyFetchRegions } from './syntenyFetchWindow.ts'

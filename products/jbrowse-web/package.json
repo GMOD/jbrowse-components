@@ -88,6 +88,7 @@
     "@jbrowse/cli": "workspace:*",
     "@jbrowse/display-test-utils": "workspace:^",
     "@jbrowse/launch-args": "workspace:*",
+    "@jbrowse/synteny-core": "workspace:^",
     "generic-filehandle2": "^2.5.1",
     "pixelmatch": "^8.0.0",
     "pngjs": "^7.0.0"

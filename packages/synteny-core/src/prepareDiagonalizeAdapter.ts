@@ -1,9 +1,9 @@
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-
 import {
   adapterAssemblyNames,
-  regionsInAssemblyNamespace,
-} from './regionsInAssemblyNamespace.ts'
+  getRpcSessionId,
+} from '@jbrowse/core/util/tracks'
+
+import { regionsInAssemblyNamespace } from './regionsInAssemblyNamespace.ts'
 import {
   getAdapterToCanonicalRefNameMap,
   renameRegionsForAdapter,

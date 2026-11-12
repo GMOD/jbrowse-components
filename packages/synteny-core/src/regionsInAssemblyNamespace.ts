@@ -5,21 +5,6 @@ import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * The assemblies a comparative adapter config names, spelled as it spells
- * them: `assemblyNames`, or the `queryAssembly`/`targetAssembly` pair the
- * pairwise adapters also accept. The snapshot-side twin of comparative-adapters'
- * `getAssemblyNamesFromConf`.
- */
-export function adapterAssemblyNames(adapterConfig: Record<string, unknown>) {
-  const { assemblyNames, queryAssembly, targetAssembly } = adapterConfig
-  return Array.isArray(assemblyNames) && assemblyNames.length > 0
-    ? (assemblyNames as string[])
-    : [queryAssembly, targetAssembly].filter(
-        (name): name is string => typeof name === 'string',
-      )
-}
-
-/**
  * Regions respelled into the namespace an adapter compares against: each
  * `assemblyName` becomes the entry of `assemblyNames` the session resolves to
  * the same assembly, and stays as written where none does.
