@@ -8,6 +8,7 @@ import {
 import { identityLut } from '../LinearMafRenderer/identity.ts'
 import { refNameRankColors } from './components/refNameRanks.ts'
 import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
+import { MAF_BASES_FIELDS } from './rowPlan.ts'
 
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { ConservationUnit } from './conservationUnits.ts'
@@ -26,20 +27,15 @@ import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
  * plot draft, both read it here, so the two cannot judge different fields.
  */
 export function basesFieldOf(conf: AnyConfigurationModel) {
-  const field: MafBasesField | undefined = readConfObject(conf, [
+  const show: unknown = readConfObject(conf, ['alignments', 'bases', 'show'])
+  const field: unknown = readConfObject(conf, [
     'alignments',
     'bases',
-    'show',
+    'encoding',
+    'color',
+    'field',
   ])
-    ? readConfObject(conf, [
-        'alignments',
-        'bases',
-        'encoding',
-        'color',
-        'field',
-      ])
-    : undefined
-  return field
+  return show === true ? MAF_BASES_FIELDS.find(f => f === field) : undefined
 }
 
 export interface ConfigSlotSelf extends IStateTreeNode {
