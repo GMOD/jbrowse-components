@@ -326,7 +326,7 @@ display's own box, where `RowsPanel` mounts the scrollbar and the row labels.
 (ADR-254, amending ADR-250). `buildRecordsRenderData` builds every record
 the display's filter admits from the cell payload as a `SimpleFeature`, and
 everything after is `@jbrowse/plugin-features/band`: the pack,
-LinearBasicDisplay's own feature band (`featureBandViews` over a plain
+LinearBasicDisplay's own feature band (`hostFeatureBand` over a plain
 `FeatureBandHost`, since this model's `facet` is the sample facet), which
 owns the fit ladder, the kept stack, its sections, id lookups and hit
 indexes, `paintFeatureBand` on screen and in the export, and

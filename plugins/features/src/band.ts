@@ -8,22 +8,13 @@ export { buildFeatureRenderData } from './RenderFeatureDataRPC/buildFeatureRende
 export { GENE_GLYPH_DEFAULTS } from './RenderFeatureDataRPC/renderConfig.ts'
 export { layoutRegionKey } from './LinearBasicDisplay/layoutInputs.ts'
 export { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-export {
-  featureBandViews,
-  hostFeatureBand,
-} from './LinearBasicDisplay/featureBandViews.ts'
-export { fittedHeight } from './LinearBasicDisplay/fitLadder.ts'
-export {
-  scaleLaidOutData,
-  unplaceBelow,
-} from './LinearBasicDisplay/applyLayout.ts'
+export { hostFeatureBand } from './LinearBasicDisplay/featureBandViews.ts'
 export {
   countTruncatedFeatures,
   createMembershipMemo,
   featureIdsTouchingBlocks,
   maxBottom,
 } from './LinearBasicDisplay/layoutQueries.ts'
-export { indexById } from './LinearBasicDisplay/baseModelHelpers.ts'
 export { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 export { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 export { DEFAULT_TOOLTIP } from './RenderFeatureDataRPC/featureTooltip.ts'
@@ -31,10 +22,7 @@ export {
   FEATURE_DESCRIPTION_FIELD,
   FEATURE_NAME_FIELD,
 } from './RenderFeatureDataRPC/featureNameField.ts'
-export {
-  featureGroupSections,
-  hiddenSectionFeatureIds,
-} from './LinearBasicDisplay/facet.ts'
+export { hiddenSectionFeatureIds } from './LinearBasicDisplay/facet.ts'
 export {
   featureHeightMenuItem,
   labelCheckboxItems,
@@ -59,51 +47,29 @@ export { default as FeatureGateMixin } from './shared/FeatureGateMixin.ts'
 export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export { htmlToPlainText } from './LinearBasicDisplay/components/hoverReadout.ts'
 export {
-  buildRegionInstanceIndex,
   drawnLabelTexts,
   featureHighlightInk,
   featuresNamedInk,
 } from './LinearBasicDisplay/featureHighlightInk.ts'
-export {
-  buildFeatureFlatbushIndex,
-  performMultiRegionHitDetection,
-} from './LinearBasicDisplay/components/hitTesting.ts'
+export { performMultiRegionHitDetection } from './LinearBasicDisplay/components/hitTesting.ts'
 
 export type { FeatureBandHost } from './LinearBasicDisplay/featureBandViews.ts'
-export type {
-  FeatureHighlightMenuSelf,
-  FeatureMenuHit,
-  FeatureRecordMenuSelf,
-} from './LinearBasicDisplay/featureContextMenu.ts'
-export type {
-  FeatureHighlight,
-  ResolvedHighlights,
-} from './LinearBasicDisplay/featureHighlight.ts'
-export type {
-  GateHost,
-  RegionGateMeasurement,
-} from './shared/FeatureGateMixin.ts'
+export type { FeatureMenuHit } from './LinearBasicDisplay/featureContextMenu.ts'
+export type { ResolvedHighlights } from './LinearBasicDisplay/featureHighlight.ts'
+export type { RegionGateMeasurement } from './shared/FeatureGateMixin.ts'
 export type { FitStage } from './LinearBasicDisplay/fitLadder.ts'
 export type {
   FeatureFacet,
   FeatureGroupSection,
 } from './LinearBasicDisplay/facet.ts'
-export type { FeatureBandPaint } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export type { LabelPlacementContext } from './LinearBasicDisplay/components/labelPositioning.ts'
 export type {
   FeatureInkHost,
   FeatureMatch,
   RegionInstanceIndex,
 } from './LinearBasicDisplay/featureHighlightInk.ts'
-export type {
-  FlatbushRegionIndexes,
-  HitFeatureResult,
-  VisibleRegion,
-} from './LinearBasicDisplay/components/hitTesting.ts'
-export type {
-  LayoutInputs,
-  LayoutRegionData,
-} from './LinearBasicDisplay/layoutInputs.ts'
+export type { HitFeatureResult } from './LinearBasicDisplay/components/hitTesting.ts'
+export type { LayoutRegionData } from './LinearBasicDisplay/layoutInputs.ts'
 export type {
   DisplayConfig,
   DisplayMode,
