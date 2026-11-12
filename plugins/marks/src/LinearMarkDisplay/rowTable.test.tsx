@@ -255,6 +255,21 @@ test('a facet on the group rows.groups writes stacks the rows in bands, split by
   expect(display.rowColorFields).toContain('group')
 })
 
+test('a facet on a group no loaded row carries says so in the corner', () => {
+  const unmatched = {
+    rows: { field: 'source', groups: [{ match: '^x', group: 'cousins' }] },
+    facet: 'group',
+  }
+  const notice = 'facet.field: no row carries group, so it bands nothing'
+  const display = loaded(unmatched, [{ mark: 'rect' }])
+  expect(display.bandsRows).toBe(true)
+  expect(display.notices).toContain(notice)
+  expect(display.cornerNotices).toContain(notice)
+  expect(
+    loaded({ ...FAMILY_GROUPS, facet: 'group' }, [{ mark: 'rect' }]).notices,
+  ).not.toContain(notice)
+})
+
 test('a rows field change keeps rows.groups, so facet: group still bands', () => {
   const display = loaded(
     { rows: { ...FAMILY_GROUPS.rows, sort: ['s2'] }, facet: 'group' },
