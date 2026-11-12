@@ -1,0 +1,185 @@
+{
+  "plugins": [
+    {
+      "name": "Panagram",
+      "esmUrl": "https://jbrowse.org/demos/panagram/126144256c1d/jbrowse-plugin-panagram.esm.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "canFam4",
+      "displayName": "Dog (canFam4)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "canFam4-refseq",
+        "metadata": {
+          "description": "Mar. 2020 (UU_Cfam_GSD_1.0/canFam4)",
+          "nibPath": "/gbdb/canFam4",
+          "organism": "Dog",
+          "defaultPos": "chr14:7973274-7979747",
+          "active": 1,
+          "orderKey": 4662,
+          "genome": "Dog",
+          "scientificName": "Canis lupus familiaris",
+          "htmlPath": "/gbdb/canFam4/html/description.html",
+          "hgNearOk": 0,
+          "hgPbOk": 0,
+          "sourceName": "Uppsala University",
+          "taxId": 9615,
+          "id": "canFam4",
+          "name": "canFam4",
+          "accession": "canFam4",
+          "commonName": "Dog",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/canFam4/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/canFam4/minimal.json",
+          "blatDb": "canFam4"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/canFam4/canFam4.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/canFam4/canFam4.chromAlias.txt"
+        }
+      },
+      "circularRefNames": ["chrM"],
+      "geneticCodes": {
+        "chrM": 2
+      }
+    }
+  ],
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/ucsc/canFam4/trix/canFam4.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/ucsc/canFam4/trix/canFam4.ixx",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["canFam4"]
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "canFam4-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["canFam4"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq"
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "dog_containment",
+      "name": "Pan-k-mer containment (100 bp)",
+      "assemblyNames": ["canFam4"],
+      "adapter": {
+        "type": "PanagramContainmentAdapter",
+        "uri": "https://jbrowse.org/demos/panagram_rspo2/data",
+        "anchor": "canFam4",
+        "step": 100,
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/panagram_rspo2/data/traits.tsv",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "dog_containment-heatmap",
+          "mark": {
+            "type": "rect"
+          }
+        }
+      ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "dog_containment_1bp",
+      "name": "Pan-k-mer containment (per base)",
+      "assemblyNames": ["canFam4"],
+      "adapter": {
+        "type": "PanagramContainmentAdapter",
+        "uri": "https://jbrowse.org/demos/panagram_rspo2/data",
+        "anchor": "canFam4",
+        "step": 1,
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/panagram_rspo2/data/traits.tsv",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "dog_containment_1bp-heatmap",
+          "mark": {
+            "type": "rect"
+          }
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "dog_multiplicity",
+      "name": "Pan-k-mer multiplicity",
+      "assemblyNames": ["canFam4"],
+      "adapter": {
+        "type": "PanagramMultiplicityAdapter",
+        "uri": "https://jbrowse.org/demos/panagram_rspo2/data",
+        "anchor": "canFam4",
+        "step": 100
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "RSPO2 in six dogs",
+    "views": [
+      {
+        "id": "rspo2_gene",
+        "type": "LinearGenomeView",
+        "assembly": "canFam4",
+        "loc": "chr13:8,800,000..9,000,000",
+        "tracks": ["dog_containment", "dog_multiplicity", "canFam4-ncbiRefSeq"]
+      },
+      {
+        "id": "rspo2_utr",
+        "type": "LinearGenomeView",
+        "assembly": "canFam4",
+        "loc": "chr13:8,822,900..8,825,300",
+        "tracks": ["dog_containment_1bp", "canFam4-ncbiRefSeq"]
+      }
+    ]
+  }
+}
