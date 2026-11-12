@@ -21,6 +21,18 @@ test('returns rows matching the adapter samples, silent about the rest', () => {
   expect(warnings).toEqual([])
 })
 
+// A blank cell is no value, so a merge over the row keeps what the adapter
+// already had for that column.
+test('a blank or missing cell leaves its column off the row', () => {
+  const sparse = ['name\tpop\tlabel', 'NA12878\t\tMother', 'NA19240\tYRI'].join(
+    '\n',
+  )
+  expect(parse(sparse, ['NA12878', 'NA19240']).sources).toEqual([
+    { name: 'NA12878', label: 'Mother' },
+    { name: 'NA19240', pop: 'YRI' },
+  ])
+})
+
 test('excludes metadata rows the adapter does not name', () => {
   expect(parse(tsv, ['NA12878']).sources.map(r => r.name)).toEqual(['NA12878'])
 })

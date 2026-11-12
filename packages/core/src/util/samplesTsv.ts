@@ -26,7 +26,8 @@ export const samplesTsvAdapterConfigSchemaFields = {
 } as const
 
 /**
- * The metadata rows for the samples an adapter names, plus a warning for the
+ * The metadata rows for the samples an adapter names, each carrying only the
+ * columns it fills, plus a warning for the
  * samples the table leaves out, which no row is drawn for. Rows naming samples
  * the adapter lacks are dropped silently: one project-wide table serving
  * several tracks is the normal shape. `names` undefined means the adapter lists
@@ -58,7 +59,10 @@ export function parseSamplesTsv(
       const [name, ...rest] = line.split('\t')
       return {
         ...Object.fromEntries(
-          header.slice(1).map((col, idx) => [col, rest[idx] ?? ''] as const),
+          header.slice(1).flatMap((col, idx) => {
+            const value = rest[idx]
+            return value ? [[col, value] as const] : []
+          }),
         ),
         name: name!,
       }
