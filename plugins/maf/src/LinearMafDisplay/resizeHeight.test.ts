@@ -1,4 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { treeSidebarOffset } from '@jbrowse/tree-sidebar'
 
 import { DEFAULTS } from './displayDefaults.ts'
@@ -83,10 +84,24 @@ describe('the rows always fit the track height', () => {
     expect(display.height).toBeCloseTo(2400)
   })
 
-  it('keeps the rows canvas under the backing-store ceiling on a huge drag', () => {
+  it('keeps the canvas, bands and rows, under the backing-store ceiling on a huge drag', () => {
     const display = setup(10)
+    display.setShowConservation(true)
     display.resizeHeight(+100_000)
-    expect(display.rowsHeight).toBe(display.maxRowsHeight)
+    expect(display.rowsTopOffset).toBeGreaterThan(0)
+    expect(display.rowsHeight).toBeGreaterThan(0)
+    expect(display.rowsTopOffset + display.rowsHeight).toBeLessThanOrEqual(
+      maxCanvasCssPx(),
+    )
+    expect(display.height).toBeLessThanOrEqual(maxCanvasCssPx())
+  })
+
+  it('gives the rows the whole ceiling with no band on', () => {
+    const display = setup(10)
+    display.setShowCoverage(false)
+    display.resizeHeight(+100_000)
+    expect(display.rowsTopOffset).toBe(0)
+    expect(display.rowsHeight).toBe(maxCanvasCssPx())
   })
 })
 

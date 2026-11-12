@@ -47,11 +47,13 @@ export const MAX_CANVAS_DIM_PX = 8192
  * The largest CSS-px extent a canvas may take on one axis before its backing
  * store (`× dpr`) reaches {@link MAX_CANVAS_DIM_PX}.
  *
- * For displays that size a canvas to their **content** rather than to a
- * viewport, a row stack that grows with the row count. Past it the canvas still
- * draws, at a reduced resolution on that axis (`syncCanvasSize` reports the
- * scale it got), so the cap is about keeping the rows legible: MAF scrolls its
- * overflow into a viewport, and multi-row divides the cap across its rows.
+ * For canvases sized by something other than the viewport: MAF's, whose
+ * bands and rows take the track height a reader drags, and the circular
+ * view's ring strip, as wide as the circle's circumference. Past it the canvas
+ * still draws, at a reduced resolution on that axis (`syncCanvasSize` reports
+ * the scale it got), so the cap is about keeping the marks sharp: MAF gives
+ * its rows what the bands leave under it, and the ring strip scales itself
+ * down to fit.
  *
  * A function, not a constant: `getDpr()` follows the window, so a display
  * reading this into a computed re-derives it when the window moves to another

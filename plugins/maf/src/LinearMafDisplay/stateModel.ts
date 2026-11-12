@@ -813,11 +813,13 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Max CSS-px height the rows canvas may take before its backing store
-         * (`× dpr`) hits the browser/GPU canvas limit.
+         * Max CSS-px height the rows may take: one canvas holds the band
+         * stack and the rows, and it stops where its backing store (`× dpr`)
+         * hits the browser/GPU canvas limit, so the rows get what the bands
+         * leave of that.
          */
         get maxRowsHeight() {
-          return maxCanvasCssPx()
+          return Math.max(0, maxCanvasCssPx() - self.rowsTopOffset)
         },
       }))
       .views(self => ({
@@ -827,7 +829,7 @@ export default function stateModelFactory(
          * track's `height` slot minus the stacked bands, never grown by the
          * row count, so more species shrink the rows rather than grow the
          * track. Zero when alignments are hidden. Capped at `maxRowsHeight`
-         * to stay under the canvas backing-store limit.
+         * so the canvas, bands plus rows, stays under its backing-store limit.
          */
         get rowsHeight() {
           return self.showAlignments
