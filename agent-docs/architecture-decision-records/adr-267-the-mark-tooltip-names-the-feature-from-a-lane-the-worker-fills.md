@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's `tooltip` is `{ show, field }`; the worker reads `field` off each instance's whole feature into a `tooltip` string lane, through the feature displays' reader, and `MarkTooltip` prints it above the locus. The multi-row display's field defaults to the feature tracks' `_mouseOver` chain; the plain mark display's is empty"
+summary: "The mark display's `tooltip` is `{ show, field }`; the worker reads `field` off each instance's whole feature into a `tooltip` string lane, through the feature displays' reader, and `MarkTooltip` prints it above the locus. The multi-row display's field defaults to `name`; the plain mark display's is empty"
 ---
 
 # ADR-267: The mark tooltip names the feature from a lane the worker fills
@@ -23,9 +23,8 @@ ADR-238 settled that the part's `field` names the hover's first line.
 
 - **Config: the `tooltip` part, `{ show, field }`, a bare string the field.**
   `MarkTooltip` on `LinearMarkDisplay` (and the Manhattan display, which takes
-  its schema) and `MultiRowTooltip` on `LinearMultiRowFeatureDisplay`, which
-  reuses the feature displays' `featureTooltipFieldSlot` and so their default,
-  `_mouseOver`, else `name`, `function`, `id`.
+  its schema) and `MultiRowTooltip` on `LinearMultiRowFeatureDisplay`, one
+  schema with two defaults: empty, and `name`.
 - **Worker: a `tooltip` string lane.** `MarkEncoding.tooltip` carries the
   field, `LaneName` gains `tooltip`, and `encodeFeatures` fills
   `EncodedChannels.tooltip` the way it fills `text`. It reads the field off
@@ -39,10 +38,12 @@ ADR-238 settled that the part's `field` names the hover's first line.
   `MarkHitInfo.tooltip`, and `MarkTooltip` prints it first, through
   `SanitizedHTML` as `FeatureTooltip` does, since ClinVar's `_mouseOver` is
   markup. No string, no line. `show` off opens no box.
-- **Default rule: a display whose plot is a mark per record names it; the
-  plain mark display names nothing until its config writes a field.** The
-  multi-row display draws one rect per feature record, and its records are
-  what the reader hovers to identify. `LinearMarkDisplay` is the grammar's
+- **Default rule: a display whose plot is a mark per record names it by
+  `name`; the plain mark display names nothing until its config writes a
+  field.** The multi-row display draws one rect per feature record, and its
+  records are what the reader hovers to identify. A name costs a few bytes a
+  feature; a markup field such as `_mouseOver` costs more than the rect
+  (below), so a config opts into it. `LinearMarkDisplay` is the grammar's
   blank page: its `marks` default is empty, and what it is configured with is
   mostly a value plot (bars over a score, coverage, a Manhattan, binned
   densities) whose instances number in the hundreds of thousands and whose
@@ -62,14 +63,21 @@ ADR-238 settled that the part's `field` names the hover's first line.
   ClinVar's `_mouseOver` is an HTML block (review status, condition, star
   glyphs), about 27 times the rect's own lanes. The feature display ships the
   same string per feature where it draws them; the multi-row display also
-  draws at zooms where the feature display shows density. A config that wants
-  the light line writes `tooltip: 'name'`.
+  draws at zooms where the feature display shows density, so the default
+  reads `name` and a config that wants the block writes
+  `tooltip: '_mouseOver'`.
 - A `tooltip` edit refetches, as any encoding edit does.
 - `layerRequestsOf` and `markLayerRequest` take the field as an optional
   trailing parameter; a caller passing none (the multi-way synteny lanes) asks
   for no lane.
 
 ## Rejected alternatives
+
+- **The feature tracks' default, `_mouseOver` else `name`, `function`, `id`,
+  on the multi-row display**, which would name a ClinVar variant by its HGVS
+  with no config. It ships the table's 427 B a feature, 27 times the rect, at
+  every zoom the display draws; and reusing the feature displays' slot made
+  `plugins/marks` depend on `plugins/features`.
 
 - **A debounced `CoreGetEncodedFeature` per hover**, the parked idea's plan.
   `executeGetEncodedFeature` re-runs the region's layer steps for each call,

@@ -123,8 +123,7 @@ export function configSchemaFactory() {
        * #slot tooltip
        * The box hovering a feature opens, a
        * [MultiRowTooltip](../multirowtooltip): its first line names the
-       * feature, `_mouseOver`, else the name, `function` or ID, unless
-       * `field` says otherwise.
+       * feature, its name else its ID, unless `field` says otherwise.
        */
       tooltip: multiRowTooltipConfigSchema,
     },

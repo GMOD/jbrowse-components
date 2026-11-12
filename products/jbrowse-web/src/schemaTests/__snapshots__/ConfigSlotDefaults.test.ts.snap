@@ -836,7 +836,7 @@ exports[`every registered schema slot default 1`] = `
     "rows.step": "number = "fit"",
     "rows.tree.newick": "maybeString = undefined",
     "rows.tree.provenance": "maybeFrozen = undefined",
-    "tooltip.field": "featureField = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
+    "tooltip.field": "featureField = "name"",
     "tooltip.show": "boolean = true",
   },
   "display: LinearReferenceSequenceDisplay": {

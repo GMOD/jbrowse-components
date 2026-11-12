@@ -73,9 +73,9 @@ on any block reports the whole feature; and a transcript drawn with its protein
 domains over its coding exons, as [](/docs/tutorials/protein_domains) writes it.
 
 Hovering a feature names it on the tooltip's first line, above its locus and
-row, read as a feature track reads it: the
-[`tooltip` field](/docs/config/multirowtooltip/#slot-field), which
-`"tooltip": "sample"` points at another attribute.
+row: its `name`, else its ID. The
+[`tooltip` field](/docs/config/multirowtooltip/#slot-field) points it at another
+attribute, `"tooltip": "_mouseOver"` for a UCSC track's hover text.
 
 The rows are discovered from the values of the features in the window, so a file
 that gains a sample or a category needs no config change, and a window missing

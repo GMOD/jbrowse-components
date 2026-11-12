@@ -1,11 +1,35 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { featureTooltipFieldSlot } from '@jbrowse/plugin-features'
 
-const showSlot = {
-  type: 'boolean',
-  defaultValue: true,
-  description: 'open the tooltip when the cursor rests on a mark',
-} as const
+function tooltipSchema(name: string, defaultField: string) {
+  return ConfigurationSchema(
+    name,
+    {
+      /**
+       * #slot
+       * Off, hovering a mark opens no box.
+       */
+      show: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'open the tooltip when the cursor rests on a mark',
+      },
+      /**
+       * #slot
+       * The field the box's first line reads off the feature the mark draws,
+       * such as `name`, or a `jexl:` expression over `feature`; one that
+       * reads nothing names the feature, else its ID, as a feature track's
+       * tooltip does. Empty names nothing.
+       */
+      field: {
+        type: 'featureField',
+        defaultValue: defaultField,
+        description:
+          'the field naming the hovered feature, such as `name`, or a `jexl:` expression over `feature`; empty names nothing',
+      },
+    },
+    { shorthand: 'field', writes: 'members', closed: true },
+  )
+}
 
 /**
  * #config MarkTooltip
@@ -21,57 +45,22 @@ const showSlot = {
  * { type: 'LinearMarkDisplay', tooltip: 'name' }
  * ```
  */
-export const markTooltipConfigSchema = ConfigurationSchema(
-  'MarkTooltip',
-  {
-    /**
-     * #slot
-     * Off, hovering a mark opens no box.
-     */
-    show: showSlot,
-    /**
-     * #slot
-     * The field the box's first line reads off the feature the mark draws,
-     * such as `name`, or a `jexl:` expression over `feature`; one that reads
-     * nothing names the feature, else its ID, as a feature track's tooltip
-     * does. Empty names nothing.
-     */
-    field: {
-      type: 'featureField',
-      defaultValue: '',
-      description:
-        'the field naming the hovered feature, such as `name`, or a `jexl:` expression over `feature`; empty names nothing',
-    },
-  },
-  { shorthand: 'field', writes: 'members', closed: true },
-)
+export const markTooltipConfigSchema = tooltipSchema('MarkTooltip', '')
 
 /**
  * #config MultiRowTooltip
  * #category display
  * The multi-row display's `tooltip`: the [](/docs/config/marktooltip) part
- * with a feature track's default `field`, which reads `_mouseOver`, else the
- * name, else `function`, else the ID, so hovering a ClinVar variant names it.
+ * whose `field` defaults to `name`, else the ID. A field holding a block of
+ * markup, such as ClinVar's `_mouseOver`, ships that block with every feature
+ * in view, so the default stays the short name and a config opts in.
  *
  * #example
  * ```js
- * { type: 'LinearMultiRowFeatureDisplay', tooltip: 'sample' }
+ * { type: 'LinearMultiRowFeatureDisplay', tooltip: '_mouseOver' }
  * ```
  */
-export const multiRowTooltipConfigSchema = ConfigurationSchema(
+export const multiRowTooltipConfigSchema = tooltipSchema(
   'MultiRowTooltip',
-  {
-    /**
-     * #slot
-     * Off, hovering a feature opens no box.
-     */
-    show: showSlot,
-    /**
-     * #slot
-     * The field the box's first line reads off the hovered feature, or a
-     * `jexl:` expression over `feature`. Empty names nothing.
-     */
-    field: featureTooltipFieldSlot,
-  },
-  { shorthand: 'field', writes: 'members', closed: true },
+  'name',
 )

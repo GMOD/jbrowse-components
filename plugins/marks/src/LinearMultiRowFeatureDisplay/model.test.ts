@@ -6,7 +6,6 @@ import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 import { DEFAULT_MARK_COLOR, colorAt } from '@jbrowse/core/util/markEncoding'
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { getSnapshot, onPatch } from '@jbrowse/mobx-state-tree'
-import { DEFAULT_TOOLTIP } from '@jbrowse/plugin-features/band'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import { paintedColorNode } from '../LinearMarkDisplay/inheritedColor.ts'
@@ -112,9 +111,9 @@ test('rows default to the features type, one labelled row per type in view', () 
   expect(model.rowsHint).toBeUndefined()
 })
 
-test('unwritten, each rect carries the line naming its feature, `_mouseOver` before `name`, as a feature track reads it', () => {
+test("unwritten, each rect carries its feature's name, else its id, and never a `_mouseOver` block", () => {
   const model = display({})
-  expect(model.conf.tooltip.field).toBe(DEFAULT_TOOLTIP)
+  expect(model.conf.tooltip.field).toBe('name')
   expect(model.rpcProps().layers[0]!.lanes).toContain('tooltip')
   loaded(
     model,
@@ -124,13 +123,13 @@ test('unwritten, each rect carries the line naming its feature, `_mouseOver` bef
         end: 1,
         type: 'snv',
         _mouseOver: 'BRCA1 c.68A>G',
-        name: 'v1',
+        name: 'VCV1',
       },
-      { start: 10, end: 11, type: 'snv', name: 'VCV2' },
+      { start: 10, end: 11, type: 'snv', id: 'v2' },
     ]),
   )
   const [layer] = [...model.rpcDataMap.values()][0]!.layers
-  expect(layer!.tooltip).toEqual(['BRCA1 c.68A>G', 'VCV2'])
+  expect(layer!.tooltip).toEqual(['VCV1', 'v2'])
 })
 
 test('features carrying none of the rows field in force draw in one row, and the display asks once, writing nothing', () => {
