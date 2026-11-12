@@ -12,7 +12,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { byteGatedFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RowHeightMixin } from '@jbrowse/tree-sidebar/RowHeightMixin'
-import { ROW_COLOR_SCALE_ID } from '@jbrowse/tree-sidebar/rowColorScale'
+import { ROW_COLOR_SCALE_ID } from '@jbrowse/tree-sidebar/rowColorKey'
 import {
   treeSidebarRowsConfigViews,
   treeSidebarRowStages,

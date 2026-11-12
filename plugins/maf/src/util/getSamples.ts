@@ -3,7 +3,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 import { writeNewick } from '@jbrowse/tree-sidebar'
-import { pruneNewickToLeaves } from '@jbrowse/tree-sidebar/clusterUtils'
+import { pruneNewickToLeaves } from '@jbrowse/tree-sidebar/newick'
 
 import type { MafSource } from '../types.ts'
 import type { MafAdapterConfigModel } from './mafAdapterConfigSchemaFields.ts'
