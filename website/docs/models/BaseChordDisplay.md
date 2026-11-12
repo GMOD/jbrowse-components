@@ -46,6 +46,7 @@ From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../based
 | --- | --- |
 | <span id="getter-view">**view**</span><br><code><a href="../circularview">CircularView</a></code> |  |
 | <span id="getter-trackassemblynames">**trackAssemblyNames**</span><br><code>string[]</code> | the track's assemblies that are on the circle, canonical and in the order the circle lays them out |
+| <span id="getter-trackregions">**trackRegions**</span><br><code>Region[]</code> | the displayed regions on the track's assemblies |
 | <span id="getter-fetchinert">**fetchInert**</span><br><code>boolean</code> | nothing of this track's is on the circle, so the fetch never runs; the SVG export's wait and the retry contract check both read it |
 | <span id="getter-loaded">**loaded**</span><br><code>boolean</code> |  |
 | <span id="getter-ready">**ready**</span><br><code>boolean</code> |  |

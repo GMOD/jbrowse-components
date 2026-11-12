@@ -53,7 +53,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-type">**type**</span><br><code>types.literal('CircularView') as unknown as string</code> |  |
 | <span id="property-offsetradians">**offsetRadians**</span><br><code>types.stripDefault(types.number, defaultOffsetRadians)</code> | the figure's rotation in radians, the linear view's offsetPx |
 | <span id="property-bpperpx">**bpPerPx**</span><br><code>types.stripDefault(types.number, defaultBpPerPx)</code> | the zoom level, base-pairs per pixel. Capped by `minimumRadiusPx`, and refit over by the first resize unless `autoFit` is false. |
-| <span id="property-autofit">**autoFit**</span><br><code>types.stripDefault(types.boolean, true)</code> | whether the view refits to its box on resize; a manual zoom or pan clears it |
+| <span id="property-autofit">**autoFit**</span><br><code>types.stripDefault(types.boolean, true)</code> | whether the view refits to its box on resize; a zoom, by the buttons or the wheel, clears it, and Reset view or new regions set it again |
 | <span id="property-tracks">**tracks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.array( pluginManager.pluggableMstType('track', 'stateMode…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.array(&#10;&#160;&#160;pluginManager.pluggableMstType('track', 'stateModel'),&#10;)</code></pre></dialog></span> |  |
 | <span id="property-hideverticalresizehandle">**hideVerticalResizeHandle**</span><br><code>types.stripDefault(types.boolean, false)</code> | chrome switch, for an embed that drives the view itself |
 | <span id="property-hidetrackselectorbutton">**hideTrackSelectorButton**</span><br><code>types.stripDefault(types.boolean, false)</code> | chrome switch, for an embed that drives the view itself |
@@ -129,7 +129,6 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 | <span id="getter-effectivepaddingpx">**effectivePaddingPx**</span><br><code>number</code> | `paddingPx`, capped in a small box and floored at what the labels drawn at the fit or at this zoom reach |
 | <span id="getter-ring">**ring**</span><br><code>{ spacingPx: number; radiusPx: number; }</code> | the ring at this zoom: its gaps' spacing and the radius that closes it — see `ringAt` |
 | <span id="getter-effectivespacingpx">**effectiveSpacingPx**</span><br><code>number</code> | `spacingPx`, capped so the gaps take at most a quarter of the ring |
-| <span id="getter-totalgapunits">**totalGapUnits**</span><br><code>number</code> | how many inter-slice gaps go round the circle, a genome boundary counting as several |
 | <span id="getter-radiuspx">**radiusPx**</span><br><code>number</code> |  |
 | <span id="getter-circumferencepx">**circumferencePx**</span><br><code>number</code> |  |
 | <span id="getter-bpperradian">**bpPerRadian**</span><br><code>number</code> |  |
@@ -152,6 +151,7 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 | <span id="getter-chorddisplays">**chordDisplays**</span><br><code>ChordLayerDisplay[]</code> | the displays drawing across the circle, in track order |
 | <span id="getter-chordsyntenydisplays">**chordSyntenyDisplays**</span><br><code>ChordSyntenyDisplaySelf[]</code> | the ribbon displays of `syntenyTracks()`; a chromosome reorder reads its alignments from these |
 | <span id="getter-candiagonalize">**canDiagonalize**</span><br><code>boolean</code> | whether a reorder applies: a ribbon track, and exactly two genomes (ADR-121) |
+| <span id="getter-paintingdisplay">**paintingDisplay**</span><br><code>ChordSyntenyDisplaySelf &#124; undefined</code> | the first ribbon display that paints an ideogram, if any |
 | <span id="getter-paintedassemblyname">**paintedAssemblyName**</span><br><code>string &#124; undefined</code> | the genome whose ideogram a ribbon track paints by what aligns to it from the first, rather than in the colors of its chromosomes |
 | <span id="getter-ideogrampaint">**ideogramPaint**</span><br><code>ReadonlyMap&lt;string, PaintRun[]&gt;</code> | that genome's paint, by slice key |
 | <span id="getter-launchassemblynames">**launchAssemblyNames**</span><br><code>string[]</code> | the assemblies a pending launch names, which the gates wait on before `displayedRegions` exist |
@@ -264,7 +264,6 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | <span id="action-launchtoggletrack">**launchToggleTrack**</span><br><code>(trackId: string) =&gt; Promise&lt;boolean&gt;</code> | toggleTrack with launchTrack's loading behavior |
 | <span id="action-launchtrackconf">**launchTrackConf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(configuration: Record&lt;string, unknown&gt;, initialSnapshot?: any)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(configuration: Record&lt;string, unknown&gt;, initialSnapshot?: any) =&gt; Promise&lt;any&gt;</code></pre></dialog></span> | `addTrackConf` with `launchTrack`'s loading behavior, for a track handed over inline rather than from a session list |
 | <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> |  |
-| <span id="action-resizewidth">**resizeWidth**</span><br><code>(distance: number) =&gt; number</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>28 inherited actions from 8 models</summary>

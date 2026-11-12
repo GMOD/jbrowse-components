@@ -297,7 +297,9 @@ test('on screen only the hovered and selected shapes are paths', () => {
       />
     </svg>,
   )
-  const g = container.querySelector<SVGElement>(`[data-testid="${TESTID}"]`)!
+  const g = container.querySelector<SVGElement>(
+    `[data-testid="${CSS.escape(TESTID)}"]`,
+  )!
   expect(g.dataset.chordCount).toBe('3')
   expect(
     [...container.querySelectorAll('path')].map(p => p.dataset.testid),
@@ -313,7 +315,7 @@ test('on screen the renderer group spans its disc with nothing highlighted', () 
       <ShapeDisplay display={model('ready')} />
     </svg>,
   )
-  const g = container.querySelector(`[data-testid="${TESTID}"]`)!
+  const g = container.querySelector(`[data-testid="${CSS.escape(TESTID)}"]`)!
   expect(g.querySelector('circle')?.getAttribute('r')).toBe('100')
   expect(g.querySelectorAll('path')).toHaveLength(0)
 })

@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1254)
+# model members with no description (1253)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -308,7 +308,6 @@ CircularView.panX
 CircularView.panY
 CircularView.radiusPx
 CircularView.resizeHeight
-CircularView.resizeWidth
 CircularView.rotate
 CircularView.rotateClockwiseButton
 CircularView.rotateCounterClockwiseButton

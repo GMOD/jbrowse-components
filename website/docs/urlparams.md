@@ -659,7 +659,7 @@ restores natively:
 <!-- prettier-ignore -->
 | Property | What it does |
 | --- | --- |
-| [`autoFit`](/docs/models/circularview#property-autofit) | whether the view refits to its box on resize; a manual zoom or pan clears it |
+| [`autoFit`](/docs/models/circularview#property-autofit) | whether the view refits to its box on resize; a zoom, by the buttons or the wheel, clears it, and Reset view or new regions set it again |
 | [`bpPerPx`](/docs/models/circularview#property-bpperpx) | the zoom level, base-pairs per pixel. Capped by `minimumRadiusPx`, and refit over by the first resize unless `autoFit` is false. |
 | [`disableImportForm`](/docs/models/circularview#property-disableimportform) | never show the import form, even on an error, for an embed that picks the assembly itself (the SV inspector) |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
