@@ -59,12 +59,36 @@ contig and is not total.
 ## Synteny
 
 A synteny adapter config may name an assembly by an alias, and the adapter
-compares that text in the worker. So both outbound names take the config's
-spelling on the main thread, through `adapterAssemblyNames`
-(`@jbrowse/core/util/tracks`): a region's `assemblyName`
-(`renameRegionsForAdapter`), and the assembly `loadRefNameMap` asks the
-adapter for contigs on. Missing the second leaves the refName map empty, so a
-file whose contigs are refName aliases draws nothing.
+compares that text in the worker. So every outbound assembly name takes the
+**adapter config's** spelling on the main thread, read through
+`adapterAssemblyNames` (`@jbrowse/core/util/tracks`). The track's
+`assemblyNames` stand in only for a config naming no assembly
+(`adapterNamespaceNames`), which is a graph source that reads its lanes off
+the file. A track and its adapter can spell one genome differently, and the
+records an adapter emits carry its own spelling, so respelling by the track
+sends a mate lane's region back under a name the adapter does not hold.
+
+Two helpers carry the rule, and nothing else respells:
+
+- `regionsInAdapterNamespace` (`@jbrowse/synteny-core`) for a region's
+  `assemblyName`: `renameRegionsForAdapter` (linear synteny, dotplot, chord,
+  diagonalize), the multi-way display's `callSyntenyAdapter`, the LGV synteny
+  display's `fetchNeeded` and the launch's mate discovery.
+- `adapterSpelling` (`@jbrowse/core/util/tracks`) for a bare assembly name
+  sent to `CoreGetContigs` or `CoreGetRefNames`: `loadRefNameMap`, the
+  swapped-assemblies check and the track prewarm. Missing it in
+  `loadRefNameMap` leaves the refName map empty, so a file whose contigs are
+  refName aliases draws nothing.
+
+Both keep a name the config already lists, and only then look for an alias: an
+alias of one assembly can be another assembly's name, and the first match
+would hand over the wrong genome.
+
+An assembly name the adapter itself emitted goes back as written. The
+multi-way display's `queryAssemblyName`, `targetAssemblyName` and `lanePairs`
+are mate names read off records, and its `haplotypes` list every spelling of
+each chosen lane because a lane-declaring source names its lanes in the file,
+which no config shows.
 
 For synteny the un-requested refName is the payload: every feature names a contig
 on the other axis. So the fix sits at the two channels that carry names off the

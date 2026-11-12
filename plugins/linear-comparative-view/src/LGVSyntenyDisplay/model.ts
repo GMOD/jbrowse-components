@@ -25,7 +25,7 @@ import {
   installLodTierInfoFetch,
   lodMenuItems,
   lodTierAt,
-  regionsInAssemblyNamespace,
+  regionsInAdapterNamespace,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 
@@ -203,23 +203,25 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
         /**
          * #action
          * The inherited fetch, with each region's assembly respelled the way
-         * the track declares it. The view names its assembly canonically and
-         * the adapter answers a region by comparing that text against its configured
-         * `assemblyNames` in a worker with no assembly manager, so a track
-         * declaring an alias would fetch nothing. The comparative views do the
+         * the adapter config names it. The view names its assembly canonically
+         * and the adapter answers a region by comparing that text against its
+         * configured names in a worker with no assembly manager, so an adapter
+         * naming an alias would fetch nothing. The comparative views do the
          * same through `renameRegionsForAdapter`.
          */
         fetchNeeded(needed: IndexedRegion[]) {
-          const { assemblyManager } = getSession(self)
-          const assemblyNames = getConf(self.parentTrack, 'assemblyNames')
+          const respelled = regionsInAdapterNamespace(
+            needed.map(({ region }) => region),
+            {
+              adapterConfig: self.adapterConfig,
+              trackAssemblyNames: getConf(self.parentTrack, 'assemblyNames'),
+              assemblyManager: getSession(self).assemblyManager,
+            },
+          )
           fetchNeeded(
-            needed.map(({ region, displayedRegionIndex }) => ({
+            needed.map(({ displayedRegionIndex }, i) => ({
               displayedRegionIndex,
-              region: regionsInAssemblyNamespace(
-                [region],
-                assemblyNames,
-                assemblyManager,
-              )[0]!,
+              region: respelled[i]!,
             })),
           )
         },

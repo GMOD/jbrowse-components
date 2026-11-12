@@ -15,7 +15,13 @@ import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
 function syntenyTrackConfigFactory() {
   const pluginManager = new PluginManager()
   const adapters: [string, ConfigurationSchemaDefinition][] = [
-    ['PAFAdapter', { uri: { type: 'string', defaultValue: '' } }],
+    [
+      'PAFAdapter',
+      {
+        uri: { type: 'string', defaultValue: '' },
+        assemblyNames: { type: 'stringArray', defaultValue: [] },
+      },
+    ],
     [
       'PairwiseIndexedPAFAdapter',
       { coarseBpPerPxThreshold: { type: 'number', defaultValue: 0 } },
@@ -189,6 +195,24 @@ test('an anchor no declared name matches stays as the region spells it', async (
   })
   await discover(new AbortController().signal, jest.fn())
   expect(calls[0]!.args.anchorAssembly).toBe('vvx')
+})
+
+// The mates the worker reads carry the adapter's spelling, and it compares them
+// against these names with `===`, so a track spelling a genome differently
+// from its adapter would report every mate as one it declares no assembly for.
+test("an adapter naming its assemblies sets the worker's namespace, not the track", async () => {
+  const { discover, calls } = setup({
+    assemblyNames: ['vvx', 'volvox_ins'],
+    adapter: {
+      type: 'PAFAdapter',
+      uri: 'x.paf',
+      assemblyNames: ['volvox', 'volvox_ins'],
+    },
+  })
+  await discover(new AbortController().signal, jest.fn())
+  expect(calls[0]!.args.regions).toEqual([region])
+  expect(calls[0]!.args.anchorAssembly).toBe('volvox')
+  expect(calls[0]!.args.trackAssemblyNames).toEqual(['volvox', 'volvox_ins'])
 })
 
 test('the tier is the one auto picks at the zoom the panels open at', async () => {

@@ -82,10 +82,7 @@ export {
   getAdapterToCanonicalRefNameMap,
   renameRegionsForAdapter,
 } from './renameRegionsForAdapter.ts'
-// Promoted to core; re-exported so the comparative consumers keep importing it
-// from @jbrowse/synteny-core.
-export { adapterAssemblyNames } from '@jbrowse/core/util/tracks'
-export { regionsInAssemblyNamespace } from './regionsInAssemblyNamespace.ts'
+export { regionsInAdapterNamespace } from './regionsInAdapterNamespace.ts'
 export { renameDictLane } from './renameDictLane.ts'
 export {
   SYNTENY_LANES,

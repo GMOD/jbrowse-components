@@ -1,12 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { withAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
 import {
+  adapterNamespaceNames,
   getConfAssemblyNamesOrNone,
   getConfRpcSessionId,
 } from '@jbrowse/core/util/tracks'
 import {
   getCoarseBpPerPxThreshold,
-  regionsInAssemblyNamespace,
+  regionsInAdapterNamespace,
   resolveLodTier,
 } from '@jbrowse/synteny-core'
 
@@ -70,23 +71,27 @@ export function makeMateDiscovery({
   return async (signal, statusCallback) => {
     const { rpcManager } = session
     const sessionId = getConfRpcSessionId(track)
+    const adapterConfig = readConfObject(track, 'adapter')
     const trackAssemblyNames = getConfAssemblyNamesOrNone(track)
-    // Spelled as the TRACK spells it, because that is the namespace the far
+    // Spelled as the ADAPTER spells it, because that is the namespace the far
     // side runs in: the worker has no assembly manager, the adapter answers
     // only a region whose assembly it recognizes, and a mate's `assemblyName`
-    // is whatever it resolved out of its own `assemblyNames`. The view supplies
-    // an alias of the same assembly often enough — `getSyntenyTracks` resolves
+    // is whatever it resolved out of its own config. The view supplies an
+    // alias of the same assembly often enough — `getSyntenyTracks` resolves
     // aliases to decide this track is launchable at all.
-    const [anchor] = regionsInAssemblyNamespace(
-      [region],
+    const [anchor] = regionsInAdapterNamespace([region], {
+      adapterConfig,
       trackAssemblyNames,
-      session.assemblyManager,
-    )
+      assemblyManager: session.assemblyManager,
+    })
     return withAdapterSession(rpcManager, sessionId, () =>
       rpcManager.call(sessionId, 'SyntenyDiscoverMates', {
-        adapterConfig: readConfObject(track, 'adapter'),
+        adapterConfig,
         regions: [anchor!],
-        trackAssemblyNames,
+        trackAssemblyNames: adapterNamespaceNames(
+          adapterConfig,
+          trackAssemblyNames,
+        ),
         anchorAssembly: anchor!.assemblyName,
         lodTier: resolveLodTier({
           bpPerPx: (region.end - region.start) / widthPx,

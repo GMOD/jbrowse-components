@@ -13,10 +13,10 @@ import calculateStaticBlocks, {
 } from '@jbrowse/core/util/calculateStaticBlocks'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
+import { adapterAssemblyNames } from '@jbrowse/core/util/tracks'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import {
   PRESET_ATTRIBUTES,
-  adapterAssemblyNames,
   colorPaintOf,
   comparativeFrame,
   declaredAttributes,

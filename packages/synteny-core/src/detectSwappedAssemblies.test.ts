@@ -1,4 +1,20 @@
-import { detectAssembliesSwapped } from './detectSwappedAssemblies.ts'
+import { types } from '@jbrowse/mobx-state-tree'
+
+import {
+  detectAssembliesSwapped,
+  detectDisplayAssembliesSwapped,
+} from './detectSwappedAssemblies.ts'
+
+const mockSession = { current: {} }
+
+jest.mock('@jbrowse/core/util', () => ({
+  ...jest.requireActual('@jbrowse/core/util'),
+  getSession: () => mockSession.current,
+}))
+jest.mock('@jbrowse/core/util/tracks', () => ({
+  ...jest.requireActual('@jbrowse/core/util/tracks'),
+  getRpcSessionId: () => 'test',
+}))
 
 describe('detectAssembliesSwapped', () => {
   // asmA's real refNames are chrA*, asmB's are chrB*
@@ -80,4 +96,48 @@ describe('detectAssembliesSwapped', () => {
       }),
     ).toBe(false)
   })
+})
+
+// The adapter answers `getRefNames` by comparing the name against its config
+// text, so a view on `asmA` asking a track that spells it `A` got nothing back
+// and the warning could not fire.
+test('a display whose adapter names the top assembly by an alias is asked under that alias', async () => {
+  const refNames: Record<string, string[]> = {
+    asmA: ['chrA1', 'chrA2'],
+    asmB: ['chrB1', 'chrB2'],
+  }
+  const assemblies = new Map(
+    Object.entries(refNames).map(([name, names]) => [
+      name,
+      {
+        name,
+        refNames: names,
+        hasName: (other: string) =>
+          other === name || (name === 'asmA' && other === 'A'),
+        getCanonicalRefName2: (refName: string) => refName,
+      },
+    ]),
+  )
+  const asked: string[] = []
+  mockSession.current = {
+    assemblyManager: { get: (name: string) => assemblies.get(name) },
+    rpcManager: {
+      call: async (
+        _sessionId: string,
+        _method: string,
+        { assemblyName }: { assemblyName: string },
+      ) => {
+        asked.push(assemblyName)
+        return assemblyName === 'A' ? refNames.asmB : []
+      },
+    },
+  }
+  const display = types
+    .model({})
+    .volatile(() => ({ adapterConfig: { assemblyNames: ['A', 'asmB'] } }))
+    .create()
+  expect(await detectDisplayAssembliesSwapped(display, 'asmA', 'asmB')).toBe(
+    true,
+  )
+  expect(asked).toEqual(['A'])
 })

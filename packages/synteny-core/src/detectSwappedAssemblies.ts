@@ -1,5 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { adapterSpelling, getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -84,8 +84,9 @@ interface SwapCheckHost extends IStateTreeNode {
 
 /**
  * {@link detectAssembliesSwapped} wired to a synteny/dotplot display: pulls the
- * adapter refNames via the CoreGetRefNames RPC and the assembly refNames from
- * the session's assemblyManager.
+ * adapter refNames via the CoreGetRefNames RPC, asked under the name the
+ * adapter config spells the assembly by, and the assembly refNames from the
+ * session's assemblyManager.
  */
 export function detectDisplayAssembliesSwapped(
   self: SwapCheckHost,
@@ -98,16 +99,20 @@ export function detectDisplayAssembliesSwapped(
   return detectAssembliesSwapped({
     topAssembly,
     bottomAssembly,
-    getAdapterRefNames: name =>
+    getAdapterRefNames: name => {
+      const assembly = assemblyManager.get(name)
       // No handles. On a whole-file PAF, `getRefNames` awaits the same
       // `cachedSetup` parse the band fetch is already narrating, so a report
       // here would be a second label for one download. Having no signal, this
       // call pins that parse until it lands, even if every band fetch aborts.
       // eslint-disable-next-line no-restricted-syntax
-      rpcManager.call(sessionId, 'CoreGetRefNames', {
+      return rpcManager.call(sessionId, 'CoreGetRefNames', {
         adapterConfig,
-        assemblyName: name,
-      }),
+        assemblyName: assembly
+          ? adapterSpelling(assembly, adapterConfig)
+          : name,
+      })
+    },
     getAssemblyRefNames: name => assemblyManager.get(name)?.refNames,
     getCanonicalRefName: (name, refName) =>
       assemblyManager.get(name)?.getCanonicalRefName2(refName) ?? refName,

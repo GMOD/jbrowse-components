@@ -10,7 +10,7 @@ import type {
 /**
  * A region reached a pairwise adapter naming an assembly its `assemblyNames`
  * does not. The main thread respells every region into the adapter's namespace
- * before the RPC (`renameRegionsForAdapter`, `regionsInAssemblyNamespace`), so
+ * before the RPC (`renameRegionsForAdapter`, `regionsInAdapterNamespace`), so
  * this error means a caller skipped that step; the track itself may have data.
  */
 export class AssemblyNotInAdapterError extends Error {

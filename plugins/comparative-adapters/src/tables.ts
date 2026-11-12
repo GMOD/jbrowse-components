@@ -1,6 +1,6 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { adapterAssemblyNames } from '@jbrowse/synteny-core'
+import { adapterAssemblyNames } from '@jbrowse/core/util/tracks'
 
 import { PairwiseAdapterBase } from './PairwiseAdapterBase.ts'
 

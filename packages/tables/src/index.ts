@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { adapterAssemblyNames } from '@jbrowse/core/util/tracks'
 import {
   alignmentConnectorCurves,
   alignmentMarkAlpha,
@@ -38,7 +39,6 @@ import {
   wiggleScoreMatrix,
   wiggleTables,
 } from '@jbrowse/plugin-wiggle/tables'
-import { adapterAssemblyNames } from '@jbrowse/synteny-core'
 
 import { assemblyResolver, renameRegions, sequenceRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'

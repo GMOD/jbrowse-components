@@ -107,7 +107,10 @@ export function createDisplayWithSession({
     { slots: ConfigurationSchemaDefinition; capabilities?: string[] }
   > = {
     MCScanBlocksAdapter: {
-      slots: { attributeColumns: { type: 'stringArray', defaultValue: [] } },
+      slots: {
+        attributeColumns: { type: 'stringArray', defaultValue: [] },
+        blockAssemblies: { type: 'stringArray', defaultValue: [] },
+      },
     },
     Gff3TabixAdapter: { slots: {} },
     PAFAdapter: {

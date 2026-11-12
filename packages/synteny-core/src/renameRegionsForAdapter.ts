@@ -1,14 +1,13 @@
 import { renameComparativeRegions } from '@jbrowse/core/util'
-import { adapterAssemblyNames } from '@jbrowse/core/util/tracks'
 
-import { regionsInAssemblyNamespace } from './regionsInAssemblyNamespace.ts'
+import { regionsInAdapterNamespace } from './regionsInAdapterNamespace.ts'
 
 import type { AssemblyManager, Region } from '@jbrowse/core/util'
 
 /**
  * Rename regions from the view's canonical names into a comparative adapter's
  * own namespace — refNames (e.g. "1" -> "NC_012119.1") and assembly names
- * (the alias the track declared for the view's assembly) both.
+ * (the alias the adapter config names the view's assembly by) both.
  *
  * Comparative RPCs (synteny, dotplot) fetch features and build their cumBp
  * index inside a worker that has no assemblyManager, so it cannot resolve
@@ -32,11 +31,10 @@ export async function renameRegionsForAdapter({
   const { regions: renamed } = await renameComparativeRegions(assemblyManager, {
     sessionId,
     adapterConfig,
-    regions: regionsInAssemblyNamespace(
-      regions,
-      adapterAssemblyNames(adapterConfig),
+    regions: regionsInAdapterNamespace(regions, {
+      adapterConfig,
       assemblyManager,
-    ),
+    }),
   })
   return renamed
 }

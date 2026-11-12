@@ -119,13 +119,19 @@ describe('the lane-pair fetches of a track naming the view genome by an alias', 
       mate: { assemblyName, refName, start: 100, end: 300 },
     })
 
-  async function pairCalls(adapterType: string) {
+  const isPairCall = (call: RpcArgs<'MultiWayGetFeatures'>) =>
+    call.opts?.mateShape !== 'grouped'
+
+  async function adapterCalls(
+    syntenyAdapter: Record<string, unknown>,
+    trackAssemblyNames = ['vvx', 'volvox_random', 'volvox_ins'],
+  ) {
     const calls: RpcArgs<'MultiWayGetFeatures'>[] = []
     const { display } = createDisplayWithSession({
-      syntenyAdapter: { type: adapterType },
-      trackAssemblyNames: ['vvx', 'volvox_random', 'volvox_ins'],
+      syntenyAdapter,
+      trackAssemblyNames,
       geneTracks: [],
-      assemblyAliases: { vvx: 'volvox' },
+      assemblyAliases: { vvx: 'volvox', vr: 'volvox_random' },
       rpc: async (name, args) => {
         if (name === 'MultiWayGetFeatures' && isMultiWayArgs(args)) {
           calls.push(args)
@@ -145,9 +151,12 @@ describe('the lane-pair fetches of a track naming the view genome by an alias', 
         ['volvox_ins', decisionOn('ctgC', 1200)],
       ]),
     )
-    const isPairCall = (call: RpcArgs<'MultiWayGetFeatures'>) =>
-      call.opts?.mateShape !== 'grouped'
     await until(() => calls.some(isPairCall))
+    return calls
+  }
+
+  async function pairCalls(adapterType: string) {
+    const calls = await adapterCalls({ type: adapterType })
     return calls.filter(isPairCall)
   }
 
@@ -171,8 +180,15 @@ describe('the lane-pair fetches of a track naming the view genome by an alias', 
     ])
   })
 
-  test('a pair read on its upper lane asks for that lane window as written', async () => {
-    const calls = await pairCalls('MCScanBlocksAdapter')
-    expect(assemblies(calls)).toEqual(['volvox_random'])
+  test('a track and an adapter spelling a mate lane differently ask for every window as the adapter spells it', async () => {
+    const calls = await adapterCalls(
+      {
+        type: 'MCScanBlocksAdapter',
+        blockAssemblies: ['volvox', 'volvox_random', 'volvox_ins'],
+      },
+      ['vvx', 'vr', 'volvox_ins'],
+    )
+    expect(assemblies(calls.slice(0, 1))).toEqual(['volvox'])
+    expect(assemblies(calls.filter(isPairCall))).toEqual(['volvox_random'])
   })
 })

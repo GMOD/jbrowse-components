@@ -11,7 +11,7 @@ import {
   getCanonicalRefNameFn,
   installClearHoverOnSurfaceMove,
   installLodTierInfoFetch,
-  regionsInAssemblyNamespace,
+  regionsInAdapterNamespace,
 } from '@jbrowse/synteny-core'
 import { autorun, reaction, untracked } from 'mobx'
 
@@ -58,11 +58,11 @@ function callSyntenyAdapter(
   return ctx.callRpc('MultiWayGetFeatures', {
     ...args,
     adapterConfig: self.adapterConfig,
-    regions: regionsInAssemblyNamespace(
-      regions,
-      getTrackAssemblyNames(self.parentTrack),
-      getSession(self).assemblyManager,
-    ),
+    regions: regionsInAdapterNamespace(regions, {
+      adapterConfig: self.adapterConfig,
+      trackAssemblyNames: getTrackAssemblyNames(self.parentTrack),
+      assemblyManager: getSession(self).assemblyManager,
+    }),
   })
 }
 

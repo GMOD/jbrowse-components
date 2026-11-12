@@ -4,11 +4,8 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { createStatusFanOut } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import {
-  adapterAssemblyNames,
-  declaredLanes,
-  readLodTierInfo,
-} from '@jbrowse/synteny-core'
+import { adapterAssemblyNames } from '@jbrowse/core/util/tracks'
+import { declaredLanes, readLodTierInfo } from '@jbrowse/synteny-core'
 import { forkJoin } from 'rxjs'
 import { map, mergeMap, toArray } from 'rxjs/operators'
 
