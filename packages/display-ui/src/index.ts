@@ -91,6 +91,7 @@ export type { TooltipPlacement } from '@jbrowse/core/ui/BaseTooltip'
 export { PointerLayer } from './PointerLayer.tsx'
 export { sidebarCovers } from './sidebarBounds.ts'
 export type { SidebarBounds } from './sidebarBounds.ts'
+export { DisplayCrosshairs } from './DisplayCrosshairs.tsx'
 
 // The per-track overlay layer: the node floating chrome escapes into, and the
 // host's half of that portal.

@@ -1,5 +1,5 @@
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
-import { DisplayCrosshairs } from '@jbrowse/tree-sidebar'
+import { DisplayCrosshairs } from '@jbrowse/display-ui'
 import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
 import { observer } from 'mobx-react'
 

@@ -1,8 +1,9 @@
-import { Crosshairs } from '@jbrowse/core/ui'
-import { sidebarCovers } from '@jbrowse/display-ui'
+import Crosshairs from '@jbrowse/core/ui/Crosshairs'
 import { observer } from 'mobx-react'
 
-import type { SidebarBounds } from '@jbrowse/display-ui'
+import { sidebarCovers } from './sidebarBounds.ts'
+
+import type { SidebarBounds } from './sidebarBounds.ts'
 
 // Above the track content and its overlays, below the app chrome.
 const CROSSHAIR_Z_INDEX = 800
@@ -14,9 +15,8 @@ const CROSSHAIR_Z_INDEX = 800
  * above the rows but left of the sidebar's edge it runs down to the sidebar's
  * top. A guide without `mouseY` counts the pointer as in the rows.
  *
- * Lives here because that edge does. Every display that grew a crosshair
- * re-derived the same four props and re-picked the z-index, and they had already
- * drifted on the width.
+ * Beside `sidebarBounds` because it reads that edge, so every display's
+ * crosshair takes the same props and z-index.
  *
  * `canvasWidthPx` off the model rather than `trackWidthPx` off the view, for the
  * same reason `height` comes off the model: a shared component reading the view

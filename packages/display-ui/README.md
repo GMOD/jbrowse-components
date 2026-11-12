@@ -44,6 +44,7 @@ above them.
 | `plainChromeOverlays` / `plainTrackControl` | the toolkit-free sets, CSS system colors, no theme object                           |
 | `TrackOverlaySlot` / `TrackOverlayPortal`   | the per-track overlay layer, and the host's half of it                              |
 | `FloatingLegend`                            | the one legend box every display with colors to explain draws                       |
+| `DisplayCrosshairs`                         | the cursor crosshair of a row display, its vertical guide stopping at the sidebar   |
 | `BottomRightCornerContext`                  | the corner `BackgroundProgress` is laid out in, which its prop types cannot express |
 | `tooLargeBannerText`                        | what the byte gate says, shared by every set that renders it                        |
 | `isLiveModel`                               | the liveness guard an overlay's one button needs, for an MST node or a plain object |

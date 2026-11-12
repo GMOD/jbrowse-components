@@ -1,4 +1,4 @@
-import { DisplayCrosshairs } from '@jbrowse/tree-sidebar'
+import { DisplayCrosshairs } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import VariantTooltip from './VariantTooltip.tsx'

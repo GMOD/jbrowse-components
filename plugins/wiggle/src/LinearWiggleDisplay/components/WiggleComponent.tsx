@@ -1,8 +1,5 @@
-import {
-  DisplayCrosshairs,
-  TreeSidebar,
-  treeSidebarOffset,
-} from '@jbrowse/tree-sidebar'
+import { DisplayCrosshairs } from '@jbrowse/display-ui'
+import { TreeSidebar, treeSidebarOffset } from '@jbrowse/tree-sidebar'
 import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
 import { observer } from 'mobx-react'
 
