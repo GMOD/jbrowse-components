@@ -58,7 +58,7 @@ export function keptInstances<L extends EncodedChannels>(
   }
   const x = compact(layer.x, keep, count, kept)
   const x2 = compact(layer.x2, keep, count, kept)
-  const { color, text } = layer
+  const { color, text, tooltip } = layer
   const compacted: L = {
     ...layer,
     count: kept,
@@ -79,6 +79,7 @@ export function keptInstances<L extends EncodedChannels>(
     row: lane(layer.row),
     series: lane(layer.series),
     text: text?.filter((_, i) => keep[i]),
+    tooltip: tooltip?.filter((_, i) => keep[i]),
     size: lane(layer.size),
     x2Ref: lane(layer.x2Ref),
     feet: lane(layer.feet),

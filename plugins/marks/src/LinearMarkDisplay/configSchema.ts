@@ -18,6 +18,7 @@ import { markFacetSchema } from './markFacetConfigSchema.ts'
 import { markLocusSchema } from './markLocusConfigSchema.ts'
 import { markRowsConfigSchema } from './markRowsConfigSchema.ts'
 import { markSizeSchema } from './markSizeConfigSchema.ts'
+import { markTooltipConfigSchema } from './markTooltipConfigSchema.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import { DEFAULT_TEXT_FIELD, MARK_TYPES, markTypeOf } from './markVocabulary.ts'
 import { MARK_Y_PATHS } from './markYPaths.ts'
@@ -487,6 +488,13 @@ export function configSchemaFactory() {
        * defaults to on.
        */
       legend: legendConfigSchema,
+      /**
+       * #slot tooltip
+       * The box hovering a mark opens, a [](/docs/config/marktooltip):
+       * `show`, and the `field` naming the hovered feature on its first line,
+       * empty unless written. A bare string is the field.
+       */
+      tooltip: markTooltipConfigSchema,
       /**
        * #slot filter
        * The features the display draws, a list of

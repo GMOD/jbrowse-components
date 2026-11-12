@@ -141,6 +141,34 @@ function result(
   }
 }
 
+test('unwritten, the tooltip names no feature and no layer asks for the lane; written, each mark a hover reaches reads it', () => {
+  const marks = [
+    { mark: 'point', encoding: { y: 'score' } },
+    { mark: 'rect' },
+    { mark: 'text' },
+  ]
+  const tooltipOf = (display: Record<string, unknown>) =>
+    createTestEnvironment(marks, REGION, 'BedAdapter', display)
+      .createDisplay()
+      .display.rpcProps()
+      .layers.map(l => [l.encoding.tooltip, l.lanes.includes('tooltip')])
+  expect(tooltipOf({})).toEqual([
+    [undefined, false],
+    [undefined, false],
+    [undefined, false],
+  ])
+  expect(tooltipOf({ tooltip: 'name' })).toEqual([
+    ['name', true],
+    ['name', true],
+    [undefined, false],
+  ])
+  expect(tooltipOf({ tooltip: { show: false, field: 'name' } })).toEqual([
+    [undefined, false],
+    [undefined, false],
+    [undefined, false],
+  ])
+})
+
 test('the config reaches the worker as one encoding per mark, jexl unevaluated', () => {
   const { createDisplay } = createTestEnvironment([
     {

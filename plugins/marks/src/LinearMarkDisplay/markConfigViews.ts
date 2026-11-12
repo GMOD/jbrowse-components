@@ -226,6 +226,22 @@ export function markConfigViews(self: MarkConfHost) {
     get showRowSeparators(): boolean {
       return getConf(self, ['rows', 'axis', 'grid'])
     },
+    /**
+     * #getter
+     * `tooltip.show`: whether hovering a mark opens its box.
+     */
+    get showTooltip(): boolean {
+      return getConf(self, ['tooltip', 'show'])
+    },
+    /**
+     * #getter
+     * The field naming the hovered feature on the box's first line, which
+     * the worker reads into each layer's `tooltip` lane: `tooltip.field`
+     * while the box shows, and empty, asking for no lane, while it does not.
+     */
+    get tooltipField(): string {
+      return this.showTooltip ? getConf(self, ['tooltip', 'field']) : ''
+    },
   }
 }
 
@@ -349,6 +365,7 @@ export function markFacetViews(self: MarkChannelHost) {
         self.sharedSteps,
         self.configuration.encoding.color,
         self.unsetColor,
+        self.tooltipField,
       )
     },
   }

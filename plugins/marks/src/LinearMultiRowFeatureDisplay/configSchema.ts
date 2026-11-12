@@ -4,6 +4,7 @@ import {
   configSchemaFactory as markConfigSchemaFactory,
   markListSchema,
 } from '../LinearMarkDisplay/configSchema.ts'
+import { multiRowTooltipConfigSchema } from '../LinearMarkDisplay/markTooltipConfigSchema.ts'
 import { multiRowRowsConfigSchema } from './multiRowRowsConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -118,6 +119,14 @@ export function configSchemaFactory() {
        * `field`, `type` unless written, and `''` for one row.
        */
       rows: multiRowRowsConfigSchema,
+      /**
+       * #slot tooltip
+       * The box hovering a feature opens, a
+       * [MultiRowTooltip](../multirowtooltip): its first line names the
+       * feature, `_mouseOver`, else the name, `function` or ID, unless
+       * `field` says otherwise.
+       */
+      tooltip: multiRowTooltipConfigSchema,
     },
     {
       /**

@@ -230,6 +230,28 @@ test('a constant color answers a hover as the one number the layer holds', () =>
   expect(hit?.color).toBe(0xff0000ff)
 })
 
+test('a hover carries the line naming its feature, and none where the lane holds nothing', () => {
+  const layer: StoredLayer = {
+    count: 2,
+    skipped: 0,
+    x: Uint32Array.from([100, 200]),
+    x2: Uint32Array.from([140, 240]),
+    y: Float32Array.from([5, 6]),
+    color: 0xff0000ff,
+    tooltip: ['NM_007294.4(BRCA1):c.5266dup', ''],
+    yMin: 5,
+    yMax: 6,
+  }
+  const state = { ...STATE, rowHeight: STATE.canvasHeight }
+  const marks = buildMarkList(entries('bar'))
+  const data = new Map([[0, { layers: [layer] }]])
+  const at = (x: number) =>
+    findMarkHit(x, 300, [BLOCK], data, marks, state, REGIONS)
+  expect(at(96)?.tooltip).toBe('NM_007294.4(BRCA1):c.5266dup')
+  expect(at(176)?.instance).toBe(1)
+  expect(at(176)).not.toHaveProperty('tooltip')
+})
+
 test('a ramp value hovered tells no value apart from text that is no number', () => {
   const bits = Uint32Array.from([RAMP_NO_VALUE_BITS, 0x7fc00000])
   const layer: StoredLayer = {

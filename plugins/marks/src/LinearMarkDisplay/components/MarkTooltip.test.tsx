@@ -43,6 +43,7 @@ async function tooltip(model: Partial<MarkTooltipModel>) {
     <MarkTooltip
       model={{
         hoveredFeature: HIT,
+        showTooltip: true,
         encodings: [{}],
         legendSections: [],
         facetLayout: NO_FACET,
@@ -191,4 +192,49 @@ test('under rows the hit names its row by its key, wherever the table has moved 
     rowTable: buildRowTable(Uint32Array.of(1, 0)),
   })
   expect(box.textContent).toContain('Mother')
+})
+
+test('the line naming the feature comes first, above the locus', async () => {
+  const box = await tooltip({
+    hoveredFeature: { ...HIT, tooltip: 'NM_007294.4(BRCA1):c.5266dup' },
+  })
+  expect(box.firstElementChild?.firstElementChild?.textContent).toBe(
+    'NM_007294.4(BRCA1):c.5266dup',
+  )
+  expect(box.textContent).toContain('ctgA:101..150')
+})
+
+test('a feature line holding markup renders it, as a feature track does', async () => {
+  const box = await tooltip({
+    hoveredFeature: { ...HIT, tooltip: '<b>BRCA1</b> variant' },
+  })
+  expect(box.querySelector('b')?.textContent).toBe('BRCA1')
+  expect(box.textContent).not.toContain('<b>')
+})
+
+test('with no string the locus is the first line', async () => {
+  const box = await tooltip({})
+  expect(box.firstElementChild?.firstElementChild?.textContent).toBe(
+    'ctgA:101..150',
+  )
+})
+
+test('tooltip.show off opens no box', async () => {
+  render(
+    <MarkTooltip
+      model={{
+        hoveredFeature: { ...HIT, tooltip: 'BRCA1' },
+        showTooltip: false,
+        encodings: [{}],
+        legendSections: [],
+        facetLayout: NO_FACET,
+        sources: [],
+        rowTable: undefined,
+      }}
+      mouseState={at}
+    />,
+  )
+  await expect(
+    screen.findByRole('tooltip', {}, { timeout: 200 }),
+  ).rejects.toThrow()
 })

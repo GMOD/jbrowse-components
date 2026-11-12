@@ -202,6 +202,7 @@ function emptyLayer(layer: StoredLayer): StoredLayer {
     colorKey: layer.colorKey?.subarray(0, 0),
     glyph: layer.glyph?.subarray(0, 0),
     text: layer.text && [],
+    tooltip: layer.tooltip && [],
     size: layer.size?.subarray(0, 0),
     x2Ref: layer.x2Ref?.subarray(0, 0),
     feet: layer.feet?.subarray(0, 0),

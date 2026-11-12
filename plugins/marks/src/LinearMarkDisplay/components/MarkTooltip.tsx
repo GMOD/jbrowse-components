@@ -1,5 +1,6 @@
 import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { LegendSwatchGlyph } from '@jbrowse/core/ui/LegendSwatchGlyph'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { SHAPE_CODES, SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
@@ -26,6 +27,7 @@ import type { RowTable } from '@jbrowse/render-core/marks'
 
 export interface MarkTooltipModel {
   hoveredFeature: MarkHitInfo | undefined
+  showTooltip: boolean
   encodings: MarkEncoding[]
   legendSections: MarkLegendSection[]
   facetLayout: FacetLayout
@@ -182,11 +184,17 @@ const MarkTooltip = observer(function MarkTooltip({
   model: MarkTooltipModel
   mouseState: MouseState | undefined
 }) {
-  const { hoveredFeature: hit, encodings, legendSections } = model
+  const { encodings, legendSections } = model
+  const hit = model.showTooltip ? model.hoveredFeature : undefined
   return (
     <HoverTooltip hit={hit} mouseState={mouseState}>
       {hit ? (
         <div>
+          {hit.tooltip ? (
+            <div>
+              <SanitizedHTML html={hit.tooltip} />
+            </div>
+          ) : null}
           <div>{hitLocString(hit)}</div>
           {markTooltipRows(
             hit,

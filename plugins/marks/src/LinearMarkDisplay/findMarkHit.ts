@@ -64,6 +64,11 @@ export interface MarkHitInfo {
   /** The point painter's code for the instance's shape, if its mark reads one. */
   glyph: number | undefined
   /**
+   * The line naming the instance's feature, `tooltip.field` read off it in
+   * the worker; absent where the field is empty or read nothing.
+   */
+  tooltip?: string
+  /**
    * The `row` this instance carries, if its mark reads one: its band, or
    * under `rows` or a facet its key, which the row table places.
    */
@@ -212,6 +217,7 @@ export function findMarkHit(
   const x2RefName = farRefName === refName ? undefined : farRefName
   const lo = Math.min(x, x2)
   const hi = Math.max(x, x2)
+  const tooltip = layer.tooltip?.[hit.index]
   return {
     markIndex,
     regionIndex,
@@ -234,6 +240,7 @@ export function findMarkHit(
       rampValueBits(layer.colorValue)[hit.index] === RAMP_NO_VALUE_BITS,
     heldColor: layer.heldColor,
     glyph: layer.glyph?.[hit.index],
+    ...(tooltip ? { tooltip } : {}),
     row: layer.row?.[hit.index],
     screenX: hit.x,
     screenY: hit.y,

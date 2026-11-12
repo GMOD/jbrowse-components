@@ -12,6 +12,7 @@ import { colorLanesOf, markColorOf, wireColorOf } from './markColor.ts'
 import { zoomInRange } from './markList.ts'
 import {
   MARK_SPECS,
+  answersHover,
   interpolationOf,
   markLanes,
   plotsValue,
@@ -314,7 +315,9 @@ export function markEntryOf(
  * One mark's worker request at `bpPerPx`: its encoding, its steps, and the
  * lanes its type reads. A mark that may plot a value but names none asks for
  * no `y` lane, so the worker fills no zeros for it to stand at; the same for
- * a stroke width no field feeds.
+ * a stroke width no field feeds. `tooltip` is the field naming each feature
+ * on the hover, which a mark answering hovers asks the `tooltip` lane for;
+ * empty, none does.
  */
 export function markLayerRequest(
   mark: MarkConfig,
@@ -323,6 +326,7 @@ export function markLayerRequest(
   binEdges?: [string, string],
   inherited?: MarkColorConfig,
   unset?: ColorSource,
+  tooltip = '',
 ): LayerRequest {
   const transform = stepsOf(
     mark.transform,
@@ -330,14 +334,16 @@ export function markLayerRequest(
     binEdges,
   )
   const color = markColorOf(mark, channels, undefined, [], inherited, unset)
+  const named = tooltip !== '' && answersHover(mark.mark.type)
   const lanes = markLanes(mark.mark.type, colorLanesOf(color)).filter(
     lane =>
       (lane !== 'y' || marksValue(mark, channels)) &&
       (lane !== 'size' || mark.encoding.strokeWidth.field !== ''),
   )
+  const encoding = encodingOf(mark, channels, inherited, unset)
   return {
-    encoding: encodingOf(mark, channels, inherited, unset),
-    lanes,
+    encoding: named ? { ...encoding, tooltip } : encoding,
+    lanes: named ? [...lanes, 'tooltip'] : lanes,
     ...(transform.length > 0 ? { transform } : {}),
     ...(specOfMark(mark).path ? { path: pathOf(mark, color) } : {}),
   }
@@ -369,7 +375,8 @@ export function markChannelsOf(
  * The worker request for a mark list, one layer per mark: an `aggregate`
  * naming no groupby groups by the last `bin` of the shared steps, a mark
  * naming no color paints `inherited`, and one where neither names one paints
- * `unset`.
+ * `unset`; every mark answering hovers reads `tooltip`, the field naming
+ * the hovered feature, where it is not empty.
  */
 export function layerRequestsOf(
   marks: readonly MarkConfig[],
@@ -378,10 +385,19 @@ export function layerRequestsOf(
   sharedSteps: readonly MarkTransformStepConfig[] = [],
   inherited?: MarkColorConfig,
   unset?: ColorSource,
+  tooltip = '',
 ) {
   const binEdges = lastBinEdges(sharedSteps)
   return marks.map((m, i) =>
-    markLayerRequest(m, channels[i]!, bpPerPx, binEdges, inherited, unset),
+    markLayerRequest(
+      m,
+      channels[i]!,
+      bpPerPx,
+      binEdges,
+      inherited,
+      unset,
+      tooltip,
+    ),
   )
 }
 

@@ -36,6 +36,7 @@ export type MarkLane =
   | 'glyph'
   | 'x2Ref'
   | 'series'
+  | 'tooltip'
   | 'index'
 
 export interface MarkSpec {
@@ -184,6 +185,11 @@ export function interpolationOf(
   return written !== undefined && drawn?.includes(written)
     ? written
     : drawn?.[0]
+}
+
+/** Whether a mark type answers a hover, and so names the feature it draws on one. */
+export function answersHover(type: MarkType) {
+  return specOf(type).hit !== false
 }
 
 /** Whether a mark type answers a hover through the hit index the worker builds. */
