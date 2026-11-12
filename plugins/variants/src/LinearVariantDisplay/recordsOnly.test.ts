@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 
@@ -76,8 +77,9 @@ test('with no samples the band is the display', () => {
 })
 
 // A circular view's ring samples one canvas of the strip, so there the band
-// is the display whatever the samples, in its ring's height, and the rows
-// come back when the display leaves the ring.
+// is the display whatever the samples, in its ring's height, at genomic
+// positions, and the rows and their columns come back when the display leaves
+// the ring: the slot keeps the columns throughout.
 test('in a ring the band is the display, at the ring height', () => {
   const { display } = recordsDisplayAt(FEW, 10, {}, true, {
     variantLayout: 'columns',
@@ -86,7 +88,11 @@ test('in a ring the band is the display, at the ring height', () => {
   display.setHostHeight(60)
   expect(display.recordsOnly).toBe(true)
   expect(display.drawsGenotypeRows).toBe(false)
+  expect(display.variantLayout).toBe('genomic')
   expect(display.atGenomicPositions).toBe(true)
+  expect(display.rpcProps().layout).toBe('genomic')
+  expect(labelsOf(display.trackMenuItems())).not.toContain('Layout')
+  expect(getConf(display, 'variantLayout')).toBe('columns')
   expect(display.height).toBe(60)
   expect(display.topBands.reserved).toEqual({
     records: 60,
@@ -98,6 +104,7 @@ test('in a ring the band is the display, at the ring height', () => {
   expect(display.configuredHeight).toBe(configuredHeight)
   display.setHostHeight(undefined)
   expect(display.drawsGenotypeRows).toBe(true)
+  expect(display.variantLayout).toBe('columns')
   expect(display.rpcProps().sampleFilter).toEqual(['S0'])
 })
 
