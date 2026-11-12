@@ -43,8 +43,7 @@ describe('clusterProvenanceMenuItems', () => {
 
 // Four menus across four displays spread this one item — multi-wiggle's track
 // and context menus, multi-row features' pair, the two multi-sample variant
-// menus, and maf's. They used to spell it out each, held together by comments
-// asserting they were one action.
+// menus, and maf's.
 describe('resetRowOrderMenuItems', () => {
   it('offers the reset once a row order has been written', () => {
     const resetRowArrangement = jest.fn()

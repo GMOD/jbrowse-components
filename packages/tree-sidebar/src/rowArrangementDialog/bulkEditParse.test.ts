@@ -80,8 +80,8 @@ describe('parseRowsByName', () => {
     )
   })
 
-  // A leading tab is an empty first cell, not padding: trimming it shifted every
-  // column left, so the row was filed under the color or dropped entirely.
+  // A leading tab is an empty first cell, not padding: trimming it shifts every
+  // column left, filing the row under the color or dropping it entirely.
   it('keeps an empty leading cell in a TSV row', () => {
     expect(parseRowsByName('group\tname\tcolor\n\tHG1\t#f00')).toEqual(
       new Map([['HG1', { group: '', name: 'HG1', color: '#f00' }]]),
@@ -150,10 +150,10 @@ describe('mergeParsedRows', () => {
   })
 
   // Row names are arbitrary strings out of somebody's data file. Looked up in a
-  // plain object, one that collides with `Object.prototype` came back with an
-  // inherited function rather than `undefined`, so the row counted as matched by
-  // a paste that never named it — and "Replace rows" then started from `{}` and
-  // dropped every field it had.
+  // plain object, one that collides with `Object.prototype` comes back with an
+  // inherited function rather than `undefined`, so the row counts as matched by
+  // a paste that never named it — and "Replace rows" then starts from `{}` and
+  // drops every field it had.
   it('does not treat a row named after an Object.prototype member as matched', () => {
     const rows = [
       { name: 'constructor', color: 'red' },

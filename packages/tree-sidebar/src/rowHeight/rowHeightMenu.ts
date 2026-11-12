@@ -43,14 +43,10 @@ export interface RowHeightPreset {
 /**
  * The "Row height" submenu: "Fit to track height", the display's presets, and
  * "Custom...". One builder for the multi-row feature painting and the
- * variant display's two layouts, which with MAF's (since removed) had three
- * copies of it and three copies of its dialog.
- *
- * The copies had already drifted in the way a shared builder exists to stop:
- * variants offered no presets at all, and its dialog seeded from
- * `effectiveRowHeight` — the exact trap the other two dialogs carry comments
- * warning against — so opening "Custom..." in fit mode and pressing submit
- * fixed the rows at the computed fractional height.
+ * variant display's two layouts, so each offers the presets and its dialog
+ * seeds from the stored step, never `effectiveRowHeight`: seeded from that,
+ * opening "Custom..." in fit mode and pressing submit fixes the rows at the
+ * computed fractional height.
  *
  * A display with no presets gets fit + Custom, which is what variants shows
  * today; passing a table adds the middle radios.

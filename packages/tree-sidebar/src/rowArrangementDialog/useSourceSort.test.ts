@@ -16,10 +16,8 @@ describe('nextSortState', () => {
     expect(second).toEqual({ direction: 'desc', field: 'name' })
   })
 
-  // Regression: previously the direction would carry over from the prior
-  // column, so clicking a new column after a descending sort produced a
-  // descending sort on the new column — confusing UX. New click of a
-  // different column should always start ascending.
+  // The direction does not carry over from the prior column: a click on a
+  // different column always starts ascending.
   test('clicking a new column resets direction to ascending', () => {
     const prior: SortState = { direction: 'desc', field: 'name' }
     const next = nextSortState(prior, [{ field: 'color', sort: 'asc' }])

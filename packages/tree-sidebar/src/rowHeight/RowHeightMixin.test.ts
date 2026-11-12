@@ -168,8 +168,7 @@ describe('what the mixin assumes of its host', () => {
     expect(getConf(host, 'rowHieght')).toBeUndefined()
   })
 
-  // The declared stub is a 1px row, not a NaN: it resolves the same way the
-  // read of an undeclared `autoRowHeight` did before the mixin declared one.
+  // The declared stub is a 1px row, not a NaN.
   it('resolves a display that overrides no autoRowHeight to the floor', () => {
     const configSchema = ConfigurationSchema('NoOverride', {
       rows: rowsWithStepConfigSchema,

@@ -15,8 +15,7 @@ export const MIN_TREE_AREA_WIDTH = 10
  * the gutter past the view width puts the handle outside that box, where it is
  * clipped away and cannot be clicked. `treeAreaWidth` is a persisted property
  * and no menu item resets it, so the track stays all-sidebar across a reload
- * with no way back short of editing the session. The drag used to carry
- * `Math.max(10, …)` and nothing on the other side.
+ * with no way back short of editing the session.
  *
  * Derived from the view rather than a chosen ceiling: the invariant is "the
  * control that got you here is still reachable", which is exactly the handle's

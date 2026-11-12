@@ -47,8 +47,8 @@ describe('sidebar chrome escapes the display sandbox', () => {
   })
 
   // maf stacks coverage/conservation bands above its rows, and the portal lands
-  // on the display's origin rather than the rows container the labels used to
-  // sit in — so the offset it inherited has to be passed explicitly. Without it
+  // on the display's origin rather than the rows container — so the rows'
+  // offset has to be passed explicitly. Without it
   // the labels detach from the rows they name by exactly the band height.
   it('honors the top offset a display passes for its rows viewport', () => {
     const { getByTestId } = render(<RowLabelsOverlay {...props} top={45} />)

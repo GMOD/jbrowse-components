@@ -87,11 +87,9 @@ function clusterRowDrift(
 // the clustering RPC always covers the rows it was handed.
 //
 // "entry N" is the **position** in the paste, and the value is reported beside
-// it. It used to be `${idx + 1}` alone, which reads like a position but is the
-// value — and `parseClusterOrder` is a bare `+`, so a stray word in the paste
-// arrives as NaN and printed as "entry NaN is out of range 1-40", naming
-// neither. This is the only feedback the user gets on a 200-line paste, so it
-// has to say where to look.
+// it: `parseClusterOrder` is a bare `+`, so a stray word in the paste arrives
+// as NaN, and the value alone would name neither. This is the only feedback
+// the user gets on a 200-line paste, so it has to say where to look.
 //
 // Position, not line number: `parseClusterOrder` drops blank lines, so the two
 // disagree on exactly the pastes most likely to be malformed.

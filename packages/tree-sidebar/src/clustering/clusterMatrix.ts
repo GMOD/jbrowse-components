@@ -31,11 +31,9 @@ export type ClusterMatrix = Map<string, NumericRow>
  * dendrogram is then either absent or a single leaf drawn over a row that was
  * never moved.
  *
- * Every menu row, dialog gate and `ready()` predicate on the way here states
- * this same rule, and two of the run functions state it as `length > 0` — so
- * the refusal lives at the one point all four RPCs pass through, and the gates
- * upstream are there to keep the user from reaching it rather than to be the
- * only thing that does.
+ * The refusal lives at the one point all four RPCs pass through; the menu
+ * rows, dialog gates and `ready()` predicates upstream keep the user from
+ * reaching it rather than being the only thing that does.
  */
 export const MIN_CLUSTER_ROWS = 2
 
@@ -53,12 +51,12 @@ export const MIN_CLUSTER_ROWS = 2
  * `order` is indices into the matrix's key order, which is what
  * `clusteredCladeLayout` maps back through — so a caller must build `data` in
  * its own row order. A Map because that is the only container that keeps it: see
- * `ClusterMatrix` for what a plain object did to rows named "1", "2", "10".
+ * `ClusterMatrix` for what a plain object does to rows named "1", "2", "10".
  *
  * Leaf names arrive here as arbitrary strings from somebody's data file, so
  * they have to be escaped before they go into a newick string. `toNewick` owns
- * that from @gmod/hclust 4.0.3 — we quoted here until it did, and quoting on
- * both sides would be worse than quoting on neither.
+ * that (@gmod/hclust 4.0.3 on), and quoting here as well would be worse than
+ * quoting on neither.
  *
  * `partition` names the rows of each band, and each band clusters apart: the
  * tree is one forest whose root joins the band trees at the tallest one's

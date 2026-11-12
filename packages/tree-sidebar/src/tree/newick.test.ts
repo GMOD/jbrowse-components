@@ -315,12 +315,11 @@ test('pruneNewickToLeaves drops merge heights when collapsing a unary node', () 
   expect(leaves(laid).map(l => l.y)).toEqual([80, 80])
 })
 
-// Both halves of treeOfLeaves used to recurse once per node, so focusing a
-// clade on a single-linkage dendrogram threw RangeError past about 5000 tips —
-// and `subtreeFilter` is persisted, so a shared session carrying one threw on
-// load and never recovered. The rest of this package went iterative for exactly
-// this shape (hierarchy.test.ts lays out a 50,000-tip caterpillar); these two
-// were missed.
+// A single-linkage dendrogram is a caterpillar as deep as it has leaves, so
+// both halves of treeOfLeaves walk iteratively: a recursive walk throws
+// RangeError past about 5000 tips, and `rows.kept` is persisted, so a shared
+// session carrying a focus would throw on every load (hierarchy.test.ts lays
+// out a 50,000-tip caterpillar).
 describe('a caterpillar deeper than the call stack', () => {
   const DEPTH = 20_000
   function caterpillar() {

@@ -128,8 +128,8 @@ export function sortRowsAtColumn<S extends { name: string }, D>(
  * first and valueless rows last.
  *
  * `compare` sees only the values that are actually there, so it never has to
- * spell a "missing" case — that rule is here, once, because it is the one both
- * displays wrote a paragraph about and it is easy to get subtly wrong. Giving a
+ * spell a "missing" case — that rule is here, once, because it is easy to get
+ * subtly wrong. Giving a
  * missing row a neutral value instead (0, or the numeric zero of whatever the
  * value packs to) ranks it above every negative score and in the middle of
  * every color block.
@@ -225,10 +225,10 @@ export function setupRowSortAutorun(
           return
         }
         // The slot is `frozen`, so the typed shape describes what a session
-        // author is meant to write, not what they did. A missing refName threw
-        // out of `canonicalizeViewRefName`; a missing or string `pos` failed
-        // the gate below forever, so the sort never ran and the flag never
-        // cleared, silently.
+        // author is meant to write, not what they did. A missing refName
+        // would throw out of `canonicalizeViewRefName`, and a missing or
+        // string `pos` would fail the gate below forever, so the sort would
+        // never run and the flag never clear, silently.
         const badField =
           typeof spec.refName !== 'string'
             ? 'refName'

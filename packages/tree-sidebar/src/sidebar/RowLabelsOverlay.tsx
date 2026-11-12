@@ -12,12 +12,11 @@ import type { RowAnnotationColumn, RowLabelSource } from '../types.ts'
 /**
  * The on-screen half of the sidebar's row labels: `SvgRowLabels` in the overlay
  * that has to hold them. Paired with `TreeSidebar` (which draws the dendrogram
- * onto its own canvas) — together those two are the sidebar, and each display
- * used to wire up the labels half itself.
+ * onto its own canvas) — together those two are the sidebar.
  *
  * The labels cover the first region's data. A display cannot shift its own
- * plot, so the fix is a view-level left gutter, which Colin parked on
- * 2026-09-27 for the width it takes from every track.
+ * plot, so only a view-level left gutter would clear them, at the width it
+ * takes from every track.
  *
  * Portaled above the LGV's inter-region masks (`TrackOverlayPortal`). The labels
  * are text floating over the plot, so at whole-genome or multi-region scale a

@@ -85,17 +85,16 @@ function setup(
 }
 
 // The manual tab does the SAME work as the auto tab — fetch the region, build
-// the matrix — and only the clustering step differs. `fetchMatrix` used to be
-// declared `() => Promise<ClusterMatrix>`, which `useFetch` accepts (its
-// trailing `signal`/`statusCallback` are positional, so a zero-parameter
-// fetcher is assignable and never sees them). Both plugins complied and both
-// lost cancel and progress on this tab alone.
+// the matrix — and only the clustering step differs. A `fetchMatrix` declared
+// `() => Promise<ClusterMatrix>` still satisfies `useFetch` (its trailing
+// `signal`/`statusCallback` are positional, so a zero-parameter fetcher is
+// assignable and never sees them), and loses cancel and progress on this tab
+// alone.
 describe('ClusterManualTab forwards the fetch handles it is given', () => {
   // Closing the dialog is the cancel — `useFetch` aborts the signal it created on
   // unmount, so the assertion is on the signal going aborted rather than merely
   // being handed over. A placeholder signal forwarded from the tab (or none at
-  // all) leaves the worker building a matrix nobody is waiting for, which is the
-  // state this shipped in.
+  // all) leaves the worker building a matrix nobody is waiting for.
   it('gives the fetch a signal the dialog closing actually stops', async () => {
     let seen: AbortSignal | undefined
     const { unmount } = setup(({ signal }) => {

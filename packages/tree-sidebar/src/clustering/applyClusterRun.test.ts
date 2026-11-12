@@ -116,8 +116,7 @@ test('clusteredCladeLayout accepts a full permutation', () => {
 })
 
 // The message is the only feedback on a long paste, so it names the position in
-// the paste AND the offending value. "entry 2" used to be the value, printed
-// where a position reads.
+// the paste AND the offending value.
 test('clusteredCladeLayout rejects out-of-range, duplicate, and wrong-length', () => {
   expect(() => {
     layoutAbc([0, 3])
@@ -131,8 +130,7 @@ test('clusteredCladeLayout rejects out-of-range, duplicate, and wrong-length', (
 })
 
 // `parseClusterOrder` is a bare `+`, so a stray word in the paste reaches here
-// as NaN. It used to print as "entry NaN is out of range 1-3", naming neither
-// the position nor the value.
+// as NaN, which the message names by its position.
 test('clusteredCladeLayout names a non-numeric paste line by position', () => {
   expect(() => {
     layoutAbc([0, Number.NaN, 2])

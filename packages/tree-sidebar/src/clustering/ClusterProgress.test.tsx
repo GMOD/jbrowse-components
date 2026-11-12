@@ -38,7 +38,7 @@ describe('ClusterProgress', () => {
   // its signal is tied to the key and the mount, so the dialog's own Cancel IS
   // the stop and a second button here would claim an affordance that does
   // nothing. It still gets the label and the bar, which is the point: the two
-  // tabs do the same work and now report it the same way.
+  // tabs do the same work and report it the same way.
   it('omits the Stop button when the caller has no stop to offer', () => {
     render(<ClusterProgress label="Generating genotype matrix" />)
 

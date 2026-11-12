@@ -42,12 +42,9 @@ interface RowLabelsMenuModel {
 }
 
 /**
- * Shared "Show row labels" toggle. Every display with a sidebar had written its
- * own, and they had drifted in three ways at once — one called the slot
- * `showSidebarLabels`, one dropped the row from the menu entirely while the
- * tree was off, and one explained the swatch degradation that is true of all of
- * them (`SvgRowLabels` falls back to a `rowColor`
- * stripe below `MIN_TEXT_ROW_HEIGHT` whoever is drawing).
+ * Shared "Show row labels" toggle, one slot and one row on every display with
+ * a sidebar, shown whether or not the tree is (`SvgRowLabels` falls back to a
+ * `rowColor` stripe below `MIN_TEXT_ROW_HEIGHT` whoever is drawing).
  *
  * The labels draw with or without a tree on every display: `RowLabelsOverlay`
  * is mounted unconditionally and takes a zero offset when no dendrogram is
@@ -74,8 +71,8 @@ interface RowSeparatorsMenuModel {
 /**
  * Shared "Show row separators" toggle, for the same reason
  * {@link showRowLabelsMenuItem} is shared: the canvas multi-row painting and
- * the multi-wiggle display had written it out identically, down to the hint
- * text, off the same `MIN_SEPARATOR_ROW_PX` threshold.
+ * the multi-wiggle display offer the same row, hint text and
+ * `MIN_SEPARATOR_ROW_PX` threshold.
  *
  * Stays clickable below the height the lines draw at — the toggle is a setting,
  * and fewer rows or a taller track bring it back — but says so, rather than
@@ -111,11 +108,10 @@ function showTreeSidebarMenuItems(self: TreeSidebarMenuModel): MenuItem[] {
 
 /**
  * The two tree-display controls, as one group every row display opens its
- * "Show" submenu with. They used to be split between that submenu and the
- * Clustering one, differently per display: a reader who found "Show tree"
- * under Clustering on a variant track looked there on a MAF track and found
- * nothing. Both are visibility toggles, and "Show" is where those live;
- * Clustering is the operation.
+ * "Show" submenu with, the same on every display, so a reader who finds
+ * "Show tree" on one track finds it in the same place on the next. Both are
+ * visibility toggles, and "Show" is where those live; Clustering is the
+ * operation.
  *
  * Spread into the submenu rather than returned as one item, so a display with
  * a rendering mode that has no row axis (multi-wiggle's overlays) can leave

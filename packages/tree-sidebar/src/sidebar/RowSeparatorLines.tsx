@@ -23,8 +23,7 @@ import { snappedRowTopPx } from '@jbrowse/render-core/shaders/rowSnap'
  * A 1px line between rows that are themselves 2px tall is half the picture, and
  * every display here lets its rows go below a pixel (a clustered cohort at 0.32
  * px a row is the case they exist for) — at that density the grid stops
- * dividing the plot and becomes it. Multi-wiggle drew the wash for exactly that
- * reason: it took the default, and the default was 0.
+ * dividing the plot and becomes it, which is why the default is not 0.
  *
  * Not a per-caller argument because the threshold is the pixel rule this
  * component already owns. Exported so a menu row can say why the grid is absent

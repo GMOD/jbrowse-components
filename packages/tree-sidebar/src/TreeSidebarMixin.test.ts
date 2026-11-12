@@ -84,8 +84,7 @@ function makeDisplay(configuration: Record<string, unknown> = {}) {
 // Each case flips ONE slot off a true default and asserts only that toggle
 // moved. Cross-wiring is the failure this is shaped for — the three bodies are
 // character-identical but for the slot name, so a copy-paste reads correctly and
-// answers for the wrong setting. Inverting `showBranchLength` once left all
-// 3,698 tests across the four composing plugins green.
+// answers for the wrong setting, and no test elsewhere tells them apart.
 describe('the tree toggles', () => {
   const toggles = [
     ['showTree', 'setShowTree', 'tree'],

@@ -56,8 +56,7 @@ function draw(props: Partial<TreeSidebarModel>, top?: number) {
 // `top`, the prop, lands on the `GutterLayer` div wrapping the canvas — the
 // canvas's own `top` style is only the remainder left to apply on top of that.
 // The rendered position is their sum, which is what every caller actually
-// cares about (and what regressed: the caller's `top` and the canvas's own `top`
-// used to both carry the full `rowsTopOffset`).
+// cares about, so the two never both carry the full `rowsTopOffset`.
 function renderedTop(el: HTMLElement) {
   const own = Number.parseFloat(el.style.top || '0')
   const parent = el.parentElement
@@ -68,8 +67,8 @@ function renderedTop(el: HTMLElement) {
 describe('TreeSidebar', () => {
   // `RowsPanel` passes `top`: its inline layer already sits in the panel
   // translated by `rowsTopOffset`, and `top` stands in for that ancestor on
-  // the portaled layer. Adding `rowsTopOffset` again pushed the dendrogram an
-  // extra `rowsTopOffset` px down the track.
+  // the portaled layer. Adding `rowsTopOffset` again would push the dendrogram
+  // an extra `rowsTopOffset` px down the track.
   it('does not add rowsTopOffset again when the caller already passed it as top', () => {
     const { getByTestId } = draw({ rowsTopOffset: 85 }, 85)
     expect(renderedTop(getByTestId('tree_sidebar_dendrogram'))).toBe(85)

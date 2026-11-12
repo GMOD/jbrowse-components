@@ -15,12 +15,11 @@ import type {
 
 // Stroke for tree branch lines, shared by the canvas and SVG draw paths. The
 // sidebar paints a translucent `background.paper` panel behind the dendrogram,
-// so the ink has to follow the theme with it: black-on-white was legible in
-// either mode only while the panel was hardcoded white, which is what made the
-// sidebar a bright rectangle on a dark track.
+// so the ink has to follow the theme with it: black ink on a dark panel does
+// not read.
 //
 // Literal per mode rather than `alpha(text.primary, …)` so the light-mode value
-// stays exactly what it has always been, byte for byte, in the exported SVG.
+// is fixed, byte for byte, in the exported SVG.
 export function treeStroke(palette: { mode: 'light' | 'dark' }) {
   return palette.mode === 'dark' ? '#fff8' : '#0008'
 }
@@ -30,12 +29,10 @@ export function treeStroke(palette: { mode: 'light' | 'dark' }) {
  * hovered node contains, plus the dot and ring on the node itself.
  *
  * Here, beside `treeStroke`, and theme-derived for the same reason it is — with
- * the extra term that getter did not need. These were three `rgba(255,165,0,…)`
- * literals, the last hardcoded colors left in the package's drawing paths, and
- * the band's 0.2 was picked against a light track. A translucent fill
- * composites toward the background behind it, so on a dark track that band all
- * but disappears: the same failure `getMafColorPalette`'s codon fills document
- * and fix with per-mode alphas, and the same one `treeStroke` exists for.
+ * the extra term that getter does not need: a translucent fill composites
+ * toward the background behind it, so an alpha picked against a light track
+ * all but disappears on a dark one. `getMafColorPalette`'s codon fills answer
+ * the same failure with per-mode alphas.
  *
  * `palette.highlight` rather than a literal because it is already the token for
  * "this is the thing being pointed at" — maf's MSA overlay marks with the same
@@ -62,14 +59,13 @@ export function treeHoverColors(palette: {
 // (leftmost node in the left-to-right dendrogram); at y=0 its 1px-wide vertical
 // stroke is centered on the canvas edge, so half of it is clipped off. Nudging
 // the whole y-domain right keeps the root line fully on-screen — pad 2 (not 1)
-// leaves the stroke a clear pixel off the edge so it doesn't read as clipped
-// (reviewer: the tree's top level looked ~1px offscreen at pad 1).
+// leaves the stroke a clear pixel off the edge so it doesn't read as clipped.
 export const TREE_LEFT_PAD = 2
 
 // The generic tree machinery lives in @gmod/newick, shared with react-msaview.
 // Its traversals are iterative: a dendrogram out of single-linkage clustering is
-// a caterpillar, whose depth is its leaf count, and the recursive versions these
-// replaced threw RangeError past about 5000 tips. Everything below this point is
+// a caterpillar, whose depth is its leaf count, and a recursive traversal
+// throws RangeError past about 5000 tips. Everything below this point is
 // dendrogram layout, which is ours.
 export { descendants, eachAfter, leaves, links }
 
@@ -155,8 +151,8 @@ export function clusterLayout<T extends { length?: number }>(
   // `root` from a memoized tree (parsed once per newick), so mutating it both
   // corrupts that cache and — because the returned reference then never changes
   // — leaves MobX values derived from the layout stale when sizeX/sizeY change
-  // (e.g. the hit-test spatial index froze at the row height it was first built
-  // with, so hovering the tree missed after a shift+scroll row resize).
+  // (the hit-test spatial index would keep the row height it was first built
+  // with, so hovering the tree misses after a shift+scroll row resize).
   const laid = cloneHierarchy(root)
   const n = leaves(laid).length
   placeLeaves(laid, 0, n > 0 ? sizeX / n : 0)

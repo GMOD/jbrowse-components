@@ -5,11 +5,9 @@ import { setupTreeDrawingAutorun } from './tree/treeDrawingAutorun.ts'
 /**
  * The three autoruns every display with a dendrogram sidebar installs from its
  * `afterAttach`, in one call: the tree drawing, the declarative `sortRowsBy`
- * sort, and the declarative `runClustering` run. Each display used to spell the
- * three calls out under the same two paragraphs — that they install
- * synchronously because the heavy half is code-split inside the callbacks, and
- * that this barrel must not be `import()`ed
- * (agent-docs/reference/TREE_SIDEBAR.md).
+ * sort, and the declarative `runClustering` run. They install synchronously
+ * because the heavy half is code-split inside the callbacks, and this barrel
+ * must not be `import()`ed (agent-docs/reference/TREE_SIDEBAR.md).
  *
  * What stays per display is exactly what the two callbacks say: which value a
  * row carries at a column (`sortRows`), and what a clustering run *is*

@@ -68,12 +68,12 @@ export function useClusterRun({
       // registered before the await, so an unmount mid-run has a controller to
       // abort
       setController(controller)
-      // Owned like every other progress stream, which this one was not: the
-      // clustering RPC reports at download granularity and `setStatus` went
-      // straight to React, so every one of those ~40 a second re-rendered the
-      // dialog. And nothing narrowed them to the run in flight — an RPC resolves
-      // its status channel asynchronously, so one arriving after the `finally`
-      // put a finished run's label back under an idle dialog.
+      // Owned like every other progress stream: the clustering RPC reports at
+      // download granularity, ~40 a second, and each straight to `setStatus`
+      // would re-render the dialog. The window also narrows them to the run in
+      // flight — an RPC resolves its status channel asynchronously, so one
+      // arriving after the `finally` would put a finished run's label back
+      // under an idle dialog.
       //
       // One window per run, because a run is what it describes.
       let running = true

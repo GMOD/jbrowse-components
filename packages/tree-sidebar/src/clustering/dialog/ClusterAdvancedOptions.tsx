@@ -11,8 +11,8 @@ function useShowAdvanced() {
 /**
  * The show/hide toggle and its contents. Renders nothing at all when there is
  * nothing to show, which is why the toggle lives here rather than in each tab:
- * the variants auto tab has no advanced controls and used to show a toggle that
- * revealed an empty box.
+ * the variants auto tab has no advanced controls, and a toggle there would
+ * reveal an empty box.
  */
 const ClusterAdvancedOptions = observer(function ClusterAdvancedOptions({
   children,

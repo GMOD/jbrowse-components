@@ -22,10 +22,9 @@ function leafNames(node: NewickNode): string[] {
 
 // The two halves of the format have to agree, and only an end-to-end assertion
 // says so: hclust's `toNewick` and our `parseNewick` can each be self-
-// consistently wrong. This is the pairing that broke — the Roadmap
-// 127-epigenome track's dendrogram vanished behind StaleTreeHint because three
-// row names carry parentheses and the serialized tree parsed back naming leaves
-// that were not the rows on screen.
+// consistently wrong. Row names with parentheses (three in the Roadmap
+// 127-epigenome track) must parse back naming the rows on screen, or the
+// dendrogram vanishes behind StaleTreeHint.
 test('serializes row names that carry newick metacharacters', async () => {
   const names = [
     'GM12878',
@@ -83,22 +82,19 @@ test('leaves a plain row name unquoted', async () => {
   )
 })
 
-// We escape nothing ourselves, which is only correct while hclust escapes. It
-// has since 4.0.3; before that `clusterMatrix` quoted the names on the way in,
-// and quoting on both sides would be worse than on neither (`''vHMEC''` matches
-// no row). So assert the dependency's half rather than trusting it — if a
-// future hclust stops quoting, this fails here instead of the dendrogram
-// quietly disappearing again.
+// We escape nothing ourselves, which is only correct while hclust escapes
+// (4.0.3 on), and quoting on both sides would be worse than on neither
+// (`''vHMEC''` matches no row). So assert the dependency's half rather than
+// trusting it — if a future hclust stops quoting, this fails here instead of
+// the dendrogram quietly disappearing.
 test('hclust escapes leaf names, which is why clusterMatrix does not', () => {
   expect(toNewick({ name: 'cells (vHMEC)', height: 0 })).toBe("'cells (vHMEC)'")
   expect(toNewick({ name: 'Sample 0', height: 0 })).toBe('Sample 0')
 })
 
-// Every menu row and dialog gate on the way here says "needs at least two
-// rows", and two of the four run functions say it as "at least one" — so a
-// single-row track reached hclust, which has nothing to merge and returns a
-// tree with no structure. Refused once, at the point all four RPCs pass
-// through.
+// A single row has nothing to merge, and hclust returns a tree with no
+// structure, so it is refused once, at the point all four RPCs pass through,
+// whatever the gates upstream say.
 test('refuses a matrix with fewer than two rows', async () => {
   await expect(
     clusterMatrix({ data: new Map([['GM12878', [0, 0]]]) }),
@@ -267,10 +263,9 @@ describe('imputeMissingToSiteMean', () => {
     expect(imputeMissingToSiteMean(empty)).toBe(empty)
   })
 
-  test('a no-call no longer sits further away than any real genotype', () => {
-    // The regression this exists for: with the old -1 sentinel, the distance
-    // from a no-call to a hom-alt (3) exceeded hom-ref to hom-alt (2), so
-    // samples clustered by how much data they were missing.
+  test('a no-call sits no further away than any real genotype', () => {
+    // A -1 sentinel puts a no-call farther from a hom-alt (3) than hom-ref is
+    // (2), so samples cluster by how much data they are missing.
     const rows = new Map([
       ['homRef', new Float32Array([0])],
       ['homAlt', new Float32Array([2])],

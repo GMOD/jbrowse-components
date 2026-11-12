@@ -133,10 +133,9 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 // another field (the keyed rule, ADR-257), so a reset returns no arrangement
 // of the old rows to the new ones. A base stating no field names no field, so
 // its arrangement returns on any, as a write from an empty field keeps one.
-// Reading it as naming the field a mark display's default plot picks was
-// tried and dropped: re-derived from the latest scan it was wrong after a
-// reload or a rescan, and a recorded pick is display state a re-shown track
-// loses.
+// It does not name the field a mark display's default plot picks: re-derived
+// from the latest scan that is wrong after a reload or a rescan, and a
+// recorded pick is display state a re-shown track loses.
 function baseRows(self: object): RowsMembers {
   const { rows } = baseDisplayConfig(self)
   const live: AnyConfigurationModel = host(self).configuration.rows

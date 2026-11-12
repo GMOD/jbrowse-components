@@ -57,9 +57,8 @@ const ClusterManualTab = observer(function ClusterManualTab<
   const [paste, setPaste] = useState('')
   const [clusterMethod, setClusterMethod] = useState('average')
   // A rejected paste reports beside the box it came from, the way the auto tab
-  // reports a failed run. It used to go to `session.notifyError`, i.e. a
-  // snackbar somewhere else on screen while this dialog stayed open on the paste
-  // that caused it — the one thing the message is asking the user to edit.
+  // reports a failed run, not in a snackbar elsewhere on screen while this
+  // dialog stays open on the paste the message asks the user to edit.
   const [pasteError, setPasteError] = useState<unknown>()
 
   // The matrix is computed over the visible region at the current resolution, so

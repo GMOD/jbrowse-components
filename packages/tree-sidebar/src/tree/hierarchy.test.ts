@@ -117,10 +117,10 @@ test('clusterLayout handles a single leaf without dividing by zero', () => {
   expect(laid.y).toBe(10)
 })
 
-// Regression: clusterLayout must lay out a FRESH copy, not mutate its input.
-// Callers pass a memoized tree, so mutating in place both corrupts that cache
-// and returns a stable reference — which left the hit-test spatial index frozen
-// at the row height it was first built at, so hovering missed after a resize.
+// clusterLayout lays out a FRESH copy, never mutating its input. Callers pass
+// a memoized tree, so mutating in place both corrupts that cache and returns a
+// stable reference, which keeps the hit-test spatial index at the row height
+// it was first built at, so hovering misses after a resize.
 test('clusterLayout returns a fresh tree and leaves its input unmutated', () => {
   const root = hierarchy(sample(), childrenOf)
   const laid1 = clusterLayout(root, 30, 10)
@@ -292,8 +292,8 @@ test('renderTreeSVG emits orthogonal connector path', () => {
 })
 
 // Single-linkage clustering chains, so a dendrogram can be a caterpillar whose
-// depth is its leaf count. The layout used to recurse and threw
-// "RangeError: Maximum call stack size exceeded" somewhere past 5000 tips.
+// depth is its leaf count; a recursive layout throws "RangeError: Maximum
+// call stack size exceeded" somewhere past 5000 tips.
 test('lays out a caterpillar dendrogram far deeper than the call stack', () => {
   let deep: Node = { name: 'l0' }
   for (let i = 1; i < 50_000; i++) {

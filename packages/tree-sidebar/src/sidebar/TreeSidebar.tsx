@@ -34,12 +34,12 @@ interface MenuAnchor {
  * The zero-height box every part of the sidebar hangs off, so the portaled layer
  * and the inline one are laid out by one rule and cannot drift apart.
  *
- * `absolute`, not the `sticky` the sidebar used to carry: nothing above it
- * scrolls natively — `TrackRenderingContainer` deliberately has no `overflow`,
- * and every row display paints a fixed canvas at `-scrollTop` instead — so the
- * only scrollport sticky could ever have found was the window. In an embedded,
- * page-scrolling host that would peel the sidebar off the rows it labels, and
- * now that it is two layers, peel them off each other.
+ * `absolute`, not `sticky`: nothing above it scrolls natively —
+ * `TrackRenderingContainer` deliberately has no `overflow`, and every row
+ * display paints a fixed canvas at `-scrollTop` instead — so the only
+ * scrollport sticky could find is the window. In an embedded, page-scrolling
+ * host that would peel the sidebar off the rows it labels, and its two layers
+ * off each other.
  */
 const GutterLayer = observer(function GutterLayer({
   top,
@@ -57,10 +57,10 @@ const GutterLayer = observer(function GutterLayer({
 
 // Centered line with a contrasting halo, hidden until the handle is hovered.
 // Both the halo and the panel below take their color from the theme rather than
-// a literal white: they sit over the rendering canvas, and a hardcoded white
-// panel made the whole sidebar a bright rectangle on a dark-themed track (the
-// row labels beside it were already `background.paper`). `treeStroke` moves with
-// them so the branch lines stay legible against the panel in either mode.
+// a literal white: they sit over the rendering canvas, and a white panel is a
+// bright rectangle on a dark-themed track (the row labels beside it are
+// `background.paper` too). `treeStroke` moves with them so the branch lines stay
+// legible against the panel in either mode.
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {
     '&::after': {
@@ -80,16 +80,14 @@ const useStyles = makeStyles()(theme => ({
       opacity: 1,
     },
   },
-  // OPAQUE, not the 0.8 it used to be. The rendering canvas runs the full track
-  // width and the sidebar overlays its left edge, so a translucent panel let a
-  // fifth of the painting through behind the dendrogram — and since that
-  // painting is a categorical color per row, what came through was a clean
-  // vertical band in the track's own palette, one tint per row, sitting exactly
-  // where a group swatch would sit. Reviewers read it as a legend they could not
-  // decode ("I can't see the sidebar label colors, they exactly match the colors
-  // used in the track"). The data behind the panel was never legible at 20%
-  // anyway; the cost of hiding it is the left ~5% of the view, and the benefit is
-  // that the gutter now means nothing unless something is drawn in it.
+  // OPAQUE. The rendering canvas runs the full track width and the sidebar
+  // overlays its left edge, so a translucent panel lets the painting through
+  // behind the dendrogram — and since that painting is a categorical color per
+  // row, what comes through is a vertical band in the track's own palette, one
+  // tint per row, exactly where a group swatch would sit, which reads as a
+  // legend no one can decode. The data behind the panel is not legible through
+  // it anyway; the cost of hiding it is the left ~5% of the view, and the
+  // gutter then means nothing unless something is drawn in it.
   panel: {
     position: 'absolute',
     left: 0,

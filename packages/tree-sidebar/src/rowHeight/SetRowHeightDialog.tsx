@@ -11,8 +11,8 @@ import type { RowHeightModel } from './rowHeightMenu.ts'
  * The "Custom..." row-height entry every multi-row display offers: a px
  * height, fit being the radio beside it. It seeds from `rowStep`, never
  * `effectiveRowHeight`: in fit mode the resolved getter returns the computed
- * fractional height, so seeding from it and submitting silently pinned that
- * number and left fit mode, which the variants copy of this dialog did. In fit
+ * fractional height, so seeding from it and submitting would silently pin
+ * that number and leave fit mode. In fit
  * mode the field starts empty, and left empty keeps fit, so a display with a
  * proportion can change that alone.
  *

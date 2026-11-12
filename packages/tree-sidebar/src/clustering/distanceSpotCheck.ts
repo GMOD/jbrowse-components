@@ -2,15 +2,13 @@
  * A dispatch that comes back incomplete raises no WebGPU error: the cells its
  * workgroups never reached read back as the zeros the buffer started with,
  * and a zero distance is a perfectly plausible one — hclust would merge those
- * samples first, at height 0. The LD matrix kernel met exactly this on a
- * Radeon Pro 5300M and grew a spot check of its own before that estimator was
- * retired; this is the same detector for the distance build. A handful of pairs recomputed in f64 cost O(V) each
- * against a dispatch the caller only reached past a work gate of 10^9
- * pair-elements.
+ * samples first, at height 0, as on a Radeon Pro 5300M. A handful of pairs
+ * recomputed in f64 cost O(V) each against a dispatch the caller only reached
+ * past a work gate of 10^9 pair-elements.
  */
 
 // Well above the f32 rounding the kernel legitimately shows (its blocked
-// Kahan sum holds a few ulps; 3.6e-5 relative was the unblocked worst case at
+// Kahan sum holds a few ulps; 3.6e-5 relative is the unblocked worst case at
 // 22,000 fractional columns) and well below a dropped cell, which reads 0.
 const TOLERANCE = 1e-4
 

@@ -159,7 +159,7 @@ test('autorun sizes the tree canvas itself, surviving a height change', () => {
 
   // A subtree filter shrinks the row count -> height. The autorun must resize
   // the backing store itself rather than leaving a stale (or React-cleared)
-  // canvas; this is the regression guard for the subtree-filter blanking bug.
+  // canvas, which would blank the tree.
   display.setHeight(20)
   expect(canvas.width).toBe(80 * DPR)
   expect(canvas.height).toBe(20 * DPR)
@@ -223,8 +223,8 @@ test('subtree hover paints one rect per contiguous block of rows', () => {
   ])
 })
 
-// A hardcoded white panel and a black stroke made the sidebar a bright
-// rectangle on a dark-themed track; both now follow the session palette.
+// The panel and the stroke follow the session palette, so the sidebar is no
+// bright rectangle on a dark-themed track.
 test('branch lines take their ink from the session palette', () => {
   const session = createDisplay('view4')
   const { display } = session.view
@@ -236,12 +236,9 @@ test('branch lines take their ink from the session palette', () => {
   expect(stubCtx.strokeStyle).toBe('#fff8')
 })
 
-// The hover mark was three `rgba(255,165,0,…)` literals — the last hardcoded
-// colors in the package's drawing paths — and its band's 0.2 was picked against
-// a light track. A translucent fill composites toward the background behind it,
-// so on a dark track that band all but disappeared: the same failure the codon
-// fills document and fix with per-mode alphas, and the same one `treeStroke`
-// already exists for, one line above it in the same module.
+// A translucent fill composites toward the background behind it, so a hover
+// band alpha picked against a light track all but disappears on a dark one:
+// the same failure `treeStroke`, beside it in the same module, exists for.
 test('the hover mark follows the palette, and holds up in dark mode', () => {
   const session = createDisplay('view6')
   const { display } = session.view

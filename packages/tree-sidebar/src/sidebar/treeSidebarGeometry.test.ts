@@ -10,7 +10,7 @@ import {
 
 // One gate decides three things that must never disagree: whether `TreeSidebar`
 // paints, whether the row labels beside it are pushed right to clear it, and
-// whether the mouse guides stop short of it. Each used to spell it out.
+// whether the mouse guides stop short of it.
 describe('treeIsShowing', () => {
   const hierarchy = {}
 
@@ -85,8 +85,8 @@ describe('clampTreeAreaWidth', () => {
     expect(clampTreeAreaWidth(80, VIEW)).toBe(80)
   })
 
-  // The invariant, stated as the thing that was broken: whatever the drag asks
-  // for, the control that got you there is still on screen.
+  // The invariant: whatever the drag asks for, the control that got you there
+  // is still on screen.
   it('keeps the handle reachable at any drag distance', () => {
     for (const width of [795, 800, 5000]) {
       expect(
