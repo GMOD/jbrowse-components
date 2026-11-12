@@ -121,6 +121,45 @@
           "displayId": "dog_containment-heatmap",
           "mark": {
             "type": "rect"
+          },
+          "rows": {
+            "sort": [
+              "canFam4",
+              "Orfhlaith_2",
+              "Orfhlaith_1",
+              "Noodle_1",
+              "Noodle_2",
+              "Molly_2",
+              "Molly_1",
+              "Pandan_1",
+              "Pandan_2",
+              "Appa_1",
+              "Appa_2",
+              "Zeke_1",
+              "Zeke_2"
+            ],
+            "tree": {
+              "newick": "(canFam4:8.5657,((Orfhlaith_2:2.8310,(Orfhlaith_1:2.5981,(Noodle_1:0.0000,Noodle_2:0.0000):2.5981):0.2329):4.3694,(Molly_2:6.5438,(Molly_1:5.6268,((Pandan_1:0.0000,Pandan_2:0.0000):5.4427,((Appa_1:0.5000,Appa_2:0.5000):0.6152,(Zeke_1:0.5000,Zeke_2:0.5000):0.6152):4.3275):0.1841):0.9170):0.6566):1.3653)",
+              "provenance": {
+                "regions": [
+                  {
+                    "refName": "chr13",
+                    "start": 8800044,
+                    "end": 9000045,
+                    "assemblyName": "canFam4"
+                  }
+                ],
+                "settings": [
+                  {
+                    "name": "samples/px",
+                    "value": "1"
+                  }
+                ]
+              }
+            },
+            "color": {
+              "field": "rspo2_3utr_insertion"
+            }
           }
         }
       ]
@@ -146,6 +185,45 @@
           "displayId": "dog_containment_1bp-heatmap",
           "mark": {
             "type": "rect"
+          },
+          "rows": {
+            "sort": [
+              "canFam4",
+              "Molly_1",
+              "Appa_1",
+              "Appa_2",
+              "Zeke_1",
+              "Zeke_2",
+              "Pandan_2",
+              "Molly_2",
+              "Pandan_1",
+              "Noodle_1",
+              "Noodle_2",
+              "Orfhlaith_1",
+              "Orfhlaith_2"
+            ],
+            "tree": {
+              "newick": "(((canFam4:5.9161,Molly_1:5.9161):4.6551,((Appa_1:0.0000,Appa_2:0.0000):0.0000,(Zeke_1:0.0000,Zeke_2:0.0000):0.0000):10.5712):0.4753,((Pandan_2:0.0000,(Molly_2:0.0000,Pandan_1:0.0000):0.0000):9.2601,((Noodle_1:0.0000,Noodle_2:0.0000):0.0000,(Orfhlaith_1:0.0000,Orfhlaith_2:0.0000):0.0000):9.2601):1.7864)",
+              "provenance": {
+                "regions": [
+                  {
+                    "refName": "chr13",
+                    "start": 8822898,
+                    "end": 8825300,
+                    "assemblyName": "canFam4"
+                  }
+                ],
+                "settings": [
+                  {
+                    "name": "samples/px",
+                    "value": "1"
+                  }
+                ]
+              }
+            },
+            "color": {
+              "field": "rspo2_3utr_insertion"
+            }
           }
         }
       ]
