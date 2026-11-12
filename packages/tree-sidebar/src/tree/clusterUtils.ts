@@ -10,7 +10,8 @@ import {
 } from './hierarchy.ts'
 import { newickPreorder, rotateNewickByDomain } from './rotateNewickByDomain.ts'
 
-import type { RowAlias, RowBand } from '../rows/arrangeRows.ts'
+import type { RowAlias } from '../rows/arrangeRows.ts'
+import type { RowBand } from '../rows/bandRows.ts'
 import type { ClusterHierarchyNode, ClusterNodeData } from '../types.ts'
 import type { HierarchyNode } from './hierarchy.ts'
 

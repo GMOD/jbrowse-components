@@ -1,5 +1,5 @@
 import type { ClusterProvenance } from './clustering/clusterProvenance.ts'
-import type { RowBand } from './rows/arrangeRows.ts'
+import type { RowBand } from './rows/bandRows.ts'
 import type {
   HierarchyNode,
   PositionedHierarchyNode,

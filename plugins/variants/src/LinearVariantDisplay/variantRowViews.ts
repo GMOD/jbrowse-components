@@ -26,7 +26,8 @@ import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { RowBanding, RowParent } from '@jbrowse/tree-sidebar/arrangeRows'
+import type { RowBanding } from '@jbrowse/tree-sidebar'
+import type { RowParent } from '@jbrowse/tree-sidebar/arrangeRows'
 
 /** What {@link variantRowConfigViews} reads: the display's config. */
 export interface VariantRowConfigHost {

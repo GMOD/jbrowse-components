@@ -29,7 +29,8 @@ import {
   getLeafNames,
   treeOfLeaves,
 } from '../tree/clusterUtils.ts'
-import { arrangeRows, bandRows, rowAliasOver } from './arrangeRows.ts'
+import { arrangeRows, rowAliasOver } from './arrangeRows.ts'
+import { bandRows } from './bandRows.ts'
 import { narrowRows, narrows } from './narrowRows.ts'
 
 import type { ClusterProvenance } from '../clustering/clusterProvenance.ts'
@@ -50,7 +51,8 @@ import type {
   RowLabelSource,
   RowSource,
 } from '../types.ts'
-import type { RowAlias, RowBand, RowBanding, RowParent } from './arrangeRows.ts'
+import type { RowAlias, RowParent } from './arrangeRows.ts'
+import type { RowBand, RowBanding } from './bandRows.ts'
 import type { RowNarrowing } from './narrowRows.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'

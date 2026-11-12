@@ -6,7 +6,7 @@ import { SvgRowColumnLabels } from './SvgRowColumnLabels.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 import { rowColumnLabelsHeight } from './rowLabelsBoxWidth.ts'
 
-import type { RowBand } from '../rows/arrangeRows.ts'
+import type { RowBand } from '../rows/bandRows.ts'
 import type { RowAnnotationColumn, RowLabelSource } from '../types.ts'
 
 /**

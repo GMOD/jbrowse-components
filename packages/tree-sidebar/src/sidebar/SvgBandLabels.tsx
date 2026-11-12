@@ -5,7 +5,7 @@ import { getFillProps } from '@jbrowse/core/util'
 import { fittedLabel } from './fittedLabel.ts'
 import { sidebarFontSize } from './rowLabelsBoxWidth.ts'
 
-import type { RowBand } from '../rows/arrangeRows.ts'
+import type { RowBand } from '../rows/bandRows.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 const TEXT_PAD = 6

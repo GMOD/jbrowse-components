@@ -2,7 +2,7 @@ import { bandLabelWidth } from './SvgBandLabels.tsx'
 import { rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
 import { treeSidebarOffset } from './treeSidebarGeometry.ts'
 
-import type { RowBand } from '../rows/arrangeRows.ts'
+import type { RowBand } from '../rows/bandRows.ts'
 import type {
   ClusterHierarchyNode,
   RowAnnotationColumn,

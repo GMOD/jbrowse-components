@@ -1,4 +1,4 @@
-import { bandRows } from '../rows/arrangeRows.ts'
+import { bandRows } from '../rows/bandRows.ts'
 import {
   buildTree,
   computeClusterHierarchy,
@@ -16,7 +16,7 @@ import {
 } from './hierarchy.ts'
 import { buildSpatialIndex } from './spatialIndex.ts'
 
-import type { RowBand } from '../rows/arrangeRows.ts'
+import type { RowBand } from '../rows/bandRows.ts'
 import type * as Hierarchy from './hierarchy.ts'
 
 jest.mock('./hierarchy.ts', () => {
