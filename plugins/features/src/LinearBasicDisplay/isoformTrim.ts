@@ -158,17 +158,17 @@ export function maxIsoformCount(
   return max
 }
 
-function pick<T extends { length: number; [i: number]: number }>(
-  arr: T,
-  kept: readonly number[],
-  stride: number,
-): T {
+function pick<
+  T extends {
+    length: number
+    [i: number]: number
+    slice(start?: number, end?: number): T
+  },
+>(arr: T, kept: readonly number[], stride: number): T {
   if (arr.length === 0) {
     return arr
   }
-  const Ctor = (arr as unknown as { constructor: new (n: number) => T })
-    .constructor
-  const out = new Ctor(kept.length * stride)
+  const out = arr.slice(0, kept.length * stride)
   for (const [i, k] of kept.entries()) {
     for (let s = 0; s < stride; s++) {
       out[i * stride + s] = arr[k * stride + s]!

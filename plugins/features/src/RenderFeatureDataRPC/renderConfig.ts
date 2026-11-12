@@ -39,12 +39,7 @@ export function readConfigValueSafe<T>(
   fallback: T,
 ): T {
   try {
-    const value = coreReadConfigValue<T>(
-      config as unknown as Record<string, unknown>,
-      key,
-      feature,
-      jexl,
-    )
+    const value = coreReadConfigValue<T>(config, key, feature, jexl)
     return value ?? fallback
   } catch {
     return fallback
@@ -87,7 +82,7 @@ export const GENE_LIKE_FIELD = 'geneLike'
 
 // Fully enumerated — no index signature, so a typo on any property is a type
 // error rather than silently typing as `unknown`.
-export interface DisplayConfig {
+export type DisplayConfig = {
   // displayMode is NOT sent to the worker: the main thread applies
   // compact/superCompact height scaling, so switching modes skips an RPC
   // round-trip. Track height is not sent either — the fit ladder trims isoforms

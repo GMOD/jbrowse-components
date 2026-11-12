@@ -5,15 +5,19 @@ import type {
   HitIndexed,
 } from '@jbrowse/core/util/markEncoding'
 
-type Lane = Uint32Array | Float32Array | Uint8Array
+type Lane<T> = { slice(start?: number, end?: number): T } & (
+  | Uint32Array
+  | Float32Array
+  | Uint8Array
+)
 
-function compact<T extends Lane>(
+function compact<T extends Lane<T>>(
   lane: T,
   keep: Uint8Array,
   count: number,
   kept: number,
 ): T {
-  const out = new (lane.constructor as new (n: number) => T)(kept)
+  const out = lane.slice(0, kept)
   let j = 0
   for (let i = 0; i < count; i++) {
     if (keep[i]) {
@@ -41,7 +45,7 @@ export function keptInstances<L extends EncodedChannels>(
   if (kept === count) {
     return layer
   }
-  const lane = <T extends Lane>(values: T | undefined) =>
+  const lane = <T extends Lane<T>>(values: T | undefined) =>
     values && compact(values, keep, count, kept)
   const featureIndex =
     layer.featureIndex ?? Uint32Array.from({ length: count }, (_, i) => i)
