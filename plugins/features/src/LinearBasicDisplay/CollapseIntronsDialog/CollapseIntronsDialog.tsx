@@ -135,6 +135,7 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
     regions,
     trackId,
     soloFeatureId,
+    expandFeatureId: selectedTranscript ? featureId : undefined,
     label,
   }
   const spannedBp =
@@ -219,10 +220,10 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
             label="Show only this feature (hide others in the track)"
           />
         </FormGroup>
-        {soloOnly && selectedTranscript ? (
+        {selectedTranscript ? (
           <Typography variant="body2" color="textSecondary">
-            Isolating matches whole features, so the other isoforms of{' '}
-            {featureName} still draw wherever they fall inside the kept windows.
+            {featureName} opens to all its isoforms, so the others still draw
+            wherever they fall inside the kept windows.
           </Typography>
         ) : null}
       </DialogContent>

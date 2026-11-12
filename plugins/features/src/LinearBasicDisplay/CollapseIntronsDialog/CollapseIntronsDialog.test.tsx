@@ -192,9 +192,8 @@ describe('the window-size field', () => {
   })
 })
 
-// Isolating is an exact match on the gene's own uniqueId, so scoping the
-// regions to one isoform does not scope what the track draws.
-describe('the isolation caveat', () => {
+// Scoping the regions to one isoform opens the gene, so every isoform draws.
+describe('the open-gene note', () => {
   it('stays silent while the whole gene is in scope', () => {
     renderDialog(multiViewSession().view)
     expect(screen.queryByText(/still draw wherever they fall/)).toBeNull()

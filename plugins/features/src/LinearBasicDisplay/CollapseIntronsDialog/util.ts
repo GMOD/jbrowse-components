@@ -78,6 +78,72 @@ function findSoloDisplay(view: LinearGenomeViewModel, trackId: string) {
   return track?.displays.find(isSoloCapable)
 }
 
+interface GeneExpandingDisplay {
+  expandedGeneIds: string[]
+  toggleExpandedGene: (featureId: string) => void
+}
+
+function isGeneExpanding<D>(d: D): d is D & GeneExpandingDisplay {
+  return (
+    typeof d === 'object' &&
+    d !== null &&
+    'toggleExpandedGene' in d &&
+    typeof d.toggleExpandedGene === 'function'
+  )
+}
+
+function findGeneExpandingDisplay(
+  view: LinearGenomeViewModel,
+  trackId: string,
+) {
+  const track = view.tracks.find(
+    t => readConfObject(t.configuration, 'trackId') === trackId,
+  )
+  return track?.displays.find(isGeneExpanding)
+}
+
+// A track drawing one representative transcript per gene would show that one
+// inside windows cut around another, so the gene opens to all its isoforms.
+export function expandGeneInView(
+  view: LinearGenomeViewModel,
+  trackId: string,
+  featureId: string,
+): () => void {
+  const display = findGeneExpandingDisplay(view, trackId)
+  if (display && !display.expandedGeneIds.includes(featureId)) {
+    display.toggleExpandedGene(featureId)
+    return () => {
+      display.toggleExpandedGene(featureId)
+    }
+  } else {
+    return () => {}
+  }
+}
+
+export function seedExpandedGeneInTracks(
+  tracks: TrackSnapshot[],
+  view: LinearGenomeViewModel,
+  trackId: string,
+  featureId: string,
+): TrackSnapshot[] {
+  const display = findGeneExpandingDisplay(view, trackId)
+  return display === undefined
+    ? tracks
+    : tracks.map(t => ({
+        ...t,
+        displays: t.displays.map(d =>
+          d.id === display.id
+            ? {
+                ...d,
+                expandedGeneIds: [
+                  ...new Set([...display.expandedGeneIds, featureId]),
+                ],
+              }
+            : d,
+        ),
+      }))
+}
+
 export function soloFeatureInView(
   view: LinearGenomeViewModel,
   trackId: string,
@@ -176,6 +242,7 @@ interface IntronActionArgs {
   regions: Region[]
   trackId: string
   soloFeatureId: string | undefined
+  expandFeatureId: string | undefined
   label: string
 }
 
@@ -184,6 +251,7 @@ export function replaceIntrons({
   regions,
   trackId,
   soloFeatureId,
+  expandFeatureId,
 }: IntronActionArgs) {
   // Isolate before handing the Undo over, so the undo callback closes over the
   // restore.
@@ -191,11 +259,18 @@ export function replaceIntrons({
     soloFeatureId === undefined
       ? undefined
       : soloFeatureInView(view, trackId, soloFeatureId)
+  const collapseGene =
+    expandFeatureId === undefined
+      ? undefined
+      : expandGeneInView(view, trackId, expandFeatureId)
   showRegionsWithUndo({
     view,
     regions,
     message: 'Introns collapsed',
-    alsoUndo: restoreSolo,
+    alsoUndo: () => {
+      restoreSolo?.()
+      collapseGene?.()
+    },
   })
 }
 
@@ -204,13 +279,18 @@ export function buildCollapsedViewSnapshot({
   regions,
   trackId,
   soloFeatureId,
+  expandFeatureId,
   label,
 }: IntronActionArgs) {
   const { id: _id, type: _type, ...rest } = getSnapshot(view)
-  const tracks =
+  const soloed =
     soloFeatureId === undefined
       ? rest.tracks
       : seedSoloInTracks(rest.tracks, view, trackId, soloFeatureId)
+  const tracks =
+    expandFeatureId === undefined
+      ? soloed
+      : seedExpandedGeneInTracks(soloed, view, trackId, expandFeatureId)
   return {
     ...rest,
     tracks: stripTrackIds(tracks),

@@ -3,6 +3,7 @@ import {
   buildCollapsedRegions,
   buildCollapsedViewSnapshot,
   collapsedRegionsFor,
+  expandGeneInView,
   replaceIntrons,
 } from './util.ts'
 
@@ -59,6 +60,7 @@ function intronArgs(opts: {
     regions: collapsedRegionsOf(opts),
     trackId: 'test_track',
     soloFeatureId: undefined,
+    expandFeatureId: undefined,
     label: 'myGene',
   }
 }
@@ -201,6 +203,53 @@ describe('CollapseIntrons utilities', () => {
 
       expect(snap.windowWidthBp).toBe(800 / 50)
       expect(snap.windowStartBp).toBe((10 - 800 / 50) / 2)
+    })
+  })
+
+  describe('a gene opened for one picked isoform', () => {
+    const transcripts = [
+      feat({
+        refName: 'ctgA',
+        subfeatures: [
+          feat({ type: 'exon', start: 0, end: 100 }),
+          feat({ type: 'exon', start: 5000, end: 5100 }),
+        ],
+      }),
+    ]
+
+    it('shows every isoform in place, and closes again on undo', () => {
+      const { view, display } = createTestEnvironment().createDisplay()
+      const undo = expandGeneInView(view, 'test_track', 'geneX')
+      expect([...display.expandedGeneIds]).toEqual(['geneX'])
+
+      undo()
+      expect([...display.expandedGeneIds]).toEqual([])
+    })
+
+    it('leaves a gene the reader had already opened open on undo', () => {
+      const { view, display } = createTestEnvironment().createDisplay({
+        expandedGeneIds: ['geneX'],
+      })
+      expandGeneInView(view, 'test_track', 'geneX')()
+
+      expect([...display.expandedGeneIds]).toEqual(['geneX'])
+    })
+
+    it('is carried into a launched view beside the genes already open', () => {
+      const { view } = createTestEnvironment().createDisplay({
+        expandedGeneIds: ['geneA'],
+      })
+      const snap: { tracks: { displays: { expandedGeneIds?: string[] }[] }[] } =
+        buildCollapsedViewSnapshot({
+          ...intronArgs({ transcripts, flip: false }),
+          view,
+          expandFeatureId: 'geneX',
+        })
+
+      expect(snap.tracks[0]!.displays[0]!.expandedGeneIds).toEqual([
+        'geneA',
+        'geneX',
+      ])
     })
   })
 

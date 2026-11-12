@@ -177,6 +177,7 @@ describe('buildCollapsedViewSnapshot', () => {
       regions: result.regions,
       trackId: 'test_track',
       soloFeatureId,
+      expandFeatureId: undefined,
       label: 'myGene',
     }
   }
