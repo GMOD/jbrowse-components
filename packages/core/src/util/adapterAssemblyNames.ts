@@ -1,6 +1,4 @@
-function isAdapterConfig(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
+import { isPlainObject } from './objectUtils.ts'
 
 function namesIn(value: unknown) {
   return Array.isArray(value)
@@ -50,5 +48,48 @@ export function adapterAssemblyNames(adapterConfig: Record<string, unknown>) {
   const { adapters } = adapterConfig
   return own.length > 0 || !Array.isArray(adapters)
     ? own
-    : sharedNamesFirst(adapters.filter(isAdapterConfig).map(ownAssemblyNames))
+    : sharedNamesFirst(adapters.filter(isPlainObject).map(ownAssemblyNames))
+}
+
+/**
+ * The names a region's `assemblyName` is respelled among before a comparative
+ * RPC: the ones the adapter config names, which its adapter compares against,
+ * and the track's own only for a config naming none.
+ */
+export function adapterNamespaceNames(
+  adapterConfig: Record<string, unknown>,
+  trackAssemblyNames: readonly string[] = [],
+) {
+  const named = adapterAssemblyNames(adapterConfig)
+  return named.length > 0 ? named : [...trackAssemblyNames]
+}
+
+/**
+ * `assemblyName` as `names` spells its assembly: itself where they list it,
+ * else the first of them naming the same assembly, else itself. Its own name
+ * leads because another assembly can be named by one of this one's aliases.
+ */
+export function spellingAmong(
+  names: readonly string[],
+  assemblyName: string,
+  isSameAssembly: (name: string) => boolean,
+) {
+  return names.includes(assemblyName)
+    ? assemblyName
+    : (names.find(isSameAssembly) ?? assemblyName)
+}
+
+/**
+ * The name an adapter config spells `assembly` by, which is the name its
+ * adapter answers `getRefNames` and `getContigs` for.
+ */
+export function adapterSpelling(
+  assembly: { name: string; hasName: (name: string) => boolean },
+  adapterConfig: Record<string, unknown>,
+) {
+  return spellingAmong(
+    adapterAssemblyNames(adapterConfig),
+    assembly.name,
+    name => assembly.hasName(name),
+  )
 }

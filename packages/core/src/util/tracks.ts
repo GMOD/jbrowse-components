@@ -11,7 +11,12 @@ export { getFileName } from './getFileName.ts'
 export { getRpcSessionId } from './parentWalk.ts'
 export { makeIndex } from './formatGuessers.ts'
 export { pickDisplayForView } from './displayChoice.ts'
-export { adapterAssemblyNames } from './adapterAssemblyNames.ts'
+export {
+  adapterAssemblyNames,
+  adapterNamespaceNames,
+  adapterSpelling,
+  spellingAmong,
+} from './adapterAssemblyNames.ts'
 
 export {
   isLooseTrackConfig,
@@ -40,6 +45,7 @@ import {
   adapterCapabilities,
   displayTypesFedBy,
 } from '../pluggableElementTypes/models/baseTrackConfig.ts'
+import { adapterSpelling } from './adapterAssemblyNames.ts'
 import { chooseDisplay } from './displayChoice.ts'
 import {
   getFileHandle,
@@ -1577,11 +1583,14 @@ function warmTrackAdapter(
     // a source that declares its lanes reads an index per lane asked about,
     // and only its display knows which; asked about none it would read all
     if (assemblyName && !declaresLanes(adapterConfig, pluginManager)) {
+      const assembly = session.assemblyManager.get(assemblyName)
       session.rpcManager
         // eslint-disable-next-line no-restricted-syntax -- an index read the track's first request would make anyway: nothing to show, and nothing a user can move on from
         .call(sessionId, 'CoreGetRefNames', {
           adapterConfig,
-          assemblyName,
+          assemblyName: assembly
+            ? adapterSpelling(assembly, adapterConfig)
+            : assemblyName,
           signal: undefined,
         })
         .catch(() => {})

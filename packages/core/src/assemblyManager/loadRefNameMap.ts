@@ -1,5 +1,5 @@
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
-import { adapterAssemblyNames } from '../util/adapterAssemblyNames.ts'
+import { adapterSpelling } from '../util/adapterAssemblyNames.ts'
 import { updateStatus } from '../util/progress.ts'
 import {
   assemblyContigLengths,
@@ -29,16 +29,6 @@ export type RefNameMapAssembly = Pick<
   | 'setRefNameMismatch'
   | 'setContigLengthMismatch'
 >
-
-function adapterSpelling(
-  assembly: RefNameMapAssembly,
-  adapterConfig: Record<string, unknown>,
-) {
-  return (
-    adapterAssemblyNames(adapterConfig).find(name => assembly.hasName(name)) ??
-    assembly.name
-  )
-}
 
 export async function loadRefNameMap(
   assembly: RefNameMapAssembly,

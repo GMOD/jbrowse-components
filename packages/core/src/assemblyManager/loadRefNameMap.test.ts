@@ -80,6 +80,23 @@ test('asks a comparative adapter under the spelling its config names the assembl
   )
 })
 
+// GRCh38 is an alias of hg38 here, and a config can list it for another
+// assembly of that name; the assembly's own name is the one that cannot be
+// anyone else's.
+test('asks under the assembly name where the config lists it beside one of its aliases', async () => {
+  const { assembly } = setup({ fileRefNames: CHR, assemblyRefNames: CHR })
+  await loadRefNameMap(
+    assembly,
+    { type: 'PAFAdapter', assemblyNames: ['GRCh38', 'hg38'] },
+    { sessionId: 'sesh' },
+  )
+  expect(assembly.rpcManager.call).toHaveBeenCalledWith(
+    'sesh',
+    'CoreGetContigs',
+    expect.objectContaining({ assemblyName: 'hg38' }),
+  )
+})
+
 test('asks an adapter naming no assembly under the assembly name', async () => {
   const { assembly } = setup({ fileRefNames: CHR, assemblyRefNames: CHR })
   await loadRefNameMap(assembly, adapterConfig, { sessionId: 'sesh' })

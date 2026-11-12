@@ -1,4 +1,8 @@
-import { adapterAssemblyNames } from './adapterAssemblyNames.ts'
+import {
+  adapterAssemblyNames,
+  adapterNamespaceNames,
+  adapterSpelling,
+} from './adapterAssemblyNames.ts'
 
 test('a config naming assemblyNames answers them', () => {
   expect(adapterAssemblyNames({ assemblyNames: ['q', 't'] })).toEqual([
@@ -54,4 +58,35 @@ test('a star answers what its children name, the anchor they share first', () =>
 test('a config naming no assembly answers none', () => {
   expect(adapterAssemblyNames({ type: 'MCScanBlocksAdapter' })).toEqual([])
   expect(adapterAssemblyNames({ type: 'BamAdapter' })).toEqual([])
+})
+
+test('the track names stand in only for a config naming no assembly', () => {
+  expect(
+    adapterNamespaceNames({ assemblyNames: ['q', 't'] }, ['Q', 'T']),
+  ).toEqual(['q', 't'])
+  expect(adapterNamespaceNames({ type: 'GbzAdapter' }, ['Q', 'T'])).toEqual([
+    'Q',
+    'T',
+  ])
+  expect(adapterNamespaceNames({ type: 'GbzAdapter' })).toEqual([])
+})
+
+describe('the spelling an adapter config gives an assembly', () => {
+  const assembly = {
+    name: 'A',
+    hasName: (name: string) => name === 'A' || name === 'X',
+  }
+
+  test('is the assembly name where the config lists it, ahead of an alias another assembly may hold', () => {
+    expect(adapterSpelling(assembly, { assemblyNames: ['X', 'A'] })).toBe('A')
+  })
+
+  test('is the first alias the config lists otherwise', () => {
+    expect(adapterSpelling(assembly, { assemblyNames: ['B', 'X'] })).toBe('X')
+  })
+
+  test('is the assembly name for a config naming it by nothing', () => {
+    expect(adapterSpelling(assembly, { assemblyNames: ['B', 'C'] })).toBe('A')
+    expect(adapterSpelling(assembly, { type: 'BamAdapter' })).toBe('A')
+  })
 })
