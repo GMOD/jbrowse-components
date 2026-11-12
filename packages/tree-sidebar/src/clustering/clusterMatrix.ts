@@ -2,11 +2,10 @@ import { clusterData, toNewick } from '@gmod/hclust'
 import { isAbortException } from '@jbrowse/core/util'
 
 import { renameNewickLeaves } from '../tree/newick.ts'
-import { clusterProgressStatus } from './clusterProgressStatus.ts'
 import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
 
 import type { ClusterNode, ClusterProgress } from '@gmod/hclust'
-import type { StatusCallback } from '@jbrowse/core/util'
+import type { RpcStatus, StatusCallback } from '@jbrowse/core/util'
 
 // One matrix row. Both halves of the clustering path read it and they read it
 // differently — hclust indexes it, the R-script and TSV serializers iterate it —
@@ -235,4 +234,26 @@ export function imputeMissingToSiteMean(rows: Map<string, Float32Array>) {
     }
   }
   return rows
+}
+
+/**
+ * Maps an hclust progress report onto the RPC status channel, giving each phase
+ * half the bar: the distance matrix spans 0-50% and the clustering merge loop
+ * 50-100%. Both phases count 0→100% independently upstream, so forwarding their
+ * counts raw makes the bar fill, snap back to zero, and fill again. 'init' has
+ * no denominator, so it stays a plain (indeterminate) message.
+ */
+export function clusterProgressStatus({
+  phase,
+  message,
+  current,
+  total,
+}: ClusterProgress): RpcStatus {
+  return phase === 'init'
+    ? message
+    : {
+        message,
+        current: phase === 'distance' ? current : total + current,
+        total: total * 2,
+      }
 }
