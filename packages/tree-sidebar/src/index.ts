@@ -72,7 +72,6 @@ export type {
   RowBanding,
   RowParent,
   RowParentOf,
-  UnlistedRowsSort,
 } from './arrangeRows.ts'
 export { applyClusterRun } from './applyClusterRun.ts'
 export { renameNewickLeaves, writeNewick } from './writeNewick.ts'

@@ -204,7 +204,6 @@ hook's name throws at `create`:
   marks (wiggle's gradient or declared `encoding.color`, variants' genotypes).
   On the mark displays a mark naming no color under a display naming none
   takes its row's color, over the multi-row display's file colors (ADR-265).
-- `unlistedRowsSort`: `source` by default; multi-row's discovered values sort.
 - `rowOrder`: a tree that arrived as data (supplied, or a guide tree) leads with
   its leaves, then `rows.sort` for the rows it lacks; `rows.sort` alone
   otherwise, since a computed tree's run wrote its leaf order there.

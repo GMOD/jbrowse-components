@@ -3,12 +3,6 @@ import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import type { RowSource } from './types.ts'
 
 /**
- * Where the rows an order does not list go: `source` keeps the order they
- * arrived in, `sorted` sorts them the way every in-track grouping sorts.
- */
-export type UnlistedRowsSort = 'source' | 'sorted'
-
-/**
  * The name a row also answers to — a haplotype row's sample, and a sample
  * row's own name — or undefined for a name no current row answers to.
  */
@@ -33,7 +27,6 @@ export interface RowArrangementInput {
 }
 
 export interface ArrangeRowsHooks<S> {
-  readonly unlistedRowsSort: UnlistedRowsSort
   readonly rowAlias: RowAlias | undefined
   rowParent(row: S): RowParent | undefined
 }
@@ -97,16 +90,6 @@ export function inheritedLabel(
     : parent !== undefined && Object.hasOwn(labels, parent.name)
       ? `${labels[parent.name]}${parent.labelSuffix}`
       : undefined
-}
-
-function sortedRows<S extends RowSource>(rows: S[], domain: readonly string[]) {
-  const compare = groupKeyComparator(domain)
-  for (let i = 1; i < rows.length; i++) {
-    if (compare(rows[i - 1]!.name, rows[i]!.name) > 0) {
-      return [...rows].sort((a, b) => compare(a.name, b.name))
-    }
-  }
-  return rows
 }
 
 // The earliest index of a domain entry no row draws that `alias` maps onto a
@@ -297,7 +280,7 @@ export function bandRows<S>(
 
 /**
  * The rows in a reader's arrangement: the rows `domain` lists lead, in its
- * order, and the rest follow as `unlistedRowsSort` says. A row ranks at the
+ * order, and the rest follow in the order they arrived in. A row ranks at the
  * earlier of its own entry and its parent's (`rowAlias`), and a drawn row at
  * the earliest entry naming a finer row that refines it, so the latest order
  * written at either field wins. A `labels` entry of a row's own is its label
@@ -317,7 +300,5 @@ export function arrangeRows<S extends RowSource>(
     Object.keys(labels).length > 0
       ? relabelRows(rows, labels, row => hooks.rowParent(row))
       : rows
-  return hooks.unlistedRowsSort === 'sorted'
-    ? sortedRows(relabelled, domain)
-    : orderByRank(relabelled, domain, hooks.rowAlias)
+  return orderByRank(relabelled, domain, hooks.rowAlias)
 }

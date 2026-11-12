@@ -32,13 +32,7 @@ import {
 import { rowColumnLabelsHeight } from './rowLabelsBoxWidth.ts'
 import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
-import type {
-  RowAlias,
-  RowBand,
-  RowBanding,
-  RowParent,
-  UnlistedRowsSort,
-} from './arrangeRows.ts'
+import type { RowAlias, RowBand, RowBanding, RowParent } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { HierarchyNode } from './hierarchy.ts'
 import type { RowNarrowing } from './narrowRows.ts'
@@ -91,7 +85,7 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
     /**
      * #getter
      * The row order, `rows.sort`: the rows it names lead, in its order,
-     * and the rest follow as `unlistedRowsSort` says.
+     * and the rest follow in the order they arrived in.
      */
     get rowSort(): string[] {
       return getConf(self, ['rows', 'sort'])
@@ -236,14 +230,6 @@ export function treeSidebarRowHookDefaults<S extends RowSource>() {
      */
     get finerRows(): S[] {
       return []
-    },
-    /**
-     * #getter
-     * Overridable hook: where the rows `rowOrder` does not list go, in the
-     * order they arrived by default.
-     */
-    get unlistedRowsSort(): UnlistedRowsSort {
-      return 'source'
     },
     /**
      * #getter

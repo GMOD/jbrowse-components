@@ -40,7 +40,6 @@ function haplotypeParent(row: HaplotypeRow): RowParent | undefined {
 
 function phasedHooks(rows: HaplotypeRow[]): ArrangeRowsHooks<HaplotypeRow> {
   return {
-    unlistedRowsSort: 'source',
     rowAlias: rowAliasOver(rows, [], haplotypeParent),
     rowParent: haplotypeParent,
   }
@@ -52,7 +51,6 @@ function sampleHooks(
   ploidy = 2,
 ): ArrangeRowsHooks<HaplotypeRow> {
   return {
-    unlistedRowsSort: 'source',
     rowAlias: rowAliasOver(
       samples.map(sampleRow),
       samples.flatMap(sample => haplotypeRows(sample, ploidy)),
@@ -63,7 +61,6 @@ function sampleHooks(
 }
 
 const hooks: ArrangeRowsHooks<RowSource> = {
-  unlistedRowsSort: 'source',
   rowAlias: undefined,
   rowParent: () => undefined,
 }
@@ -252,26 +249,6 @@ describe('arrangeRows', () => {
     ])
     expect(out[0]).toBe(rows[2])
     expect(out[2]).toBe(rows[1])
-  })
-
-  test('sorted: unlisted rows sort, digits by magnitude, the empty row last', () => {
-    const values = ['s10', '', 'mom', 's2', 'dad'].map(name => ({ name }))
-    expect(
-      names(
-        arrangeRows(
-          values,
-          { ...none, domain: ['s10'] },
-          { ...hooks, unlistedRowsSort: 'sorted' },
-        ),
-      ),
-    ).toEqual(['s10', 'dad', 'mom', 's2', ''])
-  })
-
-  test('sorted: rows already in order are handed back', () => {
-    const values = ['dad', 'mom', 's2', 's10'].map(name => ({ name }))
-    expect(
-      arrangeRows(values, none, { ...hooks, unlistedRowsSort: 'sorted' }),
-    ).toBe(values)
   })
 
   test("a row's own label exactly, else its sample's composed with its haplotype", () => {

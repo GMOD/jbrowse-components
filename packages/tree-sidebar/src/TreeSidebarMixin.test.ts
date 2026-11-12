@@ -132,7 +132,6 @@ describe('the declared hooks', () => {
     expect(display.discoveredRows).toEqual([])
     expect(display.editableSources).toEqual([])
     expect(display.clusterableSources).toEqual([])
-    expect(display.unlistedRowsSort).toBe('source')
     expect(display.rowOrder).toEqual(['a'])
   })
 })
@@ -711,9 +710,6 @@ describe('a dialog submit after a region adds a row', () => {
       .views(self => ({
         get discoveredRows() {
           return self.names.map(name => ({ name }))
-        },
-        get unlistedRowsSort(): 'source' | 'sorted' {
-          return 'sorted'
         },
       }))
       .actions(self => ({

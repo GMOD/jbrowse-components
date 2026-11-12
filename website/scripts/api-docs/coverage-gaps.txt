@@ -1363,7 +1363,6 @@ packages/tree-sidebar/src/treeSidebarRowViews.ts sharesPanel
 packages/tree-sidebar/src/treeSidebarRowViews.ts sources
 packages/tree-sidebar/src/treeSidebarRowViews.ts svgControlsStrip
 packages/tree-sidebar/src/treeSidebarRowViews.ts treeRoot
-packages/tree-sidebar/src/treeSidebarRowViews.ts unlistedRowsSort
 plugins/gccontent/src/GCContentTrack/index.ts gcAdapter
 plugins/gccontent/src/GCContentTrack/index.ts op
 plugins/gccontent/src/GCContentTrack/index.ts setOp
