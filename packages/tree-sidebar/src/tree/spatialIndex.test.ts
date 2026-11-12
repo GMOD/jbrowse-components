@@ -1,5 +1,5 @@
-import { buildTree } from './clusterUtils.ts'
 import { clusterLayout } from './hierarchy.ts'
+import { buildTree } from './newick.ts'
 import { buildSpatialIndex, pickTreeNode } from './spatialIndex.ts'
 
 // 4 leaves, so rows sit at x = 12.5, 37.5, 62.5, 87.5 over a 100px row axis.

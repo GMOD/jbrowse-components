@@ -40,6 +40,7 @@ import {
   rowFilterText,
   unmatchedKeptNames,
   unreadRowFields,
+  keptRows,
 } from './rows/narrowRows.ts'
 import { IDENTITY_FIELDS, extraColumns } from './rows/sourcesGridUtils.ts'
 import {
@@ -54,12 +55,11 @@ import {
 import { svgSidebarWidth } from './sidebar/svgSidebarWidth.ts'
 import { treeSidebarRightEdge } from './sidebar/treeSidebarGeometry.ts'
 import {
-  buildTree,
   getLeafNames,
-  keptRows,
   matchBandClades,
-} from './tree/clusterUtils.ts'
-import { maxNodeHeight } from './tree/hierarchy.ts'
+  maxNodeHeight,
+} from './tree/hierarchy.ts'
+import { buildTree } from './tree/newick.ts'
 import { buildSpatialIndex } from './tree/spatialIndex.ts'
 
 import type { ClusterProvenance } from './clustering/clusterProvenance.ts'

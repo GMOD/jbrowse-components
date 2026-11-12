@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/util/fieldPredicate'
 
 import { rowFieldValue } from '../color/rowColorScale.ts'
-import { keptRows } from '../tree/clusterUtils.ts'
 
 import type { RowAlias } from './arrangeRows.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -104,4 +103,54 @@ export function listedNames(names: readonly string[]) {
   return names.length > LISTED_NAMES
     ? `${shown} and ${names.length - LISTED_NAMES} more`
     : shown
+}
+
+/**
+ * The row-side half of treeOfLeaves: the rows `kept` names, in the rows'
+ * order, so the dendrogram's leaves and the rows drawn beside it cannot
+ * disagree about who survived. Every row, the input array itself, while it
+ * names none, so callers can short-circuit on identity. A list naming no
+ * current row keeps none, and the display says so.
+ *
+ * - Keyed on `name`, never a per-plugin alias like `sampleName`: the list
+ *   holds tree *leaf* names, and phased variant clustering makes those
+ *   haplotype names ("HG001 HP1") rather than sample names.
+ * - Hide-only. Anything derived from a row's index in the full list (an index
+ *   palette color, a group color) is computed before this, or focusing a clade
+ *   silently recolors the rows it kept.
+ *
+ * With `rowAlias`, a name keeps every row answering to it, so a sample's name
+ * keeps its haplotypes; and a row that is its own alias (a sample not yet
+ * expanded) stands for the rows answering to it, so it is kept when any of
+ * them is named. One `kept` then narrows the samples a fetch asks for and the
+ * haplotype rows drawn alike.
+ */
+export function keptRows<T extends { name: string }>(
+  rows: T[],
+  kept: readonly string[] | undefined,
+  rowAlias?: RowAlias,
+): T[] {
+  if (!rowAlias || !kept?.length) {
+    const named = new Set(kept)
+    return named.size ? rows.filter(r => named.has(r.name)) : rows
+  }
+  const samples = new Set(
+    kept.flatMap(name => {
+      const sample = rowAlias(name)
+      return sample === undefined ? [] : [sample]
+    }),
+  )
+  const ofSamples = rows.filter(row =>
+    samples.has(rowAlias(row.name) ?? row.name),
+  )
+  const names = new Set(kept)
+  const exact = ofSamples.filter(row => {
+    const sample = rowAlias(row.name)
+    return (
+      sample === row.name ||
+      names.has(row.name) ||
+      (sample !== undefined && names.has(sample))
+    )
+  })
+  return exact.length ? exact : ofSamples
 }

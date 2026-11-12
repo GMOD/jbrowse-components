@@ -46,15 +46,13 @@ export {
   sortRowsAtColumn,
 } from './rows/rowSort.ts'
 export type { LoadedRegionSpan } from './rows/rowSort.ts'
+export { treeOfLeaves, buildTree } from './tree/newick.ts'
 export {
-  treeOfLeaves,
-  buildTree,
   clusteredCladeLayout,
-  getLeafNames,
-  keptRows,
   parseClusterOrder,
-  treeDescribesRows,
-} from './tree/clusterUtils.ts'
+} from './clustering/applyClusterRun.ts'
+export { getLeafNames, treeDescribesRows } from './tree/hierarchy.ts'
+export { keptRows } from './rows/narrowRows.ts'
 export { narrowRows } from './rows/narrowRows.ts'
 export type { RowNarrowing } from './rows/narrowRows.ts'
 export { ROW_COLOR_SCALE_ID } from './color/rowColorScale.ts'
@@ -68,7 +66,7 @@ export type { RowColorEdits, RowColorSnapshot } from './color/rowColorChoice.ts'
 export type { RowAlias, RowParent, RowParentOf } from './rows/arrangeRows.ts'
 export type { RowBand, RowBanding } from './rows/bandRows.ts'
 export { applyClusterRun } from './clustering/applyClusterRun.ts'
-export { renameNewickLeaves, writeNewick } from './tree/writeNewick.ts'
+export { renameNewickLeaves, writeNewick } from './tree/newick.ts'
 export type { ClusterRunModel } from './clustering/applyClusterRun.ts'
 export {
   generateClusterRScript,

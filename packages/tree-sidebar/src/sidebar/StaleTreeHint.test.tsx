@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react'
 
-import { buildTree } from '../tree/clusterUtils.ts'
+import { buildTree } from '../tree/newick.ts'
 import { StaleTreeHint } from './StaleTreeHint.tsx'
 
 import type { TreeSidebarModel } from '../types.ts'

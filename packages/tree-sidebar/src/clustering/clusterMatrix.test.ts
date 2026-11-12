@@ -1,7 +1,7 @@
 import { toNewick } from '@gmod/hclust'
 import { parseNewick } from '@gmod/newick'
 
-import { writeNewick } from '../tree/writeNewick.ts'
+import { writeNewick } from '../tree/newick.ts'
 import { clusterMatrix, imputeMissingToSiteMean } from './clusterMatrix.ts'
 import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
 

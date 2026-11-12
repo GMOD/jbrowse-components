@@ -88,7 +88,9 @@ input"), so tree and layout land together. A "wait for the other half" mechanism
 that outlives its asynchrony does not fail loudly, it never fires;
 `plugins/variants/src/LinearVariantDisplay/clusterTreeLands.test.ts` guards this.
 
-Helpers live in `packages/tree-sidebar/src/tree/clusterUtils.ts`.
+The tree helpers live in `packages/tree-sidebar/src/tree/` (`newick.ts` parses,
+rotates, prunes and writes; `hierarchy.ts` positions a tree against the rows),
+and the order a run or a paste lands in `clustering/applyClusterRun.ts`.
 
 ## Performance regimes
 

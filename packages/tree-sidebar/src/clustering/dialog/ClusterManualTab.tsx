@@ -17,11 +17,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  clusteredCladeLayout,
-  parseClusterOrder,
-} from '../../tree/clusterUtils.ts'
 import ClusterProgress from '../ClusterProgress.tsx'
+import { clusteredCladeLayout, parseClusterOrder } from '../applyClusterRun.ts'
 import { generateClusterRScript, matrixToTsv } from '../clusterRScript.ts'
 import ClusterAdvancedOptions from './ClusterAdvancedOptions.tsx'
 import { clusterRunRegions, resolveClusterRunArgs } from './clusterRunArgs.ts'

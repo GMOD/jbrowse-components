@@ -1,5 +1,5 @@
-import { keptRows } from '../tree/clusterUtils.ts'
 import { arrangeRows, rowAliasOver } from './arrangeRows.ts'
+import { keptRows } from './narrowRows.ts'
 
 import type { RowSource } from '../types.ts'
 import type { ArrangeRowsHooks, RowAlias, RowParent } from './arrangeRows.ts'

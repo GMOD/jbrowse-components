@@ -23,12 +23,8 @@ import {
 } from '../color/rowColorScale.ts'
 import { rowColumnLabelsHeight } from '../sidebar/rowLabelsBoxWidth.ts'
 import { SIDEBAR_HINT_LINE_PX } from '../sidebar/treeSidebarGeometry.ts'
-import {
-  buildTree,
-  computeClusterHierarchy,
-  getLeafNames,
-  treeOfLeaves,
-} from '../tree/clusterUtils.ts'
+import { computeClusterHierarchy, getLeafNames } from '../tree/hierarchy.ts'
+import { buildTree, treeOfLeaves } from '../tree/newick.ts'
 import { arrangeRows, rowAliasOver } from './arrangeRows.ts'
 import { bandRows } from './bandRows.ts'
 import { narrowRows, narrows } from './narrowRows.ts'

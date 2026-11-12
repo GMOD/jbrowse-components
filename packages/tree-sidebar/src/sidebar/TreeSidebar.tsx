@@ -10,7 +10,7 @@ import { Menu, MenuItem } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { focusRows } from '../rows/focusRows.ts'
-import { getLeafNames, subtreeCoversEveryRow } from '../tree/clusterUtils.ts'
+import { getLeafNames, subtreeCoversEveryRow } from '../tree/hierarchy.ts'
 import { pickTreeNode } from '../tree/spatialIndex.ts'
 import { RowFocusHint } from './RowFocusHint.tsx'
 import { StaleTreeHint } from './StaleTreeHint.tsx'

@@ -1,7 +1,7 @@
 import { clusterData, toNewick } from '@gmod/hclust'
 import { isAbortException } from '@jbrowse/core/util'
 
-import { renameNewickLeaves } from '../tree/writeNewick.ts'
+import { renameNewickLeaves } from '../tree/newick.ts'
 import { clusterProgressStatus } from './clusterProgressStatus.ts'
 import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
 

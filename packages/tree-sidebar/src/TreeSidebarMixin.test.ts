@@ -15,7 +15,7 @@ import {
   SIDEBAR_HINT_LINE_PX,
   TREE_RESIZE_HANDLE_WIDTH,
 } from './sidebar/treeSidebarGeometry.ts'
-import { getLeafNames } from './tree/clusterUtils.ts'
+import { getLeafNames } from './tree/hierarchy.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'

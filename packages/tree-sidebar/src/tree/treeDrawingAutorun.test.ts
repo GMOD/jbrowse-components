@@ -1,11 +1,11 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
-  buildTree,
   computeClusterHierarchy,
   getLeafNames,
-} from './clusterUtils.ts'
-import { clusterLayout } from './hierarchy.ts'
+  clusterLayout,
+} from './hierarchy.ts'
+import { buildTree } from './newick.ts'
 import { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
 
 import type { ClusterHierarchyNode, HoveredTreeNode } from '../types.ts'

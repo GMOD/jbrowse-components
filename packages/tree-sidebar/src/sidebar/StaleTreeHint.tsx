@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react'
 
-import { treeDescribesRows } from '../tree/clusterUtils.ts'
+import { treeDescribesRows } from '../tree/hierarchy.ts'
 import { SidebarHintChip } from './SidebarHintChip.tsx'
 
 import type { TreeSidebarModel } from '../types.ts'

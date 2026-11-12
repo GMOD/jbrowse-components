@@ -1,30 +1,32 @@
 import { bandRows } from '../rows/bandRows.ts'
 import {
-  buildTree,
-  computeClusterHierarchy,
-  getLeafNames,
-  matchBandClades,
-} from './clusterUtils.ts'
-import {
   TREE_LEFT_PAD,
   bandForestLayout,
+  computeClusterHierarchy,
   descendants,
   eachAfter,
+  getLeafNames,
   links,
+  matchBandClades,
   renderTreeSVG,
   treeLinks,
 } from './hierarchy.ts'
+import { buildTree } from './newick.ts'
 import { buildSpatialIndex } from './spatialIndex.ts'
 
 import type { RowBand } from '../rows/bandRows.ts'
-import type * as Hierarchy from './hierarchy.ts'
+import type * as Newick from '@gmod/newick'
 
-jest.mock('./hierarchy.ts', () => {
-  const actual = jest.requireActual<typeof Hierarchy>('./hierarchy.ts')
+jest.mock('@gmod/newick', () => {
+  const actual = jest.requireActual<typeof Newick>('@gmod/newick')
   return { ...actual, eachAfter: jest.fn(actual.eachAfter) }
 })
 
 const walks = jest.mocked(eachAfter)
+
+function walksOver(root: unknown) {
+  return walks.mock.calls.filter(([node]) => node === root).length
+}
 
 // Two bands, AFR and EUR, as `clusterMatrix` writes a run under them: each
 // band's tree under one root, joined at the taller band's height.
@@ -209,5 +211,5 @@ test('a band forest is laid out without walking once per band', () => {
   walks.mockClear()
   const laid = computeClusterHierarchy(tree, rows, 4_000, 100, true, bands)
   expect(laid!.children).toHaveLength(2_000)
-  expect(walks).toHaveBeenCalledTimes(1)
+  expect(walksOver(tree)).toBe(1)
 })

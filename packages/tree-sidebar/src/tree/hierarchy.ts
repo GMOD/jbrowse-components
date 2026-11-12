@@ -7,6 +7,7 @@ import {
 } from '@gmod/newick'
 import { alpha } from '@jbrowse/core/ui/palette'
 
+import type { RowBand } from '../rows/bandRows.ts'
 import type {
   HierarchyNode as CoreHierarchyNode,
   NewickNode,
@@ -349,4 +350,167 @@ export function renderTreeSVG<T>(hierarchy: PositionedHierarchyNode<T>) {
     parts.push(`M${x0},${y0}L${x1},${y1}`)
   })
   return parts.join('')
+}
+
+export function getLeafNames<T extends NewickNode>(
+  node: HierarchyNode<T>,
+): string[] {
+  return leaves(node)
+    .map(l => l.data.name)
+    .filter((n): n is string => n !== undefined)
+}
+
+// True when focusing this subtree would hide nothing: the node already contains
+// every row on screen. The root always does, and clicking it is a natural "show
+// me everything" gesture — which is exactly the click that must not go through,
+// because applying that filter leaves the rows where they are while making
+// "Show all rows" appear as though something had changed. On MAF it is
+// worse than cosmetic: `rowFocus` is a fetch argument and therefore an
+// `rpcProps()` cache key, so a full-set filter drops every loaded region and
+// re-downloads byte-identical rows.
+//
+// A count comparison rather than a set comparison, and that is sound only
+// because of `treeDescribesRows` below: the tree is positioned at all only when
+// its leaves are exactly the drawn rows, so a subtree holding as many leaves as
+// there are rows holds *those* rows. Written as its own function to say that
+// once — inline it reads like a cheap approximation of a set equality, and the
+// next reader "fixes" it into one.
+export function subtreeCoversEveryRow(
+  leafNames: readonly string[],
+  rowCount: number,
+) {
+  return leafNames.length === rowCount
+}
+
+// True when `root`'s leaves are exactly `rowNames`, in the same order — i.e.
+// the tree still describes the rows the display is drawing.
+//
+// `clusterLayout` spaces the tree's own leaves evenly across the row axis, so
+// leaf *i* lands on row *i* positionally and nothing reconciles leaf name to row
+// name at draw time. Any disagreement therefore draws the whole dendrogram
+// against rows it does not name.
+//
+// This is a *derived* check on purpose. `setRowOrder` drops a stale
+// `rows.tree` for the writes that go through it, but rows also move without
+// any order write at all: a discovered row set growing as regions load
+// (multi-row features, multi-wiggle), a phased expansion switching on when the
+// ploidy arrives (multi-sample variants). One check where the tree is
+// positioned covers all of them, and covers whatever the next one turns out to
+// be; bands ask it of each band's clade (`matchBandClades`).
+export function treeDescribesRows(
+  root: HierarchyNode<NewickNode>,
+  rows: readonly { name: string }[],
+): boolean {
+  const leafNodes = leaves(root)
+  return (
+    leafNodes.length === rows.length &&
+    leafNodes.every((leaf, i) => leaf.data.name === rows[i]!.name)
+  )
+}
+
+// Position the (filtered) cluster tree for drawing: leaves spaced over
+// `rowsContentHeight` px along the row axis, branches over `treeAreaWidth` along
+// the depth axis. Undefined when there's no tree, no rows to align it against,
+// or a tree that no longer describes those rows (see `treeDescribesRows`). Every
+// tree-sidebar consumer routes through this so the clusterLayout argument order,
+// the empty-state guard and the staleness gate can't drift between display
+// types.
+//
+// `rows` are the rows actually drawn — the display's `sources`, after every
+// reorder, filter and decoration it applies — never the pre-filter or pre-layout
+// list.
+//
+// **`rowsContentHeight` must be `rows.length × effectiveRowHeight`** — the rows'
+// full stacked extent, never the viewport they scroll inside. Leaf *i* lands at
+// `(i + 0.5) × rowsContentHeight / n`, while everything drawn beside the tree
+// puts row *i* at `i × effectiveRowHeight`: the hover highlight in
+// `treeDrawingAutorun`, `SvgRowLabels`, and each display's own painting. Pass the
+// viewport instead and the dendrogram still draws, still looks plausible, and
+// silently names the wrong rows — the same failure `treeDescribesRows` guards
+// against on the name axis, on the pixel axis instead. `TreeSidebarMixin`'s
+// `rowsContentHeight` is that product.
+//
+// With `bands`, each band draws the clade whose leaves are exactly its rows in
+// order, if the tree holds one, laid out on its own rows under a root that
+// draws nothing, so a band whose rows changed loses only its own dendrogram.
+export function computeClusterHierarchy(
+  root: HierarchyNode<NewickNode> | undefined,
+  rows: readonly { name: string }[] | undefined,
+  rowsContentHeight: number,
+  treeAreaWidth: number,
+  showBranchLength: boolean,
+  bands: readonly RowBand[] = [],
+) {
+  if (!root || !rows?.length) {
+    return undefined
+  }
+  if (bands.length) {
+    const clades = matchBandClades(root, rows, bands)
+    return bandForestLayout(
+      bands.flatMap(({ start }, i) => {
+        const clade = clades[i]
+        return clade ? [{ clade, start }] : []
+      }),
+      rowsContentHeight / rows.length,
+      treeAreaWidth,
+      showBranchLength,
+    )
+  }
+  return treeDescribesRows(root, rows)
+    ? clusterLayout(root, rowsContentHeight, treeAreaWidth, showBranchLength)
+    : undefined
+}
+
+const NO_BAND = -1
+
+/**
+ * Each band's clade: the node whose leaves are exactly the band's rows, in
+ * order, or undefined where the tree holds none. One post-order walk labels
+ * every node with the band its leaves share and how many there are, so the
+ * whole match is linear in the tree.
+ */
+export function matchBandClades<T extends NewickNode>(
+  root: HierarchyNode<T>,
+  rows: readonly { name: string }[],
+  bands: readonly RowBand[],
+): (HierarchyNode<T> | undefined)[] {
+  const bandOfRow = new Map<string, number>()
+  for (const [b, { start, end }] of bands.entries()) {
+    for (let i = start; i < end; i++) {
+      bandOfRow.set(rows[i]!.name, b)
+    }
+  }
+  const band = new Map<HierarchyNode<T>, number>()
+  const count = new Map<HierarchyNode<T>, number>()
+  const clades = bands.map((): HierarchyNode<T> | undefined => undefined)
+  eachAfter(root, (node: HierarchyNode<T>) => {
+    let b: number
+    let n: number
+    if (node.children?.length) {
+      b = band.get(node.children[0]!)!
+      n = 0
+      for (const child of node.children) {
+        n += count.get(child)!
+        if (band.get(child) !== b) {
+          b = NO_BAND
+        }
+      }
+    } else {
+      const { name } = node.data
+      b = (name === undefined ? undefined : bandOfRow.get(name)) ?? NO_BAND
+      n = 1
+    }
+    band.set(node, b)
+    count.set(node, n)
+    if (b >= 0 && n === bands[b]!.end - bands[b]!.start) {
+      clades[b] = node
+    }
+  })
+  return clades.map((clade, b) => {
+    const { start } = bands[b]!
+    return clade &&
+      leaves(clade).every((leaf, i) => leaf.data.name === rows[start + i]!.name)
+      ? clade
+      : undefined
+  })
 }

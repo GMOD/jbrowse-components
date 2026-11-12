@@ -3,8 +3,8 @@ import { parseNewick } from '@gmod/newick'
 import {
   newickLeafNames,
   rotateNewickByDomain,
-} from '../tree/rotateNewickByDomain.ts'
-import { writeNewick } from '../tree/writeNewick.ts'
+  writeNewick,
+} from '../tree/newick.ts'
 
 /**
  * Compose a clustering run's result with the config `domain`: the dendrogram is

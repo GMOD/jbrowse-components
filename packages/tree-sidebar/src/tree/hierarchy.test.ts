@@ -1,14 +1,21 @@
 import {
   clusterLayout,
+  computeClusterHierarchy,
   descendants,
   eachAfter,
+  getLeafNames,
   hasIncrementalBranchLengths,
   hierarchy,
   leaves,
   links,
   maxNodeHeight,
   renderTreeSVG,
+  subtreeCoversEveryRow,
+  treeDescribesRows,
 } from './hierarchy.ts'
+import { buildTree } from './newick.ts'
+
+import type { NewickNode } from '@gmod/newick'
 
 interface Node {
   name?: string
@@ -295,4 +302,140 @@ test('lays out a caterpillar dendrogram far deeper than the call stack', () => {
   const laid = clusterLayout(hierarchy(deep, childrenOf), 100, 100, true)
   expect(leaves(laid)).toHaveLength(50_000)
   expect(descendants(laid)).toHaveLength(99_999)
+})
+
+test('getLeafNames walks the subtree', () => {
+  const root = hierarchy<NewickNode>(
+    {
+      children: [{ name: 'A' }, { children: [{ name: 'B' }, { name: 'C' }] }],
+    },
+    d => d.children,
+  )
+  expect(getLeafNames(root).sort()).toEqual(['A', 'B', 'C'])
+})
+
+test('getLeafNames skips unnamed leaves', () => {
+  const root = hierarchy<NewickNode>(
+    { children: [{ name: 'A' }, {}, { name: 'B' }] },
+    d => d.children,
+  )
+  expect(getLeafNames(root).sort()).toEqual(['A', 'B'])
+})
+
+// The tree is positioned by spacing its own leaves evenly across the row axis
+// (leaf i lands on row i), so a tree that no longer names the rows on screen
+// draws the whole dendrogram against the wrong ones. `computeClusterHierarchy`
+// is where every display positions its tree, so it is where that is caught —
+// including for the ways rows move with no `setRowOrder` call to hook.
+// The root always contains every row, and clicking it is a natural "show me
+// everything" gesture — which is the click that must not apply a filter. It
+// would leave the rows where they are while making "Show all rows"
+// appear as though something had changed, and on MAF, where `subtreeFilter` is
+// an `rpcProps()` cache key, drop every loaded region to re-download identical
+// rows.
+describe('subtreeCoversEveryRow', () => {
+  it('is true for a node holding as many leaves as there are rows', () => {
+    expect(subtreeCoversEveryRow(['a', 'b', 'c'], 3)).toBe(true)
+  })
+
+  it('is false for a proper subtree, which is the case worth offering', () => {
+    expect(subtreeCoversEveryRow(['a', 'b'], 3)).toBe(false)
+  })
+
+  // A count comparison is sound only under `treeDescribesRows`, which is what
+  // positions the tree in the first place: its leaves ARE the drawn rows, so
+  // equal counts means the same set. Pinned together so the two do not drift.
+  it('agrees with the invariant it leans on', () => {
+    const rows = [{ name: 'a' }, { name: 'b' }]
+    const root = buildTree('(a:1,b:1):0;')
+    expect(treeDescribesRows(root, rows)).toBe(true)
+    expect(subtreeCoversEveryRow(getLeafNames(root), rows.length)).toBe(true)
+  })
+})
+
+describe('treeDescribesRows', () => {
+  const root = buildTree('((a,b),c);')
+
+  test('true when the leaves are the rows, in order', () => {
+    expect(
+      treeDescribesRows(root, [{ name: 'a' }, { name: 'b' }, { name: 'c' }]),
+    ).toBe(true)
+  })
+
+  test('false when the rows are reordered (same membership)', () => {
+    expect(
+      treeDescribesRows(root, [{ name: 'b' }, { name: 'a' }, { name: 'c' }]),
+    ).toBe(false)
+  })
+
+  test('false when a row is added', () => {
+    expect(
+      treeDescribesRows(root, [
+        { name: 'a' },
+        { name: 'b' },
+        { name: 'c' },
+        { name: 'd' },
+      ]),
+    ).toBe(false)
+  })
+
+  test('false when a row is dropped', () => {
+    expect(treeDescribesRows(root, [{ name: 'a' }, { name: 'b' }])).toBe(false)
+  })
+})
+
+describe('computeClusterHierarchy', () => {
+  const root = buildTree('((a,b),c);')
+  const rows = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
+
+  test('positions the tree when it describes the rows', () => {
+    const laid = computeClusterHierarchy(root, rows, 90, 80, false)
+    expect(leaves(laid!).map(l => l.data.name)).toEqual(['a', 'b', 'c'])
+  })
+
+  test('declines a tree whose leaves are not the rows on screen', () => {
+    // e.g. multi-row features' `rows.groups` regrouping `sources` downstream of
+    // `layout`, or a discovered row set growing as regions load
+    expect(
+      computeClusterHierarchy(
+        root,
+        [rows[2]!, rows[0]!, rows[1]!],
+        90,
+        80,
+        false,
+      ),
+    ).toBeUndefined()
+    expect(
+      computeClusterHierarchy(root, [...rows, { name: 'd' }], 90, 80, false),
+    ).toBeUndefined()
+  })
+
+  // The contract on the third argument, made executable: given the rows' full
+  // stacked extent, leaf *i* has to land on the center of row *i*, because that
+  // is where everything drawn beside the tree puts it (the hover highlight in
+  // `treeDrawingAutorun`, `SvgRowLabels`, each display's own painting) — all of
+  // them off `i × effectiveRowHeight`, none of them reconciling by name. A
+  // scrolling display's viewport height still produces a dendrogram, so
+  // nothing downstream would catch it.
+  test('lands leaf i on the center of row i', () => {
+    const rowHeight = 30
+    const laid = computeClusterHierarchy(
+      root,
+      rows,
+      rows.length * rowHeight,
+      80,
+      false,
+    )
+    expect(leaves(laid!).map(l => l.x)).toEqual([15, 45, 75])
+  })
+
+  test('undefined with no tree and with no rows', () => {
+    expect(
+      computeClusterHierarchy(undefined, rows, 90, 80, false),
+    ).toBeUndefined()
+    expect(computeClusterHierarchy(root, [], 90, 80, false)).toBeUndefined()
+    expect(
+      computeClusterHierarchy(root, undefined, 90, 80, false),
+    ).toBeUndefined()
+  })
 })

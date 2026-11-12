@@ -1,4 +1,4 @@
-import { parseClusterOrder } from '../tree/clusterUtils.ts'
+import { parseClusterOrder } from './applyClusterRun.ts'
 import { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
 
 test('generateClusterRScript builds an hclust script', () => {

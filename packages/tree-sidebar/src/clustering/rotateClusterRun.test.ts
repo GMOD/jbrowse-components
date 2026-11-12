@@ -1,7 +1,6 @@
 import { parseNewick } from '@gmod/newick'
 
-import { newickLeafNames } from '../tree/rotateNewickByDomain.ts'
-import { writeNewick } from '../tree/writeNewick.ts'
+import { newickLeafNames, writeNewick } from '../tree/newick.ts'
 import { rotateClusterRun } from './rotateClusterRun.ts'
 
 const rows = [{ name: 'A' }, { name: 'B' }, { name: 'C' }, { name: 'D' }]
