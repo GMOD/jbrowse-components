@@ -6,15 +6,15 @@
  * structured-cloned to the main thread. On a 153,677-read window that measured
  * 24.5ms to build and 8.6ms to clone, 33ms total against 2.1ms for the numeric
  * form: about what computing every drawn mismatch costs
- * (`benches/readIds.bench.ts`, `agent-docs/ideas/numeric-read-ids.md`). The
- * clone half is that large because structured clone is priced by object COUNT —
- * 153,677 strings against one transferable.
+ * (`plugins/alignments/benches/readIds.bench.ts`). The clone half is that
+ * large because structured clone is priced by object COUNT — 153,677 strings
+ * against one transferable.
  *
  * So the result carries `readKeys` instead, and the string is built per lookup
  * rather than per read. Almost nothing wants the string: identity is used as a
  * map key, a dedupe key and a sort tiebreak, all of which a number serves. It
  * escapes as a string only where the id leaves this plugin's arrays —
- * `featureIdUnderMouse` (MST state, saved and restored), the feature-details
+ * `featureIdUnderMouse` (a volatile on the display model), the feature-details
  * fetch, and the tooltip — and each of those is one read at a time, because a
  * hover or a click produces exactly one.
  *

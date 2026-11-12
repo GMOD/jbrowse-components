@@ -504,8 +504,9 @@ fills, aligned to `features`:
 `@jbrowse/plugin-wiggle/tables` (`wiggleTables`) does the same for a quantitative
 track. It takes the `LinearWiggleDisplay`'s config and a `bpPerPx`, which picks the
 BigWig zoom level that answers. It runs the display's worker
-(`executeRenderMultiWiggleData`), its autoscale (`computeAutoscaleDomain`,
-`widenRangeToRules`, `getNiceDomain`) and its layer encoder
+(`executeRenderMultiWiggleData`), reads the score domain off the display's
+static host (`createWiggleStaticHost`), whose `domain` is the display's
+autoscale (`wiggleAutoscaleRange`, `getNiceDomain`), and runs its layer encoder
 (`buildSourceRenderData`):
 
 - `bins`: each source's scores as the worker ships them, with the bin's min and max

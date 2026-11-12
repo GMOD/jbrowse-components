@@ -8,9 +8,9 @@ kind: spec
 
 MST stays on the main thread; renderers work on plain objects. A display builds
 its config payload in `rpcProps()` ([DISPLAY_PIPELINE.md](DISPLAY_PIPELINE.md#rpcprops--gpuprops-pattern)). Canvas sends
-`pickDisplayConfig(fullConfSnapshot(self.configuration))`, a pick off a
-`Record<keyof DisplayConfig, true>` the compiler proves complete, never a
-subtraction. Every other display enumerates its `rpcProps()` fields by hand.
+`workerDisplayConfig(fullConfSnapshot(self.configuration), …)`, whose
+`pickDisplayConfig` reads each member `SettingsDisplayConfig` names off its own
+path, defaulted, never a subtraction. Every other display enumerates its `rpcProps()` fields by hand.
 **A value that swings with zoom is not an `rpcProps` field.** It goes in
 `zoomFetchArgs()`, so a threshold crossing refetches without a settings
 invalidation.

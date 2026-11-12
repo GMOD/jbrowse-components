@@ -73,9 +73,9 @@ function AlignmentsSvgBody({
       )
     : []
 
-  // The sashimi count labels and the linked-read bezier arcs are vector SVG on
-  // screen too, and each shares its geometry with the overlay so the two can't
-  // drift.
+  // The arcs and connectors paint into the canvas with the reads; the sashimi
+  // count labels are vector SVG on screen too, and share their geometry with
+  // the overlay so the two can't drift.
   return (
     <>
       <PaintLayer

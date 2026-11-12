@@ -1007,7 +1007,7 @@ export default function stateModelFactory(
            * #getter
            * Chain name → the ids of the READS in it; empty outside chain mode.
            * The key is a chain's own identity and the values are read ids,
-           * which consumers resolve through `readIdToIndex` / `readIdIndexMap`
+           * which consumers resolve through `readIdIndexMap`
            * (hence `hoverChainReadIds`, `selectedChainReadIds`).
            */
           get readIdsByChainName(): ReadonlyMap<string, string[]> {
@@ -2645,7 +2645,7 @@ export default function stateModelFactory(
            * and at what keeps the section as tall as its label chip: below
            * that the section's bottom edge, where its drag handle sits, stops.
            * It caps the group's rows (`maxRowsFor`) and pads the band where the
-           * rows fall short (`minPileupHeight`), so the band follows a drag in
+           * rows fall short (`computeStackedSections`), so the band follows a drag in
            * both directions, past its content too.
            */
           setGroupHeight(key: string, height: number) {

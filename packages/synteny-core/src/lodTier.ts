@@ -133,7 +133,7 @@ export function resolveLodTier({
 
 /**
  * {@link resolveLodTier} over a display's own track threshold and fetched tier
- * info — the spelling the three tiered displays share, so which `bpPerPx` and
+ * info — the spelling the tiered displays share, so which `bpPerPx` and
  * `lodMode` each feeds it stays the only per-display decision.
  */
 export function lodTierAt(

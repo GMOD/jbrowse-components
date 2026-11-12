@@ -375,8 +375,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   // What one hit hovers to, minus the coverage band every branch shares. A
-  // function returning the state rather than five `setHoverState` calls: the
-  // fields are the same five in every branch, so a branch could differ from its
+  // function returning the state rather than a `setHoverState` call per branch:
+  // every branch sets the same fields, so a branch could differ from its
   // neighbours by forgetting one rather than by deciding anything — which is
   // exactly what happened to `hoverCoverageBand`, left stale by the one branch
   // that did not mention it (the note on `setHoverState` records it).
@@ -486,8 +486,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         }
       }
       case 'none':
-        // The same five fields `clearMouseoverState` writes, which is what a
-        // miss has always meant here.
+        // The state `clearMouseoverState` writes, which is what a miss has
+        // always meant here.
         return {
           overCigarItem: false,
           featureIdUnderMouse: undefined,

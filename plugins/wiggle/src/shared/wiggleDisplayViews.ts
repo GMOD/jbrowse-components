@@ -1,6 +1,5 @@
 import { makeWiggleRenderState } from './wiggleComponentUtils.ts'
 
-import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type { WiggleRenderStateModel } from './wiggleComponentUtils.ts'
 
 /**
@@ -26,20 +25,16 @@ export interface WigglePlotGeometry {
 export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   canvasWidthPx: number
   plotGeometry: WigglePlotGeometry
-  /** The `color` object resolved against the origin and the layout. */
-  wiggleColor: ResolvedWiggleColor
-  /** The heading of the score key: the color's legend title, else the axis title. */
-  colorKeyTitle: string
 }
 
 /**
- * The views a wiggle-family display states once `plotGeometry` names where its
- * plot sits. Installed as a `.views()` layer of its own.
+ * The render state a wiggle-family display states once `plotGeometry` names
+ * where its plot sits. Installed as a `.views()` layer of its own.
  *
  * A plain function rather than another mixin: `types.compose` depth is a real
  * ceiling in these chains (ADR-041), and a mixin composed beside
- * `TrackHeightMixin` and `MultiRegionDisplayMixin` cannot see the `height` and
- * `canvasWidthPx` every getter here reads without casting to reach them.
+ * `TrackHeightMixin` and `MultiRegionDisplayMixin` cannot see the
+ * `plotGeometry` and `canvasWidthPx` it reads without casting to reach them.
  */
 export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
   return {

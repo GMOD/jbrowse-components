@@ -491,7 +491,7 @@ export interface FitViewportInput {
   // The row caps the per-group height overrides impose (drag / "show all"); a
   // lane with one opts out of the shared fit budget entirely. Caps rather than
   // the px they came from, because px that round to the same row count lay out
-  // identically — `groupRowCapSignature` is what lets the model notice.
+  // identically — the model's `groupRowCaps` keeps its identity across them.
   overrideCaps: ReadonlyMap<string, RowCap>
 }
 

@@ -117,9 +117,10 @@ whole of what the layers and both backends read (ADR-144).
   pair a subtrack with no color paints, so `resolveWiggleColor`'s `categorical`
   arm paints the misconfiguration grey only to cover the shared encoding union.
 
-**What reads the geometry is `wiggleDisplayViews`**: `scoreColorScale` and
-`renderState`, as a plain function the display installs as one `.views()` layer.
-Not a mixin — composed beside `TrackHeightMixin` it could not see `height` or
+**What reads the geometry is `wiggleDisplayViews`**: `renderState`, off
+`plotGeometry` and `canvasWidthPx`, as a plain function the display installs as
+one `.views()` layer; `scoreColorScale` is in `wiggleKeyViews.ts`. Not a mixin —
+composed beside `TrackHeightMixin` it could not see `plotGeometry` or
 `canvasWidthPx` without casting to reach them, and `types.compose` depth is a
 real ceiling (ADR-041). The display's other wiggle members (`resolution`,
 `origin`, `renderingType`, `autoscaleRange`, the setters) are views and actions
