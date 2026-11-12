@@ -827,10 +827,12 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     /**
      * #getter
      * The note on the records' Names and Descriptions checkboxes while the
-     * band's fit ladder is not honouring them.
+     * band's fit ladder is not honouring them. Over rows both ride the one
+     * label line, so the line's note is the descriptions' too.
      */
     get recordsLabelFitHints() {
-      return band.labelFitHints
+      const hints = band.labelFitHints
+      return self.recordsOnly ? hints : { ...hints, descriptions: hints.names }
     },
     /**
      * #getter

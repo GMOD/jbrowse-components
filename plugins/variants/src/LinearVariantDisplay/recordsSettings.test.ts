@@ -269,6 +269,24 @@ describe('the record menus', () => {
         'Show descriptions — hidden to fit',
       ])
     })
+
+    test('over hidden rows the dropped label line hides both', () => {
+      const pile: BandRecord[] = Array.from({ length: 40 }, (_, i) => [
+        `p${i}`,
+        100,
+        1500 + i,
+        '<DEL>',
+        'DEL',
+      ])
+      const { display } = recordsDisplayAt(pile, 1, {}, true, {
+        genotypes: { show: false },
+      })
+      expect(display.recordsOnly).toBe(false)
+      expect(showItems(display)).toEqual([
+        'Show names — hidden to fit',
+        'Show descriptions — hidden to fit',
+      ])
+    })
   })
 
   test('records.facet hides from the sample Group by over rows', () => {
