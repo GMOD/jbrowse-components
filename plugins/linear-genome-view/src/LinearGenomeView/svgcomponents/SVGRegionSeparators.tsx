@@ -1,9 +1,11 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
+import { seamWidthPx } from '../util.ts'
+
 import type { LgvSvgChromeView } from './util.ts'
 
 // SVG counterpart of the on-screen PaddingBlocks region separators: an opaque
-// 3px bar at the right edge of every displayed region, in the same per-mode grey
+// bar at the right edge of every displayed region, in the same per-mode grey
 // (a translucent fill would tint the track data it masks rather than hide it).
 // Keyed off isRightEndOfDisplayedRegion like PaddingBlocks, so the bar at the
 // last region's right edge isn't dropped.
@@ -26,18 +28,18 @@ export default function SVGRegionSeparators({
   const fill = usePalette().regionSeparator
   return (
     <>
-      {dynamicBlocks.contentBlocks
-        .filter(block => block.isRightEndOfDisplayedRegion)
-        .map(block => (
+      {dynamicBlocks.blocks.map((block, i, blocks) =>
+        block.type === 'ContentBlock' && block.isRightEndOfDisplayedRegion ? (
           <rect
             key={block.key}
             x={block.offsetPx + block.widthPx - offsetPx - 1}
-            width={3}
+            width={seamWidthPx(block, blocks[i + 1])}
             y={0}
             height={height}
             fill={fill}
           />
-        ))}
+        ) : null,
+      )}
     </>
   )
 }

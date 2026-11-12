@@ -6,6 +6,7 @@ import {
   measureText,
   parseBpString,
   parseLocString,
+  toLocale,
 } from '@jbrowse/core/util'
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
@@ -976,12 +977,16 @@ export function getScalebarLabels({
   const refNameLabelPx = runRefNameLabelPx(runs, orientation)
   for (const [i, run] of runs.entries()) {
     const runLeft = run.offsetPx - firstBlockOffset
+    const startLabel = regionStartLabel(run)
+    const reservedPx = startLabel
+      ? startLabel.x + tickLabelWidth(startLabel.label) / 2
+      : refNameLabelPx[i]!
     const runLabels = []
     for (const { base, x } of makeBlockTicks(run, bpPerPx, false)) {
       const label = getTickDisplayStr(base + 1, bpPerPx)
       const w = tickLabelWidth(label)
       if (
-        x - w / 2 >= refNameLabelPx[i]! &&
+        x - w / 2 >= reservedPx &&
         labelFitsInBlock(x - w / 2, w, run.widthPx)
       ) {
         runLabels.push({
@@ -991,11 +996,53 @@ export function getScalebarLabels({
         })
       }
     }
-    if (tickLabelsWorthDrawing(runLabels.length)) {
+    if (startLabel) {
+      labels.push({
+        x: runLeft + startLabel.x,
+        label: startLabel.label,
+        key: `${run.offsetPx}-start`,
+      })
+    }
+    if (tickLabelsWorthDrawing(runLabels.length + (startLabel ? 1 : 0))) {
       labels.push(...runLabels)
     }
   }
   return labels
+}
+
+const REGION_START_LABEL_INSET_PX = 4
+
+// A region following another of the same refName gets no refName label, so its
+// first coordinate names it instead. `x` is the label's centre.
+function regionStartLabel(run: BlockRun) {
+  const label = toLocale(run.reversed ? run.end : run.start + 1)
+  const w = tickLabelWidth(label)
+  return run.isLeftEndOfDisplayedRegion &&
+    !run.labeled &&
+    labelFitsInBlock(REGION_START_LABEL_INSET_PX, w, run.widthPx)
+    ? { label, x: REGION_START_LABEL_INSET_PX + w / 2 }
+    : undefined
+}
+
+const SEAM_PX = 3
+const NARROW_REGION_SEAM_PX = 1
+const NARROW_REGION_PX = 18
+
+function isNarrowRegion(block: BaseBlock | undefined) {
+  return (
+    block?.type === 'ContentBlock' &&
+    !!block.isLeftEndOfDisplayedRegion &&
+    !!block.isRightEndOfDisplayedRegion &&
+    block.widthPx < NARROW_REGION_PX
+  )
+}
+
+// A full bar covers most of a region a few pixels wide, so a narrow region on
+// either side of the seam takes a hairline.
+export function seamWidthPx(block: BaseBlock, next: BaseBlock | undefined) {
+  return isNarrowRegion(block) || isNarrowRegion(next)
+    ? NARROW_REGION_SEAM_PX
+    : SEAM_PX
 }
 
 /**
@@ -1006,14 +1053,14 @@ export function getScalebarLabels({
  */
 export function getPaddingSpans(blocks: BaseBlock[], firstBlockOffset: number) {
   const spans: PaddingSpan[] = []
-  for (const block of blocks) {
+  for (const [i, block] of blocks.entries()) {
     const x = block.offsetPx - firstBlockOffset
     if (block.type === 'ContentBlock') {
       if (block.isRightEndOfDisplayedRegion) {
         spans.push({
           key: `${block.key}-sep`,
           x: x + block.widthPx - 1,
-          width: 3,
+          width: seamWidthPx(block, blocks[i + 1]),
           kind: 'seam',
         })
       }

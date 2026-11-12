@@ -350,6 +350,91 @@ describe('the scalebar geometry off the static blocks', () => {
     ])
   })
 
+  const region = (
+    index: number,
+    start: number,
+    offsetPx: number,
+    widthPx: number,
+    extra: Partial<ContentBlock> = {},
+  ) =>
+    chunk(`r${index}`, start, offsetPx, widthPx, {
+      displayedRegionIndex: index,
+      isLeftEndOfDisplayedRegion: true,
+      isRightEndOfDisplayedRegion: true,
+      ...extra,
+    })
+
+  test('a seam beside a region a few pixels wide is a hairline', () => {
+    const seams = getPaddingSpans(
+      [
+        region(0, 0, 0, 400),
+        region(1, 5000, 400, 5),
+        region(2, 9000, 405, 400),
+        region(3, 20000, 805, 400),
+      ],
+      0,
+    )
+    expect(seams.map(s => [s.x, s.width])).toEqual([
+      [399, 1],
+      [404, 1],
+      [804, 3],
+      [1204, 3],
+    ])
+  })
+
+  test('a region after another of its refName is named by its first base', () => {
+    const labels = getScalebarLabels({
+      blocks: [region(0, 0, 0, 100), region(1, 5000, 100, 100)],
+      firstBlockOffset: 0,
+      bpPerPx: 1,
+      orientation: 'forward',
+    })
+    expect(labels.map(l => l.label)).toEqual(['5,001'])
+    const w = tickLabelWidth('5,001')
+    expect(labels[0]!.x).toBe(100 + 4 + w / 2)
+  })
+
+  test('a reversed region is named by the base at its left edge', () => {
+    const labels = getScalebarLabels({
+      blocks: [
+        region(0, 9000, 0, 100, { reversed: true }),
+        region(1, 5000, 100, 100, { reversed: true }),
+      ],
+      firstBlockOffset: 0,
+      bpPerPx: 1,
+      orientation: 'reversed',
+    })
+    expect(labels.map(l => l.label)).toEqual(['5,100'])
+  })
+
+  test('a region too narrow for its first base goes unnumbered', () => {
+    expect(
+      getScalebarLabels({
+        blocks: [region(0, 0, 0, 100), region(1, 5000, 100, 20)],
+        firstBlockOffset: 0,
+        bpPerPx: 1,
+        orientation: 'forward',
+      }),
+    ).toEqual([])
+  })
+
+  test('a tick number draws beside a first base, clear of it', () => {
+    const labels = getScalebarLabels({
+      blocks: [region(0, 0, 0, 100), region(1, 4990, 100, 260)],
+      firstBlockOffset: 0,
+      bpPerPx: 1,
+      orientation: 'forward',
+    })
+    const [first, ...ticks] = labels
+    expect(first!.label).toBe('4,991')
+    expect(ticks.length).toBeGreaterThan(0)
+    for (const t of ticks) {
+      expect(t.x - tickLabelWidth(t.label) / 2).toBeGreaterThanOrEqual(
+        first!.x + tickLabelWidth(first!.label) / 2,
+      )
+    }
+  })
+
   test('a view with nothing to mask returns one shared array', () => {
     const first = getPaddingSpans([chunk('a', 0, 0, 800)], 0)
     expect(first).toEqual([])
