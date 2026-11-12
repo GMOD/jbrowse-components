@@ -589,7 +589,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           opts: ExportSvgDisplayOptions,
         ): Promise<React.ReactNode> {
           const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self as LinearHicDisplayModel, opts)
+          return renderSvg(self, opts)
         },
       }
     })

@@ -10,13 +10,42 @@ import { bandScreenTop } from './components/sectionScreen.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { sashimiLabels } from './renderers/sashimiMarks.ts'
 
-import type { LinearAlignmentsDisplayModel } from './model.ts'
-import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ColorPalette } from '../shaders/colors.ts'
+import type { VisibleLabel } from './components/computeVisibleLabels.ts'
+import type { ScrollModel } from './components/sectionScreen.ts'
+import type { AlignmentLane } from './lanes.ts'
+import type {
+  DisplayRenderState,
+  SectionSource,
+} from './renderers/rendererTypes.ts'
+import type { Section } from './sectionLayout.ts'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
+import type {
+  LgvSvgBodyProps,
+  LgvSvgExportable,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type React from 'react'
 
+interface AlignmentsSvgModel extends LgvSvgExportable {
+  renderSections: readonly Pick<
+    AlignmentLane & Section,
+    'groupKey' | 'label' | 'coverageTop' | 'height'
+  >[]
+  scrollModel: ScrollModel
+  themedIn: (palette: JBrowsePalette) => {
+    colors: ColorPalette
+    sourceSections: SectionSource[]
+  }
+  renderState: DisplayRenderState
+  visibleLabels: VisibleLabel[]
+  showSashimiLabels: boolean
+  showsGroupLabels: boolean
+  groupChipLabel: (label: string) => string
+}
+
 export async function renderSvg(
-  model: LinearAlignmentsDisplayModel,
+  model: AlignmentsSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   // renderDisplaySvg's awaitSvgReady waits for ALL visible regions, not just the
@@ -36,7 +65,7 @@ function AlignmentsSvgBody({
   renderBlocks,
   overlays,
   opts,
-}: LgvSvgBodyProps<LinearAlignmentsDisplayModel>) {
+}: LgvSvgBodyProps<AlignmentsSvgModel>) {
   const palette = usePalette()
   const { renderSections } = model
   // anchors the left-edge scale bars / group labels to the content; non-zero

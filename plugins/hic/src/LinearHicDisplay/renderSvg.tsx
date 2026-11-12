@@ -4,15 +4,26 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { HIC_MARKS } from './components/hicMarks.ts'
 
-import type { LinearHicDisplayModel } from './model.ts'
-import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type {
+  HicRenderState,
+  HicUploadData,
+} from './components/hicRenderingBackendTypes.ts'
+import type {
+  LgvSvgBodyProps,
+  LgvSvgExportable,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
+interface HicSvgModel extends LgvSvgExportable {
+  matrixRegions: ReadonlyMap<number, HicUploadData>
+  renderState: HicRenderState
+}
+
 export async function renderSvg(
-  self: LinearHicDisplayModel,
+  model: HicSvgModel,
   opts?: ExportSvgDisplayOptions,
 ) {
-  return renderDisplaySvg(self, opts, HicSvgBody)
+  return renderDisplaySvg(model, opts, HicSvgBody)
 }
 
 function HicSvgBody({
@@ -20,7 +31,7 @@ function HicSvgBody({
   height,
   canvasWidth,
   opts,
-}: LgvSvgBodyProps<LinearHicDisplayModel>) {
+}: LgvSvgBodyProps<HicSvgModel>) {
   return (
     <TriangleMatrixSvgLayer
       marks={HIC_MARKS}

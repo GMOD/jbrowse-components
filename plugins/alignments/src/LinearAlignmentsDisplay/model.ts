@@ -3049,7 +3049,7 @@ export default function stateModelFactory(
          */
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self as LinearAlignmentsDisplayModel, opts)
+          return renderSvg(self, opts)
         },
 
         /**

@@ -25,12 +25,46 @@ import {
 import { SvgMafBandLabels } from './components/MafBandLabels.tsx'
 import { cullMafRows, encodeMafRows } from './encodeMafRows.ts'
 
-import type { LinearMafDisplayModel } from './stateModel.ts'
-import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type {
+  MafGPURenderState,
+  MafRegionData,
+} from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafRowOverlays } from '../LinearMafRenderer/rendering/rowOverlays.ts'
+import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
+import type { MafRowsEncodeProps, MafRowsSource } from './encodeMafRows.ts'
+import type { MafTopBands } from './mafTopBands.ts'
+import type { CoverageBandState } from '@jbrowse/alignments-core'
+import type {
+  LgvSvgBodyProps,
+  LgvSvgExportable,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
+import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
+
+interface MafSvgModel extends LgvSvgExportable {
+  topBands: Pick<MafTopBands, 'rects'>
+  rowsTopOffset: number
+  rowsHeight: number
+  renderState: MafGPURenderState
+  rowsEncodePropsIn: (colorPalette: MafColorPalette) => MafRowsEncodeProps
+  rowsSources: ReadonlyMap<number, MafRowsSource>
+  detailOnScreen: ReadonlyMap<number, MafRegionData>
+  coverageBandState: CoverageBandState
+
+  // read by paintMafRowOverlays
+  visibleEmptyLines: MafRowOverlays['emptyLines']
+  visibleFrames: MafRowOverlays['frames']
+  visibleDeletions: MafRowOverlays['deletions']
+  visibleLabels: MafRowOverlays['labels']
+  visibleCodonGlyphs: MafRowOverlays['codonGlyphs']
+  visibleInversions: MafRowOverlays['inversions']
+
+  svgSidebar: SvgSidebarProps
+  bandLabels: { text: string; top: number }[]
+}
 
 export async function renderSvg(
-  model: LinearMafDisplayModel,
+  model: MafSvgModel,
   opts: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   return renderDisplaySvg(model, opts, MafSvgBody)
@@ -42,7 +76,7 @@ function MafSvgBody({
   renderBlocks,
   overlays,
   opts,
-}: LgvSvgBodyProps<LinearMafDisplayModel>) {
+}: LgvSvgBodyProps<MafSvgModel>) {
   const palette = usePalette()
   const { rowsHeight, topBands, rowsTopOffset } = model
   const { coverage, conservation } = topBands.rects

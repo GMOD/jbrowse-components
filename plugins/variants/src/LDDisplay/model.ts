@@ -483,7 +483,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
           opts: ExportSvgDisplayOptions,
         ): Promise<React.ReactNode> {
           const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self as LDDisplayModel, opts)
+          return renderSvg(self, opts)
         },
       }
     })

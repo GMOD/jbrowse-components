@@ -7,15 +7,32 @@ import { LD_CONNECTOR_STROKE_PX } from '../shared/constants.ts'
 import { ConnectorLabels } from './components/VariantLabels.tsx'
 import { LD_MARKS } from './components/ldMarks.ts'
 
-import type { LDDisplayModel } from './model.ts'
-import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
+import type {
+  LDRenderState,
+  LDUploadData,
+} from './components/ldRenderingBackendTypes.ts'
+import type {
+  LgvSvgBodyProps,
+  LgvSvgExportable,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
+interface LdSvgModel extends LgvSvgExportable {
+  paintedCells: ReadonlyMap<number, LDUploadData>
+  renderState: LDRenderState
+  matrixTop: number
+  atGenomicPositions: boolean
+  connectorLineCoords: ConnectorCoord[]
+  connectorsHeight: number
+  drawsLabels: boolean
+}
+
 export async function renderSvg(
-  self: LDDisplayModel,
+  model: LdSvgModel,
   opts?: ExportSvgDisplayOptions,
 ) {
-  return renderDisplaySvg(self, opts, LdSvgBody)
+  return renderDisplaySvg(model, opts, LdSvgBody)
 }
 
 // `LDColumnZone`'s two forms, read once: the connector field in index mode,
@@ -26,7 +43,7 @@ function LdSvgBody({
   canvasWidth,
   overlays,
   opts,
-}: LgvSvgBodyProps<LDDisplayModel>) {
+}: LgvSvgBodyProps<LdSvgModel>) {
   const { connectorLineCoords: coords, connectorsHeight, drawsLabels } = model
   return (
     <>
