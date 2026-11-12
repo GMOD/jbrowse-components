@@ -138,7 +138,6 @@
 1 no-unsafe-argument packages/synteny-core/src/applySyntenyTrackSelections.ts
 2 no-unsafe-assignment packages/synteny-core/src/liftSyntenyViewSettings.ts
 1 no-unsafe-return packages/synteny-core/src/liftSyntenyViewSettings.ts
-2 no-unsafe-return packages/synteny-core/src/regionsInAssemblyNamespace.ts
 1 no-unsafe-argument packages/synteny-core/src/remapSelectionsToPairs.ts
 1 no-unsafe-assignment packages/synteny-core/src/remapSelectionsToPairs.ts
 1 no-unsafe-return packages/synteny-core/src/remapSelectionsToPairs.ts

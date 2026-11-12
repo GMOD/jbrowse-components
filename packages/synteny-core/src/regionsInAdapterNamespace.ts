@@ -6,7 +6,13 @@ import {
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode, IType } from '@jbrowse/mobx-state-tree'
+
+function isRegionNode<T>(
+  region: T,
+): region is T & IStateTreeNode<IType<unknown, T, unknown>> {
+  return isStateTreeNode(region)
+}
 
 /**
  * Regions respelled into the namespace a comparative adapter compares against:
@@ -40,9 +46,7 @@ export function regionsInAdapterNamespace<T extends { assemblyName: string }>(
     return spelled === region.assemblyName
       ? region
       : {
-          ...(isStateTreeNode(region)
-            ? getSnapshot(region as IStateTreeNode)
-            : region),
+          ...(isRegionNode(region) ? getSnapshot(region) : region),
           assemblyName: spelled,
         }
   })
