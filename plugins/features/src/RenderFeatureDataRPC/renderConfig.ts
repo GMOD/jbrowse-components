@@ -1,5 +1,5 @@
 import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configuration'
-import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
+import { IDENTITY_SCALE, identityFieldOf } from '@jbrowse/core/util/colorScale'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 
 import {
@@ -55,16 +55,6 @@ interface WrittenColor {
   value?: ColorSetting['value']
   field?: string
   scale?: { type?: string }
-}
-
-/**
- * The field whose CSS colors paint each feature: an identity scale's written
- * `field` while no `value` paints over it, as on the mark display.
- */
-export function identityFieldOf({ value, field, scale }: WrittenColor) {
-  return scale?.type === IDENTITY_SCALE && value === undefined && field
-    ? field
-    : undefined
 }
 
 /**

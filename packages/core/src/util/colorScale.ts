@@ -24,11 +24,27 @@ export function isRampScale(scale: unknown): scale is RampScaleName {
 export const COLOR_SCALES = ['ordinal', ...RAMP_SCALES, 'threshold'] as const
 
 /**
- * The scale that maps no field: each feature paints the color it carries, and
- * the key names the colors `domain` lists. Only a display whose features
- * carry colors of their own declares it.
+ * The scale that paints each value as itself: each feature paints the CSS
+ * color its `field` holds, else the color its file gives it, and the key names
+ * the colors `domain` lists. Only a display whose features carry colors of
+ * their own declares it.
  */
 export const IDENTITY_SCALE = 'identity'
+
+/**
+ * The field whose CSS colors paint each feature: an identity scale's written
+ * `field` while no `value` paints over it, on every display that declares the
+ * scale.
+ */
+export function identityFieldOf({
+  value,
+  field,
+  scale,
+}: Pick<ColorSlots, 'value' | 'field'> & { scale?: { type?: string } }) {
+  return scale?.type === IDENTITY_SCALE && value === undefined && field
+    ? field
+    : undefined
+}
 
 export type ColorScaleName =
   | (typeof COLOR_SCALES)[number]

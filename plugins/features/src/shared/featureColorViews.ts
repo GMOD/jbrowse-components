@@ -2,7 +2,7 @@ import {
   STRAND_FIELD,
   dealKeyColors,
 } from '@jbrowse/core/util/categoricalField'
-import { withPreset } from '@jbrowse/core/util/colorScale'
+import { identityFieldOf, withPreset } from '@jbrowse/core/util/colorScale'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 import { solidColorOf } from '@jbrowse/display-kit/ColorWritesMixin'
@@ -24,10 +24,7 @@ import {
 } from '@jbrowse/display-kit/valueRamp'
 
 import { createFieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
-import {
-  identityFieldOf,
-  workerColorOf,
-} from '../RenderFeatureDataRPC/renderConfig.ts'
+import { workerColorOf } from '../RenderFeatureDataRPC/renderConfig.ts'
 
 import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
