@@ -29,8 +29,9 @@ function boxEdgeShiftPx(boxPx: number) {
 // roundings: the drawn box is `snapBoxHeightPx(box)` and each row top is
 // floored, so this is the pitch at which the lower top clears the upper
 // snapped bottom by MIN_ISOFORM_GAP_PX at every row offset. Both heights,
-// because `featureHeight` is a per-feature callback and the taller of the two
-// is wrong in both directions.
+// because each stacked child is as tall as its own glyph lays it out — a
+// transcript whose CDS carries cleavage products takes a row per product — and
+// the taller of the two is wrong in both directions.
 function requiredPitchPx(upperBoxPx: number, lowerBoxPx: number) {
   return (
     snapBoxHeightPx(upperBoxPx) +

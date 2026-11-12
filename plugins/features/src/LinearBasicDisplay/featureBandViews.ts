@@ -597,8 +597,9 @@ export function featureBandViews(self: FeatureBandHost) {
     /**
      * #getter
      * The shortest box the layout draws on screen, read off the layout rather
-     * than the `featureHeight` slot, a per-feature jexl callback that throws
-     * with no feature in scope.
+     * than `mark.height`, which some boxes draw short of: a UTR or a repeat's
+     * internal body at `INSET_HEIGHT_FRACTION` of its row, a cleavage product
+     * padded inside its row.
      */
     get fitSmallestBoxPx() {
       return minDrawnBoxHeight(
