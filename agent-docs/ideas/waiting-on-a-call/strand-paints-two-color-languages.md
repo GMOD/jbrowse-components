@@ -32,5 +32,3 @@ only, so they read as one statement.
 - before/after captures of a feature track over a pileup, a synteny ribbon
   colored by strand, and the multi-row display;
 - the legend swatches follow, since both read the same constants.
-
-Related: `ready/multi-row-color-by-strand-takes-fixed-colors.md`.

@@ -1,5 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 import { DEFAULT_MARK_COLOR, colorAt } from '@jbrowse/core/util/markEncoding'
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
@@ -246,6 +247,31 @@ test('One row per offers None, Type and Attribute..., Type ticked by default, an
   model.colorByField('clinSign')
   expect(model.colorByMode).toBe('attribute')
   expect(model.colorByAttribute).toBe('clinSign')
+})
+
+test('Color by Strand paints forward and reverse in the strand preset colors', () => {
+  const model = display({})
+  model.setRowsField('')
+  const strand = subMenu(multiRowMenuItems(model), 'Color by').find(
+    i => 'label' in i && i.label === 'Strand',
+  )
+  if (strand && 'onClick' in strand) {
+    strand.onClick()
+  }
+  expect(model.colorByMode).toBe('strand')
+  loaded(
+    model,
+    features([
+      { start: 0, end: 100, strand: 1 },
+      { start: 200, end: 300, strand: -1 },
+    ]),
+  )
+  const [layer] = [...model.rpcDataMap.values()][0]!.layers
+  const { domain, range } = UNIVERSAL_FIELD_PRESETS.strand.scale
+  const presetColor = (key: '1' | '-1') =>
+    cssColorToABGR(range[domain.indexOf(key)]!)
+  expect(colorAt(layer!, 0)).toBe(presetColor('1'))
+  expect(colorAt(layer!, 1)).toBe(presetColor('-1'))
 })
 
 test('the pickers scan the features in view under the display byte budget', async () => {
