@@ -102,6 +102,10 @@ export const SECONDARY_ALT_COLOR = '#e41a1c'
 // skip the colord cache lookup.
 export const BLACK_ABGR = 0xff000000
 
+// The fields the display writes on a haplotype row, which no samples table
+// column may supply.
+export const HAPLOTYPE_ROW_FIELDS = ['sampleName', 'HP', 'sole'] as const
+
 // Sample-metadata keys that are internal row plumbing (identity, haplotype
 // index, rendering color/label) rather than user-facing grouping attributes.
 // Shared by the "Color by→Samples" attribute list (which offers everything a
@@ -109,9 +113,7 @@ export const BLACK_ABGR = 0xff000000
 // metadata rows *except* these), so the two can't drift apart.
 export const INTERNAL_SOURCE_KEYS = new Set([
   'name',
-  'sampleName',
-  'HP',
-  'sole',
+  ...HAPLOTYPE_ROW_FIELDS,
   'baseUri',
   'color',
   'label',

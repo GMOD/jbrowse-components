@@ -66,6 +66,7 @@ import {
 import { cellHueField } from '../shared/cellHue.ts'
 import {
   HIDDEN_ROW,
+  HAPLOTYPE_ROW_FIELDS,
   INTERNAL_SOURCE_KEYS,
   VARIANT_DISPLAY,
   VARIANT_FEATURE_WIDGET,
@@ -1086,7 +1087,7 @@ export function stateModelFactory(
          * which the arrangement dialog lists as no column.
          */
         get internalRowFields(): readonly string[] {
-          return ['sampleName', 'HP', 'sole']
+          return HAPLOTYPE_ROW_FIELDS
         },
         /**
          * #getter

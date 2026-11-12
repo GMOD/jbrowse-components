@@ -163,6 +163,21 @@ test('a matching samplesTsv still yields the metadata columns', async () => {
   expect((await adapter.getSourcesAndWarnings()).warnings).toEqual([])
 })
 
+// A `sampleName` column read as the row's own field sent the worker names the
+// VCF lacks, and every row drew blank.
+test("a samplesTsv column the display's rows already use is dropped and named", async () => {
+  const { sources, warnings } = await adapterWithSamplesTsv(
+    './test_data/samples_reserved.tsv',
+  ).getSourcesAndWarnings()
+
+  expect(sources).toEqual([
+    { name: 'sample_data/raw/volvox/volvox-sorted.bam', population: 'GBR' },
+  ])
+  expect(warnings).toEqual([
+    expect.stringContaining('"sampleName", "HP" columns are ignored'),
+  ])
+})
+
 test('a record spanning two exported regions is exported once', async () => {
   const adapter = new Adapter(
     configSchema.create({

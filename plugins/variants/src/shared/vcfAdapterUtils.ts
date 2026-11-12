@@ -3,6 +3,7 @@ import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
 import VcfFeature from '../VcfFeature/index.ts'
+import { HAPLOTYPE_ROW_FIELDS } from './constants.ts'
 
 import type { TabixIndexedFile } from '@gmod/tabix'
 import type VcfParser from '@gmod/vcf'
@@ -123,11 +124,12 @@ export async function appendVcfLines(
  * The sources of one VCF, or of several whose headers list different samples
  * (a chrY file holds only the males): the first header's samples in its order,
  * then each name a later header adds, merged with the samples table when the
- * adapter has one. `getSources` is the base-class contract and drops the
+ * adapter has one, less any column naming a field the display writes on its
+ * haplotype rows. `getSources` is the base-class contract and drops the
  * warnings, `MultiSampleVariantGetSources` takes this one so the display can
  * report them.
  */
-export function vcfSourcesAndWarnings({
+export async function vcfSourcesAndWarnings({
   parsers,
   samplesTsvLocation,
   pluginManager,
@@ -138,13 +140,30 @@ export function vcfSourcesAndWarnings({
   pluginManager: PluginManager | undefined
   opts?: BaseOptions
 }) {
-  return getSamplesTsvSources({
+  const { sources, warnings } = await getSamplesTsvSources({
     location: samplesTsvLocation,
     names: [...new Set(parsers.flatMap(parser => parser.samples))],
     namesLabel: 'the VCF',
     pluginManager,
     opts,
   })
+  const reserved = HAPLOTYPE_ROW_FIELDS.filter(field =>
+    sources.some(source => Object.hasOwn(source, field)),
+  )
+  return reserved.length
+    ? {
+        sources: sources.map(source => ({
+          ...Object.fromEntries(
+            Object.entries(source).filter(([key]) => !reserved.includes(key)),
+          ),
+          name: source.name,
+        })),
+        warnings: [
+          ...warnings,
+          `The samples metadata file's ${reserved.map(f => `"${f}"`).join(', ')} ${reserved.length > 1 ? 'columns are' : 'column is'} ignored, since the variant display names its own rows' fields so: rename it, or put a display name in a "label" column`,
+        ],
+      }
+    : { sources, warnings }
 }
 
 /**
