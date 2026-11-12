@@ -296,8 +296,8 @@ function featureFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
   })
 }
 
-// Reads the choices back off `self`: variants overrides `colorBySubMenuItems`
-// and relies on this wrapper picking it up.
+// Reads the choices back off `self`, so a model overriding
+// `colorBySubMenuItems` changes this menu too.
 export function colorMenuItems(self: {
   colorBySubMenuItems: () => MenuItem[]
 }): MenuItem[] {

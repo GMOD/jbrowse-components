@@ -78,8 +78,14 @@ files and 25 test files — and `FlatbushItem` is exported from
 either end, so this wants a session of its own.
 
 **A cheaper first move, if that is too wide:** keep the object shape in memory
-and make only the WIRE format SoA — pack in `executeRenderFeatureData`, rehydrate
-in `setRpcData`. Rehydration costs about what the spread costs (~30ms at 60k), so
+and make only the WIRE format SoA — pack in `RenderFeatureData.execute`, declare
+the packed shape as the registry entry's `wire:` (in place of its
+`transferables:`; `RpcRegistry.ts` reads `wire:` first) and rehydrate in the
+method's `deserializeReturn`, as `MultiWayGetFeatures` does. Not in
+`executeRenderFeatureData`: `shared/featureStaticHost.ts` calls it in-process for
+the tables export, where there is no hop to save. Not in the display's
+`setRpcData` either: that action stages a region for tests, and no fetch lands
+through it. Rehydration costs about what the spread costs (~30ms at 60k), so
 365ms becomes ~60ms with no consumer touched at all. It is a shim by the
 "delete rather than shim" rule, but it buys 6x for two files.
 

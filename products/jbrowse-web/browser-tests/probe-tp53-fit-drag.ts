@@ -60,8 +60,8 @@ function readState(names: string[]) {
     maxIsoforms: d?.fitStage?.maxIsoforms,
     fitLevel: d?.fitStage?.level,
     named: names.filter(n => labels.includes(n)).length,
-    descriptions: d?.renderedShowDescriptions,
-    subfeatureLabels: d?.renderedShowSubfeatureLabels,
+    descriptions: d?.renderedLabels?.showDescriptions,
+    subfeatureLabels: d?.renderedLabels?.showSubfeatureLabels,
     badges: labels.filter(t => t.endsWith('more')).length,
   }
 }
