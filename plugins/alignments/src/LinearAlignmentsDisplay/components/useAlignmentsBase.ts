@@ -375,12 +375,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     hover.queue([e.nativeEvent.offsetX, e.nativeEvent.offsetY])
   }
 
-  // What one hit hovers to, minus the coverage band every branch shares. A
-  // function returning the state rather than a `setHoverState` call per branch:
-  // every branch sets the same fields, so a branch could differ from its
-  // neighbours by forgetting one rather than by deciding anything — which is
-  // exactly what happened to `hoverCoverageBand`, left stale by the one branch
-  // that did not mention it (the note on `AlignmentsHover` records it).
+  // What one hit hovers to, minus the coverage band every branch shares. One
+  // function returning the whole state rather than a `setHoverState` call per
+  // branch, so a branch differs from its neighbours only by what it decides,
+  // never by a field it forgot.
   type HoverState = Omit<AlignmentsHover, 'hoverCoverageBand'>
 
   function hoverStateForResult(result: MarkHitResult): HoverState {
@@ -484,8 +482,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         }
       }
       case 'none':
-        // Every field empty, as `clearMouseoverState` leaves them, which is
-        // what a miss has always meant here.
+        // Every field empty, as `clearMouseoverState` leaves them.
         return {
           overCigarItem: false,
           featureIdUnderMouse: undefined,

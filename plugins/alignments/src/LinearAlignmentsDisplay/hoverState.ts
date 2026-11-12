@@ -16,8 +16,6 @@ export interface AlignmentsHover {
   featureIdUnderMouse: string | undefined
   mouseoverExtraInformation: TooltipPayload | undefined
   hoverCoverageBand?: HoverCoverageBand
-  // Optional and ALWAYS assigned, like `hoverCoverageBand`: a branch with no
-  // arc clears the highlight by not mentioning one.
   hoveredArcHighlight?: ArcHighlight
   hoveredJunction?: HoveredJunction
   hoveredConnectorReadIds?: string[]
