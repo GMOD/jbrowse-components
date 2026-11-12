@@ -1,5 +1,4 @@
 import { fullConfSnapshot } from '@jbrowse/core/configuration'
-import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   fitTargetHeightViews,
   heightModeViews,
@@ -20,9 +19,9 @@ import { featureColorScaleViews } from '../LinearBasicDisplay/derivedColorKey.ts
 import { featureBandViews } from '../LinearBasicDisplay/featureBandViews.ts'
 import { layoutRegionKey } from '../LinearBasicDisplay/layoutInputs.ts'
 import { featureIdsTouchingBlocks } from '../LinearBasicDisplay/layoutQueries.ts'
+import { workerDisplayConfig } from '../LinearBasicDisplay/workerDisplayConfig.ts'
 import { executeRenderFeatureData } from '../RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { createPeptideCache } from '../RenderFeatureDataRPC/peptides/peptideCache.ts'
-import { pickDisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { featureColorViews } from './featureColorViews.ts'
 
@@ -181,16 +180,9 @@ export async function fetchFeatureRegions(
 ) {
   const { config, displayConfig, geneGlyphMode, bpPerPx } = runInAction(() => {
     const config = fullConfSnapshot(host.configuration)
-    const { facet } = host
     return {
       config,
-      displayConfig: {
-        ...pickDisplayConfig(config),
-        subfeatureLabels: host.effectiveSubfeatureLabels,
-        ...(facet === undefined || facet.field === STRAND_FIELD
-          ? {}
-          : { facetField: facet.field }),
-      },
+      displayConfig: workerDisplayConfig(config, host),
       geneGlyphMode: host.effectiveGeneGlyphMode,
       bpPerPx: host.host.bpPerPx,
     }

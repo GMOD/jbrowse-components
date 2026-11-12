@@ -17,7 +17,6 @@ import {
   pluralize,
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
-import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   unreadFieldNotice,
   unreadInEveryRegion,
@@ -120,6 +119,7 @@ import {
   showSubmenuCheckboxItems,
   showSubmenuLegendItems,
 } from './trackMenus.ts'
+import { workerDisplayConfig } from './workerDisplayConfig.ts'
 import {
   installYMorphAutorun,
   yMorphActions,
@@ -494,15 +494,10 @@ export default function baseStateModelFactory(
       // Every field read here is an RPC cache key: the settings autorun
       // clears data when any of them changes.
       rpcProps() {
-        // Picked rather than filtered: the snapshot carries every slot the
-        // schema and its bases declare, and the subtractive spelling made
-        // every slot nobody excluded a silent refetch trigger. The gate
-        // budgets are not cache keys; as one, `maxFeatureDensity` made
-        // zooming across the 20 kb floor a full clear and refetch, and a
-        // raised budget already reaches the verdict through the tracked
-        // `regionTooLarge`.
-        const snapshot = fullConfSnapshot(self.configuration)
-        const workerConfig = pickDisplayConfig(snapshot)
+        const workerConfig = workerDisplayConfig(
+          fullConfSnapshot(self.configuration),
+          self,
+        )
         return {
           displayConfig: {
             ...workerConfig,
@@ -512,12 +507,6 @@ export default function baseStateModelFactory(
               ...workerConfig.color,
               field: workerConfig.color.field || self.parkedColor?.field || '',
             },
-            subfeatureLabels: self.effectiveSubfeatureLabels,
-            // A facet other than strand needs a stamp per feature, so only
-            // it joins the cache key: a strand facet never refetches.
-            ...(self.facet === undefined || self.facet.field === STRAND_FIELD
-              ? {}
-              : { facetField: self.facet.field }),
           },
           colorByFrame: self.colorByFrame,
           // Undefined while collecting, so building the set neither
