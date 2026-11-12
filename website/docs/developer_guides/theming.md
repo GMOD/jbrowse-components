@@ -73,6 +73,7 @@ theme; anything you don't set keeps its preset value.
 | `featureSelected` | `string` | Border accent around the click-selected feature |
 | `featureDescription` | `string` | Feature description labels, e.g. gene descriptions |
 | `featureConnector` | `string` | Intron lines, strand chevrons and strand arrows in feature tracks |
+| `variantCall` | `string` | A variant call's junction line in the breakpoint split view |
 | `accent` | `string` | The primary color where it marks something on the page's own ground, such as a checked box or a selected row. `primary.main` in light mode, and the secondary text color in dark mode, where a midnight primary vanishes |
 | `tertiary` | `PaletteColor` | Accordion headers and some toolbar chrome |
 | `quaternary` | `PaletteColor` | Secondary floating-action-button background |
