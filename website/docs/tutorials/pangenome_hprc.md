@@ -1,10 +1,8 @@
 ---
-title:
-  "Pangenome (HPRC) part 1: the graph's alleles and the haplotypes that have
+title: "Pangenome (HPRC) part 1: the graph's alleles and the haplotypes that have
   them"
 sidebar_label: Pangenome (HPRC pt 1, graph alleles)
-description:
-  Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of
+description: Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of
   the linear view, trace an allele to the assembly it came from, list every
   haplotype with it from the release's phased VCF, and read the same alleles as
   aligned bases in the release's multiple alignment
