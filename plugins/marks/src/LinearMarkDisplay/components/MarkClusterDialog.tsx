@@ -1,8 +1,4 @@
-import {
-  ClusterDialog,
-  MIN_CLUSTER_ROWS,
-  clusteredCladeLayout,
-} from '@jbrowse/tree-sidebar'
+import { ClusterDialog, MIN_CLUSTER_ROWS } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import {
@@ -41,16 +37,6 @@ const MarkClusterDialog = observer(function MarkClusterDialog({
           ...handles,
         })
       }
-      applyOrder={(order, matrixRowNames) => {
-        model.setRowOrder(
-          clusteredCladeLayout({
-            rows: clusterableSources,
-            editableSources: model.editableSources,
-            order,
-            matrixRowNames,
-          }),
-        )
-      }}
     />
   )
 })

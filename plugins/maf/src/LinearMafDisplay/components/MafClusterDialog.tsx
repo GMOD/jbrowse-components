@@ -1,4 +1,4 @@
-import { ClusterDialog, clusteredCladeLayout } from '@jbrowse/tree-sidebar'
+import { ClusterDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { runMafClustering } from '../runMafClustering.ts'
@@ -43,16 +43,6 @@ const MafClusterDialog = observer(function MafClusterDialog({
           ...args,
         })
       }
-      applyOrder={(order, matrixRowNames) => {
-        model.setRowOrder(
-          clusteredCladeLayout({
-            rows: model.clusterableSources,
-            editableSources: model.editableSources,
-            order,
-            matrixRowNames,
-          }),
-        )
-      }}
     />
   )
 })

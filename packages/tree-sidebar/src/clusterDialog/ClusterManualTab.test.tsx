@@ -31,6 +31,14 @@ const View = types
     },
   }))
 
+const rowsAB = [{ name: 'a' }, { name: 'b' }]
+
+const Display = types.model('Display', {}).volatile(() => ({
+  clusterableSources: rowsAB,
+  editableSources: rowsAB,
+  setRowOrder: jest.fn<undefined, [{ name: string }[]]>(),
+}))
+
 // The root stands in for the session: `resolveClusterRunArgs` reaches the RPC
 // host through `isSessionServices`, which duck-types on `rpcManager` and
 // `configuration`, and the session id through the `rpcSessionId` walk.
@@ -41,7 +49,7 @@ const Root = types
         'ViewWithDisplay',
         View,
         types.model({
-          display: types.optional(types.model('Display', {}), {}),
+          display: types.optional(Display, {}),
         }),
       ),
       {},
@@ -54,13 +62,13 @@ const Root = types
   }))
 
 function setup(
-  fetchMatrix: ClusterDialogProps['fetchMatrix'],
-  applyOrder: ClusterDialogProps['applyOrder'] = () => {},
+  fetchMatrix: ClusterDialogProps<{ name: string }>['fetchMatrix'],
 ) {
   const root = Root.create({})
-  return render(
+  const display = root.view.display
+  const rendered = render(
     <ClusterManualTab
-      model={root.view.display}
+      model={display}
       handleClose={() => {}}
       title="Cluster"
       canRun
@@ -69,11 +77,11 @@ function setup(
       tsvFilename="genotypes.tsv"
       matrixKey={['genotypeMatrix']}
       fetchMatrix={fetchMatrix}
-      applyOrder={applyOrder}
     >
       {null}
     </ClusterManualTab>,
   )
+  return { ...rendered, display }
 }
 
 // The manual tab does the SAME work as the auto tab — fetch the region, build
@@ -141,17 +149,11 @@ describe('ClusterManualTab forwards the fetch handles it is given', () => {
 // was built over has to travel with them: the rows on screen move while the user
 // is in R (a region finishes loading, a filter changes), and a count check
 // cannot see one row swapped for another.
-test('applyOrder is told which rows the matrix was built over', async () => {
-  const applyOrder = jest.fn()
-  const { getByLabelText, getByRole, getByText } = setup(
-    () =>
-      Promise.resolve<ClusterMatrix>(
-        new Map([
-          ['a', [1]],
-          ['b', [2]],
-        ]),
-      ),
-    applyOrder,
+async function pasteOrder(matrixRows: string[], paste: string) {
+  const { display, getByLabelText, getByRole, getByText } = setup(() =>
+    Promise.resolve<ClusterMatrix>(
+      new Map(matrixRows.map(name => [name, [1]])),
+    ),
   )
   await waitFor(() => {
     expect(
@@ -159,9 +161,25 @@ test('applyOrder is told which rows the matrix was built over', async () => {
         .disabled,
     ).toBe(false)
   })
-
-  await userEvent.type(getByLabelText(/Paste result/), '2\n1')
+  await userEvent.type(getByLabelText(/Paste result/), paste)
   await userEvent.click(getByText('Apply clustering'))
+  return { display, getByText }
+}
 
-  expect(applyOrder).toHaveBeenCalledWith([1, 0], ['a', 'b'])
+test('a pasted order lands on the rows the matrix was built over', async () => {
+  const { display } = await pasteOrder(['a', 'b'], '2\n1')
+  expect(display.setRowOrder).toHaveBeenCalledWith([
+    { name: 'b' },
+    { name: 'a' },
+  ])
+})
+
+test('a pasted order over rows that have since moved is rejected', async () => {
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const { display, getByText } = await pasteOrder(['a', 'c'], '2\n1')
+  expect(display.setRowOrder).not.toHaveBeenCalled()
+  expect(
+    getByText(/the rows changed since the matrix was generated/),
+  ).toBeTruthy()
+  reported.mockRestore()
 })

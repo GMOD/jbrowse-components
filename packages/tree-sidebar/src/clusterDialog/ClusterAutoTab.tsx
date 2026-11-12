@@ -10,14 +10,16 @@ import type { ClusterDialogProps } from './types.ts'
 
 // "Run clustering": the in-app hclust path. Everything here is the lifecycle
 // `useClusterRun` owns; the display contributes only `run` and `canRun`.
-const ClusterAutoTab = observer(function ClusterAutoTab({
+const ClusterAutoTab = observer(function ClusterAutoTab<
+  S extends { name: string },
+>({
   model,
   handleClose,
   canRun,
   run: runClustering,
   advancedOptions,
   children,
-}: ClusterDialogProps & { children: React.ReactNode }) {
+}: ClusterDialogProps<S> & { children: React.ReactNode }) {
   const { status, loading, error, run, stop } = useClusterRun({
     model,
     onSuccess: () => {

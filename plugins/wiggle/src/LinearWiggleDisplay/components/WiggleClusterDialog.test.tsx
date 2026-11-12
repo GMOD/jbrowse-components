@@ -88,7 +88,7 @@ test('the manual tab offers no downloads until the matrix arrives', async () => 
 })
 
 // A short or duplicated hand-pasted order would silently drop or double rows, so
-// applyOrder validates and the dialog stays open on the message — beside the
+// the dialog validates it and stays open on the message — beside the
 // paste box, not in a session snackbar somewhere else on screen while the dialog
 // covering it is the thing the user has to edit.
 test('a bad pasted order keeps the manual tab open and says why', async () => {

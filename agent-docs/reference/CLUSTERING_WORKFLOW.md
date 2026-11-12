@@ -59,8 +59,9 @@ values are diploid-scale dosage with `NaN` for a no-call
 (`genotypeMatrixEncoding.ts` says why). hclust rejects non-finite input, so the
 in-app path runs `imputeMissingToSiteMean` first; the R/TSV export writes `NA`
 and the R script imputes it the same way. Phased mode gives one row per
-haplotype. The dialog commits through one `applyOrder(order, matrixRowNames)`
-callback, so phased and unphased paths commit identically.
+haplotype. The dialog commits a pasted order over `clusterableSources`, checked
+against the exported matrix's row names, so phased and unphased paths commit
+identically.
 
 ## Staleness has one imperative half and one derived half
 

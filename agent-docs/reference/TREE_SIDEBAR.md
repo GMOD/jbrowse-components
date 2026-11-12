@@ -22,8 +22,10 @@ run clears the flag, the mixin answers `awaitingDependentData`, so the loading
 scrim, a capture and an SVG export all wait for the rows it orders. A failed run
 reports through `notifyError`, which jb2export treats as fatal.
 
-`run` and `applyOrder` should **throw** rather than drop a row silently, so both
-land in the dialog's error state. `validateClusterOrder` guards the R-paste path.
+`run` should **throw** rather than drop a row silently, so it lands in the
+dialog's error state. The dialog applies a pasted R order itself, through
+`clusteredCladeLayout` and the display's `setRowOrder`; `validateClusterOrder`
+rejects one that misses a row or names rows the matrix did not hold.
 
 `src/hierarchy.ts` wraps `@gmod/newick`'s hierarchy helpers for the tree
 canvas and SVG.
@@ -81,7 +83,7 @@ order there in the same action as the tree.
   called from `applyClusterRun`, which every display's run goes through.
   Rotating an arranged tree on the way out would turn a restored session's
   dendrogram away from the order saved beside it and draw nothing at all.
-- The R-paste `applyOrder` path carries no tree and rotates nothing: a paste is
+- The R-paste path carries no tree and rotates nothing: a paste is
   an explicit order.
 
 **A reorder rotates a supplied tree and drops a computed one.**

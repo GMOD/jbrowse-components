@@ -1,8 +1,4 @@
-import {
-  ClusterDialog,
-  MIN_CLUSTER_ROWS,
-  clusteredCladeLayout,
-} from '@jbrowse/tree-sidebar'
+import { ClusterDialog, MIN_CLUSTER_ROWS } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { runWiggleClustering } from '../runWiggleClustering.ts'
@@ -60,16 +56,6 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
           ...handles,
         })
       }
-      applyOrder={(order, matrixRowNames) => {
-        model.setRowOrder(
-          clusteredCladeLayout({
-            rows: model.clusterableSources,
-            editableSources: model.editableSources,
-            order,
-            matrixRowNames,
-          }),
-        )
-      }}
       advancedOptions={
         <SamplesPerPixelField
           value={samplesPerPixel}

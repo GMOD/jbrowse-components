@@ -19,7 +19,7 @@ import { observer } from 'mobx-react'
 
 import ClusterProgress from '../ClusterProgress.tsx'
 import { generateClusterRScript, matrixToTsv } from '../clusterRScript.ts'
-import { parseClusterOrder } from '../clusterUtils.ts'
+import { clusteredCladeLayout, parseClusterOrder } from '../clusterUtils.ts'
 import ClusterAdvancedOptions from './ClusterAdvancedOptions.tsx'
 import { clusterRunRegions, resolveClusterRunArgs } from './clusterRunArgs.ts'
 
@@ -41,18 +41,19 @@ async function download(text: string, filename: string) {
 }
 
 // "Download R script": export the matrix, run hclust in R, paste the leaf order
-// back. The display contributes the matrix fetch and how an order is applied.
-const ClusterManualTab = observer(function ClusterManualTab({
+// back. The display contributes the matrix fetch.
+const ClusterManualTab = observer(function ClusterManualTab<
+  S extends { name: string },
+>({
   model,
   handleClose,
   matrixLabel,
   tsvFilename,
   matrixKey,
   fetchMatrix,
-  applyOrder,
   advancedOptions,
   children,
-}: ClusterDialogProps & { children: React.ReactNode }) {
+}: ClusterDialogProps<S> & { children: React.ReactNode }) {
   const [paste, setPaste] = useState('')
   const [clusterMethod, setClusterMethod] = useState('average')
   // A rejected paste reports beside the box it came from, the way the auto tab
@@ -112,15 +113,18 @@ const ClusterManualTab = observer(function ClusterManualTab({
       onSubmit={() => {
         try {
           setPasteError(undefined)
-          // parseClusterOrder yields 1-based R indices; applyOrder takes
-          // 0-based, and validates that the order covers every row and that
-          // they are still the rows the matrix held, before anything is
-          // applied. A paste from a script taken in some earlier session has
-          // no export of its own, and falls back to the matrix in hand — which
-          // it also has to describe.
-          applyOrder(
-            parseClusterOrder(paste).map(idx => idx - 1),
-            exportedRowNames ?? matrixRowNames,
+          // parseClusterOrder yields 1-based R indices. The order is checked
+          // to cover every row, and those to still be the rows the matrix
+          // held, before anything is applied. A paste from a script taken in
+          // some earlier session has no export of its own, and falls back to
+          // the matrix in hand — which it also has to describe.
+          model.setRowOrder(
+            clusteredCladeLayout({
+              rows: model.clusterableSources,
+              editableSources: model.editableSources,
+              order: parseClusterOrder(paste).map(idx => idx - 1),
+              matrixRowNames: exportedRowNames ?? matrixRowNames,
+            }),
           )
           handleClose()
         } catch (e) {

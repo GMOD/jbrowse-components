@@ -13,12 +13,12 @@ import type { ClusterDialogProps } from './types.ts'
 /**
  * The "Cluster rows by ..." dialog for every clusterable display. Two tabs (run
  * it in-app, or export an R script and paste the order back) over one
- * `ClusterDialogProps` describing what this display's matrix is and how to apply
- * an order to it. Each plugin used to carry its own copy of all three files.
+ * `ClusterDialogProps` describing what this display's matrix is. Either tab
+ * lands its order through the display's `setRowOrder`.
  */
-const ClusterDialog = observer(function ClusterDialog(
-  props: ClusterDialogProps,
-) {
+const ClusterDialog = observer(function ClusterDialog<
+  S extends { name: string },
+>(props: ClusterDialogProps<S>) {
   const { title, description, maxWidth, handleClose } = props
   const [activeMode, setActiveMode] = useState('auto')
   // One element, handed to whichever tab is up: the mode radios are the thing
