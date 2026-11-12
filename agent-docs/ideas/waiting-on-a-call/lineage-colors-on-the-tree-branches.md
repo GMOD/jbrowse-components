@@ -6,9 +6,9 @@ description: Color a dendrogram's branches by a row attribute where every tip be
 # Lineage colors on the tree branches
 
 The tree sidebar strokes every branch in one color (`treeStroke` in
-`packages/tree-sidebar/src/hierarchy.ts`), as one path on screen
-(`packages/tree-sidebar/src/treeDrawingAutorun.ts`) and in the export
-(`packages/tree-sidebar/src/SvgTreePath.tsx`). A row attribute shows only beside the labels: the row
+`packages/tree-sidebar/src/tree/hierarchy.ts`), as one path on screen
+(`packages/tree-sidebar/src/tree/treeDrawingAutorun.ts`) and in the export
+(`packages/tree-sidebar/src/sidebar/SvgTreePath.tsx`). A row attribute shows only beside the labels: the row
 color's bar and the `rows.annotations` columns
 ([ADR-260](../../architecture-decision-records/adr-260-row-annotations-are-color-columns-beside-the-row-labels.md)).
 

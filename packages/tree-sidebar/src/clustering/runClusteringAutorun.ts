@@ -1,0 +1,154 @@
+import {
+  getNotificationSink,
+  getSession,
+  locStringsToRegions,
+} from '@jbrowse/core/util'
+import { isAbortException } from '@jbrowse/core/util/aborting'
+import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
+import { autorun } from 'mobx'
+
+import { clusterRunArgs, clusterRunRegions } from './dialog/clusterRunArgs.ts'
+
+import type { ClusterRunArgs } from './dialog/types.ts'
+import type { Region, StatusStream } from '@jbrowse/core/util'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+// Declarative counterpart to a "Cluster ..." -> "Run clustering" dialog,
+// following the same transient-launch-spec pattern as LinearGenomeView's
+// `init`: a session/config sets `runClustering: true` on the display, the real
+// clustering RPC runs once automatically as soon as the display is ready, and
+// the flag clears itself afterward (setRunClustering(undefined)) so a saved
+// session never re-triggers it. Shared by every row display: each supplies its
+// own `run` (the actual RPC) and may override `autoClusterReady`, while this
+// owns the re-entrancy guard, the view.initialized gate, the signal lifecycle,
+// and the status channel. Only the reads before the first await are tracked —
+// the trigger, `autoClusterReady`, `view.initialized` and what `clusterRegions`
+// reads before its own await — so the autorun re-fires when sources arrive or
+// the view initializes; `run` itself starts after the regions resolve, so
+// nothing it reads is tracked.
+//
+// `run` gets a `statusCallback` to hand the RPC. It writes the display's
+// `statusMessage`/`statusProgress`, which `DisplayChrome` shows as a corner
+// progress chip — this path has no dialog to report into, and a cohort-sized
+// cluster is many seconds of otherwise invisible work. Owned here rather than
+// per flavor so none of them can forget the clear (a status left set outlives
+// the run and pins the chip up).
+//
+// It is `openStatusStream` rather than `setStatusMessage` for the same reason
+// the fetch path uses it: a clustering run is one of the display's concurrent
+// operations, so it takes a slot on the field rather than writing it (ADR-081),
+// and the throttle that keeps a per-iteration RPC progress stream from writing
+// MST — and re-rendering the chip — on every callback lives there too. The extra
+// `applying` gate is this path's own: the status channel is out-of-band from the
+// call's return value, so a callback landing after the `finally` would otherwise
+// set a status with no run behind it and pin the chip up for good.
+export function setupRunClusteringAutorun(
+  self: IStateTreeNode & {
+    runClustering?: boolean
+    autoClusterReady: boolean
+    // The locus the run reads from, if the session named one.
+    clusterRegion?: string
+    setRunClustering: (arg?: boolean) => void
+    setClusterRegion: (arg?: string) => void
+    openStatusStream: (isCurrent: () => boolean) => StatusStream
+  },
+  opts: {
+    name: string
+    run: (args: ClusterRunArgs) => Promise<void>
+  },
+) {
+  // Plain closure flag (not observable) guards re-entrant runs while the RPC is
+  // in flight, the same trick setupInitAutorun uses for `init`.
+  let applying = false
+  // Disposing the reaction says nothing about the RPC a run already has in a
+  // worker, and the controller is otherwise reachable only from inside the run
+  // that made it. Untick the track mid-run without this and hclust builds the whole
+  // cohort dendrogram for nobody, then commits it to a dead node — where the
+  // `isAlive` gate in the catch below swallows the throw. `useClusterRun`'s
+  // effect cleanup is the dialog flavor's version of the same abort.
+  let inFlight: AbortController | undefined
+  addDisposer(self, () => {
+    inFlight?.abort()
+  })
+  addDisposer(
+    self,
+    autorun(
+      async () => {
+        if (!self.runClustering || applying || !self.autoClusterReady) {
+          return
+        }
+        const view = containingLgv(self)
+        if (!view.initialized) {
+          return
+        }
+        applying = true
+        const controller = new AbortController()
+        inFlight = controller
+        // narrowed to this run rather than merely to the node being alive, so a
+        // status arriving after the run settles can't repaint the chip.
+        // Wrapping a callback in a second guarded sink said the same thing and
+        // also stacked a second throttle window on the model-wide one, delaying
+        // every status by up to two.
+        const stream = self.openStatusStream(() => applying && isAlive(self))
+        try {
+          await opts.run(
+            clusterRunArgs(self, await clusterRegions(self), {
+              signal: controller.signal,
+              statusCallback: stream.statusCallback,
+            }),
+          )
+        } catch (e) {
+          if (!isAbortException(e) && isAlive(self)) {
+            console.error(e)
+            // This path has no dialog to report into -- that is the whole
+            // reason it owns a status channel -- so without this the only sign
+            // of a failure is the progress chip disappearing and nothing
+            // happening. A `clusterRegion` with a typo in it lands here, and it
+            // is a setting the session author can fix.
+            getNotificationSink(self).notifyError(`${e}`, e)
+          }
+        } finally {
+          inFlight = undefined
+          // this run's slot, retired: the display's viewport fetch may be
+          // running beside it, and blanking the field outright took its label
+          // with it (ADR-081)
+          stream.clear()
+          if (isAlive(self)) {
+            // both halves of the trigger, since the region is its argument: a
+            // saved session must not keep a locus that no run is coming for
+            self.setRunClustering(undefined)
+            self.setClusterRegion(undefined)
+          }
+          applying = false
+        }
+      },
+      { delay: 500, name: opts.name },
+    ),
+  )
+}
+
+// The declared locus if there is one, else what is on screen, both on the
+// track's genome. Resolved on the client because the assembly is what turns a
+// locstring into a region, and only the client has one.
+async function clusterRegions(
+  self: IStateTreeNode & { clusterRegion?: string },
+): Promise<Region[]> {
+  const { clusterRegion } = self
+  const assemblyName = containingLgv(self).assemblyNames.find(
+    onTrackAssembly(self),
+  )
+  if (!clusterRegion || !assemblyName) {
+    return clusterRunRegions(self)
+  }
+  // waitForAssembly, not `get`: the autorun can fire on the first ready tick,
+  // before the assembly manager has finished loading refNames, and a locstring
+  // cannot be validated without them
+  const assembly =
+    await getSession(self).assemblyManager.waitForAssembly(assemblyName)
+  if (!assembly) {
+    throw new Error(`assembly ${assemblyName} not found`)
+  }
+  return locStringsToRegions(clusterRegion, assembly, assemblyName)
+}

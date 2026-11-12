@@ -8,11 +8,14 @@ import {
   liftRowColor,
   rowColorChoiceOf,
   startingRowColor,
-} from '../rowColorChoice.ts'
+} from '../color/rowColorChoice.ts'
 import RowArrangementDialog from './RowArrangementDialog.tsx'
 
-import type { RowColorEdits, RowColorSnapshot } from '../rowColorChoice.ts'
-import type { RowColorSetting } from '../rowColorScale.ts'
+import type {
+  RowColorEdits,
+  RowColorSnapshot,
+} from '../color/rowColorChoice.ts'
+import type { RowColorSetting } from '../color/rowColorScale.ts'
 import type { RowArrangementModel } from './RowArrangementDialog.tsx'
 
 interface Src {

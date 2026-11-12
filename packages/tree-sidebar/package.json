@@ -22,15 +22,15 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./arrangeRows": "./src/arrangeRows.ts",
-    "./binColumns": "./src/binColumns.ts",
-    "./clusterMatrix": "./src/clusterMatrix.ts",
-    "./clusterUtils": "./src/clusterUtils.ts",
-    "./narrowRows": "./src/narrowRows.ts",
-    "./rowColorScale": "./src/rowColorScale.ts",
+    "./arrangeRows": "./src/rows/arrangeRows.ts",
+    "./binColumns": "./src/clustering/binColumns.ts",
+    "./clusterMatrix": "./src/clustering/clusterMatrix.ts",
+    "./clusterUtils": "./src/tree/clusterUtils.ts",
+    "./narrowRows": "./src/rows/narrowRows.ts",
+    "./rowColorScale": "./src/color/rowColorScale.ts",
     "./RowHeightMixin": "./src/rowHeight/RowHeightMixin.ts",
     "./RowArrangementDialog": "./src/rowArrangementDialog/RowArrangementDialog.tsx",
-    "./treeSidebarRowViews": "./src/treeSidebarRowViews.ts"
+    "./treeSidebarRowViews": "./src/rows/treeSidebarRowViews.ts"
   },
   "files": [
     "esm"
@@ -69,15 +69,15 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
-      "./arrangeRows": "./esm/arrangeRows.js",
-      "./binColumns": "./esm/binColumns.js",
-      "./clusterMatrix": "./esm/clusterMatrix.js",
-      "./clusterUtils": "./esm/clusterUtils.js",
-      "./narrowRows": "./esm/narrowRows.js",
-      "./rowColorScale": "./esm/rowColorScale.js",
+      "./arrangeRows": "./esm/rows/arrangeRows.js",
+      "./binColumns": "./esm/clustering/binColumns.js",
+      "./clusterMatrix": "./esm/clustering/clusterMatrix.js",
+      "./clusterUtils": "./esm/tree/clusterUtils.js",
+      "./narrowRows": "./esm/rows/narrowRows.js",
+      "./rowColorScale": "./esm/color/rowColorScale.js",
       "./RowHeightMixin": "./esm/rowHeight/RowHeightMixin.js",
       "./RowArrangementDialog": "./esm/rowArrangementDialog/RowArrangementDialog.js",
-      "./treeSidebarRowViews": "./esm/treeSidebarRowViews.js"
+      "./treeSidebarRowViews": "./esm/rows/treeSidebarRowViews.js"
     }
   },
   "sideEffects": false

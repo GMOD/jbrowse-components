@@ -17,22 +17,7 @@ import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConf
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import {
-  buildTree,
-  getLeafNames,
-  keptRows,
-  matchBandClades,
-} from './clusterUtils.ts'
-import { focusRows } from './focusRows.ts'
-import { maxNodeHeight } from './hierarchy.ts'
-import {
-  filteredRows,
-  listedNames,
-  rowFilterText,
-  unmatchedKeptNames,
-  unreadRowFields,
-} from './narrowRows.ts'
-import { rowAnnotationNotices } from './rowAnnotationNotices.ts'
+import { rowAnnotationNotices } from './color/rowAnnotationNotices.ts'
 import {
   liftRowColor,
   pinnedColorsOf,
@@ -41,17 +26,22 @@ import {
   rowColorResetTarget,
   sameRowColor,
   startingRowColor,
-} from './rowColorChoice.ts'
+} from './color/rowColorChoice.ts'
 import {
   ROW_COLOR_SCALE_ID,
   rowColorKeyValue,
   withPinnedColors,
-} from './rowColorScale.ts'
-import { labelEdits } from './rowEdits.ts'
-import { IDENTITY_FIELDS, extraColumns } from './sourcesGridUtils.ts'
-import { buildSpatialIndex } from './spatialIndex.ts'
-import { svgSidebarWidth } from './svgSidebarWidth.ts'
-import { treeSidebarRightEdge } from './treeSidebarGeometry.ts'
+} from './color/rowColorScale.ts'
+import { focusRows } from './rows/focusRows.ts'
+import {
+  filteredRows,
+  listedNames,
+  rowFilterText,
+  unmatchedKeptNames,
+  unreadRowFields,
+} from './rows/narrowRows.ts'
+import { labelEdits } from './rows/rowEdits.ts'
+import { IDENTITY_FIELDS, extraColumns } from './rows/sourcesGridUtils.ts'
 import {
   hierarchyViews,
   rowSidebarViews,
@@ -60,15 +50,25 @@ import {
   treeSidebarAxisConfigViews,
   treeSidebarRowStages,
   treeSidebarRowsConfigViews,
-} from './treeSidebarRowViews.ts'
+} from './rows/treeSidebarRowViews.ts'
+import { svgSidebarWidth } from './sidebar/svgSidebarWidth.ts'
+import { treeSidebarRightEdge } from './sidebar/treeSidebarGeometry.ts'
+import {
+  buildTree,
+  getLeafNames,
+  keptRows,
+  matchBandClades,
+} from './tree/clusterUtils.ts'
+import { maxNodeHeight } from './tree/hierarchy.ts'
+import { buildSpatialIndex } from './tree/spatialIndex.ts'
 
-import type { ClusterProvenance } from './clusterProvenance.ts'
-import type { RowColorEdits } from './rowColorChoice.ts'
-import type { RowColorSetting } from './rowColorScale.ts'
-import type { RowSortSpec } from './rowSortAutorun.ts'
-import type { TreeSpatialIndex } from './spatialIndex.ts'
-import type { SvgSidebarProps } from './svgSidebarWidth.ts'
-import type { TreeSidebarConfigModel } from './treeSidebarRowViews.ts'
+import type { ClusterProvenance } from './clustering/clusterProvenance.ts'
+import type { RowColorEdits } from './color/rowColorChoice.ts'
+import type { RowColorSetting } from './color/rowColorScale.ts'
+import type { RowSortSpec } from './rows/rowSortAutorun.ts'
+import type { TreeSidebarConfigModel } from './rows/treeSidebarRowViews.ts'
+import type { SvgSidebarProps } from './sidebar/svgSidebarWidth.ts'
+import type { TreeSpatialIndex } from './tree/spatialIndex.ts'
 import type { HoveredTreeNode, RowSource } from './types.ts'
 import type {
   AnyConfigurationModel,
@@ -78,7 +78,7 @@ import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 import type { SidebarBounds } from '@jbrowse/display-ui'
 
-export type { TreeSidebarConfigModel } from './treeSidebarRowViews.ts'
+export type { TreeSidebarConfigModel } from './rows/treeSidebarRowViews.ts'
 
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the

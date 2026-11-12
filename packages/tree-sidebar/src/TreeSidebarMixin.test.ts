@@ -11,11 +11,11 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
-import { getLeafNames } from './clusterUtils.ts'
 import {
   SIDEBAR_HINT_LINE_PX,
   TREE_RESIZE_HANDLE_WIDTH,
-} from './treeSidebarGeometry.ts'
+} from './sidebar/treeSidebarGeometry.ts'
+import { getLeafNames } from './tree/clusterUtils.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'

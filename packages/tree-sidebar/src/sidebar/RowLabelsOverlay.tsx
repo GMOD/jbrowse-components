@@ -1,0 +1,168 @@
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
+import { observer } from 'mobx-react'
+
+import { SvgBandLabels, bandLabelWidth } from './SvgBandLabels.tsx'
+import { SvgRowColumnLabels } from './SvgRowColumnLabels.tsx'
+import { SvgRowLabels } from './SvgRowLabels.tsx'
+import { rowColumnLabelsHeight } from './rowLabelsBoxWidth.ts'
+
+import type { RowBand } from '../rows/arrangeRows.ts'
+import type { RowAnnotationColumn, RowLabelSource } from '../types.ts'
+
+/**
+ * The on-screen half of the sidebar's row labels: `SvgRowLabels` in the overlay
+ * that has to hold them. Paired with `TreeSidebar` (which draws the dendrogram
+ * onto its own canvas) — together those two are the sidebar, and each display
+ * used to wire up the labels half itself.
+ *
+ * The labels cover the first region's data. A display cannot shift its own
+ * plot, so the fix is a view-level left gutter, which Colin parked on
+ * 2026-09-27 for the width it takes from every track.
+ *
+ * Portaled above the LGV's inter-region masks (`TrackOverlayPortal`). The labels
+ * are text floating over the plot, so at whole-genome or multi-region scale a
+ * region-separator bar landed on them at every boundary — the masks paint over
+ * the whole `contain:strict` sandbox a display renders into, and there is no
+ * z-index from inside it that gets out. Outside a TrackContainer the portal
+ * renders in place, so a standalone display is unchanged.
+ *
+ * The overlay geometry is the part worth single-sourcing, because getting any
+ * of it wrong is silent:
+ *
+ * - `pointerEvents: 'none'` — the labels sit over the plot, so without this
+ *   they swallow the hover/click the display's own hit test needs. The portal
+ *   node is `pointerEvents: 'none'` too, and this keeps the inline fallback
+ *   behaving the same way.
+ * - `zIndex: 2` — below `TreeSidebar`'s gutter layer (100), which is what keeps
+ *   the opaque dendrogram panel over the labels rather than under them. Order
+ *   within the portal node is otherwise **mount order, not tree order**, so the
+ *   two halves cannot be left to their DOM positions the way they could inline.
+ * - sized to the **rows viewport**, not the display, and paired with the
+ *   `scrollTop` the rows scroll by, so the labels track the rows they name
+ *   rather than hanging a scroll-distance off them.
+ *
+ * Renders nothing when there are no rows, so callers don't have to guard: a
+ * label overlay with nothing in it is a `<svg>` swallowing nothing, but it is
+ * also a DOM node that test selectors and screenshot doneness gates can see.
+ *
+ * **Memoized**, because none of what it draws is a function of the viewport. A
+ * display body re-renders on every animation frame of a wheel zoom — its
+ * `visible*` getters are all derived from the view's coordinates — and dragged
+ * this whole overlay along with it: one `measureText` per row to size the label
+ * box and N rects and texts to reconcile, none of which a zoom changes. `sources` is a MobX computed, so its identity is stable
+ * for exactly as long as the row list is.
+ *
+ * `showLabels: false` keeps that `<svg>` and drops only the labels inside it,
+ * for the same reason: this element is the doneness signal several displays gate
+ * their capture on (it exists only once rows are derived from fetched data,
+ * unlike `canvasDrawn`, which flips on an empty first paint). Guarding the
+ * element itself instead would make turning labels off also turn off the gate,
+ * and the figure would capture blank.
+ *
+ * The color columns' labels (`columnLabels`) are a second `<svg>` over the
+ * lines the mixin reserves above the rows, so they stay put while the rows
+ * scroll and no scrolled row draws into them.
+ */
+export const RowLabelsOverlay = observer(function RowLabelsOverlay({
+  sources,
+  rowHeight,
+  labelOffset,
+  width,
+  height,
+  top = 0,
+  scrollTop,
+  testId,
+  showLabels = true,
+  bands = [],
+  annotations,
+  columnLabels = [],
+}: {
+  // Resolved, never absent: every display's `sources` getter answers `[]`
+  // before a fetch has landed, and "no rows yet" is its loading state to
+  // report, not a missing array to render around.
+  sources: RowLabelSource[]
+  // Resolved px row height, never a fit-to-height sentinel — same contract as
+  // `TreeDrawingModel.effectiveRowHeight`.
+  rowHeight: number
+  // Px reserved on the left for the dendrogram; labels start after it.
+  labelOffset: number
+  width: number
+  // Height of the rows viewport, which is what the labels are culled against.
+  height: number
+  // Top of the rows viewport within the display's box: the portal lands on the
+  // display's origin, so the bands stacked above the rows are passed here.
+  top?: number
+  scrollTop?: number
+  testId?: string
+  // Draw the names. False still renders the overlay element, see above.
+  showLabels?: boolean
+  // The bands' strip, drawn whatever `showLabels` says, the row labels beside
+  // it.
+  bands?: readonly RowBand[]
+  // The `rows.annotations` columns, the mixin's `rowAnnotationColors`.
+  annotations?: readonly RowAnnotationColumn[]
+  // The label over each color column, the mixin's `rowColumnLabels`.
+  columnLabels?: readonly string[]
+}) {
+  const rowLabelOffset = labelOffset + (bands.length ? bandLabelWidth() : 0)
+  const columnLabelsHeight = rowColumnLabelsHeight(columnLabels)
+  return sources.length ? (
+    <TrackOverlayPortal>
+      {showLabels && columnLabelsHeight > 0 ? (
+        <svg
+          data-testid="row-column-labels"
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: top - columnLabelsHeight,
+            width,
+            height: columnLabelsHeight,
+            pointerEvents: 'none',
+            zIndex: 2,
+          }}
+        >
+          <g transform={`translate(0 ${columnLabelsHeight})`}>
+            <SvgRowColumnLabels
+              labels={columnLabels}
+              sources={sources}
+              rowHeight={rowHeight}
+              labelOffset={rowLabelOffset}
+              annotations={annotations}
+            />
+          </g>
+        </svg>
+      ) : null}
+      <svg
+        data-testid={testId}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top,
+          width,
+          height,
+          pointerEvents: 'none',
+          zIndex: 2,
+        }}
+      >
+        <SvgBandLabels
+          bands={bands}
+          rowHeight={rowHeight}
+          x={labelOffset}
+          scrollTop={scrollTop}
+          availableHeight={height}
+        />
+        {showLabels ? (
+          <SvgRowLabels
+            sources={sources}
+            rowHeight={rowHeight}
+            labelOffset={rowLabelOffset}
+            scrollTop={scrollTop}
+            availableHeight={height}
+            backdrop={labelOffset > 0 ? 'paper' : 'wash'}
+            annotations={annotations}
+          />
+        ) : null}
+      </svg>
+    </TrackOverlayPortal>
+  ) : null
+})

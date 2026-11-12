@@ -36,7 +36,7 @@ import {
 import { buildSync } from 'esbuild'
 import puppeteer from 'puppeteer'
 
-import { clusterMatrix } from '../../../packages/tree-sidebar/src/clusterMatrix.ts'
+import { clusterMatrix } from '../../../packages/tree-sidebar/src/clustering/clusterMatrix.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const treeSidebar = join(here, '../../../packages/tree-sidebar')

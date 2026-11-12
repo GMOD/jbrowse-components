@@ -1,7 +1,10 @@
-import type { RowBand } from './arrangeRows.ts'
-import type { ClusterProvenance } from './clusterProvenance.ts'
-import type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
-import type { TreeSpatialIndex } from './spatialIndex.ts'
+import type { ClusterProvenance } from './clustering/clusterProvenance.ts'
+import type { RowBand } from './rows/arrangeRows.ts'
+import type {
+  HierarchyNode,
+  PositionedHierarchyNode,
+} from './tree/hierarchy.ts'
+import type { TreeSpatialIndex } from './tree/spatialIndex.ts'
 import type { NewickNode } from '@gmod/newick'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 

@@ -1,6 +1,6 @@
-import { setupRowSortAutorun } from './rowSortAutorun.ts'
-import { setupRunClusteringAutorun } from './runClusteringAutorun.ts'
-import { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
+import { setupRunClusteringAutorun } from './clustering/runClusteringAutorun.ts'
+import { setupRowSortAutorun } from './rows/rowSortAutorun.ts'
+import { setupTreeDrawingAutorun } from './tree/treeDrawingAutorun.ts'
 
 /**
  * The three autoruns every display with a dendrogram sidebar installs from its

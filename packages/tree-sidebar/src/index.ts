@@ -1,48 +1,51 @@
-export type { TreeSpatialIndex } from './spatialIndex.ts'
-export { default as TreeSidebar } from './TreeSidebar.tsx'
+export type { TreeSpatialIndex } from './tree/spatialIndex.ts'
+export { default as TreeSidebar } from './sidebar/TreeSidebar.tsx'
 export {
   SIDEBAR_HINT_LINE_PX,
   treeIsShowing,
   treeSidebarOffset,
   treeSidebarRightEdge,
-} from './treeSidebarGeometry.ts'
-export { SvgRowLabels } from './SvgRowLabels.tsx'
-export { SvgRowColumnLabels } from './SvgRowColumnLabels.tsx'
-export { rowLabelsCarryText } from './rowLabelsBoxWidth.ts'
-export { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
-export { RowsPanel } from './RowsPanel.tsx'
-export type { RowsPanelModel } from './RowsPanel.tsx'
+} from './sidebar/treeSidebarGeometry.ts'
+export { SvgRowLabels } from './sidebar/SvgRowLabels.tsx'
+export { SvgRowColumnLabels } from './sidebar/SvgRowColumnLabels.tsx'
+export { rowLabelsCarryText } from './sidebar/rowLabelsBoxWidth.ts'
+export { RowLabelsOverlay } from './sidebar/RowLabelsOverlay.tsx'
+export { RowsPanel } from './sidebar/RowsPanel.tsx'
+export type { RowsPanelModel } from './sidebar/RowsPanel.tsx'
 export {
   FILLED_ROW_SEPARATOR_OPACITY,
   MIN_SEPARATOR_ROW_PX,
   RowSeparatorLines,
-} from './RowSeparatorLines.tsx'
-export { StaleTreeHint } from './StaleTreeHint.tsx'
-export { RowFocusHint } from './RowFocusHint.tsx'
-export { SidebarHintChip } from './SidebarHintChip.tsx'
+} from './sidebar/RowSeparatorLines.tsx'
+export { StaleTreeHint } from './sidebar/StaleTreeHint.tsx'
+export { RowFocusHint } from './sidebar/RowFocusHint.tsx'
+export { SidebarHintChip } from './sidebar/SidebarHintChip.tsx'
 export {
   clusterProvenanceFromRegions,
   describeClusterProvenance,
-} from './clusterProvenance.ts'
+} from './clustering/clusterProvenance.ts'
 export type {
   ClusterProvenance,
   ClusterProvenanceRegion,
-} from './clusterProvenance.ts'
-export { SvgTreePath } from './SvgTreePath.tsx'
-export { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
-export { sidebarPanelWidth, svgSidebarWidth } from './svgSidebarWidth.ts'
-export type { SvgSidebarProps } from './svgSidebarWidth.ts'
-export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
-export { setupRunClusteringAutorun } from './runClusteringAutorun.ts'
-export { setupRowSortAutorun } from './rowSortAutorun.ts'
+} from './clustering/clusterProvenance.ts'
+export { SvgTreePath } from './sidebar/SvgTreePath.tsx'
+export { SvgTreeSidebar } from './sidebar/SvgTreeSidebar.tsx'
+export {
+  sidebarPanelWidth,
+  svgSidebarWidth,
+} from './sidebar/svgSidebarWidth.ts'
+export type { SvgSidebarProps } from './sidebar/svgSidebarWidth.ts'
+export { setupTreeDrawingAutorun } from './tree/treeDrawingAutorun.ts'
+export { setupRunClusteringAutorun } from './clustering/runClusteringAutorun.ts'
+export { setupRowSortAutorun } from './rows/rowSortAutorun.ts'
 export { setupTreeSidebarAutoruns } from './setupTreeSidebarAutoruns.ts'
-export type { RowSortSpec } from './rowSortAutorun.ts'
+export type { RowSortSpec } from './rows/rowSortAutorun.ts'
 export {
   loadedRegionIndexAt,
   orderRowsByValueAt,
   sortRowsAtColumn,
-} from './rowSortColumn.ts'
-export type { LoadedRegionSpan } from './rowSortColumn.ts'
+} from './rows/rowSortColumn.ts'
+export type { LoadedRegionSpan } from './rows/rowSortColumn.ts'
 export {
   treeOfLeaves,
   buildTree,
@@ -51,33 +54,36 @@ export {
   keptRows,
   parseClusterOrder,
   treeDescribesRows,
-} from './clusterUtils.ts'
-export { narrowRows } from './narrowRows.ts'
-export type { RowNarrowing } from './narrowRows.ts'
-export { ROW_COLOR_SCALE_ID } from './rowColorScale.ts'
+} from './tree/clusterUtils.ts'
+export { narrowRows } from './rows/narrowRows.ts'
+export type { RowNarrowing } from './rows/narrowRows.ts'
+export { ROW_COLOR_SCALE_ID } from './color/rowColorScale.ts'
 export type {
   RowColorKeyInputs,
   RowColorScaleSetting,
   RowColorSetting,
-} from './rowColorScale.ts'
-export { rowColorChoiceLabel } from './rowColorChoice.ts'
-export type { RowColorEdits, RowColorSnapshot } from './rowColorChoice.ts'
+} from './color/rowColorScale.ts'
+export { rowColorChoiceLabel } from './color/rowColorChoice.ts'
+export type { RowColorEdits, RowColorSnapshot } from './color/rowColorChoice.ts'
 export type {
   RowAlias,
   RowBand,
   RowBanding,
   RowParent,
   RowParentOf,
-} from './arrangeRows.ts'
-export { applyClusterRun } from './applyClusterRun.ts'
-export { renameNewickLeaves, writeNewick } from './writeNewick.ts'
-export type { ClusterRunModel } from './applyClusterRun.ts'
-export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
-export { MIN_CLUSTER_ROWS, clusterMatrix } from './clusterMatrix.ts'
+} from './rows/arrangeRows.ts'
+export { applyClusterRun } from './clustering/applyClusterRun.ts'
+export { renameNewickLeaves, writeNewick } from './tree/writeNewick.ts'
+export type { ClusterRunModel } from './clustering/applyClusterRun.ts'
+export {
+  generateClusterRScript,
+  matrixToTsv,
+} from './clustering/clusterRScript.ts'
+export { MIN_CLUSTER_ROWS, clusterMatrix } from './clustering/clusterMatrix.ts'
 // `ClusterMatrix` is part of the dialog's public shape (`fetchMatrix` returns
 // one), so it has to be nameable by the plugins that implement it.
-export type { ClusterMatrix, NumericRow } from './clusterMatrix.ts'
-export type { RpcMethodCaller } from './rpcMethodCaller.ts'
+export type { ClusterMatrix, NumericRow } from './clustering/clusterMatrix.ts'
+export type { RpcMethodCaller } from './clustering/rpcMethodCaller.ts'
 export { TreeSidebarMixin, orderOver } from './TreeSidebarMixin.ts'
 export type { ClusterRun } from './TreeSidebarMixin.ts'
 export {
@@ -87,8 +93,8 @@ export {
   showRowSeparatorsMenuItem,
   sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
-} from './treeMenuItems.ts'
-export { rowOrderMenuItems } from './rowArrangementMenuItem.ts'
+} from './menus/treeMenuItems.ts'
+export { rowOrderMenuItems } from './menus/rowArrangementMenuItem.ts'
 export { RowHeightMixin } from './rowHeight/RowHeightMixin.ts'
 export { rowHeightMenuItem } from './rowHeight/rowHeightMenu.ts'
 export type {
@@ -101,8 +107,11 @@ export type {
 } from './rowArrangementDialog/RowArrangementDialog.tsx'
 // Displays reach the layout through `TreeSidebarMixin`'s `hierarchy`;
 // `clusterLayout` stays public only for SVG-export tests.
-export { clusterLayout } from './hierarchy.ts'
-export type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
+export { clusterLayout } from './tree/hierarchy.ts'
+export type {
+  HierarchyNode,
+  PositionedHierarchyNode,
+} from './tree/hierarchy.ts'
 export type {
   ClusterHierarchyNode,
   ClusterNodeData,
@@ -114,8 +123,8 @@ export type {
   TreeSidebarModel,
   TreeSource,
 } from './types.ts'
-export { default as ClusterDialog } from './clusterDialog/ClusterDialog.tsx'
+export { default as ClusterDialog } from './clustering/dialog/ClusterDialog.tsx'
 export type {
   ClusterDialogProps,
   ClusterRunArgs,
-} from './clusterDialog/types.ts'
+} from './clustering/dialog/types.ts'

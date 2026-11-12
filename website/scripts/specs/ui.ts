@@ -15,7 +15,7 @@ import {
   KG_CONFIG,
 } from '../screenshot-spec-helpers.ts'
 
-import type { RowSortSpec } from '../../../packages/tree-sidebar/src/rowSortAutorun.ts'
+import type { RowSortSpec } from '../../../packages/tree-sidebar/src/rows/rowSortAutorun.ts'
 import type {
   Annotation,
   ScreenshotAction,

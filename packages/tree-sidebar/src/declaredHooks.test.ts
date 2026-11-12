@@ -27,7 +27,7 @@ function read(file: string) {
 function mixinMembers() {
   const src = [
     'packages/tree-sidebar/src/TreeSidebarMixin.ts',
-    'packages/tree-sidebar/src/treeSidebarRowViews.ts',
+    'packages/tree-sidebar/src/rows/treeSidebarRowViews.ts',
   ]
     .map(read)
     .join('\n')

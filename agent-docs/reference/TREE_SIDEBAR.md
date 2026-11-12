@@ -27,7 +27,7 @@ dialog's error state. The dialog applies a pasted R order itself, through
 `clusteredCladeLayout` and the display's `setRowOrder`; `validateClusterOrder`
 rejects one that misses a row or names rows the matrix did not hold.
 
-`src/hierarchy.ts` wraps `@gmod/newick`'s hierarchy helpers for the tree
+`src/tree/hierarchy.ts` wraps `@gmod/newick`'s hierarchy helpers for the tree
 canvas and SVG.
 
 ## `ClusterMatrix` is a `Map` because its key order _is_ the result

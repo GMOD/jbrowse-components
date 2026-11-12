@@ -88,14 +88,14 @@ input"), so tree and layout land together. A "wait for the other half" mechanism
 that outlives its asynchrony does not fail loudly, it never fires;
 `plugins/variants/src/LinearVariantDisplay/clusterTreeLands.test.ts` guards this.
 
-Helpers live in `packages/tree-sidebar/src/clusterUtils.ts`.
+Helpers live in `packages/tree-sidebar/src/tree/clusterUtils.ts`.
 
 ## Performance regimes
 
 At default filters a population panel is thousands to tens of thousands of
 columns wide, so the Euclidean distance build dominates, not hclust's merge loop.
 `clusterMatrix` tries `gpuDistanceMatrix` first
-(`packages/tree-sidebar/src/gpuDistanceMatrix.ts`) and falls back to wasm below
+(`packages/tree-sidebar/src/clustering/gpuDistanceMatrix.ts`) and falls back to wasm below
 the work gate, without a WebGPU device, or when the dispatch fails validation or
 reads back wrong. **A truncated dispatch raises no error and leaves zeros**,
 which hclust would merge first at height 0, so `distanceSpotCheck.ts` recomputes

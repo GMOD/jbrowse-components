@@ -16,7 +16,7 @@
 //
 // `perColumn` is how many features land in one column — 1 for a tiling BigWig
 // at base resolution, hundreds for a bedMethyl zoomed out.
-import { clusterMatrix } from '../../../packages/tree-sidebar/src/clusterMatrix.ts'
+import { clusterMatrix } from '../../../packages/tree-sidebar/src/clustering/clusterMatrix.ts'
 
 const ROWS = Number(process.argv[2] ?? 40)
 const COLUMNS = Number(process.argv[3] ?? 2000)

@@ -1,0 +1,282 @@
+import { toNewick } from '@gmod/hclust'
+import { parseNewick } from '@gmod/newick'
+
+import { writeNewick } from '../tree/writeNewick.ts'
+import { clusterMatrix, imputeMissingToSiteMean } from './clusterMatrix.ts'
+import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
+
+import type { NewickNode } from '@gmod/newick'
+
+jest.mock('./gpuDistanceMatrix.ts', () => ({
+  gpuDistanceMatrix: jest.fn(() => Promise.resolve(null)),
+}))
+
+function leafNames(node: NewickNode): string[] {
+  return node.children?.length ? node.children.flatMap(leafNames) : [node.name!]
+}
+
+// The two halves of the format have to agree, and only an end-to-end assertion
+// says so: hclust's `toNewick` and our `parseNewick` can each be self-
+// consistently wrong. This is the pairing that broke — the Roadmap
+// 127-epigenome track's dendrogram vanished behind StaleTreeHint because three
+// row names carry parentheses and the serialized tree parsed back naming leaves
+// that were not the rows on screen.
+test('serializes row names that carry newick metacharacters', async () => {
+  const names = [
+    'GM12878',
+    'Primary T helper naive cells from peripheral blood (BLD.CD4.NPC)',
+    'Breast variant Human Mammary Epithelial Cells (vHMEC)',
+    'has, a comma',
+    "o'brien",
+    'chr1:100-200',
+    'NA18536 HP1',
+  ]
+  const { order, tree } = await clusterMatrix({
+    data: new Map(names.map((n, i) => [n, [i, i * 2]])),
+  })
+
+  expect(leafNames(parseNewick(tree))).toHaveLength(names.length)
+  expect(new Set(leafNames(parseNewick(tree)))).toEqual(new Set(names))
+  // `order` is indices into the matrix's key insertion order, and the tree's
+  // leaves are those same rows in the clustered order — the invariant
+  // `treeDescribesRows` checks before it will position a dendrogram.
+  expect(leafNames(parseNewick(tree))).toEqual(order.map(i => names[i]))
+})
+
+// The other way the same invariant breaks, and the reason the matrix is a Map:
+// a plain object hoists integer-like keys into numeric order, so the rows a
+// caller built as 10, 2, 1 reached hclust as 1, 2, 10 and the indices it handed
+// back pointed at the wrong sources. Reachable from numbered bigWig filenames,
+// numeric VCF sample IDs, or a numeric partition field.
+test('keeps numeric-looking row names in the caller order', async () => {
+  const names = ['10', '2', '1']
+  const { order, tree } = await clusterMatrix({
+    data: new Map(names.map((n, i) => [n, [i, i * 2]])),
+  })
+  expect(leafNames(parseNewick(tree))).toEqual(order.map(i => names[i]))
+})
+
+test('keeps the empty-named row a feature with no value files under', async () => {
+  const names = ['exon', '', 'intron']
+  const { order, tree } = await clusterMatrix({
+    data: new Map(names.map((n, i) => [n, [i, i * 2]])),
+  })
+  expect(leafNames(parseNewick(tree))).toEqual(order.map(i => names[i]))
+})
+
+test('leaves a plain row name unquoted', async () => {
+  const { tree } = await clusterMatrix({
+    data: new Map([
+      ['GM12878', [0, 0]],
+      ['K562', [1, 1]],
+      ['HepG2', [5, 5]],
+    ]),
+  })
+  expect(tree).not.toContain("'")
+  expect(new Set(leafNames(parseNewick(tree)))).toEqual(
+    new Set(['GM12878', 'K562', 'HepG2']),
+  )
+})
+
+// We escape nothing ourselves, which is only correct while hclust escapes. It
+// has since 4.0.3; before that `clusterMatrix` quoted the names on the way in,
+// and quoting on both sides would be worse than on neither (`''vHMEC''` matches
+// no row). So assert the dependency's half rather than trusting it — if a
+// future hclust stops quoting, this fails here instead of the dendrogram
+// quietly disappearing again.
+test('hclust escapes leaf names, which is why clusterMatrix does not', () => {
+  expect(toNewick({ name: 'cells (vHMEC)', height: 0 })).toBe("'cells (vHMEC)'")
+  expect(toNewick({ name: 'Sample 0', height: 0 })).toBe('Sample 0')
+})
+
+// Every menu row and dialog gate on the way here says "needs at least two
+// rows", and two of the four run functions say it as "at least one" — so a
+// single-row track reached hclust, which has nothing to merge and returns a
+// tree with no structure. Refused once, at the point all four RPCs pass
+// through.
+test('refuses a matrix with fewer than two rows', async () => {
+  await expect(
+    clusterMatrix({ data: new Map([['GM12878', [0, 0]]]) }),
+  ).rejects.toThrow(/at least 2 rows, got 1/)
+  await expect(clusterMatrix({ data: new Map() })).rejects.toThrow(
+    /at least 2 rows, got 0/,
+  )
+})
+
+// Three rows where the rows say A is near B, and a hand-built distance matrix
+// that says A is near C. Which tree comes back is which input hclust saw.
+const rowsNearAB = new Map<string, number[]>([
+  ['A', [0, 0]],
+  ['B', [1, 0]],
+  ['C', [9, 0]],
+])
+const matrixNearAC = new Float32Array([0, 9, 1, 0, 0, 8, 0, 0, 0])
+
+test('clusters the GPU distance matrix when one comes back', async () => {
+  jest.mocked(gpuDistanceMatrix).mockResolvedValueOnce(matrixNearAC)
+  const { order } = await clusterMatrix({ data: rowsNearAB })
+  expect(order.map(i => [...rowsNearAB.keys()][i])).toEqual(['B', 'A', 'C'])
+})
+
+test('falls back to the rows when the GPU declines or fails', async () => {
+  jest.mocked(gpuDistanceMatrix).mockResolvedValueOnce(null)
+  const declined = await clusterMatrix({ data: rowsNearAB })
+  expect(declined.order.map(i => [...rowsNearAB.keys()][i])).toEqual([
+    'C',
+    'A',
+    'B',
+  ])
+
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  jest
+    .mocked(gpuDistanceMatrix)
+    .mockRejectedValueOnce(new Error('dispatch failed'))
+  const failed = await clusterMatrix({ data: rowsNearAB })
+  expect(failed.order).toEqual(declined.order)
+  expect(warn).toHaveBeenCalledWith(
+    'GPU distance matrix failed, falling back to hclust',
+    expect.any(Error),
+  )
+  warn.mockRestore()
+})
+
+test('a cancellation during the GPU build is not a fallback', async () => {
+  jest.mocked(gpuDistanceMatrix).mockRejectedValueOnce(new Error('aborted'))
+  await expect(clusterMatrix({ data: rowsNearAB })).rejects.toThrow('aborted')
+})
+
+test('an abort during the WASM run rejects it', async () => {
+  let seed = 7
+  const random = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32
+  const data = new Map(
+    Array.from({ length: 1500 }, (_, i) => [
+      `row${i}`,
+      Array.from({ length: 800 }, random),
+    ]),
+  )
+  await expect(
+    clusterMatrix({ data, signal: AbortSignal.timeout(20) }),
+  ).rejects.toMatchObject({ name: 'TimeoutError' })
+})
+
+describe('a run under bands', () => {
+  // Across the cohort a sits with d, which bands keep apart. Handed
+  // interleaved, as the arranged rows arrive before the bands stack them.
+  const data = new Map<string, number[]>([
+    ['a', [0, 0]],
+    ['d', [1, 1]],
+    ['b', [40, 40]],
+    ['e', [60, 60]],
+    ['c', [41, 41]],
+  ])
+  const partition = [
+    ['a', 'b', 'c'],
+    ['d', 'e'],
+  ]
+  const keys = [...data.keys()]
+
+  test('writes one forest, a band tree per band, and one order', async () => {
+    const { order, tree } = await clusterMatrix({ data, partition })
+    const root = parseNewick(tree)
+    expect(root.children!.map(leafNames)).toEqual([
+      ['a', 'b', 'c'],
+      ['d', 'e'],
+    ])
+    expect(leafNames(root)).toEqual(order.map(i => keys[i]))
+    expect(parseNewick(writeNewick(root))).toEqual(root)
+  })
+
+  // Every leaf at one depth, so the forest drawn whole, with no bands, is a
+  // dendrogram joined at the taller band's height.
+  test('joins the band trees at the tallest one, every leaf level', async () => {
+    const { tree } = await clusterMatrix({ data, partition })
+    const depths: number[] = []
+    const stack = [{ node: parseNewick(tree), depth: 0 }]
+    while (stack.length) {
+      const { node, depth } = stack.pop()!
+      if (node.children?.length) {
+        for (const child of node.children) {
+          stack.push({ node: child, depth: depth + (child.length ?? 0) })
+        }
+      } else {
+        depths.push(depth)
+      }
+    }
+    expect(Math.min(...depths)).toBeGreaterThan(50)
+    expect(Math.max(...depths) - Math.min(...depths)).toBeLessThan(1e-3)
+  })
+
+  test('a one-row band is a bare leaf', async () => {
+    const { order, tree } = await clusterMatrix({
+      data,
+      partition: [['a', 'b', 'c', 'e'], ['d']],
+    })
+    expect(parseNewick(tree).children![1]!).toMatchObject({ name: 'd' })
+    expect(order.map(i => keys[i]).at(-1)).toBe('d')
+  })
+
+  test('one band is a run with no bands', async () => {
+    const whole = await clusterMatrix({ data })
+    expect(await clusterMatrix({ data, partition: [keys] })).toEqual(whole)
+  })
+
+  test('a row in no band fails the run rather than dropping out', async () => {
+    await expect(
+      clusterMatrix({ data, partition: [['a', 'b', 'c'], ['d']] }),
+    ).rejects.toThrow(/5 rows, 4 in bands/)
+  })
+})
+
+describe('imputeMissingToSiteMean', () => {
+  test('replaces a no-call with the mean of the samples that were called', () => {
+    const rows = new Map([
+      ['a', new Float32Array([0, 0])],
+      ['b', new Float32Array([2, NaN])],
+      ['c', new Float32Array([NaN, 2])],
+    ])
+    imputeMissingToSiteMean(rows)
+    expect([...rows.get('a')!]).toEqual([0, 0])
+    expect([...rows.get('b')!]).toEqual([2, 1])
+    expect([...rows.get('c')!]).toEqual([1, 2])
+  })
+
+  test('a site with no calls at all drops out', () => {
+    const rows = new Map([
+      ['a', new Float32Array([NaN, 1])],
+      ['b', new Float32Array([NaN, 1])],
+    ])
+    imputeMissingToSiteMean(rows)
+    expect([...rows.get('a')!]).toEqual([0, 1])
+    expect([...rows.get('b')!]).toEqual([0, 1])
+  })
+
+  test('leaves a fully called matrix alone', () => {
+    const rows = new Map([['a', new Float32Array([0, 1, 2])]])
+    imputeMissingToSiteMean(rows)
+    expect([...rows.get('a')!]).toEqual([0, 1, 2])
+  })
+
+  test('handles an empty matrix', () => {
+    expect(imputeMissingToSiteMean(new Map())).toEqual(new Map())
+    const empty = new Map([['a', new Float32Array(0)]])
+    expect(imputeMissingToSiteMean(empty)).toBe(empty)
+  })
+
+  test('a no-call no longer sits further away than any real genotype', () => {
+    // The regression this exists for: with the old -1 sentinel, the distance
+    // from a no-call to a hom-alt (3) exceeded hom-ref to hom-alt (2), so
+    // samples clustered by how much data they were missing.
+    const rows = new Map([
+      ['homRef', new Float32Array([0])],
+      ['homAlt', new Float32Array([2])],
+      ['noCall', new Float32Array([NaN])],
+    ])
+    imputeMissingToSiteMean(rows)
+    const homRef = rows.get('homRef')![0]!
+    const homAlt = rows.get('homAlt')![0]!
+    const noCall = rows.get('noCall')![0]!
+    const spread = Math.abs(homRef - homAlt)
+    expect(Math.abs(noCall - homAlt)).toBeLessThan(spread)
+    expect(Math.abs(noCall - homRef)).toBeLessThan(spread)
+  })
+})

@@ -8,22 +8,29 @@ import { Button, DialogActions, DialogContent } from '@mui/material'
 import { compareStructural } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { rowColorMembers, withPair, withPairs } from '../rowColorChoice.ts'
+import {
+  rowColorMembers,
+  withPair,
+  withPairs,
+} from '../color/rowColorChoice.ts'
 import {
   resolveRowColors,
   rowFieldValue,
   withPinnedColors,
-} from '../rowColorScale.ts'
-import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
+} from '../color/rowColorScale.ts'
+import { IDENTITY_FIELDS } from '../rows/sourcesGridUtils.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
 import PlotColorRow from './PlotColorRow.tsx'
 import RowColorPanel from './RowColorPanel.tsx'
 import SourceGrid from './SourceGrid.tsx'
 
-import type { RowAlias } from '../arrangeRows.ts'
-import type { RowColorEdits, RowColorSnapshot } from '../rowColorChoice.ts'
-import type { RowColorSetting } from '../rowColorScale.ts'
+import type {
+  RowColorEdits,
+  RowColorSnapshot,
+} from '../color/rowColorChoice.ts'
+import type { RowColorSetting } from '../color/rowColorScale.ts'
+import type { RowAlias } from '../rows/arrangeRows.ts'
 import type { RowSource } from '../types.ts'
 import type { ValueColor } from './RowColorPanel.tsx'
 

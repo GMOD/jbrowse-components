@@ -145,7 +145,7 @@
 1 no-unsafe-return packages/tables/src/bareHost.ts
 2 no-unsafe-argument packages/tables/src/bundle.ts
 1 no-unsafe-member-access packages/text-indexing-core/src/types/common.ts
-1 no-unsafe-return packages/tree-sidebar/src/treeSidebarRowViews.ts
+1 no-unsafe-return packages/tree-sidebar/src/rows/treeSidebarRowViews.ts
 1 no-unsafe-assignment plugins/alignments/src/shared/alignmentsFilter.ts
 1 no-unsafe-member-access plugins/alignments/src/shared/alignmentsFilter.ts
 3 no-unsafe-assignment plugins/breakpoint-split-view/src/BreakpointSplitView/components/BreakpointSplitViewOverlay.tsx

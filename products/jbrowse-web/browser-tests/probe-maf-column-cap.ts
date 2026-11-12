@@ -17,7 +17,7 @@
 //     node browser-tests/probe-maf-column-cap.ts [rows] [reps]
 //
 // Read the ratios between columns, not the milliseconds.
-import { clusterMatrix } from '../../../packages/tree-sidebar/src/clusterMatrix.ts'
+import { clusterMatrix } from '../../../packages/tree-sidebar/src/clustering/clusterMatrix.ts'
 
 const ROWS = Number(process.argv[2] ?? 464)
 const REPS = Number(process.argv[3] ?? 5)

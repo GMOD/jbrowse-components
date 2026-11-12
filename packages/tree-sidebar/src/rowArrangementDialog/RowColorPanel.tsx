@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { rowColorChoiceLabel } from '../rowColorChoice.ts'
+import { rowColorChoiceLabel } from '../color/rowColorChoice.ts'
 
 const useStyles = makeStyles()(theme => ({
   panel: {
