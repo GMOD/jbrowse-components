@@ -323,30 +323,21 @@ export type TreeSidebarRowInputs<S extends RowSource> = ReturnType<
 > &
   ReturnType<typeof treeSidebarRowHookDefaults<S>>
 
-type ExpandedRowsHost<S extends RowSource> = TreeSidebarRowInputs<S> &
-  ReturnType<typeof expandedRowViews<S>>
-type RowAliasHost<S extends RowSource> = ExpandedRowsHost<S> &
-  ReturnType<typeof rowAliasViews<S>>
-type RowTreeHost<S extends RowSource> = RowAliasHost<S> &
-  ReturnType<typeof rowTreeViews<S>>
-type RowOrderHost<S extends RowSource> = RowTreeHost<S> &
-  ReturnType<typeof rowOrderViews<S>>
-type RowColorsHost<S extends RowSource> = RowOrderHost<S> &
-  ReturnType<typeof resolvedRowColorViews<S>>
-type EditableRowsHost<S extends RowSource> = RowColorsHost<S> &
-  ReturnType<typeof editableRowViews<S>>
-type ClusterableRowsHost<S extends RowSource> = EditableRowsHost<S> &
-  ReturnType<typeof clusterableRowViews<S>>
-type BandedRowsHost<S extends RowSource> = ClusterableRowsHost<S> &
+type ArrangementInputsHost<S extends RowSource> = TreeSidebarRowInputs<S> &
+  ReturnType<typeof rowArrangementInputViews<S>>
+type ArrangedRowsHost<S extends RowSource> = ArrangementInputsHost<S> &
+  ReturnType<typeof arrangedRowViews<S>>
+type BandedRowsHost<S extends RowSource> = ArrangedRowsHost<S> &
   ReturnType<typeof bandedRowViews<S>>
-type BandedSourcesHost<S extends RowSource> = BandedRowsHost<S> &
-  ReturnType<typeof bandedSourceViews<S>>
 
 /**
- * The first stage of the rows a display draws: the rows at the granularity
- * drawn, and what reads the hooks alone.
+ * What arranging the rows reads, off the hooks and the config alone: the rows
+ * at the granularity drawn and the names they answer to, the trees and the
+ * order they give, the band a row stacks in, and the color deals. A layer of
+ * its own because `rowAlias`, `rowOrder` and `rowBand` are hooks, which the
+ * layers after it read through `self`.
  */
-export function expandedRowViews<S extends RowSource>(
+export function rowArrangementInputViews<S extends RowSource>(
   self: TreeSidebarRowInputs<S>,
 ) {
   return {
@@ -369,12 +360,103 @@ export function expandedRowViews<S extends RowSource>(
     },
     /**
      * #getter
+     * Overridable hook: the name each row also answers to, read off
+     * `rowParent`: a refining row its parent's, and a `finerRows` row the
+     * drawn row it refines. Undefined while no row refines another. MAF
+     * reads it off a copy row's name instead, since a copy exists at some
+     * loci only and a stored name must answer where no block aligns it.
+     */
+    get rowAlias(): RowAlias | undefined {
+      return rowAliasOver(this.expandedRows, self.finerRows, row =>
+        self.rowParent(row),
+      )
+    },
+    /**
+     * #getter
+     * The rows refining each parent no row draws, in their order: what a
+     * tree leaf naming that parent forks into, as a sample leaf of a tree
+     * clustered per sample forks over its haplotype rows.
+     */
+    get rowForks(): ReadonlyMap<string, readonly string[]> {
+      const rows = this.expandedRows
+      const drawn = new Set(rows.map(row => row.name))
+      const forks = new Map<string, string[]>()
+      for (const row of rows) {
+        const parent = self.rowParent(row)?.name
+        if (parent !== undefined && !drawn.has(parent)) {
+          const kids = forks.get(parent)
+          if (kids) {
+            kids.push(row.name)
+          } else {
+            forks.set(parent, [row.name])
+          }
+        }
+      }
+      return forks
+    },
+    /**
+     * #getter
      * `guideTreeNewick` parsed and rotated towards `rows.sort`; undefined
      * while the display supplies none.
      */
     get guideTree(): HierarchyNode<ClusterNodeData> | undefined {
       const newick = self.guideTreeNewick
       return newick ? buildTree(newick, self.rowSort) : undefined
+    },
+    /**
+     * #getter
+     * Whether the rotated guide tree lists `rows.sort`'s names in
+     * `rows.sort`'s order, which holds exactly when some rotation of it
+     * does.
+     */
+    get guideTreeHonoursDomain(): boolean {
+      const { guideTree } = this
+      return !!guideTree && listsInOrder(getLeafNames(guideTree), self.rowSort)
+    },
+    /**
+     * #getter
+     * The tree that arranges the rows, as newick: `rows.tree`, else the
+     * guide tree while `guideTreeHonoursDomain`. A reorder no rotation
+     * produces hides the guide tree, and a reset brings it back.
+     */
+    get rowTree(): string | undefined {
+      return (
+        self.storedRowTree ??
+        (this.guideTreeHonoursDomain ? self.guideTreeNewick : undefined)
+      )
+    },
+    /**
+     * #getter
+     * `rowTree` parsed. A run rotated its tree in the same write as the
+     * order it produced; a tree that arrived as data rotates towards
+     * `rows.sort` here, and the guide tree is `guideTree`'s parse.
+     */
+    get parsedTree(): HierarchyNode<ClusterNodeData> | undefined {
+      const tree = self.storedRowTree
+      if (tree) {
+        const forks = this.rowForks
+        return buildTree(
+          tree,
+          self.rowTreeProvenance ? [] : self.rowSort,
+          forks.size > 0 ? leaf => forks.get(leaf) : undefined,
+        )
+      }
+      return this.guideTreeHonoursDomain ? this.guideTree : undefined
+    },
+    /**
+     * #getter
+     * Overridable hook: the row names in display order. A tree that
+     * arrived as data (a supplied `rows.tree` or a guide tree) leads with
+     * its leaves, then `rows.sort` for the rows it lacks. `rows.sort`
+     * alone otherwise, since a computed tree's run wrote its leaf order
+     * there and a later `rows.sort` write is the reader's.
+     */
+    get rowOrder(): readonly string[] {
+      const { parsedTree } = this
+      const { rowSort, rowTreeProvenance } = self
+      return parsedTree && !rowTreeProvenance
+        ? [...getLeafNames(parsedTree), ...rowSort]
+        : rowSort
     },
     /**
      * #getter
@@ -393,73 +475,12 @@ export function expandedRowViews<S extends RowSource>(
     get rowColorSetting(): RowColorSetting {
       return withPinnedColors(self.rowColorChannel, self.rowColorPins)
     },
-  }
-}
-
-/** The second stage: what reads the expanded rows. */
-export function rowAliasViews<S extends RowSource>(self: ExpandedRowsHost<S>) {
-  return {
-    /**
-     * #getter
-     * Overridable hook: the name each row also answers to, read off
-     * `rowParent`: a refining row its parent's, and a `finerRows` row the
-     * drawn row it refines. Undefined while no row refines another. MAF
-     * reads it off a copy row's name instead, since a copy exists at some
-     * loci only and a stored name must answer where no block aligns it.
-     */
-    get rowAlias(): RowAlias | undefined {
-      return rowAliasOver(self.expandedRows, self.finerRows, row =>
-        self.rowParent(row),
-      )
-    },
-    /**
-     * #getter
-     * The rows refining each parent no row draws, in their order: what a
-     * tree leaf naming that parent forks into, as a sample leaf of a tree
-     * clustered per sample forks over its haplotype rows.
-     */
-    get rowForks(): ReadonlyMap<string, readonly string[]> {
-      const rows = self.expandedRows
-      const drawn = new Set(rows.map(row => row.name))
-      const forks = new Map<string, string[]>()
-      for (const row of rows) {
-        const parent = self.rowParent(row)?.name
-        if (parent !== undefined && !drawn.has(parent)) {
-          const kids = forks.get(parent)
-          if (kids) {
-            kids.push(row.name)
-          } else {
-            forks.set(parent, [row.name])
-          }
-        }
-      }
-      return forks
-    },
-    /**
-     * #getter
-     * Whether the rotated guide tree lists `rows.sort`'s names in
-     * `rows.sort`'s order, which holds exactly when some rotation of it
-     * does.
-     */
-    get guideTreeHonoursDomain(): boolean {
-      const { guideTree } = self
-      return !!guideTree && listsInOrder(getLeafNames(guideTree), self.rowSort)
-    },
-    /**
-     * #getter
-     * The rows the palette deals over: `expandedRows`, in the order their
-     * source lists them, so no `rows.sort` (the config's or a reorder's),
-     * focus or relabel recolors a row, and a tables export deals the same.
-     */
-    get rowColorDealRows(): readonly S[] {
-      return self.expandedRows
-    },
     /**
      * #getter
      * The field that colors the rows, or '' for `name`.
      */
     get rowColorField(): string {
-      const { field } = self.rowColorSetting
+      const { field } = this.rowColorSetting
       return field === 'name' ? '' : field
     },
     /**
@@ -471,54 +492,14 @@ export function rowAliasViews<S extends RowSource>(self: ExpandedRowsHost<S>) {
       const field = this.rowColorField
       return field ? capitalizeFirst(field) : self.rowNoun
     },
-  }
-}
-
-/** The third stage: the narrowing, the tree and the deal. */
-export function rowTreeViews<S extends RowSource>(self: RowAliasHost<S>) {
-  return {
     /**
      * #getter
-     * What narrows the rows shown: `rowFilter`, then `rowFocus`, through
-     * `rowAlias`. The one narrowing the rows drawn, the rows a run
-     * clusters, the tree, a fetch's samples and an export all read.
+     * The rows the palette deals over: `expandedRows`, in the order their
+     * source lists them, so no `rows.sort` (the config's or a reorder's),
+     * focus or relabel recolors a row, and a tables export deals the same.
      */
-    get rowNarrowing(): RowNarrowing {
-      return {
-        kept: self.rowFocus ?? [],
-        filter: self.rowFilter,
-        rowAlias: self.rowAlias,
-      }
-    },
-    /**
-     * #getter
-     * The tree that arranges the rows, as newick: `rows.tree`, else the
-     * guide tree while `guideTreeHonoursDomain`. A reorder no rotation
-     * produces hides the guide tree, and a reset brings it back.
-     */
-    get rowTree(): string | undefined {
-      return (
-        self.storedRowTree ??
-        (self.guideTreeHonoursDomain ? self.guideTreeNewick : undefined)
-      )
-    },
-    /**
-     * #getter
-     * `rowTree` parsed. A run rotated its tree in the same write as the
-     * order it produced; a tree that arrived as data rotates towards
-     * `rows.sort` here, and the guide tree is `guideTree`'s parse.
-     */
-    get parsedTree(): HierarchyNode<ClusterNodeData> | undefined {
-      const tree = self.storedRowTree
-      if (tree) {
-        const forks = self.rowForks
-        return buildTree(
-          tree,
-          self.rowTreeProvenance ? [] : self.rowSort,
-          forks.size > 0 ? leaf => forks.get(leaf) : undefined,
-        )
-      }
-      return self.guideTreeHonoursDomain ? self.guideTree : undefined
+    get rowColorDealRows(): readonly S[] {
+      return this.expandedRows
     },
     /**
      * #method
@@ -531,37 +512,10 @@ export function rowTreeViews<S extends RowSource>(self: RowAliasHost<S>) {
       const lifted = liftRowColor(setting)
       return dealValueColors(
         lifted,
-        () => self.rowColorDealRows,
-        self.rowPaletteDeals,
+        () => this.rowColorDealRows,
+        this.rowPaletteDeals,
         self.rowColorDeclaredValues(lifted.field),
       )
-    },
-  }
-}
-
-/** The fourth stage: the order and the dealt colors. */
-export function rowOrderViews<S extends RowSource>(self: RowTreeHost<S>) {
-  return {
-    /**
-     * #method
-     * `rows` narrowed by `rowNarrowing`: `filter`, then `kept`.
-     */
-    narrowRows<T extends { name: string }>(rows: T[]): T[] {
-      return narrowRows(rows, self.rowNarrowing)
-    },
-    /**
-     * #getter
-     * Overridable hook: the row names in display order. A tree that
-     * arrived as data (a supplied `rows.tree` or a guide tree) leads with
-     * its leaves, then `rows.sort` for the rows it lacks. `rows.sort`
-     * alone otherwise, since a computed tree's run wrote its leaf order
-     * there and a later `rows.sort` write is the reader's.
-     */
-    get rowOrder(): readonly string[] {
-      const { parsedTree, rowSort, rowTreeProvenance } = self
-      return parsedTree && !rowTreeProvenance
-        ? [...getLeafNames(parsedTree), ...rowSort]
-        : rowSort
     },
     /**
      * #getter
@@ -569,7 +523,7 @@ export function rowOrderViews<S extends RowSource>(self: RowTreeHost<S>) {
      * listed pairs first and then in the order dealt.
      */
     get dealtValueColors(): ReadonlyMap<string, string> {
-      return self.dealtValueColorsFor(self.rowColorSetting)
+      return this.dealtValueColorsFor(this.rowColorSetting)
     },
     /**
      * #getter
@@ -587,8 +541,8 @@ export function rowOrderViews<S extends RowSource>(self: RowTreeHost<S>) {
             setting,
             dealt: dealValueColors(
               setting,
-              () => self.rowColorDealRows,
-              self.rowPaletteDeals,
+              () => this.rowColorDealRows,
+              this.rowPaletteDeals,
               self.rowColorDeclaredValues(setting.field),
               position => annotationPaletteColorAt(setting.position, position),
             ),
@@ -597,11 +551,35 @@ export function rowOrderViews<S extends RowSource>(self: RowTreeHost<S>) {
   }
 }
 
-/** The fifth stage: each row's color. */
-export function resolvedRowColorViews<S extends RowSource>(
-  self: RowOrderHost<S>,
+/**
+ * The rows arranged, colored and narrowed, the row color's key, and the tree
+ * narrowed as the rows are, with the tree's hooks. A layer of its own because
+ * `clusterableSources` is a hook, which banding reads through `self`.
+ */
+export function arrangedRowViews<S extends RowSource>(
+  self: ArrangementInputsHost<S>,
 ) {
   return {
+    /**
+     * #getter
+     * What narrows the rows shown: `rowFilter`, then `rowFocus`, through
+     * `rowAlias`. The one narrowing the rows drawn, the rows a run
+     * clusters, the tree, a fetch's samples and an export all read.
+     */
+    get rowNarrowing(): RowNarrowing {
+      return {
+        kept: self.rowFocus ?? [],
+        filter: self.rowFilter,
+        rowAlias: self.rowAlias,
+      }
+    },
+    /**
+     * #method
+     * `rows` narrowed by `rowNarrowing`: `filter`, then `kept`.
+     */
+    narrowRows<T extends { name: string }>(rows: T[]): T[] {
+      return narrowRows(rows, this.rowNarrowing)
+    },
     /**
      * #getter
      * Each row's color, by name: its `rows.colors` entry, else its
@@ -618,12 +596,6 @@ export function resolvedRowColorViews<S extends RowSource>(
         self.rowAlias,
       )
     },
-  }
-}
-
-/** The sixth stage: the arranged rows and what their key reads. */
-export function editableRowViews<S extends RowSource>(self: RowColorsHost<S>) {
-  return {
     /**
      * #getter
      * The rows in the reader's arrangement, each with its resolved color
@@ -638,8 +610,18 @@ export function editableRowViews<S extends RowSource>(self: RowColorsHost<S>) {
           { domain: self.rowOrder, labels: self.rowLabels },
           self,
         ),
-        self.resolvedRowColors,
+        this.resolvedRowColors,
       )
+    },
+    /**
+     * #getter
+     * Overridable hook: `editableSources` narrowed to the focus, the rows a
+     * clustering run clusters, and deliberately not the display's decorated
+     * `sources`, whose palette and band a run has no business writing back.
+     * MAF applies a focus as given on a track that discovers its species.
+     */
+    get clusterableSources(): S[] {
+      return this.narrowRows(this.editableSources)
     },
     /**
      * #getter
@@ -651,28 +633,10 @@ export function editableRowViews<S extends RowSource>(self: RowColorsHost<S>) {
         setting,
         pairs: pairedColorsOf(setting.scale),
         dealt: self.dealtValueColors,
-        resolved: self.resolvedRowColors,
+        resolved: this.resolvedRowColors,
         pinned: self.rowColorPins,
         alias: self.rowAlias,
       }
-    },
-  }
-}
-
-/** The seventh stage: the rows narrowed, and the row color key. */
-export function clusterableRowViews<S extends RowSource>(
-  self: EditableRowsHost<S>,
-) {
-  return {
-    /**
-     * #getter
-     * Overridable hook: `editableSources` narrowed to the focus, the rows a
-     * clustering run clusters, and deliberately not the display's decorated
-     * `sources`, whose palette and band a run has no business writing back.
-     * MAF applies a focus as given on a track that discovers its species.
-     */
-    get clusterableSources(): S[] {
-      return self.narrowRows(self.editableSources)
     },
     /**
      * #getter
@@ -686,11 +650,11 @@ export function clusterableRowViews<S extends RowSource>(
       const field = self.rowColorField
       const keyedLabels = () => {
         const labels = new Map(
-          self.editableSources.map(row => [row.name, row.label ?? row.name]),
+          this.editableSources.map(row => [row.name, row.label ?? row.name]),
         )
         return rowColorKeyEntries(
           self.rowColorDealRows,
-          self.rowColorKeyInputs,
+          this.rowColorKeyInputs,
           name => labels.get(name) ?? name,
         )
       }
@@ -704,13 +668,81 @@ export function clusterableRowViews<S extends RowSource>(
       }
       return entries.length > 0 ? [rowKey] : []
     },
+    /**
+     * #getter
+     * Whether the "Showing N of M rows" chip shows: something narrows the
+     * rows, and the rows are known, so no "0 of 0" shows before the first
+     * region lands.
+     */
+    get rowNarrowingShows(): boolean {
+      return narrows(this.rowNarrowing) && self.expandedRows.length > 0
+    },
+    /**
+     * #getter
+     * The line the "Showing N of M rows" chip takes above the first row
+     * while `rowNarrowingShows`, 0 otherwise.
+     */
+    get rowFocusLineHeight(): number {
+      return this.rowNarrowingShows ? SIDEBAR_HINT_LINE_PX : 0
+    },
+    /**
+     * #getter
+     * The parsed tree narrowed by `rowNarrowing`, a leaf no row has
+     * reading as a row with no attributes; none where it keeps no leaf.
+     */
+    get root(): HierarchyNode<ClusterNodeData> | undefined {
+      const tree = self.parsedTree
+      const narrowing = this.rowNarrowing
+      // the rows' attributes, read only where a filter tests them, so a
+      // region arrival re-prunes no tree `kept` alone narrows
+      const rows = new Map<string, { name: string }>(
+        narrowing.filter.length > 0
+          ? self.expandedRows.map(row => [row.name, row])
+          : [],
+      )
+      const leaves =
+        tree && narrows(narrowing)
+          ? narrowRows(
+              getLeafNames(tree).map(name => rows.get(name) ?? { name }),
+              narrowing,
+            ).map(leaf => leaf.name)
+          : undefined
+      return tree && leaves
+        ? leaves.length > 0
+          ? treeOfLeaves(tree, leaves)
+          : undefined
+        : tree
+    },
+    /**
+     * #getter
+     * Overridable hook: the tree `hierarchy` positions, `root` by default.
+     * `computeClusterHierarchy` declines to position a tree whose leaves are
+     * no longer the rows drawn, so a display that hides a row prunes it from
+     * the tree here too, or the whole dendrogram goes with the row.
+     */
+    get treeRoot(): HierarchyNode<ClusterNodeData> | undefined {
+      return this.root
+    },
+    /**
+     * #getter
+     * Overridable hook: whether the dendrogram draws at all, true by
+     * default; off wherever the rows it would lay against are not drawn.
+     * This is the single gate: the on-screen sidebar, the SVG export,
+     * `spatialIndex` (subtree hover) and the tooltip dead zone the sidebar
+     * reserves all read `hierarchy`, so nothing keeps drawing or reserving
+     * space when the tree is off.
+     */
+    get drawsTree(): boolean {
+      return true
+    },
   }
 }
 
-/** The eighth stage: the narrowed rows stacked in bands. */
-export function bandedRowViews<S extends RowSource>(
-  self: ClusterableRowsHost<S>,
-) {
+/**
+ * The narrowed rows stacked in bands, and the rows drawn. A layer of its own
+ * because `sources` is a hook, which the drawn-row layer reads through `self`.
+ */
+export function bandedRowViews<S extends RowSource>(self: ArrangedRowsHost<S>) {
   return {
     /**
      * #getter
@@ -723,14 +755,6 @@ export function bandedRowViews<S extends RowSource>(
         ? bandRows(rows, row => self.rowBand(row), banding)
         : { rows, bands: [] }
     },
-  }
-}
-
-/** The ninth stage: the banded rows and their bands. */
-export function bandedSourceViews<S extends RowSource>(
-  self: BandedRowsHost<S>,
-) {
-  return {
     /**
      * #getter
      * `clusterableSources` stacked in bands by `rowBanding`, each band's rows
@@ -738,7 +762,7 @@ export function bandedSourceViews<S extends RowSource>(
      * over. `clusterableSources` itself while nothing bands.
      */
     get bandedSources(): S[] {
-      return self.bandedRows.rows
+      return this.bandedRows.rows
     },
     /**
      * #getter
@@ -746,32 +770,25 @@ export function bandedSourceViews<S extends RowSource>(
      * none while nothing bands.
      */
     get rowBands(): readonly RowBand[] {
-      return self.bandedRows.bands
+      return this.bandedRows.bands
     },
-  }
-}
-
-/** The last stage: the rows drawn. */
-export function sourceViews<S extends RowSource>(self: BandedSourcesHost<S>) {
-  return {
     /**
      * #getter
      * Overridable hook: the rows drawn, top to bottom, `bandedSources` by
      * default. MAF drops its hidden reference row.
      */
     get sources(): S[] {
-      return self.bandedSources
+      return this.bandedSources
     },
   }
 }
 
-type DrawnRowsHost<S extends RowSource> = BandedSourcesHost<S> &
-  ReturnType<typeof sourceViews<S>>
-
-/** The `rows.annotations` columns drawn beside the rows drawn, and the keys. */
-export function rowAnnotationViews<S extends RowSource>(
-  self: DrawnRowsHost<S>,
-) {
+/**
+ * What reads the rows drawn: the `rows.annotations` columns beside them, the
+ * row color keys, the labels over the color columns, and where the rows
+ * start in the display's box.
+ */
+export function drawnRowViews<S extends RowSource>(self: BandedRowsHost<S>) {
   return {
     /**
      * #getter
@@ -811,50 +828,6 @@ export function rowAnnotationViews<S extends RowSource>(
         ...rowAnnotationScales(self.sources, this.rowAnnotationColumns),
       ]
     },
-  }
-}
-
-type SourcesHost<S extends RowSource> = DrawnRowsHost<S> &
-  ReturnType<typeof rowAnnotationViews<S>>
-
-/** Whether the rows drawn are narrowed, which a chip above them says. */
-export function rowNarrowingShowsViews<S extends RowSource>(
-  self: SourcesHost<S>,
-) {
-  return {
-    /**
-     * #getter
-     * Whether the "Showing N of M rows" chip shows: something narrows the
-     * rows, and the rows are known, so no "0 of 0" shows before the first
-     * region lands.
-     */
-    get rowNarrowingShows(): boolean {
-      return narrows(self.rowNarrowing) && self.expandedRows.length > 0
-    },
-  }
-}
-
-/** The line the narrowing chip takes above the rows. */
-export function rowFocusLineViews(self: { rowNarrowingShows: boolean }) {
-  return {
-    /**
-     * #getter
-     * The line the "Showing N of M rows" chip takes above the first row
-     * while `rowNarrowingShows`, 0 otherwise.
-     */
-    get rowFocusLineHeight(): number {
-      return self.rowNarrowingShows ? SIDEBAR_HINT_LINE_PX : 0
-    },
-  }
-}
-
-/** The labels over the color columns beside the row labels. */
-export function rowColumnLabelViews(self: {
-  sources: readonly RowLabelSource[]
-  rowColorTitle: string
-  rowAnnotationColumns: readonly RowAnnotationDrawn[]
-}) {
-  return {
     /**
      * #getter
      * The label over each color column beside the row labels, the row
@@ -867,21 +840,10 @@ export function rowColumnLabelViews(self: {
         ...(self.sources.some(source => source.rowColor)
           ? [self.rowColorTitle]
           : []),
-        ...self.rowAnnotationColumns.map(column => column.setting.title),
+        ...this.rowAnnotationColumns.map(column => column.setting.title),
       ]
       return titles.length > 1 ? titles : []
     },
-  }
-}
-
-/** Where the rows start in the display's box. */
-export function rowsTopOffsetViews(self: {
-  rowsHeaderHeight: number
-  rowsHeaderControlsHeight: number
-  rowFocusLineHeight: number
-  rowColumnLabels: readonly string[]
-}) {
-  return {
     /**
      * #getter
      * The lines the sidebar stacks directly above the first row: the focus
@@ -889,7 +851,7 @@ export function rowsTopOffsetViews(self: {
      */
     get rowsLeadHeight(): number {
       return (
-        self.rowFocusLineHeight + rowColumnLabelsHeight(self.rowColumnLabels)
+        self.rowFocusLineHeight + rowColumnLabelsHeight(this.rowColumnLabels)
       )
     },
     /**
@@ -951,70 +913,6 @@ export function treeSidebarAxisConfigViews(self: TreeSidebarRowsConfigHost) {
      */
     get treeAreaWidth(): number {
       return getConf(self, ['rows', 'axis', 'width'])
-    },
-  }
-}
-
-/** The tree narrowed to the rows shown. */
-export function rowTreeRootViews<S extends RowSource>(self: SourcesHost<S>) {
-  return {
-    /**
-     * #getter
-     * The parsed tree narrowed by `rowNarrowing`, a leaf no row has
-     * reading as a row with no attributes; none where it keeps no leaf.
-     */
-    get root(): HierarchyNode<ClusterNodeData> | undefined {
-      const tree = self.parsedTree
-      const narrowing = self.rowNarrowing
-      // the rows' attributes, read only where a filter tests them, so a
-      // region arrival re-prunes no tree `kept` alone narrows
-      const rows = new Map<string, { name: string }>(
-        narrowing.filter.length > 0
-          ? self.expandedRows.map(row => [row.name, row])
-          : [],
-      )
-      const leaves =
-        tree && narrows(narrowing)
-          ? narrowRows(
-              getLeafNames(tree).map(name => rows.get(name) ?? { name }),
-              narrowing,
-            ).map(leaf => leaf.name)
-          : undefined
-      return tree && leaves
-        ? leaves.length > 0
-          ? treeOfLeaves(tree, leaves)
-          : undefined
-        : tree
-    },
-  }
-}
-
-/** The hooks the dendrogram reads, at what a display that overrides none answers. */
-export function treeSidebarTreeHookDefaults(self: {
-  root: HierarchyNode<ClusterNodeData> | undefined
-}) {
-  return {
-    /**
-     * #getter
-     * Overridable hook: the tree `hierarchy` positions, `root` by default.
-     * `computeClusterHierarchy` declines to position a tree whose leaves are
-     * no longer the rows drawn, so a display that hides a row prunes it from
-     * the tree here too, or the whole dendrogram goes with the row.
-     */
-    get treeRoot(): HierarchyNode<ClusterNodeData> | undefined {
-      return self.root
-    },
-    /**
-     * #getter
-     * Overridable hook: whether the dendrogram draws at all, true by
-     * default; off wherever the rows it would lay against are not drawn.
-     * This is the single gate: the on-screen sidebar, the SVG export,
-     * `spatialIndex` (subtree hover) and the tooltip dead zone the sidebar
-     * reserves all read `hierarchy`, so nothing keeps drawing or reserving
-     * space when the tree is off.
-     */
-    get drawsTree(): boolean {
-      return true
     },
   }
 }
@@ -1138,10 +1036,13 @@ export function listsInOrder(
 }
 
 /**
- * Installs the row chain on `model` in its one order: the hook defaults, each
- * stage from `expandedRows` through `rowsTopOffset`, and the tree's `root`
- * and its hook defaults. `TreeSidebarMixin` and each static host call it
- * after the row config views, and install their hook overrides after it.
+ * Installs the row chain on `model` in its one order: the hook defaults, then
+ * one layer per hook a later layer reads (`rowArrangementInputViews` declares
+ * `rowAlias`, `rowOrder` and `rowBand`, `arrangedRowViews`
+ * `clusterableSources`, `treeRoot` and `drawsTree`, `bandedRowViews`
+ * `sources`), then `drawnRowViews`. `TreeSidebarMixin` and each static host
+ * call it after the row config views, and install their hook overrides after
+ * it.
  */
 export function treeSidebarRowStages<S extends RowSource>() {
   return <
@@ -1154,21 +1055,8 @@ export function treeSidebarRowStages<S extends RowSource>() {
   ) =>
     model
       .views(() => treeSidebarRowHookDefaults<S>())
-      .views(self => expandedRowViews<S>(self))
-      .views(self => rowAliasViews<S>(self))
-      .views(self => rowTreeViews<S>(self))
-      .views(self => rowOrderViews<S>(self))
-      .views(self => resolvedRowColorViews<S>(self))
-      .views(self => editableRowViews<S>(self))
-      .views(self => clusterableRowViews<S>(self))
+      .views(self => rowArrangementInputViews<S>(self))
+      .views(self => arrangedRowViews<S>(self))
       .views(self => bandedRowViews<S>(self))
-      .views(self => bandedSourceViews<S>(self))
-      .views(self => sourceViews<S>(self))
-      .views(self => rowAnnotationViews<S>(self))
-      .views(self => rowNarrowingShowsViews<S>(self))
-      .views(self => rowFocusLineViews(self))
-      .views(self => rowColumnLabelViews(self))
-      .views(self => rowsTopOffsetViews(self))
-      .views(self => rowTreeRootViews<S>(self))
-      .views(self => treeSidebarTreeHookDefaults(self))
+      .views(self => drawnRowViews<S>(self))
 }

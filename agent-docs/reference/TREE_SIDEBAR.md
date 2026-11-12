@@ -167,10 +167,22 @@ colors and key, where the rows start (`rowNarrowingShows`,
 `rowFocusLineHeight`, `rowsTopOffset`), and the tree beside them (the
 `rows.axis` reads, `root`, the `treeRoot` and `drawsTree` hooks,
 `rowsContentHeight`, `hierarchy`) are written once, in
-`treeSidebarRowViews.ts`, as one views function per stage, each reading only
-through `self` what an earlier stage or a hook gives. The mixin installs them as
-`.views()` layers, so each getter stays its own computed and a display's
-override answers wherever a stage reads a hook.
+`rows/treeSidebarRowViews.ts`, and the mixin installs them as `.views()`
+layers, so each getter stays its own computed. A layer ends where a later
+getter reads a hook the chain itself declares, which it reads through `self`
+so a display's override answers; within a layer a getter reads its neighbours
+through `this`:
+
+- `treeSidebarRowHookDefaults`: the hooks at their defaults.
+- `rowArrangementInputViews`: what arranging reads off the hooks and the
+  config, `expandedRows`, the trees and the color deals, and declares
+  `rowAlias`, `rowOrder` and `rowBand`.
+- `arrangedRowViews`: `editableSources`, the narrowing, the resolved colors
+  and the row color's key, and `root`; declares `clusterableSources`,
+  `treeRoot` and `drawsTree`.
+- `bandedRowViews`: the bands, and declares `sources`.
+- `drawnRowViews`: what reads the rows drawn, the annotation columns, the
+  keys, the column labels and `rowsTopOffset`.
 
 A display writes its own hook overrides as a views function too
 (`wiggleRowHookViews`, `variantRowHookViews`), which the display installs after
