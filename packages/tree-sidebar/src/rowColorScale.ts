@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { otherName } from './arrangeRows.ts'
+import { withPairs } from './rowColorChoice.ts'
 
 import type { RowAlias } from './arrangeRows.ts'
 import type { RowAnnotationColumn, RowSource } from './types.ts'
@@ -41,40 +42,38 @@ export function withPinnedColors(
   pinned: ReadonlyMap<string, string>,
 ): RowColorSetting {
   return channel.field === 'name' && pinned.size > 0
-    ? {
-        ...channel,
-        scale: {
-          ...channel.scale,
-          domain: [...pinned.keys()],
-          range: [...pinned.values(), ...channel.scale.range],
-        },
-      }
+    ? withPairs(channel, pinned)
     : channel
 }
 
-/** The color `pinned` gives the row `name`, its own else its alias's. */
-function pinnedColorOf(
-  pinned: ReadonlyMap<string, string>,
+/**
+ * The key of `colors` the row `name` takes its color from: its own, else its
+ * alias's.
+ */
+function colorKeyOf(
+  colors: ReadonlyMap<string, string>,
   name: string,
   alias: RowAlias | undefined,
 ) {
-  return pinned.size > 0
-    ? (pinned.get(name) ?? aliasColor(pinned, name, alias))
-    : undefined
-}
-
-/** The `rows.colors` entry giving the row `name` its color, or undefined. */
-function pinnedKeyOf(
-  pinned: ReadonlyMap<string, string>,
-  name: string,
-  alias: RowAlias | undefined,
-) {
-  const other = pinned.size > 0 && alias ? otherName(alias, name) : undefined
-  return pinned.has(name)
+  const other =
+    colors.has(name) || colors.size === 0 || !alias
+      ? undefined
+      : otherName(alias, name)
+  return colors.has(name)
     ? name
-    : other !== undefined && pinned.has(other)
+    : other !== undefined && colors.has(other)
       ? other
       : undefined
+}
+
+/** The color `colors` gives the row `name`, its own else its alias's. */
+function colorOf(
+  colors: ReadonlyMap<string, string>,
+  name: string,
+  alias: RowAlias | undefined,
+) {
+  const key = colorKeyOf(colors, name, alias)
+  return key === undefined ? undefined : colors.get(key)
 }
 
 const NONE: ReadonlyMap<string, string> = new Map()
@@ -139,12 +138,11 @@ export function resolveRowColors(
   alias: RowAlias | undefined,
 ): ReadonlyMap<string, string> {
   const colors = new Map<string, string>()
-  const aliased = dealt.size > 0 ? alias : undefined
   for (const row of rows) {
     const color =
-      pinnedColorOf(pinned, row.name, alias) ??
+      colorOf(pinned, row.name, alias) ??
       (field === 'name'
-        ? (dealt.get(row.name) ?? aliasColor(dealt, row.name, aliased))
+        ? colorOf(dealt, row.name, alias)
         : dealt.get(rowFieldValue(row, field))) ??
       row.color
     if (color !== undefined) {
@@ -172,15 +170,6 @@ export function withRowColors<S extends RowSource>(
     }
   }
   return out ?? rows
-}
-
-function aliasColor(
-  dealt: ReadonlyMap<string, string>,
-  name: string,
-  alias: RowAlias | undefined,
-) {
-  const other = alias && otherName(alias, name)
-  return other === undefined ? undefined : dealt.get(other)
 }
 
 /** `field`'s value on `row`, `''` where the row has none of its own. */
@@ -222,7 +211,7 @@ function keyColor(row: RowSource, value: string, key: RowColorKeyInputs) {
 function pinnedKey(row: RowSource, key: RowColorKeyInputs) {
   return key.setting.field === 'name'
     ? undefined
-    : pinnedKeyOf(key.pinned, row.name, key.alias)
+    : colorKeyOf(key.pinned, row.name, key.alias)
 }
 
 /**
