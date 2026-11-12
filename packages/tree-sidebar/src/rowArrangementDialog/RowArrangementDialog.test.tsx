@@ -624,23 +624,18 @@ test('a color by the display does not offer still shows as chosen', () => {
   expect(pressed('Tissue')).toBe('true')
 })
 
-// Regression: the warning must consult the model live, not a snapshot taken at
-// render. Clearing custom settings drops the tree, so a subsequent Submit must
-// not pop the (now-spurious) warning.
-test('no spurious warning after Clear custom settings drops the tree', () => {
-  const rowOrderWillDropTree = jest.fn(() => true)
-  const resetRowArrangement = jest.fn(() => {
-    rowOrderWillDropTree.mockReturnValue(false)
-  })
-  const model = fakeModel({ rowOrderWillDropTree, resetRowArrangement })
-  setup(model)
+// The reset writes the model at once, so the dialog closes on it rather than
+// leaving a Cancel that could not undo it.
+test('Reset row order resets and closes, writing none of the edits held', () => {
+  const model = fakeModel()
+  const { handleClose } = setup(model)
 
-  fireEvent.click(screen.getByText('Clear custom settings'))
-  expect(resetRowArrangement).toHaveBeenCalled()
+  pickColor(gridRow('b').getByTitle(AUTO), '#222222', '#00ff00')
+  fireEvent.click(screen.getByText('Reset row order'))
 
-  fireEvent.click(screen.getByText('Submit'))
-  expect(screen.queryByText(/Clear cluster tree/)).toBeNull()
-  expect(model.applyRowEdits).toHaveBeenCalled()
+  expect(model.resetRowArrangement).toHaveBeenCalled()
+  expect(handleClose).toHaveBeenCalled()
+  expect(model.applyRowEdits).not.toHaveBeenCalled()
 })
 
 // The display's own color, on one line above the rows, held here and written
@@ -731,7 +726,7 @@ describe('the plot color line', () => {
 
 // One row has nothing to arrange, so the dialog is the plot color and the
 // buttons — the whole color UI a single-source track needs.
-test('showRows false drops the row choice, the grid and the bulk editor', () => {
+test('showRows false drops the row choice, the grid, the bulk editor and the reset', () => {
   render(
     <RowArrangementDialog
       model={fakeModel({ editableSources: [{ name: 'a' }] })}
@@ -751,6 +746,7 @@ test('showRows false drops the row choice, the grid and the bulk editor', () => 
   expect(screen.queryByText('Color rows by')).toBeNull()
   expect(screen.queryByText('Bulk row editor')).toBeNull()
   expect(screen.queryByRole('grid')).toBeNull()
+  expect(screen.queryByText('Reset row order')).toBeNull()
 })
 
 // A stacked display's config can paint the listed rows and grey the rest
@@ -911,22 +907,6 @@ describe('the Other values swatch', () => {
     )
 
     expect(otherCount()).toBe('0 rows')
-  })
-
-  test('Clear custom settings drops a color set on it', () => {
-    const model = byGroupPair()
-    setup(model)
-
-    pickColor(
-      otherValues().previousElementSibling!.firstElementChild!,
-      'blue',
-      '#999999',
-    )
-    fireEvent.click(screen.getByText('Clear custom settings'))
-    fireEvent.click(screen.getByText('Submit'))
-
-    expect(model.resetRowArrangement).toHaveBeenCalled()
-    expect(submitted(model)[1]).toBeUndefined()
   })
 
   test('None leaves the values no pair names uncolored', () => {

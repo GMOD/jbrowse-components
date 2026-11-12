@@ -125,16 +125,14 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
   onEditAsJson,
 }: RowArrangementDialogProps<S>) {
   const { classes } = useStyles()
-  // Undefined until a swatch is touched, so a reset re-reads the model rather
-  // than restoring a pair snapshotted before it.
+  // Undefined until a swatch is touched, which shows the model's pair.
   const [plotPair, setPlotPair] = useState<{
     above: string
     below: string
   }>()
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(model.editableSources)
-  const [openedChoice, setOpenedChoice] = useState(model.rowColorChoice)
-  const [choice, setChoice] = useState(openedChoice)
+  const [choice, setChoice] = useState(model.rowColorChoice)
   // The `rows.color` object each choice the reader edited in this sitting
   // writes; an unedited one writes what it starts from.
   const [drafts, setDrafts] = useState<
@@ -179,7 +177,7 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
   // An untouched panel writes no color object, so the config's own stands
   // whatever the panel can spell.
   const colorTouched =
-    choice !== openedChoice ||
+    choice !== model.rowColorChoice ||
     Object.hasOwn(drafts, choice) ||
     !compareStructural(
       Object.fromEntries(pins),
@@ -214,17 +212,6 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
     } else {
       submit()
     }
-  }
-
-  // Drop custom settings and re-seed the grid from the model's persisted state.
-  const resetToModel = () => {
-    model.resetRowArrangement()
-    setCurrLayout(model.editableSources)
-    setOpenedChoice(model.rowColorChoice)
-    setChoice(model.rowColorChoice)
-    setDrafts({})
-    setPins(model.rowColorPins)
-    setPlotPair(undefined)
   }
 
   return (
@@ -348,9 +335,18 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
                 Edit plot...
               </Button>
             ) : null}
-            <Button variant="contained" color="inherit" onClick={resetToModel}>
-              Clear custom settings
-            </Button>
+            {showRows ? (
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={() => {
+                  model.resetRowArrangement()
+                  handleClose()
+                }}
+              >
+                Reset row order
+              </Button>
+            ) : null}
             <Button variant="contained" color="secondary" onClick={handleClose}>
               Cancel
             </Button>
