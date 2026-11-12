@@ -6,7 +6,6 @@ import {
   measureText,
   parseBpString,
   parseLocString,
-  toLocale,
 } from '@jbrowse/core/util'
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
@@ -977,7 +976,7 @@ export function getScalebarLabels({
   const refNameLabelPx = runRefNameLabelPx(runs, orientation)
   for (const [i, run] of runs.entries()) {
     const runLeft = run.offsetPx - firstBlockOffset
-    const startLabel = regionStartLabel(run)
+    const startLabel = regionStartLabel(run, bpPerPx)
     const reservedPx = startLabel
       ? startLabel.x + tickLabelWidth(startLabel.label) / 2
       : refNameLabelPx[i]!
@@ -1014,8 +1013,11 @@ const REGION_START_LABEL_INSET_PX = 4
 
 // A region following another of the same refName gets no refName label, so its
 // first coordinate names it instead. `x` is the label's centre.
-function regionStartLabel(run: BlockRun) {
-  const label = toLocale(run.reversed ? run.end : run.start + 1)
+function regionStartLabel(run: BlockRun, bpPerPx: number) {
+  const label = getTickDisplayStr(
+    run.reversed ? run.end : run.start + 1,
+    bpPerPx,
+  )
   const w = tickLabelWidth(label)
   return run.isLeftEndOfDisplayedRegion &&
     !run.labeled &&

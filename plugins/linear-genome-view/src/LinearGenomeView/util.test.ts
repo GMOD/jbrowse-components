@@ -394,6 +394,19 @@ describe('the scalebar geometry off the static blocks', () => {
     expect(labels[0]!.x).toBe(100 + 4 + w / 2)
   })
 
+  test('a first base is written in the units the ticks use', () => {
+    const labels = getScalebarLabels({
+      blocks: [
+        region(0, 0, 0, 100, { end: 50_000_000 }),
+        region(1, 100_000_000, 100, 100, { end: 100_100_000 }),
+      ],
+      firstBlockOffset: 0,
+      bpPerPx: 1000,
+      orientation: 'forward',
+    })
+    expect(labels[0]!.label).toBe('100M')
+  })
+
   test('a reversed region is named by the base at its left edge', () => {
     const labels = getScalebarLabels({
       blocks: [
