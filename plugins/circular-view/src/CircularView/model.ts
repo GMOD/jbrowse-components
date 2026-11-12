@@ -725,24 +725,27 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * the first ribbon display that paints an ideogram, if any
+       */
+      get paintingDisplay() {
+        return this.chordSyntenyDisplays.find(
+          d => d.paintedAssemblyName !== undefined,
+        )
+      },
+      /**
+       * #getter
        * the genome whose ideogram a ribbon track paints by what aligns to it
        * from the first, rather than in the colors of its chromosomes
        */
       get paintedAssemblyName() {
-        return this.chordSyntenyDisplays.find(
-          d => d.paintedAssemblyName !== undefined,
-        )?.paintedAssemblyName
+        return this.paintingDisplay?.paintedAssemblyName
       },
       /**
        * #getter
        * that genome's paint, by slice key
        */
       get ideogramPaint(): ReadonlyMap<string, PaintRun[]> {
-        return (
-          this.chordSyntenyDisplays.find(
-            d => d.paintedAssemblyName === this.paintedAssemblyName,
-          )?.ideogramPaint ?? new Map()
-        )
+        return this.paintingDisplay?.ideogramPaint ?? new Map()
       },
       /**
        * #getter
