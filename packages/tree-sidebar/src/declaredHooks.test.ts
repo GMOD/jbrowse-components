@@ -28,6 +28,8 @@ function mixinMembers() {
   const src = [
     'packages/tree-sidebar/src/TreeSidebarMixin.ts',
     'packages/tree-sidebar/src/rows/treeSidebarRowViews.ts',
+    'packages/tree-sidebar/src/color/rowColorViews.ts',
+    'packages/tree-sidebar/src/rows/rowNoticeViews.ts',
   ]
     .map(read)
     .join('\n')

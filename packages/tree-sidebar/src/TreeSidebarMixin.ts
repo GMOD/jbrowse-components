@@ -1,45 +1,22 @@
-import {
-  canonicalSpelling,
-  getConfigurationSchemaMetadata,
-  isKeyedWrites,
-  isSlotDefinitionEntry,
-  keyedBase,
-  readConfObject,
-  setConf,
-} from '@jbrowse/core/configuration'
+import { setConf } from '@jbrowse/core/configuration'
 import { persistTrackConfigNow } from '@jbrowse/core/util'
-import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
-import {
-  predicatesOf,
-  unreadFieldNotice,
-} from '@jbrowse/core/util/fieldPredicate'
 import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { rowAnnotationNotices } from './color/rowAnnotationNotices.ts'
 import {
   liftRowColor,
-  pinnedColorsOf,
-  rowColorChoiceOf,
   rowColorMembers,
   rowColorResetTarget,
   sameRowColor,
-  startingRowColor,
 } from './color/rowColorChoice.ts'
 import { ROW_COLOR_SCALE_ID, rowColorKeyValue } from './color/rowColorKey.ts'
-import { withPinnedColors } from './color/rowColors.ts'
+import { rowColorFieldViews, rowColorViews } from './color/rowColorViews.ts'
 import { labelEdits } from './rows/arrangeRows.ts'
+import { baseRows, liveRows, present } from './rows/baseRows.ts'
 import { focusRows } from './rows/focusRows.ts'
-import {
-  filteredRows,
-  listedNames,
-  rowFilterText,
-  unmatchedKeptNames,
-  unreadRowFields,
-  keptRows,
-} from './rows/narrowRows.ts'
-import { IDENTITY_FIELDS, extraColumns } from './rows/rowFields.ts'
+import { filteredRows } from './rows/narrowRows.ts'
+import { rowNoticeViews } from './rows/rowNoticeViews.ts'
 import {
   hierarchyViews,
   rowSidebarViews,
@@ -62,16 +39,13 @@ import { buildSpatialIndex } from './tree/spatialIndex.ts'
 import type { ClusterProvenance } from './clustering/clusterProvenance.ts'
 import type { RowColorEdits } from './color/rowColorChoice.ts'
 import type { RowColorSetting } from './color/rowColors.ts'
+import type { ArrangementMember } from './rows/baseRows.ts'
 import type { RowSortSpec } from './rows/rowSort.ts'
 import type { TreeSidebarConfigModel } from './rows/treeSidebarRowViews.ts'
 import type { SvgSidebarProps } from './sidebar/svgSidebarWidth.ts'
 import type { TreeSpatialIndex } from './tree/spatialIndex.ts'
 import type { HoveredTreeNode, Row } from './types.ts'
-import type {
-  AnyConfigurationModel,
-  KeyedWrites,
-} from '@jbrowse/core/configuration'
-import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 import type { SidebarBounds } from '@jbrowse/display-ui'
 
@@ -88,87 +62,11 @@ export interface TreeSidebarHost {
   setScrollTop(top: number): void
 }
 
-const host = (self: object) => self as TreeSidebarHost
-
-const withRowHeight = <T extends object>(self: T) =>
-  self as T & Pick<TreeSidebarHost, 'effectiveRowHeight'>
-
-type ArrangementMember = (typeof ROW_ARRANGEMENT_MEMBERS)[number]
-type RowsMembers = Partial<
-  Record<ArrangementMember | 'filter' | 'color', unknown>
->
-
-// A row's name, label and colors are what a row color is set on, never what
-// one is set by.
-const NOT_COLOR_FIELDS = new Set<string>([
-  ...IDENTITY_FIELDS,
-  'id',
-  'label',
-  'color',
-  'rowColor',
-])
+const host = <T extends object>(self: T) => self as T & TreeSidebarHost
 
 // What "Reset row order" is offered on: the shown rows have a clear of their
 // own, the chip's "Show all", and a reset still takes them with the rest.
 const ORDER_MEMBERS = ROW_ARRANGEMENT_MEMBERS.filter(m => m !== 'kept')
-
-// An empty list or map is the member's default, which a stripped snapshot
-// leaves out, so the two spellings compare as one.
-function present(value: unknown) {
-  if (Array.isArray(value)) {
-    return value.length ? value : undefined
-  }
-  if (typeof value === 'object' && value !== null) {
-    return Object.keys(value).length ? value : undefined
-  }
-  return value
-}
-
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v)
-
-// The one read of the base's `rows`: in the spelling the live one is stored
-// in, so a `rows.tree` written as its newick compares equal to the object it
-// lifts to, less what names the base field's rows once the live rows are on
-// another field (the keyed rule, ADR-257), so a reset returns no arrangement
-// of the old rows to the new ones. A base stating no field names no field, so
-// its arrangement returns on any, as a write from an empty field keeps one.
-// It does not name the field a mark display's default plot picks: re-derived
-// from the latest scan that is wrong after a reload or a rescan, and a
-// recorded pick is display state a re-shown track loses.
-function baseRows(self: object): RowsMembers {
-  const { rows } = baseDisplayConfig(self)
-  const live: AnyConfigurationModel = host(self).configuration.rows
-  const meta = getConfigurationSchemaMetadata(live)!
-  const { writes } = meta.options
-  const base = isRecord(rows) ? canonicalSpelling(meta, rows) : {}
-  return isKeyedWrites(writes)
-    ? keyedBase(
-        writes,
-        { [writes.keyedBy]: declaredDefaultOf(meta, writes.keyedBy), ...base },
-        keyedFieldOf(live, writes),
-      )
-    : base
-}
-
-// What a slot holds where the config writes nothing, as the keyed rule reads
-// the config's field: the multi-row display's `rows.field` is `type`.
-function declaredDefaultOf(
-  meta: NonNullable<ReturnType<typeof getConfigurationSchemaMetadata>>,
-  slot: string,
-): unknown {
-  const entry = meta.definition[slot]
-  return isSlotDefinitionEntry(entry) ? entry.defaultValue : undefined
-}
-
-function keyedFieldOf(live: AnyConfigurationModel, writes: KeyedWrites) {
-  const value: unknown = readConfObject(live, writes.keyedBy)
-  return { [writes.keyedBy]: value }
-}
-
-function liveRows(self: object): RowsMembers {
-  return getSnapshot(host(self).configuration.rows)
-}
 
 /**
  * The order a reorder writes: the rows it named lead, and the names the
@@ -299,7 +197,7 @@ export function TreeSidebarMixin<S extends Row = Row>() {
       mouseoverCanvas: null as HTMLCanvasElement | null,
     }))
     .views(self => treeSidebarAxisConfigViews(host(self)))
-    .views(self => ({
+    .views(() => ({
       /**
        * #getter
        * Overridable hook: whether the track lists its rows before any region
@@ -320,29 +218,11 @@ export function TreeSidebarMixin<S extends Row = Row>() {
       rowFoundAtSomeLoci(_name: string): boolean {
         return false
       },
-      /**
-       * #getter
-       * The `rows.color` object this display's base declares, which a reset
-       * returns to and "is this the reader's" compares against.
-       */
-      get baseRowColorChannel(): RowColorSetting {
-        return liftRowColor(baseRows(self).color)
-      },
     }))
     .views(self => treeSidebarRowsConfigViews(host(self)))
 
   return treeSidebarRowStages<S>()(base)
-    .views(self => ({
-      /**
-       * #getter
-       * `rowColorSetting` as this display's base declares it.
-       */
-      get baseRowColorSetting(): RowColorSetting {
-        return withPinnedColors(
-          self.baseRowColorChannel,
-          pinnedColorsOf(baseRows(self).colors),
-        )
-      },
+    .views(() => ({
       /**
        * #getter
        * Overridable hook: what the sidebar says where the tree's leaves are
@@ -364,6 +244,14 @@ export function TreeSidebarMixin<S extends Row = Row>() {
       get svgSidebar(): SvgSidebarProps | undefined {
         return undefined
       },
+      /**
+       * #getter
+       * Overridable hook: the row fields that are display plumbing,
+       * which the arrangement dialog never lists as a column.
+       */
+      get internalRowFields(): readonly string[] {
+        return []
+      },
     }))
     .views(self => ({
       /**
@@ -376,124 +264,17 @@ export function TreeSidebarMixin<S extends Row = Row>() {
         return svgSidebar ? svgSidebarWidth(svgSidebar, text) : 0
       },
     }))
+    .views(self => rowColorFieldViews(self))
+    .views(self => rowColorViews(host(self)))
     .views(self => ({
-      /**
-       * #getter
-       * Overridable hook: the row fields that are display plumbing,
-       * which the arrangement dialog never lists as a column.
-       */
-      get internalRowFields(): readonly string[] {
-        return []
-      },
-      /**
-       * #getter
-       * Overridable hook: the row fields a reader can color the rows by,
-       * offered beside None and Each row. By default every field a row
-       * has but its name, label and colors.
-       */
-      get rowColorFields(): readonly string[] {
-        return extraColumns(self.expandedRows, NOT_COLOR_FIELDS)
-      },
-      /**
-       * #getter
-       * The `rows.filter` this display's base declares, which "Show all"
-       * and "Reset row order" return to.
-       */
-      get baseRowFilter(): FieldPredicate[] {
-        return predicatesOf(baseRows(self).filter)
-      },
-      /**
-       * #method
-       * The notice for a top-level `filter` field no loaded `record`
-       * carries: where a row carries it, a pointer at `rows.filter`, which
-       * keeps rows by their attributes, where the top-level `filter` tests
-       * records.
-       */
-      unreadFilterFieldNotice(field: string, record: string) {
-        return this.rowColorFields.includes(field)
-          ? `The filter tests "${field}", a row attribute no loaded ${record} carries, so it hides every ${record}: rows.filter keeps rows by their attributes`
-          : unreadFieldNotice(field, record)
-      },
-      /**
-       * #getter
-       * A line for the corner notice when rows have arrived and none has
-       * the field `rowBanding` bands by, which then bands nothing. Each
-       * display spreads it into its `notices`.
-       */
-      get rowBandingNotices(): string[] {
-        const banding = self.rowBanding
-        const rows = self.expandedRows
-        return banding &&
-          rows.length > 0 &&
-          rows.every(row => self.rowBand(row) === '')
-          ? [
-              `facet.field: no row carries ${banding.field}, so it bands nothing`,
-            ]
-          : []
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Whether `rows.color` gives its field's values colors the config does
-       * not, so "Reset row order" is offered for a recolor too: whether
-       * `rowColorResetTarget` has anything to write. A choice of row color
-       * source is no arrangement, so it is never custom. The pins are an
-       * arrangement member.
-       */
-      get rowColorIsCustom(): boolean {
-        return (
-          rowColorResetTarget(
-            self.rowColorChannel,
-            self.baseRowColorChannel,
-            self.rowPaletteDeals,
-          ) !== undefined
-        )
-      },
-      /**
-       * #getter
-       * The choice of what colors the rows, as the arrangement dialog and a menu
-       * offer it: '' for none dealt, `name` for a palette color each, or a
-       * field.
-       */
-      get rowColorChoice(): string {
-        return rowColorChoiceOf(self.rowColorChannel, self.rowPaletteDeals)
-      },
-      /**
-       * #method
-       * The `rows.color` object `choice` starts from (`startingRowColor`):
-       * the current object's where it shows that choice, else the config's.
-       */
-      rowColorFor(choice: string): RowColorSetting {
-        return startingRowColor(
-          choice,
-          [self.rowColorChannel, self.baseRowColorChannel],
-          self.rowPaletteDeals,
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The fields a reader can color the rows by: `rowColorFields`, and
-       * the current one where the rows lack it, so it still shows as chosen.
-       */
-      get rowColorFieldsOffered(): readonly string[] {
-        const current = self.rowColorChoice
-        return current === '' ||
-          current === 'name' ||
-          self.rowColorFields.includes(current)
-          ? self.rowColorFields
-          : [...self.rowColorFields, current]
-      },
       /**
        * #getter
        * Whether the arrangement differs from what the config declares — what
        * "Reset row order" is offered on.
        */
       get rowArrangementIsCustom(): boolean {
-        const live = liveRows(self)
-        const base = baseRows(self)
+        const live = liveRows(host(self))
+        const base = baseRows(host(self))
         return (
           self.rowColorIsCustom ||
           ORDER_MEMBERS.some(
@@ -555,9 +336,9 @@ export function TreeSidebarMixin<S extends Row = Row>() {
         return self.shownRows.length > 1
       },
     }))
-    .views(self => rowsContentHeightViews(withRowHeight(self)))
+    .views(self => rowsContentHeightViews(host(self)))
     .views(self => hierarchyViews(self))
-    .views(self => rowSidebarViews(withRowHeight(self)))
+    .views(self => rowSidebarViews(host(self)))
     .views(self => ({
       /**
        * #getter
@@ -620,115 +401,7 @@ export function TreeSidebarMixin<S extends Row = Row>() {
           : 0
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * Whether "Show all" has anything to clear: `rows.kept` names rows, or
-       * `rows.filter` differs from the config's.
-       */
-      get rowNarrowingClears(): boolean {
-        return (
-          (self.rowFocus?.length ?? 0) > 0 ||
-          !compareStructural(
-            present(liveRows(self).filter),
-            present(baseRows(self).filter),
-          )
-        )
-      },
-      /**
-       * #getter
-       * The corner notice's lines on the narrowing, once the rows are known:
-       * a `rows.filter` field no row carries, what left no row where none
-       * shows, and where the track lists its rows up front
-       * (`rowsListedUpFront`), the `rows.kept` names no row has. Each
-       * display spreads it into its `notices`.
-       */
-      get rowNarrowingNotices(): string[] {
-        const rows = self.expandedRows
-        const narrowing = self.rowNarrowing
-        const unread = unreadRowFields(rows, narrowing.filter)
-        const emptiedBy =
-          rows.length > 0 && self.shownRows.length === 0
-            ? filteredRows(rows, narrowing.filter).length === 0
-              ? 'filter'
-              : keptRows(rows, narrowing.kept, narrowing.rowAlias).length > 0
-                ? 'hidden'
-                : 'kept'
-            : undefined
-        const filterText = rowFilterText(narrowing.filter)
-        const unmatched = self.rowsListedUpFront
-          ? unmatchedKeptNames(rows, narrowing).filter(
-              name => !self.rowFoundAtSomeLoci(name),
-            )
-          : []
-        return rows.length === 0
-          ? []
-          : [
-              ...unread.map(
-                field =>
-                  `rows.filter tests "${field}", which no row carries, so it filters out every row`,
-              ),
-              ...(emptiedBy === 'filter' && unread.length === 0
-                ? [`Every row is filtered out by rows.filter (${filterText})`]
-                : []),
-              ...(emptiedBy === 'hidden'
-                ? [
-                    `Every row rows.kept names is hidden by rows.filter (${filterText})`,
-                  ]
-                : []),
-              ...(emptiedBy === 'kept'
-                ? [
-                    `rows.kept names no row${unmatched.length ? ` (${listedNames(unmatched)})` : ' here'}, so no row shows`,
-                  ]
-                : unmatched.length > 0
-                  ? [
-                      `rows.kept names ${listedNames(unmatched)}, which no row has`,
-                    ]
-                  : []),
-            ]
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       * The lines for the corner notice about `rows.annotations` on a track
-       * `height` px tall (`rowAnnotationNotices`): an entry on a field no row
-       * carries, one on mostly distinct numbers, and column labels taking
-       * more than half the track. Each display spreads it into its
-       * `notices`.
-       */
-      rowAnnotationNotices(height: number): string[] {
-        return rowAnnotationNotices({
-          rows: self.expandedRows,
-          settings: self.drawsRowAnnotations
-            ? self.rowAnnotationDeals.map(deal => deal.setting)
-            : [],
-          columnLabels: self.rowColumnLabels,
-          height,
-        })
-      },
-      /**
-       * #getter
-       * The chip above the rows while `rowNarrowingShows`: "Showing N of M
-       * rows", with "Show all" where `rowNarrowingClears`, and the config's
-       * own `rows.filter`, which "Show all" keeps, stated in its tooltip.
-       */
-      get rowNarrowingHint(): { text: string; title: string } | undefined {
-        const base = rowFilterText(self.baseRowFilter)
-        const clears = self.rowNarrowingClears
-        return self.rowNarrowingShows
-          ? {
-              text: `Showing ${self.shownRows.length} of ${self.expandedRows.length} rows${clears ? ' · Show all' : ''}`,
-              title: [
-                ...(clears ? ['Click to show every row again'] : []),
-                ...(base
-                  ? [`The track's config keeps rows where ${base}`]
-                  : []),
-              ].join('. '),
-            }
-          : undefined
-      },
-    }))
+    .views(self => rowNoticeViews<S>(host(self)))
     .views(self => ({
       /**
        * #getter
@@ -874,7 +547,7 @@ export function TreeSidebarMixin<S extends Row = Row>() {
          */
         showAllRows() {
           write('kept', [])
-          writeRowFilter(baseRows(self).filter)
+          writeRowFilter(baseRows(host(self)).filter)
           persist()
         },
         /**
@@ -927,7 +600,7 @@ export function TreeSidebarMixin<S extends Row = Row>() {
          * config's name the old field's rows.
          */
         resetRowArrangement() {
-          const base = baseRows(self)
+          const base = baseRows(host(self))
           for (const member of ROW_ARRANGEMENT_MEMBERS) {
             write(member, base[member])
           }
