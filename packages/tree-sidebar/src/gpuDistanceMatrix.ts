@@ -29,8 +29,8 @@ function packSlab(
 ) {
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]!
-    if (ArrayBuffer.isView(row)) {
-      slab.set((row as Float32Array).subarray(v0, v0 + vc), i * vc)
+    if (row instanceof Float32Array) {
+      slab.set(row.subarray(v0, v0 + vc), i * vc)
     } else {
       for (let k = 0; k < vc; k++) {
         slab[i * vc + k] = row[v0 + k]!
