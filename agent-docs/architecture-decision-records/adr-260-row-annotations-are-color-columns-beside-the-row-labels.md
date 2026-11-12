@@ -149,9 +149,9 @@ it exported.
 - A capture run's `window.jbrowseRowPalette` replaces the row palette alone.
 - Below the text threshold a track with annotations and no row color draws its
   columns from the left edge, inside the 8 px the swatch would take.
-- A mark display over a multi-BigWig draws no annotation from a subtrack's
-  `group` or a samples table column, since the row listing it reads carries
-  neither (`ready/a-row-listing-carries-its-rows-attributes.md`).
+- A mark display over a VCF or a MAF draws no annotation from a samples table
+  column, since neither adapter's row listing carries one
+  (`ready/a-row-listing-carries-its-rows-attributes.md`).
 - The variants tables export still carries the row color and its key alone.
 - The static hosts install `rowSidebarProps`, so an export with no session
   draws the columns too.

@@ -386,6 +386,28 @@ test("a listed row carries the listing's attributes, and the listing's warnings 
   expect(display.liveNotices).toContain(listing.warnings[0])
 })
 
+// A table's `group` column and a `rows.groups` entry blend: the entry wins on
+// the rows it matches, and the rest keep the table's.
+test('rows.groups wins over a listed group on the rows it matches', async () => {
+  const listing = {
+    field: 'source',
+    sources: [
+      { name: 'mom', attributes: { group: 'parents' } },
+      { name: 'dad', attributes: { group: 'parents' } },
+    ],
+  }
+  const display = await listingOf(
+    {
+      rows: { field: 'source', groups: [{ match: '^mom$', group: 'mother' }] },
+    },
+    listing,
+  )
+  const groupOf = (name: string) =>
+    display.expandedRows.find(row => row.name === name)?.group
+  expect(groupOf('mom')).toBe('mother')
+  expect(groupOf('dad')).toBe('parents')
+})
+
 test('a listing over a field the rows are not on, directly or through a flatten, is ignored', async () => {
   const bySource = await listingOf({ rows: 'source' }, SPECIES_LISTING)
   expect(bySource.adapterSources).toBeUndefined()

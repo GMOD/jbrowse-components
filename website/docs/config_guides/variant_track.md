@@ -172,8 +172,9 @@ frequency split into ultra-rare, rare, low-frequency and common:
 
 ### Auto-coloring samples by metadata
 
-Point the adapter's `samplesTsvLocation` at a TSV whose first column is `name`,
-matching the VCF sample names, with any further columns as metadata:
+Point the adapter's `samplesTsvLocation` at a TSV whose first column holds the
+VCF sample names, under a header cell JBrowse does not read, with any further
+columns as metadata:
 
 ```tsv
 name	population	region	phenotype
@@ -214,6 +215,10 @@ gets a different palette color:
   those and reports the ones it dropped; one matching none fails the track. The
   usual cause is a prefixed or suffixed id, `1000GP_HG00096` against a header
   naming `HG00096`
+- **A blank cell is no value** for that sample
+- **A `label` column names each sample's row and a `color` column colors it.**
+  `sampleName`, `HP` and `sole` are fields the display writes on its haplotype
+  rows, so a column by one of those names is ignored, with a warning
 
 ## Linkage disequilibrium (LD) display
 
