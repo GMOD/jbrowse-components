@@ -800,8 +800,8 @@ export function paintedColorEncoding(
 /**
  * The rows an identity scale's key lists: each `scale.domain` color, named by
  * its `scale.names` entry. Only while each feature paints a color of its own
- * — `value` unset, so a file's itemRgb, or a `jexl:` callback — since a
- * constant paints no color for the key to name.
+ * — `value` unset, so a field's CSS color or a file's itemRgb, or a `jexl:`
+ * callback — since a constant paints no color for the key to name.
  */
 export function identityKeyEntries({ scale, value }: ColorSetting) {
   if (
@@ -1006,11 +1006,15 @@ export function colorFieldOf(
  * callback in `value`, or a field whose values each take a range color, whose
  * numbers each take the color of the interval between cut points they fall
  * in, or whose numbers run along a color ramp, with a key. A string is the
- * field; a written field always paints. `scale.type: "identity"` keeps each
- * feature's color, whether a file's itemRgb or what a `value` callback
- * returns, and names the colors `scale.domain` lists in the key. Like UCSC's
- * `itemRgb on`, it paints an itemRgb of `0,0,0` or `0` black, which otherwise
- * reads as no color, and reads a comma-free itemRgb as a packed integer.
+ * field; a written field always paints, but under identity a set `value`
+ * paints over it. `scale.type: "identity"` paints each feature the CSS color
+ * its `field` holds, as the mark displays do, a part with none taking its
+ * nearest ancestor's and a feature with none anywhere the default; with no
+ * field it keeps each feature's own color, the file's itemRgb or what a
+ * `value` callback returns, and names the colors `scale.domain` lists in the
+ * key either way. Like UCSC's `itemRgb on`, the fieldless form paints an itemRgb of `0,0,0` or `0` black, which
+ * otherwise reads as no color, and reads a comma-free itemRgb as a packed
+ * integer.
  *
  * #example
  * ```js
@@ -1074,6 +1078,12 @@ export function colorFieldOf(
  *   },
  * }
  * ```
+ * ```js
+ * {
+ *   type: 'LinearBasicDisplay',
+ *   encoding: { color: { field: 'color', scale: { type: 'identity' } } },
+ * }
+ * ```
  */
 export const colorConfigSchema = ConfigurationSchema(
   'FeatureColor',
@@ -1081,7 +1091,8 @@ export const colorConfigSchema = ConfigurationSchema(
     /**
      * #slot value
      * A CSS color, or a jexl callback over `feature` returning one. Unset, a
-     * feature's own BED itemRgb paints it if it has one, else goldenrod.
+     * feature's own BED itemRgb paints it if it has one, else goldenrod; under
+     * an identity scale with a `field`, the CSS color that field holds.
      * Alignments' `value` is constant-only; here a callback stays, since the
      * worker evaluates it per box, where a `field` reads the transcript.
      */
@@ -1105,7 +1116,7 @@ export const colorConfigSchema = ConfigurationSchema(
         ...colorScaleTypeSlot({
           scales: FEATURE_COLOR_SCALES,
           scaleName: 'FeatureColorScaleType',
-          type: "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as a channel with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and ordinal for any other field",
+          type: "ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints the CSS color field holds, or with no field each feature's own color, as a channel with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and ordinal for any other field",
         }),
         ...colorDomainSlot({
           domain:

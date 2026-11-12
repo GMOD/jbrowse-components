@@ -41,7 +41,9 @@ of the multi-row worker against 0.46-0.50x for a key over the column.
 - **The key lists `domain` whole** once the view draws any of the colors, each
   under its `names` entry; a hover names a color by its row.
 - **Edit plot's scale picker leaves identity out.** The picker sits beside a
-  field, which identity does not read.
+  field, which identity does not read. Since ADR-249 identity reads a written
+  field's CSS colors, so from 2026-11-11 the picker offers it, with its
+  `domain` and `names`.
 
 ## Consequences
 

@@ -15,6 +15,14 @@ relabelled and called that, in grammar terms, an identity scale with labels.
 
 Amended by [ADR-243](adr-243-a-mark-paints-a-files-own-colors-through-an-identity-key.md): the mark display takes the identity scale too.
 
+Amended 2026-11-11: identity reads a written `field` on the feature displays
+and the variant display as the mark display does
+([ADR-249](adr-249-the-multi-row-display-is-the-mark-display-with-a-paintings-default-plot.md)),
+each feature painting the CSS color the field holds, a part with none taking
+its nearest ancestor's. With no field it still paints the file's own color,
+and a set `value` still paints over both. The worker gets the field as
+`WorkerColor.identityField`, apart from the parked field `color.field` ships.
+
 ## Context
 
 ChromHMM, the BXD painting, dog10k's copy number, the E. coli projections and
@@ -31,10 +39,11 @@ colors at all.
   worker, the encode and every drawn pixel are untouched: `colorEncodingOf`
   answers `value` for it. `domain` lists CSS colors and `labels` names them,
   one each in order; a color past the labels is named by itself.
-- **It reads no field.** A file's color column is `itemRgb`, `reserved` on a
+- **It needs no field.** A file's color column is `itemRgb`, `reserved` on a
   bigBed or `field8` on a BED9, and `featureBedColor` already resolves the
-  three; a `jexl:` `value` covers a color held anywhere else. A field written
-  beside it waits unread, as under `none`.
+  three. A color held anywhere else is a written `field`, whose CSS colors
+  paint (amended 2026-11-11; this said a field waited unread, as under
+  `none`).
 - **The key lists the domain whole once anything is drawn**, like a
   threshold's closed bins, so a figure's key is the one the `legend` slot drew.
   A constant `value` paints no color of the feature's own and keys nothing,
@@ -56,6 +65,9 @@ colors at all.
 - **Identity over a named field**, painting each value as a color on the main
   thread. It needs the config to know which of three names the color column
   has, and moves every migrated track onto the field palette for no change in
-  the picture.
+  the picture. Taken up as an option on 2026-11-11: with no field identity
+  still reads the BED color under whichever of its three names the file uses,
+  so the config never has to name the column, and a field paints only where
+  one is written.
 - **A key of only the colors drawn.** The ChromHMM key would shrink to the
   states in view and every figure's key would move.
