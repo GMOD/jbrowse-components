@@ -108,8 +108,8 @@ export interface DisplayConfig {
   // `mark.height`, flat here
   featureHeight: number
   // The members a box reads: its value, the field whose values it ships,
-  // whether "0,0,0" is black, and the field an identity scale paints. The scale is otherwise the main thread's, so a
-  // recolor never refetches.
+  // whether "0,0,0" is black, and the field an identity scale paints. The
+  // scale is otherwise the main thread's, so a recolor never refetches.
   color: WorkerColor
   // `maybeColor` slots, as `color.value`.
   utrColor: string | undefined
