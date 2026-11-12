@@ -347,12 +347,12 @@ describe('the configured per-sample color reaches the sidebar', () => {
   })
 
   // Resolved, like `drawnRows` it is derived from — an empty row list, not an
-  // absent one. "Has the species list arrived" is `sourcesKnown`, and the
+  // absent one. "Has the species list arrived" is `rowsReported`, and the
   // label components take an array either way.
   it('is empty before any fetch, like `drawnRows`', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     expect(display.drawnRows).toEqual([])
-    expect(display.sourcesKnown).toBe(false)
+    expect(display.rowsReported).toBe(false)
   })
 })
 

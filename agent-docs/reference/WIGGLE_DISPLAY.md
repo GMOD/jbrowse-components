@@ -152,7 +152,7 @@ That getter is a `stableIdentityComputed`
 (`@jbrowse/display-kit/stableIdentityComputed`), which owns why: the list
 reaches `gpuProps()`, whose identity re-encodes every loaded region. What is
 local is that the metadata is stripped off the payload first, so the comparer
-never walks a feature array. MAF's `sourcesVolatile` buys the same property with
+never walks a feature array. MAF's `reportedRows` buys the same property with
 a `deepEqual` before the write.
 
 ## `viewportWidth` is CSS px — `clip.scissorW`, never `clip.pxW`

@@ -105,7 +105,7 @@ interface MafMenuSelf
   setColorScheme: (scheme: ColorSchemeName) => void
   arrangedRows: MafRow[]
   drawnRows: MafRow[]
-  sourcesKnown: boolean
+  rowsReported: boolean
   setShowTree: (f: boolean) => void
   setShowBranchLength: (f: boolean) => void
   setShowCoverage: (f: boolean) => void
@@ -342,7 +342,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           label: 'Cluster rows by identity...',
           // `drawnRows` is the post-filter list, so one row is as often a clade
           // focused to one species as a track still loading.
-          disabled: !self.sourcesKnown,
+          disabled: !self.rowsReported,
           disabledHelpText: 'Loading rows...',
           onClick: () => {
             getDialogHost(self).queueDialog(handleClose => [

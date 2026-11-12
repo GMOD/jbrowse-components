@@ -275,7 +275,7 @@ export default function stateModelFactory(
          * `arrangedRows` arranges and colors it by `rows`, and `drawnRows`
          * narrows that by the focus.
          */
-        sourcesVolatile: [] as MafRow[],
+        reportedRows: [] as MafRow[],
         /**
          * #volatile
          * The adapter's guide tree as newick, which `rowTree` draws while some
@@ -356,11 +356,11 @@ export default function stateModelFactory(
         }) {
           const next = placeCopyRows(
             samplesCanonical
-              ? withKnownCopies(self.sourcesVolatile, samples)
-              : unionSources([self.sourcesVolatile, samples]),
+              ? withKnownCopies(self.reportedRows, samples)
+              : unionSources([self.reportedRows, samples]),
           )
-          if (!deepEqual(next, self.sourcesVolatile)) {
-            self.sourcesVolatile = next
+          if (!deepEqual(next, self.reportedRows)) {
+            self.reportedRows = next
           }
           if (treeNewick !== self.treeNewickVolatile) {
             self.treeNewickVolatile = treeNewick
@@ -387,7 +387,7 @@ export default function stateModelFactory(
           const viewAssembly = self.view.assemblyNames[0]
           return (
             self.refSampleIdVolatile ??
-            self.sourcesVolatile.find(s =>
+            self.reportedRows.find(s =>
               isSameAssemblyName(s.name, viewAssembly, assemblyManager),
             )?.name
           )
@@ -432,10 +432,10 @@ export default function stateModelFactory(
          * #getter
          * `TreeSidebarMixin`'s hook: the worker's species, in the order it
          * reported them. Empty until the first fetch populates the set;
-         * `sourcesKnown` is the readiness question.
+         * `rowsReported` is the readiness question.
          */
         get discoveredRows(): MafRow[] {
-          return self.sourcesVolatile
+          return self.reportedRows
         },
         /**
          * #getter
@@ -495,7 +495,7 @@ export default function stateModelFactory(
          * copy.
          */
         get rowAlias(): RowAlias | undefined {
-          const names = self.sourcesVolatile.map(s => s.name)
+          const names = self.reportedRows.map(s => s.name)
           if (!names.some(name => copyParent(name) !== undefined)) {
             return undefined
           }
@@ -523,7 +523,7 @@ export default function stateModelFactory(
          * #getter
          * The display rows: `shownRows`, less the reference row when
          * `showReferenceRow` is off. An empty array means no fetch yet or a
-         * focus with no rows; `sourcesKnown` tells them apart.
+         * focus with no rows; `rowsReported` tells them apart.
          */
         get drawnRows(): MafRow[] {
           const rows = self.shownRows
@@ -558,8 +558,8 @@ export default function stateModelFactory(
          * and the render callback's first-paint gate read this, since an empty
          * `drawnRows` is ambiguous.
          */
-        get sourcesKnown(): boolean {
-          return self.sourcesVolatile.length > 0
+        get rowsReported(): boolean {
+          return self.reportedRows.length > 0
         },
 
         /**
@@ -674,7 +674,7 @@ export default function stateModelFactory(
          */
         get defaultCodonSpecies(): string | undefined {
           const refSrc = self.referenceSampleId
-          const rows = self.sourcesVolatile
+          const rows = self.reportedRows
           return rows.some(s => s.name === refSrc) ? refSrc : rows[0]?.name
         },
       }))
@@ -877,7 +877,7 @@ export default function stateModelFactory(
          */
         get rowsVisible() {
           return (
-            self.host.initialized && self.rowsHeight > 0 && self.sourcesKnown
+            self.host.initialized && self.rowsHeight > 0 && self.rowsReported
           )
         },
         /**
@@ -1875,7 +1875,7 @@ export default function stateModelFactory(
             cells: () => self.encodedUpload,
             render: (b, encoded) => {
               const hasFetched =
-                self.sourcesKnown ||
+                self.rowsReported ||
                 self.hasRegionData ||
                 self.coarseTierRead !== undefined
               // One call whatever the rows do: this canvas carries the coverage

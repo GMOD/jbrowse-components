@@ -13,7 +13,7 @@ test('the placed-rows observer tracks the store and the row order', () => {
   expect(placedRows()).toEqual(
     expect.arrayContaining([
       'RowArrangementConfigurationSchema.sort',
-      'LinearMafDisplay.sourcesVolatile',
+      'LinearMafDisplay.reportedRows',
       'RowArrangementConfigurationSchema.kept',
       'MafReferenceRowConfigurationSchema.show',
       'LinearMafDisplay.loadedRegions',

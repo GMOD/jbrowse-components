@@ -33,7 +33,7 @@ describe('LinearMafDisplay zero-block loading', () => {
   // flipped and the loading overlay spun forever. Once a region has loaded the
   // callback runs and the canvas clears, even with nothing to draw.
   //
-  // This is also why `sourcesKnown` exists rather than the gate testing
+  // This is also why `rowsReported` exists rather than the gate testing
   // `drawnRows` for truthiness: `drawnRows` is a resolved array now, and an empty
   // one arrives both from "no fetch yet" and from "a fetch that found no rows"
   // — this test's state, and the one where the gate must open.
@@ -46,7 +46,7 @@ describe('LinearMafDisplay zero-block loading', () => {
     const { display } = createDisplay()
 
     // the gate, as the render callback spells it
-    expect(display.sourcesKnown || display.loadedRegions.size > 0).toBe(false)
+    expect(display.rowsReported || display.loadedRegions.size > 0).toBe(false)
     // ...and the state it feeds the backend is resolved throughout, so nothing
     // downstream has to re-encode "not ready" as a missing render state
     expect(display.renderState).toBeDefined()
@@ -57,10 +57,10 @@ describe('LinearMafDisplay zero-block loading', () => {
     })
 
     // resolved, and empty — the row list never went `undefined`, so a consumer
-    // cannot mistake "found no rows" for "not loaded"; that is `sourcesKnown`
+    // cannot mistake "found no rows" for "not loaded"; that is `rowsReported`
     expect(display.drawnRows).toEqual([])
-    expect(display.sourcesKnown).toBe(false)
-    expect(display.sourcesKnown || display.loadedRegions.size > 0).toBe(true)
+    expect(display.rowsReported).toBe(false)
+    expect(display.rowsReported || display.loadedRegions.size > 0).toBe(true)
     expect(display.renderState).toBeDefined()
   })
 })

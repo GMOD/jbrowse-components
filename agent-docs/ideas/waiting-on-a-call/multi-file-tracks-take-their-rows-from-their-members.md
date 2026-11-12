@@ -143,7 +143,7 @@ written into its config, where the form writes `rows: 'source'` today.
 Multi-row reads the listing as the mark display does (ADR-249), and keeps it by
 moving onto the mixin. Wiggle already keeps a row with nothing in view, since a
 multi-source payload carries the full list in every region (`sourcesLogic.ts`),
-and MAF keeps its rows from a header fetch (`sourcesVolatile`).
+and MAF keeps its rows from a header fetch (`reportedRows`).
 
 ### A region carries its chromosome aliases
 
