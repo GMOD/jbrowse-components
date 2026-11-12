@@ -1,6 +1,7 @@
 import { listsRowSources } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
+import { isAbortException } from '@jbrowse/core/util/aborting'
 
 import type { PlotFields } from './LinearMarkDisplay/scanPlotFields.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -11,6 +12,25 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     MarkScanPlotFields: {
       args: { adapterConfig: Record<string, unknown>; regions: Region[] }
       return: PlotFields
+    }
+  }
+}
+
+/**
+ * How many files the adapter lists rows for, none where its listing fails, as
+ * the display's own listing read falls back to the features.
+ */
+async function listedSourceCount(adapter: object, signal?: AbortSignal) {
+  try {
+    const listing = listsRowSources(adapter)
+      ? await adapter.listRowSources({ signal })
+      : undefined
+    return listing?.field === 'source' ? listing.sources.length : 0
+  } catch (e) {
+    if (isAbortException(e)) {
+      throw e
+    } else {
+      return 0
     }
   }
 }
@@ -33,13 +53,10 @@ export default class MarkScanPlotFields extends RpcMethodTypeWithRenameRegions<'
       signal,
       statusCallback,
     })
-    const listing = listsRowSources(adapter)
-      ? await adapter.listRowSources({ signal })
-      : undefined
     const { scanPlotFields } =
       await import('./LinearMarkDisplay/scanPlotFields.ts')
     return scanPlotFields(features, {
-      listedSources: listing?.field === 'source' ? listing.sources.length : 0,
+      listedSources: await listedSourceCount(adapter, signal),
     })
   }
 }

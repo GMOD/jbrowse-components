@@ -87,3 +87,16 @@ test("a MAF's listed species take no rows on source", async () => {
     categorical: ['source'],
   })
 })
+
+// The display's own listing read falls back to the features on a failure, and
+// so does the scan: a samples table that cannot be read fails no dialog.
+test('a listing that fails lists no rows, and the scan still answers', async () => {
+  expect(
+    await scan({
+      listRowSources: () => Promise.reject(new Error('samples.tsv: 404')),
+    }),
+  ).toEqual({
+    numeric: ['score'],
+    categorical: ['source'],
+  })
+})
