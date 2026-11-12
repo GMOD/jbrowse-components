@@ -6,6 +6,7 @@ import {
   svgRasterDataUrl,
 } from '@jbrowse/core/util/createSvgRasterCanvas'
 
+import { ringStripReplaced } from './RingStatus.tsx'
 import { warpRing } from './warpRing.ts'
 
 import type { ExportSvgOptions } from '../CircularView/model.ts'
@@ -19,14 +20,18 @@ import type { ReactNode } from 'react'
 // 10,000 CSS px figure costs 512 MiB under it; the default would cost 2 GiB.
 const RING_RASTER_AREA_PX = 8192 * 8192
 
-type RingSvgDisplay = RingDisplay & {
-  renderSvg?: (
+interface RingSvgDisplay extends RingDisplay {
+  renderSvg: (
     opts: ExportSvgOptions & {
       theme?: ThemeOptions
       rasterizeLayers?: boolean
       plotOnly?: boolean
     },
   ) => Promise<ReactNode>
+}
+
+function exportsSvg(display: RingDisplay): display is RingSvgDisplay {
+  return 'renderSvg' in display
 }
 
 export interface RingBody {
@@ -71,27 +76,27 @@ async function rasterize(
 /**
  * Every ring display's own SVG export, plot only. The first half of a ring
  * export, and the only half that waits on data, so the view fans it out beside
- * its chord renders and reads the figure geometry after both.
+ * its chord renders and reads the figure geometry after both. A display that
+ * settled gated or failed is left out, so its annulus is as empty as the
+ * screen's, where its status line stands in for the export's message box.
  */
-export function renderRingBodies(
+export async function renderRingBodies(
   ringDisplays: readonly RingDisplay[],
   opts: ExportSvgOptions,
   theme: ThemeOptions | undefined,
 ) {
-  const displays = ringDisplays as RingSvgDisplay[]
-  return awaitSvgRenders(
-    displays
-      .filter(display => display.renderSvg)
-      .map(async display => ({
-        display,
-        body: await display.renderSvg!({
-          ...opts,
-          theme,
-          rasterizeLayers: opts.decodeSvg === undefined,
-          plotOnly: true,
-        }),
-      })),
+  const bodies = await awaitSvgRenders(
+    ringDisplays.filter(exportsSvg).map(async display => ({
+      display,
+      body: await display.renderSvg({
+        ...opts,
+        theme,
+        rasterizeLayers: opts.decodeSvg === undefined,
+        plotOnly: true,
+      }),
+    })),
   )
+  return bodies.filter(({ display }) => !ringStripReplaced(display))
 }
 
 /**

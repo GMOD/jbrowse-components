@@ -1,6 +1,6 @@
 import { createCanvas, loadImage } from '@napi-rs/canvas'
 
-import { paintRingsSvg } from './ringSvg.tsx'
+import { paintRingsSvg, renderRingBodies } from './ringSvg.tsx'
 
 import type { RingDisplay } from './ringHost.ts'
 import type { ReactElement } from 'react'
@@ -24,6 +24,23 @@ const display: RingDisplay = {
   configuration: { displayId: 'ring' },
   RenderingComponent: () => null,
 }
+
+// A gated display's export is its "Region too large" box, which the warp bent
+// into an opaque grey annulus where the screen shows the status line alone.
+test('a ring whose display settled gated or failed exports no body, and one still painting does', async () => {
+  const phased = (displayPhase: string) => ({
+    ...display,
+    id: displayPhase,
+    displayPhase,
+    renderSvg: async () => <rect data-phase={displayPhase} />,
+  })
+  const bodies = await renderRingBodies(
+    ['ready', 'tooLarge', 'renderError', 'loading'].map(phased),
+    {},
+    undefined,
+  )
+  expect(bodies.map(b => b.display.id)).toEqual(['ready', 'loading'])
+})
 
 test('an exported ring draws a translucent strip at its own alpha, inside its annulus only', async () => {
   const width = 2 * Math.PI * 200

@@ -70,6 +70,18 @@ function ringStatus(display: StatusDisplay) {
   return undefined
 }
 
+/**
+ * Whether a ring's display has settled into a state its status line stands
+ * in for — gated or failed — so its strip is not drawn.
+ */
+export function ringStripReplaced(display: object) {
+  return (
+    hasPhase(display) &&
+    display.displayPhase !== 'loading' &&
+    ringStatus(display) !== undefined
+  )
+}
+
 /** The first of `candidates` that fits the arc a label path can take. */
 function fitting(candidates: string[], radiusPx: number) {
   const room = 1.2 * radiusPx
