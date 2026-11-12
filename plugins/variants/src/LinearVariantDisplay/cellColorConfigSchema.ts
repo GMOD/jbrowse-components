@@ -34,11 +34,12 @@ import {
  * Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
  * `jexl:` expression — and a numeric one cut into intervals by a `threshold`
  * scale or run along a `linear` or `log` ramp. A string is the field.
- * `scale.type: "identity"` keys a `value` callback's colors: each variant
- * paints the color it returns, and the key names the colors `scale.domain`
- * lists, as on a feature track. The records paint what the cells paint, so
- * one channel colors both, except under `phaseSet`, a genotype's value no
- * record holds, where the records keep their SV type.
+ * `scale.type: "identity"` paints each variant the CSS color its `field`
+ * holds, or with no field the color a `value` callback returns, and the key
+ * names the colors `scale.domain` lists, as on a feature track; a variant
+ * with no color keeps the default alt color. The records paint what the
+ * cells paint, so one channel colors both, except under `phaseSet`, a
+ * genotype's value no record holds, where the records keep their SV type.
  *
  * #example
  * ```js
@@ -49,7 +50,7 @@ import {
  *   type: 'LinearVariantDisplay',
  *   encoding: {
  *     color: {
- *       value: "jexl:get(feature,'INFO').COLOR",
+ *       field: 'INFO.COLOR',
  *       scale: {
  *         type: 'identity',
  *         domain: ['#d73027', '#4575b4'],
@@ -103,7 +104,7 @@ export const cellColorConfigSchema = ConfigurationSchema(
         ...colorScaleTypeSlot({
           scales: FEATURE_COLOR_SCALES,
           scaleName: 'VariantCellColorScaleType',
-          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each variant the color its value callback returns, as a callback with no scale does, and the key names the colors in domain; unset is linear for score and ordinal for any other field',
+          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each variant the CSS color its field holds, else the color its value callback returns, and the key names the colors in domain; unset is linear for score and ordinal for any other field',
         }),
         ...colorDomainSlot({
           domain:

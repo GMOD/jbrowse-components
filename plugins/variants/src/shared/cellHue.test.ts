@@ -6,7 +6,13 @@ import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { paintFeatureColors } from '../LinearVariantDisplay/paintCells.ts'
 import VariantsPlugin from '../index.ts'
 import { ALT_HUE } from './cellFill.ts'
-import { cellHueOf, cellHueReaderOf, sameHueRead } from './cellHue.ts'
+import {
+  cellHueOf,
+  cellHueReaderOf,
+  identityHueOf,
+  makeHueValueTable,
+  sameHueRead,
+} from './cellHue.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
 import { IMPACT_FIELD, getImpactColor } from './variantConsequence.ts'
 import { getCachedABGR as abgr } from './variantWebglUtils.ts'
@@ -119,6 +125,32 @@ test('a CSS color paints every variant', () => {
 
 test('a jexl callback paints the color it returns', () => {
   expect(hue("jexl:'#abcdef'")(variant({}))).toBe(abgr('#abcdef'))
+})
+
+test('an identity field paints each variant the CSS color it holds, else the alt hue, as a mark track paints it', () => {
+  const identity = identityHueOf('INFO.COLOR')
+  const { value } = cellHueReaderOf(identity.read, {
+    jexl: pluginManager.jexl,
+    rowsField: 'sample',
+  })
+  const values = ['#d73027', '215,48,39', 'not a color', undefined]
+  const table = makeHueValueTable()
+  const featureColorValues = Uint32Array.from(
+    values.map(color =>
+      table.add(value?.(variant(color === undefined ? {} : { COLOR: color }))),
+    ),
+  )
+  const painted = paintFeatureColors(
+    { featureColorValues, ...table.result() },
+    identity,
+    true,
+  )
+  expect([...painted]).toEqual([
+    abgr('#d73027'),
+    abgr('#d73027'),
+    abgr('magenta'),
+    abgr(ALT_HUE),
+  ])
 })
 
 test('the impact preset paints the tier a record answers, Unannotated where it has none', () => {

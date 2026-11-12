@@ -1,6 +1,7 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   FEATURE_FIELD_PRESETS,
+  identityFieldOf,
   withPreset,
 } from '@jbrowse/core/util/colorScale'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -68,8 +69,10 @@ export interface VariantLegendInputs {
   // heading, `''` draws none.
   colorTitle?: string
   // The colors an identity scale names (`identityKeyEntries`), what a jexl
-  // callback's key lists.
+  // callback's or an identity field's key lists.
   identityEntries?: readonly CategoricalEntry[]
+  // The field an identity scale paints the CSS colors of (`identityFieldOf`).
+  identityField?: string
 }
 
 function keyTitle({ colorTitle }: VariantLegendInputs, own: string) {
@@ -194,8 +197,9 @@ function recordFieldScale(
 // for the phase-set preset, a record field's values (the SV classes and the
 // impact tiers among them), or the genotype key — which is also where a plain
 // CSS color lands, since "every alt cell is that color" is a genotype key with
-// one alt hue. A jexl callback's output can't be enumerated into swatches, so
-// it keys only the colors an identity scale names, else nothing.
+// one alt hue. A jexl callback's output, or the colors an identity field
+// holds, can't be enumerated into swatches, so either keys only the colors an
+// identity scale names, else nothing.
 function getCellColorScale(
   encoding: ColorEncoding | undefined,
   inputs: VariantLegendInputs,
@@ -230,7 +234,10 @@ function getCellColorScale(
   if (recordField) {
     return recordFieldScale(recordField, inputs)
   }
-  if (typeof encoding === 'string' && isJexl(encoding)) {
+  if (
+    inputs.identityField !== undefined ||
+    (typeof encoding === 'string' && isJexl(encoding))
+  ) {
     const named = inputs.identityEntries ?? []
     return named.length > 0
       ? {
@@ -321,7 +328,7 @@ export function variantDataColorScales({
   colorSetting: ColorSetting
   cells: () => Omit<
     Parameters<typeof getVariantColorScales>[0],
-    'recordsAlone' | 'colorTitle' | 'identityEntries'
+    'recordsAlone' | 'colorTitle' | 'identityEntries' | 'identityField'
   >
 }): ColorScale[] {
   return [
@@ -333,6 +340,7 @@ export function variantDataColorScales({
           colorTitle: withPreset(colorSetting, FEATURE_FIELD_PRESETS).legend
             .title,
           identityEntries: identityKeyEntries(colorSetting),
+          identityField: identityFieldOf(colorSetting),
         })
       : []),
   ]

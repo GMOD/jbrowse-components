@@ -76,7 +76,8 @@ export type CellHueRead = string | { field: string } | undefined
 /**
  * Where the alt cells' hue comes from: `read`, what the worker reads off each
  * variant, a field without its scale so recoloring one refetches nothing;
- * `hueOf`, a read value's color; `keyOf`, the key row it files under;
+ * `hueOf`, a read value's color, undefined for the default alt hue; `keyOf`,
+ * the key row it files under;
  * `deal`, which sees a region's values before `hueOf` paints any;
  * `ramp`, the ramp a numeric field paints along; and `constant`, the hue of
  * every alt cell with no value of its own. No paint member set paints the
@@ -85,7 +86,7 @@ export type CellHueRead = string | { field: string } | undefined
 export interface CellHue {
   read: CellHueRead
   constant?: string
-  hueOf?: (value: string) => string
+  hueOf?: (value: string) => string | undefined
   keyOf?: (value: string) => string
   deal?: (values: readonly string[]) => void
   ramp?: ValueRamp
@@ -134,6 +135,15 @@ export function cellHueOf(
         : undefined,
     constant: typeof encoding === 'string' ? encoding : undefined,
   }
+}
+
+/**
+ * The hue an identity scale over `field` paints: each variant the CSS color
+ * the field holds, as a feature or mark track paints it, and a variant with
+ * no value the default alt hue.
+ */
+export function identityHueOf(field: string): CellHue {
+  return { read: { field }, hueOf: css => css || undefined }
 }
 
 export function sameHueRead(a: CellHueRead, b: CellHueRead) {

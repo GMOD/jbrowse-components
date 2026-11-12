@@ -1,8 +1,9 @@
+import { identityFieldOf } from '@jbrowse/core/util/colorScale'
 import { paintedColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
-import { cellHueOf, sameHueRead } from '../shared/cellHue.ts'
+import { cellHueOf, identityHueOf, sameHueRead } from '../shared/cellHue.ts'
 import { fadeCellColors } from './densityFade.ts'
 import { colorKeysOf, paintCellColors } from './paintCells.ts'
 import { mapPayloadRegions } from './payloadRegions.ts'
@@ -17,6 +18,7 @@ import type {
 import type { VariantRowsField } from '../shared/constants.ts'
 import type { KeyedVariants } from './keyedVariants.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -35,13 +37,14 @@ export function cellHueInputViews(self: CellHueInputHost) {
   const hueInput = stableIdentityComputed(() => ({
     encoding: paintedColorEncoding(self.colorEncoding),
     keptField: self.colorSetting.field || self.parkedColor?.field,
+    identityField: identityFieldOf(self.colorSetting),
   }))
   return {
     /**
      * #getter
-     * The painted `encoding.color` and the field kept beside it, which
-     * `cellHue` resolves. Compared by value, so editing the key's title or
-     * names repaints nothing.
+     * The painted `encoding.color`, the field kept beside it and the field
+     * an identity scale paints, which `cellHue` resolves. Compared by value,
+     * so editing the key's title or names repaints nothing.
      */
     get cellHueInput() {
       return hueInput.get()
@@ -52,10 +55,23 @@ export function cellHueInputViews(self: CellHueInputHost) {
      * apart from the loaded values a ramp follows.
      */
     get cellHueRead() {
-      const { encoding, keptField } = hueInput.get()
-      return cellHueOf(encoding, keptField).read
+      return inputHueOf(hueInput.get()).read
     },
   }
+}
+
+type CellHueInput = ReturnType<typeof cellHueInputViews>['cellHueInput']
+
+// An identity scale's field paints its CSS colors; anything else resolves
+// through `cellHueOf`.
+function inputHueOf(
+  { encoding, keptField, identityField }: CellHueInput,
+  held?: HeldSlots,
+  loaded?: Iterable<string>,
+) {
+  return identityField === undefined
+    ? cellHueOf(encoding, keptField, held, loaded)
+    : identityHueOf(identityField)
 }
 
 /** What {@link cellHueValuesReadViews} reads: the payload and the read. */
@@ -80,7 +96,7 @@ export function cellHueValuesReadViews(self: CellHueValuesReadHost) {
 
 /** What {@link cellHueViews} reads: the hue input, the payload and the rows. */
 export interface CellHueHost extends CellHueValuesReadHost {
-  cellHueInput: ReturnType<typeof cellHueInputViews>['cellHueInput']
+  cellHueInput: CellHueInput
   cellHueValuesRead: boolean
   rowsField: VariantRowsField
 }
@@ -94,12 +110,11 @@ export function cellHueViews(self: CellHueHost) {
      * every fetched region read.
      */
     get cellHue() {
-      const { encoding, keptField } = self.cellHueInput
+      const input = self.cellHueInput
       const { cellData } = self
-      return cellHueOf(
-        encoding,
-        keptField,
-        heldColorSlots(self, encoding),
+      return inputHueOf(
+        input,
+        heldColorSlots(self, input.encoding),
         cellData && self.cellHueValuesRead
           ? Object.values(cellData.perRegionCellData).flatMap(
               d => d.colorValues,

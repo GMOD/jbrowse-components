@@ -277,6 +277,21 @@ describe('encoding.color identity', () => {
     )
   })
 
+  test("paints a field's CSS colors and keys the colors the domain names", () => {
+    const { display } = recordsDisplayAt(KIT, 51, {}, true, {
+      encoding: {
+        color: { ...identity, value: undefined, field: 'INFO.COLOR' },
+      },
+    })
+    expect(display.cellHueRead).toEqual({ field: 'INFO.COLOR' })
+    expect(display.cellHue.hueOf?.('#d73027')).toBe('#d73027')
+    expect(display.cellHue.hueOf?.('')).toBeUndefined()
+    const key = display.colorScales.find(s => s.id === 'identity')
+    expect(
+      key?.kind === 'categorical' && key.entries.map(e => [e.label, e.color]),
+    ).toEqual(expect.arrayContaining([['Pathogenic', '#d73027']]))
+  })
+
   test('a callback with no identity scale keys nothing', () => {
     const { display } = recordsDisplayAt(KIT, 51, {}, true, {
       encoding: { color: { value: identity.value } },
