@@ -31,6 +31,7 @@ async function execute(
           }
         : { type, ldLocation: location },
     regions: [{ assemblyName: 'a', refName: '1', start: 0, end: 5000 }],
+    axisBlocks: [{ refName: '1', offsetBp: 0 }],
     originBp: 0,
     spanBp: 5000,
     field: 'r2',
