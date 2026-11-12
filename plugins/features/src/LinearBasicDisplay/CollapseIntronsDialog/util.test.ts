@@ -226,6 +226,15 @@ describe('CollapseIntrons utilities', () => {
       expect([...display.expandedGeneIds]).toEqual([])
     })
 
+    it('leaves a gene the reader closed since closed on undo', () => {
+      const { view, display } = createTestEnvironment().createDisplay()
+      const undo = expandGeneInView(view, 'test_track', 'geneX')
+      display.toggleExpandedGene('geneX')
+
+      undo()
+      expect([...display.expandedGeneIds]).toEqual([])
+    })
+
     it('leaves a gene the reader had already opened open on undo', () => {
       const { view, display } = createTestEnvironment().createDisplay({
         expandedGeneIds: ['geneX'],

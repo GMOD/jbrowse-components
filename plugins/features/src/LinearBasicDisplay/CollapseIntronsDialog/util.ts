@@ -113,7 +113,9 @@ export function expandGeneInView(
   if (display && !display.expandedGeneIds.includes(featureId)) {
     display.toggleExpandedGene(featureId)
     return () => {
-      display.toggleExpandedGene(featureId)
+      if (display.expandedGeneIds.includes(featureId)) {
+        display.toggleExpandedGene(featureId)
+      }
     }
   } else {
     return () => {}
