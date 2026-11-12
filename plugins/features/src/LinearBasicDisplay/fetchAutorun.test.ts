@@ -1771,6 +1771,28 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     })
   })
 
+  it.each([
+    [['transcripts', 'types'], ['mRNA']],
+    [['transcripts', 'field'], 'canonical'],
+    [['transcripts', 'sort'], ['MANE_Select']],
+    [['containers', 'types'], ['polyprotein']],
+    [['utrs', 'encoding', 'color', 'value'], 'jexl:get(feature,"utrColor")'],
+    [['mark', 'height'], 7],
+    [['tooltip', 'field'], 'product'],
+    [['labels', 'name', 'field'], 'gene_name'],
+    [['labels', 'description', 'field'], 'product'],
+  ])('a worker-read %j change refetches', async (slot, value) => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    // a table of slot paths, which setConf's narrowing cannot follow
+    setConf(display, slot as ['mark', 'height'], value as never)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+  })
+
   it('collapsed displayMode refetches, because it forces subfeatureLabels off', async () => {
     const { display, mockRpcCall } = await loadedDisplay()
     // subfeatureLabels resolves to 'none' by default, where the collapsed

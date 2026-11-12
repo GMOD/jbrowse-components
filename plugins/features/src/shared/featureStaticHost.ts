@@ -17,9 +17,12 @@ import {
 import configSchemaFactory from '../LinearBasicDisplay/configSchema.ts'
 import { featureColorScaleViews } from '../LinearBasicDisplay/derivedColorKey.ts'
 import { featureBandViews } from '../LinearBasicDisplay/featureBandViews.ts'
+import {
+  featureRequestViews,
+  geneGlyphRequestViews,
+} from '../LinearBasicDisplay/featureRequestViews.ts'
 import { layoutRegionKey } from '../LinearBasicDisplay/layoutInputs.ts'
 import { featureIdsTouchingBlocks } from '../LinearBasicDisplay/layoutQueries.ts'
-import { workerDisplayConfig } from '../LinearBasicDisplay/workerDisplayConfig.ts'
 import { executeRenderFeatureData } from '../RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { createPeptideCache } from '../RenderFeatureDataRPC/peptides/peptideCache.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
@@ -116,6 +119,8 @@ const FeatureStaticHostModel = types
     },
   }))
   .views(self => basicDisplayGlyphViews(self))
+  .views(geneGlyphRequestViews)
+  .views(featureRequestViews)
   .views(self => basicDisplayLayoutViews(self))
   .views(featureBandViews)
   .views(self => featureColorScaleViews(self))
@@ -179,10 +184,9 @@ export async function fetchFeatureRegions(
   tooLarge: (bytes: number | undefined) => Error,
 ) {
   const { config, displayConfig, geneGlyphMode, bpPerPx } = runInAction(() => {
-    const config = fullConfSnapshot(host.configuration)
     return {
-      config,
-      displayConfig: workerDisplayConfig(config, host),
+      config: fullConfSnapshot(host.configuration),
+      displayConfig: host.renderSettings,
       geneGlyphMode: host.effectiveGeneGlyphMode,
       bpPerPx: host.host.bpPerPx,
     }

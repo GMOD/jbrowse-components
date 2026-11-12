@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import {
   ConfigurationReference,
-  fullConfSnapshot,
   getConf,
   plotOf,
   setConf,
@@ -57,7 +56,7 @@ import { toJS } from 'mobx'
 import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
 import { buildFeatureAdmission } from '../RenderFeatureDataRPC/featureAdmission.ts'
-import { pickDisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
+import { GENE_GLYPH_DEFAULTS } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import FeatureGateMixin from '../shared/FeatureGateMixin.ts'
 import { featureColorViews } from '../shared/featureColorViews.ts'
@@ -94,6 +93,7 @@ import {
   featureHighlightActions,
   featureHighlightViews,
 } from './featureHighlightViews.ts'
+import { featureRequestViews } from './featureRequestViews.ts'
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
@@ -113,7 +113,6 @@ import {
   showSubmenuCheckboxItems,
   showSubmenuLegendItems,
 } from './trackMenus.ts'
-import { workerDisplayConfig } from './workerDisplayConfig.ts'
 import {
   installYMorphAutorun,
   yMorphActions,
@@ -124,6 +123,7 @@ import {
 import type { IsoformPicks } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import type {
   DisplayMode,
+  GeneGlyphSettings,
   SubfeatureLabels,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 // Importing any type from rpcTypes.ts pulls in its RpcRegistry augmentation,
@@ -483,15 +483,26 @@ export default function baseStateModelFactory(
     .views(featureHighlightViews)
     .views(self => ({
       /**
+       * #getter
+       * Overridable hook (default the gene-glyph defaults): the gene-glyph
+       * settings the worker reads, for a display declaring no gene slots.
+       */
+      get geneGlyphSettings(): GeneGlyphSettings {
+        return {
+          ...GENE_GLYPH_DEFAULTS,
+          subfeatureLabels: self.effectiveSubfeatureLabels,
+        }
+      },
+    }))
+    .views(featureRequestViews)
+    .views(self => ({
+      /**
        * #method
        */
       // Every field read here is an RPC cache key: the settings autorun
       // clears data when any of them changes.
       rpcProps() {
-        const workerConfig = workerDisplayConfig(
-          fullConfSnapshot(self.configuration),
-          self,
-        )
+        const workerConfig = self.renderSettings
         return {
           displayConfig: {
             ...workerConfig,
@@ -559,7 +570,7 @@ export default function baseStateModelFactory(
        */
       get canonicalTranscripts(): CanonicalTranscripts {
         const { canonicalTranscriptField, canonicalTranscriptTags } =
-          pickDisplayConfig(fullConfSnapshot(self.configuration))
+          self.geneGlyphSettings
         return {
           field: canonicalTranscriptField,
           tags: canonicalTranscriptTags,

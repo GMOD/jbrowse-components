@@ -22,6 +22,7 @@ import { GENE_LIKE_FIELD } from '../RenderFeatureDataRPC/renderConfig.ts'
 import baseStateModelFactory from './baseModel.ts'
 import { basicDisplayGlyphViews } from './basicDisplayLayoutViews.ts'
 import { collapseIntronsMenuItem } from './collapseIntronsMenu.ts'
+import { geneGlyphRequestViews } from './featureRequestViews.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
 import { inertLabelHint, inlineRadioGroup } from './trackMenus.ts'
@@ -108,6 +109,7 @@ export default function stateModelFactory(
       },
     }))
     .views(self => basicDisplayGlyphViews(self))
+    .views(geneGlyphRequestViews)
     .views(self => ({
       // Shown in every mode, so picking "All transcripts" from the control
       // does not make the control disappear.
