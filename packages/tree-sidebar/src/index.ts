@@ -63,6 +63,11 @@ export type {
 } from './color/rowColors.ts'
 export { rowColorChoiceLabel } from './color/rowColorChoice.ts'
 export type { RowColorEdits, RowColorSnapshot } from './color/rowColorChoice.ts'
+export type {
+  RowAnnotationDeal,
+  RowAnnotationDrawn,
+  RowAnnotationSetting,
+} from './color/rowAnnotations.ts'
 export type { RowAlias, RowParent, RowParentOf } from './rows/arrangeRows.ts'
 export type { RowBand, RowBanding } from './rows/bandRows.ts'
 export { applyClusterRun } from './clustering/applyClusterRun.ts'
