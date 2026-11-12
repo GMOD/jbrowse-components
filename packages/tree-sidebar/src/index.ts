@@ -37,15 +37,15 @@ export {
 export type { SvgSidebarProps } from './sidebar/svgSidebarWidth.ts'
 export { setupTreeDrawingAutorun } from './tree/treeDrawingAutorun.ts'
 export { setupRunClusteringAutorun } from './clustering/runClusteringAutorun.ts'
-export { setupRowSortAutorun } from './rows/rowSortAutorun.ts'
+export { setupRowSortAutorun } from './rows/rowSort.ts'
 export { setupTreeSidebarAutoruns } from './setupTreeSidebarAutoruns.ts'
-export type { RowSortSpec } from './rows/rowSortAutorun.ts'
+export type { RowSortSpec } from './rows/rowSort.ts'
 export {
   loadedRegionIndexAt,
   orderRowsByValueAt,
   sortRowsAtColumn,
-} from './rows/rowSortColumn.ts'
-export type { LoadedRegionSpan } from './rows/rowSortColumn.ts'
+} from './rows/rowSort.ts'
+export type { LoadedRegionSpan } from './rows/rowSort.ts'
 export {
   treeOfLeaves,
   buildTree,

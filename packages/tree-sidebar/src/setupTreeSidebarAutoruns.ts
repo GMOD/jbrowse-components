@@ -1,5 +1,5 @@
 import { setupRunClusteringAutorun } from './clustering/runClusteringAutorun.ts'
-import { setupRowSortAutorun } from './rows/rowSortAutorun.ts'
+import { setupRowSortAutorun } from './rows/rowSort.ts'
 import { setupTreeDrawingAutorun } from './tree/treeDrawingAutorun.ts'
 
 /**

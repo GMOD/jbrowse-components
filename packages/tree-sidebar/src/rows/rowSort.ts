@@ -1,10 +1,16 @@
-// The two halves of "order the rows by what each carries at one genomic
-// column", shared by every display with a "Sort rows by ... here" row.
+import { canonicalizeViewRefName } from '@jbrowse/core/util'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
+
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+// "Order the rows by what each carries at one genomic column", shared by every
+// display with a "Sort rows by ... here" row: the region predicate the gate and
+// the sort share, the sort, and the one-shot `sortRowsBy` autorun.
 //
 // Which value is read is the display's own — multi-wiggle takes the score at
 // the base, the multi-row feature display the color painted there — and stays
-// there. What is here is the part that is the same question whichever value it
-// is, and that both displays had answered separately and slightly differently.
+// there.
 
 // Just the span, so this takes a `Region` or anything narrower without dragging
 // the assembly in.
@@ -159,4 +165,116 @@ export function orderRowsByValueAt<T extends { name: string }, V>(
       return compare(a.value, b.value) || a.idx - b.idx
     })
     .map(x => x.source)
+}
+
+/**
+ * A single genomic column to order the rows by. The whole point of naming it
+ * this way rather than by a loaded-region index is that a session outlives the
+ * fetch that produced one.
+ */
+export interface RowSortSpec {
+  refName: string
+  pos: number
+}
+
+// Declarative one-shot counterpart to a display's right-click "Sort rows by ...
+// here", following the same transient-launch-spec pattern as
+// `setupRunClusteringAutorun` and LinearGenomeView's `init`: a session or figure
+// sets `sortRowsBy`, the sort applies as soon as the region containing that
+// position is loaded, and the flag clears so a saved session never re-triggers
+// it (the order it produced persists on its own).
+//
+// Gating on the region being loaded is the substance here. Sorting before the
+// data at `pos` arrives is a silent no-op — every row reads "no value", the
+// order is unchanged — and clearing the flag afterwards would make that
+// permanent, so a figure would capture the unsorted rows with nothing to say
+// why. The autorun reads `loadedRegions` so it re-fires when the fetch lands.
+//
+// Shared rather than per display because the flag, the gate and the clear are
+// the same three lines whichever value the rows are being ordered by; `sortRows`
+// is what differs (the multi-row feature display ranks by an attribute it reads
+// in the worker, multi-wiggle by the score at the column).
+export function setupRowSortAutorun(
+  self: IStateTreeNode & {
+    sortRowsBy?: RowSortSpec
+    loadedRegions: { values: () => Iterable<LoadedRegionSpan> }
+    setSortRowsBy: (arg?: RowSortSpec) => void
+  },
+  opts: {
+    name: string
+    // `false` means the sort declined, and the trigger is left set so a later
+    // fetch can re-fire it. Anything else (including a plain `void`) means it
+    // ran. The gate below only knows that a region covers the column, and a
+    // display can have a second reason to decline that the gate cannot ask
+    // about — the multi-sample variant sort needs a RECORD at the position,
+    // not merely a loaded region over it, so a session `sortRowsBy` on a
+    // variant-free column sorted nothing and cleared itself.
+    // A promise holds the trigger until it resolves.
+    sortRows: (
+      refName: string,
+      pos: number,
+    ) => void | boolean | Promise<boolean>
+  },
+) {
+  addDisposer(
+    self,
+    autorun(
+      () => {
+        const spec = self.sortRowsBy
+        if (!spec) {
+          return
+        }
+        // The slot is `frozen`, so the typed shape describes what a session
+        // author is meant to write, not what they did. A missing refName threw
+        // out of `canonicalizeViewRefName`; a missing or string `pos` failed
+        // the gate below forever, so the sort never ran and the flag never
+        // cleared, silently.
+        const badField =
+          typeof spec.refName !== 'string'
+            ? 'refName'
+            : Number.isFinite(spec.pos)
+              ? undefined
+              : 'pos'
+        if (badField) {
+          console.warn(
+            `${opts.name}: sortRowsBy.${badField} is ${JSON.stringify(spec[badField])}, not sorting`,
+          )
+          return
+        }
+        // Normalize before both the gate and the dispatch. The right-click
+        // entry point hands `sortRows` a refName copied off a region, but this
+        // one carries whatever a session author typed — an alias as often as
+        // the assembly's own name — and everything it is about to be compared
+        // against is canonical. Unnormalized, `{refName: 'chr17'}` on an
+        // assembly canonicalized `17` never satisfies the gate, so the sort
+        // never runs AND the flag never clears: it sits in the snapshot
+        // forever, doing nothing, saying nothing.
+        const refName = canonicalizeViewRefName(self, spec.refName)
+        // The same predicate the sort itself resolves its region with, so the
+        // gate cannot open on a column the action will decline to sort — which
+        // would clear the trigger and leave the rows unsorted with nothing left
+        // to re-fire it.
+        const loaded = [...self.loadedRegions.values()].some(r =>
+          regionCoversColumn(r, refName, spec.pos),
+        )
+        if (!loaded) {
+          return
+        }
+        // Only this spec: one a session wrote while an async sort was in
+        // flight is the next sort, not this one's to clear.
+        const clearIfSorted = (sorted: void | boolean) => {
+          if (sorted !== false && isAlive(self) && self.sortRowsBy === spec) {
+            self.setSortRowsBy(undefined)
+          }
+        }
+        const sorted = opts.sortRows(refName, spec.pos)
+        if (sorted instanceof Promise) {
+          void sorted.then(clearIfSorted, () => {})
+        } else {
+          clearIfSorted(sorted)
+        }
+      },
+      { name: opts.name },
+    ),
+  )
 }

@@ -334,7 +334,7 @@ stage's recomputes and the display's named reaction runs.
 ## "Sort rows by … here" is three shared pieces and one per-display read
 
 Only _which value a row carries at the column_ is the display's (multi-wiggle the
-score, multi-row its clustering attribute). `rowSortColumn.ts` owns the rest:
+score, multi-row its clustering attribute). `rows/rowSort.ts` owns the rest:
 
 - **`regionCoversColumn` is asked by the gate and by the sort.**
   `setupRowSortAutorun` waits for a region satisfying it and then clears
