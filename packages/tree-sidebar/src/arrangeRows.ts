@@ -80,7 +80,7 @@ export function rowAliasOver<S extends { name: string }>(
  * reads, since row names come from files and a row called `constructor` would
  * otherwise read one off `Object.prototype`.
  */
-export function inheritedLabel(
+function inheritedLabel(
   labels: Readonly<Record<string, string>>,
   name: string,
   parent: RowParent | undefined,

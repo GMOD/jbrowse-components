@@ -29,10 +29,7 @@ export function compileRowGroups(rowGroups: RowGroup[]): CompiledRowGroup[] {
 }
 
 /** The first entry a row name matches. */
-export function rowGroupOf(
-  compiled: readonly CompiledRowGroup[],
-  name: string,
-) {
+function rowGroupOf(compiled: readonly CompiledRowGroup[], name: string) {
   return compiled.find(g => g.re.test(name))
 }
 

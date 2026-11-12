@@ -13,7 +13,7 @@ import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
 
 // The tree toggle's label. Exported because the website's figure recipes name
 // it in a click path and must not re-spell it.
-export const TREE_SIDEBAR_LABEL = 'Show tree'
+const TREE_SIDEBAR_LABEL = 'Show tree'
 
 interface BranchLengthMenuModel {
   showTree: boolean
@@ -140,7 +140,7 @@ interface RowFocusMenuModel {
 // and the tree's own context menu is gone with the tree. Returned as a list so
 // the one label and the one gate are single-sourced across the clustering
 // submenu and any display that has no clustering submenu to put it in.
-export function clearRowFocusMenuItems(self: RowFocusMenuModel): MenuItem[] {
+function clearRowFocusMenuItems(self: RowFocusMenuModel): MenuItem[] {
   return self.rowFocus?.length
     ? [
         {

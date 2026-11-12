@@ -39,11 +39,7 @@ export function columnSegments(
  * column covers the column it starts in, so base-resolution data never bins to
  * an all-zero row.
  */
-export function spanColumns(
-  segment: ColumnSegment,
-  start: number,
-  end: number,
-) {
+function spanColumns(segment: ColumnSegment, start: number, end: number) {
   const { width, regionStart, bpPerPx } = segment
   if (end <= regionStart) {
     return { startX: 0, endX: 0 }

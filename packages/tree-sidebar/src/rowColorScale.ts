@@ -53,7 +53,7 @@ export function withPinnedColors(
 }
 
 /** The color `pinned` gives the row `name`, its own else its alias's. */
-export function pinnedColorOf(
+function pinnedColorOf(
   pinned: ReadonlyMap<string, string>,
   name: string,
   alias: RowAlias | undefined,
@@ -358,7 +358,7 @@ export function annotationColumn(
  * config list, so an entry before it drawing nothing moves no key's id, nor
  * which keys a reader dismissed.
  */
-export function rowAnnotationScaleId(position: number) {
+function rowAnnotationScaleId(position: number) {
   return `rows.annotations.${position}`
 }
 
