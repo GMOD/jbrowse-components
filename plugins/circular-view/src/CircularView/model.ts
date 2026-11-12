@@ -485,7 +485,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       get ring() {
         return ringAt(
           this.totalBp / self.bpPerPx,
-          this.totalGapUnits,
+          sum(gapUnitsAfter(this.elidedRegions)),
           self.spacingPx,
         )
       },
@@ -495,14 +495,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get effectiveSpacingPx() {
         return this.ring.spacingPx
-      },
-      /**
-       * #getter
-       * how many inter-slice gaps go round the circle, a genome boundary
-       * counting as several
-       */
-      get totalGapUnits() {
-        return sum(gapUnitsAfter(this.elidedRegions))
       },
       /**
        * #getter
