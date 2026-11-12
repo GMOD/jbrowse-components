@@ -1,10 +1,9 @@
 import { clusterData, toNewick } from '@gmod/hclust'
-import { parseNewick } from '@gmod/newick'
 import { isAbortException } from '@jbrowse/core/util'
 
 import { clusterProgressStatus } from './clusterProgressStatus.ts'
 import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
-import { writeNewick } from './writeNewick.ts'
+import { renameNewickLeaves } from './writeNewick.ts'
 
 import type { ClusterNode, ClusterProgress } from '@gmod/hclust'
 import type { StatusCallback } from '@jbrowse/core/util'
@@ -184,27 +183,15 @@ function sliceMatrix(
   return slices
 }
 
+// hclust writes a row named `''` bare, which parses back as a leaf with no
+// name; the multi-row display's no-value row is that row.
 function withNamedLeaves(
   data: ClusterMatrix,
   run: { order: number[]; tree: string },
 ) {
-  return data.has('') ? { ...run, tree: nameTheUnnamedLeaf(run.tree) } : run
-}
-
-// hclust writes a row named `''` bare, which parses back as a leaf with no
-// name; the multi-row display's no-value row is that row.
-function nameTheUnnamedLeaf(newick: string) {
-  const root = parseNewick(newick)
-  const stack = [root]
-  while (stack.length > 0) {
-    const n = stack.pop()!
-    if (n.children?.length) {
-      stack.push(...n.children)
-    } else if (n.name === undefined) {
-      n.name = ''
-    }
-  }
-  return writeNewick(root)
+  return data.has('')
+    ? { ...run, tree: renameNewickLeaves(run.tree, name => name ?? '') }
+    : run
 }
 
 /**

@@ -158,7 +158,11 @@ function withHaplotypesFromOne(instance: Record<string, unknown>) {
             : row,
         ),
         ...(typeof clusterTree === 'string'
-          ? { clusterTree: renameNewickLeaves(clusterTree, rename) }
+          ? {
+              clusterTree: renameNewickLeaves(clusterTree, name =>
+                name === undefined ? name : rename(name),
+              ),
+            }
           : {}),
         ...(Array.isArray(subtreeFilter)
           ? { subtreeFilter: listOf(subtreeFilter).map(renameValue) }

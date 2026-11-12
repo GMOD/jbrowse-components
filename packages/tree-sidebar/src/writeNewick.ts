@@ -1,6 +1,8 @@
 import { quoteName } from '@gmod/hclust'
 import { parseNewick } from '@gmod/newick'
 
+import { newickPreorder } from './rotateNewickByDomain.ts'
+
 import type { NewickNode } from '@gmod/newick'
 
 /**
@@ -25,17 +27,7 @@ import type { NewickNode } from '@gmod/newick'
  * stack, and holding every intermediate string is quadratic.
  */
 export function writeNewick(node: NewickNode): string {
-  const preorder: NewickNode[] = []
-  const stack = [node]
-  while (stack.length > 0) {
-    const n = stack.pop()!
-    preorder.push(n)
-    if (n.children) {
-      for (const child of n.children) {
-        stack.push(child)
-      }
-    }
-  }
+  const preorder = newickPreorder(node)
   const incremental = preorder.some(
     n => !n.children?.length && n.length !== undefined,
   )
@@ -61,19 +53,16 @@ export function writeNewick(node: NewickNode): string {
 
 /**
  * `newick` with each leaf renamed by `rename`, its shape and its lengths, in
- * either encoding, kept.
+ * either encoding, kept. A leaf written bare has no name, and `rename` is
+ * handed undefined for it.
  */
 export function renameNewickLeaves(
   newick: string,
-  rename: (name: string) => string,
+  rename: (name: string | undefined) => string | undefined,
 ) {
   const root = parseNewick(newick)
-  const stack = [root]
-  while (stack.length > 0) {
-    const n = stack.pop()!
-    if (n.children?.length) {
-      stack.push(...n.children)
-    } else if (n.name !== undefined) {
+  for (const n of newickPreorder(root)) {
+    if (!n.children?.length) {
       n.name = rename(n.name)
     }
   }

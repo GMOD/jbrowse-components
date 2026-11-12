@@ -30,17 +30,7 @@ export function rotateNewickByDomain(
     }
   }
   const unlisted = domain.length
-  const preorder: NewickNode[] = []
-  const stack = [node]
-  while (stack.length > 0) {
-    const n = stack.pop()!
-    preorder.push(n)
-    if (n.children) {
-      for (const child of n.children) {
-        stack.push(child)
-      }
-    }
-  }
+  const preorder = newickPreorder(node)
   const rotated = new Map<NewickNode, NewickNode>()
   const earliest = new Map<NewickNode, number>()
   for (let i = preorder.length - 1; i >= 0; i--) {
@@ -60,6 +50,26 @@ export function rotateNewickByDomain(
     }
   }
   return rotated.get(node)!
+}
+
+/**
+ * Every node under `node`, each before its descendants, so a walk backwards
+ * meets every child before its parent and can build bottom-up. Iterative for
+ * the reason {@link rotateNewickByDomain} is.
+ */
+export function newickPreorder<N extends { children?: N[] }>(node: N) {
+  const preorder: N[] = []
+  const stack = [node]
+  while (stack.length > 0) {
+    const n = stack.pop()!
+    preorder.push(n)
+    if (n.children) {
+      for (const child of n.children) {
+        stack.push(child)
+      }
+    }
+  }
+  return preorder
 }
 
 /**

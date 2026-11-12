@@ -8,7 +8,7 @@ import {
   hierarchy,
   leaves,
 } from './hierarchy.ts'
-import { rotateNewickByDomain } from './rotateNewickByDomain.ts'
+import { newickPreorder, rotateNewickByDomain } from './rotateNewickByDomain.ts'
 
 import type { RowAlias, RowBand } from './arrangeRows.ts'
 import type { HierarchyNode } from './hierarchy.ts'
@@ -163,20 +163,9 @@ export function pruneNewickToLeaves(
   keep: Set<string>,
   incrementalLengths = true,
 ): ClusterNodeData | undefined {
-  // Iterative post-order, on the raw newick data rather than a HierarchyNode:
-  // build each node's replacement only once every child's is known. Recursion
-  // here threw past ~5000 tips on the caterpillar this package exists to draw.
-  const order: ClusterNodeData[] = []
-  const stack = [node]
-  while (stack.length > 0) {
-    const n = stack.pop()!
-    order.push(n)
-    if (n.children) {
-      for (const child of n.children) {
-        stack.push(child)
-      }
-    }
-  }
+  // Built bottom-up on the raw newick data rather than a HierarchyNode: each
+  // node's replacement only once every child's is known.
+  const order = newickPreorder(node)
   const pruned = new Map<ClusterNodeData, ClusterNodeData | undefined>()
   for (let i = order.length - 1; i >= 0; i--) {
     const n = order[i]!

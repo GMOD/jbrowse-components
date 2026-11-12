@@ -1,6 +1,8 @@
 import { quoteName } from '@gmod/hclust'
 import { parseNewick } from '@gmod/newick'
 
+import { renameNewickLeaves } from './writeNewick.ts'
+
 // The parser's own coverage lives in @gmod/newick. What is left here is the
 // pairing this package depends on and that package cannot test: @gmod/hclust
 // writes the newick and @gmod/newick reads it, so the two have to agree exactly,
@@ -117,4 +119,14 @@ test('round-trips a label containing a comma as one leaf', () => {
 
 test('round-trips a label containing a literal quote', () => {
   expect(roundTrip(['A', "o'brien", 'B'])).toEqual(['A', "o'brien", 'B'])
+})
+
+test('renameNewickLeaves hands a bare leaf undefined and keeps every length', () => {
+  const seen: (string | undefined)[] = []
+  const renamed = renameNewickLeaves('((a:1,:2):0.5,b:3);', name => {
+    seen.push(name)
+    return name === undefined ? 'blank' : name.toUpperCase()
+  })
+  expect(seen).toContain(undefined)
+  expect(renamed).toBe('((A:1,blank:2):0.5,B:3);')
 })
