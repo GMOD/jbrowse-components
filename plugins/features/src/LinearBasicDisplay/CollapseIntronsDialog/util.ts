@@ -70,12 +70,35 @@ function isSoloCapable<D>(d: D): d is D & SoloCapableDisplay {
 }
 
 // The track and display ids here still match a pre-stripTrackIds snapshot, so
-// seeding and in-place isolation resolve the same display.
-function findSoloDisplay(view: LinearGenomeViewModel, trackId: string) {
+// seeding and acting in place resolve the same display.
+type ViewDisplay = LinearGenomeViewModel['tracks'][number]['displays'][number]
+
+function findDisplay<T>(
+  view: LinearGenomeViewModel,
+  trackId: string,
+  isCapable: (d: ViewDisplay) => d is ViewDisplay & T,
+) {
   const track = view.tracks.find(
     t => readConfObject(t.configuration, 'trackId') === trackId,
   )
-  return track?.displays.find(isSoloCapable)
+  return track?.displays.find(isCapable)
+}
+
+// Seeds only the display that has the props, so no other display type sees an
+// unknown property.
+function seedDisplayInTracks(
+  tracks: TrackSnapshot[],
+  displayId: string | undefined,
+  props: Record<string, unknown>,
+): TrackSnapshot[] {
+  return displayId === undefined
+    ? tracks
+    : tracks.map(t => ({
+        ...t,
+        displays: t.displays.map(d =>
+          d.id === displayId ? { ...d, ...props } : d,
+        ),
+      }))
 }
 
 interface GeneExpandingDisplay {
@@ -92,16 +115,6 @@ function isGeneExpanding<D>(d: D): d is D & GeneExpandingDisplay {
   )
 }
 
-function findGeneExpandingDisplay(
-  view: LinearGenomeViewModel,
-  trackId: string,
-) {
-  const track = view.tracks.find(
-    t => readConfObject(t.configuration, 'trackId') === trackId,
-  )
-  return track?.displays.find(isGeneExpanding)
-}
-
 // A track drawing one representative transcript per gene would show that one
 // inside windows cut around another, so the gene opens to all its isoforms.
 export function expandGeneInView(
@@ -109,7 +122,7 @@ export function expandGeneInView(
   trackId: string,
   featureId: string,
 ): () => void {
-  const display = findGeneExpandingDisplay(view, trackId)
+  const display = findDisplay(view, trackId, isGeneExpanding)
   if (display && !display.expandedGeneIds.includes(featureId)) {
     display.toggleExpandedGene(featureId)
     return () => {
@@ -128,22 +141,12 @@ export function seedExpandedGeneInTracks(
   trackId: string,
   featureId: string,
 ): TrackSnapshot[] {
-  const display = findGeneExpandingDisplay(view, trackId)
-  return display === undefined
-    ? tracks
-    : tracks.map(t => ({
-        ...t,
-        displays: t.displays.map(d =>
-          d.id === display.id
-            ? {
-                ...d,
-                expandedGeneIds: [
-                  ...new Set([...display.expandedGeneIds, featureId]),
-                ],
-              }
-            : d,
-        ),
-      }))
+  const display = findDisplay(view, trackId, isGeneExpanding)
+  return seedDisplayInTracks(tracks, display?.id, {
+    expandedGeneIds: [
+      ...new Set([...(display?.expandedGeneIds ?? []), featureId]),
+    ],
+  })
 }
 
 export function soloFeatureInView(
@@ -151,7 +154,7 @@ export function soloFeatureInView(
   trackId: string,
   featureId: string,
 ): () => void {
-  const display = findSoloDisplay(view, trackId)
+  const display = findDisplay(view, trackId, isSoloCapable)
   if (!display) {
     return () => {}
   }
@@ -171,25 +174,17 @@ export function soloFeatureInView(
   }
 }
 
-// Seeds the persistent solo props onto the one display that supports solo, so
-// no other display type sees an unknown property.
 export function seedSoloInTracks(
   tracks: TrackSnapshot[],
   view: LinearGenomeViewModel,
   trackId: string,
   featureId: string,
 ): TrackSnapshot[] {
-  const soloDisplayId = findSoloDisplay(view, trackId)?.id
-  return soloDisplayId === undefined
-    ? tracks
-    : tracks.map(t => ({
-        ...t,
-        displays: t.displays.map(d =>
-          d.id === soloDisplayId
-            ? { ...d, soloFeatureIds: [featureId], soloApplied: true }
-            : d,
-        ),
-      }))
+  return seedDisplayInTracks(
+    tracks,
+    findDisplay(view, trackId, isSoloCapable)?.id,
+    { soloFeatureIds: [featureId], soloApplied: true },
+  )
 }
 
 /**
