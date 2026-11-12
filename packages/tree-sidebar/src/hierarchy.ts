@@ -159,13 +159,7 @@ export function clusterLayout<T extends { length?: number }>(
   const laid = cloneHierarchy(root)
   const n = leaves(laid).length
   placeLeaves(laid, 0, n > 0 ? sizeX / n : 0)
-  // A dendrogram with no merge heights (e.g. a topology-only tree) can't show a
-  // meaningful phylogram, so fall back to the cladogram layout in that case.
-  if (showBranchLength && maxNodeHeight(laid) > 0) {
-    assignBranchLengthY(laid, sizeY)
-  } else {
-    assignDepthY(laid, sizeY)
-  }
+  placeDepths([laid], sizeY, showBranchLength)
   return laid as unknown as PositionedHierarchyNode<T>
 }
 
@@ -191,29 +185,7 @@ export function bandForestLayout(
     placeLeaves(copy, start, rowHeight)
     return copy
   })
-  const nodes = laid.map(c => descendants(c))
-  if (showBranchLength && laid.some(c => maxNodeHeight(c) > 0)) {
-    if (laid.some(c => hasIncrementalBranchLengths(c))) {
-      const dists = laid.map(rootDistances)
-      const spans = dists.map(dist => largest(dist.values()))
-      const max = largest(spans)
-      for (const [i, dist] of dists.entries()) {
-        for (const [n, d] of dist) {
-          n.y = insetY(max === 0 ? 1 : (max - spans[i]! + d) / max, sizeY)
-        }
-      }
-    } else {
-      const max = largest(laid.map(c => maxNodeHeight(c)))
-      for (const n of nodes.flat()) {
-        n.y = insetY(max === 0 ? 1 : 1 - (n.data.length ?? 0) / max, sizeY)
-      }
-    }
-  } else {
-    const max = largest(laid.map(c => c.height))
-    for (const n of nodes.flat()) {
-      n.y = insetY(max === 0 ? 1 : (max - n.height) / max, sizeY)
-    }
-  }
+  placeDepths(laid, sizeY, showBranchLength)
   const root: HierarchyNode<NewickNode> & { forestRoot: true } = {
     data: { children: laid.map(c => c.data) },
     children: laid,
@@ -228,6 +200,54 @@ export function bandForestLayout(
     clade.parent = root
   }
   return root as PositionedHierarchyNode<NewickNode>
+}
+
+/**
+ * Depth positions for trees drawn side by side on one scale, each one's
+ * farthest leaf at the right edge. One tree is the plain dendrogram.
+ *
+ * - Cladogram: by depth-to-leaf, `node.height`, root at the left inset and
+ *   every leaf at the right edge regardless of balance, as ape::plot.phylo
+ *   draws; depth-from-root would leave shallow leaves dangling short of the
+ *   row labels. Also the fallback for a tree with no lengths at all, which has
+ *   no phylogram to show.
+ * - Incremental lengths (phylo): each node at its cumulative root distance,
+ *   so leaves land at their true distance and the right edge is ragged. A
+ *   root's own `length` is a stem up to an absent parent and counts for
+ *   nothing.
+ * - Absolute merge heights (hclust v4 and earlier): root at the left inset,
+ *   leaves at the right edge, a merge at its height's fraction, as R's
+ *   `plot.hclust` places it. A dendrogram written as `:` lengths lands on the
+ *   same picture, because every leaf of one sits at the same distance from the
+ *   root.
+ */
+function placeDepths<T extends { length?: number }>(
+  trees: readonly HierarchyNode<T>[],
+  sizeY: number,
+  showBranchLength: boolean,
+) {
+  if (showBranchLength && trees.some(t => maxNodeHeight(t) > 0)) {
+    if (trees.some(t => hasIncrementalBranchLengths(t))) {
+      const dists = trees.map(rootDistances)
+      const spans = dists.map(dist => largest(dist.values()))
+      const max = largest(spans)
+      for (const [i, dist] of dists.entries()) {
+        for (const [n, d] of dist) {
+          n.y = insetY(max === 0 ? 1 : (max - spans[i]! + d) / max, sizeY)
+        }
+      }
+    } else {
+      const max = largest(trees.map(t => maxNodeHeight(t)))
+      for (const n of trees.flatMap(t => descendants(t))) {
+        n.y = insetY(max === 0 ? 1 : 1 - (n.data.length ?? 0) / max, sizeY)
+      }
+    }
+  } else {
+    const max = largest(trees.map(t => t.height))
+    for (const n of trees.flatMap(t => descendants(t))) {
+      n.y = insetY(max === 0 ? 1 : (max - n.height) / max, sizeY)
+    }
+  }
 }
 
 function largest(values: Iterable<number>) {
@@ -245,22 +265,6 @@ function largest(values: Iterable<number>) {
 export function treeLinks<T>(root: PositionedHierarchyNode<T>) {
   const all = links(root)
   return root.forestRoot ? all.filter(link => link.source !== root) : all
-}
-
-// Assigns y positions by topological depth-to-leaf — root at 0, every leaf at
-// sizeY. `node.height` is already the distance from a node to its farthest
-// descendant leaf, so positioning by `(rootHeight - height)` aligns all leaves
-// at the right edge regardless of tree balance, matching ape::plot.phylo.
-// Positioning by depth-from-root instead would leave shallow leaves dangling
-// short of the row labels.
-export function assignDepthY<T>(node: HierarchyNode<T>, sizeY: number) {
-  const rootHeight = node.height
-  for (const n of descendants(node)) {
-    n.y = insetY(
-      rootHeight === 0 ? 1 : (rootHeight - n.height) / rootHeight,
-      sizeY,
-    )
-  }
 }
 
 // Maps a 0..1 fraction (0 = root, 1 = leaf) onto the tree's horizontal band,
@@ -304,51 +308,6 @@ export function hasIncrementalBranchLengths<T extends { length?: number }>(
   node: HierarchyNode<T>,
 ): boolean {
   return leaves(node).some(l => l.data.length !== undefined)
-}
-
-// Phylogram y positions, dispatching on which encoding the tree uses.
-export function assignBranchLengthY<T extends { length?: number }>(
-  node: HierarchyNode<T>,
-  sizeY: number,
-) {
-  if (hasIncrementalBranchLengths(node)) {
-    assignCumulativeLengthY(node, sizeY)
-  } else {
-    assignMergeHeightY(node, sizeY)
-  }
-}
-
-// Absolute-merge-height form (hclust v4 and earlier): root (max height) at 0,
-// every leaf (height 0) at sizeY, internal nodes proportional to where their
-// cluster merged. Matches R's `plot.hclust` node placement exactly.
-//
-// A dendrogram written as `:` lengths takes the cumulative path below instead
-// and lands on the same picture, because every leaf of one sits at the same
-// distance from the root — the two are the same ruler read from opposite ends.
-function assignMergeHeightY<T extends { length?: number }>(
-  node: HierarchyNode<T>,
-  sizeY: number,
-) {
-  const max = maxNodeHeight(node)
-  for (const n of descendants(node)) {
-    const h = n.data.length ?? 0
-    n.y = insetY(max === 0 ? 1 : 1 - h / max, sizeY)
-  }
-}
-
-// Incremental form (phylo): each node sits at its cumulative root distance, so
-// leaves land at their true evolutionary distance and the right edge is ragged
-// rather than flush. The root's own `length` is a stem up to an absent parent,
-// so the walk starts the accumulator at 0 and ignores it.
-function assignCumulativeLengthY<T extends { length?: number }>(
-  node: HierarchyNode<T>,
-  sizeY: number,
-) {
-  const dist = rootDistances(node)
-  const max = largest(dist.values())
-  for (const [n, d] of dist) {
-    n.y = insetY(max === 0 ? 1 : d / max, sizeY)
-  }
 }
 
 // Each node's summed branch length below `node`, whose own stem counts for

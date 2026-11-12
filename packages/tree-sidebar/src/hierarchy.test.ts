@@ -1,6 +1,4 @@
 import {
-  assignBranchLengthY,
-  assignDepthY,
   clusterLayout,
   descendants,
   eachAfter,
@@ -126,9 +124,8 @@ test('clusterLayout returns a fresh tree and leaves its input unmutated', () => 
   expect(laid2).not.toBe(root)
 })
 
-test('assignDepthY positions by depth-to-leaf, aligning leaves at the edge', () => {
-  const root = hierarchy(sample(), childrenOf)
-  assignDepthY(root, 100)
+test('clusterLayout positions by depth-to-leaf, aligning leaves at the edge', () => {
+  const root = clusterLayout(hierarchy(sample(), childrenOf), 30, 100)
   // root sits at the left inset (TREE_LEFT_PAD) so its stroke isn't clipped;
   // leaf A and leaf C both reach the right edge despite A being shallower
   // (depth 1 vs 2) — they share depth-to-leaf 0
@@ -179,9 +176,8 @@ test('maxNodeHeight returns the largest merge height', () => {
   expect(maxNodeHeight(hierarchy(cladogram(), childrenOf))).toBe(0)
 })
 
-test('assignBranchLengthY positions nodes by absolute merge height', () => {
-  const root = hierarchy(dendro(), childrenOf)
-  assignBranchLengthY(root, 100)
+test('clusterLayout positions nodes by absolute merge height', () => {
+  const root = clusterLayout(hierarchy(dendro(), childrenOf), 30, 100, true)
   // root (max height) at the left inset, all leaves (height 0) at the right
   // edge, the inner cluster at its merge height fraction (1 - 0.5/2)
   expect(root.y).toBe(2)
@@ -196,10 +192,13 @@ test('both encodings of one dendrogram lay out identically', () => {
   // replaces. It holds because every leaf of a dendrogram sits at the same
   // distance from the root, which makes cumulative depth and height-below-root
   // the same measurement.
-  const legacy = hierarchy(dendro(), childrenOf)
-  const current = hierarchy(dendroWithBranchLengths(), childrenOf)
-  assignBranchLengthY(legacy, 100)
-  assignBranchLengthY(current, 100)
+  const legacy = clusterLayout(hierarchy(dendro(), childrenOf), 30, 100, true)
+  const current = clusterLayout(
+    hierarchy(dendroWithBranchLengths(), childrenOf),
+    30,
+    100,
+    true,
+  )
 
   expect(hasIncrementalBranchLengths(legacy)).toBe(false)
   expect(hasIncrementalBranchLengths(current)).toBe(true)
@@ -208,12 +207,6 @@ test('both encodings of one dendrogram lay out identically', () => {
   )
   expect(current.y).toBe(2)
   expect(current.children![1]!.y).toBe(75.5)
-})
-
-test('clusterLayout uses branch-length layout when enabled', () => {
-  const laid = clusterLayout(hierarchy(dendro(), childrenOf), 30, 100, true)
-  expect(laid.y).toBe(2)
-  expect(laid.children![1]!.y).toBe(75.5)
 })
 
 // real phylo shape (UCSC multiz style): `:` lengths on every branch, leaves
@@ -248,9 +241,8 @@ test('hasIncrementalBranchLengths distinguishes phylo from hclust newick', () =>
   expect(hasIncrementalBranchLengths(hierarchy(phylo(), childrenOf))).toBe(true)
 })
 
-test('assignBranchLengthY positions phylo nodes by cumulative root distance', () => {
-  const root = hierarchy(phylo(), childrenOf)
-  assignBranchLengthY(root, 100)
+test('clusterLayout positions phylo nodes by cumulative root distance', () => {
+  const root = clusterLayout(hierarchy(phylo(), childrenOf), 30, 100, true)
   // fractions match ape::node.depth.edgelength / max: the deepest root->leaf
   // path is mm10/rn5 at 0.05+0.3=0.35, so hg38 sits at (0.0057+0.0067)/0.35
   const frac = (n: { y?: number }) => ((n.y ?? 0) - 2) / 98

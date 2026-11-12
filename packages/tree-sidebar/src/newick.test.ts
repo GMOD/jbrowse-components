@@ -36,7 +36,7 @@ test('reads hclust serialization: numeric post-paren is a merge height', () => {
 
 // A bootstrap/support label sits exactly where hclust puts its merge height. A
 // `:` anywhere means phylo newick, so the number is support, not a length —
-// reading it as a length made assignCumulativeLengthY sum support values (often
+// reading it as a length made the cumulative layout sum support values (often
 // 0-100) into the branch distances and flatten the real ones.
 test('reads a post-paren numeric as a name when the tree has : lengths', () => {
   expect(parseNewick('((A:0.1,B:0.2)95,(C:0.1,D:0.1)80);')).toEqual({
