@@ -38,6 +38,7 @@ import {
 } from './tooltipUtils.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { AlignmentsHover } from '../hoverState.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
 import type { ConnectorMarkHit } from './connectorHitTest.ts'
@@ -379,11 +380,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   // every branch sets the same fields, so a branch could differ from its
   // neighbours by forgetting one rather than by deciding anything — which is
   // exactly what happened to `hoverCoverageBand`, left stale by the one branch
-  // that did not mention it (the note on `setHoverState` records it).
-  type HoverState = Omit<
-    Parameters<typeof model.setHoverState>[0],
-    'hoverCoverageBand'
-  >
+  // that did not mention it (the note on `AlignmentsHover` records it).
+  type HoverState = Omit<AlignmentsHover, 'hoverCoverageBand'>
 
   function hoverStateForResult(result: MarkHitResult): HoverState {
     switch (result.type) {
@@ -486,8 +484,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         }
       }
       case 'none':
-        // The state `clearMouseoverState` writes, which is what a miss has
-        // always meant here.
+        // Every field empty, as `clearMouseoverState` leaves them, which is
+        // what a miss has always meant here.
         return {
           overCigarItem: false,
           featureIdUnderMouse: undefined,

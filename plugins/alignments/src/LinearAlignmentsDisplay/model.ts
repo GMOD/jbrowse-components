@@ -32,7 +32,6 @@ import {
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
-import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import ColorWritesMixin, {
   writtenColorOf,
 } from '@jbrowse/display-kit/ColorWritesMixin'
@@ -70,10 +69,7 @@ import { connectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import { buildSashimiBandFeeds } from '../features/sashimi/bandFeed.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
-import {
-  junctionSupportingReadSlots,
-  sameLaneJunction,
-} from '../features/sashimi/supportingReads.ts'
+import { junctionSupportingReadSlots } from '../features/sashimi/supportingReads.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { withBasesFields } from '../shared/basesFilter.ts'
 import { paintsEveryBase, workerColorField } from '../shared/colorFieldDefs.ts'
@@ -144,6 +140,7 @@ import {
   orderedGroups,
   splitOverflowKeys,
 } from './groupedDataMaps.ts'
+import { NO_CONNECTOR_READ_IDS, nextHover } from './hoverState.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
   arcSlotsInWindows,
@@ -217,9 +214,9 @@ import type { ReadColorCategory } from './colorUtils.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
 import type { ContextMenuHit } from './components/hitTestPipeline.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
-import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { AlignmentsUnit } from './constants.ts'
 import type { GroupSize } from './groupLayout.ts'
+import type { AlignmentsHover } from './hoverState.ts'
 import type { AlignmentLane } from './lanes.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -249,11 +246,6 @@ const AlignmentsTooltip = lazy(
 )
 
 export type { AlignmentLane }
-
-export interface HoverCoverageBand {
-  topOffset: number
-  coverageHeight: number
-}
 
 // One identity, so `groupSizesInEffect` hands the layout no fresh map per
 // read.
@@ -401,14 +393,6 @@ export default function stateModelFactory(
           /**
            * #volatile
            */
-          featureIdUnderMouse: undefined as undefined | string,
-          /**
-           * #volatile
-           */
-          mouseoverExtraInformation: undefined as TooltipPayload | undefined,
-          /**
-           * #volatile
-           */
           contextMenuFeature: undefined as Feature | undefined,
           /**
            * #volatile
@@ -432,38 +416,71 @@ export default function stateModelFactory(
            * and the layout.
            */
           fittedHeightPx: 0,
-          /**
-           * #volatile
-           * The two read ids at the ends of the connector under the cursor.
-           */
-          hoveredConnectorReadIds: [] as string[],
-          /**
-           * #volatile
-           * The sashimi junction or split-read arc under the cursor, whose
-           * supporting reads the hover lights.
-           */
-          hoveredJunction: undefined as HoveredJunction | undefined,
-
-          /**
-           * #volatile
-           */
-          overCigarItem: false,
-          /**
-           * #volatile
-           * Screen-px coverage band of the section under a coverage/indicator
-           * hover; the tooltip draws its vertical hover bar on it. `undefined`
-           * when not hovering.
-           */
-          hoverCoverageBand: undefined as HoverCoverageBand | undefined,
-          /**
-           * #volatile
-           * The read-connection arc under the cursor, as the ink
-           * `ArcHoverOverlay` draws. A snapshot from the mousemove that found
-           * the arc, like its tooltip.
-           */
-          hoveredArcHighlight: undefined as ArcHighlight | undefined,
         }
       })
+      .volatile((): { hoverState: AlignmentsHover | undefined } => ({
+        /**
+         * #volatile
+         * Everything the cursor is over, as one value, so a clear is one
+         * write that cannot miss a field. `setHoverState` writes it whole.
+         */
+        hoverState: undefined,
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         */
+        get featureIdUnderMouse() {
+          return self.hoverState?.featureIdUnderMouse
+        },
+        /**
+         * #getter
+         */
+        get mouseoverExtraInformation() {
+          return self.hoverState?.mouseoverExtraInformation
+        },
+        /**
+         * #getter
+         * The two read ids at the ends of the connector under the cursor.
+         */
+        get hoveredConnectorReadIds() {
+          return (
+            self.hoverState?.hoveredConnectorReadIds ?? NO_CONNECTOR_READ_IDS
+          )
+        },
+        /**
+         * #getter
+         * The sashimi junction or split-read arc under the cursor, whose
+         * supporting reads the hover lights.
+         */
+        get hoveredJunction() {
+          return self.hoverState?.hoveredJunction
+        },
+        /**
+         * #getter
+         */
+        get overCigarItem() {
+          return self.hoverState?.overCigarItem ?? false
+        },
+        /**
+         * #getter
+         * Screen-px coverage band of the section under a coverage/indicator
+         * hover; the tooltip draws its vertical hover bar on it. `undefined`
+         * when not hovering.
+         */
+        get hoverCoverageBand() {
+          return self.hoverState?.hoverCoverageBand
+        },
+        /**
+         * #getter
+         * The read-connection arc under the cursor, as the ink
+         * `ArcHoverOverlay` draws. A snapshot from the mousemove that found
+         * the arc, like its tooltip.
+         */
+        get hoveredArcHighlight() {
+          return self.hoverState?.hoveredArcHighlight
+        },
+      }))
       .views(self => ({
         /**
          * #getter
@@ -2440,15 +2457,7 @@ export default function stateModelFactory(
         const superSetHeightMode = self.setHeightMode
         const superCloseContextMenu = self.closeContextMenu
         function clearMouseoverState() {
-          self.featureIdUnderMouse = undefined
-          self.mouseoverExtraInformation = undefined
-          self.overCigarItem = false
-          self.hoverCoverageBand = undefined
-          self.hoveredArcHighlight = undefined
-          self.hoveredJunction = undefined
-          if (self.hoveredConnectorReadIds.length > 0) {
-            self.hoveredConnectorReadIds = []
-          }
+          self.hoverState = undefined
         }
         function writeSort(sort: SortSetting) {
           setConf(
@@ -2800,35 +2809,9 @@ export default function stateModelFactory(
            * open, since `openContextMenu` pins the hover to the read the menu
            * acts on.
            */
-          setHoverState(state: {
-            overCigarItem: boolean
-            featureIdUnderMouse: string | undefined
-            mouseoverExtraInformation: TooltipPayload | undefined
-            hoverCoverageBand?: HoverCoverageBand
-            // Optional and ALWAYS assigned, like `hoverCoverageBand`: a branch
-            // with no arc clears the highlight by not mentioning one.
-            hoveredArcHighlight?: ArcHighlight
-            hoveredJunction?: HoveredJunction
-            hoveredConnectorReadIds?: string[]
-          }) {
-            if (self.contextMenuInfo) {
-              return
-            }
-            self.overCigarItem = state.overCigarItem
-            self.featureIdUnderMouse = state.featureIdUnderMouse
-            self.mouseoverExtraInformation = state.mouseoverExtraInformation
-            self.hoverCoverageBand = state.hoverCoverageBand
-            self.hoveredArcHighlight = state.hoveredArcHighlight
-            // Write only on a real change: a fresh junction or an equal array
-            // invalidates `hoverInk`, an O(reads) rebuild per mousemove.
-            if (
-              !sameLaneJunction(self.hoveredJunction, state.hoveredJunction)
-            ) {
-              self.hoveredJunction = state.hoveredJunction
-            }
-            const ends = state.hoveredConnectorReadIds ?? []
-            if (!sameStrings(self.hoveredConnectorReadIds, ends)) {
-              self.hoveredConnectorReadIds = ends
+          setHoverState(state: AlignmentsHover) {
+            if (!self.contextMenuInfo) {
+              self.hoverState = nextHover(self.hoverState, state)
             }
           },
 
@@ -2948,7 +2931,11 @@ export default function stateModelFactory(
             // Pin the hover to the menu's target read so its highlight box
             // (`hoverInk`) stays on while the menu is open; undefined for
             // coverage/indicator hits.
-            self.featureIdUnderMouse = info.featureId
+            self.hoverState = {
+              overCigarItem: false,
+              featureIdUnderMouse: info.featureId,
+              mouseoverExtraInformation: undefined,
+            }
             const { featureId } = info
             if (featureId !== undefined) {
               void withFeature(

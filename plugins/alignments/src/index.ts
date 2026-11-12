@@ -161,7 +161,7 @@ export type {
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
 export type { ChainedByGroup } from './LinearAlignmentsDisplay/chainFields.ts'
-export type { HoverCoverageBand } from './LinearAlignmentsDisplay/model.ts'
+export type { HoverCoverageBand } from './LinearAlignmentsDisplay/hoverState.ts'
 export { SORT_FIELDS } from './shared/types.ts'
 export type {
   ColumnSortField,
