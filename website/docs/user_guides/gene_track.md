@@ -51,6 +51,11 @@ keeps some flanking sequence around each splice boundary. Right-clicking a
 transcript offers that isoform as well as the whole gene (exons unioned), and
 the dialog's transcript dropdown reaches an isoform that isn't drawn.
 
+Each exon after the first is labeled with its first coordinate on the ruler. To
+bring the introns back, click **Undo** on the notice, or click the chromosome
+name on the ruler and choose its **Show the whole span** row. The **1 feature**
+chip on the gene track brings back the other genes.
+
 With an [RNA-seq track](/docs/tutorials/rnaseq), the spliced reads' **sashimi
 arcs** then span directly between adjacent exons.
 
