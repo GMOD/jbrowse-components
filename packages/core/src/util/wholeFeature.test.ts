@@ -1,5 +1,6 @@
 import { asTable } from './featureTable.ts'
 import { layerTables, runTransforms } from './featureTransforms.ts'
+import createJexlInstance from './jexl.ts'
 import { NO_ROOT, encodeFeatures } from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
 import { wholeFeatureRow } from './stepTables.ts'
@@ -99,4 +100,19 @@ test('a block opens as the outermost feature it is part of', () => {
   )
   expect(wholeFeatureRow(blocks, 1).toJSON().subfeatures).toHaveLength(2)
   expect(wholeFeatureRow(blocks, 2).id()).toBe('solid')
+})
+
+test('the tooltip line of a block reads the feature it is a block of', () => {
+  const blocks = runTransforms(
+    [transcript, solid],
+    [{ type: 'flatten', keepEmpty: true }],
+  )
+  expect(
+    encodeFeatures(
+      blocks,
+      { tooltip: `jexl:get(feature,'type') || 'whole'` },
+      ['tooltip'],
+      { jexl: createJexlInstance() },
+    ).tooltip,
+  ).toEqual(['whole', 'whole', 'whole'])
 })

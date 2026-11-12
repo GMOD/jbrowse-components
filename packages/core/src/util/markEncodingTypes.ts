@@ -195,6 +195,11 @@ export interface MarkEncoding {
   shape?: ShapeEncoding
   /** The field a `text` mark prints, read by that mark alone. */
   text?: FieldRef
+  /**
+   * The field naming each instance's feature on the hover's first line, a
+   * display's `tooltip.field`, read off the whole feature the instance draws.
+   */
+  tooltip?: FieldRef
   /** The width a `link` mark strokes at, read by that mark alone. */
   size?: SizeEncoding
 }
@@ -216,6 +221,7 @@ export type LaneName =
   | 'glyph'
   | 'row'
   | 'text'
+  | 'tooltip'
   | 'size'
   | 'x2Ref'
   | 'series'
@@ -443,6 +449,11 @@ export interface EncodedChannels {
    * cloned across the wire where the typed lanes are transferred.
    */
   text?: string[]
+  /**
+   * Each instance's hover line, its `tooltip` field read off the whole
+   * feature it draws, `''` for none. Cloned across the wire, as `text` is.
+   */
+  tooltip?: string[]
   /** Each feature's raw `size` value, NaN where it holds no number. */
   size?: Float32Array
   /**

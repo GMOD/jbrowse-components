@@ -8,9 +8,9 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
+import { tooltipTextReader } from '@jbrowse/core/util/tooltipText'
 
 import { LITERAL, STROKE, cdsFrameClass } from '../colorClasses.ts'
-import { getFeatureName } from '../labelUtils.ts'
 import { readConfigValueSafe } from '../renderConfig.ts'
 import { isCDS, isUTR } from '../util.ts'
 
@@ -237,32 +237,14 @@ export function packColor({
 
 /**
  * The hover text of each feature record, evaluated worker-side because the
- * full feature is here: through `fieldReader`, where a field that throws or
- * reads nothing degrades to the feature name rather than failing the render.
- * An empty field reads nothing. Resolved once per walk.
+ * full feature is here, through the reader the mark display's `tooltip` lane
+ * shares. Resolved once per walk.
  */
 export function tooltipReader(
   config: RenderContext['config'],
   jexl: RenderContext['jexl'],
-): (feature: Feature) => string {
-  const { tooltip } = config
-  if (!tooltip) {
-    return () => ''
-  }
-  const fallback = (feature: Feature) => getFeatureName(feature) ?? ''
-  let read: (feature: Feature) => unknown
-  try {
-    read = fieldReader(tooltip, jexl)
-  } catch {
-    return fallback
-  }
-  return feature => {
-    try {
-      return valueText(read(feature)) || fallback(feature)
-    } catch {
-      return fallback(feature)
-    }
-  }
+) {
+  return tooltipTextReader(config.tooltip, jexl)
 }
 
 export function featureTooltip(feature: Feature, ctx: RenderContext) {

@@ -1025,6 +1025,48 @@ test('only the lanes asked for are filled, and the index only when named', () =>
   expect(Flatbush.from(spans.flatbushData!).search(90, -1, 160, 1)).toEqual([1])
 })
 
+const FEATURE_TOOLTIP = `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`
+
+test('the tooltip lane holds the hover line of each instance, `_mouseOver` before `name`', () => {
+  const r = encodeFeatures(
+    [
+      feature(0, { _mouseOver: 'NM_000059.4(BRCA2):c.68-7T>A', name: 'v1' }),
+      feature(1, { name: 'BRCA1' }),
+      feature(2, { function: 'stem_loop' }),
+      feature(3, {}),
+    ],
+    { tooltip: FEATURE_TOOLTIP },
+    ['tooltip'],
+    { jexl },
+  )
+  expect(r.tooltip).toEqual([
+    'NM_000059.4(BRCA2):c.68-7T>A',
+    'BRCA1',
+    'stem_loop',
+    '',
+  ])
+  expect(encodedChannelTransferables(r)).toHaveLength(2)
+  expect(
+    encodeFeatures(features, { tooltip: 'type' }, ['y'], { jexl }).tooltip,
+  ).toBeUndefined()
+})
+
+test('a tooltip field that reads nothing or throws names the feature, and an empty one names nothing', () => {
+  const named = [feature(0, { name: 'geneA' }), feature(1, { id: 'id-1' })]
+  expect(
+    encodeFeatures(named, { tooltip: 'product' }, ['tooltip'], { jexl })
+      .tooltip,
+  ).toEqual(['geneA', 'id-1'])
+  expect(
+    encodeFeatures(named, { tooltip: 'jexl:feature.a.b.c' }, ['tooltip'], {
+      jexl,
+    }).tooltip,
+  ).toEqual(['geneA', 'id-1'])
+  expect(
+    encodeFeatures(named, { tooltip: '' }, ['tooltip'], { jexl }).tooltip,
+  ).toEqual(['', ''])
+})
+
 test('text is a lane of strings, filled only when named, empty where the field holds nothing', () => {
   const r = encodeFeatures(
     [

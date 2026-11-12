@@ -27,13 +27,14 @@ import { numericValue } from './numericValue.ts'
 import { scaleExtent } from './quantileExtent.ts'
 import { DEFAULT_SHAPE_RANGE, SHAPE_CODES } from './shapeNames.ts'
 import { buildJexlContext } from './simpleFeature.ts'
-import { rootRowOf } from './stepTables.ts'
+import { rootRowOf, wholeFeatureRow } from './stepTables.ts'
 import {
   isMissing,
   thresholdCuts,
   thresholdIndex,
   thresholdPalette,
 } from './thresholdScale.ts'
+import { tooltipTextReader } from './tooltipText.ts'
 
 import type { CategoricalField } from './categoricalField.ts'
 import type { Column, FeatureTable, NumberLane } from './featureTable.ts'
@@ -153,6 +154,7 @@ export interface MarkEncodingInput {
   color?: MarkColorEncoding | ChannelReader<number>
   shape?: ShapeEncoding | ChannelReader<number>
   text?: FieldRef | ChannelReader
+  tooltip?: FieldRef
   size?: SizeEncoding
 }
 
@@ -826,6 +828,17 @@ function textLane(walk: LaneContext, textEncoding: MarkEncodingInput['text']) {
   return { text }
 }
 
+function tooltipLane(walk: LaneContext, field: FieldRef | undefined) {
+  const { table, jexl, report, count, rowAt } = walk
+  const read = tooltipTextReader(field ?? '', jexl)
+  const tooltip = new Array<string>(count)
+  for (let k = 0; k < count; k++) {
+    report?.(k)
+    tooltip[k] = read(wholeFeatureRow(table, rowAt(k)))
+  }
+  return { tooltip }
+}
+
 function glyphLane(
   walk: LaneContext,
   shapeEncoding: MarkEncodingInput['shape'],
@@ -1259,6 +1272,9 @@ export function encodeFeatures<L extends LaneName>(
     ? seriesLane(walk, encoding.series)
     : undefined
   const textChannels = has('text') ? textLane(walk, textEncoding) : undefined
+  const tooltipChannels = has('tooltip')
+    ? tooltipLane(walk, encoding.tooltip)
+    : undefined
   const glyphChannels = has('glyph')
     ? glyphLane(walk, shapeEncoding)
     : undefined
@@ -1295,6 +1311,7 @@ export function encodeFeatures<L extends LaneName>(
     ...glyphChannels,
     ...seriesChannels,
     ...textChannels,
+    ...tooltipChannels,
     ...sizeChannels,
     ...x2RefChannels,
     ...(feet ? { feet } : undefined),
