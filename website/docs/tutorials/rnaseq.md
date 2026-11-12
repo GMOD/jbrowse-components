@@ -17,7 +17,8 @@ extra files or configuration. We:
   same gene
 - color and group the reads by first-of-pair strand where genes on opposite
   strands sit close together
-- draw a circular RNA's back-splice from split reads
+- draw a circular RNA's back-splice from split reads, set RNase R-treated reads
+  beside untreated ones, and follow nanopore reads around a circle
 - load STAR, regtools and portcullis junction tables as arc tracks
 
 ## Prerequisites
@@ -267,6 +268,28 @@ STAR --genomeDir star_index --readFilesIn r1.fq.gz r2.fq.gz \
   --chimSegmentMin 15 --chimJunctionOverhangMin 15
 ```
 
+STAR's `Chimeric.out.junction` lists every chimeric read. A back-splice is a row
+on one chromosome and strand whose acceptor lies upstream of its donor. Columns
+2 and 5 give the intron base beside the junction on the donor and acceptor
+sides, so on the plus strand the circle runs from one base after column 5 to one
+base before column 2, and the minus strand mirrors that. This counts distinct
+reads per back-splice and keeps those with at least two:
+
+```bash
+awk -F'\t' -v OFS='\t' '$1 !~ /^#/ && $1 == $4 && $3 == $6 && $7 >= 0 &&
+  (($3 == "+" && $5 < $2) || ($3 == "-" && $5 > $2)) {
+    # 1-based intron bases to the circle as a 0-based half-open BED interval
+    s = $3 == "+" ? $5 : $2
+    e = $3 == "+" ? $2 - 1 : $5 - 1
+    k = $1 OFS s OFS e
+    # column 10 is the read name: a read counts once however many rows it has
+    if (!((k, $10) in seen)) { seen[k, $10] = 1; n[k]++ }
+  }
+  END { for (k in n) if (n[k] >= 2) print k, n[k] " reads", n[k], "." }' \
+  Chimeric.out.junction | sort -k1,1 -k2,2n | bgzip > backsplice.bed.gz
+tabix -p bed backsplice.bed.gz
+```
+
 The
 [circRNA demo](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/circrna/config.json)
 holds HeLa RNA-seq treated with RNase R, which digests linear RNA and leaves the
@@ -321,6 +344,57 @@ with the read count:
 At _ZKSCAN1_ the circle spans two exons:
 
 <Figure caption="ZKSCAN1: the STAR back-splice table above the reads, and over their coverage a splice arc and the back-splice as a teal duplication-type split junction." src="/img/circrna/zkscan1_backsplice.png" links="Open this view=circrna/zkscan1_backsplice" />
+
+RNase R digests linear RNA and leaves the circles, so a circle's back-splice
+should hold up against the linear splices into and out of its exons. The same
+HeLa RNA left untreated is the control:
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "hela_control_reads",
+  "name": "HeLa ribominus RNA-seq, no RNase R (SRR1637089)",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/circrna/SRR1637089.slice.bam",
+  "displayDefaults": {
+    "height": 300,
+    "sashimi": { "labels": { "show": true } },
+    "filter": [{ "field": "mapq", "gte": 1 }]
+  }
+}
+```
+
+In the control the long red arcs joining ZKSCAN1's circle exons to the rest of
+the gene carry more reads than the teal back-splice. In the treated reads they
+all but vanish, while the back-splice and the splice between the circle's two
+exons stay:
+
+<Figure caption="ZKSCAN1 with RNase R above and untreated below: the linear splices into and out of the circle fall away under RNase R, and the back-splice stays." src="/img/circrna/zkscan1_rnase_vs_control.png" links="Open this view=circrna/zkscan1_rnase_vs_control" />
+
+A nanopore read of a circle can run around it several times, and the aligner
+writes each lap as its own piece. isoCirc enriches circles and copies each one
+round and round by rolling-circle amplification, so its reads are long runs of
+laps. The demo holds HEK293 isoCirc reads aligned with `minimap2 -ax splice`:
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "hek293_isocirc_reads",
+  "name": "HEK293 isoCirc nanopore reads (SRR10612055)",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/circrna/SRR10612055.slice.bam",
+  "displayDefaults": {
+    "height": 300,
+    "sashimi": { "labels": { "show": true } }
+  }
+}
+```
+
+CDR1as is a single-exon circle antisense to _CDR1_. The sashimi band counts
+every lap of every read as a crossing of the back-splice, and the pileup shows
+the pieces of each read stacked over the one exon:
+
+<Figure caption="CDR1as in HEK293 isoCirc reads: one back-splice spanning the exon, counted once per lap." src="/img/circrna/cdr1as_isocirc.png" links="Open this view=circrna/cdr1as_isocirc" />
 
 ## Loading STAR, regtools and portcullis junction tables
 
