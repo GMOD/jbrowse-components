@@ -39,7 +39,9 @@ inside that height.
 composes both halves or neither. It owes the mixin `autoRowHeight` and may
 override `effectiveRowHeight`. The same directory holds `rowHeightMenuItem(model,
 presets)` and the one `SetRowHeightDialog`. A display that exposes
-`rowProportion` / `setRowProportion` gets a second dialog field.
+`rowProportion` / `setRowProportion` gets a second dialog field. On the mark
+display that proportion is the tallest sized span's `mark.height.band`, and
+setting it scales every sized span by one factor (ADR-194).
 
 `effectiveRowHeight` is the cross-plugin ABI. `applyRowResizeWheel.ts` (core)
 and `TreeDrawingModel` (tree-sidebar `types.ts`) read it by that name off a model

@@ -701,8 +701,9 @@ shows. The row height, `"rows": { "field": "source", "step": 20 }`, pins each
 row at 20 px instead, and the rows that do not fit scroll: a wheel over the rows
 or the scrollbar at the right reaches them, and shift+wheel resizes them. **Row
 height → Fit to track height** writes `"fit"` again. The menu's Normal and
-Compact presets also set every rect's `mark.height.band`, so the rows stand
-apart.
+Compact presets also set the tallest rect's `mark.height.band`, so the rows
+stand apart, and scale every other rect's with it, so a thin UTR under a coding
+exon stays as much thinner.
 
 A row's color, pinned in [`rows.colors`](/docs/config/markrows/#slot-colors) or
 mapped from an attribute by [`rows.color`](/docs/config/markrows/#slot-color),

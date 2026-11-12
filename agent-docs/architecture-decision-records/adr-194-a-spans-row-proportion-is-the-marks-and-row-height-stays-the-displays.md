@@ -13,7 +13,9 @@ link's and the line's `interpolate` and the line's `gapBp`, and the
 `unread-*` rules for the three became one, `unread-mark-member`. Amended
 2026-10-30: the multi-row feature display became a mark display (ADR-249),
 and MAF's `alignments.rowProportion` became `alignments.mark.height.band`, the
-same spelling; it was beta-only, so it has no retired lift.
+same spelling; it was beta-only, so it has no retired lift. Amended
+2026-11-12: the display's proportion is its tallest span's, and the presets
+scale every span to it, below.
 
 Follows `9b74cc729e`, which gave the mark display
 `RowHeightMixin`'s `rowHeight` and a display-level `rowProportion`. Colin asked
@@ -102,6 +104,25 @@ proportion on its span, the word unchanged.
   the variant displays do.
 - `rowHeight`, `setRowHeight`, `setFitToHeight` and the shared menu stay as
   ROW_HEIGHT_AND_FIT.md describes them.
+
+## Amended 2026-11-12: the presets keep each span's ratio to the tallest
+
+The model's `rowProportion` is the tallest sized span's band, and
+`setRowProportion(n)` makes that `n` and scales every other sized span by the
+same factor; a band-0 span stays a line. A plot whose sized spans share one
+band, the cases above, still gets `n` on every span.
+
+Writing one band to every span erased the thick-and-thin pair the Decision
+argues for. The transcript and protein plot draws its UTR at a quarter of the
+row under coding exons at the Normal proportion, and **Row height → Normal**
+or **Compact** drew the UTR as tall as the CDS. The first span's band was the
+UTR's, so **Custom...** offered it and wrote it back on submit, thinning every
+coding rect to it even when only the px height changed.
+
+A tallest span is written `n` as given, and a preset already in effect writes
+nothing, so Normal → Compact → Normal returns the plot's bands; a thinner span
+can come back off by a rounding error of the ratio. The preset ticked in the
+menu still follows the row height alone.
 
 ## Rejected alternatives
 
