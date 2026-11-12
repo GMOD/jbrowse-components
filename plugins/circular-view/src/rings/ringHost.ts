@@ -172,6 +172,12 @@ interface RingAxis {
   ticks: { items: { value: number; y: number; label?: string }[] }
 }
 
+function hasAxes(
+  display: RingDisplay,
+): display is RingDisplay & { axes?: RingAxis[] } {
+  return 'axes' in display
+}
+
 /**
  * A ring display's y axis as radii: each tick of its first single-band scale
  * at the radius its strip row is warped to, labelled where the label clears
@@ -179,9 +185,10 @@ interface RingAxis {
  * and draws none.
  */
 export function ringAxisTicks(ring: Ring) {
-  const axis = (ring.display as { axes?: RingAxis[] }).axes?.find(
-    a => (a.bandTops ?? [0]).length === 1,
-  )
+  const { display } = ring
+  const axis = hasAxes(display)
+    ? display.axes?.find(a => (a.bandTops ?? [0]).length === 1)
+    : undefined
   const scale = stripPerRingPx(ring)
   let lastLabelled = -Infinity
   return (axis?.ticks.items ?? []).flatMap(({ value, y, label }) => {
