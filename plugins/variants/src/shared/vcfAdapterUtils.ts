@@ -147,7 +147,7 @@ export async function vcfSourcesAndWarnings({
     pluginManager,
     opts,
   })
-  const reserved = HAPLOTYPE_ROW_FIELDS.filter(field =>
+  const reserved: string[] = HAPLOTYPE_ROW_FIELDS.filter(field =>
     sources.some(source => Object.hasOwn(source, field)),
   )
   return reserved.length

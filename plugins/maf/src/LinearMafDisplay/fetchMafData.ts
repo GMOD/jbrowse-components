@@ -43,7 +43,7 @@ interface SampleSet {
   samples: MafSource[]
   treeNewick: string | undefined
   samplesCanonical: boolean
-  sampleWarnings: string[]
+  sampleWarnings?: string[]
 }
 
 /**

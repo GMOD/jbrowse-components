@@ -107,6 +107,12 @@ function disambiguateSources<T extends LabelledMember>(entries: T[]): T[] {
   })
 }
 
+interface MultiWiggleSource {
+  name: string
+  source: string
+  [key: string]: unknown
+}
+
 interface LabelledMember extends MemberConfig {
   source: string
 }
@@ -454,7 +460,7 @@ export default class MultiWiggleAdapter
       })
       const byName = new Map(sources.map(s => [s.name, s]))
       return {
-        sources: rows.map(row => {
+        sources: rows.map((row): MultiWiggleSource => {
           const sub = byName.get(row.name)!
           return { ...sub, ...row, source: sub.source, name: sub.name }
         }),
