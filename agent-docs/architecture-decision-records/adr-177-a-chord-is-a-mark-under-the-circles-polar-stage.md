@@ -158,3 +158,17 @@ rows with the CIGAR folded, which took it from 133 MB to 7.3 MB.
 - The grammar's coordinate stage is answered twice in this view: the rings
   resample a strip (ADR-119) and the chords place through the scale in their own
   shaders, because a chord crosses the interior, where there is no strip.
+
+### Amended 2026-11-12: a chord fetch is gated
+
+A whole-genome VCF on the default chord display was fetched whole: on hosted
+production, 1000 Genomes sites on chr22 froze the tab for 15 s and drew no
+chord, and ClinVar and the HPRC SV callset ran the worker out of heap. Colin's
+call was the linear displays' gate as it is. `BaseChordDisplay` composes
+`RegionTooLargeMixin`, `ChordVariantDisplay` opts in, and the fetch asks the
+index first, over the whole request rather than the largest region, since the
+circle holds every region's records at once. The banner is the linear
+displays' `TooLargeMessage` with its force-load button; its advice in place of
+zooming in is `tooLargeBannerText`'s `release`, because a zoom shrinks no chord
+fetch. A worker-side drop of records with no other end stays the lever for a
+file under the limit.
