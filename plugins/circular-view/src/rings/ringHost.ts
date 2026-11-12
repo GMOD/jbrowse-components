@@ -62,8 +62,6 @@ export interface RingHostView {
   bodyMounted: boolean
   effectiveBodyMounted: boolean
   initialized: boolean
-  width: number
-  height: number
   bpPerPx: number
   radiusPx: number
   circumferencePx: number
@@ -292,7 +290,7 @@ function sameCell(a: RingCell | undefined, b: RingCell | undefined) {
  * `RING_PASSES`, since a pass holds one texture and a canvas's passes are
  * declared when its backend is built.
  */
-export const RingPass = types
+const RingPass = types
   .compose('CircularRingPass', RenderLifecycleMixin(), types.model({}))
   .volatile(() => ({
     host: undefined as RingHostModel | undefined,
@@ -644,7 +642,6 @@ export const RingHost = types
     setBodyMounted() {},
     setMinimized() {},
     setDisplayName() {},
-    scrollZoom() {},
     setStripElement(displayId: string, el: HTMLElement | null) {
       if (el) {
         self.stripElements.set(displayId, el)
