@@ -4,12 +4,7 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { autorun } from 'mobx'
 
-import {
-  treeHoverColors,
-  treeLinkSegments,
-  treeLinks,
-  treeStroke,
-} from './hierarchy.ts'
+import { eachTreeSegment, treeHoverColors, treeStroke } from './hierarchy.ts'
 import { rowRuns } from './rowRuns.ts'
 import { treeContentHeight } from './treeSidebarGeometry.ts'
 
@@ -51,12 +46,10 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         ctx.lineWidth = 1
 
         ctx.beginPath()
-        for (const { source, target } of treeLinks(hierarchy)) {
-          for (const [[x0, y0], [x1, y1]] of treeLinkSegments(source, target)) {
-            ctx.moveTo(x0, y0)
-            ctx.lineTo(x1, y1)
-          }
-        }
+        eachTreeSegment(hierarchy, (x0, y0, x1, y1) => {
+          ctx.moveTo(x0, y0)
+          ctx.lineTo(x1, y1)
+        })
         ctx.stroke()
       },
       { name: 'TreeDraw' },

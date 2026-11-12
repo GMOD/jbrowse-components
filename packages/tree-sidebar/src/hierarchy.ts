@@ -327,34 +327,26 @@ function rootDistances<T extends { length?: number }>(node: HierarchyNode<T>) {
   return dist
 }
 
-// The two orthogonal segments of a parent→child dendrogram connector, in
-// draw-space coordinates (node.y = depth/horizontal axis, node.x = row/vertical
-// axis). Single source of truth for the elbow geometry, shared by the canvas
-// draw path and the SVG export so the two can never drift.
-export function treeLinkSegments<N extends { x: number; y: number }>(
-  source: N,
-  target: N,
-): [[number, number], [number, number]][] {
-  return [
-    // vertical: down the parent's depth line from its row to the child's row
-    [
-      [source.y, source.x],
-      [source.y, target.x],
-    ],
-    // horizontal: across the child's row from the parent depth to the child
-    [
-      [source.y, target.x],
-      [target.y, target.x],
-    ],
-  ]
+/**
+ * Every segment the positioned tree draws, in draw-space coordinates (`y` the
+ * depth axis, `x` the row axis): per link, down the parent's depth line from
+ * its row to the child's, then across the child's row to the child. The one
+ * walk the canvas and the SVG export both draw from, so the two cannot drift.
+ */
+export function eachTreeSegment<T>(
+  root: PositionedHierarchyNode<T>,
+  segment: (x0: number, y0: number, x1: number, y1: number) => void,
+) {
+  for (const { source, target } of treeLinks(root)) {
+    segment(source.y, source.x, source.y, target.x)
+    segment(source.y, target.x, target.y, target.x)
+  }
 }
 
 export function renderTreeSVG<T>(hierarchy: PositionedHierarchyNode<T>) {
   const parts: string[] = []
-  for (const { source, target } of treeLinks(hierarchy)) {
-    for (const [[x0, y0], [x1, y1]] of treeLinkSegments(source, target)) {
-      parts.push(`M${x0},${y0}L${x1},${y1}`)
-    }
-  }
+  eachTreeSegment(hierarchy, (x0, y0, x1, y1) => {
+    parts.push(`M${x0},${y0}L${x1},${y1}`)
+  })
   return parts.join('')
 }
