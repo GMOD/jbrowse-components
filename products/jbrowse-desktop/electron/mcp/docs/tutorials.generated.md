@@ -786,8 +786,10 @@ Spliced reads, splice arcs, and strand-specific coverage in RNA-seq
 Page: https://jbrowse.org/jb2/docs/tutorials/rnaseq/
 
 - https://jbrowse.org/code/jb2/main/test_data/config_demo.json
+- https://jbrowse.org/demos/circrna/SRR10612055.slice.bam
 - https://jbrowse.org/demos/circrna/SRR1636985.backsplice.bed.gz
 - https://jbrowse.org/demos/circrna/SRR1636985.slice.bam
+- https://jbrowse.org/demos/circrna/SRR1637089.slice.bam
 - https://jbrowse.org/demos/circrna/config.json
 - https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz
 - https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz
