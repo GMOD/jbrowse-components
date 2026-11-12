@@ -2997,6 +2997,7 @@
         "colorProblems",
         "colorSlotsOf",
         "fieldScaleOf",
+        "identityFieldOf",
         "isRampScale",
         "noticeLines",
         "paintedScale",

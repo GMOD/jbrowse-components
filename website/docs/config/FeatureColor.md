@@ -11,11 +11,15 @@ The feature displays' `encoding.color`: a CSS color or `jexl:`
 callback in `value`, or a field whose values each take a range color, whose
 numbers each take the color of the interval between cut points they fall
 in, or whose numbers run along a color ramp, with a key. A string is the
-field; a written field always paints. `scale.type: "identity"` keeps each
-feature's color, whether a file's itemRgb or what a `value` callback
-returns, and names the colors `scale.domain` lists in the key. Like UCSC's
-`itemRgb on`, it paints an itemRgb of `0,0,0` or `0` black, which otherwise
-reads as no color, and reads a comma-free itemRgb as a packed integer.
+field; a written field always paints, but under identity a set `value`
+paints over it. `scale.type: "identity"` paints each feature the CSS color
+its `field` holds, as the mark displays do, a part with none taking its
+nearest ancestor's and a feature with none anywhere the default; with no
+field it keeps each feature's own color, the file's itemRgb or what a
+`value` callback returns, and names the colors `scale.domain` lists in the
+key either way. Like UCSC's `itemRgb on`, the fieldless form paints an itemRgb of `0,0,0` or `0` black, which
+otherwise reads as no color, and reads a comma-free itemRgb as a packed
+integer.
 
 ## Example usage
 
@@ -86,6 +90,13 @@ reads as no color, and reads a comma-free itemRgb as a packed integer.
 }
 ```
 
+```js
+{
+  type: 'LinearBasicDisplay',
+  encoding: { color: { field: 'color', scale: { type: 'identity' } } },
+}
+```
+
 ## Preset fields
 
 A `field` named here paints through its own scale while `scale.type` is unset, and `range` and `names` index its levels in order while `domain` is unwritten. Any other field is ordinal.
@@ -105,11 +116,11 @@ A setting written to it replaces it whole: a member left out returns to its defa
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | A CSS color, or a jexl callback over `feature` returning one. Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod. Alignments' `value` is constant-only; here a callback stays, since the worker evaluates it per box, where a `field` reads the transcript.<br>_callback args:_ `feature` |
+| <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | A CSS color, or a jexl callback over `feature` returning one. Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod; under an identity scale with a `field`, the CSS color that field holds. Alignments' `value` is constant-only; here a callback stays, since the worker evaluates it per box, where a `field` reads the transcript.<br>_callback args:_ `feature` |
 | <span id="slot-scale">**scale**</span><br>[FeatureColorScale sub-schema](#slot-scaletype) | How the field's values map to colors, Vega-Lite's scale object. |
 | <span id="slot-legend">**legend**</span><br>[FeatureColorLegend sub-schema](#slot-legendtitle) | The key this channel draws. |
 | <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | a feature field, or a jexl expression over feature, whose values each take one range color, with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless scale.domain or scale.range says otherwise |
-| <span id="slot-scaletype">**scale.type**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (ordinal, threshold, linear, log, identity) | ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as a channel with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and ordinal for any other field |
+| <span id="slot-scaletype">**scale.type**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (ordinal, threshold, linear, log, identity) | ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints the CSS color field holds, or with no field each feature's own color, as a channel with no field does, except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and ordinal for any other field |
 | <span id="slot-scaledomain">**scale.domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the values that take the range first, in order; a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colors the key names, in order |
 | <span id="slot-scalerange">**scale.range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors the domain takes, in order, a value past the end of the list sampling the scheme where one is set, else continuing into the default palette; under threshold one per interval, one more than the cuts, an interval left out sampling the scheme, else the default ramp; under linear or log the ramp's stops, winning over scheme |
 | <span id="slot-scaleunknown">**scale.unknown**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | color for a value missing from domain. Unset: the next palette color where the display deals one, and the levels a preset field names, such as strand's, keep their own colors. A color: that color. "": no color dealt, so a feature paints the no-value grey, a variant cell the alt hue, and a row keeps the color it already has |
