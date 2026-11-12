@@ -976,13 +976,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        * aligned to it covers, most first
        */
       get bandComposition() {
-        const index = this.hoveredBand?.index
-        const region =
-          index === undefined ? undefined : this.staticSlices[index]?.region
-        if (index === undefined || !region || region.elided) {
+        const band = this.hoveredBand
+        if (!band || band.region.elided) {
           return undefined
         }
-        const { assemblyName, refName, start, end } = region
+        const { assemblyName, refName, start, end } = band.region
         const displayName =
           getSession(self).assemblyManager.get(assemblyName)?.displayName
         return {
@@ -991,7 +989,7 @@ function stateModelFactory(pluginManager: PluginManager) {
               ? `${displayName} ${refName}`
               : refName,
           shares: partnerShares(
-            self.chordSyntenyDisplays.flatMap(d => d.partnerSpans(index)),
+            self.chordSyntenyDisplays.flatMap(d => d.partnerSpans(band.index)),
             { start, end },
           ),
         }
