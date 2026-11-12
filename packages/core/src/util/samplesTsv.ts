@@ -33,6 +33,10 @@ export const samplesTsvAdapterConfigSchemaFields = {
  * several tracks is the normal shape. `names` undefined means the adapter lists
  * no samples of its own, so the rows become the set.
  *
+ * The table narrowing the samples stays, though `rows.filter` now chooses
+ * rows too: a table that only annotated, weighed on 2026-11-12, would show
+ * samples an existing config's table leaves out.
+ *
  * A table matching none of `names` throws. Falling back to `names` would show
  * every sample when the config asked for a curated subset, and an empty result
  * draws a blank track with no banner. The message quotes both sides of the
