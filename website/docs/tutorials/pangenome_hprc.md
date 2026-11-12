@@ -73,11 +73,11 @@ same files for a graph of your own.
 ## Launching tracks from the HPRC page
 
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), which opens
-on its first example. Click another **Examples** entry, or type a gene symbol or
-a region such as `chr6:32,510,001-32,600,000` into the **Gene or region** box
-and press **Show**. The page draws a map of the window: GRCh38's genes, then one
-row per structural form the haplotypes fall into, commonest first, each with its
-share of the haplotypes aligned there.
+on its first example, **CFH / CFHR**. Pick another **Examples** entry, or type a
+gene symbol or a region such as `chr6:32,510,001-32,600,000` into the **Gene or
+region** box and press **Show**. The page draws a map of the window: GRCh38's
+genes, then one row per structural form the haplotypes fall into, commonest
+first, each with its share of the haplotypes aligned there.
 
 <Figure caption="The HPRC page's map of its HLA / MHC example. The boxed button opens the window in JBrowse." src="/img/pangenome/genomes_hprc_loci.png" />
 
@@ -105,9 +105,10 @@ opens the same map.
 
 ## A known allele: CFHR3–CFHR1 {#a-known-allele-cfhr3-cfhr1}
 
-Some windows hold an allele described in a publication. Click the **CFH / CFHR**
-example. Above the map, the page names the **CFHR3–CFHR1 deletion**, says what
-it does, counts the haplotypes with it in the panel and cites
+Some windows hold an allele described in a publication, as the page's opening
+example does: pick **CFH / CFHR** in **Examples** to return to it. Above the
+map, the page names the **CFHR3–CFHR1 deletion**, says what it does, counts the
+haplotypes with it in the panel and cites
 [Hughes et al. 2006](https://doi.org/10.1038/ng1890), who tied it to a lower
 risk of age-related macular degeneration. The map calls the change by the same
 name.
