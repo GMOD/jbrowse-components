@@ -1,8 +1,5 @@
 import React from 'react'
 
-import { mkdirSync, writeFileSync } from 'node:fs'
-import path from 'node:path'
-
 import { createJBrowseTheme, legendSpecOf } from '@jbrowse/core/ui'
 import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import { ThemeProvider } from '@mui/material'
@@ -67,12 +64,6 @@ jest.mock('@jbrowse/core/util/mstUtils', () => ({
 afterEach(() => {
   mockView = makeDefaultMockView()
 })
-
-function extractAndWriteSvg(html: string, filename: string) {
-  const outputDir = path.join(__dirname, '__test-outputs__')
-  mkdirSync(outputDir, { recursive: true })
-  writeFileSync(path.join(outputDir, filename), html, 'utf-8')
-}
 
 jest.mock('mobx', () => ({
   ...jest.requireActual('mobx'),
@@ -152,7 +143,6 @@ describe('renderSvg', () => {
     const result = await renderSvg(makeModel({ laidOutDataMap: new Map() }))
     expect(result).not.toBeNull()
     const html = renderResult(result)
-    extractAndWriteSvg(html, 'empty-map.svg')
     expect(html).toMatchSnapshot()
   })
 
@@ -177,7 +167,6 @@ describe('renderSvg', () => {
     )
     expect(result).not.toBeNull()
     const html = renderResult(result)
-    extractAndWriteSvg(html, 'with-features.svg')
     expect(html).toMatchSnapshot()
   })
 
@@ -187,7 +176,6 @@ describe('renderSvg', () => {
     )
     expect(result).not.toBeNull()
     const html = renderResult(result)
-    extractAndWriteSvg(html, 'empty.svg')
     expect(html).toMatchSnapshot()
   })
 
@@ -218,7 +206,6 @@ describe('renderSvg', () => {
     )
     expect(result).not.toBeNull()
     const html = renderResult(result)
-    extractAndWriteSvg(html, 'reversed.svg')
     expect(html).toMatchSnapshot()
   })
 
