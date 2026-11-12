@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's `tooltip` is `{ show, field }`; the worker reads `field` off each instance's whole feature into a `tooltip` string lane, through the feature displays' reader, and `MarkTooltip` prints it above the locus. The multi-row display's field defaults to `name`; the plain mark display's is empty"
+summary: "The mark display's `tooltip` is `{ show, field }`; the worker reads `field` off each instance's whole feature into a string lane printed above the locus. The field defaults to `name` on the multi-row display and to empty on the plain mark display"
 ---
 
 # ADR-267: The mark tooltip names the feature from a lane the worker fills
