@@ -193,31 +193,6 @@ function relabelRows<S extends RowSource>(
   return out ?? rows
 }
 
-/**
- * The rows `domain` names first, in its order, and every other row in the
- * order it arrived in: the adapter's for a quantitative display, the file's
- * sample order for the variant displays. A name matching no row places
- * nothing, and a name listed twice places its row once. With `rowAlias`, a
- * row the domain does not name takes its alias's place, beside the other rows
- * answering to it in the order they came in.
- *
- * **This is the no-tree half.** Where a tree describes the rows, the domain is
- * a preference the topology honours rather than a placement: the tree is
- * rotated towards it (`rotateNewickByDomain`) and the rows follow its leaves,
- * so the dendrogram keeps drawing. MAF passes those leaf names ahead of the
- * domain, which is how one function states both halves.
- *
- * Returns `rows` by reference when the domain moves nothing, so callers can
- * short-circuit on identity.
- */
-export function orderRowsByDomain<S extends { name: string }>(
-  rows: S[],
-  domain: readonly string[],
-  rowAlias?: RowAlias,
-): S[] {
-  return orderByRank(rows, domain, rowAlias)
-}
-
 /** A band of the rows as drawn: its value, its label and the rows it spans. */
 export interface RowBand {
   key: string
@@ -280,13 +255,22 @@ export function bandRows<S>(
 
 /**
  * The rows in a reader's arrangement: the rows `domain` lists lead, in its
- * order, and the rest follow in the order they arrived in. A row ranks at the
+ * order, and the rest follow in the order they arrived in: the adapter's for
+ * a quantitative display, the file's sample order for the variant displays.
+ * A name matching no row places nothing, and a name listed twice places its
+ * row once. A row ranks at the
  * earlier of its own entry and its parent's (`rowAlias`), and a drawn row at
  * the earliest entry naming a finer row that refines it, so the latest order
  * written at either field wins. A `labels` entry of a row's own is its label
  * exactly; else its parent's entry composes with what the row adds
  * (`rowParent`), so a label written against a sample reaches each of its
  * haplotypes as `Mother HP1`.
+ *
+ * **This is the no-tree half.** Where a tree describes the rows, the domain is
+ * a preference the topology honours rather than a placement: the tree is
+ * rotated towards it (`rotateNewickByDomain`) and the rows follow its leaves,
+ * so the dendrogram keeps drawing. MAF passes those leaf names ahead of the
+ * domain, which is how one function states both halves.
  *
  * Hands back `rows` itself whenever nothing moves or changes, so a consumer
  * keyed on identity sees no change.

@@ -110,7 +110,7 @@ carries one and a reorder refetches nothing. Every `rows.sort` (`rowSort`,
 ADR-157), the multiway lanes' included, every `facet.sort` and the legend order
 are that one rule (`groupKeyComparator`). Past the `sort` list, values found on
 features follow sorted, since the order they arrive in changes with the region,
-while rows a source lists keep its order (`orderRowsByDomain`), since a
+while rows a source lists keep its order (`arrangeRows`), since a
 phylogeny's leaf order and a file's sample order mean something; where a tree
 describes the rows, the `sort` list rotates it (`rotateNewickByDomain`).
 

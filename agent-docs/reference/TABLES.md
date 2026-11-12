@@ -528,7 +528,7 @@ autoscale (`wiggleAutoscaleRange`, `getNiceDomain`), and runs its layer encoder
   resolved domain.
 - `run` numbers the layers' stretches, one per layer, since the display draws an
   interpolated line across every hole.
-- The sources stack in the order `rows.sort` gives them (`orderRowsByDomain`, the
+- The sources stack in the order `rows.sort` gives them (`arrangeRows`, the
   tree sidebar's own rule), each on its `row` under a row layout and all on row 0 in
   a shared panel.
 - `scoreScale` is the axis `encoding.y` resolves to, its `domain`, `type` and

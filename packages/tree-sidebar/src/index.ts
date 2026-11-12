@@ -55,7 +55,6 @@ export {
   parseClusterOrder,
   treeDescribesRows,
 } from './clusterUtils.ts'
-export { orderRowsByDomain } from './arrangeRows.ts'
 export { narrowRows } from './narrowRows.ts'
 export type { RowNarrowing } from './narrowRows.ts'
 export { ROW_COLOR_SCALE_ID, rowFieldValue } from './rowColorScale.ts'
@@ -105,12 +104,7 @@ export type {
   RowHeightModel,
   RowHeightPreset,
 } from './rowHeight/rowHeightMenu.ts'
-export {
-  extraColumns,
-  moveDown,
-  moveUp,
-  updateRows,
-} from './sourcesGridUtils.ts'
+export { extraColumns, moveDown, moveUp } from './sourcesGridUtils.ts'
 export type {
   RowArrangementDialogProps,
   RowArrangementModel,

@@ -1,12 +1,7 @@
-import {
-  arrangeRows,
-  bandRows,
-  orderRowsByDomain,
-  rowAliasOver,
-} from './arrangeRows.ts'
+import { arrangeRows, bandRows, rowAliasOver } from './arrangeRows.ts'
 import { keptRows } from './clusterUtils.ts'
 
-import type { ArrangeRowsHooks, RowParent } from './arrangeRows.ts'
+import type { ArrangeRowsHooks, RowAlias, RowParent } from './arrangeRows.ts'
 import type { RowSource } from './types.ts'
 
 interface HaplotypeRow extends RowSource {
@@ -67,19 +62,33 @@ const hooks: ArrangeRowsHooks<RowSource> = {
 const none = { domain: [], labels: {} }
 const names = (rows: { name: string }[]) => rows.map(r => r.name)
 
-describe('orderRowsByDomain', () => {
+// The rows ordered by `domain` alone, as a display with no labels arranges
+// them
+function byDomain<S extends RowSource>(
+  rows: S[],
+  domain: string[],
+  rowAlias?: RowAlias,
+) {
+  return arrangeRows(
+    rows,
+    { domain, labels: {} },
+    { rowAlias, rowParent: () => undefined },
+  )
+}
+
+describe('arrangeRows by domain', () => {
   const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
 
   test('an empty domain returns the input array itself', () => {
-    expect(orderRowsByDomain(rows, [])).toBe(rows)
+    expect(byDomain(rows, [])).toBe(rows)
   })
 
   test('a domain naming none of the rows returns the input array itself', () => {
-    expect(orderRowsByDomain(rows, ['ghost'])).toBe(rows)
+    expect(byDomain(rows, ['ghost'])).toBe(rows)
   })
 
   test('listed rows come first in the domain order', () => {
-    expect(orderRowsByDomain(rows, ['kid', 'dad'])).toEqual([
+    expect(byDomain(rows, ['kid', 'dad'])).toEqual([
       { name: 'kid' },
       { name: 'dad' },
       { name: 'mom' },
@@ -91,7 +100,7 @@ describe('orderRowsByDomain', () => {
   // unlisted sections are.
   test('the rest keep the order they arrived in', () => {
     const many = ['e', 'd', 'c', 'b', 'a'].map(name => ({ name }))
-    expect(orderRowsByDomain(many, ['c']).map(r => r.name)).toEqual([
+    expect(byDomain(many, ['c']).map(r => r.name)).toEqual([
       'c',
       'e',
       'd',
@@ -101,7 +110,7 @@ describe('orderRowsByDomain', () => {
   })
 
   test('a listed name with no row places nothing', () => {
-    expect(orderRowsByDomain(rows, ['ghost', 'kid']).map(r => r.name)).toEqual([
+    expect(byDomain(rows, ['ghost', 'kid']).map(r => r.name)).toEqual([
       'kid',
       'mom',
       'dad',
@@ -109,7 +118,7 @@ describe('orderRowsByDomain', () => {
   })
 
   test('a name listed twice places its row once', () => {
-    expect(orderRowsByDomain(rows, ['kid', 'kid']).map(r => r.name)).toEqual([
+    expect(byDomain(rows, ['kid', 'kid']).map(r => r.name)).toEqual([
       'kid',
       'mom',
       'dad',
@@ -121,23 +130,21 @@ describe('orderRowsByDomain', () => {
       { name: 'mom', label: 'Mother', color: 'red' },
       { name: 'kid', label: 'Child' },
     ]
-    expect(orderRowsByDomain(decorated, ['kid'])).toEqual([
+    expect(byDomain(decorated, ['kid'])).toEqual([
       { name: 'kid', label: 'Child' },
       { name: 'mom', label: 'Mother', color: 'red' },
     ])
   })
 })
 
-describe('orderRowsByDomain with an alias', () => {
+describe('arrangeRows by domain with an alias', () => {
   const haplotypes = ['HG001', 'HG002', 'HG003'].flatMap(sample =>
     haplotypeRows(sample),
   )
   const alias = rowAliasOver(haplotypes, [], haplotypeParent)
 
   test('a sample name places each of its haplotypes, in the order they came', () => {
-    expect(
-      names(orderRowsByDomain(haplotypes, ['HG003', 'HG002 HP2'], alias)),
-    ).toEqual([
+    expect(names(byDomain(haplotypes, ['HG003', 'HG002 HP2'], alias))).toEqual([
       'HG003 HP1',
       'HG003 HP2',
       'HG002 HP2',
@@ -148,7 +155,7 @@ describe('orderRowsByDomain with an alias', () => {
   })
 
   test('an order that moves nothing hands back the rows', () => {
-    expect(orderRowsByDomain(haplotypes, ['HG001'], alias)).toBe(haplotypes)
+    expect(byDomain(haplotypes, ['HG001'], alias)).toBe(haplotypes)
   })
 })
 

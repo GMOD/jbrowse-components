@@ -184,7 +184,7 @@ column beside the labels with a key titled `legend.title`; one on the
 lines and their keys draw over the rows drawn
 (ADR [260](../architecture-decision-records/adr-260-row-annotations-are-color-columns-beside-the-row-labels.md)).
 `TreeSidebarMixin` (`packages/tree-sidebar`) owns the arrangement: rows a
-source lists keep its order past the `sort` list (`orderRowsByDomain`), a
+source lists keep its order past the `sort` list (`arrangeRows`), a
 tree rotates to it (`rotateNewickByDomain`), and clustering writes back into
 `rows`. `RowHeightMixin` resolves `step`. A row's color resolves once and
 deals in source order (ADRs [207](../architecture-decision-records/adr-207-a-rows-color-resolves-once-and-shows-beside-its-label.md), [239](../architecture-decision-records/adr-239-a-row-palette-deals-in-source-order.md)). The span mark reads rows through a row

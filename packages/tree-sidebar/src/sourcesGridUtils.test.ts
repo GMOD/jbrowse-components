@@ -3,7 +3,6 @@ import {
   extraColumns,
   moveDown,
   moveUp,
-  updateRows,
 } from './sourcesGridUtils.ts'
 
 interface Item {
@@ -108,25 +107,6 @@ describe('moveDown', () => {
     const arr: Item[] = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
     moveDown(arr, ['b'])
     expect(arr.map(x => x.name)).toEqual(['a', 'b', 'c'])
-  })
-})
-
-describe('updateRows', () => {
-  it('returns a new array with selected rows patched, others untouched', () => {
-    const a = { name: 'a', color: 'red' }
-    const b = { name: 'b', color: 'green' }
-    const c = { name: 'c', color: 'blue' }
-    const result = updateRows([a, b, c], ['a', 'c'], { color: 'pink' })
-    expect(result[0]!.color).toBe('pink')
-    expect(result[1]).toBe(b)
-    expect(result[2]!.color).toBe('pink')
-  })
-
-  it('returns a new outer array reference even when nothing matches', () => {
-    const rows = [{ name: 'a', color: 'red' }]
-    const result = updateRows(rows, ['missing'], { color: 'pink' })
-    expect(result).not.toBe(rows)
-    expect(result[0]).toBe(rows[0])
   })
 })
 

@@ -47,17 +47,6 @@ export function moveDown<T extends { name: string }>(
   return result
 }
 
-// Immutable row patch by name. Replaces the in-place `elt.color = c; onChange([...rows])`
-// pattern that violates React's "treat state as immutable" rule.
-export function updateRows<T extends { name: string }>(
-  rows: T[],
-  ids: Iterable<GridRowId>,
-  patch: Partial<T>,
-): T[] {
-  const sel = new Set(ids)
-  return rows.map(r => (sel.has(r.name) ? { ...r, ...patch } : r))
-}
-
 // Heterogeneous rows can contribute different keys, so union across all rows
 // rather than peeking at just the first.
 function unionFields<T extends object>(
