@@ -1,6 +1,6 @@
 ---
 name: a-back-splice-reads-its-splice-motif-outside-its-arc
-description: A duplication-type split junction (a circRNA back-splice in RNA) reads no splice motif, so the non-canonical filter never drops one and the tooltip never says GT-AG. Its motif is two bases past each end of the arc. The call is which split classes read one and what the tooltip names.
+description: A duplication-type split junction (a circRNA back-splice) reads no splice motif, so the non-canonical filter never drops one and the tooltip never says GT-AG. Its motif sits two bases past each arc end. The call is which split classes read one.
 ---
 
 # A back-splice reads its splice motif outside its arc
