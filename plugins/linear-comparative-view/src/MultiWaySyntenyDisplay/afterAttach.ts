@@ -3,6 +3,7 @@ import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
+import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { installAnimationDeadline } from '@jbrowse/display-kit/displayAutoruns'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
@@ -10,6 +11,7 @@ import {
   getCanonicalRefNameFn,
   installClearHoverOnSurfaceMove,
   installLodTierInfoFetch,
+  regionsInAssemblyNamespace,
 } from '@jbrowse/synteny-core'
 import { autorun, reaction, untracked } from 'mobx'
 
@@ -31,6 +33,7 @@ import type {
 import type { HeldLaneLayer } from './laneLayers.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
+import type { RpcArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
@@ -46,6 +49,22 @@ interface MultiWayFetchArgs {
 const DEPENDENT_FETCH_DELAY = 500
 
 const DESCRIBE_DEADLINE_MS = 20_000
+
+function callSyntenyAdapter(
+  self: MultiWaySyntenyDisplayModel,
+  ctx: FetchContext,
+  { regions, ...args }: Omit<RpcArgs<'MultiWayGetFeatures'>, 'adapterConfig'>,
+) {
+  return ctx.callRpc('MultiWayGetFeatures', {
+    ...args,
+    adapterConfig: self.adapterConfig,
+    regions: regionsInAssemblyNamespace(
+      regions,
+      getTrackAssemblyNames(self.parentTrack),
+      getSession(self).assemblyManager,
+    ),
+  })
+}
 
 function fetchPhases(
   self: MultiWaySyntenyDisplayModel,
@@ -65,18 +84,14 @@ function fetchPhases(
     // `prepare` captures `haplotypes`, so a landing carries the selection its
     // run asked for
     run: async ({ regions, lodTier, haplotypes }, ctx) => {
-      const { features, ops, deletions } = await ctx.callRpc(
-        'MultiWayGetFeatures',
-        {
-          regions,
-          adapterConfig: self.adapterConfig,
-          ...(haplotypes === undefined ? {} : { haplotypes }),
-          opts: {
-            mateShape: 'grouped',
-            lodTier,
-          },
+      const { features, ops, deletions } = await callSyntenyAdapter(self, ctx, {
+        regions,
+        ...(haplotypes === undefined ? {} : { haplotypes }),
+        opts: {
+          mateShape: 'grouped',
+          lodTier,
         },
-      )
+      })
       return { features: dedupe(features, r => r.id()), ops, deletions }
     },
     commit: ({ features, ops, deletions }, { regions, anchor, haplotypes }) => {
@@ -155,8 +170,7 @@ async function fetchLanePairBatch(
     ]),
   )
   try {
-    const { features, ops } = await ctx.callRpc('MultiWayGetFeatures', {
-      adapterConfig: self.adapterConfig,
+    const { features, ops } = await callSyntenyAdapter(self, ctx, {
       regions: first.regions,
       opts: {
         lanePairs: specs.map(spec => ({
@@ -456,24 +470,20 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     fetchSpecs: () => self.laneLinksFetchSpecs,
     state: () => self.laneLinks,
     fetchOne: async (spec, ctx) => {
-      const { features: links, ops } = await ctx.callRpc(
-        'MultiWayGetFeatures',
-        {
-          adapterConfig: self.adapterConfig,
-          regions: spec.onAnchor
-            ? spec.regions
-            : await laneRegions(
-                getSession(self),
-                spec.assemblyName,
-                spec.regions,
-              ),
-          opts: {
-            ...(spec.onAnchor ? { queryAssemblyName: spec.assemblyName } : {}),
-            targetAssemblyName: spec.lowerAssembly,
-            lodTier: spec.lodTier,
-          },
+      const { features: links, ops } = await callSyntenyAdapter(self, ctx, {
+        regions: spec.onAnchor
+          ? spec.regions
+          : await laneRegions(
+              getSession(self),
+              spec.assemblyName,
+              spec.regions,
+            ),
+        opts: {
+          ...(spec.onAnchor ? { queryAssemblyName: spec.assemblyName } : {}),
+          targetAssemblyName: spec.lowerAssembly,
+          lodTier: spec.lodTier,
         },
-      )
+      })
       return { key: spec.key, links, ops }
     },
     fetchMany: ([first, ...rest], ctx) =>
@@ -489,8 +499,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     fetchSpecs: () => self.laneGroupsFetchSpecs,
     state: () => self.laneGroups,
     fetchOne: async (spec, ctx) => {
-      const { features } = await ctx.callRpc('MultiWayGetFeatures', {
-        adapterConfig: self.adapterConfig,
+      const { features } = await callSyntenyAdapter(self, ctx, {
         regions: await laneRegions(getSession(self), spec.lane, spec.regions),
         opts: { mateShape: 'grouped', lodTier: spec.lodTier },
       })
