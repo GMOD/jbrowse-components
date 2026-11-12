@@ -1,17 +1,34 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { fullConfSnapshot, setConf } from '@jbrowse/core/configuration'
+import { setConf } from '@jbrowse/core/configuration'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { isObservable } from 'mobx'
 
+import {
+  FEATURE_DESCRIPTION_FIELD,
+  FEATURE_NAME_FIELD,
+} from '../RenderFeatureDataRPC/featureNameField.ts'
+import { DEFAULT_TOOLTIP } from '../RenderFeatureDataRPC/featureTooltip.ts'
+import {
+  DEFAULT_FEATURE_HEIGHT,
+  GENE_GLYPH_DEFAULTS,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 import { createFeatureStaticHost } from '../shared/featureStaticHost.ts'
 import { createTestEnvironment } from './testEnv.ts'
-import { workerDisplayConfig } from './workerDisplayConfig.ts'
 
 const UTR_COLOR = "jexl:get(feature,'strand')>0?'red':'blue'"
 const COLOR = "jexl:get(feature,'type')=='gene'?'green':'purple'"
 const TOOLTIP = "jexl:get(feature,'product')"
 const NAME = "jexl:get(feature,'gene_name')"
 const LENGTH_FILTER = 'jexl:feature.end - feature.start > 1000'
+
+const DEFAULTS = {
+  ...GENE_GLYPH_DEFAULTS,
+  tooltip: DEFAULT_TOOLTIP,
+  filter: [],
+  featureHeight: DEFAULT_FEATURE_HEIGHT,
+  color: { value: undefined, field: '' },
+  labels: { name: FEATURE_NAME_FIELD, description: FEATURE_DESCRIPTION_FIELD },
+}
 
 const EVERY_WORKER_SLOT = {
   transcripts: {
@@ -62,22 +79,48 @@ function observablesIn(value: unknown): unknown[] {
 }
 
 describe.each([
-  ['the default config', {}],
-  ['every slot the worker reads set', EVERY_WORKER_SLOT],
-  ['an identity color scale', IDENTITY_COLOR],
-])('renderSettings under %s', (_, slots) => {
-  it('is what the snapshot picker sent, on the display', () => {
-    const display = displayWith(slots)
-    expect(display.renderSettings).toEqual(
-      workerDisplayConfig(fullConfSnapshot(display.configuration), display),
-    )
+  ['the default config', {}, DEFAULTS],
+  [
+    'every slot the worker reads set, callbacks raw',
+    EVERY_WORKER_SLOT,
+    {
+      subfeatureLabels: 'below',
+      transcriptTypes: ['mRNA', 'ncRNA'],
+      canonicalTranscriptField: 'canonical',
+      canonicalTranscriptTags: ['MANE_Select'],
+      containerTypes: ['polyprotein'],
+      utrColor: UTR_COLOR,
+      tooltip: TOOLTIP,
+      filter: [
+        { field: 'score', gte: 100 },
+        { field: LENGTH_FILTER, equal: true },
+      ],
+      featureHeight: 7,
+      color: { value: COLOR, field: 'biotype' },
+      labels: { name: NAME, description: 'product' },
+      facetField: 'biotype',
+    },
+  ],
+  [
+    'an identity color scale',
+    IDENTITY_COLOR,
+    {
+      ...DEFAULTS,
+      color: {
+        value: undefined,
+        field: 'itemRgb',
+        itemRgbOn: true,
+        identityField: 'itemRgb',
+      },
+    },
+  ],
+])('renderSettings under %s', (_, slots, expected) => {
+  it('is each slot the worker reads, on the display', () => {
+    expect(displayWith(slots).renderSettings).toEqual(expected)
   })
 
-  it('is what the snapshot picker sent, on the static host', () => {
-    const host = staticHost(slots)
-    expect(host.renderSettings).toEqual(
-      workerDisplayConfig(fullConfSnapshot(host.configuration), host),
-    )
+  it('is each slot the worker reads, on the static host', () => {
+    expect(staticHost(slots).renderSettings).toEqual(expected)
   })
 
   it('is plain data that survives a structured clone', () => {

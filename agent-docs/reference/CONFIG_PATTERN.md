@@ -7,10 +7,11 @@ kind: spec
 # Display Config Pattern
 
 MST stays on the main thread; renderers work on plain objects. A display builds
-its config payload in `rpcProps()` ([DISPLAY_PIPELINE.md](DISPLAY_PIPELINE.md#rpcprops--gpuprops-pattern)). Canvas sends
-`workerDisplayConfig(fullConfSnapshot(self.configuration), …)`, whose
-`pickDisplayConfig` reads each member `SettingsDisplayConfig` names off its own
-path, defaulted, never a subtraction. Every other display enumerates its `rpcProps()` fields by hand.
+its config payload in `rpcProps()` ([DISPLAY_PIPELINE.md](DISPLAY_PIPELINE.md#rpcprops--gpuprops-pattern)). The feature
+display sends `renderSettings` (`featureRequestViews`), a literal of the
+payload's type read member by member off the typed config node, callback slots
+raw, so a slot rename fails to compile; its tables static host installs the same layer. Every
+other display enumerates its `rpcProps()` fields by hand.
 **A value that swings with zoom is not an `rpcProps` field.** It goes in
 `zoomFetchArgs()`, so a threshold crossing refetches without a settings
 invalidation.

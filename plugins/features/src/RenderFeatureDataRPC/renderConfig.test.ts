@@ -1,18 +1,7 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import configSchemaFactory from '../LinearBasicDisplay/configSchema.ts'
 import {
-  FEATURE_DESCRIPTION_FIELD,
-  FEATURE_NAME_FIELD,
-} from './featureNameField.ts'
-import { DEFAULT_TOOLTIP } from './featureTooltip.ts'
-import {
-  DEFAULT_FEATURE_HEIGHT,
-  GENE_GLYPH_DEFAULTS,
   isDisplayMode,
-  pickDisplayConfig,
   readConfigValueSafe,
   workerColorOf,
 } from './renderConfig.ts'
@@ -81,80 +70,6 @@ describe('isDisplayMode', () => {
     expect(isDisplayMode('super-compact')).toBe(false)
     expect(isDisplayMode(undefined)).toBe(false)
     expect(isDisplayMode('')).toBe(false)
-  })
-})
-
-// The variant display declares no gene-glyph slots, and the worker reads them
-// all, so its fetch sends the defaults the feature display's slots start at.
-describe('pickDisplayConfig', () => {
-  it('sends the gene defaults for a display declaring no gene slots', () => {
-    const picked = pickDisplayConfig({ mark: { height: 10 }, height: 100 })
-    expect(picked).toMatchObject(GENE_GLYPH_DEFAULTS)
-    expect(picked).not.toHaveProperty('height')
-  })
-
-  it('lets a declared gene slot win over its default', () => {
-    const picked = pickDisplayConfig({
-      transcripts: { types: ['mRNA'] },
-    })
-    expect(picked.transcriptTypes).toEqual(['mRNA'])
-  })
-
-  it('gives a snapshot declaring no labels, mark or filter the schema defaults', () => {
-    const picked = pickDisplayConfig({})
-    expect(picked.labels).toEqual({
-      name: FEATURE_NAME_FIELD,
-      description: FEATURE_DESCRIPTION_FIELD,
-    })
-    expect(picked.featureHeight).toBe(DEFAULT_FEATURE_HEIGHT)
-    expect(picked.filter).toEqual([])
-    expect(picked.tooltip).toBe(DEFAULT_TOOLTIP)
-  })
-
-  it('keeps a declared label field and drops a filter entry naming no field', () => {
-    const picked = pickDisplayConfig({
-      labels: { name: { field: 'gene_name' } },
-      filter: [{ field: 'type', equal: 'gene' }, { equal: 'x' }, 'junk'],
-    })
-    expect(picked.labels.name).toBe('gene_name')
-    expect(picked.labels.description).toBe(FEATURE_DESCRIPTION_FIELD)
-    expect(picked.filter).toEqual([{ field: 'type', equal: 'gene' }])
-  })
-
-  it("sends mark.height as the worker's flat featureHeight", () => {
-    expect(pickDisplayConfig({ mark: { height: 6 } }).featureHeight).toBe(6)
-  })
-
-  describe('reads encoding.color off a display node', () => {
-    const pluginManager = new PluginManager([])
-    pluginManager.createPluggableElements()
-    pluginManager.configure()
-    const schema = configSchemaFactory(pluginManager)
-    const workerColor = (encoding: Record<string, unknown>) =>
-      pickDisplayConfig(
-        fullConfSnapshot(
-          schema.create(
-            { displayId: 'test', type: 'LinearBasicDisplay', encoding },
-            { pluginManager },
-          ),
-        ),
-      ).color
-
-    it('sends the worker the constant and the field', () => {
-      const value = "jexl:get(feature,'type')=='SNV'?'green':'purple'"
-      expect(workerColor({ color: { value, field: 'type' } })).toEqual({
-        value,
-        field: 'type',
-      })
-    })
-
-    it('sends itemRgbOn under an identity scale', () => {
-      expect(workerColor({ color: { scale: { type: 'identity' } } })).toEqual({
-        value: undefined,
-        field: '',
-        itemRgbOn: true,
-      })
-    })
   })
 })
 
