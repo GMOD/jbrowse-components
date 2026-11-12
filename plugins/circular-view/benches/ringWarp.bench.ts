@@ -28,8 +28,9 @@
 // worst case for a wedge drawn with straight edges.
 //
 // ARMS, WebGL2:
-//   warp        one quad over the annulus; the fragment takes atan2, samples
-//               the strip texture in polar coordinates and fades the two rims
+//   warp        the mesh `ringWarp.slang` ships, a fan of quads hugging the
+//               annulus; the fragment takes atan2, samples the strip texture
+//               in polar coordinates and fades the two rims
 //   control     the warp arm again, separately declared
 //   restrip     the warp plus the strip canvas re-uploaded as a texture — the
 //               frame a zoom or a data arrival costs on top of a rotation
@@ -62,6 +63,8 @@
 import { readFileSync } from 'node:fs'
 import { createRequire, stripTypeScriptTypes } from 'node:module'
 import { parseArgs } from 'node:util'
+
+import { VERTS_PER_INSTANCE } from '../src/rings/shaders/ringWarp.iface.generated.ts'
 
 import type { PuppeteerNode } from 'puppeteer'
 
@@ -109,6 +112,7 @@ const INNER_PX = ${INNER_PX}
 const STRIP_W = ${STRIP_W}
 const TWO_PI = ${TWO_PI}
 const BINS = ${bins}
+const RING_VERTS = ${VERTS_PER_INSTANCE}
 const ALPHA = ${alpha}
 const FILL = 'rgba(76, 120, 168, ' + ALPHA + ')'
 const ROUNDS = ${rounds}
@@ -167,10 +171,12 @@ function compile(gl, vs, fs) {
 }
 
 const WARP_VS = '#version 300 es\n' +
-  'uniform vec2 u_center; uniform float u_outer; uniform vec2 u_canvas;\n' +
-  'void main(){ int v = gl_VertexID % 6;\n' +
+  'uniform vec2 u_center; uniform float u_outer; uniform float u_inner; uniform vec2 u_canvas;\n' +
+  'void main(){ int v = gl_VertexID % 6; int seg = gl_VertexID / 6;\n' +
   ' float qx = (v==0||v==2||v==3) ? 0.0 : 1.0; float qy = (v==0||v==1||v==4) ? 0.0 : 1.0;\n' +
-  ' vec2 px = u_center + (vec2(qx,qy)*2.0-1.0)*(u_outer+1.0);\n' +
+  ' float arc = ${TWO_PI} / ${VERTS_PER_INSTANCE / 6}.0; float a = (float(seg) + qx) * arc;\n' +
+  ' float r = mix(max(u_inner - 1.0, 0.0), (u_outer + 1.0) / cos(arc * 0.5), qy);\n' +
+  ' vec2 px = u_center + r * vec2(cos(a), sin(a));\n' +
   ' gl_Position = vec4(px/u_canvas*2.0-1.0, 0.0, 1.0); }'
 const WARP_FS = '#version 300 es\nprecision highp float;\n' +
   'uniform vec2 u_center; uniform float u_outer; uniform float u_inner; uniform float u_rot; uniform vec2 u_canvas;\n' +
@@ -232,7 +238,7 @@ function glArm(name, kind) {
           gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, strip)
         }
         gl.uniform1f(rotLoc, rot)
-        gl.drawArrays(gl.TRIANGLES, 0, 6)
+        gl.drawArrays(gl.TRIANGLES, 0, RING_VERTS)
         gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, probe)
       },
     }
