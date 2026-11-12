@@ -165,7 +165,7 @@ test('a bigwig-shaped track opens on the circle as a wiggle ring over the strip'
     expect(region.displayedRegionIndex).toBe(i)
   }
   const [a, b] = display.renderBlocks
-  expect(b!.screenStartPx - a!.screenEndPx).toBeCloseTo(view.effectiveSpacingPx)
+  expect(b!.screenStartPx - a!.screenEndPx).toBeCloseTo(view.ring.spacingPx)
 
   // the ring is the display's configured height, under the ruler, shrunk to
   // leave the small test circle half its radius, and the display lays itself

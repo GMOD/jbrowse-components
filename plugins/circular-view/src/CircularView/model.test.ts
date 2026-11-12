@@ -313,7 +313,7 @@ describe('the fixed-pixel geometry gives way in a small box', () => {
   test('a roomy circle keeps exactly the padding and spacing it declared', () => {
     const view = createView({ regions: chromosomes, width: 800, height: 800 })
     expect(view.effectivePaddingPx).toBe(view.paddingPx)
-    expect(view.effectiveSpacingPx).toBe(view.spacingPx)
+    expect(view.ring.spacingPx).toBe(view.spacingPx)
   })
 
   test('a narrow pane draws a bigger circle than the fixed padding allowed', () => {
@@ -330,7 +330,7 @@ describe('the fixed-pixel geometry gives way in a small box', () => {
 
   test('the inter-chromosome gaps cannot take a quarter of the ring', () => {
     const small = createView({ regions: chromosomes, width: 475, height: 316 })
-    const gaps = chromosomes.length * small.effectiveSpacingPx
+    const gaps = chromosomes.length * small.ring.spacingPx
     expect(gaps / small.circumferencePx).toBeLessThan(0.26)
   })
 
@@ -348,7 +348,7 @@ describe('the fixed-pixel geometry gives way in a small box', () => {
     const small = createView({ regions: chromosomes, width: 475, height: 316 })
     const last = small.staticSlices.at(-1)!
     // the ring closes: the final slice ends one gap short of a full turn
-    const gapRadians = small.effectiveSpacingPx / small.radiusPx
+    const gapRadians = small.ring.spacingPx / small.radiusPx
     expect(last.endRadians + gapRadians).toBeCloseTo(2 * Math.PI, 5)
   })
 })

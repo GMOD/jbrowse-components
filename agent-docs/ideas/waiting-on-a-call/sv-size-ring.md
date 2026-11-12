@@ -41,7 +41,7 @@ inventing: readers of cancer genomes arrive already able to read it.
   along the rim" degenerates exactly the way the chord did. It wants a dot or a
   tick, sized by class rather than by span.
 - **Where the ring lives.** The chords already own the interior, so taking a
-  band out of it makes them worse. `effectivePaddingPx`/`effectiveSpacingPx`
+  band out of it makes them worse. `effectivePaddingPx`/`ring.spacingPx`
   have since bought back most of the radius the fixed-pixel constants were
   spending in a narrow pane, which is the room this would come out of.
 - **Whether it belongs to `ChordVariantDisplay` or beside it.** The display is

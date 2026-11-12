@@ -479,8 +479,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the ring at this zoom: its gaps' spacing and the radius that closes
-       * it — see `ringAt`
+       * the ring at this zoom: its gaps' spacing, `spacingPx` capped so the
+       * gaps take at most a quarter of it, and the radius that closes it — see
+       * `ringAt`
        */
       get ring() {
         return ringAt(
@@ -488,13 +489,6 @@ function stateModelFactory(pluginManager: PluginManager) {
           sum(gapUnitsAfter(this.elidedRegions)),
           self.spacingPx,
         )
-      },
-      /**
-       * #getter
-       * `spacingPx`, capped so the gaps take at most a quarter of the ring
-       */
-      get effectiveSpacingPx() {
-        return this.ring.spacingPx
       },
       /**
        * #getter
@@ -1017,7 +1011,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       get chordScale(): PolarScale {
         return {
           radiansPerBp: 1 / self.bpPerRadian,
-          gapRadians: self.effectiveSpacingPx / self.radiusPx,
+          gapRadians: self.ring.spacingPx / self.radiusPx,
         }
       },
       /**
