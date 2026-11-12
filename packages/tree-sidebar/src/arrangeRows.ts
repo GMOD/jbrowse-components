@@ -75,10 +75,23 @@ export function rowAliasOver<S extends { name: string }>(
 }
 
 /**
+ * The label a row takes from its parent's entry in `labels`, that entry with
+ * what the row adds (`Mother HP1`), or undefined where `labels` does not name
+ * the parent. Own-property reads, since row names come from files and a row
+ * called `constructor` would otherwise read one off `Object.prototype`.
+ */
+export function parentLabel(
+  labels: Readonly<Record<string, string>>,
+  parent: RowParent | undefined,
+) {
+  return parent !== undefined && Object.hasOwn(labels, parent.name)
+    ? `${labels[parent.name]}${parent.labelSuffix}`
+    : undefined
+}
+
+/**
  * A row's label where `labels` names it or its parent: its own entry exactly,
- * else its parent's entry with what the row adds (`Mother HP1`). Own-property
- * reads, since row names come from files and a row called `constructor` would
- * otherwise read one off `Object.prototype`.
+ * else its `parentLabel`.
  */
 function inheritedLabel(
   labels: Readonly<Record<string, string>>,
@@ -87,9 +100,7 @@ function inheritedLabel(
 ) {
   return Object.hasOwn(labels, name)
     ? labels[name]
-    : parent !== undefined && Object.hasOwn(labels, parent.name)
-      ? `${labels[parent.name]}${parent.labelSuffix}`
-      : undefined
+    : parentLabel(labels, parent)
 }
 
 // The earliest index of a domain entry no row draws that `alias` maps onto a

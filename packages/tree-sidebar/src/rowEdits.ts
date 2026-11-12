@@ -1,3 +1,5 @@
+import { parentLabel } from './arrangeRows.ts'
+
 import type { RowParentOf } from './arrangeRows.ts'
 import type { RowSource } from './types.ts'
 
@@ -35,11 +37,8 @@ export function labelEdits<S extends RowSource>({
     if (!seed || row.label === seed.label) {
       continue
     }
-    const parent = rowParent(row)
     const fallback =
-      parent !== undefined && Object.hasOwn(labels, parent.name)
-        ? `${labels[parent.name]}${parent.labelSuffix}`
-        : fromAdapter.get(row.name)?.label
+      parentLabel(labels, rowParent(row)) ?? fromAdapter.get(row.name)?.label
     next.delete(row.name)
     if (row.label !== undefined && row.label !== fallback) {
       next.set(row.name, row.label)
