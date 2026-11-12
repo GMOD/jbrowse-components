@@ -1,4 +1,4 @@
-import { labelEdits } from './rowEdits.ts'
+import { labelEdits } from './arrangeRows.ts'
 
 import type { RowSource } from '../types.ts'
 

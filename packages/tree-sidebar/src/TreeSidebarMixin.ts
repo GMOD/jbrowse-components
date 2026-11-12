@@ -32,6 +32,7 @@ import {
   rowColorKeyValue,
   withPinnedColors,
 } from './color/rowColorScale.ts'
+import { labelEdits } from './rows/arrangeRows.ts'
 import { focusRows } from './rows/focusRows.ts'
 import {
   filteredRows,
@@ -40,7 +41,6 @@ import {
   unmatchedKeptNames,
   unreadRowFields,
 } from './rows/narrowRows.ts'
-import { labelEdits } from './rows/rowEdits.ts'
 import { IDENTITY_FIELDS, extraColumns } from './rows/sourcesGridUtils.ts'
 import {
   hierarchyViews,
