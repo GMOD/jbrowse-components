@@ -39,6 +39,10 @@ export type { RegionLayer } from './LinearMarkDisplay/markAutoscale.ts'
 export type { DefaultPlot } from './LinearMarkDisplay/plotDefault.ts'
 export type { SharedKey } from './LinearMarkDisplay/pinDistinct.ts'
 export type {
+  CompiledRowGroup,
+  RowGroup,
+} from './LinearMarkDisplay/rowGroups.ts'
+export type {
   RowCompare,
   RowCompareBy,
 } from './LinearMarkDisplay/rowCompare.ts'
