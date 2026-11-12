@@ -19,7 +19,7 @@ connected view's regions, with per-row hover highlight state.
 | <span id="property-type">**type**</span><br><code>types.literal('MafSequenceWidget')</code> |  |
 | <span id="property-adapterconfig">**adapterConfig**</span><br><code>types.frozen&lt;Record&lt;string, unknown&gt; &#124; undefined&gt;( undefined, )</code> |  |
 | <span id="property-bytelimit">**byteLimit**</span><br><code>types.frozen&lt;number &#124; undefined&gt;(undefined)</code> |  |
-| <span id="property-samples">**samples**</span><br><code>types.frozen&lt;MafSource[] &#124; undefined&gt;(undefined)</code> |  |
+| <span id="property-samples">**samples**</span><br><code>types.frozen&lt;MafRow[] &#124; undefined&gt;(undefined)</code> |  |
 | <span id="property-regions">**regions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.frozen&lt; &#124; { refName: string start: number end: number ass…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.frozen&lt;&#10;&#160;&#160;&#124; {&#10;&#160;&#160;&#160;&#160;&#160;&#160;refName: string&#10;&#160;&#160;&#160;&#160;&#160;&#160;start: number&#10;&#160;&#160;&#160;&#160;&#160;&#160;end: number&#10;&#160;&#160;&#160;&#160;&#160;&#160;assemblyName: string&#10;&#160;&#160;&#160;&#160;}[]&#10;&#160;&#160;&#124; undefined&#10;&gt;(undefined)</code></pre></dialog></span> |  |
 | <span id="property-connectedviewid">**connectedViewId**</span><br><code>types.maybe(types.string)</code> |  |
 
