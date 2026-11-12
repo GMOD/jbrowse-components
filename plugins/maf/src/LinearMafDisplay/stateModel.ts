@@ -15,7 +15,6 @@ import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems
 import {
   ConfigurationReference,
   getConf,
-  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -87,7 +86,11 @@ import { conservationBarAt } from './components/conservationBand.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { perRowRefNameRanks } from './components/refNameRanks.ts'
 import { summaryAt } from './components/summarySpans.ts'
-import { configSlotActions, configSlotViews } from './configSlotViews.ts'
+import {
+  basesFieldOf,
+  configSlotActions,
+  configSlotViews,
+} from './configSlotViews.ts'
 import { coverageTooltipBinAt } from './coverageTooltipBin.ts'
 import {
   EMPTY_MAF_COVERAGE,
@@ -135,7 +138,7 @@ import type { HoverBp } from './components/findRowHover.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { MafRowsEncodeProps, MafRowsSource } from './encodeMafRows.ts'
-import type { MafBasesField, RowPlan } from './rowPlan.ts'
+import type { RowPlan } from './rowPlan.ts'
 import type { MafHover } from './util.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -1328,23 +1331,10 @@ export default function stateModelFactory(
            * theme's colors.
            */
           configProblemsOf(conf: AnyConfigurationModel): string[] {
-            const bases: MafBasesField | undefined = readConfObject(conf, [
-              'alignments',
-              'bases',
-              'show',
-            ])
-              ? readConfObject(conf, [
-                  'alignments',
-                  'bases',
-                  'encoding',
-                  'color',
-                  'field',
-                ])
-              : undefined
             return [
               ...superConfigProblemsOf(conf),
               ...coverageLayerProblems(conf.coverage),
-              ...(bases === 'codon' && !self.framesAdapterConfig
+              ...(basesFieldOf(conf) === 'codon' && !self.framesAdapterConfig
                 ? [
                     'alignments.bases.encoding.color.field: codon needs a framesAdapter on the MAF adapter to define reading frames, so the layer draws nothing',
                   ]

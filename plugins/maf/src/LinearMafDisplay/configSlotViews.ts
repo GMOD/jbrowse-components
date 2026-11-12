@@ -1,4 +1,4 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import {
   colorEncodingOf,
@@ -12,12 +12,35 @@ import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { ConservationUnit } from './conservationUnits.ts'
 import type { MafBasesField, MafColorField, MafYField } from './rowPlan.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type {
   ColorSetting,
   FieldColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+
+/**
+ * The per-position layer's field while `alignments.bases.show` is on. The
+ * display's `basesField` and `configProblemsOf`, which also judges an Edit
+ * plot draft, both read it here, so the two cannot judge different fields.
+ */
+export function basesFieldOf(conf: AnyConfigurationModel) {
+  const field: MafBasesField | undefined = readConfObject(conf, [
+    'alignments',
+    'bases',
+    'show',
+  ])
+    ? readConfObject(conf, [
+        'alignments',
+        'bases',
+        'encoding',
+        'color',
+        'field',
+      ])
+    : undefined
+  return field
+}
 
 export interface ConfigSlotSelf extends IStateTreeNode {
   configuration: Instance<LinearMafDisplayConfigModel>
@@ -167,9 +190,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * The per-position layer's field while `alignments.bases.show` is on.
      */
     get basesField(): MafBasesField | undefined {
-      return getConf(self, ['alignments', 'bases', 'show'])
-        ? getConf(self, ['alignments', 'bases', 'encoding', 'color', 'field'])
-        : undefined
+      return basesFieldOf(self.configuration)
     },
     /**
      * #getter
