@@ -16,7 +16,6 @@ import {
   shapeSection,
 } from '../legend.ts'
 
-import type { MarkType } from '../configSchema.ts'
 import type { FacetLayout } from '../facet.ts'
 import type { MarkHitInfo } from '../findMarkHit.ts'
 import type { MarkLegendSection } from '../legend.ts'
@@ -28,7 +27,6 @@ import type { RowTable } from '@jbrowse/render-core/marks'
 export interface MarkTooltipModel {
   hoveredFeature: MarkHitInfo | undefined
   encodings: MarkEncoding[]
-  markTypes: MarkType[]
   legendSections: MarkLegendSection[]
   facetLayout: FacetLayout
   sources: readonly { label?: string }[]
@@ -184,7 +182,7 @@ const MarkTooltip = observer(function MarkTooltip({
   model: MarkTooltipModel
   mouseState: MouseState | undefined
 }) {
-  const { hoveredFeature: hit, encodings, markTypes, legendSections } = model
+  const { hoveredFeature: hit, encodings, legendSections } = model
   return (
     <HoverTooltip hit={hit} mouseState={mouseState}>
       {hit ? (
@@ -213,7 +211,6 @@ const MarkTooltip = observer(function MarkTooltip({
               {value}
             </div>
           ))}
-          <small>{markTypes[hit.markIndex]}</small>
         </div>
       ) : null}
     </HoverTooltip>

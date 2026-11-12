@@ -44,7 +44,6 @@ async function tooltip(model: Partial<MarkTooltipModel>) {
       model={{
         hoveredFeature: HIT,
         encodings: [{}],
-        markTypes: ['bar'],
         legendSections: [],
         facetLayout: NO_FACET,
         sources: [],
@@ -61,7 +60,6 @@ test('a point reads its shape scale, naming the category the plot drew', async (
   const box = await tooltip({
     hoveredFeature: { ...HIT, y: 7, glyph: SHAPE_CODES['triangle-down'] },
     encodings: [{ y: 'score', shape: { field: 'svtype', scale: 'ordinal' } }],
-    markTypes: ['point'],
     legendSections: [
       {
         markIndexes: [0],
@@ -82,14 +80,13 @@ test('a point reads its shape scale, naming the category the plot drew', async (
   })
   expect(box.textContent).toContain('score: 7')
   expect(box.textContent).toContain('svtype: DEL')
-  expect(box.textContent).toContain('point')
+  expect(box.textContent).not.toContain('point')
 })
 
 test('a span stacked by a transform names the band it stands in', async () => {
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 2 },
     encodings: [{ row: 'row', color: 'red' }],
-    markTypes: ['rect'],
   })
   expect(box.textContent).toContain('row: 2')
 })
@@ -101,7 +98,6 @@ test('a mark in an implicit pileup names its section', async () => {
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
     encodings: [{ color: 'red' }],
-    markTypes: ['rect'],
     facetLayout: {
       field: 'svtype',
       sections: [
@@ -120,7 +116,6 @@ test('a mark in an implicit pileup outside a facet shows no bare row number', as
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
     encodings: [{ color: 'red' }],
-    markTypes: ['rect'],
   })
   expect(box.textContent).not.toContain('row')
 })
@@ -129,7 +124,6 @@ test('under a facet the band reads as the section chip rather than an index', as
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
     encodings: [{ row: 'row', color: 'red' }],
-    markTypes: ['rect'],
     facetLayout: {
       field: 'svtype',
       sections: [
