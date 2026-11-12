@@ -254,8 +254,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         bpPerPx: types.stripDefault(types.number, defaultBpPerPx),
         /**
          * #property
-         * whether the view refits to its box on resize; a manual zoom or pan
-         * clears it
+         * whether the view refits to its box on resize; a zoom, by the buttons
+         * or the wheel, clears it, and Reset view or new regions set it again
          */
         autoFit: types.stripDefault(types.boolean, true),
         /**
