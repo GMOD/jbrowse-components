@@ -256,8 +256,8 @@ describe('a record field', () => {
     const cellHue = cellHueOf(encoding, undefined, undefined, ['0', '0.5', '1'])
     expect(cellHue.read).toEqual({ field: 'INFO.AF' })
     expect(cellHue.keyOf).toBeUndefined()
-    expect(abgr(cellHue.hueOf!('0'))).toBe(abgr('#000000'))
-    expect(abgr(cellHue.hueOf!('1'))).toBe(abgr('#ffffff'))
+    expect(abgr(cellHue.hueOf!('0')!)).toBe(abgr('#000000'))
+    expect(abgr(cellHue.hueOf!('1')!)).toBe(abgr('#ffffff'))
     expect(cellHue.hueOf!('')).toBe(NO_CATEGORY_COLOR)
     expect(cellHue.ramp!.keyScales('recordField', 'AF')[0]).toMatchObject({
       kind: 'ramp',
