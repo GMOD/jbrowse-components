@@ -62,7 +62,7 @@ export type {
   RowColorSetting,
 } from './rowColorScale.ts'
 export { rowColorChoiceLabel } from './rowColorChoice.ts'
-export type { RowColorSnapshot } from './rowColorChoice.ts'
+export type { RowColorEdits, RowColorSnapshot } from './rowColorChoice.ts'
 export type {
   RowAlias,
   RowBand,
