@@ -759,7 +759,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get launchAssemblyNames() {
         const launch = this.pendingLaunch
-        return launch ? launchAssemblyNames(launch) : []
+        return launch
+          ? launchAssemblyNames(launch, getSession(self).assemblyManager)
+          : []
       },
       /**
        * #getter

@@ -27,10 +27,19 @@ export interface CircularViewInitSelf extends IStateTreeNode {
   setColorField: (field: string | undefined) => void
 }
 
-/** The assemblies a launch blob draws, in the order it names them. */
-export function launchAssemblyNames(init: LaunchInput<CircularViewCommands>) {
-  const { assembly } = init
-  return assembly === undefined ? [] : [assembly].flat()
+/**
+ * The assemblies a launch blob draws, in the order it names them, each once
+ * however many times or by however many aliases it is named.
+ */
+export function launchAssemblyNames(
+  init: LaunchInput<CircularViewCommands>,
+  assemblyManager: AssemblyNameResolver,
+) {
+  const names = init.assembly === undefined ? [] : [init.assembly].flat()
+  return names.filter(
+    (name, i) =>
+      names.findIndex(n => isSameAssemblyName(n, name, assemblyManager)) === i,
+  )
 }
 
 function namesForAssembly(
@@ -58,7 +67,8 @@ export async function applyInit(
   const session = getSession(self)
   const drawn: Region[] = []
   const { assemblyManager } = session
-  for (const assemblyName of launchAssemblyNames(init)) {
+  const assemblyNames = launchAssemblyNames(init, assemblyManager)
+  for (const assemblyName of assemblyNames) {
     const assembly = assemblyManager.get(assemblyName)
     const regions = assembly?.regions
     if (!assembly || !regions) {
@@ -88,9 +98,7 @@ export async function applyInit(
     drawn.push(...(named ?? whole))
   }
   if (!drawn.length) {
-    throw new Error(
-      `${launchAssemblyNames(init).join(' and ')} has no regions to display`,
-    )
+    throw new Error(`${assemblyNames.join(' and ')} has no regions to display`)
   }
   const twoGenomes = new Set(drawn.map(r => r.assemblyName)).size === 2
   const reorder = init.autoDiagonalize ?? twoGenomes

@@ -95,6 +95,42 @@ test('two assemblies each contribute their slices, in the order named', async ()
   expect(view.assemblyNames).toEqual(['volvox', 'volvox2'])
 })
 
+test('an assembly named twice draws each chromosome once', async () => {
+  const { view } = await setup({ assembly: ['volvox', 'volvox'] })
+  expect(
+    view.displayedRegions.map(r => `${r.assemblyName}:${r.refName}`),
+  ).toEqual(['volvox:ctgA', 'volvox:ctgB'])
+})
+
+test('an assembly named by its alias too draws each chromosome once', async () => {
+  const session = createTestSession()
+  session.addAssemblyConf({
+    name: 'volvox',
+    aliases: ['vvx'],
+    sequence: {
+      trackId: 'volvox_refseq',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: ['ctgA', 'ctgB'].map(refName => ({
+          refName,
+          uniqueId: refName,
+          start: 0,
+          end: 16000,
+        })),
+      },
+    },
+  })
+  const view = (await session.launchView('CircularView', {
+    assembly: ['volvox', 'vvx'],
+  })) as CircularViewModel
+  view.setWidth(800)
+  await when(() => view.displayedRegions.length > 0)
+  expect(
+    view.displayedRegions.map(r => `${r.assemblyName}:${r.refName}`),
+  ).toEqual(['volvox:ctgA', 'volvox:ctgB'])
+})
+
 test('displayedRegionNames restricts each assembly it names', async () => {
   const { view } = await setup(
     { assembly: ['volvox', 'volvox2'], displayedRegionNames: ['ctgB'] },
