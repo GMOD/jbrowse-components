@@ -23,16 +23,13 @@ import {
   arcPaintRank,
 } from './arcColors.ts'
 import { arcsToRegionResult, groupArcsByRef } from './arcRegions.ts'
-import {
-  collectArcs,
-  computeArcsByGroup,
-  computeArcsFromPileupData,
-} from './compute.ts'
+import { collectArcs, computeArcsFromPileupData } from './compute.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
 } from './shapes.ts'
+import { computeArcsByGroup } from './testArcs.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcSettings, ComputedLine, ComputedArc } from './arcTypes.ts'

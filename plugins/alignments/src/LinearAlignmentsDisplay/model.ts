@@ -653,7 +653,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * The fetched regions as `{refName,start,end,displayedRegionIndex}`,
-         * the shape every per-read region scan takes (`computeArcsByGroup`).
+         * the shape every per-read region scan takes (`collectArcs`).
          * Regions whose fetch has not landed are dropped.
          */
         get loadedRegionInfos() {

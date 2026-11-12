@@ -49,7 +49,7 @@ export interface ArcsUploadData {
   // hover exists to give, since a tick's own position says only where the
   // breakpoint is and not what it reaches. A `string[][]` beside the typed
   // arrays because this feed is built and consumed entirely on the main thread
-  // (`computeArcsByGroup` runs in the model, not the worker); only
+  // (`resolveArcsByGroup` runs in the model, not the worker); only
   // `arcLinePositions` and the widths derived here cross into a GPU buffer.
   arcLinePartnerRefNames: string[][]
   // Where each tick's reads land, same shape and same reason as the refNames.
@@ -67,12 +67,9 @@ export function hasArcBandInk(data: ArcsUploadData) {
   return data.numArcs > 0 || data.numArcLines > 0
 }
 
-// "Does this LANE paint anything" used to live here too, as `anyArcsDrawn` over
-// one group's region map. It moved into `computeArcsByGroup` as `inkGroupKeys`
-// when the cross-region arcs were split out, because the question stopped being
-// answerable from this feed alone: a lane whose every arc crosses a seam has
-// all its ink in the overlay and none in any region's `ArcsUploadData`, and the
-// old predicate said the band was empty and reserved no strip for it.
+// Whether a LANE paints anything is `resolveArcsByGroup`'s `inkGroupKeys`, not
+// a question for this feed: a lane whose every arc crosses a seam has all its
+// ink in the overlay and none in any region's `ArcsUploadData`.
 
 export function emptyArcsUploadData(): ArcsUploadData {
   return {

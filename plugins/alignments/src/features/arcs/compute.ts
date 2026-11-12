@@ -528,7 +528,8 @@ function interchromClusters(
 
 /**
  * Arcs, cross-region arcs and connector ticks for one group's pileup data:
- * the single-group entry point (`computeArcsByGroup` pools across lanes).
+ * the single-group entry point (`collectArcs` and `resolveArcsByGroup`
+ * pool across lanes).
  * `displayedRegions` defaults to the fetched list (`ArcRegions`).
  */
 export function computeArcsFromPileupData(
@@ -570,25 +571,7 @@ export interface ArcsByGroupResult {
 }
 
 /**
- * The full arc upload feed for every group of one fetch: collected over every
- * lane, resolved per lane against one pooled scale. Every group handed in is
- * pooled, so hidden lanes must already be out of `rawDataByGroup`
- * (`buildRawDataByGroup`).
- */
-export function computeArcsByGroup(
-  rawDataByGroup: ReadonlyMap<string, Map<number, WorkerPileupData>>,
-  regions: ArcRegions,
-  settings: ArcSettings,
-): ArcsByGroupResult {
-  return resolveArcsByGroup(
-    collectArcs(rawDataByGroup, regions.loaded, settings),
-    regions,
-    settings,
-  )
-}
-
-/**
- * `computeArcsByGroup`'s first half, which the connectors over the pileup
+ * The collected half of the arc pass, which the connectors over the pileup
  * read too: every lane's pending arcs, the pooled scale, the
  * inter-chromosomal clusters, and the QNAMEs whose mate-link connection
  * gathers fewer reads at its breakpoint than `minInterchromReads`, the
@@ -651,7 +634,11 @@ export function collectArcs(
   return { lanes, scale, clusters, belowFloor }
 }
 
-/** `computeArcsByGroup`'s second half: the band's feeds from a collection. */
+/**
+ * The band's feeds from a collection, resolved per lane against its pooled
+ * scale. Every lane collected is pooled, so hidden lanes must already be out
+ * of `rawDataByGroup` (`buildRawDataByGroup`).
+ */
 export function resolveArcsByGroup(
   { lanes, clusters }: ArcCollection,
   regions: ArcRegions,

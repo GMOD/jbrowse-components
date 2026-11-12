@@ -9,8 +9,8 @@ import {
   ARC_COLOR_SPLIT_FORWARD,
 } from '../arcs/arcColors.ts'
 import { buildArcBandFeeds } from '../arcs/bandFeed.ts'
-import { computeArcsByGroup } from '../arcs/compute.ts'
 import { ARC_SHAPE_ARC } from '../arcs/shapes.ts'
+import { computeArcsByGroup } from '../arcs/testArcs.ts'
 import {
   arcSplitJunction,
   junctionSupportingReadSlots,

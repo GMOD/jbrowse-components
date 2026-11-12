@@ -288,8 +288,8 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 - **`resolveArcBandHover` is the single entry point**, over the band's marks.
 - **Ask `hasArcBandInk`, not `numArcs`** — a lane with only off-region partners
   carries ticks and no arcs.
-- **Across lanes, ask `computeArcsByGroup`**, not a walk of `arcsByGroup`, and
-  after regionization.
+- **Across lanes, ask `resolveArcsByGroup`**, not a walk of `arcsByGroup`,
+  and after regionization.
 - **A splice junction outranks the arc band** (`resolveSashimiHit`), its mark
   painting last, and unlike an arc it is clickable.
 - **`runHitTest` asks the arc band FIRST and returns

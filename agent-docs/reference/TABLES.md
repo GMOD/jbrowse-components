@@ -417,8 +417,8 @@ stacked sections as the worker partitions them for the display, ordered by
   key serves every section.
 
 Under `readConnections` (`'arc'` or `'cloud'`) the read-connection band comes back
-from the display's own arc pass (`computeArcsByGroup`), run over every section at
-once as the display runs it:
+from the display's own arc pass (`collectArcs`, then `resolveArcsByGroup`), run
+over every section at once as the display runs it:
 
 - `arcs`: each mate-pair or split-read connection's feet (`start`, `end`, the near
   foot first, so `start` can lie right of `end`), `shape` (`arc`, `flat`,

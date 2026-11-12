@@ -14,12 +14,13 @@ import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupDat
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import { arcsToRegionMap } from './arcRegions.ts'
 import { buildArcBandFeeds } from './bandFeed.ts'
-import { computeArcsByGroup, computeArcsFromPileupData } from './compute.ts'
+import { computeArcsFromPileupData } from './compute.ts'
 import {
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
   ARC_SHAPE_FLAT_UNPLACED,
 } from './shapes.ts'
+import { computeArcsByGroup } from './testArcs.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcSettings, RegionInfo } from './arcTypes.ts'
