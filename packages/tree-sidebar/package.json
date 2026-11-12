@@ -27,7 +27,7 @@
     "./clusterMatrix": "./src/clustering/clusterMatrix.ts",
     "./clusterUtils": "./src/tree/newick.ts",
     "./narrowRows": "./src/rows/narrowRows.ts",
-    "./rowColorScale": "./src/color/rowColorScale.ts",
+    "./rowColorScale": "./src/color/rowColorKey.ts",
     "./RowHeightMixin": "./src/rowHeight/RowHeightMixin.ts",
     "./RowArrangementDialog": "./src/rowArrangementDialog/RowArrangementDialog.tsx",
     "./treeSidebarRowViews": "./src/rows/treeSidebarRowViews.ts"
@@ -74,7 +74,7 @@
       "./clusterMatrix": "./esm/clustering/clusterMatrix.js",
       "./clusterUtils": "./esm/tree/newick.js",
       "./narrowRows": "./esm/rows/narrowRows.js",
-      "./rowColorScale": "./esm/color/rowColorScale.js",
+      "./rowColorScale": "./esm/color/rowColorKey.js",
       "./RowHeightMixin": "./esm/rowHeight/RowHeightMixin.js",
       "./RowArrangementDialog": "./esm/rowArrangementDialog/RowArrangementDialog.js",
       "./treeSidebarRowViews": "./esm/rows/treeSidebarRowViews.js"

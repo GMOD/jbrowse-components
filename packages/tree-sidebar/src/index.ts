@@ -55,12 +55,12 @@ export { getLeafNames, treeDescribesRows } from './tree/hierarchy.ts'
 export { keptRows } from './rows/narrowRows.ts'
 export { narrowRows } from './rows/narrowRows.ts'
 export type { RowNarrowing } from './rows/narrowRows.ts'
-export { ROW_COLOR_SCALE_ID } from './color/rowColorScale.ts'
+export { ROW_COLOR_SCALE_ID } from './color/rowColorKey.ts'
+export type { RowColorKeyInputs } from './color/rowColorKey.ts'
 export type {
-  RowColorKeyInputs,
   RowColorScaleSetting,
   RowColorSetting,
-} from './color/rowColorScale.ts'
+} from './color/rowColors.ts'
 export { rowColorChoiceLabel } from './color/rowColorChoice.ts'
 export type { RowColorEdits, RowColorSnapshot } from './color/rowColorChoice.ts'
 export type { RowAlias, RowParent, RowParentOf } from './rows/arrangeRows.ts'

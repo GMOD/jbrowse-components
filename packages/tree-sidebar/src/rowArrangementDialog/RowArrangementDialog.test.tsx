@@ -15,7 +15,7 @@ import type {
   RowColorEdits,
   RowColorSnapshot,
 } from '../color/rowColorChoice.ts'
-import type { RowColorSetting } from '../color/rowColorScale.ts'
+import type { RowColorSetting } from '../color/rowColors.ts'
 import type { RowArrangementModel } from './RowArrangementDialog.tsx'
 
 interface Src {

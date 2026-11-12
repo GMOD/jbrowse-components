@@ -5,21 +5,22 @@ import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import {
+  annotationColumn,
+  rowAnnotationScales,
+} from '../color/rowAnnotations.ts'
+import {
   liftRowColor,
   pinnedColorsOf,
   rowAnnotationSettingOf,
   rowColorSettingOf,
 } from '../color/rowColorChoice.ts'
+import { ROW_COLOR_SCALE_ID, rowColorKeyEntries } from '../color/rowColorKey.ts'
 import {
-  ROW_COLOR_SCALE_ID,
-  annotationColumn,
   dealValueColors,
   resolveRowColors,
-  rowAnnotationScales,
-  rowColorKeyEntries,
   withPinnedColors,
   withRowColors,
-} from '../color/rowColorScale.ts'
+} from '../color/rowColors.ts'
 import { rowColumnLabelsHeight } from '../sidebar/rowLabelsBoxWidth.ts'
 import { SIDEBAR_HINT_LINE_PX } from '../sidebar/treeSidebarGeometry.ts'
 import { computeClusterHierarchy, getLeafNames } from '../tree/hierarchy.ts'
@@ -30,14 +31,14 @@ import { narrowRows, narrows } from './narrowRows.ts'
 import { rowFieldValue } from './rowFields.ts'
 
 import type { ClusterProvenance } from '../clustering/clusterProvenance.ts'
-import type { RowColorSnapshot } from '../color/rowColorChoice.ts'
 import type {
   RowAnnotationDeal,
   RowAnnotationDrawn,
   RowAnnotationSetting,
-  RowColorKeyInputs,
-  RowColorSetting,
-} from '../color/rowColorScale.ts'
+} from '../color/rowAnnotations.ts'
+import type { RowColorSnapshot } from '../color/rowColorChoice.ts'
+import type { RowColorKeyInputs } from '../color/rowColorKey.ts'
+import type { RowColorSetting } from '../color/rowColors.ts'
 import type { SvgSidebarProps } from '../sidebar/svgSidebarWidth.ts'
 import type { HierarchyNode } from '../tree/hierarchy.ts'
 import type {

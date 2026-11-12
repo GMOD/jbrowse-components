@@ -11,7 +11,7 @@ import { autorun } from 'mobx'
 import { TreeSidebarMixin } from '../TreeSidebarMixin.ts'
 import { ROW_COLUMN_LABEL_LINE_HEIGHT } from '../sidebar/rowLabelsBoxWidth.ts'
 import { SIDEBAR_HINT_LINE_PX } from '../sidebar/treeSidebarGeometry.ts'
-import { dealValueColors } from './rowColorScale.ts'
+import { dealValueColors } from './rowColors.ts'
 
 const configSchema = ConfigurationSchema('RowColorKeyDisplay', {
   rows: rowsConfigSchema,

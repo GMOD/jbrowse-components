@@ -3,11 +3,8 @@ import { capitalizeFirst } from '@jbrowse/core/util'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { compareStructural } from 'mobx'
 
-import type {
-  RowAnnotationSetting,
-  RowColorScaleSetting,
-  RowColorSetting,
-} from './rowColorScale.ts'
+import type { RowAnnotationSetting } from './rowAnnotations.ts'
+import type { RowColorScaleSetting, RowColorSetting } from './rowColors.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /** The `rows.color` object as a config or the dialog writes it. */

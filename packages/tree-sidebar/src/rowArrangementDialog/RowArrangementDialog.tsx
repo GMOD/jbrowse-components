@@ -13,7 +13,7 @@ import {
   withPair,
   withPairs,
 } from '../color/rowColorChoice.ts'
-import { resolveRowColors, withPinnedColors } from '../color/rowColorScale.ts'
+import { resolveRowColors, withPinnedColors } from '../color/rowColors.ts'
 import { IDENTITY_FIELDS, rowFieldValue } from '../rows/rowFields.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
@@ -25,7 +25,7 @@ import type {
   RowColorEdits,
   RowColorSnapshot,
 } from '../color/rowColorChoice.ts'
-import type { RowColorSetting } from '../color/rowColorScale.ts'
+import type { RowColorSetting } from '../color/rowColors.ts'
 import type { RowAlias } from '../rows/arrangeRows.ts'
 import type { RowSource } from '../types.ts'
 import type { ValueColor } from './RowColorPanel.tsx'

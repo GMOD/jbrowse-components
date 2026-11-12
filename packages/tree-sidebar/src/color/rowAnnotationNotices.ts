@@ -2,7 +2,7 @@ import { rowFieldValue } from '../rows/rowFields.ts'
 import { rowColumnLabelsHeight } from '../sidebar/rowLabelsBoxWidth.ts'
 
 import type { RowSource } from '../types.ts'
-import type { RowAnnotationSetting } from './rowColorScale.ts'
+import type { RowAnnotationSetting } from './rowAnnotations.ts'
 
 /**
  * More distinct numbers than this, on more than half the rows carrying the

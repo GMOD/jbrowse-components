@@ -27,11 +27,8 @@ import {
   sameRowColor,
   startingRowColor,
 } from './color/rowColorChoice.ts'
-import {
-  ROW_COLOR_SCALE_ID,
-  rowColorKeyValue,
-  withPinnedColors,
-} from './color/rowColorScale.ts'
+import { ROW_COLOR_SCALE_ID, rowColorKeyValue } from './color/rowColorKey.ts'
+import { withPinnedColors } from './color/rowColors.ts'
 import { labelEdits } from './rows/arrangeRows.ts'
 import { focusRows } from './rows/focusRows.ts'
 import {
@@ -64,7 +61,7 @@ import { buildSpatialIndex } from './tree/spatialIndex.ts'
 
 import type { ClusterProvenance } from './clustering/clusterProvenance.ts'
 import type { RowColorEdits } from './color/rowColorChoice.ts'
-import type { RowColorSetting } from './color/rowColorScale.ts'
+import type { RowColorSetting } from './color/rowColors.ts'
 import type { RowSortSpec } from './rows/rowSort.ts'
 import type { TreeSidebarConfigModel } from './rows/treeSidebarRowViews.ts'
 import type { SvgSidebarProps } from './sidebar/svgSidebarWidth.ts'
