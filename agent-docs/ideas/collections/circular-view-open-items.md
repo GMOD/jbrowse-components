@@ -1,6 +1,6 @@
 ---
 name: circular-view-open-items
-description: "Open circular-view items after the ring, chord and circular-synteny rounds (ADR-177): no fetch gate on chords, overlay canvases never reaching a ring, ordinal-x displays on a ring, same-loci SVs merging into one chord, zoom rebuilding the ribbon hit cache, the Canvas2D rung's per-frame repaint."
+description: "Open circular-view items after the ring, chord and circular-synteny rounds (ADR-177): no fetch gate on chords, overlay canvases never reaching a ring, same-loci SVs merging into one chord, zoom rebuilding the ribbon hit cache, the Canvas2D rung's per-frame repaint."
 ---
 
 # Circular view open items
@@ -20,10 +20,6 @@ stall is unmeasured.
 (`ringStripCanvas`, the display's marked picture since ae28f756e7), so the
 OverlayCanvas layers drawn over it (density band, indel glyphs, alignments
 labels, MAF overlays) are dropped.
-
-**Ordinal-x displays as rings** (`variantLayout: 'columns'`, LD): columns spread
-over the whole circumference at the wrong angles and the connector band drops.
-Refuse the layout on a ring or force it genomic: undecided.
 
 **Two SVs at the same two loci draw as one chord.** The junction key is
 `ref:pos|ref:pos` only, so a `<DEL>` and a `<DUP>` at identical coordinates
