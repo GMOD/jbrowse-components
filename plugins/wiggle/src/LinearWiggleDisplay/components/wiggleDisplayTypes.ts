@@ -3,13 +3,7 @@ import type { WigglePlotGeometry } from '../../shared/wiggleDisplayViews.ts'
 import type { WiggleHoveredFeature } from '../../util.ts'
 import type { WiggleContextInfo } from './findHit.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
-import type { SidebarBounds } from '@jbrowse/display-ui'
-import type {
-  ClusterHierarchyNode,
-  HoveredTreeNode,
-  RowAnnotationColumn,
-  RowBand,
-} from '@jbrowse/tree-sidebar'
+import type { TreeSidebarMixinModel } from '@jbrowse/tree-sidebar'
 import type {
   ScaleType,
   WiggleDataResult,
@@ -17,16 +11,44 @@ import type {
   YAxis,
 } from '@jbrowse/wiggle-core'
 
-export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
+export interface WiggleDisplayModel
+  extends
+    WiggleGpuDisplayModel,
+    Pick<
+      TreeSidebarMixinModel,
+      | 'drawnRows'
+      | 'discoveredRows'
+      | 'rowsTopOffset'
+      | 'rowFocusLineHeight'
+      | 'hierarchy'
+      | 'treeAreaWidth'
+      | 'showTree'
+      | 'showRowLabels'
+      | 'sidebarBounds'
+      | 'rowAnnotationColors'
+      | 'rowColumnLabels'
+      | 'rowBands'
+      | 'treelessBandCount'
+      | 'rowFocus'
+      | 'rowNarrowingHint'
+      | 'rowNarrowingClears'
+      | 'hoveredTreeNode'
+      | 'treeCanvas'
+      | 'mouseoverCanvas'
+      | 'setTreeCanvasRef'
+      | 'setMouseoverCanvasRef'
+      | 'setHoveredTreeNode'
+      | 'setTreeAreaWidth'
+      | 'setRowFocus'
+      | 'showAllRows'
+    > {
   id: string
   // read by DisplayChrome, which publishes it as `data-display-id` — the stable
   // hook the browser tests use to target one track's display
   configuration: { displayId: string }
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   notices: readonly string[]
-  drawnRows: { name: string; color?: string; rowColor?: string }[]
   markSources: { name: string; label?: string; color?: string }[]
-  discoveredRows: { name: string }[]
   domain: [number, number] | undefined
   scaleType: ScaleType
   // where the plot canvas sits inside the display's height — the same value
@@ -42,34 +64,11 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   numSources: number
   numRows: number
   effectiveRowHeight: number
-  rowsTopOffset: number
   scrollableHeight: number
-  rowFocusLineHeight: number
   axes: YAxis[]
-  hierarchy?: ClusterHierarchyNode
-  treeAreaWidth: number
-  showTree: boolean
-  sidebarBounds: SidebarBounds
   showRowSeparators: boolean
-  showRowLabels: boolean
   drawsRowLabels: boolean
-  rowAnnotationColors: readonly RowAnnotationColumn[]
-  rowColumnLabels: readonly string[]
-  rowBands: readonly RowBand[]
-  treelessBandCount: number
-  rowFocus?: readonly string[]
-  rowNarrowingHint?: { text: string; title: string }
-  rowNarrowingClears: boolean
-  hoveredTreeNode?: HoveredTreeNode
-  treeCanvas?: HTMLCanvasElement | null
-  mouseoverCanvas?: HTMLCanvasElement | null
   hoveredFeature?: WiggleHoveredFeature
-  setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
-  setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
-  setHoveredTreeNode: (node?: HoveredTreeNode) => void
-  setTreeAreaWidth: (width: number) => void
-  setRowFocus: (names?: readonly string[]) => void
-  showAllRows: () => void
   setScrollTop: (scrollTop: number) => void
   setHoveredFeature: (feat?: WiggleHoveredFeature) => void
   clearHoveredFeature: () => void

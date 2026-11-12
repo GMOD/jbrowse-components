@@ -83,7 +83,7 @@ export { MIN_CLUSTER_ROWS, clusterMatrix } from './clustering/clusterMatrix.ts'
 export type { ClusterMatrix, NumericRow } from './clustering/clusterMatrix.ts'
 export type { RpcMethodCaller } from './clustering/rpcMethodCaller.ts'
 export { TreeSidebarMixin, orderOver } from './TreeSidebarMixin.ts'
-export type { ClusterRun } from './TreeSidebarMixin.ts'
+export type { ClusterRun, TreeSidebarMixinModel } from './TreeSidebarMixin.ts'
 export {
   clusteringMenuItem,
   resetRowOrderMenuItems,
