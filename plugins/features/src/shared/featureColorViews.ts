@@ -24,7 +24,10 @@ import {
 } from '@jbrowse/display-kit/valueRamp'
 
 import { createFieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
-import { workerColorOf } from '../RenderFeatureDataRPC/renderConfig.ts'
+import {
+  identityFieldOf,
+  workerColorOf,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 
 import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -165,14 +168,17 @@ export function featureColorViews(self: FeatureColorHost) {
     /**
      * #getter
      * The Color by radio that is ticked: a field, else a constant, else the
-     * track's own color.
+     * track's own color. An identity scale's field ticks Attribute..., as on
+     * the multi-row display.
      */
     get colorByMode(): 'default' | 'solid' | 'strand' | 'attribute' {
       const field = this.colorField
       return field === undefined
-        ? this.solidColor === undefined
-          ? 'default'
-          : 'solid'
+        ? this.solidColor !== undefined
+          ? 'solid'
+          : identityFieldOf(this.colorSetting) === undefined
+            ? 'default'
+            : 'attribute'
         : field === STRAND_FIELD
           ? 'strand'
           : 'attribute'

@@ -23,6 +23,8 @@ export interface RenderContext {
   readGroupKey?: (feature: Feature) => unknown
   // Reads `config.tooltip`, built once per walk (`tooltipReader`).
   tooltipOf?: (feature: Feature) => string
+  // A box's own color, built once per walk (`ownColorReader`).
+  ownColorOf?: (feature: Feature) => string | undefined
   isGeneType?: (type: string) => boolean
 }
 

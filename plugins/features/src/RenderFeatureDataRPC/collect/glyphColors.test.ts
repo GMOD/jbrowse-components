@@ -3,11 +3,14 @@ import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { MISCONFIGURED_COLOR } from '@jbrowse/core/util/color'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
+import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 
+import { workerColorOf } from '../renderConfig.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 import { createColorKey } from './colorKey.ts'
-import { boxColor } from './glyphColors.ts'
+import { boxColor, packColor } from './glyphColors.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { MockDisplayConfigOverrides } from '../testUtils.ts'
@@ -297,5 +300,94 @@ describe('boxColor (an explicit color always beats the file)', () => {
 
   it('still yields to the file when unset', () => {
     expect(fill(itemRgbFeature)).toBe('227,26,28')
+  })
+})
+
+describe('boxColor (an identity scale over a field)', () => {
+  const identity = (field?: string, value?: string) =>
+    mockDisplayConfig({
+      color: workerColorOf({ value, field, scale: { type: 'identity' } }),
+    })
+  const gene = new SimpleFeature({
+    uniqueId: 'gene1',
+    refName: 'chr1',
+    start: 0,
+    end: 300,
+    type: 'gene',
+    color: '#d73027',
+    itemRgb: '0,0,255',
+    subfeatures: [
+      {
+        uniqueId: 'tx1',
+        refName: 'chr1',
+        start: 0,
+        end: 100,
+        type: 'mRNA',
+        subfeatures: [
+          { uniqueId: 'e1', refName: 'chr1', start: 0, end: 100, type: 'exon' },
+        ],
+      },
+      {
+        uniqueId: 'tx2',
+        refName: 'chr1',
+        start: 200,
+        end: 300,
+        type: 'mRNA',
+        color: 'rebeccapurple',
+      },
+    ],
+  })
+  const [transcript, tinted] = gene.get('subfeatures')!
+  const exon = transcript!.get('subfeatures')![0]!
+  const flat = (color?: string) =>
+    new SimpleFeature({
+      uniqueId: `f${color}`,
+      refName: 'chr1',
+      start: 0,
+      end: 10,
+      type: 'block',
+      itemRgb: '0,0,255',
+      ...(color === undefined ? {} : { color }),
+    })
+
+  it("paints each feature the CSS color its field holds, over the file's own", () => {
+    expect(fill(gene, identity('color'))).toBe('#d73027')
+    expect(fill(tinted!, identity('color'))).toBe('rebeccapurple')
+  })
+
+  it("paints a subfeature with no value its nearest ancestor's", () => {
+    expect(fill(exon, identity('color'))).toBe('#d73027')
+    expect(fill(transcript!, identity('color'))).toBe('#d73027')
+  })
+
+  it('paints a feature with no value anywhere the default, not its BED color', () => {
+    expect(fill(flat(), identity('color'))).toBe(featureDefaultColor)
+    expect(fill(flat(''), identity('color'))).toBe(featureDefaultColor)
+  })
+
+  it('paints each value, a BED triple or no CSS color at all, as the mark display does', () => {
+    const values = ['#d73027', '215,48,39', 'not a color', 'rebeccapurple']
+    const ctx = { config: identity('color'), colorByFrame: false, jexl }
+    const marked = encodeFeatures(
+      values.map(flat),
+      { color: { scale: 'identity', field: 'color' } },
+      ['color'],
+    ).color
+    expect(marked).toBeInstanceOf(Uint32Array)
+    expect(values.map(v => packColor(boxColor(flat(v), ctx)).color)).toEqual(
+      Array.from(marked instanceof Uint32Array ? marked : []),
+    )
+    expect(packColor(boxColor(flat('not a color'), ctx)).color).toBe(
+      cssColorToABGR('magenta'),
+    )
+  })
+
+  it('still paints the BED color with no field', () => {
+    expect(fill(gene, identity())).toBe('0,0,255')
+    expect(fill(exon, identity())).toBe('0,0,255')
+  })
+
+  it('lets a written value paint over the field, as the mark display does', () => {
+    expect(fill(gene, identity('color', 'green'))).toBe('green')
   })
 })

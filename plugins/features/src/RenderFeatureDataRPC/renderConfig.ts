@@ -51,29 +51,41 @@ export function readConfigValueSafe<T>(
   }
 }
 
-/**
- * `itemRgbOn` is present only under an identity scale, the track declaring its
- * features' colors their own as UCSC's `itemRgb on` does, so "0,0,0" paints
- * black.
- */
-export type WorkerColor = Pick<ColorSetting, 'value' | 'field'> & {
-  itemRgbOn?: true
-}
-
-/** The share of a color object the worker reads. */
-export function workerColorOf({
-  value,
-  field,
-  scale,
-}: {
+interface WrittenColor {
   value?: ColorSetting['value']
   field?: string
   scale?: { type?: string }
-}): WorkerColor {
+}
+
+/**
+ * The field whose CSS colors paint each feature: an identity scale's written
+ * `field` while no `value` paints over it, as on the mark display.
+ */
+export function identityFieldOf({ value, field, scale }: WrittenColor) {
+  return scale?.type === IDENTITY_SCALE && value === undefined && field
+    ? field
+    : undefined
+}
+
+/**
+ * `itemRgbOn` is present only under an identity scale, the track declaring its
+ * features' colors their own as UCSC's `itemRgb on` does, so "0,0,0" paints
+ * black. `identityField` is present only where `identityFieldOf` names one,
+ * since `field` may be a parked field shipping its values, which never paints.
+ */
+export type WorkerColor = Pick<ColorSetting, 'value' | 'field'> & {
+  itemRgbOn?: true
+  identityField?: string
+}
+
+/** The share of a color object the worker reads. */
+export function workerColorOf(color: WrittenColor): WorkerColor {
+  const identityField = identityFieldOf(color)
   return {
-    value,
-    field: field ?? '',
-    ...(scale?.type === IDENTITY_SCALE ? { itemRgbOn: true } : {}),
+    value: color.value,
+    field: color.field ?? '',
+    ...(color.scale?.type === IDENTITY_SCALE ? { itemRgbOn: true } : {}),
+    ...(identityField === undefined ? {} : { identityField }),
   }
 }
 
@@ -105,8 +117,8 @@ export interface DisplayConfig {
   filter: FieldPredicate[]
   // `mark.height`, flat here
   featureHeight: number
-  // The members a box reads: its value, the field whose values it ships, and
-  // whether "0,0,0" is black. The scale is otherwise the main thread's, so a
+  // The members a box reads: its value, the field whose values it ships,
+  // whether "0,0,0" is black, and the field an identity scale paints. The scale is otherwise the main thread's, so a
   // recolor never refetches.
   color: WorkerColor
   // `maybeColor` slots, as `color.value`.

@@ -171,4 +171,20 @@ describe('workerColorOf', () => {
     })
     expect(workerColorOf({})).toEqual({ value: undefined, field: '' })
   })
+
+  it('names the identity field only under identity, a written field and no value', () => {
+    const identity = { type: 'identity' }
+    expect(workerColorOf({ field: 'color', scale: identity })).toEqual({
+      value: undefined,
+      field: 'color',
+      itemRgbOn: true,
+      identityField: 'color',
+    })
+    expect(
+      workerColorOf({ field: 'color', value: 'red', scale: identity }),
+    ).not.toHaveProperty('identityField')
+    expect(workerColorOf({ field: 'color' })).not.toHaveProperty(
+      'identityField',
+    )
+  })
 })

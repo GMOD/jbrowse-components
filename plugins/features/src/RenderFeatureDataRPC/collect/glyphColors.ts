@@ -14,9 +14,11 @@ import { getFeatureName } from '../labelUtils.ts'
 import { readConfigValueSafe } from '../renderConfig.ts'
 import { isCDS, isUTR } from '../util.ts'
 
+import type { WorkerColor } from '../renderConfig.ts'
 import type { ColorKey } from './colorKey.ts'
 import type { RenderContext } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 export const TRANSL_EXCEPT_HIGHLIGHT = colorToUint32('#ffc850')
 
@@ -76,18 +78,53 @@ export function isRetrotransposonBody(type: string) {
 // failing the whole track render.
 const INVALID_COLOR = MISCONFIGURED_COLOR
 
-// The gene glyph draws one box per subfeature, and a subfeature has no BED
-// color of its own, so this reads the nearest ancestor that has one. That is
-// not always the top-level feature: BigBedAdapter's `aggregateField` puts
+// The gene glyph draws one box per subfeature, and a subfeature has no color
+// of its own, so this reads the nearest ancestor that has one. That is not
+// always the top-level feature: BigBedAdapter's `aggregateField` puts
 // transcripts, each with its own color, under a synthesized gene with none.
-function inheritedBedColor(feature: Feature, itemRgbOn?: boolean) {
+function inheritedColor(
+  feature: Feature,
+  colorOf: (feature: Feature) => string | undefined,
+) {
   let cur: Feature | undefined = feature
   let found: string | undefined
   while (cur !== undefined && found === undefined) {
-    found = featureBedColor(cur, itemRgbOn)
+    found = colorOf(cur)
     cur = cur.parent?.()
   }
   return found
+}
+
+function fieldColorReader(field: string, jexl: JexlInstance) {
+  try {
+    const read = fieldReader(field, jexl)
+    return (feature: Feature) => {
+      try {
+        return valueText(read(feature)) || undefined
+      } catch {
+        return undefined
+      }
+    }
+  } catch {
+    return () => undefined
+  }
+}
+
+/**
+ * The color a box paints where no `value` does: the CSS color an identity
+ * scale's field holds, as the mark display reads it, else the file's own BED
+ * color, each off the nearest ancestor where the box carries none. Built once
+ * per walk.
+ */
+export function ownColorReader(
+  { identityField, itemRgbOn }: WorkerColor,
+  jexl: JexlInstance,
+): (feature: Feature) => string | undefined {
+  const colorOf =
+    identityField === undefined
+      ? (cur: Feature) => featureBedColor(cur, itemRgbOn)
+      : fieldColorReader(identityField, jexl)
+  return feature => inheritedColor(feature, colorOf)
 }
 
 const BOX_COLOR_SLOTS = {
@@ -132,7 +169,7 @@ export function boxColor(
   const raw = slot === 'color' ? config.color.value : config.utrColor
   const fill =
     raw === undefined
-      ? (inheritedBedColor(feature, config.color.itemRgbOn) ??
+      ? ((ctx.ownColorOf ?? ownColorReader(config.color, jexl))(feature) ??
         glyphDefault ??
         BOX_COLOR_SLOTS[isUtrBox ? 'utrColor' : 'color'])
       : readConfigValueSafe<string>(
