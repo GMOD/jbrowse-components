@@ -48,8 +48,8 @@ function scratchContext(width: number, height: number) {
   return context2d(scratchCanvas)
 }
 
-// Every pixel drawn from this canvas is first put from `ringPixels`, so a
-// resize is the only reason to touch its size.
+// Sized to the frame in device px, so every ring of every frame reuses it and
+// `ringPixels`. Every pixel drawn from it is first put from `ringPixels`.
 function ringContext(width: number, height: number) {
   ringCanvas ??= document.createElement('canvas')
   if (ringCanvas.width !== width || ringCanvas.height !== height) {
@@ -134,26 +134,16 @@ export function ringShape(id: string): MarkShape<RingChannels, RingParams> {
       }
       const pixels = pixelsOf(strip)
       const dpr = getDpr()
-      const cx = params.centerX * dpr
-      const cy = params.centerY * dpr
+      const out = ringContext(
+        Math.ceil(frame.canvasWidth * dpr),
+        Math.ceil(frame.canvasHeight * dpr),
+      )
       for (let i = 0; i < channels.count; i++) {
-        const outerPx = channels.outerPx[i]! * dpr
-        const left = Math.max(0, Math.floor(cx - outerPx - 1))
-        const top = Math.max(0, Math.floor(cy - outerPx - 1))
-        const right = Math.min(frame.canvasWidth * dpr, cx + outerPx + 1)
-        const bottom = Math.min(frame.canvasHeight * dpr, cy + outerPx + 1)
-        if (right - left < 1 || bottom - top < 1) {
-          continue
-        }
-        const out = ringContext(
-          Math.ceil(right - left),
-          Math.ceil(bottom - top),
-        )
         const annulus = {
-          centerX: cx - left,
-          centerY: cy - top,
+          centerX: params.centerX * dpr,
+          centerY: params.centerY * dpr,
           innerPx: channels.innerPx[i]! * dpr,
-          outerPx,
+          outerPx: channels.outerPx[i]! * dpr,
           offsetRadians,
         }
         const rects = annulusRects(
@@ -174,8 +164,8 @@ export function ringShape(id: string): MarkShape<RingChannels, RingParams> {
             y,
             width,
             height,
-            (left + x) / dpr,
-            (top + y) / dpr,
+            x / dpr,
+            y / dpr,
             width / dpr,
             height / dpr,
           )
