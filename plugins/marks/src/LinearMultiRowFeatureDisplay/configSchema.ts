@@ -4,8 +4,8 @@ import {
   configSchemaFactory as markConfigSchemaFactory,
   markListSchema,
 } from '../LinearMarkDisplay/configSchema.ts'
-import { multiRowTooltipConfigSchema } from '../LinearMarkDisplay/markTooltipConfigSchema.ts'
 import { multiRowRowsConfigSchema } from './multiRowRowsConfigSchema.ts'
+import { multiRowTooltipConfigSchema } from './multiRowTooltipConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

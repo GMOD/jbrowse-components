@@ -17,6 +17,7 @@ function layer(): EncodedChannels {
     colorValue: y,
     row: Uint32Array.from([0, 1, 0, 1]),
     text: ['a', 'b', 'c', 'd'],
+    tooltip: ['VCV1', 'VCV2', 'VCV3', 'VCV4'],
     color: Uint32Array.from([1, 2, 3, 4]),
     root: Uint32Array.from([7, 7, 8, 8]),
   }
@@ -30,6 +31,7 @@ test('every lane keeps the same instances, and featureIndex still names their fe
   expect([...kept.y!]).toEqual([5, 1])
   expect([...kept.row!]).toEqual([0, 0])
   expect(kept.text).toEqual(['a', 'c'])
+  expect(kept.tooltip).toEqual(['VCV1', 'VCV3'])
   expect([...(kept.color as Uint32Array)]).toEqual([1, 3])
   expect([...kept.featureIndex!]).toEqual([0, 2])
   expect([...kept.root!]).toEqual([7, 8])

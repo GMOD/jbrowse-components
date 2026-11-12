@@ -174,8 +174,9 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)).
   An area mark waits on `y2`; the line is a mark
   ([ADR-184](../architecture-decision-records/adr-184-a-line-is-a-mark.md)).
-  No `tooltip` channel either: each display's hover prints its own fields,
-  and a plot naming them waits on one whose hover prints the wrong ones.
+  The hover's name line is a display-level `tooltip` part, `{ show, field }`,
+  not a per-mark channel
+  ([ADR-267](../architecture-decision-records/adr-267-the-mark-tooltip-names-the-feature-from-a-lane-the-worker-fills.md)).
 - **A band is one config object**
   ([ADR-231](../architecture-decision-records/adr-231-an-alignments-band-is-one-config-object.md)).
   The alignments `coverage`, `pileup`, `sashimi` and `readConnections`, and

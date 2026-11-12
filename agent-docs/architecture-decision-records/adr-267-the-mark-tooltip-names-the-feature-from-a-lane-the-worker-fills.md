@@ -23,8 +23,8 @@ ADR-238 settled that the part's `field` names the hover's first line.
 
 - **Config: the `tooltip` part, `{ show, field }`, a bare string the field.**
   `MarkTooltip` on `LinearMarkDisplay` (and the Manhattan display, which takes
-  its schema) and `MultiRowTooltip` on `LinearMultiRowFeatureDisplay`, one
-  schema with two defaults: empty, and `name`.
+  its schema) and `MultiRowTooltip` on `LinearMultiRowFeatureDisplay`, the
+  same two slots with the field defaulting to empty and to `name`.
 - **Worker: a `tooltip` string lane.** `MarkEncoding.tooltip` carries the
   field, `LaneName` gains `tooltip`, and `encodeFeatures` fills
   `EncodedChannels.tooltip` the way it fills `text`. It reads the field off
@@ -41,8 +41,8 @@ ADR-238 settled that the part's `field` names the hover's first line.
 - **Default rule: a display whose plot is a mark per record names it by
   `name`; the plain mark display names nothing until its config writes a
   field.** The multi-row display draws one rect per feature record, and its
-  records are what the reader hovers to identify. A name costs a few bytes a
-  feature; a markup field such as `_mouseOver` costs more than the rect
+  records are what the reader hovers to identify. A name costs about what
+  the rect's own lanes do, 14 B a feature against 16 B; a markup field such as `_mouseOver` costs more than the rect
   (below), so a config opts into it. `LinearMarkDisplay` is the grammar's
   blank page: its `marks` default is empty, and what it is configured with is
   mostly a value plot (bars over a score, coverage, a Manhattan, binned

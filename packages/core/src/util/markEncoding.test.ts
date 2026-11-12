@@ -1025,27 +1025,20 @@ test('only the lanes asked for are filled, and the index only when named', () =>
   expect(Flatbush.from(spans.flatbushData!).search(90, -1, 160, 1)).toEqual([1])
 })
 
-const FEATURE_TOOLTIP = `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`
-
-test('the tooltip lane holds the hover line of each instance, `_mouseOver` before `name`', () => {
+test('the tooltip lane holds the name of each admitted instance, skipping with the instances a y skips', () => {
   const r = encodeFeatures(
     [
-      feature(0, { _mouseOver: 'NM_000059.4(BRCA2):c.68-7T>A', name: 'v1' }),
-      feature(1, { name: 'BRCA1' }),
-      feature(2, { function: 'stem_loop' }),
-      feature(3, {}),
+      feature(0, { score: 1, name: 'VCV1' }),
+      feature(1, { score: 'n/a', name: 'VCV2' }),
+      feature(2, { score: 3, id: 'id-3' }),
     ],
-    { tooltip: FEATURE_TOOLTIP },
-    ['tooltip'],
+    { y: 'score', tooltip: 'name' },
+    ['y', 'tooltip'],
     { jexl },
   )
-  expect(r.tooltip).toEqual([
-    'NM_000059.4(BRCA2):c.68-7T>A',
-    'BRCA1',
-    'stem_loop',
-    '',
-  ])
-  expect(encodedChannelTransferables(r)).toHaveLength(2)
+  expect(r.count).toBe(2)
+  expect(r.tooltip).toEqual(['VCV1', 'id-3'])
+  expect(encodedChannelTransferables(r)).toHaveLength(4)
   expect(
     encodeFeatures(features, { tooltip: 'type' }, ['y'], { jexl }).tooltip,
   ).toBeUndefined()
