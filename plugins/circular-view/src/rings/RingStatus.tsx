@@ -48,6 +48,7 @@ function ringStatus(display: StatusDisplay) {
     return {
       text: tooLargeBannerText(display.regionTooLargeReason ?? '', {
         zoomCanRelease: display.zoomCanReleaseGate,
+        release: 'Show fewer chromosomes to see this track',
       }),
       short: display.regionTooLargeReason || 'Too much data to show',
       action: display.forceLoad,
