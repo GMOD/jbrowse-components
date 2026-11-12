@@ -40,6 +40,7 @@ function setup({
     },
     getCanonicalRefName: (name: string) =>
       assemblyRefNames.includes(name) ? name : aliases[name],
+    hasName: (name: string) => name === 'hg38' || name === 'GRCh38',
     setRefNameMismatch,
     setContigLengthMismatch,
   } as unknown as RefNameMapAssembly
@@ -62,6 +63,32 @@ test('forwards the lanes the fetch names', async () => {
 })
 
 const CHR = ['chr1', 'chr2', 'chr3']
+
+// The worker compares the assembly name against the config's text, with no
+// assembly manager to resolve an alias, so the alias is picked before the call.
+test('asks a comparative adapter under the spelling its config names the assembly by', async () => {
+  const { assembly } = setup({ fileRefNames: CHR, assemblyRefNames: CHR })
+  await loadRefNameMap(
+    assembly,
+    { type: 'PAFAdapter', assemblyNames: ['mm39', 'GRCh38'] },
+    { sessionId: 'sesh' },
+  )
+  expect(assembly.rpcManager.call).toHaveBeenCalledWith(
+    'sesh',
+    'CoreGetContigs',
+    expect.objectContaining({ assemblyName: 'GRCh38' }),
+  )
+})
+
+test('asks an adapter naming no assembly under the assembly name', async () => {
+  const { assembly } = setup({ fileRefNames: CHR, assemblyRefNames: CHR })
+  await loadRefNameMap(assembly, adapterConfig, { sessionId: 'sesh' })
+  expect(assembly.rpcManager.call).toHaveBeenCalledWith(
+    'sesh',
+    'CoreGetContigs',
+    expect.objectContaining({ assemblyName: 'hg38' }),
+  )
+})
 
 test('records the mismatch when nothing canonicalizes, and still returns the map', async () => {
   const { assembly, setRefNameMismatch } = setup({

@@ -25,10 +25,21 @@ function assembly(
   name: string,
   contigs: [refName: string, length: number][],
   aliases: string[] = [],
+  refNameAliases: Record<string, string[]> = {},
 ) {
   return {
     name,
     aliases,
+    refNameAliases: {
+      adapter: {
+        type: 'FromConfigAdapter',
+        features: Object.entries(refNameAliases).map(([refName, names]) => ({
+          refName,
+          uniqueId: `${name}_${refName}_aliases`,
+          aliases: names,
+        })),
+      },
+    },
     sequence: {
       type: 'ReferenceSequenceTrack',
       trackId: `${name}_refseq`,
@@ -154,4 +165,44 @@ test('a multi-pairwise track whose children name the anchor by an alias answers 
       expect.objectContaining({ assemblyName: 'genomeC', refName: 'cctg1' }),
     ]),
   )
+})
+
+// Both namespaces at once: the PAF names volvox `vvx`, an assembly alias, and
+// its contig `A`, a refName alias of ctgA. The refName map comes from asking
+// the adapter for its contigs on volvox, and a pairwise adapter answers only
+// for an assembly spelled as its config spells it.
+describe('a synteny track naming a genome by an assembly alias and its contigs by refName aliases', () => {
+  const adapterConfig = {
+    type: 'PAFAdapter',
+    pafLocation: local('test_data/volvox/volvox_alias_query.paf'),
+    assemblyNames: ['vvx', 'volvox_del'],
+  }
+  const volvoxAndDel = () =>
+    sessionWith([
+      assembly('volvox', [['ctgA', 50001]], ['vvx'], { ctgA: ['A'] }),
+      assembly('volvox_del', [['ctgA', 45141]]),
+    ])
+
+  test('maps the canonical contig to the file spelling', async () => {
+    const session = volvoxAndDel()
+    const volvox = await session.assemblyManager.requireAssembly('volvox')
+    expect(
+      await volvox.getRefNameMapForAdapter(adapterConfig, {
+        sessionId: SESSION_ID,
+      }),
+    ).toEqual({ ctgA: 'A' })
+  })
+
+  test('draws the alignment under the view genome', async () => {
+    const features = await featuresThroughTheViewPath(
+      volvoxAndDel(),
+      adapterConfig,
+      { assemblyName: 'volvox', refName: 'ctgA', start: 10000, end: 11000 },
+    )
+    expect(features).toHaveLength(1)
+    expect(features[0]!.get('mate')).toMatchObject({
+      assemblyName: 'volvox_del',
+      refName: 'ctgA',
+    })
+  })
 })

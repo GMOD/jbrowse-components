@@ -58,6 +58,14 @@ contig and is not total.
 
 ## Synteny
 
+A synteny adapter config may name an assembly by an alias, and the adapter
+compares that text in the worker. So both outbound names take the config's
+spelling on the main thread, through `adapterAssemblyNames`
+(`@jbrowse/core/util/tracks`): a region's `assemblyName`
+(`renameRegionsForAdapter`), and the assembly `loadRefNameMap` asks the
+adapter for contigs on. Missing the second leaves the refName map empty, so a
+file whose contigs are refName aliases draws nothing.
+
 For synteny the un-requested refName is the payload: every feature names a contig
 on the other axis. So the fix sits at the two channels that carry names off the
 wire, and both are renamed on receipt:

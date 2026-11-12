@@ -1,4 +1,5 @@
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
+import { adapterAssemblyNames } from '../util/adapterAssemblyNames.ts'
 import { updateStatus } from '../util/progress.ts'
 import {
   assemblyContigLengths,
@@ -24,13 +25,24 @@ export type RefNameMapAssembly = Pick<
   | 'refNameAliases'
   | 'rpcManager'
   | 'getCanonicalRefName'
+  | 'hasName'
   | 'setRefNameMismatch'
   | 'setContigLengthMismatch'
 >
 
+function adapterSpelling(
+  assembly: RefNameMapAssembly,
+  adapterConfig: Record<string, unknown>,
+) {
+  return (
+    adapterAssemblyNames(adapterConfig).find(name => assembly.hasName(name)) ??
+    assembly.name
+  )
+}
+
 export async function loadRefNameMap(
   assembly: RefNameMapAssembly,
-  adapterConfig: unknown,
+  adapterConfig: Record<string, unknown>,
   options: BaseOptions,
 ): Promise<RefNameAliases> {
   const { sessionId } = options
@@ -53,8 +65,8 @@ export async function loadRefNameMap(
   // no extra read, and they are what gives away a file from another build
   const contigs = await updateStatus('Loading', options.statusCallback, () =>
     assembly.rpcManager.call(sessionId, 'CoreGetContigs', {
-      adapterConfig: adapterConfig as Record<string, unknown>,
-      assemblyName: assembly.name,
+      adapterConfig,
+      assemblyName: adapterSpelling(assembly, adapterConfig),
       haplotypes: options.haplotypes,
       // signal intentionally not passed, fixes issues like #2221.
       // alternative fix #2540 was proposed but non-working currently
@@ -108,9 +120,7 @@ export async function loadRefNameMap(
     assemblyRefNames: assembly.refNames ?? [],
     getCanonicalRefName: name => assembly.getCanonicalRefName(name),
   })
-  const adapterCacheKey = adapterConfigCacheKey(
-    adapterConfig as Record<string, unknown>,
-  )
+  const adapterCacheKey = adapterConfigCacheKey(adapterConfig)
   if (mismatch) {
     assembly.setRefNameMismatch(adapterCacheKey, mismatch)
   } else {
