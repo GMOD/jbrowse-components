@@ -516,7 +516,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        */
       get partnerSpansBySlice(): ReadonlyMap<number, PartnerSpan[]> {
         const { assemblyManager } = getSession(self)
-        const twoGenomes = new Set(self.trackAssemblyNames).size > 1
+        const twoGenomes = self.trackAssemblyNames.length > 1
         const name = ({ assemblyName, refName }: AlignmentEnd) => {
           const displayName =
             assemblyName === undefined
