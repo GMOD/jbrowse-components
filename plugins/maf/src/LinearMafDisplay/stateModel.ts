@@ -629,18 +629,27 @@ export default function stateModelFactory(
           return self.showConservation && !self.coarseTierActive
         },
       }))
+      .views(self => {
+        const keepRowIndex = sameAsLast<Map<string, number>>()
+        return {
+          /**
+           * #getter
+           * Maps a `src` (species) to its display row index. The single source for
+           * the `src`→row projection used by the summary-bar and CDS-frame overlays
+           * and the frame hover lookup, so they can't disagree on row placement.
+           * The same object while the row order is, since every region's
+           * placement and encode keys on it: a relabel or recolor moves no row.
+           */
+          get rowIndexBySrc(): Map<string, number> {
+            return keepRowIndex(
+              new Map(
+                self.sources.map((s, i): [string, number] => [s.name, i]),
+              ),
+            )
+          },
+        }
+      })
       .views(self => ({
-        /**
-         * #getter
-         * Maps a `src` (species) to its display row index. The single source for
-         * the `src`→row projection used by the summary-bar and CDS-frame overlays
-         * and the frame hover lookup, so they can't disagree on row placement.
-         */
-        get rowIndexBySrc(): Map<string, number> {
-          return new Map(
-            self.sources.map((s, i): [string, number] => [s.name, i]),
-          )
-        },
         /**
          * #getter
          * The anchor species whose `mafFrames` reading frame translates every
