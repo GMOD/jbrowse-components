@@ -1298,6 +1298,35 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
     expect(JSON.stringify(statuses)).toContain('Downloading sample metadata')
   })
 
+  it("fills a subtrack's fields where its cells do, and never renames it", async () => {
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        samplesTsvLocation: {
+          localPath: require.resolve('./test_data/samples-sparse.tsv'),
+          locationType: 'LocalPathLocation',
+        },
+      }),
+    )
+    adapter.getAdapters = jest.fn().mockResolvedValue([
+      {
+        source: 'k1',
+        color: '#f00',
+        group: 'g1',
+        dataAdapter: stubDataAdapter,
+      },
+      {
+        source: 'k2',
+        color: '#00f',
+        group: 'g2',
+        dataAdapter: stubDataAdapter,
+      },
+    ])
+    expect((await adapter.getSourcesAndWarnings()).sources).toEqual([
+      { name: 'k1', source: 'k1', color: '#f00', group: 'liver' },
+      { name: 'k2', source: 'k2', color: '#0f0', group: 'g2' },
+    ])
+  })
+
   it('stops waiting on the table when the fetch is aborted', async () => {
     const { adapter, getFeatureArrays } = adapterWithTsv()
     const controller = new AbortController()

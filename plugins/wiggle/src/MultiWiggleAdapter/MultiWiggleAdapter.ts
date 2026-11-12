@@ -454,7 +454,10 @@ export default class MultiWiggleAdapter
       })
       const byName = new Map(sources.map(s => [s.name, s]))
       return {
-        sources: rows.map(row => ({ ...byName.get(row.name)!, ...row })),
+        sources: rows.map(row => {
+          const sub = byName.get(row.name)!
+          return { ...sub, ...row, source: sub.source, name: sub.name }
+        }),
         warnings,
       }
     },
