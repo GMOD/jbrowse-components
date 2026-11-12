@@ -287,27 +287,3 @@ export function autoscaleDomainFromStats({
     spans: visibleEntries.map(d => datasetSpan(d, field, extent)),
   })
 }
-
-/**
- * #api
- * The score domain of the visible feature arrays, following `quantile` as
- * `encoding.y.scale.fenceQuantile` says, its outliers fenced for an axis that
- * reaches 0 under `zero`.
- */
-export function computeAutoscaleDomain(
-  quantile: number,
-  field: SummaryField,
-  visibleEntries: {
-    data: FeatureArrays
-    visStart: number
-    visEnd: number
-  }[],
-  zero: boolean,
-  extent: Extent = 'none',
-): [number, number] | undefined {
-  const spans = visibleEntries.map(d => datasetSpan(d, field, extent))
-  const stats = computeSpanStats(spans)
-  return stats
-    ? autoscaleDomainFromSpans({ stats, quantile, zero, spans })
-    : undefined
-}

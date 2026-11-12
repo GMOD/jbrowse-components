@@ -30,7 +30,6 @@ export {
 export {
   autoscaleDomainFromSpans,
   autoscaleDomainFromStats,
-  computeAutoscaleDomain,
   computeScoreStats,
   computeSpanStats,
   datasetSpan,

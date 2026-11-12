@@ -1,6 +1,28 @@
-import { computeAutoscaleDomain } from './autoscale.ts'
+import { autoscaleDomainFromStats, computeScoreStats } from './autoscale.ts'
+import { getNiceDomain } from './scale.ts'
 
-import type { FeatureArrays } from './autoscale.ts'
+import type { Dataset, FeatureArrays } from './autoscale.ts'
+import type { Extent, SummaryField } from './summaryFields.ts'
+
+function wiggleAutoscaleDomain(
+  quantile: number,
+  field: SummaryField,
+  visibleEntries: Dataset[],
+  zero: boolean,
+  extent: Extent = 'none',
+) {
+  const stats = computeScoreStats(field, visibleEntries, extent)
+  return stats
+    ? autoscaleDomainFromStats({
+        stats,
+        quantile,
+        zero,
+        field,
+        extent,
+        visibleEntries,
+      })
+    : undefined
+}
 
 // Build one autoscale dataset entry from a flat score list. Each feature spans
 // [i, i+1] by default; the summary arrays mirror featureScores (no whiskers).
@@ -32,21 +54,21 @@ describe('outlier fence', () => {
   const spiked = [entry([...new Array(99).fill(2), 50])]
 
   it('keeps a rare gain the baseline leaves room for', () => {
-    expect(computeAutoscaleDomain(0.99, 'score', copyNumber, true)).toEqual([
+    expect(wiggleAutoscaleDomain(0.99, 'score', copyNumber, true)).toEqual([
       2, 3,
     ])
   })
 
   it('fences a spike at twice the axis the rest need, 0 included', () => {
-    expect(computeAutoscaleDomain(0.99, 'score', spiked, true)).toEqual([2, 4])
+    expect(wiggleAutoscaleDomain(0.99, 'score', spiked, true)).toEqual([2, 4])
   })
 
   // Off 0, the quantile ends' own span sets the fence; ends that meet span
   // their own size.
   it('fences off 0 at the span of the quantile ends', () => {
-    expect(computeAutoscaleDomain(0.99, 'score', spiked, false)).toEqual([2, 4])
+    expect(wiggleAutoscaleDomain(0.99, 'score', spiked, false)).toEqual([2, 4])
     expect(
-      computeAutoscaleDomain(
+      wiggleAutoscaleDomain(
         0.99,
         'score',
         [entry([100, ...new Array(97).fill(105), 110, 500])],
@@ -56,13 +78,13 @@ describe('outlier fence', () => {
   })
 
   it('a quantile of 1 does not clip', () => {
-    expect(computeAutoscaleDomain(1, 'score', copyNumber, true)).toEqual([2, 3])
+    expect(wiggleAutoscaleDomain(1, 'score', copyNumber, true)).toEqual([2, 3])
   })
 
   it('only counts features overlapping the visible window', () => {
     // features at [0,1],[1,2],[2,3],[3,4],[4,5]; window [3,5) keeps the last two
     expect(
-      computeAutoscaleDomain(
+      wiggleAutoscaleDomain(
         1,
         'score',
         [entry([2, 2, 2, 3, 5], { visStart: 3, visEnd: 5 })],
@@ -107,7 +129,7 @@ describe('visible-window clipping matches a full scan', () => {
   it('keeps a feature straddling the left edge', () => {
     // window opens inside feature 3 ([30,40)), so its 50 counts
     expect(
-      computeAutoscaleDomain(
+      wiggleAutoscaleDomain(
         1,
         'score',
         [wideEntry(scores, { visStart: 35, visEnd: 60 })],
@@ -119,7 +141,7 @@ describe('visible-window clipping matches a full scan', () => {
   it('keeps a feature straddling the right edge', () => {
     // window closes inside feature 3, which still overlaps
     expect(
-      computeAutoscaleDomain(
+      wiggleAutoscaleDomain(
         1,
         'score',
         [wideEntry(scores, { visStart: 10, visEnd: 35 })],
@@ -130,7 +152,7 @@ describe('visible-window clipping matches a full scan', () => {
 
   it('excludes a feature that ends exactly at the window start', () => {
     expect(
-      computeAutoscaleDomain(
+      wiggleAutoscaleDomain(
         1,
         'score',
         [wideEntry(scores, { visStart: 30, visEnd: 40 })],
@@ -150,7 +172,7 @@ describe('visible-window clipping matches a full scan', () => {
     for (let visStart = 0; visStart < 2000; visStart += 137) {
       for (const width of [1, 15, 200, 1500]) {
         const visEnd = visStart + width
-        const clipped = computeAutoscaleDomain(
+        const clipped = wiggleAutoscaleDomain(
           1,
           'score',
           [wideEntry(random, { visStart, visEnd })],
@@ -177,13 +199,13 @@ describe('visible-window clipping matches a full scan', () => {
 describe('non-finite scores', () => {
   it('scales to the real scores around a NaN', () => {
     expect(
-      computeAutoscaleDomain(1, 'score', [entry([2, Number.NaN, 5, 3])], true),
+      wiggleAutoscaleDomain(1, 'score', [entry([2, Number.NaN, 5, 3])], true),
     ).toEqual([2, 5])
   })
 
   it('has no domain when every score is NaN', () => {
     expect(
-      computeAutoscaleDomain(
+      wiggleAutoscaleDomain(
         1,
         'score',
         [entry([Number.NaN, Number.NaN])],
@@ -199,25 +221,128 @@ describe('non-finite scores', () => {
 describe('one-signed windows', () => {
   it('an all-negative window keeps a negative top', () => {
     expect(
-      computeAutoscaleDomain(
-        0.99,
-        'score',
-        [entry([-4, -3, -2, -1])],
-        true,
-      )![1],
+      wiggleAutoscaleDomain(0.99, 'score', [entry([-4, -3, -2, -1])], true)![1],
     ).toBeLessThan(0)
   })
 
   it('empty bins lower no top', () => {
     expect(
-      computeAutoscaleDomain(0.99, 'score', [entry([0, 0, 0, 5, 5, 5])], true),
+      wiggleAutoscaleDomain(0.99, 'score', [entry([0, 0, 0, 5, 5, 5])], true),
     ).toEqual([0, 5])
   })
 
   it('empty bins beside negatives keep the top at 0, where the extremes put it', () => {
     const scores = [...new Array(90).fill(0), -1, -2, -3, -1, -2, -3]
+    expect(wiggleAutoscaleDomain(0.99, 'score', [entry(scores)], true)).toEqual(
+      [-3, 0],
+    )
+  })
+})
+
+describe('extremes', () => {
+  it('has no domain with nothing visible', () => {
+    expect(wiggleAutoscaleDomain(1, 'score', [], true)).toBeUndefined()
+  })
+
+  it('excludes a feature starting where the window ends', () => {
     expect(
-      computeAutoscaleDomain(0.99, 'score', [entry(scores)], true),
-    ).toEqual([-3, 0])
+      wiggleAutoscaleDomain(
+        1,
+        'score',
+        [entry([1, 100, 5], { visEnd: 1 })],
+        true,
+      ),
+    ).toEqual([1, 1])
+  })
+
+  it('spans negative and positive scores', () => {
+    expect(
+      wiggleAutoscaleDomain(1, 'score', [entry([-10, -2, 5])], true),
+    ).toEqual([-10, 5])
+  })
+
+  it('a single feature is its own domain', () => {
+    expect(wiggleAutoscaleDomain(1, 'score', [entry([42])], true)).toEqual([
+      42, 42,
+    ])
+  })
+
+  it('combines every visible region', () => {
+    expect(
+      wiggleAutoscaleDomain(1, 'score', [entry([2, 4]), entry([6, 10])], true),
+    ).toEqual([2, 10])
+  })
+})
+
+describe('a quantile below 1', () => {
+  it('keeps all-positive data off 0, and a linear axis adds it', () => {
+    const result = wiggleAutoscaleDomain(
+      0.99,
+      'score',
+      [entry([2, 5, 8])],
+      true,
+    )!
+    expect(result).toEqual([2, 8])
+    expect(
+      getNiceDomain({
+        zero: true,
+        scaleType: 'linear',
+        domain: result,
+        bounds: [undefined, undefined],
+      })[0],
+    ).toBe(0)
+  })
+
+  it('keeps a sparse negative tail visible', () => {
+    // 95 positive + 5 negative features (like phyloP: mostly conserved with a
+    // small accelerated tail). A single combined 1st-percentile min lands >= 0
+    // and flattens the negatives; each side must clip independently so the
+    // negative extent survives.
+    const scores = [...Array.from({ length: 95 }, () => 3), -1, -2, -3, -4, -5]
+    const result = wiggleAutoscaleDomain(0.99, 'score', [entry(scores)], true)
+    expect(result![0]).toBeLessThan(0)
+    expect(result![0]).toBeLessThanOrEqual(-4)
+    expect(result![1]).toBeGreaterThan(0)
+  })
+})
+
+describe('a min-max extent', () => {
+  function whiskered(min: number[], max: number[]): Dataset {
+    return {
+      data: {
+        featurePositions: new Uint32Array([0, 100, 100, 200]),
+        featureScores: new Float32Array([5, 8]),
+        featureMinScores: new Float32Array(min),
+        featureMaxScores: new Float32Array(max),
+        numFeatures: 2,
+        hasSummaryScores: true,
+      },
+      visStart: 0,
+      visEnd: 200,
+    }
+  }
+
+  it('reads the min and max arrays', () => {
+    expect(
+      wiggleAutoscaleDomain(
+        1,
+        'score',
+        [whiskered([1, 3], [10, 15])],
+        true,
+        'min-max',
+      ),
+    ).toEqual([1, 15])
+  })
+
+  it('opens a clipped domain to the whisker spread on each side', () => {
+    const result = wiggleAutoscaleDomain(
+      0.99,
+      'score',
+      [whiskered([-8, -6], [10, 12])],
+      true,
+      'min-max',
+    )
+    expect(result![0]).toBeLessThanOrEqual(-8)
+    expect(result![1]).toBeGreaterThanOrEqual(12)
   })
 })
