@@ -1501,17 +1501,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         const oldHeight = self.height
         return self.setHeight(oldHeight + distance) - oldHeight
       },
-      /**
-       * #action
-       */
-      resizeWidth(distance: number) {
-        const oldWidth = self.volatileWidth
-        if (oldWidth === undefined) {
-          return 0
-        }
-        self.setWidth(oldWidth + distance)
-        return self.width - oldWidth
-      },
     }))
     .actions(self => ({
       afterCreate() {
