@@ -98,13 +98,20 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
+       * the displayed regions on the track's assemblies
+       */
+      get trackRegions() {
+        return this.view.displayedRegions.filter(r =>
+          this.trackAssemblyNames.includes(r.assemblyName),
+        )
+      },
+      /**
+       * #getter
        * nothing of this track's is on the circle, so the fetch never runs; the
        * SVG export's wait and the retry contract check both read it
        */
       get fetchInert() {
-        return !this.view.displayedRegions.some(r =>
-          this.trackAssemblyNames.includes(r.assemblyName),
-        )
+        return this.trackRegions.length === 0
       },
       /**
        * #getter
@@ -267,8 +274,7 @@ export function BaseChordDisplay() {
        * anything that has to find a shape on screen without a DOM node
        */
       shapePathFor(feature: Feature) {
-        const i = self.laneIndexById.get(feature.id())
-        const shape = i === undefined ? undefined : self.shapeAt(i)
+        const shape = this.shapeFor(feature.id())
         return shape
           ? shapePath(shape, self.radiusPx, self.bezierRadius)
           : undefined
@@ -404,10 +410,7 @@ export function installChordFetch(
     report: self,
     contract: `${name} chord fetch`,
     prepare: () => {
-      const { view, trackAssemblyNames } = self
-      const regions = view.displayedRegions.filter(r =>
-        trackAssemblyNames.includes(r.assemblyName),
-      )
+      const regions = self.trackRegions
       return regions.length
         ? {
             sessionId: getRpcSessionId(self),
