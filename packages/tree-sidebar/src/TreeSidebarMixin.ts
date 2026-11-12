@@ -82,12 +82,13 @@ export type { TreeSidebarConfigModel } from './treeSidebarRowViews.ts'
 
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the
- * `rows` object, its axis, colors and color channel, and the resolved row
- * height.
+ * `rows` object, its axis, colors and color channel, the resolved row
+ * height, and the scroll a focus resets (`TrackHeightMixin`).
  */
 export interface TreeSidebarHost {
   configuration: TreeSidebarConfigModel & { displayId: string }
   effectiveRowHeight: number
+  setScrollTop(top: number): void
 }
 
 const host = (self: object) => self as TreeSidebarHost
@@ -978,7 +979,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             : []
         if (names.length > 0) {
           focusRows(
-            self as typeof self & { setScrollTop(top: number): void },
+            {
+              setRowFocus: self.setRowFocus,
+              setScrollTop: host(self).setScrollTop,
+            },
             names,
           )
         }
