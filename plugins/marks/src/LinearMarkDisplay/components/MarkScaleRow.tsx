@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { LabeledCheckbox } from '@jbrowse/core/ui'
-import { isRampScale } from '@jbrowse/core/util/colorScale'
+import { IDENTITY_SCALE, isRampScale } from '@jbrowse/core/util/colorScale'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -40,7 +40,11 @@ function listLabel(channel: EditChannel, scale: string, member: ListMember) {
     return 'values the key lists'
   }
   if (member === 'domain') {
-    return scale === 'threshold' ? 'cut points' : 'values, in order'
+    return scale === 'threshold'
+      ? 'cut points'
+      : scale === IDENTITY_SCALE
+        ? 'colors the key names, in order'
+        : 'values, in order'
   }
   return channel === 'shape'
     ? 'shapes'
@@ -50,9 +54,9 @@ function listLabel(channel: EditChannel, scale: string, member: ListMember) {
 }
 
 // Which lists a scale reads: an ordinal or threshold color its values or
-// cuts, their colors and their names; a shape its values, shapes and names;
-// an ordinal key the values it lists; a width ramp its two px ends; a color
-// ramp its stops.
+// cuts, their colors and their names; an identity color the colors its key
+// names and their names; a shape its values, shapes and names; an ordinal key
+// the values it lists; a width ramp its two px ends; a color ramp its stops.
 function listsOf(channel: EditChannel, scale: string): ListMember[] {
   if (channel === 'size' || channel === 'strokeWidth') {
     return ['range']
@@ -62,7 +66,9 @@ function listsOf(channel: EditChannel, scale: string): ListMember[] {
   }
   return scale === 'threshold'
     ? ['domain', 'range', 'names']
-    : ['domain', 'range', 'names', 'values']
+    : scale === IDENTITY_SCALE
+      ? ['domain', 'names']
+      : ['domain', 'range', 'names', 'values']
 }
 
 const MemberField = observer(function MemberField({

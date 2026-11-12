@@ -1,6 +1,5 @@
 import {
   FEATURE_FIELD_PRESETS,
-  IDENTITY_SCALE,
   fieldScaleOf,
   isRampScale,
 } from '@jbrowse/core/util/colorScale'
@@ -126,13 +125,13 @@ function rampMembers(channel: EditChannel): readonly ScaleMember[] {
 
 /**
  * The scale kinds a channel offers beside its field, off the vocabulary its
- * own schema declares: every color scale but `identity`, which reads no
- * field, for `color`, `ordinal` alone for `shape`, and a width's two ramps
- * for `size` and `strokeWidth`.
+ * own schema declares: every color scale for `color`, `identity` painting
+ * the CSS colors the field holds, `ordinal` alone for `shape`, and a width's
+ * two ramps for `size` and `strokeWidth`.
  */
 export function channelScales(channel: EditChannel): readonly string[] {
   return channel === 'color'
-    ? MARK_COLOR_SCALES.filter(s => s !== IDENTITY_SCALE)
+    ? MARK_COLOR_SCALES
     : channel === 'shape'
       ? ['ordinal']
       : isPxChannel(channel)

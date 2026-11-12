@@ -278,7 +278,38 @@ describe('a scale beside its field', () => {
     const options = [...screen.getByTestId('scale-color').children].map(
       o => (o as HTMLOptionElement).value,
     )
-    expect(options).toEqual(['ordinal', 'linear', 'log', 'symlog', 'threshold'])
+    expect(options).toEqual([
+      'ordinal',
+      'linear',
+      'log',
+      'symlog',
+      'threshold',
+      'identity',
+    ])
+  })
+
+  it('reads a field through identity, listing the colors its key names', () => {
+    const { apply, written } = setup({
+      marks: [
+        {
+          mark: 'rect',
+          encoding: { color: { field: 'color', scale: { type: 'ordinal' } } },
+        },
+      ],
+    })
+    fireEvent.change(screen.getByTestId('scale-color'), {
+      target: { value: 'identity' },
+    })
+    expect(screen.getByTestId('scale-color')).toHaveValue('identity')
+    expect(screen.queryByTestId('range-color')).toBeNull()
+    fireEvent.change(screen.getByTestId('domain-color'), {
+      target: { value: '#d73027' },
+    })
+    fireEvent.click(apply())
+    expect(written.mock.calls[0]![0].marks[0].encoding.color).toEqual({
+      field: 'color',
+      scale: { type: 'identity', domain: ['#d73027'] },
+    })
   })
 
   it('names a ramp its stops and pins its ends', () => {
