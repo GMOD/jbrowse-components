@@ -38,7 +38,7 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 const middleTitleFontSizePx = 16
 
-function RulerLabel({
+const RulerLabel = observer(function RulerLabel({
   offsetRadians,
   text,
   maxWidthPx,
@@ -84,7 +84,7 @@ function RulerLabel({
       {title ? <title>{title}</title> : null}
     </text>
   )
-}
+})
 
 function regionColor(
   model: CircularViewModel,
