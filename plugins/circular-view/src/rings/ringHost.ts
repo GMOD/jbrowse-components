@@ -22,7 +22,6 @@ import type { Region } from '@jbrowse/core/util'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { MarkImage } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { IComputedValue } from 'mobx'
 import type { ComponentType } from 'react'
@@ -47,6 +46,7 @@ export interface RingDisplay {
   height: number
   configuredHeight?: number
   setHostHeight: (height: number | undefined) => void
+  canvasDrawn: boolean
   paintCount: number
   painted: boolean
   renderNow: () => void
@@ -234,18 +234,40 @@ export function ringHit(
  * its plot (wiggle leaves room for its axis labels), and the ring samples the
  * canvas, not the strip, so its band is the canvas's box.
  */
-function canvasBox(
-  strip: HTMLElement | undefined,
-  canvas: HTMLCanvasElement | null | undefined,
-) {
-  if (!strip || !canvas) {
-    return { top: 0, height: Infinity }
-  }
+function canvasBox(strip: HTMLElement, canvas: HTMLCanvasElement) {
   const s = strip.getBoundingClientRect()
   const c = canvas.getBoundingClientRect()
   return c.height > 0
     ? { top: c.top - s.top, height: c.height }
     : { top: 0, height: Infinity }
+}
+
+/**
+ * A ring's upload payload: its annulus, trimmed to where the display's canvas
+ * sits in its strip, and the strip canvas it samples.
+ */
+function stripCell(
+  index: number,
+  ring: Ring,
+  strip: HTMLElement,
+  canvas: HTMLCanvasElement,
+): RingCell {
+  const { display } = ring
+  const box = canvasBox(strip, canvas)
+  const scale = stripPerRingPx(ring)
+  const outerPx = ring.outerPx - box.top / scale
+  const innerPx = Math.max(ring.innerPx, outerPx - box.height / scale)
+  return {
+    index,
+    display,
+    paintCount: display.paintCount,
+    channels: {
+      innerPx: new Float32Array([innerPx]),
+      outerPx: new Float32Array([outerPx]),
+      count: 1,
+    },
+    strip: { image: canvas, width: canvas.width, height: canvas.height },
+  }
 }
 
 /** Whether two cells would upload the same annulus and strip. */
@@ -573,46 +595,20 @@ export const RingHost = types
       return last ? last.innerPx - RING_GAP_PX : self.view.radiusPx
     },
     /**
-     * One ring's upload payload: its annulus, trimmed to where the display's
-     * canvas sits in its strip, and the strip canvas it samples. None until
-     * the display has painted that canvas, so the ring never samples a blank
-     * strip and reports it drawn.
+     * One ring's upload payload, while its display has a painted canvas: none
+     * before the first paint, so the ring never samples a blank strip and
+     * reports it drawn, and none once a gate or render error has unmounted
+     * the canvas, so it never samples a strip painted at an earlier zoom.
      */
     ringCell(displayId: string): RingCell | undefined {
       const index = this.rings.findIndex(r => r.display.id === displayId)
       const ring = this.rings[index]
       const el = self.stripElements.get(displayId)
-      const canvas = el && ringStripCanvas(el)
-      if (
-        !ring ||
-        ring.display.paintCount === 0 ||
-        !canvas ||
-        canvas.width === 0 ||
-        canvas.height === 0
-      ) {
-        return undefined
-      }
-      const { display } = ring
-      const strip: MarkImage = {
-        image: canvas,
-        width: canvas.width,
-        height: canvas.height,
-      }
-      const box = canvasBox(el, canvas)
-      const scale = stripPerRingPx(ring)
-      const outerPx = ring.outerPx - box.top / scale
-      const innerPx = Math.max(ring.innerPx, outerPx - box.height / scale)
-      return {
-        index,
-        display,
-        paintCount: display.paintCount,
-        channels: {
-          innerPx: new Float32Array([innerPx]),
-          outerPx: new Float32Array([outerPx]),
-          count: 1,
-        },
-        strip,
-      }
+      const canvas =
+        ring?.display.canvasDrawn && el ? ringStripCanvas(el) : null
+      return ring && el && canvas && canvas.width > 0 && canvas.height > 0
+        ? stripCell(index, ring, el, canvas)
+        : undefined
     },
     /**
      * Every ring's cell, each the same object until its own annulus or strip

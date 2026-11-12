@@ -9,6 +9,7 @@ function renderStatus(status: Record<string, unknown>) {
     id: 'genes',
     type: 'LinearBasicDisplay',
     height: 50,
+    canvasDrawn: false,
     paintCount: 0,
     painted: false,
     renderNow() {},

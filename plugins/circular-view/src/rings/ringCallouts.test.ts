@@ -10,6 +10,7 @@ function ringOf(namedFeatures: NamedFeature[]): Ring {
     id: 'genes',
     type: 'LinearBasicDisplay',
     height: 50,
+    canvasDrawn: true,
     paintCount: 1,
     painted: true,
     renderNow() {},

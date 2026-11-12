@@ -12,6 +12,7 @@ const display = (height: number): RingDisplay => ({
   id: 'genes',
   type: 'LinearBasicDisplay',
   height,
+  canvasDrawn: true,
   paintCount: 1,
   painted: true,
   renderNow() {},

@@ -2,7 +2,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
-import { observable, runInAction } from 'mobx'
+import { autorun, observable, runInAction } from 'mobx'
 
 import { buildChordAxis, layoutSlices } from '../CircularView/slices.ts'
 import {
@@ -141,6 +141,7 @@ const display = (id: string, height: number): RingDisplay => ({
   id,
   type: 'LinearWiggleDisplay',
   height,
+  canvasDrawn: false,
   paintCount: 0,
   painted: false,
   renderNow() {},
@@ -196,6 +197,47 @@ test('a display with no height takes no ring, and leaves the rest sized', () => 
       r.outerPx - r.innerPx,
     ]),
   ).toEqual([['b', 100]])
+})
+
+// A gate or render error unmounts the display's canvas, which nothing the
+// cell's computed reads used to say, so the ring went on sampling the strip
+// painted at the old zoom under its status band.
+test('a ring samples its strip only while the display has a painted canvas', () => {
+  const ring = observable(display('a', 50))
+  const host = RingHost.create({})
+  host.setView(
+    observable({
+      initialized: true,
+      staticSlices: slices,
+      radiusPx: 500,
+      circumferencePx: TWO_PI * 500,
+      bpPerPx: 0.1,
+      ringDisplays: [ring],
+    }) as unknown as RingHostView,
+  )
+  const strip = document.createElement('div')
+  const canvas = document.createElement('canvas')
+  strip.append(canvas)
+  host.setStripElement('a', strip)
+  const sampled: unknown[] = []
+  const dispose = autorun(() => {
+    sampled.push(host.ringCells[0]?.strip.image)
+  })
+  expect(sampled.at(-1)).toBeUndefined()
+
+  runInAction(() => {
+    ring.paintCount = 1
+    ring.canvasDrawn = true
+    ring.painted = true
+  })
+  expect(sampled.at(-1)).toBe(canvas)
+
+  canvas.remove()
+  runInAction(() => {
+    ring.canvasDrawn = false
+  })
+  expect(sampled.at(-1)).toBeUndefined()
+  dispose()
 })
 
 // the strip is still drawn at the display's height, so a point on a shrunk

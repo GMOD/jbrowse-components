@@ -16,6 +16,7 @@ const display: RingDisplay = {
   id: 'ring',
   type: 'LinearWiggleDisplay',
   height: 50,
+  canvasDrawn: true,
   paintCount: 1,
   painted: true,
   renderNow() {},
