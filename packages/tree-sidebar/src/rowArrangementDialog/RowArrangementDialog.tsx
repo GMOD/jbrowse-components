@@ -8,7 +8,7 @@ import { Button, DialogActions, DialogContent } from '@mui/material'
 import { compareStructural } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { rowColorMembers, withPair } from '../rowColorChoice.ts'
+import { rowColorMembers, withPair, withPairs } from '../rowColorChoice.ts'
 import {
   resolveRowColors,
   rowFieldValue,
@@ -302,10 +302,7 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
                     editDraft(s => withPair(s, value, color))
                   }}
                   onClear={() => {
-                    editDraft(s => ({
-                      ...s,
-                      scale: { ...s.scale, domain: [], range: [] },
-                    }))
+                    editDraft(s => withPairs(s, new Map()))
                     if (choice === 'name') {
                       setPins(new Map())
                     }

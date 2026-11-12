@@ -261,6 +261,25 @@ describe('Each row', () => {
     })
   })
 
+  test('Clear row colors keeps the palette the config deals', () => {
+    const model = fakeModel({
+      rowColorSetting: {
+        field: 'name',
+        scale: { domain: [], range: ['#123456'] },
+      },
+    })
+    setup(model)
+
+    pickColor(gridRow('b').getByTitle(AUTO), '#222222', '#00ff00')
+    fireEvent.click(screen.getByText('Clear row colors'))
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'name', scale: { range: ['#123456'] } },
+      colors: {},
+    })
+  })
+
   test('Other none leaves the rows no pick names uncolored', () => {
     const model = fakeModel()
     setup(model)
@@ -470,6 +489,25 @@ describe('colored by an attribute', () => {
     fireEvent.click(screen.getByText('Clear Group colors'))
     fireEvent.click(screen.getByText('Submit'))
     expect(submitted(model)[1]).toEqual({ field: 'group' })
+  })
+
+  test('Clear keeps the palette past the pairs, which the unpaired values take', () => {
+    const model = fakeModel({
+      editableSources: GROUPED,
+      rowColorFields: ['group'],
+      rowColorSetting: {
+        field: 'group',
+        scale: { domain: ['g2'], range: ['#abcdef', '#010101'] },
+      },
+    })
+    setup(model)
+
+    fireEvent.click(screen.getByText('Clear Group colors'))
+    fireEvent.click(screen.getByText('Submit'))
+    expect(submitted(model)[1]).toEqual({
+      field: 'group',
+      scale: { range: ['#010101'] },
+    })
   })
 
   test('None colors nothing', () => {
