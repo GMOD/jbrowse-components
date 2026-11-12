@@ -5,8 +5,8 @@ import { getStr, measureGridWidth } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
 
 /**
- * Each Row's picks, which the swatch column edits: the colors picked by row
- * name, and what a pick writes.
+ * The colors pinned on rows, which the swatch column edits: the colors
+ * picked by row name, and what a pick writes.
  */
 export interface EachRowPicks {
   picks: ReadonlyMap<string, string>
@@ -21,7 +21,7 @@ export function buildSourceColumns<S extends { name: string }>({
   cellClassName,
 }: {
   colors: ReadonlyMap<string, string>
-  eachRow?: EachRowPicks
+  eachRow: EachRowPicks
   extras: string[]
   rows: S[]
   cellClassName: string
@@ -32,30 +32,15 @@ export function buildSourceColumns<S extends { name: string }>({
       headerName: 'Color',
       width: 70,
       sortable: false,
-      renderCell: ({ row }) => {
-        const color = colors.get(row.name)
-        return eachRow ? (
-          <PopoverPicker
-            color={color ?? 'auto'}
-            unset={!eachRow.picks.has(row.name)}
-            onChange={next => {
-              eachRow.onPick(new Map([[row.name, next]]))
-            }}
-          />
-        ) : color ? (
-          <span
-            data-testid="row-color-swatch"
-            title="Pick a row's color under Each row"
-            style={{
-              display: 'inline-block',
-              width: 24,
-              height: 14,
-              verticalAlign: 'middle',
-              background: color,
-            }}
-          />
-        ) : null
-      },
+      renderCell: ({ row }) => (
+        <PopoverPicker
+          color={colors.get(row.name) ?? 'auto'}
+          unset={!eachRow.picks.has(row.name)}
+          onChange={next => {
+            eachRow.onPick(new Map([[row.name, next]]))
+          }}
+        />
+      ),
     } satisfies GridColDef<S>,
     {
       field: 'name',

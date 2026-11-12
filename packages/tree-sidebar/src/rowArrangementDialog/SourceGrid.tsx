@@ -37,8 +37,9 @@ export default observer(function SourceGrid<S extends { name: string }>({
   onChange: (arg: S[]) => void
   // The color each row shows, by name.
   colors: ReadonlyMap<string, string>
-  // Under Each row, where a row's swatch is its pick.
-  eachRow?: EachRowPicks
+  // The colors pinned on rows, which a row's swatch and the bulk color
+  // controls set.
+  eachRow: EachRowPicks
   // Fields that drive their own dedicated column or are plumbing, so they must
   // not appear in the auto-derived extras.
   reserved: ReadonlySet<string>
@@ -50,9 +51,7 @@ export default observer(function SourceGrid<S extends { name: string }>({
 
   return (
     <div>
-      {eachRow ? (
-        <BulkColorControls selected={selected} onPick={eachRow.onPick} />
-      ) : null}
+      <BulkColorControls selected={selected} onPick={eachRow.onPick} />
       <SelectionMoveButtons
         rows={rows}
         selected={selected}
