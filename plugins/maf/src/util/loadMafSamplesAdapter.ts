@@ -34,6 +34,6 @@ export async function loadMafSamplesAdapter(
       `${adapterConfig.type} is not a MAF adapter — a MafTrack needs one of BigMafAdapter, MafTabixAdapter, BgzipTaffyAdapter or BgzipMafAdapter`,
     )
   }
-  const { samples, treeNewick } = await dataAdapter.getSamples(opts)
-  return { adapter: dataAdapter, samples, treeNewick }
+  const { samples, treeNewick, warnings } = await dataAdapter.getSamples(opts)
+  return { adapter: dataAdapter, samples, treeNewick, warnings }
 }

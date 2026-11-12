@@ -510,3 +510,17 @@ describe('a focus naming a copy row', () => {
     expect(rowNames(display)).toEqual(['hg38', 'hg38~2'])
   })
 })
+
+// The worker's console is where these went before, and nobody reads it.
+test("the samples table's warnings show as the display's notices", () => {
+  const { display } = createMafTestEnvironment().createDisplay()
+  const warning =
+    '1 of the 3 samples in the guide tree are not in the metadata file species.tsv'
+  display.setSamples({
+    samples: [sample('hg38'), sample('mm10')],
+    treeNewick: undefined,
+    samplesCanonical: true,
+    sampleWarnings: [warning],
+  })
+  expect(display.liveNotices).toContain(warning)
+})

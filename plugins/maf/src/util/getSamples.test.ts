@@ -50,6 +50,17 @@ describe('getSamplesFromConfig with samplesTsvLocation', () => {
     ])
     expect(collectLeafNames(parseNewick(treeNewick!))).toEqual(['a', 'c'])
   })
+
+  test('says which of the set the table leaves out', async () => {
+    const { warnings } = await getSamplesFromConfig(
+      local('./test_data/species.nh'),
+      [],
+      tsv,
+    )
+    expect(warnings).toEqual([
+      expect.stringContaining('1 of the 3 samples in the guide tree'),
+    ])
+  })
 })
 
 describe('collectLeafNames', () => {

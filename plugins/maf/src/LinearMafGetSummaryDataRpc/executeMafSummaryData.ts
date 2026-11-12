@@ -28,6 +28,8 @@ export interface LinearMafGetSummaryDataResult {
    * has rather than replacing them.
    */
   samplesCanonical: boolean
+  /** What the samples table disagreed with the track's samples about. */
+  sampleWarnings: string[]
   records: MafSummaryRecord[]
   /**
    * What the summary sub-adapter's index quoted for this region. The summary
@@ -70,6 +72,7 @@ export async function executeMafSummaryData({
     adapter,
     samples: configSamples,
     treeNewick,
+    warnings: sampleWarnings,
   } = await loadMafSamplesAdapter(pluginManager, sessionId, adapterConfig, {
     signal,
     statusCallback,
@@ -135,6 +138,7 @@ export async function executeMafSummaryData({
       : [...discovered].map(name => ({ name, label: name })),
     treeNewick,
     samplesCanonical: hasConfiguredSamples,
+    sampleWarnings,
     records,
     bytes,
   }

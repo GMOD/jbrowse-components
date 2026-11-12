@@ -290,6 +290,11 @@ export default function stateModelFactory(
         speciesListed: false,
         /**
          * #volatile
+         * What the adapter's samples table disagreed with its species about.
+         */
+        sampleWarnings: [] as string[],
+        /**
+         * #volatile
          * The reference sample row the worker resolved, held here because the
          * region store that delivers it empties on chromosome navigation.
          *
@@ -342,10 +347,12 @@ export default function stateModelFactory(
           samples,
           treeNewick,
           samplesCanonical,
+          sampleWarnings = [],
         }: {
           samples: MafSource[]
           treeNewick: string | undefined
           samplesCanonical: boolean
+          sampleWarnings?: string[]
         }) {
           const next = placeCopyRows(
             samplesCanonical
@@ -359,6 +366,9 @@ export default function stateModelFactory(
             self.treeNewickVolatile = treeNewick
           }
           self.speciesListed = samplesCanonical
+          if (!deepEqual(sampleWarnings, self.sampleWarnings)) {
+            self.sampleWarnings = sampleWarnings
+          }
         },
       }))
       .views(self => ({
@@ -526,11 +536,12 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * `rowNarrowingNotices`: a `rows.kept` naming no row, or naming
+         * What the samples table disagreed with the track's samples about,
+         * and `rowNarrowingNotices`: a `rows.kept` naming no row, or naming
          * species the config does not list.
          */
         get liveNotices(): string[] {
-          return self.rowNarrowingNotices
+          return [...self.sampleWarnings, ...self.rowNarrowingNotices]
         },
 
         /**

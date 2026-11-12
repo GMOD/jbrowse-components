@@ -43,6 +43,7 @@ interface SampleSet {
   samples: MafSource[]
   treeNewick: string | undefined
   samplesCanonical: boolean
+  sampleWarnings: string[]
 }
 
 /**
@@ -65,8 +66,8 @@ export function unionSources(lists: readonly (readonly MafSource[])[]) {
  * so regions can name different sets; the union keeps every row and settles in
  * one round.
  *
- * `treeNewick` and `samplesCanonical` are config-derived, so the first result
- * supplies them.
+ * `treeNewick`, `samplesCanonical` and `sampleWarnings` are config-derived,
+ * so the first result supplies them.
  */
 export function unionSampleSets(
   results: readonly { result: SampleSet }[],
@@ -77,6 +78,7 @@ export function unionSampleSets(
         samples: unionSources(results.map(({ result }) => result.samples)),
         treeNewick: first.treeNewick,
         samplesCanonical: first.samplesCanonical,
+        sampleWarnings: first.sampleWarnings,
       }
     : undefined
 }

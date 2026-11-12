@@ -33,6 +33,8 @@ export interface LinearMafGetAlignmentDataResult {
    * has (see `setSamples`).
    */
   samplesCanonical: boolean
+  /** What the samples table disagreed with the track's samples about. */
+  sampleWarnings: string[]
   regionData: MafWireRegionData
   /**
    * What the alignment index quoted for this region, when the fetch carried a
@@ -83,6 +85,7 @@ export async function executeMafAlignmentData({
     adapter,
     samples: configSamples,
     treeNewick,
+    warnings: sampleWarnings,
   } = await loadMafSamplesAdapter(pluginManager, sessionId, adapterConfig, {
     signal,
     statusCallback,
@@ -151,6 +154,7 @@ export async function executeMafAlignmentData({
     samples,
     treeNewick,
     samplesCanonical: hasConfiguredSamples,
+    sampleWarnings,
     regionData,
     bytes,
   }

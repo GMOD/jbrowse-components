@@ -154,9 +154,9 @@ export async function getSamplesFromConfig(
     : configSamples
 
   if (!samplesTsvLocation) {
-    return { samples, treeNewick }
+    return { samples, treeNewick, warnings: [] }
   }
-  const { sources } = await getSamplesTsvSources({
+  const { sources, warnings } = await getSamplesTsvSources({
     location: samplesTsvLocation,
     names: samples.length ? samples.map(s => s.name) : undefined,
     namesLabel: treeNewick ? 'the guide tree' : 'the samples slot',
@@ -170,6 +170,7 @@ export async function getSamplesFromConfig(
       treeNewick && merged.length < samples.length
         ? pruneTree(treeNewick, merged)
         : treeNewick,
+    warnings,
   }
 }
 
