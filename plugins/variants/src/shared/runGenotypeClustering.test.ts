@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { parseClusterTree, treeDescribesRows } from '@jbrowse/tree-sidebar'
+import { buildTree, treeDescribesRows } from '@jbrowse/tree-sidebar'
 
 import { runGenotypeClustering } from './runGenotypeClustering.ts'
 
@@ -116,7 +116,7 @@ describe('runGenotypeClustering', () => {
     const [order, run] = jest.mocked(model.setRowOrder).mock.calls[0]!
     const tree = run?.tree
     expect(order.map(s => s.name)).toEqual(['sampleB', 'sampleA', 'sampleC'])
-    expect(treeDescribesRows(parseClusterTree(tree!), order)).toBe(true)
+    expect(treeDescribesRows(buildTree(tree!), order)).toBe(true)
   })
 
   it('passes through the display filter values', async () => {

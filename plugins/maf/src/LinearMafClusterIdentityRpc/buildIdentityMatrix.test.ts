@@ -148,7 +148,7 @@ describe('buildIdentityMatrix', () => {
   })
 
   // Row order is the caller's contract: `order` comes back as indices into this
-  // map, and `buildClusteredLayout` applies them to the display's own array. A
+  // map, and `clusteredCladeLayout` applies them to the display's own array. A
   // map seeded from the file's first block instead would permute silently.
   it('emits rows in the order `sources` names, not the block order', async () => {
     const m = await matrixOf(

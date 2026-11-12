@@ -52,16 +52,12 @@ export {
 export type { LoadedRegionSpan } from './rowSortColumn.ts'
 export {
   treeOfLeaves,
-  buildClusteredLayout,
   buildTree,
   clusteredCladeLayout,
-  rowsNamed,
   getLeafNames,
   keptRows,
   parseClusterOrder,
-  parseClusterTree,
   treeDescribesRows,
-  validateClusterOrder,
 } from './clusterUtils.ts'
 export { orderRowsByDomain } from './arrangeRows.ts'
 export { narrowRows } from './narrowRows.ts'

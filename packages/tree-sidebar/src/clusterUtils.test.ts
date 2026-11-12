@@ -1,15 +1,13 @@
 import {
-  treeOfLeaves,
-  buildClusteredLayout,
+  buildTree,
   clusteredCladeLayout,
   computeClusterHierarchy,
-  rowsNamed,
   getLeafNames,
-  parseClusterTree,
+  keptRows,
   pruneNewickToLeaves,
   subtreeCoversEveryRow,
   treeDescribesRows,
-  validateClusterOrder,
+  treeOfLeaves,
 } from './clusterUtils.ts'
 import { clusterLayout, hierarchy, leaves } from './hierarchy.ts'
 
@@ -33,8 +31,8 @@ test('getLeafNames skips unnamed leaves', () => {
   expect(getLeafNames(root).sort()).toEqual(['A', 'B'])
 })
 
-test('parseClusterTree returns the full tree when no filter is given', () => {
-  const root = parseClusterTree('((A:1,B:1):1,(C:1,D:1):1);')
+test('buildTree returns the full tree', () => {
+  const root = buildTree('((A:1,B:1):1,(C:1,D:1):1);')
   expect(
     leaves(root)
       .map(l => l.data.name)
@@ -42,8 +40,8 @@ test('parseClusterTree returns the full tree when no filter is given', () => {
   ).toEqual(['A', 'B', 'C', 'D'])
 })
 
-test('parseClusterTree descends into the subtree matching the filter', () => {
-  const root = parseClusterTree('((A:1,B:1):1,(C:1,D:1):1);', ['C', 'D'])
+test('treeOfLeaves descends into the subtree matching the filter', () => {
+  const root = treeOfLeaves(buildTree('((A:1,B:1):1,(C:1,D:1):1);'), ['C', 'D'])
   expect(
     leaves(root)
       .map(l => l.data.name)
@@ -51,8 +49,8 @@ test('parseClusterTree descends into the subtree matching the filter', () => {
   ).toEqual(['C', 'D'])
 })
 
-test('parseClusterTree filter matches nested clade', () => {
-  const root = parseClusterTree('((A:1,(B:1,C:1):1):1,(D:1,E:1):1);', [
+test('treeOfLeaves filter matches nested clade', () => {
+  const root = treeOfLeaves(buildTree('((A:1,(B:1,C:1):1):1,(D:1,E:1):1);'), [
     'B',
     'C',
   ])
@@ -63,8 +61,8 @@ test('parseClusterTree filter matches nested clade', () => {
   ).toEqual(['B', 'C'])
 })
 
-test('parseClusterTree prunes to a scattered (non-monophyletic) leaf set', () => {
-  const root = parseClusterTree('((A:1,B:1):1,(C:1,D:1):1);', ['A', 'C'])
+test('treeOfLeaves prunes to a scattered (non-monophyletic) leaf set', () => {
+  const root = treeOfLeaves(buildTree('((A:1,B:1):1,(C:1,D:1):1);'), ['A', 'C'])
   expect(
     leaves(root)
       .map(l => l.data.name)
@@ -72,9 +70,9 @@ test('parseClusterTree prunes to a scattered (non-monophyletic) leaf set', () =>
   ).toEqual(['A', 'C'])
 })
 
-test('parseClusterTree collapses unary nodes and preserves leaf order', () => {
+test('treeOfLeaves collapses unary nodes and preserves leaf order', () => {
   // keep one leaf from each pair: the (X,Y) parents collapse to their kept leaf
-  const root = parseClusterTree('((A:1,B:1):2,(C:1,D:1):2);', ['B', 'D'])
+  const root = treeOfLeaves(buildTree('((A:1,B:1):2,(C:1,D:1):2);'), ['B', 'D'])
   expect(leaves(root).map(l => l.data.name)).toEqual(['B', 'D'])
   // both kept leaves sit directly under the root after the unary collapse
   expect(root.children!.map(c => c.data.name)).toEqual(['B', 'D'])
@@ -102,8 +100,8 @@ test('pruneNewickToLeaves sums branch length when collapsing a unary node', () =
   expect(pruned?.length).toBe(7)
 })
 
-test('parseClusterTree returns whole tree for filter matching root leaves', () => {
-  const root = parseClusterTree('((A:1,B:1):1,(C:1,D:1):1);', [
+test('treeOfLeaves returns whole tree for filter matching root leaves', () => {
+  const root = treeOfLeaves(buildTree('((A:1,B:1):1,(C:1,D:1):1);'), [
     'A',
     'B',
     'C',
@@ -116,13 +114,17 @@ test('parseClusterTree returns whole tree for filter matching root leaves', () =
   ).toEqual(['A', 'B', 'C', 'D'])
 })
 
-test('buildClusteredLayout reorders the rows it indexes', () => {
+test('clusteredCladeLayout reorders the rows it indexes', () => {
   const base = [
     { name: 'A', color: 'red' },
     { name: 'B', color: 'green' },
     { name: 'C', color: 'blue' },
   ]
-  const result = buildClusteredLayout(base, [2, 0, 1])
+  const result = clusteredCladeLayout({
+    rows: base,
+    editableSources: base,
+    order: [2, 0, 1],
+  })
   expect(result.map(r => r.name)).toEqual(['C', 'A', 'B'])
   expect(result[0]).toBe(base[2])
 })
@@ -158,64 +160,67 @@ test('clusteredCladeLayout rejects an order that misses a clustered row', () => 
   ).toThrow(/expected 3 entries/)
 })
 
-test('buildClusteredLayout throws on out-of-bounds index', () => {
-  expect(() => buildClusteredLayout([{ name: 'A' }], [5])).toThrow(
-    /out of bounds/,
-  )
-})
-
 const abc = [{ name: 'A' }, { name: 'B' }, { name: 'C' }]
 
-test('validateClusterOrder accepts a full permutation', () => {
+function layoutAbc(order: number[], matrixRowNames?: string[]) {
+  clusteredCladeLayout({
+    rows: abc,
+    editableSources: abc,
+    order,
+    matrixRowNames,
+  })
+}
+
+test('clusteredCladeLayout accepts a full permutation', () => {
   expect(() => {
-    validateClusterOrder([2, 0, 1], abc)
+    layoutAbc([2, 0, 1])
   }).not.toThrow()
 })
 
 // The message is the only feedback on a long paste, so it names the position in
 // the paste AND the offending value. "entry 2" used to be the value, printed
 // where a position reads.
-test('validateClusterOrder rejects out-of-range, duplicate, and wrong-length', () => {
+test('clusteredCladeLayout rejects out-of-range, duplicate, and wrong-length', () => {
   expect(() => {
-    validateClusterOrder([0, 3], abc)
+    layoutAbc([0, 3])
   }).toThrow('entry 2 is 4, outside the range 1-3')
   expect(() => {
-    validateClusterOrder([0, 1, 1], abc)
+    layoutAbc([0, 1, 1])
   }).toThrow('entry 3 repeats row 2')
   expect(() => {
-    validateClusterOrder([0, 1], abc)
+    layoutAbc([0, 1])
   }).toThrow(/expected 3 entries/)
 })
 
 // `parseClusterOrder` is a bare `+`, so a stray word in the paste reaches here
 // as NaN. It used to print as "entry NaN is out of range 1-3", naming neither
 // the position nor the value.
-test('validateClusterOrder names a non-numeric paste line by position', () => {
+test('clusteredCladeLayout names a non-numeric paste line by position', () => {
   expect(() => {
-    validateClusterOrder([0, Number.NaN, 2], abc)
+    layoutAbc([0, Number.NaN, 2])
   }).toThrow('entry 2 is not a whole number')
 })
 
-test('validateClusterOrder accepts an order over the rows the matrix held', () => {
+test('clusteredCladeLayout accepts an order over the rows the matrix held', () => {
   expect(() => {
-    validateClusterOrder([2, 0, 1], abc, ['A', 'B', 'C'])
+    layoutAbc([2, 0, 1], ['A', 'B', 'C'])
   }).not.toThrow()
 })
 
 // The one a cardinality check cannot see: the row set moved while the user was
 // in R, keeping its count, so every rank lands on a row that never entered the
 // matrix and the dendrogram still draws.
-test('validateClusterOrder rejects an order whose rows were swapped out', () => {
+test('clusteredCladeLayout rejects an order whose rows were swapped out', () => {
   expect(() => {
-    validateClusterOrder([2, 0, 1], abc, ['A', 'D', 'C'])
+    layoutAbc([2, 0, 1], ['A', 'D', 'C'])
   }).toThrow('row 2 was "D" and is now "B"')
 })
 
-test('validateClusterOrder reports a row count that moved before the entries', () => {
+test('clusteredCladeLayout reports a row count that moved before the entries', () => {
   // the count check would have said "expected 3 entries, got 2", which names
   // the paste rather than the rows that changed under it
   expect(() => {
-    validateClusterOrder([1, 0], abc, ['A', 'B'])
+    layoutAbc([1, 0], ['A', 'B'])
   }).toThrow('the matrix had 2 rows and there are now 3')
 })
 
@@ -224,7 +229,7 @@ test('validateClusterOrder reports a row count that moved before the entries', (
 // leaf that gains a `length` flips the tree onto the cumulative phylogram
 // layout, stranding leaves mid-tree instead of flush against their row labels.
 test('pruneNewickToLeaves drops merge heights when collapsing a unary node', () => {
-  const root = parseClusterTree('((A,B)4,(C,D)1)5;', ['A', 'C'])
+  const root = treeOfLeaves(buildTree('((A,B)4,(C,D)1)5;'), ['A', 'C'])
   expect(root.data).toEqual({
     length: 5,
     children: [{ name: 'A' }, { name: 'C' }],
@@ -234,23 +239,23 @@ test('pruneNewickToLeaves drops merge heights when collapsing a unary node', () 
   expect(leaves(laid).map(l => l.y)).toEqual([80, 80])
 })
 
-test('rowsNamed returns the input array itself when unfiltered', () => {
+test('keptRows returns the input array itself when unfiltered', () => {
   const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
-  expect(rowsNamed(rows, undefined)).toBe(rows)
-  expect(rowsNamed(rows, [])).toBe(rows)
+  expect(keptRows(rows, undefined)).toBe(rows)
+  expect(keptRows(rows, [])).toBe(rows)
 })
 
-test('rowsNamed keeps row order, not filter order', () => {
+test('keptRows keeps row order, not filter order', () => {
   const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
-  expect(rowsNamed(rows, ['kid', 'mom'])).toEqual([
+  expect(keptRows(rows, ['kid', 'mom'])).toEqual([
     { name: 'mom' },
     { name: 'kid' },
   ])
 })
 
-test('rowsNamed ignores filter names no row has', () => {
+test('keptRows ignores filter names no row has', () => {
   const rows = [{ name: 'mom' }, { name: 'dad' }]
-  expect(rowsNamed(rows, ['dad', 'ghost'])).toEqual([{ name: 'dad' }])
+  expect(keptRows(rows, ['dad', 'ghost'])).toEqual([{ name: 'dad' }])
 })
 
 // The tree is positioned by spacing its own leaves evenly across the row axis
@@ -278,14 +283,14 @@ describe('subtreeCoversEveryRow', () => {
   // equal counts means the same set. Pinned together so the two do not drift.
   it('agrees with the invariant it leans on', () => {
     const rows = [{ name: 'a' }, { name: 'b' }]
-    const root = parseClusterTree('(a:1,b:1):0;')
+    const root = buildTree('(a:1,b:1):0;')
     expect(treeDescribesRows(root, rows)).toBe(true)
     expect(subtreeCoversEveryRow(getLeafNames(root), rows.length)).toBe(true)
   })
 })
 
 describe('treeDescribesRows', () => {
-  const root = parseClusterTree('((a,b),c);')
+  const root = buildTree('((a,b),c);')
 
   test('true when the leaves are the rows, in order', () => {
     expect(
@@ -316,7 +321,7 @@ describe('treeDescribesRows', () => {
 })
 
 describe('computeClusterHierarchy', () => {
-  const root = parseClusterTree('((a,b),c);')
+  const root = buildTree('((a,b),c);')
   const rows = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
 
   test('positions the tree when it describes the rows', () => {

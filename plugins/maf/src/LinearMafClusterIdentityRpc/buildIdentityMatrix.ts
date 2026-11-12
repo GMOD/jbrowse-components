@@ -102,7 +102,7 @@ export function buildSegments(regions: Region[]) {
  *
  * `sources` fixes the ROW ORDER, and the caller depends on it: `clusterMatrix`
  * returns an `order` of indices into this map's iteration order, and
- * `buildClusteredLayout` applies those indices to the display's own row array.
+ * `clusteredCladeLayout` applies those indices to the display's own row array.
  * Seeding the map from `sources` before any block is read is what keeps the two
  * the same list; letting rows appear in whatever order the file's first block
  * happens to name them would silently permute the result.

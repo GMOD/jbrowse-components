@@ -109,7 +109,7 @@ function forkOf(
  * single-linkage tree is as deep as it has leaves. Replaces nodes in place, so
  * it takes a tree no one else holds, as a fresh parse is.
  */
-export function forkLeaves(
+function forkLeaves(
   root: ClusterNodeData,
   forksOf: (leaf: string) => readonly string[] | undefined,
 ): ClusterNodeData {
@@ -219,38 +219,19 @@ export function treeOfLeaves(
   return pruned ? hierarchy<ClusterNodeData>(pruned, d => d.children) : root
 }
 
-export function parseClusterTree(newick: string, names?: string[]) {
-  return treeOfLeaves(buildTree(newick), names)
-}
-
-// The row-side half of treeOfLeaves: narrow a display's rows to the same
-// names the tree was narrowed to, so the dendrogram's leaves and the rows drawn
-// beside it can't disagree about who survived. Every tree-sidebar consumer
-// (multi-wiggle, multi-row features, MAF, multi-sample variants) needs this, and
-// two rules are easy to get wrong per-plugin, so they live here:
-//
-//   - Keyed on `name`, never a per-plugin alias like `sampleName`: the filter
-//     holds tree *leaf* names, and phased variant clustering makes those
-//     haplotype names ("HG001 HP1") rather than sample names.
-//   - Hide-only. Anything derived from a row's index in the full list (an index
-//     palette color, a group color) must be computed before filtering, or
-//     focusing a clade silently recolors the rows it kept.
-//
-// Returns the input array by reference when no filter is set, so callers can
-// short-circuit on identity.
-export function rowsNamed<T extends { name: string }>(
-  rows: T[],
-  names: readonly string[] | undefined,
-): T[] {
-  const filterSet = names?.length ? new Set(names) : undefined
-  return filterSet ? rows.filter(r => filterSet.has(r.name)) : rows
-}
-
 /**
- * The rows `kept` names, in the rows' order; every row while it names none.
- * A list naming no current row keeps none, and the display says so.
- * Synthesis keyed to a row's place among every row runs before this, for the
- * reason {@link rowsNamed} states.
+ * The row-side half of treeOfLeaves: the rows `kept` names, in the rows'
+ * order, so the dendrogram's leaves and the rows drawn beside it cannot
+ * disagree about who survived. Every row, the input array itself, while it
+ * names none, so callers can short-circuit on identity. A list naming no
+ * current row keeps none, and the display says so.
+ *
+ * - Keyed on `name`, never a per-plugin alias like `sampleName`: the list
+ *   holds tree *leaf* names, and phased variant clustering makes those
+ *   haplotype names ("HG001 HP1") rather than sample names.
+ * - Hide-only. Anything derived from a row's index in the full list (an index
+ *   palette color, a group color) is computed before this, or focusing a clade
+ *   silently recolors the rows it kept.
  *
  * With `rowAlias`, a name keeps every row answering to it, so a sample's name
  * keeps its haplotypes; and a row that is its own alias (a sample not yet
@@ -264,7 +245,8 @@ export function keptRows<T extends { name: string }>(
   rowAlias?: RowAlias,
 ): T[] {
   if (!rowAlias || !kept?.length) {
-    return rowsNamed(rows, kept)
+    const named = new Set(kept)
+    return named.size ? rows.filter(r => named.has(r.name)) : rows
   }
   const samples = new Set(
     kept.flatMap(name => {
@@ -469,10 +451,9 @@ function clusterRowDrift(
     : `the matrix had ${matrixRowNames.length} rows and there are now ${rows.length}`
 }
 
-// A pasted order is only meaningful if it's a full permutation of the rows:
-// buildClusteredLayout catches out-of-range indices, but a partial paste or one
-// with duplicates would silently drop/duplicate subtracks. Throw a clear error
-// instead. `order` is 0-based.
+// A pasted order is only meaningful if it's a full permutation of the rows: an
+// out-of-range index, a partial paste or one with duplicates would silently
+// drop or duplicate rows. Throw a clear error instead. `order` is 0-based.
 //
 // **And a permutation of the SAME rows.** `matrixRowNames` is the row list the
 // exported matrix was built over, which is the order `generateClusterRScript`
@@ -494,7 +475,7 @@ function clusterRowDrift(
 //
 // Position, not line number: `parseClusterOrder` drops blank lines, so the two
 // disagree on exactly the pastes most likely to be malformed.
-export function validateClusterOrder(
+function validateClusterOrder(
   order: number[],
   rows: readonly { name: string }[],
   matrixRowNames?: readonly string[],
@@ -572,23 +553,10 @@ export function clusteredCladeLayout<S extends { name: string }>({
   matrixRowNames?: string[]
 }): S[] {
   validateClusterOrder(order, rows, matrixRowNames)
-  const clustered = buildClusteredLayout(rows, order)
+  const clustered = order.map(idx => rows[idx]!)
   const clusteredNames = new Set(clustered.map(s => s.name))
   return [
     ...clustered,
     ...editableSources.filter(s => !clusteredNames.has(s.name)),
   ]
-}
-
-export function buildClusteredLayout<S extends { name: string }>(
-  baseSources: readonly S[],
-  order: number[],
-): S[] {
-  return order.map(idx => {
-    const source = baseSources[idx]
-    if (!source) {
-      throw new Error(`cluster order index ${idx} out of bounds`)
-    }
-    return source
-  })
 }

@@ -96,7 +96,7 @@ export async function getScoreMatrix({
   const { segments, width } = columnSegments(regions, bpPerPx)
 
   // Keyed in `sources` order and kept that way: the cluster `order` comes back
-  // as indices into this map and buildClusteredLayout maps them into the
+  // as indices into this map and clusteredCladeLayout maps them into the
   // caller's source list (see ClusterMatrix).
   // Float32Array<ArrayBuffer>, not the ArrayBufferLike default: these buffers
   // are handed to postMessage as transferables, and naming the non-shared buffer

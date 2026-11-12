@@ -52,7 +52,7 @@ export const MIN_CLUSTER_ROWS = 2
  * builds it itself. `reference/CLUSTERING_WORKFLOW.md` has the numbers.
  *
  * `order` is indices into the matrix's key order, which is what
- * `buildClusteredLayout` maps back through — so a caller must build `data` in
+ * `clusteredCladeLayout` maps back through — so a caller must build `data` in
  * its own row order. A Map because that is the only container that keeps it: see
  * `ClusterMatrix` for what a plain object did to rows named "1", "2", "10".
  *
