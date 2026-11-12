@@ -2472,7 +2472,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, whose first cell is not read, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the variant and wiggle displays, and a mark display over a MultiWiggle, group, sort, color and tooltip rows by, and a blank cell is no value; \`label\` and \`color\` name and color the row. A VCF's table ignores a \`sampleName\`, \`HP\` or \`sole\` column, with a warning, since the variant display writes those fields on its haplotype rows. A MAF adapter reads only the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, with a warning naming the rest, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -2536,7 +2536,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, whose first cell is not read, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the variant and wiggle displays, and a mark display over a MultiWiggle, group, sort, color and tooltip rows by, and a blank cell is no value; \`label\` and \`color\` name and color the row. A VCF's table ignores a \`sampleName\`, \`HP\` or \`sole\` column, with a warning, since the variant display writes those fields on its haplotype rows. A MAF adapter reads only the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, with a warning naming the rest, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -2628,7 +2628,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, whose first cell is not read, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the variant and wiggle displays, and a mark display over a MultiWiggle, group, sort, color and tooltip rows by, and a blank cell is no value; \`label\` and \`color\` name and color the row. A VCF's table ignores a \`sampleName\`, \`HP\` or \`sole\` column, with a warning, since the variant display writes those fields on its haplotype rows. A MAF adapter reads only the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, with a warning naming the rest, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -2861,7 +2861,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, whose first cell is not read, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the variant and wiggle displays, and a mark display over a MultiWiggle, group, sort, color and tooltip rows by, and a blank cell is no value; \`label\` and \`color\` name and color the row. A VCF's table ignores a \`sampleName\`, \`HP\` or \`sole\` column, with a warning, since the variant display writes those fields on its haplotype rows. A MAF adapter reads only the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, with a warning naming the rest, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -3102,7 +3102,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, whose first cell is not read, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the variant and wiggle displays, and a mark display over a MultiWiggle, group, sort, color and tooltip rows by, and a blank cell is no value; \`label\` and \`color\` name and color the row. A VCF's table ignores a \`sampleName\`, \`HP\` or \`sole\` column, with a warning, since the variant display writes those fields on its haplotype rows. A MAF adapter reads only the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, with a warning naming the rest, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -3213,7 +3213,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, whose first cell is not read, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the variant and wiggle displays, and a mark display over a MultiWiggle, group, sort, color and tooltip rows by, and a blank cell is no value; \`label\` and \`color\` name and color the row. A VCF's table ignores a \`sampleName\`, \`HP\` or \`sole\` column, with a warning, since the variant display writes those fields on its haplotype rows. A MAF adapter reads only the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, with a warning naming the rest, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -3310,7 +3310,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, whose first cell is not read, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the variant and wiggle displays, and a mark display over a MultiWiggle, group, sort, color and tooltip rows by, and a blank cell is no value; \`label\` and \`color\` name and color the row. A VCF's table ignores a \`sampleName\`, \`HP\` or \`sole\` column, with a warning, since the variant display writes those fields on its haplotype rows. A MAF adapter reads only the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, with a warning naming the rest, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -3424,7 +3424,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, whose first cell is not read, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the variant and wiggle displays, and a mark display over a MultiWiggle, group, sort, color and tooltip rows by, and a blank cell is no value; \`label\` and \`color\` name and color the row. A VCF's table ignores a \`sampleName\`, \`HP\` or \`sole\` column, with a warning, since the variant display writes those fields on its haplotype rows. A MAF adapter reads only the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, with a warning naming the rest, and a table naming none of them is an error. An adapter that names no samples (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "if": {
             "type": "null"
           },
@@ -16547,6 +16547,48 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "MarkTooltip": {
+      "title": "MarkTooltip",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "MarkTooltip",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "show": {
+              "description": "open the tooltip when the cursor rests on a mark.",
+              "default": true,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
+            },
+            "field": {
+              "description": "the field naming the hovered feature, such as \`name\`, or a \`jexl:\` expression over \`feature\`; empty names nothing.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearManhattanDisplaySlots": {
       "type": "object",
       "properties": {
@@ -16642,6 +16684,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/Legend"
+          }
+        },
+        "tooltip": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkTooltip"
           }
         },
         "filter": {
@@ -16793,6 +16843,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/Legend"
+          }
+        },
+        "tooltip": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkTooltip"
           }
         },
         "filter": {
@@ -17044,6 +17102,48 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "MultiRowTooltip": {
+      "title": "MultiRowTooltip",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "name",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "MultiRowTooltip",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "show": {
+              "description": "open the tooltip when the cursor rests on a feature.",
+              "default": true,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
+            },
+            "field": {
+              "description": "the field naming the hovered feature, or a \`jexl:\` expression over \`feature\`; empty names nothing.",
+              "default": "name",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearMultiRowFeatureDisplaySlots": {
       "type": "object",
       "properties": {
@@ -17139,6 +17239,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/Legend"
+          }
+        },
+        "tooltip": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MultiRowTooltip"
           }
         },
         "filter": {
@@ -17756,7 +17864,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "tooltip": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/tooltip"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/tooltip"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/tooltip"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/tooltip"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/tooltip"
+                }
+              ]
             },
             "maxFeatureScreenDensity": {
               "anyOf": [
@@ -18336,7 +18457,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnections"
             },
             "tooltip": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/tooltip"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/tooltip"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/tooltip"
+                }
+              ]
             },
             "sashimi": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimi"
@@ -18946,7 +19074,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "tooltip": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/tooltip"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/tooltip"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/tooltip"
+                }
+              ]
             },
             "legend": {
               "anyOf": [
@@ -19699,6 +19834,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
             },
+            "tooltip": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/tooltip"
+            },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
@@ -20040,6 +20178,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "tooltip": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/tooltip"
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
@@ -20609,6 +20750,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
+            "tooltip": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/tooltip"
+            },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
@@ -21157,7 +21301,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnections"
             },
             "tooltip": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/tooltip"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/tooltip"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/tooltip"
+                }
+              ]
             },
             "data": {
               "anyOf": [
@@ -21540,6 +21691,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "legend": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/legend"
+            },
+            "tooltip": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/tooltip"
             },
             "filter": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/filter"

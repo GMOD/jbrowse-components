@@ -1566,8 +1566,10 @@ name, the name of each entry.
 
 ### ListedRowSource
 
-One row an adapter lists: `name` is a value of the listing's field, and `label`
-and `color` are what the adapter names and colors that row with.
+One row an adapter lists: `name` is a value of the listing's field, `label` and
+`color` are what the adapter names and colors that row with, and `attributes`
+its other fields, such as a samples table's columns or a subtrack's `group`,
+which never include its name, label or color.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
 
@@ -2747,6 +2749,24 @@ A numeric field cut into intervals: `domain` is the ascending cut points and
 points it is at or past. A value that is not a number belongs to no interval.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+### tooltipTextReader
+
+A hover's first line off each feature, as a display's `tooltip.field` names it:
+the field through `fieldReader`, where one that does not compile, throws on a
+feature or reads nothing degrades to the feature's name, else its id, rather
+than failing the render. An empty field reads nothing. Resolved once per walk;
+the feature displays and the mark display's `tooltip` lane both read through it,
+so one field reads alike in each.
+
+```js
+import { tooltipTextReader } from '@jbrowse/core/util/tooltipText'
+
+// type signature
+(field: string, jexl: JexlInstance | undefined) => (feature: Feature) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/tooltipText.ts)
 
 ### trackCatalog
 

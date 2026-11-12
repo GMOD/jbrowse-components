@@ -148,6 +148,7 @@ const result: LinearMafGetAlignmentDataResult = {
   samples,
   treeNewick,
   samplesCanonical: hasConfiguredSamples,
+  sampleWarnings,
   regionData,
   bytes,
 }

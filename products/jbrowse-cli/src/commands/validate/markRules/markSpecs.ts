@@ -28,7 +28,8 @@ export type PxChannel = Extract<MarkChannel, 'size' | 'strokeWidth'>
  * A lane the worker fills: a channel, a quantitative color's raw values, an
  * ordinal color's keys, the point painter's code for a `shape`, a link's
  * stroke width in the `size` lane the worker names it by, the sequence a far
- * `x2` lies on, or the hit index.
+ * `x2` lies on, the hit index, or the text naming each instance's feature on
+ * the hover's first line.
  */
 export type MarkLane =
   | Exclude<MarkChannel, 'shape' | 'strokeWidth'>
@@ -37,6 +38,7 @@ export type MarkLane =
   | 'glyph'
   | 'x2Ref'
   | 'series'
+  | 'tooltip'
   | 'index'
 
 export interface MarkSpec {
@@ -185,6 +187,11 @@ export function interpolationOf(
   return written !== undefined && drawn?.includes(written)
     ? written
     : drawn?.[0]
+}
+
+/** Whether a mark type answers a hover, and so names the feature it draws on one. */
+export function answersHover(type: MarkType) {
+  return specOf(type).hit !== false
 }
 
 /** Whether a mark type answers a hover through the hit index the worker builds. */

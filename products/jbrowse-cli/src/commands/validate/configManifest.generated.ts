@@ -10001,6 +10001,25 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
+          "name": "tooltip",
+          "type": "MarkTooltipConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "schema": "MarkTooltip",
+          "writes": "members",
+          "shorthand": {
+            "string": "field"
+          }
+        },
+        {
           "name": "filter",
           "type": "FieldPredicateConfigurationSchema[]",
           "subSlots": [
@@ -10983,6 +11002,25 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "Legend",
           "writes": "members"
+        },
+        {
+          "name": "tooltip",
+          "type": "MarkTooltipConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "schema": "MarkTooltip",
+          "writes": "members",
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "filter",
@@ -11979,6 +12017,25 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "Legend",
           "writes": "members"
+        },
+        {
+          "name": "tooltip",
+          "type": "MultiRowTooltipConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "schema": "MultiRowTooltip",
+          "writes": "members",
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "filter",

@@ -1734,6 +1734,13 @@
         "@mui/material"
       ]
     },
+    "@jbrowse/core/ui/Crosshairs": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/ui/DataGridFlexContainer": {
       "package": "@jbrowse/core",
       "names": [
@@ -4039,11 +4046,21 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/tooltipText": {
+      "package": "@jbrowse/core",
+      "names": [
+        "tooltipTextReader"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/tracks": {
       "package": "@jbrowse/core",
       "names": [
         "UNKNOWN",
         "UNSUPPORTED",
+        "adapterAssemblyNames",
+        "adapterNamespaceNames",
+        "adapterSpelling",
         "addAdapterGuesser",
         "addTrackTypeGuesser",
         "allSessionTracks",
@@ -4090,6 +4107,7 @@
         "setBlobMap",
         "setFileInCache",
         "showTrackGeneric",
+        "spellingAmong",
         "storeBlobLocation",
         "storeFileHandleLocation",
         "stripFileExtension",
@@ -5403,6 +5421,7 @@
         "CrossHatches",
         "DEFAULT_RULE_COLOR",
         "DisplayChromeOverlayProvider",
+        "DisplayCrosshairs",
         "DisplayUIProvider",
         "FLOATING_LEGEND_RIGHT_PX",
         "FLOATING_LEGEND_TOP_PX",

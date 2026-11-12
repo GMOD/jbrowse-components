@@ -232,7 +232,7 @@ function SequenceSvgBody({
  */
 async renderSvg(opts: ExportSvgDisplayOptions) {
   const { renderSvg } = await import('./renderSvg.tsx')
-  return renderSvg(self as LinearMafDisplayModel, opts)
+  return renderSvg(self, opts)
 },
 ```
 

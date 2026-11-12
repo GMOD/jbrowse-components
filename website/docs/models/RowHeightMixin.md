@@ -14,9 +14,9 @@ agent-docs/reference/ROW_HEIGHT_AND_FIT.md; this is the middle link of it.
 `rowHeightMenuItem` and `SetRowHeightDialog` in this directory are the one
 menu row and dialog for every row display, and `resolveRowHeight` in core is
 the one place `"fit"` resolves and a non-positive result is floored.
-This mixin sits between them, in place of hand-written copies — the
-multi-row feature painting and the multi-sample variant base — of the slot,
-the getter over it and the setters. MAF is always-fit and composes none of it.
+This mixin sits between them: the slot, the getter over it and the setters,
+for the multi-row feature painting and the multi-sample variant base. MAF is
+always-fit and composes none of it.
 
 **The mixin declares the members this package depends on.**
 `rowHeightMenu` restates `rowStep` / `setRowHeight` / `setFitToHeight` as

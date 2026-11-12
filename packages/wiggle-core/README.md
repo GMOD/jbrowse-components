@@ -25,19 +25,6 @@ it has.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
-### computeAutoscaleDomain
-
-The score domain of the visible feature arrays, following `quantile` as
-`encoding.y.scale.fenceQuantile` says, its outliers fenced for an axis that
-reaches 0 under `zero`.
-
-```js
-// type signature
-(quantile: number, field: "maxScore" | "minScore" | "score", visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], zero: boolean, extent?: "min-max" | "none") => [...] | undefined
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
-
 ### getEffectiveScores
 
 The per-feature array a summary field names: `minScore` and `maxScore` the bins'
