@@ -49,7 +49,8 @@ genes under each rule. Clicking it opens the same three modes.
 displayed regions with that gene's exons side by side. A window-size setting
 keeps some flanking sequence around each splice boundary. Right-clicking a
 transcript offers that isoform as well as the whole gene (exons unioned), and
-the dialog's transcript dropdown reaches an isoform that isn't drawn.
+the dialog's transcript dropdown reaches an isoform that isn't drawn. Picking
+one isoform opens the gene to all of them.
 
 Each exon after the first is labeled with its first coordinate on the ruler. To
 bring the introns back, click **Undo** on the notice, or click the chromosome
