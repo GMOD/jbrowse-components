@@ -1,7 +1,3 @@
-// re-exported rather than dropped: the maf and canvas plugins import both from
-// this package, and a plugin's imports are ABI
-export { parseNewick } from '@gmod/newick'
-export type { NewickNode } from '@gmod/newick'
 export type { TreeSpatialIndex } from './spatialIndex.ts'
 export { default as TreeSidebar } from './TreeSidebar.tsx'
 export { DisplayCrosshairs } from './DisplayCrosshairs.tsx'
@@ -79,27 +75,16 @@ export type {
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 export { applyClusterRun } from './applyClusterRun.ts'
-export { rotateClusterRun } from './rotateClusterRun.ts'
-export { rotateNewickByDomain } from './rotateNewickByDomain.ts'
 export { renameNewickLeaves, writeNewick } from './writeNewick.ts'
 export type { ClusterRunModel } from './applyClusterRun.ts'
 export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
-export { clusterProgressStatus } from './clusterProgressStatus.ts'
 export { MIN_CLUSTER_ROWS, clusterMatrix } from './clusterMatrix.ts'
 // `ClusterMatrix` is part of the dialog's public shape (`fetchMatrix` returns
 // one), so it has to be nameable by the plugins that implement it.
 export type { ClusterMatrix, NumericRow } from './clusterMatrix.ts'
 export type { RpcMethodCaller } from './rpcMethodCaller.ts'
-export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
-export { default as ClusterProgress } from './ClusterProgress.tsx'
-export { useClusterRun } from './useClusterRun.ts'
 export { TreeSidebarMixin, orderOver } from './TreeSidebarMixin.ts'
 export type { ClusterRun } from './TreeSidebarMixin.ts'
-// Moved to display-kit on 2026-08-27 — right-click state is a display concern
-// every plugin has, not a tree one. Re-exported so nothing importing the old
-// name breaks; new code names the display-kit subpath.
-export { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
-export { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 export {
   TREE_SIDEBAR_LABEL,
   clearRowFocusMenuItems,

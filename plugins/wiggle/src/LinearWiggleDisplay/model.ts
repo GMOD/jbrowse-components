@@ -14,6 +14,7 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
+import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin, { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
@@ -27,7 +28,6 @@ import {
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  ContextMenuMixin,
   TreeSidebarMixin,
   resetRowOrderMenuItems,
   rowOrderMenuItems,

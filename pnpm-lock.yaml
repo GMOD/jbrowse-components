@@ -1683,6 +1683,9 @@ importers:
       '@gmod/bgzf-filehandle':
         specifier: ^6.8.4
         version: 6.8.4
+      '@gmod/newick':
+        specifier: ^1.1.0
+        version: 1.1.0
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core

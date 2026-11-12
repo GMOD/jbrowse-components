@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@gmod/bgzf-filehandle": "^6.8.4",
+    "@gmod/newick": "^1.1.0",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",

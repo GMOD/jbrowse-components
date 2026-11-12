@@ -33,6 +33,7 @@ import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
+import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
@@ -48,7 +49,6 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import { drawnRowHeightPx } from '@jbrowse/render-core/shaders/rowRect'
 import {
-  ContextMenuMixin,
   TreeSidebarMixin,
   treeOfLeaves,
   resetRowOrderMenuItems,

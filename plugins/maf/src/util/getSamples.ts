@@ -1,15 +1,16 @@
+import { parseNewick } from '@gmod/newick'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
-import { parseNewick, writeNewick } from '@jbrowse/tree-sidebar'
+import { writeNewick } from '@jbrowse/tree-sidebar'
 import { pruneNewickToLeaves } from '@jbrowse/tree-sidebar/clusterUtils'
 
 import type { MafSource } from '../types.ts'
 import type { MafAdapterConfigModel } from './mafAdapterConfigSchemaFields.ts'
+import type { NewickNode } from '@gmod/newick'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation, UriLocation } from '@jbrowse/core/util'
 import type { SamplesTsvRow } from '@jbrowse/core/util/samplesTsv'
-import type { NewickNode } from '@jbrowse/tree-sidebar'
 
 export interface SampleConfigEntry {
   id: string

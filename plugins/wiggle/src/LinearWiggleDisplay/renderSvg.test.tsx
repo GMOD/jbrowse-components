@@ -14,8 +14,8 @@ import { renderSvg } from './renderSvg.tsx'
 import type { RenderSvgModel } from './renderSvg.tsx'
 import type {
   ClusterHierarchyNode,
+  ClusterNodeData,
   HierarchyNode,
-  NewickNode,
   SvgSidebarProps,
 } from '@jbrowse/tree-sidebar'
 import type React from 'react'
@@ -106,7 +106,7 @@ function makeRegionData() {
 // A two-leaf dendrogram positioned by the real layout, so SvgTreePath exercises
 // the same geometry the on-screen tree does.
 function makeHierarchy(): ClusterHierarchyNode {
-  const leaf = (name: string): HierarchyNode<NewickNode> => ({
+  const leaf = (name: string): HierarchyNode<ClusterNodeData> => ({
     data: { name },
     children: null,
     parent: null,
@@ -115,7 +115,7 @@ function makeHierarchy(): ClusterHierarchyNode {
   })
   const a = leaf('a')
   const b = leaf('b')
-  const root: HierarchyNode<NewickNode> = {
+  const root: HierarchyNode<ClusterNodeData> = {
     data: { name: '' },
     children: [a, b],
     parent: null,

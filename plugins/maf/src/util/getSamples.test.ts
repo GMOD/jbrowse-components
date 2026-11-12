@@ -1,4 +1,4 @@
-import { parseNewick } from '@jbrowse/tree-sidebar'
+import { parseNewick } from '@gmod/newick'
 
 import {
   collectLeafNames,
@@ -7,7 +7,7 @@ import {
   resolveSamplesFromTree,
 } from './getSamples.ts'
 
-import type { NewickNode } from '@jbrowse/tree-sidebar'
+import type { NewickNode } from '@gmod/newick'
 
 const noTree = undefined
 
