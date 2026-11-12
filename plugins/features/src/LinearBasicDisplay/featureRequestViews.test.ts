@@ -1,6 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { setConf } from '@jbrowse/core/configuration'
+import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { linearGenomeViewStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import { isObservable } from 'mobx'
 
 import {
@@ -13,7 +15,11 @@ import {
   GENE_GLYPH_DEFAULTS,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { createFeatureStaticHost } from '../shared/featureStaticHost.ts'
+import baseConfigSchemaFactory from './baseConfigSchema.ts'
+import baseStateModelFactory from './baseModel.ts'
 import { createTestEnvironment } from './testEnv.ts'
+
+import type { LinearFeatureBaseDisplayModel } from './baseModel.ts'
 
 const UTR_COLOR = "jexl:get(feature,'strand')>0?'red':'blue'"
 const COLOR = "jexl:get(feature,'type')=='gene'?'green':'purple'"
@@ -131,5 +137,22 @@ describe.each([
       expect(observablesIn(settings)).toEqual([])
       expect(structuredClone(settings)).toEqual(settings)
     }
+  })
+})
+
+test('the base display, declaring no gene slots, sends the gene-glyph defaults', () => {
+  const { display } =
+    createDisplayTestEnvironment<LinearFeatureBaseDisplayModel>({
+      trackType: 'FeatureTrack',
+      adapter: { name: 'TestAdapter', configOnly: true },
+      displayName: 'LinearFeatureBaseDisplay',
+      configSchema: pm => baseConfigSchemaFactory(pm),
+      stateModel: (_pm, schema) => baseStateModelFactory(schema),
+      viewModel: linearGenomeViewStateModelFactory,
+      viewRegionEnd: 10_000,
+    }).createDisplay()
+  expect(display.renderSettings).toEqual({
+    ...DEFAULTS,
+    subfeatureLabels: 'none',
   })
 })
