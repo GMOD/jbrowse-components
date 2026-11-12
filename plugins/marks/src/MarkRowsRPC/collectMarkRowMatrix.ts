@@ -4,14 +4,17 @@ import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { layerTables } from '@jbrowse/core/util/featureTransforms'
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import {
-  MAX_CATEGORICAL_VALUES,
   binSpan,
-  categoryColumnWidth,
   columnMeans,
   columnSegments,
+} from '@jbrowse/tree-sidebar/binColumns'
+
+import {
+  MAX_CATEGORICAL_VALUES,
+  categoryColumnWidth,
   coverSpan,
   markGaps,
-} from '@jbrowse/tree-sidebar/binColumns'
+} from './oneHotColumns.ts'
 
 import type { MarkRowMatrixArgs } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

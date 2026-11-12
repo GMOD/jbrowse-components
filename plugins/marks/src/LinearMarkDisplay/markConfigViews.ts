@@ -12,11 +12,6 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import {
-  ROW_GROUP_FIELD,
-  compileRowGroups,
-  tagRowGroups,
-} from '@jbrowse/tree-sidebar/rowGroups'
 
 import { paintedColorNode, saysColor } from './inheritedColor.ts'
 import { markColorsOf } from './markColor.ts'
@@ -32,6 +27,7 @@ import {
 } from './markRequest.ts'
 import { markSizePx, pxChannelOf } from './markSpecs.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
+import { ROW_GROUP_FIELD, compileRowGroups, tagRowGroups } from './rowGroups.ts'
 
 import type {
   LinearMarkDisplayConfig,
@@ -41,6 +37,7 @@ import type {
 } from './configSchema.ts'
 import type { ColorSource, HiddenCategory } from './markColor.ts'
 import type { MarkEntry, TextMarkEntry } from './markList.ts'
+import type { RowGroup } from './rowGroups.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
@@ -52,7 +49,6 @@ import type {
 import type { RowStep } from '@jbrowse/core/util/resolveRowHeight'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { RowBanding, RowSource } from '@jbrowse/tree-sidebar'
-import type { RowGroup } from '@jbrowse/tree-sidebar/rowGroups'
 
 /**
  * The row attributes a config gives its rows: `group` where `rows.groups`

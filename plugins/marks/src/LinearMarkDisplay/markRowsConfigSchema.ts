@@ -1,7 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { rowsWithStepConfigSchema } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
+
+import { rowGroupConfigSchema } from './rowGroupConfigSchema.ts'
 
 /**
  * #config MarkRows

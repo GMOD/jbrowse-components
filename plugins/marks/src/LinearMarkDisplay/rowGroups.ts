@@ -1,4 +1,4 @@
-import type { RowSource } from './types.ts'
+import type { RowSource } from '@jbrowse/tree-sidebar'
 
 /** The row attribute a `rows.groups` entry writes. */
 export const ROW_GROUP_FIELD = 'group'

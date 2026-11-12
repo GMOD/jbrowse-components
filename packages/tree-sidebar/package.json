@@ -28,8 +28,6 @@
     "./clusterUtils": "./src/clusterUtils.ts",
     "./narrowRows": "./src/narrowRows.ts",
     "./rowColorScale": "./src/rowColorScale.ts",
-    "./rowGroupConfigSchema": "./src/rowGroupConfigSchema.ts",
-    "./rowGroups": "./src/rowGroups.ts",
     "./RowHeightMixin": "./src/rowHeight/RowHeightMixin.ts",
     "./RowArrangementDialog": "./src/rowArrangementDialog/RowArrangementDialog.tsx",
     "./treeSidebarRowViews": "./src/treeSidebarRowViews.ts"
@@ -77,8 +75,6 @@
       "./clusterUtils": "./esm/clusterUtils.js",
       "./narrowRows": "./esm/narrowRows.js",
       "./rowColorScale": "./esm/rowColorScale.js",
-      "./rowGroupConfigSchema": "./esm/rowGroupConfigSchema.js",
-      "./rowGroups": "./esm/rowGroups.js",
       "./RowHeightMixin": "./esm/rowHeight/RowHeightMixin.js",
       "./RowArrangementDialog": "./esm/rowArrangementDialog/RowArrangementDialog.js",
       "./treeSidebarRowViews": "./esm/treeSidebarRowViews.js"
