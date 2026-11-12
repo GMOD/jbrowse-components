@@ -722,6 +722,8 @@ exports[`every registered schema slot default 1`] = `
     "rows.step": "number = "fit"",
     "rows.tree.newick": "maybeString = undefined",
     "rows.tree.provenance": "maybeFrozen = undefined",
+    "tooltip.field": "featureField = """,
+    "tooltip.show": "boolean = true",
   },
   "display: LinearMarkDisplay": {
     "encoding.color.field": "featureField = """,
@@ -777,6 +779,8 @@ exports[`every registered schema slot default 1`] = `
     "rows.step": "number = "fit"",
     "rows.tree.newick": "maybeString = undefined",
     "rows.tree.provenance": "maybeFrozen = undefined",
+    "tooltip.field": "featureField = """,
+    "tooltip.show": "boolean = true",
   },
   "display: LinearMultiRowFeatureDisplay": {
     "encoding.color.field": "featureField = """,
@@ -832,6 +836,8 @@ exports[`every registered schema slot default 1`] = `
     "rows.step": "number = "fit"",
     "rows.tree.newick": "maybeString = undefined",
     "rows.tree.provenance": "maybeFrozen = undefined",
+    "tooltip.field": "featureField = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
+    "tooltip.show": "boolean = true",
   },
   "display: LinearReferenceSequenceDisplay": {
     "fetchSizeLimit": "number = 1000000",
