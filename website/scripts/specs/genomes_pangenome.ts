@@ -16,7 +16,7 @@ export const PORTAL_CONFIG =
 const MHC_WINDOW = { refName: 'chr6', start: 32510000, end: 32600000 }
 
 const FORMS_MAP = '.ui-lanes'
-const OPEN_IN_JBROWSE = 'a.ui-open'
+const OPEN_IN_JBROWSE = '.ui-actions a.ui-btn'
 
 // The graph launch after the tutorial's C4 step hides the variant matrix.
 export function portalGraphLaunch({
