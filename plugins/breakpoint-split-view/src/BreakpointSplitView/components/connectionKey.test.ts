@@ -1,3 +1,5 @@
+import { resolvePalette } from '@jbrowse/core/ui/palette'
+
 import { connectedVariantJunctions } from './connectedJunctions.ts'
 import {
   drawnConnectionKey,
@@ -5,13 +7,12 @@ import {
 } from './overlayUtils.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 jest.mock('./connectedJunctions.ts', () => ({
   connectedVariantJunctions: jest.fn(() => []),
 }))
 
-const theme = { mode: 'light' } as JBrowsePalette
+const theme = resolvePalette()
 const RED = '#ff0000'
 const BLUE = '#0000ff'
 
@@ -50,6 +51,16 @@ const drawn = new Map([
   ],
 ])
 
+function drawEveryCall() {
+  jest
+    .mocked(connectedVariantJunctions)
+    .mockImplementation(({ match }) =>
+      match.kind === 'variant'
+        ? ([{}] as ReturnType<typeof connectedVariantJunctions>)
+        : [],
+    )
+}
+
 afterEach(() => {
   jest.mocked(connectedVariantJunctions).mockReturnValue([])
 })
@@ -68,13 +79,7 @@ test('reads alone make one section, with no heading row', () => {
 })
 
 test('a drawn call puts Calls before Reads, each under a heading', () => {
-  jest
-    .mocked(connectedVariantJunctions)
-    .mockImplementation(({ match }) =>
-      match.kind === 'variant'
-        ? ([{}] as ReturnType<typeof connectedVariantJunctions>)
-        : [],
-    )
+  drawEveryCall()
   const model = fakeModel({ drawn })
   const trackIds = ['reads', 'calls']
   expect(
@@ -82,7 +87,7 @@ test('a drawn call puts Calls before Reads, each under a heading', () => {
   ).toEqual(['Calls', 'Reads'])
   expect(drawnConnectionKey(model, theme, trackIds)).toEqual([
     { key: 'Calls', label: 'Calls', color: undefined },
-    { key: 'Variant call', label: 'Variant call', color: '#2e7d32' },
+    { key: 'Variant call', label: 'Variant call', color: theme.variantCall },
     { key: 'Reads', label: 'Reads', color: undefined },
     expect.objectContaining({ key: RED, label: 'Read pair / LR' }),
     expect.objectContaining({ key: BLUE, label: 'Split alignment' }),
@@ -90,6 +95,9 @@ test('a drawn call puts Calls before Reads, each under a heading', () => {
 })
 
 test('a track too zoomed out to draw adds nothing to the key', () => {
-  const model = fakeModel({ drawn, tooLarge: new Set(['reads']) })
-  expect(drawnConnectionKeySections(model, theme, ['reads'])).toEqual([])
+  drawEveryCall()
+  const model = fakeModel({ drawn, tooLarge: new Set(['reads', 'calls']) })
+  expect(drawnConnectionKeySections(model, theme, ['reads', 'calls'])).toEqual(
+    [],
+  )
 })

@@ -641,6 +641,8 @@ export interface StringColors {
   featureDescription: string
   /** Intron lines, strand chevrons and strand arrows in feature tracks */
   featureConnector: string
+  /** A variant call's junction line in the breakpoint split view */
+  variantCall: string
 }
 
 /** #color theme-colors | Stop codon | Stop codon in gene/CDS tracks */
@@ -705,6 +707,8 @@ const modificationRev = '#c8dcc8'
 const mutedSnpBase = '#888'
 // MAF bridged-row fill where the species has no alignment (à la UCSC)
 const missingData = '#ffffcc'
+/** #color theme-colors | Variant call | A variant call's junction line in the breakpoint split view */
+const variantCall = green[800]
 
 const lightStringColors: StringColors = {
   stopCodon,
@@ -746,6 +750,7 @@ const lightStringColors: StringColors = {
   // blue accent for feature description labels (e.g. gene descriptions)
   featureDescription: 'blue',
   featureConnector: 'rgba(0, 0, 0, 0.6)',
+  variantCall,
 }
 
 // Dark overrides. White-on-dark reads far stronger than dark-on-white at the
@@ -784,6 +789,8 @@ const darkStringColors: Partial<StringColors> = {
   // `colorPairLRDark`'s 71.8. #d4d4d4 glared like the #e4e4e4 it replaced, and
   // #bcbcbc (76.2) vanished into the reads on the same captures
   readMateOverlap: '#c8c8c8',
+  // the deep green sinks into the dark ground
+  variantCall: green[400],
 }
 
 const lightAlignmentFill: AlignmentFill = {

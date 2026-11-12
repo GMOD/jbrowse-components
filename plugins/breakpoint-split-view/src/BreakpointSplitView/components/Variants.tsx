@@ -9,7 +9,6 @@ import {
   OverlayPaths,
   buildJunctionPath,
   buildPairTooltip,
-  variantJunctionColor,
   variantWidgetOpener,
 } from './overlayUtils.tsx'
 
@@ -37,7 +36,7 @@ const Variants = observer(function Variants(props: OverlayProps) {
     <OverlayPaths
       {...props}
       pathTestId="r2"
-      stroke={variantJunctionColor(palette)}
+      stroke={palette.variantCall}
       strokeWidth={5}
       hoverStrokeWidth={10}
       render={variantPaths}

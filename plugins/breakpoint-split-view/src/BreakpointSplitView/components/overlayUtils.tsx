@@ -111,10 +111,6 @@ export interface JunctionPoint {
   reversed: boolean
 }
 
-// The call's green, lighter on a dark ground where the deep one sinks into it
-export function variantJunctionColor({ mode }: JBrowsePalette) {
-  return mode === 'dark' ? '#66bb6a' : '#2e7d32'
-}
 export const VARIANT_JUNCTION_LABEL = 'Variant call'
 
 // A variant call's junction: a foot over the arm each end keeps, joined by a
@@ -309,18 +305,18 @@ export function drawnConnectionKeySections(
   theme: JBrowsePalette,
   trackIds = model.overlayTracks.map(t => String(t.configuration.trackId)),
 ) {
+  const drawnTrackIds = trackIds.filter(
+    trackId =>
+      !model.getMatchedTracks(trackId).some(t => t.displays[0]?.regionTooLarge),
+  )
   const styled: StyledConnection[] = []
-  for (const trackId of trackIds) {
-    if (
-      !model.getMatchedTracks(trackId).some(t => t.displays[0]?.regionTooLarge)
-    ) {
-      const styleOf = model.connectionStylerIn(trackId, theme)
-      for (const drawn of model.drawnConnectionsByTrack.get(trackId) ?? []) {
-        styled.push({ kind: drawn.kind, ...styleOf(drawn) })
-      }
+  for (const trackId of drawnTrackIds) {
+    const styleOf = model.connectionStylerIn(trackId, theme)
+    for (const drawn of model.drawnConnectionsByTrack.get(trackId) ?? []) {
+      styled.push({ kind: drawn.kind, ...styleOf(drawn) })
     }
   }
-  const drawsVariantCall = trackIds.some(trackId => {
+  const drawsVariantCall = drawnTrackIds.some(trackId => {
     const match = model.overlayMatches.get(trackId)
     return (
       !!match &&
@@ -339,7 +335,7 @@ export function drawnConnectionKeySections(
         ? [
             {
               key: VARIANT_JUNCTION_LABEL,
-              color: variantJunctionColor(theme),
+              color: theme.variantCall,
               label: VARIANT_JUNCTION_LABEL,
             },
           ]
