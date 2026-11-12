@@ -4,8 +4,9 @@
 // its middle — and the count of slice gaps before it. Its angle is affine in
 // the two, so a zoom writes `radiansPerBp` and `gapRadians`, a rotation writes
 // `offsetRadians`, and neither uploads a buffer.
-//! js-export: footRadians, chordTurn, ribbonReturnTurn, polarPoint, turnControlPoint, chordControlPoint, ribbonEndPad, widenedSpan, chordIsSpeck, ribbonThinFade, focusAlpha
+//! js-export: footRadians, chordTurn, ribbonReturnTurn, polarPoint, turnControlPoint, chordControlPoint, widenedSpan, chordIsSpeck, ribbonThinFade, focusAlpha
 //! export-consts: MIN_RIBBON_END_PX, DIMMED_OPACITY
+//! js-skip: ribbonEndPad — reached as a private helper inside the generated widenedSpan, which is the only question a painter asks of it
 //! oracle-skip: chordControlPoint — the probe's ends sit hundreds of radians apart, where chordTurn's float32 range reduction leaves 1e-5 rad on the turn and the radius scales it past the tolerance; a stage's angles stay within a few turns, and turnControlPoint and chordTurn, which it composes, are each refereed
 module chordStage;
 

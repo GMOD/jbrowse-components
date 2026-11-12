@@ -15,7 +15,7 @@ in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
 Scanned 47 shaders with entry points. 171 functions
-are inside the emitter's subset, of which **139 are exported**.
+are inside the emitter's subset, of which **138 are exported**.
 
 ## Candidates
 
@@ -58,6 +58,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `pxToClipLen` | `(f32, f32) -> f32` | the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert |
 | `pxToClipX` | `(f32, f32) -> f32` | the inverse of clipXToPx, same reason |
 | `quadLocal` | `(u32) -> vec2f` | maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect |
+| `ribbonEndPad` | `(f32, f32, f32, f32) -> f32` | reached as a private helper inside the generated widenedSpan, which is the only question a painter asks of it |
 | `rowYPxToNorm` | `(f32, f32, f32) -> f32` | a GPU line reads its gradient position back off a y; Canvas2D and the SVG export stroke a gradient line as threshold bands placed by score (rampAsBands), so nothing there maps a y back |
 | `sBlendDeriv` | `(f32) -> f32` | the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative |
 | `snapBoxCenterY` | `(f32, f32, f32) -> f32` | clip-space wrapper over the exported snapBoxCenterYPx |
@@ -140,7 +141,6 @@ is no longer shared with anything.
 | `pinchedParam` | tests only — `ribbonBand.test.ts` |
 | `polarPoint` | tests only — `ribbonBand.test.ts` |
 | `rampScaleType` | tests only — `markRamp.test.ts` |
-| `ribbonEndPad` | nothing |
 | `slabCoverage` | tests only — `barCutCoverage.test.ts` |
 | `slabVertexYPx` | tests only — `barCutCoverage.test.ts` |
 | `strokeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `strokeCoverage.test.ts` |
