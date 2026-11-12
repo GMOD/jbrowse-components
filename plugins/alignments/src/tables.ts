@@ -1085,13 +1085,11 @@ function resolvedConfig(
  */
 function readConnectionTables(
   host: AlignmentsTablesHostModel,
-  dataByGroup: ReadonlyMap<string, ReadonlyMap<number, WorkerPileupData>>,
-  regionInfos: RegionInfo[],
   colors: ReturnType<typeof colorReads>,
   slotColor: string[],
   connectorSlots: ReadonlySet<number>,
 ) {
-  const result = host.arcsResult
+  const { arcsResult: result, regionInfos } = host
   const stroke = host.readConnectionsStrokeScale
   const widthOf = (support: number) =>
     linkStrokeWidthPx(
@@ -1107,7 +1105,7 @@ function readConnectionTables(
     )
   const paint = { slotColor, widthOf }
   const bySection = new Map(
-    [...dataByGroup.keys()].map(key => [
+    [...host.rawDataByGroup.keys()].map(key => [
       key,
       new Map(
         regionInfos.map((window, i) => [
@@ -1704,8 +1702,6 @@ function laidOutTables(
   const slotColor = buildArcColorPalette(colors.palette).map(normalizedRgbToHex)
   const connections = readConnectionTables(
     host,
-    sectionData,
-    regionInfos,
     colors,
     slotColor,
     new Set(
