@@ -240,6 +240,57 @@ test('a ring samples its strip only while the display has a painted canvas', () 
   dispose()
 })
 
+// A fresh image per cell made the GPU re-upload, and Canvas2D re-read, every
+// inner ring's strip whenever an outer ring's height moved its annulus.
+test("a ring moved by another ring's height keeps its strip image until its own strip repaints", () => {
+  const outer = observable(display('a', 50))
+  const inner = observable(display('b', 50))
+  const host = RingHost.create({})
+  host.setView(
+    observable({
+      initialized: true,
+      staticSlices: slices,
+      radiusPx: 500,
+      circumferencePx: TWO_PI * 500,
+      bpPerPx: 0.1,
+      ringDisplays: [outer, inner],
+    }) as unknown as RingHostView,
+  )
+  for (const [id, ring] of [
+    ['a', outer],
+    ['b', inner],
+  ] as const) {
+    const strip = document.createElement('div')
+    strip.append(document.createElement('canvas'))
+    host.setStripElement(id, strip)
+    runInAction(() => {
+      ring.paintCount = 1
+      ring.canvasDrawn = true
+    })
+  }
+  const cells: RingCell[] = []
+  const dispose = autorun(() => {
+    const cell = host.ringCells[1]
+    if (cell) {
+      cells.push(cell)
+    }
+  })
+  runInAction(() => {
+    outer.height = 30
+  })
+  const [before, moved] = cells.slice(-2)
+  expect(moved).not.toBe(before)
+  expect(moved!.channels.outerPx[0]).toBe(before!.channels.outerPx[0]! + 20)
+  expect(moved!.strip).toBe(before!.strip)
+
+  runInAction(() => {
+    inner.paintCount = 2
+  })
+  expect(cells.at(-1)!.strip).not.toBe(moved!.strip)
+  expect(cells.at(-1)!.strip.image).toBe(moved!.strip.image)
+  dispose()
+})
+
 // the strip is still drawn at the display's height, so a point on a shrunk
 // ring unwarps to the strip row the warp put there
 test('a point on a shrunk ring unwarps to its strip row', () => {

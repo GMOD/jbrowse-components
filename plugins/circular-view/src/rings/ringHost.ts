@@ -22,6 +22,7 @@ import type { Region } from '@jbrowse/core/util'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { MarkImage } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { IComputedValue } from 'mobx'
 import type { ComponentType } from 'react'
@@ -247,6 +248,27 @@ function canvasBox(strip: HTMLElement, canvas: HTMLCanvasElement) {
     : { top: 0, height: Infinity }
 }
 
+const stripImages = new WeakMap<
+  HTMLCanvasElement,
+  { paintCount: number; image: MarkImage }
+>()
+
+/**
+ * The strip canvas as one `MarkImage` per paint: a moved annulus hands the
+ * same image back, so neither backend copies a strip that did not repaint.
+ */
+function stripImage(canvas: HTMLCanvasElement, paintCount: number) {
+  const held = stripImages.get(canvas)
+  const image =
+    held?.paintCount === paintCount &&
+    held.image.width === canvas.width &&
+    held.image.height === canvas.height
+      ? held.image
+      : { image: canvas, width: canvas.width, height: canvas.height }
+  stripImages.set(canvas, { paintCount, image })
+  return image
+}
+
 /**
  * A ring's upload payload: its annulus, trimmed to where the display's canvas
  * sits in its strip, and the strip canvas it samples.
@@ -271,7 +293,7 @@ function stripCell(
       outerPx: new Float32Array([outerPx]),
       count: 1,
     },
-    strip: { image: canvas, width: canvas.width, height: canvas.height },
+    strip: stripImage(canvas, display.paintCount),
   }
 }
 
@@ -284,9 +306,7 @@ function sameCell(a: RingCell | undefined, b: RingCell | undefined) {
       a.index === b.index &&
       a.display === b.display &&
       a.paintCount === b.paintCount &&
-      a.strip.image === b.strip.image &&
-      a.strip.width === b.strip.width &&
-      a.strip.height === b.strip.height &&
+      a.strip === b.strip &&
       a.channels.innerPx[0] === b.channels.innerPx[0] &&
       a.channels.outerPx[0] === b.channels.outerPx[0])
   )
