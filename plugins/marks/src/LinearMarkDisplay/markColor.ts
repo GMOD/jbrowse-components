@@ -19,7 +19,7 @@ import {
   dealKeyColors,
 } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
+import { IDENTITY_SCALE, identityFieldOf } from '@jbrowse/core/util/colorScale'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
   DEFAULT_MARK_COLOR,
@@ -152,9 +152,10 @@ function colorSourceOf(
     hidden.filter(h => h.field === field).map(h => h.value)
   if (setting.scale.type === IDENTITY_SCALE && setting.value === undefined) {
     const colors = hiddenOf('').map(value => cssColorToABGR(value))
+    const field = identityFieldOf(setting)
     return {
       kind: 'identity',
-      ...(setting.field ? { field: setting.field } : {}),
+      ...(field === undefined ? {} : { field }),
       domain: [...setting.scale.domain],
       ...(colors.length > 0 ? { hidden: colors } : {}),
     }
