@@ -110,6 +110,18 @@ export function createDisplayWithSession({
       slots: { attributeColumns: { type: 'stringArray', defaultValue: [] } },
     },
     Gff3TabixAdapter: { slots: {} },
+    PAFAdapter: {
+      slots: {
+        pafLocation: {
+          type: 'fileLocation',
+          defaultValue: {
+            uri: '/path/to/file.paf',
+            locationType: 'UriLocation',
+          },
+        },
+        assemblyNames: { type: 'stringArray', defaultValue: [] },
+      },
+    },
     PairwiseIndexedPAFAdapter: {
       slots: {
         coarseBpPerPxThreshold: { type: 'number', defaultValue: 10000 },
