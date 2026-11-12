@@ -21,7 +21,6 @@ export {
 export { StaleTreeHint } from './StaleTreeHint.tsx'
 export { RowFocusHint } from './RowFocusHint.tsx'
 export { SidebarHintChip } from './SidebarHintChip.tsx'
-export { focusRows } from './focusRows.ts'
 export {
   clusterProvenanceFromRegions,
   describeClusterProvenance,
@@ -42,7 +41,6 @@ export type { RowSortSpec } from './rowSortAutorun.ts'
 export {
   loadedRegionIndexAt,
   orderRowsByValueAt,
-  regionCoversColumn,
   sortRowsAtColumn,
 } from './rowSortColumn.ts'
 export type { LoadedRegionSpan } from './rowSortColumn.ts'
@@ -57,13 +55,13 @@ export {
 } from './clusterUtils.ts'
 export { narrowRows } from './narrowRows.ts'
 export type { RowNarrowing } from './narrowRows.ts'
-export { ROW_COLOR_SCALE_ID, rowFieldValue } from './rowColorScale.ts'
+export { ROW_COLOR_SCALE_ID } from './rowColorScale.ts'
 export type {
   RowColorKeyInputs,
   RowColorScaleSetting,
   RowColorSetting,
 } from './rowColorScale.ts'
-export { rowColorChoiceLabel, rowColorSettingOf } from './rowColorChoice.ts'
+export { rowColorChoiceLabel } from './rowColorChoice.ts'
 export type { RowColorSnapshot } from './rowColorChoice.ts'
 export type {
   RowAlias,
@@ -84,9 +82,6 @@ export type { RpcMethodCaller } from './rpcMethodCaller.ts'
 export { TreeSidebarMixin, orderOver } from './TreeSidebarMixin.ts'
 export type { ClusterRun } from './TreeSidebarMixin.ts'
 export {
-  TREE_SIDEBAR_LABEL,
-  clearRowFocusMenuItems,
-  clusterProvenanceMenuItems,
   clusteringMenuItem,
   resetRowOrderMenuItems,
   showRowLabelsMenuItem,
@@ -94,17 +89,13 @@ export {
   sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
 } from './treeMenuItems.ts'
-export {
-  rowArrangementMenuItem,
-  rowOrderMenuItems,
-} from './rowArrangementMenuItem.ts'
+export { rowOrderMenuItems } from './rowArrangementMenuItem.ts'
 export { RowHeightMixin } from './rowHeight/RowHeightMixin.ts'
 export { rowHeightMenuItem } from './rowHeight/rowHeightMenu.ts'
 export type {
   RowHeightModel,
   RowHeightPreset,
 } from './rowHeight/rowHeightMenu.ts'
-export { extraColumns, moveDown, moveUp } from './sourcesGridUtils.ts'
 export type {
   RowArrangementDialogProps,
   RowArrangementModel,

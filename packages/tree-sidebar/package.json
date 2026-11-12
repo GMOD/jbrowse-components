@@ -27,14 +27,11 @@
     "./clusterMatrix": "./src/clusterMatrix.ts",
     "./clusterUtils": "./src/clusterUtils.ts",
     "./narrowRows": "./src/narrowRows.ts",
-    "./rowColorChoice": "./src/rowColorChoice.ts",
     "./rowColorScale": "./src/rowColorScale.ts",
     "./rowGroupConfigSchema": "./src/rowGroupConfigSchema.ts",
     "./rowGroups": "./src/rowGroups.ts",
     "./RowHeightMixin": "./src/rowHeight/RowHeightMixin.ts",
-    "./rowSortColumn": "./src/rowSortColumn.ts",
     "./RowArrangementDialog": "./src/rowArrangementDialog/RowArrangementDialog.tsx",
-    "./treeSidebarGeometry": "./src/treeSidebarGeometry.ts",
     "./treeSidebarRowViews": "./src/treeSidebarRowViews.ts"
   },
   "files": [
@@ -79,14 +76,11 @@
       "./clusterMatrix": "./esm/clusterMatrix.js",
       "./clusterUtils": "./esm/clusterUtils.js",
       "./narrowRows": "./esm/narrowRows.js",
-      "./rowColorChoice": "./esm/rowColorChoice.js",
       "./rowColorScale": "./esm/rowColorScale.js",
       "./rowGroupConfigSchema": "./esm/rowGroupConfigSchema.js",
       "./rowGroups": "./esm/rowGroups.js",
       "./RowHeightMixin": "./esm/rowHeight/RowHeightMixin.js",
-      "./rowSortColumn": "./esm/rowSortColumn.js",
       "./RowArrangementDialog": "./esm/rowArrangementDialog/RowArrangementDialog.js",
-      "./treeSidebarGeometry": "./esm/treeSidebarGeometry.js",
       "./treeSidebarRowViews": "./esm/treeSidebarRowViews.js"
     }
   },
