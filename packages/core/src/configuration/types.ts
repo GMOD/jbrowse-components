@@ -12,6 +12,7 @@ import type {
   IArrayType,
   IOptionalIType,
   ISimpleType,
+  ISnapshotProcessor,
   IStateTreeNode,
   IType,
   Instance,
@@ -110,6 +111,7 @@ type ConfigNodeValue<DEF> =
 type ConfigNodeLeafValue<DEF> = DEF extends
   | IArrayType<any>
   | IOptionalIType<IArrayType<any>, any>
+  | ISnapshotProcessor<IArrayType<any>, any, any>
   ? DEF['Type']
   : DEF extends string
     ? string
