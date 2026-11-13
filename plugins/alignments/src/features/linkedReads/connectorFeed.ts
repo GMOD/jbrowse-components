@@ -124,6 +124,33 @@ function placeEnd(
 }
 
 /**
+ * Where a pair's two ends place on the displayed regions (`connectorInstance`'s
+ * `region`, `x`, `x2Region` and `x2`), undefined where an end's region is not
+ * displayed.
+ */
+export function connectorEnds(
+  {
+    e1,
+    e2,
+    c,
+  }: {
+    e1: { displayedRegionIndex: number }
+    e2: { displayedRegionIndex: number }
+    c: { bp1: number; bp2: number }
+  },
+  displayedRegions: readonly DisplayedRegion[],
+) {
+  const r1 = displayedRegions[e1.displayedRegionIndex]
+  const r2 = displayedRegions[e2.displayedRegionIndex]
+  if (r1 && r2) {
+    const own = placeEnd(displayedRegions, e1.displayedRegionIndex, r1, c.bp1)
+    const far = placeEnd(displayedRegions, e2.displayedRegionIndex, r2, c.bp2)
+    return { region: own.region, x: own.bp, x2Region: far.region, x2: far.bp }
+  }
+  return undefined
+}
+
+/**
  * One pair as the connector mark draws it: each end placed on the region
  * holding it (`x`, `x2` and `x2Region`, the first end's region `region`), the
  * rows, the `bend` (a loop's set depth, a discordant dip, or `CONNECTOR_BOW`),
@@ -140,9 +167,9 @@ export function connectorInstance(
   const { e1, e2, c } = pair
   const r1 = displayedRegions[e1.displayedRegionIndex]
   const r2 = displayedRegions[e2.displayedRegionIndex]
-  if (r1 && r2) {
-    const own = placeEnd(displayedRegions, e1.displayedRegionIndex, r1, c.bp1)
-    const far = placeEnd(displayedRegions, e2.displayedRegionIndex, r2, c.bp2)
+  const ends = connectorEnds(pair, displayedRegions)
+  if (r1 && r2 && ends) {
+    const { region, x, x2Region, x2 } = ends
     const { straight, hidden, loop, dipPx } = connectorShape(
       pair,
       r1,
@@ -151,10 +178,10 @@ export function connectorInstance(
       pileupHeight,
     )
     return {
-      region: own.region,
-      x: own.bp,
-      x2: far.bp,
-      x2Region: far.region,
+      region,
+      x,
+      x2,
+      x2Region,
       row: e1.data.readYs[e1.readIdx]!,
       row2: e2.data.readYs[e2.readIdx]!,
       bend: loop ? loopDipPx(rowPitch) : (dipPx ?? CONNECTOR_BOW),
@@ -213,7 +240,8 @@ export function linePassInstance(
 
 /**
  * Whether a placed connector reaches into one of `windows`, the bp each
- * displayed region shows, by region index: its two ends, in screen order
+ * displayed region shows, each by its `regionIndex` (else its place in the
+ * list): its two ends, in screen order
  * across the regions, span part of a window. One joining two regions crosses
  * the screen between them, so an end stopped at its own region's edge still
  * reaches into the window holding the other.
@@ -226,13 +254,13 @@ export function connectorInWindows(
     x2,
   }: { region: number; x: number; x2Region: number; x2: number },
   displayedRegions: readonly DisplayedRegion[],
-  windows: readonly { start: number; end: number }[],
+  windows: readonly { start: number; end: number; regionIndex?: number }[],
 ) {
   const a = screenOrder(displayedRegions, region, x)
   const b = screenOrder(displayedRegions, x2Region, x2)
   return windows.some((w, i) => {
-    const p = screenOrder(displayedRegions, i, w.start)
-    const q = screenOrder(displayedRegions, i, w.end)
+    const p = screenOrder(displayedRegions, w.regionIndex ?? i, w.start)
+    const q = screenOrder(displayedRegions, w.regionIndex ?? i, w.end)
     return Math.max(a, b) > Math.min(p, q) && Math.min(a, b) < Math.max(p, q)
   })
 }

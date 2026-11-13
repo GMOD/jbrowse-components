@@ -594,6 +594,65 @@ test('each dip is the bend the display’s connector feed draws, scrolled to the
   expect(sorted(tabled)).toEqual(sorted(fed))
 }, 60_000)
 
+test('the legend keys the color of every connector the display draws into a window, ends in view or not', async () => {
+  const display = { ...TALL, pileup: { connectors: { show: true } } }
+  const { display: m, dispose } =
+    await standUpDisplay<LinearAlignmentsDisplayModel>({
+      plugins: [new AlignmentsPlugin()],
+      track: {
+        type: 'AlignmentsTrack',
+        adapter: INVERSION_LOCI.adapterConfig,
+      },
+      displayType: 'LinearAlignmentsDisplay',
+      isDisplay: isLinearAlignmentsDisplay,
+      displayConfig: display,
+      regions: INVERSION_LOCI.regions,
+      contigLengths: VOLVOX_CONTIGS,
+      bpPerPx: 8,
+    })
+  m.setShowLegend(true)
+  const { displayedRegions } = m.view
+  const rowPitch = m.featureHeight + m.featureSpacing
+  const arrows = connectorArrowPx(m.featureHeight) > 0
+  const drawn = new Set<number>()
+  for (const sec of m.renderSections) {
+    const group = m.connectorsByGroup.get(sec.groupKey)
+    const pairs = [
+      ...(group?.linePairs ?? []).map(pair => ({
+        pair,
+        placed: linePassInstance(
+          pair,
+          displayedRegions,
+          sec.rowsHeight,
+          rowPitch,
+        ),
+      })),
+      ...(group?.overlayPairs ?? []).map(pair => ({
+        pair,
+        placed: connectorInstance(
+          pair,
+          displayedRegions,
+          sec.rowsHeight,
+          rowPitch,
+          arrows,
+        ),
+      })),
+    ]
+    for (const { pair, placed } of pairs) {
+      if (
+        placed &&
+        connectorInWindows(placed, displayedRegions, INVERSION_LOCI.regions)
+      ) {
+        drawn.add(pair.c.colorType)
+      }
+    }
+  }
+  const keyed = new Set(m.connectionColorTypes)
+  dispose()
+  expect(drawn.size).toBeGreaterThan(0)
+  expect(keyed).toEqual(drawn)
+}, 60_000)
+
 test('a junction skipping a segment out of view is fed as a bow, and the tables name the same pairs', async () => {
   const display = { ...TALL, unit: 'chain' }
   const { display: m, dispose } =

@@ -1,6 +1,10 @@
 import { touchesAny, windowsByRegion } from '@jbrowse/display-kit/keyWindows'
 
 import { ARC_COLOR_INTERCHROM } from '../features/arcs/arcColors.ts'
+import {
+  connectorEnds,
+  connectorInWindows,
+} from '../features/linkedReads/connectorFeed.ts'
 import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 
@@ -10,10 +14,15 @@ import type {
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
-import type { GroupConnectors } from '../features/linkedReads/computeOverlay.ts'
 import type { MergedJunction } from '../features/sashimi/junctions.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
+
+interface ConnectorPair {
+  e1: { displayedRegionIndex: number }
+  e2: { displayedRegionIndex: number }
+  c: { bp1: number; bp2: number; colorType: number }
+}
 
 type ByGroup<D> = ReadonlyMap<string, ReadonlyMap<number, D>>
 
@@ -229,37 +238,33 @@ export function arcSlotsInWindows(
   return present
 }
 
-/** The connector color slots with a foot in a window. */
+/**
+ * The connector color slots drawn in a window: the straight-line pass's pairs
+ * and the overlay's, each by the rule the drawn connectors and the tables
+ * share (`connectorInWindows`), so one crossing a window with both ends off
+ * screen still keys.
+ */
 export function connectorSlotsInWindows(
-  connectorsByGroup: ReadonlyMap<string, GroupConnectors>,
+  connectorsByGroup: ReadonlyMap<
+    string,
+    {
+      linePairs: readonly ConnectorPair[]
+      overlayPairs: readonly ConnectorPair[]
+    }
+  >,
+  displayedRegions: readonly { refName: string; reversed?: boolean }[],
   windows: readonly KeyWindow[],
 ) {
-  const regions = windowsByRegion(windows)
   const present = new Set<number>()
-  for (const { lines, overlayPairs } of connectorsByGroup.values()) {
-    for (const [regionIndex, region] of lines) {
-      const ranges = regions.get(regionIndex)
-      if (ranges) {
-        const pos = region.linkedReadLinePositions
-        for (let i = 0; i < region.numLinkedReadLines; i++) {
-          const a = pos[i * 2]!
-          const b = pos[i * 2 + 1]!
-          if (touchesAny(ranges, Math.min(a, b), Math.max(a, b) + 1)) {
-            present.add(region.linkedReadLineColorTypes[i]!)
-          }
-        }
-      }
+  const add = (pair: ConnectorPair) => {
+    const ends = connectorEnds(pair, displayedRegions)
+    if (ends && connectorInWindows(ends, displayedRegions, windows)) {
+      present.add(pair.c.colorType)
     }
-    for (const { e1, e2, c } of overlayPairs) {
-      const r1 = regions.get(e1.displayedRegionIndex)
-      const r2 = regions.get(e2.displayedRegionIndex)
-      if (
-        (r1 && touchesAny(r1, c.bp1, c.bp1 + 1)) ||
-        (r2 && touchesAny(r2, c.bp2, c.bp2 + 1))
-      ) {
-        present.add(c.colorType)
-      }
-    }
+  }
+  for (const { linePairs, overlayPairs } of connectorsByGroup.values()) {
+    linePairs.forEach(add)
+    overlayPairs.forEach(add)
   }
   return present
 }

@@ -1294,7 +1294,11 @@ export default function stateModelFactory(
          */
         get connectionColorTypes(): Set<number> {
           return self.showLegend
-            ? connectorSlotsInWindows(self.connectorsByGroup, self.keyWindows)
+            ? connectorSlotsInWindows(
+                self.connectorsByGroup,
+                self.view.displayedRegions,
+                self.keyWindows,
+              )
             : new Set<number>()
         },
 

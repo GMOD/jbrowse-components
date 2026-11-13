@@ -4,6 +4,7 @@ import { ARC_COLOR_INTERCHROM } from '../features/arcs/arcColors.ts'
 import { READ_COLOR_CATEGORY } from './colorUtils.ts'
 import {
   arcSlotsInWindows,
+  connectorSlotsInWindows,
   insertSizeBandInWindows,
   junctionInWindows,
   readCategoriesInWindows,
@@ -94,6 +95,35 @@ test('a junction keys where its span touches a window on its reference', () => {
   expect(
     junctionInWindows({ refName: 'chr1', start: 2000, end: 5000 }, window),
   ).toBe(false)
+})
+
+test('a connector keys when its span crosses a window, whichever ends are on screen', () => {
+  const regions = [{ refName: 'chr1' }, { refName: 'chr1' }]
+  const pair = (
+    [region1, bp1]: [number, number],
+    [region2, bp2]: [number, number],
+    colorType: number,
+  ) => ({
+    e1: { displayedRegionIndex: region1 },
+    e2: { displayedRegionIndex: region2 },
+    c: { bp1, bp2, colorType },
+  })
+  const group = (
+    overlayPairs: ReturnType<typeof pair>[],
+    linePairs: ReturnType<typeof pair>[] = [],
+  ) => new Map([['', { linePairs, overlayPairs }]])
+  const slots = (
+    overlayPairs: ReturnType<typeof pair>[],
+    linePairs?: ReturnType<typeof pair>[],
+  ) => connectorSlotsInWindows(group(overlayPairs, linePairs), regions, window)
+
+  expect(slots([pair([0, 100], [0, 5000], 4)])).toEqual(new Set([4]))
+  expect(slots([], [pair([0, 100], [0, 5000], 4)])).toEqual(new Set([4]))
+  expect(
+    slots([pair([0, 100], [0, 900], 4), pair([0, 2100], [0, 5000], 5)]),
+  ).toEqual(new Set())
+  expect(slots([pair([1, 100], [1, 900], 4)])).toEqual(new Set())
+  expect(slots([pair([1, 100], [0, 900], 5)])).toEqual(new Set([5]))
 })
 
 test('a key states the insert-size band only where every region in view shares one', () => {
