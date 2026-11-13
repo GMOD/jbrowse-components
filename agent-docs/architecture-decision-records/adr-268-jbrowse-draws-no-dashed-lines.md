@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every line JBrowse draws by default is solid. A read connector over segments not in view says so in its hover alone; a reference line, a center line or a pending box is told apart by color and weight. The link mark's `strokeDash` stays for a config that asks"
+summary: "Every line JBrowse draws by default is solid. A read connector over segments not in view says so in its hover alone; other lines differ by color and weight. The link mark's `strokeDash` stays for a config that asks"
 ---
 
 # ADR-268: JBrowse draws no dashed lines
