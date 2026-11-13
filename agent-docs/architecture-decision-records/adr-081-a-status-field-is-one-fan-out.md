@@ -37,7 +37,7 @@ not distinguish is a sibling that is a different operation entirely.
 **It was live, not latent.** `MultiSampleVariantBaseModel` composes both fetch
 families, and its `awaitingPrerequisite` gate — the region fetch declines until
 `sourcesBase` lands — only holds for the *first* load. Nothing clears
-`sourcesVolatile`, so on `reload()` the cellData fetch starts immediately while
+`sampleListing`, so on `reload()` the cellData fetch starts immediately while
 the sources autorun, carrying `delay: 1000`, starts a second later: two fetches
 in flight, and the one that finishes first blanks the other's label. That is the
 retry path, which is exactly when someone is watching the loading UI. Clustering
