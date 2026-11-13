@@ -18,10 +18,10 @@ export interface AlignmentsHover {
   hoverCoverageBand?: HoverCoverageBand
   hoveredArcHighlight?: ArcHighlight
   hoveredJunction?: HoveredJunction
-  hoveredConnectorReadIds?: string[]
+  hoveredConnectorReadIds?: readonly string[]
 }
 
-export const NO_CONNECTOR_READ_IDS: string[] = []
+export const NO_CONNECTOR_READ_IDS: readonly string[] = []
 
 // Carries the previous junction and connector ends into the new hover when
 // they are equal: a fresh junction or an equal array invalidates `hoverInk`,
