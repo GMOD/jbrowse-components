@@ -5,6 +5,7 @@ import {
   collapsedRegionsFor,
   expandGeneInView,
   replaceIntrons,
+  soloFeatureInView,
 } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -341,5 +342,26 @@ describe('CollapseIntrons utilities', () => {
       expect(flipped.windowWidthBp).toBe(plain.windowWidthBp)
       expect(flipped.windowStartBp).toBe(plain.windowStartBp)
     })
+  })
+})
+
+describe('Undo after the track closed', () => {
+  it('expand: undo does not throw once the track is gone', () => {
+    const { view } = createTestEnvironment().createDisplay()
+    const undo = expandGeneInView(view, 'test_track', 'geneX')
+    view.hideTrack('test_track')
+    expect(view.tracks).toHaveLength(0)
+    expect(() => {
+      undo()
+    }).not.toThrow()
+  })
+
+  it('solo: undo does not throw once the track is gone', () => {
+    const { view } = createTestEnvironment().createDisplay()
+    const undo = soloFeatureInView(view, 'test_track', 'geneX')
+    view.hideTrack('test_track')
+    expect(() => {
+      undo()
+    }).not.toThrow()
   })
 })

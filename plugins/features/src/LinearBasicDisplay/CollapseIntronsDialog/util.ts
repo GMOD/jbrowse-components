@@ -126,7 +126,10 @@ export function expandGeneInView(
   if (display && !display.expandedGeneIds.includes(featureId)) {
     display.toggleExpandedGene(featureId)
     return () => {
-      if (display.expandedGeneIds.includes(featureId)) {
+      if (
+        findDisplay(view, trackId, isGeneExpanding) === display &&
+        display.expandedGeneIds.includes(featureId)
+      ) {
         display.toggleExpandedGene(featureId)
       }
     }
@@ -162,14 +165,16 @@ export function soloFeatureInView(
   const prevApplied = display.soloApplied
   display.soloFeature(featureId)
   return () => {
-    display.clearSolo()
-    for (const id of prevIds) {
-      display.toggleSoloFeature(id)
-    }
-    // toggleSoloFeature collects without isolating, so a prior set that was
-    // isolating has to be applied again.
-    if (prevApplied) {
-      display.applySolo()
+    if (findDisplay(view, trackId, isSoloCapable) === display) {
+      display.clearSolo()
+      for (const id of prevIds) {
+        display.toggleSoloFeature(id)
+      }
+      // toggleSoloFeature collects without isolating, so a prior set that was
+      // isolating has to be applied again.
+      if (prevApplied) {
+        display.applySolo()
+      }
     }
   }
 }
