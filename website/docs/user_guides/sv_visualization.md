@@ -301,7 +301,9 @@ split read across a deletion draws a gold arc. One across a tandem duplication
 draws a teal arc, the color of the pairs that span it, and a teal loop under its
 row where the read maps back over itself. One split around an insertion the
 aligner left out of the CIGAR draws a pink arc, the color of the pairs too close
-across it, and no sashimi arc.
+across it, and no sashimi arc. A connector joining two segments across a third
+the view has not loaded draws grey, keyed **Split read (segment not in view)**,
+since that segment decides the class; its hover names the segment's locus.
 
 **Group by → Split reads** splits the pileup into two sections: reads with a
 supplementary alignment, and the rest. Together the two sections give the
