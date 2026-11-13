@@ -15,6 +15,7 @@ import {
   READ_GROUPS,
   SIGNED_BIGWIG,
   SPLICED,
+  SPLIT_INVERSION_GAP,
   WIDE_RNASEQ,
 } from './volvox.fixture.ts'
 
@@ -1183,6 +1184,38 @@ test('a curve the bottom row flattens to no dip stays a curve on its row, where 
   })
   for (const i of flat) {
     expect(bowed.handleRow[i]).toBeLessThan(c.row[i]!)
+  }
+})
+
+test('a junction skipping a segment out of view bows over its row, where the same rows as a curve stay on it', async () => {
+  const t = await engine.alignments({
+    adapterConfig: SPLIT_INVERSION_GAP.adapterConfig,
+    regions: SPLIT_INVERSION_GAP.regions,
+    display: { unit: 'chain' },
+  })
+  const c = t.connectors
+  const bows = c.kind.flatMap((kind, i) => (kind === 'bow' ? [i] : []))
+  expect(bows).toHaveLength(2)
+  for (const i of bows) {
+    expect(c.dashed[i]).toBe(true)
+    expect(c.dip[i]).toBe(0)
+    expect(c.endRow[i]).toBe(c.row[i])
+  }
+  const place = (connectors: typeof c) =>
+    engine.alignmentConnectorCurves({
+      pxPerBp: 1200 / 17000,
+      featureHeight: t.readPitch.featureHeight,
+      featureSpacing: t.readPitch.featureSpacing,
+      connectors,
+    })
+  const bowed = place(c)
+  const flat = place({
+    ...c,
+    kind: c.kind.map(kind => (kind === 'bow' ? ('curve' as const) : kind)),
+  })
+  for (const i of bows) {
+    expect(bowed.handleRow[i]).toBeLessThan(c.row[i]!)
+    expect(flat.handleRow[i]).toBe(c.row[i])
   }
 })
 

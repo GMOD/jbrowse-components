@@ -116,6 +116,23 @@ export const PAIRED_INVERSION = {
   region: { refName: 'ctgA', start: 18000, end: 32000 },
 } satisfies AlignmentTablesArgs
 
+/**
+ * Split reads whose middle segment, at ctgA:20000-30000, lies between the two
+ * regions and in neither: under chain unit each is one bow over its row.
+ */
+export const SPLIT_INVERSION_GAP = {
+  adapterConfig: {
+    type: 'BamAdapter',
+    bamLocation: uri('volvox-simple-inv.bam'),
+    index: { location: uri('volvox-simple-inv.bam.bai'), indexType: 'BAI' },
+  },
+  sequenceAdapter,
+  regions: [
+    { refName: 'ctgA', start: 15000, end: 19950 },
+    { refName: 'ctgA', start: 30010, end: 33000 },
+  ],
+}
+
 /** A mate pair and a split read, each with its two pieces overlapping. */
 export const OVERLAP = {
   adapterConfig: {
