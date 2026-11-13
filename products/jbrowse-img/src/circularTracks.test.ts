@@ -12,9 +12,11 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
+import { getEnv } from '@jbrowse/core/util'
+import { createViewStateAsync } from '@jbrowse/react-app2'
 import { enableStaticRendering } from 'mobx-react'
 
-import { renderRegion } from './renderRegion.ts'
+import { circularTrackInit, renderRegion } from './renderRegion.ts'
 
 import type { Entry } from '@jbrowse/launch-args'
 
@@ -37,7 +39,7 @@ const volvox = path.join(__dirname, '..', 'data', 'volvox')
 
 // The same VCF under two ids, so the chords a run draws count the tracks it
 // opened: both is twice one, and neither is the bare ideogram.
-function twoChordTracks() {
+function twoChordTracks(display: Record<string, unknown> = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-circular-'))
   const file = path.join(dir, 'config.json')
   const track = (trackId: string) => ({
@@ -45,6 +47,9 @@ function twoChordTracks() {
     trackId,
     name: trackId,
     assemblyNames: ['volvox'],
+    ...(Object.keys(display).length > 0
+      ? { displays: [{ type: 'ChordVariantDisplay', ...display }] }
+      : {}),
     adapter: {
       type: 'VcfTabixAdapter',
       vcfGzLocation: { localPath: path.join(volvox, 'volvox.dup.vcf.gz') },
@@ -105,26 +110,45 @@ test('--track naming no track in the config fails', async () => {
   )
 }, 60000)
 
-// The modifiers name slots on the LINEAR displays, a variant track here draws
-// chords, and a key a display does not declare fails the whole export — so
-// `height:400` beside a --vcf drew a chord plot until this view read
-// `--track`, and carrying the snapshot over killed the render instead. Both a
-// named modifier and a slot-path write land in the same warning, since neither
-// reaches the view. A typo'd value is covered by the same line, which is why
-// nothing here parses one.
-test('a modifier the chord display has no slot for is said, not applied', async () => {
+// A slot-path write names a linear display's slot, and a key a display does
+// not declare fails the whole export, so it is said and not applied; a named
+// option the chord display has no slot for warns the same way a linear track's
+// does.
+test('an option the chord display has no slot for is said, not applied', async () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
   const config = twoChordTracks()
   const plain = await renderCircular(config, ['sv_one'])
   const modified = await renderCircular(config, [
     'sv_one',
     'height:400',
-    'force:true',
     'encoding.color.field=SVTYPE',
   ])
   expect(modified).toBe(plain)
   expect(warn).toHaveBeenCalledWith(
-    expect.stringContaining('have no effect on a circular view'),
+    expect.stringContaining('has no effect on a circular view'),
+  )
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('has no effect on ChordVariantDisplay'),
   )
   warn.mockRestore()
 }, 90000)
+
+// volvox's one contig is too small for the chord gate to stop a fetch, so the
+// launch entry is the witness: `force:true` lands as the chord display's
+// `forceLoad`, and an option it has no slot for does not.
+test('force:true reaches the chord display as forceLoad', async () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  const model = await createViewStateAsync({ config: { assemblies: [] } })
+  const { pluginManager } = getEnv(model)
+  const tracks = [{ type: 'VariantTrack', trackId: 'sv', adapter: {} }]
+  expect(
+    circularTrackInit(pluginManager, tracks, {
+      trackId: 'sv',
+      opts: ['force:true', 'height:400'],
+    }),
+  ).toEqual({ trackId: 'sv', forceLoad: true })
+  expect(
+    circularTrackInit(pluginManager, tracks, { trackId: 'sv', opts: [] }),
+  ).toBe('sv')
+  warn.mockRestore()
+}, 60000)

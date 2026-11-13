@@ -1190,10 +1190,11 @@ The command draws the tracks that the track flags and `--track` name. Name
 tracks when you use a `--genome` or a large `--config`, because their hundreds
 of tracks would otherwise all be opened, as happens in a run that names none.
 
-Display modifiers do not apply to the circular view, and a run that passes one
-reports that. The modifiers name slots on the linear displays, and the circular
-view draws a variant track as chords. Settings for a circular view go in the
-config the track comes from, or in a `--spec`.
+A named modifier applies where the chord display has the setting: `force:true`
+draws a track whose size limit stopped it. A run reports any other modifier, and
+every `path=value` or JSON one, as having no effect, since those name slots on
+the linear displays. Other settings for a circular view go in the config the
+track comes from, or in a `--spec`.
 
 ```bash
 jb2export circular ref.fa sv.vcf.gz --out circular.svg

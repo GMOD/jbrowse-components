@@ -2,6 +2,7 @@ import { retainAdapterSession } from '@jbrowse/core/data_adapters/adapterSession
 import { getEnv } from '@jbrowse/core/util'
 import { openTracks } from '@jbrowse/core/util/openViews'
 import {
+  trackDisplayType,
   viewCanDisplayTrack,
   viewDisplayNames,
 } from '@jbrowse/core/util/tracks'
@@ -16,6 +17,7 @@ import {
 import {
   buildDisplaySnapshot,
   memberWrites,
+  trackModifierNames,
 } from '@jbrowse/launch-args/displaySettings'
 import { destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
@@ -54,6 +56,7 @@ import {
 import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'
 import type { Config, ConfigFile, OpenTrack, Opts, Track } from './types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { AbstractViewModel, ViewProblem } from '@jbrowse/core/util'
 import type { SettleableView } from '@jbrowse/core/util/whenViewSettled'
@@ -545,8 +548,39 @@ function circularDrawable(
   })
 }
 
-// With no track named, every config track opens. Modifiers are not applied:
-// they name linear display slots, and an undeclared key fails the export.
+// A track's named options land on the display the circle opens it as,
+// declared slots only: `force:true` lifts a chord track's size gate, and one
+// that display has no setting for warns, as on a linear track. A slot-path or
+// JSON option names a linear display's slot, and an undeclared key fails the
+// export, so it is said and not applied. With no track named, every config
+// track opens.
+export function circularTrackInit(
+  pluginManager: PluginManager,
+  tracks: Track[],
+  { trackId, opts: mods }: OpenTrack,
+) {
+  const named = mods.filter(opt =>
+    trackModifierNames.includes(opt.split(':')[0]!),
+  )
+  const unapplied = mods.filter(opt => !named.includes(opt))
+  if (unapplied.length > 0) {
+    console.warn(
+      `Warning: ${unapplied.join(', ')} on "${trackId}" has no effect on a circular view`,
+    )
+  }
+  const track = tracks.find(t => t.trackId === trackId)
+  const displayType = track
+    ? trackDisplayType(
+        pluginManager,
+        { ...track, type: trackType(track) },
+        'CircularView',
+      )
+    : undefined
+  return named.length > 0
+    ? { trackId, ...buildDisplaySnapshot(displayType, named).snap }
+    : trackId
+}
+
 function circularInit(ctx: ModeContext): CircularViewCommands {
   const { model, data, opts } = ctx
   const named = [
@@ -556,16 +590,13 @@ function circularInit(ctx: ModeContext): CircularViewCommands {
   const open = named.length
     ? named
     : data.tracks.map(({ trackId }) => ({ trackId, opts: [] }))
-  const drawable = circularDrawable(model, trackCandidates(data), open)
-  const modified = drawable.filter(({ opts: mods }) => mods.length > 0)
-  if (modified.length > 0) {
-    console.warn(
-      `Warning: display modifiers on ${modified.map(({ trackId }) => `"${trackId}"`).join(', ')} have no effect on a circular view`,
-    )
-  }
+  const candidates = trackCandidates(data)
+  const drawable = circularDrawable(model, candidates, open)
   return {
     assembly: data.assembly.name,
-    tracks: drawable.map(({ trackId }) => trackId),
+    tracks: drawable.map(entry =>
+      circularTrackInit(getEnv(model).pluginManager, candidates, entry),
+    ),
   }
 }
 
