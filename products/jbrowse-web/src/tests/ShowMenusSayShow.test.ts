@@ -11,11 +11,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-// The maintainer's rule: every toggle row of a "Show" submenu starts with
-// "Show" and still says what it does, on views and displays alike, and "Show"
-// holds no nested submenus. Nothing else pins it, so a rename that drops the
-// prefix regresses silently.
-
 const lgvDisplays = [
   ['FeatureTrack', 'LinearBasicDisplay'],
   ['AlignmentsTrack', 'LinearAlignmentsDisplay'],
@@ -64,10 +59,10 @@ function trackConfig([type, display]: (typeof lgvDisplays)[number]) {
   }
 }
 
-function trackState([, display]: (typeof lgvDisplays)[number]) {
+function trackState([type, display]: (typeof lgvDisplays)[number]) {
   return {
     id: `s-${display}`,
-    type: lgvDisplays.find(([, d]) => d === display)![0],
+    type,
     configuration: trackIdOf(display),
     displays: [{ id: `d-${display}`, type: display }],
   }
@@ -78,9 +73,9 @@ function labelOf(item: MenuItem) {
 }
 
 function showRows(items: MenuItem[]) {
-  return items
-    .filter(i => labelOf(i) === 'Show' && 'subMenu' in i)
-    .flatMap(i => resolveSubMenu(i))
+  return items.flatMap(i =>
+    'subMenu' in i && labelOf(i) === 'Show' ? resolveSubMenu(i) : [],
+  )
 }
 
 function offenders(items: MenuItem[]) {
@@ -103,6 +98,26 @@ const regionView = (id: string) => ({
   bpPerPx: 0.1,
 })
 
+async function trackOf(display: string) {
+  const { views } = await sessionOf([
+    {
+      id: 'lgv',
+      type: 'LinearGenomeView',
+      tracks: lgvDisplays.map(trackState),
+    },
+  ])
+  const view = views[0]
+  const track =
+    view && 'tracks' in view
+      ? view.tracks.find((t: { id: string }) => t.id === `s-${display}`)
+      : undefined
+  if (track) {
+    return track
+  } else {
+    throw new Error(`no track for ${display}`)
+  }
+}
+
 function sessionOf(views: Record<string, unknown>[]) {
   return createTestSessionAsync({
     jbrowseConfig: {
@@ -116,16 +131,7 @@ function sessionOf(views: Record<string, unknown>[]) {
 test.each(lgvDisplays.map(([, display]) => [display]))(
   '%s: every toggle in its Show submenu starts with "Show " and none nests',
   async display => {
-    const { views } = await sessionOf([
-      {
-        id: 'lgv',
-        type: 'LinearGenomeView',
-        tracks: lgvDisplays.map(trackState),
-      },
-    ])
-    const track = views[0]!.tracks.find(
-      (t: { id: string }) => t.id === `s-${display}`,
-    )
+    const track = await trackOf(display)
     expect(offenders(track.trackMenuItems())).toEqual([])
   },
 )
@@ -136,16 +142,7 @@ test.each([
 ])(
   '%s grouped by %s: the rows grouping adds to Show start with "Show " too',
   async (display, field) => {
-    const { views } = await sessionOf([
-      {
-        id: 'lgv',
-        type: 'LinearGenomeView',
-        tracks: lgvDisplays.map(trackState),
-      },
-    ])
-    const track = views[0]!.tracks.find(
-      (t: { id: string }) => t.id === `s-${display}`,
-    )
+    const track = await trackOf(display)
     track.displays[0].facetByField(field)
     const rows = showRows(track.trackMenuItems()).map(labelOf)
     expect(rows).toContain('Show groups as one row')
