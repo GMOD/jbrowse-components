@@ -42,9 +42,14 @@ export function isKeyedWrites(writes: unknown): writes is KeyedWrites {
 const isMembers = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-// The field a config's members draw: as written, else the declaration's
-// `unwritten`, `null` resetting to it
-function fieldInForce(writes: KeyedWrites, members: Record<string, unknown>) {
+/**
+ * The field a keyed object's members draw: as written, else the
+ * declaration's `unwritten`, `null` resetting to it.
+ */
+export function keyedFieldInForce<V>(
+  writes: KeyedWrites,
+  members: Record<string, V>,
+) {
   return members[writes.keyedBy] ?? writes.unwritten
 }
 
@@ -77,9 +82,9 @@ export function changesKeyedField(
   prior: Record<string, unknown>,
   next: Record<string, unknown>,
 ) {
-  const from = fieldInForce(writes, prior)
+  const from = keyedFieldInForce(writes, prior)
   const to = Object.hasOwn(next, writes.keyedBy)
-    ? fieldInForce(writes, next)
+    ? keyedFieldInForce(writes, next)
     : undefined
   return writes.emptyChanges
     ? Object.hasOwn(next, writes.keyedBy) && emptied(from) !== emptied(to)

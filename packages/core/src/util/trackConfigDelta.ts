@@ -59,7 +59,7 @@
  * silently changing which display opens by default.
  */
 
-import { changesKeyedField } from '@jbrowse/add-track-core'
+import { changesKeyedField, keyedFieldInForce } from '@jbrowse/add-track-core'
 
 import { deepEqual } from './deepEqual.ts'
 
@@ -142,7 +142,9 @@ const keyedAt = (at: At) =>
 // drops those itself, and a null would also drop what an admin later writes
 // for the new field. Each keyed member the edit states stores whole, as the
 // merge writes it over nothing. The edit is a whole snapshot, so a field it
-// leaves out is empty, which changes a field keyed with `emptyChanges`.
+// leaves out is the one in force, its declared default (`unwritten`) or
+// empty, which changes a field keyed with `emptyChanges`. A base writing no
+// such object diffs as an empty one, so its field in force is named too.
 function keyedDiff(
   at: At,
   out: JsonObject,
@@ -164,10 +166,11 @@ function keyedDiff(
           ),
         }
       : out
+    const field = keyedFieldInForce(keyed, edited)
     return out[keyed.keyedBy] === undefined &&
-      edited[keyed.keyedBy] !== undefined &&
+      field !== undefined &&
       keyed.keyed.some(member => Object.hasOwn(kept, member))
-      ? { ...kept, [keyed.keyedBy]: edited[keyed.keyedBy] }
+      ? { ...kept, [keyed.keyedBy]: field }
       : kept
   }
   return out
@@ -235,16 +238,21 @@ function diffValue(base: Json, edited: Json, at: At): Json | typeof UNCHANGED {
     }
     return out.length > 0 ? out : UNCHANGED
   }
-  if (isPlainObject(edited) && isPlainObject(base) && !isWhole(at)) {
+  const prior = isPlainObject(base)
+    ? base
+    : base === undefined && keyedAt(at)
+      ? {}
+      : undefined
+  if (isPlainObject(edited) && prior && !isWhole(at)) {
     const out: JsonObject = {}
-    for (const k of new Set([...Object.keys(base), ...Object.keys(edited)])) {
-      const d = diffValue(base[k], edited[k], childAt(at, k))
+    for (const k of new Set([...Object.keys(prior), ...Object.keys(edited)])) {
+      const d = diffValue(prior[k], edited[k], childAt(at, k))
       if (d !== UNCHANGED) {
         out[k] = d
       }
     }
     return Object.keys(out).length > 0
-      ? keyedDiff(at, out, base, edited)
+      ? keyedDiff(at, out, prior, edited)
       : UNCHANGED
   }
   return edited

@@ -3,7 +3,7 @@ import {
   applyConfSettings,
   mergeConfSettings,
 } from '@jbrowse/core/configuration'
-import { mergeTrackConfig } from '@jbrowse/core/util'
+import { diffTrackConfig, mergeTrackConfig } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { displayForms } from '@jbrowse/product-core'
 
@@ -257,4 +257,18 @@ test.each(cases)('$name, through all four consumers', c => {
     trackConfigDelta: rows,
     mergeBySlots: rows,
   })
+})
+
+test("a share link's arrangement of a declared default's rows keeps naming them after the admin changes the field", () => {
+  const forms = displayForms(pluginManager)
+  const display = { type: 'LinearMultiRowFeatureDisplay', displayId: 't-d' }
+  const track = (rows?: Bag) => ({
+    trackId: 't',
+    type: 'FeatureTrack',
+    displays: [{ ...display, ...(rows ? { rows } : {}) }],
+  })
+  const sorted = { sort: ['exon', 'gene'] }
+  const delta = diffTrackConfig(track(), track(sorted), forms)
+  const merged = mergeTrackConfig(track({ field: 'sample' }), delta, forms)
+  expect(rowsOf(display.type, merged.displays[0]!)).toEqual(sorted)
 })

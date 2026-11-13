@@ -30,6 +30,7 @@ export {
   changesKeyedField,
   isKeyedWrites,
   keyedBase,
+  keyedFieldInForce,
   keyedInForce,
   refinesProblem,
   staleKeyedMembers,
