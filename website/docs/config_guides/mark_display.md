@@ -1048,8 +1048,10 @@ scale type, min and max, Include 0, outlier clipping, grid lines and reference
 lines. Beside it, **Point size**, the legend toggle, and **Filter by...**, whose
 jexl runs in the worker before the encoding, so a filtered feature is neither
 drawn nor in the axis. Hovering a mark shows its location, value and color
-class; clicking opens the feature, and clicking a binned or coverage bar opens
-the bin remade over the features under it.
+class, under a first line naming the feature when `tooltip` names a field
+(`tooltip: 'name'`); `tooltip.show: false` opens no box. Clicking opens the
+feature, and clicking a binned or coverage bar opens the bin remade over the
+features under it.
 
 The full slot list is the
 [LinearMarkDisplay config reference](/docs/config/linearmarkdisplay); how the

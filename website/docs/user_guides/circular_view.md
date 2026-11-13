@@ -162,6 +162,14 @@ Citations:
   [breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view)
   centered on the event's two breakpoints
 
+The circle fetches every chromosome it shows at once, so a VCF whose index puts
+that fetch over the track's
+[`fetchSizeLimit`](/docs/config/chordvariantdisplay/#slot-fetchsizelimit) shows
+a banner instead of chords. Show fewer chromosomes, draw the track as a ring
+from **Display types**, or press **Force load**; `forceLoad: true` in the
+display's config, or `force:true` on a `jb2export circular` track, does the same
+without the button.
+
 To triage many variants at once, use the
 [SV inspector](/docs/user_guides/sv_inspector_view), which pairs this same
 circular overview with a filterable variant table and cross-filters the two

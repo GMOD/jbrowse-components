@@ -95,6 +95,11 @@ function configSchemaF(_pluginManager: PluginManager) {
        */
       encoding: chordEncodingConfigSchema,
       ...regionTooLargeConfigSchemaFields,
+      fetchSizeLimit: {
+        ...regionTooLargeConfigSchemaFields.fetchSizeLimit,
+        description:
+          'bytes the whole circle may fetch, every displayed region at once, before the display asks first; an adapter that sets its own limit takes precedence over this',
+      },
     },
     {
       explicitIdentifier: 'displayId',

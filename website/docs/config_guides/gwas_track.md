@@ -165,7 +165,9 @@ types**), and its point mark's encoding sets what it reads:
 
 The track menu's **Edit marks...** edits both, and `encoding.size` is the point
 diameter in px. A point stands at the middle of its window; `"mark": "rule"`
-draws the window across its extent, `encoding.strokeWidth` px thick.
+draws the window across its extent, `encoding.strokeWidth` px thick. Hovering a
+point shows its locus and score, and names the SNP on a first line when
+[`tooltip`](/docs/config/marktooltip) names its column (`"tooltip": "name"`).
 
 ```json addtrack
 {

@@ -44,9 +44,19 @@ once per display that embeds it, so read the trend, not the size.
 surface on one page, its first table each path whose members differ between
 displays or a display's parts, with the ruling on each.
 
-- The last shared-path change is the alignments mismatch fade losing
-  `scale.clamp` (2026-11-11, −2 shared: LinearAlignments and LGVSynteny),
-  beta-only and written by no config, since every scale clamps (ADR-238).
+- The last shared-path change is two beta-only retired keys leaving the
+  schema (2026-11-13, −2 shared): `LinearMafDisplay.rowHeight` and
+  `LinearVariantDisplay.referenceDrawingMode`, which the retired-keys gate
+  below refuses; v4's `referenceDrawingModeSetting` state lifts straight to
+  `genotypes.reference.show`. Before it, 2026-11-12 added +12 shared and +3
+  mark display, both by reusing a spelling already on the surface: the mark
+  family's `tooltip { field, show }`, `LinearBasic`'s shape, on
+  LinearManhattan, LinearMark and LinearMultiRowFeature and their tracks'
+  `displayDefaults` (5bb04298e1, 3ca6aecf29), and ChordVariant's
+  `fetchSizeLimit` and `forceLoad`, the shared gate fields (47dbf6b1a1).
+  Before those, the alignments mismatch fade lost `scale.clamp`
+  (2026-11-11, −2 shared: LinearAlignments and LGVSynteny), beta-only and
+  written by no config, since every scale clamps (ADR-238).
   The last respell before it is `encoding.y.scale.group` to `share`
   (3cc17821fb, 2026-11-07, +6 / −6 shared, +1 / −1 mark display). The key
   was beta-only, no writer outside the tree spelled it, and ggjbrowse's
@@ -81,6 +91,9 @@ displays or a display's parts, with the ruling on each.
      ggjbrowse `1c3cdfc`), and the downstream canary runs ggjbrowse on every
      push to main (`.github/workflows/downstream-canary.yml`), so a rename
      that misses R goes red there on push.
+   - Unchecked: whether the engine pin and the R reader tables carry the
+     2026-11-12 keys (the mark family's `tooltip`, the chord gate's
+     `fetchSizeLimit` and `forceLoad`). Being new, they turn no canary red.
    - jb2hubs checks its configs against v4.3.0, v5.0.0-beta.20 and `main`
      (`HOST_VERSIONS`, `jb2hubs/scripts/checkConfigCompat.mjs`). Its Trix
      adapters keep writing `textSearchAdapterId`, which v4.3.0 needs to boot
@@ -130,23 +143,28 @@ displays or a display's parts, with the ruling on each.
 - CONFIG_SPELLINGS.md's "Open differences" list is empty, each entry ruled
   as kept or respelled, and the first table's rows are re-read against their
   whys since the last read: `git diff <sha> --
-  agent-docs/reference/CONFIG_SPELLINGS.md` (read through 02d6a33036,
-  2026-11-11; whoever re-reads moves the sha). The count pin passes a
+  agent-docs/reference/CONFIG_SPELLINGS.md` (read through 4e00334d6b,
+  2026-11-13; whoever re-reads moves the sha). The count pin passes a
   display that moves between two existing variants and a variant whose
   members change in place.
 - The meter shows no shared-path change, respell, addition or removal, past
   the last one "Measuring churn" lists.
-- Every `retired` entry maps a name a v1–v4 release declared, none a
-  beta-only one, except a display type a beta session names (the rule above).
-  No test checks the gate, since v4 shipped no JSON schema and
-  so `scripts/check-config-slot-paths.ts` has no v4 baseline. A `git grep -w <key>
-  v4.3.0` over the legacy keys in `website/static/schema/v5/config.json` finds
-  six missing from v4.3.0 on 2026-10-27, each from an earlier release, so
-  the check greps every v1–v4 tag. Rechecked 2026-10-30 over every retired
-  top-level key: none is beta-only once `LinearWiggleDisplay.extent` went
-  with ggjbrowse v0.10.0. v1.3.1–v1.3.5 declared
+- Every `retired` key, `retiredState` key and `retiredTypes` entry maps a
+  name a v1–v4 release declared as that kind (config slot, display state,
+  type), in the tree or in the last v4-compatible release of a plugin since
+  folded in (jbrowse-plugin-mafviewer, jbrowse-plugin-gwas), checked in that
+  plugin's repo. A word appearing in a tag is not a declaration: v4 spelled
+  `referenceDrawingMode` as a renderer prop and a model getter, never a slot.
+  Excepted: a display type a beta session names (the rule above). No test
+  checks the gate, since v4 shipped no JSON schema and so
+  `scripts/check-config-slot-paths.ts` has no v4 baseline; a check greps each
+  key in every v1–v4 tag's config schemas (`git grep -w <key> <tag> --
+  '*configSchema*' '*ConfigSchema*'`) and its state models. v1.3.1–v1.3.5 declared
   `textSearchIndexingAttributes`, and desktop's open-sequence dialog wrote
-  `cytobandsLocation` from v2.10.0 through v4.3.0, so both stay.
+  `cytobandsLocation` from v2.10.0 through v4.3.0, so both stay. Rechecked
+  2026-11-13 over the keys retired since 2026-10-30: two were beta-only
+  and are gone (Measuring churn); six (`maxScore` on the variant display, five
+  alignments state keys on `LGVSyntenyDisplay`) were not grepped one by one.
 - `jbrowse validate` reports no warning on hosted configs, `demos/` and the
   tutorials, plugin types checked against manifests from step 3, but for a
   track a plugin creates at runtime. On an adapter that
