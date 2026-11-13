@@ -4,14 +4,14 @@ exports[`breakpoint split view 1`] = `
 <g
   data-testid="pacbio_hg002_breakpoints-loaded"
   fill="none"
-  stroke-width="1"
+  stroke-width="1.5"
 >
   <path
     d="M 408.99312656000257 95.5 C 454.0241920797007 95.5 358.3876146955563 440.5 403.4186802152544 440.5"
     data-testid="r1"
     stroke="#af4d19"
     stroke-opacity="0.8"
-    stroke-width="1"
+    stroke-width="1.5"
   />
   <path
     d="M 408.99312656000257 95.5 C 454.0241920797007 95.5 358.3876146955563 440.5 403.4186802152544 440.5"
@@ -24,7 +24,7 @@ exports[`breakpoint split view 1`] = `
     data-testid="r1"
     stroke="#af4d19"
     stroke-opacity="0.8"
-    stroke-width="1"
+    stroke-width="1.5"
   />
   <path
     d="M 658.4186802152544 440.5 C 746.2499583902679 440.5 319.1618483849891 68.5 406.99312656000257 68.5"
