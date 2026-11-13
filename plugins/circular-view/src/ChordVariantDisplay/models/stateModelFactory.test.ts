@@ -477,7 +477,7 @@ function readsIndexedFile(args: object) {
 // An indexed VCF track whose index puts the whole fetch at `bytes`; the
 // estimate is answered here, and every read of the file goes to the in-memory
 // track's rows instead
-async function launchWithEstimate(bytes: number | undefined) {
+async function launchUnmeasured(bytes: number | undefined) {
   const session = createTestSession()
   addConf(session)
   session.addSessionTrackConf({
@@ -504,17 +504,27 @@ async function launchWithEstimate(bytes: number | undefined) {
               : args,
           )
     })
-  const view = (await session.launchView('CircularView', {
-    assembly: 'volvox',
-    tracks: ['svgz'],
-  })) as CircularViewModel
-  view.setWidth(800)
+  const { pluginManager } = getEnv(session)
+  await pluginManager.getViewType('CircularView').loadStateModel()
+  await pluginManager.getDisplayType('ChordVariantDisplay').loadStateModel()
+  const view = session.addView('CircularView', {
+    displayedRegions: [
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 16000 },
+      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 8000 },
+    ],
+  }) as CircularViewModel
+  view.showTrack('svgz')
   await session.assemblyManager.waitForAssembly('volvox')
-  await when(() => view.tracks.length > 0)
-  const display = chordDisplay(view)
-  await when(() => display.ready || display.regionTooLarge)
   const methods = () => asked.map(a => a.method)
-  return { view, display, asked, methods }
+  return { view, display: chordDisplay(view), asked, methods }
+}
+
+async function launchWithEstimate(bytes: number | undefined) {
+  const launched = await launchUnmeasured(bytes)
+  const { view, display } = launched
+  view.setWidth(800)
+  await when(() => display.ready || display.regionTooLarge)
+  return launched
 }
 
 // VcfTabixAdapter's fetchSizeLimit is 5 MB. Fails if the estimate is skipped,
@@ -541,6 +551,17 @@ test('a file the index puts over the byte limit gates and fetches no features', 
   await when(() => display.ready)
   expect(display.displayPhase).toBe('ready')
   expect(display.features).toHaveLength(1)
+}, 20000)
+
+test('a circle not yet measured fetches nothing, then measures before fetching', async () => {
+  const { view, display, methods } = await launchUnmeasured(6_000_000)
+  expect(display.trackRegions.length).toBeGreaterThan(0)
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  expect(methods()).toEqual([])
+
+  view.setWidth(800)
+  await when(() => display.regionTooLarge)
+  expect(methods()).toEqual(['CoreGetRegionByteEstimate'])
 }, 20000)
 
 test('a file under the byte limit fetches and draws', async () => {

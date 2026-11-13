@@ -407,7 +407,8 @@ export interface BaseChordDisplayModel extends Instance<
 
 /**
  * A chord display's one fetch: the features `fetchFeatures` brings back over
- * the track's regions. Keyed on the region set ignoring order and `reversed`,
+ * the track's regions, once the circle is measured, since the gate cannot act
+ * before then. Keyed on the region set ignoring order and `reversed`,
  * because the slice index re-places features and a reorder only moves and flips
  * regions, and on the byte limit, so a force load refetches.
  *
@@ -434,6 +435,7 @@ export function installChordFetch(
     delay: 300,
     report: self,
     contract: `${name} chord fetch`,
+    gate: () => self.view.initialized,
     prepare: () => {
       const regions = self.trackRegions
       return regions.length
