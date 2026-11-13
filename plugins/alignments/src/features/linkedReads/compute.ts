@@ -189,8 +189,8 @@ export interface LinkedPair {
 //
 // `canonicalRefName` is what lets a junction report the segments it skipped
 // (`hiddenSegmentsBetween`) in the view's own refName spelling. Both emitters
-// pass one: the overlay dashes such a junction, and the straight-line pass
-// leaves it to the overlay.
+// pass one: the overlay names the skipped loci in its hover, and the
+// straight-line pass leaves such a junction to the overlay.
 //
 // A read past its section's row cap sits on the overflow row `maxY`, at the
 // section's bottom edge. A connection to one still draws, ending on that edge,
@@ -241,7 +241,7 @@ export function* iterLinkedPairs(
 // The pairs the GPU / Canvas2D straight-line pass draws: normal orientation,
 // both ends in one displayed region, and no unfetched segment between them.
 // The overlay takes every other pair (`isConnectorMarkPair`), since only it can
-// dash a hidden-segment junction and name the loci in a hover.
+// name a hidden-segment junction's loci in a hover.
 export function isGpuLinkedReadLine({
   e1,
   e2,

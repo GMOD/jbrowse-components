@@ -11,14 +11,14 @@ import {
 } from '@jbrowse/cigar-utils'
 import { CUBIC_APEX_RATIO, adapterRefNameText, max } from '@jbrowse/core/util'
 import {
-  CONNECTOR_DASHED,
   CONNECTOR_STRAIGHT,
   connectorMark,
+  recordPath,
 } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
-import { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from '@jbrowse/sv-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { formatConnectorTooltip } from '../../LinearAlignmentsDisplay/components/tooltipUtils.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
@@ -60,8 +60,9 @@ import type { LinkRegion } from '@jbrowse/render-core/marks'
 
 // The connectors as the feed and the connector mark draw them, read back off
 // the mark's own path: a straight one as `M x y L x y`, a curve as
-// `M x y C ...`. The region table is sampled from `bpToScreenX`, which every
-// fixture here keeps linear.
+// `M x y C ...`, and `dashed` where the painter set a line dash in its region.
+// The region table is sampled from `bpToScreenX`, which every fixture here
+// keeps linear.
 function drawnConnectors(opts: {
   pairs: LinkedPair[]
   displayedRegions: { refName: string; reversed?: boolean }[]
@@ -101,9 +102,15 @@ function drawnConnectors(opts: {
     ...opts,
     dipFloorPx: opts.dipFloorPx ?? Infinity,
   })
-  return [...feeds].flatMap(([regionIdx, feed]) =>
-    feed.hits.flatMap((hit, i) => {
-      const block = canvasWideBlock(regionIdx, frame.canvasWidth)
+  return [...feeds].flatMap(([regionIdx, feed]) => {
+    const block = canvasWideBlock(regionIdx, frame.canvasWidth)
+    const painted = recordPath()
+    let dashed = false
+    painted.ctx.setLineDash = segments => {
+      dashed ||= segments.length > 0
+    }
+    connectorMark.paintBlock(painted.ctx, feed.channels, block, frame, params)
+    return feed.hits.flatMap((hit, i) => {
       const ink = connectorMark.ink!(feed.channels, block, frame, params, i)
       if (!ink) {
         return []
@@ -119,12 +126,12 @@ function drawnConnectors(opts: {
             ? `M ${x0} ${y0} L ${x3} ${y3}`
             : `M ${x0} ${y0} C ${x1} ${y1} ${x2} ${y2} ${x3} ${y3}`,
         stroke: `rgb(${color & 255},${(color >>> 8) & 255},${(color >>> 16) & 255})`,
-        dash: bits & CONNECTOR_DASHED ? HIDDEN_SEGMENT_DASH : undefined,
+        dashed,
         x1: x0,
         x2: x3,
       }
-    }),
-  )
+    })
+  })
 }
 
 // The straight-line pass's records, as the display resolves them.
@@ -930,7 +937,7 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
     ])
   })
 
-  it('dashes the arc and carries the loci to the hover', () => {
+  it('draws the arc solid and names the loci in its hover', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
@@ -938,14 +945,15 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
       pairs: enumerateConnectorPairs(sections, identity),
     })
     expect(arcs).toHaveLength(1)
-    // The same arc as before the dash existed: the connector is real, only its
-    // directness is not, so nothing about the geometry or the label moves.
+    // The connector is real, only its directness is not, so nothing about
+    // the geometry or the label moves, and the hover is what says so.
     expect(arcs[0]!.d).toMatch(/^M 25359568 5 C .* 25359111 17$/)
     expect(arcs[0]!.label).toBe('Split read (inversion, LL-type)')
-    expect(arcs[0]!.dash).toBe(HIDDEN_SEGMENT_DASH)
-    expect(hiddenSegmentsNote(arcs[0]!.hiddenSegmentsBetween!)).toBe(
+    expect(arcs[0]!.dashed).toBe(false)
+    expect(formatConnectorTooltip(arcs[0]!, () => undefined).lines).toEqual([
+      'Split read (inversion, LL-type)',
       'hidden segments not in view: chr10:600,001-600,199, chr12:700,001-700,183',
-    )
+    ])
   })
 
   // The SA tag names chromosomes in the BAM's own spelling. Reported raw, a
@@ -988,7 +996,7 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
         ...baseOpts,
         displayedRegions: [{ refName: 'chr3' }],
         pairs,
-      })[0]!.dash,
+      })[0]!.hiddenSegmentsBetween,
     ).toBeUndefined()
   })
 
@@ -1329,15 +1337,15 @@ describe('a same-strand junction across segments nothing fetched', () => {
     expect(linesOf(map, identity).size).toBe(0)
   })
 
-  it('draws a dashed straight line between rows, naming the loci', () => {
+  it('draws a solid straight line between rows, naming the loci', () => {
     const arcs = arcOf([0, 1])
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toBe('M 1500 5 L 3000 17')
-    expect(arcs[0]!.dash).toBe(HIDDEN_SEGMENT_DASH)
+    expect(arcs[0]!.dashed).toBe(false)
     expect(arcs[0]!.hiddenSegmentsBetween).toEqual(['chr10:600,001-600,199'])
   })
 
-  // A chain puts both ends on one row, where a straight dash would lie on the
+  // A chain puts both ends on one row, where a straight line would lie on the
   // chain's own connecting line.
   it('bows up over the row when both ends share it', () => {
     const [arc] = arcOf([2, 2])
@@ -1346,7 +1354,6 @@ describe('a same-strand junction across segments nothing fetched', () => {
     expect(cp.sy2).toBe(29)
     expect(cp.cp1y).toBeLessThan(29)
     expect(cp.cp2y).toBeLessThan(29)
-    expect(arc!.dash).toBe(HIDDEN_SEGMENT_DASH)
   })
 })
 

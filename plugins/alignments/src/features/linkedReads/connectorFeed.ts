@@ -6,7 +6,6 @@ import {
 import {
   CONNECTOR_ARROW,
   CONNECTOR_BOW,
-  CONNECTOR_DASHED,
   CONNECTOR_LEADING_2,
   CONNECTOR_MINUS_1,
   CONNECTOR_MINUS_2,
@@ -200,7 +199,6 @@ export function connectorInstance(
         (c.s2 < 0 ? CONNECTOR_MINUS_2 : 0) |
         (c.isSplit ? CONNECTOR_LEADING_2 : 0) |
         (straight ? CONNECTOR_STRAIGHT : 0) |
-        (hidden ? CONNECTOR_DASHED : 0) |
         (loop && arrows ? CONNECTOR_ARROW : 0),
     }
   }
@@ -326,9 +324,9 @@ export interface ConnectorFeedInput {
  * mark projects both ends through the view's region table.
  *
  * A normal connection is a straight segment, a maps-back loop dips a set depth
- * under its row and ends in an arrowhead, a hidden-segment junction is dashed,
- * and everything else dips by `discordantDipPx` (`connectorShape`), or by
- * half the room left above `dipFloorPx` where that is less.
+ * under its row and ends in an arrowhead, and everything else dips by
+ * `discordantDipPx` (`connectorShape`), or by half the room left above
+ * `dipFloorPx` where that is less.
  */
 export function buildConnectorFeeds({
   pairs,

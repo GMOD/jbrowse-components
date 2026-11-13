@@ -23,8 +23,8 @@ import type { LinkedReadLinesUploadData } from './types.ts'
 // The split view's alignment connector width, which draws the same curve.
 export const CURVE_STROKE_WIDTH_PX = 1
 
-// Every pair the line pass leaves: it cannot dash a line or name the loci a
-// junction skips.
+// Every pair the line pass leaves: it draws straight lines within one region
+// and cannot name the loci a junction skips.
 function isConnectorMarkPair(pair: LinkedPair) {
   return !isGpuLinkedReadLine(pair)
 }
@@ -116,7 +116,7 @@ const NO_LINES: ReadonlyMap<number, LinkedReadLinesUploadData> = new Map()
 //
 // `canonicalRefName` turns on the SA walk that finds hidden segments; without
 // it no pair has any, and a junction across unfetched segments would be drawn
-// solid by the line pass as well as dashed by the overlay.
+// by the line pass with no hover naming the loci it skipped.
 export function resolveConnectors(
   map: ReadonlyMap<number, LaidOutPileupData>,
   {

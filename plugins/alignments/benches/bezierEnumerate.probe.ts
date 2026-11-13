@@ -6,8 +6,8 @@
 //        --rounds=<n> (default 15)
 //
 // `enumerateConnectorPairs` short-circuits `crossRegion` on `map.size < 2`, and the
-// dashed hidden-hop mark exists only in the overlay, so a same-region junction
-// that skips an unfetched segment stays solid under that scope. Lifting the
+// hidden-hop note exists only in the overlay, so a same-region junction that
+// skips an unfetched segment names no loci under that scope. Lifting the
 // short-circuit is what would fix it; this prices the grouping that lift would
 // newly pay on the view almost everyone has. Synthetic reads, ONE FIXTURE PER
 // PROCESS — agent-docs/reference/BENCHMARKING.md.

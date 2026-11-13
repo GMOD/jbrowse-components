@@ -1,9 +1,6 @@
 import { arcsToRegionResult } from '../../features/arcs/arcRegions.ts'
 import { buildArcBandFeeds } from '../../features/arcs/bandFeed.ts'
-import {
-  ARC_SHAPE_ARC,
-  ARC_SHAPE_FLAT_SPLIT,
-} from '../../features/arcs/shapes.ts'
+import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
 import { ARC_TICK_FOOT_PX } from '../renderers/arcMarks.ts'
 import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
@@ -92,7 +89,6 @@ test('finds the arc at its apex, and carries its support and region out', () => 
   expect(found?.hit).toMatchObject({ kind: 'arc', support: 5, x1: 100 })
   expect(found?.regionIndex).toBe(0)
   expect(found!.highlight.d).toMatch(/^M/)
-  expect(found!.highlight.dash).toBeUndefined()
   expect(found!.highlight.clip).toEqual({
     x: 0,
     y: 100,
@@ -151,13 +147,4 @@ describe('a band of ticks and no arcs', () => {
       `300 159.0641353123017L${300 + ARC_TICK_FOOT_PX} 159.0641353123017`,
     ])
   })
-})
-
-test('a split-read connector in the read cloud highlights solid, as it draws', () => {
-  const found = hover(150, 150, {
-    cloud: true,
-    arcs: [arc(100, 200, { shapeType: ARC_SHAPE_FLAT_SPLIT, yBp: 2 })],
-  })
-  expect(found?.hit.kind).toBe('arc')
-  expect(found!.highlight.dash).toBeUndefined()
 })

@@ -1,6 +1,6 @@
 export { ARC_HIT_SLOP_PX } from './arcHitRanking.ts'
 export { discordantDipPx } from './discordantDip.ts'
-export { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from './hiddenSegments.ts'
+export { hiddenSegmentsNote } from './hiddenSegments.ts'
 export { default as BreakpointSplitViewChoiceDialog } from './BreakpointSplitViewChoiceDialog.tsx'
 export { launchBreakpointSplitView } from './launchBreakpointSplitView.ts'
 export {

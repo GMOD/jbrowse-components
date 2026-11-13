@@ -31,7 +31,6 @@ export { connectorPlacement } from './connectorPlacement.ts'
 export {
   CONNECTOR_ARROW,
   CONNECTOR_BOW,
-  CONNECTOR_DASHED,
   CONNECTOR_LEADING_2,
   CONNECTOR_MAX_REACH_PX,
   CONNECTOR_MINUS_1,

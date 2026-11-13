@@ -1,7 +1,6 @@
 import { getDpr } from '../canvas2dUtils.ts'
 import {
   CONNECTOR_CURVE_SEGMENTS,
-  CONNECTOR_DASHED,
   CONNECTOR_MAX_HANDLE_PX,
   CONNECTOR_MAX_REACH_PX,
 } from '../shaders/connectorMark.consts.generated.ts'
@@ -24,7 +23,7 @@ import type { InkRect, MarkFrame, MarkShape } from './types.ts'
  * px a dipping connector reaches below its ends, or `CONNECTOR_BOW` for one
  * that bows up over its row; `width` the stroke in CSS px; `color` ABGR with
  * its alpha; `bits` the `CONNECTOR_*` flags: each end's strand, a split
- * junction's leading second end, a straight segment, a dash, an arrowhead.
+ * junction's leading second end, a straight segment, an arrowhead.
  */
 export interface ConnectorChannels {
   x: Uint32Array
@@ -48,8 +47,6 @@ export interface ConnectorParams {
   rowPitchPx: number
   /** How far an arrowhead's arms reach back and off the row. */
   arrowPx: number
-  /** A dashed connector's `[dash, gap]` in CSS px, starting on a dash. */
-  strokeDash?: readonly [number, number]
   maxHandlePx?: number
 }
 
@@ -261,8 +258,6 @@ export const connectorMark: MarkShape<ConnectorChannels, ConnectorParams> = {
       rowOffsetPx: params.rowOffsetPx,
       rowPitchPx: params.rowPitchPx,
       maxHandlePx: params.maxHandlePx ?? CONNECTOR_MAX_HANDLE_PX,
-      dashPx: params.strokeDash?.[0] ?? 0,
-      gapPx: params.strokeDash?.[1] ?? 0,
       arrowPx: params.arrowPx,
       zero: 0,
       ...viewRegionUniforms(params.regions, block.displayedRegionIndex),
@@ -276,7 +271,6 @@ export const connectorMark: MarkShape<ConnectorChannels, ConnectorParams> = {
   paintBlock(ctx, c, block, frame, params) {
     const own = block.displayedRegionIndex
     const dpr = getDpr()
-    const dash = params.strokeDash ? [...params.strokeDash] : []
     ctx.lineCap = 'butt'
     for (let i = 0; i < c.count; i++) {
       if (
@@ -287,18 +281,15 @@ export const connectorMark: MarkShape<ConnectorChannels, ConnectorParams> = {
       }
       ctx.lineWidth = PLACED.strokePx
       ctx.strokeStyle = abgrToCssRgba(c.color[i]!)
-      ctx.setLineDash((c.bits[i]! & CONNECTOR_DASHED) !== 0 ? dash : [])
       ctx.beginPath()
       traceCurve(ctx, PLACED)
       ctx.stroke()
       if (PLACED.arrow) {
-        ctx.setLineDash([])
         ctx.beginPath()
         traceArrow(ctx, PLACED, params.arrowPx)
         ctx.stroke()
       }
     }
-    ctx.setLineDash([])
   },
 
   ink(c, block, _frame, params, i) {

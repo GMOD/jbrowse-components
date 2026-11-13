@@ -2,11 +2,7 @@ import { isAbnormalConnection } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { assembleLocString, bezierConnectorPath } from '@jbrowse/core/util'
-import {
-  HIDDEN_SEGMENT_DASH,
-  discordantDipPx,
-  hiddenSegmentsNote,
-} from '@jbrowse/sv-core'
+import { discordantDipPx, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import { readIdOf, readNameOf, readSpanOf } from '../readChains.ts'
@@ -101,7 +97,6 @@ const AlignmentConnections = observer(function AlignmentConnections(
               // and boxes every segment, across every panel it visits
               emphasisGroup: `chain-${chainIndex}`,
               stroke: alpha(color, CONNECTION_ALPHA),
-              strokeDasharray: hiddenNote ? HIDDEN_SEGMENT_DASH : undefined,
               tooltip: () =>
                 buildPairTooltip(
                   entryLabel(e1),

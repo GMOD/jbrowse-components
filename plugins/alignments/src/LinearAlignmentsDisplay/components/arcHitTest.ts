@@ -29,7 +29,6 @@ export interface ArcHighlight {
   d: string
   clip: ArcBandClip
   lineWidth: number
-  dash?: string
 }
 
 /**
@@ -165,7 +164,6 @@ export function resolveArcBandHover(
         height: band.height,
       },
       lineWidth: recorder.lineWidth,
-      dash: recorder.dash,
     },
   }
 }

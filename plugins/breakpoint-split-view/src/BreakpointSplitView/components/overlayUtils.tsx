@@ -182,7 +182,6 @@ export interface PathSpec {
    */
   emphasisGroup?: string
   stroke?: string
-  strokeDasharray?: string
 }
 
 export interface OverlayContext {
@@ -271,7 +270,6 @@ export const OverlayPaths = observer(function OverlayPaths({
               d={spec.path}
               data-testid={pathTestId}
               strokeWidth={isEmphasized(spec) ? hoverStrokeWidth : strokeWidth}
-              strokeDasharray={spec.strokeDasharray}
               {...(spec.stroke ? getStrokeProps(spec.stroke) : undefined)}
             />
             {yOffsetsOverride === undefined ? (

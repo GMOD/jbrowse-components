@@ -4,14 +4,12 @@ const ELLIPSE_SEGMENTS = 48
 
 /**
  * A 2D context that records what a painter traces as one SVG path, with the
- * widest stroke and the dash it stroked with, so a highlight lies on the ink a
- * shape painted rather than on a second tracing of it. Transforms are not
- * followed; a painter that sets one records untransformed.
+ * widest stroke, so a highlight lies on the ink a shape painted rather than on
+ * a second tracing of it. Transforms are not followed; a painter that sets one
+ * records untransformed.
  */
 export function recordPath() {
   const parts: string[] = []
-  let dash: number[] = []
-  let strokedDash: number[] = []
   let strokedWidth = 0
   let inSubpath = false
   const ctx: MarkContext2D = {
@@ -60,18 +58,13 @@ export function recordPath() {
       }
       inSubpath = true
     },
-    setLineDash(segments) {
-      dash = segments
-    },
+    setLineDash() {},
     closePath() {
       parts.push('Z')
     },
     fill() {},
     stroke() {
       strokedWidth = Math.max(strokedWidth, this.lineWidth)
-      if (dash.length > 0) {
-        strokedDash = dash
-      }
     },
   }
   return {
@@ -82,9 +75,6 @@ export function recordPath() {
     /** The widest stroke traced, 0 for a shape that only fills. */
     get lineWidth() {
       return strokedWidth
-    },
-    get dash() {
-      return strokedDash.length > 0 ? strokedDash.join(' ') : undefined
     },
   }
 }

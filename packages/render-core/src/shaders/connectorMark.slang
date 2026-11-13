@@ -11,11 +11,11 @@
 // The hull is a triangle strip along the curve inflated by the half stroke and
 // one antialiasing ramp, and the fragment fades on its distance across, which
 // the strip's straight sections carry exactly. An instance can end in an open
-// arrowhead, and a straight one can be dashed.
+// arrowhead.
 //! targets: wgsl, glsl
 //! topology: triangle-strip
 //! coverage: analytic
-//! export-consts: CONNECTOR_CURVE_SEGMENTS, CONNECTOR_BOW, CONNECTOR_MAX_REACH_PX, CONNECTOR_APEX_RATIO, CONNECTOR_MAX_HANDLE_PX, CONNECTOR_MINUS_1, CONNECTOR_MINUS_2, CONNECTOR_LEADING_2, CONNECTOR_STRAIGHT, CONNECTOR_DASHED, CONNECTOR_ARROW
+//! export-consts: CONNECTOR_CURVE_SEGMENTS, CONNECTOR_BOW, CONNECTOR_MAX_REACH_PX, CONNECTOR_APEX_RATIO, CONNECTOR_MAX_HANDLE_PX, CONNECTOR_MINUS_1, CONNECTOR_MINUS_2, CONNECTOR_LEADING_2, CONNECTOR_STRAIGHT, CONNECTOR_ARROW
 //! js-export: connectorBudgetPx, connectorHandlePx, connectorLiftPx, connectorTangent, connectorStrokePx, connectorArrowFits
 
 import antialias;
@@ -58,8 +58,7 @@ public static const uint CONNECTOR_MINUS_1 = 1u;
 public static const uint CONNECTOR_MINUS_2 = 2u;
 public static const uint CONNECTOR_LEADING_2 = 4u;
 public static const uint CONNECTOR_STRAIGHT = 8u;
-public static const uint CONNECTOR_DASHED = 16u;
-public static const uint CONNECTOR_ARROW = 32u;
+public static const uint CONNECTOR_ARROW = 16u;
 
 struct ConnectorInstance {
   uint  x        : ATTR0;
@@ -81,8 +80,6 @@ struct Uniforms {
   float  rowOffsetPx;
   float  rowPitchPx;
   float  maxHandlePx;
-  float  dashPx;
-  float  gapPx;
   float  arrowPx;
   uint   regionCount;
   float  zero;
@@ -96,11 +93,9 @@ struct Uniforms {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
-  // Signed px from the centreline, and px along it from the `x` end.
+  // Signed px from the centreline.
   float  across   : COLOR1;
-  float  along    : COLOR2;
-  nointerpolation float halfWidthPx : COLOR3;
-  nointerpolation float dashed      : COLOR4;
+  nointerpolation float halfWidthPx : COLOR2;
 };
 
 // How much shaping a curve may spend: a share of the distance it covers.
@@ -195,31 +190,17 @@ Cubic placeCubic(ConnectorInstance inst, float4 entry2) {
   return c;
 }
 
-// The curve's length up to segment `seg`, as the strip's chords measure it.
-float lengthTo(Cubic c, uint seg) {
-  float total = 0.0;
-  float2 prev = c.p0;
-  for (uint k = 1u; k <= seg; k++) {
-    float2 next = cubicAt(c, float(k) / float(CONNECTOR_CURVE_SEGMENTS));
-    total += length(next - prev);
-    prev = next;
-  }
-  return total;
-}
-
 struct StripVertex {
   float2 screen;
   float across;
-  float along;
 };
 
-StripVertex curveVertex(Cubic c, uint seg, float side, float hw, bool dashed) {
+StripVertex curveVertex(Cubic c, uint seg, float side, float hw) {
   float t = float(seg) / float(CONNECTOR_CURVE_SEGMENTS);
   float2 dir = cubicDirection(c, t);
   StripVertex v;
   v.across = side * hw;
   v.screen = cubicAt(c, t) + float2(-dir.y, dir.x) * v.across;
-  v.along = dashed ? lengthTo(c, seg) : 0.0;
   return v;
 }
 
@@ -237,7 +218,6 @@ StripVertex armCorner(Cubic c, uint a, uint corner, float hw, float strand2, boo
   float2 dir = axis / len;
   StripVertex v;
   v.across = (corner % 2u == 0u) ? -hw : hw;
-  v.along = 0.0;
   float at = corner >= 2u ? len : 0.0;
   v.screen = c.p3 + dir * at + float2(-dir.y, dir.x) * v.across;
   return v;
@@ -250,16 +230,14 @@ VsOut vs_main(ConnectorInstance inst, uint vid : SV_VertexID) {
   Cubic c = placeCubic(inst, entry2);
   float halfWidth = 0.5 * connectorStrokePx(inst.width, u.devicePixelRatio);
   float hw = halfWidth + aaHalfPx(u.devicePixelRatio);
-  bool dashed = (inst.bits & CONNECTOR_DASHED) != 0u;
   bool arrow = (inst.bits & CONNECTOR_ARROW) != 0u
     && connectorArrowFits(c.p3.x - c.p0.x, u.arrowPx) != 0.0;
   float strand2 = 1.0 - 2.0 * bitSet(inst.bits, CONNECTOR_MINUS_2);
   bool reversed2 = entry2.w < 0.0;
 
   StripVertex v;
-  bool onArm = false;
   if (vid < CURVE_VERTS) {
-    v = curveVertex(c, vid / 2u, (vid % 2u == 0u) ? -1.0 : 1.0, hw, dashed);
+    v = curveVertex(c, vid / 2u, (vid % 2u == 0u) ? -1.0 : 1.0, hw);
   } else {
     uint j = vid - CURVE_VERTS;
     uint a = j / ARM_VERTS;
@@ -267,14 +245,13 @@ VsOut vs_main(ConnectorInstance inst, uint vid : SV_VertexID) {
     // The block starts from the vertex before it: the curve's last, or the
     // first arm's last corner.
     StripVertex start = a == 0u
-      ? curveVertex(c, CONNECTOR_CURVE_SEGMENTS, 1.0, hw, dashed)
+      ? curveVertex(c, CONNECTOR_CURVE_SEGMENTS, 1.0, hw)
       : (arrow ? armCorner(c, 0u, 3u, hw, strand2, reversed2)
-               : curveVertex(c, CONNECTOR_CURVE_SEGMENTS, 1.0, hw, dashed));
+               : curveVertex(c, CONNECTOR_CURVE_SEGMENTS, 1.0, hw));
     if (k == 0u || !arrow) {
       v = start;
     } else {
       v = armCorner(c, a, k <= 2u ? 0u : k - 2u, hw, strand2, reversed2);
-      onArm = true;
     }
   }
 
@@ -285,18 +262,12 @@ VsOut vs_main(ConnectorInstance inst, uint vid : SV_VertexID) {
     : float4(-2.0, -2.0, 0.0, 1.0);
   o.color = unpackRGBA(inst.color);
   o.across = v.across;
-  o.along = v.along;
   o.halfWidthPx = halfWidth;
-  o.dashed = dashed && !onArm ? 1.0 : 0.0;
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float dash = fragIn.dashed > 0.5 && u.dashPx > 0.0
-    ? dashCoverage(fragIn.along, u.dashPx, u.gapPx, u.devicePixelRatio)
-    : 1.0;
-  float alpha = strokeCoverage(fragIn.halfWidthPx, abs(fragIn.across), u.devicePixelRatio)
-    * dash;
+  float alpha = strokeCoverage(fragIn.halfWidthPx, abs(fragIn.across), u.devicePixelRatio);
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

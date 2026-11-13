@@ -88,7 +88,7 @@ noticing in a diff.
 | type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'RibbonCurves' is outside the supported scalar subset | 8 | `bandNormal`, `bandWidthAt`, `curvesCross`, `curvesMeet`, `firstCurve`, `refineCrossing`, … |
 | type 'vec3' is outside the supported scalar subset | 7 | `baseColor`, `bpRange`, `buttSegmentCoverage`, `capsuleDist`, `categoryPaletteColor`, `getReadColor`, … |
-| type 'Cubic' is outside the supported scalar subset | 6 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex`, `lengthTo` |
+| type 'Cubic' is outside the supported scalar subset | 5 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex` |
 | type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markScaleColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
 | type 'VsOut' is outside the supported scalar subset | 4 | `culled`, `linkDash`, `linkDashAlong`, `linkDistance` |

@@ -129,8 +129,8 @@ There are two right answers and the choice is per consumer:
 - **A connector draws the junction and marks it.** `splitJunctions`
   (`readGroupConnections.ts`) emits the junction, counts the read's own segments
   lying strictly between the two on-screen ones, and passes the loci up — which
-  the alignments connector mark and the breakpoint split view both draw dashed and name in
-  their hover. A reader following one molecule loses the thread if the
+  the alignments connector mark and the breakpoint split view both draw solid
+  and name in their hover. A reader following one molecule loses the thread if the
   connector disappears.
 - **An aggregate emits nothing.** `unpairedChainArcs` withholds the junction,
   because in a band whose marks are being counted a wrong junction becomes
@@ -141,7 +141,7 @@ than being the silence left by a `continue`. A
 same-strand junction reaches the overlay too, though the straight-line pass
 would otherwise own it: that pass leaves any pair with hidden segments alone
 (`isGpuLinkedReadLine`), and where both ends share a row, as a chain's do, the
-dashed line bows up over the row instead of lying on the chain's connecting
+line bows up over the row instead of lying on the chain's connecting
 line. A same-row junction with one of the read's FETCHED alignments between its
 ends, as on der(3)'s return from chr12 into the inverted chr3 arm, would paint
 over that alignment, so the overlay dips it (`crossesOwnAlignment`).

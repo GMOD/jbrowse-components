@@ -1,7 +1,6 @@
 import {
   CONNECTOR_ARROW,
   CONNECTOR_BOW,
-  CONNECTOR_DASHED,
   CONNECTOR_LEADING_2,
   CONNECTOR_MINUS_2,
   CONNECTOR_STRAIGHT,
@@ -39,7 +38,6 @@ const params: ConnectorParams = {
   rowOffsetPx: 5,
   rowPitchPx: 10,
   arrowPx: 4,
-  strokeDash: [4, 3],
 }
 
 interface Row {
@@ -180,15 +178,17 @@ function paint(c: ConnectorChannels) {
   return { ctx: spy, dashes, styles, strokes }
 }
 
-test('the painter strokes in the instance color with its alpha, dashing only a dashed one', () => {
-  const { dashes, styles } = paint(
+test('the painter strokes in the instance color with its alpha, and never dashes', () => {
+  const { dashes, styles, strokes } = paint(
     channels([
       { x: 100, x2: 400, color: 0xcc0000ff },
-      { x: 100, x2: 400, bits: CONNECTOR_DASHED },
+      { x: 100, x2: 400, bits: CONNECTOR_STRAIGHT },
+      { x: 100, x2: 400, bits: CONNECTOR_ARROW },
     ]),
   )
   expect(styles[0]).toBe(abgrToCssRgba(0xcc0000ff))
-  expect(dashes.slice(0, 2)).toEqual([[], [4, 3]])
+  expect(strokes).toBe(4)
+  expect(dashes.filter(d => d.length > 0)).toEqual([])
 })
 
 test('an arrowhead strokes its two arms at the far end', () => {

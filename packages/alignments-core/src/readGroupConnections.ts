@@ -60,7 +60,7 @@ export interface ReadConnection<E> {
   // order and that no fetched entry carries — the junction joins two segments
   // that are read-adjacent on screen and not on the molecule. Absent when the
   // two really are consecutive, and on every mate link. The connector mark and
-  // the breakpoint split view both dash such a junction.
+  // the breakpoint split view both name the loci in the junction's hover.
   hiddenSegmentsBetween?: string[]
 }
 
@@ -264,7 +264,7 @@ function hiddenSegments<E extends MinEntry>(
 // SA tags declare a segment between the two — a hop this view never fetched —
 // the junction still gets emitted (the reader is following one molecule, and
 // dropping the connector loses the thread) but names the loci it skipped, which
-// is what the overlay draws dashed. The arc band answers the same question by
+// is what the overlay's hover names. The arc band answers the same question by
 // emitting nothing there (`unpairedChainArcs`), which is right for an aggregate
 // where a wrong junction would be counted.
 //
