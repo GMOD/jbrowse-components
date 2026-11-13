@@ -105,7 +105,6 @@ const Legend = observer(function Legend({
             y1={0}
             y2={BAR_PX}
             stroke={palette.text.secondary}
-            strokeDasharray="3 2"
           />
         </svg>
         <span>reference allele · {formatBp(referenceBp)}</span>
@@ -366,7 +365,6 @@ const TandemRepeatPanel = observer(function TandemRepeatPanel({
             y1={AXIS_PX - 3}
             y2={height - PAD / 2}
             stroke={faint}
-            strokeDasharray="3 2"
           />
           {rows.map((allele, i) => (
             <Row
