@@ -201,11 +201,20 @@ export function isSameAssemblyName(
  * ({@link getSequenceAssemblyConf}).
  *
  * A frozen {@link TrackConfigEntry} omits a slot at its default, so one
- * without `assemblyNames` names the slot's default, `[]`.
+ * without `assemblyNames` names the slot's default, `[]` — except a frozen
+ * sequence track, which is what `getTrackById` answers for one in a session
+ * that keeps track edits (`withSequenceEdits`), and which only the assemblies
+ * that `owners` lists can name.
  */
-function confAssemblyNames(conf: AnyConfiguration) {
+function confAssemblyNames(conf: AnyConfiguration, owners?: SequenceOwners) {
   if (!isConfigurationModel(conf)) {
-    return (conf.assemblyNames as string[] | undefined) ?? []
+    const assembly =
+      conf.type === 'ReferenceSequenceTrack' && owners
+        ? sequenceOwner(owners, conf.trackId)
+        : undefined
+    return assembly
+      ? [readConfObject(assembly, 'name')]
+      : ((conf.assemblyNames as string[] | undefined) ?? [])
   }
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
     | string[]
@@ -238,11 +247,21 @@ export function getSequenceAssemblyConf(conf: AnyConfigurationModel) {
       : undefined
 }
 
+/**
+ * The assemblies a sequence track's trackId is looked up among, which an
+ * assembly manager is.
+ */
+export interface SequenceOwners {
+  assemblyList: BaseAssemblyConfigModel[]
+}
+
+function sequenceOwner(owners: SequenceOwners, trackId: unknown) {
+  return owners.assemblyList.find(a => a.sequence.trackId === trackId)
+}
+
 function assemblyBySequenceId(conf: AnyConfigurationModel) {
-  const { rootModel } = getEnv(conf).pluginManager
-  return rootModel?.session?.assemblyManager.assemblyList.find(
-    a => a.sequence.trackId === conf.trackId,
-  )
+  const owners = getEnv(conf).pluginManager.rootModel?.session?.assemblyManager
+  return owners ? sequenceOwner(owners, conf.trackId) : undefined
 }
 
 export function getConfAssemblyNames(conf: AnyConfiguration) {
@@ -263,9 +282,16 @@ export function getConfAssemblyNames(conf: AnyConfiguration) {
  * which is a second, subtly different copy of the walk above — and one that
  * answers `[]` for a ReferenceSequenceTrack whose assembly this already knows
  * how to name.
+ *
+ * A caller holding a `getTrackById` answer passes the session's assembly
+ * manager as `owners`, since a frozen sequence track names its assembly only
+ * through it.
  */
-export function getConfAssemblyNamesOrNone(conf: AnyConfiguration) {
-  return confAssemblyNames(conf) ?? []
+export function getConfAssemblyNamesOrNone(
+  conf: AnyConfiguration,
+  owners?: SequenceOwners,
+) {
+  return confAssemblyNames(conf, owners) ?? []
 }
 
 /**

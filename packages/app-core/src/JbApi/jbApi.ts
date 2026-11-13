@@ -1238,8 +1238,12 @@ async function trackAssembly(
   requested: string | undefined,
 ) {
   // getConfAssemblyNamesOrNone, not the assemblyNames slot: an assembly's own
-  // sequence track has no such slot and answers through its parent assembly
-  const trackAssemblies = getConfAssemblyNamesOrNone(conf)
+  // sequence track has no such slot and answers through the assembly holding
+  // it, which a session's detached copy of it finds by trackId
+  const trackAssemblies = getConfAssemblyNamesOrNone(
+    conf,
+    session.assemblyManager,
+  )
   const assemblyName = requested ?? trackAssemblies[0]
   if (assemblyName === undefined) {
     throw new Error('The track names no assembly; pass assembly explicitly')
@@ -1828,7 +1832,10 @@ export function createJbApi(
             ]
           : await visibleRegionsOf(session, fetchArgs.viewId, {
               preferTrackId: fetchArgs.trackId,
-              trackAssemblies: getConfAssemblyNamesOrNone(conf),
+              trackAssemblies: getConfAssemblyNamesOrNone(
+                conf,
+                session.assemblyManager,
+              ),
               signal,
             })
       return fetchFeatures(
@@ -1972,7 +1979,7 @@ async function showCatalogTrack(
   const track = {
     trackId: conf.trackId,
     trackType: conf.type,
-    assembly: getConfAssemblyNamesOrNone(conf)[0],
+    assembly: getConfAssemblyNamesOrNone(conf, session.assemblyManager)[0],
   }
   const adapterType = (conf.adapter as { type?: string } | undefined)?.type
   const summary = { ...track, ...(adapterType ? { adapterType } : {}) }

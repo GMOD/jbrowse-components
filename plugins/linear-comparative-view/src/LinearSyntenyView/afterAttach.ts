@@ -216,7 +216,9 @@ async function applyInitSyntenyTracks(
         return (entry.assemblyNames as string[] | undefined) ?? []
       }
       const conf = session.getTrackById(entry)
-      return conf ? getConfAssemblyNamesOrNone(conf) : undefined
+      return conf
+        ? getConfAssemblyNamesOrNone(conf, session.assemblyManager)
+        : undefined
     },
     assemblyManager: session.assemblyManager,
   })
