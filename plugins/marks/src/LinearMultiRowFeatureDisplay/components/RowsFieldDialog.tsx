@@ -15,12 +15,14 @@ import type { AttributeScanModel } from '@jbrowse/display-kit/AttributeFieldInpu
 const RowsFieldDialog = observer(function RowsFieldDialog({
   model,
   handleClose,
+  onDismiss,
 }: {
   model: AttributeScanModel & {
     rowsField: string
     setRowsField: (field: string) => void
   }
   handleClose: () => void
+  onDismiss?: () => void
 }) {
   const [attribute, setAttribute] = useState(model.rowsField)
   const trimmed = attribute.trim()
@@ -31,6 +33,7 @@ const RowsFieldDialog = observer(function RowsFieldDialog({
       submitText="Apply"
       submitDisabled={!trimmed}
       onCancel={() => {
+        onDismiss?.()
         handleClose()
       }}
       onSubmit={() => {

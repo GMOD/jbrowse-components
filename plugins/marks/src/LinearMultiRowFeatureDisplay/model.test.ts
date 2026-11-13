@@ -136,7 +136,7 @@ test("unwritten, each rect carries its feature's name, else its id, and never a 
   expect(layer!.tooltip).toEqual(['VCV1', 'v2'])
 })
 
-test('features carrying none of the rows field in force draw in one row, and the display asks once, writing nothing', () => {
+test('features carrying none of the rows field in force draw in one row, and the display asks once, writing nothing until the ask is answered', () => {
   const model = display({})
   const queueDialog = jest.spyOn(getSession(model), 'queueDialog')
   loaded(model)
@@ -157,6 +157,51 @@ test('features carrying none of the rows field in force draw in one row, and the
   loaded(written)
   expect(written.rowsHint?.text).toBe('One row per...')
   expect(asked).toHaveBeenCalledTimes(1)
+})
+
+function renderQueuedDialog(
+  model: LinearMultiRowFeatureDisplayModel,
+  queueDialog: jest.SpyInstance,
+) {
+  const [Dialog, props] = queueDialog.mock.calls[0]![0](() => {})
+  render(createElement(Suspense, null, createElement(Dialog, props)))
+  return model
+}
+
+test('dismissing the unasked picker chooses one row, written to the track config, so a reload or another instance draws it with no dialog', async () => {
+  const env = createTestEnvironment({})
+  const model = env.createDisplay().display
+  const queueDialog = jest.spyOn(getSession(model), 'queueDialog')
+  loaded(model)
+  renderQueuedDialog(model, queueDialog)
+  fireEvent.click(await screen.findByText('Cancel'))
+  expect(getSnapshot(model.conf.rows)).toEqual({ field: '' })
+  expect(model.rowsField).toBe('')
+  expect(model.drawsRows).toBe(false)
+  expect(model.rowsHint).toBeUndefined()
+
+  const sibling = env.createDisplay().display
+  const siblingAsked = jest.spyOn(getSession(sibling), 'queueDialog')
+  loaded(sibling)
+  expect(siblingAsked).not.toHaveBeenCalled()
+  expect(sibling.drawsRows).toBe(false)
+  expect(sibling.rowsHint).toBeUndefined()
+
+  const reloaded = display({ rows: getSnapshot(model.conf.rows) })
+  const reloadedAsked = jest.spyOn(getSession(reloaded), 'queueDialog')
+  loaded(reloaded)
+  expect(reloadedAsked).not.toHaveBeenCalled()
+  expect(reloaded.drawsRows).toBe(false)
+  expect(reloaded.rowsHint).toBeUndefined()
+})
+
+test('opening One row per from the menu and cancelling writes nothing', async () => {
+  const model = loaded(display({}), VARIANTS)
+  const queueDialog = jest.spyOn(getSession(model), 'queueDialog')
+  model.openRowsFieldDialog()
+  renderQueuedDialog(model, queueDialog)
+  fireEvent.click(await screen.findByText('Cancel'))
+  expect(getSnapshot(model.conf.rows)).toEqual({})
 })
 
 test('one row is a written choice the default never overrides, and Type returns to the declared default', () => {

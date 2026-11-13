@@ -79,8 +79,8 @@ export function stateModelFactory(
     .volatile(() => ({
       /**
        * #volatile
-       * Whether One row per has been offered or picked, so the display asks
-       * once.
+       * Whether One row per has been offered or picked in this session, so a
+       * pick of the default itself, which writes nothing, is not asked again.
        */
       rowsFieldAsked: false,
     }))
@@ -222,6 +222,23 @@ export function stateModelFactory(
       },
       /**
        * #action
+       * The picker the display opens unasked: dismissing it chooses one row,
+       * written so the choice outlives the session and no instance asks again.
+       */
+      askRowsField() {
+        getDialogHost(self).queueDialog(handleClose => [
+          RowsFieldDialog,
+          {
+            model: self,
+            handleClose,
+            onDismiss: () => {
+              self.setRowsField('')
+            },
+          },
+        ])
+      },
+      /**
+       * #action
        * Color by's Attribute....
        */
       openColorByAttributeDialog() {
@@ -255,14 +272,15 @@ export function stateModelFactory(
     .actions(self => ({
       afterAttach() {
         // Where no feature in view carries the rows field in force, `type`
-        // by default, ask once which attribute the rows stand for, as the
-        // mark display opens its plot dialog on an undecided plot.
+        // by default, ask which attribute the rows stand for, as the mark
+        // display opens its plot dialog on an undecided plot; a dismissal
+        // writes one row, a pick writes its field, and either ends the asking.
         addDisposer(
           self,
           autorun(() => {
             if (!self.rowsFieldAsked && self.featuresCarryRowsField === false) {
               self.setRowsFieldAsked()
-              self.openRowsFieldDialog()
+              self.askRowsField()
             }
           }),
         )

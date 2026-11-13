@@ -82,11 +82,15 @@ it.
 - **Else ask.** Where the loaded regions, split on the field in force
   (default or written), hold features and none carries it (a plain BED or
   RepeatMasker's table has no `type`), every feature draws in the one row of
-  no value, a "One row per..." chip shows, and the display opens the picker
-  once in its life, as the mark display opens Edit plot on an undecided plot.
-  The loaded regions are the whole view the render fetch read, the same
-  features the candidates RPC would download again, so the decision costs no
-  fetch and reads no sample; nothing of it is written.
+  no value, a "One row per..." chip shows, and the display opens the picker,
+  as the mark display opens Edit plot on an undecided plot. Dismissing it is
+  choosing one row, so it writes `rows.field: ''` through `setConf`: a written
+  field is no longer the default, and neither a reload, a share link nor
+  another instance of the track asks again (2026-11-13; it was once a volatile
+  flag, asking again in every session). The loaded regions are the whole view
+  the render fetch read, the same features the candidates RPC would download
+  again, so the decision costs no fetch and reads no sample; asking writes
+  nothing.
 - **Formats state their plot.** The protein-domain tutorial, its build script
   and figure spec write `rows: 'name'`, the transcript-and-matches marks and
   `encoding.color: { field: 'name' }`; "Edit plot..." offers the same plot as an
