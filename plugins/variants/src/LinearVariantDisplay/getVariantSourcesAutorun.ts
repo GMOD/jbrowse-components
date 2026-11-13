@@ -13,6 +13,7 @@ export function getVariantSourcesAutorun(
     setSources: (
       sources: Source[],
       adapterConfig: Record<string, unknown>,
+      warnings: string[],
     ) => void
   },
 ) {
@@ -33,16 +34,7 @@ export function getVariantSourcesAutorun(
     run: (adapterConfig, ctx) =>
       ctx.callRpc('MultiSampleVariantGetSources', { adapterConfig }),
     commit: ({ adapterConfig, value: { sources, warnings } }) => {
-      self.setSources(sources, adapterConfig)
-      // A `samplesTsv` that matches only some of the VCF's samples still
-      // draws, but silently dropping the rest is a config mistake worth
-      // surfacing — and this fetch runs in the worker, whose console nobody is
-      // looking at. `notify` dedupes by message, so a refetch of the same file
-      // doesn't stack them.
-      for (const warning of warnings) {
-        console.warn(warning)
-        getNotificationSink(self).notify(warning, 'warning')
-      }
+      self.setSources(sources, adapterConfig, warnings)
     },
     // The sample list is a prerequisite for everything this display draws, so a
     // failure here is not a partial result — the band is empty either way.

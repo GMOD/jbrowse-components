@@ -378,6 +378,12 @@ export function stateModelFactory(
         sampleListing: undefined as AdapterRead<Source[]> | undefined,
         /**
          * #volatile
+         * What the samples table disagreed with the VCF's samples about, as
+         * the sample list came back with it.
+         */
+        sampleWarnings: [] as string[],
+        /**
+         * #volatile
          * The fetched per-display data, replaced whole by each fetch.
          */
         cellData: undefined as CellDataResult | undefined,
@@ -691,11 +697,13 @@ export function stateModelFactory(
 
         /**
          * #getter
+         * What the samples table disagreed with the VCF's samples about,
          * `rowNotices`, and each `filter` field no loaded variant carries,
          * pointing at `rows.filter` where it is a row attribute.
          */
         get liveNotices(): string[] {
           return [
+            ...(self.adapterSamples ? self.sampleWarnings : []),
             ...self.rowNotices,
             ...(self.cellData?.unreadFilterFields ?? []).map(field =>
               self.unreadFilterFieldNotice(field, 'variant'),
@@ -907,7 +915,14 @@ export function stateModelFactory(
           /**
            * #action
            */
-          setSources(sources: Source[], adapterConfig = self.adapterConfig) {
+          setSources(
+            sources: Source[],
+            adapterConfig = self.adapterConfig,
+            warnings: string[] = [],
+          ) {
+            if (!deepEqual(warnings, self.sampleWarnings)) {
+              self.sampleWarnings = warnings
+            }
             const held = self.sampleListing?.value
             if (held !== undefined && deepEqual(sources, held)) {
               self.sampleListing = { adapterConfig, value: held }
