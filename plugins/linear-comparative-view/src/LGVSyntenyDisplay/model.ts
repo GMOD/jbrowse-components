@@ -15,6 +15,7 @@ import {
   getFiltersMenuItems,
   getHitMenuItems,
   getSortMenuItem,
+  sectionOrderResetItems,
 } from '@jbrowse/plugin-alignments'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the alignments display model would undo that display's lazy loading.
@@ -299,6 +300,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           }),
           ...getFiltersMenuItems(self),
           getSyntenyGroupByMenuItem(self),
+          ...sectionOrderResetItems(self),
           ...getSyntenyShowMenuItems(self),
           // Same submenu the synteny view and dotplot show, from one source, so
           // the three surfaces can't word the same setting differently

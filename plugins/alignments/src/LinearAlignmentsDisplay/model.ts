@@ -164,6 +164,7 @@ import {
   getSashimiPlacementItems,
   getSortMenuItem,
   getTrackSizingItems,
+  sectionOrderResetItems,
 } from './menus/index.ts'
 import {
   arcViews,
@@ -742,7 +743,7 @@ export default function stateModelFactory(
                   this.groupRowCaps.has(g.key) &&
                   !self.collapsedGroups.has(g.key),
               )
-              ? `Every group is drawn on one row — turn off "Collapse groups to one row"${self.fitHeightToDisplay ? '' : ', or expand a group from its label,'} to sort`
+              ? `Every group is drawn on one row — turn off "Show groups as one row"${self.fitHeightToDisplay ? '' : ', or expand a group from its label,'} to sort`
               : undefined
           },
 
@@ -1115,8 +1116,8 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The drawn lanes that lay out no read rows: every one with Show →
-         * Pileup off, else those collapsed to their coverage.
+         * The drawn lanes that lay out no read rows: every one with "Show
+         * pileup" off, else those collapsed to their coverage.
          */
         get rowlessLaneKeys(): ReadonlySet<string> {
           return new Set(
@@ -2961,6 +2962,7 @@ export default function stateModelFactory(
               narrowings: { bases: basesFilterNarrowing(self) },
             }),
             getGroupByMenuItem(self),
+            ...sectionOrderResetItems(self),
             ...getReadsMenuItems(self),
             getFeatureHeightMenuItem(self, self.featureNoun, pileupGate),
             getReadConnectionsMenuItem(self),

@@ -19,7 +19,7 @@ test('grouped, it offers one checkbox that reflects the setting', () => {
   const items = collapseSectionsItems(
     makeModel({ collapseSections: true }).model,
   )
-  expect(items.map(i => i.label)).toEqual(['Collapse groups to one row'])
+  expect(items.map(i => i.label)).toEqual(['Show groups as one row'])
   expect(items[0]!.checked).toBe(true)
 })
 

@@ -272,8 +272,8 @@ sections, one per value of a field. Three track-menu items set the pileup up for
 reading strain by strain:
 
 - pick **Group by → Mate assembly** to give each strain a section, then untick
-  **Show → Collapse groups to one row** to stack every section, or expand one
-  from its label
+  **Show → Show groups as one row** to stack every section, or expand one from
+  its label
 - tick **Group by → Hide self-alignment lane** to drop the section for the
   strain you're viewing, as in the figures below
 - tick **Show → Show coverage** to add a histogram of how many other strains

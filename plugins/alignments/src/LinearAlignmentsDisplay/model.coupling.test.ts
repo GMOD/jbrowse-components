@@ -656,7 +656,7 @@ describe('ordering controls in chain mode', () => {
     expect(display.collapseSections).toBe(true)
     expect(display.canCollapseSections).toBe(true)
     expect(
-      hasMenuItem(display.trackMenuItems(), 'Collapse groups to one row'),
+      hasMenuItem(display.trackMenuItems(), 'Show groups as one row'),
     ).toBe(true)
 
     display.setUnit('chain')
@@ -666,7 +666,7 @@ describe('ordering controls in chain mode', () => {
     expect(display.canCollapseSections).toBe(false)
     expect(display.collapseSections).toBe(false)
     expect(
-      hasMenuItem(display.trackMenuItems(), 'Collapse groups to one row'),
+      hasMenuItem(display.trackMenuItems(), 'Show groups as one row'),
     ).toBe(false)
   })
 
@@ -2032,7 +2032,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(display.facet).toEqual({ field: 'tags.RG', sort: [] })
   })
 
-  test('a lane drop writes the drawn order as the domain without a refetch, and Show offers the reset', () => {
+  test('a lane drop writes the drawn order as the domain without a refetch, and the track menu offers the reset beside Group by', () => {
     const display = createDisplay({ withRegions: true })
     display.facetByField('tags.HP')
     seedGroups(display, [
@@ -2041,9 +2041,11 @@ describe('per-lane state belongs to one grouping key space', () => {
     ])
     expect(hasMenuItem(display.trackMenuItems(), 'Sections')).toBe(false)
     const reset = () =>
-      menuSubItems(display.trackMenuItems(), 'Show').find(
-        r => 'label' in r && r.label === 'Reset section order',
-      ) as { onClick: () => void } | undefined
+      display
+        .trackMenuItems()
+        .find(r => 'label' in r && r.label === 'Reset section order') as
+        | { onClick: () => void }
+        | undefined
     expect(reset()).toBeUndefined()
     const fetched = display.rpcProps()
     moveSectionOnto(sectionOrderOf(display)!, '1', '2')

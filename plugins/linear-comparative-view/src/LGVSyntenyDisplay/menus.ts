@@ -6,7 +6,6 @@ import {
   groupByRadioMenuItem,
   hiddenGroupsItems,
   pickFacetOptions,
-  sectionOrderResetItems,
 } from '@jbrowse/plugin-alignments'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -15,7 +14,6 @@ import type {
   CollapseSectionsModel,
   Facet,
   HiddenGroupsModel,
-  SectionOrderMenuModel,
 } from '@jbrowse/plugin-alignments'
 
 interface GroupByModel {
@@ -79,8 +77,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   }
 }
 
-interface ShowModel
-  extends CollapseSectionsModel, HiddenGroupsModel, SectionOrderMenuModel {
+interface ShowModel extends CollapseSectionsModel, HiddenGroupsModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
   showCoverage: boolean
@@ -111,7 +108,6 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
     // mate assembly this is the default, one band per mate genome.
     ...collapseSectionsItems(model),
     ...hiddenGroupsItems(model),
-    ...sectionOrderResetItems(model),
     toggleItem(
       'Show mismatches',
       model.showMismatches,

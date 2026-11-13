@@ -24,7 +24,7 @@ function searchBoxRows(view: BreakpointViewModel) {
     item =>
       'label' in item &&
       (item.label === 'Show search boxes' ||
-        item.label === 'Search box orientation'),
+        item.label === 'Show search boxes stacked'),
   )
 }
 

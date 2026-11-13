@@ -636,9 +636,9 @@ sorted after. A `sort` orders the sections and leaves the set of sections
 unchanged.
 
 When a reader drags a section's chip onto another section, the display writes
-the drawn order back as the facet's `sort`, and **Show → Reset section
-order**<!-- menu-path-ok --> clears it. A hidden section leaves the legend and
-the value axis along with the plot.
+the drawn order back as the facet's `sort`, and **Reset section order** in the
+track menu clears it. A hidden section leaves the legend and the value axis
+along with the plot.
 
 Haplotagged reads split by their `HP` tag, the tag lifted into a field by a
 `formula` so the chips and the key name it `HP`:

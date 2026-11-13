@@ -10,6 +10,7 @@ import {
   categoryOf,
 } from '@jbrowse/display-kit/categoryFilter'
 import { types } from '@jbrowse/mobx-state-tree'
+import LabelIcon from '@mui/icons-material/Label'
 import SegmentIcon from '@mui/icons-material/Segment'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 
@@ -25,7 +26,7 @@ import { collapseIntronsMenuItem } from './collapseIntronsMenu.ts'
 import { geneGlyphRequestViews } from './featureRequestViews.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
-import { inertLabelHint, inlineRadioGroup } from './trackMenus.ts'
+import { hintedRadioItems, inertLabelHint } from './trackMenus.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { IsoformStack } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -243,7 +244,6 @@ export default function stateModelFactory(
     }))
     .views(self => {
       const superShowSubmenuCheckboxItems = self.showSubmenuCheckboxItems
-      const superShowSubmenuRadioGroups = self.showSubmenuRadioGroups
       const superTrackMenuItems = self.trackMenuItems
       const superContextMenuItems = self.contextMenuItems
       const superFilterSubMenuItems = self.filterSubMenuItems
@@ -276,30 +276,28 @@ export default function stateModelFactory(
             }),
           ]
         },
-        showSubmenuRadioGroups() {
-          return [
-            ...superShowSubmenuRadioGroups(),
-            ...inlineRadioGroup(
-              'Subfeature labels',
-              self.subfeatureLabels,
-              SUBFEATURE_LABEL_OPTIONS,
-              mode => {
-                self.setSubfeatureLabels(mode)
-              },
-              inertLabelHint(
-                self,
-                self.subfeatureLabels,
-                self.renderedLabels.showSubfeatureLabels
-                  ? undefined
-                  : 'hidden to fit',
-              ),
-            ),
-          ]
-        },
 
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+            {
+              label: 'Subfeature labels',
+              icon: LabelIcon,
+              subMenu: hintedRadioItems(
+                self.subfeatureLabels,
+                SUBFEATURE_LABEL_OPTIONS,
+                mode => {
+                  self.setSubfeatureLabels(mode)
+                },
+                inertLabelHint(
+                  self,
+                  self.subfeatureLabels,
+                  self.renderedLabels.showSubfeatureLabels
+                    ? undefined
+                    : 'hidden to fit',
+                ),
+              ),
+            },
             {
               label: 'Gene glyph',
               icon: SegmentIcon,

@@ -35,20 +35,16 @@ import type { PlotDisplay } from '@jbrowse/display-kit/plotMenu'
 // Rows come from core's `radioItems`, so every radio keeps the menu
 // open on click; a hand-rolled copy is how the Gene glyph submenu came to
 // dismiss the whole menu.
-export function inlineRadioGroup<T extends string>(
-  header: string,
+export function hintedRadioItems<T extends string>(
   current: T,
   options: readonly { value: T; label: string }[],
   onSelect: (value: T) => void,
   hint?: (value: T) => string | undefined,
 ): MenuItem[] {
-  return [
-    { type: 'subHeader' as const, label: header },
-    ...radioItems(options, current, onSelect).map((item, i) => {
-      const { value, label } = options[i]!
-      return hint ? { ...item, label: withHint(label, hint(value)) } : item
-    }),
-  ]
+  return radioItems(options, current, onSelect).map((item, i) => {
+    const { value, label } = options[i]!
+    return hint ? { ...item, label: withHint(label, hint(value)) } : item
+  })
 }
 
 interface LabelToggleSelf {
@@ -63,8 +59,7 @@ interface LabelToggleSelf {
 }
 
 // Structural for the same reason as `FeatureMenuSelf`;
-interface ShowSubmenuSelf
-  extends HiddenGroupsModel, FacetSelf, LabelToggleSelf {
+interface ShowSubmenuSelf extends HiddenGroupsModel, LabelToggleSelf {
   hasLegendKey: boolean
   showLegend: boolean
   setShowLegend: (value: boolean) => void
@@ -88,7 +83,7 @@ interface GroupByMenuSelf {
   applyGroupBy: (field: string | undefined, colorByGroup: boolean) => void
 }
 
-interface TrackMenuSelf extends GroupByMenuSelf, PlotDisplay {
+interface TrackMenuSelf extends GroupByMenuSelf, FacetSelf, PlotDisplay {
   featureNarrowings: () => Reversibles
   featureMarks: () => Reversibles
   showSubmenuMenuItems: () => MenuItem[]
@@ -139,19 +134,7 @@ function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
 }
 
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
-  const { facet } = self
-  return [
-    ...hiddenGroupsItems(self),
-    ...resetSectionOrderItems(
-      facet && {
-        domain: facet.sort,
-        setDomain: domain => {
-          self.setFacetSort(domain)
-        },
-      },
-    ),
-    ...labelCheckboxItems(self),
-  ]
+  return [...hiddenGroupsItems(self), ...labelCheckboxItems(self)]
 }
 
 // A ticked label the track is not drawing says why: collapsed mode strips
@@ -275,6 +258,14 @@ export function featureTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
   return [
     ...self.colorMenuItems(),
     ...groupByMenuItems(self),
+    ...resetSectionOrderItems(
+      self.facet && {
+        domain: self.facet.sort,
+        setDomain: domain => {
+          self.setFacetSort(domain)
+        },
+      },
+    ),
     ...makeShowSubMenu(self.showSubmenuMenuItems()),
     ...self.featureHeightMenuItems(),
     ...editPlotMenuItems(self),

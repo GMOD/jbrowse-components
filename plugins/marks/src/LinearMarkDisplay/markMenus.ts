@@ -165,6 +165,12 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
     }),
     ...categoriesMenuItems(self),
     ...(self.drawsRows ? rowsMenuItems(self) : []),
+    ...resetSectionOrderItems({
+      domain: self.facet?.sort ?? [],
+      setDomain: domain => {
+        self.setFacetSort(domain)
+      },
+    }),
     ...makeShowSubMenu([
       ...(self.drawsRows
         ? [
@@ -174,12 +180,6 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
           ]
         : []),
       ...hiddenGroupsItems(self),
-      ...resetSectionOrderItems({
-        domain: self.facet?.sort ?? [],
-        setDomain: domain => {
-          self.setFacetSort(domain)
-        },
-      }),
       ...legendMenuItems(self),
     ]),
     ...editPlotMenuItems(self),

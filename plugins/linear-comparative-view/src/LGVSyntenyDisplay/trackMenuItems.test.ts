@@ -83,7 +83,7 @@ function labelsOf(items: MenuItem[]) {
   return items.map(i => ('label' in i ? i.label : undefined))
 }
 
-test('a lane drop writes the drawn order as the domain, and Show offers the reset', () => {
+test('a lane drop writes the drawn order as the domain, and the track menu offers the reset beside Group by', () => {
   const display = createDisplay({
     trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_two'],
   })
@@ -91,9 +91,7 @@ test('a lane drop writes the drawn order as the domain, and Show offers the rese
   seedSections(display, ['volvox_random', 'volvox_two'])
   const items = () => display.trackMenuItems()
   expect(labelsOf(items())).not.toContain('Sections')
-  expect(labelsOf(subMenu(items(), 'Show'))).not.toContain(
-    'Reset section order',
-  )
+  expect(labelsOf(items())).not.toContain('Reset section order')
 
   moveSectionOnto(sectionOrderOf(display)!, 'volvox_random', 'volvox_two')
   expect(display.facet).toEqual({
@@ -104,5 +102,8 @@ test('a lane drop writes the drawn order as the domain, and Show offers the rese
     'volvox_two',
     'volvox_random',
   ])
-  expect(labelsOf(subMenu(items(), 'Show'))).toContain('Reset section order')
+  expect(labelsOf(items())).toContain('Reset section order')
+  expect(labelsOf(subMenu(items(), 'Show'))).not.toContain(
+    'Reset section order',
+  )
 })

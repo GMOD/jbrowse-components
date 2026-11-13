@@ -17,17 +17,8 @@ function subMenuOf(items: MenuItem[], label: string) {
   }
 }
 
-function showSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
-  const items = subMenuOf(display.trackMenuItems(), 'Show')
-  const start = items.findIndex(
-    i => i.type === 'subHeader' && i.label === 'Subfeature labels',
-  )
-  if (start === -1) {
-    throw new Error('"Subfeature labels" subHeader not found')
-  }
-  const rest = items.slice(start + 1)
-  const end = rest.findIndex(i => i.type !== 'radio')
-  return end === -1 ? rest : rest.slice(0, end)
+function labelsSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
+  return subMenuOf(display.trackMenuItems(), 'Subfeature labels')
 }
 
 function radio(subMenu: MenuItem[], label: string) {
@@ -43,7 +34,7 @@ describe('Subfeature labels submenu', () => {
   it('offers Auto/Off/Below/Overlay radios', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    const subMenu = showSubMenu(display)
+    const subMenu = labelsSubMenu(display)
 
     const labels = subMenu.flatMap(i => ('label' in i ? [i.label] : []))
     expect(labels).toEqual(['Auto', 'Off', 'Below', 'Overlay'])
@@ -54,18 +45,18 @@ describe('Subfeature labels submenu', () => {
     const { display } = createDisplay()
 
     expect(display.subfeatureLabels).toBe('auto')
-    expect(radio(showSubMenu(display), 'Auto').checked).toBe(true)
+    expect(radio(labelsSubMenu(display), 'Auto').checked).toBe(true)
 
     display.setSubfeatureLabels('none')
-    expect(radio(showSubMenu(display), 'Off').checked).toBe(true)
+    expect(radio(labelsSubMenu(display), 'Off').checked).toBe(true)
 
     display.setSubfeatureLabels('overlay')
     expect(display.subfeatureLabels).toBe('overlay')
-    expect(radio(showSubMenu(display), 'Overlay').checked).toBe(true)
+    expect(radio(labelsSubMenu(display), 'Overlay').checked).toBe(true)
 
     display.setSubfeatureLabels('below')
     expect(display.subfeatureLabels).toBe('below')
-    const subMenu = showSubMenu(display)
+    const subMenu = labelsSubMenu(display)
     expect(radio(subMenu, 'Below').checked).toBe(true)
     expect(radio(subMenu, 'Overlay').checked).toBe(false)
   })

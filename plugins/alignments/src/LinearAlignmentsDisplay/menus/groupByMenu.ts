@@ -47,7 +47,7 @@ export function collapseSectionsItems(model: CollapseSectionsModel) {
     model.canCollapseSections
       ? [
           toggleItem(
-            'Collapse groups to one row',
+            'Show groups as one row',
             model.collapseSections,
             model.setCollapseSections,
             {

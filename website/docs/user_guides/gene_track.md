@@ -67,7 +67,8 @@ arcs** then span directly between adjacent exons.
 Track-menu toggles:
 
 - Display mode - _Normal_, _Compact_, or _Super-compact_ feature heights
-- Show subfeature labels - each transcript's name on its row
+- Subfeature labels - each transcript's name on its row, placed _Auto_, _Below_
+  or _Overlay_, or _Off_
 - Show → Show chevrons - strand chevrons along the intron lines (on by default)
 - Filter by → Genes - _Only genes_ hides non-gene features, _Hide genes_ the
   genes
@@ -83,7 +84,8 @@ Each section has a chip naming it, and the × on a chip hides that section. The
 **Show N hidden** chip at the top of the track, or **Show → Show N hidden
 groups**,<!-- menu-path-ok --> puts every hidden section back, and changing the
 grouping clears them. Drag a chip onto another section to move its section
-there; **Show → Reset section order** returns them to the sorted order.
+there; **Reset section order** in the track menu returns them to the sorted
+order.
 
 <Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes grouped and colored by gene_biotype from Group by, then the protein_coding chip dragged to the top." />
 
@@ -238,7 +240,7 @@ color, hoverable and clickable.
 
 - The track names each row by its `product` attribute, which NCBI writes in
   place of a Name, and falls back to the track's `labels.name`.
-- **Subfeature labels** in the Show menu sets the placement
+- **Subfeature labels** in the track menu sets the placement
   ([`labels.subfeatures`](/docs/config/featuresubfeaturelabels)). `Auto` names
   cleavage products only; `Off`, `Below` and `Overlay` apply to every part,
   transcripts included.

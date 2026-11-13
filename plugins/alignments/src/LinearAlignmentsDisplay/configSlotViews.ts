@@ -255,8 +255,8 @@ export function configSlotViews(
     /**
      * #getter
      * The field `pileup.mismatches.encoding.opacity` fades by, its implied
-     * `baseQuality` included, unset for none: the "Fade low-quality
-     * mismatches" checkbox.
+     * `baseQuality` included, unset for none: the "Show low-quality
+     * mismatches faded" checkbox.
      */
     get mismatchOpacityField(): MismatchOpacityField | undefined {
       return mismatchOpacity().field

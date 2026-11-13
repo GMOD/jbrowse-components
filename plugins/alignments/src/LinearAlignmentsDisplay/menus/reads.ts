@@ -3,29 +3,17 @@ import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 
-import {
-  collapseSectionsItems,
-  hiddenGroupsItems,
-  sectionOrderResetItems,
-} from './groupByMenu.ts'
+import { collapseSectionsItems, hiddenGroupsItems } from './groupByMenu.ts'
 import { sashimiShowItems } from './sashimi.ts'
 
 import type { MismatchOpacityField } from '../../features/mismatch/qualityOpacity.ts'
 import type { AlignmentsUnit } from '../constants.ts'
-import type {
-  CollapseSectionsModel,
-  HiddenGroupsModel,
-  SectionOrderMenuModel,
-} from './groupByMenu.ts'
+import type { CollapseSectionsModel, HiddenGroupsModel } from './groupByMenu.ts'
 import type { SashimiModel } from './sashimi.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadsModel
-  extends
-    CollapseSectionsModel,
-    HiddenGroupsModel,
-    SectionOrderMenuModel,
-    SashimiModel {
+  extends CollapseSectionsModel, HiddenGroupsModel, SashimiModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
   showCoverage: boolean
@@ -87,7 +75,7 @@ function softClippingItem(model: ReadsModel) {
 // agent-docs/ideas/ready/sbx-duplex-yc-detail-decode.md
 function fadeMismatchesItem(model: ReadsModel) {
   return toggleItem(
-    'Fade low-quality mismatches',
+    'Show low-quality mismatches faded',
     model.mismatchOpacityField === 'baseQuality',
     fade => {
       model.setMismatchOpacityField(fade ? 'baseQuality' : undefined)
@@ -112,7 +100,6 @@ export function getReadsMenuItems(model: ReadsModel) {
     // it modifies rather than in the Group-by dimension list.
     ...collapseSectionsItems(model),
     ...hiddenGroupsItems(model),
-    ...sectionOrderResetItems(model),
     toggleItem(
       'Show mismatches',
       model.showMismatches,

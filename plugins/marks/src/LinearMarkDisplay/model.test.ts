@@ -2534,26 +2534,22 @@ test('a facet domain orders the folded sections and stays off the worker request
   expect(rowsOf(display)).toEqual([2, 0, 1])
 })
 
-test('a pinned facet domain orders the sections off the worker request, and Show offers the reset', () => {
+test('a pinned facet domain orders the sections off the worker request, and the track menu offers the reset', () => {
   const { display } = facetedEnvironment().createDisplay()
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
   const labels = (items: MenuItem[]) =>
     items.map(r => ('label' in r ? r.label : undefined))
-  const show = () => {
-    const item = display
-      .trackMenuItems()
-      .find(i => 'label' in i && i.label === 'Show')
-    return resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0])
-  }
   expect(labels(display.trackMenuItems())).not.toContain('Sections')
-  expect(labels(show())).not.toContain('Reset section order')
+  expect(labels(display.trackMenuItems())).not.toContain('Reset section order')
   const fetched = display.rpcProps()
   display.setFacetSort(['b', 'a'])
   expect(display.rpcProps()).toEqual(fetched)
   expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b', 'a'])
-  const reset = show().find(
-    r => 'label' in r && r.label === 'Reset section order',
-  ) as { onClick: () => void }
+  const reset = display
+    .trackMenuItems()
+    .find(r => 'label' in r && r.label === 'Reset section order') as {
+    onClick: () => void
+  }
   reset.onClick()
   expect(display.facet?.sort).toEqual([])
 })

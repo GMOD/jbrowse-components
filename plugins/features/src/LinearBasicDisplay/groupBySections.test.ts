@@ -249,14 +249,15 @@ test('Group by is a radio submenu: strand picks directly, attribute names its fi
   expect(display.facet).toBeUndefined()
 })
 
-test('no Sections row; the reset sits in Show once the order is pinned', () => {
+test('no Sections row; the reset sits beside Group by once the order is pinned, not in Show', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
   display.facetByField('biotype')
   expect(labelsOf(display.trackMenuItems())).not.toContain('Sections')
-  const show = () => menuRows(display.trackMenuItems(), 'Show')
-  expect(labelsOf(show())).not.toContain('Reset section order')
+  expect(labelsOf(display.trackMenuItems())).not.toContain(
+    'Reset section order',
+  )
   display.applyPlot({
     facet: { field: 'biotype', sort: ['protein_coding', 'lncRNA'] },
   })
@@ -264,9 +265,14 @@ test('no Sections row; the reset sits in Show once the order is pinned', () => {
     'protein_coding',
     'lncRNA',
   ])
-  const reset = show().find(
-    i => 'label' in i && i.label === 'Reset section order',
-  ) as { onClick: () => void }
+  expect(labelsOf(menuRows(display.trackMenuItems(), 'Show'))).not.toContain(
+    'Reset section order',
+  )
+  const reset = display
+    .trackMenuItems()
+    .find(i => 'label' in i && i.label === 'Reset section order') as {
+    onClick: () => void
+  }
   reset.onClick()
   expect(getConf(display, ['facet', 'sort'])).toEqual([])
   expect(display.plot.facet).toEqual({ field: 'biotype' })

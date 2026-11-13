@@ -155,8 +155,8 @@ scale and reads missing the tag collect in a trailing "none" section. Grouping
 caps at 40 sections; past that the tail merges into one "N merged values"
 section, and the tag dialog refuses a tag that would reach the cap, telling you
 how many distinct values it found in view first. Drag a section's chip onto
-another section to move it there; **Show → Reset section
-order**<!-- menu-path-ok --> returns them to the sorted order.
+another section to move it there; **Reset section order** in the track menu
+returns them to the sorted order.
 
 The `facet` setting pre-groups a track, spelled as on the feature tracks: a
 dimension (`"strand"`, `"pairOrientation"`, ...), a tag as `"tags.HP"`, or any
@@ -198,7 +198,7 @@ Each section has a label chip that controls the section's height:
   puts them back.<!-- menu-path-ok -->
 - Dragging the boundary below a section resizes that section alone.
 
-**Show → Collapse groups to one row** draws every section as a single row with
+**Show → Show groups as one row** draws every section as a single row with
 overlap depth as darker shading, the compact reading for a track with many
 groups; expanding one section from its chip opts that one back out to a true
 stack.

@@ -302,7 +302,7 @@ test("fit's collapsed-sort reason names only the collapse switch", () => {
   )
   expect(display.sortReadsBlockedReason).toMatch(/expand a group/)
   display.setHeightMode('fit')
-  expect(display.sortReadsBlockedReason).toMatch(/Collapse groups to one row/)
+  expect(display.sortReadsBlockedReason).toMatch(/Show groups as one row/)
   expect(display.sortReadsBlockedReason).not.toMatch(/expand/)
 })
 

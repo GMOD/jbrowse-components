@@ -127,28 +127,14 @@ export function searchBoxMenuItems(
       },
     },
     {
-      label: 'Search box orientation',
+      label: 'Show search boxes stacked',
+      type: 'checkbox',
+      checked: !sideBySide,
+      keepMenuOpen,
       disabled,
-      subMenu: [
-        {
-          label: 'Side-by-side',
-          type: 'radio',
-          checked: sideBySide,
-          keepMenuOpen,
-          onClick: () => {
-            setSideBySide(true)
-          },
-        },
-        {
-          label: 'Stacked',
-          type: 'radio',
-          checked: !sideBySide,
-          keepMenuOpen,
-          onClick: () => {
-            setSideBySide(false)
-          },
-        },
-      ],
+      onClick: () => {
+        setSideBySide(!sideBySide)
+      },
     },
   ]
 }

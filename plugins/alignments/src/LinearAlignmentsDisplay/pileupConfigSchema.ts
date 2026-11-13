@@ -38,7 +38,7 @@ export const pileupConfigSchema = ConfigurationSchema(
      * sections (an all-vs-all synteny track's mate genomes). A section
      * expanded from its label chip opts back out and draws a true stack. On
      * the pileup rather than `facet`, which a share link writing
-     * `facet: 'HP'` replaces whole. The Show menu's "Collapse groups to one
+     * `facet: 'HP'` replaces whole. The Show menu's "Show groups as one
      * row" writes it.
      */
     collapsed: {

@@ -1127,7 +1127,7 @@ const mismatchesLayer = layerCheckbox(
   'Show → Show mismatches',
   'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
 )
-const mismatchesFade = checkbox('Show → Fade low-quality mismatches')
+const mismatchesFade = checkbox('Show → Show low-quality mismatches faded')
 const mismatchesStep: FieldRecipe = (value, context) => {
   const opacity = channelOf(asRecord(asRecord(value)?.encoding)?.opacity)
   const field = asString(opacity?.field)
@@ -1725,7 +1725,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     d => SHOW_SUBMENU_DISPLAYS.has(d) || d === 'LinearMafDisplay',
   ),
   'pileup.collapsed': showToggle(
-    'Collapse groups to one row',
+    'Show groups as one row',
     d => SHOW_SUBMENU_DISPLAYS.has(d),
     {
       note: 'Offered only once the reads are grouped, since it is what the groups collapse into.',
@@ -1875,7 +1875,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       : undefined
   },
   // The label parts: the feature display's Names and Descriptions checkboxes
-  // and its Subfeature labels radio, and the multi-way display's Gene labels
+  // and its Subfeature labels submenu, and the multi-way display's Gene labels
   // checkbox. A label's field has no menu row.
   labels: (value, { displayType }) => {
     const labels = asRecord(value)
@@ -1901,7 +1901,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       checkbox('Show names', labels?.name),
       checkbox('Show descriptions', labels?.description),
       radio
-        ? { path: `${TRACK_MENU} → Show → Subfeature labels → ${radio}` }
+        ? { path: `${TRACK_MENU} → Subfeature labels → ${radio}` }
         : undefined,
     ].filter(step => step !== undefined)
     return steps.length > 0 ? steps : undefined

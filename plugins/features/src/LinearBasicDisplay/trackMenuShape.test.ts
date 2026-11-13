@@ -45,6 +45,7 @@ describe('feature track menu shape', () => {
 
     for (const group of [
       subMenuOf(items, 'Gene glyph'),
+      subMenuOf(items, 'Subfeature labels'),
       subMenuOf(items, 'Show'),
       subMenuOf(items, 'Feature height'),
     ]) {
@@ -92,6 +93,7 @@ describe('feature track menu shape', () => {
       'Group by',
       'Show',
       'Feature height',
+      'Subfeature labels',
       'Gene glyph',
       'Clear 1 highlight',
       'Filter by',
@@ -198,7 +200,7 @@ describe('feature track menu shape', () => {
     expect(display.genesFilter).toBeUndefined()
   })
 
-  it('offers the labels as checkboxes beside the subfeature label radio', () => {
+  it('offers the labels as checkboxes, with the subfeature label radios in their own submenu', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const show = subMenuOf(display.trackMenuItems(), 'Show')
@@ -207,12 +209,10 @@ describe('feature track menu shape', () => {
       'Show names',
       'Show descriptions',
       'Show chevrons',
-      'Subfeature labels',
-      'Auto',
-      'Off',
-      'Below',
-      'Overlay',
     ])
+    expect(
+      subMenuOf(display.trackMenuItems(), 'Subfeature labels').map(labelOf),
+    ).toEqual(['Auto', 'Off', 'Below', 'Overlay'])
   })
 
   it('says so when a ticked label is suppressed by collapsed mode', () => {
@@ -236,15 +236,15 @@ describe('feature track menu shape', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setSubfeatureLabels('below')
-    find(subMenuOf(display.trackMenuItems(), 'Show'), 'Below')
+    find(subMenuOf(display.trackMenuItems(), 'Subfeature labels'), 'Below')
 
     display.setDisplayMode('collapsed')
     const inert = find(
-      subMenuOf(display.trackMenuItems(), 'Show'),
+      subMenuOf(display.trackMenuItems(), 'Subfeature labels'),
       'Below — hidden while collapsed',
     )
     expect(inert.type === 'radio' && inert.checked).toBe(true)
-    find(subMenuOf(display.trackMenuItems(), 'Show'), 'Off')
+    find(subMenuOf(display.trackMenuItems(), 'Subfeature labels'), 'Off')
   })
 })
 

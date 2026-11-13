@@ -189,7 +189,7 @@ test('the pileup-only layers grey out with the pileup hidden', () => {
   const pileupOff = makeModel({ showPileup: false })
   for (const label of [
     'Show mismatches',
-    'Fade low-quality mismatches',
+    'Show low-quality mismatches faded',
     'Show soft clipping',
   ]) {
     expect(rowOf(pileupOff, label)).toMatchObject({
@@ -198,14 +198,17 @@ test('the pileup-only layers grey out with the pileup hidden', () => {
     })
   }
   expect(
-    rowOf(makeModel({ showMismatches: false }), 'Fade low-quality mismatches'),
+    rowOf(
+      makeModel({ showMismatches: false }),
+      'Show low-quality mismatches faded',
+    ),
   ).toMatchObject({
     disabled: true,
     disabledHelpText: expect.stringContaining('Show mismatches'),
   })
   const on = makeModel()
   expect(rowOf(on, 'Show mismatches')).not.toHaveProperty('disabled')
-  expect(rowOf(on, 'Fade low-quality mismatches')).not.toHaveProperty(
+  expect(rowOf(on, 'Show low-quality mismatches faded')).not.toHaveProperty(
     'disabled',
   )
 })
