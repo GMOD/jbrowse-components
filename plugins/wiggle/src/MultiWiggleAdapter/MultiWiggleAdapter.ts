@@ -154,6 +154,14 @@ function isText(value: unknown): value is string {
   return typeof value === 'string' && value !== ''
 }
 
+function attributeText(value: unknown) {
+  return typeof value === 'number' || typeof value === 'boolean'
+    ? String(value)
+    : isText(value)
+      ? value
+      : undefined
+}
+
 export default class MultiWiggleAdapter
   extends BaseFeatureDataAdapter<MultiWiggleAdapterConfig>
   implements RowSourceLister
@@ -480,9 +488,10 @@ export default class MultiWiggleAdapter
       sources: sources.map(
         ({ name, label, color, source: _source, ...rest }) => {
           const attributes = Object.fromEntries(
-            Object.entries(rest).filter((entry): entry is [string, string] =>
-              isText(entry[1]),
-            ),
+            Object.entries(rest).flatMap(([key, value]): [string, string][] => {
+              const text = attributeText(value)
+              return text === undefined ? [] : [[key, text]]
+            }),
           )
           return {
             name,

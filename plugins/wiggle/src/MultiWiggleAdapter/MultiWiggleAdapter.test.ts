@@ -784,6 +784,24 @@ describe('MultiWiggleAdapter.listRowSources', () => {
   })
 })
 
+describe('MultiWiggleAdapter.listRowSources attribute values', () => {
+  it('lists a numeric or boolean attribute as the text a row display reads from getSources', async () => {
+    const adapter = new MultiWiggleAdapter(configSchema.create({}))
+    adapter.getAdapters = jest.fn().mockResolvedValue([
+      {
+        source: 'k1',
+        group: 1,
+        replicate: 0,
+        control: true,
+        nested: { a: 1 },
+        dataAdapter: stubDataAdapter,
+      },
+    ])
+    const [{ attributes }] = (await adapter.listRowSources()).sources
+    expect(attributes).toEqual({ group: '1', replicate: '0', control: 'true' })
+  })
+})
+
 describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti', () => {
   const region = { refName: 'chr1', start: 0, end: 100, assemblyName: 'hg38' }
   const region2 = {
