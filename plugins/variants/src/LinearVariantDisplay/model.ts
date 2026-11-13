@@ -194,7 +194,7 @@ function warnMissingAttribute(
   if (sources.length) {
     console.warn(
       `${setting} attribute "${attribute}" not found in sample metadata. ` +
-        `Available attributes: ${Object.keys(sources[0]!).join(', ')}`,
+        `Available attributes: ${[...new Set(sources.flatMap(Object.keys))].join(', ')}`,
     )
   }
 }

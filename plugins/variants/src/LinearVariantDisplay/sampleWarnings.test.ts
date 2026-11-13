@@ -17,3 +17,18 @@ test('a refetch of the same sample list without the warnings clears them', () =>
   display.setSources(sources, undefined, [])
   expect(display.liveNotices).toEqual([])
 })
+
+test('the attributes a missing-field warning lists are the union over every sample', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  display.setSources([
+    { name: 'S0' },
+    { name: 'S1', superpop: 'EUR' },
+    { name: 'S2', population: 'AFR' },
+  ])
+  display.setRowColorChoice('tissue')
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('Available attributes: name, superpop, population'),
+  )
+  warn.mockRestore()
+})
