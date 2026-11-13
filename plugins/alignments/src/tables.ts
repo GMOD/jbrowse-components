@@ -154,6 +154,7 @@ import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
 import {
   connectorArrowPx,
+  connectorInWindows,
   connectorInstance,
   flooredBend,
   linePassInstance,
@@ -1309,8 +1310,9 @@ function stackedSections(
 /**
  * Each section's connectors as the display draws them (`connectorsByGroup`):
  * the straight-line pass's pairs (`linePassInstance`) and the connector
- * mark's (`connectorInstance`), each filed by the region holding its first
- * end. A dip or loop is held above the bottom of the sections as the display
+ * mark's (`connectorInstance`), those reaching into a window
+ * (`connectorInWindows`), each filed by the region holding its first end. A
+ * dip or loop is held above the bottom of the sections as the display
  * stacks them, scrolled to their end (`flooredBend`).
  */
 function sectionConnectors(
@@ -1330,12 +1332,7 @@ function sectionConnectors(
       const connectors = host.connectorsByGroup.get(key)
       const byRegion = new Map<number, PlacedConnector[]>()
       const file = (pair: LinkedPair, placed: PlacedConnector['placed']) => {
-        const window = windows[placed.region]
-        if (
-          window &&
-          Math.max(placed.x, placed.x2) > window.start &&
-          Math.min(placed.x, placed.x2) < window.end
-        ) {
+        if (connectorInWindows(placed, regions, windows)) {
           getOrCreate(byRegion, placed.region, () => []).push({ pair, placed })
         }
       }

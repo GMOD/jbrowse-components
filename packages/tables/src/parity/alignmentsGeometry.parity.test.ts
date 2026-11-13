@@ -10,6 +10,7 @@ import { sectionDipFloor } from '../../../../plugins/alignments/src/LinearAlignm
 import { arcColorSlot } from '../../../../plugins/alignments/src/features/arcs/arcColors.ts'
 import {
   connectorArrowPx,
+  connectorInWindows,
   connectorInstance,
   flooredBend,
   linePassInstance,
@@ -184,7 +185,7 @@ function modelGeometry(
       })),
     ]
     for (const { pair, placed } of placedPairs) {
-      if (placed && touches(windows, placed.x, placed.x2)) {
+      if (placed && connectorInWindows(placed, displayedRegions, windows)) {
         joined.add(pair.e1.data.readKeys[pair.e1.readIdx])
         joined.add(pair.e2.data.readKeys[pair.e2.readIdx])
       }
@@ -204,7 +205,7 @@ function modelGeometry(
         arrows,
       )
       const label = labelOf.get(sec.groupKey)
-      if (placed && touches(windows, placed.x, placed.x2)) {
+      if (placed && connectorInWindows(placed, displayedRegions, windows)) {
         const bend = flooredBend(
           placed,
           m.featureHeight,
@@ -519,18 +520,6 @@ describe('split reads over an inversion, its middle segment out of view', () => 
     {
       name: 'unit chain: the junction skipping the hidden segment bows',
       config: { ...TALL, unit: 'chain' },
-      drifts: {
-        connectors: {
-          owner:
-            'the display lays out reads in its margin, so it also draws their connectors, clamped to the window edge; the tables hold only the window’s reads',
-          exported: [
-            ' 107734465>277644978 1/1 bow 0',
-            ' 188085106>306175187 0/0 bow 0',
-            ' 30033-19939 7/7 straight',
-            ' 30275-19874 6/6 straight',
-          ],
-        },
-      },
     },
   ])
 })
@@ -576,10 +565,14 @@ test('each dip is the bend the display’s connector feed draws, scrolled to the
   expect(m.sections.contentHeight).toBeGreaterThan(m.height)
   const labelOf = new Map(m.renderSections.map(s => [s.groupKey, s.label]))
   const fed = [...m.themed.connectorFeedsByGroup].flatMap(([key, byRegion]) =>
-    [...byRegion.values()].flatMap(({ channels: f, hits }) =>
+    [...byRegion].flatMap(([region, { channels: f, hits }]) =>
       hits.flatMap((hit, i) =>
         (f.bits[i]! & CONNECTOR_STRAIGHT) === 0 &&
-        touches(fixture.regions, f.x[i], f.x2[i])
+        connectorInWindows(
+          { region, x: f.x[i]!, x2Region: f.x2Region[i]!, x2: f.x2[i]! },
+          m.view.displayedRegions,
+          fixture.regions,
+        )
           ? [
               `${labelOf.get(key)} ${hit.id1}>${hit.id2} ${f.row[i]}/${f.row2[i]} ${(f.bend[i] === FED_BOW ? 0 : f.bend[i]!).toFixed(3)}`,
             ]

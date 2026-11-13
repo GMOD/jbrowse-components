@@ -192,7 +192,7 @@ interface Opts {
 // in either direction.
 const REGION_STRIDE = 2 ** 33
 
-function screenOrder(
+export function screenOrder(
   displayedRegions: Opts['displayedRegions'],
   regionIndex: number,
   bp: number,

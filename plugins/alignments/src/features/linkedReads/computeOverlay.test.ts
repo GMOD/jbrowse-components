@@ -49,7 +49,7 @@ import {
   enumerateConnectorPairs,
   resolveConnectors,
 } from './computeOverlay.ts'
-import { buildConnectorFeeds } from './connectorFeed.ts'
+import { buildConnectorFeeds, connectorInWindows } from './connectorFeed.ts'
 
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -1562,5 +1562,61 @@ describe('connectorFilterOf', () => {
       'r',
     ])
     expect(belowFloor).not.toHaveBeenCalled()
+  })
+})
+
+describe('connectorInWindows', () => {
+  const regions = [
+    { refName: 'ctgA', start: 15000, end: 20000 },
+    { refName: 'ctgA', start: 30000, end: 33000 },
+  ]
+  const windows = [
+    { start: 15000, end: 20000 },
+    { start: 30000, end: 33000 },
+  ]
+
+  it('reaches the far window from an end stopped at its own region’s edge', () => {
+    expect(
+      connectorInWindows(
+        { region: 0, x: 20000, x2Region: 1, x2: 30500 },
+        regions,
+        windows,
+      ),
+    ).toBe(true)
+    expect(
+      connectorInWindows(
+        { region: 1, x: 30000, x2Region: 0, x2: 19500 },
+        regions,
+        windows,
+      ),
+    ).toBe(true)
+  })
+
+  it('leaves a connector in one region outside its window', () => {
+    expect(
+      connectorInWindows(
+        { region: 0, x: 19200, x2Region: 0, x2: 19800 },
+        regions,
+        [{ start: 16000, end: 19000 }, windows[1]!],
+      ),
+    ).toBe(false)
+  })
+
+  it('reads a reversed region right to left', () => {
+    const reversed = [regions[0]!, { ...regions[1]!, reversed: true }]
+    expect(
+      connectorInWindows(
+        { region: 0, x: 20000, x2Region: 1, x2: 33000 },
+        reversed,
+        windows,
+      ),
+    ).toBe(false)
+    expect(
+      connectorInWindows(
+        { region: 0, x: 20000, x2Region: 1, x2: 32000 },
+        reversed,
+        windows,
+      ),
+    ).toBe(true)
   })
 })

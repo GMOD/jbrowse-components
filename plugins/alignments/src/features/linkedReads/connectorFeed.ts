@@ -30,6 +30,7 @@ import {
   LOOP_STROKE_WIDTH_PX,
   connectorShape,
   loopDipPx,
+  screenOrder,
 } from './computeOverlay.ts'
 
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -208,6 +209,32 @@ export function linePassInstance(
         bits: placed.bits | CONNECTOR_STRAIGHT,
       }
     : placed
+}
+
+/**
+ * Whether a placed connector reaches into one of `windows`, the bp each
+ * displayed region shows, by region index: its two ends, in screen order
+ * across the regions, span part of a window. One joining two regions crosses
+ * the screen between them, so an end stopped at its own region's edge still
+ * reaches into the window holding the other.
+ */
+export function connectorInWindows(
+  {
+    region,
+    x,
+    x2Region,
+    x2,
+  }: { region: number; x: number; x2Region: number; x2: number },
+  displayedRegions: readonly DisplayedRegion[],
+  windows: readonly { start: number; end: number }[],
+) {
+  const a = screenOrder(displayedRegions, region, x)
+  const b = screenOrder(displayedRegions, x2Region, x2)
+  return windows.some((w, i) => {
+    const p = screenOrder(displayedRegions, i, w.start)
+    const q = screenOrder(displayedRegions, i, w.end)
+    return Math.max(a, b) > Math.min(p, q) && Math.min(a, b) < Math.max(p, q)
+  })
 }
 
 // Clearance under the deepest apex for the stroke, which a hover thickens.
