@@ -797,8 +797,12 @@ describe('MultiWiggleAdapter.listRowSources attribute values', () => {
         dataAdapter: stubDataAdapter,
       },
     ])
-    const [{ attributes }] = (await adapter.listRowSources()).sources
-    expect(attributes).toEqual({ group: '1', replicate: '0', control: 'true' })
+    const { sources } = await adapter.listRowSources()
+    expect(sources[0]?.attributes).toEqual({
+      group: '1',
+      replicate: '0',
+      control: 'true',
+    })
   })
 })
 
