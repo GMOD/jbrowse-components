@@ -105,7 +105,7 @@ describe('the rows always fit the track height', () => {
   })
 })
 
-describe('a pinned rowHeight from an older config or link is dropped', () => {
+describe("a mafviewer session's pinned rowHeight is dropped", () => {
   const species = Array.from({ length: 1000 }, (_, i) => ({
     name: `s${i}`,
     label: `s${i}`,
@@ -120,15 +120,7 @@ describe('a pinned rowHeight from an older config or link is dropped', () => {
     expect(display.scrollableHeight).toBe(0)
   }
 
-  it('in a track config', () => {
-    expectFits(
-      createMafTestEnvironment({
-        displayConfig: { rowHeight: 15 },
-      }).createDisplay().display,
-    )
-  })
-
-  it('in a session display snapshot', () => {
+  it('from a session display snapshot', () => {
     expectFits(
       createMafTestEnvironment().createDisplay({
         displaySnapshot: { rowHeight: 15 },

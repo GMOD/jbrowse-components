@@ -65,33 +65,25 @@ describe('the display config schema', () => {
     it.each([
       ['draw', true],
       ['skip', false],
-    ])(
-      "lifts v4's referenceDrawingMode %s without a console line",
-      (mode, show) => {
-        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-        const config = configSchema.create({
-          type: 'LinearVariantDisplay',
-          displayId: 'test-2c',
-          referenceDrawingMode: mode,
-        })
-        expect(readConfObject(config, ['genotypes', 'reference', 'show'])).toBe(
-          show,
-        )
-        expect(warn).not.toHaveBeenCalled()
-        warn.mockRestore()
-      },
-    )
-
-    it('a lifted referenceDrawingMode keeps a written genotypes.show', () => {
-      const config = configSchema.create({
+    ])("lifts a v4 session's referenceDrawingModeSetting %s", (mode, show) => {
+      const pluginManager = new PluginManager([
+        new LinearGenomeViewPlugin(),
+        new FeaturesPlugin(),
+        new VariantsPlugin(),
+      ])
+      pluginManager.createPluggableElements()
+      pluginManager.configure()
+      const display = pluginManager.getDisplayType('LinearVariantDisplay')
+      const config = display.configSchema.create({
         type: 'LinearVariantDisplay',
-        displayId: 'test-2d',
-        referenceDrawingMode: 'draw',
-        genotypes: { show: false },
+        displayId: 'test-2c',
+        ...display.retiredState!.lift({
+          type: 'MultiLinearVariantDisplay',
+          referenceDrawingModeSetting: mode,
+        }),
       })
-      expect(readConfObject(config, ['genotypes', 'show'])).toBe(false)
       expect(readConfObject(config, ['genotypes', 'reference', 'show'])).toBe(
-        true,
+        show,
       )
     })
   })

@@ -82,8 +82,7 @@ const reRootedFeatureSpellings: Record<string, RetiredSpelling> =
  * LinearBasicDisplay's own lifts (`basicRetired`), and its `maxHeight`, a
  * second grow ceiling, drops rather than becoming `records.height`. v4's
  * two multi-sample displays spelt the sidebar's tree and labels and the
- * reference-allele paint as booleans, the latter later a `'draw' | 'skip'`
- * `referenceDrawingMode`, named the row color's attribute
+ * reference-allele paint as booleans, named the row color's attribute
  * `colorBy`, and carried the wiggle scale slots the matrix never read.
  */
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
@@ -99,9 +98,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   showTree: (tree: unknown) => ({ rows: { axis: { tree } } }),
   showReferenceAlleles: (show: unknown) => ({
     genotypes: { reference: { show: !!show } },
-  }),
-  referenceDrawingMode: (mode: unknown) => ({
-    genotypes: { reference: { show: mode === 'draw' } },
   }),
   colorBy: (field: unknown) =>
     typeof field === 'string' && field ? { rows: { color: field } } : {},
@@ -202,7 +198,8 @@ export const retiredTypes: RetiredDisplayType[] = [
  * palette into its rows, so its colors stay behind and the palette keeps
  * painting them; its `jexlFilters` and `renderingModeSetting` land as the
  * config's own retired spellings, which `retiredConfigSpellings` then lifts.
- * The menus' MAF floor and reference-allele toggle land the same way. A v4
+ * The menus' MAF floor lands the same way, and the reference-allele
+ * toggle's `'draw' | 'skip'` is `genotypes.reference.show`. A v4
  * `LinearVariantDisplay` held its filters as `jexlFiltersSetting`, and a v4
  * matrix its dragged connector band as `lineZoneHeight`. A pixel
  * `rowHeightMode` is `rows.step`; its `'auto'` is the default fit.
@@ -248,7 +245,13 @@ export const retiredState: RetiredDisplayState = {
           }
         : {}),
       ...(typeof instance.referenceDrawingModeSetting === 'string'
-        ? { referenceDrawingMode: instance.referenceDrawingModeSetting }
+        ? {
+            genotypes: {
+              reference: {
+                show: instance.referenceDrawingModeSetting === 'draw',
+              },
+            },
+          }
         : {}),
     }
   },

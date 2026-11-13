@@ -14,29 +14,6 @@ const DISPLAY = '[data-display-id^="volvox_maf-LinearMafDisplay"]'
 // scissored out of its top, the rows out of the rest.
 const CANVAS = `${DISPLAY} > canvas`
 
-// volvox_maf is 10 species. A link from before MAF went always-fit pinned
-// them at 15px in a 120px track (45 of which is the coverage band), which
-// overflowed the rows by 75px; the retired key is dropped, so they fit.
-const retiredRowHeightSpec = {
-  views: [
-    {
-      type: 'LinearGenomeView',
-      assembly: 'volvox',
-      loc: 'ctgA:1-4000',
-      tracks: [
-        {
-          trackId: 'volvox_maf',
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            rowHeight: 15,
-            height: 120,
-          },
-        },
-      ],
-    },
-  ],
-}
-
 const defaultSpec = {
   views: [
     {
@@ -202,19 +179,6 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateWithSessionSpec(page, defaultSpec)
         await expectAllRowsFit(page)
-      },
-    },
-
-    {
-      name: 'a link pinning the retired rowHeight still opens fitted',
-      fn: async page => {
-        await navigateWithSessionSpec(page, retiredRowHeightSpec)
-        const g = await expectAllRowsFit(page)
-        if (Math.abs(g.rowsTopOffset + g.rowsHeight - 120) > 1) {
-          throw new Error(
-            `the track is ${g.rowsTopOffset + g.rowsHeight}px, not its 120px height`,
-          )
-        }
       },
     },
 
