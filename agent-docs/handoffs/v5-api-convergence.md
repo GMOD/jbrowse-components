@@ -91,9 +91,10 @@ displays or a display's parts, with the ruling on each.
      ggjbrowse `1c3cdfc`), and the downstream canary runs ggjbrowse on every
      push to main (`.github/workflows/downstream-canary.yml`), so a rename
      that misses R goes red there on push.
-   - Unchecked: whether the engine pin and the R reader tables carry the
-     2026-11-12 keys (the mark family's `tooltip`, the chord gate's
-     `fetchSizeLimit` and `forceLoad`). Being new, they turn no canary red.
+   - The 2026-11-12 keys (the mark family's `tooltip`, the chord gate's
+     `fetchSizeLimit` and `forceLoad`) owe ggjbrowse nothing: it draws static
+     images, where neither a hover nor a fetch gate acts, and no R code or
+     tutorial writes them. The canary passed on 4e00334d6b, which holds them.
    - jb2hubs checks its configs against v4.3.0, v5.0.0-beta.20 and `main`
      (`HOST_VERSIONS`, `jb2hubs/scripts/checkConfigCompat.mjs`). Its Trix
      adapters keep writing `textSearchAdapterId`, which v4.3.0 needs to boot
@@ -163,8 +164,11 @@ displays or a display's parts, with the ruling on each.
   `textSearchIndexingAttributes`, and desktop's open-sequence dialog wrote
   `cytobandsLocation` from v2.10.0 through v4.3.0, so both stay. Rechecked
   2026-11-13 over the keys retired since 2026-10-30: two were beta-only
-  and are gone (Measuring churn); six (`maxScore` on the variant display, five
-  alignments state keys on `LGVSyntenyDisplay`) were not grepped one by one.
+  and are gone (Measuring churn). The rest hold, the variant display's
+  wiggle-scale keys (`maxScore`, `autoscale`, `scaleType` and the like)
+  through v2.18.0–v3.x's `SharedVariantConfigSchema`, and every alignments
+  state key `LGVSyntenyDisplay` lifts through a v4.3.0 alignments or wiggle
+  model.
 - `jbrowse validate` reports no warning on hosted configs, `demos/` and the
   tutorials, plugin types checked against manifests from step 3, but for a
   track a plugin creates at runtime. On an adapter that
