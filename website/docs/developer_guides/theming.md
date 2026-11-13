@@ -57,6 +57,7 @@ theme; anything you don't set keeps its preset value.
 | `mafGap` | `string` | MAF alignment-gap cells, where a species has no base |
 | `readOverlap` | `string` | Span where two segments of one molecule both align (view-as-pairs / chains), at least one of them a split or supplementary segment |
 | `readMateOverlap` | `string` | Span where the two mates of a pair both align (view-as-pairs / chains): the fragment is shorter than two reads |
+| `readThroughHidden` | `string` | A split-read connector joining two segments across a segment of the read the view never fetched |
 | `modificationFwd` | `string` | Base modifications on the forward strand |
 | `modificationRev` | `string` | Base modifications on the reverse strand |
 | `mutedSnpBase` | `string` | SNP bases muted when show-modifications coloring is on |

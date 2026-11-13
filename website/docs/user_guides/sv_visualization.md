@@ -64,6 +64,7 @@ supported.
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#af4d19;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#af4d19"></span> | Inter-chromosomal | `#af4d19` | Mate on another chromosome |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#000000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#000000"></span> | Mate unmapped | `#000000` | Mate aligned nowhere |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#9b30b0;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#9b30b0"></span> | Split read (inverted) | `#9b30b0` | Supplementary segment on the opposite strand to its primary |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#2e2e2e;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#2e2e2e"></span> | Split read (segment not in view) | `#2e2e2e` | A connector joining two segments of a split read across a segment of it the view never fetched, so the class its two ends would take is not one the read states |
 
 <!-- END GENERATED COLOR_TABLE alignments-pair-orientation -->
 
