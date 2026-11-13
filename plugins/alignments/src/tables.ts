@@ -52,6 +52,7 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { heightModeViews } from '@jbrowse/display-kit/HeightModeMixin'
 import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import {
   byteGatedFetchRegions,
@@ -102,6 +103,10 @@ import {
   coverageTicksViews,
 } from './LinearAlignmentsDisplay/coverageScaleViews.ts'
 import { groupMaxY } from './LinearAlignmentsDisplay/groupLayout.ts'
+import {
+  buildSashimiDownKeys,
+  hasNamedGroups,
+} from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import { arcSlotsInWindows } from './LinearAlignmentsDisplay/keyWindows.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
@@ -126,7 +131,9 @@ import {
   arcsOverlayCoverage,
   boundBelowCoverageHeights,
   boundCoverageHeight,
+  computeStackedSections,
   laneBands,
+  sectionDipFloor,
 } from './LinearAlignmentsDisplay/sectionLayout.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import { appliedPileupSort } from './RenderAlignmentDataRPC/sortLayout.ts'
@@ -148,6 +155,7 @@ import { emptyArcsUploadData } from './features/arcs/types.ts'
 import {
   connectorArrowPx,
   connectorInstance,
+  flooredBend,
   linePassInstance,
 } from './features/linkedReads/connectorFeed.ts'
 import { effectiveBaseColors } from './features/mismatch/baseColors.ts'
@@ -1088,6 +1096,7 @@ function readConnectionTables(
   colors: ReturnType<typeof colorReads>,
   slotColor: string[],
   connectorSlots: ReadonlySet<number>,
+  bands: BelowCoverageBands,
 ) {
   const { arcsResult: result, regionInfos } = host
   const stroke = host.readConnectionsStrokeScale
@@ -1148,11 +1157,7 @@ function readConnectionTables(
     },
     arcLegendTitle: arcLegendTitle(host.drawnReadConnections),
     arcSpanMax: result.maxFlatArcSpanBp,
-    arcScale: arcScaleOf(
-      host,
-      result.maxFlatArcSpanBp,
-      result.inkGroupKeys.size > 0,
-    ),
+    arcScale: arcScaleOf(host, result.maxFlatArcSpanBp, bands),
   }
 }
 
@@ -1166,24 +1171,9 @@ function readConnectionTables(
 function arcScaleOf(
   host: AlignmentsTablesHostModel,
   maxFlatArcSpanBp: number,
-  hasArcs: boolean,
+  { stated, bound }: BelowCoverageBands,
 ) {
   const mode = host.drawnReadConnections
-  const stated = {
-    showCoverage: host.showCoverage,
-    coverageHeight: host.coverageHeight,
-    drawnReadConnections: mode,
-    readConnectionsDown: host.readConnectionsPlacement === 'down',
-    readConnectionsHeight: host.readConnectionsHeight,
-    showSashimi: false,
-    sashimiHeight: 0,
-    hasArcs,
-    hasSashimiDownArcs: false,
-  }
-  const bound = {
-    ...stated,
-    ...boundBelowCoverageHeights(stated, host.bandPlot),
-  }
   const { arcBand } = laneBands(bound, stated)
   return arcBand
     ? {
@@ -1253,18 +1243,90 @@ function overlapsInWindow(
 }
 
 /**
+ * The band stack each section reserves above its pileup, as the display
+ * states and binds it (`belowCoverageBandsInput`), and the sections whose
+ * junctions draw in the sashimi strip.
+ */
+function belowCoverageBands(host: AlignmentsTablesHostModel) {
+  const sashimiDown = buildSashimiDownKeys(host.rpcDataMap, {
+    filter: host.junctionFilter,
+    placement: host.effectiveSashimiPlacement,
+    refNameFor: i => host.loadedRegions.get(i)?.refName ?? `#${i}`,
+    hidden: host.hiddenGroups,
+  })
+  const sashimiDownLanes = new Set(
+    [...sashimiDown].filter(([, down]) => down.size > 0).map(([key]) => key),
+  )
+  const stated = {
+    showCoverage: host.showCoverage,
+    coverageHeight: host.coverageHeight,
+    drawnReadConnections: host.drawnReadConnections,
+    readConnectionsDown: host.readConnectionsPlacement === 'down',
+    readConnectionsHeight: host.readConnectionsHeight,
+    showSashimi: host.showSashimi,
+    sashimiHeight: host.sashimiHeight,
+    hasArcs: host.arcsResult.inkGroupKeys.size > 0,
+    hasSashimiDownArcs: sashimiDownLanes.size > 0,
+  }
+  return {
+    stated,
+    bound: { ...stated, ...boundBelowCoverageHeights(stated, host.bandPlot) },
+    sashimiDownLanes,
+  }
+}
+
+type BelowCoverageBands = ReturnType<typeof belowCoverageBands>
+
+/**
+ * The sections stacked as the display stacks them (`computeStackedSections`),
+ * each its band stack over every row the tables lay out, no lane sized by a
+ * drag.
+ */
+function stackedSections(
+  host: AlignmentsTablesHostModel,
+  { bound, sashimiDownLanes }: BelowCoverageBands,
+  readPitch: number,
+) {
+  const order = host.groupOrder
+  return computeStackedSections(
+    order.map(({ key }) => ({
+      key,
+      maxY: host.showPileup
+        ? groupMaxY(host.laidOutByGroupFramed.get(key) ?? new Map())
+        : 0,
+      hasArcs: host.arcsResult.inkGroupKeys.has(key),
+      hasSashimiDownArcs: sashimiDownLanes.has(key),
+      heightOverridePx: undefined,
+    })),
+    bound,
+    {
+      rowHeight: readPitch,
+      minSectionHeight: hasNamedGroups(order) ? GROUP_LABEL_HEIGHT : 0,
+    },
+  )
+}
+
+/**
  * Each section's connectors as the display draws them (`connectorsByGroup`):
  * the straight-line pass's pairs (`linePassInstance`) and the connector
  * mark's (`connectorInstance`), each filed by the region holding its first
- * end.
+ * end. A dip or loop is held above the bottom of the sections as the display
+ * stacks them, scrolled to their end (`flooredBend`).
  */
-function sectionConnectors(host: AlignmentsTablesHostModel, readPitch: number) {
+function sectionConnectors(
+  host: AlignmentsTablesHostModel,
+  bands: BelowCoverageBands,
+  readPitch: number,
+) {
   const regions = host.frames
   const windows = host.regionInfos
-  const arrows = connectorArrowPx(host.featureHeight) > 0
+  const { featureHeight } = host
+  const arrows = connectorArrowPx(featureHeight) > 0
+  const layout = stackedSections(host, bands, readPitch)
   return new Map(
-    [...host.laidOutByGroupFramed].map(([key, laid]) => {
-      const pileupHeight = groupMaxY(laid) * readPitch
+    layout.sections.map(sec => {
+      const { key, rowsHeight: pileupHeight } = sec
+      const dipFloor = sectionDipFloor(layout, sec, 0)
       const connectors = host.connectorsByGroup.get(key)
       const byRegion = new Map<number, PlacedConnector[]>()
       const file = (pair: LinkedPair, placed: PlacedConnector['placed']) => {
@@ -1292,7 +1354,10 @@ function sectionConnectors(host: AlignmentsTablesHostModel, readPitch: number) {
           arrows,
         )
         if (placed) {
-          file(pair, placed)
+          file(pair, {
+            ...placed,
+            bend: flooredBend(placed, featureHeight, readPitch, dipFloor),
+          })
         }
       }
       return [key, byRegion]
@@ -1309,10 +1374,13 @@ interface PlacedConnector {
  * One region's connectors as the connector mark draws them: each end's
  * position, row and region (the second end may sit in another), the color of
  * the connection's arc at `opacity`, the stroke `width` in px, and the shape:
- * `straight`, a `curve` dipping `dip` px below its rows, or bowing up over
- * them where `dip` is 0, or a `loop` where a read maps back over itself,
+ * `straight`, a `curve` dipping `dip` px below its rows, a `bow` up over
+ * them, or a `loop` where a read maps back over itself, dipping `dip` px and
  * ending in an `arrow`; `dashed` where the junction steps over segments not
- * in view. `strand` and `endStrand` (1 or -1) and `leading`, the second end
+ * in view. A `dip` is the one the display draws: at most half the room
+ * between its lower row's center and the bottom of the sections as the
+ * display stacks them, scrolled to their end, so a host whose y axis ends at
+ * the last row keeps every curve without reserving room under it. `strand` and `endStrand` (1 or -1) and `leading`, the second end
  * being a split junction's leading edge, set which way each end's curve
  * leaves its read: `alignmentConnectorCurves` places the curve at a host's
  * scale. `key` and `mateKey` are the two reads' `key` in `reads`.
@@ -1334,7 +1402,13 @@ function connectorColumns(
       opacity: connected.map(({ placed }) => placed.alpha),
       width: connected.map(({ placed }) => placed.width),
       kind: connected.map(({ placed }) =>
-        placed.straight ? 'straight' : placed.loop ? 'loop' : 'curve',
+        placed.straight
+          ? 'straight'
+          : placed.loop
+            ? 'loop'
+            : placed.bend === CONNECTOR_BOW
+              ? 'bow'
+              : 'curve',
       ),
       dashed: connected.map(({ placed }) => placed.hidden),
       dip: connected.map(({ placed }) =>
@@ -1698,7 +1772,8 @@ function laidOutTables(
     junctions: host.junctionFilter,
   }
   const readPitch = featureHeight + host.featureSpacing
-  const connectorsBySection = sectionConnectors(host, readPitch)
+  const bands = belowCoverageBands(host)
+  const connectorsBySection = sectionConnectors(host, bands, readPitch)
   const slotColor = buildArcColorPalette(colors.palette).map(normalizedRgbToHex)
   const connections = readConnectionTables(
     host,
@@ -1711,6 +1786,7 @@ function laidOutTables(
         ),
       ),
     ),
+    bands,
   )
   const keyOf = numberByFirstAppearance<WorkerPileupData['readKeys'][number]>()
   const plainRead = normalizedRgbToHex(colors.palette.readCategoryColors.plain)
@@ -2139,7 +2215,7 @@ export function alignmentConnectorCurves({
     end: readonly number[]
     row: readonly number[]
     endRow: readonly number[]
-    kind: readonly ('straight' | 'curve' | 'loop')[]
+    kind: readonly ('straight' | 'curve' | 'bow' | 'loop')[]
     dip: readonly number[]
     strand: readonly number[]
     endStrand: readonly number[]
@@ -2162,7 +2238,7 @@ export function alignmentConnectorCurves({
     row: Uint32Array.from(row),
     row2: Uint32Array.from(endRow),
     bend: Float32Array.from(kind, (k, i) =>
-      k !== 'straight' && dip[i] === 0 ? CONNECTOR_BOW : dip[i]!,
+      k === 'bow' ? CONNECTOR_BOW : dip[i]!,
     ),
     width: new Float32Array(count).fill(1),
     color: new Uint32Array(count),

@@ -7,7 +7,7 @@ const featureHeight = 7
 const featureSpacing = 1
 const pitch = featureHeight + featureSpacing
 
-type Kind = 'straight' | 'curve' | 'loop'
+type Kind = 'straight' | 'curve' | 'bow' | 'loop'
 
 function one({
   start,
@@ -152,10 +152,16 @@ test('a dipping curve is the split view’s curve, below its rows', () => {
   }
 })
 
-test('a curve with no dip bows up over its rows as the split view’s does', () => {
-  const got = one({ start: 1000, end: 1600, kind: 'curve', dip: 0 })
+test('a bow rises over its rows as the split view’s does', () => {
+  const got = one({ start: 1000, end: 1600, kind: 'bow' })
   expectSameCurve(got, splitViewCurve({ start: 1000, end: 1600 }))
   expect(got.handleRow).toBeLessThan(2)
+})
+
+test('a curve with no dip runs along its rows', () => {
+  expect(one({ start: 1000, end: 1600, kind: 'curve', dip: 0 }).handleRow).toBe(
+    2,
+  )
 })
 
 test('each handle leaves its end the way its strand reads, in bp on a reversed region too', () => {

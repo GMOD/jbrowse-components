@@ -6,16 +6,21 @@ import AlignmentsPlugin, {
   isLinearAlignmentsDisplay,
 } from '@jbrowse/plugin-alignments'
 
+import { sectionDipFloor } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/sectionLayout.ts'
 import { arcColorSlot } from '../../../../plugins/alignments/src/features/arcs/arcColors.ts'
 import {
   connectorArrowPx,
   connectorInstance,
+  flooredBend,
   linePassInstance,
 } from '../../../../plugins/alignments/src/features/linkedReads/connectorFeed.ts'
 import { effectiveBaseColors } from '../../../../plugins/alignments/src/features/mismatch/baseColors.ts'
 import { junctionColor } from '../../../../plugins/alignments/src/features/sashimi/bandFeed.ts'
 import { buildArcColorPalette } from '../../../../plugins/alignments/src/shaders/palettes.ts'
-import { CONNECTOR_BOW } from '../../../render-core/src/shaders/connectorMark.consts.generated.ts'
+import {
+  CONNECTOR_BOW,
+  CONNECTOR_STRAIGHT,
+} from '../../../render-core/src/shaders/connectorMark.consts.generated.ts'
 import { createTablesEngine } from '../index.ts'
 import { BAM, PAIRED_INVERSION, SPLICED, SV_READS } from '../volvox.fixture.ts'
 import { VOLVOX_CONTIGS, standUpDisplay } from './testEnv.ts'
@@ -118,7 +123,8 @@ function readRows(
  * junctions the sashimi band draws and their color, the arcs the read-connection band draws (those joining two regions
  * by its overlay), and the color each mismatched base paints. The display
  * lays out the view's margin around a one-locus window too, which the window
- * does not show.
+ * does not show. A dip is the one the connector mark draws with the display
+ * scrolled to its end and its content taller than its track.
  */
 function modelGeometry(
   m: LinearAlignmentsDisplayModel,
@@ -190,13 +196,26 @@ function modelGeometry(
         arrows,
       )
       const label = labelOf.get(sec.groupKey)
-      return placed && touches(windows, placed.x, placed.x2)
-        ? [
-            placed.straight
-              ? `${label} ${placed.x}-${placed.x2} ${placed.row}/${placed.row2} straight`
-              : `${label} ${pair.e1.data.readKeys[pair.e1.readIdx]}>${pair.e2.data.readKeys[pair.e2.readIdx]} ${placed.row}/${placed.row2} ${placed.loop ? 'loop' : 'curve'} ${placed.bend === CONNECTOR_BOW ? 0 : placed.bend}`,
-          ]
-        : []
+      if (placed && touches(windows, placed.x, placed.x2)) {
+        const bend = flooredBend(
+          placed,
+          m.featureHeight,
+          rowPitch,
+          sectionDipFloor(m.sections, sec, 0),
+        )
+        const kind = placed.loop
+          ? 'loop'
+          : bend === CONNECTOR_BOW
+            ? 'bow'
+            : 'curve'
+        return [
+          placed.straight
+            ? `${label} ${placed.x}-${placed.x2} ${placed.row}/${placed.row2} straight`
+            : `${label} ${pair.e1.data.readKeys[pair.e1.readIdx]}>${pair.e2.data.readKeys[pair.e2.readIdx]} ${placed.row}/${placed.row2} ${kind} ${bend === CONNECTOR_BOW ? 0 : bend}`,
+        ]
+      } else {
+        return []
+      }
     }),
   )
   const arcSlotColor = buildArcColorPalette(palette).map(normalizedRgbToHex)
@@ -409,6 +428,15 @@ describe('volvox pairs across an inversion', () => {
       name: 'pileup connectors',
       config: { ...TALL, pileup: { connectors: { show: true } } },
     },
+    {
+      name: 'facet by strand, pileup connectors under read connections and compact reads',
+      config: {
+        ...TALL,
+        facet: 'strand',
+        readConnections: { show: true, placement: 'down' },
+        pileup: { mark: { height: 3 }, connectors: { show: true } },
+      },
+    },
   ])
 })
 
@@ -500,6 +528,49 @@ describe('simulated pairs over loci on two contigs, end to end', () => {
     ],
   )
 })
+
+test('each dip is the bend the display’s connector feed draws, scrolled to the end of content taller than its track', async () => {
+  const fixture = windowsOf(PAIRED_INVERSION)
+  const display = { height: 100, pileup: { connectors: { show: true } } }
+  const { display: m, dispose } =
+    await standUpDisplay<LinearAlignmentsDisplayModel>({
+      plugins: [new AlignmentsPlugin()],
+      track: { type: 'AlignmentsTrack', adapter: fixture.adapterConfig },
+      displayType: 'LinearAlignmentsDisplay',
+      isDisplay: isLinearAlignmentsDisplay,
+      displayConfig: display,
+      regions: fixture.regions,
+      contigLengths: VOLVOX_CONTIGS,
+      bpPerPx: 14,
+    })
+  const t = await engine.alignments({ ...fixture, display })
+  expect(m.sections.contentHeight).toBeGreaterThan(m.height)
+  const labelOf = new Map(m.renderSections.map(s => [s.groupKey, s.label]))
+  const fed = [...m.themed.connectorFeedsByGroup].flatMap(([key, byRegion]) =>
+    [...byRegion.values()].flatMap(({ channels: f, hits }) =>
+      hits.flatMap((hit, i) =>
+        (f.bits[i]! & CONNECTOR_STRAIGHT) === 0 &&
+        touches(fixture.regions, f.x[i], f.x2[i])
+          ? [
+              `${labelOf.get(key)} ${hit.id1}>${hit.id2} ${f.row[i]}/${f.row2[i]} ${(f.bend[i] === CONNECTOR_BOW ? 0 : f.bend[i]!).toFixed(3)}`,
+            ]
+          : [],
+      ),
+    ),
+  )
+  dispose()
+  const c = t.connectors
+  const idOfKey = new Map(t.reads.key.map((k, i) => [k, t.reads.id[i]!]))
+  const tabled = c.kind.flatMap((kind, i) =>
+    kind === 'straight'
+      ? []
+      : [
+          `${c.section[i]} ${idOfKey.get(c.key[i]!)}>${idOfKey.get(c.mateKey[i]!)} ${c.row[i]}/${c.endRow[i]} ${Math.fround(c.dip[i]!).toFixed(3)}`,
+        ],
+  )
+  expect(fed.length).toBeGreaterThan(0)
+  expect(sorted(tabled)).toEqual(sorted(fed))
+}, 60_000)
 
 test('the cases decide over loops, curves, straight lines, junctions, and arcs within and across regions', async () => {
   const [loops, pairs, spliced, arcs, acrossLoci] = await Promise.all([

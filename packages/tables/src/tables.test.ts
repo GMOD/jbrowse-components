@@ -1134,6 +1134,58 @@ test('a chain’s connectors carry what places each curve, and place at a host�
   }
 })
 
+test('every connector’s dip ends above the bottom of its rows, as the display draws it scrolled to its end', async () => {
+  const t = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { pileup: { connectors: { show: true } } },
+  })
+  const { featureHeight, featureSpacing } = t.readPitch
+  const pitch = featureHeight + featureSpacing
+  const floor = (Math.max(...t.reads.row) + 1) * pitch
+  const c = t.connectors
+  const apexes = c.kind.flatMap((kind, i) =>
+    kind === 'straight'
+      ? []
+      : [
+          Math.max(c.row[i]!, c.endRow[i]!) * pitch +
+            featureHeight / 2 +
+            c.dip[i]!,
+        ],
+  )
+  expect(apexes.length).toBeGreaterThan(0)
+  expect(Math.max(...apexes)).toBeLessThan(floor)
+})
+
+test('a curve the bottom row flattens to no dip stays a curve on its row, where a bow rises over it', async () => {
+  const t = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { unit: 'chain', pileup: { mark: { height: 3 } } },
+  })
+  const c = t.connectors
+  const flat = c.kind.flatMap((kind, i) =>
+    kind === 'curve' && c.dip[i] === 0 ? [i] : [],
+  )
+  expect(flat.length).toBeGreaterThan(0)
+  const curves = engine.alignmentConnectorCurves({
+    pxPerBp: 1200 / 14000,
+    featureHeight: t.readPitch.featureHeight,
+    featureSpacing: t.readPitch.featureSpacing,
+    connectors: c,
+  })
+  for (const i of flat) {
+    expect(curves.handleRow[i]).toBe(c.row[i])
+  }
+  const bowed = engine.alignmentConnectorCurves({
+    pxPerBp: 1200 / 14000,
+    featureHeight: t.readPitch.featureHeight,
+    featureSpacing: t.readPitch.featureSpacing,
+    connectors: { ...c, kind: c.kind.map(() => 'bow' as const) },
+  })
+  for (const i of flat) {
+    expect(bowed.handleRow[i]).toBeLessThan(c.row[i]!)
+  }
+})
+
 test('the glyph hands R the splice line’s fade at the read height, and the size labels’ rules', async () => {
   const tall = await engine.alignments(SPLICED)
   const compact = await engine.alignments({

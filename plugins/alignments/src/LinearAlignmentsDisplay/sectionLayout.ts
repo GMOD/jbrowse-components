@@ -299,6 +299,19 @@ export function computeStackedSections<L extends SectionLaneInput>(
   return { sections, contentHeight: top }
 }
 
+/**
+ * How far below a section's pileup top the bottom of a display `viewportPx`
+ * tall sits with it scrolled to its end: the floor its connectors' dips end
+ * above (`flooredBend`).
+ */
+export function sectionDipFloor(
+  layout: Pick<SectionsLayout, 'contentHeight'>,
+  section: Pick<Section, 'pileupTop'>,
+  viewportPx: number,
+) {
+  return Math.max(layout.contentHeight, viewportPx) - section.pileupTop
+}
+
 // Project a SectionsLayout into the screen-space draw geometry the renderers
 // loop, through the same two scroll tiers the overlays use: band tops through
 // `bandScreenTop` (sticky ungrouped, scrolling grouped), pileup content through

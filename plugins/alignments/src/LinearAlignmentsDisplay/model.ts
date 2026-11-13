@@ -184,6 +184,7 @@ import {
   computeStackedSections,
   dragBelowCoverageBand,
   laneBandOverheads,
+  sectionDipFloor,
 } from './sectionLayout.ts'
 
 import type {
@@ -1267,7 +1268,6 @@ export default function stateModelFactory(
          * top with the display scrolled to its end.
          */
         get connectorPairSections() {
-          const bottom = Math.max(this.sections.contentHeight, self.height)
           return this.renderSections.flatMap(sec => {
             const pairs = self.connectorsByGroup.get(sec.groupKey)?.overlayPairs
             return pairs?.length
@@ -1276,7 +1276,7 @@ export default function stateModelFactory(
                     groupKey: sec.groupKey,
                     pileupTop: sec.pileupTop,
                     pileupHeight: sec.rowsHeight,
-                    dipFloor: bottom - sec.pileupTop,
+                    dipFloor: sectionDipFloor(this.sections, sec, self.height),
                     pairs,
                   },
                 ]

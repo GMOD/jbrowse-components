@@ -26,8 +26,9 @@ import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 // section, the next section's reads included, and clips at the bottom of the
 // display. A lane sized by a drag passes its rows, not the size. The connector
 // feed lets a dip take half the room between its row and the bottom of the
-// display with it scrolled to its end (`dipFloorPx` in plugins/alignments), so
-// the lowest rows of the last section flatten toward a line. The split view
+// display with it scrolled to its end (`flooredBend` in plugins/alignments, the
+// alignments tables' `dip` too), so the lowest rows of the last section
+// flatten toward a line. The split view
 // clips at its panel edge.
 //
 // Capping the dip at ALL the room left below the lower read was tried twice

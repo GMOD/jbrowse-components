@@ -155,19 +155,22 @@ a quiet region.
   the feed the mark draws from (`connectorInstance`). A section on one row
   draws no straight line, so it lists none. Each has both ends'
   positions, rows and regions, the connection's arc color at its `opacity`,
-  the stroke `width` in px, its `kind` (`straight`, `curve` or `loop`),
-  `dashed` for a junction over segments not in view, the `dip` in px a curve
-  or loop asks for (0 for one that bows up), `strand`, `endStrand` and
+  the stroke `width` in px, its `kind` (`straight`, `curve`, `bow` or
+  `loop`), `dashed` for a junction over segments not in view, the `dip` in px
+  a curve or loop draws (0 for a bow), `strand`, `endStrand` and
   `leading`, which set the way each end's curve leaves its read, `arrow` for a
   loop's arrowhead, and `key`/`mateKey` naming the two reads in `reads`.
   `alignmentConnectorCurves` places the curves at a host's `pxPerBp` through
   the mark's own placement (render-core's `connectorPlacement`), returning
   each cubic's two control points in bp and rows and the arrowhead's arms, so
   a dip flattens as the figure zooms out, as the display's does.
-- A curve's `dip` can reach below its section's last row. The display keeps
-  no room for it and draws the curve over what is under the section, a dip
-  near the bottom of the track drawn shallower; a host with no
-  track height gets every `dip` as asked for and leaves that room itself.
+- A `dip` is the one the display draws scrolled to its end with its content
+  taller than its track: at most half the room between the lower row's center
+  and the bottom of the sections as the display stacks them, each band stack
+  over its rows (`flooredBend`, `sectionDipFloor`). A curve in the last
+  section ends above its last row, so a host whose y axis ends there keeps
+  every curve with no room reserved under it; a curve in an earlier section
+  can still reach into the sections below, as the display's does.
 - Under `unit: 'chain'`, `overlaps` holds the spans
   where two of a chain's reads both align, each in its kind's color: the strong neutral
   where a split or supplementary segment is one of the two, the faint one where

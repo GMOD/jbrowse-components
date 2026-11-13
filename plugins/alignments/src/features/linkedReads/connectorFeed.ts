@@ -225,6 +225,29 @@ function dipRoomPx(rowCenterPx: number, dipFloorPx: number) {
   )
 }
 
+/**
+ * A placed connector's `bend` as the connector mark draws it: a dip or loop
+ * takes at most half the room between its lower row's center and
+ * `dipFloorPx`, measured from its section's pileup top. A bow keeps its
+ * sentinel. The connector feed and the alignments tables both read it here.
+ */
+export function flooredBend(
+  { bend, row, row2 }: { bend: number; row: number; row2: number },
+  featureHeight: number,
+  rowPitch: number,
+  dipFloorPx: number,
+) {
+  return bend === CONNECTOR_BOW
+    ? bend
+    : Math.min(
+        bend,
+        dipRoomPx(
+          Math.max(row, row2) * rowPitch + featureHeight / 2,
+          dipFloorPx,
+        ),
+      )
+}
+
 export interface ConnectorFeedInput {
   pairs: readonly LinkedPair[]
   displayedRegions: readonly DisplayedRegion[]
@@ -286,18 +309,7 @@ export function buildConnectorFeeds({
       lanes.x2Region.push(placed.x2Region)
       lanes.row.push(placed.row)
       lanes.row2.push(placed.row2)
-      lanes.bend.push(
-        placed.bend === CONNECTOR_BOW
-          ? placed.bend
-          : Math.min(
-              placed.bend,
-              dipRoomPx(
-                Math.max(placed.row, placed.row2) * rowPitch +
-                  featureHeight / 2,
-                dipFloorPx,
-              ),
-            ),
-      )
+      lanes.bend.push(flooredBend(placed, featureHeight, rowPitch, dipFloorPx))
       lanes.width.push(placed.width)
       lanes.color.push(
         placed.alpha === 1
