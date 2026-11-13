@@ -931,6 +931,8 @@
         "isKeyedWrites",
         "isSlotDefinitionEntry",
         "keyedBase",
+        "keyedInForce",
+        "keyedValueInForce",
         "keyedWritesAt",
         "liftPlot",
         "liftRetiredSpellings",

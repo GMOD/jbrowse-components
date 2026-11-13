@@ -7912,7 +7912,7 @@
           }
         },
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
+          "description": "bytes the whole circle may fetch, every displayed region at once, before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -13012,10 +13012,6 @@
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "referenceDrawingMode": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
         "colorBy": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -15220,10 +15216,6 @@
         "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "rowHeight": {
-          "deprecated": true,
-          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -18629,9 +18621,6 @@
             "showReferenceAlleles": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showReferenceAlleles"
             },
-            "referenceDrawingMode": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/referenceDrawingMode"
-            },
             "colorBy": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/colorBy"
             },
@@ -20128,9 +20117,6 @@
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
               ]
-            },
-            "rowHeight": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowHeight"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"

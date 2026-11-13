@@ -8135,7 +8135,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fetchSizeLimit": {
-          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
+          "description": "bytes the whole circle may fetch, every displayed region at once, before the display asks first; an adapter that sets its own limit takes precedence over this.",
           "default": 1000000,
           "if": {
             "type": "null"
@@ -13422,10 +13422,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "referenceDrawingMode": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
         "colorBy": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -15719,10 +15715,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "rowHeight": {
-          "deprecated": true,
-          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -19208,9 +19200,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showReferenceAlleles": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showReferenceAlleles"
             },
-            "referenceDrawingMode": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/referenceDrawingMode"
-            },
             "colorBy": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/colorBy"
             },
@@ -20760,9 +20749,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
               ]
-            },
-            "rowHeight": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowHeight"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"

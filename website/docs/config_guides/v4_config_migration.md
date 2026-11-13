@@ -126,7 +126,6 @@ a file, and fails on a key it does not know.
 |  | `mode` (session) | dropped |
 | `LinearHicDisplay`, `LinearWiggleDisplay` | `fetchSizeLimit` | dropped |
 |  | `resolution` (session) | `data.resolution` |
-| `LinearMafDisplay` | `rowHeight` | dropped |
 | `LinearMafDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `subtreeFilter` (session) | `rows.kept` |
 |  | `treeAreaWidth` (session) | `rows.axis.width` |
 | `LinearMarkDisplay` | type `LinearArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link"}]` |
@@ -148,7 +147,7 @@ a file, and fails on a key it does not know.
 |  | `renderingMode` | `rows.field` |
 |  | `showDescriptions` | `records.labels.description.show` |
 |  | `showLabels` | `records.labels.name.show` |
-|  | `referenceDrawingMode`, `showReferenceAlleles` | `genotypes.reference.show` |
+|  | `showReferenceAlleles` | `genotypes.reference.show` |
 |  | `showSidebarLabels` | `rows.axis.labels` |
 |  | `showTree` | `rows.axis.tree` |
 |  | type `LinearMultiSampleVariantDisplay`, type `MultiLinearVariantDisplay` | `LinearVariantDisplay` |

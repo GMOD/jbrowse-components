@@ -7354,7 +7354,6 @@ export const configManifest: ConfigManifest = {
         "showSidebarLabels",
         "showTree",
         "showReferenceAlleles",
-        "referenceDrawingMode",
         "colorBy",
         "autoscale",
         "minScore",
@@ -8845,15 +8844,13 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters",
-        "rowHeight"
+        "jexlFilters"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover",
-        "rowHeight"
+        "mouseover"
       ],
       "misnamed": {
         "rowColor": [
