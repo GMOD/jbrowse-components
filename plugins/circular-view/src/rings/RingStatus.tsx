@@ -16,7 +16,7 @@ const LOADING_DELAY_MS = 250
 interface StatusDisplay {
   displayPhase: DisplayPhase
   regionTooLargeReason?: string
-  zoomCanReleaseGate?: boolean
+  tooLargeStatus?: { axis?: 'bytes' | 'density' }
   error?: unknown
   renderError?: unknown
   statusMessage?: string
@@ -47,7 +47,7 @@ function ringStatus(display: StatusDisplay) {
   if (phase === 'tooLarge') {
     return {
       text: tooLargeBannerText(display.regionTooLargeReason ?? '', {
-        zoomCanRelease: display.zoomCanReleaseGate,
+        zoomCanRelease: display.tooLargeStatus?.axis !== 'bytes',
         release: 'Show fewer chromosomes to see this track',
       }),
       short: display.regionTooLargeReason || 'Too much data to show',
@@ -168,6 +168,11 @@ const RingStatusLine = observer(function RingStatusLine({
  * level at the top of the screen, where the linear track would show its scrim
  * or banner: both live in the hidden strip the ring is warped from, so neither
  * reaches the circle.
+ *
+ * A density gate releases when fewer chromosomes refit the circle to fewer bp
+ * per px. A byte gate is the costliest region's, and a ring's regions are what
+ * the circle shows whatever the zoom, so neither a zoom nor dropping other
+ * chromosomes moves it: that ring offers only force load.
  */
 export const RingStatus = observer(function RingStatus({
   model,

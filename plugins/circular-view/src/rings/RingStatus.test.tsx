@@ -35,7 +35,6 @@ test('a gated ring says so, and a click on it force loads', () => {
   const { getByTestId } = renderStatus({
     displayPhase: 'tooLarge',
     regionTooLargeReason: 'Too many features',
-    zoomCanReleaseGate: true,
     forceLoad,
   })
   const status = getByTestId('ring-status')
@@ -46,16 +45,28 @@ test('a gated ring says so, and a click on it force loads', () => {
   expect(forceLoad).toHaveBeenCalledTimes(1)
 })
 
-test('a gated ring advises fewer chromosomes, since a zoom fetches the same regions', () => {
+test('a ring gated on density advises fewer chromosomes, which refits the circle to fewer bp per px', () => {
   const { getByTestId } = renderStatus({
     displayPhase: 'tooLarge',
-    regionTooLargeReason: 'Requested too much data (40 MB)',
-    zoomCanReleaseGate: true,
+    regionTooLargeReason: 'Too many features to display',
+    tooLargeStatus: { axis: 'density' },
     forceLoad: jest.fn(),
   })
   const title = getByTestId('ring-status').querySelector('title')!.textContent
   expect(title).toContain('Show fewer chromosomes to see this track')
   expect(title).not.toContain('Zoom in')
+})
+
+test('a ring gated on bytes offers only force load, since its budget is per chromosome', () => {
+  const { getByTestId } = renderStatus({
+    displayPhase: 'tooLarge',
+    regionTooLargeReason: 'Requested too much data (40 MB)',
+    tooLargeStatus: { axis: 'bytes' },
+    forceLoad: jest.fn(),
+  })
+  expect(getByTestId('ring-status').querySelector('title')!.textContent).toBe(
+    'Requested too much data (40 MB). Force load this track for the rest of the session (may be slow)',
+  )
 })
 
 test('a failed ring shows its error and retries on a click', () => {
