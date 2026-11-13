@@ -20,9 +20,6 @@ import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedPair, RefNameAt } from './compute.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 
-// The split view's alignment connector width, which draws the same curve.
-export const CURVE_STROKE_WIDTH_PX = 1
-
 // Every pair the line pass leaves: it draws straight lines within one region
 // and cannot name the loci a junction skips.
 function isConnectorMarkPair(pair: LinkedPair) {

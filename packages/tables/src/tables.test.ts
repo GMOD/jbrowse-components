@@ -1119,6 +1119,10 @@ test('a chainâ€™s connectors carry what places each curve, and place at a hostâ€
   expect(c.dip.every(d => d >= 0)).toBe(true)
   expect(c.dip.some(d => d > 0)).toBe(true)
   expect(c.width.every(w => w > 0)).toBe(true)
+  expect(c.kind).toContain('curve')
+  expect(new Set(c.width.filter((_, i) => c.kind[i] !== 'loop'))).toEqual(
+    new Set([1.5]),
+  )
   expect(c.opacity.every(o => o > 0 && o <= 1)).toBe(true)
   expect(c.color.every(color => t.arcLegend.color.includes(color))).toBe(true)
   const curves = engine.alignmentConnectorCurves({

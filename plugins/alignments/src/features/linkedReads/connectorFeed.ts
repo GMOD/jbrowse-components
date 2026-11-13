@@ -23,7 +23,6 @@ import {
 } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
 import { arcColorCategoryLabel } from '../../shared/legendUtils.ts'
 import {
-  CURVE_STROKE_WIDTH_PX,
   LOOP_ARROW_MIN_FEATURE_HEIGHT_PX,
   LOOP_MAX_ARROW_PX,
   LOOP_STROKE_WIDTH_PX,
@@ -184,11 +183,7 @@ export function connectorInstance(
       row: e1.data.readYs[e1.readIdx]!,
       row2: e2.data.readYs[e2.readIdx]!,
       bend: loop ? loopDipPx(rowPitch) : (dipPx ?? CONNECTOR_BOW),
-      width: straight
-        ? LINKED_READ_LINE_WIDTH_PX
-        : loop
-          ? LOOP_STROKE_WIDTH_PX
-          : CURVE_STROKE_WIDTH_PX,
+      width: loop ? LOOP_STROKE_WIDTH_PX : LINKED_READ_LINE_WIDTH_PX,
       slot: linkedReadColorSlot(c.colorType),
       alpha: loop ? 1 : LINKED_READ_LINE_ALPHA,
       straight,
