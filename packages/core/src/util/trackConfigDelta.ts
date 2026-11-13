@@ -144,7 +144,8 @@ const keyedAt = (at: At) =>
 // merge writes it over nothing. The edit is a whole snapshot, so a field it
 // leaves out is the one in force, its declared default (`unwritten`) or
 // empty, which changes a field keyed with `emptyChanges`. A base writing no
-// such object diffs as an empty one, so its field in force is named too.
+// such object diffs as an empty one, so its field in force is named too. A
+// reset names no field, since it carries no arrangement.
 function keyedDiff(
   at: At,
   out: JsonObject,
@@ -169,11 +170,30 @@ function keyedDiff(
     const field = keyedFieldInForce(keyed, edited)
     return out[keyed.keyedBy] === undefined &&
       field !== undefined &&
-      keyed.keyed.some(member => Object.hasOwn(kept, member))
+      keyed.keyed.some(member => kept[member] != null)
       ? { ...kept, [keyed.keyedBy]: field }
       : kept
   }
   return out
+}
+
+// A delta naming the declared default field (`unwritten`) beside an
+// arrangement recorded it as the rows that arrangement names, since a pick of
+// the default diffs as a reset: the base's field stands where it names the
+// same rows or ones they refine, so the arrangement follows an admin's switch
+// to a refinement. A field stated alone is a pick, and lands.
+function withoutDefaultGuard(
+  keyed: KeyedWrites,
+  base: JsonObject,
+  delta: JsonObject,
+) {
+  const { [keyed.keyedBy]: field, ...rest } = delta
+  return field !== undefined &&
+    field === keyed.unwritten &&
+    keyed.keyed.some(member => rest[member] != null) &&
+    !changesKeyedField(keyed, base, { [keyed.keyedBy]: field })
+    ? rest
+    : delta
 }
 
 function withoutKeyed(keyed: KeyedWrites, o: JsonObject) {
@@ -327,11 +347,12 @@ function mergeValue(base: Json, delta: Json, at: At): Json {
   if (isPlainObject(delta) && !isWhole(at)) {
     const keyed = keyedAt(at)
     const prior = isPlainObject(base) ? base : {}
+    const stated = keyed ? withoutDefaultGuard(keyed, prior, delta) : delta
     const out =
-      keyed && changesKeyedField(keyed, prior, delta)
+      keyed && changesKeyedField(keyed, prior, stated)
         ? withoutKeyed(keyed, prior)
         : { ...prior }
-    for (const [k, v] of Object.entries(delta)) {
+    for (const [k, v] of Object.entries(stated)) {
       if (v === null) {
         delete out[k]
       } else {
@@ -437,10 +458,22 @@ function walkDelta(
         out.push({ path: [...path, k], from: base[k], to: delta[k] })
       }
     }
-  } else if (isPlainObject(delta) && isPlainObject(base)) {
+  } else if (
+    isPlainObject(delta) &&
+    (isPlainObject(base) ||
+      (base === undefined && keyedAt(at)?.unwritten !== undefined))
+  ) {
+    const prior = isPlainObject(base) ? base : {}
+    const keyed = keyedAt(at)
     for (const [k, v] of Object.entries(delta)) {
       if (!identityKeys.has(k)) {
-        walkDelta(base[k], v, [...path, k], out, childAt(at, k))
+        walkDelta(
+          keyed?.keyedBy === k ? keyedFieldInForce(keyed, prior) : prior[k],
+          v,
+          [...path, k],
+          out,
+          childAt(at, k),
+        )
       }
     }
   } else if (!deepEqual(base, delta)) {

@@ -3,7 +3,11 @@ import {
   applyConfSettings,
   mergeConfSettings,
 } from '@jbrowse/core/configuration'
-import { diffTrackConfig, mergeTrackConfig } from '@jbrowse/core/util'
+import {
+  diffTrackConfig,
+  flattenTrackConfigDelta,
+  mergeTrackConfig,
+} from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { displayForms } from '@jbrowse/product-core'
 
@@ -259,16 +263,81 @@ test.each(cases)('$name, through all four consumers', c => {
   })
 })
 
-test("a share link's arrangement of a declared default's rows keeps naming them after the admin changes the field", () => {
+// A share link stored over a base display, then merged over the base an
+// admin later writes, read back through the schema
+function sharedLink(
+  displayType: string,
+  { base, edited, later }: { base?: Bag; edited: Bag; later?: Bag },
+) {
   const forms = displayForms(pluginManager)
-  const display = { type: 'LinearMultiRowFeatureDisplay', displayId: 't-d' }
   const track = (rows?: Bag) => ({
     trackId: 't',
     type: 'FeatureTrack',
-    displays: [{ ...display, ...(rows ? { rows } : {}) }],
+    displays: [
+      { type: displayType, displayId: 't-d', ...(rows ? { rows } : {}) },
+    ],
   })
+  const delta = diffTrackConfig(track(base), track(edited), forms)
+  return {
+    changes: flattenTrackConfigDelta(track(base), delta, forms).map(c =>
+      c.path.join('.'),
+    ),
+    rows: rowsOf(
+      displayType,
+      mergeTrackConfig(track(later), delta, forms).displays[0]!,
+    ),
+  }
+}
+
+test("a share link's arrangement of a declared default's rows keeps naming them after the admin changes the field", () => {
   const sorted = { sort: ['exon', 'gene'] }
-  const delta = diffTrackConfig(track(), track(sorted), forms)
-  const merged = mergeTrackConfig(track({ field: 'sample' }), delta, forms)
-  expect(rowsOf(display.type, merged.displays[0]!)).toEqual(sorted)
+  expect(
+    sharedLink('LinearMultiRowFeatureDisplay', {
+      edited: sorted,
+      later: { field: 'sample' },
+    }).rows,
+  ).toEqual(sorted)
+})
+
+test("a share link's arrangement of the default sample rows follows the admin to the haplotype rows refining them", () => {
+  const sorted = { sort: ['HG002'] }
+  expect(
+    sharedLink('LinearVariantDisplay', {
+      edited: sorted,
+      later: { field: 'haplotype' },
+    }).rows,
+  ).toEqual({ field: 'haplotype', ...sorted })
+  expect(
+    sharedLink('LinearVariantDisplay', {
+      base: { field: 'sample' },
+      edited: { field: 'sample', ...sorted },
+      later: { field: 'haplotype' },
+    }).rows,
+  ).toEqual({ field: 'haplotype', ...sorted })
+})
+
+test("a share link's changes list no field the user left at the one in force", () => {
+  const display = 'LinearMultiRowFeatureDisplay'
+  expect(sharedLink(display, { edited: { sort: ['exon'] } }).changes).toEqual([
+    `displays.${display}.rows.sort`,
+  ])
+  expect(
+    sharedLink(display, {
+      base: { axis: { width: 40 } },
+      edited: { axis: { width: 40 }, tree: { newick: '(a,b);' } },
+    }).changes,
+  ).toEqual([`displays.${display}.rows.tree`])
+})
+
+test("a share link resetting the order records no field, so the admin's later field stands", () => {
+  expect(
+    sharedLink('LinearMultiRowFeatureDisplay', {
+      base: { sort: ['a'] },
+      edited: {},
+      later: { field: 'sample', sort: ['s1'] },
+    }),
+  ).toEqual({
+    changes: ['displays.LinearMultiRowFeatureDisplay.rows.sort'],
+    rows: { field: 'sample' },
+  })
 })
