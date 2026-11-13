@@ -169,7 +169,7 @@ export function connectorInstance(
   const ends = connectorEnds(pair, displayedRegions)
   if (r1 && r2 && ends) {
     const { region, x, x2Region, x2 } = ends
-    const { straight, hidden, loop, dipPx } = connectorShape(
+    const { straight, loop, dipPx } = connectorShape(
       pair,
       r1,
       r2,
@@ -193,7 +193,6 @@ export function connectorInstance(
       alpha: loop ? 1 : LINKED_READ_LINE_ALPHA,
       straight,
       loop,
-      hidden,
       bits:
         (c.s1 < 0 ? CONNECTOR_MINUS_1 : 0) |
         (c.s2 < 0 ? CONNECTOR_MINUS_2 : 0) |

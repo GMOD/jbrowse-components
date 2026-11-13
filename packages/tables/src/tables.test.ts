@@ -1197,7 +1197,6 @@ test('a junction skipping a segment out of view bows over its row, where the sam
   const bows = c.kind.flatMap((kind, i) => (kind === 'bow' ? [i] : []))
   expect(bows).toHaveLength(2)
   for (const i of bows) {
-    expect(c.dashed[i]).toBe(true)
     expect(c.dip[i]).toBe(0)
     expect(c.endRow[i]).toBe(c.row[i])
   }

@@ -1373,14 +1373,14 @@ interface PlacedConnector {
  * the connection's arc at `opacity`, the stroke `width` in px, and the shape:
  * `straight`, a `curve` dipping `dip` px below its rows, a `bow` up over
  * them, or a `loop` where a read maps back over itself, dipping `dip` px and
- * ending in an `arrow`; `dashed` where the junction steps over segments not
- * in view. A `dip` is the one the display draws: at most half the room
- * between its lower row's center and the bottom of the sections as the
- * display stacks them, scrolled to their end, so a host whose y axis ends at
- * the last row keeps every curve without reserving room under it. `strand` and `endStrand` (1 or -1) and `leading`, the second end
- * being a split junction's leading edge, set which way each end's curve
- * leaves its read: `alignmentConnectorCurves` places the curve at a host's
- * scale. `key` and `mateKey` are the two reads' `key` in `reads`.
+ * ending in an `arrow`. A `dip` is the one the display draws: at most half
+ * the room between its lower row's center and the bottom of the sections as
+ * the display stacks them, scrolled to their end, so a host whose y axis ends
+ * at the last row keeps every curve without reserving room under it.
+ * `strand` and `endStrand` (1 or -1) and `leading`, the second end being a
+ * split junction's leading edge, set which way each end's curve leaves its
+ * read: `alignmentConnectorCurves` places the curve at a host's scale. `key`
+ * and `mateKey` are the two reads' `key` in `reads`.
  */
 function connectorColumns(
   connected: readonly PlacedConnector[],
@@ -1407,7 +1407,6 @@ function connectorColumns(
               ? 'bow'
               : 'curve',
       ),
-      dashed: connected.map(({ placed }) => placed.hidden),
       dip: connected.map(({ placed }) =>
         placed.straight || placed.bend === CONNECTOR_BOW ? 0 : placed.bend,
       ),

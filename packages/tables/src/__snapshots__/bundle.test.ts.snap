@@ -85,7 +85,6 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
     "connectors": {
       "arrow": "array",
       "color": "array",
-      "dashed": "array",
       "dip": "array",
       "end": "array",
       "endRegion": "array",
@@ -361,7 +360,6 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
     "connectors": {
       "arrow": "array",
       "color": "array",
-      "dashed": "array",
       "dip": "array",
       "end": "array",
       "endRegion": "array",

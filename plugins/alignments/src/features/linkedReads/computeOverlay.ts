@@ -261,7 +261,6 @@ export function connectorShape(
     loop ||
     (facesOneWay && !(sameRow && crossesOwnAlignment(pair, displayedRegions)))
   return {
-    hidden,
     loop,
     straight: plain && !loop && !(hidden && sameRow),
     // The endpoint bps, not their screen xs, so one event holds its depth
