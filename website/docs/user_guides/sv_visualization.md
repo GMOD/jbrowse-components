@@ -84,9 +84,9 @@ as an ordinary LR pair.
 
 <figure>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" style="max-width:100%;height:auto;display:block" width="900" font-family="system-ui, sans-serif" font-size="13" fill="#333" role="img" aria-label="How an inversion turns normal read pairs into LL and RR pairs on the reference">
-<line x1="300" y1="42" x2="300" y2="212" stroke="#bbb" stroke-dasharray="3 3"/>
+<line x1="300" y1="42" x2="300" y2="212" stroke="#ddd"/>
 <text x="300" y="34" text-anchor="middle" fill="#888" font-size="12">junction</text>
-<line x1="600" y1="42" x2="600" y2="212" stroke="#bbb" stroke-dasharray="3 3"/>
+<line x1="600" y1="42" x2="600" y2="212" stroke="#ddd"/>
 <text x="600" y="34" text-anchor="middle" fill="#888" font-size="12">junction</text>
 <rect x="100" y="90" width="720" height="10" fill="#e4e4e4"/>
 <rect x="300" y="88" width="300" height="14" fill="#dfe5f0"/>
@@ -115,12 +115,12 @@ as an ordinary LR pair.
 <polygon points="680,224 647,224 640,232.0 647,240 680,240" fill="#5555bb"/>
 <path d="M550,56 Q605.0,23.0 660,56" fill="none" stroke="#aaa" stroke-width="1.5"/>
 <path d="M350,240 Q505.0,333.0 660,240" fill="none" stroke="#5555bb" stroke-width="2"/>
-<path d="M240,102 C240,145.0 240,145.0 240,196" fill="none" stroke="#4d9a4d" stroke-opacity="0.45" stroke-dasharray="4 3"/>
-<path d="M350,102 C350,145.0 550,145.0 550,196" fill="none" stroke="#4d9a4d" stroke-opacity="0.45" stroke-dasharray="4 3"/>
-<path d="M440,102 C440,145.0 460,145.0 460,196" fill="none" stroke="#c8c8c8" stroke-opacity="0.45" stroke-dasharray="4 3"/>
-<path d="M500,102 C500,145.0 400,145.0 400,196" fill="none" stroke="#c8c8c8" stroke-opacity="0.45" stroke-dasharray="4 3"/>
-<path d="M550,102 C550,145.0 350,145.0 350,196" fill="none" stroke="#5555bb" stroke-opacity="0.45" stroke-dasharray="4 3"/>
-<path d="M660,102 C660,145.0 660,145.0 660,196" fill="none" stroke="#5555bb" stroke-opacity="0.45" stroke-dasharray="4 3"/>
+<path d="M240,102 C240,145.0 240,145.0 240,196" fill="none" stroke="#4d9a4d" stroke-opacity="0.3"/>
+<path d="M350,102 C350,145.0 550,145.0 550,196" fill="none" stroke="#4d9a4d" stroke-opacity="0.3"/>
+<path d="M440,102 C440,145.0 460,145.0 460,196" fill="none" stroke="#c8c8c8" stroke-opacity="0.3"/>
+<path d="M500,102 C500,145.0 400,145.0 400,196" fill="none" stroke="#c8c8c8" stroke-opacity="0.3"/>
+<path d="M550,102 C550,145.0 350,145.0 350,196" fill="none" stroke="#5555bb" stroke-opacity="0.3"/>
+<path d="M660,102 C660,145.0 660,145.0 660,196" fill="none" stroke="#5555bb" stroke-opacity="0.3"/>
 <text x="395" y="300" text-anchor="middle" fill="#4d9a4d" font-weight="600">LL pair</text>
 <text x="505" y="300" text-anchor="middle" fill="#5555bb" font-weight="600">RR pair</text>
 <text x="430" y="268" text-anchor="middle" fill="#888" font-size="12">LR pair</text>

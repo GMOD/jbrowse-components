@@ -164,7 +164,7 @@ const y = (loc: number) => pad.top + plotH - (loc / ceiling) * plotH
 const esc = (t: string) => t.replaceAll('&', '&amp;').replaceAll('<', '&lt;')
 const font = 'font-family="Helvetica, Arial, sans-serif"'
 
-// The release each dashed rule marks, at the week its tag landed. They are what
+// The release each rule marks, at the week its tag landed. They are what
 // turn a slope into a history: the last rule is where this release's window
 // opens, and the announcement's prose points at what happens after it.
 const MARKED = ['v2.0.0', 'v3.0.0', 'v4.0.0', 'v4.3.0']
@@ -219,7 +219,7 @@ ${tagWeeks
   .map(({ tag, at }) => {
     const px = x(at).toFixed(1)
     return (
-      `<line x1="${px}" y1="${pad.top}" x2="${px}" y2="${pad.top + plotH}" stroke="#999" stroke-width="1.5" stroke-dasharray="7 6"/>` +
+      `<line x1="${px}" y1="${pad.top}" x2="${px}" y2="${pad.top + plotH}" stroke="#bbb" stroke-width="1.5"/>` +
       `<text x="${px}" y="${pad.top + 14}" ${font} font-size="18" fill="#777" transform="rotate(90 ${px} ${pad.top + 14})">${tag}</text>`
     )
   })

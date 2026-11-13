@@ -533,8 +533,9 @@ export const jbrowseImgSpecs: CliSpec[] = [
   ]),
 
   // The two halves differ only in the track, so they compare line for line.
-  // The plugin dashes a connector whose read has a supplementary alignment
-  // outside the view, so the chr10 panel keeps every connector solid
+  // A connector whose read has a supplementary alignment outside the view
+  // steps over that segment, so the chr10 panel gives every connector the
+  // segment that really follows it
   // (agent-docs/reference/SV_MULTIHOP.md). The byte gate refuses the 200x ONT
   // chr3 panel without `force:true`.
   cliSpec('sv_review_tumor', svReviewHalf('COLO829_tumor_ont')),

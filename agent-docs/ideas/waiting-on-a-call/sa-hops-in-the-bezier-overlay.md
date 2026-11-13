@@ -16,8 +16,9 @@ draws.
 
 **The correctness half is not here, and it shipped.** `68eab1e8c7` stopped the
 overlay drawing a solid junction across segments it never fetched: it walks the
-SA tags of the segments it did fetch, dashes a junction spanning one it did not,
-and names the hidden loci in the hover. It did NOT go through
+SA tags of the segments it did fetch and names the hidden loci in the hover of a
+junction spanning one it did not. The junction itself draws solid, like every
+line JBrowse draws. It did NOT go through
 `unpairedReadChain`, as this file and the backlog both once proposed — `SegAln`
 carries no route back to the `ReadEntry`, and the overlay needs the entry at
 both ends for its `readYs` row and `displayedRegionIndex`, so it takes its
@@ -126,7 +127,7 @@ matters.
 
 ---
 
-## A dashed arc names loci nobody can act on
+## A hover names loci nobody can act on
 
 The hover prints `hiddenSegmentsBetween`, and that is the only place those loci
 appear. Making them walkable is smaller than it looks and blocked on a UI call,
@@ -140,7 +141,7 @@ not plumbing:
 - **Adding them is one existing helper away**, `showRegionsWithUndo` from the
   LGV plugin, which `viewSplitAlignmentRegionsInCurrentView` already wraps —
   but that helper REPLACES the view's regions with one window per segment. A
-  dashed arc wants the hidden windows INSERTED between the two it joins, in
+  junction over hidden segments wants the hidden windows INSERTED between the two it joins, in
   read order, so it is the same undo-able call with a different region list.
 - **An inserted window that overlaps another on its refName has to merge into
   it**, as `viewSplitAlignmentRegionsInCurrentView` does in read order, even

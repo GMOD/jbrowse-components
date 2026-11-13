@@ -355,11 +355,13 @@ to that panel**, the meaning a space already has for a linear view. So the
 two-breakend case is two bare `--loc` flags with no shell quoting, and a quoted
 `--loc` is how a panel takes two windows.
 
-A connector is drawn dashed when the read it joins has a supplementary alignment
-at a locus that is not on screen. A dashed connector means a panel is missing,
-so add that panel. COLO829's der(3) is a closed cycle over three chromosomes, so
-the junction below needs a chr10 panel between the two it appears to join, and
-with it every connector in the figure is solid.
+A connector joins the two segments of a read that are adjacent on screen, which
+need not be adjacent on the molecule: when the read has a supplementary
+alignment at a locus that is not on screen, the connector steps over it, and in
+the browser its hover names that locus. Such a connector means a panel is
+missing, so add that panel. COLO829's der(3) is a closed cycle over three
+chromosomes, so the junction below needs a chr10 panel between the two it
+appears to join, and with it no connector in the figure steps over a segment.
 
 **Render each sample separately, the matched normal beside the tumour.** A
 somatic call is the difference between the tumour and its matched normal, so a

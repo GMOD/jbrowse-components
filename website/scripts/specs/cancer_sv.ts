@@ -85,8 +85,8 @@ const FLOW_NUMBER = (n: number, extra?: { view: [number, number] }) =>
 // cancer_sv/realigned_reads: one junction (chr3:25,359,568, derivative 32,732)
 // against hg38 and against derive's allele.
 //
-// The reference pane needs the chr12 panel: without it, connectors that skip
-// the chr12 insert draw dashed. It needs 5 kb a panel: at 380 bp a connector
+// The reference pane needs the chr12 panel: without it, connectors step over the
+// chr12 insert, joining segments that are not adjacent on the molecule. It needs 5 kb a panel: at 380 bp a connector
 // with one end off-panel draws as a diagonal comb.
 //
 // The derivative pane stays at 380 bp; past ~1 kb it fills with clipped tails

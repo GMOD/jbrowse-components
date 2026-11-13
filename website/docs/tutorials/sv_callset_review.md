@@ -141,7 +141,7 @@ jb2export breakpoint \
   --width 1000 --out der3_tumor.png
 ```
 
-<Figure caption="COLO829's der(3) loci in separate panels with tumor and normal nanopore reads, and the same loci as one reconstructed contig on the right. A dashed connector marks a read with a segment outside the frame." src="/img/jbrowse-img/sv_review_pair.png" />
+<Figure caption="COLO829's der(3) loci in separate panels with tumor and normal nanopore reads, and the same loci as one reconstructed contig on the right." src="/img/jbrowse-img/sv_review_pair.png" />
 
 The [complex rearrangements tutorial](/docs/tutorials/cancer_sv) builds the
 reconstructed contig on the right.
