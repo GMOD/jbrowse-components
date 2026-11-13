@@ -95,6 +95,9 @@ function configSchemaF(_pluginManager: PluginManager) {
        */
       encoding: chordEncodingConfigSchema,
       ...regionTooLargeConfigSchemaFields,
+      /**
+       * #slot
+       */
       fetchSizeLimit: {
         ...regionTooLargeConfigSchemaFields.fetchSizeLimit,
         description:
