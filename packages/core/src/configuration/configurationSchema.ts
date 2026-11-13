@@ -116,9 +116,10 @@ export interface ConfigurationSchemaOptions<
    * old field's order standing. A keyed form, `{ keyedBy, keyed }`, merges
    * member by member except that a write changing `keyedBy` unsets the
    * `keyed` members, which name that member's values, unless it states them
-   * (ADR-257).
+   * (ADR-257). The schema fills in a keyed form's `unwritten` from the
+   * `keyedBy` slot's default, so a schema never states it.
    */
-  writes?: 'whole' | 'members' | KeyedWrites
+  writes?: DeclaredWrites
   /**
    * What the sub-schema means, in the words a slot's `description` uses: a
    * refused key or shape names it, at load, on a write and in
@@ -221,12 +222,25 @@ export interface MergedConfigurationSchemaOptions<
   EXPLICIT_IDENTIFIER extends string | undefined,
 > extends Omit<
   ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
-  'actions' | 'views' | 'extend'
+  'actions' | 'views' | 'extend' | 'writes'
 > {
   actions?: SchemaHook | SchemaHook[]
   views?: SchemaHook | SchemaHook[]
   extend?: SchemaHook | SchemaHook[]
+  writes?: StoredWrites
 }
+
+/** `writes` as a schema declares it. */
+export type DeclaredWrites =
+  | 'whole'
+  | 'members'
+  | Omit<KeyedWrites, 'unwritten'>
+
+/**
+ * `writes` as stored: a keyed form carries its field's declared default as
+ * `unwritten` where that names values (`writesInForce`).
+ */
+export type StoredWrites = 'whole' | 'members' | KeyedWrites
 
 function hookList(hook: SchemaHook | SchemaHook[] | undefined) {
   return hook === undefined ? [] : Array.isArray(hook) ? hook : [hook]
@@ -348,6 +362,14 @@ function preprocessConfigurationSchemaArguments(
     )
   }
 
+  if (
+    isKeyedWrites(inputOptions.writes) &&
+    'unwritten' in inputOptions.writes
+  ) {
+    throw new Error(
+      `${modelName}'s keyed writes state unwritten, which the schema fills in from ${inputOptions.writes.keyedBy}'s default`,
+    )
+  }
   let schemaDefinition = inputSchemaDefinition
   let options: MergedConfigurationSchemaOptions<any, any> = inputOptions
   const baseMeta = inputOptions.baseConfiguration
@@ -412,13 +434,14 @@ function preprocessConfigurationSchemaArguments(
 }
 
 // A keyed declaration carries its field's declared default where that names
-// values, so a reader of `writes` compares the field in force.
+// values, so a reader of `writes` compares the field in force. A base's own
+// default goes, since this schema may redeclare the slot.
 function writesInForce(
-  writes: MergedConfigurationSchemaOptions<any, any>['writes'],
+  writes: StoredWrites | undefined,
   definition: ConfigurationSchemaDefinition,
 ) {
   if (isKeyedWrites(writes)) {
-    const { unwritten: _stated, ...declared } = writes
+    const { unwritten: _inherited, ...declared } = writes
     const slot = definition[writes.keyedBy]
     const unwritten = isSlotDefinitionEntry(slot)
       ? slot.defaultValue

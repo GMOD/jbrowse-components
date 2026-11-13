@@ -76,16 +76,13 @@ function sharedRefines(keyed: KeyedWrites[]) {
 // Whole where any declaration writes it whole or two key it by different
 // fields; keyed where any keys it, by every declaration's keyed members and
 // the refinements all of them state, as `rows` gains a member on some
-// displays only, an empty value changing it where any declaration says so,
-// and the field's default where every slot declares the same one (the
-// multi-row display's `type` is no other display's); members otherwise.
+// displays only, an empty value changing it where any declaration says so;
+// members otherwise.
 function mergedWrites(slots: SlotEntry[]) {
   const keyed = slots.map(s => s.writes).filter(isKeyedWrites)
   const keyedBy = new Set(keyed.map(w => w.keyedBy))
   const [field] = keyedBy
   const refines = sharedRefines(keyed)
-  const unwritten = new Set(keyed.map(w => w.unwritten))
-  const [shared] = unwritten
   return slots.some(s => s.writes !== 'members' && !isKeyedWrites(s.writes)) ||
     keyedBy.size > 1
     ? 'whole'
@@ -96,9 +93,6 @@ function mergedWrites(slots: SlotEntry[]) {
           keyed: [...new Set(keyed.flatMap(w => w.keyed))],
           ...(keyed.some(w => w.emptyChanges) ? { emptyChanges: true } : {}),
           ...(Object.keys(refines).length > 0 ? { refines } : {}),
-          ...(unwritten.size === 1 && shared !== undefined
-            ? { unwritten: shared }
-            : {}),
         }
 }
 

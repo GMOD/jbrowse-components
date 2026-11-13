@@ -215,6 +215,14 @@ test("a field typed in Edit plot drops the type rows' arrangement, and an emptie
   expect(cleared.rowsField).toBe('')
 })
 
+test('rows deleted from the plot text reset to the type rows, and write a reset', () => {
+  const model = display({ rows: { field: 'sample', sort: ['mom'] } })
+  const { rows: _rows, ...rest } = model.plot
+  expect(model.plotWrites(rest, { whole: true })).toEqual({ rows: null })
+  model.applyPlot(rest, { whole: true })
+  expect(getSnapshot(model.conf.rows)).toEqual({})
+})
+
 test('a bag naming another field drops the arrangement a bag under it wrote for the type rows', () => {
   const merged = mergeConfSettings(
     configSchemaFactory(),

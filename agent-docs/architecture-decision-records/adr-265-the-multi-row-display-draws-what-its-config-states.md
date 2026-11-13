@@ -70,8 +70,8 @@ it.
   the variant display's `sample`), so every reader of the declaration
   compares and reads the field in force: `changesKeyedField` under setConf,
   Reset (`baseRows`), the bag folds (`mergeConfSettings`, the share-link
-  delta, the CLI's `mergeBySlots` through the manifest), and `keyedInForce`
-  for a read of the rows whole: the plot (`plotOf`, so Edit plot shows
+  delta, whose diff names the field in force beside an arrangement), and
+  `keyedInForce` for a read of the rows whole: the plot (`plotOf`, so Edit plot shows
   `type` and a field typed over it drops the type rows' arrangement), the
   rule list (`markPlotSettingsOf`) and `jbrowse validate`. An arrangement a
   config writes beside no `field` names the `type` rows and leaves with a

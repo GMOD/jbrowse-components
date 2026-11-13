@@ -48,8 +48,10 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
  * in, so a `rows.tree` written as its newick compares equal to the object it
  * lifts to, less what names the base field's rows once the live rows are on
  * another field (the keyed rule, ADR-257), so a reset returns no arrangement
- * of the old rows to the new ones. A base stating no field names no field, so
- * its arrangement returns on any, as a write from an empty field keeps one.
+ * of the old rows to the new ones. A base stating no field names its field
+ * in force, the declared default (the multi-row display's `type`), and where
+ * that is empty it names no field, so its arrangement returns on any, as a
+ * write from an empty field keeps one.
  * It does not name the field a mark display's default plot picks: re-derived
  * from the latest scan that is wrong after a reload or a rescan, and a
  * recorded pick is display state a re-shown track loses.
