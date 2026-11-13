@@ -216,6 +216,7 @@ exports[`darkMinimal resolves the same colors 1`] = `
   },
   "readMateOverlap": "#c8c8c8",
   "readOverlap": "#e4e4e4",
+  "readThroughHidden": "#ffffff",
   "regionBoundary": "rgba(255,255,255,0.3)",
   "regionSeparator": "#9e9e9e",
   "secondary": {
@@ -478,6 +479,7 @@ exports[`darkStock resolves the same colors 1`] = `
   },
   "readMateOverlap": "#c8c8c8",
   "readOverlap": "#e4e4e4",
+  "readThroughHidden": "#ffffff",
   "regionBoundary": "rgba(255,255,255,0.3)",
   "regionSeparator": "#9e9e9e",
   "secondary": {
@@ -732,6 +734,7 @@ exports[`default + a bare mode resolves the same colors 1`] = `
   },
   "readMateOverlap": "#c8c8c8",
   "readOverlap": "#e4e4e4",
+  "readThroughHidden": "#ffffff",
   "regionBoundary": "rgba(255,255,255,0.3)",
   "regionSeparator": "#9e9e9e",
   "secondary": {
@@ -986,6 +989,7 @@ exports[`default + a config background resolves the same colors 1`] = `
   },
   "readMateOverlap": "#b4b4b4",
   "readOverlap": "#555555",
+  "readThroughHidden": "#2e2e2e",
   "regionBoundary": "rgba(0,0,0,0.42)",
   "regionSeparator": "#757575",
   "secondary": {
@@ -1240,6 +1244,7 @@ exports[`default + a config brand resolves the same colors 1`] = `
   },
   "readMateOverlap": "#b4b4b4",
   "readOverlap": "#555555",
+  "readThroughHidden": "#2e2e2e",
   "regionBoundary": "rgba(0,0,0,0.42)",
   "regionSeparator": "#757575",
   "secondary": {
@@ -1494,6 +1499,7 @@ exports[`default + a config brand, dark resolves the same colors 1`] = `
   },
   "readMateOverlap": "#c8c8c8",
   "readOverlap": "#e4e4e4",
+  "readThroughHidden": "#ffffff",
   "regionBoundary": "rgba(255,255,255,0.3)",
   "regionSeparator": "#9e9e9e",
   "secondary": {
@@ -1756,6 +1762,7 @@ exports[`default resolves the same colors 1`] = `
   },
   "readMateOverlap": "#b4b4b4",
   "readOverlap": "#555555",
+  "readThroughHidden": "#2e2e2e",
   "regionBoundary": "rgba(0,0,0,0.42)",
   "regionSeparator": "#757575",
   "secondary": {
@@ -2018,6 +2025,7 @@ exports[`lightMinimal resolves the same colors 1`] = `
   },
   "readMateOverlap": "#b4b4b4",
   "readOverlap": "#555555",
+  "readThroughHidden": "#2e2e2e",
   "regionBoundary": "rgba(0,0,0,0.42)",
   "regionSeparator": "#757575",
   "secondary": {
@@ -2280,6 +2288,7 @@ exports[`lightStock resolves the same colors 1`] = `
   },
   "readMateOverlap": "#b4b4b4",
   "readOverlap": "#555555",
+  "readThroughHidden": "#2e2e2e",
   "regionBoundary": "rgba(0,0,0,0.42)",
   "regionSeparator": "#757575",
   "secondary": {
@@ -2542,6 +2551,7 @@ exports[`minimal resolves the same colors 1`] = `
   },
   "readMateOverlap": "#b4b4b4",
   "readOverlap": "#555555",
+  "readThroughHidden": "#2e2e2e",
   "regionBoundary": "rgba(0,0,0,0.42)",
   "regionSeparator": "#757575",
   "secondary": {
@@ -2804,6 +2814,7 @@ exports[`stock resolves the same colors 1`] = `
   },
   "readMateOverlap": "#b4b4b4",
   "readOverlap": "#555555",
+  "readThroughHidden": "#2e2e2e",
   "regionBoundary": "rgba(0,0,0,0.42)",
   "regionSeparator": "#757575",
   "secondary": {
