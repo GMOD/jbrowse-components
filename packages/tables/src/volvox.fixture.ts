@@ -128,8 +128,8 @@ export const SPLIT_INVERSION_GAP = {
   },
   sequenceAdapter,
   regions: [
-    { refName: 'ctgA', start: 15000, end: 19950 },
-    { refName: 'ctgA', start: 30010, end: 33000 },
+    { refName: 'ctgA', start: 14999, end: 19950 },
+    { refName: 'ctgA', start: 30009, end: 33000 },
   ],
 }
 

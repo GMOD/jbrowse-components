@@ -22,7 +22,13 @@ import {
   CONNECTOR_STRAIGHT,
 } from '../../../render-core/src/shaders/connectorMark.consts.generated.ts'
 import { createTablesEngine } from '../index.ts'
-import { BAM, PAIRED_INVERSION, SPLICED, SV_READS } from '../volvox.fixture.ts'
+import {
+  BAM,
+  PAIRED_INVERSION,
+  SPLICED,
+  SPLIT_INVERSION_GAP,
+  SV_READS,
+} from '../volvox.fixture.ts'
 import { VOLVOX_CONTIGS, standUpDisplay } from './testEnv.ts'
 import { parityCases } from './testUtils.ts'
 
@@ -66,6 +72,8 @@ const TANDEM_DUPLICATION = {
 }
 
 const engine = createTablesEngine()
+
+const FED_BOW = Math.fround(CONNECTOR_BOW)
 
 const sorted = (entries: string[]) => entries.toSorted()
 
@@ -506,6 +514,27 @@ describe('two loci of volvox pairs either side of an inversion', () => {
   ])
 })
 
+describe('split reads over an inversion, its middle segment out of view', () => {
+  parityCases(geometryParity(SPLIT_INVERSION_GAP), [
+    {
+      name: 'unit chain: the junction skipping the hidden segment bows',
+      config: { ...TALL, unit: 'chain' },
+      drifts: {
+        connectors: {
+          owner:
+            'the display lays out reads in its margin, so it also draws their connectors, clamped to the window edge; the tables hold only the window’s reads',
+          exported: [
+            ' 107734465>277644978 1/1 bow 0',
+            ' 188085106>306175187 0/0 bow 0',
+            ' 30033-19939 7/7 straight',
+            ' 30275-19874 6/6 straight',
+          ],
+        },
+      },
+    },
+  ])
+})
+
 describe('simulated pairs over loci on two contigs, end to end', () => {
   parityCases(
     geometryParity({
@@ -552,7 +581,7 @@ test('each dip is the bend the display’s connector feed draws, scrolled to the
         (f.bits[i]! & CONNECTOR_STRAIGHT) === 0 &&
         touches(fixture.regions, f.x[i], f.x2[i])
           ? [
-              `${labelOf.get(key)} ${hit.id1}>${hit.id2} ${f.row[i]}/${f.row2[i]} ${(f.bend[i] === CONNECTOR_BOW ? 0 : f.bend[i]!).toFixed(3)}`,
+              `${labelOf.get(key)} ${hit.id1}>${hit.id2} ${f.row[i]}/${f.row2[i]} ${(f.bend[i] === FED_BOW ? 0 : f.bend[i]!).toFixed(3)}`,
             ]
           : [],
       ),
@@ -572,13 +601,52 @@ test('each dip is the bend the display’s connector feed draws, scrolled to the
   expect(sorted(tabled)).toEqual(sorted(fed))
 }, 60_000)
 
-test('the cases decide over loops, curves, straight lines, junctions, and arcs within and across regions', async () => {
-  const [loops, pairs, spliced, arcs, acrossLoci] = await Promise.all([
+test('a junction skipping a segment out of view is fed as a bow, and the tables name the same pairs', async () => {
+  const display = { ...TALL, unit: 'chain' }
+  const { display: m, dispose } =
+    await standUpDisplay<LinearAlignmentsDisplayModel>({
+      plugins: [new AlignmentsPlugin()],
+      track: {
+        type: 'AlignmentsTrack',
+        adapter: SPLIT_INVERSION_GAP.adapterConfig,
+      },
+      displayType: 'LinearAlignmentsDisplay',
+      isDisplay: isLinearAlignmentsDisplay,
+      displayConfig: display,
+      regions: SPLIT_INVERSION_GAP.regions,
+      contigLengths: VOLVOX_CONTIGS,
+      bpPerPx: 8,
+    })
+  const t = await engine.alignments({ ...SPLIT_INVERSION_GAP, display })
+  const fed = [...m.themed.connectorFeedsByGroup.values()].flatMap(byRegion =>
+    [...byRegion.values()].flatMap(({ channels: f, hits }) =>
+      hits.flatMap((hit, i) =>
+        (f.bits[i]! & CONNECTOR_STRAIGHT) === 0 && f.bend[i] === FED_BOW
+          ? [`${hit.id1}>${hit.id2}`]
+          : [],
+      ),
+    ),
+  )
+  dispose()
+  const c = t.connectors
+  const idOfKey = new Map(t.reads.key.map((k, i) => [k, t.reads.id[i]!]))
+  const tabled = c.kind.flatMap((kind, i) =>
+    kind === 'bow'
+      ? [`${idOfKey.get(c.key[i]!)}>${idOfKey.get(c.mateKey[i]!)}`]
+      : [],
+  )
+  expect(fed).toHaveLength(2)
+  expect(sorted(tabled)).toEqual(sorted(fed))
+}, 60_000)
+
+test('the cases decide over loops, curves, bows, straight lines, junctions, and arcs within and across regions', async () => {
+  const [loops, pairs, bows, spliced, arcs, acrossLoci] = await Promise.all([
     engine.alignments({ ...TANDEM_DUPLICATION, display: { unit: 'chain' } }),
     engine.alignments({
       ...PAIRED_INVERSION,
       display: { pileup: { connectors: { show: true } } },
     }),
+    engine.alignments({ ...SPLIT_INVERSION_GAP, display: { unit: 'chain' } }),
     engine.alignments({ ...SPLICED, display: {} }),
     engine.alignments({
       ...PAIRED_INVERSION,
@@ -592,6 +660,7 @@ test('the cases decide over loops, curves, straight lines, junctions, and arcs w
   expect(loops.connectors.kind).toContain('loop')
   expect(pairs.connectors.kind).toContain('curve')
   expect(pairs.connectors.kind).toContain('straight')
+  expect(bows.connectors.kind).toContain('bow')
   expect(spliced.junctions.shown).toContain(true)
   expect(arcs.arcs.start.length).toBeGreaterThan(0)
   expect(
