@@ -335,9 +335,9 @@ describe('the y axis', () => {
       ]),
       [],
     )
-    const rules = [
-      ...container.querySelectorAll(`line[stroke="${DEFAULT_RULE_COLOR}"]`),
-    ]
+    const rules = [...container.querySelectorAll('line')].filter(
+      line => line.getAttribute('stroke') === DEFAULT_RULE_COLOR,
+    )
     expect(rules.map(rule => rule.getAttribute('y1'))).toEqual(['20', '80'])
     expect(labelsOf(container).filter(t => t === 'cut')).toHaveLength(2)
   })
