@@ -190,11 +190,14 @@ cannot fall is the one thing the banner must not do. `zoomCanReleaseGate`
 answers it from two consecutive measurements rather than from a threshold; see
 `ByteEstimate.zoomIneffective`.
 
+`release` is that advice, for a view where zooming is not what shrinks the
+fetch: the circle fetches every displayed region at any zoom.
+
 ```js
 import { tooLargeBannerText } from '@jbrowse/display-ui'
 
 // type signature
-(regionTooLargeReason: string, { zoomCanRelease }?: { zoomCanRelease?: boolean | undefined; }) => string
+(regionTooLargeReason: string, { zoomCanRelease, release }?: { zoomCanRelease?: boolean; release?: string; }) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/tooLargeBannerText.ts)

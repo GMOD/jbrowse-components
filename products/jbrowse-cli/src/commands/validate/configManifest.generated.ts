@@ -4674,6 +4674,14 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "ChordEncoding",
           "writes": "members"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "number"
+        },
+        {
+          "name": "forceLoad",
+          "type": "boolean"
         }
       ],
       "legacyKeys": [

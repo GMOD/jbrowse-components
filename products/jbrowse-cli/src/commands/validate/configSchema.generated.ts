@@ -8134,6 +8134,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/ChordEncoding"
           }
         },
+        "fetchSizeLimit": {
+          "description": "bytes a region may fetch before the display asks first; an adapter that sets its own limit takes precedence over this.",
+          "default": 1000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "forceLoad": {
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "strokeColor": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -18995,6 +19015,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
+            "fetchSizeLimit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ChordVariantDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
+            },
+            "forceLoad": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ChordVariantDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
+                }
+              ]
+            },
             "strokeColor": {
               "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColor"
             },
@@ -19014,26 +19060,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
-                }
-              ]
-            },
-            "fetchSizeLimit": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/fetchSizeLimit"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
-                }
-              ]
-            },
-            "forceLoad": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/forceLoad"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
                 }
               ]
             },
