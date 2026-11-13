@@ -118,7 +118,7 @@ it('stops drawing rules in density mode', () => {
 
   // density spends color rather than height on the score, so there is no axis
   // for a rule to sit on — the same reason the grid draws nothing here,
-  // and a dashed line with a "2 copies" caption over a color ramp reads as a
+  // and a line with a "2 copies" caption over a color ramp reads as a
   // threshold in a picture that has none
   display.setMark('rect')
   expect(display.isDensityMode).toBe(true)

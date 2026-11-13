@@ -1,7 +1,7 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { useMouseState } from '@jbrowse/core/ui/useMouseTracking'
 import { measureText } from '@jbrowse/core/util/measureText'
-import { TrackOverlaySlot } from '@jbrowse/display-ui'
+import { DEFAULT_RULE_COLOR, TrackOverlaySlot } from '@jbrowse/display-ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   isGpuRenderingDisabled,
@@ -1036,7 +1036,9 @@ describe('the y axis', () => {
       }),
     )
     await findByTestId('probe-canvas')
-    const rules = [...container.querySelectorAll('line[stroke-dasharray]')]
+    const rules = [
+      ...container.querySelectorAll(`line[stroke="${DEFAULT_RULE_COLOR}"]`),
+    ]
     expect(rules.map(rule => rule.getAttribute('y1'))).toEqual(['20', '80'])
     expect(labelsOf(container).filter(t => t === 'cut')).toHaveLength(2)
   })

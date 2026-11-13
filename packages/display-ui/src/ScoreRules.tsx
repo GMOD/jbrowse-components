@@ -60,7 +60,6 @@ export function ScoreRuleLines({
               // export's renderToStaticMarkup strips rgba() alpha
               strokeOpacity={0.9}
               strokeWidth={1}
-              strokeDasharray="4 3"
             />
             {label ? (
               // right-hand end: the left is where the y-axis and its tick

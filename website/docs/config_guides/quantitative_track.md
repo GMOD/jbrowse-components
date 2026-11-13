@@ -42,9 +42,9 @@ A line's [`mark.interpolate`](/docs/config/wigglemark/#slot-interpolate) is
 `step` or `linear`: `"mark": { "type": "line", "interpolate": "linear" }`.
 
 Reference lines belong to the axis object too.
-[`encoding.y.rules`](/docs/config/yfieldchannel/#slot-rules) draws a dashed line
-across the plot at each value, a bare number or `{ value, color, label }`, in
-every row of a track on `rows`:
+[`encoding.y.rules`](/docs/config/yfieldchannel/#slot-rules) draws a line across
+the plot at each value, a bare number or `{ value, color, label }`, in every row
+of a track on `rows`:
 
 ```json addtrack
 {

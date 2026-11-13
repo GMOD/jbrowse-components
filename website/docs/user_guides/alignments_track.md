@@ -403,7 +403,7 @@ insert size.
 **Read connections → Read cloud** lays pairs out on the Y axis by the **log
 distance between mates**, so the insert-size distribution is visible directly
 and short-insert (insertion-supporting) pairs lift away from the background. Two
-dashed lines across the cloud mark the normal insert range, so a bar above the
+grey lines across the cloud mark the normal insert range, so a bar above the
 upper line is a long pair and one below the lower line a short pair.
 
 <Figure caption="Read cloud on a synthetic SV dataset, reads stratified by log distance between mates." src="/img/alignments/read_cloud.png" />

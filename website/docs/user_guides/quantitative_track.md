@@ -62,7 +62,7 @@ axis...**, and on a density plot, which maps score to color, **Score range...**.
   ([`encoding.y.scale.share`](/docs/config/yscale/#slot-share)). A coverage
   band, a mark display and a Manhattan plot take the same `share`.
 - **Grid lines** rule the plot at every tick, and **Reference lines** draw a
-  dashed line at each value you add, each with an optional label and color.
+  darker line at each value you add, each with an optional label and color.
 
 Include 0 and Clip extreme outliers move only an end left empty, so both grey
 out once Min and Max are both set; Include 0 also greys out on a log axis, which

@@ -1,4 +1,5 @@
 import { measureText } from '@jbrowse/core/util/measureText'
+import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import { render } from '@testing-library/react'
 
@@ -334,7 +335,9 @@ describe('the y axis', () => {
       ]),
       [],
     )
-    const rules = [...container.querySelectorAll('line[stroke-dasharray]')]
+    const rules = [
+      ...container.querySelectorAll(`line[stroke="${DEFAULT_RULE_COLOR}"]`),
+    ]
     expect(rules.map(rule => rule.getAttribute('y1'))).toEqual(['20', '80'])
     expect(labelsOf(container).filter(t => t === 'cut')).toHaveLength(2)
   })
