@@ -34,7 +34,7 @@ const AlignmentConnections = observer(function AlignmentConnections(
     <OverlayPaths
       {...props}
       pathTestId="r1"
-      strokeWidth={1}
+      strokeWidth={1.5}
       hoverStrokeWidth={5}
       render={ctx => {
         const { session, match, tracks, levels, layouts, getX, getY } = ctx
