@@ -1,4 +1,4 @@
-import { getClip } from '@jbrowse/cigar-utils'
+import { getClip, getLengthSansClipping } from '@jbrowse/cigar-utils'
 
 import { PerBaseColumns } from '../features/alignedBaseWalk.ts'
 import {
@@ -193,7 +193,13 @@ export function extractFeatureArrays<T extends FeatureData>(
         ? feature.clipLengthAtStartOfRead
         : getClip(cigarString, strand),
     )
-    alignedBases.push(sa !== '' && isMismatch ? feature.alignedReadBases : 0)
+    alignedBases.push(
+      sa === ''
+        ? 0
+        : isMismatch
+          ? feature.alignedReadBases
+          : getLengthSansClipping(cigarString),
+    )
 
     if (colorTag) {
       tagColorValues.push(extractFeatureTagValue(feature, colorTag))

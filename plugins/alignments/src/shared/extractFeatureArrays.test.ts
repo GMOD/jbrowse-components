@@ -5,6 +5,7 @@ import {
   extractFeatureArrays,
 } from './extractFeatureArrays.ts'
 import { layerForTest } from './splitFieldForTest.ts'
+import { piecesOf } from './splitReadJunctions.ts'
 
 import type { FeatureData } from './webglRpcTypes.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -157,6 +158,38 @@ describe('SA tags are extracted whatever the display is drawing', () => {
       extract([splitRead('a', undefined), splitRead('b', undefined)], 'strand')
         .suppAlignments,
     ).toBeUndefined()
+  })
+
+  // An adapter that is not BAM/CRAM/SAM hands over a plain feature with a CIGAR
+  // string, and the junction's read gap is measured from these aligned bases.
+  test('a CIGAR-only split read reports its aligned bases as svKind measures them', () => {
+    const plain = new SimpleFeature({
+      uniqueId: 'plain',
+      refName: 'ctgA',
+      start: 100,
+      end: 160,
+      strand: 1,
+      CIGAR: '10S40M2I3D8M40S',
+      tags: { SA: SA },
+    })
+    const unsplit = new SimpleFeature({
+      uniqueId: 'unsplit',
+      refName: 'ctgA',
+      start: 100,
+      end: 150,
+      strand: 1,
+      CIGAR: '10S50M',
+    })
+    const { alignedBases } = extract(
+      [plain, unsplit, syntenyFeature('ctgA', 'ctgB')],
+      'strand',
+    )
+    expect([...alignedBases]).toEqual([
+      piecesOf(plain, SA)[0]!.alignedBases,
+      0,
+      0,
+    ])
+    expect(alignedBases[0]).toBe(50)
   })
 })
 
