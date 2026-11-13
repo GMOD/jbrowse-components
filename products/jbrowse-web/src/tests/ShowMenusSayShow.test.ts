@@ -98,6 +98,16 @@ const regionView = (id: string) => ({
   bpPerPx: 0.1,
 })
 
+interface TrackWithMenu {
+  id: string
+  trackMenuItems: () => MenuItem[]
+  displays: { facetByField: (field: string) => void }[]
+}
+
+function hasTracks(view: unknown): view is { tracks: TrackWithMenu[] } {
+  return typeof view === 'object' && view !== null && 'tracks' in view
+}
+
 async function trackOf(display: string) {
   const { views } = await sessionOf([
     {
@@ -107,10 +117,9 @@ async function trackOf(display: string) {
     },
   ])
   const view = views[0]
-  const track =
-    view && 'tracks' in view
-      ? view.tracks.find((t: { id: string }) => t.id === `s-${display}`)
-      : undefined
+  const track = hasTracks(view)
+    ? view.tracks.find(t => t.id === `s-${display}`)
+    : undefined
   if (track) {
     return track
   } else {
@@ -143,7 +152,7 @@ test.each([
   '%s grouped by %s: the rows grouping adds to Show start with "Show " too',
   async (display, field) => {
     const track = await trackOf(display)
-    track.displays[0].facetByField(field)
+    track.displays[0]!.facetByField(field)
     const rows = showRows(track.trackMenuItems()).map(labelOf)
     expect(rows).toContain('Show groups as one row')
     expect(offenders(track.trackMenuItems())).toEqual([])
