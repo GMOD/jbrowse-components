@@ -36,7 +36,6 @@ function hoverStyle(
 interface StrokeStyle {
   color: string
   widenPx: number
-  dash?: string
 }
 
 const Boxes = observer(function Boxes({
@@ -60,7 +59,7 @@ const Boxes = observer(function Boxes({
       height: r.height,
     } as const
     if (r.stroke) {
-      const { color, widenPx, dash } = strokeOf(r)
+      const { color, widenPx } = strokeOf(r)
       const pad = widenPx / 2
       return (
         <svg
@@ -82,7 +81,6 @@ const Boxes = observer(function Boxes({
             fill="none"
             stroke={color}
             strokeWidth={r.stroke.widthPx + widenPx}
-            strokeDasharray={dash}
           />
         </svg>
       )
@@ -129,11 +127,11 @@ const ChromeHighlight = observer(function ChromeHighlight({
         rects={soloInk}
         testid="chrome-solo"
         styleOf={() => ({
-          border: `2px dashed ${palette.accent}`,
+          border: `2px solid ${palette.accent}`,
           borderRadius: 3,
           backgroundColor: alpha(palette.accent, 0.15),
         })}
-        strokeOf={() => ({ color: palette.accent, widenPx: 3, dash: '6 3' })}
+        strokeOf={() => ({ color: palette.accent, widenPx: 3 })}
       />
       <Boxes
         rects={pinnedInk}

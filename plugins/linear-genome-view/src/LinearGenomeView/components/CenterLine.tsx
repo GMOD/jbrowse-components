@@ -19,7 +19,7 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 4, // above the track but under menu
     position: 'absolute',
     left: 0,
-    border: `1px ${theme.palette.action.active} dashed`,
+    border: `1px ${theme.palette.action.active} solid`,
     borderTop: 'none',
     borderBottom: 'none',
     pointerEvents: 'none',

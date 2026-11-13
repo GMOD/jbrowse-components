@@ -24,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(2),
     borderWidth: 2,
     borderRadius: 2,
-    borderStyle: 'dashed',
+    borderStyle: 'solid',
     outline: 'none',
     cursor: 'pointer',
     transition: 'border .24s ease-in-out, background-color .24s ease-in-out',
@@ -81,7 +81,7 @@ function validate(file: File, accept?: Accept, maxSize?: number) {
 }
 
 /**
- * Shared dashed-border file dropzone (drag-and-drop plus click-to-browse) used
+ * Shared bordered file dropzone (drag-and-drop plus click-to-browse) used
  * by the bulk add-track, multi-wiggle, assembly, and session-import forms. The
  * `onDrop` signature reports accepted files and, when `accept`/`maxSize` are
  * set, rejected files with their validation errors. Pass `message` to replace

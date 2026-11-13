@@ -10,9 +10,10 @@ const useStyles = makeStyles()({
   picker: { position: 'relative' },
   swatch: swatchStyle,
   // Signals a color that isn't explicitly set — the swatch shows the effective
-  // (auto) color, dashed to distinguish it from a user-chosen value.
+  // (auto) color, bordered to distinguish it from a user-chosen value, which has
+  // none.
   unset: {
-    border: '2px dashed #999',
+    border: '2px solid #999',
     boxSizing: 'border-box',
   },
 })
@@ -26,7 +27,7 @@ const PopoverPicker = observer(function PopoverPicker({
   color: string
   onChange: (color: string) => void
   presetAlpha?: number
-  // When true, style the swatch as an auto/unset value (dashed border) and
+  // When true, style the swatch as an auto/unset value (grey border) and
   // seed the picker from a sane color if `color` is the 'auto' sentinel.
   unset?: boolean
 }) {

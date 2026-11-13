@@ -1087,7 +1087,7 @@ describe('the highlight', () => {
   })
 
   // A pin persists until the reader clears it and the export carries it; a solo
-  // collection is a pending gesture, drawn dashed and never exported.
+  // collection is a pending gesture, drawn in the accent and never exported.
   test('the pinned and solo lists get their own boxes, under the hover', async () => {
     const { findByTestId, findAllByTestId } = renderChrome(
       HighlightModel.create({}),
@@ -1098,7 +1098,7 @@ describe('the highlight', () => {
     expect(pinned!.style.left).toBe('120px')
     expect(pinned!.style.border).toContain('1px solid')
     expect(solo!.style.left).toBe('140px')
-    expect(solo!.style.border).toContain('2px dashed')
+    expect(solo!.style.border).toContain('2px solid')
     expect(solo!.compareDocumentPosition(pinned!)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     )

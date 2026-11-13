@@ -244,9 +244,8 @@ export const Ruler = observer(function Ruler({
             slice.startRadians,
             slice.endRadians,
           )}
-          stroke={palette.text.secondary}
+          stroke={palette.text.disabled}
           strokeWidth={2}
-          strokeDasharray="2,2"
           fill="none"
         />
       ) : (

@@ -241,7 +241,7 @@ test('a pinned feature on another reference sequence lights nothing', () => {
   expect(display.pinnedInk).toEqual([])
 })
 
-// The dashed box says which features an unapplied solo has collected. Applying
+// The accent box says which features an unapplied solo has collected. Applying
 // it leaves only those features on screen, which says it without a box.
 test('soloInk lights the collection while the solo is pending, and drops it once applied', () => {
   const { display, view } = setUp()

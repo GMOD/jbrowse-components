@@ -51,7 +51,7 @@ const useStyles = makeStyles()(theme => ({
     // caption below can sit outside it without the two disagreeing about where
     // the line is.
     height: 0,
-    borderTop: `1px dashed ${theme.palette.text.disabled}`,
+    borderTop: `1px solid ${theme.palette.text.disabled}`,
     pointerEvents: 'none',
     zIndex: 6,
   },
