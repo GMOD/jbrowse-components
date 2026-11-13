@@ -170,7 +170,7 @@ describe('SA tags are extracted whatever the display is drawing', () => {
       end: 160,
       strand: 1,
       CIGAR: '10S40M2I3D8M40S',
-      tags: { SA: SA },
+      tags: { SA },
     })
     const unsplit = new SimpleFeature({
       uniqueId: 'unsplit',
