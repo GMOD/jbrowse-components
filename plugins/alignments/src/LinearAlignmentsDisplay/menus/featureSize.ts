@@ -59,6 +59,7 @@ export {
   FIT_TO_TRACK_LABEL,
   NORMAL_PITCH,
   featureSpacingForHeight,
+  featureSpacingForPitch,
 } from './compactnessPresets.ts'
 
 // One radio group: the pixel-size presets, Custom, and fitting the reads to

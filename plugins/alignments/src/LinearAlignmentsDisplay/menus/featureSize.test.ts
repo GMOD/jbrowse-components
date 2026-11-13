@@ -8,6 +8,7 @@ import {
   FIT_TO_TRACK_LABEL,
   NORMAL_PITCH,
   featureSpacingForHeight,
+  featureSpacingForPitch,
   getFeatureHeightMenuItem,
   getTrackSizingItems,
 } from './featureSize.ts'
@@ -28,6 +29,20 @@ test('featureSpacingForHeight reproduces the fixed-mode preset pitches', () => {
   expect(pitch(COMPACTNESS_PRESETS.normal.height)).toBe(9)
   expect(pitch(COMPACTNESS_PRESETS.compact.height)).toBe(3)
   expect(pitch(COMPACTNESS_PRESETS['super-compact'].height)).toBe(1)
+})
+
+test('featureSpacingForPitch splits every fixed height’s pitch back into that height and gap', () => {
+  for (let i = 1; i <= 1200; i++) {
+    const height = i / 100
+    const gap = featureSpacingForHeight(height)
+    expect(featureSpacingForPitch(height + gap)).toBe(gap)
+  }
+})
+
+test('featureSpacingForPitch holds the body across the pitches no fixed height reaches', () => {
+  const body = (pitch: number) => pitch - featureSpacingForPitch(pitch)
+  expect([3, 3.5, 4].map(body)).toEqual([3, 3, 3])
+  expect([8, 8.5, 9].map(body)).toEqual([7, 7, 7])
 })
 
 test('NORMAL_PITCH is the Normal body plus its derived gap (the fit cap)', () => {

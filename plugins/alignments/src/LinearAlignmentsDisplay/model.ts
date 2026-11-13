@@ -149,6 +149,7 @@ import {
 import { buildLanes, drawnLanesOf, drawsPileupRows } from './lanes.ts'
 import {
   featureSpacingForHeight,
+  featureSpacingForPitch,
   basesFilterNarrowing,
   getContextMenuItems,
   getFeatureHeightMenuItem,
@@ -615,14 +616,15 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Derived from the read height, never stored: 2px from a Normal
-           * read up, 1px once there is room (pitch/height > 3), else flush. One
-           * rule covers the fixed presets and the fit squeeze.
+           * Derived, never stored: 2px from a Normal read up, 1px past
+           * Compact, else flush. In fit mode it comes from the pitch, ramping
+           * across the pitches no fixed height produces so the body never
+           * shrinks as the track grows.
            */
           get featureSpacing(): number {
-            return featureSpacingForHeight(
-              this.isFitting ? self.fittedHeightPx : self.markHeight,
-            )
+            return this.isFitting
+              ? featureSpacingForPitch(self.fittedHeightPx)
+              : featureSpacingForHeight(self.markHeight)
           },
 
           /**

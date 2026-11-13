@@ -16,14 +16,34 @@ export const COMPACTNESS_PRESETS = {
   'super-compact': { label: 'Super-compact', height: 1 },
 } as const
 
+const FLUSH_MAX_HEIGHT = COMPACTNESS_PRESETS.compact.height
+const WIDE_GAP_MIN_HEIGHT = COMPACTNESS_PRESETS.normal.height
+
 // The one rule turning a read size into its inter-read gap: 2px from a Normal
-// read up, as v4 drew it, 1px once there's room for a >2px body, else flush.
-// Spacing is derived, never stored, so this is the single source both the
-// `featureSpacing` getter (fixed body / fit pitch) and the fit cap (`normal
-// pitch = body + gap`) key off — encoding it once keeps the presets and the fit
-// squeeze from disagreeing.
+// read up, as v4 drew it, 1px once a read is taller than Compact, else flush.
+// Spacing is derived, never stored; the fixed `featureSpacing` getter and the
+// fit cap (`normal pitch = body + gap`) key off it.
 export function featureSpacingForHeight(height: number) {
-  return height >= COMPACTNESS_PRESETS.normal.height ? 2 : height > 3 ? 1 : 0
+  return (
+    (height > FLUSH_MAX_HEIGHT ? 1 : 0) +
+    (height >= WIDE_GAP_MIN_HEIGHT ? 1 : 0)
+  )
+}
+
+function unitRamp(x: number) {
+  return Math.min(1, Math.max(0, x))
+}
+
+// The fit squeeze's gap for a pitch (body + gap), from the same two steps. No
+// body puts its pitch in (3, 4] or [8, 9), since each step adds a pixel of gap,
+// so across those spans the body holds and the gap grows: the body never
+// shrinks as the track grows, and a pitch some fixed height produces splits
+// back into that height and its `featureSpacingForHeight` gap.
+export function featureSpacingForPitch(pitch: number) {
+  return (
+    unitRamp(pitch - FLUSH_MAX_HEIGHT) +
+    unitRamp(pitch - WIDE_GAP_MIN_HEIGHT - 1)
+  )
 }
 
 // The pitch a Normal read occupies (body + its derived gap). The fit squeeze

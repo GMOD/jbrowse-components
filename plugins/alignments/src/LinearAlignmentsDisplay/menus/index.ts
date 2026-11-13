@@ -9,6 +9,7 @@ export {
   COMPACTNESS_PRESETS,
   NORMAL_PITCH,
   featureSpacingForHeight,
+  featureSpacingForPitch,
   getFeatureHeightMenuItem,
   getTrackSizingItems,
 } from './featureSize.ts'

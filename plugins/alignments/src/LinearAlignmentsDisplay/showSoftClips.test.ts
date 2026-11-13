@@ -8,7 +8,12 @@ import {
 import { tagColorFor } from '../shared/alignmentsColor.ts'
 import { basesFilterOf } from '../shared/basesFilter.ts'
 import { requireReadsConf } from './configSlotViews.ts'
-import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
+import {
+  COMPACTNESS_PRESETS,
+  NORMAL_PITCH,
+  featureSpacingForHeight,
+  getFeatureHeightMenuItem,
+} from './menus/featureSize.ts'
 import {
   bootAlignmentsDisplay,
   clickMenuItem,
@@ -300,7 +305,7 @@ describe('alignments fit-to-display-height split', () => {
     expect(display.featureSpacing).toBe(2)
   })
 
-  it('spares a 1px gap once the pitch clears 3px, body fills the rest', () => {
+  it('spares a 1px gap from a 4px pitch, body fills the rest', () => {
     const { display } = createDisplay()
     display.setHeightMode('fit')
     display.setFittedHeightPx(6)
@@ -332,10 +337,47 @@ describe('alignments fit-to-display-height split', () => {
   it('splits a fractional pitch without losing the fill (body stays fractional)', () => {
     const { display } = createDisplay()
     display.setHeightMode('fit')
-    display.setFittedHeightPx(3.5)
+    display.setFittedHeightPx(5.5)
     expect(display.featureSpacing).toBe(1)
-    expect(display.featureHeight).toBe(2.5)
-    expect(display.featureHeight + display.featureSpacing).toBe(3.5)
+    expect(display.featureHeight).toBe(4.5)
+    expect(display.featureHeight + display.featureSpacing).toBe(5.5)
+  })
+
+  it('never shrinks the read body as the fitted pitch grows', () => {
+    const { display } = createDisplay()
+    display.setHeightMode('fit')
+    const bodies = Array.from({ length: 1000 }, (_, i) => {
+      display.setFittedHeightPx(0.01 + (i * NORMAL_PITCH) / 999)
+      return display.featureHeight
+    })
+    const drops = bodies.filter((body, i) => i > 0 && body < bodies[i - 1]!)
+    expect(drops).toEqual([])
+  })
+
+  it('gives each preset its fixed body and gap when fit lands on its pitch', () => {
+    const { display } = createDisplay()
+    display.setHeightMode('fit')
+    for (const { height } of Object.values(COMPACTNESS_PRESETS)) {
+      const gap = featureSpacingForHeight(height)
+      display.setFittedHeightPx(height + gap)
+      expect([display.featureHeight, display.featureSpacing]).toEqual([
+        height,
+        gap,
+      ])
+    }
+  })
+
+  it('agrees with a fixed custom height at that height’s pitch', () => {
+    const { display } = createDisplay()
+    display.setHeightMode('fit')
+    for (const height of [2, 3.5, 4, 5, 6, 6.5]) {
+      const gap = featureSpacingForHeight(height)
+      display.setFittedHeightPx(height + gap)
+      expect([display.featureHeight, display.featureSpacing]).toEqual([
+        height,
+        gap,
+      ])
+    }
   })
 
   it('ignores a stale fit cache once fit is off', () => {
