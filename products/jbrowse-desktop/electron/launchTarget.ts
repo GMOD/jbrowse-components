@@ -158,6 +158,28 @@ export function openFileTarget(filePath: string): ArgvTarget | undefined {
 }
 
 /**
+ * Settles on the first target that can be opened. One that cannot (a .txt
+ * handed to open-file, a link that does not parse) is remembered instead, so a
+ * usable one arriving behind it still wins, and the unusable one is reported
+ * only when nothing else turned up.
+ */
+export function targetGate() {
+  let unusable: ArgvTarget | undefined
+  return {
+    offer(target: ArgvTarget | undefined) {
+      if (target && target.type !== 'invalid') {
+        return target
+      }
+      unusable ??= target
+      return undefined
+    },
+    settle(target: ArgvTarget | undefined) {
+      return target ?? unusable
+    },
+  }
+}
+
+/**
  * A launch target, or the reason a command line names none it can open. Only
  * the main process sees the reason; it reports it rather than sending it on.
  */

@@ -23,6 +23,7 @@ import {
   openFileTarget,
   protocolTarget,
   rendererArg,
+  targetGate,
 } from './launchTarget.ts'
 import { describeLaunchLink } from './linkPrompt.ts'
 import { startMcpBridge } from './mcp/bridge.ts'
@@ -71,22 +72,24 @@ function showFatalError(title: string, error: unknown) {
 // event that fires before 'ready' (macOS delivers both that way on a cold
 // launch). Resolves exactly once, when 'ready' fires.
 //
-// A link that cannot be opened does not settle it: a usable one arriving
-// behind it (a browser that fires the handler twice, a second click) still
-// opens, and the unusable one is reported only when nothing else turned up.
+// A file or link that cannot be opened does not settle it: a usable one
+// arriving behind it (a browser that fires the handler twice, a second click)
+// still opens, and the unusable one is reported only when nothing else turned
+// up.
 function getInitialTarget(): Promise<ArgvTarget | undefined> {
   return new Promise(resolve => {
+    const gate = targetGate()
     const onOpenFile = (event: Electron.Event, filePath: string) => {
       event.preventDefault()
-      resolve(openFileTarget(filePath))
+      const target = gate.offer(openFileTarget(filePath))
+      if (target) {
+        resolve(target)
+      }
     }
-    let unusable: ArgvTarget | undefined
     const onOpenUrl = (event: Electron.Event, url: string) => {
       event.preventDefault()
-      const target = protocolTarget(url)
-      if (target.type === 'invalid') {
-        unusable ??= target
-      } else {
+      const target = gate.offer(protocolTarget(url))
+      if (target) {
         resolve(target)
       }
     }
@@ -96,7 +99,7 @@ function getInitialTarget(): Promise<ArgvTarget | undefined> {
       app.off('open-file', onOpenFile)
       app.off('open-url', onOpenUrl)
       resolve(
-        findLaunchTarget(appArgv(process.argv), process.cwd()) ?? unusable,
+        gate.settle(findLaunchTarget(appArgv(process.argv), process.cwd())),
       )
     })
   })

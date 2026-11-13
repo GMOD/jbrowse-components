@@ -2,7 +2,9 @@ import {
   findLaunchTarget,
   openFileTarget,
   parseProtocolUrl,
+  protocolTarget,
   rendererArg,
+  targetGate,
   toProtocolUrl,
 } from './launchTarget.ts'
 
@@ -367,4 +369,43 @@ test('ignores flags and the argv[0] binary path', () => {
       '/',
     ),
   ).toBeUndefined()
+})
+
+describe('the target an unusable open-file or open-url cannot hide', () => {
+  test('an unusable file settles nothing, so a usable file behind it opens', () => {
+    const gate = targetGate()
+    expect(gate.offer(openFileTarget('/data/notes.txt'))).toBeUndefined()
+    expect(gate.offer(openFileTarget('/data/s.jbrowse'))).toEqual({
+      type: 'file',
+      path: '/data/s.jbrowse',
+    })
+  })
+
+  test('an unusable file settles nothing, so a usable link behind it opens', () => {
+    const gate = targetGate()
+    expect(gate.offer(openFileTarget('/data/notes.txt'))).toBeUndefined()
+    expect(gate.offer(protocolTarget(toProtocolUrl(webUrl)))).toEqual({
+      type: 'link',
+      url: webUrl,
+    })
+  })
+
+  test('with nothing usable the first unusable one is reported at ready', () => {
+    const gate = targetGate()
+    gate.offer(openFileTarget('/data/notes.txt'))
+    gate.offer(protocolTarget('jbrowse://open'))
+    expect(gate.settle(undefined)).toMatchObject({
+      type: 'invalid',
+      message: expect.stringMatching(/notes\.txt/) as string,
+    })
+  })
+
+  test('a target from the command line wins over an unusable event', () => {
+    const gate = targetGate()
+    gate.offer(openFileTarget('/data/notes.txt'))
+    expect(gate.settle({ type: 'file', path: '/data/s.jbrowse' })).toEqual({
+      type: 'file',
+      path: '/data/s.jbrowse',
+    })
+  })
 })
