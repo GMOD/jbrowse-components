@@ -390,6 +390,7 @@ test("a listed row carries the listing's attributes, and the listing's warnings 
   expect(display.drawnRows.map(row => row.name)).toEqual(['mom', 'dad'])
   expect(display.rowColorFields).toContain('tissue')
   expect(display.liveNotices).toContain(listing.warnings[0])
+  expect(display.cornerNotices).toContain(listing.warnings[0])
 })
 
 // A table's `group` column and a `rows.groups` entry blend: the entry wins on

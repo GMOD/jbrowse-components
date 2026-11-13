@@ -630,29 +630,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The config's lines, `dataNotices`, and the keys whose values
-         * collide: what the corner's problems notice lists. The skipped count
-         * appears in a separate chip.
+         * The lines the corner chip and the settle report both list: the
+         * loaded data's notices, the samples table's warnings, the row
+         * notices and the colliding keys.
          */
-        get cornerNotices(): string[] {
-          return [
-            ...self.configNotices,
-            ...this.dataNotices,
-            ...this.displayNotices,
-            ...self.rowNotices,
-            ...this.rowColorNotices,
-            ...this.sharedKeys.map(sharedKeyNotice),
-          ]
-        },
-        /**
-         * #getter
-         * `dataNotices`, the colliding keys, and a mark whose every loaded
-         * feature was skipped, which a mistyped field is: a display with any
-         * of them still draws, so an agent's settle report lists them for a caller
-         * that cannot see the corner.
-         */
-        get liveNotices(): string[] {
-          const { skipped, total, fields } = this.skippedFeatures
+        get sharedNotices(): string[] {
           return [
             ...this.dataNotices,
             ...this.displayNotices,
@@ -660,6 +642,27 @@ export function stateModelFactory(
             ...self.rowNotices,
             ...this.rowColorNotices,
             ...this.sharedKeys.map(sharedKeyNotice),
+          ]
+        },
+        /**
+         * #getter
+         * The config's lines and `sharedNotices`: what the corner's problems
+         * notice lists. The skipped count appears in a separate chip.
+         */
+        get cornerNotices(): string[] {
+          return [...self.configNotices, ...this.sharedNotices]
+        },
+        /**
+         * #getter
+         * `sharedNotices` and a mark whose every loaded feature was skipped,
+         * which a mistyped field is: a display with any of them still draws,
+         * so an agent's settle report lists them for a caller that cannot see
+         * the corner.
+         */
+        get liveNotices(): string[] {
+          const { skipped, total, fields } = this.skippedFeatures
+          return [
+            ...this.sharedNotices,
             ...(total > 0 && skipped === total
               ? [
                   `every one of ${total.toLocaleString()} ${pluralize(total, 'feature')} was skipped: ${fields.join(', ') || 'start or end'} missing or not a number`,
