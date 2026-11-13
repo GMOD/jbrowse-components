@@ -30,7 +30,6 @@
 1 no-unsafe-assignment packages/core/src/configuration/getConf.ts
 1 no-unsafe-return packages/core/src/configuration/getConf.ts
 1 no-unsafe-assignment packages/core/src/configuration/partitionAdvanced.ts
-1 no-unsafe-assignment packages/core/src/configuration/plot.ts
 4 no-unsafe-assignment packages/core/src/configuration/readConfObject.ts
 5 no-unsafe-return packages/core/src/configuration/readConfObject.ts
 1 no-unsafe-assignment packages/core/src/configuration/slotFacade.ts
