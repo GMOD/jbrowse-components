@@ -215,9 +215,6 @@ the base linear display schema:
    */
   baseConfiguration: baseLinearDisplayConfigSchema,
   explicitlyTyped: true,
-  // The rows always fit the display `height`, so a pinned row height
-  // from an older config has nothing to set.
-  retired: { rowHeight: () => ({}) },
   misnamed: { rowColor: ['rows.colors', 'rows.color'], axis: 'rows.axis' },
 },
 ```

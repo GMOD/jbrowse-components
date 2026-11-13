@@ -160,7 +160,6 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `showSidebarLabels` | moved into a current slot |
 | `showTree` | moved into a current slot |
 | `showReferenceAlleles` | moved into a current slot |
-| `referenceDrawingMode` | moved into a current slot |
 | `colorBy` | moved into a current slot |
 | `autoscale` | ignored |
 | `minScore` | ignored |

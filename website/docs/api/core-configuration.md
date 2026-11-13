@@ -145,6 +145,22 @@ import { hydrateTrackConfig } from '@jbrowse/core/configuration'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchema.ts)
 
+## keyedValueInForce
+
+A sub-schema's snapshot as drawn: a keyed object's field in force where
+the snapshot leaves out a declared default that names values, as the
+multi-row display's `rows.field` is `type` (`keyedInForce`). Any other
+value is returned as given.
+
+```js
+import { keyedValueInForce } from '@jbrowse/core/configuration'
+
+// type signature
+(node: AnyConfigurationModel | undefined, value: unknown) => unknown
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
 ## keyedWritesAt
 
 The keyed writes `schema` declares on the object at `path` (ADR-257), as
@@ -265,7 +281,8 @@ import { plotList } from '@jbrowse/core/configuration'
 
 A display's plot as declared, defaults left off. A list sitting at a
 default it shares with no other display, a default plot's marks, shows its
-entries, since they are what is drawn.
+entries, and a keyed object its field's declared default, since they are
+what is drawn.
 
 ```js
 import { plotOf } from '@jbrowse/core/configuration'
@@ -286,7 +303,8 @@ does; `whole` takes it for the whole plot, as the "Edit plot..." text is.
 ## plotWrites
 
 What applying a draft writes: each setting whose lifted value differs from
-the plot, as the lifted value, and `null` for one it resets. A value
+the plot, as the lifted value, and `null` for one it resets, a keyed
+object back at its declared default included. A value
 spelled another way but lifting to the same setting writes nothing, and a
 retired spelling writes the settings it lifts into.
 Under `whole`, a setting the draft leaves out writes its reset.
