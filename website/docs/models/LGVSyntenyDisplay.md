@@ -143,7 +143,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | --- | --- |
 | <span id="method-groupchiplabel">**groupChipLabel**</span><br><code>(label: string) =&gt; string</code> | A mate-assembly chip reads the assembly's display name |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
-| <span id="method-trackmenuitems">**trackMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; (MenuItem &#124; { subMenu: MenuItem[]; label: string; icon: O…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; (MenuItem &#124; { subMenu: MenuItem[]; label: string; icon: OverridableComponent&lt;SvgIconTypeMap&lt;{}, "svg"&gt;&gt; &amp; { muiName: string; }; type: "subMenu"; })[]</code></pre></dialog></span> |  |
+| <span id="method-trackmenuitems">**trackMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; (MenuItem &#124; { label: string; disabled: boolean; onClick:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; (MenuItem &#124; { label: string; disabled: boolean; onClick: () =&gt; void; } &#124; { subMenu: MenuItem[]; label: string; icon: OverridableComponent&lt;SvgIconTypeMap&lt;{}, "svg"&gt;&gt; &amp; { muiName: string; }; type: "subMenu"; })[]</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>33 inherited methods from 6 models</summary>
