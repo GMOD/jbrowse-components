@@ -17,7 +17,7 @@ Wiggle adapters expose two paths to the executor:
   The executor collects it via `firstValueFrom(... .pipe(toArray()))`, then walks
   the array converting each `Feature` into typed arrays.
 - **Fast:** `adapter.getFeatureArrays(regions, opts)` returns a `RawFeatureArrays`
-  per region, each a struct (`{ starts, ends, scores, minScores, maxScores, count }`) directly.
+  per region, each a struct (`{ starts, ends, scores, summary?: { minScores, maxScores }, count }`) directly.
   Avoids the per-feature object allocation/iteration entirely.
 
 `BigWigAdapter` implements the fast path because the BigWig zoom-bin format is
