@@ -167,10 +167,11 @@ a quiet region.
 - A `dip` is the one the display draws scrolled to its end with its content
   taller than its track: at most half the room between the lower row's center
   and the bottom of the sections as the display stacks them, each band stack
-  over its rows (`flooredBend`, `sectionDipFloor`). A curve in the last
-  section ends above its last row, so a host whose y axis ends there keeps
-  every curve with no room reserved under it; a curve in an earlier section
-  can still reach into the sections below, as the display's does.
+  over its rows (`flooredBend`, `sectionDipFloor`). Only the last
+  section's curves end above its rows: a curve in an earlier section can run
+  over the sections below, as the display draws it. A host stacking the
+  sections as separately clipped panels must let connectors run past a panel's
+  bottom, and ends its y axis at the bottom of the last section.
 - Under `unit: 'chain'`, `overlaps` holds the spans
   where two of a chain's reads both align, each in its kind's color: the strong neutral
   where a split or supplementary segment is one of the two, the faint one where
