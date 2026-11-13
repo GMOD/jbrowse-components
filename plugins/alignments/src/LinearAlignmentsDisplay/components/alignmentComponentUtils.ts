@@ -109,6 +109,7 @@ export function buildColorPaletteFromPalette(
     // `colorInsertionIndicator` and friends are equal to their base colors in
     // light mode and differ in dark for exactly the same kind of reason.
     colorOverlapTint: toRgb(palette.text.primary),
+    colorThroughHidden: toRgb(palette.readThroughHidden),
   }
   return {
     ...colors,

@@ -59,6 +59,9 @@ export interface PaletteColors {
   // theme neutral between two read fills) — a tint that composes toward the
   // ground it sits on adds nothing, whichever theme is in force.
   colorOverlapTint: RGBColor
+  // A split-read connector across a segment the view never fetched, in place
+  // of its class color (`palette.readThroughHidden`).
+  colorThroughHidden: RGBColor
 }
 
 export type PaletteColorKey = keyof PaletteColors

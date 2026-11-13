@@ -1222,6 +1222,26 @@ test('a junction skipping a segment out of view bows over its row, where the sam
   }
 })
 
+test('a junction through a segment out of view paints the through-hidden neutral and keys its own row, not its class', async () => {
+  const t = await engine.alignments({
+    adapterConfig: SPLIT_INVERSION_GAP.adapterConfig,
+    regions: SPLIT_INVERSION_GAP.regions,
+    display: { unit: 'chain' },
+  })
+  const c = t.connectors
+  const grey = cssColorToHex(resolvePalette().readThroughHidden)
+  const bows = c.kind.flatMap((kind, i) => (kind === 'bow' ? [i] : []))
+  expect(bows).toHaveLength(2)
+  for (const i of bows) {
+    expect(c.color[i]).toBe(grey)
+  }
+  expect(c.color.filter(color => color !== grey).length).toBeGreaterThan(0)
+  expect(new Set(t.arcLegend.color)).toEqual(new Set(c.color))
+  expect(t.arcLegend.label[t.arcLegend.color.indexOf(grey)]).toBe(
+    'Split read (segment not in view)',
+  )
+})
+
 test('the glyph hands R the splice line’s fade at the read height, and the size labels’ rules', async () => {
   const tall = await engine.alignments(SPLICED)
   const compact = await engine.alignments({

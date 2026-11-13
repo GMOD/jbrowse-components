@@ -85,6 +85,7 @@ export function makeTestPalette({
     colorOverlap: z,
     colorMateOverlap: z,
     colorOverlapTint: z,
+    colorThroughHidden: z,
     ...overrides,
   }
   return {

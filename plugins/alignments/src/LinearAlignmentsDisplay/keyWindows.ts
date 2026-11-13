@@ -22,6 +22,7 @@ interface ConnectorPair {
   e1: { displayedRegionIndex: number }
   e2: { displayedRegionIndex: number }
   c: { bp1: number; bp2: number; colorType: number }
+  hiddenSegmentsBetween?: readonly string[]
 }
 
 type ByGroup<D> = ReadonlyMap<string, ReadonlyMap<number, D>>
@@ -239,12 +240,15 @@ export function arcSlotsInWindows(
 }
 
 /**
- * The connector color slots drawn in a window: the straight-line pass's pairs
- * and the overlay's, each by the rule the drawn connectors and the tables
- * share (`connectorInWindows`), so one crossing a window with both ends off
- * screen still keys.
+ * What the connectors drawn in a window key: the class color types of those
+ * painted in their class color, and whether any junction through a segment
+ * not in view is drawn (`throughHidden`), which paints its own color in place
+ * of its class's. The straight-line pass's pairs and the overlay's count, each
+ * by the rule the drawn connectors and the tables share
+ * (`connectorInWindows`), so one crossing a window with both ends off screen
+ * still keys.
  */
-export function connectorSlotsInWindows(
+export function connectorKeyInWindows(
   connectorsByGroup: ReadonlyMap<
     string,
     {
@@ -255,18 +259,23 @@ export function connectorSlotsInWindows(
   displayedRegions: readonly { refName: string; reversed?: boolean }[],
   windows: readonly KeyWindow[],
 ) {
-  const present = new Set<number>()
+  const colorTypes = new Set<number>()
+  let throughHidden = false
   const add = (pair: ConnectorPair) => {
     const ends = connectorEnds(pair, displayedRegions)
     if (ends && connectorInWindows(ends, displayedRegions, windows)) {
-      present.add(pair.c.colorType)
+      if (pair.hiddenSegmentsBetween?.length) {
+        throughHidden = true
+      } else {
+        colorTypes.add(pair.c.colorType)
+      }
     }
   }
   for (const { linePairs, overlayPairs } of connectorsByGroup.values()) {
     linePairs.forEach(add)
     overlayPairs.forEach(add)
   }
-  return present
+  return { colorTypes, throughHidden }
 }
 
 /** Whether a junction's span touches a window on its reference. */

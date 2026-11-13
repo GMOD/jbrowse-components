@@ -1,7 +1,11 @@
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { abgrToHex, normalizedRgbToHex } from '@jbrowse/core/util/colorBits'
+import {
+  abgrToHex,
+  cssColorToHex,
+  normalizedRgbToHex,
+} from '@jbrowse/core/util/colorBits'
 import AlignmentsPlugin, {
   isLinearAlignmentsDisplay,
 } from '@jbrowse/plugin-alignments'
@@ -689,6 +693,58 @@ test('a junction skipping a segment out of view is fed as a bow, and the tables 
   )
   expect(fed).toHaveLength(2)
   expect(sorted(tabled)).toEqual(sorted(fed))
+}, 60_000)
+
+test('the display and the tables paint each connector the same color, a junction through a segment out of view the through-hidden neutral, and key the same colors', async () => {
+  const display = { ...TALL, unit: 'chain' }
+  const { display: m, dispose } =
+    await standUpDisplay<LinearAlignmentsDisplayModel>({
+      plugins: [new AlignmentsPlugin()],
+      track: {
+        type: 'AlignmentsTrack',
+        adapter: SPLIT_INVERSION_GAP.adapterConfig,
+      },
+      displayType: 'LinearAlignmentsDisplay',
+      isDisplay: isLinearAlignmentsDisplay,
+      displayConfig: display,
+      regions: SPLIT_INVERSION_GAP.regions,
+      contigLengths: VOLVOX_CONTIGS,
+      bpPerPx: 8,
+    })
+  m.setShowLegend(true)
+  const t = await engine.alignments({ ...SPLIT_INVERSION_GAP, display })
+  const grey = normalizedRgbToHex(m.themed.colors.colorThroughHidden)
+  const fed = [...m.themed.connectorFeedsByGroup.values()].flatMap(byRegion =>
+    [...byRegion].flatMap(([region, { channels: f, hits }]) =>
+      hits.flatMap((hit, i) =>
+        (f.bits[i]! & CONNECTOR_STRAIGHT) === 0 &&
+        connectorInWindows(
+          { region, x: f.x[i]!, x2Region: f.x2Region[i]!, x2: f.x2[i]! },
+          m.view.displayedRegions,
+          SPLIT_INVERSION_GAP.regions,
+        )
+          ? [`${hit.id1}>${hit.id2} ${abgrToHex(f.color[i]!)}`]
+          : [],
+      ),
+    ),
+  )
+  const keyed = m
+    .connectionLegendItems(m.themed.colors)
+    .map(item => cssColorToHex(item.color!))
+  dispose()
+  const c = t.connectors
+  const idOfKey = new Map(t.reads.key.map((k, i) => [k, t.reads.id[i]!]))
+  const tabled = c.kind.flatMap((kind, i) =>
+    kind === 'straight'
+      ? []
+      : [
+          `${idOfKey.get(c.key[i]!)}>${idOfKey.get(c.mateKey[i]!)} ${c.color[i]}`,
+        ],
+  )
+  expect(fed.filter(entry => entry.endsWith(grey))).toHaveLength(2)
+  expect(sorted(tabled)).toEqual(sorted(fed))
+  expect(new Set(keyed)).toEqual(new Set(t.arcLegend.color))
+  expect(keyed).toContain(grey)
 }, 60_000)
 
 test('the cases decide over loops, curves, bows, straight lines, junctions, and arcs within and across regions', async () => {

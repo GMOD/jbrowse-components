@@ -4,7 +4,7 @@ import { ARC_COLOR_INTERCHROM } from '../features/arcs/arcColors.ts'
 import { READ_COLOR_CATEGORY } from './colorUtils.ts'
 import {
   arcSlotsInWindows,
-  connectorSlotsInWindows,
+  connectorKeyInWindows,
   insertSizeBandInWindows,
   junctionInWindows,
   readCategoriesInWindows,
@@ -115,7 +115,9 @@ test('a connector keys when its span crosses a window, whichever ends are on scr
   const slots = (
     overlayPairs: ReturnType<typeof pair>[],
     linePairs?: ReturnType<typeof pair>[],
-  ) => connectorSlotsInWindows(group(overlayPairs, linePairs), regions, window)
+  ) =>
+    connectorKeyInWindows(group(overlayPairs, linePairs), regions, window)
+      .colorTypes
 
   expect(slots([pair([0, 100], [0, 5000], 4)])).toEqual(new Set([4]))
   expect(slots([], [pair([0, 100], [0, 5000], 4)])).toEqual(new Set([4]))
@@ -124,6 +126,40 @@ test('a connector keys when its span crosses a window, whichever ends are on scr
   ).toEqual(new Set())
   expect(slots([pair([1, 100], [1, 900], 4)])).toEqual(new Set())
   expect(slots([pair([1, 100], [0, 900], 5)])).toEqual(new Set([5]))
+})
+
+test('a junction through a segment not in view keys its own row and not its class', () => {
+  const regions = [{ refName: 'chr1' }]
+  const pair = (
+    bp1: number,
+    bp2: number,
+    hiddenSegmentsBetween?: string[],
+  ) => ({
+    e1: { displayedRegionIndex: 0 },
+    e2: { displayedRegionIndex: 0 },
+    c: { bp1, bp2, colorType: 4 },
+    hiddenSegmentsBetween,
+  })
+  const key = (...overlayPairs: ReturnType<typeof pair>[]) =>
+    connectorKeyInWindows(
+      new Map([['', { linePairs: [], overlayPairs }]]),
+      regions,
+      window,
+    )
+
+  expect(key(pair(1100, 1900, ['chr2:1-100']))).toEqual({
+    colorTypes: new Set(),
+    throughHidden: true,
+  })
+  expect(key(pair(1100, 1900))).toEqual({
+    colorTypes: new Set([4]),
+    throughHidden: false,
+  })
+  expect(key(pair(1100, 1900, ['chr2:1-100']), pair(1200, 1800))).toEqual({
+    colorTypes: new Set([4]),
+    throughHidden: true,
+  })
+  expect(key(pair(2100, 5000, ['chr2:1-100'])).throughHidden).toBe(false)
 })
 
 test('a key states the insert-size band only where every region in view shares one', () => {

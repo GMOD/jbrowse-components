@@ -598,6 +598,8 @@ export interface StringColors {
   readOverlap: string
   /** Span where the two mates of a pair both align (view-as-pairs / chains): the fragment is shorter than two reads */
   readMateOverlap: string
+  /** A split-read connector joining two segments across a segment of the read the view never fetched */
+  readThroughHidden: string
   /** Base modifications on the forward strand */
   modificationFwd: string
   /** Base modifications on the reverse strand */
@@ -699,6 +701,15 @@ const readOverlap = '#555555'
  * quiet step that leaves the mismatches on top of it legible.
  */
 const readMateOverlap = '#b4b4b4'
+/**
+ * #color alignments-pair-orientation | Split read (segment not in view) | A connector joining two segments of a split read across a segment of it the view never fetched, so the class its two ends would take is not one the read states
+ *
+ * A neutral for the reason `readOverlap` is one: the unseen segment is what
+ * makes the class unreliable, so no class color is the honest answer. It sits
+ * past `readOverlap` on the same side, so the connector stays apart from the
+ * overlap box it often starts at.
+ */
+const readThroughHidden = '#2e2e2e'
 /** #color theme-colors | Base modification (fwd) | Base modifications on the forward strand */
 const modificationFwd = '#c8c8c8'
 /** #color theme-colors | Base modification (rev) | Base modifications on the reverse strand */
@@ -722,6 +733,7 @@ const lightStringColors: StringColors = {
   mafGap: deletion,
   readOverlap,
   readMateOverlap,
+  readThroughHidden,
   softclip,
   hardclip,
   skip,
@@ -789,6 +801,10 @@ const darkStringColors: Partial<StringColors> = {
   // `colorPairLRDark`'s 71.8. #d4d4d4 glared like the #e4e4e4 it replaced, and
   // #bcbcbc (76.2) vanished into the reads on the same captures
   readMateOverlap: '#c8c8c8',
+  // inverted for the reason `readOverlap` is, and as far past its #e4e4e4 as
+  // the scale goes: #f0f0f0 was L* 4 from it, too near to tell the two rows
+  // of the key apart
+  readThroughHidden: '#ffffff',
   // the deep green sinks into the dark ground
   variantCall: green[400],
 }

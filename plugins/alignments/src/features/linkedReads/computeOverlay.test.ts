@@ -33,6 +33,7 @@ const PALETTE = makeTestPalette({
   colorPairLL: [0.4, 0.4, 0.4],
   colorSupplementary: [0.5, 0.5, 0.5],
   colorSplitInversion: [0.6, 0.6, 0.6],
+  colorThroughHidden: [0.7, 0.7, 0.7],
 })
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { arcCategoryColor } from '../../shaders/palettes.ts'
@@ -956,6 +957,22 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
     ])
   })
 
+  // The unseen segments are what the junction's class turns on, so it paints
+  // the one through-hidden neutral rather than any class color.
+  it('paints the junction the through-hidden neutral, not its class color', () => {
+    const arcs = drawnConnectors({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr3' }],
+      pairs: enumerateConnectorPairs(sections, identity),
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.stroke).toBe(rgb255(PALETTE.colorThroughHidden))
+    expect(arcs[0]!.stroke).not.toBe(
+      rgb255(arcCategoryColor(PALETTE, 'splitInvLL')),
+    )
+  })
+
   // The SA tag names chromosomes in the BAM's own spelling. Reported raw, a
   // tooltip sends the reader to a refName the view does not have.
   it('reports the loci in the assembly-canonical spelling', () => {
@@ -990,14 +1007,15 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
     const pairs = enumerateConnectorPairs(new Map([[0, twoSegments]]), identity)
     expect(pairs).toHaveLength(1)
     expect(pairs[0]!.hiddenSegmentsBetween).toBeUndefined()
-    expect(
-      drawnConnectors({
-        colors: PALETTE,
-        ...baseOpts,
-        displayedRegions: [{ refName: 'chr3' }],
-        pairs,
-      })[0]!.hiddenSegmentsBetween,
-    ).toBeUndefined()
+    const [arc] = drawnConnectors({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr3' }],
+      pairs,
+    })
+    expect(arc!.hiddenSegmentsBetween).toBeUndefined()
+    expect(arc!.label).toBe('Split read (inversion, LL-type)')
+    expect(arc!.stroke).toBe(rgb255(arcCategoryColor(PALETTE, 'splitInvLL')))
   })
 
   // Without a normalizer no junction reports hidden segments.

@@ -156,6 +156,7 @@ import {
   connectorArrowPx,
   connectorInWindows,
   connectorInstance,
+  connectorRgb,
   flooredBend,
   linePassInstance,
 } from './features/linkedReads/connectorFeed.ts'
@@ -212,6 +213,7 @@ import {
   sashimiLegendItems,
   SASHIMI_LEGEND_TITLE,
   sashimiLegend,
+  throughHiddenLegendItems,
   titledReadColorKey,
 } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
@@ -244,7 +246,7 @@ import type {
   MergedJunction,
   RegionJunctions,
 } from './features/sashimi/junctions.ts'
-import type { ColorPalette } from './shaders/colors.ts'
+import type { ColorPalette, RGBColor } from './shaders/colors.ts'
 import type { ArcCategory } from './shaders/palettes.ts'
 import type {
   BaseLayer,
@@ -1096,7 +1098,7 @@ function readConnectionTables(
   host: AlignmentsTablesHostModel,
   colors: ReturnType<typeof colorReads>,
   slotColor: string[],
-  connectorSlots: ReadonlySet<number>,
+  connectorKey: { slots: ReadonlySet<number>; throughHidden: boolean },
   bands: BelowCoverageBands,
 ) {
   const { arcsResult: result, regionInfos } = host
@@ -1143,11 +1145,13 @@ function readConnectionTables(
       new Set(
         [
           ...arcSlotsInWindows(result, keyWindowsOf(regionInfos)),
-          ...connectorSlots,
+          ...connectorKey.slots,
         ].map(slot => arcSlotCategory(slot)),
       ),
       colors.palette,
       colors.keyLabels.categories,
+    ).concat(
+      throughHiddenLegendItems(connectorKey.throughHidden, colors.palette),
     ),
   ).filter(item => item.color !== undefined)
   return {
@@ -1370,7 +1374,8 @@ interface PlacedConnector {
 /**
  * One region's connectors as the connector mark draws them: each end's
  * position, row and region (the second end may sit in another), the color of
- * the connection's arc at `opacity`, the stroke `width` in px, and the shape:
+ * the connection's arc at `opacity` (`colorThroughHidden` for a junction
+ * through a segment not in view, `connectorRgb`), the stroke `width` in px, and the shape:
  * `straight`, a `curve` dipping `dip` px below its rows, a `bow` up over
  * them, or a `loop` where a read maps back over itself, dipping `dip` px and
  * ending in an `arrow`. A `dip` is the one the display draws: at most half
@@ -1384,7 +1389,8 @@ interface PlacedConnector {
  */
 function connectorColumns(
   connected: readonly PlacedConnector[],
-  slotColor: readonly string[],
+  slotRgb: readonly RGBColor[],
+  palette: ColorPalette,
   keyOf: (readKey: WorkerPileupData['readKeys'][number]) => number,
 ) {
   const bits = connected.map(({ placed }) => placed.bits)
@@ -1395,7 +1401,9 @@ function connectorColumns(
       endRegion: connected.map(({ placed }) => placed.x2Region),
       row: connected.map(({ placed }) => placed.row),
       endRow: connected.map(({ placed }) => placed.row2),
-      color: connected.map(({ placed }) => slotColor[placed.slot]!),
+      color: connected.map(({ placed }) =>
+        normalizedRgbToHex(connectorRgb(placed, slotRgb, palette)),
+      ),
       opacity: connected.map(({ placed }) => placed.alpha),
       width: connected.map(({ placed }) => placed.width),
       kind: connected.map(({ placed }) =>
@@ -1770,18 +1778,22 @@ function laidOutTables(
   const readPitch = featureHeight + host.featureSpacing
   const bands = belowCoverageBands(host)
   const connectorsBySection = sectionConnectors(host, bands, readPitch)
-  const slotColor = buildArcColorPalette(colors.palette).map(normalizedRgbToHex)
+  const slotRgb = buildArcColorPalette(colors.palette)
+  const placedConnectors = [...connectorsBySection.values()].flatMap(byRegion =>
+    [...byRegion.values()].flatMap(list => list.map(({ placed }) => placed)),
+  )
   const connections = readConnectionTables(
     host,
     colors,
-    slotColor,
-    new Set(
-      [...connectorsBySection.values()].flatMap(byRegion =>
-        [...byRegion.values()].flatMap(list =>
-          list.map(({ placed }) => placed.slot),
+    slotRgb.map(normalizedRgbToHex),
+    {
+      slots: new Set(
+        placedConnectors.flatMap(placed =>
+          placed.throughHidden ? [] : [placed.slot],
         ),
       ),
-    ),
+      throughHidden: placedConnectors.some(placed => placed.throughHidden),
+    },
     bands,
   )
   const keyOf = numberByFirstAppearance<WorkerPileupData['readKeys'][number]>()
@@ -1794,7 +1806,8 @@ function laidOutTables(
             windowedPart({ section: label, region: i }, dataFor(key, i), r, {
               ...connectorColumns(
                 connectorsBySection.get(key)?.get(i) ?? [],
-                slotColor,
+                slotRgb,
+                colors.palette,
                 keyOf,
               ),
               ...overlapsInWindow(

@@ -32,7 +32,7 @@ import {
 } from './computeOverlay.ts'
 
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import type { ColorPalette } from '../../shaders/colors.ts'
+import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 import type { LinkedPair } from './compute.ts'
 import type { ConnectorChannels } from '@jbrowse/render-core/marks'
 
@@ -152,8 +152,11 @@ export function connectorEnds(
  * One pair as the connector mark draws it: each end placed on the region
  * holding it (`x`, `x2` and `x2Region`, the first end's region `region`), the
  * rows, the `bend` (a loop's set depth, a discordant dip, or `CONNECTOR_BOW`),
- * the stroke `width`, the palette `slot` its color comes from at `alpha`, and
- * the `CONNECTOR_*` bits. Undefined where an end's region is not displayed.
+ * the stroke `width`, the palette `slot` its class color comes from at
+ * `alpha`, whether it joins two segments across one the view never fetched
+ * (`throughHidden`, painted `colorThroughHidden` in place of the class color:
+ * `connectorRgb`), and the `CONNECTOR_*` bits. Undefined where an end's
+ * region is not displayed.
  */
 export function connectorInstance(
   pair: LinkedPair,
@@ -185,6 +188,7 @@ export function connectorInstance(
       bend: loop ? loopDipPx(rowPitch) : (dipPx ?? CONNECTOR_BOW),
       width: loop ? LOOP_STROKE_WIDTH_PX : LINKED_READ_LINE_WIDTH_PX,
       slot: linkedReadColorSlot(c.colorType),
+      throughHidden: !!pair.hiddenSegmentsBetween?.length,
       alpha: loop ? 1 : LINKED_READ_LINE_ALPHA,
       straight,
       loop,
@@ -197,6 +201,20 @@ export function connectorInstance(
     }
   }
   return undefined
+}
+
+/**
+ * The color a placed connector paints: its class's from the arc palette
+ * `slotRgb`, or `colorThroughHidden` where the junction passes through a
+ * segment the view never fetched, since that segment is what the class would
+ * turn on.
+ */
+export function connectorRgb(
+  { slot, throughHidden }: { slot: number; throughHidden: boolean },
+  slotRgb: readonly RGBColor[],
+  colors: Pick<ColorPalette, 'colorThroughHidden'>,
+) {
+  return throughHidden ? colors.colorThroughHidden : slotRgb[slot]!
 }
 
 /**
@@ -350,7 +368,9 @@ export function buildConnectorFeeds({
         lanes = new Lanes()
         byRegion.set(placed.region, lanes)
       }
-      const opaque = normalizedRgbToABGR(...palette[placed.slot]!)
+      const opaque = normalizedRgbToABGR(
+        ...connectorRgb(placed, palette, colors),
+      )
       lanes.x.push(placed.x)
       lanes.x2.push(placed.x2)
       lanes.x2Region.push(placed.x2Region)

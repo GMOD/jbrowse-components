@@ -863,6 +863,27 @@ export function getArcLegendItems(
   ]
 }
 
+export const THROUGH_HIDDEN_LABEL = 'Split read (segment not in view)'
+
+/**
+ * The key row for the split-read connectors drawn through a segment the view
+ * never fetched, which paint `colorThroughHidden` and key no class row; none
+ * where `drawn` is false.
+ */
+export function throughHiddenLegendItems(
+  drawn: boolean,
+  palette: Pick<ColorPalette, 'colorThroughHidden'>,
+): LegendItem[] {
+  return drawn
+    ? [
+        {
+          color: rgb255(palette.colorThroughHidden),
+          label: THROUGH_HIDDEN_LABEL,
+        },
+      ]
+    : []
+}
+
 // The modification family's own key: the methylation views (fill-unmarked and
 // bisulfite) key the 5mC/5hmC states, not the per-type MM palette; every other
 // modification view keys each detected type in the color the reads use. Blue

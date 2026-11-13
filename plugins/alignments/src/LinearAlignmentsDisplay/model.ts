@@ -89,6 +89,7 @@ import {
   readCategoryLabelOverrides,
   readColorCategoryLabel,
   sashimiLegend,
+  throughHiddenLegendItems,
 } from '../shared/legendUtils.ts'
 import {
   alignmentsColorViews,
@@ -143,7 +144,7 @@ import { NO_CONNECTOR_READ_IDS, nextHover } from './hoverState.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
   arcSlotsInWindows,
-  connectorSlotsInWindows,
+  connectorKeyInWindows,
   junctionInWindows,
 } from './keyWindows.ts'
 import { buildLanes, drawnLanesOf, drawsPileupRows } from './lanes.ts'
@@ -1287,35 +1288,52 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The color types (arc palette slots) drawn in view, by the
-         * overlay's curves and by the straight-line pass beside them, so the
-         * key lists every connector color on screen. Empty while the legend is
-         * hidden so the scan is skipped.
+         * What the connectors drawn in view key, by the overlay's curves and
+         * by the straight-line pass beside them, so the key lists every
+         * connector color on screen: the class color types, and whether a
+         * junction through a segment not in view is drawn in its own color.
+         * Empty while the legend is hidden so the scan is skipped.
          */
-        get connectionColorTypes(): Set<number> {
+        get connectorKey() {
           return self.showLegend
-            ? connectorSlotsInWindows(
+            ? connectorKeyInWindows(
                 self.connectorsByGroup,
                 self.view.displayedRegions,
                 self.keyWindows,
               )
-            : new Set<number>()
+            : { colorTypes: new Set<number>(), throughHidden: false }
+        },
+
+        /**
+         * #getter
+         * The color types (arc palette slots) the connectors drawn in view
+         * paint in their class color.
+         */
+        get connectionColorTypes(): Set<number> {
+          return this.connectorKey.colorTypes
         },
 
         /**
          * #method
          * Key for the connection colors drawn: the band's and the pileup
-         * connectors', which paint one field through one palette.
+         * connectors', which paint one field through one palette, and the
+         * row for a junction through a segment not in view.
          */
         connectionLegendItems(palette: ColorPalette) {
-          return getArcLegendItems(
-            new Set([
-              ...self.arcLegendCategories,
-              ...connectorCategories(this.connectionColorTypes),
-            ]),
-            palette,
-            self.keyReadLabels.categories,
-          )
+          return [
+            ...getArcLegendItems(
+              new Set([
+                ...self.arcLegendCategories,
+                ...connectorCategories(this.connectionColorTypes),
+              ]),
+              palette,
+              self.keyReadLabels.categories,
+            ),
+            ...throughHiddenLegendItems(
+              this.connectorKey.throughHidden,
+              palette,
+            ),
+          ]
         },
 
         /**
