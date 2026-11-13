@@ -20,6 +20,14 @@ export interface KeyedWrites {
    * direction, and a read interprets them at the field in force.
    */
   refines?: Readonly<Record<string, string>>
+  /**
+   * What `keyedBy` holds where nothing writes it: the schema's declared
+   * default where that names values, as the multi-row display's `rows.field`
+   * is `type`. The schema fills it in from the slot, never stated beside it,
+   * so every reader of the declaration, the CLI's manifest included, compares
+   * and reads the field in force.
+   */
+  unwritten?: string
 }
 
 export function isKeyedWrites(writes: unknown): writes is KeyedWrites {
@@ -31,21 +39,48 @@ export function isKeyedWrites(writes: unknown): writes is KeyedWrites {
   )
 }
 
+const isMembers = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+// The field a config's members draw: as written, else the declaration's
+// `unwritten`, `null` resetting to it
+function fieldInForce(writes: KeyedWrites, members: Record<string, unknown>) {
+  return members[writes.keyedBy] ?? writes.unwritten
+}
+
+/**
+ * A keyed object's snapshot, or nothing written, as drawn: its field in
+ * force where the declaration has an `unwritten` and the snapshot states no
+ * field. Any other value is returned as given.
+ */
+export function keyedInForce(writes: KeyedWrites, value: unknown) {
+  const members = value ?? {}
+  return writes.unwritten !== undefined &&
+    isMembers(members) &&
+    members[writes.keyedBy] == null
+    ? { ...members, [writes.keyedBy]: writes.unwritten }
+    : value
+}
+
 /**
  * Whether writing `next` over `prior` changes the field the keyed members
- * name. An empty field names no values, so a write from one or to one changes
- * nothing: the arrangement waits while rows are off, as wiggle's overlay
- * toggle turns them, and a write between a value and the one it refines
- * (`refines`) changes nothing either. Under `emptyChanges` any write `next`
- * states of another value changes it, empty (`''`, `null`, unset) included.
+ * name, each read in force (`unwritten` where one writes none, or `null`
+ * resetting it). An empty field names no values, so a write from one or to
+ * one changes nothing: the arrangement waits while rows are off, as wiggle's
+ * overlay toggle turns them, and a write between a value and the one it
+ * refines (`refines`) changes nothing either. Under `emptyChanges` any write
+ * `next` states of another value changes it, empty (`''`, `null`, unset)
+ * included.
  */
 export function changesKeyedField(
   writes: KeyedWrites,
   prior: Record<string, unknown>,
   next: Record<string, unknown>,
 ) {
-  const from = prior[writes.keyedBy]
-  const to = next[writes.keyedBy]
+  const from = fieldInForce(writes, prior)
+  const to = Object.hasOwn(next, writes.keyedBy)
+    ? fieldInForce(writes, next)
+    : undefined
   return writes.emptyChanges
     ? Object.hasOwn(next, writes.keyedBy) && emptied(from) !== emptied(to)
     : typeof to === 'string' &&

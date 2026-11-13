@@ -7002,7 +7002,8 @@ export const configManifest: ConfigManifest = {
             ],
             "refines": {
               "haplotype": "sample"
-            }
+            },
+            "unwritten": "sample"
           },
           "shorthand": {
             "string": "field"
@@ -11791,7 +11792,8 @@ export const configManifest: ConfigManifest = {
               "colors",
               "tree",
               "kept"
-            ]
+            ],
+            "unwritten": "type"
           },
           "shorthand": {
             "string": "field"

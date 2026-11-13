@@ -233,6 +233,20 @@ const cases: {
       tree: CLUSTERED,
     },
   },
+  {
+    name: "a new field over a declared default's rows unsets the keyed members",
+    display: 'LinearMultiRowFeatureDisplay',
+    base: { rows: { sort: ['Deletion'], labels: { Deletion: 'Del' } } },
+    write: { rows: 'sample' },
+    rows: { field: 'sample' },
+  },
+  {
+    name: 'restating a declared default keeps the arrangement',
+    display: 'LinearMultiRowFeatureDisplay',
+    base: { rows: { sort: ['Deletion'], labels: { Deletion: 'Del' } } },
+    write: { rows: 'type' },
+    rows: { sort: ['Deletion'], labels: { Deletion: 'Del' } },
+  },
 ]
 
 test.each(cases)('$name, through all four consumers', c => {

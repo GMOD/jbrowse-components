@@ -100,8 +100,7 @@ export function withSplitField(
 }
 
 function rowsWithoutField(rows: MarkPlot['rows']) {
-  const { field: _field, ...kept } = channelObject(rows) ?? {}
-  return Object.keys(kept).length > 0 ? kept : null
+  return { ...channelObject(rows), field: '' }
 }
 
 /**

@@ -161,7 +161,7 @@ describe('the split field, typed a keystroke at a time', () => {
   })
 })
 
-test('emptying the rows field keeps the row axis and the arrangement', () => {
+test('emptying the rows field writes one row, keeping the row axis and the arrangement', () => {
   const rows = {
     field: 'sample',
     sort: ['b', 'a'],
@@ -169,13 +169,14 @@ test('emptying the rows field keeps the row axis and the arrangement', () => {
     axis: { grid: true },
   }
   expect(withSplitField({ marks: [], rows }, 'rows', '').rows).toEqual({
+    field: '',
     sort: ['b', 'a'],
     labels: { a: 'A' },
     axis: { grid: true },
   })
   expect(
     withSplitField({ marks: [], rows: { field: 'sample' } }, 'rows', '').rows,
-  ).toBeNull()
+  ).toEqual({ field: '' })
 })
 
 test('emptying the rows field in the box writes what the JSON text does', () => {

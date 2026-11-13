@@ -30,6 +30,7 @@ export {
   changesKeyedField,
   isKeyedWrites,
   keyedBase,
+  keyedInForce,
   refinesProblem,
   staleKeyedMembers,
 } from './keyedWrites.ts'

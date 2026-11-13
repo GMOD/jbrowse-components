@@ -1,3 +1,4 @@
+import { keyedValueInForce } from '@jbrowse/core/configuration'
 import { scaleEndsOf } from '@jbrowse/core/util/colorScale'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { confNodeAt } from '@jbrowse/wiggle-core'
@@ -63,7 +64,8 @@ export interface MarkPlotSettings extends PlotSnapshot {
 
 /**
  * The settings the rule list reads off a lifted config: the marks drawn, a
- * default plot's included, and the snapshot's other four.
+ * default plot's included, the rows with their field in force, and the
+ * snapshot's other three.
  */
 export function markPlotSettingsOf(
   conf: AnyConfigurationModel,
@@ -74,7 +76,9 @@ export function markPlotSettingsOf(
     marks: getSnapshot(node.marks!) as MarkSnapshot[],
     transform: (snapshot.transform ?? []) as StepSnapshot[],
     facet: snapshot.facet as FacetSnapshot | undefined,
-    rows: snapshot.rows as RowsSnapshot | undefined,
+    rows: keyedValueInForce(node.rows, snapshot.rows) as
+      | RowsSnapshot
+      | undefined,
     axis: axisOf(conf),
   }
 }

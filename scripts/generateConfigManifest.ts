@@ -272,7 +272,7 @@ function modelOf(type) {
 }
 
 // A keyed form (ADR-257) as plain data, its member list and refinements
-// copied off the schema's constants
+// copied off the schema's constants, and its field's declared default
 function writesOf(writes = 'members') {
   return typeof writes === 'object'
     ? {
@@ -280,6 +280,7 @@ function writesOf(writes = 'members') {
         keyed: [...writes.keyed],
         ...(writes.emptyChanges ? { emptyChanges: true } : {}),
         ...(writes.refines ? { refines: { ...writes.refines } } : {}),
+        ...(writes.unwritten ? { unwritten: writes.unwritten } : {}),
       }
     : writes
 }

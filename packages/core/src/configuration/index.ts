@@ -89,6 +89,7 @@ export {
   changesKeyedField,
   isKeyedWrites,
   keyedBase,
+  keyedInForce,
   staleKeyedMembers,
 } from '@jbrowse/add-track-core'
 export { fillLocations } from './fillLocations.ts'
@@ -132,6 +133,7 @@ export {
 export type { SlotFacade } from './slotFacade.ts'
 export { fullConfSnapshot } from './fullConfSnapshot.ts'
 export {
+  keyedValueInForce,
   liftPlot,
   parsePlot,
   plotKeysOf,

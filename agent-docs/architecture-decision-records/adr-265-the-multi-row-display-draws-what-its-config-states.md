@@ -65,12 +65,20 @@ it.
   Against a `type` default `''` is not the default, so the snapshot keeps it
   and None survives. "One row per → None" writes it, and "Type" writes `type`,
   which leaves the slot at its declared default.
-- **The keyed rule reads the field in force.** A write of `rows.field`
-  compares the new field with the one in force, the declared default
-  included (`unsetStaleKeyedMembers`), and Reset reads the config's field the
-  same way (`baseRows`), so an arrangement a config writes beside no `field`
-  names the `type` rows and leaves with a pick of `sample`. For a display
-  whose default is `''` nothing changes: an empty field names no values.
+- **The keyed rule reads the field in force.** The schema copies a keyed
+  field's declared default onto its `writes` as `unwritten` (`type` here,
+  the variant display's `sample`), so every reader of the declaration
+  compares and reads the field in force: `changesKeyedField` under setConf,
+  Reset (`baseRows`), the bag folds (`mergeConfSettings`, the share-link
+  delta, the CLI's `mergeBySlots` through the manifest), and `keyedInForce`
+  for a read of the rows whole: the plot (`plotOf`, so Edit plot shows
+  `type` and a field typed over it drops the type rows' arrangement), the
+  rule list (`markPlotSettingsOf`) and `jbrowse validate`. An arrangement a
+  config writes beside no `field` names the `type` rows and leaves with a
+  pick of `sample`, and emptying the field in Edit plot writes `''`. For a
+  display whose default is `''` nothing changes: an empty field names no
+  values. A snapshot-only reader once missed the default (2026-11-13), which
+  is why it lives on the declaration rather than at each site.
 - **Else ask.** Where the loaded regions, split on the field in force
   (default or written), hold features and none carries it (a plain BED or
   RepeatMasker's table has no `type`), every feature draws in the one row of

@@ -1,4 +1,8 @@
-import { isKeyedWrites, staleKeyedMembers } from '@jbrowse/add-track-core'
+import {
+  isKeyedWrites,
+  keyedInForce,
+  staleKeyedMembers,
+} from '@jbrowse/add-track-core'
 import {
   getSnapshot,
   getType,
@@ -130,22 +134,42 @@ function folded(member: unknown, value: unknown): unknown {
 
 /**
  * #api core/configuration
+ * A sub-schema's snapshot as drawn: a keyed object's field in force where
+ * the snapshot leaves out a declared default that names values, as the
+ * multi-row display's `rows.field` is `type` (`keyedInForce`). Any other
+ * value is returned as given.
+ */
+export function keyedValueInForce(
+  node: AnyConfigurationModel | undefined,
+  value: unknown,
+) {
+  const writes = node
+    ? getConfigurationSchemaMetadata(node)?.options.writes
+    : undefined
+  return isKeyedWrites(writes) ? keyedInForce(writes, value) : value
+}
+
+/**
+ * #api core/configuration
  * A display's plot as declared, defaults left off. A list sitting at a
  * default it shares with no other display, a default plot's marks, shows its
- * entries, since they are what is drawn.
+ * entries, and a keyed object its field's declared default, since they are
+ * what is drawn.
  */
 export function plotOf(conf: AnyConfigurationModel): Plot {
   const snapshot = getSnapshot<Record<string, unknown>>(conf)
   const plot: Plot = {}
   for (const key of plotKeysOf(conf)) {
     const member = (conf as unknown as Record<string, unknown>)[key]
-    const value =
+    const value = keyedValueInForce(
+      subConfOf(conf, key),
       snapshot[key] ??
-      (isStateTreeNode(member) &&
-      isArrayType(getType(member)) &&
-      (member as unknown[]).length > 0
-        ? getSnapshot(member)
-        : undefined)
+        (isStateTreeNode(member) &&
+        isArrayType(getType(member)) &&
+        (member as unknown[]).length > 0
+          ? getSnapshot(member)
+          : undefined),
+    )
     if (value !== undefined) {
       plot[key] = folded(member, value)
     }

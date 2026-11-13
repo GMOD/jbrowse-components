@@ -248,6 +248,14 @@ describe('a marks list in a config file', () => {
     ])
   })
 
+  it('checks a multi-row display with no rows written against the type rows it draws', () => {
+    const multiRow = { type: 'LinearMultiRowFeatureDisplay' }
+    expect(found([PILEUP], multiRow)).toEqual([
+      `warning packing-under-rows ${DISPLAY}.marks[0].transform[0]`,
+    ])
+    expect(found([PILEUP], { ...multiRow, rows: '' })).toEqual([])
+  })
+
   it('names the fields the steps leave where y reads another', () => {
     expect(
       problemsOf(

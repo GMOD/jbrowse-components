@@ -12,7 +12,9 @@
 
 import {
   fileNameOf,
+  isKeyedWrites,
   isLooseTrackConfig,
+  keyedInForce,
   matchFormat,
   trackTypeForAdapter,
 } from '@jbrowse/add-track-core'
@@ -684,7 +686,11 @@ function checkMarkDisplay(
   if (!slots || !isRecord(lifted)) {
     return
   }
-  const { facet, rows, encoding } = lifted
+  const { facet, encoding } = lifted
+  const rowsWrites = slots.find(slot => slot.name === 'rows')?.writes
+  const rows = isKeyedWrites(rowsWrites)
+    ? keyedInForce(rowsWrites, lifted.rows)
+    : lifted.rows
   const [axis] = slots.flatMap(slot =>
     valueAxesOf(lifted[slot.name], slot, slot.name),
   )

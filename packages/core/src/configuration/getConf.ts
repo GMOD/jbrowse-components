@@ -119,9 +119,7 @@ export function setConf<
 }
 
 // A write of a keyed object's field that changes it resets the members naming
-// the old field's values (ADR-257). The old field is the one in force, so a
-// declared default the snapshot leaves out (the multi-row display's `type`)
-// counts as written.
+// the old field's values (ADR-257).
 function unsetStaleKeyedMembers(
   node: AnyConfigurationModel,
   leaf: string,
@@ -129,11 +127,7 @@ function unsetStaleKeyedMembers(
 ) {
   const writes = getConfigurationSchemaMetadata(node)?.options.writes
   if (isKeyedWrites(writes) && writes.keyedBy === leaf) {
-    const inForce: unknown = readConfObject(node, leaf)
-    const prior = {
-      ...getSnapshot<Record<string, unknown>>(node),
-      [leaf]: inForce,
-    }
+    const prior = getSnapshot<Record<string, unknown>>(node)
     for (const member of staleKeyedMembers(writes, prior, { [leaf]: value })) {
       if (Object.hasOwn(prior, member)) {
         writeConfPath(node, [member], null)

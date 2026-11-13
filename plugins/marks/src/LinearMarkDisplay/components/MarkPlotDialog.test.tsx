@@ -1,10 +1,11 @@
 import '@testing-library/jest-dom'
 
-import { liftPlot, plotWrites } from '@jbrowse/core/configuration'
+import { liftPlot, plotOf, plotWrites } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
+import { configSchemaFactory as multiRowConfigSchemaFactory } from '../../LinearMultiRowFeatureDisplay/configSchema.ts'
 import { configSchemaFactory } from '../configSchema.ts'
 import { markPlotSettingsOf } from '../markPlot.ts'
 import { STEP_PRESETS } from '../plotEdit.ts'
@@ -16,11 +17,11 @@ import type { MarkPlotDialogModel } from './MarkPlotDialog.tsx'
 const schema = configSchemaFactory()
 
 // What applying the draft writes: the settings it moves, as `applyPlot` does.
-function setup(plot: MarkPlot = {}) {
+function setup(plot: MarkPlot = {}, displaySchema = schema) {
   const written = jest.fn()
   const openPlotDialog = jest.fn()
   const handleClose = jest.fn()
-  const conf = schema.create({ displayId: 'declared', ...plot })
+  const conf = displaySchema.create({ displayId: 'declared', ...plot })
   const model: MarkPlotDialogModel = {
     plot,
     plotFields: { numeric: ['score'], categorical: ['strand'] },
@@ -572,6 +573,22 @@ describe('the plot as a whole', () => {
       fireEvent.click(apply())
       expect(written).toHaveBeenCalledWith(writes({ rows: { field: 'name' } }))
     })
+  })
+
+  it("shows a multi-row display's type rows with nothing written, and another field drops their order", () => {
+    const multiRow = multiRowConfigSchemaFactory()
+    const plot = plotOf(
+      multiRow.create({ displayId: 'd', rows: { sort: ['Deletion'] } }),
+    )
+    const { apply, written, writes } = setup(plot, multiRow)
+    const field = screen.getByTestId('rows-field')
+    expect(field).toHaveValue('type')
+    expect(screen.getByTestId('rows-order')).toHaveValue('Deletion')
+    fireEvent.focus(field)
+    fireEvent.change(field, { target: { value: 'sample' } })
+    expect(screen.getByTestId('rows-order')).toHaveValue('')
+    fireEvent.click(apply())
+    expect(written).toHaveBeenCalledWith(writes({ rows: { field: 'sample' } }))
   })
 
   it('keeps a half-typed order as typed', () => {

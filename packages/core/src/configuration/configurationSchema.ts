@@ -402,7 +402,32 @@ function preprocessConfigurationSchemaArguments(
   if (options.explicitlyTyped && options.explicitIdentifier === 'displayId') {
     options = { ...options, closed: options.closed ?? true }
   }
-  return { schemaDefinition, options }
+  return {
+    schemaDefinition,
+    options: {
+      ...options,
+      writes: writesInForce(options.writes, schemaDefinition),
+    },
+  }
+}
+
+// A keyed declaration carries its field's declared default where that names
+// values, so a reader of `writes` compares the field in force.
+function writesInForce(
+  writes: MergedConfigurationSchemaOptions<any, any>['writes'],
+  definition: ConfigurationSchemaDefinition,
+) {
+  if (isKeyedWrites(writes)) {
+    const { unwritten: _stated, ...declared } = writes
+    const slot = definition[writes.keyedBy]
+    const unwritten = isSlotDefinitionEntry(slot)
+      ? slot.defaultValue
+      : undefined
+    return typeof unwritten === 'string' && unwritten !== ''
+      ? { ...declared, unwritten }
+      : declared
+  }
+  return writes
 }
 
 function makeConfigurationSchemaModel<

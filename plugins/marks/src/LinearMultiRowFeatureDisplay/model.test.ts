@@ -1,5 +1,6 @@
 import { Suspense, createElement } from 'react'
 
+import { mergeConfSettings } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
@@ -11,8 +12,11 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { paintedColorNode } from '../LinearMarkDisplay/inheritedColor.ts'
 import { keySettingOf } from '../LinearMarkDisplay/legend.ts'
 import { SPLICED_MARKS } from '../LinearMarkDisplay/markPlot.ts'
+import { markProblems } from '../LinearMarkDisplay/markProblems.ts'
 import { NORMAL_ROW_PROPORTION } from '../LinearMarkDisplay/markVocabulary.ts'
+import { splitField, withSplitField } from '../LinearMarkDisplay/plotEdit.ts'
 import { REGION, features, workerResult } from '../LinearMarkDisplay/testEnv.ts'
+import { configSchemaFactory } from './configSchema.ts'
 import { multiRowMenuItems } from './multiRowMenus.ts'
 import { TRANSCRIPT_PROTEIN_PLOT } from './plotExamples.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -184,6 +188,40 @@ test("a pick off the default type drops the arrangement naming the types' rows",
   })
   model.setRowsField('clinSign')
   expect(getSnapshot(model.conf.rows)).toEqual({ field: 'clinSign' })
+})
+
+test('with nothing written, the plot reads the type rows it draws, and the rules check them', () => {
+  const model = display({
+    marks: [{ mark: 'rect', transform: [{ type: 'pileup' }] }],
+  })
+  expect(model.plot.rows).toEqual({ field: 'type' })
+  expect(splitField(model.plot, 'rows')).toBe('type')
+  expect(model.configProblems.map(p => p.rule)).toContain('packing-under-rows')
+  expect(
+    markProblems(model.liftMarkPlot({ facet: 'strand' })).map(p => p.rule),
+  ).toContain('rows-beside-facet')
+})
+
+test("a field typed in Edit plot drops the type rows' arrangement, and an emptied one is one row", () => {
+  const model = display({
+    rows: { sort: ['Deletion'], colors: { Deletion: 'red' } },
+  })
+  const typed = withSplitField(model.plot, 'rows', 'sample')
+  expect(typed.rows).toEqual({ field: 'sample' })
+  model.applyPlot(typed, { whole: true })
+  expect(getSnapshot(model.conf.rows)).toEqual({ field: 'sample' })
+  const cleared = display({ rows: { sort: ['Deletion'] } })
+  cleared.applyPlot(withSplitField(cleared.plot, 'rows', ''), { whole: true })
+  expect(cleared.rowsField).toBe('')
+})
+
+test('a bag naming another field drops the arrangement a bag under it wrote for the type rows', () => {
+  const merged = mergeConfSettings(
+    configSchemaFactory(),
+    { rows: { sort: ['Deletion'], colors: { Deletion: 'red' } } },
+    { rows: 'sample' },
+  )
+  expect(merged.rows).toEqual({ field: 'sample' })
 })
 
 test("unset, each feature paints its file's own color, and a placeholder black paints the default", () => {
