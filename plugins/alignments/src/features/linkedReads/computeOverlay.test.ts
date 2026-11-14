@@ -933,8 +933,18 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
     const pairs = enumerateConnectorPairs(sections, identity)
     expect(pairs).toHaveLength(1)
     expect(pairs[0]!.hiddenSegmentsBetween).toEqual([
-      'chr10:600,001-600,199',
-      'chr12:700,001-700,183',
+      {
+        refName: 'chr10',
+        start: 600_000,
+        end: 600_199,
+        loc: 'chr10:600,001-600,199',
+      },
+      {
+        refName: 'chr12',
+        start: 700_000,
+        end: 700_183,
+        loc: 'chr12:700,001-700,183',
+      },
     ])
   })
 
@@ -954,7 +964,8 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
     expect(arcs[0]!.dashed).toBe(false)
     expect(formatConnectorTooltip(arcs[0]!, () => undefined).lines).toEqual([
       'Split read (segment not in view)',
-      'hidden segments not in view: chr10:600,001-600,199, chr12:700,001-700,183',
+      'passes through chr10:600,001-600,199, chr12:700,001-700,183',
+      'ends relate as: inversion, LL-type',
     ])
   })
 
@@ -981,8 +992,8 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
       adapterRefNameText(refName).replace('chr', ''),
     )
     expect(pairs[0]!.hiddenSegmentsBetween).toEqual([
-      '10:600,001-600,199',
-      '12:700,001-700,183',
+      expect.objectContaining({ refName: '10', loc: '10:600,001-600,199' }),
+      expect.objectContaining({ refName: '12', loc: '12:700,001-700,183' }),
     ])
   })
 
@@ -1017,6 +1028,48 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
     expect(arc!.hiddenSegmentsBetween).toBeUndefined()
     expect(arc!.label).toBe('Split read (inversion, LL-type)')
     expect(arc!.stroke).toBe(rgb255(arcCategoryColor(PALETTE, 'splitInvLL')))
+  })
+
+  // Ends on two chromosomes relate only by crossing them, which the class
+  // line would not add to the loci, so the hover leaves it out.
+  it('states no relation for ends on two chromosomes', () => {
+    const chr3Arm = makeData({
+      names: ['chain3'],
+      ids: ['chain3-primary'],
+      flags: [0],
+      strands: [1],
+      positions: [[25_359_068, 25_359_568]],
+      clipAtStart: [0],
+      suppAlignments: [[CHR10, 'chr12,700001,+,699S183M500S,60,0'].join(';')],
+      ys: [0],
+    })
+    const chr12Arm = makeData({
+      names: ['chain3'],
+      ids: ['chain3-supp'],
+      flags: [SAM_FLAG_SUPPLEMENTARY],
+      strands: [1],
+      positions: [[700_000, 700_183]],
+      clipAtStart: [699],
+      suppAlignments: [[CHR3_FWD, CHR10].join(';')],
+      ys: [0],
+    })
+    const [arc] = drawnConnectors({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr3' }, { refName: 'chr12' }],
+      pairs: enumerateConnectorPairs(
+        new Map([
+          [0, chr3Arm],
+          [1, chr12Arm],
+        ]),
+        identity,
+        i => ['chr3', 'chr12'][i],
+      ),
+    })
+    expect(formatConnectorTooltip(arc!, () => undefined).lines).toEqual([
+      'Split read (segment not in view)',
+      'passes through chr10:600,001-600,199',
+    ])
   })
 
   // Without a normalizer no junction reports hidden segments.
@@ -1361,7 +1414,11 @@ describe('a same-strand junction across segments nothing fetched', () => {
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toBe('M 1500 5 L 3000 17')
     expect(arcs[0]!.dashed).toBe(false)
-    expect(arcs[0]!.hiddenSegmentsBetween).toEqual(['chr10:600,001-600,199'])
+    expect(formatConnectorTooltip(arcs[0]!, () => undefined).lines).toEqual([
+      'Split read (segment not in view)',
+      'passes through chr10:600,001-600,199',
+      'ends relate as: deletion-type',
+    ])
   })
 
   // A chain puts both ends on one row, where a straight line would lie on the

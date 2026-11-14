@@ -21,6 +21,7 @@ import type { LinkedReadLinesUploadData } from './types.ts'
 import type {
   ConnectionEndpoints,
   ConnectionKind,
+  HiddenSegment,
 } from '@jbrowse/alignments-core'
 
 // No refName, unlike the arc path's entry: every comparison this path makes is
@@ -172,10 +173,10 @@ export interface LinkedPair {
   e1: ReadEntry
   e2: ReadEntry
   c: ClassifiedPair
-  // The loci this junction skips over — see `ReadConnection`. Carried on the
-  // pair rather than folded into `ClassifiedPair`, which answers what the
+  // The segments this junction skips over — see `ReadConnection`. Carried on
+  // the pair rather than folded into `ClassifiedPair`, which answers what the
   // connection IS; this answers what the view is missing of it.
-  hiddenSegmentsBetween?: string[]
+  hiddenSegmentsBetween?: HiddenSegment[]
   // Every on-screen alignment of the read, the pair's own two included.
   segments: readonly ReadEntry[]
 }

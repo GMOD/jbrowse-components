@@ -1290,9 +1290,10 @@ export default function stateModelFactory(
          * #getter
          * What the connectors drawn in view key, by the overlay's curves and
          * by the straight-line pass beside them, so the key lists every
-         * connector color on screen: the class color types, and whether a
-         * junction through a segment not in view is drawn in its own color.
-         * Empty while the legend is hidden so the scan is skipped.
+         * connector color on screen: the class color types, and the refNames
+         * the connectors drawn through segments not in view pass through, in
+         * their own color. Empty while the legend is hidden so the scan is
+         * skipped.
          */
         get connectorKey() {
           return self.showLegend
@@ -1301,7 +1302,10 @@ export default function stateModelFactory(
                 self.view.displayedRegions,
                 self.keyWindows,
               )
-            : { colorTypes: new Set<number>(), throughHidden: false }
+            : {
+                colorTypes: new Set<number>(),
+                throughHiddenRefNames: new Set<string>(),
+              }
         },
 
         /**
@@ -1330,7 +1334,7 @@ export default function stateModelFactory(
               self.keyReadLabels.categories,
             ),
             ...throughHiddenLegendItems(
-              this.connectorKey.throughHidden,
+              this.connectorKey.throughHiddenRefNames,
               palette,
             ),
           ]

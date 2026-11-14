@@ -18,16 +18,29 @@ export const ARC_SPLIT_SWATCH = {
 
 export type ArcSplitCategory = keyof typeof ARC_SPLIT_SWATCH
 
-// The junction's type, as DELLY, LUMPY and samplot name it, and not a variant
-// call: a deletion-type junction is also one side of a templated insertion. The
-// inversion rows carry the pair code of their twin, as Manta ties INV3/INV5 to
-// LL/RR reads.
+// How the two ends of a split relate, as DELLY, LUMPY and samplot name the
+// junction type, and not a variant call: a deletion-type junction is also one
+// side of a templated insertion. The inversion rows carry the pair code of
+// their twin, as Manta ties INV3/INV5 to LL/RR reads. A connector through a
+// segment not in view states it as a relation rather than a junction.
+export const ARC_SPLIT_RELATIONS: Record<ArcSplitCategory, string> = {
+  splitForward: 'deletion-type',
+  splitBack: 'duplication-type',
+  splitInvLL: 'inversion, LL-type',
+  splitInvRR: 'inversion, RR-type',
+  splitInsertion: 'insertion',
+}
+
+function splitLabel(category: ArcSplitCategory) {
+  return `Split read (${ARC_SPLIT_RELATIONS[category]})`
+}
+
 export const ARC_SPLIT_LABELS: Record<ArcSplitCategory, string> = {
-  splitForward: 'Split read (deletion-type)',
-  splitBack: 'Split read (duplication-type)',
-  splitInvLL: 'Split read (inversion, LL-type)',
-  splitInvRR: 'Split read (inversion, RR-type)',
-  splitInsertion: 'Split read (insertion)',
+  splitForward: splitLabel('splitForward'),
+  splitBack: splitLabel('splitBack'),
+  splitInvLL: splitLabel('splitInvLL'),
+  splitInvRR: splitLabel('splitInvRR'),
+  splitInsertion: splitLabel('splitInsertion'),
 }
 
 // The one row a split class and its pair twin share when a key holds both: they

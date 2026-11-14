@@ -16,9 +16,16 @@ const theme = resolvePalette()
 const RED = '#ff0000'
 const BLUE = '#0000ff'
 
+interface FakeDrawn {
+  kind: string
+  color: string
+  label: string
+  connection: { hiddenSegmentsBetween?: { refName: string }[] }
+}
+
 function fakeModel({
   tooLarge = new Set<string>(),
-  drawn = new Map<string, { kind: string; color: string; label: string }[]>(),
+  drawn = new Map<string, FakeDrawn[]>(),
 }) {
   return {
     views: [],
@@ -44,9 +51,14 @@ const drawn = new Map([
   [
     'reads',
     [
-      { kind: 'splitInverted', color: BLUE, label: 'Split alignment' },
-      { kind: 'readPair', color: RED, label: 'Read pair' },
-      { kind: 'pairLR', color: RED, label: 'LR' },
+      {
+        kind: 'splitInverted',
+        color: BLUE,
+        label: 'Split alignment',
+        connection: {},
+      },
+      { kind: 'readPair', color: RED, label: 'Read pair', connection: {} },
+      { kind: 'pairLR', color: RED, label: 'LR', connection: {} },
     ],
   ],
 ])
@@ -99,5 +111,32 @@ test('a track too zoomed out to draw adds nothing to the key', () => {
   const model = fakeModel({ drawn, tooLarge: new Set(['reads', 'calls']) })
   expect(drawnConnectionKeySections(model, theme, ['reads', 'calls'])).toEqual(
     [],
+  )
+})
+
+test('the connectors through segments not in view key one row naming the refNames they pass through', () => {
+  const grey = theme.readThroughHidden
+  const through = (...refNames: string[]) => ({
+    kind: 'splitInverted',
+    color: grey,
+    label: 'Split read (segment not in view)',
+    connection: {
+      hiddenSegmentsBetween: refNames.map(refName => ({ refName })),
+    },
+  })
+  const model = fakeModel({
+    drawn: new Map([
+      [
+        'reads',
+        [
+          through('chr10', 'chr12'),
+          { kind: 'readPair', color: RED, label: 'Read pair', connection: {} },
+          through('chr12'),
+        ],
+      ],
+    ]),
+  })
+  expect(drawnConnectionKey(model, theme, ['reads']).map(r => r.label)).toEqual(
+    ['Read pair', 'Split read via chr10, chr12 (not in view)'],
   )
 })

@@ -56,12 +56,23 @@ export interface ReadConnection<E> {
   // mate link between the two reads of a pair. Drives endpoint selection and
   // coloring: split junctions carry no pair orientation / template length.
   isSplit: boolean
-  // Loc strings of the read's OWN segments that lie between these two in read
-  // order and that no fetched entry carries — the junction joins two segments
+  // The read's OWN segments that lie between these two in read order and that
+  // no fetched entry carries, in read order — the junction joins two segments
   // that are read-adjacent on screen and not on the molecule. Absent when the
   // two really are consecutive, and on every mate link. The connector mark and
-  // the breakpoint split view both name the loci in the junction's hover.
-  hiddenSegmentsBetween?: string[]
+  // the breakpoint split view both name them in the junction's hover and key.
+  hiddenSegmentsBetween?: HiddenSegment[]
+}
+
+/**
+ * A segment of a read that no fetched entry carries: its canonical refName,
+ * its interbase `start`/`end`, and `loc`, the locus string a hover names it by.
+ */
+export interface HiddenSegment {
+  refName: string
+  start: number
+  end: number
+  loc: string
 }
 
 export interface ConnectionEndpoints {
@@ -176,11 +187,11 @@ export function connectionEndpoints<E extends MinEntry>({
   return { bp1, s1, bp2, s2 }
 }
 
-// A segment of the read that no fetched entry carries: where it sits in the read
-// (the clip axis the junction walk compares on) and the locus to name it by.
-interface HiddenSegment {
+// A hidden segment and where it sits in the read, the clip axis the junction
+// walk compares on.
+interface ClippedSegment {
   clip: number
-  loc: string
+  segment: HiddenSegment
 }
 
 // The read's own segments that sit inside its on-screen chain and are not part of
@@ -214,7 +225,7 @@ interface HiddenSegment {
 function hiddenSegments<E extends MinEntry>(
   ordered: E[],
   canonicalRefName: CanonicalRefName,
-): HiddenSegment[] {
+): ClippedSegment[] {
   const firstClip = clipAt(ordered[0]!)
   const lastClip = clipAt(ordered[ordered.length - 1]!)
   const onScreen = new Set(ordered.map(clipAt))
@@ -241,14 +252,18 @@ function hiddenSegments<E extends MinEntry>(
   return (
     featurizeSAEntries([...candidates.values()], '', undefined, undefined)
       .filter(sa => Number.isFinite(sa.start) && sa.end > sa.start)
-      .map(sa => ({
-        clip: sa.clipLengthAtStartOfRead,
-        loc: formatLocationRange(
-          canonicalRefName(adapterRefName(sa.refName)),
-          sa.start,
-          sa.end,
-        ),
-      }))
+      .map(sa => {
+        const refName = canonicalRefName(adapterRefName(sa.refName))
+        return {
+          clip: sa.clipLengthAtStartOfRead,
+          segment: {
+            refName,
+            start: sa.start,
+            end: sa.end,
+            loc: formatLocationRange(refName, sa.start, sa.end),
+          },
+        }
+      })
       // Read order, so the loci a junction reports read the way the molecule does
       // rather than the way the tags happened to list them.
       .sort((a, b) => a.clip - b.clip)
@@ -295,7 +310,9 @@ function splitJunctions<E extends MinEntry>(
       e1,
       e2,
       isSplit: true,
-      hiddenSegmentsBetween: hidden.length ? hidden.map(s => s.loc) : undefined,
+      hiddenSegmentsBetween: hidden.length
+        ? hidden.map(s => s.segment)
+        : undefined,
     })
   }
   return out

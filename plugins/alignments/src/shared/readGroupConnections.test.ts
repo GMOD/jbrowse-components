@@ -278,7 +278,9 @@ describe('a junction over segments no region fetched', () => {
       readGroupConnections(twoOfThree(), canonical).map(
         c => c.hiddenSegmentsBetween,
       ),
-    ).toEqual([['ctgA:501-700']])
+    ).toEqual([
+      [{ refName: 'ctgA', start: 500, end: 700, loc: 'ctgA:501-700' }],
+    ])
   })
 
   test('says nothing without the normalizer that turns the walk on', () => {

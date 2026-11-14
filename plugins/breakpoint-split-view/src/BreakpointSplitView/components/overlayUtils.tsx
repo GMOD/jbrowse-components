@@ -297,7 +297,8 @@ export const OverlayPaths = observer(function OverlayPaths({
 })
 
 // The overlay's key in sections: the variant calls, then each drawn alignment
-// connector's color and label in `theme`, one row per color.
+// connector's color and label in `theme`, one row per color, and one for those
+// through segments not in view.
 export function drawnConnectionKeySections(
   model: BreakpointViewModel,
   theme: JBrowsePalette,
@@ -311,7 +312,11 @@ export function drawnConnectionKeySections(
   for (const trackId of drawnTrackIds) {
     const styleOf = model.connectionStylerIn(trackId, theme)
     for (const drawn of model.drawnConnectionsByTrack.get(trackId) ?? []) {
-      styled.push({ kind: drawn.kind, ...styleOf(drawn) })
+      styled.push({
+        kind: drawn.kind,
+        ...styleOf(drawn),
+        hiddenSegments: drawn.connection.hiddenSegmentsBetween,
+      })
     }
   }
   const drawsVariantCall = drawnTrackIds.some(trackId => {

@@ -2,7 +2,7 @@ import { isAbnormalConnection } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { assembleLocString, bezierConnectorPath } from '@jbrowse/core/util'
-import { discordantDipPx, hiddenSegmentsNote } from '@jbrowse/sv-core'
+import { discordantDipPx, throughHiddenLines } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import { readIdOf, readNameOf, readSpanOf } from '../readChains.ts'
@@ -56,7 +56,7 @@ const AlignmentConnections = observer(function AlignmentConnections(
             return []
           }
           const abnormal = isAbnormalConnection(kind)
-          const { color, label } = styleOf(drawn)
+          const { color, label, relation } = styleOf(drawn)
           // Endpoint 1 is read1's 3' edge; endpoint 2 is the next segment's 5'
           // leading edge for a split junction, or the mate's 3' edge for a
           // pair. A discordant connection within one view dips below the
@@ -86,9 +86,6 @@ const AlignmentConnections = observer(function AlignmentConnections(
                   )
                 : undefined,
           })
-          const hiddenNote = hiddenSegmentsBetween?.length
-            ? hiddenSegmentsNote(hiddenSegmentsBetween)
-            : undefined
           return [
             {
               id: `${readIdOf(e1)}-${readIdOf(e2)}`,
@@ -101,7 +98,12 @@ const AlignmentConnections = observer(function AlignmentConnections(
                 buildPairTooltip(
                   entryLabel(e1),
                   entryLabel(e2),
-                  hiddenNote ? [label, hiddenNote] : [label],
+                  hiddenSegmentsBetween?.length
+                    ? [
+                        label,
+                        ...throughHiddenLines(hiddenSegmentsBetween, relation),
+                      ]
+                    : [label],
                 ),
               highlights: () =>
                 chainHighlightRects({

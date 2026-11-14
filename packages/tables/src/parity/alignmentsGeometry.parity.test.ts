@@ -728,9 +728,8 @@ test('the display and the tables paint each connector the same color, a junction
       ),
     ),
   )
-  const keyed = m
-    .connectionLegendItems(m.themed.colors)
-    .map(item => cssColorToHex(item.color!))
+  const legend = m.connectionLegendItems(m.themed.colors)
+  const keyed = legend.map(item => cssColorToHex(item.color!))
   dispose()
   const c = t.connectors
   const idOfKey = new Map(t.reads.key.map((k, i) => [k, t.reads.id[i]!]))
@@ -745,6 +744,11 @@ test('the display and the tables paint each connector the same color, a junction
   expect(sorted(tabled)).toEqual(sorted(fed))
   expect(new Set(keyed)).toEqual(new Set(t.arcLegend.color))
   expect(keyed).toContain(grey)
+  const throughHiddenRow = legend[keyed.indexOf(grey)]!.label
+  expect(throughHiddenRow).toBe('Split read via ctgA (not in view)')
+  expect(t.arcLegend.label[t.arcLegend.color.indexOf(grey)]).toBe(
+    throughHiddenRow,
+  )
 }, 60_000)
 
 test('the cases decide over loops, curves, bows, straight lines, junctions, and arcs within and across regions', async () => {

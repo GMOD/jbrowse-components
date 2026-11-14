@@ -8,7 +8,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 import { adapterRefNameText, toLocale } from '@jbrowse/core/util'
-import { hiddenSegmentsNote } from '@jbrowse/sv-core'
+import { throughHiddenLines } from '@jbrowse/sv-core'
 
 import { isChainData } from '../../RenderAlignmentDataRPC/types.ts'
 import {
@@ -552,7 +552,10 @@ export function formatArcLineTooltip(
  * through, the one place those are named.
  */
 export function formatConnectorTooltip(
-  hit: Pick<ConnectorHit, 'label' | 'id1' | 'id2' | 'hiddenSegmentsBetween'>,
+  hit: Pick<
+    ConnectorHit,
+    'label' | 'id1' | 'id2' | 'hiddenSegmentsBetween' | 'relation'
+  >,
   infoOf: (id: string) => TooltipFeatureInfo | undefined,
 ): TextTooltipPayload {
   const parts: string[] = []
@@ -567,7 +570,10 @@ export function formatConnectorTooltip(
   return {
     type: 'text',
     lines: hit.hiddenSegmentsBetween?.length
-      ? [connection, hiddenSegmentsNote(hit.hiddenSegmentsBetween)]
+      ? [
+          connection,
+          ...throughHiddenLines(hit.hiddenSegmentsBetween, hit.relation),
+        ]
       : [connection],
   }
 }

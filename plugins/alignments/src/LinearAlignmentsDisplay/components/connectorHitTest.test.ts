@@ -159,12 +159,22 @@ test('the tooltip names the connection and both reads, and the loci a junction s
     label: 'Split alignment',
     id1: 'x1',
     id2: 'x2',
-    hiddenSegmentsBetween: ['chr10:600,001-600,199'],
+    hiddenSegmentsBetween: [
+      {
+        refName: 'chr10',
+        start: 600_000,
+        end: 600_199,
+        loc: 'chr10:600,001-600,199',
+      },
+    ],
   }
-  const [connection, note] = formatConnectorTooltip(hit, info).lines
+  const [connection, ...notes] = formatConnectorTooltip(hit, info).lines
   expect(connection).toContain('Split alignment: read-x1')
   expect(connection).toContain('→ read-x2')
-  expect(note).toContain('chr10:600,001-600,199')
+  expect(notes).toEqual(['passes through chr10:600,001-600,199'])
+  expect(
+    formatConnectorTooltip({ ...hit, relation: 'deletion-type' }, info).lines,
+  ).toHaveLength(3)
   expect(
     formatConnectorTooltip(
       { ...hit, hiddenSegmentsBetween: undefined },

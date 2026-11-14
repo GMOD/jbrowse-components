@@ -107,7 +107,10 @@ import {
   buildSashimiDownKeys,
   hasNamedGroups,
 } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
-import { arcSlotsInWindows } from './LinearAlignmentsDisplay/keyWindows.ts'
+import {
+  arcSlotsInWindows,
+  connectorKeyInWindows,
+} from './LinearAlignmentsDisplay/keyWindows.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
 import {
@@ -152,6 +155,7 @@ import {
 } from './features/arcs/arcSplitCategory.ts'
 import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
+import { connectorCategories } from './features/linkedReads/computeOverlay.ts'
 import {
   connectorArrowPx,
   connectorInWindows,
@@ -1098,7 +1102,7 @@ function readConnectionTables(
   host: AlignmentsTablesHostModel,
   colors: ReturnType<typeof colorReads>,
   slotColor: string[],
-  connectorKey: { slots: ReadonlySet<number>; throughHidden: boolean },
+  connectorKey: ReturnType<typeof connectorKeyInWindows>,
   bands: BelowCoverageBands,
 ) {
   const { arcsResult: result, regionInfos } = host
@@ -1142,16 +1146,19 @@ function readConnectionTables(
   )
   const legend = oneRowPerSplitTwin(
     getArcLegendItems(
-      new Set(
-        [
-          ...arcSlotsInWindows(result, keyWindowsOf(regionInfos)),
-          ...connectorKey.slots,
-        ].map(slot => arcSlotCategory(slot)),
-      ),
+      new Set([
+        ...[...arcSlotsInWindows(result, keyWindowsOf(regionInfos))].map(slot =>
+          arcSlotCategory(slot),
+        ),
+        ...connectorCategories(connectorKey.colorTypes),
+      ]),
       colors.palette,
       colors.keyLabels.categories,
     ).concat(
-      throughHiddenLegendItems(connectorKey.throughHidden, colors.palette),
+      throughHiddenLegendItems(
+        connectorKey.throughHiddenRefNames,
+        colors.palette,
+      ),
     ),
   ).filter(item => item.color !== undefined)
   return {
@@ -1779,21 +1786,11 @@ function laidOutTables(
   const bands = belowCoverageBands(host)
   const connectorsBySection = sectionConnectors(host, bands, readPitch)
   const slotRgb = buildArcColorPalette(colors.palette)
-  const placedConnectors = [...connectorsBySection.values()].flatMap(byRegion =>
-    [...byRegion.values()].flatMap(list => list.map(({ placed }) => placed)),
-  )
   const connections = readConnectionTables(
     host,
     colors,
     slotRgb.map(normalizedRgbToHex),
-    {
-      slots: new Set(
-        placedConnectors.flatMap(placed =>
-          placed.throughHidden ? [] : [placed.slot],
-        ),
-      ),
-      throughHidden: placedConnectors.some(placed => placed.throughHidden),
-    },
+    connectorKeyInWindows(host.connectorsByGroup, host.frames, host.keyWindows),
     bands,
   )
   const keyOf = numberByFirstAppearance<WorkerPileupData['readKeys'][number]>()

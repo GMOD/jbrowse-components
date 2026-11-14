@@ -1007,15 +1007,17 @@ describe('connectorStyler', () => {
     ).toEqual({
       color: rgb255(colors.readCategoryColors.splitSameStrand),
       label: 'Split read (deletion-type)',
+      relation: 'deletion-type',
     })
   })
 
   it('the same split across chromosomes paints inter-chromosomal', () => {
     expect(
       styleOf(makeEntry(split, 0), makeEntry(split, 1), true, true),
-    ).toEqual({
+    ).toStrictEqual({
       color: rgb255(colors.readCategoryColors.interchrom),
       label: 'Inter-chromosomal',
+      relation: undefined,
     })
   })
 

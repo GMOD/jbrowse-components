@@ -15,6 +15,7 @@ import {
 import { OTHER_VALUES_LABEL } from '@jbrowse/core/util/categoricalField'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { isMethylationFillType } from '@jbrowse/modifications-utils'
+import { throughHiddenKeyLabel } from '@jbrowse/sv-core'
 
 import {
   bakedValueOrder,
@@ -27,6 +28,7 @@ import {
 import {
   ARC_SPLIT_LABELS,
   ARC_SPLIT_MERGED_LABELS,
+  ARC_SPLIT_RELATIONS,
   ARC_SPLIT_SWATCH,
   isArcSplitCategory,
 } from '../features/arcs/arcSplitCategory.ts'
@@ -863,22 +865,31 @@ export function getArcLegendItems(
   ]
 }
 
-export const THROUGH_HIDDEN_LABEL = 'Split read (segment not in view)'
+/**
+ * How the two ends of a connection relate, as a noun phrase, where its color
+ * category is a split class; undefined for any other, which says nothing of
+ * the read's own ends.
+ */
+export function arcSplitRelation(category: ArcCategory) {
+  return isArcSplitCategory(category)
+    ? ARC_SPLIT_RELATIONS[category]
+    : undefined
+}
 
 /**
  * The key row for the split-read connectors drawn through a segment the view
- * never fetched, which paint `colorThroughHidden` and key no class row; none
- * where `drawn` is false.
+ * never fetched, which paint `colorThroughHidden` and key no class row,
+ * naming the `refNames` their hidden segments sit on; none where it is empty.
  */
 export function throughHiddenLegendItems(
-  drawn: boolean,
+  refNames: ReadonlySet<string>,
   palette: Pick<ColorPalette, 'colorThroughHidden'>,
 ): LegendItem[] {
-  return drawn
+  return refNames.size > 0
     ? [
         {
           color: rgb255(palette.colorThroughHidden),
-          label: THROUGH_HIDDEN_LABEL,
+          label: throughHiddenKeyLabel(refNames),
         },
       ]
     : []

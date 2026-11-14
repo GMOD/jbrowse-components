@@ -37,6 +37,7 @@ import {
   buildReadChains,
   drawnConnections,
   layoutReadChains,
+  throughHiddenStyle,
 } from './readChains.ts'
 import {
   VIEW_DIVIDER_HEIGHT,
@@ -468,16 +469,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Each drawn connection's color and key label in `theme`, as the
-       * alignments display in the row of its first end paints it, so a curve
-       * between panels agrees with the arcs and connectors inside them.
+       * Each drawn connection's color and key label in `theme`, and how its
+       * ends relate, as the alignments display in the row of its first end
+       * paints it, so a curve between panels agrees with the arcs and
+       * connectors inside them: one through segments not in view greys as
+       * the display's does (`throughHiddenStyle`).
        */
       connectionStylerIn(trackId: string, theme: JBrowsePalette) {
         const stylers = this.readSources(trackId).map(s =>
           s?.connectorStylerIn(theme),
         )
-        return ({ connection: { e1, e2, isSplit } }: DrawnConnection) =>
-          stylers[e1.level]!(e1, e2, isSplit, e1.refName !== e2.refName)
+        return ({
+          connection: { e1, e2, isSplit, hiddenSegmentsBetween },
+        }: DrawnConnection) =>
+          throughHiddenStyle(
+            stylers[e1.level]!(e1, e2, isSplit, e1.refName !== e2.refName),
+            hiddenSegmentsBetween,
+            theme,
+          )
       },
 
       /**

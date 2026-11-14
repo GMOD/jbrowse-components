@@ -102,6 +102,7 @@ export type {
   ClassifiedConnection,
   ConnectionEndpoints,
   ConnectionReadArrays,
+  HiddenSegment,
   ReadConnection,
 } from './readGroupConnections.ts'
 export type {

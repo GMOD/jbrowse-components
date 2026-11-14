@@ -9,6 +9,7 @@ import {
   readNameAt,
 } from '@jbrowse/alignments-core'
 import { canonicalAdapterRefName } from '@jbrowse/core/util'
+import { THROUGH_HIDDEN_LABEL } from '@jbrowse/sv-core'
 
 import { isLevelPairMinimized } from './util.ts'
 
@@ -43,13 +44,38 @@ export interface ReadSource {
   connectorStylerIn: (theme: JBrowsePalette) => ConnectorStyler
 }
 
-/** A connection's color and key label, as the display that holds `e1` paints it. */
+/**
+ * A connection's color and key label, and how its ends relate where its
+ * color is a split class.
+ */
+export interface ConnectionStyle {
+  color: string
+  label: string
+  relation?: string
+}
+
+/**
+ * A connection's style where it joins two segments of a read across
+ * `hiddenSegments` the view never fetched: the `readThroughHidden` neutral
+ * and its label in place of its class's, keeping how its ends relate.
+ */
+export function throughHiddenStyle(
+  style: ConnectionStyle,
+  hiddenSegments: readonly unknown[] | undefined,
+  theme: Pick<JBrowsePalette, 'readThroughHidden'>,
+) {
+  return hiddenSegments?.length
+    ? { ...style, color: theme.readThroughHidden, label: THROUGH_HIDDEN_LABEL }
+    : style
+}
+
+/** A connection's style, as the display that holds `e1` paints it. */
 export type ConnectorStyler = (
   e1: ReadEntry,
   e2: ReadEntry,
   isSplit: boolean,
   crossesChromosomes: boolean,
-) => { color: string; label: string }
+) => ConnectionStyle
 
 export interface ReadEntry {
   level: number

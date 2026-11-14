@@ -4,7 +4,10 @@ import {
   buildArcColorPalette,
 } from '../../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { arcColorCategoryLabel } from '../../shared/legendUtils.ts'
+import {
+  arcColorCategoryLabel,
+  arcSplitRelation,
+} from '../../shared/legendUtils.ts'
 import { classifyPair } from './compute.ts'
 
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -16,6 +19,8 @@ export interface ConnectorStyle {
   color: string
   /** the key row and tooltip line naming the color */
   label: string
+  /** how the two ends relate, where the color is a split class */
+  relation?: string
 }
 
 export type ConnectorStyler = (
@@ -26,9 +31,9 @@ export type ConnectorStyler = (
 ) => ConnectorStyle
 
 /**
- * The color and label a connector between two reads paints with: its arc
- * slot, through the palette and key the display's own connectors and arcs
- * use. The two entries may come from different
+ * The color and label a connector between two reads paints with, and how its
+ * ends relate: its arc slot, through the palette and key the display's own
+ * connectors and arcs use. The two entries may come from different
  * displays, as a breakpoint split view's two panels do.
  */
 export function connectorStyler({
@@ -42,9 +47,11 @@ export function connectorStyler({
   return (e1, e2, isSplit, crossesChromosomes) => {
     const { colorType } = classifyPair(e1, e2, isSplit, crossesChromosomes)
     const slot = linkedReadColorSlot(colorType)
+    const category = arcSlotCategory(slot)
     return {
       color: palette[slot]!,
-      label: arcColorCategoryLabel(arcSlotCategory(slot), labels),
+      label: arcColorCategoryLabel(category, labels),
+      relation: arcSplitRelation(category),
     }
   }
 }

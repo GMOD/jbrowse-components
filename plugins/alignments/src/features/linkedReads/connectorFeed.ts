@@ -11,6 +11,7 @@ import {
   CONNECTOR_MINUS_2,
   CONNECTOR_STRAIGHT,
 } from '@jbrowse/render-core/shaders/connectorMarkConsts'
+import { THROUGH_HIDDEN_LABEL } from '@jbrowse/sv-core'
 
 import {
   arcSlotCategory,
@@ -22,8 +23,8 @@ import {
   LINKED_READ_LINE_WIDTH_PX,
 } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
 import {
-  THROUGH_HIDDEN_LABEL,
   arcColorCategoryLabel,
+  arcSplitRelation,
 } from '../../shared/legendUtils.ts'
 import {
   LOOP_ARROW_MIN_FEATURE_HEIGHT_PX,
@@ -37,15 +38,21 @@ import {
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 import type { LinkedPair } from './compute.ts'
+import type { HiddenSegment } from '@jbrowse/alignments-core'
 import type { ConnectorChannels } from '@jbrowse/render-core/marks'
 
-/** What a hover or click on connector `i` acts on and names. */
+/**
+ * What a hover or click on connector `i` acts on and names: a junction
+ * through segments not in view carries them, and a split class `relation`,
+ * how the two ends relate, which its hover states.
+ */
 export interface ConnectorHit {
   id1: string
   id2: string
   readName: string
   label: string
-  hiddenSegmentsBetween?: string[]
+  hiddenSegmentsBetween?: HiddenSegment[]
+  relation?: string
 }
 
 /** One region's connectors as the connector mark reads them, and their reads. */
@@ -208,9 +215,8 @@ export function connectorInstance(
 
 /**
  * The color a placed connector paints: its class's from the arc palette
- * `slotRgb`, or `colorThroughHidden` where the junction passes through a
- * segment the view never fetched, since that segment is what the class would
- * turn on.
+ * `slotRgb`, or `colorThroughHidden` where it passes through a segment the
+ * view never fetched, since it is then no junction of the read.
  */
 export function connectorRgb(
   { slot, throughHidden }: { slot: number; throughHidden: boolean },
@@ -395,6 +401,7 @@ export function buildConnectorFeeds({
           ? THROUGH_HIDDEN_LABEL
           : arcColorCategoryLabel(arcSlotCategory(placed.slot), labels),
         hiddenSegmentsBetween: pair.hiddenSegmentsBetween,
+        relation: arcSplitRelation(arcSlotCategory(placed.slot)),
       })
     }
   }

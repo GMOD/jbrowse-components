@@ -12,8 +12,14 @@ import {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 
-import { buildReadChains, layoutReadChains, readIdOf } from './readChains.ts'
+import {
+  buildReadChains,
+  layoutReadChains,
+  readIdOf,
+  throughHiddenStyle,
+} from './readChains.ts'
 
 import type { OverlayReadArrays, ReadSource } from './readChains.ts'
 
@@ -425,4 +431,22 @@ test('layoutReadChains asks each entry’s own row for its rect', () => {
     [1000, 0, 1500, 5],
     undefined,
   ])
+})
+
+test('a connection through segments not in view greys, keys the segment row and states how its ends relate', () => {
+  const theme = resolvePalette()
+  const style = {
+    color: '#00f',
+    label: 'Split read (inversion, LL-type)',
+    relation: 'inversion, LL-type',
+  }
+  expect(
+    throughHiddenStyle(style, [{ loc: 'chr10:600,001-600,199' }], theme),
+  ).toEqual({
+    color: theme.readThroughHidden,
+    label: 'Split read (segment not in view)',
+    relation: 'inversion, LL-type',
+  })
+  expect(throughHiddenStyle(style, undefined, theme)).toBe(style)
+  expect(throughHiddenStyle(style, [], theme)).toBe(style)
 })
