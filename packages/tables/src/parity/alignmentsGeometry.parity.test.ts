@@ -745,7 +745,7 @@ test('the display and the tables paint each connector the same color, a junction
   expect(new Set(keyed)).toEqual(new Set(t.arcLegend.color))
   expect(keyed).toContain(grey)
   const throughHiddenRow = legend[keyed.indexOf(grey)]!.label
-  expect(throughHiddenRow).toBe('Split read via ctgA (not in view)')
+  expect(throughHiddenRow).toBe('Split read (segment not in view)')
   expect(t.arcLegend.label[t.arcLegend.color.indexOf(grey)]).toBe(
     throughHiddenRow,
   )

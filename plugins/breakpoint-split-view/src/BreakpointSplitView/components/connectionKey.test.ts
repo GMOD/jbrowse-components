@@ -114,7 +114,7 @@ test('a track too zoomed out to draw adds nothing to the key', () => {
   )
 })
 
-test('the connectors through segments not in view key one row naming the refNames they pass through', () => {
+test('the connectors through segments not in view key one fixed row', () => {
   const grey = theme.readThroughHidden
   const through = (...refNames: string[]) => ({
     kind: 'splitInverted',
@@ -137,6 +137,6 @@ test('the connectors through segments not in view key one row naming the refName
     ]),
   })
   expect(drawnConnectionKey(model, theme, ['reads']).map(r => r.label)).toEqual(
-    ['Read pair', 'Split read via chr10, chr12 (not in view)'],
+    ['Read pair', 'Split read (segment not in view)'],
   )
 })

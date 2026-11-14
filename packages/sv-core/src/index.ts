@@ -3,9 +3,7 @@ export { discordantDipPx } from './discordantDip.ts'
 export {
   THROUGH_HIDDEN_LABEL,
   hiddenSegmentsNote,
-  throughHiddenKeyLabel,
   throughHiddenLines,
-  throughHiddenRefNames,
 } from './hiddenSegments.ts'
 export { default as BreakpointSplitViewChoiceDialog } from './BreakpointSplitViewChoiceDialog.tsx'
 export { launchBreakpointSplitView } from './launchBreakpointSplitView.ts'

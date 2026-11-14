@@ -315,7 +315,7 @@ export function drawnConnectionKeySections(
       styled.push({
         kind: drawn.kind,
         ...styleOf(drawn),
-        hiddenSegments: drawn.connection.hiddenSegmentsBetween,
+        throughHidden: !!drawn.connection.hiddenSegmentsBetween?.length,
       })
     }
   }

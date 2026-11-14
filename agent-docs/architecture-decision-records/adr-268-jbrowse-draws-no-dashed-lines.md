@@ -40,16 +40,17 @@ into noise at a hairline and in a downscaled figure.
   skipped loci, then "ends relate as:" the class as a noun phrase
   (`ARC_SPLIT_RELATIONS`), left out for ends on two chromosomes;
   `throughHiddenLines` in sv-core words it for both views. The key keys one
-  row in place of the class rows, naming the refNames the skipped segments
-  sit on in natural order, "Split read via chr10, chr12 (not in view)",
-  counted past three; a refName also in view counts, since its segment is
-  not. The read gap counts the skipped segments' bases, so a same-strand pair
-  can class as an insertion, a fair word for a templated insertion. Declined
-  in the prototype: the class color faded toward grey (still claims a
-  junction), an X at the curve's midpoint on each connector or one per bundle
-  (a second mark vocabulary for one fact, and noise in a bundle of reads),
-  grey with the X, and 14 px stubs from each end with no curve (loses where
-  the read goes). A junction whose ends share a row still bows up over the
+  fixed row, "Split read (segment not in view)", in place of the class rows.
+  The read gap counts the skipped segments' bases, so a same-strand pair can
+  class as an insertion, a fair word for a templated insertion. Declined in
+  the prototype: the class color faded toward grey (still claims a junction),
+  an X at the curve's midpoint on each connector or one per bundle (a second
+  mark vocabulary for one fact, and noise in a bundle of reads), grey with
+  the X, and 14 px stubs from each end with no curve (loses where the read
+  goes). Declined after shipping: a key row naming the refNames the skipped
+  segments sit on ("Split read via chr10, chr12 (not in view)"), since reads
+  in a repetitive region reach many unrelated chromosomes and the row grows a
+  list the hover already gives locus by locus. A junction whose ends share a row still bows up over the
   row rather than lying on the chain's connecting line.
 - **A line that a dash set apart is set apart by color or weight.** Reference
   and insert-range lines are a darker grey than the faint grid; the elided
@@ -61,8 +62,8 @@ into noise at a hairline and in a downscaled figure.
 
 - A static figure (jbrowse-img, a figure spec) of the alignments display or
   the breakpoint split view shows a connector across an unfetched segment as
-  the grey and a key row naming the refNames it passes through; only the
-  exact loci and the ends' relation need the hover. The docs tell a figure
+  the grey and its key row; where the read went and how its ends relate
+  need the hover. The docs tell a figure
   author to add the missing panel.
 - Figures shot before this change still show the dashes until they are
   re-shot.

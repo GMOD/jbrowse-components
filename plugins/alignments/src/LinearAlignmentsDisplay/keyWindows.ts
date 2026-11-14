@@ -1,5 +1,4 @@
 import { touchesAny, windowsByRegion } from '@jbrowse/display-kit/keyWindows'
-import { throughHiddenRefNames } from '@jbrowse/sv-core'
 
 import { ARC_COLOR_INTERCHROM } from '../features/arcs/arcColors.ts'
 import {
@@ -23,7 +22,7 @@ interface ConnectorPair {
   e1: { displayedRegionIndex: number }
   e2: { displayedRegionIndex: number }
   c: { bp1: number; bp2: number; colorType: number }
-  hiddenSegmentsBetween?: readonly { refName: string }[]
+  hiddenSegmentsBetween?: readonly unknown[]
 }
 
 type ByGroup<D> = ReadonlyMap<string, ReadonlyMap<number, D>>
@@ -242,12 +241,12 @@ export function arcSlotsInWindows(
 
 /**
  * What the connectors drawn in a window key: the class color types of those
- * painted in their class color, and the refNames the hidden segments of those
- * drawn through segments not in view sit on (`throughHiddenRefNames`, in
- * first-seen order), which paint their own color in place of their class's.
- * The straight-line pass's pairs and the overlay's count, each by the rule
- * the drawn connectors and the tables share (`connectorInWindows`), so one
- * crossing a window with both ends off screen still keys.
+ * painted in their class color, and whether any junction through a segment
+ * not in view is drawn (`throughHidden`), which paints its own color in place
+ * of its class's. The straight-line pass's pairs and the overlay's count, each
+ * by the rule the drawn connectors and the tables share
+ * (`connectorInWindows`), so one crossing a window with both ends off screen
+ * still keys.
  */
 export function connectorKeyInWindows(
   connectorsByGroup: ReadonlyMap<
@@ -261,12 +260,12 @@ export function connectorKeyInWindows(
   windows: readonly KeyWindow[],
 ) {
   const colorTypes = new Set<number>()
-  const throughHidden: ConnectorPair['hiddenSegmentsBetween'][] = []
+  let throughHidden = false
   const add = (pair: ConnectorPair) => {
     const ends = connectorEnds(pair, displayedRegions)
     if (ends && connectorInWindows(ends, displayedRegions, windows)) {
       if (pair.hiddenSegmentsBetween?.length) {
-        throughHidden.push(pair.hiddenSegmentsBetween)
+        throughHidden = true
       } else {
         colorTypes.add(pair.c.colorType)
       }
@@ -276,10 +275,7 @@ export function connectorKeyInWindows(
     linePairs.forEach(add)
     overlayPairs.forEach(add)
   }
-  return {
-    colorTypes,
-    throughHiddenRefNames: throughHiddenRefNames(throughHidden),
-  }
+  return { colorTypes, throughHidden }
 }
 
 /** Whether a junction's span touches a window on its reference. */

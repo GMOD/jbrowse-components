@@ -15,7 +15,7 @@ import {
 import { OTHER_VALUES_LABEL } from '@jbrowse/core/util/categoricalField'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { isMethylationFillType } from '@jbrowse/modifications-utils'
-import { throughHiddenKeyLabel } from '@jbrowse/sv-core'
+import { THROUGH_HIDDEN_LABEL } from '@jbrowse/sv-core'
 
 import {
   bakedValueOrder,
@@ -878,18 +878,18 @@ export function arcSplitRelation(category: ArcCategory) {
 
 /**
  * The key row for the split-read connectors drawn through a segment the view
- * never fetched, which paint `colorThroughHidden` and key no class row,
- * naming the `refNames` their hidden segments sit on; none where it is empty.
+ * never fetched, which paint `colorThroughHidden` and key no class row; none
+ * where `drawn` is false.
  */
 export function throughHiddenLegendItems(
-  refNames: ReadonlySet<string>,
+  drawn: boolean,
   palette: Pick<ColorPalette, 'colorThroughHidden'>,
 ): LegendItem[] {
-  return refNames.size > 0
+  return drawn
     ? [
         {
           color: rgb255(palette.colorThroughHidden),
-          label: throughHiddenKeyLabel(refNames),
+          label: THROUGH_HIDDEN_LABEL,
         },
       ]
     : []

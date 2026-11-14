@@ -24,28 +24,25 @@ test('rows follow the connection kinds order, by the first kind of each', () => 
   expect(rows.map(r => r.label)).toEqual(['B', 'A'])
 })
 
-const chr10 = { refName: 'chr10', loc: 'chr10:600,001-600,199' }
-const chr12 = { refName: 'chr12', loc: 'chr12:700,001-700,183' }
-
-test('the connections through segments not in view key one row, last, naming where the reads went', () => {
+test('the connections through segments not in view key one fixed row, last', () => {
   const grey = '#2e2e2e'
   const rows = connectionKeyRows([
     {
       kind: 'splitInverted',
       color: grey,
       label: 'Split read (segment not in view)',
-      hiddenSegments: [chr10, chr12],
+      throughHidden: true,
     },
     { kind: 'readPair', color: 'b', label: 'B' },
     {
       kind: 'splitSameStrand',
       color: grey,
       label: 'Split read (segment not in view)',
-      hiddenSegments: [chr12, { refName: 'chr3', loc: 'chr3:1-10' }],
+      throughHidden: true,
     },
   ])
   expect(rows.map(r => r.label)).toEqual([
     'B',
-    'Split read via chr3, chr10, chr12 (not in view)',
+    'Split read (segment not in view)',
   ])
 })

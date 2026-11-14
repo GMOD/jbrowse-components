@@ -350,13 +350,12 @@ two-breakend case is two bare `--loc` flags with no shell quoting, and a quoted
 A connector joins the two segments of a read that are adjacent on screen, which
 need not be adjacent on the molecule: when the read has a supplementary
 alignment at a locus that is not on screen, the connector steps over it. Both a
-linear view and the breakpoint view draw that connector grey, keyed with the
-chromosomes it passes through, as "Split read via chr10 (not in view)". In the
-browser its hover names the skipped locus and how the two ends relate. Such a
-connector means a panel is missing, so add that panel. COLO829's der(3) is a
-closed cycle over three chromosomes, so the junction below needs a chr10 panel
-between the two it appears to join, and with it no connector in the figure steps
-over a segment.
+linear view and the breakpoint view draw that connector grey, keyed "Split read
+(segment not in view)". In the browser its hover names the skipped locus and how
+the two ends relate. Such a connector means a panel is missing, so add that
+panel. COLO829's der(3) is a closed cycle over three chromosomes, so the
+junction below needs a chr10 panel between the two it appears to join, and with
+it no connector in the figure steps over a segment.
 
 **Render each sample separately, the matched normal beside the tumour.** A
 somatic call is the difference between the tumour and its matched normal, so a

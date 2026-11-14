@@ -128,7 +128,7 @@ test('a connector keys when its span crosses a window, whichever ends are on scr
   expect(slots([pair([1, 100], [0, 900], 5)])).toEqual(new Set([5]))
 })
 
-test('a junction through a segment not in view keys its own row, naming the refNames it passes through in first-seen order', () => {
+test('a junction through a segment not in view keys its own row and not its class', () => {
   const regions = [{ refName: 'chr1' }]
   const pair = (bp1: number, bp2: number, ...hidden: string[]) => ({
     e1: { displayedRegionIndex: 0 },
@@ -147,20 +147,17 @@ test('a junction through a segment not in view keys its own row, naming the refN
 
   expect(key(pair(1100, 1900, 'chr2'))).toEqual({
     colorTypes: new Set(),
-    throughHiddenRefNames: new Set(['chr2']),
+    throughHidden: true,
   })
   expect(key(pair(1100, 1900))).toEqual({
     colorTypes: new Set([4]),
-    throughHiddenRefNames: new Set(),
+    throughHidden: false,
   })
-  expect(key(pair(1100, 1900, 'chr2'), pair(1200, 1800)).colorTypes).toEqual(
-    new Set([4]),
-  )
-  expect([
-    ...key(pair(1100, 1900, 'chr5', 'chr2'), pair(1200, 1800, 'chr2', 'chr1'))
-      .throughHiddenRefNames,
-  ]).toEqual(['chr5', 'chr2', 'chr1'])
-  expect(key(pair(2100, 5000, 'chr2')).throughHiddenRefNames.size).toBe(0)
+  expect(key(pair(1100, 1900, 'chr2'), pair(1200, 1800))).toEqual({
+    colorTypes: new Set([4]),
+    throughHidden: true,
+  })
+  expect(key(pair(2100, 5000, 'chr2')).throughHidden).toBe(false)
 })
 
 test('a key states the insert-size band only where every region in view shares one', () => {

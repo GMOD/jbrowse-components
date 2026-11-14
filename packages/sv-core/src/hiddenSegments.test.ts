@@ -1,9 +1,7 @@
 import {
   THROUGH_HIDDEN_LABEL,
   hiddenSegmentsNote,
-  throughHiddenKeyLabel,
   throughHiddenLines,
-  throughHiddenRefNames,
 } from './hiddenSegments.ts'
 
 const seg = (refName: string, loc: string) => ({ refName, loc })
@@ -32,28 +30,4 @@ test('the hover states the loci, then how the two ends relate where that says so
     'passes through chr10:600,001-600,199, chr12:700,001-700,183',
   ])
   expect(THROUGH_HIDDEN_LABEL).toBe('Split read (segment not in view)')
-})
-
-test('the key names each refName the reads went through once, in natural order', () => {
-  const refNames = throughHiddenRefNames([
-    [seg('chr10', 'a'), seg('chr12', 'b')],
-    undefined,
-    [seg('chr3', 'c'), seg('chr10', 'd')],
-  ])
-  expect([...refNames]).toEqual(['chr10', 'chr12', 'chr3'])
-  expect(throughHiddenKeyLabel(refNames)).toBe(
-    'Split read via chr3, chr10, chr12 (not in view)',
-  )
-  expect(throughHiddenKeyLabel(new Set(['chr12', 'chr10']))).toBe(
-    'Split read via chr10, chr12 (not in view)',
-  )
-  expect(throughHiddenKeyLabel(new Set(['chr10']))).toBe(
-    'Split read via chr10 (not in view)',
-  )
-})
-
-test('past three refNames the key counts them', () => {
-  expect(throughHiddenKeyLabel(new Set(['chr1', 'chr2', 'chr5', 'chrX']))).toBe(
-    'Split read via 4 reference sequences (not in view)',
-  )
 })

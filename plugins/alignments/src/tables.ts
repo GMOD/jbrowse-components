@@ -1155,10 +1155,7 @@ function readConnectionTables(
       colors.palette,
       colors.keyLabels.categories,
     ).concat(
-      throughHiddenLegendItems(
-        connectorKey.throughHiddenRefNames,
-        colors.palette,
-      ),
+      throughHiddenLegendItems(connectorKey.throughHidden, colors.palette),
     ),
   ).filter(item => item.color !== undefined)
   return {

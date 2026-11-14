@@ -1,10 +1,6 @@
 import { CONNECTION_LABELS } from '@jbrowse/alignments-core'
 import { alpha } from '@jbrowse/core/ui/palette'
-import {
-  THROUGH_HIDDEN_LABEL,
-  throughHiddenKeyLabel,
-  throughHiddenRefNames,
-} from '@jbrowse/sv-core'
+import { THROUGH_HIDDEN_LABEL } from '@jbrowse/sv-core'
 
 import type { ConnectionKind } from '@jbrowse/alignments-core'
 
@@ -17,20 +13,19 @@ export interface StyledConnection {
   kind: ConnectionKind
   color: string
   label: string
-  hiddenSegments?: readonly { refName: string }[]
+  throughHidden?: boolean
 }
 
 // One row per color, since kinds that share a swatch read as one meaning,
 // their labels joined; rows in CONNECTION_LABELS order of their first kind.
 // The connections through segments not in view key one row of their own,
-// last, naming the refNames they pass through.
+// last.
 export function connectionKeyRows(styled: Iterable<StyledConnection>) {
   const rows = new Map<string, { kind: ConnectionKind; labels: string[] }>()
-  const throughHidden: StyledConnection[] = []
-  for (const connection of styled) {
-    const { kind, color, label, hiddenSegments } = connection
-    if (hiddenSegments?.length) {
-      throughHidden.push(connection)
+  let throughHiddenColor: string | undefined
+  for (const { kind, color, label, throughHidden } of styled) {
+    if (throughHidden) {
+      throughHiddenColor ??= color
     } else {
       const row = rows.get(color)
       if (!row) {
@@ -45,7 +40,6 @@ export function connectionKeyRows(styled: Iterable<StyledConnection>) {
       }
     }
   }
-  const first = throughHidden[0]
   return [
     ...[...rows]
       .sort(
@@ -57,16 +51,14 @@ export function connectionKeyRows(styled: Iterable<StyledConnection>) {
         color: alpha(color, CONNECTION_ALPHA),
         label: labels.join(' / '),
       })),
-    ...(first
-      ? [
+    ...(throughHiddenColor === undefined
+      ? []
+      : [
           {
             key: THROUGH_HIDDEN_LABEL,
-            color: alpha(first.color, CONNECTION_ALPHA),
-            label: throughHiddenKeyLabel(
-              throughHiddenRefNames(throughHidden.map(c => c.hiddenSegments)),
-            ),
+            color: alpha(throughHiddenColor, CONNECTION_ALPHA),
+            label: THROUGH_HIDDEN_LABEL,
           },
-        ]
-      : []),
+        ]),
   ]
 }
