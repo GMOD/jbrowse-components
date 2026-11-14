@@ -127,17 +127,21 @@ matters.
 
 ---
 
-## A hover names loci nobody can act on
+## Inserting the hidden windows, rather than replacing the view
 
-The hover prints `hiddenSegmentsBetween`, and that is the only place those loci
-appear. Making them walkable is smaller than it looks and blocked on a UI call,
-not plumbing:
+The loci are already walkable: a connector's right-click opens the nearer
+read's menu (ADR-225), whose "View split alignments → Split current view to
+show split alignments" replaces the view with one merged window per segment,
+the hidden ones included, after which every connector is a real junction in
+its class color. The grey connector's hover names the loci and its key row
+names their refNames (ADR-268). Declined on 2026-11-13 as a menu item of its
+own: what remains is inserting the hidden windows beside the reader's current
+ones instead of replacing them, which is one more item for a small gain. If
+that gain is wanted later:
 
-- **The loci are already structured before they are strings.** `hiddenSegments`
-  in `alignments-core/src/readGroupConnections.ts` gets `refName`/`start`/`end` back from
-  `featurizeSAEntries` and keeps only `formatLocationRange` of them. Carrying
-  `{refName, start, end}` beside `loc` through `ReadConnection` → `LinkedPair`
-  → `PileupArc` is a field on each.
+- **The loci are structured on the hit.** `hiddenSegmentsBetween` carries
+  `HiddenSegment` (`refName`/`start`/`end`/`loc`) from `hiddenSegments` in
+  `alignments-core/src/readGroupConnections.ts` through to the connector hit.
 - **Adding them is one existing helper away**, `showRegionsWithUndo` from the
   LGV plugin, which `viewSplitAlignmentRegionsInCurrentView` already wraps —
   but that helper REPLACES the view's regions with one window per segment. A
