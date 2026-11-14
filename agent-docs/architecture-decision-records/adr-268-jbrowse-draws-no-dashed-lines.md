@@ -33,8 +33,9 @@ into noise at a hairline and in a downscaled figure.
   loci.** In the alignments display and its tables it paints the
   `readThroughHidden` palette neutral (`colorThroughHidden`) in place of its
   class color, solid and 1.5 px like every connector, and keys "Split read
-  (segment not in view)" in place of its class row: the unseen segment is what
-  the class turns on, so no class color is the honest answer. Declined in the
+  (segment not in view)" in place of its class row, and its hover leads with
+  that row's label in place of the class's: the unseen segment is what the
+  class turns on, so no class color or name is the honest answer. Declined in the
   prototype: the class color faded toward grey (still claims a class), an X at
   the curve's midpoint on each connector or one per bundle (a second mark
   vocabulary for one fact, and noise in a bundle of reads), grey with the X,

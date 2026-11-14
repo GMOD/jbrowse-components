@@ -21,7 +21,10 @@ import {
   LINKED_READ_LINE_ALPHA,
   LINKED_READ_LINE_WIDTH_PX,
 } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
-import { arcColorCategoryLabel } from '../../shared/legendUtils.ts'
+import {
+  THROUGH_HIDDEN_LABEL,
+  arcColorCategoryLabel,
+} from '../../shared/legendUtils.ts'
 import {
   LOOP_ARROW_MIN_FEATURE_HEIGHT_PX,
   LOOP_MAX_ARROW_PX,
@@ -388,7 +391,9 @@ export function buildConnectorFeeds({
         id1: readIdAt(pair.e1.data, pair.e1.readIdx)!,
         id2: readIdAt(pair.e2.data, pair.e2.readIdx)!,
         readName: readNameAt(pair.e1.data, pair.e1.readIdx),
-        label: arcColorCategoryLabel(arcSlotCategory(placed.slot), labels),
+        label: placed.throughHidden
+          ? THROUGH_HIDDEN_LABEL
+          : arcColorCategoryLabel(arcSlotCategory(placed.slot), labels),
         hiddenSegmentsBetween: pair.hiddenSegmentsBetween,
       })
     }

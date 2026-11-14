@@ -946,13 +946,14 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
       pairs: enumerateConnectorPairs(sections, identity),
     })
     expect(arcs).toHaveLength(1)
-    // The connector is real, only its directness is not, so nothing about
-    // the geometry or the label moves, and the hover is what says so.
+    // The connector is real, only its directness is not, so the geometry
+    // holds; the class its ends would take is not one the read states, so the
+    // hover leads with the key's row, as the color does, and names the loci.
     expect(arcs[0]!.d).toMatch(/^M 25359568 5 C .* 25359111 17$/)
-    expect(arcs[0]!.label).toBe('Split read (inversion, LL-type)')
+    expect(arcs[0]!.label).toBe('Split read (segment not in view)')
     expect(arcs[0]!.dashed).toBe(false)
     expect(formatConnectorTooltip(arcs[0]!, () => undefined).lines).toEqual([
-      'Split read (inversion, LL-type)',
+      'Split read (segment not in view)',
       'hidden segments not in view: chr10:600,001-600,199, chr12:700,001-700,183',
     ])
   })
