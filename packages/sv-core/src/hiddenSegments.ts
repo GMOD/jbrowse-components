@@ -45,11 +45,17 @@ export function throughHiddenRefNames(
   return refNames
 }
 
-/** The key row naming where the reads went, counted past three refNames. */
+/**
+ * The key row naming where the reads went, counted past three refNames. The
+ * names sort naturally (chr3 before chr10): reads on either strand visit them
+ * in opposite orders, so no read order speaks for the row.
+ */
 export function throughHiddenKeyLabel(refNames: ReadonlySet<string>) {
   const via =
     refNames.size > MAX_KEY_REF_NAMES
       ? `${refNames.size} reference sequences`
-      : [...refNames].join(', ')
+      : [...refNames]
+          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+          .join(', ')
   return `Split read via ${via} (not in view)`
 }

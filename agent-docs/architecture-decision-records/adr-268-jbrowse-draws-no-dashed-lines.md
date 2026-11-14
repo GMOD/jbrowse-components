@@ -41,7 +41,7 @@ into noise at a hairline and in a downscaled figure.
   (`ARC_SPLIT_RELATIONS`), left out for ends on two chromosomes;
   `throughHiddenLines` in sv-core words it for both views. The key keys one
   row in place of the class rows, naming the refNames the skipped segments
-  sit on in first-seen order, "Split read via chr10, chr12 (not in view)",
+  sit on in natural order, "Split read via chr10, chr12 (not in view)",
   counted past three; a refName also in view counts, since its segment is
   not. The read gap counts the skipped segments' bases, so a same-strand pair
   can class as an insertion, a fair word for a templated insertion. Declined

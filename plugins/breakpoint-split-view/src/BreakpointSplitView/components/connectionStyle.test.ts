@@ -46,6 +46,6 @@ test('the connections through segments not in view key one row, last, naming whe
   ])
   expect(rows.map(r => r.label)).toEqual([
     'B',
-    'Split read via chr10, chr12, chr3 (not in view)',
+    'Split read via chr3, chr10, chr12 (not in view)',
   ])
 })

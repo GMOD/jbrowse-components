@@ -34,7 +34,7 @@ test('the hover states the loci, then how the two ends relate where that says so
   expect(THROUGH_HIDDEN_LABEL).toBe('Split read (segment not in view)')
 })
 
-test('the key names each refName the reads went through once, in first-seen order', () => {
+test('the key names each refName the reads went through once, in natural order', () => {
   const refNames = throughHiddenRefNames([
     [seg('chr10', 'a'), seg('chr12', 'b')],
     undefined,
@@ -42,7 +42,10 @@ test('the key names each refName the reads went through once, in first-seen orde
   ])
   expect([...refNames]).toEqual(['chr10', 'chr12', 'chr3'])
   expect(throughHiddenKeyLabel(refNames)).toBe(
-    'Split read via chr10, chr12, chr3 (not in view)',
+    'Split read via chr3, chr10, chr12 (not in view)',
+  )
+  expect(throughHiddenKeyLabel(new Set(['chr12', 'chr10']))).toBe(
+    'Split read via chr10, chr12 (not in view)',
   )
   expect(throughHiddenKeyLabel(new Set(['chr10']))).toBe(
     'Split read via chr10 (not in view)',
