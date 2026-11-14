@@ -119,7 +119,7 @@ test('the connectors through regions not shown key one fixed row', () => {
   const through = (...refNames: string[]) => ({
     kind: 'splitInverted',
     color: grey,
-    label: 'Split read (via a region not shown)',
+    label: 'Split read (skips parts aligned outside this view)',
     connection: {
       hiddenSegmentsBetween: refNames.map(refName => ({ refName })),
     },
@@ -137,6 +137,6 @@ test('the connectors through regions not shown key one fixed row', () => {
     ]),
   })
   expect(drawnConnectionKey(model, theme, ['reads']).map(r => r.label)).toEqual(
-    ['Read pair', 'Split read (via a region not shown)'],
+    ['Read pair', 'Split read (skips parts aligned outside this view)'],
   )
 })

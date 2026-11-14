@@ -36,11 +36,11 @@ into noise at a hairline and in a downscaled figure.
   junction of the read, so no junction class color is the honest answer; the
   relation of its two ends is still measured (`splitJunctionSlot` reads only
   their strands, positions and the read gap), so the hover states it. The
-  hover reads "Split read (via a region not shown)", then "passes through" the
-  skipped loci, then "ends relate as:" the class as a noun phrase
+  hover reads "Split read (skips parts aligned outside this view)", then "skipped parts:" and
+  their loci, then "ends relate as:" the class as a noun phrase
   (`ARC_SPLIT_RELATIONS`), left out for ends on two chromosomes;
   `throughHiddenLines` in sv-core words it for both views. The key keys one
-  fixed row, "Split read (via a region not shown)", in place of the class rows.
+  fixed row, "Split read (skips parts aligned outside this view)", in place of the class rows.
   The read gap counts the skipped segments' bases, so a same-strand pair can
   class as an insertion, a fair word for a templated insertion. Declined in
   the prototype: the class color faded toward grey (still claims a junction),

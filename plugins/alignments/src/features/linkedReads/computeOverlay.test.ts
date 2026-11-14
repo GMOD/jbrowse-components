@@ -960,11 +960,13 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
     // holds; the class its ends would take is not one the read states, so the
     // hover leads with the key's row, as the color does, and names the loci.
     expect(arcs[0]!.d).toMatch(/^M 25359568 5 C .* 25359111 17$/)
-    expect(arcs[0]!.label).toBe('Split read (via a region not shown)')
+    expect(arcs[0]!.label).toBe(
+      'Split read (skips parts aligned outside this view)',
+    )
     expect(arcs[0]!.dashed).toBe(false)
     expect(formatConnectorTooltip(arcs[0]!, () => undefined).lines).toEqual([
-      'Split read (via a region not shown)',
-      'passes through chr10:600,001-600,199, chr12:700,001-700,183',
+      'Split read (skips parts aligned outside this view)',
+      'skipped parts: chr10:600,001-600,199, chr12:700,001-700,183',
       'ends relate as: inversion, LL-type',
     ])
   })
@@ -1067,8 +1069,8 @@ describe('enumerateConnectorPairs — a junction across segments nothing fetched
       ),
     })
     expect(formatConnectorTooltip(arc!, () => undefined).lines).toEqual([
-      'Split read (via a region not shown)',
-      'passes through chr10:600,001-600,199',
+      'Split read (skips parts aligned outside this view)',
+      'skipped parts: chr10:600,001-600,199',
     ])
   })
 
@@ -1415,8 +1417,8 @@ describe('a same-strand junction across segments nothing fetched', () => {
     expect(arcs[0]!.d).toBe('M 1500 5 L 3000 17')
     expect(arcs[0]!.dashed).toBe(false)
     expect(formatConnectorTooltip(arcs[0]!, () => undefined).lines).toEqual([
-      'Split read (via a region not shown)',
-      'passes through chr10:600,001-600,199',
+      'Split read (skips parts aligned outside this view)',
+      'skipped parts: chr10:600,001-600,199',
       'ends relate as: deletion-type',
     ])
   })

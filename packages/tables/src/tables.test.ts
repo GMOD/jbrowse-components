@@ -1222,7 +1222,7 @@ test('a junction through a region not shown paints the through-hidden neutral an
   expect(c.color.filter(color => color !== grey).length).toBeGreaterThan(0)
   expect(new Set(t.arcLegend.color)).toEqual(new Set(c.color))
   expect(t.arcLegend.label[t.arcLegend.color.indexOf(grey)]).toBe(
-    'Split read (via a region not shown)',
+    'Split read (skips parts aligned outside this view)',
   )
 })
 

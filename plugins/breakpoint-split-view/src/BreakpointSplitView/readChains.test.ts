@@ -444,7 +444,7 @@ test('a connection through regions not shown greys, keys its own row and states 
     throughHiddenStyle(style, [{ loc: 'chr10:600,001-600,199' }], theme),
   ).toEqual({
     color: theme.readThroughHidden,
-    label: 'Split read (via a region not shown)',
+    label: 'Split read (skips parts aligned outside this view)',
     relation: 'inversion, LL-type',
   })
   expect(throughHiddenStyle(style, undefined, theme)).toBe(style)

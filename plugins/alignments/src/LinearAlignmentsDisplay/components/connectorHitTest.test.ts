@@ -171,7 +171,7 @@ test('the tooltip names the connection and both reads, and the loci a junction s
   const [connection, ...notes] = formatConnectorTooltip(hit, info).lines
   expect(connection).toContain('Split alignment: read-x1')
   expect(connection).toContain('→ read-x2')
-  expect(notes).toEqual(['passes through chr10:600,001-600,199'])
+  expect(notes).toEqual(['skipped parts: chr10:600,001-600,199'])
   expect(
     formatConnectorTooltip({ ...hit, relation: 'deletion-type' }, info).lines,
   ).toHaveLength(3)

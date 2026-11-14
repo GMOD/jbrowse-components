@@ -30,19 +30,19 @@ test('the connections through regions not shown key one fixed row, last', () => 
     {
       kind: 'splitInverted',
       color: grey,
-      label: 'Split read (via a region not shown)',
+      label: 'Split read (skips parts aligned outside this view)',
       throughHidden: true,
     },
     { kind: 'readPair', color: 'b', label: 'B' },
     {
       kind: 'splitSameStrand',
       color: grey,
-      label: 'Split read (via a region not shown)',
+      label: 'Split read (skips parts aligned outside this view)',
       throughHidden: true,
     },
   ])
   expect(rows.map(r => r.label)).toEqual([
     'B',
-    'Split read (via a region not shown)',
+    'Split read (skips parts aligned outside this view)',
   ])
 })

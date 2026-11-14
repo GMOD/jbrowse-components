@@ -161,7 +161,7 @@ a quiet region.
   read, `arrow` for a loop's arrowhead, and `key`/`mateKey` naming the two
   reads in `reads`. A junction through regions not shown is drawn solid like
   any other, in the `readThroughHidden` neutral in place of its class color,
-  and keys its own `arcLegend` row ("Split read (via a region not shown)") in
+  and keys its own `arcLegend` row ("Split read (skips parts aligned outside this view)") in
   place of its class row, so its `color` marks it and no column does. The
   tables key connectors through the display's own `connectorKeyInWindows`, so
   the rows match the display's.

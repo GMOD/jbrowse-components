@@ -4,14 +4,15 @@
 // alignments display and the breakpoint split view, so the reader who met this
 // finding in one does not have to learn a second phrasing in the other.
 
-export const THROUGH_HIDDEN_LABEL = 'Split read (via a region not shown)'
+export const THROUGH_HIDDEN_LABEL =
+  'Split read (skips parts aligned outside this view)'
 
 export function hiddenSegmentsNote(segments: readonly { loc: string }[]) {
-  return `passes through ${segments.map(s => s.loc).join(', ')}`
+  return `skipped parts: ${segments.map(s => s.loc).join(', ')}`
 }
 
 /**
- * The hover lines under such a connector's first: the loci it passes through,
+ * The hover lines under such a connector's first: the loci of the parts it skips,
  * then how its two ends relate (`relation`, a split class as a noun phrase),
  * left out where that says nothing, as for an inter-chromosomal pair.
  */
