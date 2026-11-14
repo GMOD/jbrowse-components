@@ -573,6 +573,18 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_ecoli/
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.maf.bed.gz
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_depth.bw
 
+## Pangenome (fly)
+
+Open the Drosophila melanogaster pangenome, read six duplication alleles of a nicotine resistance gene in one bubble, find the transposons behind classic visible mutants, then load the graph in your own JBrowse
+
+Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_fly/
+
+- https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit
+- https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.fa.gz
+- https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.bubbles.bed.gz
+- https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.fold10000.graph.bed.gz
+- https://jbrowse.org/demos/fly_pangenome/fly-dm6-minigraph.graph.bed.gz
+
 ## Pangenome (HPRC) part 1: the graph's alleles and the haplotypes that have them
 
 Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of the linear view, trace an allele to the assembly it came from, list every haplotype with it from the release's phased VCF, and read the same alleles as aligned bases in the release's multiple alignment

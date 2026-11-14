@@ -5,7 +5,7 @@ description:
   one of the strains, then rank the graph's bubbles and open the densest
 guide_category: Tutorials
 tutorial_category: Pangenomes
-tutorial_subcategory: Mouse and cattle
+tutorial_subcategory: Other species
 ---
 
 The mouse strain pangenome aligns eighteen assemblies of seventeen inbred and
@@ -232,6 +232,7 @@ build.
 ## See also
 
 - [](/docs/tutorials/pangenome_cattle)
+- [](/docs/tutorials/pangenome_fly)
 - [](/docs/tutorials/pangenome_prepare_graph)
 
 ## Citations

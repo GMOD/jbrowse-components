@@ -114,10 +114,11 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/tutorials/pangenome_hprc_repeats)
 
-#### Mouse and cattle
+#### Other species
 
 - [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cattle)
+- [](/docs/tutorials/pangenome_fly)
 
 #### Building a graph
 

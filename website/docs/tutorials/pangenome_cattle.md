@@ -5,7 +5,7 @@ description:
   each assembly's alleles, and find published breed and species variants in it
 guide_category: Tutorials
 tutorial_category: Pangenomes
-tutorial_subcategory: Mouse and cattle
+tutorial_subcategory: Other species
 ---
 
 The bovine super-pangenome is one graph of a set of assemblies on the ARS-UCD1.2

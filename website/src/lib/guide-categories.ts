@@ -94,7 +94,7 @@ export const TUTORIAL_SUBCATEGORIES: Record<string, string[]> = {
     'Whole-genome alignments',
     'Ortholog tables',
   ],
-  Pangenomes: ['HPRC release 2', 'Mouse and cattle', 'Building a graph'],
+  Pangenomes: ['HPRC release 2', 'Other species', 'Building a graph'],
   'Transcriptomics & proteins': ['Variants on protein structures'],
   'Population genomics': ['Dog10K'],
 }
@@ -129,6 +129,7 @@ export const TUTORIAL_ORDER = [
   'pangenome_hprc_repeats',
   'pangenome_mouse',
   'pangenome_cattle',
+  'pangenome_fly',
   'pangenome_prepare_graph',
   'pangenome_ecoli',
   'pangenome_cactus',
