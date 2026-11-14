@@ -303,8 +303,10 @@ draws a teal arc, the color of the pairs that span it, and a teal loop under its
 row where the read maps back over itself. One split around an insertion the
 aligner left out of the CIGAR draws a pink arc, the color of the pairs too close
 across it, and no sashimi arc. A connector joining two segments across a third
-the view has not loaded draws grey, keyed **Split read (segment not in view)**,
-since that segment decides the class; its hover names the segment's locus.
+the view has not loaded is not a junction of the read, so it draws grey, in the
+breakpoint split view too, keyed with the chromosomes it passes through: **Split
+read via chr10 (not in view)**. Its hover names the segment's locus and how the
+two drawn ends relate, as in "ends relate as: inversion, LL-type".
 
 **Group by → Split reads** splits the pileup into two sections: reads with a
 supplementary alignment, and the rest. Together the two sections give the

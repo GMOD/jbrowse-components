@@ -161,8 +161,11 @@ a quiet region.
   read, `arrow` for a loop's arrowhead, and `key`/`mateKey` naming the two
   reads in `reads`. A junction over segments not in view is drawn solid like
   any other, in the `readThroughHidden` neutral in place of its class color,
-  and keys its own `arcLegend` row ("Split read (segment not in view)") in
-  place of its class row, so its `color` marks it and no column does.
+  and keys one `arcLegend` row in place of its class row, naming the refNames
+  its skipped segments sit on ("Split read via chr10, chr12 (not in view)"),
+  so its `color` marks it and no column does. The tables key connectors
+  through the display's own `connectorKeyInWindows`, so the row and its
+  refName order match the display's.
   `alignmentConnectorCurves` places the curves at a host's `pxPerBp` through
   the mark's own placement (render-core's `connectorPlacement`), returning
   each cubic's two control points in bp and rows and the arrowhead's arms, so

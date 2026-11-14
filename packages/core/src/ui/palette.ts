@@ -702,12 +702,13 @@ const readOverlap = '#555555'
  */
 const readMateOverlap = '#b4b4b4'
 /**
- * #color alignments-pair-orientation | Split read (segment not in view) | A connector joining two segments of a split read across a segment of it the view never fetched, so the class its two ends would take is not one the read states
+ * #color alignments-pair-orientation | Split read (segment not in view) | A connector joining two segments of a split read across a segment of it the view never fetched, so it is no junction of the read; its hover states how its two ends relate
  *
- * A neutral for the reason `readOverlap` is one: the unseen segment is what
- * makes the class unreliable, so no class color is the honest answer. It sits
- * past `readOverlap` on the same side, so the connector stays apart from the
- * overlap box it often starts at.
+ * A neutral for the reason `readOverlap` is one: the connector is not a
+ * junction of the read, so no junction class color is the honest answer,
+ * while the relation of its two ends is still measured and its hover states
+ * it. It sits past `readOverlap` on the same side, so the connector stays
+ * apart from the overlap box it often starts at.
  */
 const readThroughHidden = '#2e2e2e'
 /** #color theme-colors | Base modification (fwd) | Base modifications on the forward strand */

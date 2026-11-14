@@ -128,9 +128,10 @@ There are two right answers and the choice is per consumer:
 
 - **A connector draws the junction and marks it.** `splitJunctions`
   (`readGroupConnections.ts`) emits the junction, counts the read's own segments
-  lying strictly between the two on-screen ones, and passes the loci up — which
-  the alignments connector mark and the breakpoint split view both draw solid
-  and name in their hover. A reader following one molecule loses the thread if the
+  lying strictly between the two on-screen ones, and passes them up as
+  `{ refName, start, end, loc }` — which the alignments connector mark and the
+  breakpoint split view both draw solid and grey, name in their hover, and key
+  by refName. A reader following one molecule loses the thread if the
   connector disappears.
 - **An aggregate emits nothing.** `unpairedChainArcs` withholds the junction,
   because in a band whose marks are being counted a wrong junction becomes
