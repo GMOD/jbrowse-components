@@ -522,7 +522,7 @@ describe('two loci of volvox pairs either side of an inversion', () => {
 describe('split reads over an inversion, its middle segment out of view', () => {
   parityCases(geometryParity(SPLIT_INVERSION_GAP), [
     {
-      name: 'unit chain: the junction skipping the hidden segment dips',
+      name: 'unit chain: the junction skipping the hidden segment runs straight',
       config: { ...TALL, unit: 'chain' },
     },
   ])
@@ -657,7 +657,7 @@ test('the legend keys the color of every connector the display draws into a wind
   expect(keyed).toEqual(drawn)
 }, 60_000)
 
-test('a junction skipping a segment out of view is fed as a dip under its row, and the tables name the same pairs', async () => {
+test('a junction skipping a segment not shown is fed as a straight line along its row, and the tables name the same pairs', async () => {
   const display = { ...TALL, unit: 'chain' }
   const { display: m, dispose } =
     await standUpDisplay<LinearAlignmentsDisplayModel>({
@@ -679,9 +679,8 @@ test('a junction skipping a segment out of view is fed as a dip under its row, a
     [...byRegion.values()].flatMap(({ channels: f, hits }) =>
       hits.flatMap((hit, i) =>
         !!hit.hiddenSegmentsBetween?.length &&
-        (f.bits[i]! & CONNECTOR_STRAIGHT) === 0 &&
-        f.row[i] === f.row2[i] &&
-        f.bend[i]! > 0
+        (f.bits[i]! & CONNECTOR_STRAIGHT) !== 0 &&
+        f.row[i] === f.row2[i]
           ? [`${hit.id1}>${hit.id2}`]
           : [],
       ),
@@ -691,7 +690,7 @@ test('a junction skipping a segment out of view is fed as a dip under its row, a
   const c = t.connectors
   const idOfKey = new Map(t.reads.key.map((k, i) => [k, t.reads.id[i]!]))
   const tabled = c.kind.flatMap((kind, i) =>
-    c.color[i] === grey && kind === 'curve' && c.dip[i]! > 0
+    c.color[i] === grey && kind === 'straight'
       ? [`${idOfKey.get(c.key[i]!)}>${idOfKey.get(c.mateKey[i]!)}`]
       : [],
   )
@@ -700,7 +699,7 @@ test('a junction skipping a segment out of view is fed as a dip under its row, a
   expect(sorted(tabled)).toEqual(sorted(fed))
 }, 60_000)
 
-test('the display and the tables paint each connector the same color, a junction through a segment out of view the through-hidden neutral, and key the same colors', async () => {
+test('the display and the tables paint each connector the same color, a junction through a segment not shown the through-hidden neutral, and key the same colors', async () => {
   const display = { ...TALL, unit: 'chain' }
   const { display: m, dispose } =
     await standUpDisplay<LinearAlignmentsDisplayModel>({
@@ -722,7 +721,8 @@ test('the display and the tables paint each connector the same color, a junction
   const fed = [...m.themed.connectorFeedsByGroup.values()].flatMap(byRegion =>
     [...byRegion].flatMap(([region, { channels: f, hits }]) =>
       hits.flatMap((hit, i) =>
-        (f.bits[i]! & CONNECTOR_STRAIGHT) === 0 &&
+        ((f.bits[i]! & CONNECTOR_STRAIGHT) === 0 ||
+          !!hit.hiddenSegmentsBetween?.length) &&
         connectorInWindows(
           { region, x: f.x[i]!, x2Region: f.x2Region[i]!, x2: f.x2[i]! },
           m.view.displayedRegions,
@@ -739,7 +739,7 @@ test('the display and the tables paint each connector the same color, a junction
   const c = t.connectors
   const idOfKey = new Map(t.reads.key.map((k, i) => [k, t.reads.id[i]!]))
   const tabled = c.kind.flatMap((kind, i) =>
-    kind === 'straight'
+    kind === 'straight' && c.color[i] !== grey
       ? []
       : [
           `${idOfKey.get(c.key[i]!)}>${idOfKey.get(c.mateKey[i]!)} ${c.color[i]}`,

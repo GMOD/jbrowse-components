@@ -233,9 +233,9 @@ function crossesOwnAlignment(
 // as its color says, so in chain layout it runs along the molecule's own
 // row. On a row it shares with alignments of the read lying between its
 // two ends, as on a fold-back, that line would paint over them, so it dips
-// like a discordant one. A hidden-segment line whose ends share a row would
-// lie on the chain's connecting line, so it dips too, where a bow up over a
-// top row would leave the band.
+// like a discordant one. A junction through segments not shown takes the shape
+// of any other with the same ends, as the straight-line pass never draws it
+// (`isGpuLinkedReadLine`), so only its color sets it apart.
 // A split junction is judged by the way its two segments point on screen,
 // so an inverted fusion viewed with one partner's region flipped reads
 // straight across the seam.
@@ -246,8 +246,7 @@ export function connectorShape(
   displayedRegions: Opts['displayedRegions'],
   pileupHeight: number,
 ) {
-  const { e1, e2, c, hiddenSegmentsBetween } = pair
-  const hidden = !!hiddenSegmentsBetween?.length
+  const { e1, e2, c } = pair
   const sameRow = e1.data.readYs[e1.readIdx] === e2.data.readYs[e2.readIdx]
   const facesOneWay = c.isSplit
     ? screenStrand(c.s1, r1.reversed) === screenStrand(c.s2, r2.reversed)
@@ -257,8 +256,7 @@ export function connectorShape(
   const loop = c.mapsBack && sameRow
   const plain =
     loop ||
-    (facesOneWay &&
-      !(sameRow && (hidden || crossesOwnAlignment(pair, displayedRegions))))
+    (facesOneWay && !(sameRow && crossesOwnAlignment(pair, displayedRegions)))
   return {
     loop,
     straight: plain && !loop,

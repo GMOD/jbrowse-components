@@ -1191,7 +1191,7 @@ test('a curve the bottom row flattens to no dip stays a curve on its row, where 
   }
 })
 
-test('a junction skipping a segment out of view dips under its row like any unusual connection', async () => {
+test('a junction skipping a segment not shown whose ends face one way runs straight along its row', async () => {
   const t = await engine.alignments({
     adapterConfig: SPLIT_INVERSION_GAP.adapterConfig,
     regions: SPLIT_INVERSION_GAP.regions,
@@ -1203,17 +1203,10 @@ test('a junction skipping a segment out of view dips under its row like any unus
     color === grey ? [i] : [],
   )
   expect(throughHidden).toHaveLength(2)
-  const placed = engine.alignmentConnectorCurves({
-    pxPerBp: 1200 / 17000,
-    featureHeight: t.readPitch.featureHeight,
-    featureSpacing: t.readPitch.featureSpacing,
-    connectors: c,
-  })
   for (const i of throughHidden) {
-    expect(c.kind[i]).toBe('curve')
-    expect(c.dip[i]).toBeGreaterThan(0)
+    expect(c.kind[i]).toBe('straight')
+    expect(c.dip[i]).toBe(0)
     expect(c.endRow[i]).toBe(c.row[i])
-    expect(placed.handleRow[i]).toBeGreaterThan(c.row[i]!)
   }
 })
 
