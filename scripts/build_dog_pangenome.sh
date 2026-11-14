@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # A dog pangenome on UCSC canFam4 (UU_Cfam_GSD_1.0, GCA_011100685.1): a
-# minigraph graph built here from 26 chromosome-scale NCBI canid assemblies,
+# minigraph graph built here from 25 chromosome-scale NCBI canid assemblies,
 # plus the tabix projections JBrowse queries a locus from. Hosted under
 # https://jbrowse.org/demos/dog_pangenome/, read by
 # website/pangenome-config/dog-canfam4.json in GMOD/jb2hubs.
@@ -12,11 +12,13 @@
 #   - the University of Michigan haplotype pairs of Sonar and Melody (2025),
 #     4 of the public haplotypes the Panagram preprint (Jenike et al. 2026,
 #     bioRxiv 10.64898/2026.10.21.760756) analysed
-#   - 13 single dog assemblies, among them Cairn terrier CA611, the
+#   - 12 single dog assemblies, among them Cairn terrier CA611, the
 #     panel's one dog with furnishings, and canFam6 (Tasha)
 #   - the Mexican wolf (VGP) and wolf GW haplotype pairs, the Greenland
 #     wolf and two dingoes
 # Panagram's own six dogs are not on NCBI yet and wait for their deposition.
+# German Shepherd Nala (GCA_008641055.3) is left out: NCBI holds its
+# chromosomes as unlocalized contigs, with chr35 its one assembled molecule.
 #
 # THE ONE THING TO KNOW: minigraph writes no P or W lines, so the graph says
 # nothing about which dog carries which allele, and a segment's rank is
@@ -81,7 +83,6 @@ GCA_031010765.1 Bernese_BD
 GCA_031010635.1 Bernese_OD
 GCA_031165255.1 Labrador_UMich
 GCA_000002285.4 Boxer_Tasha_canFam6
-GCA_008641055.3 GSD_Nala
 GCA_014441545.1 Labrador_ROS1
 GCA_048164855.1 MexicanWolf_hap1
 GCA_048164845.1 MexicanWolf_hap2
