@@ -234,7 +234,8 @@ function crossesOwnAlignment(
 // row. On a row it shares with alignments of the read lying between its
 // two ends, as on a fold-back, that line would paint over them, so it dips
 // like a discordant one. A hidden-segment line whose ends share a row would
-// lie on the chain's connecting line, so it bows up over the row instead.
+// lie on the chain's connecting line, so it dips too, where a bow up over a
+// top row would leave the band.
 // A split junction is judged by the way its two segments point on screen,
 // so an inverted fusion viewed with one partner's region flipped reads
 // straight across the seam.
@@ -256,13 +257,14 @@ export function connectorShape(
   const loop = c.mapsBack && sameRow
   const plain =
     loop ||
-    (facesOneWay && !(sameRow && crossesOwnAlignment(pair, displayedRegions)))
+    (facesOneWay &&
+      !(sameRow && (hidden || crossesOwnAlignment(pair, displayedRegions))))
   return {
     loop,
-    straight: plain && !loop && !(hidden && sameRow),
+    straight: plain && !loop,
     // The endpoint bps, not their screen xs, so one event holds its depth
     // while the reader zooms; no span at all for an interchromosomal pair.
-    // Undefined for a plain connection, which is a line or bows up.
+    // Undefined for a plain connection, which is a line or a loop.
     dipPx: plain
       ? undefined
       : discordantDipPx(

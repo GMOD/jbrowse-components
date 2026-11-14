@@ -50,8 +50,10 @@ into noise at a hairline and in a downscaled figure.
   goes). Declined after shipping: a key row naming the refNames the skipped
   segments sit on ("Split read via chr10, chr12 (not in view)"), since reads
   in a repetitive region reach many unrelated chromosomes and the row grows a
-  list the hover already gives locus by locus. A junction whose ends share a row still bows up over the
-  row rather than lying on the chain's connecting line.
+  list the hover already gives locus by locus. A junction whose ends share a
+  row dips under it like any unusual connection rather than lying on the
+  chain's connecting line; a bow up over the row left the band on the top
+  rows, where it was clipped to two hooks.
 - **A line that a dash set apart is set apart by color or weight.** Reference
   and insert-range lines are a darker grey than the faint grid; the elided
   arc takes the disabled grey; a pending solo keeps its accent color and wash.

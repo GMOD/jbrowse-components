@@ -142,8 +142,8 @@ than being the silence left by a `continue`. A
 same-strand junction reaches the overlay too, though the straight-line pass
 would otherwise own it: that pass leaves any pair with hidden segments alone
 (`isGpuLinkedReadLine`), and where both ends share a row, as a chain's do, the
-line bows up over the row instead of lying on the chain's connecting
-line. A same-row junction with one of the read's FETCHED alignments between its
+line dips under the row like a discordant one instead of lying on the chain's
+connecting line. A same-row junction with one of the read's FETCHED alignments between its
 ends, as on der(3)'s return from chr12 into the inverted chr3 arm, would paint
 over that alignment, so the overlay dips it (`crossesOwnAlignment`).
 

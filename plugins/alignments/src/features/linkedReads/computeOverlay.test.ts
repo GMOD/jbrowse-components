@@ -1422,14 +1422,14 @@ describe('a same-strand junction across segments nothing fetched', () => {
   })
 
   // A chain puts both ends on one row, where a straight line would lie on the
-  // chain's own connecting line.
-  it('bows up over the row when both ends share it', () => {
+  // chain's own connecting line, and a bow up over a top row leaves the band.
+  it('dips below the row when both ends share it', () => {
     const [arc] = arcOf([2, 2])
     const cp = controlPoints(arc!.d)
     expect(cp.sy1).toBe(29)
     expect(cp.sy2).toBe(29)
-    expect(cp.cp1y).toBeLessThan(29)
-    expect(cp.cp2y).toBeLessThan(29)
+    expect(cp.cp1y).toBeGreaterThan(29)
+    expect(cp.cp2y).toBeGreaterThan(29)
   })
 })
 

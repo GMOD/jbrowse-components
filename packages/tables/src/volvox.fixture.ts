@@ -118,7 +118,7 @@ export const PAIRED_INVERSION = {
 
 /**
  * Split reads whose middle segment, at ctgA:20000-30000, lies between the two
- * regions and in neither: under chain unit each is one bow over its row.
+ * regions and in neither: under chain unit each is one dip under its row.
  */
 export const SPLIT_INVERSION_GAP = {
   adapterConfig: {

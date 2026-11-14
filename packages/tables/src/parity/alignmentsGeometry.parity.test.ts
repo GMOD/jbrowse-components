@@ -522,7 +522,7 @@ describe('two loci of volvox pairs either side of an inversion', () => {
 describe('split reads over an inversion, its middle segment out of view', () => {
   parityCases(geometryParity(SPLIT_INVERSION_GAP), [
     {
-      name: 'unit chain: the junction skipping the hidden segment bows',
+      name: 'unit chain: the junction skipping the hidden segment dips',
       config: { ...TALL, unit: 'chain' },
     },
   ])
@@ -657,7 +657,7 @@ test('the legend keys the color of every connector the display draws into a wind
   expect(keyed).toEqual(drawn)
 }, 60_000)
 
-test('a junction skipping a segment out of view is fed as a bow, and the tables name the same pairs', async () => {
+test('a junction skipping a segment out of view is fed as a dip under its row, and the tables name the same pairs', async () => {
   const display = { ...TALL, unit: 'chain' }
   const { display: m, dispose } =
     await standUpDisplay<LinearAlignmentsDisplayModel>({
@@ -674,10 +674,14 @@ test('a junction skipping a segment out of view is fed as a bow, and the tables 
       bpPerPx: 8,
     })
   const t = await engine.alignments({ ...SPLIT_INVERSION_GAP, display })
+  const grey = normalizedRgbToHex(m.themed.colors.colorThroughHidden)
   const fed = [...m.themed.connectorFeedsByGroup.values()].flatMap(byRegion =>
     [...byRegion.values()].flatMap(({ channels: f, hits }) =>
       hits.flatMap((hit, i) =>
-        (f.bits[i]! & CONNECTOR_STRAIGHT) === 0 && f.bend[i] === FED_BOW
+        !!hit.hiddenSegmentsBetween?.length &&
+        (f.bits[i]! & CONNECTOR_STRAIGHT) === 0 &&
+        f.row[i] === f.row2[i] &&
+        f.bend[i]! > 0
           ? [`${hit.id1}>${hit.id2}`]
           : [],
       ),
@@ -687,10 +691,11 @@ test('a junction skipping a segment out of view is fed as a bow, and the tables 
   const c = t.connectors
   const idOfKey = new Map(t.reads.key.map((k, i) => [k, t.reads.id[i]!]))
   const tabled = c.kind.flatMap((kind, i) =>
-    kind === 'bow'
+    c.color[i] === grey && kind === 'curve' && c.dip[i]! > 0
       ? [`${idOfKey.get(c.key[i]!)}>${idOfKey.get(c.mateKey[i]!)}`]
       : [],
   )
+  expect(c.kind).not.toContain('bow')
   expect(fed).toHaveLength(2)
   expect(sorted(tabled)).toEqual(sorted(fed))
 }, 60_000)
@@ -751,14 +756,13 @@ test('the display and the tables paint each connector the same color, a junction
   )
 }, 60_000)
 
-test('the cases decide over loops, curves, bows, straight lines, junctions, and arcs within and across regions', async () => {
-  const [loops, pairs, bows, spliced, arcs, acrossLoci] = await Promise.all([
+test('the cases decide over loops, curves, straight lines, junctions, and arcs within and across regions', async () => {
+  const [loops, pairs, spliced, arcs, acrossLoci] = await Promise.all([
     engine.alignments({ ...TANDEM_DUPLICATION, display: { unit: 'chain' } }),
     engine.alignments({
       ...PAIRED_INVERSION,
       display: { pileup: { connectors: { show: true } } },
     }),
-    engine.alignments({ ...SPLIT_INVERSION_GAP, display: { unit: 'chain' } }),
     engine.alignments({ ...SPLICED, display: {} }),
     engine.alignments({
       ...PAIRED_INVERSION,
@@ -772,7 +776,6 @@ test('the cases decide over loops, curves, bows, straight lines, junctions, and 
   expect(loops.connectors.kind).toContain('loop')
   expect(pairs.connectors.kind).toContain('curve')
   expect(pairs.connectors.kind).toContain('straight')
-  expect(bows.connectors.kind).toContain('bow')
   expect(spliced.junctions.shown).toContain(true)
   expect(arcs.arcs.start.length).toBeGreaterThan(0)
   expect(
