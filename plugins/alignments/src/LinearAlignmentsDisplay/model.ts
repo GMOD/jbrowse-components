@@ -1291,7 +1291,7 @@ export default function stateModelFactory(
          * What the connectors drawn in view key, by the overlay's curves and
          * by the straight-line pass beside them, so the key lists every
          * connector color on screen: the class color types, and whether a
-         * junction through a segment not in view is drawn in its own color.
+         * junction through a region not shown is drawn in its own color.
          * Empty while the legend is hidden so the scan is skipped.
          */
         get connectorKey() {
@@ -1317,7 +1317,7 @@ export default function stateModelFactory(
          * #method
          * Key for the connection colors drawn: the band's and the pileup
          * connectors', which paint one field through one palette, and the
-         * row for a junction through a segment not in view.
+         * row for a junction through a region not shown.
          */
         connectionLegendItems(palette: ColorPalette) {
           return [

@@ -519,7 +519,7 @@ describe('two loci of volvox pairs either side of an inversion', () => {
   ])
 })
 
-describe('split reads over an inversion, its middle segment out of view', () => {
+describe('split reads over an inversion, its middle segment in a region not shown', () => {
   parityCases(geometryParity(SPLIT_INVERSION_GAP), [
     {
       name: 'unit chain: the junction skipping the hidden segment runs straight',
@@ -750,7 +750,7 @@ test('the display and the tables paint each connector the same color, a junction
   expect(new Set(keyed)).toEqual(new Set(t.arcLegend.color))
   expect(keyed).toContain(grey)
   const throughHiddenRow = legend[keyed.indexOf(grey)]!.label
-  expect(throughHiddenRow).toBe('Split read (segment not in view)')
+  expect(throughHiddenRow).toBe('Split read (via a region not shown)')
   expect(t.arcLegend.label[t.arcLegend.color.indexOf(grey)]).toBe(
     throughHiddenRow,
   )

@@ -1379,7 +1379,8 @@ interface PlacedConnector {
  * One region's connectors as the connector mark draws them: each end's
  * position, row and region (the second end may sit in another), the color of
  * the connection's arc at `opacity` (`colorThroughHidden` for a junction
- * through a segment not in view, `connectorRgb`), the stroke `width` in px, and the shape:
+ * through a region not shown, `connectorRgb`), the stroke `width` in px, and
+ * the shape:
  * `straight`, a `curve` dipping `dip` px below its rows, a `bow` up over
  * them, or a `loop` where a read maps back over itself, dipping `dip` px and
  * ending in an `arrow`. A `dip` is the one the display draws: at most half

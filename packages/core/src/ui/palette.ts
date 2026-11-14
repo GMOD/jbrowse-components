@@ -702,7 +702,7 @@ const readOverlap = '#555555'
  */
 const readMateOverlap = '#b4b4b4'
 /**
- * #color alignments-pair-orientation | Split read (segment not in view) | A connector joining two segments of a split read across a segment of it the view never fetched, so it is no junction of the read; its hover states how its two ends relate
+ * #color alignments-pair-orientation | Split read (via a region not shown) | A connector joining two segments of a split read that aligns, between them, to a region the view does not show, so it is no junction of the read; its hover states how its two ends relate
  *
  * A neutral for the reason `readOverlap` is one: the connector is not a
  * junction of the read, so no junction class color is the honest answer,

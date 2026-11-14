@@ -29,5 +29,5 @@ test('the hover states the loci, then how the two ends relate where that says so
   expect(throughHiddenLines(colo829, undefined)).toEqual([
     'passes through chr10:600,001-600,199, chr12:700,001-700,183',
   ])
-  expect(THROUGH_HIDDEN_LABEL).toBe('Split read (segment not in view)')
+  expect(THROUGH_HIDDEN_LABEL).toBe('Split read (via a region not shown)')
 })

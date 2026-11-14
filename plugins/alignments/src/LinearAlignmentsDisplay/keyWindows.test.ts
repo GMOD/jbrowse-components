@@ -128,7 +128,7 @@ test('a connector keys when its span crosses a window, whichever ends are on scr
   expect(slots([pair([1, 100], [0, 900], 5)])).toEqual(new Set([5]))
 })
 
-test('a junction through a segment not in view keys its own row and not its class', () => {
+test('a junction through a region not shown keys its own row and not its class', () => {
   const regions = [{ refName: 'chr1' }]
   const pair = (bp1: number, bp2: number, ...hidden: string[]) => ({
     e1: { displayedRegionIndex: 0 },

@@ -241,8 +241,8 @@ export function arcSlotsInWindows(
 
 /**
  * What the connectors drawn in a window key: the class color types of those
- * painted in their class color, and whether any junction through a segment
- * not in view is drawn (`throughHidden`), which paints its own color in place
+ * painted in their class color, and whether any junction through a region
+ * not shown is drawn (`throughHidden`), which paints its own color in place
  * of its class's. The straight-line pass's pairs and the overlay's count, each
  * by the rule the drawn connectors and the tables share
  * (`connectorInWindows`), so one crossing a window with both ends off screen

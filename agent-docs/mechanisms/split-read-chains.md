@@ -130,9 +130,9 @@ There are two right answers and the choice is per consumer:
   (`readGroupConnections.ts`) emits the junction, counts the read's own segments
   lying strictly between the two on-screen ones, and passes them up as
   `{ refName, start, end, loc }` — which the alignments connector mark and the
-  breakpoint split view both draw solid and grey and name in their hover. A
-  reader following one molecule loses the thread if the
-  connector disappears.
+  breakpoint split view both draw solid and grey, key "Split read (via a region
+  not shown)" and name in their hover. A reader following one molecule loses
+  the thread if the connector disappears.
 - **An aggregate emits nothing.** `unpairedChainArcs` withholds the junction,
   because in a band whose marks are being counted a wrong junction becomes
   evidence.

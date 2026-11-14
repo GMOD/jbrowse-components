@@ -1210,7 +1210,7 @@ test('a junction skipping a segment not shown whose ends face one way runs strai
   }
 })
 
-test('a junction through a segment out of view paints the through-hidden neutral and keys its own row, not its class', async () => {
+test('a junction through a region not shown paints the through-hidden neutral and keys its own row, not its class', async () => {
   const t = await engine.alignments({
     adapterConfig: SPLIT_INVERSION_GAP.adapterConfig,
     regions: SPLIT_INVERSION_GAP.regions,
@@ -1222,7 +1222,7 @@ test('a junction through a segment out of view paints the through-hidden neutral
   expect(c.color.filter(color => color !== grey).length).toBeGreaterThan(0)
   expect(new Set(t.arcLegend.color)).toEqual(new Set(c.color))
   expect(t.arcLegend.label[t.arcLegend.color.indexOf(grey)]).toBe(
-    'Split read (segment not in view)',
+    'Split read (via a region not shown)',
   )
 })
 

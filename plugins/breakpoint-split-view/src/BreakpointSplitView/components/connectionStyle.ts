@@ -18,8 +18,7 @@ export interface StyledConnection {
 
 // One row per color, since kinds that share a swatch read as one meaning,
 // their labels joined; rows in CONNECTION_LABELS order of their first kind.
-// The connections through segments not in view key one row of their own,
-// last.
+// The connections through regions not shown key one row of their own, last.
 export function connectionKeyRows(styled: Iterable<StyledConnection>) {
   const rows = new Map<string, { kind: ConnectionKind; labels: string[] }>()
   let throughHiddenColor: string | undefined

@@ -24,25 +24,25 @@ test('rows follow the connection kinds order, by the first kind of each', () => 
   expect(rows.map(r => r.label)).toEqual(['B', 'A'])
 })
 
-test('the connections through segments not in view key one fixed row, last', () => {
+test('the connections through regions not shown key one fixed row, last', () => {
   const grey = '#2e2e2e'
   const rows = connectionKeyRows([
     {
       kind: 'splitInverted',
       color: grey,
-      label: 'Split read (segment not in view)',
+      label: 'Split read (via a region not shown)',
       throughHidden: true,
     },
     { kind: 'readPair', color: 'b', label: 'B' },
     {
       kind: 'splitSameStrand',
       color: grey,
-      label: 'Split read (segment not in view)',
+      label: 'Split read (via a region not shown)',
       throughHidden: true,
     },
   ])
   expect(rows.map(r => r.label)).toEqual([
     'B',
-    'Split read (segment not in view)',
+    'Split read (via a region not shown)',
   ])
 })

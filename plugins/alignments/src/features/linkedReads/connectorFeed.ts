@@ -43,7 +43,7 @@ import type { ConnectorChannels } from '@jbrowse/render-core/marks'
 
 /**
  * What a hover or click on connector `i` acts on and names: a junction
- * through segments not in view carries them, and a split class `relation`,
+ * through regions not shown carries their segments, and a split class `relation`,
  * how the two ends relate, which its hover states.
  */
 export interface ConnectorHit {

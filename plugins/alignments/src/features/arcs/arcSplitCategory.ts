@@ -22,7 +22,7 @@ export type ArcSplitCategory = keyof typeof ARC_SPLIT_SWATCH
 // junction type, and not a variant call: a deletion-type junction is also one
 // side of a templated insertion. The inversion rows carry the pair code of
 // their twin, as Manta ties INV3/INV5 to LL/RR reads. A connector through a
-// segment not in view states it as a relation rather than a junction.
+// region not shown states it as a relation rather than a junction.
 export const ARC_SPLIT_RELATIONS: Record<ArcSplitCategory, string> = {
   splitForward: 'deletion-type',
   splitBack: 'duplication-type',

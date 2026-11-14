@@ -298,7 +298,7 @@ export const OverlayPaths = observer(function OverlayPaths({
 
 // The overlay's key in sections: the variant calls, then each drawn alignment
 // connector's color and label in `theme`, one row per color, and one for those
-// through segments not in view.
+// through regions not shown.
 export function drawnConnectionKeySections(
   model: BreakpointViewModel,
   theme: JBrowsePalette,

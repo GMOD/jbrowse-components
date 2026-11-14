@@ -433,7 +433,7 @@ test('layoutReadChains asks each entry’s own row for its rect', () => {
   ])
 })
 
-test('a connection through segments not in view greys, keys the segment row and states how its ends relate', () => {
+test('a connection through regions not shown greys, keys its own row and states how its ends relate', () => {
   const theme = resolvePalette()
   const style = {
     color: '#00f',
@@ -444,7 +444,7 @@ test('a connection through segments not in view greys, keys the segment row and 
     throughHiddenStyle(style, [{ loc: 'chr10:600,001-600,199' }], theme),
   ).toEqual({
     color: theme.readThroughHidden,
-    label: 'Split read (segment not in view)',
+    label: 'Split read (via a region not shown)',
     relation: 'inversion, LL-type',
   })
   expect(throughHiddenStyle(style, undefined, theme)).toBe(style)

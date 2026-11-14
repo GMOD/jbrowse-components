@@ -159,9 +159,9 @@ a quiet region.
   `loop`), the `dip` in px a curve or loop draws (0 for a bow), `strand`,
   `endStrand` and `leading`, which set the way each end's curve leaves its
   read, `arrow` for a loop's arrowhead, and `key`/`mateKey` naming the two
-  reads in `reads`. A junction over segments not in view is drawn solid like
+  reads in `reads`. A junction through regions not shown is drawn solid like
   any other, in the `readThroughHidden` neutral in place of its class color,
-  and keys its own `arcLegend` row ("Split read (segment not in view)") in
+  and keys its own `arcLegend` row ("Split read (via a region not shown)") in
   place of its class row, so its `color` marks it and no column does. The
   tables key connectors through the display's own `connectorKeyInWindows`, so
   the rows match the display's.

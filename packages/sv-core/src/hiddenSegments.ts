@@ -4,7 +4,7 @@
 // alignments display and the breakpoint split view, so the reader who met this
 // finding in one does not have to learn a second phrasing in the other.
 
-export const THROUGH_HIDDEN_LABEL = 'Split read (segment not in view)'
+export const THROUGH_HIDDEN_LABEL = 'Split read (via a region not shown)'
 
 export function hiddenSegmentsNote(segments: readonly { loc: string }[]) {
   return `passes through ${segments.map(s => s.loc).join(', ')}`

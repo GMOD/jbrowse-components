@@ -472,7 +472,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * Each drawn connection's color and key label in `theme`, and how its
        * ends relate, as the alignments display in the row of its first end
        * paints it, so a curve between panels agrees with the arcs and
-       * connectors inside them: one through segments not in view greys as
+       * connectors inside them: one through regions not shown greys as
        * the display's does (`throughHiddenStyle`).
        */
       connectionStylerIn(trackId: string, theme: JBrowsePalette) {
