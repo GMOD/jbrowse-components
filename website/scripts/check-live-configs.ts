@@ -44,8 +44,19 @@ const network = process.argv.includes('--network')
 //
 // `*_local.json` is the GRAPH_PLUGIN_LOCAL switch's output, gitignored and
 // pointed at a local build on purpose.
+//
+// The JBrowse 2 v5 paper's two configs are the exception: since 2026-11-14 they
+// pin 9.0.0, the release that drew its published Figures 2c and 5.
 const PLUGIN_URL =
   'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js'
+const PAPER_PLUGIN_URL =
+  'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/9.0.0/dist/jbrowse-plugin-graphgenomeviewer.esm.js'
+const PAPER_CONFIGS = new Set([
+  'test_data/graphgenomeview/hprc_cnv.json',
+  'test_data/graphgenomeview/paper_hprc.json',
+])
+const expectedPluginUrl = (file: string) =>
+  PAPER_CONFIGS.has(file) ? PAPER_PLUGIN_URL : PLUGIN_URL
 const ANY_PLUGIN_URL_RE =
   /https:\/\/[^"'\s]*graphgenomeviewer[^"'\s]*\.esm\.js/g
 
@@ -60,9 +71,10 @@ function pluginUrls(dir: string) {
     }
     const file = join(entry.parentPath, entry.name)
     const text = readFileSync(file, 'utf8')
+    const rel = relative(repoRoot, file)
     for (const [url] of text.matchAll(ANY_PLUGIN_URL_RE)) {
-      if (url !== PLUGIN_URL) {
-        found.push({ file: relative(repoRoot, file), url })
+      if (url !== expectedPluginUrl(rel)) {
+        found.push({ file: rel, url })
       }
     }
   }
@@ -76,7 +88,9 @@ function checkPluginPins() {
     ...pluginUrls('demos'),
   ]) {
     problems.push(
-      `${file} loads the plugin from ${url}. Name ${PLUGIN_URL}, as demos/ecoli_pangenome/config.json does.`,
+      PAPER_CONFIGS.has(file)
+        ? `${file} loads the plugin from ${url}. Name ${PAPER_PLUGIN_URL}, the release that drew the paper's figures.`
+        : `${file} loads the plugin from ${url}. Name ${PLUGIN_URL}, as demos/ecoli_pangenome/config.json does.`,
     )
   }
   return problems
