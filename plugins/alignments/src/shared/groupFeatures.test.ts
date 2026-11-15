@@ -808,11 +808,8 @@ test('the split notice names the values, singular and past the listed few', () =
 })
 
 describe('alignedRefNames key', () => {
-  const keyOf =
-    (field: 'mateRefName' | 'alignedRefNames') =>
-    (fields: Record<string, unknown>) =>
-      FACET_DIMENSIONS[field].key(feat('r', fields), undefined).key
-  const alignedRefNamesOf = keyOf('alignedRefNames')
+  const dimension = FACET_DIMENSIONS.alignedRefNames
+  const membersOf = (features: Feature[]) => dimension.membersAll?.(features)
   const fusionPiece = (refName: string, SA: string) =>
     feat(`${refName}piece`, {
       name: 'fusion',
@@ -828,26 +825,40 @@ describe('alignedRefNames key', () => {
     'chr22',
     'chr9,100,+,60M40S,60,0;chr19,700,+,70S30M,60,0;',
   )
-
-  test('a split read keys its own reference and every SA entry', () => {
-    expect(FACET_DIMENSIONS.alignedRefNames.members?.(chr9Piece)).toEqual([
-      'chr19',
-      'chr22',
-      'chr9',
-    ])
-    expect(FACET_DIMENSIONS.alignedRefNames.key(chr9Piece, undefined).key).toBe(
-      'chr19 + chr22 + chr9',
-    )
+  // read1 unsplit on chr9; read2 split from chr9 to chr22
+  const read1 = feat('r1', { name: 'pair', refName: 'chr9', flags: 0x41 })
+  const read2 = feat('r2', {
+    name: 'pair',
+    refName: 'chr9',
+    flags: 0x81,
+    tags: { SA: 'chr22,500,+,40S60M,60,0;' },
+  })
+  const read2Supplementary = feat('r2s', {
+    name: 'pair',
+    refName: 'chr22',
+    flags: 0x881,
+    tags: { SA: 'chr9,100,+,60M40S,60,0;' },
   })
 
-  test('an unsplit read keys its own reference', () => {
-    expect(alignedRefNamesOf({ flags: 0 })).toBe('ctgA')
-  })
-
-  test('each piece of a molecule keys the same set', () => {
+  test('a split read holds its own reference and every SA entry', () => {
+    expect(membersOf([chr9Piece])).toEqual([['chr19', 'chr22', 'chr9']])
     expect(
-      FACET_DIMENSIONS.alignedRefNames.key(chr22Piece, undefined).key,
-    ).toBe(FACET_DIMENSIONS.alignedRefNames.key(chr9Piece, undefined).key)
+      keys(partitionFeatures([chr9Piece], { field: 'alignedRefNames' })),
+    ).toEqual(['chr19 + chr22 + chr9'])
+  })
+
+  test('an unsplit read holds its own reference', () => {
+    expect(membersOf([feat('r', { flags: 0 })])).toEqual([['ctgA']])
+  })
+
+  test('an SA entry names its reference however little follows it', () => {
+    expect(
+      membersOf([feat('r', { flags: 0, tags: { SA: 'chr7;chr8,5;' } })]),
+    ).toEqual([['chr7', 'chr8', 'ctgA']])
+  })
+
+  test('each piece of a molecule holds the same set, fetched apart', () => {
+    expect(membersOf([chr22Piece])).toEqual(membersOf([chr9Piece]))
   })
 
   test('a chain facet puts both pieces in one section', () => {
@@ -860,12 +871,24 @@ describe('alignedRefNames key', () => {
     expect(groups[0]!.features).toHaveLength(2)
   })
 
+  test("a pair's mates share the split mate's set, in each region's fetch", () => {
+    for (const unit of ['chain', 'read'] as const) {
+      const facet = { field: 'alignedRefNames', unit } as const
+      const chr9Region = partitionFeatures([read1, read2], facet)
+      expect(keys(chr9Region)).toEqual(['chr22 + chr9'])
+      expect(chr9Region[0]!.features).toHaveLength(2)
+      expect(keys(partitionFeatures([read2Supplementary], facet))).toEqual([
+        'chr22 + chr9',
+      ])
+    }
+  })
+
   test('mateRefName keys an unpaired split read no mate', () => {
     expect(
-      keyOf('mateRefName')({
-        flags: 0,
-        tags: { SA: 'chr22,500,+,40S60M,60,0;' },
-      }),
+      FACET_DIMENSIONS.mateRefName.key(
+        feat('r', { flags: 0, tags: { SA: 'chr22,500,+,40S60M,60,0;' } }),
+        undefined,
+      ).key,
     ).toBe('')
   })
 })

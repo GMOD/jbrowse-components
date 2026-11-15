@@ -204,18 +204,19 @@ function dictionaryCoded<V>(
   return { ids, values }
 }
 
-// A read dimension's values for every read: a set-valued one's members, or
-// the key a facet files the read under, each read's own or its chain's where
-// the facet keys the whole fetch (`keyAll`)
+// A read dimension's values for every read: a set-valued one's members by
+// its chain, or the key a facet files the read under, each read's own or its
+// chain's where the facet keys the whole fetch (`keyAll`)
 function keyLane(
-  { key, keyAll, members }: FacetDimension,
+  { key, keyAll, membersAll }: FacetDimension,
   features: Feature[],
   insertSizeBand: InsertSizeBand | undefined,
 ): PredicateLane {
-  if (members) {
+  if (membersAll) {
+    const sets = membersAll(features)
     const { ids, values } = dictionaryCoded(
       features.length,
-      i => members(features[i]!),
+      i => sets[i]!,
       set => set.join('\0'),
     )
     return { kind: 'sets', ids, sets: values }

@@ -16,8 +16,8 @@ import {
 } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { fieldTag } from './facetLabels.ts'
-import { fieldValueReader, refNameSetKey } from './groupFeatures.ts'
-import { alignedRefNames, categoryBitsOf, saTagOf } from './splitAlignment.ts'
+import { fieldValues } from './groupFeatures.ts'
+import { categoryBitsOf, saTagOf } from './splitAlignment.ts'
 import { isMethylationView } from './types.ts'
 import { getMateRefName, getStrand } from './util.ts'
 
@@ -134,12 +134,10 @@ export function extractFeatureArrays<T extends FeatureData>(
   const colorTag = fieldTag(colorField)
   const colorAttribute =
     colorFieldKindOf(colorField) === 'tag' && !colorTag ? colorField : undefined
-  // reads the SA tag the loop already holds
-  const colorsByAlignedRefNames = colorField === 'alignedRefNames'
-  const readColorAttribute =
-    colorAttribute === undefined || colorsByAlignedRefNames
+  const attributeColorValues =
+    colorAttribute === undefined
       ? undefined
-      : fieldValueReader(colorAttribute, opts.jexl)
+      : fieldValues(colorAttribute, featuresArray, opts.jexl)
   // Chromosome painting reuses the tag channel: both resolve one string per
   // read that the main thread bakes into a color (see buildReadFillColors), so
   // the mate refName travels as a `tagColorValues` entry rather than earning a
@@ -205,10 +203,8 @@ export function extractFeatureArrays<T extends FeatureData>(
 
     if (colorTag) {
       tagColorValues.push(extractFeatureTagValue(feature, colorTag))
-    } else if (colorsByAlignedRefNames) {
-      tagColorValues.push(refNameSetKey(alignedRefNames(feature, sa)).key)
-    } else if (readColorAttribute) {
-      tagColorValues.push(readColorAttribute(feature))
+    } else if (attributeColorValues) {
+      tagColorValues.push(attributeColorValues[readIndex]!)
     } else if (isMateRefNameMode) {
       tagColorValues.push(getMateRefName(feature) ?? '')
     }

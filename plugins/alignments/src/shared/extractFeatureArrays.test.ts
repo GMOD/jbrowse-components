@@ -122,6 +122,27 @@ describe('attribute color extraction', () => {
     ])
   })
 
+  test("alignedRefNames paints an unsplit mate by its split mate's set", () => {
+    const mate = (flags: number, tags?: Record<string, string>) =>
+      new SimpleFeature({
+        uniqueId: `pair${flags}`,
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: 1,
+        name: 'pair',
+        flags,
+        CIGAR: tags ? '50M50S' : '100M',
+        ...(tags ? { tags } : {}),
+      })
+    expect(
+      extract(
+        [mate(0x41), mate(0x81, { SA: 'ctgB,5000,+,50S50M,60,0;' })],
+        'alignedRefNames',
+      ).tagColorValues,
+    ).toEqual(['ctgA + ctgB', 'ctgA + ctgB'])
+  })
+
   test('a path field reads into the feature', () => {
     expect(
       extract([syntenyFeature('ctgA', 'ctgB')], 'mate.assemblyName')

@@ -630,4 +630,52 @@ describe('filterChainFeatures by aligned references', () => {
       names(filterChainFeatures([spelled('fusion')], fileSpelled)),
     ).toEqual(['fusion'])
   })
+
+  const mate = (
+    name: string,
+    flags: number,
+    refName: string,
+    nextRef: string,
+    SA?: string,
+  ) =>
+    new SimpleFeature({
+      uniqueId: `${name}:${flags}`,
+      refName,
+      start: 1000,
+      end: 1100,
+      name,
+      flags,
+      next_ref: nextRef,
+      CIGAR: SA ? '60M40S' : '100M',
+      ...(SA ? { tags: { SA } } : {}),
+    })
+  const onChr9AndChr22: FieldPredicate[] = [
+    { field: 'alignedRefNames', equal: 'chr9' },
+    { field: 'alignedRefNames', equal: 'chr22' },
+  ]
+
+  test('keeps both mates of a pair whose read2 alone is split to chr22', () => {
+    const pair = [
+      mate('pair', 0x41, 'chr9', 'chr9'),
+      mate('pair', 0x81, 'chr9', 'chr9', 'chr22,500,+,60S40M,60,0;'),
+    ]
+    expect(
+      filterChainFeatures(pair, [
+        { field: 'split', equal: true },
+        ...onChr9AndChr22,
+      ]).map(f => f.get('uniqueId')),
+    ).toEqual(['pair:65', 'pair:129'])
+  })
+
+  test('keeps an unsplit discordant pair with a mate on each', () => {
+    const pairs = [
+      mate('pair', 0x41, 'chr9', 'chr22'),
+      mate('pair', 0x81, 'chr22', 'chr9'),
+      mate('withinChr9', 0x41, 'chr9', 'chr9'),
+      mate('withinChr9', 0x81, 'chr9', 'chr9'),
+    ]
+    expect(
+      filterChainFeatures(pairs, onChr9AndChr22).map(f => f.get('uniqueId')),
+    ).toEqual(['pair:65', 'pair:129'])
+  })
 })

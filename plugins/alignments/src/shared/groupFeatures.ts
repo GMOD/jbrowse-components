@@ -43,6 +43,7 @@ import {
 import {
   alignedRefNames,
   chainIsSplit,
+  forEachAlignedRefName,
   isSplitAlignment,
   isSvEvidence,
 } from './splitAlignment.ts'
@@ -292,6 +293,43 @@ export function refNameSetKey(names: readonly string[]): GroupKey {
   return { key, label: key }
 }
 
+// Each read's `alignedRefNames`: every reference its chain's records align
+// to, a pair's two mates and each split piece included. A chain on one
+// reference holds the name alone, so an unsplit fetch builds no set.
+function chainAlignedRefNames(features: Feature[]) {
+  const chainKeys = features.map(featureChainKey)
+  const held = new Map<string, string | Set<string>>()
+  for (let i = 0; i < features.length; i++) {
+    const chain = chainKeys[i]!
+    forEachAlignedRefName(features[i]!, name => {
+      const names = held.get(chain)
+      if (names === undefined) {
+        held.set(chain, name)
+      } else if (typeof names === 'string') {
+        if (names !== name) {
+          held.set(chain, new Set([names, name]))
+        }
+      } else {
+        names.add(name)
+      }
+    })
+  }
+  const sorted = new Map<string, readonly string[]>()
+  return chainKeys.map(chain =>
+    getOrCreate(sorted, chain, () => {
+      const names = held.get(chain)!
+      return typeof names === 'string' ? [names] : [...names].sort()
+    }),
+  )
+}
+
+function chainAlignedRefNameKeys(features: Feature[]) {
+  const keys = new Map<readonly string[], GroupKey>()
+  return chainAlignedRefNames(features).map(names =>
+    getOrCreate(keys, names, () => refNameSetKey(names)),
+  )
+}
+
 // One section per mate sample of an all-vs-all synteny track. `mate.assemblyName`
 // is the loaded assembly when it is listed, else the bare PanSN sample prefix
 // (a sample/haplotype, not necessarily a species).
@@ -463,9 +501,9 @@ export interface FacetDimension<K extends ReadDimension = ReadDimension> {
     chain: Feature[],
     insertSizeBand: InsertSizeBand | undefined,
   ) => GroupKey
-  // A set-valued dimension's members, of which a filter entry needs one to
-  // pass; its key joins them
-  members?: (feature: Feature) => readonly string[]
+  // A set-valued dimension's members for every read of a fetch, each by its
+  // whole chain as `keyAll` keys it; a filter entry needs one member to pass
+  membersAll?: (features: Feature[]) => readonly (readonly string[])[]
   // Keys every read of a fetch at once, each by its whole chain, in either
   // unit: for a dimension the filter judging its evidence reads per chain
   keyAll?: (
@@ -544,14 +582,17 @@ export const FACET_DIMENSIONS: {
     hidden: true,
     key: mateRefNameKey,
   },
-  // Out of the radios as `mateRefName` is. Every piece of a split read lists
-  // the others in its SA tag, so a long read's records share one set.
+  // Out of the radios as `mateRefName` is. A read answers with its whole
+  // chain's set, so a pair whose read2 alone is split keeps both mates in one
+  // section in either unit.
   alignedRefNames: {
     field: 'alignedRefNames',
-    fragmentLevel: true,
+    fragmentLevel: false,
     hidden: true,
     key: feature => refNameSetKey(alignedRefNames(feature)),
-    members: feature => alignedRefNames(feature),
+    chainKey: chain => chainAlignedRefNameKeys(chain)[0]!,
+    keyAll: chainAlignedRefNameKeys,
+    membersAll: chainAlignedRefNames,
   },
   mateAssembly: {
     field: 'mateAssembly',
@@ -610,14 +651,21 @@ function groupKeyer(
 }
 
 /**
- * The value one read takes for a field, as a facet keys its section: a read
- * dimension's own key, a tag's value or a field's, a path or a `jexl:`
- * expression included. A field the color bake paints from a value per read
- * reads it here too, so the two channels name a read alike.
+ * The value each read takes for a field, as a facet keys its section: a read
+ * dimension's own key, or its chain's where the dimension keys the whole
+ * fetch, a tag's value or a field's, a path or a `jexl:` expression included.
+ * A field the color bake paints from a value per read reads it here too, so
+ * the two channels name a read alike.
  */
-export function fieldValueReader(field: string, jexl?: JexlInstance) {
-  const { key } = groupKeyer(field, jexl)
-  return (feature: Feature) => key(feature, undefined).key
+export function fieldValues(
+  field: string,
+  features: Feature[],
+  jexl?: JexlInstance,
+) {
+  const { key, keyAll } = groupKeyer(field, jexl)
+  return (
+    keyAll?.(features, undefined) ?? features.map(f => key(f, undefined))
+  ).map(k => k.key)
 }
 
 // Whether chain mode can honor a facet: the chain has to resolve to one key,

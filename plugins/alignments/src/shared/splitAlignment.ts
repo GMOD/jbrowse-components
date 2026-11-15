@@ -16,7 +16,6 @@ import {
 } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { forEachSAEntry } from '../features/sashimi/splitJunctions.ts'
 import { cigarCategoryBitsOf } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { makesJunction } from './splitReadJunctions.ts'
@@ -65,16 +64,37 @@ export function saTagOf(feature: Feature) {
 }
 
 /**
- * The `alignedRefNames` field: the references the read aligns to, the
- * record's own and every SA entry's, sorted. Every record of a split read
- * lists the others, so each answers the same set.
+ * Each reference the record aligns to: its own, then every SA entry's, read
+ * up to the entry's first comma and no further.
  */
+export function forEachAlignedRefName(
+  feature: Feature,
+  visit: (refName: string) => void,
+  sa = saTagOf(feature),
+) {
+  visit(feature.get('refName'))
+  let at = 0
+  while (at < sa.length) {
+    const semi = sa.indexOf(';', at)
+    const entryEnd = semi === -1 ? sa.length : semi
+    const comma = sa.indexOf(',', at)
+    const nameEnd = comma === -1 || comma > entryEnd ? entryEnd : comma
+    if (nameEnd > at) {
+      visit(sa.slice(at, nameEnd))
+    }
+    at = entryEnd + 1
+  }
+}
+
+/** The references one record aligns to, its own and every SA entry's, sorted. */
 export function alignedRefNames(feature: Feature, sa = saTagOf(feature)) {
-  const names = new Set<string>([feature.get('refName')])
-  forEachSAEntry(sa, (nameStart, nameEnd) => {
-    names.add(sa.slice(nameStart, nameEnd))
-  })
-  return [...names].sort()
+  if (sa === '') {
+    return [feature.get('refName')]
+  } else {
+    const names = new Set<string>()
+    forEachAlignedRefName(feature, name => names.add(name), sa)
+    return [...names].sort()
+  }
 }
 
 /**
