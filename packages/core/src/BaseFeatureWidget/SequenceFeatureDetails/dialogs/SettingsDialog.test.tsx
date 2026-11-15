@@ -16,6 +16,25 @@ function renderDialog() {
   return { model, handleClose, ...utils }
 }
 
+const keepCase = 'Capitalization from reference genome sequence'
+
+test('the capitalization waits for Submit like the other settings', () => {
+  const { model, handleClose, getByLabelText, getByRole } = renderDialog()
+  fireEvent.click(getByLabelText(keepCase))
+  expect(model.upperCaseCDS).toBe(true)
+
+  fireEvent.click(getByRole('button', { name: 'Submit' }))
+  expect(model.upperCaseCDS).toBe(false)
+  expect(handleClose).toHaveBeenCalled()
+})
+
+test('Cancel leaves the capitalization as it was', () => {
+  const { model, getByLabelText, getByRole } = renderDialog()
+  fireEvent.click(getByLabelText(keepCase))
+  fireEvent.click(getByRole('button', { name: 'Cancel' }))
+  expect(model.upperCaseCDS).toBe(true)
+})
+
 test.each([
   'Number of intronic bases around splice site to display',
   'Number of bases up/down stream of feature to display',

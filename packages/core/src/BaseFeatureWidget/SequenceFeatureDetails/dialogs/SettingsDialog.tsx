@@ -36,7 +36,7 @@ const SequenceFeatureSettingsDialog = observer(
     model: SequenceFeatureDetailsModel
   }) {
     const { classes } = useStyles()
-    const { upperCaseCDS } = model
+    const [upperCaseCDS, setUpperCaseCDS] = useState(model.upperCaseCDS)
     const [intronBp, setIntronBp] = useState<number | undefined>(model.intronBp)
     const [upDownBp, setUpDownBp] = useState<number | undefined>(model.upDownBp)
     const [charactersPerRow, setCharactersPerRow] = useState<
@@ -62,6 +62,7 @@ const SequenceFeatureSettingsDialog = observer(
             model.setIntronBp(intronBp)
             model.setUpDownBp(upDownBp)
             model.setCharactersPerRow(charactersPerRow)
+            model.setUpperCaseCDS(upperCaseCDS)
             handleClose()
           }
         }}
@@ -101,7 +102,7 @@ const SequenceFeatureSettingsDialog = observer(
               <RadioGroup
                 value={upperCaseCDS ? 'cds' : 'unchanged'}
                 onChange={e => {
-                  model.setUpperCaseCDS(e.target.value === 'cds')
+                  setUpperCaseCDS(e.target.value === 'cds')
                 }}
               >
                 <FormControlLabel
