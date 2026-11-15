@@ -17,12 +17,9 @@ const SyntenyFeatureDetail = observer(function SyntenyFeatureDetail({
     <FeatureDetailsFrame
       model={model}
       renderBody={(feature, raw) => (
-        <FeatureDetailsPanel
-          model={model}
-          feature={feature}
-          unformatted={raw}
-          after={<LinkToSyntenyView model={model} feat={raw} />}
-        />
+        <FeatureDetailsPanel model={model} feature={feature} unformatted={raw}>
+          <LinkToSyntenyView model={model} feat={raw} />
+        </FeatureDetailsPanel>
       )}
     />
   )

@@ -137,33 +137,30 @@ const VariantDetails = observer(function VariantDetails({
           </ErrorBoundary>
         ) : null
       }
-      after={
-        <>
-          <Suspense fallback={null}>
-            {consequences.map(({ key, format, data, fields }) => (
-              <VariantConsequencePanel
-                key={key}
-                fields={fields}
-                data={data}
-                format={format}
-              />
-            ))}
-            <LaunchBreakendWidgetArea model={model} feat={raw} />
-          </Suspense>
-          {clickedSample ? (
-            <BaseCard title={`Sample: ${clickedSample}`}>
-              <Typography>Genotype: {`${clickedGenotype}`}</Typography>
-              <Typography>Alleles: {`${clickedAlleles}`}</Typography>
-            </BaseCard>
-          ) : null}
-          <VariantSampleGrid
-            feature={raw}
-            descriptions={descriptions}
-            selectedAlt={selectedAlt}
+    >
+      <Suspense fallback={null}>
+        {consequences.map(({ key, format, data, fields }) => (
+          <VariantConsequencePanel
+            key={key}
+            fields={fields}
+            data={data}
+            format={format}
           />
-        </>
-      }
-    />
+        ))}
+        <LaunchBreakendWidgetArea model={model} feat={raw} />
+      </Suspense>
+      {clickedSample ? (
+        <BaseCard title={`Sample: ${clickedSample}`}>
+          <Typography>Genotype: {`${clickedGenotype}`}</Typography>
+          <Typography>Alleles: {`${clickedAlleles}`}</Typography>
+        </BaseCard>
+      ) : null}
+      <VariantSampleGrid
+        feature={raw}
+        descriptions={descriptions}
+        selectedAlt={selectedAlt}
+      />
+    </FeatureDetailsPanel>
   )
 })
 

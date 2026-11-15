@@ -1,3 +1,4 @@
+import type { Descriptors } from '@jbrowse/core/BaseFeatureWidget'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export interface VCFFeatureSerialized extends SimpleFeatureSerialized {
@@ -23,7 +24,7 @@ export interface VCFFeatureSerialized extends SimpleFeatureSerialized {
 // own descriptions go.
 type FieldDescriptions = Record<string, { Description?: string } | undefined>
 
-export type Descriptions = {
+export interface Descriptions extends Descriptors {
   INFO?: FieldDescriptions
   FORMAT?: FieldDescriptions
   ALT?: FieldDescriptions

@@ -4,15 +4,12 @@ import FeatureDetailsFrame from './FeatureDetailsFrame.tsx'
 import FeatureDetailsPanel from './FeatureDetailsPanel.tsx'
 
 import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
-import type { Descriptors } from '../types.tsx'
 
 const BaseFeatureDetail = observer(function BaseFeatureDetail({
   model,
 }: {
   model: BaseFeatureWidgetModel
 }) {
-  // annotated to shed the MST node brand types.frozen() carries on the instance
-  const descriptions: Descriptors | undefined = model.descriptions
   return (
     <FeatureDetailsFrame
       model={model}
@@ -21,7 +18,6 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
           model={model}
           feature={feature}
           unformatted={unformatted}
-          descriptions={descriptions}
         />
       )}
     />

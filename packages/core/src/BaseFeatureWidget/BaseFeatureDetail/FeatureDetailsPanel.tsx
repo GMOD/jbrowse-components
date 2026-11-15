@@ -19,6 +19,7 @@ import type React from 'react'
 export interface FeatureDetailsPanelModel extends FeatureDetailsModel {
   track?: { displays: readonly unknown[] }
   parentFeature?: ParentFeatureSummary
+  descriptions?: Descriptors
 }
 
 /**
@@ -31,12 +32,12 @@ const FeatureDetailsPanel = observer(function FeatureDetailsPanel({
   model,
   feature,
   unformatted,
-  descriptions,
+  descriptions = model.descriptions,
   omit,
   formatter,
   isFilterable,
   before,
-  after,
+  children,
 }: {
   model: FeatureDetailsPanelModel
   feature: SimpleFeatureSerialized
@@ -47,7 +48,7 @@ const FeatureDetailsPanel = observer(function FeatureDetailsPanel({
   /** which rows offer filter actions; every row when unset */
   isFilterable?: (path: string[]) => boolean
   before?: React.ReactNode
-  after?: React.ReactNode
+  children?: React.ReactNode
 }) {
   const { parentFeature } = model
   // a track's filter tests its top-level features, so a panel opened on a
@@ -78,7 +79,7 @@ const FeatureDetailsPanel = observer(function FeatureDetailsPanel({
             : undefined
         }
       />
-      {after}
+      {children}
     </>
   )
 })

@@ -77,8 +77,9 @@ const AlignmentsFeatureDetails = observer(function AlignmentsFeatureDetails({
               value
             )
           }
-          after={<AlignmentPanels feat={raw} model={model} />}
-        />
+        >
+          <AlignmentPanels feat={raw} model={model} />
+        </FeatureDetailsPanel>
       )}
     />
   )
