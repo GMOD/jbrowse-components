@@ -86,9 +86,11 @@ function isFilterable(path: string[]) {
 
 const FeatDefined = observer(function FeatDefined({
   feat,
+  raw,
   model,
 }: {
   feat: VCFFeatureSerialized
+  raw: VCFFeatureSerialized
   model: VariantFeatureWidgetModel
 }) {
   // annotated to shed the MST node brand types.frozen() carries on the
@@ -102,24 +104,22 @@ const FeatDefined = observer(function FeatDefined({
     clickedAlleles,
     ...rest
   } = feat
-  const { REF = '', ALT = [], INFO } = rest
+  const { REF = '', ALT = [], INFO } = raw
   const altBp = symbolicAlleleBp(ALT, INFO)
   const repeat = useMemo(() => {
     try {
-      return tandemRepeatOf(feat)
+      return tandemRepeatOf(raw)
     } catch (e) {
       console.error(e)
       return undefined
     }
-  }, [feat])
+  }, [raw])
   const [selectedAlt, setSelectedAlt] = useState<number | null>(null)
   const consequences = consequencePanels(INFO, descriptions)
   const display = jexlFilterDisplay(model.track)
-  const { unformattedFeatureData } = model
-  const filterActions =
-    display && unformattedFeatureData
-      ? rawValueFilterActions(display, unformattedFeatureData)
-      : undefined
+  const filterActions = display
+    ? rawValueFilterActions(display, raw)
+    : undefined
   const fieldActions = filterActions
     ? (path: string[], value: unknown) =>
         isFilterable(path) ? filterActions(path, value) : []
@@ -140,7 +140,7 @@ const FeatDefined = observer(function FeatDefined({
       </Suspense>
       <FeatureDetails
         feature={rest}
-        unformatted={model.unformattedFeatureData}
+        unformatted={raw}
         model={model}
         descriptions={{
           ...descriptions,
@@ -170,7 +170,7 @@ const FeatDefined = observer(function FeatDefined({
             format={format}
           />
         ))}
-        <LaunchBreakendWidgetArea model={model} feat={feat} />
+        <LaunchBreakendWidgetArea model={model} feat={raw} />
       </Suspense>
       {clickedSample ? (
         <BaseCard title={`Sample: ${clickedSample}`}>
@@ -179,7 +179,7 @@ const FeatDefined = observer(function FeatDefined({
         </BaseCard>
       ) : null}
       <VariantSampleGrid
-        feature={feat}
+        feature={raw}
         descriptions={descriptions}
         selectedAlt={selectedAlt}
       />
@@ -192,17 +192,18 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget({
 }: {
   model: VariantFeatureWidgetModel
 }) {
-  const { featureData } = model
+  const { featureData, unformattedFeatureData } = model
   // keyed by feature: the widget instance is reused for the next variant clicked
   // (one widget id per track, and the drawer renders it without a key), so
   // without this the sample grid's filters and genotype selection carry over and
   // silently empty the next variant's grid
   return (
     <FeatureDetailsFrame model={model}>
-      {featureData ? (
+      {featureData && unformattedFeatureData ? (
         <FeatDefined
           key={featureKey(model.trackId, featureData.uniqueId)}
           feat={featureData}
+          raw={unformattedFeatureData}
           model={model}
         />
       ) : null}

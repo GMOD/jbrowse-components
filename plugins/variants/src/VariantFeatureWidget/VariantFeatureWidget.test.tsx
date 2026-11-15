@@ -1,5 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  FormatDetailsConfigSchemaFactory,
+} from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
@@ -13,15 +16,21 @@ import type { Descriptions, VCFFeatureSerialized } from './types.ts'
 function renderWidget(
   featureData: VCFFeatureSerialized,
   descriptions?: Descriptions,
+  formatFeature?: string,
 ) {
   const pluginManager = new PluginManager([])
   const Session = types.model({
     rpcManager: types.optional(types.frozen(), {}),
-    configuration: ConfigurationSchema('test', {}),
+    configuration: ConfigurationSchema('test', {
+      formatDetails: FormatDetailsConfigSchemaFactory(),
+    }),
     widget: stateModelFactory(pluginManager),
   })
   const model = Session.create(
-    { widget: { type: 'VariantFeatureWidget', descriptions } },
+    {
+      configuration: { formatDetails: { feature: formatFeature } },
+      widget: { type: 'VariantFeatureWidget', descriptions },
+    },
     { pluginManager },
   )
   model.widget.setFeatureData(featureData)
@@ -440,4 +449,22 @@ test("the ALT and FILTER names keep the column's description beside the header's
     /^filter status/,
   )
   expect(getByText('INFO.DP').getAttribute('aria-label')).toBe('Read depth')
+})
+
+test('a formatDetails callback hiding ALT and type leaves the panels computed from the record', async () => {
+  const { findByText, queryByText } = renderWidget(
+    {
+      uniqueId: 'hidden',
+      refName: 'ctgA',
+      start: 176,
+      end: 177,
+      type: 'breakend',
+      REF: 'A',
+      ALT: ['A[ctgB:100['],
+    },
+    undefined,
+    'jexl:{ALT:null,type:null}',
+  )
+  await findByText('ctgB:100')
+  expect(queryByText('ALT')).toBeNull()
 })
