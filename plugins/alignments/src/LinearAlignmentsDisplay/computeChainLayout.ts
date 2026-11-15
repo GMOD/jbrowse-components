@@ -9,12 +9,11 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import {
   cloneWithLayout,
-  extendRefNameSpan,
   placeRectCapped,
-  refNameAxisShift,
   withoutLayout,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import { UNCAPPED, isChainData } from '../RenderAlignmentDataRPC/types.ts'
+import { screenOrderOf } from '../features/linkedReads/computeOverlay.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import {
   OVERLAP_MATES,
@@ -23,10 +22,7 @@ import {
 import { getOrCreate } from '../shared/util.ts'
 import { mergeSortedSpans, subtractSortedSpans } from './spanOverlaps.ts'
 
-import type {
-  RefNameSpans,
-  RegionBounds,
-} from '../RenderAlignmentDataRPC/sortLayout.ts'
+import type { RegionBounds } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type {
   ChainPileupData,
   ChainedPileupData,
@@ -88,8 +84,8 @@ function buildChainRowMap(
 }
 
 // One chain's merged state while `mergeChains` folds the regions into it.
-// `minStart`/`maxEnd` are on the shifted placement axis and drive placement;
-// `reach`/`refSeen`/`refMin`/`refMax` are unshifted genomic coordinates and
+// `minStart`/`maxEnd` are on the screen-order placement axis and drive
+// placement; `reach`/`refSeen`/`refMin`/`refMax` are genomic coordinates and
 // drive the packing key alone — see the note where `distance` is resolved.
 interface MergedChain {
   minStart: number
@@ -112,13 +108,27 @@ function chainEntriesByRefName(
   entries: [number, ChainedPileupData][],
   refNameOf: (idx: number) => string | undefined,
 ) {
-  const byRef = new Map<string | undefined, ChainPileupData[]>()
+  const byRef = new Map<string | undefined, [number, ChainPileupData][]>()
   for (const [idx, data] of entries) {
     if (isChainData(data)) {
-      getOrCreate(byRef, refNameOf(idx), () => []).push(data)
+      getOrCreate(byRef, refNameOf(idx), () => []).push([idx, data])
     }
   }
   return byRef
+}
+
+// Negated for a whole-view flip, so its rows mirror the unflipped view's.
+function placementAxis(
+  entries: [number, ChainedPileupData][],
+  regions: ReadonlyMap<number, RegionBounds> | undefined,
+) {
+  const reversedOf = (idx: number) => regions?.get(idx)?.reversed
+  const sign =
+    entries.length > 0 && entries.every(([idx]) => reversedOf(idx) === true)
+      ? -1
+      : 1
+  return (idx: number, bp: number) =>
+    sign * screenOrderOf(reversedOf(idx), idx, bp)
 }
 
 // Chains spanning multiple regions are merged by name. min/max give the true
@@ -130,40 +140,15 @@ function chainEntriesByRefName(
 // read is a singleton in each of the two regions, so a chain crossing the whole
 // view carried one alignment's distance and packed among the tight ones. See
 // `reach` at the end.
-//
-// Bounds are shifted onto their region's refName segment of the placement axis
-// (`refNameAxisShift`) before merging — refNames share the genomic coordinate
-// space while occupying disjoint screen space, so packing ctgA and ctgB chains
-// on one axis pushed every ctgB chain below the ctgA chains covering the same
-// bp. Shifting per region rather than per merged chain is what keeps an
-// inter-chromosomal chain's two ends in their own segments. Identity for
-// single-refName views, so the common case is untouched. `distance` is a span,
-// not a coordinate, so it never shifts.
 function mergeChains(
   entries: [number, ChainedPileupData][],
   regions: ReadonlyMap<number, RegionBounds> | undefined,
 ) {
   const refNameOf = (idx: number) => regions?.get(idx)?.refName
-  const spans: RefNameSpans = new Map()
-  for (const [idx, data] of entries) {
-    if (isChainData(data)) {
-      const { chainNames, chainAbsMinStarts, chainAbsMaxEnds } = data
-      for (let i = 0; i < chainNames.length; i++) {
-        extendRefNameSpan(
-          spans,
-          refNameOf(idx),
-          chainAbsMinStarts[i]!,
-          chainAbsMaxEnds[i]!,
-        )
-      }
-    }
-  }
-  const shiftFor = refNameAxisShift(spans)
-
+  const axis = placementAxis(entries, regions)
   const merged = new Map<string, MergedChain>()
   for (const [refName, group] of chainEntriesByRefName(entries, refNameOf)) {
-    const offset = shiftFor(refName)
-    for (const data of group) {
+    for (const [idx, data] of group) {
       const { chainNames, chainAbsMinStarts, chainAbsMaxEnds, chainDistances } =
         data
       for (let i = 0; i < chainNames.length; i++) {
@@ -171,11 +156,15 @@ function mergeChains(
         const lo = chainAbsMinStarts[i]!
         const hi = chainAbsMaxEnds[i]!
         const distance = chainDistances[i]!
+        const a = axis(idx, lo)
+        const b = axis(idx, hi)
+        const minStart = Math.min(a, b)
+        const maxEnd = Math.max(a, b)
         const existing = merged.get(name)
         if (!existing) {
           merged.set(name, {
-            minStart: lo + offset,
-            maxEnd: hi + offset,
+            minStart,
+            maxEnd,
             distance,
             crossesRegions: false,
             reach: 0,
@@ -185,8 +174,6 @@ function mergeChains(
           })
           continue
         }
-        const minStart = lo + offset
-        const maxEnd = hi + offset
         existing.crossesRegions = true
         if (minStart < existing.minStart) {
           existing.minStart = minStart
@@ -218,26 +205,14 @@ function mergeChains(
       }
     }
   }
-  // `reach` — how far the chain covers within any ONE refName, in unshifted
-  // genomic coordinates — is the floor under the packing key, and the last
-  // refName's span is banked here.
-  //
-  // A DISTANCE, NOT A COORDINATE DIFFERENCE, and that distinction is the whole
-  // of this. The rule used to be `maxEnd - minStart` over the merged bounds,
-  // which for two windows on one refName (collapse-introns) is exactly this
-  // number and is right — but those bounds are on the PLACEMENT axis, which
-  // `refNameAxisShift` builds by laying each refName end to end. So across
-  // chromosomes it measured the gap between two segments of a synthetic axis, a
-  // quantity with no genomic meaning that is nonetheless larger than any local
-  // chain's span by construction. Every cross-region chain therefore sorted
-  // behind every local one, and in a row-capped pileup an interchromosomal
-  // fusion's own read support — the entire subject of the view chain mode exists
-  // to serve — went below the fold.
-  //
-  // Two ends on two chromosomes are not a distance apart at all, so the honest
-  // reading of "how far does this chain reach" is the furthest it reaches on any
-  // one of them. Identity for the single-refName case, which is what the rule
-  // was verified against.
+  // `reach` — how far the chain covers within any ONE refName, in genomic
+  // coordinates — is the floor under the packing key, and the last refName's
+  // span is banked here. It is a distance, not a difference of placement-axis
+  // coordinates, which lay regions a fixed stride apart and so measure nothing
+  // genomic: charged that, every cross-region chain sorted behind every local
+  // one, and a row-capped fusion view lost its own read support below the
+  // fold. Two ends on two chromosomes are not a distance apart at all, so the
+  // chain reaches the furthest it reaches on any one of them.
   return [...merged.entries()].map(([name, b]) => ({
     name,
     minStart: b.minStart,
@@ -265,9 +240,10 @@ export function readYsFromRowMap(
 /**
  * Compute chain layout across multiple regions, deduplicating chains that
  * span region boundaries by read name. Returns a rowMap keyed by chain name
- * for distributing rows back to each region. Mirrors computeMultiRegionLayout()
- * from sortLayout.ts, including its per-refName segmentation of the placement
- * axis (`regions`, omitted only by single-region callers/tests).
+ * for distributing rows back to each region. Unlike computeMultiRegionLayout()
+ * in sortLayout.ts, which packs on the genomic axis segmented per refName, it
+ * packs on the screen order of the displayed regions (`regions`, omitted only
+ * by single-region callers/tests), since a chain's connector runs across them.
  */
 export function computeMultiRegionChainLayout(
   entries: [number, ChainedPileupData][],

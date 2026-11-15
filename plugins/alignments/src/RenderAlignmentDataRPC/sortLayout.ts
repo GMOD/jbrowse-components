@@ -728,6 +728,7 @@ export interface RegionBounds {
   refName: string
   start: number
   end: number
+  reversed?: boolean
 }
 
 // The sort that applies to these regions, or undefined. Both layout paths go
@@ -816,9 +817,9 @@ export function extendRefNameSpan(
  * ctgB's pileup. Identity when every region shares a refName (the single-region
  * and collapse-introns cases), so single-refName placement is untouched.
  *
- * Shared by pileup layout (`segmentExtentsByRefName`, shifting each read's
- * unioned extent) and chain layout (`mergeChains`, shifting each chain's
- * per-region bounds) so the two can't drift on the rule.
+ * Pileup layout only (`segmentExtentsByRefName`, shifting each read's unioned
+ * extent): chain layout packs on the screen order of the displayed regions
+ * (`mergeChains`), since a chain's connector runs across them.
  */
 export function refNameAxisShift(spans: RefNameSpans) {
   if (spans.size < 2) {

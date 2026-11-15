@@ -194,10 +194,15 @@ export function screenOrder(
   regionIndex: number,
   bp: number,
 ) {
-  return (
-    regionIndex * REGION_STRIDE +
-    (displayedRegions[regionIndex]?.reversed ? -bp : bp)
-  )
+  return screenOrderOf(displayedRegions[regionIndex]?.reversed, regionIndex, bp)
+}
+
+export function screenOrderOf(
+  reversed: boolean | undefined,
+  regionIndex: number,
+  bp: number,
+) {
+  return regionIndex * REGION_STRIDE + (reversed ? -bp : bp)
 }
 
 function screenStrand(strand: number, reversed: boolean | undefined) {
