@@ -297,3 +297,22 @@ test('a CRAM record stored with QUAL * reports no quality, as its BAM twin does'
     expect(feature.get('NUMERIC_QUAL')).toBeUndefined()
   }
 })
+
+test('both mates of every wgsim tie face FR', async () => {
+  const region = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 8000,
+  }
+  const features = await firstValueFrom(
+    makeAdapter('../../../../test_data/volvox/wgsim_short_reads_ties.cram')
+      .getFeatures(region)
+      .pipe(toArray()),
+  )
+  const oriented = features
+    .map(f => f.get('pair_orientation'))
+    .filter(o => o !== undefined)
+  expect(oriented).toHaveLength(16)
+  expect(oriented.filter(o => o !== 'F1R2' && o !== 'F2R1')).toEqual([])
+})
