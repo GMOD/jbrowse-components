@@ -316,6 +316,32 @@ test('toggling coordinates restyles the readout in place', () => {
   expect(getByTestId('sequence_panel').firstElementChild).toBe(before)
 })
 
+test('CDS mode capitalizes a soft-masked CDS unless told to keep the case', () => {
+  const model = SequenceFeatureDetailsF().create()
+  const feature = {
+    ...f,
+    start: 0,
+    end: 9,
+    subfeatures: [
+      { refName: 'chr1', start: 0, end: 9, type: 'exon' },
+      { refName: 'chr1', start: 0, end: 9, type: 'CDS' },
+    ],
+  }
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="cds"
+      sequence={{ seq: 'ATGaaaTAA' }}
+      feature={feature}
+    />,
+  )
+  expect(getSequenceFasta(getByTestId('sequence_panel'))).toContain('ATGAAATAA')
+  act(() => {
+    model.setUpperCaseCDS(false)
+  })
+  expect(getSequenceFasta(getByTestId('sequence_panel'))).toContain('ATGaaaTAA')
+})
+
 test('single exon cDNA should not have duplicate sequences', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()

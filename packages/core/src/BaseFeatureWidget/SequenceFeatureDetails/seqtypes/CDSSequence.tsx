@@ -16,8 +16,13 @@ const CDSSequence = observer(function CDSSequence({
   sequence: string
   model: SequenceFeatureDetailsModel
 }) {
+  const str = stitch(cds, sequence)
   return (
-    <PlainSequence model={model} color={cdsColor} str={stitch(cds, sequence)} />
+    <PlainSequence
+      model={model}
+      color={cdsColor}
+      str={model.upperCaseCDS ? str.toUpperCase() : str}
+    />
   )
 })
 
