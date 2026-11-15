@@ -27,7 +27,8 @@ import type { StatusCallback } from '@jbrowse/core/util'
  *
  * `showSoftClips=false` (the default) produces zero-length softclip-base
  * arrays — chain mode uses this so softclip fields are still present in the
- * result with the correct shape.
+ * result with the correct shape. Shown soft clips keep only the bases inside
+ * `region`.
  */
 export async function buildAlignmentDetailArrays({
   features,
@@ -40,6 +41,7 @@ export async function buildAlignmentDetailArrays({
   perBaseQualities,
   perBaseLetters,
   showSoftClips = false,
+  region,
   statusCallback,
 }: {
   features: FeatureData[]
@@ -52,12 +54,17 @@ export async function buildAlignmentDetailArrays({
   perBaseQualities: PerBaseColumns
   perBaseLetters: PerBaseColumns
   showSoftClips?: boolean
+  region: { start: number; end: number }
   statusCallback: StatusCallback | undefined
 }) {
   return updateStatus('Processing alignments', statusCallback, async () => ({
     gapArrays: buildGapArrays(gaps),
     mismatchArrays: buildMismatchArrays(mismatches),
-    softclipBaseArrays: buildSoftclipBaseArrays(showSoftClips ? softclips : []),
+    softclipBaseArrays: buildSoftclipBaseArrays(
+      showSoftClips ? softclips : [],
+      region.start,
+      region.end,
+    ),
     interbaseArrays: buildInterbaseArrays(insertions, softclips, hardclips),
     modificationArrays: buildModificationArrays(modifications),
     perBaseQualityArrays: buildPerBaseQualityArrays(perBaseQualities),

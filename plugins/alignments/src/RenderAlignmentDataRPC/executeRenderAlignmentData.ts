@@ -237,6 +237,7 @@ async function buildGroupResult(
     perBaseQualities,
     perBaseLetters,
     showSoftClips,
+    region,
     statusCallback,
   })
 
