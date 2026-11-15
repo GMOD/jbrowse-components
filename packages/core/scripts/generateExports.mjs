@@ -71,6 +71,11 @@ const preservedExports = [
   // imports it by subpath, and without an entry here tsc has no portable path
   // to write into the plugin's `.d.ts` and fails declaration emit with TS2883.
   '@jbrowse/core/util/unknownSnapshotKeys',
+  // Published since 4.x for plugins drawing their own feature widget. The
+  // variant, alignments and synteny widgets were the last importers, and now
+  // draw through `FeatureDetailsPanel`.
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails',
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter',
 ]
 
 // The directories whose import sites decide what @jbrowse/core publishes.
