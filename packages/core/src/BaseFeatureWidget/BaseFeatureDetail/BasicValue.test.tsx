@@ -1,6 +1,9 @@
-import { act, fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render, waitFor } from '@testing-library/react'
 
+import copyToClipboard from '../../util/copyToClipboard.ts'
 import BasicValue from './BasicValue.tsx'
+
+jest.mock('../../util/copyToClipboard.ts')
 
 const stubbed = globalThis.ResizeObserver
 let reportHeight: (height: number) => void
@@ -52,4 +55,42 @@ test('a tall value is clipped until expanded, with no scroller of its own', () =
   expect(getComputedStyle(clip).maxHeight).toBe('none')
   fireEvent.click(getByText('Show less'))
   expect(getComputedStyle(clip).maxHeight).toBe('300px')
+})
+
+// a long read's SEQ runs to 100k+ characters, which slow the app in the DOM
+test('a value past the cut-off is cut until expanded, and Copy takes all of it', async () => {
+  const seq = 'ACGT'.repeat(1000)
+  const { container, getByText } = render(<BasicValue value={seq} />)
+  expect(container.textContent).not.toContain(seq)
+  expect(container.textContent).toContain(`${seq.slice(0, 2000)}…`)
+
+  fireEvent.click(getByText('Copy'))
+  await waitFor(() => {
+    expect(copyToClipboard).toHaveBeenCalledWith(seq)
+  })
+
+  fireEvent.click(getByText('Show more'))
+  expect(container.textContent).toContain(seq)
+})
+
+test('ordinary long text is whole, left to the clamp', () => {
+  const note = 'word '.repeat(300)
+  const { container, queryByText } = render(<BasicValue value={note} />)
+  expect(container.textContent).toContain(note)
+  expect(queryByText('Copy')).toBeNull()
+})
+
+test('a cut HTML value previews as HTML, not as its tags', () => {
+  const { container } = render(
+    <BasicValue value={`<b>bold</b> ${'A'.repeat(3000)}`} />,
+  )
+  expect(container.querySelector('b')?.textContent).toBe('bold')
+  expect(container.textContent).not.toContain('<b>')
+})
+
+test('a bare URL is never cut', () => {
+  const url = `https://example.com/${'a'.repeat(3000)}`
+  const { getByRole, queryByText } = render(<BasicValue value={url} />)
+  expect(getByRole('link').getAttribute('href')).toBe(url)
+  expect(queryByText('Copy')).toBeNull()
 })

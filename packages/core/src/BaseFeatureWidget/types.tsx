@@ -25,11 +25,12 @@ export interface Descriptors {
   [key: string]: React.ReactNode | Descriptors
 }
 
+/** What a row shows for a value: an element as given, anything else as a value. */
 export type FeatureFormatter = (
   value: unknown,
   key: string,
   index?: number,
-) => React.ReactNode
+) => unknown
 
 /** Menu items for one attribute's value, offered from a button on its row. */
 export type FieldActions = (path: string[], value: unknown) => MenuItem[]

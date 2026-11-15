@@ -6,7 +6,6 @@ import {
   FeatureDetailsPanel,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { assembleLocString, notEmpty } from '@jbrowse/core/util'
@@ -123,7 +122,7 @@ const VariantDetails = observer(function VariantDetails({
             mate={getTraMate(INFO)}
           />
         ) : (
-          <Formatter value={value} />
+          value
         )
       }
       before={

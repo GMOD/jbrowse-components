@@ -2,7 +2,6 @@ import {
   FeatureDetailsFrame,
   FeatureDetailsPanel,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { observer } from 'mobx-react'
 
 import LinkToSyntenyView from './LinkToSyntenyView.tsx'
@@ -21,7 +20,6 @@ const SyntenyFeatureDetail = observer(function SyntenyFeatureDetail({
           model={model}
           feature={feature}
           unformatted={raw}
-          formatter={value => <Formatter value={value} />}
           after={<LinkToSyntenyView model={model} feat={raw} />}
         />
       )}

@@ -5,7 +5,6 @@ import {
   FeatureDetailsFrame,
   FeatureDetailsPanel,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { observer } from 'mobx-react'
 
 import Flags from './Flags.tsx'
@@ -75,7 +74,7 @@ const AlignmentsFeatureDetails = observer(function AlignmentsFeatureDetails({
                 {String(value)}
               </NavToLocLink>
             ) : (
-              <Formatter value={value} />
+              value
             )
           }
           after={<AlignmentPanels feat={raw} model={model} />}

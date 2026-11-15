@@ -11,9 +11,8 @@ function renderWithTheme(ui: React.ReactElement) {
   )
 }
 
-// The alignments, variant and synteny panels pass every value through
-// Formatter, which printed plain text: a formatDetails callback's link, or an
-// INFO field's URL, was dead text there and a link everywhere else
+// Formatter is what a plugin's formatter returns to have a value drawn as any
+// row draws it, so it links URLs and cuts long text the same way
 describe('Formatter', () => {
   test('a bare URL is a link', () => {
     const { getByRole } = renderWithTheme(
@@ -25,7 +24,7 @@ describe('Formatter', () => {
   })
 
   test('a long URL is left whole', () => {
-    const url = `https://example.com/${'a'.repeat(150)}`
+    const url = `https://example.com/${'a'.repeat(3000)}`
     const { getByRole, queryByText } = renderWithTheme(
       <Formatter value={url} />,
     )
@@ -35,9 +34,9 @@ describe('Formatter', () => {
 
   test('a long value is truncated', () => {
     const { getByText } = renderWithTheme(
-      <Formatter value={'ACGT'.repeat(50)} />,
+      <Formatter value={'ACGT'.repeat(1000)} />,
     )
-    expect(getByText('Show more')).toBeTruthy()
+    expect(getByText('Copy')).toBeTruthy()
   })
 
   test('a symbolic allele stays text', async () => {

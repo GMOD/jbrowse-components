@@ -188,13 +188,7 @@ exports[`renders with just the required model elements 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          &lt;TRA&gt;
-                        </div>
-                      </div>
+                      &lt;TRA&gt;
                     </div>
                   </div>
                   <div
