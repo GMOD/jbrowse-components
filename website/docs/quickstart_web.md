@@ -23,7 +23,6 @@ tabix, and use placeholder filenames you swap for your own.
 npm install -g @jbrowse/cli
 jbrowse create jbrowse2 && cd jbrowse2
 
-samtools faidx genome.fa
 jbrowse add-assembly genome.fa --load copy
 
 samtools index file.bam
@@ -96,12 +95,12 @@ npx serve -S .                # http://localhost:3000
 ### Genome assembly (FASTA)
 
 ```bash
-samtools faidx genome.fa
 jbrowse add-assembly genome.fa --load copy
 ```
 
-`--name` (`-n`) sets the assembly name, which defaults to the filename.
-bgzip-compressed indexed FASTA and 2bit work too.
+A FASTA with no `genome.fa.fai` beside it gets one generated, so samtools is
+optional here. `--name` (`-n`) sets the assembly name, which defaults to the
+filename. bgzip-compressed indexed FASTA and 2bit work too.
 
 <Figure caption="The linear genome view setup with volvox in the assembly dropdown." src="/img/lgv_assembly.png"/>
 

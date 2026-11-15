@@ -19,6 +19,7 @@ import {
 import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
 
 import type { Assembly, Config, Sequence } from '../../base.ts'
+import type { FaiToGenerate } from './generateFai.ts'
 
 export type SequenceType =
   | 'indexedFasta'
@@ -187,10 +188,16 @@ async function customSequenceAdapter(argsSequence: string, name?: string) {
 export async function getAssembly({
   runFlags,
   argsSequence,
+  destDir,
 }: {
   runFlags: AssemblyFlags
   argsSequence: string
-}): Promise<{ assembly: Assembly; filesToLoad: string[] }> {
+  destDir: string
+}): Promise<{
+  assembly: Assembly
+  filesToLoad: string[]
+  faiToGenerate?: FaiToGenerate
+}> {
   validateLoadAndLocation(argsSequence, runFlags.load)
 
   const type = runFlags.type ?? guessSequenceType(argsSequence)
@@ -220,6 +227,27 @@ export async function getAssembly({
     field: s.field,
     path: runFlags[s.field] ?? `${argsSequence}${s.suffix}`,
   }))
+  const isLocal = !isURL(argsSequence) && fs.existsSync(argsSequence)
+  const missingSidecars = isLocal
+    ? sidecars.filter(s => !isURL(s.path) && !fs.existsSync(s.path))
+    : []
+  if (type === 'bgzipFasta' && missingSidecars.length > 0 && !runFlags.force) {
+    throw new Error(
+      `Missing ${missingSidecars.map(s => s.path).join(' and ')}: run "samtools faidx ${argsSequence}" to write the .fai and .gzi`,
+    )
+  }
+  const faiToGenerate =
+    type === 'indexedFasta' &&
+    runFlags.faiLocation === undefined &&
+    missingSidecars.length > 0
+      ? {
+          fasta: argsSequence,
+          fai:
+            runFlags.load === 'inPlace'
+              ? `${argsSequence}.fai`
+              : path.join(destDir, `${path.basename(argsSequence)}.fai`),
+        }
+      : undefined
   const name = runFlags.name || spec.defaultName(argsSequence)
   const adapter = {
     type: spec.adapterType,
@@ -228,7 +256,10 @@ export async function getAssembly({
   }
   return {
     assembly: { name, sequence: makeSequence(name, adapter) },
-    filesToLoad: [argsSequence, ...sidecars.map(s => s.path)],
+    filesToLoad: faiToGenerate
+      ? [argsSequence]
+      : [argsSequence, ...sidecars.map(s => s.path)],
+    faiToGenerate,
   }
 }
 

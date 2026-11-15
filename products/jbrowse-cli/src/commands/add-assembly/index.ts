@@ -5,6 +5,7 @@ import { debug, printHelp, requirePositional } from '../../utils.ts'
 import { loadFiles } from '../add-track-utils/file-operations.ts'
 import { validateLoadOption } from '../add-track-utils/validators.ts'
 import { saveConfigAndReport } from '../shared/config-operations.ts'
+import { generateFai } from './generateFai.ts'
 import {
   addAssemblyToConfig,
   enhanceAssembly,
@@ -19,7 +20,7 @@ export async function run(args?: string[]) {
     type: {
       type: 'string',
       short: 't',
-      description: `type of sequence, by default inferred from sequence file\n\nindexedFasta - An index FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation\n\nbgzipFasta - A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation\n\ntwoBit - A twoBit (e.g. .2bit) file\n\nchromSizes - A chromosome sizes (e.g. .chrom.sizes) file\n\ncustom - Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
+      description: `type of sequence, by default inferred from sequence file\n\nindexedFasta - A FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation, and a local FASTA with no .fai gets one generated\n\nbgzipFasta - A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation\n\ntwoBit - A twoBit (e.g. .2bit) file\n\nchromSizes - A chromosome sizes (e.g. .chrom.sizes) file\n\ncustom - Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
       choices: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
     },
     name: {
@@ -115,7 +116,7 @@ export async function run(args?: string[]) {
     "assembly's About dialog."
 
   const examples = [
-    '# add assembly to installation in current directory. assumes .fai file also exists, and copies GRCh38.fa and GRCh38.fa.fai to current directory',
+    '# add assembly to installation in current directory, copying GRCh38.fa and GRCh38.fa.fai there; with no GRCh38.fa.fai, one is generated',
     '$ jbrowse add-assembly GRCh38.fa --load copy',
     '',
     '# add assembly to a specific jb2 installation path using --out, and copies the .fa and .fa.fai file to /path/to/jb2',
@@ -165,11 +166,16 @@ export async function run(args?: string[]) {
   debug(`Sequence location is: ${argsSequence}`)
 
   const target = await resolveTargetPath(output)
-  const { assembly: baseAssembly, filesToLoad: sequenceFiles } =
-    await getAssembly({
-      runFlags: flags,
-      argsSequence,
-    })
+  const destDir = path.dirname(target)
+  const {
+    assembly: baseAssembly,
+    filesToLoad: sequenceFiles,
+    faiToGenerate,
+  } = await getAssembly({
+    runFlags: flags,
+    argsSequence,
+    destDir,
+  })
   const { assembly, filesToLoad: aliasFiles } = await enhanceAssembly(
     baseAssembly,
     flags,
@@ -182,9 +188,14 @@ export async function run(args?: string[]) {
     runFlags: flags,
   })
 
+  if (faiToGenerate) {
+    console.log(`No FASTA index found, generating ${faiToGenerate.fai}`)
+    await generateFai({ ...faiToGenerate, force: flags.force })
+  }
+
   await loadFiles({
     files: [...sequenceFiles, ...aliasFiles],
-    destDir: path.dirname(target),
+    destDir,
     mode: flags.load,
     force: flags.force,
   })

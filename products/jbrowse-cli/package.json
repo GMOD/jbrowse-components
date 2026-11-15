@@ -32,6 +32,7 @@
     "generate-readme": "./generate_readme.sh > README.md"
   },
   "dependencies": {
+    "@gmod/faidx": "^3.1.0",
     "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/launch-args": "workspace:^",

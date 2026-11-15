@@ -2184,6 +2184,9 @@ importers:
 
   products/jbrowse-cli:
     dependencies:
+      '@gmod/faidx':
+        specifier: ^3.1.0
+        version: 3.1.0
       '@jbrowse/add-track-core':
         specifier: workspace:^
         version: link:../../packages/add-track-core

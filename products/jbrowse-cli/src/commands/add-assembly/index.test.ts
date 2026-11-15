@@ -182,6 +182,68 @@ test('adds an assembly from a FASTA (bgzip)', async () => {
   })
 })
 
+test('generates a missing .fai into the install dir when copying', async () => {
+  await runInTmpDir(async ctx => {
+    await mkdir(ctxDir(ctx, 'src'))
+    await mkdir(ctxDir(ctx, 'jb2'))
+    await copyFile(dataDir('simple.fasta'), ctxDir(ctx, 'src/simple.fa'))
+    const { error } = await runCommand([
+      'add-assembly',
+      path.join('src', 'simple.fa'),
+      '--load',
+      'copy',
+      '--out',
+      'jb2',
+    ])
+    expect(error).toBe(undefined)
+    expect(fs.readFileSync(ctxDir(ctx, 'jb2/simple.fa.fai'), 'utf8')).toBe(
+      fs.readFileSync(dataDir('simple.fasta.fai'), 'utf8'),
+    )
+    expect(fs.existsSync(ctxDir(ctx, 'src/simple.fa.fai'))).toBe(false)
+    expect(
+      readConf(ctx, 'jb2').assemblies[0].sequence.adapter.faiLocation.uri,
+    ).toBe('simple.fa.fai')
+  })
+})
+
+test('generates a missing .fai beside the FASTA with --load inPlace', async () => {
+  await runInTmpDir(async ctx => {
+    await copyFile(dataDir('simple.fasta'), ctxDir(ctx, 'simple.fa'))
+    const { error } = await runCommand([
+      'add-assembly',
+      'simple.fa',
+      '--load',
+      'inPlace',
+    ])
+    expect(error).toBe(undefined)
+    expect(fs.readFileSync(ctxDir(ctx, 'simple.fa.fai'), 'utf8')).toBe(
+      fs.readFileSync(dataDir('simple.fasta.fai'), 'utf8'),
+    )
+  })
+})
+
+test('a bgzip FASTA missing its .gzi names samtools faidx', async () => {
+  await runInTmpDir(async ctx => {
+    await copyFile(dataDir('simple.fasta.gz'), ctxDir(ctx, 'simple.fa.gz'))
+    await copyFile(
+      dataDir('simple.fasta.gz.fai'),
+      ctxDir(ctx, 'simple.fa.gz.fai'),
+    )
+    const { error } = await runCommand([
+      'add-assembly',
+      'simple.fa.gz',
+      '--load',
+      'copy',
+      '--out',
+      'jb2',
+    ])
+    expect(error?.message).toBe(
+      'Error: Missing simple.fa.gz.gzi: run "samtools faidx simple.fa.gz" to write the .fai and .gzi',
+    )
+    expect(fs.existsSync(ctxDir(ctx, 'jb2/config.json'))).toBe(false)
+  })
+})
+
 test('adds an assembly from a 2bit', async () => {
   await runInTmpDir(async ctx => {
     await runCommand(['add-assembly', dataDir('simple.2bit'), '--load', 'copy'])
