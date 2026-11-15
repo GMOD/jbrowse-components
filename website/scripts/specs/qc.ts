@@ -51,6 +51,20 @@ const lrSvTrack = {
     type: 'BigBedAdapter',
     uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/lrSv/1kgOnt.bb',
   },
+  displayDefaults: {
+    encoding: {
+      color: {
+        field: 'svType',
+        scale: {
+          type: 'ordinal',
+          domain: ['DEL', 'INS', 'CPX'],
+          range: ['rgb(200,0,0)', 'rgb(0,0,200)', 'rgb(140,0,200)'],
+          names: ['Deletion', 'Insertion', 'Complex'],
+        },
+        legend: { title: 'SV type' },
+      },
+    },
+  },
 }
 
 const HUB_SUBTRACKS = [umapTrack, lrSvTrack]

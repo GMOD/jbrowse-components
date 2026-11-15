@@ -162,7 +162,21 @@ bin's minimum and maximum do not fill the low-coverage block at this zoom:
   "trackId": "hg38-lrSv1kgOnt",
   "name": "Long-read SVs - 1KG Vienna ONT SVs",
   "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/lrSv/1kgOnt.bb",
-  "assemblyNames": ["hg38"]
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "encoding": {
+      "color": {
+        "field": "svType",
+        "scale": {
+          "type": "ordinal",
+          "domain": ["DEL", "INS", "CPX"],
+          "range": ["rgb(200,0,0)", "rgb(0,0,200)", "rgb(140,0,200)"],
+          "names": ["Deletion", "Insertion", "Complex"]
+        },
+        "legend": { "title": "SV type" }
+      }
+    }
+  }
 }
 ```
 
