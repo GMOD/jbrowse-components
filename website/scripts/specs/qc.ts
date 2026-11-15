@@ -18,14 +18,24 @@ const SMN1_ZOOM_LOC = 'chr5:70,889,000-70,989,000'
 // Wider than the GIAB and ENCODE flagged intervals, so both edges are in frame.
 const OVERVIEW_LOC = 'chr5:69,200,000-71,700,000'
 
-// gnomAD coverage recovers at 71.375 Mb, and nothing narrower shows the edge.
-// The tutorial's control, chr5:71,455,000-71,485,000, is the right-hand fifth.
-const WIDE_LOC = 'chr5:70,850,000-71,500,000'
-
-const SMN_HIGHLIGHT = [
-  { refName: 'chr5', start: 70_924_940, end: 70_953_012, assemblyName: 'hg38' },
-  { refName: 'chr5', start: 70_049_523, end: 70_077_595, assemblyName: 'hg38' },
+// The overview's band marks the zoomed window in the compose trapezoid's own
+// red, so band and wedge read as one shape.
+const ZOOM_COLOR = 'rgba(227,36,43,0.14)'
+const ZOOM_HIGHLIGHT = [
+  {
+    refName: 'chr5',
+    start: 70_889_000,
+    end: 70_989_000,
+    assemblyName: 'hg38',
+    color: ZOOM_COLOR,
+  },
 ]
+
+// A bp's x inside the overview part's data area, which the app's margins inset
+// from the image (L = 12.4, W = 2976 of 3000 px); the app centres
+// OVERVIEW_LOC on 69,200,297.
+const overviewFrac = (bp: number) =>
+  (12.4 + ((bp - 69_200_297) / 2_500_000) * 2976) / 3000
 
 const UMAP_M100 = 'hg38-umap100Quantitative'
 
@@ -170,55 +180,6 @@ export const qcSpecs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
-    name: 'qc/smn_read_placement',
-    url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track, umapTrack],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: WIDE_LOC,
-          highlight: [SMN_HIGHLIGHT[0]!],
-          tracks: [
-            geneTrack(60, true),
-            mappabilityTrack,
-            gnomadCoverageTrack(90, 'none'),
-            {
-              trackId: 'na12878_qc_reads',
-              encoding: { color: 'mapq' },
-              legend: { show: true },
-              forceLoad: true,
-              coverage: { encoding: { y: { scale: { fenceQuantile: 0.99 } } } },
-              // A smaller featureHeight at 464 bp/px reaches the sparse tail of
-              // the pack and breaks the MAPQ block into a picket fence.
-              height: 260,
-            },
-          ],
-        },
-      ],
-    }),
-    viewportHeight: 805,
-    hideSelectors: HIDE_ISOFORM_CHIP,
-    readySelector: displayPainted('pileup-display'),
-    readyTimeout: 600000,
-    annotations: [
-      {
-        type: 'text',
-        text: 'SMN1',
-        fontSize: 18,
-        maxWidth: 330,
-        anchor: {
-          trackId: 'hg38-gnomad3MeanCoverage',
-          loc: 'chr5:70,925,000',
-          alignX: 'left',
-          fracY: 0.15,
-        },
-      },
-    ],
-  },
-
-  {
-    mode: 'url',
     name: 'qc/smn_problematic_regions',
     url: sessionSpec(HG38_HUB, {
       sessionTracks: [lrSvTrack],
@@ -227,10 +188,10 @@ export const qcSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: OVERVIEW_LOC,
-          highlight: SMN_HIGHLIGHT,
+          highlight: ZOOM_HIGHLIGHT,
           tracks: [
             { ...geneTrack(60, true), displayMode: 'compact' },
-            gnomadCoverageTrack(100, 'none'),
+            gnomadCoverageTrack(120, 'none'),
             {
               trackId: 'hg38-alllowmapandsegdupregions',
               height: 40,
@@ -243,23 +204,34 @@ export const qcSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    viewportHeight: 622,
+    viewportHeight: 642,
     hideSelectors: HIDE_ISOFORM_CHIP,
     annotations: [
       {
         type: 'text',
-        text: 'mappability dip',
+        text: 'Typical coverage',
+        fontSize: 19,
+        maxWidth: 300,
+        anchor: {
+          trackId: 'hg38-gnomad3MeanCoverage',
+          loc: 'chr5:71,550,000',
+          fracY: 0.1,
+        },
+      },
+      {
+        type: 'text',
+        text: 'Coverage stays low across the whole block',
         fontSize: 19,
         maxWidth: 340,
         anchor: {
           trackId: 'hg38-gnomad3MeanCoverage',
           loc: 'chr5:70,400,000',
-          fracY: 0.18,
+          fracY: 0.15,
         },
       },
       {
         type: 'text',
-        text: 'few long-read calls',
+        text: 'Few long-read SV calls inside the block',
         fontSize: 18,
         maxWidth: 340,
         anchor: {
@@ -272,87 +244,18 @@ export const qcSpecs: ScreenshotSpec[] = [
   },
 
   {
-    mode: 'url',
+    mode: 'compose',
     name: 'qc/smn_block_and_reads',
-    url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track, umapTrack, lrSvTrack],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: OVERVIEW_LOC,
-          highlight: SMN_HIGHLIGHT,
-          tracks: [
-            { ...geneTrack(60, true), displayMode: 'compact' },
-            gnomadCoverageTrack(90, 'none'),
-            {
-              trackId: 'hg38-alllowmapandsegdupregions',
-              height: 40,
-            },
-            {
-              trackId: LR_SV,
-              height: 100,
-            },
-          ],
-        },
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: WIDE_LOC,
-          tracks: [
-            geneTrack(60, true),
-            mappabilityTrack,
-            {
-              trackId: 'na12878_qc_reads',
-              encoding: { color: 'mapq' },
-              legend: { show: true },
-              forceLoad: true,
-              coverage: { encoding: { y: { scale: { fenceQuantile: 0.99 } } } },
-              height: 260,
-            },
-          ],
-        },
-      ],
-    }),
-    viewportHeight: 1250,
-    hideSelectors: HIDE_ISOFORM_CHIP,
-    readySelector: displayPainted('pileup-display'),
-    readyTimeout: 600000,
+    parts: ['qc/smn_problematic_regions', 'qc/smn1_evidence'],
+    gutter: 120,
     annotations: [
       {
-        type: 'text',
-        text: 'mappability dip',
-        fontSize: 19,
-        maxWidth: 340,
-        anchor: {
-          trackId: 'hg38-gnomad3MeanCoverage',
-          loc: 'chr5:70,300,000',
-          fracY: 0.18,
+        type: 'trapezoid',
+        fromAnchor: {
+          selector: '[data-part="0"]',
+          fracX: [overviewFrac(70_889_000), overviewFrac(70_989_000)],
         },
-      },
-      {
-        type: 'text',
-        text: 'few long-read calls',
-        fontSize: 18,
-        maxWidth: 340,
-        anchor: {
-          trackId: LR_SV,
-          loc: 'chr5:70,300,000',
-          fracY: 0.55,
-        },
-      },
-      {
-        type: 'text',
-        text: 'SMN1',
-        fontSize: 18,
-        maxWidth: 330,
-        anchor: {
-          view: 1,
-          trackId: UMAP_M100,
-          loc: 'chr5:70,940,000',
-          alignX: 'left',
-          fracY: 0.4,
-        },
+        anchor: { selector: '[data-part="1"]' },
       },
     ],
   },

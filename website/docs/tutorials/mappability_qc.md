@@ -93,7 +93,7 @@ and problematic-region tracks for hg38 only:
     draws the worst position in each bin
   - **Y axis... → Range** pins the axis at 0 to 1
   - In the 2.5 Mb frame, at about a kilobase per pixel, even **Minimum** sits on
-    the floor everywhere, so read this track in the narrower read view
+    the floor everywhere, so read this track in the zoomed view
 - **gnomAD v3 Genome Coverage - Mean Coverage**, averaged over tens of thousands
   of genomes. gnomAD drops reads that do not place uniquely before averaging, so
   this track falls wherever the Umap track is blank.
@@ -199,18 +199,15 @@ decodes it against hg38; for your own sample, swap the `uri`. In
 ```
 
 Open `chr5:69,200,000-71,700,000` for the whole region, and a second view at
-`chr5:70,850,000-71,500,000` for the reads.
+`chr5:70,889,000-70,989,000`, the SMN cassette, for the reads.
 
-<Figure src="/img/qc/smn_block_and_reads.png" caption="Top: the SMN region with coverage and difficult-region tracks. Below: reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
+<Figure src="/img/qc/smn_block_and_reads.png" caption="Top: 2.5 Mb of chr5 around SMN2 and SMN1, the band marking the window below. Below: that 100 kb around SMN1, one read per row, colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the zoomed view=qc/smn1_evidence" />
 
 GIAB flags two long intervals, much larger than the gene, and the gnomAD track
-stays low across both. The long-read SV track is empty across them. In the read
-view, the reads stay at MAPQ 0 until well past the end of _SMN1_, where the Umap
-track steps up at the same coordinate as the gnomAD coverage.
-
-Zoom the read view to the SMN cassette, `chr5:70,889,000-70,989,000`.
-
-<Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette with one read per row, colored by mapping quality." links="Open this view=qc/smn1_evidence" />
+stays low across both, against the typical depth on either side. The long-read
+SV track is nearly empty across them. In the zoomed view most of the Umap track
+is blank, gnomAD reaches its flank level only in islands, and most reads are
+dark blue.
 
 Dark blue is MAPQ 0; yellow is MAPQ 30 and above. **Advanced → Edit plot...** on
 the reads track shows this `encoding.color` as text and applies edits live.
