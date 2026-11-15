@@ -26,8 +26,10 @@ What runs in the worker and what on the main thread, and the invalidation tiers:
 
 ## Placement and sort
 
-- **Segment the placement axis per refName in both layouts** — pileup and chain.
-  One shared axis collides regions that never overlap on screen.
+- **Segment the pileup's placement axis per refName; pack chains on screen
+  order** (`mergeChains`). One genomic axis collides regions that never overlap
+  on screen, and a chain's connector crosses the regions in view order and
+  orientation, not genomic order.
 - **Apply `sortColumn` through `sortForRegions`** in both layout paths: it
   applies only when every laid-out region is on its refName.
 - **Put `showSoftClips` in `rpcProps`**: the worker gates per-base extraction on

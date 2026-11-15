@@ -23,6 +23,9 @@ that path on every layout.
 - `computeMultiRegionLayout` deduplicates into index-space arrays: unioned
   starts and ends after `refNameAxisShift`, keys, lift tiers, and each region's
   read-to-index map.
+- Chain packing keeps its own axis, the screen order of the displayed regions
+  (`mergeChains`), so the one packer takes two extent builders, not one shared
+  axis.
 - One packer takes those arrays and a placement order, with the heap path when
   the order is start-monotone. `computeLayout`, `computeSortedLayout` and the
   multi-region path each build their arrays and order, then call it.
