@@ -767,10 +767,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   })),
   // `unit: 'chain'` puts each NUP214--XKR3 molecule's two alignments on one
   // row. The call joins chr9 + to chr22 -, so chr22 is `[rev]` and a molecule
-  // reads straight across the join. `svKind: 'elsewhere'` drops the chr9 to
-  // chr9 splits, 327 of the window's 587 split records, at the cost of about
-  // one fusion record in seven whose strand-flipped extra piece files it as an
-  // inversion.
+  // reads straight across the join.
   {
     mode: 'url' as const,
     name: 'cancer_sv/k562_fusion_inspector_reads',
@@ -811,7 +808,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           ...SPLIT_READS_ONLY,
           filter: [
             ...SPLIT_READS_ONLY.filter,
-            { field: 'svKind', equal: 'elsewhere' },
             { field: 'connection.offscreen', equal: false },
             { field: 'connection.interchrom', equal: true },
           ],
