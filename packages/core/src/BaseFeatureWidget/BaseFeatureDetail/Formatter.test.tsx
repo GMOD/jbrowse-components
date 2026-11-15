@@ -32,11 +32,12 @@ describe('Formatter', () => {
     expect(queryByText('Show more')).toBeNull()
   })
 
-  test('a long value is truncated', () => {
-    const { getByText } = renderWithTheme(
-      <Formatter value={'ACGT'.repeat(1000)} />,
-    )
-    expect(getByText('Copy')).toBeTruthy()
+  test('a long value is cut, under Copy and Show more buttons', () => {
+    const seq = 'ACGT'.repeat(1000)
+    const { container, getByText } = renderWithTheme(<Formatter value={seq} />)
+    expect(container.textContent).not.toContain(seq)
+    expect(getByText('Copy').tagName).toBe('BUTTON')
+    expect(getByText('Show more').tagName).toBe('BUTTON')
   })
 
   test('a symbolic allele stays text', async () => {

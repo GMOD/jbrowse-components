@@ -146,7 +146,7 @@ test("a sequence-resolved insertion's raw ALT is cut like any long value", () =>
     ALT: [alt],
   })
   fireEvent.click(getByText('Show raw ALT'))
-  expect(container.textContent).toContain(`${alt.slice(0, 2000)}…`)
+  expect(container.textContent).toContain(alt.slice(0, 2000))
   expect(container.textContent).not.toContain(alt)
   expect(getByText('Copy')).toBeTruthy()
 })

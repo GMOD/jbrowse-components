@@ -10,12 +10,13 @@ import { isObject } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import useMeasure from '../../util/useMeasure.ts'
 
-const CLAMP_HEIGHT = 300
+const LONG_TEXT_LENGTH = 300
 
-// Past any ordinary Note or description, which the clamp shows whole, and far
-// short of a long read's SEQ or QUAL: 10-100k+ characters, which slow the whole
-// app when put in the DOM, even out of sight below the clamp
+// Far short of a long read's SEQ or QUAL: 10-100k+ characters, which slow the
+// whole app when put in the DOM, even out of sight below the clamp
 const CUT_LENGTH = 2000
+
+const CLIP_HEIGHT = 300
 
 const useStyles = makeStyles()(theme => ({
   fieldValue: {
@@ -25,19 +26,18 @@ const useStyles = makeStyles()(theme => ({
     flex: 1,
     minWidth: 0,
   },
+  threeLines: {
+    display: '-webkit-box',
+    WebkitLineClamp: 3,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+  },
   clip: {
     overflowX: 'auto',
     overflowY: 'hidden',
   },
-  clamped: {
-    maxHeight: CLAMP_HEIGHT,
-  },
-  faded: {
-    maskImage: 'linear-gradient(to bottom, black 75%, transparent)',
-  },
-  controls: {
-    display: 'flex',
-    gap: theme.spacing(1),
+  clipped: {
+    maxHeight: CLIP_HEIGHT,
   },
 }))
 
@@ -70,65 +70,88 @@ export const ValueText = observer(function ValueText({
 })
 
 /**
- * A value as a details row draws it. Text past `CUT_LENGTH` characters is cut
- * until expanded, with a button copying the whole of it; shorter text is
- * clipped at `CLAMP_HEIGHT` until expanded. A bare URL or markup is never
- * cut, since a cut URL links nowhere and cut markup ends mid-tag; both keep
- * the clip.
+ * Long plain text, such as a long read's SEQ, CIGAR or MD: three lines of its
+ * first `CUT_LENGTH` characters until Show more, under buttons that copy or
+ * show the whole of it.
+ */
+const LongText = observer(function LongText({ text }: { text: string }) {
+  const { classes } = useStyles()
+  const [expanded, setExpanded] = useState(false)
+  const { copied, copy } = useCopyToClipboard(700)
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          void copy(text)
+        }}
+      >
+        {copied ? 'Copied to clipboard' : 'Copy'}
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setExpanded(v => !v)
+        }}
+      >
+        {expanded ? 'Show less' : 'Show more'}
+      </button>
+      <div className={expanded ? undefined : classes.threeLines}>
+        <ValueText text={expanded ? text : text.slice(0, CUT_LENGTH)} />
+      </div>
+    </>
+  )
+})
+
+/**
+ * Any other value, clipped at `CLIP_HEIGHT` with a Show more link when it is
+ * taller, measured so short values get no link.
+ */
+const ClippedText = observer(function ClippedText({ text }: { text: string }) {
+  const { classes, cx } = useStyles()
+  const [expanded, setExpanded] = useState(false)
+  const [ref, { height }] = useMeasure('height')
+  const tall = height !== undefined && height > CLIP_HEIGHT
+  return (
+    <>
+      <div className={cx(classes.clip, !expanded && classes.clipped)}>
+        <div ref={ref}>
+          <ValueText text={text} />
+        </div>
+      </div>
+      {tall ? (
+        <Link
+          component="button"
+          variant="caption"
+          onClick={() => {
+            setExpanded(v => !v)
+          }}
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </Link>
+      ) : null}
+    </>
+  )
+})
+
+/**
+ * A value as a details row draws it. Plain text past `LONG_TEXT_LENGTH`
+ * characters is `LongText`; a bare URL or markup never is, since a cut URL
+ * links nowhere and cut markup ends mid-tag, so it is `ClippedText` with
+ * everything else.
  */
 export const FieldText = observer(function FieldText({
   value,
 }: {
   value: unknown
 }) {
-  const { classes, cx } = useStyles()
-  const [expanded, setExpanded] = useState(false)
-  const [ref, { height }] = useMeasure('height')
-  const { copied, copy } = useCopyToClipboard(700)
   const text = valueText(value)
-  const cut =
-    text.length > CUT_LENGTH && !isBareUrl(text) && !looksLikeHTML(text)
-  const overflows = cut || (height !== undefined && height > CLAMP_HEIGHT)
-  return (
-    <>
-      <div
-        className={cx(
-          classes.clip,
-          !expanded && classes.clamped,
-          !expanded && overflows && classes.faded,
-        )}
-      >
-        <div ref={ref}>
-          <ValueText
-            text={cut && !expanded ? `${text.slice(0, CUT_LENGTH)}…` : text}
-          />
-        </div>
-      </div>
-      {overflows ? (
-        <div className={classes.controls}>
-          <Link
-            component="button"
-            variant="caption"
-            onClick={() => {
-              setExpanded(v => !v)
-            }}
-          >
-            {expanded ? 'Show less' : 'Show more'}
-          </Link>
-          {cut ? (
-            <Link
-              component="button"
-              variant="caption"
-              onClick={() => {
-                void copy(text)
-              }}
-            >
-              {copied ? 'Copied to clipboard' : 'Copy'}
-            </Link>
-          ) : null}
-        </div>
-      ) : null}
-    </>
+  return text.length > LONG_TEXT_LENGTH &&
+    !isBareUrl(text) &&
+    !looksLikeHTML(text) ? (
+    <LongText text={text} />
+  ) : (
+    <ClippedText text={text} />
   )
 })
 
