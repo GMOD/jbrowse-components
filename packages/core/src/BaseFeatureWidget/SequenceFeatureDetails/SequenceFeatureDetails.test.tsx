@@ -342,6 +342,36 @@ test('CDS mode capitalizes a soft-masked CDS unless told to keep the case', () =
   expect(getSequenceFasta(getByTestId('sequence_panel'))).toContain('ATGaaaTAA')
 })
 
+test.each(['genomic_sequence_updownstream', 'gene_updownstream'] as const)(
+  'relative coordinates in %s count the feature from 0 and the upstream flank back from it',
+  mode => {
+    const model = SequenceFeatureDetailsF().create()
+    model.setShowCoordinates('relative')
+    const { getByTestId } = render(
+      <SequencePanel
+        model={model}
+        mode={mode}
+        sequence={{
+          seq: 'ACGT'.repeat(50),
+          upstream: 'T'.repeat(100),
+          downstream: 'G'.repeat(100),
+        }}
+        feature={{
+          ...f,
+          start: 1000,
+          end: 1200,
+          subfeatures: [
+            { refName: 'chr1', start: 1000, end: 1200, type: 'exon' },
+          ],
+        }}
+      />,
+    )
+    expect(renderedRowStarts(getByTestId('sequence_panel'))).toEqual([
+      -100, 0, 100, 200,
+    ])
+  },
+)
+
 test('single exon cDNA should not have duplicate sequences', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()

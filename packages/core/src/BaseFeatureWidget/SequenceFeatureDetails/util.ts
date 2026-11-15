@@ -106,12 +106,15 @@ export function computeCoordProps({
 }) {
   const strand = displayStrand(feature, revcomp)
   const mult = useGenomicCoords ? strand : 1
-  const coordStart = useGenomicCoords
+  const firstFeatureBase = useGenomicCoords
     ? strand > 0
-      ? feature.start + 1 - (upstream?.length ?? 0)
-      : feature.end + (upstream?.length ?? 0)
+      ? feature.start + 1
+      : feature.end
     : 0
-  return { mult, coordStart }
+  return {
+    mult,
+    coordStart: firstFeatureBase - (upstream?.length ?? 0) * mult,
+  }
 }
 
 /**
