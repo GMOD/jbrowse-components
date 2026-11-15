@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1252)
+# model members with no description (1254)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -261,6 +261,8 @@ BaseWebSessionModel.setPendingFileHandleIds
 BaseWebSessionModel.setSession
 BaseWebSessionModel.shareURL
 BaseWebSessionModel.textSearchManager
+BreakpointAlignmentsWidget.read1
+BreakpointAlignmentsWidget.read2
 BreakpointSplitView.getMatchedFeaturesInLayout
 BreakpointSplitView.hasSomethingToShow
 BreakpointSplitView.menuItems

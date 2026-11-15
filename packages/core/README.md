@@ -1006,6 +1006,38 @@ import { fenceOutliers } from '@jbrowse/core/util/quantileExtent'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
 
+### fetchAdapterRecord
+
+The record behind a drawn or overlaid feature as its display's adapter holds it,
+every field included, where the display paints from a slim copy. Read over the
+feature's first base rather than its span, a zero-length one straddled;
+`undefined` when the adapter holds no record with its id there.
+
+```js
+import { fetchAdapterRecord } from '@jbrowse/core/util'
+
+// type signature
+(self: AdapterRecordHost, feature: Feature, opts?: RpcHandles) => Promise<SimpleFeature | undefined>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fetchAdapterRecord.ts)
+
+### fetchAdapterRecordById
+
+The record with `featureId` as its display's adapter holds it over `region`,
+every field included, picked in the worker; `undefined` when the adapter holds
+no record with that id there. Only the locus crosses to the worker, not whatever
+else a loaded region carries.
+
+```js
+import { fetchAdapterRecordById } from '@jbrowse/core/util'
+
+// type signature
+(self: AdapterRecordHost, featureId: string, { assemblyName, refName, start, end }: RegionLike, opts?: RpcHandles) => Promise<SimpleFeature | undefined>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fetchAdapterRecord.ts)
+
 ### fieldReader
 
 What a channel reads off a feature: a field by name, a dotted path into a

@@ -2434,6 +2434,8 @@
         "ensureFileHandleReady",
         "expandLooseTrackConfig",
         "featureSpanPx",
+        "fetchAdapterRecord",
+        "fetchAdapterRecordById",
         "fetchAndMaybeUnzip",
         "fetchAndMaybeUnzipText",
         "fetchJson",
