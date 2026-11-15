@@ -89,11 +89,14 @@ genes, B1 three, and B4 a 6 kb duplication. A1 has B4's duplication with a
 transposon inside the second _Cyp28d1_ copy. The A2 and B4 alleles resist
 nicotine best and express _Cyp28d1_ most. dm6 has the single-copy allele.
 
-- Open the portal page's
-  [Cyp28d1 example](https://genomes.jbrowse.org/pangenomes/fly/?region=chr2L:5,200,000-5,220,000).
+- Type `chr2L:5,200,000-5,220,000` into the
+  [portal page](https://genomes.jbrowse.org/pangenomes/fly)'s box and press
+  **Show**, or pick **Cyp28d1** from its examples.
 - Read the map: one bubble over both genes, with a form per allele. BOG1_A2 is
   15 kb longer than dm6, BER1_B1 38 kb, RVC3_B4 6.1 kb and Canton-S_A1 11 kb.
 - Press **Graph** to open the bubble in the graph view.
+
+<Figure caption="The portal page at Cyp28d1. One bubble over the gene holds a form per duplication allele, each named from the known allele above the map." src="/img/pangenome/genomes_fly_cyp28d1.png" />
 
 The map also draws alleles the paper did not describe: KSA2 and A4_HiFi 5.3 kb
 longer, SAM_HiFi 3.3 kb. Two Bloomington stocks share Canton-S_A1's 11 kb form,
@@ -105,14 +108,18 @@ The Curved (c¹) wing mutation was described a century ago and never placed in
 the genome. Samano et al. (2026) traced it to a 7.5 kb DM412 retrotransposon
 inside an exon of the muscle gene _Strn-Mlck_, which truncates its transcript.
 
-- Open the portal page's
-  [Strn-Mlck example](https://genomes.jbrowse.org/pangenomes/fly/?region=chr2R:15,940,000-15,995,000).
+- Type `chr2R:15,940,000-15,966,000` into the
+  [portal page](https://genomes.jbrowse.org/pangenomes/fly)'s box and press
+  **Show**, or pick **Strn-Mlck** from its examples.
 - Find the 7.5 kb insertion at `chr2R:15,953,909`, carried by BDSC_156 alone.
 
-The bubbles to its right are copy-number variants in the gene's PEVK repeats:
-almost every assembly differs from dm6 there, by up to 2.7 kb. The same stock,
-BDSC_156, carries the plexus (px¹) wing-vein allele, a 1.5 kb duplication split
-by a second DM412, which the portal's **plexus** example opens.
+<Figure caption="The portal page at Strn-Mlck. The known allele above the map names BDSC_156 as the one stock with the DM412 insertion, and the map draws it as a 7.5 kb insertion in the gene." src="/img/pangenome/genomes_fly_strn_mlck.png" />
+
+The window stops short of the gene's PEVK repeats, where almost every assembly
+differs from dm6 in copy number, by up to 2.7 kb. Type
+`chr2R:15,940,000-15,995,000` to see them. The same stock, BDSC_156, carries the
+plexus (px¹) wing-vein allele, a 1.5 kb duplication split by a second DM412,
+which the portal's **plexus** example opens.
 
 ## CHKov1: an allele the reference carries
 
@@ -122,10 +129,13 @@ insecticide. Magwire et al. (2011) found that the same insertion protects
 against the sigma virus, and that it is now the commonest form of the gene. dm6
 carries the Doc, so the assemblies without it appear as a 4.5 kb deletion.
 
-- Open the portal page's
-  [CHKov1 example](https://genomes.jbrowse.org/pangenomes/fly/?region=chr3R:25,320,000-25,335,000).
+- Type `chr3R:25,320,000-25,335,000` into the
+  [portal page](https://genomes.jbrowse.org/pangenomes/fly)'s box and press
+  **Show**, or pick **CHKov1** from its examples.
 - Read the deletion's carriers: Oregon-R, BOG1_A2, three Bloomington stocks and
   two of the HiFi strains lack the Doc; the other 22 assemblies have it.
+
+<Figure caption="The portal page at CHKov1. dm6 carries the Doc, so the seven assemblies without it are one form with a 4.5 kb deletion, named no Doc." src="/img/pangenome/genomes_fly_chkov1.png" />
 
 The portal's **Jheh** example reads the same way: dm6 carries Bari-Jheh, a 1.7
 kb Bari1 transposon that adds antioxidant response elements upstream of _Jheh1_

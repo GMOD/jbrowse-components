@@ -228,7 +228,7 @@ awk '$1=="S"' "$GRAPH.rgfa" | grep -oP 'SN:Z:\K\S+' | sort | uniq -c >"$GRAPH.sn
 bad=$(awk '{print $2}' "$GRAPH.sn.counts.txt" |
   grep -vcE '^[A-Za-z0-9_.-]+#1#chr([1-9]|[12][0-9]|3[0-8]|X)$' || true)
 [ "$bad" -eq 0 ] || { echo "refusing: $bad SN tags do not match <name>#1#chr<1-38|X>" >&2; exit 1; }
-dups=$(awk '$1=="S"{print $2}' "$GRAPH.rgfa" | sort | uniq -d | head -5)
+dups=$(awk '$1=="S"{print $2}' "$GRAPH.rgfa" | sort | uniq -d | awk 'NR<=5')
 [ -z "$dups" ] || { echo "refusing: duplicate segment ids: $dups" >&2; exit 1; }
 # rank 0 is the reference alone, and each of its chromosomes sums to its length
 awk '$1=="S" { sn = ""; sr = ""

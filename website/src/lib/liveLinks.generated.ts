@@ -159,6 +159,9 @@ export const figureLiveRefs: Record<string, string> = {
   "genomes_basics/about_track": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C400-7%2C677%2C600%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-phyloP100way%22%2C%22height%22%3A400%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "genomes_basics/genark_axolotl": "?config=https%3A%2F%2Fjbrowse.org%2Fhubs%2Fgenark%2FGCF%2F040%2F938%2F575%2FGCF_040938575.1%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_040938575.1%22%2C%22loc%22%3A%22tp53%22%7D%5D%7D&sessionName=Screenshot",
   "pangenome/genomes_hprc_loci": "https://genomes.jbrowse.org/pangenomes/hprc/?region=chr6%3A32%2C510%2C001-32%2C600%2C000",
+  "pangenome/genomes_fly_cyp28d1": "https://genomes.jbrowse.org/pangenomes/fly/?region=chr2L%3A5%2C200%2C001-5%2C220%2C000",
+  "pangenome/genomes_fly_strn_mlck": "https://genomes.jbrowse.org/pangenomes/fly/?region=chr2R%3A15%2C940%2C001-15%2C966%2C000",
+  "pangenome/genomes_fly_chkov1": "https://genomes.jbrowse.org/pangenomes/fly/?region=chr3R%3A25%2C320%2C001-25%2C335%2C000",
   "about_track": "?config=test_data%2Fvolvox%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%22volvox_cram%22%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_track_color_by_cds": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr17%3A41%2C244%2C000-41%2C244%2C090%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%22Pd8Wh30ei9R%22%2C%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22geneGlyphMode%22%3A%22representative%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_track_selenocysteine": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr3%3A49%2C395%2C505-49%2C395%2C625%22%2C%22colorByFrame%22%3Atrue%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%22Pd8Wh30ei9R%22%2C%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22geneGlyphMode%22%3A%22representative%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -507,6 +510,9 @@ export const figureLiveLabels: Record<string, string> = {
   "genomes_basics/site_search": "Open genomes.jbrowse.org",
   "genomes_basics/site_ucsc_list": "Open the UCSC genome list",
   "pangenome/genomes_hprc_loci": "Open the HPRC page",
+  "pangenome/genomes_fly_cyp28d1": "Open the fly page",
+  "pangenome/genomes_fly_strn_mlck": "Open the fly page",
+  "pangenome/genomes_fly_chkov1": "Open the fly page",
   "protein/protein_browser_page": "Open TP53 in the protein browser"
 }
 
@@ -658,6 +664,9 @@ export const figureSlowSpecs: string[] = [
   "pangenome/bovine_polled",
   "pangenome/bovine_tas2r46",
   "pangenome/bovine_whole_chromosome",
+  "pangenome/genomes_fly_chkov1",
+  "pangenome/genomes_fly_cyp28d1",
+  "pangenome/genomes_fly_strn_mlck",
   "pangenome/genomes_hprc_loci",
   "pangenome/graph_context_hop1",
   "pangenome/graph_context_none",
@@ -1481,6 +1490,18 @@ export const figureFrames: Record<
     "timeout": 180000
   },
   "pangenome/genomes_hprc_loci": {
+    "width": 1100,
+    "height": 850
+  },
+  "pangenome/genomes_fly_cyp28d1": {
+    "width": 1100,
+    "height": 850
+  },
+  "pangenome/genomes_fly_strn_mlck": {
+    "width": 1100,
+    "height": 850
+  },
+  "pangenome/genomes_fly_chkov1": {
     "width": 1100,
     "height": 850
   },
