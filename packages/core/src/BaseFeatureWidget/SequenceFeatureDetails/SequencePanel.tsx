@@ -16,6 +16,7 @@ const rowsStyle = {
   color: 'black',
   background: 'white',
   fontSize: 11,
+  margin: 0,
 } as const
 
 const wrappedStyle = {

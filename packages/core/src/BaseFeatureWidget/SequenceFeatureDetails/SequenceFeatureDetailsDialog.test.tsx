@@ -95,4 +95,5 @@ test('the inline panel and its dialog copy the same FASTA', async () => {
   const [html] = copyMock.mock.lastCall!
   expect(html).toMatch(/^<pre /)
   expect(html).not.toContain('overflow')
+  expect(html).not.toContain('max-height')
 })

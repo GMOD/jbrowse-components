@@ -146,6 +146,25 @@ test('test using the sequence feature panel with show coords', () => {
   ).toEqual(`${pep}*`)
 })
 
+// a <pre>'s default margin pushed the readout's header down
+test('the readout has no margin, with or without coordinates', () => {
+  const model = SequenceFeatureDetailsF().create()
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="protein"
+      sequence={{ seq: readFasta('./test_data/DLGAP3_dna.fa') }}
+      feature={DLGAP3.subfeatures[0]!}
+    />,
+  )
+  const pre = getByTestId('sequence_panel').querySelector('pre')!
+  expect(pre.style.margin).toBe('0px')
+  act(() => {
+    model.setShowCoordinates('genomic')
+  })
+  expect(pre.style.margin).toBe('0px')
+})
+
 test('NCDN collapsed intron', () => {
   // samtools faidx 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz' 1:36,023,400-36,032,380 > out.fa
   const dna = readFasta('./test_data/NCDN_dna.fa')
