@@ -18,6 +18,7 @@ import {
   readYsFromRowMap,
 } from './computeChainLayout.ts'
 
+import type { RegionBounds } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 
 function makeChainData(opts: {
@@ -645,8 +646,8 @@ describe('computeMultiRegionChainLayout — reversed and reordered entries', () 
         { name: 'b', minStart: 2900, maxEnd: 3000, distance: 100 },
       ],
     })
-  const chr9 = { refName: 'chr9', start: 1000, end: 3000 }
-  const chr22 = { refName: 'chr22', start: 1000, end: 3000 }
+  const chr9: RegionBounds = { refName: 'chr9', start: 1000, end: 3000 }
+  const chr22: RegionBounds = { refName: 'chr22', start: 1000, end: 3000 }
   const forward = () =>
     computeMultiRegionChainLayout(
       [
