@@ -268,8 +268,8 @@ the rest more height.
 ## Insertion and clipping indicators
 
 The coverage row shows an upside-down histogram of insertions and clips, with a
-colored triangle wherever an event exceeds a depth-dependent fraction of the
-reads at that base.
+colored triangle where they are a large enough share of a deep enough column
+([`filter`](/docs/config/coverageinterbase/#slot-filter)).
 
 <!-- BEGIN GENERATED COLOR_TABLE alignments-indicators -->
 
@@ -301,8 +301,14 @@ or **hard-clipped** (dropped). Soft-clipped bases are hidden by default; **Show
 → Show soft clipping** in the track menu reveals them. Clusters of them often
 mark a structural-variant breakpoint.
 
+Clipped bases are drawn for the reads aligned inside the loaded window, which is
+a little wider than the view. A long read's clipped end can run for kilobases,
+so as you pan away from a breakpoint it stops, on every read at once, where the
+reads' aligned parts leave that window.
+
 A read with no `SEQ` field (secondary reads among them) has no clipped bases to
-draw, so its clip indicator appears black.
+draw. It keeps the blue bar at its clipped end and, zoomed in to the bases, the
+clip's length as `(S30)`.
 
 <Figure caption="Enabling Soft clipping (top), and reads ending at a deletion breakpoint showing their unaligned bases (bottom)." src="/img/alignments_soft_clipped_menu.png" />
 

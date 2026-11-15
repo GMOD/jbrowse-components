@@ -207,6 +207,12 @@ by** use it, and **SV kind**, the Group by row this arrangement sets, bands a
 read, its mate and its split pieces together by the kind of SV they point at, so
 the last band holds exactly the reads the filter hides.
 
+A read that ends in a clip and has no `SA` tag carries a clip and nothing else,
+since the aligner placed its overhang nowhere. It files under **No SV
+evidence**, and its clip still counts in the
+[clipping indicators](/docs/user_guides/alignments_track#insertion-and-clipping-indicators)
+over that band's coverage. **Filter by → SV evidence → All reads** draws it.
+
 <Figure caption="The INVdup call's reads, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 <figure>
