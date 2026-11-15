@@ -25,7 +25,7 @@ import {
  * The alignments displays' `encoding.color`: one color for every read in
  * `value`, or a field of each read. A preset field, listed below, colors by
  * its levels or bins, `tags.XX` reads a SAM tag, and any other name reads
- * the read as a facet over it does: `mateAssembly`, `splitPartnerRefName`, a
+ * the read as a facet over it does: `mateAssembly`, `alignedRefNames`, a
  * feature attribute, a dotted path into one or a `jexl:` expression. A string
  * is the field.
  * Unlike a feature track, which deals colors in the order values appear, a

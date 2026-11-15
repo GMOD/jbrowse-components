@@ -18,7 +18,7 @@ export const READ_DIMENSIONS = [
   'svKind',
   'mapq',
   'mateRefName',
-  'splitPartnerRefName',
+  'alignedRefNames',
   'mateAssembly',
 ] as const
 export type ReadDimension = (typeof READ_DIMENSIONS)[number]
@@ -114,7 +114,7 @@ export const READ_LEVEL_LABELS: {
 /**
  * Each closed read dimension's levels. `mapq`'s are core's bins, which the
  * facet adds (`sectionOrder`), and the data names `mateRefName`'s,
- * `splitPartnerRefName`'s and `mateAssembly`'s.
+ * `alignedRefNames`'s and `mateAssembly`'s.
  */
 export const DIMENSION_LEVELS: Readonly<Record<string, readonly string[]>> = {
   strand: STRAND_LEVELS,

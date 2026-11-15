@@ -50,8 +50,8 @@ export const facetConfigSchema = ConfigurationSchema(
      * mark displays' is `group`, their `rows.groups`.
      * The alignments displays also take a read dimension here:
      * `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`,
-     * `mapq`, `mateRefName`, `splitPartnerRefName` or `mateAssembly`.
-     * Writing `facet: "strand"` sets this slot.
+     * `mapq`, `mateRefName`, `alignedRefNames` (the set of references a read
+     * aligns to) or `mateAssembly`. Writing `facet: "strand"` sets this slot.
      */
     field: {
       type: 'featureField',

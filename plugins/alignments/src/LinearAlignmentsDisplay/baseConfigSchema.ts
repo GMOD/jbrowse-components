@@ -76,11 +76,13 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * `svSignal`, `alone` and `split` over a read, its mate and its split
      * segments together, each taking `equal: true` or `false`. The `facet`
      * read fields `pairOrientation`, `pairing`, `svKind`,
-     * `firstOfPairStrand` (`1` or `-1`), `mateRefName`,
-     * `splitPartnerRefName` (the reference of a split read's first placed
-     * piece on another one) and `mateAssembly` pick drawn reads too, each read by the section a facet by read files it
-     * under (`svKind` by its whole chain's), with `equal` or `oneOf` of their
-     * values, or `valid: false` for the reads with none; a read's strand is
+     * `firstOfPairStrand` (`1` or `-1`), `mateRefName`, `alignedRefNames`
+     * and `mateAssembly` pick drawn reads too, each read by the section a
+     * facet by read files it under (`svKind` by its whole chain's), with
+     * `equal` or `oneOf` of their values, or `valid: false` for the reads with
+     * none; `alignedRefNames`, the references a read and its SA entries align
+     * to, passes when any of them does, so an entry each for `chr9` and
+     * `chr22` keeps the reads aligned to both; a read's strand is
      * `flags.REVERSE`. A facet on a category gives its own coverage.
      * `junction.reads`,
      * `junction.canonical` (a split junction reads no motif and counts as
@@ -102,9 +104,9 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * #slot facet
      * In-track stacked grouping, one labelled section per value: a read
      * dimension (`strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`,
-     * `split`, `spliced`, `svKind`, `mapq`, `mateRefName`,
-     * `splitPartnerRefName`, `mateAssembly`), a tag (`tags.HP`), or any other
-     * field. `{ field: "tags.HP", sort: ["2",
+     * `split`, `spliced`, `svKind`, `mapq`, `mateRefName`, `alignedRefNames`
+     * (one section per set of references, `chr22 + chr9`), `mateAssembly`), a
+     * tag (`tags.HP`), or any other field. `{ field: "tags.HP", sort: ["2",
      * "1"] }` stacks the listed values first.
      */
     facet: sectionFacetConfigSchema,

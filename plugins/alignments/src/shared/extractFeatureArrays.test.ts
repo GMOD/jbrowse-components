@@ -116,9 +116,9 @@ describe('mateRefName extraction', () => {
 // section, so a path reaches into the feature and a read dimension's name
 // paints the dimension's own values rather than an attribute nobody sets.
 describe('attribute color extraction', () => {
-  test("splitPartnerRefName paints a split read by its partner's reference", () => {
-    expect(extract([longRead], 'splitPartnerRefName').tagColorValues).toEqual([
-      'ctgB',
+  test('alignedRefNames paints a split read by every reference it aligns to', () => {
+    expect(extract([longRead], 'alignedRefNames').tagColorValues).toEqual([
+      'ctgA + ctgB',
     ])
   })
 

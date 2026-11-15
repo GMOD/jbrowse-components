@@ -16,8 +16,8 @@ import {
 } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { fieldTag } from './facetLabels.ts'
-import { fieldValueReader } from './groupFeatures.ts'
-import { categoryBitsOf, saTagOf } from './splitAlignment.ts'
+import { fieldValueReader, refNameSetKey } from './groupFeatures.ts'
+import { alignedRefNames, categoryBitsOf, saTagOf } from './splitAlignment.ts'
 import { isMethylationView } from './types.ts'
 import { getMateRefName, getStrand } from './util.ts'
 
@@ -134,8 +134,10 @@ export function extractFeatureArrays<T extends FeatureData>(
   const colorTag = fieldTag(colorField)
   const colorAttribute =
     colorFieldKindOf(colorField) === 'tag' && !colorTag ? colorField : undefined
+  // reads the SA tag the loop already holds
+  const colorsByAlignedRefNames = colorField === 'alignedRefNames'
   const readColorAttribute =
-    colorAttribute === undefined
+    colorAttribute === undefined || colorsByAlignedRefNames
       ? undefined
       : fieldValueReader(colorAttribute, opts.jexl)
   // Chromosome painting reuses the tag channel: both resolve one string per
@@ -203,6 +205,8 @@ export function extractFeatureArrays<T extends FeatureData>(
 
     if (colorTag) {
       tagColorValues.push(extractFeatureTagValue(feature, colorTag))
+    } else if (colorsByAlignedRefNames) {
+      tagColorValues.push(refNameSetKey(alignedRefNames(feature, sa)).key)
     } else if (readColorAttribute) {
       tagColorValues.push(readColorAttribute(feature))
     } else if (isMateRefNameMode) {

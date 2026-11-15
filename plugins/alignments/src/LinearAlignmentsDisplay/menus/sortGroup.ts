@@ -236,8 +236,9 @@ export function queueSortByTagDialog(
 // Every offered dimension selects directly; a tag needs its name (+ optional
 // color-by-tag), so it goes last as a dialog-opener — mirroring the sort menu's
 // "Tag...". Its radio is the tag prefix, which no field can equal. A hidden
-// dimension a config stored (`mateRefName`, `mateAssembly`) still draws its
-// sections, so it gets the checked, disabled radio any config-only field does.
+// dimension a config stored (`mateRefName`, `alignedRefNames`,
+// `mateAssembly`) still draws its sections, so it gets the checked, disabled
+// radio any config-only field does.
 export function getGroupByMenuItem(model: GroupByMenuModel) {
   const field = model.facet?.field
   const tag = fieldTag(field)

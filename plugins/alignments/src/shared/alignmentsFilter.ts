@@ -138,7 +138,7 @@ export function readPredicatesOf(predicates: readonly FieldPredicate[]) {
 /** The read fields whose values are reference names in the file's spelling. */
 export const REF_NAME_FIELDS: ReadonlySet<string> = new Set([
   'mateRefName',
-  'splitPartnerRefName',
+  'alignedRefNames',
 ])
 
 // An entry's listed values as one `oneOf`, each beside its other spelling
@@ -160,9 +160,9 @@ function withSpellings(
 }
 
 /**
- * `filter` with each `mateRefName` and `splitPartnerRefName` value listed in
+ * `filter` with each `mateRefName` and `alignedRefNames` value listed in
  * `spell`'s spelling too, the adapter's name for that sequence, which is how
- * the worker reads a mate's or an SA entry's reference
+ * the worker reads a mate's, a record's or an SA entry's reference
  * (REFNAME_NAMESPACES.md): `chr9` keeps the mates a file names `9`. The value
  * as written stays, so a synteny block's query contig, on another assembly,
  * answers by its own name.

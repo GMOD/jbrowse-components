@@ -1,5 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { withRefNameSpellings } from '../shared/alignmentsFilter.ts'
 import { filterChainFeatures } from './filterChainFeatures.ts'
 
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -571,11 +572,11 @@ describe('filterChainFeatures read dimensions', () => {
   })
 })
 
-describe('filterChainFeatures by split partner reference', () => {
-  const longRead = (name: string, SA?: string) =>
+describe('filterChainFeatures by aligned references', () => {
+  const longRead = (name: string, refName: string, SA?: string) =>
     new SimpleFeature({
-      uniqueId: name,
-      refName: 'chr9',
+      uniqueId: `${name}:${refName}`,
+      refName,
       start: 1000,
       end: 2000,
       name,
@@ -584,20 +585,49 @@ describe('filterChainFeatures by split partner reference', () => {
       ...(SA ? { tags: { SA } } : {}),
     })
   const reads = [
-    longRead('fusion', 'chr22,5000,+,1000S500M,60,0;'),
-    longRead('withinChr9', 'chr9,9000,+,1000S500M,60,0;'),
-    longRead('toChr19', 'chr19,7000,+,1000S500M,60,0;'),
-    longRead('unsplit'),
+    longRead(
+      'fusion',
+      'chr9',
+      'chr19,7000,+,1200S300M,60,0;chr22,5000,+,1000S200M300S,60,0;',
+    ),
+    longRead(
+      'fusion',
+      'chr22',
+      'chr9,1001,+,1000M500S,60,0;chr19,7000,+,1200S300M,60,0;',
+    ),
+    longRead('withinChr9', 'chr9', 'chr9,9000,+,1000S500M,60,0;'),
+    longRead('toChr19', 'chr9', 'chr19,7000,+,1000S500M,60,0;'),
+    longRead('unsplit', 'chr9'),
+  ]
+  const onBoth: FieldPredicate[] = [
+    { field: 'split', equal: true },
+    { field: 'alignedRefNames', equal: 'chr9' },
+    { field: 'alignedRefNames', equal: 'chr22' },
   ]
 
-  test('keeps a split read whose other piece is on chr9 or chr22', () => {
+  test('keeps both pieces of a split read aligned to chr9 and chr22', () => {
     expect(
-      names(
-        filterChainFeatures(reads, [
-          { field: 'split', equal: true },
-          { field: 'splitPartnerRefName', oneOf: ['chr9', 'chr22'] },
-        ]),
-      ),
+      filterChainFeatures(reads, onBoth).map(f => f.get('uniqueId')),
+    ).toEqual(['fusion:chr9', 'fusion:chr22'])
+  })
+
+  test('a reference in the adapter spelling matches its own name', () => {
+    const fileSpelled = withRefNameSpellings(onBoth, refName =>
+      refName.replace('chr', ''),
+    )
+    const spelled = (name: string) =>
+      new SimpleFeature({
+        uniqueId: name,
+        refName: '9',
+        start: 1000,
+        end: 2000,
+        name,
+        flags: 0,
+        CIGAR: '1000M500S',
+        tags: { SA: '19,7000,+,1200S300M,60,0;22,5000,+,1000S200M300S,60,0;' },
+      })
+    expect(
+      names(filterChainFeatures([spelled('fusion')], fileSpelled)),
     ).toEqual(['fusion'])
   })
 })

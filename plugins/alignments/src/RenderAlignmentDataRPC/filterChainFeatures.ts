@@ -181,28 +181,53 @@ function recordLane(source: DrawnReadSource) {
   }
 }
 
-// A read dimension's key for every read, dictionary-coded so a predicate
-// decides once per key: each read's own, or its chain's where the facet keys
-// the whole fetch (`keyAll`)
-function keyLane(
-  { key, keyAll }: FacetDimension,
-  features: Feature[],
-  insertSizeBand: InsertSizeBand | undefined,
-): PredicateLane {
-  const keys = keyAll?.(features, insertSizeBand)
-  const labels: string[] = []
+// Each read's value, dictionary-coded so a predicate decides once per
+// distinct value
+function dictionaryCoded<V>(
+  count: number,
+  valueAt: (i: number) => V,
+  keyOf: (value: V) => string,
+) {
+  const values: V[] = []
   const idOf = new Map<string, number>()
-  const ids = new Uint32Array(features.length)
-  for (let i = 0; i < features.length; i++) {
-    const k = (keys ? keys[i]! : key(features[i]!, insertSizeBand)).key
+  const ids = new Uint32Array(count)
+  for (let i = 0; i < count; i++) {
+    const value = valueAt(i)
+    const k = keyOf(value)
     let id = idOf.get(k)
     if (id === undefined) {
-      id = labels.push(k) - 1
+      id = values.push(value) - 1
       idOf.set(k, id)
     }
     ids[i] = id
   }
-  return { kind: 'labels', ids, labels }
+  return { ids, values }
+}
+
+// A read dimension's values for every read: a set-valued one's members, or
+// the key a facet files the read under, each read's own or its chain's where
+// the facet keys the whole fetch (`keyAll`)
+function keyLane(
+  { key, keyAll, members }: FacetDimension,
+  features: Feature[],
+  insertSizeBand: InsertSizeBand | undefined,
+): PredicateLane {
+  if (members) {
+    const { ids, values } = dictionaryCoded(
+      features.length,
+      i => members(features[i]!),
+      set => set.join('\0'),
+    )
+    return { kind: 'sets', ids, sets: values }
+  } else {
+    const keys = keyAll?.(features, insertSizeBand)
+    const { ids, values } = dictionaryCoded(
+      features.length,
+      i => (keys ? keys[i]! : key(features[i]!, insertSizeBand)).key,
+      k => k,
+    )
+    return { kind: 'labels', ids, labels: values }
+  }
 }
 
 // One lane per read dimension, keyed once however many entries name it
@@ -301,7 +326,8 @@ function maskPassing(source: DrawnReadSource, predicates: FieldPredicate[]) {
 /**
  * Which reads of a fetch the filter draws, 1 each, or undefined while it
  * draws every one: `name` and `spliced` per record, a read dimension by the
- * key a facet by read files the read under, `svSignal`, `split` and `alone`
+ * key a facet by read files the read under (`alignedRefNames` by any of its
+ * members), `svSignal`, `split` and `alone`
  * per chain grouped by name. Coverage still counts the reads it leaves out.
  */
 export function drawnReadMask(

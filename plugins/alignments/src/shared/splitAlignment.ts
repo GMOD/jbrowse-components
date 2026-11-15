@@ -65,22 +65,16 @@ export function saTagOf(feature: Feature) {
 }
 
 /**
- * The `splitPartnerRefName` field: the reference of the first placed (MAPQ
- * not 0) SA entry off the record's own.
+ * The `alignedRefNames` field: the references the read aligns to, the
+ * record's own and every SA entry's, sorted. Every record of a split read
+ * lists the others, so each answers the same set.
  */
-export function splitPartnerRefName(feature: Feature, sa = saTagOf(feature)) {
-  const ownRefName = feature.get('refName')
-  let partner: string | undefined
-  forEachSAEntry(
-    sa,
-    (nameStart, nameEnd, _start, _end, _strand, _clip, mapq) => {
-      if (partner === undefined && mapq !== 0) {
-        const refName = sa.slice(nameStart, nameEnd)
-        partner = refName === ownRefName ? undefined : refName
-      }
-    },
-  )
-  return partner
+export function alignedRefNames(feature: Feature, sa = saTagOf(feature)) {
+  const names = new Set<string>([feature.get('refName')])
+  forEachSAEntry(sa, (nameStart, nameEnd) => {
+    names.add(sa.slice(nameStart, nameEnd))
+  })
+  return [...names].sort()
 }
 
 /**

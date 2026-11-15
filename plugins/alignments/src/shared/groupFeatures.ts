@@ -41,10 +41,10 @@ import {
   SV_KIND_LEVELS,
 } from './readFieldLevels.ts'
 import {
+  alignedRefNames,
   chainIsSplit,
   isSplitAlignment,
   isSvEvidence,
-  splitPartnerRefName,
 } from './splitAlignment.ts'
 import { SV_KIND_PRECEDENCE } from './splitReadJunctions.ts'
 import { svKindOf } from './svKind.ts'
@@ -286,11 +286,10 @@ function mateRefNameKey(feature: Feature): GroupKey {
     : { key: '', label: 'No mate reference' }
 }
 
-function splitPartnerRefNameKey(feature: Feature): GroupKey {
-  const name = splitPartnerRefName(feature)
-  return name
-    ? { key: name, label: name }
-    : { key: '', label: 'No split partner elsewhere' }
+/** A set of references as one section, `chr22 + chr9`. */
+export function refNameSetKey(names: readonly string[]): GroupKey {
+  const key = names.join(' + ')
+  return { key, label: key }
 }
 
 // One section per mate sample of an all-vs-all synteny track. `mate.assemblyName`
@@ -325,7 +324,7 @@ function mapqKey(feature: Feature): GroupKey {
 // region-width depth arrays before uploading a per-bp GPU buffer that alone
 // approaches the device limit at chromosome scale, so `MAX_GROUPS` is what
 // keeps a UMI-style `RX`/`MI` tag from paying that thousands of times over.
-// Every read dimension but `mateRefName`, `splitPartnerRefName` and
+// Every read dimension but `mateRefName`, `alignedRefNames` and
 // `mateAssembly` is a closed set of at most five keys; a tag, a field and a
 // `jexl:` facet are open too, and GroupByDialog refuses `tag` up front with
 // the distinct values in hand.
@@ -464,6 +463,9 @@ export interface FacetDimension<K extends ReadDimension = ReadDimension> {
     chain: Feature[],
     insertSizeBand: InsertSizeBand | undefined,
   ) => GroupKey
+  // A set-valued dimension's members, of which a filter entry needs one to
+  // pass; its key joins them
+  members?: (feature: Feature) => readonly string[]
   // Keys every read of a fetch at once, each by its whole chain, in either
   // unit: for a dimension the filter judging its evidence reads per chain
   keyAll?: (
@@ -542,13 +544,14 @@ export const FACET_DIMENSIONS: {
     hidden: true,
     key: mateRefNameKey,
   },
-  // Out of the radios as `mateRefName` is, and per record: each piece of a
-  // split names the other's reference.
-  splitPartnerRefName: {
-    field: 'splitPartnerRefName',
-    fragmentLevel: false,
+  // Out of the radios as `mateRefName` is. Every piece of a split read lists
+  // the others in its SA tag, so a long read's records share one set.
+  alignedRefNames: {
+    field: 'alignedRefNames',
+    fragmentLevel: true,
     hidden: true,
-    key: splitPartnerRefNameKey,
+    key: feature => refNameSetKey(alignedRefNames(feature)),
+    members: feature => alignedRefNames(feature),
   },
   mateAssembly: {
     field: 'mateAssembly',
