@@ -214,8 +214,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         maxWidth: 300,
         anchor: {
           trackId: 'hg38-gnomad3MeanCoverage',
-          loc: 'chr5:71,650,000',
-          alignX: 'right',
+          loc: 'chr5:71,390,000',
           fracY: 0.1,
         },
       },
