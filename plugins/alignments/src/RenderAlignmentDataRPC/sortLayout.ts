@@ -785,9 +785,9 @@ interface ReadExtent {
 
 // Per-refName extent of everything being placed, accumulated by
 // `extendRefNameSpan` and consumed by `refNameAxisShift`.
-export type RefNameSpans = Map<string | undefined, { min: number; max: number }>
+type RefNameSpans = Map<string | undefined, { min: number; max: number }>
 
-export function extendRefNameSpan(
+function extendRefNameSpan(
   spans: RefNameSpans,
   refName: string | undefined,
   start: number,
@@ -821,7 +821,7 @@ export function extendRefNameSpan(
  * extent): chain layout packs on the screen order of the displayed regions
  * (`mergeChains`), since a chain's connector runs across them.
  */
-export function refNameAxisShift(spans: RefNameSpans) {
+function refNameAxisShift(spans: RefNameSpans) {
   if (spans.size < 2) {
     return () => 0
   }

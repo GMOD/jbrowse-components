@@ -127,8 +127,10 @@ function placementAxis(
     entries.length > 0 && entries.every(([idx]) => reversedOf(idx) === true)
       ? -1
       : 1
-  return (idx: number, bp: number) =>
-    sign * screenOrderOf(reversedOf(idx), idx, bp)
+  return (idx: number) => {
+    const reversed = reversedOf(idx)
+    return (bp: number) => sign * screenOrderOf(reversed, idx, bp)
+  }
 }
 
 // Chains spanning multiple regions are merged by name. min/max give the true
@@ -145,10 +147,11 @@ function mergeChains(
   regions: ReadonlyMap<number, RegionBounds> | undefined,
 ) {
   const refNameOf = (idx: number) => regions?.get(idx)?.refName
-  const axis = placementAxis(entries, regions)
+  const axisOf = placementAxis(entries, regions)
   const merged = new Map<string, MergedChain>()
   for (const [refName, group] of chainEntriesByRefName(entries, refNameOf)) {
     for (const [idx, data] of group) {
+      const axis = axisOf(idx)
       const { chainNames, chainAbsMinStarts, chainAbsMaxEnds, chainDistances } =
         data
       for (let i = 0; i < chainNames.length; i++) {
@@ -156,8 +159,8 @@ function mergeChains(
         const lo = chainAbsMinStarts[i]!
         const hi = chainAbsMaxEnds[i]!
         const distance = chainDistances[i]!
-        const a = axis(idx, lo)
-        const b = axis(idx, hi)
+        const a = axis(lo)
+        const b = axis(hi)
         const minStart = Math.min(a, b)
         const maxEnd = Math.max(a, b)
         const existing = merged.get(name)
@@ -242,8 +245,8 @@ export function readYsFromRowMap(
  * span region boundaries by read name. Returns a rowMap keyed by chain name
  * for distributing rows back to each region. Unlike computeMultiRegionLayout()
  * in sortLayout.ts, which packs on the genomic axis segmented per refName, it
- * packs on the screen order of the displayed regions (`regions`, omitted only
- * by single-region callers/tests), since a chain's connector runs across them.
+ * packs on the screen order of the displayed regions, since a chain's connector
+ * runs across them. Without `regions` every region reads as forward.
  */
 export function computeMultiRegionChainLayout(
   entries: [number, ChainedPileupData][],
