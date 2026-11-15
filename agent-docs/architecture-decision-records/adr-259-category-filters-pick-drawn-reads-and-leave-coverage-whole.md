@@ -24,9 +24,11 @@ category, judged per record, and leaves ADR-229's `svSignal` the SV-evidence
 test. A `mateRefName` value is listed in the adapter's spelling beside its own
 where the regions are renamed (`adapterSpelledFilter`).
 
-Amended 2026-11-15: `splitPartnerRefName`, the reference of a read's first
-placed (MAPQ not 0) SA piece off its own, filters and facets beside
-`mateRefName`, which keeps naming only the mate's reference.
+Amended 2026-11-15: `alignedRefNames`, the set of references a read aligns to
+(its own and every SA entry's), filters and facets beside `mateRefName`, which
+keeps naming only the mate's reference. An entry on it passes when any member
+does, so an entry each for `chr9` and `chr22` keeps the reads aligned to both;
+every record of a split read holds the same set, so a chain facet keys it.
 
 ## Context
 
