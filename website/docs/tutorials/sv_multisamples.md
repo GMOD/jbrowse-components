@@ -220,8 +220,8 @@ their arcs:
 - The inversion band draws two bundles of arcs, the same-strand pairs and split
   reads across each end of the inversion, green for one end and blue for the
   other
-- No duplication-type band appears: no pair here has mates facing away from
-  each other, which is what a tandem duplication would leave
+- No duplication-type band appears, since no pair here has mates facing away
+  from each other as a tandem duplication would leave them
 
 <Figure caption="HG02768's reads at the complex call, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
