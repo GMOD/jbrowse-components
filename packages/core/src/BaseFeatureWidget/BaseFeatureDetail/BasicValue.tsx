@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 
 import { SanitizedHTML } from '../../ui/index.ts'
 import { useCopyToClipboard } from '../../ui/useCopyToClipboard.ts'
+import { looksLikeHTML } from '../../util/htmlText.ts'
 import { isObject } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import useMeasure from '../../util/useMeasure.ts'
@@ -71,8 +72,9 @@ export const ValueText = observer(function ValueText({
 /**
  * A value as a details row draws it. Text past `CUT_LENGTH` characters is cut
  * until expanded, with a button copying the whole of it; shorter text is
- * clipped at `CLAMP_HEIGHT` until expanded. A bare URL is never cut, since a
- * cut one links nowhere.
+ * clipped at `CLAMP_HEIGHT` until expanded. A bare URL or markup is never
+ * cut, since a cut URL links nowhere and cut markup ends mid-tag; both keep
+ * the clip.
  */
 export const FieldText = observer(function FieldText({
   value,
@@ -84,7 +86,8 @@ export const FieldText = observer(function FieldText({
   const [ref, { height }] = useMeasure('height')
   const { copied, copy } = useCopyToClipboard(700)
   const text = valueText(value)
-  const cut = text.length > CUT_LENGTH && !isBareUrl(text)
+  const cut =
+    text.length > CUT_LENGTH && !isBareUrl(text) && !looksLikeHTML(text)
   const overflows = cut || (height !== undefined && height > CLAMP_HEIGHT)
   return (
     <>

@@ -80,12 +80,25 @@ test('ordinary long text is whole, left to the clamp', () => {
   expect(queryByText('Copy')).toBeNull()
 })
 
-test('a cut HTML value previews as HTML, not as its tags', () => {
-  const { container } = render(
-    <BasicValue value={`<b>bold</b> ${'A'.repeat(3000)}`} />,
+// a file's header reaches the panel as escaped text in a <pre>, and a cut
+// would end it mid-tag and give Copy the markup
+test('a long markup value is clamped whole, not cut', async () => {
+  const lines = '##INFO=&lt;ID=DP,Number=1,Type=Integer&gt;\n'.repeat(100)
+  const { container, queryByText } = render(
+    <BasicValue value={`<pre>${lines}</pre>`} />,
   )
-  expect(container.querySelector('b')?.textContent).toBe('bold')
-  expect(container.textContent).not.toContain('<b>')
+  await waitFor(() => {
+    expect(container.querySelector('pre')?.textContent).toContain(
+      '##INFO=<ID=DP,Number=1,Type=Integer>\n'.repeat(100),
+    )
+  })
+  act(() => {
+    reportHeight(1200)
+  })
+  const clip = container.firstElementChild!.firstElementChild!
+  expect(getComputedStyle(clip).maxHeight).toBe('300px')
+  expect(queryByText('Show more')).toBeTruthy()
+  expect(queryByText('Copy')).toBeNull()
 })
 
 test('a bare URL is never cut', () => {
