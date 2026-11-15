@@ -64,12 +64,10 @@ export function registerFileHandlers(paths: AppPaths) {
       // of a stream still creating the file
       const fai = await fs.promises.open(faiPath, 'w')
       try {
-        const stream = await getFileStream(location, signal)
-        // generateFastaIndex locks the stream it is handed, so cancelling that
-        // one is refused: the signal has to abort a pipe in front of it
         await generateFastaIndex(
           Writable.toWeb(fai.createWriteStream()),
-          stream.pipeThrough(new TransformStream(), { signal }),
+          await getFileStream(location, signal),
+          { signal },
         )
         // an abort landing after the last read still means the user left
         signal.throwIfAborted()

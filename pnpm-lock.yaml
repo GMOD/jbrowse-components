@@ -2218,8 +2218,8 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@gmod/faidx':
-        specifier: ^3.0.1
-        version: 3.0.1
+        specifier: ^3.1.0
+        version: 3.1.0
       '@jbrowse/app-core':
         specifier: workspace:^
         version: link:../../packages/app-core
@@ -4560,8 +4560,8 @@ packages:
   '@gmod/cram@14.4.0':
     resolution: {integrity: sha512-XWB+5x/0hQ+mJ1PNDVN+lMgYLJG0OZBNixzuMk4+XNT2TYo51sqObf1TOHGrHWOZURH0TiLaJIKIOvvAsVaR5w==}
 
-  '@gmod/faidx@3.0.1':
-    resolution: {integrity: sha512-VvAPjPbZ1wGKQKFnyfaZJnhSiowon6eLQlgRuukmZb4InwVv8yAEzlCTvRyCl2Nlqjw6VN7W+jyHEVgWAD0uNQ==}
+  '@gmod/faidx@3.1.0':
+    resolution: {integrity: sha512-xsgHVXfdJ1o+GbvO8P5T5+Nl9wGEjEsHFsHaxIDVf8eJL3hN8QqW7XZ/jskHXfptEVR42E7CDuJ7bMrEUDspWA==}
 
   '@gmod/gff-nostream@5.6.4':
     resolution: {integrity: sha512-y9AyL+CJFo7Mv0OMpEQTSk0ZP2eXDCKfzeOujc5ndb0iDpegzHDOSrPqloITjSBcWDSb6Ey3glXtaVHEWD2pkA==}
@@ -12571,7 +12571,7 @@ snapshots:
     transitivePeerDependencies:
       - buffer
 
-  '@gmod/faidx@3.0.1': {}
+  '@gmod/faidx@3.1.0': {}
 
   '@gmod/gff-nostream@5.6.4': {}
 
