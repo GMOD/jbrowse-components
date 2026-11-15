@@ -747,15 +747,15 @@ Available `color:` fields, except `tags.<TAG>`, which is an
 `encoding.color.field=` write. Anything else is a CSS color, painting every read
 with it:
 
-| Field                      | Description                                             |
-| -------------------------- | ------------------------------------------------------- |
-| `strand`                   | Forward/reverse strand                                  |
-| `firstOfPairStrand`        | Strand of the first read in the pair                    |
-| `mapq`                     | MAPQ                                                    |
-| `insertSizeAndOrientation` | Combined insert size + orientation                      |
-| `mateRefName`              | Reference the mate maps to                              |
-| `mateAssembly`             | Assembly the mate maps to, for synteny reads            |
-| `tags.<TAG>`               | Color by any BAM tag, as `encoding.color.field=tags.HP` |
+| Field                      | Description                                                     |
+| -------------------------- | --------------------------------------------------------------- |
+| `strand`                   | Forward/reverse strand                                          |
+| `firstOfPairStrand`        | Strand of the first read in the pair                            |
+| `mapq`                     | MAPQ                                                            |
+| `insertSizeAndOrientation` | Combined insert size + orientation                              |
+| `mateRefName`              | Reference the mate maps to, or an unpaired read's split partner |
+| `mateAssembly`             | Assembly the mate maps to, for synteny reads                    |
+| `tags.<TAG>`               | Color by any BAM tag, as `encoding.color.field=tags.HP`         |
 
 Available `baseColor:` fields:
 
