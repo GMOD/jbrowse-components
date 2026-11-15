@@ -4,6 +4,7 @@ import { act, fireEvent, render, within } from '@testing-library/react'
 
 import SequenceFeatureDetails from './SequenceFeatureDetails.tsx'
 import { SequenceFeatureDetailsF } from './model.ts'
+import { useTranscriptPick } from './useTranscriptPick.ts'
 
 import type {
   AbstractSessionModel,
@@ -35,6 +36,25 @@ const region: SimpleFeatureSerialized = {
   type: 'region',
 }
 
+function Panel({
+  model,
+  feature,
+}: {
+  model: SequenceFeatureDetailsModel
+  feature: SimpleFeatureSerialized
+}) {
+  const pick = useTranscriptPick(feature)
+  return (
+    <SequenceFeatureDetails
+      model={model}
+      session={session}
+      assemblyName={undefined}
+      feature={feature}
+      transcriptPick={pick}
+    />
+  )
+}
+
 // Swaps the feature from inside a tree that stays mounted, which is what the
 // drawer widget does (setFeatureData on the same widget). RTL's rerender()
 // would instead mount a fresh tree, which reinitializes every panel for free.
@@ -55,12 +75,7 @@ function Harness({
       >
         next feature
       </button>
-      <SequenceFeatureDetails
-        model={model}
-        session={session}
-        assemblyName={undefined}
-        feature={feature}
-      />
+      <Panel model={model} feature={feature} />
     </>
   )
 }
@@ -125,20 +140,10 @@ test('a pick a feature cannot show leaves its earlier pick in place', async () =
   const { getByTestId } = render(
     <>
       <div data-testid="transcript">
-        <SequenceFeatureDetails
-          model={model}
-          session={session}
-          assemblyName={undefined}
-          feature={transcript}
-        />
+        <Panel model={model} feature={transcript} />
       </div>
       <div data-testid="region">
-        <SequenceFeatureDetails
-          model={model}
-          session={session}
-          assemblyName={undefined}
-          feature={region}
-        />
+        <Panel model={model} feature={region} />
       </div>
     </>,
   )

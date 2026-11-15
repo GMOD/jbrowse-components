@@ -40,7 +40,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
 }: {
   model: FeatureDetailsModel
   feature: SimpleFeatureSerialized
-  transcriptPick?: TranscriptPick
+  transcriptPick: TranscriptPick
 }) {
   const { classes } = useStyles()
   const [shown, setShown] = useState(false)
@@ -82,7 +82,6 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
             })}
             feature={feature}
             hoverTarget={model}
-            canonicalTranscripts={model.canonicalTranscripts}
             transcriptPick={transcriptPick}
           />
         </Suspense>

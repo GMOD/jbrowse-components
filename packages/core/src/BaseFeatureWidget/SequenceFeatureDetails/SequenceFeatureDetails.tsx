@@ -8,13 +8,11 @@ import SequenceControls from './dialogs/SequenceControls.tsx'
 import TranscriptSelector from './dialogs/TranscriptSelector.tsx'
 import { featureHasExonOrCDS, resolveMode } from './featureTypeUtil.ts'
 import { useSequenceFetch } from './useSequenceFetch.ts'
-import { useTranscriptPick } from './useTranscriptPick.ts'
 
 import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from '../../util/index.ts'
-import type { CanonicalTranscripts } from '../../util/isoformRank.ts'
 import type {
   SequenceFeatureDetailsModel,
   SequenceHoverTarget,
@@ -32,9 +30,7 @@ interface SequenceFeatureDetailsProps {
   feature: SimpleFeatureSerialized
   hoverTarget?: SequenceHoverTarget
   showOpenInDialog?: boolean
-  canonicalTranscripts?: CanonicalTranscripts
-  /** a pick the caller shares with its own transcript menu */
-  transcriptPick?: TranscriptPick
+  transcriptPick: TranscriptPick
 }
 
 const SequenceFeatureDetailsPanel = observer(
@@ -45,18 +41,13 @@ const SequenceFeatureDetailsPanel = observer(
     feature,
     hoverTarget,
     showOpenInDialog = true,
-    canonicalTranscripts,
-    transcriptPick,
+    transcriptPick: pick,
   }: SequenceFeatureDetailsProps) {
     const { upDownBp } = model
     const seqPanelRef = useRef<HTMLPreElement>(null)
 
-    // A container feature (e.g. a gene) has no CDS/exon of its own — one of its
-    // transcript children does. Default to the transcript the track draws first
-    // so CDS and Protein sequence types work without an extra click into
-    // Subfeatures, with a selector to switch when the gene has more than one.
-    const ownPick = useTranscriptPick(feature, canonicalTranscripts)
-    const pick = transcriptPick ?? ownPick
+    // A container feature (e.g. a gene) has no CDS/exon of its own; one of its
+    // transcript children does, so the panel reads the picked transcript.
     const picked = pick.transcripts[pick.index]
     const effectiveFeature =
       picked && featureHasExonOrCDS(picked) ? picked : feature

@@ -6,18 +6,43 @@ import { ErrorBanner, InfoDialog, LoadingEllipses } from '../../../ui/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import SequenceFeatureDetails from '../SequenceFeatureDetails.tsx'
 import { SequenceFeatureDetailsF } from '../model.ts'
+import { useTranscriptPick } from '../useTranscriptPick.ts'
 
 import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from '../../../util/index.ts'
 import type { CanonicalTranscripts } from '../../../util/isoformRank.ts'
-import type { SequenceHoverTarget } from '../model.ts'
+import type {
+  SequenceFeatureDetailsModel,
+  SequenceHoverTarget,
+} from '../model.ts'
 
 const useStyles = makeStyles()({
   content: {
     width: '80em',
   },
+})
+
+const PickedSequence = observer(function PickedSequence({
+  canonicalTranscripts,
+  ...props
+}: {
+  model: SequenceFeatureDetailsModel
+  session: AbstractSessionModel
+  assemblyName: string | undefined
+  feature: SimpleFeatureSerialized
+  hoverTarget?: SequenceHoverTarget
+  canonicalTranscripts?: CanonicalTranscripts
+}) {
+  const pick = useTranscriptPick(props.feature, canonicalTranscripts)
+  return (
+    <SequenceFeatureDetails
+      {...props}
+      showOpenInDialog={false}
+      transcriptPick={pick}
+    />
+  )
 })
 
 // The feature sequence panel as a standalone dialog, for callers that have a
@@ -64,13 +89,12 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
         {error ? (
           <ErrorBanner error={error} />
         ) : feature ? (
-          <SequenceFeatureDetails
+          <PickedSequence
             model={model}
             session={session}
             assemblyName={assemblyName}
             feature={feature}
             hoverTarget={hoverTarget}
-            showOpenInDialog={false}
             canonicalTranscripts={canonicalTranscripts}
           />
         ) : (
