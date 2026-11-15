@@ -327,7 +327,7 @@ describe('color by menu curation', () => {
   test('curated colorOptions replace the basic radios', () => {
     expect(
       labelsFor({ colorOptions: colorFieldOptions(undefined, 'mateRefName') }),
-    ).toEqual(['Normal', 'Mate chromosome', 'Solid color...'])
+    ).toEqual(['Normal', 'Mate or partner chromosome', 'Solid color...'])
   })
 
   test('a curated entry can relabel one field for its own display', () => {
@@ -364,7 +364,7 @@ describe('color by menu curation', () => {
     const model = makeModel()
     // clickRadio throws if the row isn't there or isn't clickable, so reaching
     // the assertion is itself the "it is offered" half
-    clickRadio(model, 'Mate chromosome')
+    clickRadio(model, 'Mate or partner chromosome')
     expect(model.colorField).toBe('mateRefName')
   })
 })

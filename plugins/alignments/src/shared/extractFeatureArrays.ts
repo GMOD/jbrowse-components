@@ -17,9 +17,9 @@ import {
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { fieldTag } from './facetLabels.ts'
 import { fieldValueReader } from './groupFeatures.ts'
-import { categoryBitsOf, saTagOf } from './splitAlignment.ts'
+import { categoryBitsOf, mateRefNameOf, saTagOf } from './splitAlignment.ts'
 import { isMethylationView } from './types.ts'
-import { getMateRefName, getStrand } from './util.ts'
+import { getStrand } from './util.ts'
 
 import type { BaseLayer } from './types.ts'
 import type {
@@ -141,9 +141,10 @@ export function extractFeatureArrays<T extends FeatureData>(
   // Chromosome painting reuses the tag channel: both resolve one string per
   // read that the main thread bakes into a color (see buildReadFillColors), so
   // the mate refName travels as a `tagColorValues` entry rather than earning a
-  // parallel array. The `?? ''` is a feature with neither of the two sources
-  // `getMateRefName` reads — a synteny block's `mate`, a BAM read's `next_ref`
-  // — which is uncolored rather than a hash of the empty string.
+  // parallel array. The `?? ''` is a feature with none of the sources
+  // `mateRefNameOf` reads — a synteny block's `mate`, a BAM read's `next_ref`,
+  // an unpaired read's split partner on another reference — which is uncolored
+  // rather than a hash of the empty string.
   const isMateRefNameMode = colorField === 'mateRefName'
   const paintsModificationMarks = baseLayer?.field === 'modifications'
   // A sort on the tag the reads are colored by shares their column, which
@@ -206,7 +207,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     } else if (readColorAttribute) {
       tagColorValues.push(readColorAttribute(feature))
     } else if (isMateRefNameMode) {
-      tagColorValues.push(getMateRefName(feature) ?? '')
+      tagColorValues.push(mateRefNameOf(feature, sa) ?? '')
     }
 
     if (sortTagValues && sortTag && !sortsByColorTag) {

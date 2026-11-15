@@ -16,10 +16,16 @@ import {
 } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { forEachSAEntry } from '../features/sashimi/splitJunctions.ts'
 import { cigarCategoryBitsOf } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { makesJunction } from './splitReadJunctions.ts'
-import { getFlags, getMappingQuality, getStrand } from './util.ts'
+import {
+  getFlags,
+  getMappingQuality,
+  getMateRefName,
+  getStrand,
+} from './util.ts'
 
 import type { MismatchFeature } from './extractCigarFeatures.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -61,6 +67,30 @@ export function saTagOf(feature: Feature) {
   return (feature as Partial<MismatchFeature>).hasEndClip === false
     ? ''
     : extractFeatureTagValue(feature, 'SA')
+}
+
+/** The reference of the first placed SA entry off the record's own. */
+export function splitPartnerRefName(feature: Feature, sa: string) {
+  const ownRefName = feature.get('refName')
+  let partner: string | undefined
+  forEachSAEntry(
+    sa,
+    (nameStart, nameEnd, _start, _end, _strand, _clip, mapq) => {
+      if (partner === undefined && mapq !== 0) {
+        const refName = sa.slice(nameStart, nameEnd)
+        partner = refName === ownRefName ? undefined : refName
+      }
+    },
+  )
+  return partner
+}
+
+/**
+ * The `mateRefName` field: the mate's reference, or for a read with no mate,
+ * as a long read has none, its split partner's on another reference.
+ */
+export function mateRefNameOf(feature: Feature, sa = saTagOf(feature)) {
+  return getMateRefName(feature) ?? splitPartnerRefName(feature, sa)
 }
 
 /**

@@ -570,3 +570,34 @@ describe('filterChainFeatures read dimensions', () => {
     expect(orientationReads).toBe(reads.length)
   })
 })
+
+describe('filterChainFeatures on unpaired long reads', () => {
+  const longRead = (name: string, SA?: string) =>
+    new SimpleFeature({
+      uniqueId: name,
+      refName: 'chr9',
+      start: 1000,
+      end: 2000,
+      name,
+      flags: 0,
+      CIGAR: SA ? '1000M500S' : '1000M',
+      ...(SA ? { tags: { SA } } : {}),
+    })
+  const reads = [
+    longRead('fusion', 'chr22,5000,+,1000S500M,60,0;'),
+    longRead('withinChr9', 'chr9,9000,+,1000S500M,60,0;'),
+    longRead('toChr19', 'chr19,7000,+,1000S500M,60,0;'),
+    longRead('unsplit'),
+  ]
+
+  test('a split partner on the fusion partner reference keeps a chain', () => {
+    expect(
+      names(
+        filterChainFeatures(reads, [
+          { field: 'split', equal: true },
+          { field: 'mateRefName', oneOf: ['chr9', 'chr22'] },
+        ]),
+      ),
+    ).toEqual(['fusion'])
+  })
+})

@@ -806,3 +806,41 @@ test('the split notice names the values, singular and past the listed few', () =
     /^facet: a, b, c and 2 more passed .* their reads split between their own sections/,
   )
 })
+
+describe('mateRefName key', () => {
+  const mateRefNameOfRead = (fields: Record<string, unknown>) =>
+    FACET_DIMENSIONS.mateRefName.key(feat('r', fields), undefined).key
+
+  test('an unpaired read keys its placed split partner on another reference', () => {
+    expect(
+      mateRefNameOfRead({ flags: 0, tags: { SA: 'chr22,500,+,40S60M,60,0;' } }),
+    ).toBe('chr22')
+  })
+
+  test('an unpaired read split within its own reference keys no mate', () => {
+    expect(
+      mateRefNameOfRead({ flags: 0, tags: { SA: 'ctgA,500,+,40S60M,60,0;' } }),
+    ).toBe('')
+  })
+
+  test('an unplaced partner gives way to the next placed one', () => {
+    expect(
+      mateRefNameOfRead({
+        flags: 0,
+        tags: {
+          SA: 'chr22,500,+,40S30M30S,0,0;ctgA,900,+,70S30M,60,0;chr19,700,+,70S30M,60,0;',
+        },
+      }),
+    ).toBe('chr19')
+  })
+
+  test("a paired read keys its mate's reference over its split partner's", () => {
+    expect(
+      mateRefNameOfRead({
+        flags: 0x1,
+        next_ref: 'chr7',
+        tags: { SA: 'chr22,500,+,40S60M,60,0;' },
+      }),
+    ).toBe('chr7')
+  })
+})

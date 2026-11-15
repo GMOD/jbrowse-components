@@ -22,7 +22,7 @@ export const FACET_LABELS: Record<ReadDimension, string> = {
   spliced: 'Spliced reads',
   svKind: 'SV kind',
   mapq: 'Mapping quality',
-  mateRefName: 'Mate chromosome',
+  mateRefName: 'Mate or partner chromosome',
   mateAssembly: 'Mate assembly',
 }
 
