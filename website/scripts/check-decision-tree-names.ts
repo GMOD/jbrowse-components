@@ -16,7 +16,12 @@ import { readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 
 import { slotPaths } from '../../scripts/configSlotPaths.ts'
-import { reportProblems, repoFiles, sourceFiles } from './check-utils.ts'
+import {
+  BUILD_DIRS,
+  reportProblems,
+  repoFiles,
+  sourceFiles,
+} from './check-utils.ts'
 import { codeOf } from './codeOf.ts'
 import { fencedLines } from './docFenceRegions.ts'
 import { repoRoot } from './paths.ts'
@@ -59,7 +64,7 @@ function sourceNames() {
   const chains = new Set<string>()
   const isSource = (name: string) =>
     /\.(?:tsx?|jsx?|mjs|cjs|slang)$/.test(name) && !name.includes('.test.')
-  for (const file of sourceFiles(PRODUCT_ROOTS, isSource)) {
+  for (const file of sourceFiles(PRODUCT_ROOTS, isSource, BUILD_DIRS)) {
     const code = codeOf(readFileSync(file, 'utf8'))
     for (const [word] of code.matchAll(/[A-Za-z_$][\w$]*/g)) {
       words.add(word)
