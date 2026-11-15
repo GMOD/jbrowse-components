@@ -7,6 +7,22 @@ import SimpleField from './SimpleField.tsx'
 
 import type { BaseProps } from '../types.tsx'
 
+const ROWS = [
+  { label: 'Name', field: 'name', filterable: true },
+  { label: 'Description', field: 'description', filterable: false },
+  { label: 'Length', field: 'length', filterable: false },
+  { label: 'Type', field: 'type', filterable: true },
+] as const
+
+/** The fields these rows and the Position row show, which Attributes skips. */
+export const shownByCoreDetails = [
+  'refName',
+  'start',
+  'end',
+  'strand',
+  ...ROWS.map(row => row.field),
+]
+
 const CoreDetails = observer(function CoreDetails({
   feature,
   fieldActions,
@@ -20,15 +36,12 @@ const CoreDetails = observer(function CoreDetails({
     .filter(Boolean)
     .join(' ')
   const go = locate?.(feature)
-  const rows: { label: string; value: unknown; field?: string }[] = [
-    { label: 'Name', value: name, field: 'name' },
-    { label: 'Description', value: description },
-    {
-      label: 'Length',
-      value: typeof length === 'number' ? toLocale(length) : length,
-    },
-    { label: 'Type', value: type, field: 'type' },
-  ]
+  const values = {
+    name,
+    description,
+    length: typeof length === 'number' ? toLocale(length) : length,
+    type,
+  }
   return (
     <>
       <SimpleField
@@ -48,18 +61,21 @@ const CoreDetails = observer(function CoreDetails({
           )
         }
       />
-      {rows.map(({ label, value, field }) => (
-        <SimpleField
-          key={label}
-          name={label}
-          value={Array.isArray(value) ? value.join(', ') : value}
-          fieldActions={
-            field && fieldActions
-              ? (_path, rowValue) => fieldActions([field], rowValue)
-              : undefined
-          }
-        />
-      ))}
+      {ROWS.map(({ label, field, filterable }) => {
+        const value = values[field]
+        return (
+          <SimpleField
+            key={label}
+            name={label}
+            value={Array.isArray(value) ? value.join(', ') : value}
+            fieldActions={
+              filterable && fieldActions
+                ? (_path, rowValue) => fieldActions([field], rowValue)
+                : undefined
+            }
+          />
+        )
+      })}
     </>
   )
 })

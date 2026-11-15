@@ -11,7 +11,7 @@ import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
 import { useTranscriptPick } from '../SequenceFeatureDetails/useTranscriptPick.ts'
 import Attributes from './Attributes.tsx'
 import BaseCard from './BaseCard.tsx'
-import CoreDetails from './CoreDetails.tsx'
+import CoreDetails, { shownByCoreDetails } from './CoreDetails.tsx'
 import SubfeatureParts from './SubfeatureParts.tsx'
 import { featureNavigator, spanLocator } from './featureNavigator.ts'
 import { subfeatureGroups } from './subfeatureGroups.ts'
@@ -39,16 +39,6 @@ const SectionHeader = observer(function SectionHeader({
 }) {
   return <Typography variant="overline">{title}</Typography>
 })
-
-const shownByCoreDetails = [
-  'name',
-  'start',
-  'end',
-  'strand',
-  'refName',
-  'description',
-  'type',
-]
 
 interface FeatureDetailsProps {
   model: FeatureDetailsModel
