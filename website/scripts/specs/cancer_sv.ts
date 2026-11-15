@@ -806,10 +806,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             height: 90,
           },
           ...SPLIT_READS_ONLY,
+          // `splitPartnerRefName` keeps the chains whose other piece is on the
+          // other side of this fusion: 394 of the 395 chr9-window chains
+          // reaching chr22, with the chr9 to chr9 splits and the pieces on
+          // chr7, chr19 and other references dropped.
           filter: [
             ...SPLIT_READS_ONLY.filter,
             { field: 'connection.offscreen', equal: false },
-            { field: 'connection.interchrom', equal: true },
+            { field: 'splitPartnerRefName', oneOf: ['chr9', 'chr22'] },
           ],
           encoding: { color: 'insertSizeAndOrientation' },
           legend: { show: true },

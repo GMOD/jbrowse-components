@@ -24,6 +24,10 @@ category, judged per record, and leaves ADR-229's `svSignal` the SV-evidence
 test. A `mateRefName` value is listed in the adapter's spelling beside its own
 where the regions are renamed (`adapterSpelledFilter`).
 
+Amended 2026-11-15: `splitPartnerRefName`, the reference of a read's first
+placed (MAPQ not 0) SA piece off its own, filters and facets beside
+`mateRefName`, which keeps naming only the mate's reference.
+
 ## Context
 
 - **The category filters thinned coverage.** `selectChains` ran ahead of the
