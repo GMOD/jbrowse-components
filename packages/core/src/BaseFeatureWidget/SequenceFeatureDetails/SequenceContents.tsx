@@ -21,11 +21,6 @@ import type {
 } from './model.ts'
 import type { SeqState } from './types.ts'
 
-// Dispatches to the renderer for the current sequence type. An observer because
-// it reads showCoordinatesSetting: that setting moving relative<->genomic
-// leaves the coarse showCoordinates boolean every other observer here reads
-// untouched, so as a plain component this kept rendering the old coordinates
-// while the menu radio said otherwise.
 const SequenceContents = observer(function SequenceContents({
   mode,
   feature,
@@ -43,14 +38,11 @@ const SequenceContents = observer(function SequenceContents({
   revcomp: boolean
   onHoverBase?: (base0: number) => void
 }) {
-  // revcomp is offered for the genomic types only, so a toggle left on in one
-  // of those can't flip a spliced readout when the user switches type
   const traits = sequenceModes[mode]
-  const rc = revcomp && traits.revcomp
   const { seq, upstream, downstream, cds, exons } = getSequenceData({
     feature,
     sequence,
-    revcomp: rc,
+    revcomp,
   })
   const withUpDown = traits.upDownstream
   const useGenomicCoords =
@@ -66,7 +58,7 @@ const SequenceContents = observer(function SequenceContents({
           upstream={withUpDown ? upstream : undefined}
           downstream={withUpDown ? downstream : undefined}
           useGenomicCoords={useGenomicCoords}
-          revcomp={rc}
+          revcomp={revcomp}
           onHoverBase={onHoverBase}
         />
       )
@@ -105,7 +97,7 @@ const SequenceContents = observer(function SequenceContents({
           includeIntrons={traits.introns}
           collapseIntron={traits.collapsedIntrons}
           useGenomicCoords={useGenomicCoords}
-          revcomp={rc}
+          revcomp={revcomp}
           onHoverBase={onHoverBase}
         />
       )

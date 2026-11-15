@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 
 import SequenceContents from './SequenceContents.tsx'
 import SequenceName from './SequenceName.tsx'
+import { sequenceModes } from './sequenceModes.ts'
 
 import type { SequencePanelProps } from './types.ts'
 
@@ -36,6 +37,7 @@ const SequencePanel = observer(function SequencePanel({
   ref,
 }: SequencePanelProps) {
   const { showCoordinates } = model
+  const effectiveRevcomp = revcomp && sequenceModes[mode].revcomp
   // clear the LGV crosshair if the panel unmounts mid-hover (e.g. the sequence
   // is hidden) so it doesn't linger
   useEffect(
@@ -56,7 +58,7 @@ const SequencePanel = observer(function SequencePanel({
         <SequenceName
           model={model}
           mode={mode}
-          revcomp={revcomp}
+          revcomp={effectiveRevcomp}
           feature={feature}
         />
         <SequenceContents
@@ -64,7 +66,7 @@ const SequencePanel = observer(function SequencePanel({
           mode={mode}
           feature={feature}
           sequence={sequence}
-          revcomp={revcomp}
+          revcomp={effectiveRevcomp}
           assemblyGeneticCodeId={assemblyGeneticCodeId}
           onHoverBase={base0 => {
             hoverTarget?.setSequenceHoverPosition({

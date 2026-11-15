@@ -27,7 +27,7 @@ const SequenceName = observer(function SequenceName({
         [
           coarseStripHTML(`${feature.name || feature.id || ''}`),
           mode,
-          revcomp && sequenceModes[mode].revcomp ? 'revcomp' : '',
+          revcomp ? 'revcomp' : '',
         ]
           .filter(Boolean)
           .join('-'),
