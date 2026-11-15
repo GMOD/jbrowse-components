@@ -30,6 +30,9 @@ extend-ignore-re = [
   "\\bff[0-9a-f]{6}\\b",
   # a generated artifact's input hash: `inputs: dfc3f13f2050caf8` read `caf`
   "\\binputs: [0-9a-f]{16}\\b",
+  # an Illumina read name, instrument:run:flowcell:lane:tile:x:y; the flowcell
+  # id `C2UE1ACXX` read `UE`
+  "\\b[A-Z0-9-]+:\\d+:[A-Z0-9]+:\\d+:\\d+:\\d+:\\d+\\b",
 ]
 
 [default.extend-words]
