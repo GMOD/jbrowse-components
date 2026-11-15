@@ -1,6 +1,9 @@
+import { createRef } from 'react'
+
 import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import copyToClipboard from '../../../util/copyToClipboard.ts'
+import SequencePanel from '../SequencePanel.tsx'
 import { SequenceFeatureDetailsF } from '../model.ts'
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
 
@@ -77,6 +80,60 @@ test('copies HTML through the session its opener supplied', async () => {
     format: 'text/html',
   })
   expect(errors).toEqual([])
+})
+
+test('the panel exports its readout, not the scroll box around it', async () => {
+  const model = SequenceFeatureDetailsF().create()
+  const ref = createRef<HTMLPreElement>()
+  const notified: string[] = []
+  render(
+    <>
+      <SequenceFeatureMenu
+        model={model}
+        session={{
+          notify: (message: string) => {
+            notified.push(message)
+          },
+          notifyError: () => {},
+        }}
+        ref={ref}
+        fileStem="r_genomic"
+        mode="genomic"
+        revcomp={false}
+        setRevcomp={() => {}}
+      />
+      <SequencePanel
+        ref={ref}
+        model={model}
+        mode="genomic"
+        sequence={{ seq: 'ACGTACGT' }}
+        feature={{
+          uniqueId: 'r',
+          name: 'r',
+          refName: 'chr1',
+          start: 0,
+          end: 8,
+          type: 'region',
+        }}
+      />
+    </>,
+  )
+
+  clickMenuItem('Copy HTML')
+  await waitFor(() => {
+    expect(notified).toEqual(['Copied sequence HTML to clipboard'])
+  })
+  const html = copyMock.mock.calls[0]![0]
+  expect(html).toMatch(/^<pre /)
+  expect(html).toContain('ACGTACGT')
+  expect(html).not.toContain('overflow')
+  expect(html).not.toContain('max-height')
+
+  clickMenuItem('Copy FASTA')
+  await waitFor(() => {
+    expect(copyMock).toHaveBeenCalledTimes(2)
+  })
+  expect(copyMock.mock.calls[1]![0]).toBe('>r-genomic chr1:1-8\nACGTACGT')
 })
 
 test('a rejected clipboard write reaches the same session', async () => {

@@ -61,7 +61,7 @@ const SequenceDialog = observer(function SequenceDialog({
   onForceLoad: () => void
 }) {
   const { classes } = useStyles()
-  const seqPanelRef = useRef<HTMLDivElement>(null)
+  const seqPanelRef = useRef<HTMLPreElement>(null)
 
   return (
     <InfoDialog

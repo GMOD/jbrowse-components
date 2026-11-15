@@ -47,13 +47,12 @@ const SequencePanel = observer(function SequencePanel({
   return (
     <div
       data-testid="sequence_panel"
-      ref={ref}
       style={{ maxHeight: 300, overflow: 'auto' }}
       onMouseLeave={() => {
         hoverTarget?.setSequenceHoverPosition(undefined)
       }}
     >
-      <pre style={showCoordinates ? rowsStyle : wrappedStyle}>
+      <pre ref={ref} style={showCoordinates ? rowsStyle : wrappedStyle}>
         <SequenceName
           model={model}
           mode={mode}

@@ -32,7 +32,7 @@ const SequenceBody = observer(function SequenceBody({
   sequence: SeqState | ErrorState | undefined
   status?: RpcStatus
   feature: SimpleFeatureSerialized
-  seqPanelRef: RefObject<HTMLDivElement | null>
+  seqPanelRef: RefObject<HTMLPreElement | null>
   model: SequenceFeatureDetailsModel
   mode: SequenceDisplayMode
   revcomp: boolean

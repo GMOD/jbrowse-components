@@ -49,7 +49,7 @@ const SequenceFeatureDetailsPanel = observer(
     transcriptPick,
   }: SequenceFeatureDetailsProps) {
     const { upDownBp } = model
-    const seqPanelRef = useRef<HTMLDivElement>(null)
+    const seqPanelRef = useRef<HTMLPreElement>(null)
 
     // A container feature (e.g. a gene) has no CDS/exon of its own — one of its
     // transcript children does. Default to the transcript the track draws first

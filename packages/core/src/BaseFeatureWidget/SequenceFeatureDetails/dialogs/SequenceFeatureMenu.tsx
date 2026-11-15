@@ -31,7 +31,7 @@ interface Props {
   // creates detached, so the menu cannot reach a session by walking up from it.
   // whoever mounted the panel supplies one.
   session: Pick<AbstractSessionModel, 'notify' | 'notifyError'>
-  ref: RefObject<HTMLDivElement | null>
+  ref: RefObject<HTMLElement | null>
   fileStem: string
   mode: SequenceDisplayMode
   revcomp: boolean
@@ -59,7 +59,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
   // every export row reads the rendered panel out of the ref, which is empty
   // until the panel mounts (the sequence is still loading, or errored)
   const withPanel =
-    (f: (panel: HTMLDivElement) => Promise<void> | void) => async () => {
+    (f: (panel: HTMLElement) => Promise<void> | void) => async () => {
       const panel = ref.current
       if (panel) {
         await f(panel)

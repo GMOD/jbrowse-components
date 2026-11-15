@@ -40,7 +40,7 @@ const SequenceControls = observer(function SequenceControls({
   mode: SequenceDisplayMode
   revcomp: boolean
   setRevcomp: (arg: boolean) => void
-  seqPanelRef: RefObject<HTMLDivElement | null>
+  seqPanelRef: RefObject<HTMLElement | null>
   transcriptSelector?: ReactNode
   extraItems?: MenuItem[]
 }) {

@@ -21,7 +21,7 @@ export interface SequencePanelProps {
   // tially stable (it is the owning widget/display), since a fresh identity
   // each render would clear the hover it just set
   hoverTarget?: SequenceHoverTarget
-  ref?: RefObject<HTMLDivElement | null>
+  ref?: RefObject<HTMLPreElement | null>
 }
 
 export interface Feat {
