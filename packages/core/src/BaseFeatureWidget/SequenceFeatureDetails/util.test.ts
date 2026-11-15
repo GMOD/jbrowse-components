@@ -1,4 +1,5 @@
 import {
+  getIntronDisplayStr,
   sequenceFileStem,
   splitRegionByCds,
   splitString,
@@ -246,5 +247,17 @@ describe('splitString', () => {
     expect(segments[0]).toBe('ABC')
     expect(segments[1]).toBe('DEFG')
     expect(segments[2]).toBe('H')
+  })
+})
+
+describe('getIntronDisplayStr', () => {
+  test('keeps intronBp bases from each end of a long intron', () => {
+    expect(getIntronDisplayStr('AACCCCCCGG', 2, true)).toBe('AA...GG')
+  })
+  test('a zero-base collapse keeps neither end', () => {
+    expect(getIntronDisplayStr('AACCCCCCGG', 0, true)).toBe('...')
+  })
+  test('an intron no longer than both ends shows whole', () => {
+    expect(getIntronDisplayStr('AACCGG', 3, true)).toBe('AACCGG')
   })
 })

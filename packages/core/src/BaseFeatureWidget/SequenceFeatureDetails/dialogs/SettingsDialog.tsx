@@ -73,6 +73,8 @@ const SequenceFeatureSettingsDialog = observer(
               className={classes.formElt}
               defaultValue={model.intronBp}
               onValueChange={setIntronBp}
+              min={0}
+              errorText="Must be zero or more"
             />
           </div>
           <div>
@@ -81,6 +83,8 @@ const SequenceFeatureSettingsDialog = observer(
               className={classes.formElt}
               defaultValue={model.upDownBp}
               onValueChange={setUpDownBp}
+              min={0}
+              errorText="Must be zero or more"
             />
           </div>
           <div>

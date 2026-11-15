@@ -180,7 +180,7 @@ export function getIntronDisplayStr(
   collapseIntron: boolean,
 ) {
   return collapseIntron && intron.length > intronBp * 2
-    ? `${intron.slice(0, intronBp)}...${intron.slice(-intronBp)}`
+    ? `${intron.slice(0, intronBp)}...${intron.slice(intron.length - intronBp)}`
     : intron
 }
 

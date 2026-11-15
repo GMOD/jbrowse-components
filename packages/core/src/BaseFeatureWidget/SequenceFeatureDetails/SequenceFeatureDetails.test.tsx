@@ -288,6 +288,17 @@ test('the row width is a setting, and never zero', () => {
   expect(model.charactersPerRow).toBe(1)
 })
 
+test('the base-pair settings are whole and never negative', () => {
+  const model = SequenceFeatureDetailsF().create()
+  model.setIntronBp(-5)
+  model.setUpDownBp(2.7)
+  expect(model.intronBp).toBe(0)
+  expect(model.upDownBp).toBe(2)
+
+  localStorage.setItem('sequenceFeatureDetails-upDownBp', '-5')
+  expect(SequenceFeatureDetailsF().create().upDownBp).toBe(0)
+})
+
 test('single exon cDNA should not have duplicate sequences', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()

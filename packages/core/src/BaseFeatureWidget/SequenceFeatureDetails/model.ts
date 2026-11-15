@@ -65,6 +65,10 @@ function clampCharactersPerRow(n: number) {
   return Math.max(1, Math.floor(n))
 }
 
+function clampBasePairs(n: number) {
+  return Math.max(0, Math.floor(n))
+}
+
 /**
  * #stateModel SequenceFeatureDetails
  * #category Widget
@@ -90,11 +94,11 @@ export function SequenceFeatureDetailsF() {
       /**
        * #volatile
        */
-      intronBp: localStorageGetNumber(`${p}-intronBp`, 10),
+      intronBp: clampBasePairs(localStorageGetNumber(`${p}-intronBp`, 10)),
       /**
        * #volatile
        */
-      upDownBp: localStorageGetNumber(`${p}-upDownBp`, 100),
+      upDownBp: clampBasePairs(localStorageGetNumber(`${p}-upDownBp`, 100)),
       /**
        * #volatile
        */
@@ -123,15 +127,17 @@ export function SequenceFeatureDetailsF() {
        * #action
        */
       setUpDownBp(f: number) {
-        self.upDownBp = f
-        localStorageSetNumber(`${p}-upDownBp`, f)
+        const clamped = clampBasePairs(f)
+        self.upDownBp = clamped
+        localStorageSetNumber(`${p}-upDownBp`, clamped)
       },
       /**
        * #action
        */
       setIntronBp(f: number) {
-        self.intronBp = f
-        localStorageSetNumber(`${p}-intronBp`, f)
+        const clamped = clampBasePairs(f)
+        self.intronBp = clamped
+        localStorageSetNumber(`${p}-intronBp`, clamped)
       },
       /**
        * #action
