@@ -44,8 +44,8 @@ test(
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 84 })
     fireEvent.click(canvas, { clientX: 200, clientY: 84 })
 
-    // this is to confirm a alignment detail widget opened
-    await findByTestId('alignment-side-drawer', ...opts)
+    // only the alignments widget draws a Flags card
+    await findByTestId('BaseCard-Flags', ...opts)
   },
   timeout + 10_000,
 )

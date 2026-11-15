@@ -109,7 +109,6 @@ const VariantDetails = observer(function VariantDetails({
       model={model}
       feature={rest}
       unformatted={raw}
-      testId="variant-side-drawer"
       descriptions={{ ...descriptions, ...variantFieldDescriptions }}
       omit={consequences.map(({ key }) => key)}
       isFilterable={isFilterable}

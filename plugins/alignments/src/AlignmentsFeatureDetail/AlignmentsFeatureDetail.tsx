@@ -66,7 +66,6 @@ const AlignmentsFeatureDetails = observer(function AlignmentsFeatureDetails({
           model={model}
           feature={feature}
           unformatted={raw}
-          testId="alignment-side-drawer"
           descriptions={descriptions}
           omit={omit}
           formatter={(value, key) =>

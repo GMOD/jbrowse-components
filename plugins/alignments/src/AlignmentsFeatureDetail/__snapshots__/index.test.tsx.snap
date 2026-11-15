@@ -6,94 +6,75 @@ exports[`open up a widget 1`] = `
     class="css-HASH"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-HASH-MuiPaper-root"
-      data-testid="alignment-side-drawer"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-HASH-MuiPaper-root-MuiAccordion-root"
+      data-testid="BaseCard-ctgA_3_555_0:0:0_2:0:0_102d · match"
       style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
     >
-      <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-HASH-MuiPaper-root-MuiAccordion-root"
-        data-testid="BaseCard-ctgA_3_555_0:0:0_2:0:0_102d · match"
-        style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+      <h3
+        class="MuiAccordion-heading css-HASH-MuiAccordion-heading"
       >
-        <h3
-          class="MuiAccordion-heading css-HASH-MuiAccordion-heading"
+        <button
+          aria-expanded="true"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-HASH-MuiButtonBase-root-MuiAccordionSummary-root"
+          tabindex="0"
+          type="button"
         >
-          <button
-            aria-expanded="true"
-            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-HASH-MuiButtonBase-root-MuiAccordionSummary-root"
-            tabindex="0"
-            type="button"
+          <span
+            class="MuiAccordionSummary-content Mui-expanded css-HASH-MuiAccordionSummary-content"
           >
             <span
-              class="MuiAccordionSummary-content Mui-expanded css-HASH-MuiAccordionSummary-content"
+              class="MuiTypography-root MuiTypography-subtitle2 MuiTypography-noWrap css-HASH-MuiTypography-root"
+              title="ctgA_3_555_0:0:0_2:0:0_102d · match"
             >
-              <span
-                class="MuiTypography-root MuiTypography-subtitle2 MuiTypography-noWrap css-HASH-MuiTypography-root"
-                title="ctgA_3_555_0:0:0_2:0:0_102d · match"
-              >
-                ctgA_3_555_0:0:0_2:0:0_102d · match
-              </span>
+              ctgA_3_555_0:0:0_2:0:0_102d · match
             </span>
-            <span
-              class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-HASH-MuiAccordionSummary-expandIconWrapper"
+          </span>
+          <span
+            class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-HASH-MuiAccordionSummary-expandIconWrapper"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+              data-testid="ExpandMoreIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
             >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                data-testid="ExpandMoreIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
-                />
-              </svg>
-            </span>
-          </button>
-        </h3>
+              <path
+                d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </span>
+        </button>
+      </h3>
+      <div
+        class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-HASH-MuiCollapse-root"
+        style="min-height: 0px;"
+      >
         <div
-          class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-HASH-MuiCollapse-root"
-          style="min-height: 0px;"
+          class="MuiCollapse-wrapper MuiCollapse-vertical css-HASH-MuiCollapse-wrapper"
         >
           <div
-            class="MuiCollapse-wrapper MuiCollapse-vertical css-HASH-MuiCollapse-wrapper"
+            class="MuiCollapse-wrapperInner MuiCollapse-vertical css-HASH-MuiCollapse-wrapperInner"
           >
             <div
-              class="MuiCollapse-wrapperInner MuiCollapse-vertical css-HASH-MuiCollapse-wrapperInner"
+              class="MuiAccordion-region css-HASH-MuiAccordion-region"
+              role="region"
             >
               <div
-                class="MuiAccordion-region css-HASH-MuiAccordion-region"
-                role="region"
+                class="MuiAccordionDetails-root css-HASH-MuiAccordionDetails-root"
               >
-                <div
-                  class="MuiAccordionDetails-root css-HASH-MuiAccordionDetails-root"
+                <span
+                  class="MuiTypography-root MuiTypography-overline css-HASH-MuiTypography-root"
                 >
-                  <span
-                    class="MuiTypography-root MuiTypography-overline css-HASH-MuiTypography-root"
-                  >
-                    Core details
-                  </span>
+                  Core details
+                </span>
+                <div
+                  class="css-HASH"
+                >
                   <div
                     class="css-HASH"
                   >
-                    <div
-                      class="css-HASH"
-                    >
-                      Position
-                    </div>
-                    <div
-                      class="css-HASH"
-                    >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            ctgA:3..102 (+)
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    Position
                   </div>
                   <div
                     class="css-HASH"
@@ -101,21 +82,21 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      Name
-                    </div>
-                    <div
-                      class="css-HASH"
-                    >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            ctgA_3_555_0:0:0_2:0:0_102d
-                          </span>
-                        </div>
+                      <div>
+                        <span>
+                          ctgA:3..102 (+)
+                        </span>
                       </div>
                     </div>
+                  </div>
+                </div>
+                <div
+                  class="css-HASH"
+                >
+                  <div
+                    class="css-HASH"
+                  >
+                    Name
                   </div>
                   <div
                     class="css-HASH"
@@ -123,21 +104,21 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      Length
-                    </div>
-                    <div
-                      class="css-HASH"
-                    >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            100
-                          </span>
-                        </div>
+                      <div>
+                        <span>
+                          ctgA_3_555_0:0:0_2:0:0_102d
+                        </span>
                       </div>
                     </div>
+                  </div>
+                </div>
+                <div
+                  class="css-HASH"
+                >
+                  <div
+                    class="css-HASH"
+                  >
+                    Length
                   </div>
                   <div
                     class="css-HASH"
@@ -145,264 +126,277 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      Type
-                    </div>
-                    <div
-                      class="css-HASH"
-                    >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            match
-                          </span>
-                        </div>
+                      <div>
+                        <span>
+                          100
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <hr
-                    class="MuiDivider-root MuiDivider-fullWidth css-HASH-MuiDivider-root"
-                  />
-                  <span
-                    class="MuiTypography-root MuiTypography-overline css-HASH-MuiTypography-root"
-                  >
-                    Attributes
-                  </span>
+                </div>
+                <div
+                  class="css-HASH"
+                >
                   <div
                     class="css-HASH"
                   >
-                    <div
-                      aria-label="SEQ: read bases as stored in the file (reverse-complemented for reverse-strand reads)"
-                      class="css-HASH css-HASH"
-                      data-mui-internal-clone-element="true"
-                      style="width: 96px;"
-                      tabindex="0"
-                    >
-                      seq
-                    </div>
-                    <div
-                      class="css-HASH"
-                    >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    class="css-HASH"
-                  >
-                    <div
-                      aria-label="MAPQ: mapping quality, phred-scaled probability that the mapping position is wrong"
-                      class="css-HASH css-HASH"
-                      data-mui-internal-clone-element="true"
-                      style="width: 96px;"
-                      tabindex="0"
-                    >
-                      score
-                    </div>
-                    <div
-                      class="css-HASH"
-                    >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            37
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    class="css-HASH"
-                  >
-                    <div
-                      aria-label="QUAL: phred-scaled per-base quality scores"
-                      class="css-HASH css-HASH"
-                      data-mui-internal-clone-element="true"
-                      style="width: 96px;"
-                      tabindex="0"
-                    >
-                      qual
-                    </div>
-                    <div
-                      class="css-HASH"
-                    >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    Type
                   </div>
                   <div
                     class="css-HASH"
                   >
                     <div
                       class="css-HASH"
-                      style="width: 96px;"
                     >
-                      MQ
-                    </div>
-                    <div
-                      class="css-HASH"
-                    >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            37
-                          </span>
-                        </div>
+                      <div>
+                        <span>
+                          match
+                        </span>
                       </div>
                     </div>
                   </div>
+                </div>
+                <hr
+                  class="MuiDivider-root MuiDivider-fullWidth css-HASH-MuiDivider-root"
+                />
+                <span
+                  class="MuiTypography-root MuiTypography-overline css-HASH-MuiTypography-root"
+                >
+                  Attributes
+                </span>
+                <div
+                  class="css-HASH"
+                >
                   <div
-                    class="css-HASH"
+                    aria-label="SEQ: read bases as stored in the file (reverse-complemented for reverse-strand reads)"
+                    class="css-HASH css-HASH"
+                    data-mui-internal-clone-element="true"
+                    style="width: 96px;"
+                    tabindex="0"
                   >
-                    <div
-                      aria-label="CIGAR: alignment operations (M match, I insertion, D deletion, N skip, S/H soft/hard clip)"
-                      class="css-HASH css-HASH"
-                      data-mui-internal-clone-element="true"
-                      style="width: 96px;"
-                      tabindex="0"
-                    >
-                      CIGAR
-                    </div>
-                    <div
-                      class="css-HASH"
-                    >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            100M
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    seq
                   </div>
                   <div
                     class="css-HASH"
                   >
                     <div
                       class="css-HASH"
-                      style="width: 96px;"
                     >
-                      length_on_ref
-                    </div>
-                    <div
-                      class="css-HASH"
-                    >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            100
-                          </span>
-                        </div>
+                      <div>
+                        <span>
+                          TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
+                        </span>
                       </div>
                     </div>
+                  </div>
+                </div>
+                <div
+                  class="css-HASH"
+                >
+                  <div
+                    aria-label="MAPQ: mapping quality, phred-scaled probability that the mapping position is wrong"
+                    class="css-HASH css-HASH"
+                    data-mui-internal-clone-element="true"
+                    style="width: 96px;"
+                    tabindex="0"
+                  >
+                    score
                   </div>
                   <div
                     class="css-HASH"
                   >
                     <div
-                      aria-label="TLEN: signed observed template length (insert size) of a properly paired read"
-                      class="css-HASH css-HASH"
-                      data-mui-internal-clone-element="true"
-                      style="width: 96px;"
-                      tabindex="0"
-                    >
-                      template_length
-                    </div>
-                    <div
                       class="css-HASH"
                     >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            0
-                          </span>
-                        </div>
+                      <div>
+                        <span>
+                          37
+                        </span>
                       </div>
                     </div>
+                  </div>
+                </div>
+                <div
+                  class="css-HASH"
+                >
+                  <div
+                    aria-label="QUAL: phred-scaled per-base quality scores"
+                    class="css-HASH css-HASH"
+                    data-mui-internal-clone-element="true"
+                    style="width: 96px;"
+                    tabindex="0"
+                  >
+                    qual
                   </div>
                   <div
                     class="css-HASH"
                   >
                     <div
-                      aria-label="Length of the read sequence in bases"
-                      class="css-HASH css-HASH"
-                      data-mui-internal-clone-element="true"
-                      style="width: 96px;"
-                      tabindex="0"
-                    >
-                      seq_length
-                    </div>
-                    <div
                       class="css-HASH"
                     >
-                      <div
-                        class="css-HASH"
-                      >
-                        <div>
-                          <span>
-                            100
-                          </span>
-                        </div>
+                      <div>
+                        <span>
+                          17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+                        </span>
                       </div>
                     </div>
+                  </div>
+                </div>
+                <div
+                  class="css-HASH"
+                >
+                  <div
+                    class="css-HASH"
+                    style="width: 96px;"
+                  >
+                    MQ
                   </div>
                   <div
                     class="css-HASH"
                   >
                     <div
-                      class="MuiFormControl-root MuiFormControl-marginDense css-HASH-MuiFormControl-root"
+                      class="css-HASH"
                     >
-                      <button
-                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-HASH-MuiButtonBase-root-MuiButton-root"
-                        tabindex="0"
-                        type="button"
-                      >
-                        Show feature sequence
-                      </button>
+                      <div>
+                        <span>
+                          37
+                        </span>
+                      </div>
                     </div>
+                  </div>
+                </div>
+                <div
+                  class="css-HASH"
+                >
+                  <div
+                    aria-label="CIGAR: alignment operations (M match, I insertion, D deletion, N skip, S/H soft/hard clip)"
+                    class="css-HASH css-HASH"
+                    data-mui-internal-clone-element="true"
+                    style="width: 96px;"
+                    tabindex="0"
+                  >
+                    CIGAR
+                  </div>
+                  <div
+                    class="css-HASH"
+                  >
+                    <div
+                      class="css-HASH"
+                    >
+                      <div>
+                        <span>
+                          100M
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-HASH"
+                >
+                  <div
+                    class="css-HASH"
+                    style="width: 96px;"
+                  >
+                    length_on_ref
+                  </div>
+                  <div
+                    class="css-HASH"
+                  >
+                    <div
+                      class="css-HASH"
+                    >
+                      <div>
+                        <span>
+                          100
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-HASH"
+                >
+                  <div
+                    aria-label="TLEN: signed observed template length (insert size) of a properly paired read"
+                    class="css-HASH css-HASH"
+                    data-mui-internal-clone-element="true"
+                    style="width: 96px;"
+                    tabindex="0"
+                  >
+                    template_length
+                  </div>
+                  <div
+                    class="css-HASH"
+                  >
+                    <div
+                      class="css-HASH"
+                    >
+                      <div>
+                        <span>
+                          0
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-HASH"
+                >
+                  <div
+                    aria-label="Length of the read sequence in bases"
+                    class="css-HASH css-HASH"
+                    data-mui-internal-clone-element="true"
+                    style="width: 96px;"
+                    tabindex="0"
+                  >
+                    seq_length
+                  </div>
+                  <div
+                    class="css-HASH"
+                  >
+                    <div
+                      class="css-HASH"
+                    >
+                      <div>
+                        <span>
+                          100
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="css-HASH"
+                >
+                  <div
+                    class="MuiFormControl-root MuiFormControl-marginDense css-HASH-MuiFormControl-root"
+                  >
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-HASH-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                        data-testid="HelpIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
-                        />
-                      </svg>
+                      Show feature sequence
                     </button>
                   </div>
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
+                      data-testid="HelpIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>

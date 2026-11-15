@@ -1,4 +1,3 @@
-import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import FeatureDetails from './FeatureDetails.tsx'
@@ -38,7 +37,6 @@ const FeatureDetailsPanel = observer(function FeatureDetailsPanel({
   isFilterable,
   before,
   after,
-  testId,
 }: {
   model: FeatureDetailsPanelModel
   feature: SimpleFeatureSerialized
@@ -50,7 +48,6 @@ const FeatureDetailsPanel = observer(function FeatureDetailsPanel({
   isFilterable?: (path: string[]) => boolean
   before?: React.ReactNode
   after?: React.ReactNode
-  testId?: string
 }) {
   const { parentFeature } = model
   // a track's filter tests its top-level features, so a panel opened on a
@@ -60,7 +57,7 @@ const FeatureDetailsPanel = observer(function FeatureDetailsPanel({
     ? rawValueFilterActions(display, unformatted)
     : undefined
   return (
-    <Paper data-testid={testId}>
+    <>
       {parentFeature ? (
         <ParentFeatureLine parentFeature={parentFeature} />
       ) : null}
@@ -82,7 +79,7 @@ const FeatureDetailsPanel = observer(function FeatureDetailsPanel({
         }
       />
       {after}
-    </Paper>
+    </>
   )
 })
 
