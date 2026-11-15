@@ -1322,13 +1322,21 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     // One schema per key: the slot of every display declaring it, any of
     // which may take the value, as the loader routes it
     const declared = new Map<string, JsonSchema[]>()
+    const retiredEverywhere = new Map<string, boolean>()
     for (const name of displays) {
-      const slots = defs[`${name}Slots`]!.properties as Record<string, unknown>
-      for (const key of Object.keys(slots)) {
+      const slots = defs[`${name}Slots`]!.properties as Record<
+        string,
+        JsonSchema
+      >
+      for (const [key, slot] of Object.entries(slots)) {
         declared.set(key, [
           ...(declared.get(key) ?? []),
           ref(`${name}Slots/properties/${key}`),
         ])
+        retiredEverywhere.set(
+          key,
+          (retiredEverywhere.get(key) ?? true) && slot.deprecated === true,
+        )
       }
     }
     properties.displayDefaults = {
@@ -1344,7 +1352,10 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         ...Object.fromEntries(
           [...declared].map(([key, slots]) => [
             key,
-            slots.length === 1 ? slots[0]! : { anyOf: slots },
+            {
+              ...(slots.length === 1 ? slots[0]! : { anyOf: slots }),
+              ...(retiredEverywhere.get(key) ? { deprecated: true } : {}),
+            },
           ]),
         ),
       }),

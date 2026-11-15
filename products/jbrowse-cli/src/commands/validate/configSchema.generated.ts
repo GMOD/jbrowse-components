@@ -18012,7 +18012,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/maxDisplayedBpPerPx"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "mouseover": {
               "anyOf": [
@@ -18031,7 +18032,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/mouseover"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "jexlFilters": {
               "anyOf": [
@@ -18050,43 +18052,56 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/jexlFilters"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "color1": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color1"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color1",
+              "deprecated": true
             },
             "color2": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color2"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color2",
+              "deprecated": true
             },
             "color3": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color3"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color3",
+              "deprecated": true
             },
             "featureHeight": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/featureHeight"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/featureHeight",
+              "deprecated": true
             },
             "transcriptTypes": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcriptTypes"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcriptTypes",
+              "deprecated": true
             },
             "containerTypes": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/containerTypes"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/containerTypes",
+              "deprecated": true
             },
             "showLabels": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showLabels"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showLabels",
+              "deprecated": true
             },
             "showDescriptions": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions",
+              "deprecated": true
             },
             "subfeatureLabels": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subfeatureLabels"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subfeatureLabels",
+              "deprecated": true
             },
             "outline": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outline"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outline",
+              "deprecated": true
             },
             "maxHeight": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight",
+              "deprecated": true
             },
             "impliedUTRs": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/impliedUTRs"
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/impliedUTRs",
+              "deprecated": true
             },
             "renderer": {
               "anyOf": [
@@ -18096,7 +18111,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "rows": {
               "anyOf": [
@@ -18134,34 +18150,44 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "displayCrossHatches": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches",
+              "deprecated": true
             },
             "minimalTicks": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks",
+              "deprecated": true
             },
             "scaleType": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType",
+              "deprecated": true
             },
             "autoscale": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale",
+              "deprecated": true
             },
             "minScore": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore",
+              "deprecated": true
             },
             "maxScore": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore",
+              "deprecated": true
             },
             "numStdDev": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev",
+              "deprecated": true
             },
             "inverted": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted",
+              "deprecated": true
             },
             "renderers": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers",
+              "deprecated": true
             },
             "defaultRendering": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering",
+              "deprecated": true
             },
             "marks": {
               "anyOf": [
@@ -18190,7 +18216,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "color": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -18492,7 +18519,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [
@@ -18502,7 +18530,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "mouseover": {
               "anyOf": [
@@ -18512,7 +18541,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "jexlFilters": {
               "anyOf": [
@@ -18522,73 +18552,96 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "colorBy": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorBy"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorBy",
+              "deprecated": true
             },
             "pileupDisplay": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/pileupDisplay"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/pileupDisplay",
+              "deprecated": true
             },
             "snpCoverageDisplay": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/snpCoverageDisplay"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/snpCoverageDisplay",
+              "deprecated": true
             },
             "defaultRendering": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/defaultRendering"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/defaultRendering",
+              "deprecated": true
             },
             "colorScheme": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorScheme"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorScheme",
+              "deprecated": true
             },
             "scaleType": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scaleType"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scaleType",
+              "deprecated": true
             },
             "autoscale": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/autoscale"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/autoscale",
+              "deprecated": true
             },
             "minScore": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minScore"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minScore",
+              "deprecated": true
             },
             "maxScore": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxScore"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxScore",
+              "deprecated": true
             },
             "numStdDev": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/numStdDev"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/numStdDev",
+              "deprecated": true
             },
             "inverted": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/inverted"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/inverted",
+              "deprecated": true
             },
             "multiTicks": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/multiTicks"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/multiTicks",
+              "deprecated": true
             },
             "jitter": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/jitter"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/jitter",
+              "deprecated": true
             },
             "lineWidth": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/lineWidth"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/lineWidth",
+              "deprecated": true
             },
             "featureHeight": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/featureHeight"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/featureHeight",
+              "deprecated": true
             },
             "maxHeight": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxHeight"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxHeight",
+              "deprecated": true
             },
             "hideSmallIndels": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideSmallIndels"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideSmallIndels",
+              "deprecated": true
             },
             "hideMismatches": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideMismatches"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideMismatches",
+              "deprecated": true
             },
             "mismatchAlpha": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mismatchAlpha"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mismatchAlpha",
+              "deprecated": true
             },
             "hideLargeIndels": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideLargeIndels"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideLargeIndels",
+              "deprecated": true
             },
             "minSubfeatureWidth": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minSubfeatureWidth"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minSubfeatureWidth",
+              "deprecated": true
             },
             "renderers": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/renderers"
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/renderers",
+              "deprecated": true
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -18603,10 +18656,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
             "renderer": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer",
+              "deprecated": true
             },
             "color": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -18800,7 +18855,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/forceLoad"
             },
             "renderer": {
-              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/renderer"
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/renderer",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -19034,13 +19090,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "strokeColor": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColor"
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColor",
+              "deprecated": true
             },
             "strokeColorSelected": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorSelected"
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorSelected",
+              "deprecated": true
             },
             "strokeColorHover": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorHover"
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorHover",
+              "deprecated": true
             },
             "renderer": {
               "anyOf": [
@@ -19053,7 +19112,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "height": {
               "anyOf": [
@@ -19141,7 +19201,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [
@@ -19151,7 +19212,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "mouseover": {
               "anyOf": [
@@ -19161,7 +19223,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "jexlFilters": {
               "anyOf": [
@@ -19171,61 +19234,80 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "featureHeight": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/featureHeight"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/featureHeight",
+              "deprecated": true
             },
             "showLabels": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showLabels"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showLabels",
+              "deprecated": true
             },
             "showDescriptions": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions",
+              "deprecated": true
             },
             "color1": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color1"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color1",
+              "deprecated": true
             },
             "maxHeight": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxHeight"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxHeight",
+              "deprecated": true
             },
             "renderingMode": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/renderingMode"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/renderingMode",
+              "deprecated": true
             },
             "showSidebarLabels": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showSidebarLabels"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showSidebarLabels",
+              "deprecated": true
             },
             "showTree": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showTree"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showTree",
+              "deprecated": true
             },
             "showReferenceAlleles": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showReferenceAlleles"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showReferenceAlleles",
+              "deprecated": true
             },
             "colorBy": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/colorBy"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/colorBy",
+              "deprecated": true
             },
             "autoscale": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/autoscale"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/autoscale",
+              "deprecated": true
             },
             "minScore": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/minScore"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/minScore",
+              "deprecated": true
             },
             "maxScore": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxScore"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxScore",
+              "deprecated": true
             },
             "scaleType": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/scaleType"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/scaleType",
+              "deprecated": true
             },
             "inverted": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/inverted"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/inverted",
+              "deprecated": true
             },
             "numStdDev": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/numStdDev"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/numStdDev",
+              "deprecated": true
             },
             "minimalTicks": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/minimalTicks"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/minimalTicks",
+              "deprecated": true
             },
             "minorAlleleFrequencyFilter": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/minorAlleleFrequencyFilter"
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/minorAlleleFrequencyFilter",
+              "deprecated": true
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -19237,7 +19319,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
             "color": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -19451,70 +19534,92 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/variantLayout"
             },
             "maxFeatureScreenDensity": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxFeatureScreenDensity"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxFeatureScreenDensity",
+              "deprecated": true
             },
             "maxDisplayedBpPerPx": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxDisplayedBpPerPx"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxDisplayedBpPerPx",
+              "deprecated": true
             },
             "mouseover": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/mouseover"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/mouseover",
+              "deprecated": true
             },
             "jexlFilters": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/jexlFilters"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/jexlFilters",
+              "deprecated": true
             },
             "ldMetric": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/ldMetric"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/ldMetric",
+              "deprecated": true
             },
             "showLegend": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLegend"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLegend",
+              "deprecated": true
             },
             "showVerticalGuides": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showVerticalGuides"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showVerticalGuides",
+              "deprecated": true
             },
             "tickHeight": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/tickHeight"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/tickHeight",
+              "deprecated": true
             },
             "lineZoneHeight": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/lineZoneHeight"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/lineZoneHeight",
+              "deprecated": true
             },
             "fitToHeight": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/fitToHeight"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/fitToHeight",
+              "deprecated": true
             },
             "useGenomicPositions": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/useGenomicPositions"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/useGenomicPositions",
+              "deprecated": true
             },
             "maxHeight": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxHeight"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxHeight",
+              "deprecated": true
             },
             "colorScheme": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/colorScheme"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/colorScheme",
+              "deprecated": true
             },
             "signedLD": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/signedLD"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/signedLD",
+              "deprecated": true
             },
             "showLDTriangle": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLDTriangle"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLDTriangle",
+              "deprecated": true
             },
             "showRecombination": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showRecombination"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showRecombination",
+              "deprecated": true
             },
             "recombinationZoneHeight": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/recombinationZoneHeight"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/recombinationZoneHeight",
+              "deprecated": true
             },
             "minorAlleleFrequencyFilter": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/minorAlleleFrequencyFilter"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/minorAlleleFrequencyFilter",
+              "deprecated": true
             },
             "lengthCutoffFilter": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/lengthCutoffFilter"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/lengthCutoffFilter",
+              "deprecated": true
             },
             "hweFilterThreshold": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/hweFilterThreshold"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/hweFilterThreshold",
+              "deprecated": true
             },
             "callRateFilter": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/callRateFilter"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/callRateFilter",
+              "deprecated": true
             },
             "showLabels": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLabels"
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLabels",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -19765,7 +19870,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [
@@ -19775,7 +19881,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "fetchSizeLimit": {
               "anyOf": [
@@ -19795,7 +19902,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "jexlFilters": {
               "anyOf": [
@@ -19805,37 +19913,48 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "displayCrossHatches": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches",
+              "deprecated": true
             },
             "minimalTicks": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks",
+              "deprecated": true
             },
             "scaleType": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType",
+              "deprecated": true
             },
             "autoscale": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale",
+              "deprecated": true
             },
             "minScore": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore",
+              "deprecated": true
             },
             "maxScore": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore",
+              "deprecated": true
             },
             "numStdDev": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev",
+              "deprecated": true
             },
             "inverted": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted",
+              "deprecated": true
             },
             "renderers": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers",
+              "deprecated": true
             },
             "defaultRendering": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering",
+              "deprecated": true
             },
             "forceLoad": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
@@ -19856,10 +19975,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
             "renderer": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer",
+              "deprecated": true
             },
             "color": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -20110,7 +20231,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [
@@ -20120,7 +20242,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "fetchSizeLimit": {
               "anyOf": [
@@ -20140,7 +20263,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "jexlFilters": {
               "anyOf": [
@@ -20150,37 +20274,48 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "displayCrossHatches": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches",
+              "deprecated": true
             },
             "minimalTicks": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks",
+              "deprecated": true
             },
             "scaleType": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType",
+              "deprecated": true
             },
             "autoscale": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale",
+              "deprecated": true
             },
             "minScore": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore",
+              "deprecated": true
             },
             "maxScore": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore",
+              "deprecated": true
             },
             "numStdDev": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev",
+              "deprecated": true
             },
             "inverted": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted",
+              "deprecated": true
             },
             "renderers": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers",
+              "deprecated": true
             },
             "defaultRendering": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering",
+              "deprecated": true
             },
             "forceLoad": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
@@ -20201,10 +20336,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
             "renderer": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer",
+              "deprecated": true
             },
             "color": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -20412,49 +20549,64 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/legend"
             },
             "maxFeatureScreenDensity": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxFeatureScreenDensity"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxFeatureScreenDensity",
+              "deprecated": true
             },
             "maxDisplayedBpPerPx": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxDisplayedBpPerPx"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxDisplayedBpPerPx",
+              "deprecated": true
             },
             "fetchSizeLimit": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit",
+              "deprecated": true
             },
             "mouseover": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mouseover"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mouseover",
+              "deprecated": true
             },
             "jexlFilters": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/jexlFilters"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/jexlFilters",
+              "deprecated": true
             },
             "displayCrossHatches": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches",
+              "deprecated": true
             },
             "minimalTicks": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks",
+              "deprecated": true
             },
             "scaleType": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType",
+              "deprecated": true
             },
             "autoscale": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale",
+              "deprecated": true
             },
             "minScore": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore",
+              "deprecated": true
             },
             "maxScore": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore",
+              "deprecated": true
             },
             "numStdDev": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev",
+              "deprecated": true
             },
             "inverted": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted",
+              "deprecated": true
             },
             "renderers": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers",
+              "deprecated": true
             },
             "defaultRendering": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -20718,7 +20870,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [
@@ -20728,7 +20881,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "mouseover": {
               "anyOf": [
@@ -20738,7 +20892,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "jexlFilters": {
               "anyOf": [
@@ -20748,7 +20903,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -20769,10 +20925,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
             "renderer": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer",
+              "deprecated": true
             },
             "color": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -20977,22 +21135,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/filter"
             },
             "maxFeatureScreenDensity": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/maxFeatureScreenDensity"
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/maxFeatureScreenDensity",
+              "deprecated": true
             },
             "maxDisplayedBpPerPx": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/maxDisplayedBpPerPx"
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/maxDisplayedBpPerPx",
+              "deprecated": true
             },
             "fetchSizeLimit": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/fetchSizeLimit"
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/fetchSizeLimit",
+              "deprecated": true
             },
             "mouseover": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/mouseover"
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/mouseover",
+              "deprecated": true
             },
             "jexlFilters": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/jexlFilters"
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/jexlFilters",
+              "deprecated": true
             },
             "renderer": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/renderer"
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/renderer",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -21201,10 +21365,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/renderer"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "middle": {
-              "$ref": "#/$defs/LinearSyntenyDisplaySlots/properties/middle"
+              "$ref": "#/$defs/LinearSyntenyDisplaySlots/properties/middle",
+              "deprecated": true
             },
             "fetchSizeLimit": {
               "anyOf": [
@@ -21343,7 +21509,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [
@@ -21356,7 +21523,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "mouseover": {
               "anyOf": [
@@ -21369,7 +21537,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "jexlFilters": {
               "anyOf": [
@@ -21382,73 +21551,96 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
-              ]
+              ],
+              "deprecated": true
             },
             "colorBy": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy",
+              "deprecated": true
             },
             "pileupDisplay": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/pileupDisplay"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/pileupDisplay",
+              "deprecated": true
             },
             "snpCoverageDisplay": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/snpCoverageDisplay"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/snpCoverageDisplay",
+              "deprecated": true
             },
             "defaultRendering": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/defaultRendering"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/defaultRendering",
+              "deprecated": true
             },
             "colorScheme": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorScheme"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorScheme",
+              "deprecated": true
             },
             "scaleType": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scaleType"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scaleType",
+              "deprecated": true
             },
             "autoscale": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/autoscale"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/autoscale",
+              "deprecated": true
             },
             "minScore": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minScore"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minScore",
+              "deprecated": true
             },
             "maxScore": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxScore"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxScore",
+              "deprecated": true
             },
             "numStdDev": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/numStdDev"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/numStdDev",
+              "deprecated": true
             },
             "inverted": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/inverted"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/inverted",
+              "deprecated": true
             },
             "multiTicks": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/multiTicks"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/multiTicks",
+              "deprecated": true
             },
             "jitter": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/jitter"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/jitter",
+              "deprecated": true
             },
             "lineWidth": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/lineWidth"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/lineWidth",
+              "deprecated": true
             },
             "featureHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/featureHeight"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/featureHeight",
+              "deprecated": true
             },
             "maxHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight",
+              "deprecated": true
             },
             "hideSmallIndels": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideSmallIndels"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideSmallIndels",
+              "deprecated": true
             },
             "hideMismatches": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideMismatches"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideMismatches",
+              "deprecated": true
             },
             "mismatchAlpha": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mismatchAlpha"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mismatchAlpha",
+              "deprecated": true
             },
             "hideLargeIndels": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideLargeIndels"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideLargeIndels",
+              "deprecated": true
             },
             "minSubfeatureWidth": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minSubfeatureWidth"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minSubfeatureWidth",
+              "deprecated": true
             },
             "renderers": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/renderers"
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/renderers",
+              "deprecated": true
             },
             "utrs": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrs"
@@ -21488,7 +21680,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
             "color": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color",
+              "deprecated": true
             }
           },
           "patternProperties": {
@@ -21711,16 +21904,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/filter"
             },
             "maxFeatureScreenDensity": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxFeatureScreenDensity"
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxFeatureScreenDensity",
+              "deprecated": true
             },
             "maxDisplayedBpPerPx": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxDisplayedBpPerPx"
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxDisplayedBpPerPx",
+              "deprecated": true
             },
             "mouseover": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/mouseover"
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/mouseover",
+              "deprecated": true
             },
             "jexlFilters": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters",
+              "deprecated": true
             }
           },
           "patternProperties": {

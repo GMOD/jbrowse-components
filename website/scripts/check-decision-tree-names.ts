@@ -115,10 +115,7 @@ const dependencies = new Set(
 const lastKey = (path: string) => path.slice(path.lastIndexOf('.') + 1)
 const endsWithSlot = (paths: string[], dotted: string) =>
   paths.some(path => path === dotted || path.endsWith(`.${dotted}`))
-const mirrorsDisplaySlots = (path: string) => path.includes('.displayDefaults.')
-const liveKeys = new Set(
-  slots.live.filter(path => !mirrorsDisplaySlots(path)).map(lastKey),
-)
+const liveKeys = new Set(slots.live.map(lastKey))
 const retiredKeys = new Set(
   slots.retired.map(lastKey).filter(key => !liveKeys.has(key)),
 )
