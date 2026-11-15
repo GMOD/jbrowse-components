@@ -60,6 +60,16 @@ const buildFeatureData = (f: Feature): FeatureData => ({
   strand: f.get('strand') ?? 0,
 })
 
+const longRead = new SimpleFeature({
+  uniqueId: 'long',
+  refName: 'ctgA',
+  start: 100,
+  end: 200,
+  strand: 1,
+  CIGAR: '100M50S',
+  tags: { SA: 'ctgB,5000,+,100S50M,60,0;' },
+})
+
 function extract(features: Feature[], colorField: string) {
   return extractFeatureArrays(features, buildFeatureData, {
     colorField,
@@ -89,6 +99,10 @@ describe('mateRefName extraction', () => {
     expect(extract([bamRead('')], 'mateRefName').tagColorValues).toEqual([''])
   })
 
+  test('an unpaired split read reports no name', () => {
+    expect(extract([longRead], 'mateRefName').tagColorValues).toEqual([''])
+  })
+
   // The channel is shared with tag coloring, so it must stay empty for every
   // other field — a stray value would bake a color over the shader's own.
   test('the channel is empty under other color fields', () => {
@@ -102,6 +116,12 @@ describe('mateRefName extraction', () => {
 // section, so a path reaches into the feature and a read dimension's name
 // paints the dimension's own values rather than an attribute nobody sets.
 describe('attribute color extraction', () => {
+  test("splitPartnerRefName paints a split read by its partner's reference", () => {
+    expect(extract([longRead], 'splitPartnerRefName').tagColorValues).toEqual([
+      'ctgB',
+    ])
+  })
+
   test('a path field reads into the feature', () => {
     expect(
       extract([syntenyFeature('ctgA', 'ctgB')], 'mate.assemblyName')

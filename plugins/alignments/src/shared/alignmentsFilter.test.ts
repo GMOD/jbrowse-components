@@ -20,7 +20,7 @@ import {
   tagFiltersOf,
   withField,
   withFields,
-  withMateRefNameSpellings,
+  withRefNameSpellings,
 } from './alignmentsFilter.ts'
 import { DIMENSION_FIELDS } from './filterFields.ts'
 
@@ -415,6 +415,7 @@ describe('the read dimensions', () => {
       'mateRefName',
       'pairOrientation',
       'pairing',
+      'splitPartnerRefName',
       'svKind',
     ])
   })
@@ -454,15 +455,16 @@ describe('the read dimensions', () => {
     expect(readPredicatesOf([{ field: 'strand', equal: -1 }])).toEqual([])
   })
 
-  test('a mate reference is listed beside its other spelling', () => {
+  test('a mate or split partner reference is listed beside its other spelling', () => {
     const fileName = (name: string) => (name === 'chr9' ? '9' : name)
     expect(
-      withMateRefNameSpellings(
+      withRefNameSpellings(
         [
           { field: 'mateRefName', equal: 'chr9' },
           { field: 'mateRefName', oneOf: ['9', 'ctgB', true] },
           { field: 'mateRefName', valid: false },
           { field: 'pairing', equal: 'chr9' },
+          { field: 'splitPartnerRefName', oneOf: ['chr9', 'chr22'] },
         ],
         fileName,
       ),
@@ -471,6 +473,7 @@ describe('the read dimensions', () => {
       { field: 'mateRefName', oneOf: ['9', 'ctgB', true] },
       { field: 'mateRefName', valid: false },
       { field: 'pairing', equal: 'chr9' },
+      { field: 'splitPartnerRefName', oneOf: ['chr9', '9', 'chr22'] },
     ])
   })
 })

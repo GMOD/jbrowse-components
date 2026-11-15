@@ -148,6 +148,7 @@ export const ALIGNMENTS_COLOR_FIELDS = [
   'mapq',
   'insertSizeAndOrientation',
   'mateRefName',
+  'splitPartnerRefName',
   'mateAssembly',
 ] as const
 const ALIGNMENTS_COLOR_FIELD_SET: ReadonlySet<string> = new Set(

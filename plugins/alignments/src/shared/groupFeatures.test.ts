@@ -806,3 +806,59 @@ test('the split notice names the values, singular and past the listed few', () =
     /^facet: a, b, c and 2 more passed .* their reads split between their own sections/,
   )
 })
+
+describe('splitPartnerRefName key', () => {
+  const keyOf =
+    (field: 'mateRefName' | 'splitPartnerRefName') =>
+    (fields: Record<string, unknown>) =>
+      FACET_DIMENSIONS[field].key(feat('r', fields), undefined).key
+  const splitPartnerRefNameOf = keyOf('splitPartnerRefName')
+
+  test('a placed piece on another reference keys that reference', () => {
+    expect(
+      splitPartnerRefNameOf({
+        flags: 0,
+        tags: { SA: 'chr22,500,+,40S60M,60,0;' },
+      }),
+    ).toBe('chr22')
+  })
+
+  test('a piece on its own reference keys no partner', () => {
+    expect(
+      splitPartnerRefNameOf({
+        flags: 0,
+        tags: { SA: 'ctgA,500,+,40S60M,60,0;' },
+      }),
+    ).toBe('')
+  })
+
+  test('an unplaced piece gives way to the next placed one', () => {
+    expect(
+      splitPartnerRefNameOf({
+        flags: 0,
+        tags: {
+          SA: 'chr22,500,+,40S30M30S,0,0;ctgA,900,+,70S30M,60,0;chr19,700,+,70S30M,60,0;',
+        },
+      }),
+    ).toBe('chr19')
+  })
+
+  test("a paired read keys its piece's reference, not its mate's", () => {
+    expect(
+      splitPartnerRefNameOf({
+        flags: 0x1,
+        next_ref: 'chr7',
+        tags: { SA: 'chr22,500,+,40S60M,60,0;' },
+      }),
+    ).toBe('chr22')
+  })
+
+  test('mateRefName keys an unpaired split read no mate', () => {
+    expect(
+      keyOf('mateRefName')({
+        flags: 0,
+        tags: { SA: 'chr22,500,+,40S60M,60,0;' },
+      }),
+    ).toBe('')
+  })
+})

@@ -746,6 +746,7 @@ with it:
 | `mapq`                     | MAPQ                                                    |
 | `insertSizeAndOrientation` | Combined insert size + orientation                      |
 | `mateRefName`              | Reference the mate maps to                              |
+| `splitPartnerRefName`      | Reference a split read's other piece maps to            |
 | `mateAssembly`             | Assembly the mate maps to, for synteny reads            |
 | `tags.<TAG>`               | Color by any BAM tag, as `encoding.color.field=tags.HP` |
 

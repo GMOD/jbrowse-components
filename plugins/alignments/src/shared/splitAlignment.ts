@@ -16,6 +16,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { forEachSAEntry } from '../features/sashimi/splitJunctions.ts'
 import { cigarCategoryBitsOf } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { makesJunction } from './splitReadJunctions.ts'
@@ -61,6 +62,25 @@ export function saTagOf(feature: Feature) {
   return (feature as Partial<MismatchFeature>).hasEndClip === false
     ? ''
     : extractFeatureTagValue(feature, 'SA')
+}
+
+/**
+ * The `splitPartnerRefName` field: the reference of the first placed (MAPQ
+ * not 0) SA entry off the record's own.
+ */
+export function splitPartnerRefName(feature: Feature, sa = saTagOf(feature)) {
+  const ownRefName = feature.get('refName')
+  let partner: string | undefined
+  forEachSAEntry(
+    sa,
+    (nameStart, nameEnd, _start, _end, _strand, _clip, mapq) => {
+      if (partner === undefined && mapq !== 0) {
+        const refName = sa.slice(nameStart, nameEnd)
+        partner = refName === ownRefName ? undefined : refName
+      }
+    },
+  )
+  return partner
 }
 
 /**

@@ -44,6 +44,7 @@ import {
   chainIsSplit,
   isSplitAlignment,
   isSvEvidence,
+  splitPartnerRefName,
 } from './splitAlignment.ts'
 import { SV_KIND_PRECEDENCE } from './splitReadJunctions.ts'
 import { svKindOf } from './svKind.ts'
@@ -285,6 +286,13 @@ function mateRefNameKey(feature: Feature): GroupKey {
     : { key: '', label: 'No mate reference' }
 }
 
+function splitPartnerRefNameKey(feature: Feature): GroupKey {
+  const name = splitPartnerRefName(feature)
+  return name
+    ? { key: name, label: name }
+    : { key: '', label: 'No split partner elsewhere' }
+}
+
 // One section per mate sample of an all-vs-all synteny track. `mate.assemblyName`
 // is the loaded assembly when it is listed, else the bare PanSN sample prefix
 // (a sample/haplotype, not necessarily a species).
@@ -317,9 +325,10 @@ function mapqKey(feature: Feature): GroupKey {
 // region-width depth arrays before uploading a per-bp GPU buffer that alone
 // approaches the device limit at chromosome scale, so `MAX_GROUPS` is what
 // keeps a UMI-style `RX`/`MI` tag from paying that thousands of times over.
-// Every read dimension but `mateRefName` and `mateAssembly` is a closed set of
-// at most five keys; a tag, a field and a `jexl:` facet are open too, and
-// GroupByDialog refuses `tag` up front with the distinct values in hand.
+// Every read dimension but `mateRefName`, `splitPartnerRefName` and
+// `mateAssembly` is a closed set of at most five keys; a tag, a field and a
+// `jexl:` facet are open too, and GroupByDialog refuses `tag` up front with
+// the distinct values in hand.
 
 // The tail past `MAX_GROUPS` merges into one overflow section rather than
 // dropping its reads, by `capGroupKeys`, so which groups survive follows from
@@ -532,6 +541,14 @@ export const FACET_DIMENSIONS: {
     fragmentLevel: true,
     hidden: true,
     key: mateRefNameKey,
+  },
+  // Out of the radios as `mateRefName` is, and per record: each piece of a
+  // split names the other's reference.
+  splitPartnerRefName: {
+    field: 'splitPartnerRefName',
+    fragmentLevel: false,
+    hidden: true,
+    key: splitPartnerRefNameKey,
   },
   mateAssembly: {
     field: 'mateAssembly',
