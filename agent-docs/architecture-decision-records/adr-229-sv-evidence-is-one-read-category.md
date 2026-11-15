@@ -23,9 +23,10 @@ For opposite-strand mates on one reference whose starts are closer than the
 record's `seq_length`, the forward mate leads; otherwise leftmost POS, then
 read1. The in-repo getters own the rule (`pairOrientation`,
 `shared/util.ts`, called by the BAM, CRAM and SAM features) rather than
-deferring to `@gmod/bam` and `@gmod/cram`, whose leftmost-POS rule called
-equal-start and dovetailed proper pairs RL and filed them as duplication-type
-evidence. See the pair-orientation consequences below.
+deferring to `@gmod/bam` and `@gmod/cram`, whose leftmost-POS rule called a
+dovetailed proper pair, and an equal-start one whose read1 is the reverse mate,
+RL and filed it as duplication-type evidence. See the pair-orientation
+consequences below.
 
 Amends [ADR-226](adr-226-reads-are-categorized-once.md): its `svSignal` sort
 lifted split reads and SV-size deletions, and its consequence about
@@ -159,9 +160,16 @@ lifted split reads and SV-size deletions, and its consequence about
   - `volvox-sv.bam`'s 670 proper-flagged true RL records stay RL.
   - `pair_orientation` keeps its eight values; a jexl filter or facet on it
     sees dovetail pairs move from RL to LR spellings.
-  - A flagless tie (neither 0x40 nor 0x80) now has both mates LR, where they
-    disagreed before.
+  - A tie with neither or both of 0x40 and 0x80 set now has both mates LR,
+    where they disagreed before.
   - SEQ `*` passes a `seq_length` of 0, so such a record answers as before.
+  - A BAM or CRAM record with a mapped mate on its reference and no mate
+    position takes read1 as the leader, as SAM did; the libraries compared the
+    missing position as -1.
+  - An outward-facing pair whose mates overlap has a dovetail's coordinates
+    and reads LR. A tandem duplication a little shorter than the insert size
+    makes such pairs; its junction-crossing reads still split. From the
+    geometry, not measured.
   - **Accepted edge: mates can disagree** with unequal `seq_length`, the
     reverse mate leftmost and the offset between the two lengths (0 of 5,374
     unequal-length pairs on HG002), or with exactly one SEQ-less mate.

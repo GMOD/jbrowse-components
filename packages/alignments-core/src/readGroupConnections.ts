@@ -334,10 +334,11 @@ export function primaryOf<E extends MinEntry>(segs: E[]) {
 // record's own reverse bit, position and length, so a supplementary that
 // flipped strand at the split junction — or that simply sits on the other side
 // of its mate — computes a different orientation from its primary, while the
-// two PRIMARIES of a pair agree outside the edges ADR-229 accepts. Preferring a primary is therefore a no-op whenever both
-// are on screen, which is the overwhelming majority, and only bites in the case
-// it exists for: a mate whose primary is off-screen, so `primaryOf` above handed
-// the resolver its supplementary segment instead.
+// two PRIMARIES of a pair agree outside the edges ADR-229 accepts. Preferring a
+// primary is therefore a no-op whenever both are on screen, which is the
+// overwhelming majority, and only bites in the case it exists for: a mate whose
+// primary is off-screen, so `primaryOf` above handed the resolver its
+// supplementary segment instead.
 //
 // The read FILLS follow the same rule in chain mode, where `attachChainFields`
 // gives a supplementary its chain primary's `readPairOrientations` entry. The

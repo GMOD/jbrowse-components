@@ -82,8 +82,9 @@ linked-reads Canvas2D/SVG painter once kept a hand-spelled
 `colorType % palette.length` while the rule's unit test passed.
 
 `mateLinkArc` sources orientation and TLEN from a primary endpoint
-(`pairFieldEntry`), because in chain mode @gmod/bam derives `pair_orientation`
-from the record's own reverse bit and a strand-flipped supplementary computes a
+(`pairFieldEntry`), because in chain mode `pair_orientation` comes from the
+record's own reverse bit (`pairOrientation`, `shared/util.ts`) and a
+strand-flipped supplementary computes a
 different one (`attachChainFields`). `readInsertSizes` is deliberately **not**
 corrected that way: an unset TLEN is unknown, and the orientation fields mark the
 split with `CHAIN_SPLIT_*` hues.
