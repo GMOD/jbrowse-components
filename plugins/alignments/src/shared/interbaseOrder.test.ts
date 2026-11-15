@@ -93,4 +93,13 @@ describe('buildInterbaseArrays ordering', () => {
     expect([...r.interbasePositions]).toEqual([1000, 45_000_000, 90_000_000])
     expect([...r.interbaseLengths]).toEqual([1, 2, 3])
   })
+
+  it('ships no string for a soft clip that carries its bases', () => {
+    const r = buildInterbaseArrays(
+      [ins(100, 2)],
+      [{ ...clip(50, 4), sequence: 'ACGT' }],
+      [],
+    )
+    expect(r.interbaseSequences).toEqual(['ins100', ''])
+  })
 })

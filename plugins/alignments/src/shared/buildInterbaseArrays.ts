@@ -55,12 +55,15 @@ export function buildInterbaseArrays(
   const interbaseSequences: string[] = []
 
   let idx = 0
+  // Only insertions ship their bases: a clip's string would cost a long read
+  // kilobases per entry, and its letters come from the softclip-base arrays.
   // Walks `items` in ascending position order. The order is computed off a
   // throwaway positions array through the shared counting sort rather than by
   // `items.sort((a, b) => …)`: a per-compare JS callback over a deep pileup's
   // clips measured 38-41x the counting sort on the equivalent mismatch shape
   // (`benches/hoverIndex.bench.ts` header), and these are the same objects.
   function addItems(items: InterbaseInput[], type: number) {
+    const shipsSequence = type === INTERBASE_INSERTION
     const raw = new Uint32Array(items.length)
     for (let i = 0; i < items.length; i++) {
       raw[i] = items[i]!.position
@@ -72,7 +75,7 @@ export function buildInterbaseArrays(
       interbaseLengths[idx] = item.length
       interbaseTypes[idx] = type
       interbaseReadIndices[idx] = item.readIndex
-      interbaseSequences.push(item.sequence ?? '')
+      interbaseSequences.push(shipsSequence ? (item.sequence ?? '') : '')
       idx++
     }
   }
