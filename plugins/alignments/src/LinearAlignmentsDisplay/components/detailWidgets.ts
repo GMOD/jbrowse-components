@@ -44,8 +44,8 @@ export function openIndicatorWidget(
     type: indicatorHit.indicatorType,
     refName,
     start: indicatorHit.position,
-    end: indicatorHit.position + 1,
-    depth: bin.depth,
+    end: indicatorHit.position,
+    depth: bin.interbaseDepth,
   }
 
   const interbaseEntry = bin.interbase[indicatorHit.indicatorType]

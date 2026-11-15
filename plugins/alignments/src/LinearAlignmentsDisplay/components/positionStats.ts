@@ -27,12 +27,11 @@ import type {
 } from '@jbrowse/alignments-core'
 
 // The interbase slice of a coverage position — what the interbase histogram bars
-// and indicator triangles report. `depth` is carried for the detail widget's
-// context row; the SNP/deletion tallies the shared CoverageTooltipBin also holds
-// are neither rendered nor consulted here, so this path never computes them.
+// and indicator triangles report. The SNP/deletion tallies the shared
+// CoverageTooltipBin also holds are neither rendered nor consulted here, so this
+// path never computes them.
 export interface InterbaseBin {
   position: number
-  depth: number
   interbase: CoverageTooltipBin['interbase']
   interbaseDepth: number
 }
@@ -211,10 +210,8 @@ export function getInterbaseBin(
   if (Object.keys(interbase).length === 0) {
     return undefined
   }
-  const binIdx = Math.floor(position - blockRpcData.coverageStartPos)
   return {
     position,
-    depth: blockRpcData.coverageDepths[binIdx] ?? 0,
     interbase,
     interbaseDepth: interbaseDepthAt(
       blockRpcData.coverageDepths,

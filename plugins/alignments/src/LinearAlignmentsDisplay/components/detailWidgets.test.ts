@@ -1,6 +1,8 @@
 import { openFeatureWidget } from '@jbrowse/core/util'
 
-import { openCigarWidget } from './detailWidgets.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { INTERBASE_SOFTCLIP } from '../../shared/types.ts'
+import { openCigarWidget, openIndicatorWidget } from './detailWidgets.ts'
 
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 
@@ -37,4 +39,32 @@ test('a deletion or skip spans the reference bases it removes', () => {
   const mismatch = opened({ type: 'mismatch', position: 100, length: 1 })
   expect(mismatch).toMatchObject({ start: 100, end: 101 })
   expect(mismatch).not.toHaveProperty('length')
+})
+
+// A right clip at the edge of a heterozygous deletion: 40x on its left flank,
+// 20x inside. The depth row states the count's own denominator, and the
+// column opens as a point like the per-read clip widget does.
+test('the indicator widget reports the depth its count is out of', () => {
+  jest.mocked(openFeatureWidget).mockClear()
+  openIndicatorWidget(
+    {},
+    { type: 'indicator', position: 101, indicatorType: 'softclip' },
+    'chr1',
+    makePileupDataResult({
+      coverageStartPos: 100,
+      coverageDepths: new Float32Array([40, 20]),
+      interbasePositions: new Uint32Array([101, 101]),
+      interbaseLengths: new Uint32Array([30, 30]),
+      interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP, INTERBASE_SOFTCLIP]),
+      interbaseReadIndices: new Uint32Array([0, 1]),
+      interbaseSequences: ['', ''],
+      numSoftclips: 2,
+    }),
+  )
+  expect(jest.mocked(openFeatureWidget).mock.calls[0]![1]).toMatchObject({
+    start: 101,
+    end: 101,
+    depth: 40,
+    count: expect.stringMatching(/^2\/40/),
+  })
 })
