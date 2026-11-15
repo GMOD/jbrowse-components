@@ -1,8 +1,10 @@
+import { FIT_LADDER } from './fitLadderOrder.ts'
 import { PILE_LEADER_MAX_ROOM_FACTOR } from './labelReservation.ts'
 import { maxBottom } from './layoutQueries.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LabelPlacementContext } from './components/labelPositioning.ts'
+import type { FitLevel } from './fitLadderOrder.ts'
 import type { LabelRoomFactors } from './layoutInputs.ts'
 
 // Past 8x only pinned and isolated names survive, so the search covers 0-8
@@ -170,20 +172,6 @@ export function labeledBodyFloorScale(
   )
 }
 
-// Names before isoforms, then names before body height: `thinned` shortens
-// the bodies under a full set of names, and `decimated` keeps that floor.
-// `bare` sits below `bodies` because subfeature labels are a config choice,
-// given up only where the alternative squeezes bodies under rows the squeeze
-// would hide anyway.
-type FitLevel =
-  | 'full'
-  | 'labels'
-  | 'isoforms'
-  | 'thinned'
-  | 'decimated'
-  | 'bodies'
-  | 'bare'
-
 // A rung that hands back another rung's stack by reference declares that
 // stack's reservation, so a renderer never re-derives it from the level.
 export interface LabelReservation {
@@ -319,8 +307,14 @@ function rungHeightMeasurer(measureIds?: ReadonlySet<string>) {
   }
 }
 
+export function fitLadderRungs(rungsAt: {
+  [L in FitLevel]: (FitRung & { level: L })[]
+}) {
+  return FIT_LADDER.flatMap<FitRung>(level => rungsAt[level])
+}
+
 export function resolveFitLadder(
-  rungs: [FitRung, ...FitRung[]],
+  rungs: readonly FitRung[],
   trackHeight: number,
   minScale: number,
   maxScale: number,
@@ -356,6 +350,5 @@ export function resolveFitLadder(
       }
     }
   }
-  // Unreachable: the last rung always returns.
   throw new Error('resolveFitLadder called with no rungs')
 }

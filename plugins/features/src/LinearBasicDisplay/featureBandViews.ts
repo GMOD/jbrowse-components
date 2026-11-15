@@ -12,6 +12,7 @@ import { featureGroupSections } from './facet.ts'
 import { buildRegionInstanceIndex } from './featureHighlightInk.ts'
 import {
   MIN_FIT_BOX_PX,
+  fitLadderRungs,
   labeledBodyFloorScale,
   renderedLabelContext,
   resolveFitLadder,
@@ -628,15 +629,15 @@ export function featureBandViews(self: FeatureBandHost) {
       // 1, so FitStage is assembled in one place. maxScale is 1 in every
       // mode: a stack with room to spare keeps its display mode's size.
       const trimmed = () => this.fitIsoformCount
-      const full: FitRung = {
+      const full = {
         level: 'full',
         reserved: this.fullReservation,
         layout: () => base,
-      }
+      } satisfies FitRung
       // "All transcripts" leaves no isoform rung rather than one that trims
       // nothing: as the last rung of the fixed ladder it would report `level:
       // 'isoforms'` over a stack every transcript survived.
-      const isoformRung: FitRung[] = self.showsEveryIsoform
+      const isoformRung = self.showsEveryIsoform
         ? []
         : [
             {
@@ -644,53 +645,61 @@ export function featureBandViews(self: FeatureBandHost) {
               reserved: this.isoformsReservation,
               layout: () => this.fitIsoformsSolved,
               maxIsoforms: trimmed,
-            },
+            } satisfies FitRung,
           ]
       // Only where the settings reserve `below` rows, or the rung packs a
       // byte-identical copy of `bodies` and reports a reduction that reduced
       // nothing.
-      const bareRung: FitRung[] = self.reservesBelowLabelRows
+      const bareRung = self.reservesBelowLabelRows
         ? [
             {
               level: 'bare',
               reserved: BARE_RESERVATION,
               layout: () => this.fitBareLayout,
               maxIsoforms: trimmed,
-            },
+            } satisfies FitRung,
           ]
         : []
       const stage = resolveFitLadder(
         fit
-          ? [
-              full,
-              {
-                level: 'labels',
-                reserved: this.labelsReservation,
-                layout: () => this.fitLabelsOnlyLayout,
-              },
-              ...isoformRung,
-              {
-                level: 'thinned',
-                reserved: this.labelsReservation,
-                layout: () => this.fitThinnedSolved,
-                maxIsoforms: trimmed,
-                bodyScale: () => this.fitBodyScale ?? 1,
-              },
-              {
-                level: 'decimated',
-                reserved: this.labelsReservation,
-                layout: () => this.fitDecimatedSolved,
-                maxIsoforms: trimmed,
-                bodyScale: () => this.fitDecimatedBodyScale ?? 1,
-              },
-              {
-                level: 'bodies',
-                reserved: BODIES_RESERVATION,
-                layout: () => this.fitBodiesOnlyLayout,
-                maxIsoforms: trimmed,
-              },
-              ...bareRung,
-            ]
+          ? fitLadderRungs({
+              full: [full],
+              labels: [
+                {
+                  level: 'labels',
+                  reserved: this.labelsReservation,
+                  layout: () => this.fitLabelsOnlyLayout,
+                },
+              ],
+              isoforms: isoformRung,
+              thinned: [
+                {
+                  level: 'thinned',
+                  reserved: this.labelsReservation,
+                  layout: () => this.fitThinnedSolved,
+                  maxIsoforms: trimmed,
+                  bodyScale: () => this.fitBodyScale ?? 1,
+                },
+              ],
+              decimated: [
+                {
+                  level: 'decimated',
+                  reserved: this.labelsReservation,
+                  layout: () => this.fitDecimatedSolved,
+                  maxIsoforms: trimmed,
+                  bodyScale: () => this.fitDecimatedBodyScale ?? 1,
+                },
+              ],
+              bodies: [
+                {
+                  level: 'bodies',
+                  reserved: BODIES_RESERVATION,
+                  layout: () => this.fitBodiesOnlyLayout,
+                  maxIsoforms: trimmed,
+                },
+              ],
+              bare: bareRung,
+            })
           : self.autoHeight
             ? [full]
             : [full, ...isoformRung],

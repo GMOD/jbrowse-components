@@ -26,6 +26,7 @@ import { writeExamplePluginDocs } from './generateExamplePluginDocs.ts'
 import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
 import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
 import { writeFileTypeDocs } from './generateFileTypeDocs.ts'
+import { writeFitLadderDocs } from './generateFitLadderDocs.ts'
 import { writeGatedBudgetDocs } from './generateGatedBudgetDocs.ts'
 import { writeGraphPluginDocs } from './generateGraphPluginDocs.ts'
 import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
@@ -122,6 +123,7 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   { label: 'File type tables', write: writeFileTypeDocs },
   { label: 'Gated adapter budgets table', write: writeGatedBudgetDocs },
   { label: 'Read dimensions table', write: writeReadDimensionDocs },
+  { label: 'Fit ladder rungs', write: writeFitLadderDocs },
   { label: 'Display foundations table', write: writeDisplayFoundationDocs },
   { label: 'Cross-cutting mixins table', write: writeCrossCuttingMixinDocs },
   { label: 'Fetch autoruns table', write: writeFetchAutorunDocs },
