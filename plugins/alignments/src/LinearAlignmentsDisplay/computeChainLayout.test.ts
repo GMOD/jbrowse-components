@@ -557,16 +557,17 @@ describe('computeMultiRegionChainLayout — cross-region consistency', () => {
   })
 })
 
-// Mirrors the pileup path's segmentExtentsByRefName rule (sortLayout.ts):
-// refNames share the bp axis but occupy disjoint screen space, so packing them on
-// one axis pushed ctgB's chains below every ctgA chain covering the same bp.
-describe('computeMultiRegionChainLayout — placement axis is per refName', () => {
+describe('computeMultiRegionChainLayout — placement axis is screen order', () => {
   const overlappingBp = [
     { name: 'chainA', minStart: 100, maxEnd: 900, distance: 800 },
   ]
   const regions = new Map([
     [0, { refName: 'ctgA', start: 0, end: 1000 }],
     [1, { refName: 'ctgB', start: 0, end: 1000 }],
+  ])
+  const sameRefName = new Map([
+    [0, { refName: 'ctgA', start: 0, end: 1000 }],
+    [1, { refName: 'ctgA', start: 0, end: 1000 }],
   ])
 
   test('same-bp chains on different refNames share row 0', () => {
@@ -589,7 +590,7 @@ describe('computeMultiRegionChainLayout — placement axis is per refName', () =
     expect(maxY).toBe(1)
   })
 
-  test('same-refName chains still collide', () => {
+  test('different chains at the same bp in two same-refName regions share a row', () => {
     const region1 = makeChainData({ regionStart: 0, chains: overlappingBp })
     const region2 = makeChainData({
       regionStart: 0,
@@ -601,13 +602,131 @@ describe('computeMultiRegionChainLayout — placement axis is per refName', () =
         [0, region1],
         [1, region2],
       ],
-      new Map([
-        [0, { refName: 'ctgA', start: 0, end: 1000 }],
-        [1, { refName: 'ctgA', start: 0, end: 1000 }],
-      ]),
+      sameRefName,
+    )
+
+    expect(maxY).toBe(1)
+  })
+
+  test('a chain present in both of two identical regions blocks a second', () => {
+    const both = [...overlappingBp, { ...overlappingBp[0]!, name: 'chainB' }]
+    const { maxY } = computeMultiRegionChainLayout(
+      [
+        [0, makeChainData({ regionStart: 0, chains: both })],
+        [1, makeChainData({ regionStart: 0, chains: both })],
+      ],
+      sameRefName,
     )
 
     expect(maxY).toBe(2)
+  })
+})
+
+describe('computeMultiRegionChainLayout — reversed and reordered entries', () => {
+  const singleRegion = [
+    { name: 'readA', minStart: 1000, maxEnd: 1150, distance: 150 },
+    { name: 'readB', minStart: 1050, maxEnd: 1200, distance: 150 },
+    { name: 'readC', minStart: 1100, maxEnd: 1250, distance: 150 },
+    { name: 'readD', minStart: 1300, maxEnd: 1450, distance: 150 },
+  ]
+  const onChr9 = () =>
+    makeChainData({
+      regionStart: 1000,
+      chains: [
+        { name: 'fusion', minStart: 2900, maxEnd: 3000, distance: 100 },
+        { name: 'a', minStart: 1000, maxEnd: 1100, distance: 100 },
+      ],
+    })
+  const onChr22 = () =>
+    makeChainData({
+      regionStart: 1000,
+      chains: [
+        { name: 'fusion', minStart: 1000, maxEnd: 1100, distance: 100 },
+        { name: 'b', minStart: 2900, maxEnd: 3000, distance: 100 },
+      ],
+    })
+  const chr9 = { refName: 'chr9', start: 1000, end: 3000 }
+  const chr22 = { refName: 'chr22', start: 1000, end: 3000 }
+  const forward = () =>
+    computeMultiRegionChainLayout(
+      [
+        [0, onChr9()],
+        [1, onChr22()],
+      ],
+      new Map([
+        [0, chr9],
+        [1, chr22],
+      ]),
+    )
+
+  test('a flipped single-region view returns the unflipped row map', () => {
+    const region = { refName: 'ctgA', start: 1000, end: 2000 }
+    const layout = (reversed: boolean) =>
+      computeMultiRegionChainLayout(
+        [[0, makeChainData({ regionStart: 1000, chains: singleRegion })]],
+        new Map([[0, { ...region, reversed }]]),
+      )
+
+    expect([...layout(true).rowMap]).toStrictEqual([...layout(false).rowMap])
+  })
+
+  test('a horizontally flipped two-refName view returns the unflipped row map', () => {
+    const flipped = computeMultiRegionChainLayout(
+      [
+        [0, onChr22()],
+        [1, onChr9()],
+      ],
+      new Map([
+        [0, { ...chr22, reversed: true }],
+        [1, { ...chr9, reversed: true }],
+      ]),
+    )
+
+    expect([...flipped.rowMap].sort()).toStrictEqual(
+      [...forward().rowMap].sort(),
+    )
+  })
+
+  test('mixed [chr9][chr22 rev] puts the chain under the connector off row 0', () => {
+    const chr22Rev = makeChainData({
+      regionStart: 1000,
+      chains: [
+        { name: 'fusion', minStart: 1000, maxEnd: 1100, distance: 100 },
+        { name: 'under', minStart: 2000, maxEnd: 2100, distance: 100 },
+      ],
+    })
+    const { rowMap } = computeMultiRegionChainLayout(
+      [
+        [0, onChr9()],
+        [1, chr22Rev],
+      ],
+      new Map([
+        [0, chr9],
+        [1, { ...chr22, reversed: true }],
+      ]),
+    )
+
+    expect(rowMap.get('fusion')).toBe(0)
+    expect(rowMap.get('a')).toBe(0)
+    expect(rowMap.get('under')).not.toBe(0)
+  })
+
+  test('entries arriving as [1, 0] pack as [0, 1] does', () => {
+    const landed = computeMultiRegionChainLayout(
+      [
+        [1, onChr22()],
+        [0, onChr9()],
+      ],
+      new Map([
+        [1, chr22],
+        [0, chr9],
+      ]),
+    )
+
+    expect([...landed.rowMap].sort()).toStrictEqual(
+      [...forward().rowMap].sort(),
+    )
+    expect(landed.maxY).toBe(1)
   })
 })
 
