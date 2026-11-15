@@ -33,7 +33,8 @@ export interface RefNameCanonicalizer {
 // array is an MST pluggable union, which TS widens to `any`, so naming the
 // shape here is what makes these field reads checked at all — see the
 // OverlayTrack annotation on getMatchedTracks.
-interface OverlayDisplayBase extends Partial<ReadSource> {
+interface OverlayDisplayBase extends Partial<ReadSource>, IStateTreeNode {
+  adapterConfig: Record<string, unknown>
   height: number
   scrollTop?: number
   regionTooLarge?: boolean
@@ -53,8 +54,6 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
     featureId: string,
     onFeat: (feat: Feature) => void,
   ) => Promise<void>
-  /** opens the details widget on a feature, as a click on the track does */
-  selectFeature?: (feature: Feature) => void
 }
 
 // The filters the display applies, so the overlay draws no connector for a

@@ -26,6 +26,7 @@ test('declaring searchFeatureByID without layoutReady is a type error', () => {
   // @ts-expect-error searchFeatureByID requires layoutReady alongside it
   const bad: OverlayDisplay = {
     height: 100,
+    adapterConfig: {},
     searchFeatureByID: () => undefined,
   }
   expect(bad).toBeDefined()
@@ -37,6 +38,7 @@ describe('layoutUnknown', () => {
       layoutUnknown(
         trackWith({
           height: 100,
+          adapterConfig: {},
           searchFeatureByID: () => undefined,
           layoutReady: true,
         }),
@@ -49,6 +51,7 @@ describe('layoutUnknown', () => {
       layoutUnknown(
         trackWith({
           height: 100,
+          adapterConfig: {},
           searchFeatureByID: () => undefined,
           layoutReady: false,
         }),
@@ -57,18 +60,24 @@ describe('layoutUnknown', () => {
   })
 
   test('a display that keeps no layout at all keeps the bottom-edge behavior', () => {
-    expect(layoutUnknown(trackWith({ height: 100 }))).toBe(false)
+    expect(layoutUnknown(trackWith({ height: 100, adapterConfig: {} }))).toBe(
+      false,
+    )
   })
 })
 
 describe('linksOwnReads', () => {
   test('a display drawing its own connectors links every read in the row', () => {
-    expect(linksOwnReads({ height: 100, drawsConnectors: true })).toBe(true)
+    expect(
+      linksOwnReads({ height: 100, adapterConfig: {}, drawsConnectors: true }),
+    ).toBe(true)
   })
 
   test('a display drawing no connectors leaves the row to the overlay', () => {
-    expect(linksOwnReads({ height: 100, drawsConnectors: false })).toBe(false)
-    expect(linksOwnReads({ height: 100 })).toBe(false)
+    expect(
+      linksOwnReads({ height: 100, adapterConfig: {}, drawsConnectors: false }),
+    ).toBe(false)
+    expect(linksOwnReads({ height: 100, adapterConfig: {} })).toBe(false)
   })
 })
 
@@ -225,7 +234,11 @@ describe('computeOverlayX', () => {
 })
 
 describe('overlayJexlFilters', () => {
-  const display = { height: 100, configuredFilters: () => ['jexl:a'] }
+  const display = {
+    height: 100,
+    adapterConfig: {},
+    configuredFilters: () => ['jexl:a'],
+  }
 
   test('follows the filter slot', () => {
     expect(overlayJexlFilters(display)).toEqual(['jexl:a'])
@@ -235,7 +248,7 @@ describe('overlayJexlFilters', () => {
   })
 
   test('a display with no filter contract filters nothing', () => {
-    expect(overlayJexlFilters({ height: 100 })).toEqual([])
+    expect(overlayJexlFilters({ height: 100, adapterConfig: {} })).toEqual([])
     expect(overlayJexlFilters(undefined)).toEqual([])
   })
 })

@@ -6,8 +6,11 @@ import {
   bezierConnectorPath,
   getSession,
   getStrokeProps,
+  openFeatureWidget,
   truncateMiddle,
+  withFeatureDetails,
 } from '@jbrowse/core/util'
+import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { observer } from 'mobx-react'
 
 import { readIdOf } from '../readChains.ts'
@@ -33,15 +36,37 @@ export interface OverlayProps {
   yOffsetsOverride?: (number | undefined)[]
 }
 
-// The row's display opens a clicked call as a click on its own track would, so
-// the widget gets the view, track and header descriptions and the session its
+const VARIANT_FEATURE_WIDGET = {
+  type: 'VariantFeatureWidget',
+  id: 'variantFeature',
+}
+
+// Opened from the row's display, whichever display draws the row, so the
+// widget gets the view, track and header descriptions and the session its
 // selection.
 export function variantWidgetOpener(
-  display: Pick<OverlayDisplay, 'selectFeature'> | undefined,
+  display: OverlayDisplay | undefined,
   feature: Feature,
 ) {
   return () => {
-    display?.selectFeature?.(feature)
+    if (display) {
+      const fetchMetadata = createAdapterMetadataFetch(display)
+      let descriptions: unknown
+      void withFeatureDetails(
+        display,
+        async () => {
+          descriptions = await fetchMetadata()
+          return feature
+        },
+        feat => {
+          openFeatureWidget(display, feat.toJSON(), {
+            widget: VARIANT_FEATURE_WIDGET,
+            extra: { descriptions },
+            feature: feat,
+          })
+        },
+      )
+    }
   }
 }
 

@@ -1,8 +1,11 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
+import { waitFor } from '@testing-library/react'
 
 import { variantPaths } from './Variants.tsx'
 
 import type { OverlayContext } from './overlayUtils.tsx'
+import type { Feature } from '@jbrowse/core/util'
 
 const deletion = new SimpleFeature({
   uniqueId: 'del',
@@ -131,15 +134,93 @@ test('a connector to a row above leaves from the glyph top', () => {
   expect(pathYs(path!.path).slice(0, 2)).toEqual([110, 110])
 })
 
-// The widget needs the row's view, track and header descriptions, which only
-// the row's display hands over.
-test("clicking a call opens it through its row's display", () => {
-  const selectFeature = jest.fn()
-  const ctx = context()
-  const [spec] = variantPaths({
-    ...ctx,
-    tracks: [{ minimized: false, displays: [{ selectFeature }] }],
-  } as unknown as OverlayContext)
-  spec!.openWidget!()
-  expect(selectFeature).toHaveBeenCalledWith(deletion)
-})
+const descriptions = { INFO: { END: { Description: 'End position' } } }
+
+// a variant track's row is drawn by either display, and each one's
+// `selectFeature` takes something different
+const LinearVariantDisplay = types
+  .model('LinearVariantDisplay', {})
+  .views(() => ({
+    get adapterConfig() {
+      return { type: 'VcfTabixAdapter' }
+    },
+  }))
+  .actions(() => ({
+    selectFeature(_feature: Feature) {},
+  }))
+
+const LinearMarkDisplay = types
+  .model('LinearMarkDisplay', {})
+  .views(() => ({
+    get adapterConfig() {
+      return { type: 'VcfTabixAdapter' }
+    },
+  }))
+  .actions(() => ({
+    selectFeature(_hit: { regionIndex: number }) {},
+  }))
+
+function sessionWith(
+  Display: typeof LinearVariantDisplay | typeof LinearMarkDisplay,
+) {
+  const opened: unknown[][] = []
+  const Session = types
+    .model({
+      configuration: types.frozen({}),
+      view: types
+        .model({
+          width: 800,
+          track: types.model({
+            configuration: types.frozen({ trackId: 'calls' }),
+            rpcSessionId: 'rpc',
+            display: Display,
+          }),
+        })
+        .actions(() => ({
+          setWidth() {},
+        })),
+    })
+    .volatile(() => ({
+      rpcManager: { call: async () => descriptions },
+      widgets: new Map(),
+    }))
+    .actions(() => ({
+      setSelection() {},
+      openWidget(...args: unknown[]) {
+        opened.push(args)
+      },
+    }))
+  return {
+    session: Session.create({ view: { track: { display: {} } } }),
+    opened,
+  }
+}
+
+test.each([
+  ['LinearVariantDisplay', LinearVariantDisplay],
+  ['LinearMarkDisplay', LinearMarkDisplay],
+])(
+  'clicking a call drawn by a %s opens the variant widget with its view, track and descriptions',
+  async (_name, Display) => {
+    const { session, opened } = sessionWith(Display)
+    const { track } = session.view
+    const [spec] = variantPaths({
+      ...context(),
+      tracks: [{ minimized: false, displays: [track.display] }],
+    } as unknown as OverlayContext)
+    spec!.openWidget!()
+    await waitFor(() => {
+      expect(opened).toHaveLength(1)
+    })
+    expect(opened[0]).toEqual([
+      'VariantFeatureWidget',
+      'variantFeature',
+      expect.objectContaining({
+        featureData: expect.objectContaining({ uniqueId: 'del' }),
+        view: session.view,
+        track,
+        descriptions,
+      }),
+    ])
+  },
+)
