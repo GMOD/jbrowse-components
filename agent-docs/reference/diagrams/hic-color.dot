@@ -4,7 +4,7 @@ digraph hic_color {
   { node [shape=diamond] pinned; q; visible }
 
   data [label="maxScore, quantileScore\n(finite counts only)"]
-  pinned [label="color.domainMax set"]
+  pinned [label="scale.domainMax set"]
   data -> pinned
   pinned -> set [label=" yes"]
   pinned -> q   [label=" no"]

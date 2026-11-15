@@ -23,7 +23,7 @@ containers", and any coding transcript — mRNA, a V-gene segment, a prokaryotic
 gene → CDS, an organism-specific type — by "it has a direct CDS child". Custom
 types work with no configuration.
 
-`containerTypes` is the one explicit override. It is checked beside "its
+`containers.types` is the one explicit override. It is checked beside "its
 children are containers" and before the transcript and segment shapes, so a
 top-level feature of a listed type stacks its children even when it has a
 direct CDS child. Four tests come before it: the two semantic types (guide RNAs
@@ -139,7 +139,7 @@ included, unless a slot overrides them.
   level deeper — gene → mRNA → CDS → mature peptide, which is what a GenBank
   conversion emits — and dispatch only recurses through the stacking layout, so
   a top-level-only test dropped every cleavage product to a flat box.
-- **`containerTypes` is matched case-insensitively** because it is read twice:
+- **`containers.types` is matched case-insensitively** because it is read twice:
   the same slot builds the gene-like set for the "only genes" filter, and a
   case-sensitive test on one side admitted a feature the dispatch then refused
   to stack.

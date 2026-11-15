@@ -108,6 +108,10 @@ const VALIDATORS: Validator[] = [
     argv: web('check-doc-removed-symbols.ts'),
   },
   {
+    name: 'decision trees name what the code and config schema have',
+    argv: web('check-decision-tree-names.ts'),
+  },
+  {
     // The agent-facing pages are the ones an agent is TOLD to read before its
     // first call, and a stale display type in them does not throw: showTrack
     // does not validate a requested type, so the wrong display renders under a

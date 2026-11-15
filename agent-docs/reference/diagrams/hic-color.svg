@@ -13,7 +13,7 @@
 <g id="node1" class="node">
 <title>pinned</title>
 <polygon fill="none" stroke="black" points="274.83,-614.5 162.34,-596.5 274.83,-578.5 387.32,-596.5 274.83,-614.5"/>
-<text xml:space="preserve" text-anchor="middle" x="274.83" y="-593.38" font-family="monospace" font-size="10.00">color.domainMax set</text>
+<text xml:space="preserve" text-anchor="middle" x="274.83" y="-593.38" font-family="monospace" font-size="10.00">scale.domainMax set</text>
 </g>
 <!-- q -->
 <g id="node2" class="node">
@@ -183,5 +183,5 @@
 <polygon fill="black" stroke="black" points="375.39,-134.17 382.59,-126.39 372.11,-127.98 375.39,-134.17"/>
 </g>
 </g>
-<!-- diagram-source-sha256 ba2d829b29d1bd510ba42ece13e44470ba09fce04cbd078deb6e6206944f56ba -->
+<!-- diagram-source-sha256 ae1205637013730527c8e42f4062439c6a26363bc4a020b429ba11b129a37796 -->
 </svg>

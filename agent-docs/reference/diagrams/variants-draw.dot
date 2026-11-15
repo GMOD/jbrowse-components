@@ -1,20 +1,22 @@
 digraph variant_draw {
   rankdir=TB
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] mode; fit; backend }
+  { node [shape=diamond] layout; fit; backend }
 
   filters [label="minor allele frequency,\nmissingness, jexl filters"]
   rpc     [label="MultiSampleVariantGetCellData\nrow SET is a fetch input, sent sorted\nrow ORDER is not"]
-  filters -> rpc -> mode
+  filters -> rpc -> layout
 
-  mode [label="display"]
-  mode -> cells  [label=" regular"]
-  mode -> mcells [label=" matrix"]
-  cells  [label="computeVariantCells\nreference cells forward from 0,\nalt cells backward from the end"]
-  mcells [label="computeVariantMatrixCells\nvisible region only"]
+  layout [label="layout"]
+  layout -> genomic [label=" genomic"]
+  layout -> columns [label=" columns"]
+  genomic [label="a block per displayed region,\nrecords sorted by start"]
+  columns [label="one block for the window,\nrecords in screen order"]
+  cells [label="computeVariantCells, one payload\nfor both: reference cells forward\nfrom 0, alt cells backward from the end"]
+  genomic -> cells  columns -> cells
 
   order [label="row order: layout, groupBy,\nanchored sort, clustering"]
-  cells -> order  mcells -> order
+  cells -> order
 
   remap [label="rowRemap / rowUnmap\na row with nothing to draw goes\nto the hidden-row sentinel"]
   order -> remap -> bands
@@ -28,7 +30,7 @@ digraph variant_draw {
   fitconf [label="the configured height;\noverflow scrolls"]
   fitauto -> backend  fitconf -> backend
 
-  backend [label="createMarkBackend over VARIANT_MARKS (regular)\nor VARIANT_MATRIX_MARKS (matrix)"]
+  backend [label="createMarkBackend over VARIANT_MARKS (genomic)\nor VARIANT_MATRIX_MARKS (columns)"]
   backend -> gpu [label=" WebGPU, else WebGL2"]
   backend -> c2d [label=" else Canvas2D"]
   gpu [label="cellMark / matrixCellMark\ndrawRegion"]
@@ -38,6 +40,6 @@ digraph variant_draw {
   gpu -> overlays  c2d -> overlays
   overlays -> glyphs -> conn -> legend
   glyphs [label="insertion glyphs, where the\nmarker is wider than the cell"]
-  conn   [label="connector lines (matrix)"]
+  conn   [label="connector lines (columns)"]
   legend [label="floating legend, sidebar tree,\nrow labels"]
 }

@@ -36,7 +36,7 @@ digraph feature_glyph {
   repeat -> container   [label=" no"]
   repeatglyph [label="RepeatRegion\nsubparts on one row,\nno parent box"]
 
-  container [label="listed in containerTypes,\nor its children are containers"]
+  container [label="listed in containers.types,\nor its children are containers"]
   container -> stack  [label=" yes"]
   container -> coding [label=" no"]
 

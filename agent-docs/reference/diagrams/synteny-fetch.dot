@@ -24,6 +24,6 @@ digraph synteny_fetch {
   fine   [label="fine tier: per-row CIGAR,\nevery tag the file carried"]
   coarse [label="coarse tier: no CIGAR, rows split\nat large indels so each bounding\nbox stays tight"]
 
-  key [label="the fetch key: window, zoom bucket,\ntier, region signature\ncolorBy is NOT in it"]
+  key [label="the fetch key: window, zoom bucket,\ntier, region signature\nencoding.color is NOT in it"]
   fine -> key  coarse -> key
 }
