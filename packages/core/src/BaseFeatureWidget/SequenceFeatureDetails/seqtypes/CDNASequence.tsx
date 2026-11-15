@@ -68,9 +68,7 @@ const CDNASequence = observer(function CDNASequence({
   })
 
   // the transcript is its exons; the CDS only decides how each stretch is
-  // colored and cased. Deriving that split here, rather than stitching a
-  // separately-supplied UTR list, keeps the rendered sequence complete however
-  // the annotation expresses its UTRs -- or whether it expresses them at all.
+  // colored and cased, so annotated UTRs are never needed
   const regions = transcriptRegions({
     cds,
     exons,
@@ -102,20 +100,11 @@ const CDNASequence = observer(function CDNASequence({
     }
   }
 
-  // The stretches of the feature its own exons do not reach. Real annotations
-  // produce them: CAT/liftoff emits a transcript spanning the source alignment
-  // with exons only where the CDS is supported, so KCNT2 in HG00099.1's HPRC CAT
-  // annotation runs 10,207 bp past its first exon, and 28 of the 438 transcripts
-  // around CFH do the same.
-  //
-  // Uncolored, like the inter-exon gaps they are — the annotation does not call
-  // them exonic, so stretching the first and last exon over them (which is what
-  // the no-exon CDS fallback in `transcriptRegions` does, deliberately) would
-  // fabricate exonic sequence out of what is intron. In the spliced modes they
-  // are correctly absent; only the intron-showing modes claim to run the length
-  // of the feature, and they are the ones that label genomic coordinates from
-  // `feature.start` — so dropping these silently shortened the panel AND slid
-  // every label after them.
+  // The stretches of the feature its own exons do not reach (CAT/liftoff spans
+  // a transcript over the source alignment but emits exons only where the CDS
+  // is supported). Uncolored like an intron, since the annotation does not call
+  // them exonic, and shown only by the intron modes, which run the length of
+  // the feature and label coordinates from its start.
   const outside = (key: string, str: string): SeqSegment[] =>
     includeIntrons && str
       ? [

@@ -130,11 +130,9 @@ const SequenceFeatureDetailsPanel = observer(
 
 // Takes the sequence settings model, session and assembly directly rather than
 // a feature-detail widget, so anything holding a SequenceFeatureDetails model
-// (the widget, a track's right-click dialog) renders the same readout.
-//
-// The panel's transcript and revcomp are initialized from the feature, and the
-// widget is reused (not remounted) when the user clicks a different feature —
-// so key the panel on the feature to reinitialize them.
+// (the widget, a track's right-click dialog) renders the same readout. Keyed on
+// the feature so revcomp and the dialog reset when the reused widget is handed
+// another one.
 const SequenceFeatureDetails = observer(function SequenceFeatureDetails(
   props: SequenceFeatureDetailsProps,
 ) {
