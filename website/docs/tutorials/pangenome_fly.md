@@ -238,6 +238,7 @@ accepts, so copy these audits into your own build.
 ## See also
 
 - [](/docs/tutorials/pangenome_mouse)
+- [](/docs/tutorials/pangenome_rice)
 - [](/docs/tutorials/pangenome_prepare_graph)
 
 ## Citations
