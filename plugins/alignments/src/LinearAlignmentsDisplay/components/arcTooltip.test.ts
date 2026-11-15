@@ -1,4 +1,8 @@
 import {
+  ARC_COLOR_SPLIT_INSERTION,
+  ARC_COLOR_SPLIT_INV_LL,
+} from '../../features/arcs/arcColors.ts'
+import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
@@ -77,6 +81,28 @@ describe('formatArcTooltip', () => {
     // And the thing it would have reported is precisely the span it already
     // shows, which is why the duplicate row read as a real second measurement.
     expect(payload.end - payload.start).toBe(1700)
+  })
+
+  test('an insertion split arc omits the distance, which is no insertion size', () => {
+    const insertion = {
+      ...hit(4, {
+        x1: 10001201,
+        x2: 10001215,
+        shapeType: ARC_SHAPE_FLAT_SPLIT,
+      }),
+      colorType: ARC_COLOR_SPLIT_INSERTION,
+    }
+    const inversion = {
+      ...hit(4, { shapeType: ARC_SHAPE_FLAT_SPLIT }),
+      colorType: ARC_COLOR_SPLIT_INV_LL,
+    }
+    expect(
+      formatArcTooltip(insertion, 'chr20', 'Split read (insertion)')
+        .omitDistance,
+    ).toBe(true)
+    expect(
+      formatArcTooltip(inversion, 'chr1', 'Split inversion').omitDistance,
+    ).toBeUndefined()
   })
 
   test('reports the true insert size, not the jittered Y it draws at', () => {

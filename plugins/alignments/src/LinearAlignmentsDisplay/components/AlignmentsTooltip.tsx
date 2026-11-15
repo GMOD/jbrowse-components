@@ -187,6 +187,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
         category,
         insertSize,
         unplacedPartnerBp,
+        omitDistance,
       } = tooltipData
       return (
         <BaseTooltip clientPoint={{ x, y }}>
@@ -221,7 +222,9 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
             ) : endRefName === undefined ? (
               <>
                 <div>Location: {formatLocationRange(refName, start, end)}</div>
-                <div>Distance: {toLocale(end - start)} bp</div>
+                {omitDistance ? null : (
+                  <div>Distance: {toLocale(end - start)} bp</div>
+                )}
               </>
             ) : (
               <div>

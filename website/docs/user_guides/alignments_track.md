@@ -394,7 +394,9 @@ Arcs coalesce only on exactly equal endpoints.
 
 Hovering an arc reports its location, the distance between the ends, the
 supporting read count and its color bucket. In read-cloud mode it also gives the
-insert size.
+insert size. An insertion split arc leaves out the distance: its ends mark where
+the read's two pieces overlap or miss on the reference, and that number is not
+the size of the insertion.
 
 <Figure caption="Choosing Read arcs from the Read connections submenu." src="/img/alignments/select_arc_display.png" />
 

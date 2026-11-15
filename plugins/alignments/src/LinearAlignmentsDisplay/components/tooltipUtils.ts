@@ -18,6 +18,7 @@ import {
 import { SPLIT_JUNCTION_NAMES } from '../../features/sashimi/junctionClass.ts'
 import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { forEachSAEntry } from '../../features/sashimi/splitJunctions.ts'
+import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
@@ -111,6 +112,10 @@ export interface ArcTooltipPayload {
   // place, so `start` and `end` are that single coordinate and a range between
   // them is zero wide. See `ARC_SHAPE_FLAT_UNPLACED`.
   unplacedPartnerBp?: number
+  // An insertion-class split arc's ends are where its two pieces overlap or
+  // miss on the reference, and a "Distance" beside "Split read (insertion)"
+  // reads as the insertion's size.
+  omitDistance?: true
 }
 
 // An interchromosomal connector tick. Its own payload rather than an
@@ -466,7 +471,10 @@ export function formatSashimiTooltip(
 // and the partner chromosome is exactly what a tick's hover was worth more than
 // an arc's before the arc could be drawn at all.
 export function formatArcTooltip(
-  hit: Pick<ArcHit, 'x1' | 'x2' | 'support' | 'shapeType' | 'spanBp'>,
+  hit: Pick<
+    ArcHit,
+    'x1' | 'x2' | 'support' | 'shapeType' | 'spanBp' | 'colorType'
+  >,
   refName: string,
   category: string | undefined,
   endRefName?: string,
@@ -524,6 +532,9 @@ export function formatArcTooltip(
     // position back reported that jittered number as the template length. The
     // hit no longer carries the drawn position at all.
     ...(hit.shapeType === ARC_SHAPE_FLAT ? { insertSize: hit.spanBp } : {}),
+    ...(arcSlotCategory(hit.colorType) === 'splitInsertion'
+      ? { omitDistance: true }
+      : {}),
   }
 }
 
