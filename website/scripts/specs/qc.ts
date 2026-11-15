@@ -112,6 +112,7 @@ const na12878Track = {
     cramLocation: { uri: NA12878_CRAM },
     craiLocation: { uri: `${NA12878_CRAM}.crai` },
   },
+  displayDefaults: { sashimi: { show: false } },
 }
 
 const panel = (loc: string) => ({
