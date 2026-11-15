@@ -59,8 +59,9 @@ const AlignmentsFeatureDetails = observer(function AlignmentsFeatureDetails({
   model: AlignmentFeatureWidgetModel
 }) {
   return (
-    <FeatureDetailsFrame model={model}>
-      {(feature, raw) => (
+    <FeatureDetailsFrame
+      model={model}
+      renderBody={(feature, raw) => (
         <FeatureDetailsPanel
           model={model}
           feature={feature}
@@ -80,7 +81,7 @@ const AlignmentsFeatureDetails = observer(function AlignmentsFeatureDetails({
           after={<AlignmentPanels feat={raw} model={model} />}
         />
       )}
-    </FeatureDetailsFrame>
+    />
   )
 })
 

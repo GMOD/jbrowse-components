@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
-import { act, fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render, waitFor } from '@testing-library/react'
 
 import PluginManager from '../PluginManager.ts'
 import {
@@ -406,4 +406,48 @@ test('clicking another feature keeps the sequence panel open on its type', async
   })
   expect(await findByText('Hide feature sequence')).toBeTruthy()
   expect((await findByRole('combobox')).textContent).toBe('Protein')
+})
+
+test('a card collapsed on one feature opens on the next', async () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    {
+      widget: {
+        type: 'BaseFeatureWidget',
+        unformattedFeatureData: {
+          uniqueId: 'one',
+          refName: 'ctgA',
+          start: 2,
+          end: 102,
+          name: 'one',
+        },
+      },
+    },
+    { pluginManager },
+  )
+  const { findByText, findByTitle, queryByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  expect(await findByText('ctgA:3..102')).toBeTruthy()
+  fireEvent.click(await findByTitle('one'))
+  await waitFor(() => {
+    expect(queryByText('ctgA:3..102')).toBeNull()
+  })
+  act(() => {
+    model.widget.setFeatureData({
+      uniqueId: 'two',
+      refName: 'ctgA',
+      start: 200,
+      end: 300,
+      name: 'two',
+    })
+  })
+  expect(await findByText('ctgA:201..300')).toBeTruthy()
 })

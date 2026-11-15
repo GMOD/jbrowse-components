@@ -106,8 +106,20 @@ export function SequenceFeatureDetailsF() {
       recentModes: localStorageGetStringArray(`${p}-recentModes`).filter(
         isSequenceDisplayMode,
       ),
+      /**
+       * #volatile
+       * whether the widget's sequence panel is open; it stays open as the
+       * widget swaps to the next feature
+       */
+      shown: false,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setShown(shown: boolean) {
+        self.shown = shown
+      },
       /**
        * #action
        */

@@ -174,9 +174,12 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget({
   model: VariantFeatureWidgetModel
 }) {
   return (
-    <FeatureDetailsFrame model={model}>
-      {(feat, raw) => <VariantDetails feat={feat} raw={raw} model={model} />}
-    </FeatureDetailsFrame>
+    <FeatureDetailsFrame
+      model={model}
+      renderBody={(feat, raw) => (
+        <VariantDetails feat={feat} raw={raw} model={model} />
+      )}
+    />
   )
 })
 

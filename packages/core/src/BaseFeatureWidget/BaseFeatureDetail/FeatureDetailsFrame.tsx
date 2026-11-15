@@ -20,23 +20,21 @@ export interface FeatureDetailsFrameModel {
 
 /**
  * The shell of a feature-details widget: the error and no-feature states, the
- * wash played on a swap, and the body. A function body is handed the feature
- * as the panel shows it and as the click delivered it, and is keyed on the
- * feature, so its UI state resets when the reused widget swaps to the next
- * one. A node body is not keyed: the base widget's sequence panel stays open
- * across clicks.
+ * wash played on a swap, and the body, keyed on the feature so its UI state
+ * resets when the reused widget swaps to the next one. `renderBody` is handed
+ * the feature as the panel shows it and as the click delivered it.
  */
 const FeatureDetailsFrame = observer(function FeatureDetailsFrame({
   model,
+  renderBody,
   children,
 }: {
   model: FeatureDetailsFrameModel
-  children:
-    | React.ReactNode
-    | ((
-        feature: SimpleFeatureSerialized,
-        unformatted: SimpleFeatureSerialized,
-      ) => React.ReactNode)
+  renderBody?: (
+    feature: SimpleFeatureSerialized,
+    unformatted: SimpleFeatureSerialized,
+  ) => React.ReactNode
+  children?: React.ReactNode
 }) {
   const { error, featureData, unformattedFeatureData, trackId } = model
   return !featureData || isEmpty(featureData) ? (
@@ -54,13 +52,10 @@ const FeatureDetailsFrame = observer(function FeatureDetailsFrame({
     <FeatureTrackContext value={trackId}>
       <FeatureWash uniqueId={featureKey(trackId, featureData.uniqueId)}>
         {error ? <ErrorBanner error={error} /> : null}
-        {typeof children === 'function' ? (
-          <Fragment key={featureKey(trackId, featureData.uniqueId)}>
-            {children(featureData, unformattedFeatureData ?? featureData)}
-          </Fragment>
-        ) : (
-          children
-        )}
+        <Fragment key={featureKey(trackId, featureData.uniqueId)}>
+          {renderBody?.(featureData, unformattedFeatureData ?? featureData)}
+          {children}
+        </Fragment>
       </FeatureWash>
     </FeatureTrackContext>
   )

@@ -84,3 +84,36 @@ test('a card collapsed on one read opens on the next', async () => {
   })
   expect(await findByText('read paired')).toBeTruthy()
 })
+
+test('clicking another read keeps the sequence panel open', async () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const session = Session.create(
+    { widget: { type: 'AlignmentsFeatureWidget' } },
+    { pluginManager },
+  )
+  const read = (uniqueId: string) => ({
+    uniqueId,
+    start: 2,
+    end: 102,
+    refName: 'ctgA',
+    name: uniqueId,
+  })
+  session.widget.setFeatureData(read('one'))
+  const { findByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ReactComponent model={session.widget} />
+    </ThemeProvider>,
+  )
+  fireEvent.click(await findByText('Show feature sequence'))
+  expect(await findByText('Hide feature sequence')).toBeTruthy()
+  act(() => {
+    session.widget.setFeatureData(read('two'))
+  })
+  expect(await findByText('ctgA:3..102')).toBeTruthy()
+  expect(await findByText('Hide feature sequence')).toBeTruthy()
+})

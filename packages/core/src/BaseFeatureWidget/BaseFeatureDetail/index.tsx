@@ -11,20 +11,20 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
 }: {
   model: BaseFeatureWidgetModel
 }) {
-  const { featureData, unformattedFeatureData } = model
   // annotated to shed the MST node brand types.frozen() carries on the instance
   const descriptions: Descriptors | undefined = model.descriptions
   return (
-    <FeatureDetailsFrame model={model}>
-      {featureData && unformattedFeatureData ? (
+    <FeatureDetailsFrame
+      model={model}
+      renderBody={(feature, unformatted) => (
         <FeatureDetailsPanel
           model={model}
-          feature={featureData}
-          unformatted={unformattedFeatureData}
+          feature={feature}
+          unformatted={unformatted}
           descriptions={descriptions}
         />
-      ) : null}
-    </FeatureDetailsFrame>
+      )}
+    />
   )
 })
 

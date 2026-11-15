@@ -6,6 +6,9 @@ import { observable, runInAction } from 'mobx'
 import FeatureDetailsFrame from './FeatureDetailsFrame.tsx'
 import { useFeatureKey } from './featureKey.ts'
 
+import type { FeatureDetailsFrameModel } from './FeatureDetailsFrame.tsx'
+import type React from 'react'
+
 test('a formatDetails error with no feature replaces the panel', () => {
   const { getByText, queryByText } = render(
     <FeatureDetailsFrame model={{ error: new Error('bad callback') }}>
@@ -90,4 +93,58 @@ test('the same feature id from another track is a new feature', () => {
 
 test('a re-format of the feature on screen keeps its UI state', () => {
   expect(swapIn('gencode')).toEqual({ remounted: false, washed: false })
+})
+
+function swapBody(frame: (model: FeatureDetailsFrameModel) => React.ReactNode) {
+  const model = observable<FeatureDetailsFrameModel>({
+    trackId: 'gencode',
+    featureData: { uniqueId: 'a', refName: 'chr1', start: 0, end: 1 },
+  })
+  const { getByText } = render(frame(model))
+  const before = getByText(/mount/).textContent
+  act(() => {
+    runInAction(() => {
+      model.featureData = { uniqueId: 'b', refName: 'chr1', start: 0, end: 1 }
+    })
+  })
+  return getByText(/mount/).textContent !== before
+}
+
+test('a swap to another feature remounts a plain body', () => {
+  expect(
+    swapBody(model => (
+      <FeatureDetailsFrame model={model}>
+        <Mounted />
+      </FeatureDetailsFrame>
+    )),
+  ).toBe(true)
+})
+
+test('a swap to another feature remounts a rendered body', () => {
+  expect(
+    swapBody(model => (
+      <FeatureDetailsFrame model={model} renderBody={() => <Mounted />} />
+    )),
+  ).toBe(true)
+})
+
+test('a rendered body is handed the shown and the unformatted feature', () => {
+  const { getByText } = render(
+    <FeatureDetailsFrame
+      model={{
+        featureData: { uniqueId: 'f', refName: 'ctgA', start: 0, end: 1 },
+        unformattedFeatureData: {
+          uniqueId: 'f',
+          refName: 'ctgA',
+          start: 0,
+          end: 1,
+          name: 'raw',
+        },
+      }}
+      renderBody={(feature, unformatted) =>
+        `${feature.name ?? 'unnamed'} ${unformatted.name}`
+      }
+    />,
+  )
+  expect(getByText('unnamed raw')).toBeTruthy()
 })

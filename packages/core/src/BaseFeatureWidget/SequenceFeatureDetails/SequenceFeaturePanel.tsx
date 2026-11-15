@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy } from 'react'
 
 import Help from '@mui/icons-material/Help'
 import { Button, FormControl, IconButton } from '@mui/material'
@@ -43,7 +43,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
   transcriptPick: TranscriptPick
 }) {
   const { classes } = useStyles()
-  const [shown, setShown] = useState(false)
+  const { shown } = model.sequenceFeatureDetails
 
   return (
     <div className={classes.container}>
@@ -51,7 +51,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
         <Button
           variant="contained"
           onClick={() => {
-            setShown(val => !val)
+            model.sequenceFeatureDetails.setShown(!shown)
           }}
         >
           {shown ? 'Hide feature sequence' : 'Show feature sequence'}
