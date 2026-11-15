@@ -80,9 +80,10 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * and `mateAssembly` pick drawn reads too, each read by the section a
      * facet by read files it under (`svKind` by its whole chain's), with
      * `equal` or `oneOf` of their values, or `valid: false` for the reads with
-     * none; `alignedRefNames`, the references a read and its SA entries align
-     * to, passes when any of them does, so an entry each for `chr9` and
-     * `chr22` keeps the reads aligned to both; a read's strand is
+     * none; `alignedRefNames`, the references every alignment of the read's
+     * chain is on (its split pieces, and a pair's both mates), passes when any
+     * of them does, so an entry each for `chr9` and `chr22` keeps a split read
+     * aligned to both and a pair with a mate on each; a read's strand is
      * `flags.REVERSE`. A facet on a category gives its own coverage.
      * `junction.reads`,
      * `junction.canonical` (a split junction reads no motif and counts as
