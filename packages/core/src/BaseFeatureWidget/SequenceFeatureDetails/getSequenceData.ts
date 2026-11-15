@@ -15,12 +15,6 @@ export function filterSuccessiveElementsWithSameStartAndEndCoord(list: Feat[]) {
   )
 }
 
-interface FeatureData {
-  sequence: SeqState
-  cds: Feat[]
-  exons: Feat[]
-}
-
 function prepareSubfeatures(feature: SimpleFeatureSerialized) {
   const { start, subfeatures } = feature
   return (
@@ -63,18 +57,12 @@ function processFeatureData(
   return { cds, exons }
 }
 
-function handleReverseStrand(
-  sequence: SeqState,
-  cds: Feat[],
-  exons: Feat[],
-): FeatureData {
+function handleReverseStrand(sequence: SeqState, cds: Feat[], exons: Feat[]) {
   const { seq, upstream = '', downstream = '' } = sequence
   return {
-    sequence: {
-      seq: revcom(seq),
-      upstream: revcom(downstream),
-      downstream: revcom(upstream),
-    },
+    seq: revcom(seq),
+    upstream: revcom(downstream),
+    downstream: revcom(upstream),
     cds: revlist(cds, seq.length),
     exons: revlist(exons, seq.length),
   }
@@ -91,17 +79,7 @@ export function getSequenceData({
 }) {
   const children = prepareSubfeatures(feature)
   const { cds, exons } = processFeatureData(children, feature)
-  const {
-    sequence: adjusted,
-    cds: adjustedCds,
-    exons: adjustedExons,
-  } = displayStrand(feature, revcomp) === -1
+  return displayStrand(feature, revcomp) === -1
     ? handleReverseStrand(sequence, cds, exons)
-    : { sequence, cds, exons }
-
-  return {
-    ...adjusted,
-    cds: adjustedCds,
-    exons: adjustedExons,
-  }
+    : { ...sequence, cds, exons }
 }
