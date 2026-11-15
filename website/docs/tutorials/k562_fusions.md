@@ -204,6 +204,11 @@ row's two breakpoints side by side as two regions of one view:
   (`[rev]`).
 - **Read connections → View as pairs/link supplementary alignments** merges each
   molecule's two alignments onto one row.
+- The figure's track keeps the split reads whose partner is on chr9 or chr22,
+  with
+  `"filter": [{ "field": "split", "equal": true }, { "field": "mateRefName", "oneOf": ["chr9", "chr22"] }]`
+  in its `displayDefaults`. An Iso-Seq read has no mate, so `mateRefName` names
+  the reference of its split partner.
 
 <Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
