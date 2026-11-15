@@ -174,12 +174,6 @@ right-click offers. `makeFindJunctionsNear` wants a node holding the track's
 `adapterConfig`, which the widget model does not carry; the widget resolves its
 track from the feature's `trackId`, or shares the right-click's launcher.
 
-**A read-curve click opens two generic cards.** `alignmentWidgetOpener` in
-`overlayUtils.tsx` opens `BreakpointAlignmentsWidget`, a core card and an
-attributes card per read. The alignments plugin's own widget has the SA list,
-the paired-alignments card and the flags card. One widget hosting the alignments
-detail twice is the shape to decide.
-
 **Variant curves may land on the track's bottom edge.** The survey reported
 that variant curves anchor on the track's bottom edge because the display
 exposes no `searchFeatureByID`. The variant display is built on the canvas

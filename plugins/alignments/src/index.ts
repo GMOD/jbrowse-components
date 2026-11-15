@@ -3,6 +3,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import AlignmentsFeatureWidgetF from './AlignmentsFeatureDetail/index.ts'
 import AlignmentsTrackF from './AlignmentsTrack/index.ts'
 import BamAdapterF from './BamAdapter/index.ts'
+import BreakpointAlignmentsWidgetF from './BreakpointAlignmentsFeatureDetail/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
@@ -25,6 +26,7 @@ export default class AlignmentsPlugin extends Plugin {
       PileupDataRPCMethodsF,
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
+      BreakpointAlignmentsWidgetF,
       ConsensusSequenceF,
     ]) {
       f(pluginManager)

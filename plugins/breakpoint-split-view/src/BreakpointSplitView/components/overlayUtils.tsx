@@ -5,6 +5,8 @@ import {
   assembleLocString,
   bezierConnectorPath,
   fetchAdapterRecord,
+  getContainingTrack,
+  getContainingView,
   getSession,
   getStrokeProps,
   openFeatureWidget,
@@ -72,9 +74,18 @@ export function variantWidgetOpener(
   }
 }
 
+function readDetails(display: OverlayDisplay, feature: Feature) {
+  return {
+    featureData: feature.toJSON(),
+    view: getContainingView(display),
+    track: getContainingTrack(display),
+  }
+}
+
 // The overlay holds a read's arrays, not its record, so a click fetches both
-// full reads from their own rows' displays. Serialized at click time: every
-// overlay path would otherwise pay a `toJSON` per pan/zoom frame.
+// full reads from their own rows' displays, each shown with its row's view and
+// track. Serialized at click time: every overlay path would otherwise pay a
+// `toJSON` per pan/zoom frame.
 export function alignmentWidgetOpener(
   session: ReturnType<typeof getSession>,
   tracks: Pick<OverlayTrack, 'displays'>[],
@@ -82,20 +93,19 @@ export function alignmentWidgetOpener(
   e2: ReadEntry,
 ) {
   return () => {
-    void tracks[e1.level]?.displays[0]?.withFeatureById?.(readIdOf(e1), f1 => {
-      void tracks[e2.level]?.displays[0]?.withFeatureById?.(
-        readIdOf(e2),
-        f2 => {
-          const widget = session.addWidget?.(
-            'BreakpointAlignmentsWidget',
-            'breakpointAlignments',
-            { featureData: { feature1: f1.toJSON(), feature2: f2.toJSON() } },
-          )
-          if (widget) {
-            session.showWidget?.(widget)
-          }
-        },
-      )
+    const d1 = tracks[e1.level]?.displays[0]
+    const d2 = tracks[e2.level]?.displays[0]
+    void d1?.withFeatureById?.(readIdOf(e1), f1 => {
+      void d2?.withFeatureById?.(readIdOf(e2), f2 => {
+        const widget = session.addWidget?.(
+          'BreakpointAlignmentsWidget',
+          'breakpointAlignments',
+          { read1: readDetails(d1, f1), read2: readDetails(d2, f2) },
+        )
+        if (widget) {
+          session.showWidget?.(widget)
+        }
+      })
     })
   }
 }

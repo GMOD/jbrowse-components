@@ -1,10 +1,18 @@
 import { PAIR_DIRECTION_NUM } from '@jbrowse/alignments-core'
+import { SimpleFeature } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
+import { waitFor } from '@testing-library/react'
 
 import { drawnConnections } from '../readChains.ts'
-import { buildJunctionPath, chainHighlightRects } from './overlayUtils.tsx'
+import {
+  alignmentWidgetOpener,
+  buildJunctionPath,
+  chainHighlightRects,
+} from './overlayUtils.tsx'
 
 import type { ReadEntry } from '../readChains.ts'
 import type { ConnectorRow, LayoutRecord, OverlayLevel } from '../types.ts'
+import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 const row: ConnectorRow = { minimized: false, linksReads: false }
@@ -232,5 +240,66 @@ describe('buildJunctionPath', () => {
   test('a reversed region mirrors the side an end leaves from', () => {
     const [c1x] = controls(buildJunctionPath({ ...start, reversed: true }, end))
     expect(c1x).toBeLessThan(50)
+  })
+})
+
+test('a read curve click opens the pair widget with each read on its own row view and track', async () => {
+  const Display = types.model('LinearAlignmentsDisplay', {}).actions(() => ({
+    async withFeatureById(id: string, onFeat: (feat: Feature) => void) {
+      onFeat(
+        new SimpleFeature({ uniqueId: id, refName: 'ctgA', start: 1, end: 2 }),
+      )
+    },
+  }))
+  const Row = types
+    .model('Row', {
+      width: 800,
+      track: types.model('Track', {
+        configuration: types.frozen({ trackId: 'reads' }),
+        display: Display,
+      }),
+    })
+    .actions(() => ({ setWidth() {} }))
+  const root = types
+    .model({ rows: types.array(Row) })
+    .create({ rows: [{ track: { display: {} } }, { track: { display: {} } }] })
+  const [row1, row2] = root.rows
+  const addWidget = jest.fn((..._args: unknown[]) => ({}))
+  const entry = (level: number, id: string): ReadEntry => ({
+    level,
+    groupKey: '',
+    displayedRegionIndex: 0,
+    refName: 'ctgA',
+    data: { readKeys: [id] } as unknown as ReadEntry['data'],
+    readIdx: 0,
+  })
+  const session = { addWidget, showWidget: () => {} } as unknown as Parameters<
+    typeof alignmentWidgetOpener
+  >[0]
+  alignmentWidgetOpener(
+    session,
+    root.rows.map(row => ({
+      displays: [row.track.display],
+    })) as unknown as Parameters<typeof alignmentWidgetOpener>[1],
+    entry(0, 'r1'),
+    entry(1, 'r2'),
+  )()
+  await waitFor(() => {
+    expect(addWidget).toHaveBeenCalledWith(
+      'BreakpointAlignmentsWidget',
+      'breakpointAlignments',
+      {
+        read1: {
+          featureData: expect.objectContaining({ uniqueId: 'r1' }),
+          view: row1,
+          track: row1!.track,
+        },
+        read2: {
+          featureData: expect.objectContaining({ uniqueId: 'r2' }),
+          view: row2,
+          track: row2!.track,
+        },
+      },
+    )
   })
 })
