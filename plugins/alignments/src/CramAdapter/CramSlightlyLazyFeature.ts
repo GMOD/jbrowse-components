@@ -19,8 +19,8 @@ import {
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import {
   convertTagsToPlainArrays,
+  hasPairOrientation,
   nextSegmentPosition,
-  pairOrientation,
 } from '../shared/util.ts'
 import { packCigar } from './packCigar.ts'
 
@@ -106,18 +106,13 @@ export default class CramSlightlyLazyFeature
     return this.adapter.refIdToName(this.sequenceId)!
   }
 
-  get seq_length() {
-    return this.isUnknownBases() ? 0 : this.readLength
-  }
-
   get pair_orientation() {
-    return pairOrientation(
+    return hasPairOrientation(
       this.flags,
-      this.start,
-      this.next_pos,
-      this.seq_length,
       this.sequenceId === this.nextSequenceId,
     )
+      ? this.getPairOrientation()
+      : undefined
   }
 
   get template_length() {
@@ -351,7 +346,7 @@ export default class CramSlightlyLazyFeature
       case 'NUMERIC_CIGAR':
         return this.NUMERIC_CIGAR
       case 'seq_length':
-        return this.seq_length
+        return this.isUnknownBases() ? 0 : this.readLength
       case 'pair_orientation':
         return this.pair_orientation
       case 'next_ref':

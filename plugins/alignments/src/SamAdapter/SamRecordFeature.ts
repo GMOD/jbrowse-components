@@ -1,4 +1,4 @@
-import { forEachMismatchNumeric } from '@gmod/bam'
+import { forEachMismatchNumeric, pairOrientation } from '@gmod/bam'
 import {
   alignedReadBasesNumeric,
   clipLengthAtStartOfReadNumeric,
@@ -11,8 +11,8 @@ import {
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import {
   cigarHasEndClip,
+  hasPairOrientation,
   nextSegmentPosition,
-  pairOrientation,
 } from '../shared/util.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
@@ -199,13 +199,9 @@ export default class SamRecordFeature implements MismatchFeature {
   // IGV's pair-orientation string (e.g. `F1R2`)
   get pair_orientation() {
     const { flags, next_ref, next_pos, refName, start } = this.record
-    return pairOrientation(
-      flags,
-      start,
-      next_pos,
-      this.seq_length,
-      next_ref === refName,
-    )
+    return hasPairOrientation(flags, next_ref === refName)
+      ? pairOrientation(flags, start, this.seq_length, next_pos)
+      : undefined
   }
 
   get mismatches() {

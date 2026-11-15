@@ -97,48 +97,6 @@ export function hasPairOrientation(flags: number, sameReference: boolean) {
   )
 }
 
-// Indexed by flag bits 0x10 (reverse), 0x20 (mate reverse) and 0x40 (read1)
-// shifted down to bits 0-2, plus 8 when this record leads the pair
-// prettier-ignore
-const PAIR_ORIENTATION_TABLE = [
-  'F1F2','F1R2','R1F2','R1R2','F2F1','F2R1','R2F1','R2R1',
-  'F2F1','R2F1','F2R1','R2R1','F1F2','R1F2','F1R2','R1R2',
-] as const
-
-function leadsPair(
-  orientationBits: number,
-  start: number,
-  matePos: number | undefined,
-  seqLength: number,
-) {
-  const reverse = (orientationBits & 1) !== 0
-  const mateReverse = (orientationBits & 2) !== 0
-  const read1 = (orientationBits & 4) !== 0
-  return matePos === undefined
-    ? read1
-    : reverse !== mateReverse && Math.abs(start - matePos) < seqLength
-      ? !reverse
-      : start !== matePos
-        ? start < matePos
-        : read1
-}
-
-export function pairOrientation(
-  flags: number,
-  start: number,
-  matePos: number | undefined,
-  seqLength: number,
-  sameReference: boolean,
-) {
-  const orientationBits = (flags >> 4) & 0x7
-  return hasPairOrientation(flags, sameReference)
-    ? PAIR_ORIENTATION_TABLE[
-        orientationBits |
-          (leadsPair(orientationBits, start, matePos, seqLength) ? 8 : 0)
-      ]
-    : undefined
-}
-
 export function nextSegmentPosition(
   nextRef: string | undefined,
   nextPos: number | undefined,

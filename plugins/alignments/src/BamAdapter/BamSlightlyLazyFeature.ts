@@ -9,8 +9,8 @@ import { collectMismatches } from '../shared/collectMismatches.ts'
 import {
   cigarHasEndClip,
   convertTagsToPlainArrays,
+  hasPairOrientation,
   nextSegmentPosition,
-  pairOrientation,
 } from '../shared/util.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
@@ -290,6 +290,8 @@ export default class BamSlightlyLazyFeature
   /**
    * `next_pos` as SAM and CRAM report it: undefined where the file has none.
    * BAM stores that as -1, which a Uint32 per-read array read as bp 4.29e9.
+   * Not an override of `next_pos` itself, which BamRecord's own
+   * `pair_orientation` reads raw.
    */
   get matePos() {
     const pos = this.next_pos
@@ -302,13 +304,9 @@ export default class BamSlightlyLazyFeature
 
   // OVERRIDES BamRecord.pair_orientation, which answers for every paired read
   override get pair_orientation() {
-    return pairOrientation(
-      this.flags,
-      this.start,
-      this.matePos,
-      this.seq_length,
-      this.ref_id === this.next_refid,
-    )
+    return hasPairOrientation(this.flags, this.ref_id === this.next_refid)
+      ? super.pair_orientation
+      : undefined
   }
 
   // OVERRIDES BamRecord.toJSON, which emits BAM's own field names rather than a
