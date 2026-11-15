@@ -135,6 +135,22 @@ test('shows the mate breakpoint, not a span, for a translocation', () => {
   expect(container.textContent).not.toContain('790Mbp')
 })
 
+test("a sequence-resolved insertion's raw ALT is cut like any long value", () => {
+  const alt = `A${'C'.repeat(3000)}`
+  const { container, getByText } = renderWidget({
+    uniqueId: 'hello',
+    refName: 'ctgA',
+    start: 176,
+    end: 177,
+    REF: 'A',
+    ALT: [alt],
+  })
+  fireEvent.click(getByText('Show raw ALT'))
+  expect(container.textContent).toContain(`${alt.slice(0, 2000)}…`)
+  expect(container.textContent).not.toContain(alt)
+  expect(getByText('Copy')).toBeTruthy()
+})
+
 test('lists each distinct breakend endpoint once, skipping mate-less ALTs', async () => {
   const { findByText, container } = renderWidget({
     uniqueId: 'hello',

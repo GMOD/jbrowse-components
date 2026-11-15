@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { ActionLink } from '@jbrowse/core/ui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -46,7 +47,7 @@ const AltFormatter = observer(function AltFormatter({
       >
         {show ? 'Show simplified ALT' : 'Show raw ALT'}
       </ActionLink>{' '}
-      {show ? value : alt}
+      {show ? <Formatter value={value} /> : alt}
       {detail}
     </div>
   ) : (
