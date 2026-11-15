@@ -8,7 +8,7 @@ import {
   isUriLocation,
   measureText,
 } from '../../util/index.ts'
-import ArrayValue, { isObjectArray } from './ArrayValue.tsx'
+import ArrayValue, { isObjectArray, objectArrayPrefix } from './ArrayValue.tsx'
 import SimpleField from './SimpleField.tsx'
 import TranslExceptList from './TranslExceptList.tsx'
 import UriField from './UriField.tsx'
@@ -117,11 +117,11 @@ function valueWithoutLocations(value: unknown): unknown {
  * text units — the padding is added once by `widestLabel`, not per level.
  *
  * Follows the same `classify` branches the render below does: a flat array is one
- * labelled row, an array of objects renders each element as its own block with
- * no label at this level, a data grid heads its own grid rather than sharing a
- * row (its FieldName is a heading above the grid, not a cell beside a value), a
- * `UriLocation` is one field, any other object recurses. `Attributes.test.tsx`
- * fails if the two stop agreeing.
+ * labelled row, an array of objects recurses into each element under its own
+ * prefix with no label at this level, a data grid heads its own grid rather
+ * than sharing a row (its FieldName is a heading above the grid, not a cell
+ * beside a value), a `UriLocation` is one field, any other object recurses.
+ * `Attributes.test.tsx` fails if the two stop agreeing.
  */
 function measureLabels(
   attributes: Record<string, unknown>,
@@ -142,7 +142,18 @@ function measureLabels(
     const classified = classify(key, value)
     switch (classified.kind) {
       case 'grid':
+        break
       case 'objectArray':
+        classified.value.forEach((element, i, all) => {
+          widest = Math.max(
+            widest,
+            measureLabels(element, {
+              omits: deepOmits,
+              deepOmits,
+              prefix: objectArrayPrefix(prefix, key, all.length, i),
+            }),
+          )
+        })
         break
       case 'translExcept':
       case 'array':
@@ -180,7 +191,7 @@ export function hasAttributeRows(
 function hasRows(classified: ReturnType<typeof classify>, omit: string[]) {
   switch (classified.kind) {
     case 'objectArray':
-      return classified.value.some(entry => hasAttributeRows(entry))
+      return classified.value.some(entry => hasAttributeRows(entry, omit))
     case 'object':
       return hasAttributeRows(classified.value, omit)
     case 'grid':
@@ -293,6 +304,8 @@ const Attributes = observer(function Attributes(props: {
                 key={key}
                 name={key}
                 value={classified.value}
+                omit={omit}
+                descriptions={descriptions}
                 formatter={formatter}
                 fieldActions={fieldActions}
                 description={description}

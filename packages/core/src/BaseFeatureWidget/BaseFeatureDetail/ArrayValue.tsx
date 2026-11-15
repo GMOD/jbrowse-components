@@ -11,7 +11,7 @@ import FieldActionsButton, {
 } from './FieldActionsButton.tsx'
 import FieldName from './FieldName.tsx'
 
-import type { FeatureFormatter, FieldActions } from '../types.tsx'
+import type { Descriptors, FeatureFormatter, FieldActions } from '../types.tsx'
 
 const MAX_ARRAY_LENGTH = 100
 
@@ -42,14 +42,24 @@ const useStyles = makeStyles()(theme => ({
 /**
  * An array of objects renders each element as its own `Attributes` block and
  * draws no label row at this level; anything else is one labelled row like any
- * other field, and so takes its place in the card's shared label column.
- * Exported because `Attributes` measures that column before rendering and has
- * to make the same call.
+ * other field. Either way its labels take their place in the card's shared
+ * label column. Exported because `Attributes` measures that column before
+ * rendering and has to make the same call.
  */
 export function isObjectArray(
   value: unknown[],
 ): value is Record<string, unknown>[] {
   return value.every(isObject)
+}
+
+/** The prefix element `i` of an array of objects labels its fields under. */
+export function objectArrayPrefix(
+  prefix: string[],
+  name: string,
+  length: number,
+  i: number,
+) {
+  return length === 1 ? [...prefix, name] : [...prefix, `${name}-${i}`]
 }
 
 /** Each item of a list in a box of its own, in the order the feature lists them. */
@@ -98,12 +108,16 @@ const ArrayValue = observer(function ArrayValue({
   name,
   value,
   description,
+  descriptions,
+  omit,
   formatter,
   fieldActions,
   prefix = [],
   width,
 }: {
   description?: React.ReactNode
+  descriptions?: Descriptors
+  omit?: string[]
   name: string
   value: unknown[]
   formatter?: FeatureFormatter
@@ -114,25 +128,21 @@ const ArrayValue = observer(function ArrayValue({
   const { classes, cx } = useStyles()
   const reveal = useRevealFieldActions()
   return isObjectArray(value) ? (
-    value.length === 1 ? (
-      <Attributes
-        formatter={formatter}
-        attributes={value[0]!}
-        prefix={[...prefix, name]}
-      />
-    ) : (
-      <>
-        {value.map((val, i) => (
-          <Attributes
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of attribute objects, no unique field available
-            key={i}
-            formatter={formatter}
-            attributes={val}
-            prefix={[...prefix, `${name}-${i}`]}
-          />
-        ))}
-      </>
-    )
+    <>
+      {value.map((val, i) => (
+        <Attributes
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of attribute objects, no unique field available
+          key={i}
+          attributes={val}
+          omit={omit}
+          descriptions={descriptions}
+          formatter={formatter}
+          fieldActions={fieldActions}
+          prefix={objectArrayPrefix(prefix, name, value.length, i)}
+          labelWidth={width}
+        />
+      ))}
+    </>
   ) : (
     <div className={cx(classes.field, reveal)}>
       <FieldName

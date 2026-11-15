@@ -48,19 +48,39 @@ describe('Attributes', () => {
     expect(new Set(Object.values(widths)).size).toBe(1)
   })
 
-  // an array of objects renders each element as its own Attributes block with
-  // no label row at this level, so measuring its key would widen the column for
-  // a label that is never drawn
-  test('an object array contributes no label to the column', () => {
-    const width = (attributes: Record<string, unknown>) =>
-      Object.values(
-        labelWidths(
-          renderWithTheme(<Attributes {...{ attributes }} />).container,
-        ),
-      )[0]
-    expect(width({ a: 'x', aVeryMuchLongerName: [{ b: 'y' }] })).toBe(
-      width({ a: 'x' }),
+  // an array of objects renders each element as its own Attributes block, whose
+  // labels sit in the card's column like a nested object's
+  test("an object array's labels share the card's column", () => {
+    // unlike enough in their fields to stay out of a data grid
+    const second = { aMuchLongerFieldName: 'z', c: 1, d: 2, e: 3, f: 4 }
+    const { container } = renderWithTheme(
+      <Attributes attributes={{ a: 'x', list: [{ b: 'y' }, second] }} />,
     )
+    const widths = labelWidths(container)
+    expect(Object.keys(widths).sort()).toEqual([
+      'a',
+      'list-0.b',
+      'list-1.aMuchLongerFieldName',
+      'list-1.c',
+      'list-1.d',
+      'list-1.e',
+      'list-1.f',
+    ])
+    expect(new Set(Object.values(widths)).size).toBe(1)
+  })
+
+  test("an object array's fields get their descriptions and actions", () => {
+    const fieldActions = jest.fn(() => [{ label: 'act', onClick: () => {} }])
+    const { getByText, getAllByRole } = renderWithTheme(
+      <Attributes
+        attributes={{ list: [{ b: 'y' }] }}
+        descriptions={{ list: { b: 'what b is' } }}
+        fieldActions={fieldActions}
+      />,
+    )
+    expect(getByText('list.b').getAttribute('aria-label')).toBe('what b is')
+    expect(getAllByRole('button')).toHaveLength(1)
+    expect(fieldActions).toHaveBeenCalledWith(['list', 'b'], 'y')
   })
 
   // the padding around a label is added once, not once per level: a recursive
