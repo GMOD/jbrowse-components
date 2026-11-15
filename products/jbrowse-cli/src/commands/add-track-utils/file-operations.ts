@@ -47,6 +47,17 @@ async function loadFile({
   return undefined
 }
 
+const indexWriters: [RegExp, string][] = [
+  [/\.(bai|crai)$/i, 'samtools index'],
+  [/\.(fai|gzi)$/i, 'samtools faidx'],
+  [/\.(tbi|csi)$/i, 'tabix'],
+]
+
+function missingSourceMessage(src: string) {
+  const writer = indexWriters.find(([re]) => re.test(src))?.[1]
+  return writer ? `Missing ${src} (${writer} writes it)` : `Missing ${src}`
+}
+
 // load a set of source files into the config directory, skipping the operation
 // entirely when no load mode is given (e.g. a URL track). undefined entries
 // (optional index/bed files) are ignored
@@ -65,13 +76,16 @@ export async function loadFiles({
 }) {
   // inPlace references files where they sit, so it needs no destination dir
   if (mode && mode !== 'inPlace') {
+    const sources = files.filter((f): f is string => !!f)
+    const missing = sources.find(src => !fs.existsSync(src))
+    if (missing) {
+      throw new Error(missingSourceMessage(missing))
+    }
     if (subDir) {
       fs.mkdirSync(path.join(destDir, subDir), { recursive: true })
     }
     await Promise.all(
-      files
-        .filter((f): f is string => !!f)
-        .map(src => loadFile({ src, destDir, mode, subDir, force })),
+      sources.map(src => loadFile({ src, destDir, mode, subDir, force })),
     )
   }
 }

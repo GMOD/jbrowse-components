@@ -227,25 +227,16 @@ export async function getAssembly({
     field: s.field,
     path: runFlags[s.field] ?? `${argsSequence}${s.suffix}`,
   }))
-  const isLocal = !isURL(argsSequence) && fs.existsSync(argsSequence)
-  const missingSidecars = isLocal
-    ? sidecars.filter(s => !isURL(s.path) && !fs.existsSync(s.path))
-    : []
-  if (type === 'bgzipFasta' && missingSidecars.length > 0 && !runFlags.force) {
-    throw new Error(
-      `Missing ${missingSidecars.map(s => s.path).join(' and ')}: run "samtools faidx ${argsSequence}" to write the .fai and .gzi`,
-    )
-  }
   const faiToGenerate =
     type === 'indexedFasta' &&
     runFlags.faiLocation === undefined &&
-    missingSidecars.length > 0
+    runFlags.load !== undefined &&
+    runFlags.load !== 'inPlace' &&
+    fs.existsSync(argsSequence) &&
+    !fs.existsSync(`${argsSequence}.fai`)
       ? {
           fasta: argsSequence,
-          fai:
-            runFlags.load === 'inPlace'
-              ? `${argsSequence}.fai`
-              : path.join(destDir, `${path.basename(argsSequence)}.fai`),
+          fai: path.join(destDir, `${path.basename(argsSequence)}.fai`),
         }
       : undefined
   const name = runFlags.name || spec.defaultName(argsSequence)

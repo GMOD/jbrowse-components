@@ -7,7 +7,7 @@ import path from 'node:path'
 
 import { ctxDir, readConf, runCommand, runInTmpDir } from '../testUtil.ts'
 
-const { writeFile, copyFile } = fs.promises
+const { writeFile, copyFile, mkdir } = fs.promises
 
 const exists = (p: string) => fs.existsSync(p)
 
@@ -1077,8 +1077,43 @@ test('--load copy still fails when the source file does not exist', async () => 
       '--load',
       'copy',
     ])
-    expect(error?.message).toContain('ENOENT')
+    expect(error?.message).toBe('Error: Missing notThere.bam')
     expect(readConf(ctx).tracks).toHaveLength(0)
+  })
+})
+
+test('--load copy names the tool for a missing index, before copying', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await mkdir(ctxDir(ctx, 'src'))
+    await writeFile(ctxDir(ctx, 'src/reads.bam'), 'bamcontents')
+    const { error } = await runCommand([
+      'add-track',
+      path.join('src', 'reads.bam'),
+      '--load',
+      'copy',
+    ])
+    expect(error?.message).toBe(
+      `Error: Missing ${path.join('src', 'reads.bam.bai')} (samtools index writes it)`,
+    )
+    expect(fs.existsSync(ctxDir(ctx, 'reads.bam'))).toBe(false)
+    expect(readConf(ctx).tracks).toHaveLength(0)
+  })
+})
+
+test('--load inPlace accepts a missing index', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand([
+      'add-track',
+      'notYetStaged.vcf.gz',
+      '--load',
+      'inPlace',
+    ])
+    expect(error).toBeUndefined()
+    expect(readConf(ctx).tracks[0].adapter.index.location.uri).toBe(
+      'notYetStaged.vcf.gz.tbi',
+    )
   })
 })
 

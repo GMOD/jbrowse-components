@@ -106,12 +106,7 @@ test('fails if it cannot find a file', async () => {
     '--load',
     'copy',
   ])
-  // the fasta and its .fai are copied concurrently, so whichever missing-file
-  // ENOENT rejects first is nondeterministic — assert the invariant, not the
-  // racing filename
-  expect(error?.message).toMatch(
-    /ENOENT: no such file or directory, copyfile 'simple\.doesNotExist\.fasta(\.fai)?'/,
-  )
+  expect(error?.message).toBe('Error: Missing simple.doesNotExist.fasta')
 })
 
 test('fails if using invalid inline JSON', async () => {
@@ -206,7 +201,7 @@ test('generates a missing .fai into the install dir when copying', async () => {
   })
 })
 
-test('generates a missing .fai beside the FASTA with --load inPlace', async () => {
+test('--load inPlace leaves a missing .fai alone', async () => {
   await runInTmpDir(async ctx => {
     await copyFile(dataDir('simple.fasta'), ctxDir(ctx, 'simple.fa'))
     const { error } = await runCommand([
@@ -216,13 +211,14 @@ test('generates a missing .fai beside the FASTA with --load inPlace', async () =
       'inPlace',
     ])
     expect(error).toBe(undefined)
-    expect(fs.readFileSync(ctxDir(ctx, 'simple.fa.fai'), 'utf8')).toBe(
-      fs.readFileSync(dataDir('simple.fasta.fai'), 'utf8'),
+    expect(fs.existsSync(ctxDir(ctx, 'simple.fa.fai'))).toBe(false)
+    expect(readConf(ctx).assemblies[0].sequence.adapter.faiLocation.uri).toBe(
+      'simple.fa.fai',
     )
   })
 })
 
-test('a bgzip FASTA missing its .gzi names samtools faidx', async () => {
+test('a bgzip FASTA missing its .gzi fails naming samtools faidx', async () => {
   await runInTmpDir(async ctx => {
     await copyFile(dataDir('simple.fasta.gz'), ctxDir(ctx, 'simple.fa.gz'))
     await copyFile(
@@ -238,7 +234,7 @@ test('a bgzip FASTA missing its .gzi names samtools faidx', async () => {
       'jb2',
     ])
     expect(error?.message).toBe(
-      'Error: Missing simple.fa.gz.gzi: run "samtools faidx simple.fa.gz" to write the .fai and .gzi',
+      'Error: Missing simple.fa.gz.gzi (samtools faidx writes it)',
     )
     expect(fs.existsSync(ctxDir(ctx, 'jb2/config.json'))).toBe(false)
   })

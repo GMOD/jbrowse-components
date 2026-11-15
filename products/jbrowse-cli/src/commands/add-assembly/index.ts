@@ -20,7 +20,7 @@ export async function run(args?: string[]) {
     type: {
       type: 'string',
       short: 't',
-      description: `type of sequence, by default inferred from sequence file\n\nindexedFasta - A FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation, and a local FASTA with no .fai gets one generated\n\nbgzipFasta - A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation\n\ntwoBit - A twoBit (e.g. .2bit) file\n\nchromSizes - A chromosome sizes (e.g. .chrom.sizes) file\n\ncustom - Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
+      description: `type of sequence, by default inferred from sequence file\n\nindexedFasta - A FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation, and copying, symlinking or moving a FASTA with no .fai generates one\n\nbgzipFasta - A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation\n\ntwoBit - A twoBit (e.g. .2bit) file\n\nchromSizes - A chromosome sizes (e.g. .chrom.sizes) file\n\ncustom - Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
       choices: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
     },
     name: {
