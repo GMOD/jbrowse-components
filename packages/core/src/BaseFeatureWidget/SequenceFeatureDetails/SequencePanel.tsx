@@ -10,39 +10,19 @@ import type { SequencePanelProps } from './types.ts'
 // raw inline styles (not classes) so an html copy carries styling into external
 // documents like Word; the explicit black-on-white also keeps the readout
 // legible under a dark theme (coordinate labels and introns are uncolored)
-const baseSeqStyle = {
+const rowsStyle = {
   fontFamily: 'monospace',
   color: 'black',
   background: 'white',
   fontSize: 11,
 } as const
 
-const WordWrap = observer(function WordWrap({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return <pre style={baseSeqStyle}>{children}</pre>
-})
-
-const NoWordWrap = observer(function NoWordWrap({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <div
-      style={{
-        ...baseSeqStyle,
-        maxWidth: 600,
-        whiteSpace: 'normal',
-        wordBreak: 'break-all',
-      }}
-    >
-      {children}
-    </div>
-  )
-})
+const wrappedStyle = {
+  ...rowsStyle,
+  maxWidth: 600,
+  whiteSpace: 'normal',
+  wordBreak: 'break-all',
+} as const
 
 const SequencePanel = observer(function SequencePanel({
   sequence,
@@ -56,7 +36,6 @@ const SequencePanel = observer(function SequencePanel({
   ref,
 }: SequencePanelProps) {
   const { showCoordinates } = model
-  const Container = showCoordinates ? WordWrap : NoWordWrap
   // clear the LGV crosshair if the panel unmounts mid-hover (e.g. the sequence
   // is hidden) so it doesn't linger
   useEffect(
@@ -74,7 +53,7 @@ const SequencePanel = observer(function SequencePanel({
         hoverTarget?.setSequenceHoverPosition(undefined)
       }}
     >
-      <Container>
+      <pre style={showCoordinates ? rowsStyle : wrappedStyle}>
         <SequenceName
           model={model}
           mode={mode}
@@ -97,7 +76,7 @@ const SequencePanel = observer(function SequencePanel({
             })
           }}
         />
-      </Container>
+      </pre>
     </div>
   )
 })

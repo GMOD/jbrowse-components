@@ -299,6 +299,23 @@ test('the base-pair settings are whole and never negative', () => {
   expect(SequenceFeatureDetailsF().create().upDownBp).toBe(0)
 })
 
+test('toggling coordinates restyles the readout in place', () => {
+  const model = SequenceFeatureDetailsF().create()
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      sequence={{ seq: 'ACGT'.repeat(30) }}
+      feature={{ ...f, type: 'region', subfeatures: [] }}
+    />,
+  )
+  const before = getByTestId('sequence_panel').firstElementChild
+  act(() => {
+    model.setShowCoordinates('relative')
+  })
+  expect(getByTestId('sequence_panel').firstElementChild).toBe(before)
+})
+
 test('single exon cDNA should not have duplicate sequences', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()
