@@ -24,11 +24,6 @@ category, judged per record, and leaves ADR-229's `svSignal` the SV-evidence
 test. A `mateRefName` value is listed in the adapter's spelling beside its own
 where the regions are renamed (`adapterSpelledFilter`).
 
-Amended 2026-11-15: a read with no mate answers `mateRefName` with its first
-placed (MAPQ not 0) split partner's reference on another reference
-(`mateRefNameOf`), so the field picks a long-read fusion's molecules; a mate's
-reference still wins.
-
 ## Context
 
 - **The category filters thinned coverage.** `selectChains` ran ahead of the

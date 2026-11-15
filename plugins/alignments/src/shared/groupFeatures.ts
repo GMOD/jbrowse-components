@@ -44,7 +44,6 @@ import {
   chainIsSplit,
   isSplitAlignment,
   isSvEvidence,
-  mateRefNameOf,
 } from './splitAlignment.ts'
 import { SV_KIND_PRECEDENCE } from './splitReadJunctions.ts'
 import { svKindOf } from './svKind.ts'
@@ -53,6 +52,7 @@ import {
   firstOfPairStrand,
   getFlags,
   getMappingQuality,
+  getMateRefName,
   getOrCreate,
   getStrand,
 } from './util.ts'
@@ -277,10 +277,9 @@ function svKindKeys(
   return chainKeys.map(key => SV_KIND_GROUPS[best.get(key) ?? 'none'])
 }
 
-// A read's mate reference, an unpaired read's split partner's on another
-// reference, or a synteny block's query contig.
+// A read's mate reference, or a synteny block's query contig.
 function mateRefNameKey(feature: Feature): GroupKey {
-  const name = mateRefNameOf(feature)
+  const name = getMateRefName(feature)
   return name
     ? { key: name, label: name }
     : { key: '', label: 'No mate reference' }

@@ -89,19 +89,6 @@ describe('mateRefName extraction', () => {
     expect(extract([bamRead('')], 'mateRefName').tagColorValues).toEqual([''])
   })
 
-  test("an unpaired split read reports its partner's reference", () => {
-    const longRead = new SimpleFeature({
-      uniqueId: 'long',
-      refName: 'ctgA',
-      start: 100,
-      end: 200,
-      strand: 1,
-      CIGAR: '100M50S',
-      tags: { SA: 'ctgB,5000,+,100S50M,60,0;' },
-    })
-    expect(extract([longRead], 'mateRefName').tagColorValues).toEqual(['ctgB'])
-  })
-
   // The channel is shared with tag coloring, so it must stay empty for every
   // other field — a stray value would bake a color over the shader's own.
   test('the channel is empty under other color fields', () => {

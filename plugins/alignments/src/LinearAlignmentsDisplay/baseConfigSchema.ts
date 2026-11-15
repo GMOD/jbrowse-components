@@ -79,9 +79,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * `firstOfPairStrand` (`1` or `-1`), `mateRefName` and `mateAssembly`
      * pick drawn reads too, each read by the section a facet by read files it
      * under (`svKind` by its whole chain's), with `equal` or `oneOf` of their
-     * values, or `valid: false` for the reads with none; a read with no mate
-     * answers `mateRefName` with its split partner's reference when that is
-     * another reference; a read's strand is
+     * values, or `valid: false` for the reads with none; a read's strand is
      * `flags.REVERSE`. A facet on a category gives its own coverage.
      * `junction.reads`,
      * `junction.canonical` (a split junction reads no motif and counts as
@@ -103,9 +101,8 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * #slot facet
      * In-track stacked grouping, one labelled section per value: a read
      * dimension (`strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`,
-     * `split`, `spliced`, `svKind`, `mapq`, `mateRefName`, `mateAssembly`;
-     * a read with no mate answers `mateRefName` with its split partner's
-     * reference when that is another reference), a tag
+     * `split`, `spliced`, `svKind`, `mapq`, `mateRefName`, `mateAssembly`), a
+     * tag
      * (`tags.HP`), or any other field. `{ field: "tags.HP", sort: ["2",
      * "1"] }` stacks the listed values first.
      */

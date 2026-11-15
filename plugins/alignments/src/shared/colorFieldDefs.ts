@@ -126,11 +126,9 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
   // — the color is baked per-read on the CPU either way.
   //
   // In the 'pairedEnd' group because on a BAM the name it paints is the MATE's
-  // reference (`next_ref`), the standard translocation view: reads whose mate
-  // landed on another chromosome each take that chromosome's color. A read
-  // with no mate, as a long read has none, takes its split partner's
-  // reference instead (`mateRefNameOf`), so a fusion's long reads paint the
-  // same way.
+  // reference (`getMateRefName` reads `next_ref`), which makes it the standard
+  // translocation view: reads whose mate landed on another chromosome each take
+  // that chromosome's color.
   //
   // LGVSyntenyDisplay spells its own label for it ("Query"): a PAF block
   // has no mate, and on a BAM "query name" means QNAME, i.e. the read name —
@@ -138,11 +136,7 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
   mateRefName: {
     kind: 'mateRefName',
     bodyFill: 'tag',
-    menu: {
-      kind: 'radio',
-      label: FACET_LABELS.mateRefName,
-      group: 'pairedEnd',
-    },
+    menu: { kind: 'radio', label: 'Mate chromosome', group: 'pairedEnd' },
     workerExtracts: true,
   },
   // bisulfite reuses the modifications shader path, read off the reference
