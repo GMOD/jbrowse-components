@@ -18,30 +18,37 @@ Assemblies
     name                    accession          source
     canFam4                 GCA_011100685.1    UU_Cfam_GSD_1.0, German
                                                Shepherd Mischka (UCSC canFam4)
-    Alfie_pri               GCA_062019780.1    } ROS_Cfam_2.0, Alfie (NHGRI,
-    Alfie_alt               GCA_062019781.1    } 2026), both haplotypes
+    Alfie_pri               GCA_062019780.1    } ROS_Cfam_2.0, Alfie, a
+    Alfie_alt               GCA_062019781.1    } Labrador retriever (NHGRI,
+                                               } 2026), both haplotypes
     Sonar_hap1              GCA_053572145.1    } University of Michigan
-    Sonar_hap2              GCA_053572105.1    } haplotype pairs (2025); four
-    Melody_hap1             GCA_053569395.1    } of the public haplotypes the
-    Melody_hap2             GCA_053572085.1    } Panagram preprint analysed
+    Sonar_hap2              GCA_053572105.1    } haplotype pairs (2025) of
+    Melody_hap1             GCA_053569395.1    } Sonar, an Australian Cattle
+    Melody_hap2             GCA_053572085.1    } Dog, and Melody, a New Guinea
+                                               } Singing Dog; four of the
+                                               } public haplotypes the
+                                               } Panagram preprint analysed
     Beagle_D2023-6-2        GCA_044048985.1    Beagle
     Whippet_Lino            GCA_043643935.1    Whippet
-    ShibaInu_2026           GCA_059750645.1    Shiba Inu
-    Husky_Sorin             GCA_056151415.1    Husky
+    ShibaInu_2026           GCA_059750645.1    Japanese Shiba Inu
+    Husky_Sorin             GCA_056151415.1    Siberian Husky
     MixedBreed_N25-0066     GCA_057128235.1    mixed breed
     Basenji_China           GCA_013276365.2    Basenji
     Cairn_CA611             GCA_031010295.1    Cairn terrier, the panel's one
                                                dog with furnishings
     Bernese_BD              GCA_031010765.1    } Bernese mountain dogs
     Bernese_OD              GCA_031010635.1    }
-    Labrador_UMich          GCA_031165255.1    Labrador retriever
+    Labrador_UMich          GCA_031165255.1    Yella_v2: a Labrador retriever
+                                               to NCBI, a Golden Retriever to
+                                               Schall et al. 2023 (G3)
     Boxer_Tasha_canFam6     GCA_000002285.4    Boxer Tasha (UCSC canFam6)
     Labrador_ROS1           GCA_014441545.1    ROS_Cfam_1.0, Labrador retriever
     MexicanWolf_hap1        GCA_048164855.1    } Mexican wolf (VGP), both
     MexicanWolf_hap2        GCA_048164845.1    } haplotypes
-    Wolf_GW_hap1            GCA_059341535.1    } grey wolf GW, both haplotypes
-    Wolf_GW_hap2            GCA_059341495.1    }
-    GreenlandWolf_mCanLor1  GCA_905319855.2    Greenland wolf
+    Wolf_GW_hap1            GCA_059341535.1    } GW.1 and GW.2, a phased
+    Wolf_GW_hap2            GCA_059341495.1    } re-assembly of the Greenland
+                                               } wolf below (same BioSample)
+    GreenlandWolf_mCanLor1  GCA_905319855.2    Greenland wolf, mCanLor1.2
     Dingo_Sandy             GCA_003254725.2    } dingoes
     Dingo_Cooinda           GCA_012295265.2    }
 
@@ -52,6 +59,10 @@ Assemblies
   scaffolds were left out. Three haplotypes have no X, and were kept without
   it: Alfie_alt, MexicanWolf_hap2 and Wolf_GW_hap2. sources.sha256.tsv beside
   this file holds the SHA-256 of every genomic.fna as NCBI served it.
+
+  Wolf_GW_hap1, Wolf_GW_hap2 and GreenlandWolf_mCanLor1 are one male wolf
+  (BioSample SAMEA7532739): both are in the graph, but the structural-state
+  sidecar calls only the phased pair, so the wolf is counted once.
 
   Panagram's own dogs (Jenike et al. 2026, bioRxiv
   10.64898/2026.10.21.760756) are not on NCBI yet and wait for their
@@ -120,7 +131,8 @@ Caveats
     README says how.
   - The panel is chosen for assembly quality, not as a population sample: a
     share of the panel is not a breed or population frequency, and a
-    diploid's two haplotypes count twice.
+    diploid's two haplotypes count twice. Melody, a New Guinea Singing Dog,
+    and the two dingoes are not breed dogs.
   - canFam4 is a German Shepherd, so where it carries a derived allele, the
     rest of the panel appears as the change.
   - chrY, chrM and unplaced scaffolds are outside the graph.
