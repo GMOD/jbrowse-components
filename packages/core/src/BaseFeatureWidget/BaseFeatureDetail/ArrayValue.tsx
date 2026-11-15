@@ -11,7 +11,7 @@ import FieldActionsButton, {
 } from './FieldActionsButton.tsx'
 import FieldName from './FieldName.tsx'
 
-import type { Descriptors, FeatureFormatter, FieldActions } from '../types.tsx'
+import type { FeatureFormatter, FieldActions } from '../types.tsx'
 
 const MAX_ARRAY_LENGTH = 100
 
@@ -108,7 +108,6 @@ const ArrayValue = observer(function ArrayValue({
   name,
   value,
   description,
-  descriptions,
   omit,
   formatter,
   fieldActions,
@@ -116,7 +115,6 @@ const ArrayValue = observer(function ArrayValue({
   width,
 }: {
   description?: React.ReactNode
-  descriptions?: Descriptors
   omit?: string[]
   name: string
   value: unknown[]
@@ -135,9 +133,7 @@ const ArrayValue = observer(function ArrayValue({
           key={i}
           attributes={val}
           omit={omit}
-          descriptions={descriptions}
           formatter={formatter}
-          fieldActions={fieldActions}
           prefix={objectArrayPrefix(prefix, name, value.length, i)}
           labelWidth={width}
         />

@@ -69,20 +69,6 @@ describe('Attributes', () => {
     expect(new Set(Object.values(widths)).size).toBe(1)
   })
 
-  test("an object array's fields get their descriptions and actions", () => {
-    const fieldActions = jest.fn(() => [{ label: 'act', onClick: () => {} }])
-    const { getByText, getAllByRole } = renderWithTheme(
-      <Attributes
-        attributes={{ list: [{ b: 'y' }] }}
-        descriptions={{ list: { b: 'what b is' } }}
-        fieldActions={fieldActions}
-      />,
-    )
-    expect(getByText('list.b').getAttribute('aria-label')).toBe('what b is')
-    expect(getAllByRole('button')).toHaveLength(1)
-    expect(fieldActions).toHaveBeenCalledWith(['list', 'b'], 'y')
-  })
-
   // the padding around a label is added once, not once per level: a recursive
   // measurement that returned its own padded result compounded it with depth
   test('nesting depth does not pad the column', () => {

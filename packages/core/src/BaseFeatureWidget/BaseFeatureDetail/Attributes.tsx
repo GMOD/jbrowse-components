@@ -305,7 +305,6 @@ const Attributes = observer(function Attributes(props: {
                 name={key}
                 value={classified.value}
                 omit={omit}
-                descriptions={descriptions}
                 formatter={formatter}
                 fieldActions={fieldActions}
                 description={description}
