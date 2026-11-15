@@ -3,8 +3,6 @@
 // explains what the (otherwise non-self-describing) BAM/CRAM data holds. See
 // the SAM spec: https://samtools.github.io/hts-specs/SAMv1.pdf
 export const fieldDescriptions = {
-  flags:
-    'FLAG: bitwise flags describing the read (paired, reverse strand, secondary, duplicate, etc.)',
   score:
     'MAPQ: mapping quality, phred-scaled probability that the mapping position is wrong',
   CIGAR:
@@ -13,8 +11,6 @@ export const fieldDescriptions = {
   qual: 'QUAL: phred-scaled per-base quality scores',
   template_length:
     'TLEN: signed observed template length (insert size) of a properly paired read',
-  next_ref: 'RNEXT: reference name of the mate / next segment',
-  next_pos: 'PNEXT: position of the mate / next segment',
   next_segment_position:
     'Location of the mate / next segment (click to navigate)',
   pair_orientation: 'Relative orientation of the read pair, e.g. F1R2',

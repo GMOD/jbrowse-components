@@ -22,7 +22,11 @@ const AlignmentFlags = observer(function AlignmentFlags({
   const { classes } = useStyles()
   return (
     <BaseCard title="Flags">
-      <SimpleField name="Flag" value={flags} />
+      <SimpleField
+        name="Flag"
+        value={flags}
+        description="FLAG: bitwise flags describing the read (paired, reverse strand, secondary, duplicate, etc.)"
+      />
       <FormGroup>
         {samFlagLabels.map((name, idx) => (
           <Tooltip key={name} title={samFlagDescriptions[idx]} placement="left">

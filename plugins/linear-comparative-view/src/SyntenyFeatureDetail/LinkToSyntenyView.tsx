@@ -1,10 +1,7 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { hydrateTrackConfig } from '@jbrowse/core/configuration'
 import { ActionLink } from '@jbrowse/core/ui'
-import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
-import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
-import { allSessionTracks } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { allAssembliesLaunchItems } from '../LaunchSyntenyView/allAssembliesLaunch.ts'
@@ -19,38 +16,13 @@ import { getMate } from '../syntenyMate.ts'
 import { centerStackOnFeature } from './centerOnFeature.ts'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AssemblyHost,
   Feature,
   SimpleFeatureSerialized,
-  TrackCatalog,
 } from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-// The launched view needs the track back, so its id has to resolve to a track
-// config we can read `assemblyNames` off — the same gate the LGV synteny
-// right-click menu applies. Without it, a one-vs-all mate that is only a PanSN
-// sample label (no declared assembly) opens a synteny view that can resolve
-// nothing and lands on the import form with an error.
-//
-// allSessionTracks rather than session.tracks, which holds only the session's
-// own: a synteny track arriving from a connection is the case this link used to
-// drop, hiding the launch on exactly the datasets that are loaded by reference.
-//
-// A node, because mate discovery reads the adapter's tier threshold, which a
-// frozen entry omits at its default.
-function findTrack(
-  pluginManager: PluginManager,
-  session: TrackCatalog,
-  trackId: string | undefined,
-) {
-  const entry = allSessionTracks(session).find(t => t.trackId === trackId)
-  return isStateTreeNode(entry)
-    ? entry
-    : entry && hydrateTrackConfig(pluginManager, entry)
-}
 
 function isLinearGenomeView(view: {
   type: string
@@ -109,9 +81,9 @@ export function launchAnchor(
   if (!showsBothGenomes(view)) {
     return undefined
   }
-  const own = feature.get('assemblyName') as string | undefined
+  const own = feature.get('assemblyName')
   const assembly =
-    own === undefined ? undefined : host.assemblyManager.get(own)?.name
+    typeof own === 'string' ? host.assemblyManager.get(own)?.name : undefined
   const mate = getMate(feature)
   return {
     viewId: view.id,
@@ -131,10 +103,9 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
   model: SyntenyFeatureDetailModel
   feat: SimpleFeatureSerialized
 }) {
-  const { view, level, trackId } = model
+  const { view, level, trackConfiguration: track } = model
   const session = getSession(model)
   const row = anchorRow(model)
-  const track = findTrack(getEnv(model).pluginManager, session, trackId)
   const feature = new SimpleFeature(feat)
   const anchor = launchAnchor(model, session, feature)
   const mate = anchor
