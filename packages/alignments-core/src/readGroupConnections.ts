@@ -330,7 +330,7 @@ export function primaryOf<E extends MinEntry>(segs: E[]) {
 // actually drawn; these two do not, because they describe the fragment rather
 // than the segment, and a supplementary's own record answers them differently.
 //
-// `pair_orientation` is derived (in the adapters' `pairOrientation`) from the
+// `pair_orientation` is derived (by `@gmod/bam` and `@gmod/cram`) from the
 // record's own reverse bit, position and length, so a supplementary that
 // flipped strand at the split junction — or that simply sits on the other side
 // of its mate — computes a different orientation from its primary, while the

@@ -83,7 +83,8 @@ linked-reads Canvas2D/SVG painter once kept a hand-spelled
 
 `mateLinkArc` sources orientation and TLEN from a primary endpoint
 (`pairFieldEntry`), because in chain mode `pair_orientation` comes from the
-record's own reverse bit (`pairOrientation`, `shared/util.ts`) and a
+record's own reverse bit (`@gmod/bam`'s `pair_orientation` and
+`pairOrientation`, `@gmod/cram`'s `getPairOrientation`) and a
 strand-flipped supplementary computes a
 different one (`attachChainFields`). `readInsertSizes` is deliberately **not**
 corrected that way: an unset TLEN is unknown, and the orientation fields mark the

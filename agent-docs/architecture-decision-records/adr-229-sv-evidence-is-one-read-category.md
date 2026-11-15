@@ -21,11 +21,11 @@ carrying SA (volvox long-read fixtures, in jest, under load).
 Amended 2026-11-15: "a pair not facing FR" means the leftmost 5' end leads.
 For opposite-strand mates on one reference whose starts are closer than the
 record's `seq_length`, the forward mate leads; otherwise leftmost POS, then
-read1. The in-repo getters own the rule (`pairOrientation`,
-`shared/util.ts`, called by the BAM, CRAM and SAM features) rather than
-deferring to `@gmod/bam` and `@gmod/cram`, whose leftmost-POS rule called a
-dovetailed proper pair, and an equal-start one whose read1 is the reverse mate,
-RL and filed it as duplication-type evidence. See the pair-orientation
+read1. The rule lives in `@gmod/bam` from 10.3.0 (`pair_orientation`, and
+the exported `pairOrientation` the SAM feature calls) and `@gmod/cram` from
+14.5.0 (`getPairOrientation`). Their earlier versions let the leftmost POS
+lead, which called a dovetailed proper pair, and an equal-start one whose read1
+is the reverse mate, RL and filed it as duplication-type evidence. See the pair-orientation
 consequences below.
 
 Amends [ADR-226](adr-226-reads-are-categorized-once.md): its `svSignal` sort
@@ -164,8 +164,8 @@ lifted split reads and SV-size deletions, and its consequence about
     where they disagreed before.
   - SEQ `*` passes a `seq_length` of 0, so such a record answers as before.
   - A BAM or CRAM record with a mapped mate on its reference and no mate
-    position takes read1 as the leader, as SAM did; the libraries compared the
-    missing position as -1.
+    position takes read1 as the leader, as SAM did; earlier library versions
+    compared the missing position as -1.
   - An outward-facing pair whose mates overlap has a dovetail's coordinates
     and reads LR. A tandem duplication a little shorter than the insert size
     makes such pairs; its junction-crossing reads still split. From the
