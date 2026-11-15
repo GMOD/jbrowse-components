@@ -102,6 +102,49 @@ test('oneOf and equal over a dictionary-coded lane', () => {
   ])
 })
 
+describe('a set lane', () => {
+  const refNames: PredicateLane = {
+    kind: 'sets',
+    ids: Uint32Array.from([0, 1, 2, 0, 3]),
+    sets: [['chr9', 'chr19', 'chr22'], ['chr9'], ['chr9', 'chr19'], []],
+  }
+  const admittedBy = (predicates: FieldPredicate[]) =>
+    admitted(predicates, { refNames }, 5)
+
+  test('equal holds when any member equals it', () => {
+    expect(admittedBy([{ field: 'refNames', equal: 'chr22' }])).toEqual([0, 3])
+    expect(admittedBy([{ field: 'refNames', equal: 'chr9' }])).toEqual([
+      0, 1, 2, 3,
+    ])
+  })
+
+  test('oneOf holds when any member is listed', () => {
+    expect(
+      admittedBy([{ field: 'refNames', oneOf: ['chr19', 'chr7'] }]),
+    ).toEqual([0, 2, 3])
+  })
+
+  test('two predicates each need a member of their own', () => {
+    expect(
+      admittedBy([
+        { field: 'refNames', equal: 'chr9' },
+        { field: 'refNames', equal: 'chr22' },
+      ]),
+    ).toEqual([0, 3])
+  })
+
+  test('a set with no passing member fails', () => {
+    expect(admittedBy([{ field: 'refNames', equal: 'chr7' }])).toEqual([])
+  })
+
+  test('an empty set is the missing value', () => {
+    expect(admittedBy([{ field: 'refNames', valid: false }])).toEqual([4])
+    expect(admittedBy([{ field: 'refNames', valid: true }])).toEqual([
+      0, 1, 2, 3,
+    ])
+  })
+})
+
 test('an object lane compares in the type of the constant', () => {
   const records = [{ score: '12' }, { score: '3' }, {}, { score: 40 }]
   const score: PredicateLane = {

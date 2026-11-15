@@ -34,6 +34,10 @@ built; the feature display's two label thresholds and the mark display's
 its lane names `labels.lanes.placement`, and its strand split the only layout;
 view launch keys keep their pixel words.
 
+Amended 2026-11-15: a predicate on a set-valued field holds when any member
+passes it, and an empty set is the missing value (a `sets` lane), so `equal`
+reads "has", and two entries on the field each need a member of their own.
+
 Colin's steer, on a review of the linear synteny view's settings: aim for
 ideal grammar-of-graphics terms rather than house ones ("things like
 'minLength' are exactly the types of things that concern me"), elegance over

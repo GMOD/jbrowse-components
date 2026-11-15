@@ -17,6 +17,9 @@ export type { FieldPredicate } from './fieldPredicateType.ts'
  *   value (a dictionary-coded string lane)
  * - `get`: a reader over record objects, `undefined` or `null` for a missing
  *   value
+ * - `sets`: one index per record into `sets`, for a field holding several
+ *   values: a predicate holds when any member passes it, and an empty or out
+ *   of range set is a missing value
  * - `bits`: a boolean that is one bit of a word, such as a SAM flag. Every
  *   `equal` test on bits of one `word` reader fuses into one mask compare,
  *   so a flag filter costs one read and two ANDs however many flags it names
@@ -24,6 +27,11 @@ export type { FieldPredicate } from './fieldPredicateType.ts'
 export type PredicateLane<T = number> =
   | { kind: 'number'; values: ArrayLike<number> }
   | { kind: 'labels'; ids: ArrayLike<number>; labels: readonly string[] }
+  | {
+      kind: 'sets'
+      ids: ArrayLike<number>
+      sets: readonly (readonly string[])[]
+    }
   | { kind: 'get'; get: (item: T) => unknown }
   | { kind: 'bits'; word: (item: T) => number; mask: number }
 
@@ -189,13 +197,33 @@ function labelsTest(
 ): Test {
   // every per-record test becomes one lookup: which labels pass, decided once
   const test = valueTest(p)
-  const passes = labels.map(test)
-  const absent = test(undefined)
-  const count = labels.length
+  return lookupTest(ids, labels.map(test), test(undefined))
+}
+
+// Each record's verdict as its id's, decided once per id
+function lookupTest(
+  ids: ArrayLike<number>,
+  passes: readonly boolean[],
+  absent: boolean,
+): Test {
+  const count = passes.length
   return index => {
     const id = ids[index]!
     return id >= 0 && id < count ? passes[id]! : absent
   }
+}
+
+function setsTest(
+  p: FieldPredicate,
+  ids: ArrayLike<number>,
+  sets: readonly (readonly string[])[],
+): Test {
+  const test = valueTest(p)
+  const absent = test(undefined)
+  const passes = sets.map(set =>
+    set.length === 0 ? absent : set.some(member => test(member)),
+  )
+  return lookupTest(ids, passes, absent)
 }
 
 function getTest<T>(p: FieldPredicate, get: (item: T) => unknown): Test<T> {
@@ -292,9 +320,11 @@ function compileOne<T>(
     ? (numberTest(p, lane.values) as Test<unknown>)
     : lane.kind === 'labels'
       ? (labelsTest(p, lane.ids, lane.labels) as Test<unknown>)
-      : lane.kind === 'bits'
-        ? getTest(p, bitGet(lane.word, lane.mask))
-        : getTest(p, lane.get)
+      : lane.kind === 'sets'
+        ? (setsTest(p, lane.ids, lane.sets) as Test<unknown>)
+        : lane.kind === 'bits'
+          ? getTest(p, bitGet(lane.word, lane.mask))
+          : getTest(p, lane.get)
 }
 
 /**

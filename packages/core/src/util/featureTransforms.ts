@@ -194,9 +194,11 @@ function laneHoldsValue(lane: PredicateLane, length: number) {
         ? !Number.isNaN(lane.values[i])
         : lane.kind === 'labels'
           ? !isMissing(lane.labels[lane.ids[i]!])
-          : lane.kind === 'get'
-            ? !isMissing(lane.get(i))
-            : true
+          : lane.kind === 'sets'
+            ? (lane.sets[lane.ids[i]!]?.length ?? 0) > 0
+            : lane.kind === 'get'
+              ? !isMissing(lane.get(i))
+              : true
     ) {
       return true
     }
