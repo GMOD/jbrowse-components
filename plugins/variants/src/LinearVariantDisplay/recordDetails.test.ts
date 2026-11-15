@@ -1,11 +1,11 @@
+import { SimpleFeature } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 
 import { enrichFeatureFromClick } from './components/enrichFeatureFromClick.ts'
 import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
 
 // The cell payload carries a record's span and genotype codes, no INFO, so a
-// click asks the adapter for the record as LinearBasicDisplay's
-// `fetchFullFeature` does, over the record's first base.
+// click asks the adapter for the record over its first base.
 function adapterRecord(id: string) {
   return {
     uniqueId: id,
@@ -17,12 +17,18 @@ function adapterRecord(id: string) {
   }
 }
 
-function stubDetails(mockRpcCall: jest.Mock, answer: (id: string) => unknown) {
-  mockRpcCall.mockImplementation(
-    (_sid: string, method: string, args: { featureId: string }) =>
-      method === 'GetBasicFeatureDetails'
-        ? Promise.resolve({ feature: answer(args.featureId) })
-        : new Promise(() => {}),
+function asAnswer(record: ReturnType<typeof adapterRecord> | undefined) {
+  return record ? [new SimpleFeature(record)] : []
+}
+
+function stubDetails(
+  mockRpcCall: jest.Mock,
+  record?: ReturnType<typeof adapterRecord>,
+) {
+  mockRpcCall.mockImplementation((_sid: string, method: string) =>
+    method === 'CoreGetFeatures'
+      ? Promise.resolve(asAnswer(record))
+      : new Promise(() => {}),
   )
 }
 
@@ -39,28 +45,27 @@ function recordClick(
 
 test('a record click reads its INFO over its first base, not its span', async () => {
   const { display, mockRpcCall } = recordsDisplayAt(KIT, 51)
-  stubDetails(mockRpcCall, adapterRecord)
+  stubDetails(mockRpcCall, adapterRecord('>7494>7499'))
   const full = await display.fetchFullRecord(recordClick(display, '>7494>7499'))
   expect(full.get('INFO')).toEqual({ CLNSIG: ['Pathogenic'], AF: [0.012] })
   const [, , args] = mockRpcCall.mock.calls.find(
-    ([, method]) => method === 'GetBasicFeatureDetails',
+    ([, method]) => method === 'CoreGetFeatures',
   )!
   expect(args).toMatchObject({
-    featureId: '>7494>7499',
-    region: { refName: 'ctgA', start: 19508, end: 19509 },
+    regions: [{ refName: 'ctgA', start: 19508, end: 19509 }],
   })
 })
 
 test('the record keeps every sample, over genotype rows and without', async () => {
   const rows = recordsDisplayAt(KIT, 51)
-  stubDetails(rows.mockRpcCall, adapterRecord)
+  stubDetails(rows.mockRpcCall, adapterRecord('>7494>7499'))
   const overRows = await rows.display.fetchFullRecord(
     recordClick(rows.display, '>7494>7499'),
   )
   expect(overRows.get('samples')).toEqual({ S0: { GT: ['0|1'] } })
 
   const sitesOnly = recordsDisplayAt(KIT, 51, {}, false)
-  stubDetails(sitesOnly.mockRpcCall, adapterRecord)
+  stubDetails(sitesOnly.mockRpcCall, adapterRecord('>7494>7499'))
   const recordsOnly = await sitesOnly.display.fetchFullRecord(
     recordClick(sitesOnly.display, '>7494>7499'),
   )
@@ -69,7 +74,7 @@ test('the record keeps every sample, over genotype rows and without', async () =
 
 test('a genotype cell click keeps its sample card over the full record', async () => {
   const { display, mockRpcCall } = recordsDisplayAt(KIT, 51)
-  stubDetails(mockRpcCall, adapterRecord)
+  stubDetails(mockRpcCall, adapterRecord('>7494>7499'))
   const clicked = enrichFeatureFromClick(
     display.featureById('>7494>7499')!,
     display.featureInfoById('>7494>7499'),
@@ -83,7 +88,7 @@ test('a genotype cell click keeps its sample card over the full record', async (
 
 test('a record the adapter does not find opens as clicked', async () => {
   const { display, mockRpcCall } = recordsDisplayAt(KIT, 51)
-  stubDetails(mockRpcCall, () => undefined)
+  stubDetails(mockRpcCall)
   const clicked = display.featureById('>7494>7499')!
   expect(await display.fetchFullRecord(clicked)).toBe(clicked)
 })
@@ -92,7 +97,7 @@ test('the last click wins: an earlier answer landing later is dropped', async ()
   const { display, mockRpcCall } = recordsDisplayAt(KIT, 51)
   const answers: ((v: unknown) => void)[] = []
   mockRpcCall.mockImplementation((_sid: string, method: string) =>
-    method === 'GetBasicFeatureDetails'
+    method === 'CoreGetFeatures'
       ? new Promise(resolve => {
           answers.push(resolve)
         })
@@ -102,8 +107,8 @@ test('the last click wins: an earlier answer landing later is dropped', async ()
     .fetchFullRecord(recordClick(display, '>7494>7499'))
     .catch((e: unknown) => e)
   const second = display.fetchFullRecord(recordClick(display, '>7495>7496'))
-  answers[1]!({ feature: adapterRecord('>7495>7496') })
-  answers[0]!({ feature: adapterRecord('>7494>7499') })
+  answers[1]!(asAnswer(adapterRecord('>7495>7496')))
+  answers[0]!(asAnswer(adapterRecord('>7494>7499')))
   expect((await second).id()).toBe('>7495>7496')
   expect(isAbortException(await first)).toBe(true)
 })
@@ -114,7 +119,7 @@ test('opening the details leaves a split view launch in flight', async () => {
   const { display, mockRpcCall } = recordsDisplayAt(KIT, 51)
   const answers: ((v: unknown) => void)[] = []
   mockRpcCall.mockImplementation((_sid: string, method: string) =>
-    method === 'GetBasicFeatureDetails'
+    method === 'CoreGetFeatures'
       ? new Promise(resolve => {
           answers.push(resolve)
         })
@@ -124,7 +129,7 @@ test('opening the details leaves a split view launch in flight', async () => {
     .fetchFullRecord(recordClick(display, '>7494>7499'))
     .catch((e: unknown) => e)
   display.selectFeature(recordClick(display, '>7495>7496'))
-  answers[0]!({ feature: adapterRecord('>7494>7499') })
+  answers[0]!(asAnswer(adapterRecord('>7494>7499')))
   const full = await launch
   expect(isAbortException(full)).toBe(false)
   expect(full).toMatchObject({ uniqueId: '>7494>7499' })

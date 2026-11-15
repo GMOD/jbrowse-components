@@ -6,6 +6,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   canonicalizeViewRefName,
+  fetchAdapterRecord,
   getDialogHost,
   getSession,
   SimpleFeature,
@@ -30,7 +31,6 @@ import {
   writeJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
@@ -51,8 +51,6 @@ import {
   FeatureGateMixin,
   FeatureHighlightModel,
   featureHighlightListActions,
-  featureSpanRegion,
-  fetchFeatureDetails,
 } from '@jbrowse/plugin-features/band'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -815,29 +813,6 @@ export function stateModelFactory(
         const fetchMetadata = createAdapterMetadataFetch(self)
         const openDetails = createFeatureDetailsOpener(self)
         const superSetRowColorChoice = self.setRowColorChoice
-        // Queried over the record's first base, which finds it as surely as
-        // its span does without reading a 5 Mb SV's whole span.
-        function adapterRecordOf(feature: Feature, signal?: AbortSignal) {
-          const refName = canonicalizeViewRefName(self, feature.get('refName'))
-          const region = self.view.displayedRegions.find(
-            r => r.refName === refName,
-          )
-          const start = feature.get('start')
-          return region
-            ? fetchFeatureDetails(
-                getSession(self),
-                getRpcSessionId(self),
-                self.adapterConfig,
-                feature.id(),
-                featureSpanRegion(
-                  region,
-                  start,
-                  Math.min(feature.get('end'), start + 1),
-                ),
-                { signal },
-              )
-            : Promise.resolve(undefined)
-        }
         // a click in flight is aborted by the next one for the same
         // consumer, so the last click wins; each consumer holds its own, so
         // the details widget and the split view never abort each other
@@ -847,7 +822,9 @@ export function stateModelFactory(
             clickInFlight?.abort()
             const click = new AbortController()
             clickInFlight = click
-            const full = await adapterRecordOf(feature, click.signal)
+            const full = await fetchAdapterRecord(self, feature, {
+              signal: click.signal,
+            })
             checkAbortSignal(click.signal)
             return full ? withClickedSample(full, feature) : feature
           }
@@ -903,7 +880,7 @@ export function stateModelFactory(
             opts: { signal?: AbortSignal } = {},
           ) {
             const feature = self.featureById(featureId)
-            return feature ? adapterRecordOf(feature, opts.signal) : undefined
+            return feature ? fetchAdapterRecord(self, feature, opts) : undefined
           },
           /**
            * #action

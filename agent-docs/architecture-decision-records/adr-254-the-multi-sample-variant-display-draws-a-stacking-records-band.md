@@ -114,7 +114,7 @@ case with no rows; over rows both stay provisional.
   pan between fetches. Labelling every record was the band's whole cost: at
   a 10 kb ClinVar window the fit ladder spent 260 ms; measuring buffered
   records with no rows turned a pan off 99k of them into 64 s.
-- **A click reads the record off the adapter** (`GetBasicFeatureDetails`),
+- **A click reads the record off the adapter** (`fetchAdapterRecord`),
   over its first base, last click winning, so the widget shows its INFO, for
   a record and for a genotype cell; its `samples` only with no rows.
 - **No rows gates on density as `LinearVariantDisplay` does**: past

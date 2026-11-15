@@ -463,9 +463,9 @@ a `recordsOnly` choice in the model belongs there.
 - **No second fetch to draw.** The payload already carries every record, so
   `records.show` and `records.height` are render-tier settings. **A click does
   fetch**: the payload has no INFO, so `fetchFullRecord` reads the record through
-  `GetBasicFeatureDetails`, as LinearBasicDisplay's `fetchFullFeature` does, over
-  its first base (a 5 Mb SV's span would be a 5 Mb read), the next click aborting
-  one in flight. It keeps the record's `samples`, which the widget's sample grid
+  core's `fetchAdapterRecord`, the route a breakpoint split view's call click
+  takes from either display, over its first base (a 5 Mb SV's span would be a
+  5 Mb read), the next click aborting one in flight. It keeps the record's `samples`, which the widget's sample grid
   shows, and a genotype cell's sample card (`withClickedSample`); the click's own
   record opens where the adapter finds none, INFO-less, so a breakpoint split
   view launched from it stops its junction walk there. Dropping the samples where rows draw

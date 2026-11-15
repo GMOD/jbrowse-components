@@ -4,6 +4,7 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   assembleLocString,
   bezierConnectorPath,
+  fetchAdapterRecord,
   getSession,
   getStrokeProps,
   openFeatureWidget,
@@ -41,9 +42,9 @@ const VARIANT_FEATURE_WIDGET = {
   id: 'variantFeature',
 }
 
-// Opened from the row's display, whichever display draws the row, so the
-// widget gets the view, track and header descriptions and the session its
-// selection.
+// Opened from the row's display, whichever display draws the row, on the
+// record as the adapter holds it, so the widget gets the view, track, header
+// descriptions and the record's samples, and the session its selection.
 export function variantWidgetOpener(
   display: OverlayDisplay | undefined,
   feature: Feature,
@@ -55,8 +56,9 @@ export function variantWidgetOpener(
       void withFeatureDetails(
         display,
         async () => {
+          const record = await fetchAdapterRecord(display, feature)
           descriptions = await fetchMetadata()
-          return feature
+          return record ?? feature
         },
         feat => {
           openFeatureWidget(display, feat.toJSON(), {

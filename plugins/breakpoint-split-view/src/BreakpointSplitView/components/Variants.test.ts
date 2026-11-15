@@ -136,6 +136,19 @@ test('a connector to a row above leaves from the glyph top', () => {
 
 const descriptions = { INFO: { END: { Description: 'End position' } } }
 
+// the record as the adapter holds it, which the overlay's slim copy is not
+const record = new SimpleFeature({
+  uniqueId: 'del',
+  refName: 'chr1',
+  start: 99,
+  end: 100,
+  REF: 'A',
+  ALT: ['<DEL>'],
+  QUAL: 60,
+  INFO: { END: [500], SVTYPE: ['DEL'] },
+  samples: { S1: { GT: ['0/1'] } },
+})
+
 // a variant track's row is drawn by either display, and each one's
 // `selectFeature` takes something different
 const LinearVariantDisplay = types
@@ -170,6 +183,7 @@ function sessionWith(
       view: types
         .model({
           width: 800,
+          assemblyNames: types.frozen(['hg38']),
           track: types.model({
             configuration: types.frozen({ trackId: 'calls' }),
             rpcSessionId: 'rpc',
@@ -181,7 +195,11 @@ function sessionWith(
         })),
     })
     .volatile(() => ({
-      rpcManager: { call: async () => descriptions },
+      rpcManager: {
+        call: async (_sessionId: string, method: string) =>
+          method === 'CoreGetFeatures' ? [record] : descriptions,
+      },
+      assemblyManager: { get: () => undefined },
       widgets: new Map(),
     }))
     .actions(() => ({
@@ -200,7 +218,7 @@ test.each([
   ['LinearVariantDisplay', LinearVariantDisplay],
   ['LinearMarkDisplay', LinearMarkDisplay],
 ])(
-  'clicking a call drawn by a %s opens the variant widget with its view, track and descriptions',
+  'clicking a call drawn by a %s opens the variant widget on the full record, with its view, track and descriptions',
   async (_name, Display) => {
     const { session, opened } = sessionWith(Display)
     const { track } = session.view
@@ -216,7 +234,11 @@ test.each([
       'VariantFeatureWidget',
       'variantFeature',
       expect.objectContaining({
-        featureData: expect.objectContaining({ uniqueId: 'del' }),
+        featureData: expect.objectContaining({
+          uniqueId: 'del',
+          REF: 'A',
+          samples: { S1: { GT: ['0/1'] } },
+        }),
         view: session.view,
         track,
         descriptions,

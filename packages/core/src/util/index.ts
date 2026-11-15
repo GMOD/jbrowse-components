@@ -346,6 +346,10 @@ export {
 } from './openFeatureWidget.ts'
 export { withFeatureDetails } from './withFeatureDetails.ts'
 export {
+  type AdapterRecordHost,
+  fetchAdapterRecord,
+} from './fetchAdapterRecord.ts'
+export {
   canonicalizeViewRefName,
   findParentThat,
   findParentThatIs,
