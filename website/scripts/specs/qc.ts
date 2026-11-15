@@ -5,7 +5,8 @@ import { HG38_HS1_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // website/docs/tutorials/mappability_qc.md. Every track but the read pileup
-// comes from the hosted hg38 hub. `scripts/scan_mappability_qc.sh` emits the
+// and Umap M100 comes from the hosted hg38 hub, which carries Umap M100 only
+// inside its multi-wiggle `hg38-umap`. `scripts/scan_mappability_qc.sh` emits the
 // tutorial's numbers from these files; read it before moving a locus.
 const HG38_HUB = 'https://jbrowse.org/ucsc/hg38/config.json'
 
@@ -29,8 +30,21 @@ const SMN_HIGHLIGHT = [
 // hides the collapse. A bin's mean averages only the present positions and
 // draws a wall near 1; `minScore` draws the worst one. At the 2.5 Mb overview
 // no Umap setting shows the block, so that frame uses gnomAD coverage.
+const UMAP_M100 = 'hg38-umap100Quantitative'
+
+const umapTrack = {
+  type: 'QuantitativeTrack',
+  trackId: UMAP_M100,
+  name: 'Multi-read mappability - Umap M100',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BigWigAdapter',
+    uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw',
+  },
+}
+
 const mappabilityTrack = {
-  trackId: 'hg38-umap100Quantitative',
+  trackId: UMAP_M100,
   encoding: { y: { field: 'minScore', scale: { domainMin: 0, domainMax: 1 } } },
   mark: { extent: 'none' as const },
   height: 70,
@@ -104,7 +118,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn1_evidence',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track],
+      sessionTracks: [na12878Track, umapTrack],
       views: [panel(SMN1_ZOOM_LOC)],
     }),
     hideSelectors: HIDE_ISOFORM_CHIP,
@@ -129,7 +143,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn_read_placement',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track],
+      sessionTracks: [na12878Track, umapTrack],
       views: [
         {
           type: 'LinearGenomeView',
@@ -231,7 +245,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn_block_and_reads',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track],
+      sessionTracks: [na12878Track, umapTrack],
       views: [
         {
           type: 'LinearGenomeView',
@@ -304,7 +318,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         maxWidth: 330,
         anchor: {
           view: 1,
-          trackId: 'hg38-umap100Quantitative',
+          trackId: UMAP_M100,
           loc: 'chr5:70,940,000',
           alignX: 'left',
           fracY: 0.4,

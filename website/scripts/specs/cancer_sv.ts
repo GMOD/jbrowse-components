@@ -809,6 +809,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           filter: [
             ...SPLIT_READS_ONLY.filter,
             { field: 'connection.offscreen', equal: false },
+            { field: 'connection.interchrom', equal: true },
           ],
           encoding: { color: 'insertSizeAndOrientation' },
           legend: { show: true },

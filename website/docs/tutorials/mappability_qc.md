@@ -87,7 +87,8 @@ and problematic-region tracks for hg38 only:
 - **Multi-read mappability - Umap M100**, the fraction of overlapping 100-mers
   at each position that are unique in the genome, computed from the reference
   alone. The file omits positions with no unique 100-mer, so the track goes
-  blank there.
+  blank there. The hosted config holds it only as one row of **Multi-read
+  mappability - Umap (multi)**, so add it on its own with the config below.
   - **Resolution → Bin summary → Minimum**, with **Show min and max** unchecked,
     draws the worst position in each bin
   - **Y axis... → Range** pins the axis at 0 to 1
