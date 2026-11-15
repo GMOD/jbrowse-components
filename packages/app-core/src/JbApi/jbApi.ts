@@ -1094,7 +1094,9 @@ function shownTrackModel(
  * One place, as `loc` takes it: a locstring, or the object shape every other
  * region on this surface has — `jb.visibleRegions`' answer, a feature's own
  * coordinates — which used to reach `parseLocString` and die there with
- * "endsWith is not a function". Several places are `regions`.
+ * "endsWith is not a function". Several places are `regions`. Extra keys pass,
+ * since a feature or a `jb.visibleRegions()` entry goes in as it is, so a
+ * misspelled `stop` reads to the end of the sequence.
  */
 export type JbLoc =
   | string
