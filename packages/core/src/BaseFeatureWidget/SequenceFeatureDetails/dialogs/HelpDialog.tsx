@@ -1,14 +1,42 @@
-import SettingsIcon from '@mui/icons-material/Settings'
+import MoreVert from '@mui/icons-material/MoreVert'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { InfoDialog } from '../../../ui/index.ts'
+import { sequenceModeNames, sequenceModes } from '../sequenceModes.ts'
+
+import type { SequenceFeatureDetailsModel } from '../model.ts'
+import type { SequenceDisplayMode } from '../sequenceModes.ts'
+
+const ModeList = observer(function ModeList({
+  modes,
+  model,
+}: {
+  modes: SequenceDisplayMode[]
+  model: SequenceFeatureDetailsModel
+}) {
+  const { intronBp, upDownBp } = model
+  return (
+    <ul>
+      {modes.map(mode => (
+        <li key={mode}>
+          {sequenceModes[mode].label({ intronBp, upDownBp })}:{' '}
+          {sequenceModes[mode].description}
+        </li>
+      ))}
+    </ul>
+  )
+})
 
 const HelpDialog = observer(function HelpDialog({
+  model,
   handleClose,
 }: {
+  model: SequenceFeatureDetailsModel
   handleClose: () => void
 }) {
+  const isGenomic = (mode: SequenceDisplayMode) =>
+    sequenceModes[mode].seqtype === 'genomic'
   return (
     <InfoDialog
       maxWidth="xl"
@@ -19,42 +47,25 @@ const HelpDialog = observer(function HelpDialog({
       title="Feature sequence panel help"
     >
       <Typography>
-        The "Feature sequence" panel shows the underlying genomic sequence for a
-        given feature, fetched from the reference genome.
+        The feature sequence panel shows the reference sequence under a feature.
+        For a gene it reads one transcript, picked from the Transcript menu when
+        there are several. The sequence types for a transcript are:
+      </Typography>
+      <ModeList
+        model={model}
+        modes={sequenceModeNames.filter(mode => !isGenomic(mode))}
+      />
+      <Typography>For other features they are:</Typography>
+      <ModeList model={model} modes={sequenceModeNames.filter(isGenomic)} />
+      <Typography>
+        The <MoreVert fontSize="small" /> menu copies or downloads the sequence
+        as FASTA or HTML, reverse-complements the genomic types, shows
+        coordinates, and opens Settings, where you set the intron and
+        up/downstream bases, the bases per row and the capitalization.
       </Typography>
       <Typography>
-        For gene features, this panel does special calculations to e.g. stitch
-        together the coding sequence, the options are:
-      </Typography>
-      <ul>
-        <li>CDS - shows the stitched together CDS sequences</li>
-        <li>
-          Protein - the translated coding sequence, with the "standard" genetic
-          code
-        </li>
-        <li>
-          cDNA - shows the 'copy DNA' of transcript, formed from exon sequences
-        </li>
-        <li>
-          Genomic w/ introns +/- Nbp up+down stream - the sequence underlying
-          the entire gene including introns, with UTR and CDS highlighted
-        </li>
-      </ul>
-      <Typography>For other feature types, the options are:</Typography>
-      <ul>
-        <li>
-          Genomic +/- Nbp up+down stream - the reference genome sequence
-          underlying the feature, with the up and downstream sequence
-        </li>
-      </ul>
-      <Typography>
-        Note 1: you can use the "gear icon" <SettingsIcon /> to edit the number
-        of bp displayed up/downstream and in the intron region
-      </Typography>
-      <Typography>
-        Note 2: The 'Copy HTML' function retains the colors from the sequence
-        panel but cannot be pasted into some programs like notepad that only
-        expect plain text.
+        Copy HTML keeps the colors, so it pastes into a word processor but not
+        into a plain-text editor; use Copy FASTA there.
       </Typography>
     </InfoDialog>
   )

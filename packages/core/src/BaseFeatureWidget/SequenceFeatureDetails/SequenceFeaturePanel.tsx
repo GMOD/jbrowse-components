@@ -63,6 +63,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
           getDialogHost(model).queueDialog(handleClose => [
             HelpDialog,
             {
+              model: model.sequenceFeatureDetails,
               handleClose,
             },
           ])

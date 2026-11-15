@@ -13,6 +13,7 @@ interface SequenceModeTraits {
   revcomp: boolean
   genomicCoords: boolean
   label: (bp: SequenceModeBasePairs) => string
+  description: string
 }
 
 const spliced = {
@@ -32,14 +33,31 @@ const genomic = {
 } as const
 
 const modes = {
-  cds: { ...spliced, seqtype: 'cds', label: () => 'CDS' },
-  protein: { ...spliced, seqtype: 'protein', label: () => 'Protein' },
-  cdna: { ...spliced, seqtype: 'cdna', label: () => 'cDNA' },
+  cds: {
+    ...spliced,
+    seqtype: 'cds',
+    label: () => 'CDS',
+    description: 'the coding sequence, its CDS parts joined',
+  },
+  protein: {
+    ...spliced,
+    seqtype: 'protein',
+    label: () => 'Protein',
+    description:
+      "the CDS translated with the feature's transl_table, else the assembly's genetic code, applying any transl_except",
+  },
+  cdna: {
+    ...spliced,
+    seqtype: 'cdna',
+    label: () => 'cDNA',
+    description: "the transcript's exons joined, UTRs included",
+  },
   gene: {
     ...genomic,
     seqtype: 'cdna',
     introns: true,
     label: () => 'Genomic w/ full introns',
+    description: 'the whole transcript with its introns',
   },
   gene_updownstream: {
     ...genomic,
@@ -48,6 +66,8 @@ const modes = {
     upDownstream: true,
     label: ({ upDownBp }) =>
       `Genomic w/ full introns +/- ${upDownBp}bp up+down stream`,
+    description:
+      'the whole transcript with its introns, plus flanking sequence on each side',
   },
   gene_collapsed_intron: {
     ...genomic,
@@ -56,6 +76,8 @@ const modes = {
     collapsedIntrons: true,
     genomicCoords: false,
     label: ({ intronBp }) => `Genomic w/ ${intronBp}bp intron`,
+    description:
+      'the transcript with each intron cut to the bases at either end',
   },
   gene_updownstream_collapsed_intron: {
     ...genomic,
@@ -66,13 +88,22 @@ const modes = {
     genomicCoords: false,
     label: ({ intronBp, upDownBp }) =>
       `Genomic w/ ${intronBp}bp intron +/- ${upDownBp}bp up+down stream`,
+    description:
+      'the transcript with each intron cut short, plus flanking sequence on each side',
   },
-  genomic: { ...genomic, seqtype: 'genomic', label: () => 'Genomic' },
+  genomic: {
+    ...genomic,
+    seqtype: 'genomic',
+    label: () => 'Genomic',
+    description: 'the reference sequence under the feature',
+  },
   genomic_sequence_updownstream: {
     ...genomic,
     seqtype: 'genomic',
     upDownstream: true,
     label: ({ upDownBp }) => `Genomic +/- ${upDownBp}bp up+down stream`,
+    description:
+      'the reference sequence under the feature, plus flanking sequence on each side',
   },
 } satisfies Record<string, SequenceModeTraits>
 
