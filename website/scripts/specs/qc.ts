@@ -4,9 +4,10 @@ import { HG38_HS1_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// website/docs/tutorials/mappability_qc.md. Every track but the read pileup
-// and Umap M100 comes from the hosted hg38 hub, which carries Umap M100 only
-// inside its multi-wiggle `hg38-umap`. `scripts/scan_mappability_qc.sh` emits the
+// website/docs/tutorials/mappability_qc.md. Every track but the read pileup,
+// Umap M100 and the Vienna ONT SVs comes from the hosted hg38 hub, which holds
+// those two only inside its multi-tracks `hg38-umap` and
+// `hg38-longReadVariants`. `scripts/scan_mappability_qc.sh` emits the
 // tutorial's numbers from these files; read it before moving a locus.
 const HG38_HUB = 'https://jbrowse.org/ucsc/hg38/config.json'
 
@@ -26,10 +27,6 @@ const SMN_HIGHLIGHT = [
   { refName: 'chr5', start: 70_049_523, end: 70_077_595, assemblyName: 'hg38' },
 ]
 
-// Umap leaves unmappable positions absent, not zero, so an autoscaled axis
-// hides the collapse. A bin's mean averages only the present positions and
-// draws a wall near 1; `minScore` draws the worst one. At the 2.5 Mb overview
-// no Umap setting shows the block, so that frame uses gnomAD coverage.
 const UMAP_M100 = 'hg38-umap100Quantitative'
 
 const umapTrack = {
@@ -43,6 +40,25 @@ const umapTrack = {
   },
 }
 
+const LR_SV = 'hg38-lrSv1kgOnt'
+
+const lrSvTrack = {
+  type: 'FeatureTrack',
+  trackId: LR_SV,
+  name: 'Long-read SVs - 1KG Vienna ONT SVs',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BigBedAdapter',
+    uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/lrSv/1kgOnt.bb',
+  },
+}
+
+const HUB_SUBTRACKS = [umapTrack, lrSvTrack]
+
+// Umap leaves unmappable positions absent, not zero, so an autoscaled axis
+// hides the collapse. A bin's mean averages only the present positions and
+// draws a wall near 1; `minScore` draws the worst one. At the 2.5 Mb overview
+// no Umap setting shows the block, so that frame uses gnomAD coverage.
 const mappabilityTrack = {
   trackId: UMAP_M100,
   encoding: { y: { field: 'minScore', scale: { domainMin: 0, domainMax: 1 } } },
@@ -118,7 +134,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn1_evidence',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track, umapTrack],
+      sessionTracks: [na12878Track, ...HUB_SUBTRACKS],
       views: [panel(SMN1_ZOOM_LOC)],
     }),
     hideSelectors: HIDE_ISOFORM_CHIP,
@@ -143,7 +159,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn_read_placement',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track, umapTrack],
+      sessionTracks: [na12878Track, ...HUB_SUBTRACKS],
       views: [
         {
           type: 'LinearGenomeView',
@@ -192,6 +208,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn_problematic_regions',
     url: sessionSpec(HG38_HUB, {
+      sessionTracks: HUB_SUBTRACKS,
       views: [
         {
           type: 'LinearGenomeView',
@@ -206,7 +223,7 @@ export const qcSpecs: ScreenshotSpec[] = [
               height: 40,
             },
             {
-              trackId: 'hg38-lrSv1kgOnt',
+              trackId: LR_SV,
               height: 100,
             },
           ],
@@ -233,7 +250,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 340,
         anchor: {
-          trackId: 'hg38-lrSv1kgOnt',
+          trackId: LR_SV,
           loc: 'chr5:70,300,000',
           fracY: 0.55,
         },
@@ -245,7 +262,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn_block_and_reads',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track, umapTrack],
+      sessionTracks: [na12878Track, ...HUB_SUBTRACKS],
       views: [
         {
           type: 'LinearGenomeView',
@@ -260,7 +277,7 @@ export const qcSpecs: ScreenshotSpec[] = [
               height: 40,
             },
             {
-              trackId: 'hg38-lrSv1kgOnt',
+              trackId: LR_SV,
               height: 100,
             },
           ],
@@ -306,7 +323,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 340,
         anchor: {
-          trackId: 'hg38-lrSv1kgOnt',
+          trackId: LR_SV,
           loc: 'chr5:70,300,000',
           fracY: 0.55,
         },
