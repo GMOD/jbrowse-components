@@ -61,10 +61,29 @@ what **Edit plot...** accepts.
 
 ## Alignments tracks
 
-The alignments displays take `facet` the same way, plus seven built-in read
-dimensions: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`,
-`split`, `spliced`, `mapq`. The same idea over a `LinearMarkDisplay` faceting a
-BAM by its `HP` haplotype tag:
+The alignments displays take `facet` the same way, and besides a tag or any
+other field they section by these read dimensions:
+
+<!-- BEGIN GENERATED READ_DIMENSIONS -->
+
+<!-- prettier-ignore -->
+| dimension | sections, in stacking order |
+| --- | --- |
+| `strand` | `1`<br />`-1` |
+| `firstOfPairStrand` | `1`<br />`-1` |
+| `pairOrientation` | `LR`<br />`RL`<br />`RR`<br />`LL` |
+| `pairing` | `concordant`<br />`discordant`<br />`unpaired`<br />`nonPrimary`: Secondary or supplementary |
+| `split` | `split`: Split (SA)<br />`unsplit`: Not split |
+| `spliced` | `spliced`<br />`unspliced`: Not spliced |
+| `svKind` | `deletionType`: Deletion-type: LR pair, split or CIGAR deletion<br />`duplicationType`: Duplication-type: RL pair or split<br />`inversion`: Inversion: LL or RR pair, or split<br />`elsewhere`: Partner on another chromosome or unmapped<br />`insertion`: Insertion: pair too close, or SV-size insertion<br />`none`: No SV evidence |
+| `mapq` | `30`: MAPQ 30+ (high confidence)<br />`10`: MAPQ 10-29<br />`1`: MAPQ 1-9 (low)<br />`0`: MAPQ 0 (multi-mapping)<br />`255`: unavailable |
+| `mateRefName` | one section per value the reads carry |
+| `mateAssembly` | one section per value the reads carry |
+
+<!-- END GENERATED READ_DIMENSIONS -->
+
+The same idea over a `LinearMarkDisplay` faceting a BAM by its `HP` haplotype
+tag:
 
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 

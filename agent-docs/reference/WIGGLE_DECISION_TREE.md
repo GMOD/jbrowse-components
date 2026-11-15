@@ -30,11 +30,14 @@ plugins draw a wiggle-shaped axis against it.
   per-feature array each end reads comes from the summary `y` names and the
   resolved extent — a min-max extent spreads the ends across the min and max
   arrays, none takes both from the summary's one array.
-- `encoding.y.scale.fenceQuantile` at 1 takes the visible extremes; below it each end is
-  clipped to that quantile of the values on its side of 0 (`quantileExtent`,
-  the rule a color ramp's `scale.domainQuantile` reads too), and a linear or
-  symlog axis then reaches 0 while `encoding.y.scale.zero` is on; a density row, which
-  has no axis, spans its values either way.
+- `encoding.y.scale.fenceQuantile` at 1 takes the visible extremes. Below it,
+  `quantileExtent` finds that quantile of the values on each side of 0, and
+  `fenceOutliers` keeps each end at the visible extreme unless that end would
+  stretch the axis past twice the span the quantile ends draw (0 included while
+  `encoding.y.scale.zero` is on); that end stops at the fence. So a plot with no
+  spike cuts nothing. A color ramp's `scale.domainQuantile` reads
+  `quantileExtent` alone, so a ramp does clip at its quantile. A density row,
+  which has no axis, spans its values either way.
 - The domain is then widened to reach any score a rule is drawn at, and clamped
   by `encoding.y.scale`'s `domainMin` and `domainMax`. **A set bound wins; an unset one
   autoscales that end.**

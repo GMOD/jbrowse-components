@@ -65,8 +65,9 @@ the consensus reaches 100%.
 
 Panning can change a frame, and that is accepted. **Don't re-derive a frame at a
 call site** — read `readChainHasSupp`. `framesUnpairedChainStrand` is the single
-statement of when framing is live: in a chain, under an orientation field
-(`pairOrientation`, `insertSizeAndOrientation`). There a framed segment, a split
+statement of when framing is live: in a chain, under a color field whose
+`colorFieldDefs.ts` entry sets `orientation`, which today is
+`insertSizeAndOrientation` alone. There a framed segment, a split
 mate's junction, an unmapped mate and an interchromosomal mate are levels of the
 field (`unpairedSplitSameStrand`, `splitInverted`, `mateUnmapped`, ...), so
 `encoding.color`'s `scale.domain`, `scale.range` and `scale.names` reach them.

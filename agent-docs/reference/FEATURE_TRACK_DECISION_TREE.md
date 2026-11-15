@@ -23,9 +23,15 @@ containers", and any coding transcript — mRNA, a V-gene segment, a prokaryotic
 gene → CDS, an organism-specific type — by "it has a direct CDS child". Custom
 types work with no configuration.
 
-`containerTypes` is the one explicit override, checked first so it wins. Two
-type tests are semantic rather than structural (guide RNAs and motifs), because
-those name a meaning rather than a shape.
+`containerTypes` is the one explicit override. It is checked beside "its
+children are containers" and before the transcript and segment shapes, so a
+top-level feature of a listed type stacks its children even when it has a
+direct CDS child. Four tests come before it: the two semantic types (guide RNAs
+and motifs, which name a meaning rather than a shape), a CDS with
+mature-protein children or no CDS rows, a child CDS with mature-protein
+children, and a top-level repeat region. A CDS
+whose children are CDS rows, a discontinuous one, falls through to the shapes
+and draws as a transcript.
 
 ## How much fits
 
@@ -45,8 +51,10 @@ those name a meaning rather than a shape.
   runs: `full` → `labels`
   (descriptions dropped) → `isoforms` (each gene trimmed to the count that fits
   WITH its names) → `thinned` (every name, bodies shortened) → `decimated` (a
-  name only where it is isolated) → `bodies` (no labels). The first rung that
-  fits wins, each rung is laid out lazily, and the last always returns.
+  name only where it is isolated) → `bodies` (no names or descriptions) →
+  `bare` (subfeature labels dropped too, a rung only where the settings
+  reserve `below` label rows). The first rung that fits wins, each rung is laid
+  out lazily, and the last always returns.
 - The policy after isoforms is **names before height**. `thinned` packs the
   bodies and row padding at the largest scale that fits while label rows keep
   their font size, down to a floor where the tallest body is 0.4× the label
@@ -73,9 +81,13 @@ those name a meaning rather than a shape.
   the shortest **drawn** box stays visible. Past that, the track scrolls. A
   stack with room to spare keeps its display mode's size.
 
-`showLabels` is a single flat enum — `auto` plus four pinned choices — that the
-model resolves into concrete booleans. Layout, the RPC, the SVG export and
-hit-testing read those, so the enum never crosses the worker boundary.
+`labels.name.show` and `labels.description.show` are two booleans, and
+`labelVisibility` (`showLabelsMode.ts`) turns them, the feature density and the
+collapsed mode into what draws: a name past `MAX_LABEL_FEATURE_DENSITY` only
+where the genes alone are under it, a description only under
+`MAX_DESCRIPTION_FEATURE_DENSITY`. Layout, the RPC, the SVG export and
+hit-testing read the result. The five-value `showLabels` it replaced survives
+only as a deprecated export for plugins.
 
 ## Where a box packs when regions sit side by side
 

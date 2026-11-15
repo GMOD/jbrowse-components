@@ -29,8 +29,9 @@ The representative isoform is the one the annotation tags: `RefSeq Select` or
 `MANE Select` (NCBI), `MANE_Select` or `Ensembl_canonical` (Ensembl, GENCODE).
 It is also drawn first when a gene is stacked. Without a tag, it is the longest
 by protein length, or by genomic span for a gene with no coding isoform. The
-`canonicalTranscriptField` and `canonicalTranscriptTags` config slots name the
-attribute and tags.
+[`transcripts`](/docs/config/featuretranscripts) setting names the attribute
+(`transcripts.field`) and the tags that rank first, in order
+(`transcripts.sort`).
 
 A gene drawn with fewer transcripts than it has shows **+N more** beside its
 name. Clicking it opens that one gene, and the badge then reads **show fewer**.

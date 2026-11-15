@@ -26,7 +26,7 @@ array it bakes.
 
 - **The overrides belong to the fields that read the mate**, insert size and
   pair orientation, and they are levels of those fields, which an
-  `encoding.color.scale.domain` names (`unmappedMate`, `splitInverted`, ...).
+  `encoding.color.scale.domain` names (`mateUnmapped`, `splitInverted`, ...).
   Every other field paints its own value and a constant paints one color,
   since repainting a read by chain geometry answers a different question than
   the one "color by HP" asked.

@@ -12,7 +12,7 @@ digraph wiggle_domain {
   auto -> local   [label=" 1"]
   auto -> pct     [label=" below 1"]
   local [label="the visible min and max"]
-  pct   [label="each sign clipped to that\nquantile, anchored at 0"]
+  pct   [label="each end at the visible extreme,\nunless it stretches the axis past\ntwice the span the quantile ends draw:\nthen it stops at that fence"]
 
   rules [label="widen to any score a\nscore rule is drawn at"]
   local -> rules  pct -> rules

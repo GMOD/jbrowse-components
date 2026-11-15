@@ -37,6 +37,7 @@ import { writeMenuDocs } from './generateMenuDocs.ts'
 import { writeOrthofinderSetDocs } from './generateOrthofinderSetDocs.ts'
 import { writePaletteDocs } from './generatePaletteDocs.ts'
 import { writeReExportDocs } from './generateReExportDocs.ts'
+import { writeReadDimensionDocs } from './generateReadDimensionDocs.ts'
 import { writeSearchResultDocs } from './generateSearchResultDocs.ts'
 import { writeShaderExportDocs } from './generateShaderExportDocs.ts'
 import { writeShaderShapeDocs } from './generateShaderShapeDocs.ts'
@@ -120,6 +121,7 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   { label: 'Element creation phases', write: writeElementPhaseDocs },
   { label: 'File type tables', write: writeFileTypeDocs },
   { label: 'Gated adapter budgets table', write: writeGatedBudgetDocs },
+  { label: 'Read dimensions table', write: writeReadDimensionDocs },
   { label: 'Display foundations table', write: writeDisplayFoundationDocs },
   { label: 'Cross-cutting mixins table', write: writeCrossCuttingMixinDocs },
   { label: 'Fetch autoruns table', write: writeFetchAutorunDocs },

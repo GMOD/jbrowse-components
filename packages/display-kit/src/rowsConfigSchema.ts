@@ -60,8 +60,8 @@ export const rowsConfigSchema = ConfigurationSchema(
      * #slot field
      * The field whose values each take a row. Writing
      * `rows: "source"` sets this slot. Empty is the display's default: no rows on
-     * the quantitative display, and a field picked off the data on the
-     * multi-row feature display.
+     * the quantitative display. The multi-row feature display declares `type`
+     * as its own default ([MultiRowRows](../multirowrows)).
      */
     field: {
       type: 'featureField',

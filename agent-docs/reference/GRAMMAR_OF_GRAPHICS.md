@@ -211,8 +211,11 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   is its value-x sibling.
 - **Typed tables cover MAF and BigWig alone** (`getFeatureTable`). BAM/CRAM,
   VCF and bigBed wait on a declared plot over one being slow on real data.
-  ADR-114's 3.11x and ADR-118's 4.23x blamed the per-row `Feature` that
-  ADR-191 removed for typed sources, so re-measure both before citing them.
+  ADR-152 re-measured both and found the per-row `Feature` was the cost: the
+  `pileup` step runs 4.35x<!--m:column-kernels.pileup-pileup.vsBase--> the
+  layout building a `SimpleFeature` per read, and
+  1.22x<!--m:column-kernels.pileup-pileup-columns.vsBase--> over typed
+  columns.
 
 ## What the 2026-10-07 release audit checked and found agreeing
 
