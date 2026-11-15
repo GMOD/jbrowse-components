@@ -138,6 +138,29 @@ function getMaxFeatureLengths(rpcData: PileupDataResult) {
   return val
 }
 
+/**
+ * One byte per read, set when the read has clipped bases inside the fetched
+ * region. A read with no SEQ, or whose clip the clamp left outside the region,
+ * keeps its `(S<len>)` summary beside reads drawing their letters. Cached
+ * against the array it reads, as `getMaxFeatureLengths` is against the data:
+ * built per frame it would restore the per-base walk the clamp removed.
+ */
+const readsWithClipBases = new WeakMap<Uint32Array, Uint8Array>()
+
+function getReadHasClipBases(softclipBaseReadIndices: Uint32Array) {
+  let val = readsWithClipBases.get(softclipBaseReadIndices)
+  if (!val) {
+    val = new Uint8Array(
+      softclipBaseReadIndices.reduce((max, ri) => Math.max(max, ri + 1), 0),
+    )
+    for (const ri of softclipBaseReadIndices) {
+      val[ri] = 1
+    }
+    readsWithClipBases.set(softclipBaseReadIndices, val)
+  }
+  return val
+}
+
 export function computeVisibleLabels(
   params: ComputeVisibleLabelsParams,
 ): VisibleLabel[] {
@@ -302,11 +325,17 @@ export function computeVisibleLabels(
         interbaseYs,
         interbaseLengths,
         interbaseTypes,
+        interbaseReadIndices,
         softclipBasePositions,
         softclipBaseYs,
         softclipBaseBases,
+        softclipBaseReadIndices,
       } = rpcData
       const hasSoftclipBases = showSoftClips && softclipBasePositions.length > 0
+      const readHasClipBases =
+        hasSoftclipBases && canRenderText
+          ? getReadHasClipBases(softclipBaseReadIndices)
+          : undefined
       // Zoomed out, the only thing this loop can emit is the count on a 'large'
       // insertion — small-insertion `(N)`, clip summaries and the SNP letters
       // that read `insertionShadows` are all behind `canRenderText`. So when no
@@ -379,8 +408,10 @@ export function computeVisibleLabels(
           }
         } else if (canRenderText) {
           const prefix = clipPrefix[type]
-          // suppress the soft-clip summary when per-base clip letters are drawn
-          const perBaseDrawn = type === INTERBASE_SOFTCLIP && hasSoftclipBases
+          // suppress the soft-clip summary when the read draws its clip letters
+          const perBaseDrawn =
+            type === INTERBASE_SOFTCLIP &&
+            readHasClipBases?.[interbaseReadIndices[i]!] === 1
           if (prefix !== undefined && !perBaseDrawn) {
             labels.push({
               type: type === INTERBASE_SOFTCLIP ? 'softclip' : 'hardclip',

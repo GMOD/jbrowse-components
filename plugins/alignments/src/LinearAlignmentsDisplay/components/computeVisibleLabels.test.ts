@@ -28,6 +28,7 @@ function makeRpcData(
     interbaseYs: new Uint16Array(),
     interbaseLengths: new Uint32Array(),
     interbaseTypes: new Uint8Array(),
+    interbaseReadIndices: new Uint32Array(),
     mismatchPositions: new Uint32Array(),
     mismatchYs: new Uint16Array(),
     mismatchBases: new Uint8Array(),
@@ -360,6 +361,7 @@ const softclipBasesAt30 = {
   softclipBasePositions: new Uint32Array([30, 31]),
   softclipBaseYs: new Uint16Array([2, 2]),
   softclipBaseBases: new Uint8Array([84, 71]),
+  softclipBaseReadIndices: new Uint32Array([0, 0]),
 }
 
 test('soft-clip bases render per-base letters (as mismatch-colored text)', () => {
@@ -372,6 +374,7 @@ test('the (S<len>) summary is suppressed when per-base clip letters render', () 
     interbaseYs: new Uint16Array([2]),
     interbaseLengths: new Uint32Array([2]),
     interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
+    interbaseReadIndices: new Uint32Array([0]),
   }
   const labels = run(
     makeRpcData({ ...softclipInterbase, ...softclipBasesAt30 }),
@@ -391,6 +394,7 @@ test('soft-clip letters follow the setting, not the data a refetch replaces', ()
     interbaseYs: new Uint16Array([2]),
     interbaseLengths: new Uint32Array([2]),
     interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
+    interbaseReadIndices: new Uint32Array([0]),
   }
   const labels = run(
     makeRpcData({ ...softclipInterbase, ...softclipBasesAt30 }),
@@ -401,6 +405,28 @@ test('soft-clip letters follow the setting, not the data a refetch replaces', ()
   expect(labels.filter(l => l.type === 'mismatch')).toEqual([])
   expect(labels.filter(l => l.type === 'softclip').map(l => l.text)).toEqual([
     '(S2)',
+  ])
+})
+
+// A read with no SEQ (a secondary, say) has a clip but no bases to draw, so it
+// keeps its summary while the read beside it draws letters instead
+test('the (S<len>) summary renders for a SEQ-less read beside one with bases', () => {
+  const labels = run(
+    makeRpcData({
+      interbasePositions: new Uint32Array([30, 30]),
+      interbaseYs: new Uint16Array([2, 4]),
+      interbaseLengths: new Uint32Array([2, 30]),
+      interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP, INTERBASE_SOFTCLIP]),
+      interbaseReadIndices: new Uint32Array([0, 1]),
+      ...softclipBasesAt30,
+    }),
+  )
+  expect(labels.filter(l => l.type === 'softclip').map(l => l.text)).toEqual([
+    '(S30)',
+  ])
+  expect(labels.filter(l => l.type === 'mismatch').map(l => l.text)).toEqual([
+    'T',
+    'G',
   ])
 })
 
