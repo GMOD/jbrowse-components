@@ -661,6 +661,17 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_prepare_graph/
 - https://jbrowse.org/demos/hprc_multiway/config.json
 - https://jbrowse.org/pangenome/hprc-grch38/config.json
 
+## Pangenome (rice)
+
+Open the rice pangenome, read the Green Revolution semi-dwarf deletion, three grain-width alleles and a 90 kb insertion that the reference lacks, then load the graph in your own JBrowse
+
+Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_rice/
+
+- https://hgdownload.soe.ucsc.edu/hubs/GCF/034/140/825/GCF_034140825.1/GCF_034140825.1.2bit
+- https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.bubbles.bed.gz
+- https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.fold10000.graph.bed.gz
+- https://jbrowse.org/demos/rice_pangenome/rice-agis1-minigraph.graph.bed.gz
+
 ## CNV across a population (1000 Genomes)
 
 Read k-mer depth copy number for every individual in the 1000 Genomes panel, and pack the whole panel into one Zarr store

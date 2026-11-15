@@ -130,6 +130,7 @@ export const TUTORIAL_ORDER = [
   'pangenome_mouse',
   'pangenome_cattle',
   'pangenome_fly',
+  'pangenome_rice',
   'pangenome_prepare_graph',
   'pangenome_ecoli',
   'pangenome_cactus',

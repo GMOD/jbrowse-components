@@ -162,6 +162,9 @@ export const figureLiveRefs: Record<string, string> = {
   "pangenome/genomes_fly_cyp28d1": "https://genomes.jbrowse.org/pangenomes/fly/?region=chr2L%3A5%2C200%2C001-5%2C220%2C000",
   "pangenome/genomes_fly_strn_mlck": "https://genomes.jbrowse.org/pangenomes/fly/?region=chr2R%3A15%2C940%2C001-15%2C966%2C000",
   "pangenome/genomes_fly_chkov1": "https://genomes.jbrowse.org/pangenomes/fly/?region=chr3R%3A25%2C320%2C001-25%2C335%2C000",
+  "pangenome/genomes_rice_sd1": "https://genomes.jbrowse.org/pangenomes/rice/?region=chr1%3A39%2C008%2C001-39%2C020%2C000",
+  "pangenome/genomes_rice_qsw5": "https://genomes.jbrowse.org/pangenomes/rice/?region=chr5%3A5%2C374%2C001-5%2C390%2C000",
+  "pangenome/genomes_rice_pup1": "https://genomes.jbrowse.org/pangenomes/rice/?region=chr12%3A15%2C866%2C141-15%2C866%2C870",
   "about_track": "?config=test_data%2Fvolvox%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%22volvox_cram%22%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_track_color_by_cds": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr17%3A41%2C244%2C000-41%2C244%2C090%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%22Pd8Wh30ei9R%22%2C%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22geneGlyphMode%22%3A%22representative%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "gene_track_selenocysteine": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr3%3A49%2C395%2C505-49%2C395%2C625%22%2C%22colorByFrame%22%3Atrue%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%22Pd8Wh30ei9R%22%2C%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22geneGlyphMode%22%3A%22representative%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -513,6 +516,9 @@ export const figureLiveLabels: Record<string, string> = {
   "pangenome/genomes_fly_cyp28d1": "Open the fly page",
   "pangenome/genomes_fly_strn_mlck": "Open the fly page",
   "pangenome/genomes_fly_chkov1": "Open the fly page",
+  "pangenome/genomes_rice_sd1": "Open the rice page",
+  "pangenome/genomes_rice_qsw5": "Open the rice page",
+  "pangenome/genomes_rice_pup1": "Open the rice page",
   "protein/protein_browser_page": "Open TP53 in the protein browser"
 }
 
@@ -668,6 +674,9 @@ export const figureSlowSpecs: string[] = [
   "pangenome/genomes_fly_cyp28d1",
   "pangenome/genomes_fly_strn_mlck",
   "pangenome/genomes_hprc_loci",
+  "pangenome/genomes_rice_pup1",
+  "pangenome/genomes_rice_qsw5",
+  "pangenome/genomes_rice_sd1",
   "pangenome/graph_context_hop1",
   "pangenome/graph_context_none",
   "pangenome/graph_kiv2_walk_rows",
@@ -1502,6 +1511,18 @@ export const figureFrames: Record<
     "height": 850
   },
   "pangenome/genomes_fly_chkov1": {
+    "width": 1100,
+    "height": 850
+  },
+  "pangenome/genomes_rice_sd1": {
+    "width": 1100,
+    "height": 850
+  },
+  "pangenome/genomes_rice_qsw5": {
+    "width": 1100,
+    "height": 880
+  },
+  "pangenome/genomes_rice_pup1": {
     "width": 1100,
     "height": 850
   },

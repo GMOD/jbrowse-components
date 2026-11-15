@@ -495,6 +495,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.42, 0.806],
     position: 'center',
   },
+  pangenome_rice: {
+    // The qSW5 gene over its three grain-width forms, labels cut.
+    src: 'pangenome/genomes_rice_qsw5.png',
+    band: [0.5, 0.8],
+    xband: [0.42, 0.806],
+    position: 'center',
+  },
   pangenome_hprc_haplotypes: {
     // The haplotype lanes across the whole window, down to where the CFHR3
     // form gives way to the deletion's.

@@ -119,6 +119,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cattle)
 - [](/docs/tutorials/pangenome_fly)
+- [](/docs/tutorials/pangenome_rice)
 
 #### Building a graph
 

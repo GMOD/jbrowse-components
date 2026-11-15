@@ -19,6 +19,10 @@ const FLY_PAGE = 'https://genomes.jbrowse.org/pangenomes/fly'
 const flyAnswer = (region: string) =>
   `${FLY_PAGE}/?region=${encodeURIComponent(region)}`
 
+const RICE_PAGE = 'https://genomes.jbrowse.org/pangenomes/rice'
+const riceAnswer = (region: string) =>
+  `${RICE_PAGE}/?region=${encodeURIComponent(region)}`
+
 const FORMS_MAP = '.ui-lanes'
 const OPEN_IN_JBROWSE = '.ui-actions a.ui-btn'
 
@@ -149,6 +153,22 @@ export const genomesPangenomeSpecs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     viewportHeight: 850,
     liveLabel: 'Open the fly page',
+    diffThreshold: 0.02,
+  })),
+  ...[
+    { gene: 'sd1', region: 'chr1:39,008,001-39,020,000' },
+    { gene: 'qsw5', region: 'chr5:5,374,001-5,390,000', height: 880 },
+    { gene: 'pup1', region: 'chr12:15,866,141-15,866,870' },
+  ].map(({ gene, region, height = 850 }): ScreenshotSpec => ({
+    mode: 'url',
+    name: `pangenome/genomes_rice_${gene}`,
+    noSession: true,
+    url: riceAnswer(region),
+    readySelector: FORMS_MAP,
+    readyTimeout: 180000,
+    viewportWidth: 1100,
+    viewportHeight: height,
+    liveLabel: 'Open the rice page',
     diffThreshold: 0.02,
   })),
 ]
