@@ -348,6 +348,7 @@ export { withFeatureDetails } from './withFeatureDetails.ts'
 export {
   type AdapterRecordHost,
   fetchAdapterRecord,
+  fetchAdapterRecordById,
 } from './fetchAdapterRecord.ts'
 export {
   canonicalizeViewRefName,

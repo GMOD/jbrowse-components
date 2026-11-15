@@ -59,6 +59,14 @@ export interface RpcRegistry {
     // deserializeReturn rebuilds each of these into a SimpleFeature
     wire: SimpleFeatureSerialized[]
   }
+  GetBasicFeatureDetails: {
+    args: {
+      adapterConfig: Record<string, unknown>
+      featureId: string
+      region: RegionLike
+    }
+    return: { feature?: SimpleFeatureSerialized }
+  }
   CoreGetEncodedLayers: {
     args: CoreGetEncodedLayersArgs
     // wrapped in rpcResult so postMessage transfers its channel buffers; the
@@ -187,9 +195,8 @@ export type RpcCallContext = RpcSession & RpcHandles
  * RpcRegistry`, and a name that misses falls out the bottom — where `unknown`
  * used to be. So `RpcMethodType<'GetFeatureDetails'>` type-checked with an
  * `execute` free to take and return anything at all. `GetFeatureDetails` is the
- * *class* name; the registry key beside it is `GetPileupFeatureDetails`, and
- * both classes called `GetFeatureDetails` (alignments, canvas) register under a
- * name their class does not carry — so the wrong guess is the natural one, and
+ * *class* name; the registry key beside it is `GetPileupFeatureDetails`, a
+ * name the class does not carry — so the wrong guess is the natural one, and
  * an opt-in that silently opts you back out is worse than none, because it
  * reads as checked.
  *

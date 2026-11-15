@@ -7,7 +7,6 @@ import type {
 } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { GroupByCandidate } from '@jbrowse/core/util/groupByCandidates'
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface LabelItem {
   text: string
@@ -61,17 +60,6 @@ export interface GetGroupByCandidatesArgs
   regions: Region[]
 }
 
-export interface GetFeatureDetailsArgs {
-  adapterConfig: Record<string, unknown>
-  featureId: string
-  region: {
-    refName: string
-    start: number
-    end: number
-    assemblyName: string
-  }
-}
-
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderFeatureData: {
@@ -79,10 +67,6 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
       return: RenderFeatureDataResult
       // Only the data half owns buffers to transfer, so only it is wrapped.
       transferables: FeatureDataResult
-    }
-    GetBasicFeatureDetails: {
-      args: GetFeatureDetailsArgs
-      return: { feature?: SimpleFeatureSerialized }
     }
     GetBasicGroupByCandidates: {
       args: GetGroupByCandidatesArgs

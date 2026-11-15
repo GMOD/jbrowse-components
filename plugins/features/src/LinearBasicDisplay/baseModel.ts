@@ -9,6 +9,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import {
+  fetchAdapterRecordById,
   getDialogHost,
   getEnv,
   getPaletteHost,
@@ -30,7 +31,6 @@ import {
   originTailCandidates,
   wholeSubfeatureId,
 } from '@jbrowse/core/util/originCut'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
@@ -60,10 +60,7 @@ import { GENE_GLYPH_DEFAULTS } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import FeatureGateMixin from '../shared/FeatureGateMixin.ts'
 import { featureColorViews } from '../shared/featureColorViews.ts'
-import {
-  featureSpanRegion,
-  fetchFeatureDetails,
-} from '../shared/fetchFeatureDetails.ts'
+import { featureSpanRegion } from '../shared/featureSpanBp.ts'
 import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
 import { createFeatureDetailsOpener } from '../shared/openFeatureDetails.ts'
 import { findSubfeatureById } from './baseModelHelpers.ts'
@@ -1028,10 +1025,8 @@ export default function baseStateModelFactory(
         // The feature's own span, not the buffered region: the whole region
         // is a second download of everything on screen.
         const item = self.featureIdIndex.get(featureId)
-        return fetchFeatureDetails(
-          getSession(self),
-          getRpcSessionId(self),
-          self.adapterConfig,
+        return fetchAdapterRecordById(
+          self,
           featureId,
           item ? featureSpanRegion(region, item.startBp, item.endBp) : region,
           opts,

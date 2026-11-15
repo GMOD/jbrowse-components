@@ -32,10 +32,6 @@ export {
   trackSizingItems,
 } from './LinearBasicDisplay/trackMenus.ts'
 export { MIN_GROW_HEIGHT } from './LinearBasicDisplay/heightViews.ts'
-export {
-  featureSpanRegion,
-  fetchFeatureDetails,
-} from './shared/fetchFeatureDetails.ts'
 export { createFeatureDetailsOpener } from './shared/openFeatureDetails.ts'
 export {
   featureHighlightMenuItems,

@@ -137,7 +137,7 @@ test('a connector to a row above leaves from the glyph top', () => {
 const descriptions = { INFO: { END: { Description: 'End position' } } }
 
 // the record as the adapter holds it, which the overlay's slim copy is not
-const record = new SimpleFeature({
+const record = {
   uniqueId: 'del',
   refName: 'chr1',
   start: 99,
@@ -147,7 +147,7 @@ const record = new SimpleFeature({
   QUAL: 60,
   INFO: { END: [500], SVTYPE: ['DEL'] },
   samples: { S1: { GT: ['0/1'] } },
-})
+}
 
 // a variant track's row is drawn by either display, and each one's
 // `selectFeature` takes something different
@@ -196,8 +196,17 @@ function sessionWith(
     })
     .volatile(() => ({
       rpcManager: {
-        call: async (_sessionId: string, method: string) =>
-          method === 'CoreGetFeatures' ? [record] : descriptions,
+        call: async (
+          _sessionId: string,
+          method: string,
+          args: { featureId?: string },
+        ) =>
+          method === 'GetBasicFeatureDetails'
+            ? {
+                feature:
+                  args.featureId === record.uniqueId ? record : undefined,
+              }
+            : descriptions,
       },
       assemblyManager: { get: () => undefined },
       widgets: new Map(),
