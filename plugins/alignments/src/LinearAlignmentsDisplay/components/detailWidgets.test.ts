@@ -64,6 +64,7 @@ test('the indicator widget reports the depth its count is out of', () => {
   expect(jest.mocked(openFeatureWidget).mock.calls[0]![1]).toMatchObject({
     start: 101,
     end: 101,
+    length: '30bp',
     depth: 40,
     count: expect.stringMatching(/^2\/40/),
   })

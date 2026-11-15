@@ -67,8 +67,6 @@ const lrSvTrack = {
   },
 }
 
-const HUB_SUBTRACKS = [umapTrack, lrSvTrack]
-
 // Umap leaves unmappable positions absent, not zero, so an autoscaled axis
 // hides the collapse. A bin's mean averages only the present positions and
 // draws a wall near 1; `minScore` draws the worst one. At the 2.5 Mb overview
@@ -148,7 +146,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn1_evidence',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track, ...HUB_SUBTRACKS],
+      sessionTracks: [na12878Track, umapTrack],
       views: [panel(SMN1_ZOOM_LOC)],
     }),
     hideSelectors: HIDE_ISOFORM_CHIP,
@@ -173,7 +171,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn_read_placement',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track, ...HUB_SUBTRACKS],
+      sessionTracks: [na12878Track, umapTrack],
       views: [
         {
           type: 'LinearGenomeView',
@@ -222,7 +220,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn_problematic_regions',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: HUB_SUBTRACKS,
+      sessionTracks: [lrSvTrack],
       views: [
         {
           type: 'LinearGenomeView',
@@ -276,7 +274,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qc/smn_block_and_reads',
     url: sessionSpec(HG38_HUB, {
-      sessionTracks: [na12878Track, ...HUB_SUBTRACKS],
+      sessionTracks: [na12878Track, umapTrack, lrSvTrack],
       views: [
         {
           type: 'LinearGenomeView',

@@ -140,8 +140,8 @@ function getMaxFeatureLengths(rpcData: PileupDataResult) {
 
 /**
  * One byte per read, set when the read has clipped bases inside the fetched
- * region. A read with no SEQ, or whose clip the clamp left outside the region,
- * keeps its `(S<len>)` summary beside reads drawing their letters. Cached
+ * region. A read with no SEQ, or whose every clip the clamp left outside the
+ * region, keeps its `(S<len>)` summaries beside reads drawing their letters. Cached
  * against the array it reads, as `getMaxFeatureLengths` is against the data.
  */
 const readsWithClipBases = new WeakMap<Uint32Array, Uint8Array>()

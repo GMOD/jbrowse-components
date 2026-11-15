@@ -53,7 +53,7 @@ export function openIndicatorWidget(
     featureData.count = countOfTotal(interbaseEntry.count, bin.interbaseDepth)
     // The avg only says something when the range doesn't collapse to one length.
     const sizeStr = formatLenRange(interbaseEntry.minLen, interbaseEntry.maxLen)
-    featureData.size =
+    featureData.length =
       interbaseEntry.minLen === interbaseEntry.maxLen
         ? sizeStr
         : `${sizeStr} (avg ${interbaseEntry.avgLen.toFixed(1)}bp)`
