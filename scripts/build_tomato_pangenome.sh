@@ -214,6 +214,7 @@ if [ ! -s "$GRAPH.bubbles.bed.gz" ]; then
   mv "$GRAPH.bubbles.bed.gz.tmp" "$GRAPH.bubbles.bed.gz"
 fi
 [ -f "$GRAPH.bubbles.bed.gz.csi" ] || tabix -f -C -p bed "$GRAPH.bubbles.bed.gz"
+[ -f "$GRAPH.bubbles.bed.gz.tbi" ] || tabix -f -p bed "$GRAPH.bubbles.bed.gz"
 [ -s "$GRAPH.fold10000.graph.bed.gz" ] ||
   gfa-to-tabix fold "$GRAPH.rgfa.gz" --below 10000 --layout contig -o "$GRAPH.fold10000"
 rm -f "$GRAPH.rgfa"
