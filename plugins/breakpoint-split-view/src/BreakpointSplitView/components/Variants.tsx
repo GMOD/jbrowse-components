@@ -47,7 +47,6 @@ const Variants = observer(function Variants(props: OverlayProps) {
 export default Variants
 
 export function variantPaths({
-  session,
   match,
   views,
   tracks,
@@ -121,7 +120,10 @@ export function variantPaths({
                 end: mateEnd.pos + 1,
               }),
           ),
-        openWidget: variantWidgetOpener(session, near.feature),
+        openWidget: variantWidgetOpener(
+          tracks[near.level]?.displays[0],
+          near.feature,
+        ),
       },
     ]
   })

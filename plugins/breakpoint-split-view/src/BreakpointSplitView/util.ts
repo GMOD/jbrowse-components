@@ -53,6 +53,8 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
     featureId: string,
     onFeat: (feat: Feature) => void,
   ) => Promise<void>
+  /** opens the details widget on a feature, as a click on the track does */
+  selectFeature?: (feature: Feature) => void
 }
 
 // The filters the display applies, so the overlay draws no connector for a

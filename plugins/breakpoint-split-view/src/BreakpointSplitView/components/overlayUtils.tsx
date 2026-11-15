@@ -19,7 +19,7 @@ import { connectionKeyRows } from './connectionStyle.ts'
 import type { BreakpointViewModel } from '../model.ts'
 import type { ReadEntry } from '../readChains.ts'
 import type { LayoutRecord, OverlayLevel, OverlayMatch } from '../types.ts'
-import type { OverlayTrack } from '../util.ts'
+import type { OverlayDisplay, OverlayTrack } from '../util.ts'
 import type { StyledConnection } from './connectionStyle.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -33,39 +33,21 @@ export interface OverlayProps {
   yOffsetsOverride?: (number | undefined)[]
 }
 
-// One place the overlay opens a feature widget: the two kinds differ only in
-// which widget takes the click and what it is handed.
-function openFeatureWidget(
-  session: ReturnType<typeof getSession>,
-  widgetType: string,
-  widgetId: string,
-  featureData: unknown,
-) {
-  const widget = session.addWidget?.(widgetType, widgetId, { featureData })
-  if (widget) {
-    session.showWidget?.(widget)
-  }
-}
-
-// Both openers serialize their features at click time, not per render: every
-// overlay path in the view would otherwise pay for a `toJSON` on every pan/zoom
-// frame to fill in a widget nobody has opened.
+// The row's display opens a clicked call as a click on its own track would, so
+// the widget gets the view, track and header descriptions and the session its
+// selection.
 export function variantWidgetOpener(
-  session: ReturnType<typeof getSession>,
+  display: Pick<OverlayDisplay, 'selectFeature'> | undefined,
   feature: Feature,
 ) {
   return () => {
-    openFeatureWidget(
-      session,
-      'VariantFeatureWidget',
-      'variantFeature',
-      feature.toJSON(),
-    )
+    display?.selectFeature?.(feature)
   }
 }
 
 // The overlay holds a read's arrays, not its record, so a click fetches both
-// full reads from their own rows' displays.
+// full reads from their own rows' displays. Serialized at click time: every
+// overlay path would otherwise pay a `toJSON` per pan/zoom frame.
 export function alignmentWidgetOpener(
   session: ReturnType<typeof getSession>,
   tracks: Pick<OverlayTrack, 'displays'>[],
@@ -77,12 +59,14 @@ export function alignmentWidgetOpener(
       void tracks[e2.level]?.displays[0]?.withFeatureById?.(
         readIdOf(e2),
         f2 => {
-          openFeatureWidget(
-            session,
+          const widget = session.addWidget?.(
             'BreakpointAlignmentsWidget',
             'breakpointAlignments',
-            { feature1: f1.toJSON(), feature2: f2.toJSON() },
+            { featureData: { feature1: f1.toJSON(), feature2: f2.toJSON() } },
           )
+          if (widget) {
+            session.showWidget?.(widget)
+          }
         },
       )
     })
@@ -172,7 +156,7 @@ export interface PathSpec {
    */
   tooltip?: () => string[]
   highlights?: () => HighlightRect[]
-  /** Resolved at click time, for the reason `variantWidgetOpener` gives. */
+  /** Resolved at click time, for the reason `alignmentWidgetOpener` gives. */
   openWidget?: () => void
   /**
    * Every spec sharing this reads as hovered together — for an alignments

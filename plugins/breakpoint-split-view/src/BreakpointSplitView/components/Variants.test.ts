@@ -30,7 +30,7 @@ function context(reversed = false) {
       ],
     },
     views: [{ bpToPx: ({ coord }: { coord: number }) => coord < 1000 }],
-    tracks: [{ minimized: false }],
+    tracks: [{ minimized: false, displays: [{}] }],
     layouts: [{ width: 1000 }],
     getX: (_level: number, _refName: string, coord: number) => ({
       x: coord,
@@ -104,7 +104,10 @@ function twoRowContext(nearLevel: number) {
       bpToPx: ({ coord }: { coord: number }) =>
         (coord < 300 ? nearLevel : 1 - nearLevel) === level,
     })),
-    tracks: [{ minimized: false }, { minimized: false }],
+    tracks: [
+      { minimized: false, displays: [{}] },
+      { minimized: false, displays: [{}] },
+    ],
     layouts: [{ width: 1000 }, { width: 1000 }],
     getY: (level: number, [, top, , bottom]: readonly number[], at = 0.5) =>
       level * 100 + top! + (bottom! - top!) * at,
@@ -126,4 +129,17 @@ test('a connector to a row below leaves from under the labels', () => {
 test('a connector to a row above leaves from the glyph top', () => {
   const [path] = variantPaths(twoRowContext(1))
   expect(pathYs(path!.path).slice(0, 2)).toEqual([110, 110])
+})
+
+// The widget needs the row's view, track and header descriptions, which only
+// the row's display hands over.
+test("clicking a call opens it through its row's display", () => {
+  const selectFeature = jest.fn()
+  const ctx = context()
+  const [spec] = variantPaths({
+    ...ctx,
+    tracks: [{ minimized: false, displays: [{ selectFeature }] }],
+  } as unknown as OverlayContext)
+  spec!.openWidget!()
+  expect(selectFeature).toHaveBeenCalledWith(deletion)
 })

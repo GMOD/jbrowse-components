@@ -355,7 +355,7 @@ export function navToLoc(
   const { view } = model
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   if (!view) {
-    session.notify('No view associated with this view anymore')
+    session.notify('No view associated with this widget anymore')
     return
   }
   const assemblyName = getAssemblyName(view)
