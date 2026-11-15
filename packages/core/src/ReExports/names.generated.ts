@@ -135,7 +135,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/assemblyManager/expandAssemblyConfigShorthand': ['expandAssemblySequence', 'expandAssemblySequenceAdapter', 'expandAssemblyShorthand', 'expandSidecarShorthand', 'refNameAliasAdapterType', 'referenceSequenceTrackId'],
   '@jbrowse/core/assemblyManager/refNameMaps': ['buildRefNameMaps', 'canonicalRefNameIn', 'checkRefName', 'groupNamesByCanonicalRefName', 'isAssembledMolecule', 'refNameIndexOf', 'refNamePositionIn'],
   '@jbrowse/core/BaseFeatureWidget': ['configSchema', 'stateModelFactory'],
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': ['BaseAttributes', 'BaseCard', 'BaseCoreDetails', 'FeatureDetails', 'FeatureDetailsFrame', 'FeatureTrackContext', 'FeatureWash', 'default', 'featureKey', 'filterByValueItems', 'jexlFilterDisplay', 'rawValueFilterActions', 'useFeatureKey'],
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': ['BaseAttributes', 'BaseCard', 'BaseCoreDetails', 'FeatureDetails', 'FeatureDetailsFrame', 'FeatureDetailsPanel', 'FeatureTrackContext', 'FeatureWash', 'default', 'featureKey', 'filterByValueItems', 'jexlFilterDisplay', 'rawValueFilterActions', 'useFeatureKey'],
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes': ['default', 'hasAttributeRows', 'withoutLocations'],
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard': ['default'],
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails': ['default'],

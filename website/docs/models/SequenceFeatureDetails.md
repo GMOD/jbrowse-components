@@ -27,6 +27,7 @@ caller changing the readout reaches these actions.
 | <span id="volatile-uppercasecds">**upperCaseCDS**</span><br><code>boolean</code> |  |
 | <span id="volatile-charactersperrow">**charactersPerRow**</span><br><code>number</code> | how wide a row of the readout is. Rows exist only while coordinates are shown — without them the panel wraps to its container — so this is what the labels step by, and the line width of the FASTA exported from that state. |
 | <span id="volatile-recentmodes">**recentModes**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>("cdna" &#124; "cds" &#124; "gene" &#124; "gene_collapsed_intron" &#124; "gene_updo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>("cdna" &#124; "cds" &#124; "gene" &#124; "gene_collapsed_intron" &#124; "gene_updownstream" &#124; "gene_updownstream_collapsed_intron" &#124; "genomic" &#124; "genomic_sequence_updownstream" &#124; "protein")[]</code></pre></dialog></span> | the sequence types picked in any panel, most recent first; `resolveMode` shows the first one a feature offers |
+| <span id="volatile-shown">**shown**</span><br><code>boolean</code> | whether the widget's sequence panel is open; it stays open as the widget swaps to the next feature |
 
 ## Getters
 
@@ -40,6 +41,7 @@ caller changing the readout reaches these actions.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="action-setshown">**setShown**</span><br><code>(shown: boolean) =&gt; void</code> |  |
 | <span id="action-setupdownbp">**setUpDownBp**</span><br><code>(f: number) =&gt; void</code> |  |
 | <span id="action-setintronbp">**setIntronBp**</span><br><code>(f: number) =&gt; void</code> |  |
 | <span id="action-setuppercasecds">**setUpperCaseCDS**</span><br><code>(f: boolean) =&gt; void</code> |  |

@@ -788,6 +788,7 @@
         "BaseCoreDetails",
         "FeatureDetails",
         "FeatureDetailsFrame",
+        "FeatureDetailsPanel",
         "FeatureTrackContext",
         "FeatureWash",
         "default",
