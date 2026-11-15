@@ -5,16 +5,14 @@ import {
   encodeSeqNumeric,
   numericCigarCategoryBits,
   parseCigar2Typed,
-  SAM_FLAG_FIRST_IN_PAIR,
-  SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_REVERSE,
 } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import {
   cigarHasEndClip,
-  hasPairOrientation,
   nextSegmentPosition,
+  pairOrientation,
 } from '../shared/util.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
@@ -201,18 +199,13 @@ export default class SamRecordFeature implements MismatchFeature {
   // IGV's pair-orientation string (e.g. `F1R2`)
   get pair_orientation() {
     const { flags, next_ref, next_pos, refName, start } = this.record
-    if (!hasPairOrientation(flags, next_ref === refName)) {
-      return undefined
-    }
-    const first = flags & SAM_FLAG_FIRST_IN_PAIR
-    const self = `${flags & SAM_FLAG_REVERSE ? 'R' : 'F'}${first ? 1 : 2}`
-    const mate = `${flags & SAM_FLAG_MATE_REVERSE ? 'R' : 'F'}${first ? 2 : 1}`
-    // The leftmost segment leads, decided by an order both mates evaluate the
-    // same way — @gmod/bam's rule. TLEN's sign says the same thing only when the
-    // aligner filled it in, and a TLEN of 0 made both mates trail.
-    const selfLeads =
-      next_pos === undefined || next_pos === start ? !!first : start < next_pos
-    return selfLeads ? `${self}${mate}` : `${mate}${self}`
+    return pairOrientation(
+      flags,
+      start,
+      next_pos,
+      this.seq_length,
+      next_ref === refName,
+    )
   }
 
   get mismatches() {

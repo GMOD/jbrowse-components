@@ -14,7 +14,10 @@ import configSchema from './configSchema.ts'
 // the adapter with it, so a bare construction has to hand it over the same way
 
 function volvoxBam(name: string) {
-  const bam = require.resolve(`../../../../test_data/volvox/${name}`)
+  return bamAdapter(require.resolve(`../../../../test_data/volvox/${name}`))
+}
+
+function bamAdapter(bam: string) {
   return new Adapter(
     configSchema.create({
       bamLocation: { localPath: bam, locationType: 'LocalPathLocation' },
@@ -98,3 +101,31 @@ test.each([
     }
   },
 )
+
+test.each([
+  [
+    'a wgsim tie',
+    'volvox/wgsim_short_reads.bam',
+    'ctgA',
+    1876,
+    'ctgAB_1877_2026_2:0:0_1:0:0_592',
+  ],
+  [
+    'a bwa-meth dovetail',
+    'wgbs/bwa-meth.sorted.subselect.downsample.bam',
+    'chrREF',
+    26705,
+    'HISEQ:105:C2UE1ACXX:3:2203:2563:10879',
+  ],
+])('both mates of %s face FR', async (_, file, refName, start, name) => {
+  const reads = await firstValueFrom(
+    bamAdapter(require.resolve(`../../../../test_data/${file}`))
+      .getFeatures({ assemblyName: 'test', refName, start, end: start + 10 })
+      .pipe(toArray()),
+  )
+  expect(
+    reads
+      .filter(f => f.get('name') === name)
+      .map(f => f.get('pair_orientation')),
+  ).toEqual(['F2R1', 'F2R1'])
+})

@@ -224,6 +224,49 @@ test('both mates of a pair with TLEN 0 name the same orientation', async () => {
   expect(mates.map(f => f.get('pair_orientation'))).toEqual(['F1R2', 'F1R2'])
 })
 
+test.each([
+  [
+    'a dovetail',
+    [
+      'd\t83\tctgA\t1\t60\t8M\t=\t3\t10\tACGTACGT\t*',
+      'd\t163\tctgA\t3\t60\t8M\t=\t1\t-10\tGTACGTAC\t*',
+    ],
+    ['F2R1', 'F2R1'],
+  ],
+  [
+    'a flagless tie',
+    [
+      't\t19\tctgA\t1\t60\t8M\t=\t1\t8\tACGTACGT\t*',
+      't\t35\tctgA\t1\t60\t8M\t=\t1\t-8\tACGTACGT\t*',
+    ],
+    ['F1R2', 'F2R1'],
+  ],
+  [
+    'mates of unequal length',
+    [
+      'u\t83\tctgA\t1\t60\t8M\t=\t3\t8\tACGTACGT\t*',
+      'u\t163\tctgA\t3\t60\t4M\t=\t1\t-8\tGTAC\t*',
+    ],
+    ['F2R1', 'F2R1'],
+  ],
+  [
+    'a tie with SEQ *',
+    [
+      's\t83\tctgA\t1\t60\t8M\t=\t1\t8\t*\t*',
+      's\t163\tctgA\t1\t60\t8M\t=\t1\t-8\t*\t*',
+    ],
+    ['R1F2', 'R1F2'],
+  ],
+  [
+    'no mate position',
+    ['n\t83\tctgA\t1\t60\t8M\t=\t0\t0\tACGTACGT\t*'],
+    ['R1F2'],
+  ],
+])('pair orientation of %s', async (_, records, expected) => {
+  const mates = await fetch(makeAdapter(`${records.join('\n')}\n`), 'ctgA')
+  expect(mates.map(f => f.get('pair_orientation'))).toEqual(expected)
+})
+
 test('leaves pair orientation unset for an unpaired record', async () => {
   const [exact] = await fetch(makeAdapter(SAM), 'ctgA')
   expect(exact!.get('pair_orientation')).toBeUndefined()
