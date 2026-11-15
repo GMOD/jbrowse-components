@@ -610,7 +610,10 @@ describe('computeMultiRegionChainLayout — placement axis is screen order', () 
   })
 
   test('a chain present in both of two identical regions blocks a second', () => {
-    const both = [...overlappingBp, { ...overlappingBp[0]!, name: 'chainB' }]
+    const both = [
+      { name: 'chainA', minStart: 100, maxEnd: 300, distance: 200 },
+      { name: 'chainB', minStart: 500, maxEnd: 900, distance: 400 },
+    ]
     const { maxY } = computeMultiRegionChainLayout(
       [
         [0, makeChainData({ regionStart: 0, chains: both })],
@@ -620,6 +623,132 @@ describe('computeMultiRegionChainLayout — placement axis is screen order', () 
     )
 
     expect(maxY).toBe(2)
+  })
+
+  test('descending windows on one refName keep reads under the connector off its row', () => {
+    const { rowMap } = computeMultiRegionChainLayout(
+      [
+        [
+          0,
+          makeChainData({
+            regionStart: 5000,
+            chains: [
+              { name: 'split', minStart: 5500, maxEnd: 5600, distance: 100 },
+              {
+                name: 'underRight',
+                minStart: 5700,
+                maxEnd: 5800,
+                distance: 100,
+              },
+            ],
+          }),
+        ],
+        [
+          1,
+          makeChainData({
+            regionStart: 1000,
+            chains: [
+              { name: 'split', minStart: 1500, maxEnd: 1600, distance: 100 },
+              {
+                name: 'underLeft',
+                minStart: 1200,
+                maxEnd: 1300,
+                distance: 100,
+              },
+            ],
+          }),
+        ],
+      ],
+      new Map([
+        [0, { refName: 'ctgA', start: 5000, end: 6000 }],
+        [1, { refName: 'ctgA', start: 1000, end: 2000 }],
+      ]),
+    )
+
+    expect(rowMap.get('underRight')).not.toBe(rowMap.get('split'))
+    expect(rowMap.get('underLeft')).not.toBe(rowMap.get('split'))
+  })
+
+  test('a chain across three regions blocks a chain in the middle one', () => {
+    const { rowMap } = computeMultiRegionChainLayout(
+      [
+        [
+          0,
+          makeChainData({
+            regionStart: 1000,
+            chains: [
+              { name: 'wide', minStart: 1000, maxEnd: 1100, distance: 100 },
+            ],
+          }),
+        ],
+        [
+          1,
+          makeChainData({
+            regionStart: 3000,
+            chains: [
+              { name: 'middle', minStart: 3000, maxEnd: 3100, distance: 100 },
+            ],
+          }),
+        ],
+        [
+          2,
+          makeChainData({
+            regionStart: 5000,
+            chains: [
+              { name: 'wide', minStart: 5000, maxEnd: 5100, distance: 100 },
+            ],
+          }),
+        ],
+      ],
+      new Map([
+        [0, { refName: 'ctgA', start: 1000, end: 2000 }],
+        [1, { refName: 'ctgA', start: 3000, end: 4000 }],
+        [2, { refName: 'ctgA', start: 5000, end: 6000 }],
+      ]),
+    )
+
+    expect(rowMap.get('middle')).not.toBe(rowMap.get('wide'))
+  })
+
+  test('a revisited refName keeps the chain between its visits off the spanning row', () => {
+    const { rowMap } = computeMultiRegionChainLayout(
+      [
+        [
+          0,
+          makeChainData({
+            regionStart: 1000,
+            chains: [
+              { name: 'spanning', minStart: 1500, maxEnd: 1600, distance: 100 },
+            ],
+          }),
+        ],
+        [
+          1,
+          makeChainData({
+            regionStart: 1000,
+            chains: [
+              { name: 'onChr9', minStart: 1500, maxEnd: 1600, distance: 100 },
+            ],
+          }),
+        ],
+        [
+          2,
+          makeChainData({
+            regionStart: 5000,
+            chains: [
+              { name: 'spanning', minStart: 5500, maxEnd: 5600, distance: 100 },
+            ],
+          }),
+        ],
+      ],
+      new Map([
+        [0, { refName: 'chr22', start: 1000, end: 2000 }],
+        [1, { refName: 'chr9', start: 1000, end: 2000 }],
+        [2, { refName: 'chr22', start: 5000, end: 6000 }],
+      ]),
+    )
+
+    expect(rowMap.get('onChr9')).not.toBe(rowMap.get('spanning'))
   })
 })
 
