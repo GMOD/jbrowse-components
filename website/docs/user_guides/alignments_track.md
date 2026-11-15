@@ -301,10 +301,10 @@ or **hard-clipped** (dropped). Soft-clipped bases are hidden by default; **Show
 → Show soft clipping** in the track menu reveals them. Clusters of them often
 mark a structural-variant breakpoint.
 
-Clipped bases are drawn for the reads aligned inside the loaded window, which is
-a little wider than the view. A long read's clipped end can run for kilobases,
-so as you pan away from a breakpoint it stops, on every read at once, where the
-reads' aligned parts leave that window.
+Clipped bases are drawn only inside the loaded window, half a screen past each
+side of the view. Pan faster than the next fetch and every clipped tail stops at
+that window's edge until the fetch lands. Once a read's aligned part leaves the
+window, the read and its clipped bases are not loaded.
 
 A read with no `SEQ` field (secondary reads among them) has no clipped bases to
 draw. It keeps the blue bar at its clipped end and, zoomed in to the bases, the

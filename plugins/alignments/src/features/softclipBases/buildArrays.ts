@@ -9,24 +9,21 @@ export function buildSoftclipBaseArrays(
   start: number,
   end: number,
 ) {
-  const spanOf = (sc: SoftclipData, sequence = sc.sequence ?? '') =>
-    [
-      Math.max(0, Math.ceil(start - sc.clipStart)),
-      Math.min(sequence.length, Math.ceil(end - sc.clipStart)),
-      sequence,
-    ] as const
-  const count = softclips.reduce((sum, sc) => {
-    const [from, to] = spanOf(sc)
-    return sum + Math.max(0, to - from)
-  }, 0)
+  const firstBase = (sc: SoftclipData) => Math.max(0, start - sc.clipStart)
+  const pastLastBase = (sc: SoftclipData) =>
+    Math.min(sc.sequence?.length ?? 0, end - sc.clipStart)
+  const count = softclips.reduce(
+    (sum, sc) => sum + Math.max(0, pastLastBase(sc) - firstBase(sc)),
+    0,
+  )
   const softclipBasePositions = new Uint32Array(count)
   const softclipBaseBases = new Uint8Array(count)
   const softclipBaseReadIndices = new Uint32Array(count)
   let i = 0
   for (const sc of softclips) {
-    const [from, to, sequence] = spanOf(sc)
+    const sequence = sc.sequence ?? ''
     const ri = sc.readIndex
-    for (let k = from; k < to; k++) {
+    for (let k = firstBase(sc), to = pastLastBase(sc); k < to; k++) {
       softclipBasePositions[i] = sc.clipStart + k
       // uppercase the ASCII base (CRAM may emit lowercase) so the Canvas2D
       // baseColors map (uppercase-keyed) matches the GPU shader path

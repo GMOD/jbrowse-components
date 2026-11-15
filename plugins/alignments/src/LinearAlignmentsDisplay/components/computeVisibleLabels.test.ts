@@ -408,8 +408,6 @@ test('soft-clip letters follow the setting, not the data a refetch replaces', ()
   ])
 })
 
-// A read with no SEQ (a secondary, say) has a clip but no bases to draw, so it
-// keeps its summary while the read beside it draws letters instead
 test('the (S<len>) summary renders for a SEQ-less read beside one with bases', () => {
   const labels = run(
     makeRpcData({
@@ -417,8 +415,9 @@ test('the (S<len>) summary renders for a SEQ-less read beside one with bases', (
       interbaseYs: new Uint16Array([2, 4]),
       interbaseLengths: new Uint32Array([2, 30]),
       interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP, INTERBASE_SOFTCLIP]),
-      interbaseReadIndices: new Uint32Array([0, 1]),
+      interbaseReadIndices: new Uint32Array([5, 1]),
       ...softclipBasesAt30,
+      softclipBaseReadIndices: new Uint32Array([5, 5]),
     }),
   )
   expect(labels.filter(l => l.type === 'softclip').map(l => l.text)).toEqual([

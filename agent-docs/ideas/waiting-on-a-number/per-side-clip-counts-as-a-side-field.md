@@ -23,8 +23,8 @@ visible in the pileup, but not in the hover.
   [ADR-140](../../architecture-decision-records/adr-140-sv-analysis-is-not-ours-to-ship.md)
   leaves to established tools, and the clip strings it would read no longer
   ship:
-  `interbaseSequences` carries `''` for clips. "Launch → BLAT soft-clipped
-  bases" is the route to a clip's sequence.
+  `interbaseSequences` carries `''` for clips. The external BLAT plugin's
+  "Launch → BLAT soft-clipped bases" is the route to a clip's sequence.
 
 ## The number that decides it
 
