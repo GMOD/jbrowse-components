@@ -18,6 +18,14 @@ unplaced one, and a supplementary whose source dropped its SA tag, are no
 longer split evidence, so the filter, the sort, the split view and the
 `svKind` band agree on every read. The test costs 1 to 4 µs a record
 carrying SA (volvox long-read fixtures, in jest, under load).
+Amended 2026-11-15: "a pair not facing FR" means the leftmost 5' end leads.
+For opposite-strand mates on one reference whose starts are closer than the
+record's `seq_length`, the forward mate leads; otherwise leftmost POS, then
+read1. The in-repo getters own the rule (`pairOrientation`,
+`shared/util.ts`, called by the BAM, CRAM and SAM features) rather than
+deferring to `@gmod/bam` and `@gmod/cram`, whose leftmost-POS rule called
+equal-start and dovetailed proper pairs RL and filed them as duplication-type
+evidence. See the pair-orientation consequences below.
 
 Amends [ADR-226](adr-226-reads-are-categorized-once.md): its `svSignal` sort
 lifted split reads and SV-size deletions, and its consequence about
@@ -134,6 +142,35 @@ lifted split reads and SV-size deletions, and its consequence about
   pericentromere, 67% of the discordant reads had a mate below MAPQ 20.
   `badread_long_reads.bam` carries the same shape, chimeras whose other piece
   sits on ctgB at MAPQ 0.
+
+- **Pair orientation by 5' ends (2026-11-15).** Proper pairs the leftmost-POS
+  rule called RL, and what they become under the 5' rule:
+
+  | Sample | False RL before | Grey ordinary after | Short-insert after |
+  | --- | --- | --- | --- |
+  | HG002 2x250 novoalign, 20:10.0-10.1 Mb | 534 | 522 | 12 |
+  | HG00096 bwa-mem, chr20:10.0-10.3 Mb | 26 | 16 | 10 |
+  | `test_data/wgbs` bwa-meth | 306 | 306 | 0 |
+  | `wgsim_short_reads.bam` | 12 | 12 | 0 |
+
+  - Fixed pairs leave "Only SV evidence" and the duplication-type band, and
+    file under LR. The few whose `|TLEN|` is under the band's lower bound paint
+    short-insert, as every short proper pair already does.
+  - `volvox-sv.bam`'s 670 proper-flagged true RL records stay RL.
+  - `pair_orientation` keeps its eight values; a jexl filter or facet on it
+    sees dovetail pairs move from RL to LR spellings.
+  - A flagless tie (neither 0x40 nor 0x80) now has both mates LR, where they
+    disagreed before.
+  - SEQ `*` passes a `seq_length` of 0, so such a record answers as before.
+  - **Accepted edge: mates can disagree** with unequal `seq_length`, the
+    reverse mate leftmost and the offset between the two lengths (0 of 5,374
+    unequal-length pairs on HG002), or with exactly one SEQ-less mate.
+  - **Accepted edge: the window is the record's `seq_length`, not the reverse
+    mate's reference span.** A reverse-leftmost mate shortened by a soft clip
+    or insertion, with the forward mate starting past its end but inside
+    `start + seq_length`, reads LR though the 5' ends do not cross. 0 such
+    pairs among 13,912 opposite-strand pairs on HG002, 37,140 on HG00096 and
+    782 on wgbs, and no BAM fixture has one.
 
 ## Rejected alternatives
 

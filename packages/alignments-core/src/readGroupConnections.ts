@@ -330,12 +330,11 @@ export function primaryOf<E extends MinEntry>(segs: E[]) {
 // actually drawn; these two do not, because they describe the fragment rather
 // than the segment, and a supplementary's own record answers them differently.
 //
-// `pair_orientation` is derived (in @gmod/bam) from the record's own reverse bit
-// and its own position, so a supplementary that flipped strand at the split
-// junction — or that simply sits on the other side of its mate — computes a
-// different orientation from its primary, while the two PRIMARIES of a pair
-// always agree (the table maps read1's and read2's flag/position combinations
-// onto the same string). Preferring a primary is therefore a no-op whenever both
+// `pair_orientation` is derived (in the adapters' `pairOrientation`) from the
+// record's own reverse bit, position and length, so a supplementary that
+// flipped strand at the split junction — or that simply sits on the other side
+// of its mate — computes a different orientation from its primary, while the
+// two PRIMARIES of a pair agree outside the edges ADR-229 accepts. Preferring a primary is therefore a no-op whenever both
 // are on screen, which is the overwhelming majority, and only bites in the case
 // it exists for: a mate whose primary is off-screen, so `primaryOf` above handed
 // the resolver its supplementary segment instead.

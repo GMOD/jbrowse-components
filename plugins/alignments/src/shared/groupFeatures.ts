@@ -429,7 +429,7 @@ export interface FacetDimension<K extends ReadDimension = ReadDimension> {
   //
   // NOT "every read of the chain yields this key", which two of the dimensions
   // marked true fail: a supplementary segment carries its own strand and its own
-  // @gmod/bam-derived `pair_orientation`, so an inverted split makes
+  // `pair_orientation` from its own start and length, so an inverted split makes
   // `firstOfPairStrand` and `pairOrientation` disagree with their primary. The
   // primary read1 holds the fragment's answer either way — the same read
   // `attachChainFields` takes pair orientation off. `mapq` and `strand` are false
