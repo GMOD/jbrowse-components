@@ -68,7 +68,6 @@ const SequenceContents = observer(function SequenceContents({
 
     case 'protein': {
       const transcript = new SimpleFeature(feature)
-      const translExcept = transcriptTranslExcept(transcript)
       const code = getGeneticCode(
         transcriptGeneticCodeId(transcript, assemblyGeneticCodeId),
       )
@@ -79,7 +78,7 @@ const SequenceContents = observer(function SequenceContents({
           sequence={seq}
           codonTable={code.codonTable}
           starts={code.starts}
-          translExcept={translExcept?.length ? translExcept : undefined}
+          translExcept={transcriptTranslExcept(transcript)}
         />
       )
     }

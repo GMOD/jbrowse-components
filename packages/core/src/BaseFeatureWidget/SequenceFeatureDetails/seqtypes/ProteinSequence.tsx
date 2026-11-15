@@ -38,7 +38,7 @@ const ProteinSequence = observer(function ProteinSequence({
   model,
   codonTable,
   starts,
-  translExcept,
+  translExcept = [],
 }: {
   cds: Feat[]
   sequence: string
@@ -54,10 +54,8 @@ const ProteinSequence = observer(function ProteinSequence({
     starts,
     translExcept,
   })
-  const note = translExcept ? translExceptNote(translExcept) : undefined
-  const highlightPositions = translExcept?.length
-    ? translExceptProteinPositions({ cds, translExcept })
-    : undefined
+  const note = translExceptNote(translExcept)
+  const highlightPositions = translExceptProteinPositions({ cds, translExcept })
 
   return (
     <>
@@ -69,7 +67,7 @@ const ProteinSequence = observer(function ProteinSequence({
         color={proteinColor}
         str={str}
         highlight={
-          highlightPositions?.size
+          highlightPositions.size
             ? index =>
                 highlightPositions.has(index) ? translExceptColor : undefined
             : undefined
