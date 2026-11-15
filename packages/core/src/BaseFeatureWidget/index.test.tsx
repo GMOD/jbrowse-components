@@ -408,6 +408,39 @@ test('clicking another feature keeps the sequence panel open on its type', async
   expect((await findByRole('combobox')).textContent).toBe('Protein')
 })
 
+test("a field's name carries the widget's description of it", async () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    {
+      widget: {
+        type: 'BaseFeatureWidget',
+        descriptions: { score: 'the confidence score' },
+        unformattedFeatureData: {
+          uniqueId: 'one',
+          refName: 'ctgA',
+          start: 2,
+          end: 102,
+          score: 7,
+        },
+      },
+    },
+    { pluginManager },
+  )
+  const { findByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  expect((await findByText('score')).getAttribute('aria-label')).toBe(
+    'the confidence score',
+  )
+})
+
 test('a card collapsed on one feature opens on the next', async () => {
   const pluginManager = new PluginManager([])
   const Session = types.model({
