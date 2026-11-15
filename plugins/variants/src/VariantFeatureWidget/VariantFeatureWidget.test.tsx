@@ -414,3 +414,30 @@ test('ANN without header column names stays in the raw attributes', () => {
   expect(getByText('T|stop_gained|HIGH|G1|TX1')).toBeTruthy()
   expect(queryByText('Variant ANN field')).toBeNull()
 })
+
+test("the ALT and FILTER names keep the column's description beside the header's ALT and FILTER maps", () => {
+  const { getByText } = renderWidget(
+    {
+      uniqueId: 'described',
+      refName: 'ctgA',
+      start: 176,
+      end: 177,
+      REF: 'C',
+      ALT: ['T'],
+      FILTER: ['PASS'],
+      INFO: { DP: [10] },
+    },
+    {
+      ALT: { DEL: { Description: 'Deletion' } },
+      FILTER: { PASS: { Description: 'All filters passed' } },
+      INFO: { DP: { Description: 'Read depth' } },
+    },
+  )
+  expect(getByText('ALT').getAttribute('aria-label')).toMatch(
+    /^alternate base\(s\)/,
+  )
+  expect(getByText('FILTER').getAttribute('aria-label')).toMatch(
+    /^filter status/,
+  )
+  expect(getByText('INFO.DP').getAttribute('aria-label')).toBe('Read depth')
+})

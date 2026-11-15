@@ -143,8 +143,8 @@ const FeatDefined = observer(function FeatDefined({
         unformatted={model.unformattedFeatureData}
         model={model}
         descriptions={{
-          ...variantFieldDescriptions,
           ...descriptions,
+          ...variantFieldDescriptions,
         }}
         formatter={(value, key, index) =>
           key === 'ALT' ? (

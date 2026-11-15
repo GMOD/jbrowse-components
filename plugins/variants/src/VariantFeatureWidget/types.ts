@@ -17,11 +17,15 @@ export interface VCFFeatureSerialized extends SimpleFeatureSerialized {
 }
 
 // VCF header metadata (@gmod/vcf `getMetadata()`, fetched via CoreGetMetadata),
-// narrowed to what the widget reads: the per-field Description strings it uses
-// for the ANN/CSQ column lists and the sample-grid column tooltips.
+// narrowed to the per-field Description maps: INFO and FORMAT feed the ANN/CSQ
+// column lists and the sample-grid column tooltips, and ALT and FILTER, which
+// @gmod/vcf seeds with the reserved types, sit where the column names'
+// own descriptions go.
 type FieldDescriptions = Record<string, { Description?: string } | undefined>
 
 export type Descriptions = {
   INFO?: FieldDescriptions
   FORMAT?: FieldDescriptions
+  ALT?: FieldDescriptions
+  FILTER?: FieldDescriptions
 }
