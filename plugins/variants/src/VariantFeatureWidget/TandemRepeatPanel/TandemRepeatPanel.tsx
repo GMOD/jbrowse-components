@@ -17,7 +17,9 @@ import {
   rowLayout,
   unitLabel,
 } from './layout.ts'
+import { tandemRepeatOf } from './tandemRepeat.ts'
 
+import type { VCFFeatureSerialized } from '../types.ts'
 import type { RepeatAllele, TandemRepeat } from './tandemRepeat.ts'
 
 // Tableau 10, whose leading hues stay apart in lightness as well as hue
@@ -245,7 +247,7 @@ const SAMPLE_MAX_ROWS = 24
 
 type Mode = 'sample' | 'allele'
 
-const TandemRepeatPanel = observer(function TandemRepeatPanel({
+const TandemRepeatView = observer(function TandemRepeatView({
   repeat,
   selectedAlt,
   onSelectAlt,
@@ -407,6 +409,26 @@ const TandemRepeatPanel = observer(function TandemRepeatPanel({
       </div>
     </BaseCard>
   )
+})
+
+// A <CNV:TR> record's panel, or nothing when no allele states its runs
+const TandemRepeatPanel = observer(function TandemRepeatPanel({
+  feature,
+  selectedAlt,
+  onSelectAlt,
+}: {
+  feature: VCFFeatureSerialized
+  selectedAlt: number | null
+  onSelectAlt: (altIndex: number | null) => void
+}) {
+  const repeat = tandemRepeatOf(feature)
+  return repeat ? (
+    <TandemRepeatView
+      repeat={repeat}
+      selectedAlt={selectedAlt}
+      onSelectAlt={onSelectAlt}
+    />
+  ) : null
 })
 
 export default TandemRepeatPanel

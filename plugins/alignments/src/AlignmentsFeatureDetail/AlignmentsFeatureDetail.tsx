@@ -1,10 +1,11 @@
 import { lazy } from 'react'
 
 import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
-import { FeatureDetailsFrame } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
+import {
+  FeatureDetailsFrame,
+  FeatureDetailsPanel,
+} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
-import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Flags from './Flags.tsx'
@@ -23,63 +24,63 @@ const LinkedPairedAlignments = lazy(
   () => import('./LinkedPairedAlignments.tsx'),
 )
 
-const AlignmentsFeatureDetailsBody = observer(
-  function AlignmentsFeatureDetailsBody({
-    feat,
-    model,
-  }: {
-    feat: AlignmentFeatureSerialized
-    model: AlignmentFeatureWidgetModel
-  }) {
-    const { flags } = feat
-    const SA = getStringTag('SA', feat)
-    return (
-      <Paper data-testid="alignment-side-drawer">
-        <FeatureDetails
-          model={model}
-          descriptions={{ ...fieldDescriptions, tags }}
-          feature={feat}
-          unformatted={model.unformattedFeatureData}
-          omit={['flags', 'next_ref', 'next_pos']}
-          formatter={(value, key) =>
-            key === 'next_segment_position' ? (
-              <NavToLocLink model={model} loc={value as string}>
-                {value as string}
-              </NavToLocLink>
-            ) : (
-              <Formatter value={value} />
-            )
-          }
-        />
+const descriptions = { ...fieldDescriptions, tags }
 
-        {SA !== undefined ? (
-          <SupplementaryAlignments model={model} tag={SA} feature={feat} />
-        ) : null}
-        {flags !== undefined ? (
-          <>
-            {flags & SAM_FLAG_PAIRED ? (
-              <LinkedPairedAlignments model={model} feature={feat} />
-            ) : null}
+const omit = ['flags', 'next_ref', 'next_pos']
 
-            <Flags flags={flags} />
-          </>
-        ) : null}
-      </Paper>
-    )
-  },
-)
+const AlignmentPanels = observer(function AlignmentPanels({
+  feat,
+  model,
+}: {
+  feat: AlignmentFeatureSerialized
+  model: AlignmentFeatureWidgetModel
+}) {
+  const { flags } = feat
+  const SA = getStringTag('SA', feat)
+  return (
+    <>
+      {SA !== undefined ? (
+        <SupplementaryAlignments model={model} tag={SA} feature={feat} />
+      ) : null}
+      {flags !== undefined ? (
+        <>
+          {flags & SAM_FLAG_PAIRED ? (
+            <LinkedPairedAlignments model={model} feature={feat} />
+          ) : null}
+          <Flags flags={flags} />
+        </>
+      ) : null}
+    </>
+  )
+})
 
 const AlignmentsFeatureDetails = observer(function AlignmentsFeatureDetails({
   model,
 }: {
   model: AlignmentFeatureWidgetModel
 }) {
-  const { featureData } = model
   return (
     <FeatureDetailsFrame model={model}>
-      {featureData ? (
-        <AlignmentsFeatureDetailsBody feat={featureData} model={model} />
-      ) : null}
+      {(feature, raw) => (
+        <FeatureDetailsPanel
+          model={model}
+          feature={feature}
+          unformatted={raw}
+          testId="alignment-side-drawer"
+          descriptions={descriptions}
+          omit={omit}
+          formatter={(value, key) =>
+            key === 'next_segment_position' ? (
+              <NavToLocLink model={model} loc={String(value)}>
+                {String(value)}
+              </NavToLocLink>
+            ) : (
+              <Formatter value={value} />
+            )
+          }
+          after={<AlignmentPanels feat={raw} model={model} />}
+        />
+      )}
     </FeatureDetailsFrame>
   )
 })

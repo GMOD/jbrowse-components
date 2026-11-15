@@ -1,31 +1,30 @@
-import { FeatureDetailsFrame } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
+import {
+  FeatureDetailsFrame,
+  FeatureDetailsPanel,
+} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
-import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import LinkToSyntenyView from './LinkToSyntenyView.tsx'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
 
-const SyntenyFeatureDetail = observer(function SyntenyFeatureDetail(props: {
+const SyntenyFeatureDetail = observer(function SyntenyFeatureDetail({
+  model,
+}: {
   model: SyntenyFeatureDetailModel
 }) {
-  const { model } = props
-  const { featureData } = model
   return (
     <FeatureDetailsFrame model={model}>
-      {featureData ? (
-        <Paper>
-          <FeatureDetails
-            {...props}
-            feature={featureData}
-            unformatted={model.unformattedFeatureData}
-            formatter={value => <Formatter value={value} />}
-          />
-          <LinkToSyntenyView model={model} feat={featureData} />
-        </Paper>
-      ) : null}
+      {(feature, raw) => (
+        <FeatureDetailsPanel
+          model={model}
+          feature={feature}
+          unformatted={raw}
+          formatter={value => <Formatter value={value} />}
+          after={<LinkToSyntenyView model={model} feat={raw} />}
+        />
+      )}
     </FeatureDetailsFrame>
   )
 })

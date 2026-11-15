@@ -1,25 +1,22 @@
-import { Suspense, lazy, useMemo, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
 import { parseBreakend } from '@gmod/vcf'
 import {
   FeatureDetailsFrame,
-  featureKey,
-  jexlFilterDisplay,
-  rawValueFilterActions,
+  FeatureDetailsPanel,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { assembleLocString, notEmpty } from '@jbrowse/core/util'
 import { getBreakendMateLocString } from '@jbrowse/sv-core'
-import { Paper, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getTraMate, symbolicAlleleBp } from '../VcfFeature/util.ts'
+import { TANDEM_REPEAT } from '../shared/tandemRepeatRuns.ts'
 import AltFormatter from './AltFormatter.tsx'
-import { tandemRepeatOf } from './TandemRepeatPanel/tandemRepeat.ts'
 import { consequencePanels } from './VariantConsequence/parseConsequences.ts'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { isSvLaunchFeature } from './svLaunchType.ts'
@@ -84,7 +81,7 @@ function isFilterable(path: string[]) {
     : path.length === 2 && path[0] === 'INFO'
 }
 
-const FeatDefined = observer(function FeatDefined({
+const VariantDetails = observer(function VariantDetails({
   feat,
   raw,
   model,
@@ -106,84 +103,69 @@ const FeatDefined = observer(function FeatDefined({
   } = feat
   const { REF = '', ALT = [], INFO } = raw
   const altBp = symbolicAlleleBp(ALT, INFO)
-  const repeat = useMemo(() => {
-    try {
-      return tandemRepeatOf(raw)
-    } catch (e) {
-      console.error(e)
-      return undefined
-    }
-  }, [raw])
   const [selectedAlt, setSelectedAlt] = useState<number | null>(null)
   const consequences = consequencePanels(INFO, descriptions)
-  const display = jexlFilterDisplay(model.track)
-  const filterActions = display
-    ? rawValueFilterActions(display, raw)
-    : undefined
-  const fieldActions = filterActions
-    ? (path: string[], value: unknown) =>
-        isFilterable(path) ? filterActions(path, value) : []
-    : undefined
-
   return (
-    <Paper data-testid="variant-side-drawer">
-      <Suspense fallback={null}>
-        {repeat ? (
-          <ErrorBoundary FallbackComponent={ErrorBanner}>
-            <TandemRepeatPanel
-              repeat={repeat}
-              selectedAlt={selectedAlt}
-              onSelectAlt={setSelectedAlt}
-            />
-          </ErrorBoundary>
-        ) : null}
-      </Suspense>
-      <FeatureDetails
-        feature={rest}
-        unformatted={raw}
-        model={model}
-        descriptions={{
-          ...descriptions,
-          ...variantFieldDescriptions,
-        }}
-        formatter={(value, key, index) =>
-          key === 'ALT' ? (
-            <AltFormatter
-              value={`${value}`}
-              refString={REF}
-              bp={index === undefined ? undefined : altBp[index]}
-              mate={getTraMate(INFO)}
-            />
-          ) : (
-            <Formatter value={value} />
-          )
-        }
-        fieldActions={fieldActions}
-        omit={consequences.map(({ key }) => key)}
-      />
-      <Suspense fallback={null}>
-        {consequences.map(({ key, format, data, fields }) => (
-          <VariantConsequencePanel
-            key={key}
-            fields={fields}
-            data={data}
-            format={format}
+    <FeatureDetailsPanel
+      model={model}
+      feature={rest}
+      unformatted={raw}
+      testId="variant-side-drawer"
+      descriptions={{ ...descriptions, ...variantFieldDescriptions }}
+      omit={consequences.map(({ key }) => key)}
+      isFilterable={isFilterable}
+      formatter={(value, key, index) =>
+        key === 'ALT' ? (
+          <AltFormatter
+            value={`${value}`}
+            refString={REF}
+            bp={index === undefined ? undefined : altBp[index]}
+            mate={getTraMate(INFO)}
           />
-        ))}
-        <LaunchBreakendWidgetArea model={model} feat={raw} />
-      </Suspense>
-      {clickedSample ? (
-        <BaseCard title={`Sample: ${clickedSample}`}>
-          <Typography>Genotype: {`${clickedGenotype}`}</Typography>
-          <Typography>Alleles: {`${clickedAlleles}`}</Typography>
-        </BaseCard>
-      ) : null}
-      <VariantSampleGrid
-        feature={raw}
-        descriptions={descriptions}
-        selectedAlt={selectedAlt}
-      />
-    </Paper>
+        ) : (
+          <Formatter value={value} />
+        )
+      }
+      before={
+        ALT.includes(TANDEM_REPEAT) ? (
+          <ErrorBoundary FallbackComponent={ErrorBanner}>
+            <Suspense fallback={null}>
+              <TandemRepeatPanel
+                feature={raw}
+                selectedAlt={selectedAlt}
+                onSelectAlt={setSelectedAlt}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        ) : null
+      }
+      after={
+        <>
+          <Suspense fallback={null}>
+            {consequences.map(({ key, format, data, fields }) => (
+              <VariantConsequencePanel
+                key={key}
+                fields={fields}
+                data={data}
+                format={format}
+              />
+            ))}
+            <LaunchBreakendWidgetArea model={model} feat={raw} />
+          </Suspense>
+          {clickedSample ? (
+            <BaseCard title={`Sample: ${clickedSample}`}>
+              <Typography>Genotype: {`${clickedGenotype}`}</Typography>
+              <Typography>Alleles: {`${clickedAlleles}`}</Typography>
+            </BaseCard>
+          ) : null}
+          <VariantSampleGrid
+            feature={raw}
+            descriptions={descriptions}
+            selectedAlt={selectedAlt}
+          />
+        </>
+      }
+    />
   )
 })
 
@@ -192,21 +174,9 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget({
 }: {
   model: VariantFeatureWidgetModel
 }) {
-  const { featureData, unformattedFeatureData } = model
-  // keyed by feature: the widget instance is reused for the next variant clicked
-  // (one widget id per track, and the drawer renders it without a key), so
-  // without this the sample grid's filters and genotype selection carry over and
-  // silently empty the next variant's grid
   return (
     <FeatureDetailsFrame model={model}>
-      {featureData && unformattedFeatureData ? (
-        <FeatDefined
-          key={featureKey(model.trackId, featureData.uniqueId)}
-          feat={featureData}
-          raw={unformattedFeatureData}
-          model={model}
-        />
-      ) : null}
+      {(feat, raw) => <VariantDetails feat={feat} raw={raw} model={model} />}
     </FeatureDetailsFrame>
   )
 })
