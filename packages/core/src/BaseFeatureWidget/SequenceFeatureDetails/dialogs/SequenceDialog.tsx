@@ -1,23 +1,9 @@
-import { useRef } from 'react'
-
 import { observer } from 'mobx-react'
 
 import { InfoDialog } from '../../../ui/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
-import SequenceBody from '../SequenceBody.tsx'
-import SequenceControls from './SequenceControls.tsx'
 
-import type {
-  AbstractSessionModel,
-  RpcStatus,
-  SimpleFeatureSerialized,
-} from '../../../util/index.ts'
-import type {
-  SequenceDisplayMode,
-  SequenceFeatureDetailsModel,
-  SequenceHoverTarget,
-} from '../model.ts'
-import type { ErrorState, SeqState } from '../types.ts'
+import type { ReactNode } from 'react'
 
 const useStyles = makeStyles()({
   content: {
@@ -27,42 +13,12 @@ const useStyles = makeStyles()({
 
 const SequenceDialog = observer(function SequenceDialog({
   handleClose,
-  sequenceFeatureDetails,
-  session,
-  transcriptSelector,
-  feature,
-  mode,
-  revcomp,
-  setRevcomp,
-  sequence,
-  error,
-  status,
-  assemblyGeneticCodeId,
-  assemblyName,
-  hoverTarget,
-  onForceLoad,
+  children,
 }: {
   handleClose: () => void
-  feature: SimpleFeatureSerialized
-  sequenceFeatureDetails: SequenceFeatureDetailsModel
-  session: Pick<AbstractSessionModel, 'notify' | 'notifyError'>
-  // the owning panel's transcript picker, rendered here rather than rebuilt:
-  // the transcript index is its state, not the dialog's
-  transcriptSelector?: React.ReactNode
-  mode: SequenceDisplayMode
-  revcomp: boolean
-  setRevcomp: (arg: boolean) => void
-  sequence: SeqState | ErrorState | undefined
-  error: unknown
-  status?: RpcStatus
-  assemblyGeneticCodeId?: number
-  assemblyName?: string
-  hoverTarget?: SequenceHoverTarget
-  onForceLoad: () => void
+  children: ReactNode
 }) {
   const { classes } = useStyles()
-  const seqPanelRef = useRef<HTMLPreElement>(null)
-
   return (
     <InfoDialog
       maxWidth="xl"
@@ -72,32 +28,7 @@ const SequenceDialog = observer(function SequenceDialog({
         handleClose()
       }}
     >
-      <div className={classes.content}>
-        <SequenceControls
-          model={sequenceFeatureDetails}
-          session={session}
-          feature={feature}
-          mode={mode}
-          revcomp={revcomp}
-          setRevcomp={setRevcomp}
-          seqPanelRef={seqPanelRef}
-          transcriptSelector={transcriptSelector}
-        />
-        <SequenceBody
-          error={error}
-          sequence={sequence}
-          status={status}
-          feature={feature}
-          seqPanelRef={seqPanelRef}
-          model={sequenceFeatureDetails}
-          mode={mode}
-          revcomp={revcomp}
-          assemblyGeneticCodeId={assemblyGeneticCodeId}
-          assemblyName={assemblyName}
-          hoverTarget={hoverTarget}
-          onForceLoad={onForceLoad}
-        />
-      </div>
+      <div className={classes.content}>{children}</div>
     </InfoDialog>
   )
 })

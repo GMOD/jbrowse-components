@@ -9,6 +9,7 @@ import TranscriptSelector from './dialogs/TranscriptSelector.tsx'
 import { featureHasExonOrCDS, resolveMode } from './featureTypeUtil.ts'
 import { useSequenceFetch } from './useSequenceFetch.ts'
 
+import type { MenuItem } from '../../ui/index.ts'
 import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
@@ -55,10 +56,6 @@ const SequenceFeatureDetailsPanel = observer(
     const mode = resolveMode(model.recentModes, effectiveFeature)
     const [revcomp, setRevcomp] = useState(false)
     const [openInDialog, setOpenInDialog] = useState(false)
-    // spread into whichever readout is mounted, rather than forwarded field by
-    // field: the inline body and the dialog want the same five, and listing
-    // them by hand is what dropped `status` from the dialog, whose loading
-    // indicator then had no progress to report
     const fetched = useSequenceFetch({
       session,
       assemblyName,
@@ -66,67 +63,65 @@ const SequenceFeatureDetailsPanel = observer(
       upDownBp,
     })
 
-    // handed to the dialog as well, which renders the same controls: a dialog
-    // without the selector strands a multi-transcript gene on whichever one was picked
-    // before it opened (the inline copy is behind the modal and unclickable)
-    const transcriptSelector =
-      pick.transcripts.length > 1 ? <TranscriptSelector pick={pick} /> : null
+    const controls = (extraItems: MenuItem[]) => (
+      <SequenceControls
+        model={model}
+        session={session}
+        feature={effectiveFeature}
+        mode={mode}
+        revcomp={revcomp}
+        setRevcomp={setRevcomp}
+        seqPanelRef={seqPanelRef}
+        transcriptSelector={
+          pick.transcripts.length > 1 ? (
+            <TranscriptSelector pick={pick} />
+          ) : null
+        }
+        extraItems={extraItems}
+      />
+    )
+    const body = (
+      <Suspense fallback={<LoadingEllipses />}>
+        <SequenceBody
+          {...fetched}
+          feature={effectiveFeature}
+          seqPanelRef={seqPanelRef}
+          model={model}
+          mode={mode}
+          revcomp={revcomp}
+          assemblyName={assemblyName}
+          hoverTarget={hoverTarget}
+        />
+      </Suspense>
+    )
 
     return (
       <>
-        <SequenceControls
-          model={model}
-          session={session}
-          feature={effectiveFeature}
-          mode={mode}
-          revcomp={revcomp}
-          setRevcomp={setRevcomp}
-          seqPanelRef={seqPanelRef}
-          transcriptSelector={transcriptSelector}
-          extraItems={
-            showOpenInDialog
-              ? [
-                  {
-                    label: 'Open in dialog',
-                    onClick: () => {
-                      setOpenInDialog(true)
-                    },
+        {controls(
+          showOpenInDialog
+            ? [
+                {
+                  label: 'Open in dialog',
+                  onClick: () => {
+                    setOpenInDialog(true)
                   },
-                ]
-              : []
-          }
-        />
+                },
+              ]
+            : [],
+        )}
         {openInDialog ? (
           <Suspense fallback={<LoadingEllipses />}>
             <SequenceDialog
-              {...fetched}
-              sequenceFeatureDetails={model}
-              session={session}
-              transcriptSelector={transcriptSelector}
-              feature={effectiveFeature}
-              mode={mode}
-              revcomp={revcomp}
-              setRevcomp={setRevcomp}
-              assemblyName={assemblyName}
-              hoverTarget={hoverTarget}
               handleClose={() => {
                 setOpenInDialog(false)
               }}
-            />
+            >
+              {controls([])}
+              {body}
+            </SequenceDialog>
           </Suspense>
         ) : (
-          <Suspense fallback={<LoadingEllipses />}>
-            <SequenceBody
-              {...fetched}
-              feature={effectiveFeature}
-              seqPanelRef={seqPanelRef}
-              model={model}
-              mode={mode}
-              revcomp={revcomp}
-              assemblyName={assemblyName}
-              hoverTarget={hoverTarget}
-            />
-          </Suspense>
+          body
         )}
       </>
     )
