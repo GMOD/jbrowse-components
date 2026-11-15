@@ -58,9 +58,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example
- * Long reads — taller track, soft-clipping shown, split/chimeric reads
- * connected by arcs, each segment colored by its strand against its
- * molecule's:
+ * Long reads — taller track, split/chimeric reads connected by arcs, each
+ * segment colored by its strand against its molecule's:
  * ```js
  * {
  *   type: 'AlignmentsTrack',
@@ -72,7 +71,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     height: 400,
  *     unit: 'chain',
  *     encoding: { color: 'insertSizeAndOrientation' },
- *     pileup: { softClips: { show: true } },
  *     readConnections: { show: true },
  *   },
  * }
