@@ -10,9 +10,12 @@ import {
   localStorageSetJSON,
   localStorageSetNumber,
 } from '../../util/index.ts'
-import { sequenceModes } from './sequenceModes.ts'
+import { isSequenceDisplayMode } from './sequenceModes.ts'
 
+import type { SequenceDisplayMode } from './sequenceModes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+export type { SequenceDisplayMode } from './sequenceModes.ts'
 
 export type ShowCoordinatesMode = 'none' | 'relative' | 'genomic'
 
@@ -37,24 +40,6 @@ export interface SequenceHoverPosition {
 // LGV crosshair overlay can find. A caller with nowhere to draw omits it.
 export interface SequenceHoverTarget {
   setSequenceHoverPosition: (pos: SequenceHoverPosition | undefined) => void
-}
-
-const sequenceDisplayModes = [
-  'gene',
-  'gene_collapsed_intron',
-  'gene_updownstream',
-  'gene_updownstream_collapsed_intron',
-  'cdna',
-  'cds',
-  'genomic',
-  'genomic_sequence_updownstream',
-  'protein',
-] as const
-
-export type SequenceDisplayMode = (typeof sequenceDisplayModes)[number]
-
-function isSequenceDisplayMode(val: string): val is SequenceDisplayMode {
-  return Object.hasOwn(sequenceModes, val)
 }
 
 const p = 'sequenceFeatureDetails'

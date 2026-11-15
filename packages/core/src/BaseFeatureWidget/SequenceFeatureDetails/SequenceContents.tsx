@@ -6,11 +6,7 @@ import {
   transcriptGeneticCodeId,
   transcriptTranslExcept,
 } from '../../util/translateTranscript.ts'
-import {
-  modeHasUpDownstream,
-  modeSupportsRevcomp,
-  resolveShowCoordinates,
-} from './featureTypeUtil.ts'
+import { resolveShowCoordinates } from './featureTypeUtil.ts'
 import { getSequenceData } from './getSequenceData.ts'
 import CDNASequence from './seqtypes/CDNASequence.tsx'
 import CDSSequence from './seqtypes/CDSSequence.tsx'
@@ -49,19 +45,19 @@ const SequenceContents = observer(function SequenceContents({
 }) {
   // revcomp is offered for the genomic types only, so a toggle left on in one
   // of those can't flip a spliced readout when the user switches type
-  const rc = revcomp && modeSupportsRevcomp(mode)
+  const traits = sequenceModes[mode]
+  const rc = revcomp && traits.revcomp
   const { seq, upstream, downstream, cds, exons } = getSequenceData({
     feature,
     sequence,
     revcomp: rc,
   })
-  const withUpDown = modeHasUpDownstream(mode)
+  const withUpDown = traits.upDownstream
   const useGenomicCoords =
     resolveShowCoordinates(model.showCoordinatesSetting, mode) === 'genomic'
 
-  switch (mode) {
+  switch (traits.seqtype) {
     case 'genomic':
-    case 'genomic_sequence_updownstream':
       return (
         <GenomicSequence
           model={model}
@@ -97,10 +93,6 @@ const SequenceContents = observer(function SequenceContents({
     }
 
     case 'cdna':
-    case 'gene':
-    case 'gene_collapsed_intron':
-    case 'gene_updownstream':
-    case 'gene_updownstream_collapsed_intron':
       return (
         <CDNASequence
           model={model}
@@ -110,16 +102,13 @@ const SequenceContents = observer(function SequenceContents({
           sequence={seq}
           upstream={withUpDown ? upstream : undefined}
           downstream={withUpDown ? downstream : undefined}
-          includeIntrons={sequenceModes[mode].introns}
-          collapseIntron={sequenceModes[mode].collapsedIntrons}
+          includeIntrons={traits.introns}
+          collapseIntron={traits.collapsedIntrons}
           useGenomicCoords={useGenomicCoords}
           revcomp={rc}
           onHoverBase={onHoverBase}
         />
       )
-
-    default:
-      return <div>Unknown type</div>
   }
 })
 

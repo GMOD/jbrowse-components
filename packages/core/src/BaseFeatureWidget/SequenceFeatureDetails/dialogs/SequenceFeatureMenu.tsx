@@ -7,11 +7,8 @@ import { observer } from 'mobx-react'
 import CascadingMenuButton from '../../../ui/CascadingMenuButton.tsx'
 import { copyTextWithSession } from '../../../util/copyText.ts'
 import { saveAs } from '../../../util/index.ts'
-import {
-  modeSupportsRevcomp,
-  resolveShowCoordinates,
-  showGenomicCoordsOption,
-} from '../featureTypeUtil.ts'
+import { resolveShowCoordinates } from '../featureTypeUtil.ts'
+import { sequenceModes } from '../sequenceModes.ts'
 import { getSequenceFasta } from '../util.ts'
 
 import type { MenuItem } from '../../../ui/index.ts'
@@ -109,7 +106,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
 
           ...extraItems,
 
-          ...(modeSupportsRevcomp(mode)
+          ...(sequenceModes[mode].revcomp
             ? [
                 {
                   label: 'Reverse complement',
@@ -146,7 +143,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
                 label: 'Coordinates relative to genome',
                 type: 'radio',
                 checked: coordinatesMode === 'genomic',
-                disabled: !showGenomicCoordsOption(mode),
+                disabled: !sequenceModes[mode].genomicCoords,
                 disabledHelpText:
                   'Only available for continuous genome based sequence types',
                 onClick: () => {

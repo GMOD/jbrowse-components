@@ -2,6 +2,7 @@ import {
   featureHasCDS,
   featureHasExon,
   featureHasExonOrCDS,
+  getAvailableModes,
   getTranscripts,
   rankTranscripts,
   resolveShowCoordinates,
@@ -271,5 +272,46 @@ describe('resolveShowCoordinates', () => {
     expect(resolveShowCoordinates('none', 'gene')).toBe('none')
     expect(resolveShowCoordinates('relative', 'cdna')).toBe('relative')
     expect(resolveShowCoordinates('relative', 'gene')).toBe('relative')
+  })
+})
+
+describe('getAvailableModes', () => {
+  const withSubs = (...types: string[]) => ({
+    refName: 'chr1',
+    start: 0,
+    end: 100,
+    type: 'mRNA',
+    subfeatures: types.map(type => ({
+      refName: 'chr1',
+      start: 0,
+      end: 100,
+      type,
+    })),
+  })
+  const transcriptModes = [
+    'cdna',
+    'gene',
+    'gene_updownstream',
+    'gene_collapsed_intron',
+    'gene_updownstream_collapsed_intron',
+  ]
+
+  test('a coding transcript leads with CDS and Protein', () => {
+    expect(getAvailableModes(withSubs('exon', 'CDS'))).toEqual([
+      'cds',
+      'protein',
+      ...transcriptModes,
+    ])
+  })
+
+  test('a noncoding transcript offers the transcript types', () => {
+    expect(getAvailableModes(withSubs('exon'))).toEqual(transcriptModes)
+  })
+
+  test('a plain feature offers the genomic types', () => {
+    expect(getAvailableModes(withSubs())).toEqual([
+      'genomic',
+      'genomic_sequence_updownstream',
+    ])
   })
 })

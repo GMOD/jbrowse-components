@@ -2,7 +2,7 @@ import { observer } from 'mobx-react'
 
 import { coarseStripHTML, toLocale } from '../../util/index.ts'
 import { getStrandStr } from '../util.ts'
-import { modeHasUpDownstream, modeSupportsRevcomp } from './featureTypeUtil.ts'
+import { sequenceModes } from './sequenceModes.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type {
@@ -27,12 +27,12 @@ const SequenceName = observer(function SequenceName({
         [
           coarseStripHTML(`${feature.name || feature.id || ''}`),
           mode,
-          revcomp && modeSupportsRevcomp(mode) ? 'revcomp' : '',
+          revcomp && sequenceModes[mode].revcomp ? 'revcomp' : '',
         ]
           .filter(Boolean)
           .join('-'),
         `${feature.refName}:${toLocale(feature.start + 1)}-${toLocale(feature.end)}${getStrandStr(feature.strand)}`,
-        modeHasUpDownstream(mode)
+        sequenceModes[mode].upDownstream
           ? `+/- ${toLocale(model.upDownBp)} up/downstream bp`
           : '',
       ]

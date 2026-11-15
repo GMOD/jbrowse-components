@@ -4,14 +4,15 @@ import {
   rankIsoforms,
   serializedIsoformReader,
 } from '../../util/isoformRank.ts'
-import { sequenceModes } from './sequenceModes.ts'
+import { sequenceModeNames, sequenceModes } from './sequenceModes.ts'
 
 import type {
   SimpleFeatureSerialized,
   SimpleFeatureSerializedNoId,
 } from '../../util/index.ts'
 import type { CanonicalTranscripts } from '../../util/isoformRank.ts'
-import type { SequenceDisplayMode, ShowCoordinatesMode } from './model.ts'
+import type { ShowCoordinatesMode } from './model.ts'
+import type { SeqType, SequenceDisplayMode } from './sequenceModes.ts'
 
 // these predicates only ever read type/subfeatures, so they accept a bare
 // subfeature (no guaranteed uniqueId) as readily as a full feature
@@ -66,23 +67,21 @@ export function rankTranscripts(
   )
 }
 
+const offeredFor: Record<
+  SeqType,
+  (feature: SimpleFeatureSerializedNoId) => boolean
+> = {
+  cds: featureHasCDS,
+  protein: featureHasCDS,
+  cdna: featureHasExonOrCDS,
+  genomic: feature => !featureHasExonOrCDS(feature),
+}
+
 // the sequence types the selector offers, the first being the default
-export function getAvailableModes(
-  feature: SimpleFeatureSerializedNoId,
-): SequenceDisplayMode[] {
-  const coding: SequenceDisplayMode[] = featureHasCDS(feature)
-    ? ['cds', 'protein']
-    : []
-  const rest: SequenceDisplayMode[] = featureHasExonOrCDS(feature)
-    ? [
-        'cdna',
-        'gene',
-        'gene_updownstream',
-        'gene_collapsed_intron',
-        'gene_updownstream_collapsed_intron',
-      ]
-    : ['genomic', 'genomic_sequence_updownstream']
-  return [...coding, ...rest]
+export function getAvailableModes(feature: SimpleFeatureSerializedNoId) {
+  return sequenceModeNames.filter(mode =>
+    offeredFor[sequenceModes[mode].seqtype](feature),
+  )
 }
 
 // The most recent pick this feature offers, so clicking from one gene to the
@@ -96,28 +95,6 @@ export function resolveMode(
   return recentModes.find(m => modes.includes(m)) ?? modes[0]!
 }
 
-// whether the mode renders up/downstream flanks. shared by the sequence body
-// (which fetches+renders the flanks) and the FASTA header (which annotates
-// them) so the two can't drift
-export function modeHasUpDownstream(mode: SequenceDisplayMode) {
-  return sequenceModes[mode].upDownstream
-}
-
-// reverse complement reads the opposite strand of the genome, so it is offered
-// for the genomic sequence types only: the antisense of a spliced cDNA, of an
-// annotated CDS, or of a translated peptide is not a sequence anyone asked for.
-// Shared by the menu (which offers it) and the panel (which applies it) so a
-// toggle left on in a genomic mode can't silently flip a cDNA readout.
-export function modeSupportsRevcomp(mode: SequenceDisplayMode) {
-  return sequenceModes[mode].revcomp
-}
-
-// genomic coordinates only make sense for continuous genome-based sequence
-// types (not collapsed-intron or spliced views)
-export function showGenomicCoordsOption(mode: SequenceDisplayMode) {
-  return sequenceModes[mode].genomicCoords
-}
-
 // The coordinate mode a given sequence type actually renders. The setting is
 // sticky and global, so a 'genomic' preference picked in e.g. gene mode
 // survives a switch to a spliced mode that cannot label genomic positions;
@@ -128,7 +105,7 @@ export function resolveShowCoordinates(
   setting: ShowCoordinatesMode,
   mode: SequenceDisplayMode,
 ): ShowCoordinatesMode {
-  return setting === 'genomic' && !showGenomicCoordsOption(mode)
+  return setting === 'genomic' && !sequenceModes[mode].genomicCoords
     ? 'relative'
     : setting
 }
