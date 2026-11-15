@@ -1,11 +1,8 @@
 import {
   CIGAR_H,
   CIGAR_S,
-  SAM_FLAG_FIRST_IN_PAIR,
-  SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
-  SAM_FLAG_REVERSE,
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_UNMAPPED,
 } from '@jbrowse/cigar-utils'
@@ -100,6 +97,8 @@ export function hasPairOrientation(flags: number, sameReference: boolean) {
   )
 }
 
+// Indexed by flag bits 0x10 (reverse), 0x20 (mate reverse) and 0x40 (read1)
+// shifted down to bits 0-2, plus 8 when this record leads the pair
 // prettier-ignore
 const PAIR_ORIENTATION_TABLE = [
   'F1F2','F1R2','R1F2','R1R2','F2F1','F2R1','R2F1','R2R1',
@@ -107,17 +106,17 @@ const PAIR_ORIENTATION_TABLE = [
 ] as const
 
 function leadsPair(
-  flags: number,
+  orientationBits: number,
   start: number,
   matePos: number | undefined,
   seqLength: number,
 ) {
-  const read1 = (flags & SAM_FLAG_FIRST_IN_PAIR) !== 0
-  const reverse = (flags & SAM_FLAG_REVERSE) !== 0
+  const reverse = (orientationBits & 1) !== 0
+  const mateReverse = (orientationBits & 2) !== 0
+  const read1 = (orientationBits & 4) !== 0
   return matePos === undefined
     ? read1
-    : reverse !== ((flags & SAM_FLAG_MATE_REVERSE) !== 0) &&
-        Math.abs(start - matePos) < seqLength
+    : reverse !== mateReverse && Math.abs(start - matePos) < seqLength
       ? !reverse
       : start !== matePos
         ? start < matePos
@@ -131,10 +130,11 @@ export function pairOrientation(
   seqLength: number,
   sameReference: boolean,
 ) {
+  const orientationBits = (flags >> 4) & 0x7
   return hasPairOrientation(flags, sameReference)
     ? PAIR_ORIENTATION_TABLE[
-        ((flags >> 4) & 0x7) |
-          (leadsPair(flags, start, matePos, seqLength) ? 8 : 0)
+        orientationBits |
+          (leadsPair(orientationBits, start, matePos, seqLength) ? 8 : 0)
       ]
     : undefined
 }
