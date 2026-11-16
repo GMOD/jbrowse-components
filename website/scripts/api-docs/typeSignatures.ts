@@ -6,16 +6,60 @@ import {
   startsWithTag,
 } from './jsDocTags.ts'
 import { MAX_INLINE_CELL_CODE } from './markdown.ts'
+import {
+  elideSignature,
+  functionParts,
+  groupEnd,
+  MAX_SIGNATURE,
+  scanGroups,
+  tidyType,
+  unwrapBefore,
+} from './typeText.ts'
 
-// A member's rendered type. `typeToString` truncates past ~340 characters by
-// cutting mid-token — leaving unbalanced brackets and half a word, which is
-// worse than no type at all (a display's `configuration` printed 340 characters
-// of expanded config schema ending in "including c..."). When that happens,
-// re-render untruncated and shorten structurally instead, so the type still
-// reads as a type.
-// A member of an object literal whose type is written elsewhere, as in
-// `.volatile((): State => ({ x: undefined }))`, reads as that written type
-// rather than its initializer's `undefined`.
+const writtenPrinter = ts.createPrinter({ removeComments: true })
+
+const MST_EXPANSION =
+  /ModelInstanceTypeProps|IModelType|ModelCreationType|ModelSnapshotType|IOptionalIType|ISimpleType|IMSTArray|ExtractCFromProps|ConfigNodeProps/
+
+// A whole type, or a function's whole return, that elision collapsed to its
+// outer name: `Promise<{…}>`, `Record<…>`.
+const COLLAPSED = /(?:^|=> )[\w.]+<(?:…|\{…\})>(?: \| undefined)?$/
+
+// MST's own vocabulary in what the checker inferred. A parameter can take
+// these (`runLazyAfterAttach<Self extends IStateTreeNode>`), so they count
+// only in a return or a value's whole type; `typeof self` names nothing
+// anywhere.
+const INFERRED_LEAK = /\b(?:IStateTreeNode|IAnyType|SnapshotIn)\b/
+
+// A rendered signature a reader cannot use: one line of it prints an MST
+// expansion, leaks MST's vocabulary into what it returns, or collapses to
+// nothing.
+export function unreadableSignature(sig: string) {
+  return sig
+    .split('\n')
+    .some(
+      line =>
+        MST_EXPANSION.test(line) ||
+        COLLAPSED.test(line) ||
+        line.includes('typeof self') ||
+        INFERRED_LEAK.test(functionParts(line)?.returns ?? line),
+    )
+}
+
+const LITERAL_UNION =
+  /^(?:"(?:[^"\\]|\\.)*"|undefined)(?: \| (?:"(?:[^"\\]|\\.)*"|undefined))+$/
+
+// Source as one line: a tuple written across lines prints as `[ A, B ]`, and
+// an object or call across lines keeps its trailing comma.
+function print(node: ts.Node) {
+  return writtenPrinter
+    .printNode(ts.EmitHint.Unspecified, node, node.getSourceFile())
+    .replace(/\s+/g, ' ')
+    .replace(/\[ /g, '[')
+    .replace(/ \]/g, ']')
+    .replace(/,( [}\])])/g, '$1')
+}
+
 // The checker prints an alias's expansion wherever the alias is generic or
 // resolves through one: `setViews(views: SnapshotIn<LinearGenomeViewModel>[])`
 // printed as `LaunchSnapshotIn<IModelType<…>, …>[]`. Each parameter and return
@@ -25,39 +69,12 @@ import { MAX_INLINE_CELL_CODE } from './markdown.ts'
 // values a caller passes, such as `setUnit`'s `"chain" | "read"`. A
 // `typeof` query names nothing a reader can look up, so it never replaces a
 // print that isn't an expansion.
-const writtenPrinter = ts.createPrinter({ removeComments: true })
-
-const MST_EXPANSION =
-  /ModelInstanceTypeProps|IModelType|ModelCreationType|ModelSnapshotType|IOptionalIType|ISimpleType|IMSTArray|ExtractCFromProps/
-
-// A whole type, or a function's whole return, that elision collapsed to its
-// outer name: `Promise<{…}>`, `Record<…>`.
-const COLLAPSED = /(?:^|=> )[\w.]+<(?:…|\{…\})>(?: \| undefined)?$/
-
-// A rendered signature a reader cannot use: one line of it prints an MST
-// expansion, or collapses to nothing. `IStateTreeNode` alone is not one, since
-// an API can take it (`runLazyAfterAttach<Self extends IStateTreeNode>`).
-export function unreadableSignature(sig: string) {
-  return sig
-    .split('\n')
-    .some(line => MST_EXPANSION.test(line) || COLLAPSED.test(line))
-}
-
-const LITERAL_UNION =
-  /^(?:"(?:[^"\\]|\\.)*"|undefined)(?: \| (?:"(?:[^"\\]|\\.)*"|undefined))+$/
-
 function writtenSignature(
   checker: ts.TypeChecker,
   named: PrintedType[],
   decl: ts.Declaration,
   type: ts.Type,
 ) {
-  // a tuple written across lines prints as `[ A, B ]`
-  const print = (node: ts.Node) =>
-    writtenPrinter
-      .printNode(ts.EmitHint.Unspecified, node, decl.getSourceFile())
-      .replace(/\[\s+/g, '[')
-      .replace(/\s+\]/g, ']')
   const part = (node: ts.TypeNode | undefined, inferred: ts.Type) => {
     const printed = dropNodeTails(
       nameTypes(
@@ -88,10 +105,16 @@ function writtenSignature(
   if (!fn || !signature) {
     return undefined
   }
-  const parameters = fn.parameters.map(p => ({
-    p,
-    type: part(p.type, checker.getTypeAtLocation(p)),
-  }))
+  const parameters = fn.parameters.map(p => {
+    const inferred = checker.getTypeAtLocation(p)
+    return {
+      p,
+      type:
+        p.initializer && inferred.flags & ts.TypeFlags.Any
+          ? { text: initializerType(checker, p.initializer), written: true }
+          : part(p.type, inferred),
+    }
+  })
   const returns = part(fn.type, signature.getReturnType())
   if (!returns.written && !parameters.some(({ type }) => type.written)) {
     return undefined
@@ -104,6 +127,15 @@ function writtenSignature(
       `${p.dotDotDotToken ? '...' : ''}${bindingName(p.name)}${p.questionToken || p.initializer ? '?' : ''}: ${type.text}`,
   )
   return `${typeParameters}(${list.join(', ')}) => ${returns.text}`
+}
+
+// MST's `ModelActions` index signature types an action's unannotated
+// parameters `any`, so `hideTrack(trackId, level = 0)` reads `level?: any`
+// where its default says `number`.
+function initializerType(checker: ts.TypeChecker, initializer: ts.Expression) {
+  return checker.typeToString(
+    checker.getBaseTypeOfLiteralType(checker.getTypeAtLocation(initializer)),
+  )
 }
 
 function hasTypeQuery(node: ts.Node): boolean {
@@ -126,21 +158,24 @@ function bindingName(name: ts.BindingName): string {
     : `[${elements.join(', ')}]`
 }
 
-// The function a member or `#api` declaration is: a method, a function, or a
-// property or const holding an arrow or function expression.
-function writtenFunction(decl: ts.Declaration) {
-  if (ts.isMethodDeclaration(decl) || ts.isFunctionDeclaration(decl)) {
-    return decl
-  }
+// The function a declaration is: a method, a function, or a property or const
+// holding an arrow or function expression — a member, an `#api` export, or a
+// model factory.
+export function writtenFunction(node: ts.Node) {
   const init =
-    ts.isPropertyAssignment(decl) || ts.isVariableDeclaration(decl)
-      ? decl.initializer
+    ts.isPropertyAssignment(node) || ts.isVariableDeclaration(node)
+      ? node.initializer
       : undefined
-  return init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init))
-    ? init
-    : undefined
+  return ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)
+    ? node
+    : init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init))
+      ? init
+      : undefined
 }
 
+// A member of an object literal whose type is written elsewhere, as in
+// `.volatile((): State => ({ x: undefined }))`, reads as that written type
+// rather than its initializer's `undefined`.
 function declaredType(
   checker: ts.TypeChecker,
   symbol: ts.Symbol,
@@ -153,6 +188,12 @@ function declaredType(
   return checker.getTypeOfSymbolAtLocation(written ?? symbol, decl)
 }
 
+// A member's rendered type. `typeToString` truncates past ~340 characters by
+// cutting mid-token — leaving unbalanced brackets and half a word, which is
+// worse than no type at all (a display's `configuration` printed 340 characters
+// of expanded config schema ending in "including c..."). When that happens,
+// re-render untruncated and shorten structurally instead, so the type still
+// reads as a type.
 export function typeSignature(
   checker: ts.TypeChecker,
   named: PrintedType[],
@@ -272,7 +313,7 @@ export function configNodeName(schema: string) {
 // MST's `IType` declares its instance type as a `Type` property, and a
 // configuration schema is an `IType`. A factory's model is its return type.
 function instanceType(checker: ts.TypeChecker, node: ts.Node) {
-  const fn = factoryFunction(node)
+  const fn = writtenFunction(node)
   const signature = fn && checker.getSignatureFromDeclaration(fn)
   const type = signature
     ? checker.getReturnTypeOfSignature(signature)
@@ -286,45 +327,16 @@ function instanceType(checker: ts.TypeChecker, node: ts.Node) {
 // A model instance's text without its outermost `& IStateTreeNode<…>`, which
 // has to be the last thing in it.
 function nodeBody(text: string) {
-  let depth = 0
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i]!
-    if (c === '"') {
-      i = closingQuote(text, i)
-    } else if ('<{(['.includes(c)) {
-      depth++
-    } else if ('>})]'.includes(c) && !(c === '>' && text[i - 1] === '=')) {
-      depth--
-    } else if (
+  const at = scanGroups(
+    text,
+    0,
+    (i, depth, mark) =>
+      mark === 'text' &&
       depth === 0 &&
       text.startsWith(NODE_TAIL, i) &&
-      groupEnd(text, i + NODE_TAIL.length - 1) === text.length
-    ) {
-      return text.slice(0, i)
-    }
-  }
-  return undefined
-}
-
-// The index just past the bracket closing the one at `open`, counting every
-// bracket kind; the `>` of a `=>` closes nothing, and a quoted string is
-// skipped whole.
-function groupEnd(sig: string, open: number) {
-  let depth = 0
-  for (let i = open; i < sig.length; i++) {
-    const c = sig[i]!
-    if (c === '"') {
-      i = closingQuote(sig, i)
-    } else if ('<{(['.includes(c)) {
-      depth++
-    } else if ('>})]'.includes(c) && !(c === '>' && sig[i - 1] === '=')) {
-      depth--
-      if (depth === 0) {
-        return i + 1
-      }
-    }
-  }
-  return -1
+      groupEnd(text, i + NODE_TAIL.length - 1) === text.length,
+  )
+  return at < 0 ? undefined : text.slice(0, at)
 }
 
 // Where a match of `body` at `at` ends, and the member groups a node adds to
@@ -385,42 +397,12 @@ export function dropNodeTails(sig: string) {
   return out
 }
 
-// Drop the parentheses closing at `close` when what they hold reads the same
-// without them, as `(Assembly)[]` does. Anything with a space at its top level
-// keeps them: `(A | B)[]`, `(keyof T)[]`, a parameter list.
-function unwrapBefore(sig: string, close: number) {
-  if (sig[close] !== ')') {
-    return sig
-  }
-  let depth = 0
-  let spaced = false
-  for (let i = close; i >= 0; i--) {
-    const c = sig[i]!
-    if (c === '"') {
-      spaced = true
-      i = sig.lastIndexOf('"', i - 1)
-    } else if ('>})]'.includes(c) && !(c === '>' && sig[i - 1] === '=')) {
-      depth++
-    } else if ('<{(['.includes(c)) {
-      depth--
-      if (depth === 0) {
-        return spaced
-          ? sig
-          : sig.slice(0, i) + sig.slice(i + 1, close) + sig.slice(close + 1)
-      }
-    } else if (c === ' ' && depth === 1) {
-      spaced = true
-    }
-  }
-  return sig
-}
-
 // The marks the checker leaves: a cut at the end, a count where it dropped
 // members from the middle of a nested type, and a nested group emptied whole.
 const TRUNCATED = /\.\.\.$|\.\.\. \d+ more \.\.\.|<\.\.\.>|\{ \.\.\.; \}/
 
 function shortenSignature(sig: string, max: number) {
-  return elideSignature(sortUnionMembers(dropNodeTails(sig)), max)
+  return elideSignature(sortUnionMembers(tidyType(dropNodeTails(sig))), max)
 }
 
 // The checker prints a union in its own order, not ours, and that order moves
@@ -454,148 +436,198 @@ export function sortUnionMembers(sig: string) {
   )
 }
 
-// What a dialog or a fenced block still shows whole. The table cell cuts its
-// own preview much shorter (`codeCell`), so this bounds the full text a reader
-// opens, not the row.
-const MAX_SIGNATURE = 600
-
-// Collapse `<...>` and `{...}` groups from the inside out until the string fits,
-// in one left-to-right pass. A stack of partial results reaches every group in
-// post-order — innermost first, leftmost among those — which is exactly the
-// order a repeated "find the innermost group, elide it, rescan" loop reaches
-// them in, so the output is unchanged.
-//
-// The rescan is what made this worth rewriting. Each pass skipped over the run
-// of already-elided groups to its left before finding the next one, so the cost
-// was quadratic in the number of groups; MST's expanded model types print at up
-// to 250KB, and shortening ~3600 of them was 22% of a `pnpm gendocs` run — more
-// than building the whole TypeScript program.
-//
-// The `>` of a `=>` is not a bracket, and an `open` that never closes is not a
-// group: its text goes back verbatim.
-function closingQuote(sig: string, from: number) {
-  let i = from + 1
-  while (i < sig.length && sig[i] !== '"') {
-    i += sig[i] === '\\' ? 2 : 1
-  }
-  return Math.min(i, sig.length - 1)
+// A `#property` as MST reads its declaration: the instance type a snapshot
+// fills, and the value MST fills it with when the snapshot leaves it out. The
+// checker prints a property's MST type as `IOptionalIType<ISimpleType<number>,
+// [undefined]>`, so the `types.*` combinators are read off the source and the
+// checker is asked only for what they wrap. Undefined when any part of it
+// prints as nothing a reader could use.
+export interface PropertyType {
+  type: string
+  defaultValue?: string
 }
 
-const CLOSER: Record<string, string> = { '<': '>', '{': '}' }
-
-function elideGroups(sig: string, max: number) {
-  let length = sig.length
-  const enclosing: { before: string; open: string }[] = []
-  let out = ''
-  for (let i = 0; i < sig.length; i++) {
-    const c = sig[i]!
-    const top = enclosing.at(-1)
-    if (c === '"') {
-      const end = closingQuote(sig, i)
-      out += sig.slice(i, end + 1)
-      i = end
-    } else if (CLOSER[c]) {
-      enclosing.push({ before: out, open: c })
-      out = ''
-    } else if (
-      top &&
-      c === CLOSER[top.open] &&
-      !(c === '>' && sig[i - 1] === '=')
-    ) {
-      const inner = out
-      enclosing.pop()
-      out = top.before
-      // `<T, U>(a: T) => U` binds the names its parameters use, as `({ a, b
-      // }: T)` names a parameter's fields, and a group that is the whole type
-      // leaves nothing to read.
-      const isTypeParameterList = c === '>' && sig[i + 1] === '('
-      const isBindingPattern = c === '}' && sig[i + 1] === ':'
-      const isWholeType = out === '' && i === sig.length - 1
-      if (
-        length > max &&
-        !isTypeParameterList &&
-        !isBindingPattern &&
-        !isWholeType
-      ) {
-        length -= inner.length - 1
-        out += `${top.open}…${c}`
-      } else {
-        // once it fits, every enclosing group is emitted whole
-        out += `${top.open}${inner}${c}`
-      }
-    } else {
-      out += c
-    }
-  }
-  for (const { before, open } of enclosing.reverse()) {
-    out = `${before}${open}${out}`
-  }
-  return out
+export function propertyType(
+  checker: ts.TypeChecker,
+  named: PrintedType[],
+  initializer: ts.Expression,
+) {
+  const read = mstProperty(checker, named, initializer)
+  return read && { ...read, type: shortenSignature(read.type) }
 }
 
-// Split a type on its top-level `|`, ignoring the ones nested inside brackets —
-// so a union of four object types splits into four, but a function type whose
-// parameter happens to be `boolean | undefined` stays whole.
-function topLevelUnion(sig: string) {
-  const parts: string[] = []
-  let depth = 0
-  let start = 0
-  for (let i = 0; i < sig.length; i++) {
-    const c = sig[i]!
-    if ('<{(['.includes(c)) {
-      depth++
-    } else if ('>})]'.includes(c)) {
-      if (!(c === '>' && sig[i - 1] === '=')) {
-        depth--
-      }
-    } else if (c === '|' && depth === 0) {
-      parts.push(sig.slice(start, i).trim())
-      start = i + 1
-    }
-  }
-  parts.push(sig.slice(start).trim())
-  return parts
+const DEFAULTED = new Set(['optional', 'stripDefault'])
+
+const WRAPPERS: Record<string, (type: string) => string> = {
+  maybe: type => `${type} | undefined`,
+  maybeNull: type => `${type} | null`,
+  safeReference: type => `${type} | undefined`,
+  reference: type => type,
+  array: type => `${groupedType(type)}[]`,
+  map: type => `Map<string, ${type}>`,
 }
 
-// Shorten an over-long type structurally, never by cutting characters: the point
-// is that what is printed still reads as a type. Generic arguments and inline
-// object types collapse together from the inside out, so `Promise<{ tables:
-// {…}; legend: {…} }>` keeps its keys where collapsing every generic first left
-// `Promise<…>`. Then a top-level union drops its trailing alternatives. Each
-// stage stops as soon as the type fits, so it gives up the least specific
-// detail it can.
-//
-// A type that resists both is left alone. An honest long signature beats a
-// mangled short one: truncating this one at a fixed width once ate a function's
-// entire return type, leaving it ending mid-parameter.
-export function elideSignature(sig: string, max = MAX_SIGNATURE) {
-  let out = sig.replace(/\s+/g, ' ')
-  if (out.length > max) {
-    out = elideGroups(out, max)
-  }
-  if (out.length > max) {
-    const parts = topLevelUnion(out)
-    const kept = parts.filter(
-      (_, i) => i === 0 || parts.slice(0, i + 1).join(' | ').length + 4 <= max,
+function mstProperty(
+  checker: ts.TypeChecker,
+  named: PrintedType[],
+  expression: ts.Expression,
+): PropertyType | undefined {
+  const node = withoutCasts(expression)
+  const combinator = mstCombinator(node)
+  const [held, value] = combinator?.call.arguments ?? []
+  const defaulted = !!combinator && DEFAULTED.has(combinator.name)
+  const wrap = combinator && WRAPPERS[combinator.name]
+  const inner =
+    held && (defaulted || wrap) ? mstProperty(checker, named, held) : undefined
+  return defaulted
+    ? inner && { type: inner.type, defaultValue: defaultText(checker, value) }
+    : wrap
+      ? inner && { type: wrap(inner.type) }
+      : isLiteral(node)
+        ? {
+            type: checker.typeToString(
+              checker.getBaseTypeOfLiteralType(checker.getTypeAtLocation(node)),
+            ),
+            defaultValue: node.getText(),
+          }
+        : combinator?.name === 'frozen'
+          ? frozenType(checker, named, combinator.call)
+          : (mstConstant(checker, named, node) ??
+            readableType(checker, named, createdType(checker, node)))
+}
+
+function withoutCasts(node: ts.Expression): ts.Expression {
+  return ts.isAsExpression(node) ||
+    ts.isSatisfiesExpression(node) ||
+    ts.isParenthesizedExpression(node) ||
+    ts.isNonNullExpression(node)
+    ? withoutCasts(node.expression)
+    : node
+}
+
+function mstCombinator(node: ts.Expression) {
+  return ts.isCallExpression(node) &&
+    ts.isPropertyAccessExpression(node.expression) &&
+    ts.isIdentifier(node.expression.expression) &&
+    node.expression.expression.text === 'types'
+    ? { name: node.expression.name.text, call: node }
+    : undefined
+}
+
+// A primitive written as a property is MST's shorthand for that primitive
+// with this default: `bpPerPx: 0`.
+function isLiteral(node: ts.Expression) {
+  return (
+    ts.isStringLiteral(node) ||
+    ts.isNumericLiteral(node) ||
+    ts.isNoSubstitutionTemplateLiteral(node) ||
+    node.kind === ts.SyntaxKind.TrueKeyword ||
+    node.kind === ts.SyntaxKind.FalseKeyword ||
+    (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand))
+  )
+}
+
+// A shared MST type held in a constant, read through to the combinators it is
+// built from: `id: ElementId` has the default `ElementId` gives it.
+function mstConstant(
+  checker: ts.TypeChecker,
+  named: PrintedType[],
+  node: ts.Expression,
+) {
+  const symbol = ts.isIdentifier(node)
+    ? checker.getSymbolAtLocation(node)
+    : undefined
+  const decl = symbol && aliasTarget(checker, symbol).valueDeclaration
+  const init =
+    decl &&
+    ts.isVariableDeclaration(decl) &&
+    !decl.getSourceFile().isDeclarationFile
+      ? decl.initializer
+      : undefined
+  return init && mstCombinator(withoutCasts(init))
+    ? mstProperty(checker, named, init)
+    : undefined
+}
+
+function aliasTarget(checker: ts.TypeChecker, symbol: ts.Symbol) {
+  return symbol.flags & ts.SymbolFlags.Alias
+    ? checker.getAliasedSymbol(symbol)
+    : symbol
+}
+
+// `types.frozen<T>(value)` holds a T as written, and defaults to `value`. Its
+// MST `Type` is `any` for a T MST cannot prove serializable, as a ReactNode.
+function frozenType(
+  checker: ts.TypeChecker,
+  named: PrintedType[],
+  call: ts.CallExpression,
+) {
+  const [written] = call.typeArguments ?? []
+  const [value] = call.arguments
+  const read =
+    readableType(
+      checker,
+      named,
+      written
+        ? checker.getTypeFromTypeNode(written)
+        : createdType(checker, call),
+    ) ??
+    (written && { type: print(written) })
+  return read && { ...read, defaultValue: defaultText(checker, value) }
+}
+
+// The type an MST type creates: its `Type` member.
+function createdType(checker: ts.TypeChecker, node: ts.Expression) {
+  const instance = checker.getTypeAtLocation(node).getProperty('Type')
+  return instance && checker.getTypeOfSymbolAtLocation(instance, node)
+}
+
+const UNRESOLVED = new Set(['any', 'unknown', 'undefined'])
+
+function readableType(
+  checker: ts.TypeChecker,
+  named: PrintedType[],
+  type: ts.Type | undefined,
+): PropertyType | undefined {
+  const printed =
+    type &&
+    dropNodeTails(
+      nameTypes(
+        named,
+        checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation),
+      ),
     )
-    out = kept.length < parts.length ? `${kept.join(' | ')} | …` : out
-  }
-  return out
+  return printed && !UNRESOLVED.has(printed) && !unreadableSignature(printed)
+    ? { type: printed }
+    : undefined
 }
 
-// The function a #stateModel JSDoc annotates: the declaration itself, or the
-// arrow/function initializer of a `const Factory = (...) => {...}`.
-export function factoryFunction(node: ts.Node) {
-  if (ts.isFunctionDeclaration(node)) {
-    return node
-  }
-  if (
-    ts.isVariableDeclaration(node) &&
-    node.initializer &&
-    (ts.isArrowFunction(node.initializer) ||
-      ts.isFunctionExpression(node.initializer))
-  ) {
-    return node.initializer
-  }
-  return undefined
+// What MST fills a property with: an arrow's body is computed per instance, a
+// function it calls the same way, and a constant reads as its value.
+function defaultText(checker: ts.TypeChecker, expression?: ts.Expression) {
+  const node = expression && withoutCasts(expression)
+  const body =
+    node && ts.isArrowFunction(node) && !ts.isBlock(node.body)
+      ? node.body
+      : node
+  const type =
+    body && ts.isIdentifier(body) ? checker.getTypeAtLocation(body) : undefined
+  return body
+    ? type && type.getCallSignatures().length > 0
+      ? `${body.getText()}()`
+      : type && (type.isStringLiteral() || type.isNumberLiteral())
+        ? JSON.stringify(type.value).replace(/^"(.*)"$/, "'$1'")
+        : print(body)
+    : undefined
+}
+
+// A type as the element of an array: `(A | B)[]`, not `A | B[]`.
+function groupedType(type: string) {
+  return scanGroups(
+    type,
+    0,
+    (i, depth, mark) => mark === 'text' && depth === 0 && type[i] === ' ',
+  ) < 0
+    ? type
+    : `(${type})`
 }

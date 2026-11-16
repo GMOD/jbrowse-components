@@ -12,9 +12,10 @@ import {
   startsWithTag,
 } from './jsDocTags.ts'
 import {
-  factoryFunction,
   printedTypes,
+  propertyType,
   typeSignature,
+  writtenFunction,
 } from './typeSignatures.ts'
 import { removeComments, repoRelative } from './util.ts'
 
@@ -35,6 +36,9 @@ export interface ExtractedNode {
   signature: string
   // For `#api` nodes: a type or interface, whose `signature` is its declaration
   declaresType?: boolean
+  // For `#property` nodes only: what MST fills the property with when a
+  // snapshot leaves it out
+  propertyDefault?: string
   node: string
   filename: string
   // Stable identity of the declaration this node's symbol resolves to
@@ -255,11 +259,13 @@ export function extractWithComment(
     } else if (ts.isSpreadAssignment(node) && tags.includes('slot')) {
       emitSpreadSlots(node, comment, cb)
     } else if (tags.length && !delegatedAway) {
-      const { name, signature, declaresType, declId } = describeSymbol(
-        checker,
-        named,
-        node,
-        tags.includes('api') ? Infinity : undefined,
+      const { name, signature, declaresType, propertyDefault, declId } =
+        describeSymbol(
+          checker,
+          named,
+          node,
+          tags.includes('property'),
+          tags.includes('api') ? Infinity : undefined,
       )
       if (!isStateModel && tags.some(isMemberTag)) {
         memberTagged.set(
@@ -272,6 +278,7 @@ export function extractWithComment(
         comment,
         signature,
         declaresType,
+        propertyDefault,
         node:
           (tags.includes('slot') && slotTableEntry(node)) || node.getFullText(),
         filename: node.getSourceFile().fileName,
@@ -586,13 +593,19 @@ function emitUntaggedMember(
   }
   const type = memberType(node, block)
   if (type) {
-    const { name, signature, declId } = describeSymbol(checker, named, node)
+    const { name, signature, propertyDefault, declId } = describeSymbol(
+      checker,
+      named,
+      node,
+      type === 'property',
+    )
     if (name && !(block === 'actions' && LIFECYCLE_HOOKS.has(name))) {
       cb({
         type,
         name,
         comment,
         signature,
+        propertyDefault,
         node: node.getFullText(),
         filename: node.getSourceFile().fileName,
         selfDeclId: declId,
@@ -860,7 +873,7 @@ function objectLiteralBehind(checker: ts.TypeChecker, id: ts.Identifier) {
   if (!decl) {
     return undefined
   }
-  const fn = factoryFunction(decl)
+  const fn = writtenFunction(decl)
   if (fn) {
     // One extra hop for a factory: `makeViews = schema => self => ({...})`
     // returns the callback rather than the members, so the object is a level
@@ -983,7 +996,12 @@ function emitDelegatedMembers(
       : structural
         ? [structural]
         : []
-    const { name, signature, declId } = describeSymbol(checker, named, prop)
+    const { name, signature, propertyDefault, declId } = describeSymbol(
+      checker,
+      named,
+      prop,
+      types.includes('property'),
+    )
     if (
       !types.length ||
       !name ||
@@ -997,6 +1015,7 @@ function emitDelegatedMembers(
         name,
         comment,
         signature,
+        propertyDefault,
         node: prop.getFullText(),
         filename: modelFile,
         selfDeclId: declId,
@@ -1073,6 +1092,7 @@ function describeSymbol(
   checker: ts.TypeChecker,
   named: PrintedType[],
   node: ts.Node,
+  isProperty: boolean,
   maxSignature?: number,
 ) {
   const nameNode = getNameNode(node)
@@ -1081,6 +1101,10 @@ function describeSymbol(
   const symbolName = symbol?.getName() ?? ''
   const declaresType =
     ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)
+  const property =
+    isProperty && ts.isPropertyAssignment(node)
+      ? propertyType(checker, named, node.initializer)
+      : undefined
   return {
     // `export default function Foo()` gives the symbol the name "default",
     // which is what the module exports it as and not what anyone calls it. The
@@ -1094,10 +1118,12 @@ function describeSymbol(
         : symbolName,
     signature: declaresType
       ? typeDeclaration(node)
-      : symbol && decl
-        ? typeSignature(checker, named, symbol, decl, maxSignature)
-        : '',
+      : (property?.type ??
+        (symbol && decl && !isProperty
+          ? typeSignature(checker, named, symbol, decl, maxSignature)
+          : '')),
     declaresType,
+    propertyDefault: property?.defaultValue,
     declId: symbolDeclId(checker, symbol),
   }
 }
@@ -1255,7 +1281,7 @@ function slotValueReferences(checker: ts.TypeChecker, node: ts.Node) {
       if (name) {
         schemas.push({ name, list })
       }
-      const fn = decl && factoryFunction(decl)
+      const fn = decl && writtenFunction(decl)
       const returned = fn && returnedExpression(fn)
       if (returned) {
         if (expr === head) {
@@ -1329,7 +1355,7 @@ function configurationSchemaName(decl: ts.Declaration) {
 const MODEL_CHAIN_METHODS = new Set(['props', 'volatile', 'views', 'actions'])
 
 function definesStateModel(node: ts.Node) {
-  const fn = factoryFunction(node)
+  const fn = writtenFunction(node)
   const returned = fn && returnedExpression(fn)
   if (returned && ts.isCallExpression(returned)) {
     return true
@@ -1411,7 +1437,7 @@ function resolveComposedModels(checker: ts.TypeChecker, node: ts.Node) {
 // `types.compose(...)` / `types.model(...)` roots return undefined (compose is
 // handled by the walk above; a plain model has no base).
 function returnedBaseRef(checker: ts.TypeChecker, node: ts.Node) {
-  const fn = factoryFunction(node)
+  const fn = writtenFunction(node)
   const ret = fn && returnedExpression(fn)
   if (!ret) {
     return undefined
@@ -1598,6 +1624,7 @@ interface ParsedNode {
   trackType?: string
   code: string
   signature: string
+  propertyDefault?: string
 }
 
 // Parse one extracted node into the fields the config and state-model generators
@@ -1616,5 +1643,6 @@ export function parseNode(obj: ExtractedNode): ParsedNode {
     trackType,
     code: removeComments(obj.node),
     signature: obj.signature,
+    propertyDefault: obj.propertyDefault,
   }
 }

@@ -1,4 +1,5 @@
 import { firstParagraph } from './agentText.ts'
+import { previewType } from './typeText.ts'
 
 import type { Example } from './jsDocTags.ts'
 
@@ -78,11 +79,12 @@ function preCell(code: string) {
 }
 
 // Code in a table cell — a slot's default, a member's type signature. Short
-// code renders inline; anything longer shows its head and opens in full in a
-// dialog, so one 300-character generic type can't blow up the row it sits in.
-// Raw `<code>` rather than a markdown code span because these carry backticks
-// (jexl defaults are template literals). `link` rewrites the escaped code with
-// anchors; the dialog's trigger is a button, which can't hold one.
+// code renders inline; anything longer shows a shortened preview (see
+// `previewType`) and opens in full in a dialog, so one 300-character generic
+// type can't blow up the row it sits in. Raw `<code>` rather than a markdown
+// code span because these carry backticks (jexl defaults are template
+// literals). `link` rewrites the escaped code with anchors; the dialog's
+// trigger is a button, which can't hold one.
 export const MAX_INLINE_CELL_CODE = 64
 export function codeCell(
   code: string | undefined,
@@ -93,7 +95,7 @@ export function codeCell(
     ? flat.length <= MAX_INLINE_CELL_CODE
       ? `<code>${link(escapeCellHtml(flat))}</code>`
       : dialogCell(
-          `<code>${escapeCellHtml(`${flat.slice(0, MAX_INLINE_CELL_CODE - 1).trimEnd()}…`)}</code>`,
+          `<code>${escapeCellHtml(previewType(flat, MAX_INLINE_CELL_CODE))}</code>`,
           `<pre><code>${link(preCell(code ?? ''))}</code></pre>`,
         )
     : ''

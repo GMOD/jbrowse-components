@@ -14,11 +14,11 @@ import {
 } from './markdown.ts'
 import {
   dropNodeTails,
-  elideSignature,
   nameTypes,
   sortUnionMembers,
   unreadableSignature,
 } from './typeSignatures.ts'
+import { elideSignature } from './typeText.ts'
 import {
   categoryLabel,
   collectTransitive,
@@ -536,6 +536,13 @@ describe('unreadableSignature', () => {
     expect(
       unreadableSignature('() => Promise<{ sections: {…}; legend: {…} }>'),
     ).toBe(false)
+  })
+
+  test('flags MST vocabulary in what was inferred, not in what is taken', () => {
+    expect(unreadableSignature('() => IStateTreeNode<IAnyType>')).toBe(true)
+    expect(unreadableSignature('SnapshotIn<IAnyType>')).toBe(true)
+    expect(unreadableSignature('React.FC<{ model: typeof self; }>')).toBe(true)
+    expect(unreadableSignature('(schemaType: IAnyType) => void')).toBe(false)
   })
 })
 

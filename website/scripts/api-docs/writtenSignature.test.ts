@@ -96,3 +96,31 @@ export function apply({ featureHeight = 10, maxHeight }: Settings) {}
     ),
   ).toBe('({ featureHeight, maxHeight }: Settings) => void')
 })
+
+// MST's ModelActions index signature types an unannotated action parameter
+// `any`; its default says what it is
+test('a parameter typed any by its context reads as its default', () => {
+  expect(
+    signatureOf(
+      `type Actions = Record<string, (...args: any[]) => any>
+export const actions: Actions = {
+  /** #api test */
+  hideTrack(trackId: string, level = 0) {},
+}
+`,
+      'hideTrack',
+    ),
+  ).toBe('(trackId: string, level?: number) => void')
+})
+
+test('an optional parameter does not say undefined twice', () => {
+  expect(
+    signatureOf(
+      `interface Options { theme: string }
+/** #api test */
+export function renderSvg(opts?: Options) {}
+`,
+      'renderSvg',
+    ),
+  ).toBe('(opts?: Options) => void')
+})
