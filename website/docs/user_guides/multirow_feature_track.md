@@ -22,20 +22,23 @@ reach every mark, scale, filter and facet setting.
 
 ## Turning a feature track into rows
 
-The display draws what its config states and saves no guess. A track whose
-config names no rows takes a row per feature `type`: a GFF3's `gene`, `mRNA` and
-`pseudogene`, a ClinVar bigBed's variant types. A window holding one type shows
-one labelled row. Where the features in view carry no `type` at all, as a plain
-BED's or RepeatMasker's table's do, the display draws every feature in one row,
-in its file's own colors, and opens **One row per** once; a **One row per...**
-chip at the head of the track brings it back. The picker lists every attribute
-the features in view carry, each with how many rows it would make: on
-RepeatMasker, `repClass` makes about twenty and `repFamily` more. In the track
-menu, **One row per** offers **Type**, the default, **Attribute...**, which
-opens the picker, and **None (one row)**, which writes `rows: ""` so the default
-does not come back. A saved row order, its labels and colors, and a clustering
-run are kept across a repartition. They refer to rows by value, so they apply to
-no row under the new partition and apply again when the field comes back.
+A track whose config names no rows takes a row per feature `type`: a GFF3's
+`gene`, `mRNA` and `pseudogene`, a ClinVar bigBed's variant types. A window
+holding one type shows one labelled row.
+
+- **No `type`:** where the features in view have no `type`, as a plain BED's or
+  a RepeatMasker table's, the display draws every feature in one row, in its
+  file's own colors, and opens **One row per** once; a **One row per...** chip
+  at the head of the track brings it back
+- **The picker** lists every attribute the features in view have, each with how
+  many rows it would make: on RepeatMasker, `repClass` makes about twenty and
+  `repFamily` more
+- **Track menu:** **One row per** offers **Type**, the default,
+  **Attribute...**, which opens the picker, and **None (one row)**, which writes
+  `rows: ""` so the default does not come back
+- **Repartitioning:** a saved row order, its labels and colors, and a clustering
+  run are kept by row value, so they apply to no row under a new partition and
+  apply again when the field comes back
 
 <Figure src="/img/multirow/display_types_menu.png" caption="The RepeatMasker track's Display types submenu (top), and the same window partitioned by repeat class (bottom)." />
 
@@ -61,10 +64,8 @@ config:
 
 `rows` names the feature attribute whose value assigns a feature to a row.
 Features sharing a value stack into the same row, and the value becomes the row
-label. Its declared default is `type`, which `rows: "cellType"` above overrides,
-as `rows: { "field": "cellType", ... }` does too, and `rows: ""` is one row.
-When no feature in view carries the field in force, the features draw in one row
-and the display asks once with **One row per**.
+label. `rows: { "field": "cellType", ... }` is the same as `rows: "cellType"`,
+and `rows: ""` is one row.
 
 The plot is a `rect` per feature, spanning the whole feature. **Advanced → Edit
 plot...** offers two other plots as examples: a BED12 row's or a transcript's
@@ -77,9 +78,9 @@ row: its `name`, else its ID. The
 [`tooltip` field](/docs/config/multirowtooltip/#slot-field) points it at another
 attribute, `"tooltip": "_mouseOver"` for a UCSC track's hover text.
 
-The rows are discovered from the values of the features in the window, so a file
-that gains a sample or a category needs no config change, and a window missing
-one has no row for it. The rows follow the window as it pans.
+The rows come from the values of the features in the window and follow it as it
+pans, so a file that gains a sample or a category needs no config change, and a
+window missing one has no row for it.
 
 ### Partitioning with a jexl expression {#when-the-category-is-not-a-column}
 
@@ -195,17 +196,18 @@ mean copy number, with `scale.names` naming each interval in the key:
 
 <Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number, one row per tumor, colored by the interval its log2 ratio falls in." />
 
-**Show → Show legend** keys the colors the config names, and the **Categories**
-submenu beside it hides individual categories, so you can drop the states or
-classes you aren't reading and leave the rest painted. The submenu counts what
-is hidden and offers **Show all categories** to put them back.
-`encoding.color.scale.domain` sets the order those rows read in — the values it
-lists first, the rest sorted — the same rule `rows.sort` orders the track's rows
-by.
+The key and its categories:
 
-You can also pick a color for single rows from their swatches in **Edit
-colors/arrangement...**, which writes each as a `rows.colors` entry and applies
-at render time, with no refetch.
+- **Show → Show legend** keys the colors the config names
+- **Categories**, the submenu beside it, hides individual categories and leaves
+  the rest painted. It counts what is hidden and offers **Show all categories**
+  to put them back
+- **Order:** `encoding.color.scale.domain` sets the order the categories read
+  in, the values it lists first and the rest sorted, the same rule `rows.sort`
+  orders the track's rows by
+- **Single rows:** pick a color from a row's swatch in **Edit
+  colors/arrangement...**, which writes it as a `rows.colors` entry and applies
+  with no refetch
 
 ## Row height
 
@@ -218,28 +220,28 @@ draws a line between rows once they are tall enough to hold one.
 ## Ordering and clustering rows
 
 Rows start sorted by value, digits by magnitude, with the row of features with
-no value last. Three ways to change that:
+no value last. To change the order:
 
 - **Edit colors/arrangement...** reorders, relabels or hand-picks rows in a
   dialog, and `rows.sort` pins an explicit order in config: the values it lists
   lead, and the rest sort.
-- Right-click a feature and choose **Sort rows by _field_ here** to order rows
-  by the value each has at that exact base, the analogue of an alignments
-  track's sort-by-base. Rows compare on what colors the blocks, the same as
-  clustering: the color's field, a feature's own color, or with one color for
-  everything whether a row has a feature there. Numbers sort highest first;
-  other values form contiguous blocks, the largest first, turning a QTL painting
-  at its peak into a clean split by allele.
+- **Sort rows by _field_ here**, from a feature's right-click menu, orders rows
+  by the value each has at that exact base, like an alignments track's
+  sort-by-base. Rows compare on what colors the blocks, the same as clustering:
+  the color's field, a feature's own color, or with one color for everything
+  whether a row has a feature there. Numbers sort highest first; other values
+  form contiguous blocks, the largest first, so at a QTL peak the rows split by
+  allele.
 - **Clustering → Cluster rows by similarity...** reorders rows so that samples
   with similar paintings sit together, and draws a dendrogram in the sidebar.
   See [](/docs/user_guides/clustering).
 
-Each of the three ways of reordering writes the track's
+Each writes the track's
 [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) setting, so undo
 reaches an arrangement, a shared session contains it, and it survives turning
 the track off and on. **Reset row order** appears in the track menu once any of
-the three has run, and returns the rows, their labels and their colors to what
-the config declares.
+them has run, and returns the rows, their labels and their colors to what the
+config declares.
 
 [`rows.groups`](/docs/config/markrows/#slot-groups) tags each row with a
 `group`, the first `{ match, group }` entry whose regex its name matches, and
@@ -268,21 +270,23 @@ A group takes its color from `rows.color`:
 }
 ```
 
-A band marks a group by position, which stays readable over many groups where
-colors alone are hard to tell apart, so facet a long list of groups and use the
-colors as a second cue.
+Facet a long list of groups and use the colors as a second cue: a band's
+position stays readable where many colors are hard to tell apart.
 
 **Show → Show tree** toggles the dendrogram once one has been computed, and
 **Show → Show row labels** the labels beside it, which are useful with no
 clustering run.
 
-A row that [`rows.colors`](/docs/config/markrows/#slot-colors) pins, or that
-[`rows.color`](/docs/config/markrows/#slot-color) colors by an attribute such as
-its group, draws a bar of that color at the left of its label, so a row can be
-found by color. A row with no value of that attribute, such as one no
-`rows.groups` entry matches, takes no color unless `rows.color`'s `scale.domain`
-pairs `""` with one. On a track colored per feature (an `itemRgb` painting, a
-jexl `encoding.color`) the bar is the only place a row's color shows.
+A row with a color draws a bar of it at the left of its label:
+
+- **Which rows:** one that [`rows.colors`](/docs/config/markrows/#slot-colors)
+  pins, or that [`rows.color`](/docs/config/markrows/#slot-color) colors by an
+  attribute such as its group
+- **No value:** a row with no value of that attribute, such as one no
+  `rows.groups` entry matches, takes no color unless `rows.color`'s
+  `scale.domain` pairs `""` with one
+- **Per-feature colors:** on a track colored per feature (an `itemRgb` painting,
+  a jexl `encoding.color`) the bar is the only place a row's color shows
 
 <Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="1104 tumors clustered by copy-number profile around ERBB2, with the dendrogram beside them." />
 
