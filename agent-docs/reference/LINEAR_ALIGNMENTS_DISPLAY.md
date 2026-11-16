@@ -272,17 +272,19 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   hidden the display is always-fit**, in every height mode: each lane gets
   `laneSlot`, `floor(H / N)` px, H the track's height (capped at
   `growMaxHeight` in grow, which `growTargetHeight` returns) and N the drawn
-  lanes or one, so `N * slot <= H` and nothing scrolls. The bands the stated
-  stack reserves fill the slot in proportion (`fittedBelowCoverageHeights`,
-  core `fillStackedBands`); every other band fills 0. Which strips reserve,
-  and whether up arcs overlay the coverage, read the stated settings, so the
-  fit never moves arcs on or off the histogram. `sections` takes the slot as
+  lanes or one, so `N * slot <= H` and nothing scrolls. The stated heights are
+  bound against H with no row floor (`pileupHiddenBandsInput`, as MAF binds
+  its bands with its rows hidden), and the bands that stack reserves fill the
+  slot in proportion (`fittedBelowCoverageHeights`, core `fillStackedBands`);
+  every other band fills 0. Which strips reserve, and whether up arcs overlay
+  the coverage, read those settings (`drawnBelowCoverageBandsInput`), never the
+  fitted heights, so the fit never moves arcs on or off the histogram. `sections` takes the slot as
   its `minSectionHeight`, so a lane without arcs keeps its whole slot, that
   part blank. The coverage ticks and the export's `coverageScale.heightPx`
   read the drawn height. No band handle draws while the pileup is hidden, and
   the Track height mode greys out: the track's bottom edge sizes the bands,
   and neither `coverage.height` nor `height` is written. Group chips on lanes
-  under 16 px thin to every nth (`groupChipTops`). The coverage bars keep
+  under 16 px thin by position (`groupChipTops`). The coverage bars keep
   their `YSCALEBAR_LABEL_OFFSET` inset, so at 250 px a coverage-only lane
   draws no bars from about 23 lanes (about 14 with an arcs strip); changing
   the inset is a shader-twin change of its own.

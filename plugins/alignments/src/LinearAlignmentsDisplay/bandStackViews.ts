@@ -3,6 +3,7 @@ import {
   boundBelowCoverageHeights,
   fittedBelowCoverageHeights,
   laneSlotHeight,
+  pileupHiddenBands,
   pileupHiddenHeight,
 } from './sectionLayout.ts'
 
@@ -143,6 +144,31 @@ export function bandStackViews(self: BandStackHost) {
 
     /**
      * #getter
+     * The stated stack the bands fill each lane's slot from while the pileup
+     * is hidden: bound against the track's height with no floor kept for
+     * rows (`pileupHiddenBands`), as MAF binds its bands with its rows hidden.
+     */
+    get pileupHiddenBandsInput() {
+      return pileupHiddenBands(
+        this.statedBelowCoverageBands,
+        pileupHiddenHeight(self),
+      )
+    },
+
+    /**
+     * #getter
+     * The band settings each lane reserves its strips from:
+     * `belowCoverageBandsInput` while the pileup shows,
+     * `pileupHiddenBandsInput` while it is hidden.
+     */
+    get drawnBelowCoverageBandsInput() {
+      return self.showPileup
+        ? this.belowCoverageBandsInput
+        : this.pileupHiddenBandsInput
+    },
+
+    /**
+     * #getter
      * The three band heights as every consumer draws them: the stated
      * heights while the pileup shows, and while it is hidden the pooled
      * stack fitted to fill `laneSlot`, each band in proportion to its
@@ -151,10 +177,7 @@ export function bandStackViews(self: BandStackHost) {
     get bandHeights() {
       return self.showPileup
         ? this.statedBandHeights
-        : fittedBelowCoverageHeights(
-            this.belowCoverageBandsInput,
-            this.laneSlot,
-          )
+        : fittedBelowCoverageHeights(this.pileupHiddenBandsInput, this.laneSlot)
     },
   }
 }

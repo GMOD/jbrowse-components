@@ -1,10 +1,10 @@
 import { GROW_MAX_HEIGHT } from '@jbrowse/display-kit/heightMode'
 
 import {
-  boundBelowCoverageHeights,
   computeStackedSections,
   fittedBelowCoverageHeights,
   laneSlotHeight,
+  pileupHiddenBands,
   pileupHiddenHeight,
 } from './sectionLayout.ts'
 
@@ -53,9 +53,10 @@ function* settingsCases(random: () => number) {
   }
 }
 
-// The display with its pileup hidden, as the model composes it: the stated
-// stack bound against the plot, each lane's slot of the height the mode fits,
-// and the pooled stack filling it.
+// The display with its pileup hidden, as the model composes it: each lane's
+// slot of the height the mode fits, and the stated stack, bound against that
+// height with no row floor, filling it. The booted model's own composition is
+// pileupHiddenModel.test.ts's.
 function hiddenPileupLayout(
   settings: BelowCoverageBandsSettings,
   lanes: { hasArcs: boolean; hasSashimiDownArcs: boolean }[],
@@ -67,16 +68,13 @@ function hiddenPileupLayout(
     hasArcs: lanes.some(l => l.hasArcs),
     hasSashimiDownArcs: lanes.some(l => l.hasSashimiDownArcs),
   }
-  const input = {
-    ...stated,
-    ...boundBelowCoverageHeights(stated, { height, floor: 20 }),
-  }
   const autoHeight = mode === 'grow'
   const budget = pileupHiddenHeight({
     autoHeight,
     fitTargetHeight: height,
     growMaxHeight: GROW_MAX_HEIGHT,
   })
+  const input = pileupHiddenBands(stated, budget)
   const slot = laneSlotHeight(budget, lanes.length)
   const layout = computeStackedSections(
     lanes.map((lane, i) => ({
@@ -203,6 +201,29 @@ describe('each lane gets a whole-px slot its bands fill in proportion', () => {
         growMaxHeight: 800,
       }),
     ).toBe(1000)
+  })
+
+  // Bound with a row floor, a 60 px track left the arcs 0 px under a 40 px
+  // coverage, and a 20 px coverage-only track drew nothing
+  it('fills a short track from every band that fits, no row floor kept', () => {
+    const short = hiddenPileupLayout(
+      settings,
+      [{ hasArcs: true, hasSashimiDownArcs: false }],
+      60,
+      'fixed',
+    )
+    expect(short.layout.sections[0]!.bands.reserved).toEqual({
+      coverage: 45,
+      readConnections: 15,
+      sashimi: 0,
+    })
+    const coverageOnly = hiddenPileupLayout(
+      { ...settings, drawnReadConnections: 'off' },
+      [{ hasArcs: false, hasSashimiDownArcs: false }],
+      20,
+      'fixed',
+    )
+    expect(coverageOnly.layout.sections[0]!.bands.reserved.coverage).toBe(20)
   })
 
   it('counts no lanes as one', () => {

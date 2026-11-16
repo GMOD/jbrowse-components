@@ -1170,7 +1170,7 @@ export default function stateModelFactory(
         get sections() {
           return computeStackedSections(
             this.drawnLanes,
-            self.belowCoverageBandsInput,
+            self.drawnBelowCoverageBandsInput,
             {
               rowHeight: self.rowHeight,
               minSectionHeight: self.showPileup

@@ -4,6 +4,7 @@ import {
   bootAlignmentsDisplay,
   makeEmptyAlignmentsResult,
   makeEmptyPileupData,
+  oneReadWithMate,
 } from './testUtils.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
@@ -110,6 +111,26 @@ describe('a display with the pileup hidden', () => {
     display.setShowPileup(false)
     expect(display.height).toBe(250)
     expect(display.scrollableHeight).toBe(0)
+  })
+
+  // The pileup's row floor is no part of a hidden pileup's stack: at 60 px
+  // the arcs still draw beside 45 px of coverage instead of binding to 0.
+  test('fills a short track from every band that fits', () => {
+    const display = createEnv()
+    display.setDrawnReadConnections('link')
+    display.setReadConnectionsPlacement('down')
+    display.setHeight(60)
+    display.setRpcData(
+      0,
+      { groups: [{ key: '', label: '', data: oneReadWithMate(2000) }] },
+      { refName: 'ctgA', start: 0, end: 10_000, assemblyName: 'volvox' },
+    )
+    display.setShowPileup(false)
+    expect(display.sections.sections[0]!.bands.reserved).toEqual({
+      coverage: 45,
+      readConnections: 15,
+      sashimi: 0,
+    })
   })
 
   // Hiding the pileup writes nothing: the stated band heights and the track's

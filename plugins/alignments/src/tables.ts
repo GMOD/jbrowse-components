@@ -1175,7 +1175,7 @@ function arcScaleOf(host: AlignmentsTablesHostModel, maxFlatArcSpanBp: number) {
   const { arcBand } = pooledLaneBands(host)
   return arcBand
     ? {
-        band: arcsOverlayCoverage(host.belowCoverageBandsInput)
+        band: arcsOverlayCoverage(host.drawnBelowCoverageBandsInput)
           ? 'coverage'
           : 'arcs',
         heightPx: arcBand.height,
@@ -1259,7 +1259,7 @@ function stackedSections(host: AlignmentsTablesHostModel, readPitch: number) {
       hasSashimiDownArcs: host.sashimiDownArcLanes.has(key),
       heightOverridePx: undefined,
     })),
-    host.belowCoverageBandsInput,
+    host.drawnBelowCoverageBandsInput,
     {
       rowHeight: readPitch,
       minSectionHeight: host.showPileup
@@ -1275,7 +1275,7 @@ function stackedSections(host: AlignmentsTablesHostModel, readPitch: number) {
 // The pooled band stack as the display draws it, one lane holding every
 // strip any lane reserves.
 function pooledLaneBands(host: AlignmentsTablesHostModel) {
-  const s = host.belowCoverageBandsInput
+  const s = host.drawnBelowCoverageBandsInput
   return laneBands(s, s, host.bandHeights)
 }
 

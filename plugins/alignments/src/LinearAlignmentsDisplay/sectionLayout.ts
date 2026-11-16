@@ -237,6 +237,13 @@ export function pileupHiddenHeight(s: {
     : s.fitTargetHeight
 }
 
+// The stated stack while the pileup is hidden, bound against the height the
+// bands fill with no floor kept for rows, so a short track still draws every
+// band that fits rather than the ones above a phantom pileup.
+export function pileupHiddenBands(s: BelowCoverageBandsInput, height: number) {
+  return { ...s, ...boundBelowCoverageHeights(s, { height, floor: 0 }) }
+}
+
 // Each lane's whole-px slot of `height` while the pileup is hidden; no lanes
 // draws as one.
 export function laneSlotHeight(height: number, laneCount: number) {
