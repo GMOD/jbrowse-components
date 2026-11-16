@@ -10,9 +10,11 @@ import {
 } from './astShapes.ts'
 import { slotSpreadPairs, slotSpreadPart } from './enumConstants.ts'
 import {
+  MEMBER_TAGS,
   TAG_TYPES,
   getOwnJSDocTagText,
   getOwnJSDocText,
+  isMemberTag,
   jsDocText,
   parseTaggedComment,
   startsWithTag,
@@ -25,7 +27,7 @@ import {
 } from './typeSignatures.ts'
 import { removeComments, repoRelative } from './util.ts'
 
-import type { Example, TagType } from './jsDocTags.ts'
+import type { Example, MemberTag, TagType } from './jsDocTags.ts'
 import type { PrintedType } from './typeSignatures.ts'
 
 export interface ExtractedNode {
@@ -699,20 +701,6 @@ function isUndocumentedLocal(
   return !MEMBER_TAGS.some(t => startsWithTag(doc, t))
 }
 
-const MEMBER_TAGS = [
-  'property',
-  'volatile',
-  'getter',
-  'method',
-  'action',
-] as const
-
-// A tag that documents a member of a model, as opposed to one that documents an
-// entity with a page of its own (#stateModel, #config, #api, #slot).
-function isMemberTag(tag: TagType): tag is (typeof MEMBER_TAGS)[number] {
-  return (MEMBER_TAGS as readonly string[]).includes(tag)
-}
-
 type MemberBlock = 'property' | 'volatile' | 'views' | 'actions'
 
 // The MST member block a call introduces, or undefined. `types.model({...})`
@@ -967,7 +955,7 @@ function emitDelegatedMembers(
       continue
     }
     const structural = memberType(prop, kind)
-    const types: TagType[] = tagged.length
+    const types: MemberTag[] = tagged.length
       ? [...tagged]
       : structural
         ? [structural]
@@ -1040,7 +1028,7 @@ function enclosingMemberBlock(node: ts.Node): MemberBlock | undefined {
 // undefined for members that aren't documentable API (spreads, setters, plain
 // non-function values, and the shorthand `{ slide }` returns whose tagged
 // declaration the tag pass already emitted).
-function memberType(node: ts.Node, kind: MemberBlock): TagType | undefined {
+function memberType(node: ts.Node, kind: MemberBlock): MemberTag | undefined {
   const isField =
     ts.isPropertyAssignment(node) || ts.isShorthandPropertyAssignment(node)
   if (kind === 'property') {

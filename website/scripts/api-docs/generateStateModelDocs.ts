@@ -10,7 +10,7 @@ import {
 } from './agentText.ts'
 import { parseNode } from './docProgram.ts'
 import { writePage } from './format.ts'
-import { startsWithTag } from './jsDocTags.ts'
+import { MEMBER_TAGS, isMemberTag, startsWithTag } from './jsDocTags.ts'
 import {
   codeCell,
   docPage,
@@ -36,7 +36,7 @@ import {
 } from './util.ts'
 
 import type { ComposedRef, ExtractedNode } from './docProgram.ts'
-import type { Example, TagType } from './jsDocTags.ts'
+import type { Example, MemberTag, TagType } from './jsDocTags.ts'
 
 interface Member {
   name: string
@@ -47,50 +47,49 @@ interface Member {
   signature: string
   propertyDefault?: string
 }
-type MemberKey = 'properties' | 'volatiles' | 'getters' | 'methods' | 'actions'
 
-// The five MST member kinds in render order. Each row ties together the tag that
-// routes a member here (also its anchor prefix), the StateModel bucket it lands
-// in, its section heading, and the type the Member cell shows. A property whose
-// MST type `propertyType` could not read shows the source that declares it.
-// This one table drives accumulation and every rendered section.
-export const MEMBER_KINDS: {
-  key: MemberKey
-  tag: TagType
-  label: string
-  memberCode: (m: Member) => string
-}[] = [
-  {
+// What each member tag (also its anchor prefix) routes a member to: the
+// StateModel bucket it lands in, its section heading, and the type the Member
+// cell shows. A property whose MST type `propertyType` could not read shows the
+// source that declares it. This one table drives accumulation and every
+// rendered section.
+const MEMBER_KIND = {
+  property: {
     key: 'properties',
-    tag: 'property',
     label: 'Properties',
     memberCode: m => m.signature || stripPropertyName(m.code),
   },
-  {
+  volatile: {
     key: 'volatiles',
-    tag: 'volatile',
     label: 'Volatiles',
     memberCode: m => m.signature,
   },
-  {
+  getter: {
     key: 'getters',
-    tag: 'getter',
     label: 'Getters',
     memberCode: m => m.signature,
   },
-  {
+  method: {
     key: 'methods',
-    tag: 'method',
     label: 'Methods',
     memberCode: m => m.signature,
   },
-  {
+  action: {
     key: 'actions',
-    tag: 'action',
     label: 'Actions',
     memberCode: m => m.signature,
   },
-]
+} as const satisfies Record<
+  MemberTag,
+  { key: string; label: string; memberCode: (m: Member) => string }
+>
+type MemberKey = (typeof MEMBER_KIND)[MemberTag]['key']
+
+// The member kinds in render order
+export const MEMBER_KINDS = MEMBER_TAGS.map(tag => ({
+  tag,
+  ...MEMBER_KIND[tag],
+}))
 type MemberKind = (typeof MEMBER_KINDS)[number]
 
 function byKind<T>(value: (key: MemberKey) => T): Record<MemberKey, T> {
@@ -175,7 +174,7 @@ export function accumulateModel(
       definesModel: obj.definesModel,
     }
   } else {
-    const def = MEMBER_KINDS.find(k => k.tag === obj.type)
+    const def = isMemberTag(obj.type) ? MEMBER_KIND[obj.type] : undefined
     if (def) {
       // A later block redefining a member overrides it, as in MST, so the
       // row keeps the first one's place and the override's text.
@@ -484,12 +483,7 @@ function renderModel(
 // No volatiles: 170 KB of the bundled corpus was mouse and hover state
 // (featureIdUnderMouse, contextMenuFeature) that an agent must not write and
 // gains nothing by reading. The website page still lists them.
-const AGENT_KIND_ORDER: MemberKey[] = [
-  'actions',
-  'getters',
-  'properties',
-  'methods',
-]
+const AGENT_KIND_ORDER: MemberTag[] = ['action', 'getter', 'property', 'method']
 
 function renderAgentModel(
   model: ModelWithHeader,
@@ -503,8 +497,9 @@ function renderAgentModel(
     ...model.members[key],
     ...inherited.flatMap(g => g.members[key]),
   ]
-  const sections = AGENT_KIND_ORDER.map(key => {
-    const kind = MEMBER_KINDS.find(k => k.key === key)!
+  const sections = AGENT_KIND_ORDER.map(tag => {
+    const kind = MEMBER_KIND[tag]
+    const { key } = kind
     return {
       heading: kind.label,
       lines: membersOf(key).map(m =>

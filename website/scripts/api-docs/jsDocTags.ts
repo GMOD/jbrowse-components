@@ -1,6 +1,16 @@
 import * as ts from 'typescript'
 
-export type TagType = (typeof TAG_TYPES)[number]
+// The tags that document a member of a model, in the order a model page
+// renders their sections
+export const MEMBER_TAGS = [
+  'property',
+  'volatile',
+  'getter',
+  'method',
+  'action',
+] as const
+
+export type MemberTag = (typeof MEMBER_TAGS)[number]
 
 export const TAG_TYPES = [
   'stateModel',
@@ -10,12 +20,16 @@ export const TAG_TYPES = [
   'preProcessSnapshot',
   'identifier',
   'baseConfiguration',
-  'property',
-  'volatile',
-  'getter',
-  'action',
-  'method',
+  ...MEMBER_TAGS,
 ] as const
+
+export type TagType = (typeof TAG_TYPES)[number]
+
+// A tag that documents a member of a model, as opposed to one that documents an
+// entity with a page of its own (#stateModel, #config, #api, #slot).
+export function isMemberTag(tag: string): tag is MemberTag {
+  return MEMBER_TAGS.some(t => t === tag)
+}
 
 /**
  * True when the JSDoc tag `#name` heads a line of `text` (`* #category general`)
