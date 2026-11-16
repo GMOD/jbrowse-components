@@ -261,8 +261,9 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   the fit budget still charges every lane's stack. A drag clamps to the room the
   other bands leave (`dragBelowCoverageBand`), and a strip bound to 0 px is not
   reserved (`section.bands.reserved[key]` 0), so it gets no handle on top of
-  the one above it. `LaneBandResizeHandles` maps over `LANE_BAND_ORDER`, so
-  every band gets its handle, gate and `gain` by the same rule.
+  the one above it. `LaneBandResizeHandles` maps over `LANE_BAND_ORDER`
+  through `laneBandHandle`, so every band gets its handle, gate, seam and
+  `gain` by the same rule.
 - **Two stacks: stated and drawn** (`bandStackViews.ts`, composed by the model
   and the tables host). The stated stack (`belowCoverageBandsInput`) feeds the
   row budget (`laneBandOverheads`), the fit pitch and the three band setters,
@@ -272,21 +273,34 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   hidden the display is always-fit**, in every height mode: each lane gets
   `laneSlot`, `floor(H / N)` px, H the track's height (capped at
   `growMaxHeight` in grow, which `growTargetHeight` returns) and N the drawn
-  lanes or one, so `N * slot <= H` and nothing scrolls. The stated heights are
-  bound against H with no row floor (`pileupHiddenBandsInput`, as MAF binds
-  its bands with its rows hidden), and the bands that stack reserves fill the
-  slot in proportion (`fittedBelowCoverageHeights`, core `fillStackedBands`);
-  every other band fills 0. Which strips reserve, and whether up arcs overlay
-  the coverage, read those settings (`drawnBelowCoverageBandsInput`), never the
-  fitted heights, so the fit never moves arcs on or off the histogram. `sections` takes the slot as
+  lanes or one, so `N * slot <= H` and nothing scrolls. With coverage on, the
+  down-arcs and down-sashimi strips keep their stated heights, bound top-down
+  against `{ height: slot, floor: MIN_BAND_HEIGHT }`, and the coverage takes
+  the rest of the slot (`fittedBelowCoverageHeights`): 215/35 for coverage 45
+  and arcs 35 at 250 px. Every lane draws that one pooled coverage height, so
+  `coverageBandHeight` and the tick ladder stay one value, and a lane without
+  a strip leaves its part of the slot blank. The coverage's stated height has
+  no say, so the stack bound against H (`pileupHiddenBandsInput`, as MAF
+  binds its bands with its rows hidden) binds the strips the same way rather
+  than letting a tall coverage crowd them out. With coverage off, the stated
+  heights are bound against H with no row floor and the strips fill the slot
+  in proportion (core `fillStackedBands`); every other band fills 0. Which
+  strips reserve, and whether up arcs overlay the coverage, read those
+  settings (`drawnBelowCoverageBandsInput`), never the fitted heights, so the
+  fit never moves arcs on or off the histogram. `sections` takes the slot as
   its `minSectionHeight`, so a lane without arcs keeps its whole slot, that
   part blank. The coverage ticks and the export's `coverageScale.heightPx`
-  read the drawn height. No band handle draws while the pileup is hidden, and
-  the Track height mode greys out: the track's bottom edge sizes the bands,
-  and neither `coverage.height` nor `height` is written. Group chips on lanes
+  read the drawn height. While the pileup is hidden the coverage band has no
+  handle, and a strip's handle sits on its top seam (`laneBandHandle`),
+  reversed and at gain 1, since slots never move: dragging it up grows the
+  strip, and the coverage gives way down to `MIN_BAND_HEIGHT`
+  (`dragStripHeight`, `dragPileupHiddenStrip`). With coverage off no strip
+  gets one. The Track height mode greys out: the track's bottom edge sizes
+  the slots, and neither `coverage.height` nor `height` is written. Group chips on lanes
   under 16 px thin by position (`groupChipTops`). The coverage bars keep
   their `YSCALEBAR_LABEL_OFFSET` inset, so at 250 px a coverage-only lane
-  draws no bars from about 23 lanes (about 14 with an arcs strip); changing
+  draws no bars from about 23 lanes, and so does one with an arcs strip,
+  which binds to 0 px before the coverage gives up its floor; changing
   the inset is a shader-twin change of its own.
 - **`laneBands` is the one statement of a lane's band stack**: which strips it
   reserves, their tops, and where its arcs draw — their own strip, or over the

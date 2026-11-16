@@ -140,7 +140,12 @@ track's bottom edge, the lower band's handle with them.
 `mafTopBands` binds them top-down against the track less the rows' floor
 (none while the rows are hidden), and every reader — paint, marks, export,
 handles, titles, axes, tooltip — takes a band's rect from it and keys on its
-reserved px, so a band bound to 0 px gets no handle and no title.
+reserved px, so a band bound to 0 px gets no handle and no title. With the
+rows hidden the bands fill the track (`filledMafTopBands`): the conservation
+band keeps its stated height, leaving the coverage `MIN_BAND_HEIGHT`, and the
+coverage takes the rest, as the alignments coverage does with its pileup
+hidden. Its handle then sits on its top seam, the coverage has none, and the
+coverage's stated height has no say.
 
 **The rows always fit the track, and are not floored at one pixel.** There is
 no pinned row height to scroll behind: more species shrink the rows, and a taller

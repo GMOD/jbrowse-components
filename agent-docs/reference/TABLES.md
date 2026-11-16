@@ -391,7 +391,7 @@ over every shown section's visible depths under `coverage.encoding.y` (fence, ru
 bounds, nice rounding, a log scale floored at one read), its `type`, the
 `symlogConstant` it resolves from that domain, and the `ticks` the display labels
 at `heightPx`, the px it draws the band at: `coverage.height` bound against the
-track, or with the pileup hidden the band's share of a section's slot. Every
+track, or with the pileup hidden what the strips leave of a section's slot. Every
 section shares it.
 
 `glyph` gives the px the band draws in: the triangle's width and height,

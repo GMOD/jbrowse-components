@@ -50,10 +50,12 @@ they were handed, so the duck types stay though the mixin declares the getter.
 - `wiggle/LinearWiggleDisplay` and `maf/LinearMafDisplay` are always-fit: they
   expose `effectiveRowHeight` with no `rows.step`, compose no mixin and offer no
   Row height menu. MAF with its rows hidden fills the track with its bands
-  (`filledMafTopBands`).
+  (`filledMafTopBands`): the conservation band at its stated height and the
+  coverage taking the rest.
 - `alignments/LinearAlignmentsDisplay` with the pileup hidden is always-fit in
-  every `heightMode`: each lane takes `floor(height / lanes)` px and its bands
-  fill it, so it never scrolls
+  every `heightMode`: each lane takes `floor(height / lanes)` px, its strips
+  keep their stated heights and the coverage takes the rest, so it never
+  scrolls
   ([LINEAR_ALIGNMENTS_DISPLAY](LINEAR_ALIGNMENTS_DISPLAY.md), "Two stacks").
 - `RowsPanel` gives `shift`+wheel row resizing only to a model with
   `setRowHeight`; over MAF the wheel stays the view's.
