@@ -136,8 +136,7 @@ in the pairs. The call's `INFO.CPX_INTERVALS` gives where the second copy went.
 
 Insert size colors a read by how far apart its mates aligned: red for larger
 than expected, pink for smaller, light grey for normal. Expected is a band
-around the median insert.[^mad] Under **Insert size and orientation** a pair of
-abnormal orientation takes its orientation's color instead.
+around the median insert.[^mad]
 
 <!-- BEGIN GENERATED COLOR_TABLE alignments-insert-size -->
 
@@ -151,19 +150,18 @@ abnormal orientation takes its orientation's color instead.
 
 <!-- END GENERATED COLOR_TABLE alignments-insert-size -->
 
-**Color by → Insert size and orientation** combines both signals, so it is the
-usual first setting to try. A pair of abnormal orientation takes its
+**Color by → Insert size and orientation** combines both signals and is the
+usual first setting to try: a pair of abnormal orientation takes its
 orientation's color whatever its insert, and a pair of normal orientation takes
-its insert's: red for the classic deletion, pink for an insertion.
+its insert's, red for the classic deletion and pink for an insertion.
 
 ### Read arcs
 
-**Read connections → Read arcs** draws a bezier between the ends of each pair,
-in the color of the scheme in force. Concordant pairs make short local arcs, so
-a deletion reads as a bundle of long red arcs standing on the same two
-breakpoints, and a mate on another chromosome draws as a vertical line at the
-breakpoint. Reads describing the same connection draw as one arc thickened by
-how many there are, so the arcs count the support as well as locate it.
+With
+[**Read connections → Read arcs**](/docs/user_guides/alignments_track#read-arcs)
+on, concordant pairs make short local arcs, so a deletion reads as a bundle of
+long red arcs standing on the same two breakpoints. An arc's thickness counts
+the reads behind it, so the arcs count the support as well as locate it;
 [](/docs/tutorials/k562_fusions) counts a fusion's support that way.
 
 <Figure caption="Read arcs over a deletion in a trio, with the SV call on top. Red arcs are pairs with a larger-than-expected insert." src="/img/multi-sv-trio.png" />
@@ -179,39 +177,34 @@ an inversion, so the arc is evidence from one molecule.
 Every scheme above paints one pileup, so an event's evidence is mixed into the
 rows around it. **Presets → SV channels** takes the same reads apart into one
 band per kind of SV evidence, each with a coverage curve, its evidence reads and
-their arcs, and the sashimi arcs over coverage go away: deletion-type,
-duplication-type, inversion, a partner on another chromosome or unmapped, an
-SV-size insertion, and no SV evidence. The preset files a discordant pair by its
-orientation, an LR pair whose mates sit closer than the library's fragments as
-an insertion, and a split read by its junction, so short and long reads of one
-event fill the same band. A long read split around an insertion files as an
-insertion when 50 or more read bases lie between its two pieces and the pieces
-overlap on the reference, or leave a gap there, by at most half that many bases.
-Concordant pairs and every other read without SV evidence fill the last band,
-the depth the others are read against. The preset also sets **Filter by → SV
-evidence → Only SV evidence**, which hides rows and leaves every band's coverage
-counting all its reads, so the last band draws its coverage alone and the others
-draw only the reads with SV evidence. The band that fills identifies the
-rearrangement, and a band that stays empty under a call is a call with no read
-evidence behind it. A band appears only for a kind of evidence that some read in
-the window has. The partner band is never empty on short reads: at every locus
-some mates land on another chromosome, and an insertion longer than the fragment
-adds mates that do not map.
+their arcs, and drops the sashimi arcs over coverage:
 
-A read counts as **SV evidence** when it is a split read whose placed pieces
-join, an insertion or deletion of 50 bp or more, or a discordant pair, with both
-ends placed. An end is placed at mapping quality above 0: a split read counts
-when two pieces next to each other along the read are placed and join, and a
-discordant read unless its MQ tag puts the mate at 0. **Filter by** and **Sort
-by** use it, and **SV kind**, the Group by row this arrangement sets, bands a
-read, its mate and its split pieces together by the kind of SV they point at, so
-the last band holds exactly the reads the filter hides.
-
-A read that ends in a clip, has no `SA` tag and no other SV evidence carries a
-clip and nothing else, since the aligner placed its overhang nowhere. It files
-under **No SV evidence**, and its clip still counts in the
-[clipping indicators](/docs/user_guides/alignments_track#insertion-and-clipping-indicators)
-over that band's coverage. **Filter by → SV evidence → All reads** draws it.
+- **Bands:** deletion-type, duplication-type, inversion, a partner on another
+  chromosome or unmapped, an SV-size insertion, and no SV evidence. A band
+  appears only for a kind of evidence that some read in the window has.
+- **Filing:** a discordant pair files by its orientation, an LR pair whose mates
+  sit closer than the library's fragments as an insertion, and a split read by
+  its junction,[^insertion-split] so short and long reads of one event fill the
+  same band. **SV kind**, the **Group by** row the preset sets, bands a read,
+  its mate and its split pieces together.
+- **SV evidence:** a split read whose pieces join, an insertion or deletion of
+  50 bp or more, or a discordant pair, with both ends placed.[^placed] **Filter
+  by** and **Sort by** use the same test.
+- **No SV evidence:** concordant pairs and every other read without SV evidence
+  fill the last band, the depth the others are read against. A read that ends in
+  a clip with no `SA` tag files here, and its clip still counts in the
+  [clipping indicators](/docs/user_guides/alignments_track#insertion-and-clipping-indicators)
+  over that band's coverage.
+- **Filter:** the preset sets **Filter by → SV evidence → Only SV evidence**,
+  which hides rows and leaves every band's coverage counting all its reads, so
+  the last band draws its coverage alone and the others draw only their evidence
+  reads. **Filter by → SV evidence → All reads** draws every read in the bands,
+  with the color scheme untouched.
+- **Reading it:** the band that fills identifies the rearrangement, and a band
+  that stays empty under a call is a call with no read evidence behind it. The
+  partner band is never empty on short reads: at every locus some mates land on
+  another chromosome, and an insertion longer than the fragment adds mates that
+  do not map.
 
 <Figure caption="The INVdup call's reads, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
@@ -273,24 +266,20 @@ over that band's coverage. **Filter by → SV evidence → All reads** draws it.
 <figcaption>Which band each SV type fills. A deletion is ordinary-facing pairs that are too far apart, a tandem duplication lights the outward-pointing band, and an inversion's two junctions share the same-strand band, LL pairs green and RR pairs blue. Split reads across each junction fill the same band as its pairs.</figcaption>
 </figure>
 
-Long reads fill the same bands, a split read by the junction it crosses, so one
-event reads the same on both platforms.
-
 <Figure caption="HG008-T tumor reads at CDKN2A in SV channels, PacBio HiFi above Illumina. Both draw the deletion in the deletion-type band." src="/img/sv_channels_long_reads.png" />
 
 **Tools → Undo** (Ctrl+Z) returns the track to how it was before the preset.
-Each setting the preset changes can also be changed from its usual menu:
-**Filter by → SV evidence → All reads** draws every read in the bands, with the
-color scheme untouched. [](/docs/tutorials/sv_multisamples) reads a complex 1000
-Genomes call band by band.
+Each setting the preset changes can also be changed from its usual menu.
+[](/docs/tutorials/sv_multisamples) reads a complex 1000 Genomes call band by
+band.
 
 ### Read cloud
 
-[Read cloud](/docs/user_guides/alignments_track#read-cloud) lays pairs out on
-the Y axis by the log distance between mates, so the insertion pairs lift clear
-of the background and how many reads span a breakpoint is countable. Chains with
-supplementary alignments are joined by an orange line, and **Filter by** keeps
-or hides the SV evidence and the reads without a mate.
+In the [read cloud](/docs/user_guides/alignments_track#read-cloud), the
+insertion pairs lift clear of the background and how many reads span a
+breakpoint is countable. Chains with supplementary alignments are joined by an
+orange line, and **Filter by** keeps or hides the SV evidence and the reads
+without a mate.
 
 <Figure caption="Read cloud colored by insert size, reads stratified by log distance between mates." src="/img/alignments/read_cloud.png" />
 
@@ -299,20 +288,23 @@ or hides the SV evidence and the reads without a mate.
 ### Split reads
 
 A long read spans the whole event, so it has what a short-read pair could only
-infer. At an inversion it splits into three alignments, the middle one on the
-opposite strand. With **View as pairs/link supplementary alignments** on, those
-segments chain onto one row: the inverted middle paints in the reverse-strand
-color between two forward-strand segments, and an arc joins each breakpoint
-pair: green at the junction LL pairs span, navy at the one RR pairs span. A
-split read across a deletion draws a gold arc. One across a tandem duplication
-draws a teal arc, the color of the pairs that span it, and a teal loop under its
-row where the read maps back over itself. One split around an insertion the
-aligner left out of the CIGAR draws a pink arc, the color of the pairs too close
-across it, and no sashimi arc. A connector joining two segments across a third
-in a region the view does not show is not a junction of the read, so it draws
-grey, in the breakpoint split view too, keyed **Split read (via a region not
-shown)**. Its hover names the segment's locus and how the two drawn ends relate,
-as in "ends relate as: inversion, LL-type".
+infer. With **View as pairs/link supplementary alignments** on, a split read's
+segments chain onto one row, and an arc joins each pair of segments across a
+junction:
+
+- **Deletion:** a gold arc.
+- **Inversion:** the read splits into three alignments, the inverted middle
+  painted in the reverse-strand color between two forward-strand segments. The
+  arc is green at the junction LL pairs span and navy at the one RR pairs span.
+- **Tandem duplication:** a teal arc, the color of the pairs that span it, and a
+  teal loop under the row where the read maps back over itself.
+- **Insertion the aligner left out of the CIGAR:** a pink arc, the color of the
+  pairs too close across it, and no sashimi arc.
+- **Parts aligned outside the view:** a connector joining two segments across
+  parts of the read that align outside the view is no junction of the read, so
+  it draws grey, in the breakpoint split view too, keyed **Split read (skips
+  parts aligned outside this view)**. Its hover lists the skipped parts' loci
+  and how the two drawn ends relate, as in "ends relate as: inversion, LL-type".
 
 **Group by → Split reads** splits the pileup into two sections: reads with a
 supplementary alignment, and the rest. Together the two sections give the
@@ -324,10 +316,9 @@ copy and one uninverted.
 
 ### One read against the reference
 
-Right-click any read for **Linear read vs ref...** or **Dotplot of read vs
-ref...**, which lay one read out against every locus it touches. On a read
-spanning a breakpoint, the order in which its segments align to those loci gives
-the structure of the rearrangement. See
+On a read spanning a breakpoint, the order in which its segments align to the
+loci it touches gives the structure of the rearrangement. Right-click it for
+**Linear read vs ref...** or **Dotplot of read vs ref...** to lay that out; see
 [one read against the reference](/docs/user_guides/alignments_track#one-read-against-the-reference).
 
 <Figure caption="Linear read vs ref for a PacBio read: the pileup above and the read against the reference below." src="/img/read_vs_ref_insertion.png" />
@@ -500,3 +491,13 @@ this through with the HG008 phased tumor assembly.
     The band is `median ± 3·1.4826·MAD` rather than `mean ± 3σ`, because the
     long right tail of large inserts inflates the standard deviation and pushes
     a `mean − 3σ` lower bound below zero, where no short insert is ever flagged.
+
+[^insertion-split]:
+    A long read split around an insertion files as an insertion when 50 or more
+    read bases lie between its two pieces and the pieces overlap on the
+    reference, or leave a gap there, by at most half that many bases.
+
+[^placed]:
+    An end is placed at mapping quality above 0: a split read counts when two
+    pieces next to each other along the read are placed and join, and a
+    discordant read unless its MQ tag puts the mate at 0.
