@@ -11,6 +11,7 @@ import {
 import { featureGroupSections } from './facet.ts'
 import { buildRegionInstanceIndex } from './featureHighlightInk.ts'
 import {
+  MAX_KEPT_NAME_CANDIDATES,
   MIN_FIT_BOX_PX,
   fitLadderRungs,
   keepNamesThatFit,
@@ -513,30 +514,36 @@ export function featureBandViews(self: FeatureBandHost) {
      * #getter
      * The whitespace factors the `decimated` rung commits at: the smallest
      * whose packed stack fits `fitTargetHeight`, so the most names are kept.
-     * When those keep none, the names that fit anyway ride along as
-     * `keptNameIds`.
+     * When those keep no name, or no factor fits, the names that fit anyway
+     * ride along as `keptNameIds`.
      */
     get fitDecimatedFactors(): LabelRoomFactors | undefined {
       // Memoized so `rowGeometrySignature` reads the same answer the rung
       // packed at without a second bisection.
-      const factors =
-        self.layoutReady && self.showLabels
-          ? this.solveLabelRoomFactors(self.fitTargetHeight)
-          : undefined
-      const keptNameIds =
-        factors === undefined ||
-        keepsAnyName(this.decimatedLayoutAt(factors), self.fitMeasureFeatureIds)
-          ? undefined
-          : this.namesThatFit(factors)
+      const ready = self.layoutReady && self.showLabels
+      const solved = ready
+        ? this.solveLabelRoomFactors(self.fitTargetHeight)
+        : undefined
+      const unnamed = solved ?? { labelRoomFactor: Infinity }
+      const keepsNoName =
+        ready &&
+        (solved === undefined
+          ? this.decimatedHeightProbe(Infinity, Infinity) <=
+            self.fitTargetHeight
+          : !keepsAnyName(
+              this.decimatedLayoutAt(solved),
+              self.fitMeasureFeatureIds,
+            ))
+      const keptNameIds = keepsNoName ? this.namesThatFit(unnamed) : undefined
       // An empty set would repack the stack the ladder is about to reject.
-      return factors && keptNameIds?.size
-        ? { ...factors, keptNameIds }
-        : factors
+      return keptNameIds?.size ? { ...unnamed, keptNameIds } : solved
     },
     /**
      * #method
      * The names among the on-screen ones, genes first, whose stack still
-     * fits at the labelled body floor with `factors` dropping the rest.
+     * fits at the labelled body floor with `factors` dropping the rest;
+     * none past `MAX_KEPT_NAME_CANDIDATES` on screen, where the pick would
+     * be arbitrary and change with every pan.
      */
     namesThatFit(factors: LabelRoomFactors) {
       const { geneNamesOnly } = self.layoutInputs
@@ -549,15 +556,17 @@ export function featureBandViews(self: FeatureBandHost) {
         .filter(([, gene]) => gene || !geneNamesOnly)
         .sort(([, a], [, b]) => Number(b) - Number(a))
         .map(([id]) => id)
-      return keepNamesThatFit(
-        candidates,
-        keptNameIds =>
-          this.bodyScaleHeightProbe(
-            packHeightsDecimated,
-            this.decimatedBaseInputs,
-            { ...factors, keptNameIds },
-          )(this.fitLabeledBodyFloor) <= self.fitTargetHeight,
-      )
+      return candidates.length <= MAX_KEPT_NAME_CANDIDATES
+        ? keepNamesThatFit(
+            candidates,
+            keptNameIds =>
+              this.bodyScaleHeightProbe(
+                packHeightsDecimated,
+                this.decimatedBaseInputs,
+                { ...factors, keptNameIds },
+              )(this.fitLabeledBodyFloor) <= self.fitTargetHeight,
+          )
+        : new Set<string>()
     },
     /**
      * #method

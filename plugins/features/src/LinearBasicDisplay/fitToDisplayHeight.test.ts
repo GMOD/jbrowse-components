@@ -233,17 +233,37 @@ function thinnedFloorHeight(display: TestDisplay) {
 
 // A gene stacked over nameless features, so its name costs a row, and a
 // second gene hemmed in by nameless neighbours, whose name costs none but
-// reads less room than the stacked one's.
-function pileAndLoneGeneData(bpPerPx: number) {
-  const features = [
-    { featureId: 'first', startPx: 0, endPx: 50 },
-    { featureId: 'p1', startPx: 100, endPx: 400 },
-    { featureId: 'p2', startPx: 100, endPx: 400 },
-    { featureId: 'piled', startPx: 100, endPx: 400, gene: true },
-    { featureId: 'before', startPx: 700, endPx: 880 },
-    { featureId: 'lone', startPx: 900, endPx: 1000, gene: true },
-    { featureId: 'after', startPx: 1020, endPx: 1100 },
-  ].map(f => ({
+// reads less room than the stacked one's. Last in the window, the stacked
+// gene's room is unbounded, so no factor drops its name.
+const PILE_FIRST = [
+  { featureId: 'first', startPx: 0, endPx: 50 },
+  { featureId: 'p1', startPx: 100, endPx: 400 },
+  { featureId: 'p2', startPx: 100, endPx: 400 },
+  { featureId: 'piled', startPx: 100, endPx: 400, gene: true },
+  { featureId: 'before', startPx: 700, endPx: 880 },
+  { featureId: 'lone', startPx: 900, endPx: 1000, gene: true },
+  { featureId: 'after', startPx: 1020, endPx: 1100 },
+]
+const PILE_LAST = [
+  { featureId: 'first', startPx: 0, endPx: 50 },
+  { featureId: 'before', startPx: 100, endPx: 280 },
+  { featureId: 'lone', startPx: 300, endPx: 400, gene: true },
+  { featureId: 'after', startPx: 420, endPx: 500 },
+  { featureId: 'p1', startPx: 600, endPx: 1000 },
+  { featureId: 'p2', startPx: 600, endPx: 1000 },
+  { featureId: 'piled', startPx: 600, endPx: 900, gene: true },
+]
+
+function pileAndLoneGeneData(
+  bpPerPx: number,
+  layout: {
+    featureId: string
+    startPx: number
+    endPx: number
+    gene?: boolean
+  }[],
+) {
+  const features = layout.map(f => ({
     ...f,
     startBp: Math.round((f.startPx / 2) * bpPerPx),
     endBp: Math.round((f.endPx / 2) * bpPerPx),
@@ -595,29 +615,39 @@ describe('feature display fit escalation ladder', () => {
     expect(display.hasOverflow).toBe(false)
   })
 
-  it('keeps the name that costs no height when the roomier gene name costs a row', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setRpcData(
-      0,
-      pileAndLoneGeneData(display.layoutInputs.bpPerPx),
-      ctgA,
-    )
-    display.setHeightMode('fit')
-    const namelessAtFloor = packedContentHeight(display.rpcDataMap, {
-      ...display.decimatedBaseInputs,
-      labelRoomFactor: Infinity,
+  for (const [where, layout, solves] of [
+    ['first', PILE_FIRST, true],
+    ['last', PILE_LAST, false],
+  ] as const) {
+    it(`keeps the name that costs no height when the roomier gene name costs a row, the pile ${where}`, () => {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay()
+      display.setRpcData(
+        0,
+        pileAndLoneGeneData(display.layoutInputs.bpPerPx, layout),
+        ctgA,
+      )
+      display.setHeightMode('fit')
+      const namelessAtFloor = packedContentHeight(display.rpcDataMap, {
+        ...display.decimatedBaseInputs,
+        labelRoomFactor: Infinity,
+      })
+      display.setHeight(Math.ceil(namelessAtFloor) + 2)
+      expect(thinnedFloorHeight(display)).toBeGreaterThan(
+        display.fitTargetHeight,
+      )
+      expect(
+        display.solveLabelRoomFactors(display.fitTargetHeight) !== undefined,
+      ).toBe(solves)
+      expect(display.fitStage.level).toBe('decimated')
+      expect(
+        [...display.fitStage.layout.get(0)!.floatingLabelsData.values()]
+          .filter(l => l.nameLabel)
+          .map(l => l.featureId),
+      ).toEqual(['lone'])
+      expect(display.hasOverflow).toBe(false)
     })
-    display.setHeight(Math.ceil(namelessAtFloor) + 2)
-    expect(thinnedFloorHeight(display)).toBeGreaterThan(display.fitTargetHeight)
-    expect(display.fitStage.level).toBe('decimated')
-    expect(
-      [...display.fitStage.layout.get(0)!.floatingLabelsData.values()]
-        .filter(l => l.nameLabel)
-        .map(l => l.featureId),
-    ).toEqual(['lone'])
-    expect(display.hasOverflow).toBe(false)
-  })
+  }
 
   it('tells the user what each rung gave up', () => {
     const { createDisplay } = createTestEnvironment()

@@ -177,32 +177,36 @@ const answer = ({
 }: FitStage) => ({ level, scale, bodyScale, maxIsoforms, contentHeight })
 
 describe('the fit solve across settles of the view', () => {
-  it('packs nothing on a settle that moves only the on-screen set', () => {
-    const data = labelled(unevenlySpaced(400), 5, () => 10)
-    const cached = fitDisplay(data, 60)
-    const uncached = uncachedFitDisplay(data, 60)
-    const before = cached.display.onScreenFeatureIds!
+  for (const [level, data, height] of [
+    ['bodies', () => labelled(spaced(1500, 6), 60, () => 10), undefined],
+    ['decimated', () => labelled(unevenlySpaced(400), 5, () => 10), 60],
+  ] as const) {
+    it(`packs nothing at the ${level} rung on a settle that moves only the on-screen set`, () => {
+      const cached = fitDisplay(data(), height)
+      const uncached = uncachedFitDisplay(data(), height)
+      const before = cached.display.onScreenFeatureIds!
 
-    const packsOnSettle = (d: typeof cached) => {
-      mockPackCount.value = 0
-      settle(d.view, 30)
-      void d.display.fitStage
-      return mockPackCount.value
-    }
-    const cachedPacks = packsOnSettle(cached)
-    const uncachedPacks = packsOnSettle(uncached)
+      const packsOnSettle = (d: typeof cached) => {
+        mockPackCount.value = 0
+        settle(d.view, 30)
+        void d.display.fitStage
+        return mockPackCount.value
+      }
+      const cachedPacks = packsOnSettle(cached)
+      const uncachedPacks = packsOnSettle(uncached)
 
-    const after = cached.display.onScreenFeatureIds!
-    expect([...after].some(id => !before.has(id))).toBe(true)
-    expect(cached.display.fitStage.level).toBe('decimated')
-    expect(uncachedPacks).toBeGreaterThan(0)
-    expect(cachedPacks).toBe(0)
-    expect(answer(cached.display.fitStage)).toEqual(
-      answer(uncached.display.fitStage),
-    )
-    cached.dispose()
-    uncached.dispose()
-  })
+      const after = cached.display.onScreenFeatureIds!
+      expect([...after].some(id => !before.has(id))).toBe(true)
+      expect(cached.display.fitStage.level).toBe(level)
+      expect(uncachedPacks).toBeGreaterThan(0)
+      expect(cachedPacks).toBe(0)
+      expect(answer(cached.display.fitStage)).toEqual(
+        answer(uncached.display.fitStage),
+      )
+      cached.dispose()
+      uncached.dispose()
+    })
+  }
 
   it('hands back the same on-screen set while its membership holds', () => {
     const { display, view, dispose } = fitDisplay(

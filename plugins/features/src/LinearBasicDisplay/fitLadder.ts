@@ -131,7 +131,9 @@ export function solveLabelRoomFactors(
       : undefined
 }
 
-// Bounds the packs a window of many names pays when no factor keeps one.
+// The most on-screen names the kept-name fallback weighs; past it the track is
+// dense, so one name it kept would be an arbitrary pick that hops with each
+// pan.
 export const MAX_KEPT_NAME_CANDIDATES = 8
 
 // The factor ranks names by the room beside them, not by the height they
@@ -142,7 +144,7 @@ export function keepNamesThatFit(
   fits: (keptNameIds: ReadonlySet<string>) => boolean,
 ) {
   let kept = new Set<string>()
-  for (const id of candidateIds.slice(0, MAX_KEPT_NAME_CANDIDATES)) {
+  for (const id of candidateIds) {
     const next = new Set([...kept, id])
     if (fits(next)) {
       kept = next

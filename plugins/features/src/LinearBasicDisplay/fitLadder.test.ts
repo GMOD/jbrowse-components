@@ -7,7 +7,6 @@ import {
   bisectSmallestFitting,
   keepNamesThatFit,
   LABELED_BODY_TO_FONT_RATIO,
-  MAX_KEPT_NAME_CANDIDATES,
   fitScaleToFill,
   labeledBodyFloorScale,
   resolveFitLadder,
@@ -539,18 +538,5 @@ describe('keepNamesThatFit', () => {
       'lone',
       'other',
     ])
-  })
-
-  it('tries no more than its candidate cap', () => {
-    const tried: number[] = []
-    const ids = Array.from(
-      { length: MAX_KEPT_NAME_CANDIDATES + 5 },
-      (_, i) => `n${i}`,
-    )
-    keepNamesThatFit(ids, kept => {
-      tried.push(kept.size)
-      return false
-    })
-    expect(tried).toHaveLength(MAX_KEPT_NAME_CANDIDATES)
   })
 })
