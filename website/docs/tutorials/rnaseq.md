@@ -187,9 +187,9 @@ pileup.
 <Figure caption="The ACTB pileup in file order above, sorted with spliced reads first below." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
 
 **Filter by → Spliced reads → Only spliced reads** sets a `filter` that drops
-every read without a skip, and the coverage histogram follows, leaving the
-junction-spanning evidence alone. **Hide spliced reads** in the same submenu is
-the complement.
+every read without a skip from the pileup, leaving the junction-spanning
+evidence alone. The coverage histogram still counts every read. **Hide spliced
+reads** in the same submenu is the complement.
 
 **Filter by → Non-canonical junctions → Hide non-canonical junctions** drops
 every arc whose intron does not begin and end with GT-AG, GC-AG or AT-AC on
