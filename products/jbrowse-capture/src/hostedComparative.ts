@@ -1,7 +1,5 @@
-import { genomeConfigUrl } from '@jbrowse/launch-args'
+import { HOSTED_HINT, fetchJson, genomeConfigUrl } from '@jbrowse/launch-args'
 import { hostedComparative } from '@jbrowse/launch-args/hostedGenomes'
-
-import { fetchJson } from './genome.ts'
 
 import type { JBrowseUrlOptions } from './url.ts'
 import type { ComparativeRow } from '@jbrowse/launch-args'
@@ -51,7 +49,7 @@ function searchCarrier(name: string, config: HostedConfig) {
 
 async function fetchHosted(name: string) {
   const url = genomeConfigUrl(name)
-  const config = await fetchJson(url, `genome "${name}"`)
+  const config = await fetchJson(url, `genome "${name}"`, HOSTED_HINT)
   stampBaseUri(config, url)
   return [name, config as HostedConfig] as const
 }

@@ -19,6 +19,7 @@ export {
   trackFlags,
 } from './fileInput.ts'
 export { genomeConfigUrl } from './genome.ts'
+export { HOSTED_HINT, fetchJson } from './fetchJson.ts'
 export { type HostedConfig, hostedComparative } from './hostedGenomes.ts'
 export {
   HOSTED_LIST_URL,

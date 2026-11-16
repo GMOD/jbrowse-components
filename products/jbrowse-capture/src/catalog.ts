@@ -1,7 +1,12 @@
-import { genomeConfigUrl, resolveTrackId } from '@jbrowse/launch-args'
+import {
+  HOSTED_HINT,
+  fetchJson,
+  genomeConfigUrl,
+  resolveTrackId,
+} from '@jbrowse/launch-args'
 
-import { fetchJson } from './genome.ts'
 import { resolveHostedComparative } from './hostedComparative.ts'
+import { assemblyFromSession, referencedTrackIds } from './session.ts'
 import { assertCoherentOptions, instanceUrl, needsSpec } from './url.ts'
 
 import type { JBrowseUrlOptions } from './url.ts'
@@ -17,6 +22,12 @@ export interface Catalog {
   assemblies?: CatalogAssembly[]
   assembly?: CatalogAssembly
   tracks?: Track[]
+  connections?: unknown[]
+}
+
+interface SpecDeclarations {
+  sessionTracks?: Track[]
+  sessionConnections?: unknown[]
 }
 
 const assembliesOf = (catalog: Catalog) =>
@@ -59,7 +70,11 @@ async function fetchCatalog({
   if (!url) {
     return undefined
   }
-  const fetched = fetchJson(url, config ? 'config' : `genome "${genome}"`)
+  const fetched = fetchJson(
+    url,
+    config ? 'config' : `genome "${genome}"`,
+    HOSTED_HINT,
+  )
   return (await (config ? fetched.catch(() => undefined) : fetched)) as
     | Catalog
     | undefined
@@ -107,16 +122,54 @@ export async function resolveAgainstConfig(
   }
 }
 
+function nearMatch(catalog: Catalog, id: string, assemblyName: string) {
+  try {
+    return ` (did you mean "${resolveTrackId(catalog.tracks ?? [], id, assemblyName)}"?)`
+  } catch {
+    return ''
+  }
+}
+
+// a connection brings in tracks no config lists
+function assertSpecTracks(
+  catalog: Catalog,
+  spec: SpecDeclarations,
+  assemblyName: string,
+) {
+  if (!catalog.connections?.length && !spec.sessionConnections?.length) {
+    const known = new Set(
+      [...(catalog.tracks ?? []), ...(spec.sessionTracks ?? [])].map(
+        t => t.trackId,
+      ),
+    )
+    const missing = referencedTrackIds(spec).filter(id => !known.has(id))
+    if (missing.length > 0) {
+      throw new Error(
+        `the session spec opens track(s) neither the config nor its sessionTracks define: ${missing
+          .map(id => `"${id}"${nearMatch(catalog, id, assemblyName)}`)
+          .join(', ')}`,
+      )
+    }
+  }
+}
+
 /**
- * The assembly a spec or saved session names, spelled the way the config does,
+ * The assembly a spec or saved session opens, spelled the way the config does,
  * since the app's census publishes the config's name and a spec may use an
  * alias. A name the config does not list stays as given: a spec can declare
- * its own assemblies.
+ * its own assemblies. A spec's tracks are checked against the config too, so
+ * a typo fails before a browser launches rather than at the session gate.
  */
-export async function canonicalSessionAssembly(
+export async function sessionAgainstConfig(
   options: JBrowseUrlOptions,
-  name: string,
+  opens: object,
 ) {
   const catalog = await fetchCatalog(options)
-  return (catalog && findAssembly(catalog, name)?.name) ?? name
+  const named = assemblyFromSession(opens)
+  const assemblyName =
+    (named && catalog && findAssembly(catalog, named)?.name) ?? named
+  if (catalog && options.spec) {
+    assertSpecTracks(catalog, options.spec, assemblyName ?? '')
+  }
+  return assemblyName
 }

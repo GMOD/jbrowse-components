@@ -7,7 +7,7 @@ jest.mock('./browser.ts', () => ({
 }))
 jest.mock('./catalog.ts', () => ({
   resolveAgainstConfig: (options: object) => Promise.resolve(options),
-  canonicalSessionAssembly: () => Promise.resolve(undefined),
+  sessionAgainstConfig: () => Promise.resolve(undefined),
 }))
 jest.mock('./instanceVersion.ts', () => ({
   assertSupportedInstance: () => Promise.resolve(),

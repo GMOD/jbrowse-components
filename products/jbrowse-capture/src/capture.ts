@@ -4,7 +4,7 @@ import { dirname } from 'node:path'
 import { assertValidAnnotations } from './annotationSpec.ts'
 import { drawAnnotations } from './annotations.ts'
 import { isBrowserConsoleNoise, launchBrowser } from './browser.ts'
-import { canonicalSessionAssembly, resolveAgainstConfig } from './catalog.ts'
+import { resolveAgainstConfig, sessionAgainstConfig } from './catalog.ts'
 import { assertImagePath } from './imagePath.ts'
 import { assertSupportedInstance } from './instanceVersion.ts'
 import { DEFAULT_TIMEOUT } from './poll.ts'
@@ -69,13 +69,11 @@ async function prepareOpen(options: OpenOptions) {
   })
   const { spec, session, assembly, genome, tracks } = urlOptions
   const opens = spec ?? (session && savedSnapshot(session))
-  const sessionAssembly = opens && assemblyFromSession(opens)
   const expectedAssembly = !opens
     ? (assembly ?? genome)
     : given.comparative
-      ? sessionAssembly
-      : sessionAssembly &&
-        (await canonicalSessionAssembly(urlOptions, sessionAssembly))
+      ? assemblyFromSession(opens)
+      : await sessionAgainstConfig(urlOptions, opens)
   return {
     url,
     viewport: { width, height, deviceScaleFactor: dpr },

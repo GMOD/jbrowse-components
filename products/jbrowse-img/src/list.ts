@@ -1,10 +1,12 @@
 import {
+  HOSTED_HINT,
   HOSTED_LIST_URL,
+  fetchJson,
   formatHostedGenomes,
   formatHostedTracks,
 } from '@jbrowse/launch-args'
 
-import { fetchJson, resolveConfigObject } from './resolveHub.ts'
+import { resolveConfigObject } from './resolveHub.ts'
 
 import type { HostedGenome } from '@jbrowse/launch-args'
 
@@ -26,7 +28,8 @@ export async function runList([genome, filter]: string[]) {
   }
   const data = (await fetchJson(
     HOSTED_LIST_URL,
-    'Failed to fetch assembly list',
+    'the hosted assembly list',
+    HOSTED_HINT,
   )) as { ucscGenomes?: Record<string, HostedGenome> }
   return formatHostedGenomes(data.ucscGenomes ?? {}, LISTING)
 }

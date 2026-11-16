@@ -5,9 +5,9 @@
 import http from 'node:http'
 
 import {
-  canonicalSessionAssembly,
   resolveAgainstConfig,
   resolveAssemblyName,
+  sessionAgainstConfig,
 } from './catalog.ts'
 
 import type { Catalog } from './catalog.ts'
@@ -123,20 +123,57 @@ describe('against a served config', () => {
     await expect(resolveAgainstConfig(options)).resolves.toBe(options)
   })
 
+  const lgv = (assembly: string, tracks: unknown[] = []) => ({
+    views: [{ type: 'LinearGenomeView', assembly, tracks }],
+  })
+
   test('a spec names the assembly by alias and the census by its canonical name', async () => {
     const options = { instance: base, config: 'data/config.json' }
-    await expect(canonicalSessionAssembly(options, 'GRCh38')).resolves.toBe(
+    await expect(sessionAgainstConfig(options, lgv('GRCh38'))).resolves.toBe(
       'hg38',
     )
-    await expect(canonicalSessionAssembly(options, 'mine')).resolves.toBe(
+    await expect(sessionAgainstConfig(options, lgv('mine'))).resolves.toBe(
       'mine',
     )
     await expect(
-      canonicalSessionAssembly(
+      sessionAgainstConfig(
         { ...options, config: 'missing.json' },
-        'GRCh38',
+        lgv('GRCh38'),
       ),
     ).resolves.toBe('GRCh38')
+  })
+
+  test('a spec track the config lacks fails before launch, naming the near match', async () => {
+    const spec = lgv('hg38', ['hg38-clinvarMain', 'ncbiRefSeqCurated'])
+    await expect(
+      sessionAgainstConfig(
+        { instance: base, config: 'data/config.json', spec },
+        spec,
+      ),
+    ).rejects.toThrow(
+      'neither the config nor its sessionTracks define: "ncbiRefSeqCurated" (did you mean "hg38-ncbiRefSeqCurated"?)',
+    )
+  })
+
+  test("a spec's sessionTracks, inline tracks and connections bring their own", async () => {
+    const options = { instance: base, config: 'data/config.json' }
+    const own = {
+      ...lgv('hg38', [
+        'mine',
+        { trackId: 'inline', uri: 'https://example.org/x.bw' },
+      ]),
+      sessionTracks: [{ trackId: 'mine' }],
+    }
+    await expect(
+      sessionAgainstConfig({ ...options, spec: own }, own),
+    ).resolves.toBe('hg38')
+    const connected = {
+      ...lgv('hg38', ['from-a-hub']),
+      sessionConnections: [{ type: 'UCSCTrackHubConnection' }],
+    }
+    await expect(
+      sessionAgainstConfig({ ...options, spec: connected }, connected),
+    ).resolves.toBe('hg38')
   })
 
   test('a hosted genome that does not exist fails before any browser launches', async () => {

@@ -33,7 +33,12 @@ export function savedSnapshot(session: object): object {
 // by `{configuration}`, which is the trackId, or a session track's whole config
 type TrackEntry =
   | string
-  | { trackId?: string; configuration?: string | { trackId?: string } }
+  | {
+      trackId?: string
+      configuration?: string | { trackId?: string }
+      uri?: string
+      adapter?: unknown
+    }
 
 interface SpecShape {
   views?: {
@@ -68,27 +73,43 @@ export function assemblyFromSession(session: object): string | undefined {
   return find((session as SpecShape).views)
 }
 
+const idOf = (t: TrackEntry) =>
+  typeof t === 'string'
+    ? t
+    : (t.trackId ??
+      (typeof t.configuration === 'string'
+        ? t.configuration
+        : t.configuration?.trackId))
+
+function trackEntries(session: object) {
+  const collect = (views: SpecShape['views']): TrackEntry[] =>
+    (views ?? []).flatMap(view => [
+      ...(view.tracks?.flat() ?? []),
+      ...(view.levels ?? []).flatMap(l => l.tracks ?? []),
+      ...collect(view.views),
+    ])
+  return collect((session as SpecShape).views)
+}
+
 /**
  * Every trackId a session spec or saved snapshot opens, nested views
  * included.
  */
-export function trackIdsFromSession(session: object): string[] {
-  const idOf = (t: TrackEntry) =>
-    typeof t === 'string'
-      ? t
-      : (t.trackId ??
-        (typeof t.configuration === 'string'
-          ? t.configuration
-          : t.configuration?.trackId))
-  const idsOf = (tracks: TrackEntry[] = []) =>
-    tracks.map(idOf).filter(id => id !== undefined)
-  const collect = (views: SpecShape['views']): string[] =>
-    (views ?? []).flatMap(view => [
-      ...idsOf(view.tracks?.flat()),
-      ...(view.levels ?? []).flatMap(l => idsOf(l.tracks)),
-      ...collect(view.views),
-    ])
-  return collect((session as SpecShape).views)
+export function trackIdsFromSession(session: object) {
+  return trackEntries(session)
+    .map(idOf)
+    .filter(id => id !== undefined)
+}
+
+/**
+ * The trackIds a session spec opens by reference, which the config or the
+ * spec's `sessionTracks` has to define: every one but a track written inline.
+ */
+export function referencedTrackIds(spec: object) {
+  return trackEntries(spec)
+    .filter(t => typeof t === 'string' || !('uri' in t || 'adapter' in t))
+    .map(idOf)
+    .filter(id => id !== undefined)
 }
 
 /**
