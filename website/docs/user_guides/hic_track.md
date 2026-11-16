@@ -28,18 +28,19 @@ converting first, e.g. with `hicConvertFormat` from HiCExplorer.
 
 Mousing over the matrix draws a V-shaped guide down to the two positions the bin
 under the cursor pairs, with a tooltip giving both loci, the distance between
-them on one chromosome, and the contact score. The guide tracks over empty bins
-too, so it reads positions anywhere in the triangle.
+them on one chromosome, and the contact score. The guide follows the cursor over
+empty bins too.
 
 ## Adjusting resolution
 
-JBrowse picks a resolution to fit the view width. Zoom in for finer bins, out
-for larger-scale structure. For manual control, open the **Resolution** item in
-the track menu: the Finer/Coarser buttons step through the binning levels stored
-in the file, disabling at the finest and coarsest available, and the menu stays
-open so you can step repeatedly. Stepping applies a persistent offset from the
-auto-selected level, so resolution still tracks your zoom, just shifted.
-**Reset** returns to auto.
+JBrowse picks a resolution to fit the view width: zoom in for finer bins, out
+for larger-scale structure. The **Resolution** item in the track menu overrides
+it:
+
+- **Finer** and **Coarser** step through the binning levels stored in the file
+- **The offset persists:** a step shifts the auto-selected level, so resolution
+  still tracks your zoom
+- **Reset** returns to auto
 
 <Figure caption="Show → Show legend adds the color scale, its title naming the normalization and the binsize on screen." src="/img/hic/overlay_controls.png" />
 
@@ -53,13 +54,10 @@ Pick the ramp from the track menu's **Color scheme**:
 - **Viridis**, **Magma**, **Inferno** and **Cividis** - perceptually uniform;
   cividis is the safest choice for readers with color vision deficiency
 
-A bin with no contacts is left unpainted, so the page shows through it, and a
-ramp that is dark at its low end would scatter dark specks across the sparse
-long-range half of the matrix. Viridis, magma, inferno and cividis therefore run
-light to dark, whether picked from the menu or named in a config, unless
-[`encoding.color.scale.reverse`](/docs/config/hiccolor/#slot-scalereverse) is
-written `false`. These are the ramps every color scale in JBrowse names, so a
-config spells one as
+Viridis, magma, inferno and cividis run light to dark here, so the sparse
+long-range bins sit near the unpainted empty ones;
+[`encoding.color.scale.reverse`](/docs/config/hiccolor/#slot-scalereverse)
+written `false` turns them back. A config names the ramp as
 [`encoding.color.scale.scheme`](/docs/config/hiccolor/#slot-scalescheme).
 
 **Color scheme → Emphasize faint contacts (95th percentile)** sets what the ramp
@@ -95,143 +93,115 @@ the file actually contains:
 - **VC** and **VC_SQRT** - vanilla coverage
 - **NONE** - raw observed counts
 
-Vectors are stored per chromosome and binsize, so a file can list a scheme that
-is missing at the binsize on screen. The menu ticks the normalization the loaded
-matrix actually has rather than the one requested, and the unavailable entry
-names the scheme that was substituted. Stepping to a finer resolution usually
-resolves it.
+A file can list a scheme that is missing at the binsize on screen. The menu then
+ticks the normalization the loaded matrix has, and the requested entry names the
+scheme substituted for it. Stepping to a finer resolution usually resolves it.
 
 ## Comparing two regions
 
-The matrix is fetched for every _pair_ of displayed regions. Open a second
-region in the same view and the contacts between the two fill the space between
-their triangles — the same geometry that puts a bright off-diagonal block at a
-translocation's partner loci. The
+Open a second region in the same view and the contacts between the two fill the
+space between their triangles, which is where a translocation's partner loci
+draw a bright off-diagonal block. The
 [Hi-C structural variants tutorial](/docs/tutorials/hic_structural_variants)
-shows that block on a real one, chr9 against chr22 in K562.
+shows that block for chr9 against chr22 in K562.
 
-Inter-chromosomal matrices are commonly only stored at coarse binsizes. When the
-auto-picked resolution is finer than anything the file holds for that pair, the
-cross-block is absent while the intra-chromosomal triangles still draw. Step
-**Coarser** until it appears.
-
-**View → Zoom → Show whole genome** applies the same pairwise drawing to the
-whole genome. It puts every chromosome in the view at once, which makes the
-fetch every chromosome against every other one and the drawing a block diagonal:
-each chromosome is a triangle along the bottom edge, each pair of chromosomes is
-the block between their two triangles, and the whole pyramid is the genome
-against itself.
+- **A missing cross-block:** files often store inter-chromosomal contacts only
+  at coarse binsizes, so the block can be absent while the triangles draw. Step
+  **Coarser** until it appears
+- **Whole genome:** **View → Zoom → Show whole genome** draws every chromosome
+  as a triangle along the bottom edge and each pair as the block between their
+  triangles
+- **Blank off-diagonal:** a file storing only intra-chromosomal contacts leaves
+  every block between the triangles empty, so check the file before reading a
+  blank block
+- **Log scale:** a sparse file needs a log
+  [`encoding.color.scale.type`](/docs/config/hiccolor/#slot-scaletype) to show
+  its long-range bins, and a dense one comes back solid under it
+- **Track height:** the drawing is as tall as the widest pair is wide, half the
+  view at whole-genome zoom, so a short track shows only the faint top slice
 
 <Figure caption="GM12878 Hi-C at its coarsest binsize, hg38 chr1 to chrY in one view." src="/img/hic/whole_genome.png" />
 
-What the whole-genome view shows depends on the file. A file storing only
-intra-chromosomal contacts leaves every block between the triangles empty, so
-check a candidate before reading anything into a blank off-diagonal. The file
-also determines which ramp suits it: a sparse file needs a log
-[`encoding.color.scale.type`](/docs/config/hiccolor/#slot-scaletype) to make its
-decayed long-range bins visible, and a dense one comes back solid under the same
-setting, since every bin then reaches the top of the scale.
-
-The track has to be tall here. A pair's contacts are drawn in the wedge between
-its two regions, so the drawing is as tall as the widest pair on screen is wide,
-and at whole-genome zoom that is chr1 against chrY: half the view. A
-hundred-pixel track shows the top slice of that pyramid, which is its faintest
-corner.
-
 ## Comparing two conditions
 
-Two maps of one assembly, two cell types or a treatment and its control, compare
-as one track. **Compare with** in a Hi-C track's menu lists the other Hi-C
-tracks on its assembly; picking one opens a new track of this map over that one,
-the view Juicebox calls Observed/Control. Both maps are scaled to one library
-depth first, so two libraries sequenced to different depths compare, and a
-contact either map lacks still draws: red where this map gained contacts, blue
-where it lost them. Hovering a bin prints the ratio and both counts.
+**Compare with** in a Hi-C track's menu lists the other Hi-C tracks on its
+assembly; picking one opens a new track of this map over that one, the view
+Juicebox calls Observed/Control. Use it for two cell types, or a treatment and
+its control.
+
+- **Color:** red where this map gained contacts, blue where it lost them
+- **Depth:** both maps are scaled to one library depth first, and a contact
+  either map lacks still draws
+- **Hover** prints the ratio and both counts
+- **Same build only:** JBrowse refuses a control whose chromosome lengths differ
+  from the map's
+- **Shared levels:** only the binsizes and normalizations both files hold are
+  offered; where the two fall back to different normalizations for a region
+  pair, both draw from raw counts
 
 <Figure src="/img/hic/observed_control.png" caption="K562 over GM12878 at the BCR and ABL1 loci. The block between the two regions is the translocation K562 carries." links="Open this view=hic/observed_control" />
-
-JBrowse refuses a control whose chromosomes differ in length from the map's,
-since two builds share chromosome names and differ in coordinates. Only the
-binsizes and normalizations both files hold are offered, and where the two fall
-back to different normalizations for a region pair, both are drawn from raw
-counts.
 
 ## Fitting the triangle to the track height
 
 The triangle's natural height is half the view width, so on a wide view it is
 taller than the track and the lower half is cut off. **Layout → Fit to track
-height** squashes it vertically to whatever height the track is dragged to,
-trading square bins for seeing the whole triangle.
+height** squashes it vertically to whatever height the track is dragged to.
 
 ## Overlaying loops and interactions as arcs
 
 Loop and interaction calls (HiCCUPS loops, ABC/EPIraction enhancer–gene links)
 ship as [BEDPE](/docs/config_guides/file_types/) files with two endpoints per
 line. A [mark display](/docs/config_guides/mark_display#links) draws each call
-as a link from one end to its mate, so you can stack the called loops directly
-above the matrix they came from.
+as a link from one end to its mate, stacked above the matrix they came from.
 
 Add the BEDPE file from **Add a track** and pick **Marks** from the track menu's
-display types: the display reads each call's other end from the file and draws
-the arcs with nothing configured. Then add the `.hic` matrix as a separate track
-and reorder so the links sit above it. A link's `strokeWidth` sets its stroke
-width, and `encoding.strokeWidth` bound to a field scales it by the score.
+display types; the arcs draw with nothing configured. Then add the `.hic` matrix
+as a separate track and reorder so the links sit above it. A link's
+`strokeWidth` sets its stroke width, and `encoding.strokeWidth` bound to a field
+scales it by the score.
 
 ## Compartments and subcompartments
 
 At tens of megabases the matrix separates into two interleaved sets of regions
 that preferentially contact regions of the same set: the A compartment, which is
-gene-rich and active, and the B compartment, which is not. Against the steep
-decay of contact with distance, that signal stays a faint texture in the counts.
+gene-rich and active, and the B compartment, which is not. Against the decay of
+contact with distance, that signal is a faint texture in the counts.
 
 **Values → Observed/expected** divides each count by the file's expected count
-at its distance, the view Juicebox calls O/E. The decay drops out, so a block
-between two regions of one compartment draws red and a block between opposite
-compartments blue. The ratio runs from a quarter to fourfold around 1 on every
-track, so two tracks set to it share one scale; hovering a bin prints the ratio,
-the count and the expected count. Where the file has no expected values at the
-binsize on screen, JBrowse draws the counts instead and the key says
-**Contacts**.
+at its distance, the view Juicebox calls O/E. A block between two regions of one
+compartment draws red and a block between opposite compartments blue. The ratio
+runs from a quarter to fourfold around 1 on every track, so two tracks set to it
+share one scale; hovering a bin prints the ratio, the count and the expected
+count. Where the file has no expected values at the binsize on screen, the track
+draws the counts and the key says **Contacts**.
 
 <Figure src="/img/hic/observed_expected.png" caption="Observed/expected over hg19 chr8, red where two regions contact more than their distance predicts." links="Open this view=hic/observed_expected" />
 
-Published compartment figures usually correlate those ratios as well, which
-JBrowse does not draw. The compartment call itself is the closer match, and the
-processing pipeline has already made it. ENCODE publishes two such files per
-Hi-C experiment, both derived from the matrix in the same track:
+JBrowse draws no correlation matrix of those ratios; for the compartment call
+itself, ENCODE publishes two files per Hi-C experiment, both derived from the
+matrix:
 
-- The **compartment eigenvector**, a BigWig. Its sign is the compartment
-  assignment and its magnitude is how strongly a bin belongs, so it loads as an
-  ordinary [quantitative track](/docs/user_guides/quantitative_track) and draws
-  as a two-color plot around zero.
-- **Subcompartments**, a BED. Clustering the interaction profiles splits A and B
-  further, and the file has a color per class in its `itemRgb` column, so
-  JBrowse colors the track from it with no color configuration.
+- **Compartment eigenvector:** a BigWig whose sign is the compartment and whose
+  magnitude is how strongly a bin belongs. It loads as an ordinary
+  [quantitative track](/docs/user_guides/quantitative_track), a two-color plot
+  around zero
+- **Subcompartments:** a BED splitting A and B further, colored from its
+  `itemRgb` column with no configuration
 
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over one window. At the EBF1 band they take opposite signs." links="Open this view=hic/compartment_switch" />
 
-When you compare compartments between samples, set up the tracks as in that
-figure; getting either step wrong produces a spurious difference.
+Comparing compartments between samples needs the tracks set up as in that
+figure, or the difference can be spurious:
 
-**Pin both eigenvector tracks to the same scale.** Left to autoscale, each track
-scales to the min and max of its data, so the two stop being comparable. Set the
-min and max score by hand, from the track menu or in config.
-
-**An eigenvector identifies A only up to a sign.** The decomposition that
-produces it is equally valid negated, so which sign means "active" is a property
-of the file, and comparing two files means their orientations have to agree as
-well. Both are checkable against the gene track: A is the gene-rich compartment
-by definition, so the sign that coincides with the dense stretches of the gene
-track is A. Do that check over a whole chromosome rather than in one frame,
-since a few megabases can be gene-poor in both samples and settle nothing. In
-both files above, positive is the gene-rich side.
-
-The subcompartment classes need the same caution in a different place. The
-cluster numbers a caller emits are arbitrary labels rather than the published
-A1/A2/B1/B2/B3 naming, so a class number means nothing alone and two files only
-compare because the same pipeline assigned the same colors. A class number can
-move between two files without the eigenvector moving at all, which is a
-relabelling rather than a switch.
+- **One scale:** autoscaled tracks are not comparable, so set both tracks' min
+  and max score by hand, from the track menu or in config
+- **One sign:** an eigenvector is equally valid negated, so check which sign is
+  A against the gene track (A is the gene-rich side) over a whole chromosome,
+  not one window. In both files above, positive is the gene-rich side
+- **Subcompartment labels:** a caller's cluster numbers are arbitrary, not the
+  published A1/A2/B1/B2/B3 naming, so two files compare only when one pipeline
+  assigned them. A class number that changes while the eigenvector holds is a
+  relabelling
 
 ## See also
 
