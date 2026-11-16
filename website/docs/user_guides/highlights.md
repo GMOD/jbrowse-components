@@ -30,7 +30,7 @@ every highlight with a link back to it.
 - The link in the Location column navigates the focused LGV on that assembly, or
   opens one, zoomed out a little for context. `Ctrl`/`Cmd` + `Shift` + `M`
   navigates to the newest highlight.
-- Click a Label cell and type to name a highlight. **Show… → Show highlight
+- Click a Label cell and type to name a highlight. **Show → Show highlight
   labels** in an LGV's menu shows or hides the names on the bands in every view.
 - The Color column sets a band's color. Tick rows to recolor or delete several
   at once.
@@ -40,7 +40,7 @@ every highlight with a link back to it.
 ## Showing, hiding and removing
 
 **Show highlights** hides or shows the bands in every view at once. An LGV has
-it under **Show…**, a dotplot has it at the top of its menu, and the list has it
+it under **Show**, a dotplot has it at the top of its menu, and the list has it
 in its menu. Making or recoloring a highlight shows them again.
 
 A band's chip menu has **Dismiss highlight**. In the list, tick rows and press
@@ -48,10 +48,13 @@ the delete icon.
 
 ## Export and import
 
-Export writes the ticked highlights, or all of them, as BED (one file per
-assembly, 0-based starts) or TSV (one file with `assembly_name` and `color`
-columns, 1-based starts). Only TSV keeps colors. Import reads either and adds to
-the list; a BED file takes the assembly picked in the dialog.
+Export writes the ticked highlights, or all of them:
+
+- **BED:** one file per assembly, 0-based starts, no colors.
+- **TSV:** one file with `assembly_name` and `color` columns, 1-based starts.
+
+Import reads either and adds to the list; a BED file takes the assembly picked
+in the dialog.
 
 ## Setting highlights in code
 
@@ -94,9 +97,11 @@ its assembly:
 ```
 
 **In an embedded LGV or from a plugin**, `highlight` in `createViewState` at
-launch ([](/docs/embedded_components)); after that, `session.addHighlight` takes
-an object like the one above, `session.setHighlights` replaces the list (`[]`
-clears it), and `removeHighlight` and `updateHighlight` take an entry of
-`session.highlights`. A view's `highlights` lists the ones on the assemblies the
-view displays. The [BaseSessionModel reference](/docs/models/basesessionmodel)
-has the rest.
+launch ([](/docs/embedded_components)). After that:
+
+- `session.addHighlight` takes an object like the one above.
+- `session.setHighlights` replaces the list (`[]` clears it).
+- `removeHighlight` and `updateHighlight` take an entry of `session.highlights`.
+- A view's `highlights` lists the ones on the assemblies the view displays.
+
+The [BaseSessionModel reference](/docs/models/basesessionmodel) has the rest.
