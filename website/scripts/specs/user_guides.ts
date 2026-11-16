@@ -17,8 +17,6 @@ const KG_TRACK =
 // A protospacer on the forward strand with its NGG PAM, in the window below.
 const CRISPR_GUIDE = 'CGCTCGATCAAACTCATCAT'
 
-const ROWS_FIELD = '[data-testid="rows-by-attribute"]'
-
 const ROW_FOCUS_HINT = '[data-testid="row_focus_hint"]'
 
 const CLUSTERED_SAMPLES = [
@@ -231,11 +229,11 @@ export const userGuideSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // No rows stated and no `type` in a RepeatMasker table, so the display
-  // opens the picker itself.
+  // The window and width of multirow/display_types_rows, the compose's lower
+  // part. `rows: ''` is one row, which also keeps the picker from opening.
   {
     mode: 'url',
-    name: 'multirow/rows_field_picker',
+    name: 'multirow/one_row',
     url: sessionSpec(DEMO_CONFIG, {
       sessionTracks: [HG38_RMSK_TRACK],
       views: [
@@ -247,25 +245,23 @@ export const userGuideSpecs: ScreenshotSpec[] = [
             {
               trackId: 'rmsk_hg38_ucsc',
               type: 'LinearMultiRowFeatureDisplay',
-              height: 120,
+              rows: '',
+              height: 60,
             },
           ],
         },
       ],
     }),
-    readyText: 'One row per attribute',
+    readyText: 'RepeatMasker',
     readyTimeout: 60000,
-    viewportHeight: 530,
-    actions: [
-      { type: 'click', selector: ROWS_FIELD },
-      { type: 'press', key: 'End' },
-      ...Array.from({ length: 'type'.length }, () => ({
-        type: 'press' as const,
-        key: 'Backspace' as const,
-      })),
-      { type: 'type', selector: ROWS_FIELD, value: 'rep' },
-      { type: 'waitForText', text: 'repFamily' },
-    ],
+    viewportWidth: 1000,
+    viewportHeight: 270,
+  },
+
+  {
+    mode: 'compose',
+    name: 'multirow/rows_field_picker',
+    parts: ['multirow/one_row', 'multirow/display_types_rows'],
   },
 
   // Sixteen samples kept, then clustered, so the chip and the tree share rows.
