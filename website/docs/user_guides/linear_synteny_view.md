@@ -31,10 +31,8 @@ blocks. For which file formats have one and which adapter reads each, see
 
 **Add → Linear synteny view** opens the import form. If your config already has
 a synteny track, it opens in **Quick start**: pick the track and it fills in a
-row per assembly that track names, however many that is, then click **Launch**.
-**Swap** reverses the row order, since a synteny track is queryable in either
-direction and the order a track lists its assemblies in has no bearing on which
-genome goes on top.
+row per assembly that track names, then click **Launch**. **Swap** reverses the
+row order.
 
 **Manual** is the same form with the rows exposed: select each row's assembly
 yourself, click the arrow between two rows to give that pair its dataset, and
@@ -54,58 +52,42 @@ a [pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
 
 ### From a locus you are already looking at
 
-The other way in starts from a locus in a linear genome view with a synteny
-track open on it, and lets JBrowse frame the panels. The track has to be open:
-JBrowse finds the aligned regions from its ribbons, and the import form above is
-for a dataset that is configured but closed.
+With a synteny track open in a linear genome view, JBrowse can frame the panels
+from the track's ribbons. The import form above is for a dataset that is
+configured but closed.
 
 - **Drag-select a region** on the scale bar and pick **Launch → Linear synteny
-  view**. The dialog names the **synteny dataset** the region is read back out
-  of — a select when the view has more than one open, a line otherwise — and
-  changing it refetches the panels below. JBrowse finds every assembly aligning
-  to the region in that dataset and opens a panel for each. The dialog lists
-  them top to bottom with the locus and size each panel will open on and up/down
-  arrows, the assembly you selected in among them: ribbons are drawn between
-  neighbouring panels only, so the view compares only adjacent panels in that
-  order. This is the form to use for an
-  [all-vs-all](/docs/tutorials/allvsall_synteny) dataset, where a locus aligns
-  to several assemblies at once.
-- **Right-click a single alignment** in a synteny track drawn in a linear genome
-  view and pick **Launch → Linear synteny view with \<assembly\>**,
-  <!-- menu-path-ok --> which opens the one pair that alignment describes. Its
-  **Use CIGAR to map the current visible region to the target** option walks the
-  alignment to find the interval that matches what you are looking at; without
-  it the panels frame on the whole block's endpoints, and the dialog prints
-  where each panel will open either way. An alignment with no CIGAR — a PAF
-  written without minimap2's `-c`, MashMap, MCScan, the coarse tier of a PIF —
-  offers the same option as **Clip the panels to the current visible region**,
-  estimating the target interval by interpolating across the block, which is the
-  straight line its ribbon is already drawn as. Worked through in
-  [](/docs/tutorials/genomes_synteny). On a track declaring three or more
-  assemblies the same menu also offers **Linear synteny view, all assemblies
-  here**, the multi-panel dialog above cut from this track at the block you
-  clicked in. **Open \<assembly\> at the matching region** opens the mate
-  assembly alone, with the session's gene track for it, at the stretch the
-  alignment maps your window to, for any mate the session has loaded. The same
-  three are links in the feature's details panel, clipped to the panel's visible
-  window.
-- The same **Linear synteny view (visible region)...** entry sits in the view's
-  hamburger menu under **Launch**, for when the region you want is the whole
-  view and there is nothing to select.
-- **A row of a synteny view launches too.** Drag-select on any row's scale bar
-  and the same **Launch → Linear synteny view...** reads the bands' datasets, so
-  the dialog opens anchored on that row's genome with a panel for every assembly
-  aligning to it there. **Replace current view** then swaps the stack for one
-  anchored on that row, which is how a stack is re-anchored on any of its
-  genomes.
-- **A row of a [](/docs/user_guides/maf_track)** opens as a synteny view too:
-  drag-select across the rows and pick **Linear synteny view, \<ref\> vs**, then
-  the sample. The ribbons are cut from the alignment's columns, so the view
-  needs no synteny file.
+  view**. JBrowse opens a panel for every assembly aligning to the region in the
+  dialog's **synteny dataset** (a select when the view has more than one open).
+  The dialog lists the panels top to bottom with the locus and size each opens
+  on, and up/down arrows to reorder them: ribbons join neighbouring panels only.
+  This is the route for an [all-vs-all](/docs/tutorials/allvsall_synteny)
+  dataset, where a locus aligns to several assemblies.
+- **The whole view:** with nothing to select, the view's hamburger menu has the
+  same **Linear synteny view (visible region)...** under **Launch**.
+- **Right-click an alignment** in a synteny track and pick **Launch → Linear
+  synteny view with \<assembly\>** <!-- menu-path-ok --> to open the pair that
+  alignment describes. Worked through in [](/docs/tutorials/genomes_synteny).
+  - **Use CIGAR to map the current visible region to the target** frames the
+    panels on the interval matching your window; without it they frame on the
+    whole block. The dialog prints where each panel will open.
+  - On an alignment with no CIGAR the option reads **Clip the panels to the
+    current visible region** and interpolates across the block.
+  - **Linear synteny view, all assemblies here**, on a track declaring three or
+    more assemblies, opens the multi-panel dialog at the clicked block.
+  - **Open \<assembly\> at the matching region** opens the mate assembly alone,
+    with the session's gene track for it, at the stretch your window maps to.
+  - The feature's details panel has the same three as links.
+- **A row of a synteny view:** drag-select on its scale bar and pick **Launch →
+  Linear synteny view...**; the dialog anchors on that row's genome. **Replace
+  current view** then re-anchors the stack on that row.
+- **A row of a [](/docs/user_guides/maf_track):** drag-select across the rows
+  and pick **Linear synteny view, \<ref\> vs**, then the sample. The ribbons are
+  cut from the alignment's columns, so no synteny file is needed.
 
-Every Launch dialog above offers a **window size** (padding added to every
-panel) and a **horizontally flip inverted targets** checkbox. Without flipping,
-an inverted panel's coordinates run right to left.
+Every Launch dialog offers a **window size** (padding added to every panel) and
+**horizontally flip inverted targets**. Unflipped, an inverted panel's
+coordinates run right to left.
 
 ## Navigating each panel
 
@@ -120,55 +102,43 @@ independently:
 ### Making the panels move together
 
 **Follow** in the hamburger menu keeps the other panels on whatever aligns to
-one anchor panel, re-resolved through the synteny data as you move. It
-re-derives the correspondence from the alignment, so the ribbons stay
-near-vertical however far you pan. It suits two haplotypes or two assemblies of
-the same genome, where the coordinates diverge but the sequence does not.
-Turning it on adds an **Anchor row** section to the same menu, naming which
-panel drives; the others are placed from it, outward one level at a time in a
-stack of three or more.
+one anchor panel, re-resolved through the alignment as you move, so the ribbons
+stay near-vertical however far you pan. It suits two haplotypes or two
+assemblies of the same genome.
 
-Dragging the ribbons between two panels pans them all at once. While following,
-the drag moves the anchor panel and the others follow it. A panel past a band
-with no synteny track is the exception: the follow cannot place it, so the drag
-pans it.
+- **Anchor row:** a section Follow adds to the same menu, naming the panel that
+  drives. Any panel you click, pan, zoom or type in becomes the anchor. In a
+  stack of three or more the others are placed outward from it a level at a
+  time.
+- **Dragging the ribbons** between two panels pans them together; while
+  following, it moves the anchor and the others follow. A panel past a band with
+  no synteny track pans with the drag.
+- **Header toggle:** the arrows button turns following on and off and shows
+  whether it is running. It switches to a warning form where nothing aligns to
+  the anchor's window (a haplotype-specific insertion, a centromere, the end of
+  the alignments), and the other panels hold their position.
 
-The header's arrows button toggles following on and off without opening the
-menu, and shows whether it is running. It changes to a warning form where
-nothing aligns to the anchor's window at all — a haplotype-specific insertion, a
-centromere, a panel off the end of the alignments — where the other panels hold
-their position.
-
-Any panel you click, pan, zoom or type in becomes the anchor, and the others
-follow it. Turn following off to move one panel alone.
+Turn following off to move one panel alone.
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="Following on the two haplotypes of T2T-HG002: the header's toggle, and a window typed into the anchor panel alone." />
 
 ## Interacting with the ribbons
 
-- Hover a ribbon to see a tooltip with the alignment's coordinates on both
-  genomes and, when zoomed in, the CIGAR operation under the cursor
-- Click a ribbon to highlight it across both panels
-- Right-click a ribbon for a context menu with **Center view on this feature**,
-  which moves both panels to show that alignment, the same as the link in its
-  feature panel
-- The same menu offers **Move top panel to the matching region** and **Move
-  bottom panel to the matching region**. These leave one panel alone and send
-  the other to the sequence that panel's visible window aligns to, resolved
-  through the alignment's CIGAR — reach for this on a chain-scale alignment
-  whose midpoint can be tens of megabases from what is on screen. There are two
-  items because a ribbon sits between two panels
-- The same item is on the right-click menu of a synteny track opened as a track
-  _inside_ a panel, as **Move other panel to the matching region** — there the
-  panel you clicked in is the one that stays
-- Those items appear only where the alignment has a CIGAR to walk. A PAF written
+- **Hover** a ribbon for the alignment's coordinates on both genomes and, when
+  zoomed in, the CIGAR operation under the cursor
+- **Click** a ribbon to highlight it across both panels
+- **Right-click** a ribbon for **Center view on this feature**, which moves both
+  panels to that alignment, the same as the link in its feature panel
+- **Move top panel to the matching region** and **Move bottom panel to the
+  matching region**, on the same menu, leave one panel alone and send the other
+  to the sequence the first panel's window aligns to, through the alignment's
+  CIGAR. On a synteny track opened inside a panel the item reads **Move other
+  panel to the matching region**, and the panel you clicked in stays
+- **No CIGAR, no matching region:** those items are missing on a PAF written
   without `minimap2 -c`, a MashMap or MCScan file, and the coarse tier of a
-  tiered PIF all describe a block without describing the correspondence inside
-  it, so there is no matching region to resolve; zooming in far enough to load
-  the fine tier brings the items back
-- To keep a panel on the matching region as you move rather than sending it
-  there once, use **Follow** above. It works on CIGAR-less alignments too,
-  interpolating across the block
+  tiered PIF; zooming in far enough to load the fine tier brings them back
+- **Follow** (above) keeps a panel on the matching region as you move, and works
+  on CIGAR-less alignments by interpolating across the block
 
 ## Coloring the ribbons
 
@@ -177,56 +147,50 @@ with a key to read, a ramp or a color per track, floats its legend over the top
 ribbon band; close it with the legend's button and it stays closed for that
 mode.
 
-- Default - the ribbon color plus CIGAR operation coloring, so insertions,
+- **Default:** the ribbon color plus CIGAR operation coloring, so insertions,
   deletions, and skips inside an alignment are drawn in separate colors
-- Strand - forward and inverted alignments get different colors, so a ribbon
+- **Strand:** forward and inverted alignments get different colors, so a ribbon
   that twists reads as an inversion
-- Distinct color per track - give each overlaid synteny track a separate color
-  from a palette, so several alignment files drawn into the same view can be
-  told apart. Only offered once a view has more than one track
-- Query / Target - color by the refName on this side or on the other side, for
-  telling contigs apart when one maps across several
-- Reference - color every level of a stacked view by the shared reference's
-  chromosome names, so a region keeps one color as it is traced down the stack
-- Color by value - a submenu of the numbers an alignment can have, each painted
-  on a color ramp or in bins. The row names whichever is in use.
-  - Identity - per-alignment sequence identity on a red-grey-blue ramp, red
+- **Distinct color per track:** a separate palette color for each overlaid
+  synteny track. Offered once a view has more than one track
+- **Query / Target:** color by the refName on this side or on the other side,
+  for telling contigs apart when one maps across several
+- **Reference:** color every level of a stacked view by the shared reference's
+  chromosome names, so a region keeps one color down the stack
+- **Color by value:** a submenu of the numbers an alignment can have, each
+  painted on a color ramp or in bins. The row names whichever is in use.
+  - **Identity:** per-alignment sequence identity on a red-grey-blue ramp, red
     divergent and blue identical, as the MAF track's identity heatmap paints it.
     It needs the `=`/`X` CIGAR that `minimap2 --eqx` writes
-  - Mapping quality - per-alignment PAF MAPQ in the alignments track's four bins
-    (0, 1-9, 10-29 and 30+), dark to light
-  - dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a
-    diverging blue-yellow-red ramp whose pale middle is 1. Blue below it is
-    purifying selection, red above it positive selection, clamped at 2. It needs
-    an [ortholog table](/docs/tutorials/homoeolog_synteny) with `dn` and `ds`
-    per link
-  - Syntenic depth - grey for a one-to-one ortholog, orange where several genes
-    share one, darker from three on, so a tandem array stands out against the
-    collinear rest. It needs an MCScan `.anchors` or `.blocks` file, and counts
-    over the whole file, so a gene sharing an ortholog with one off screen still
-    takes color
-  - Any column the table declares - an ortholog table's `attributeColumns` each
-    become an entry named after the column. A numeric column paints a viridis
-    ramp labelled with the values seen; a text column, an ancestral linkage
-    group or an orthogroup say, paints one color per distinct label, or the
-    color the table put beside it in a `color` column, with a legend row per
+  - **Mapping quality:** per-alignment PAF MAPQ in the alignments track's four
+    bins (0, 1-9, 10-29 and 30+), dark to light
+  - **dN/dS:** the ratio of non-synonymous to synonymous substitution rate, on a
+    diverging blue-yellow-red ramp whose pale middle is 1, clamped at 2. Blue is
+    purifying selection, red positive selection. It needs an
+    [ortholog table](/docs/tutorials/homoeolog_synteny) with `dn` and `ds` per
+    link
+  - **Syntenic depth:** grey for a one-to-one ortholog, orange where several
+    genes share one, darker from three on, so a tandem array stands out. It
+    needs an MCScan `.anchors` or `.blocks` file and counts over the whole file,
+    so a gene whose extra ortholog is off screen still takes color
+  - **Any column the table declares:** each of an ortholog table's
+    `attributeColumns` becomes an entry. A numeric column paints a viridis ramp;
+    a text column (an ancestral linkage group or an orthogroup) paints one color
+    per label, or the color in the table's `color` column, with a legend row per
     label
 
 A mode whose number a track does not have leaves every ribbon the default color.
 
-A text column's label takes a distinct color the first time the view draws it,
-and keeps that color as more labels load. The view's
-`encoding.color.scale.domain` lists labels that take the palette in order and
-lead the legend, the rest sorted after them, so a session can put an ancestral
-linkage group's names in the order a reader expects and fix each one's color.
+A text column's label keeps the color it took when first drawn. A session can
+fix the labels' order and colors with the view's `encoding.color.scale.domain`:
+the labels it lists take the palette in order and lead the legend.
 
 **Track colors**, offered once a view has more than one track, lists each track
 with the swatch it draws in under Distinct color per track. Pick a color there
 to pin it, or reset a track to its automatic palette slot.
 
-The settings button beside it has **Identity fade**, which modulates ribbon
-opacity by identity independently of the color mode, so low-identity blocks fade
-out, leaving the color mode free.
+The settings button beside it has **Identity fade**, which fades low-identity
+ribbons whatever the color mode.
 
 ## Display settings
 
@@ -236,152 +200,92 @@ options or a slider. The hamburger menu next to it sets which genomes the view
 stacks, where they point and what leaves it.
 
 - **Identity fade** is described above
-- **Curved lines** draws ribbons as bezier curves, which reads far better at
+- **Curved lines** draws ribbons as bezier curves, which read better at
   whole-genome scale where straight crossings stack into noise
 - **Location markers** continues the top panel's scalebar grid down through the
-  ribbons, so each tick shows where a round coordinate up there lands below
-- **Off-screen mates** marks the alignments this view cannot draw (below)
-- **CIGAR indels** is how per-base insertions and deletions inside an alignment
-  are shown:
+  ribbons, so each tick shows where a round coordinate lands below
+- **Off-screen mates** marks the alignments this view cannot draw
+  ([below](#off-screen-mates))
+- **CIGAR indels** sets how insertions and deletions inside an alignment are
+  shown:
   - **Colored indels** paints them
   - **Transparent indels** leaves them as see-through gaps in the ribbon
   - **Off - don't draw CIGAR indels** draws each alignment as one solid block.
-    It has a warning icon: overlapping blocks run together with nothing to tell
-    them apart, and a gap inside a block is painted as though it matched across
+    Its warning icon flags that overlapping blocks run together, and a gap
+    inside a block is painted as though it matched across
 - **Level of detail** picks which stored tier is fetched
 - **Opacity** is how much dense overlapping alignments show through each other
-- **Min length** hides alignments shorter than it, clearing the hairball of
-  short spurious chains at whole-genome zoom
+- **Min length** hides alignments shorter than it, clearing short spurious
+  chains at whole-genome zoom
 
-CIGAR indels and Level of detail are gated on the data: a CIGAR-less PAF has no
-indels to draw, and an adapter with one stored tier has nothing to switch
-between.
+CIGAR indels and Level of detail are offered only where the data has indels to
+draw and more than one stored tier. Ribbons thinner than a pixel fade in a dense
+view.
 
-Ribbons thinner than a pixel fade by their on-screen width once the view is
-dense enough to tangle, so an unfiltered whole-genome view does not read as a
-hard full-opacity hairball; a genuinely sparse comparison stays unfaded.
+<Figure caption="Human against chimp across an RB1 intron, from a liftOver chain with RepeatMasker on both. Colored indels paints a missing L1HS as a wedge." src="/img/synteny_human_chimp_cigar_modes.png" />
+
+The same human/chimp chain resolves an insertion an order of magnitude smaller
+than that L1HS, still a gap in the alignment with the element named at the
+indel:
+
+<Figure caption="A human-specific AluYb8 in PICALM, drawn as an indel in the ribbon." src="/img/synteny_te_picalm_alu.png" />
 
 ## View options
 
-The view's hamburger menu keeps seven rows however many genomes are stacked. The
-three that zoom every row at once are at the top; what varies with the stack is
-inside **Rows**:
+In the view's hamburger menu, the first rows zoom every row at once and **Rows**
+holds what varies with the stack:
 
 - **Square view - same bp per pixel** puts every row on the average of the rows'
   current scales, keeping each row's center
 - **Show whole genome - each row fit to width** zooms every row out to its whole
   genome (its chromosomes, where the assembly's sequence report names them),
-  scaling each row separately so it fills its pane
-- **Show whole genome - same bp per pixel** zooms every row out too, but puts
-  them all on one scale, so a smaller genome draws proportionally shorter than a
-  larger one. The two show-whole-genome rows are settings rather than one-off
-  buttons: whichever is marked stays in force, so after zooming into a locus,
-  zooming back out returns to the same shared scale
+  each scaled to fill its pane
+- **Show whole genome - same bp per pixel** zooms every row out onto one scale,
+  so a smaller genome draws shorter. Both show-whole-genome rows stay in force
+  once marked: zooming back out from a locus returns to the same scale
 - **Follow** moves the other rows to whatever aligns to the anchor row, and
   picks which row is the anchor
-- **Rows** - **Add assembly row** to compare three or more assemblies stacked
-  vertically, **Remove row**, **Re-order chromosomes**, and one entry per genome
-  opening that row's own view menu (which is otherwise reachable only from that
-  row's header, and a collapsed row has none). **Remove row** takes any row of a
-  stack of three or more, along with the bands beside it. Where the session has
-  a synteny track connecting the neighbours of a row taken from the middle, the
-  view opens it between them. **Reverse row order** flips the stack top to
-  bottom, each band keeping its tracks. On three rows or more the re-order
-  dialog asks which row to keep as it is: that row's order stands and every
-  other row is sorted against its neighbour nearer it, so a stack whose groups
-  are one genome's chromosomes is anchored on that genome
-  (`diagonalizeAnchorRow` on the view)
+- **Rows**:
+  - **Add assembly row** stacks a third or further assembly
+  - **Remove row** takes any row of a stack of three or more, with the bands
+    beside it; if a synteny track connects the neighbours of a middle row, the
+    view opens it between them
+  - **Reverse row order** flips the stack top to bottom, each band keeping its
+    tracks
+  - **Re-order chromosomes** opens the re-order dialog. On three rows or more it
+    asks which row to keep as it is, and sorts every other row against its
+    neighbour nearer it
+  - one entry per genome opens that row's own view menu, the only route to it
+    for a collapsed row
 - **Show** for the header's own search boxes
 - **Export image...**
 
-<Figure caption="Human against chimp across an RB1 intron, from a liftOver chain with RepeatMasker on both. Colored indels paints a missing L1HS as a wedge." src="/img/synteny_human_chimp_cigar_modes.png" />
-
 ## Off-screen mates
 
-A ribbon needs both of its ends on screen. An alignment with only one end there
-draws nothing, so a locus syntenic to a chromosome the view cannot pair looks
-exactly like a locus syntenic to nothing. Two arrangements produce that, and the
-marks cover both. Either the mate is on a contig the facing panel is not
-displaying at all, or it is on one that panel has scrolled away from. The second
-is the common case in a stack of whole genomes: every contig is displayed there,
-so nothing is missing from the panel, and the ribbons still disappear as soon as
-the two rows are not over each other.
+A ribbon needs both ends on screen. An alignment whose mate is on a contig the
+facing panel is not showing, or has scrolled away from, draws nothing, so a
+locus syntenic to a chromosome out of view looks like a locus syntenic to
+nothing. **Off-screen mates** in the settings menu, on by default, marks those
+alignments:
 
-The marks update as the facing panel scrolls: scroll that panel onto the mate
-and the mark becomes the ribbon it stood in for. The pan buffer past the
-window's edge is the edge it is measured against.
+- **Where:** a mark sits on the edge of the band beside the panel that still has
+  the alignment, at its position there. A mark along the top edge means the
+  upper panel has the alignment and the lower panel cannot pair it; along the
+  bottom edge, the reverse
+- **Hover** names the contig the mark points at, how much sequence goes there in
+  how many alignments, and the locus a click goes to. A wide enough run of marks
+  is labelled with the contig's name
+- **Click** moves the _other_ panel to the mate: it scrolls there if the panel
+  already draws that stretch, or else adds the contig as a region and zooms to
+  the mate with some context around it. Right-click offers the same and copies
+  the contig's name
+- **Undo** in the notification the click raises puts back the row's regions,
+  zoom and scroll. A click on a following row that is not the anchor makes it
+  the anchor, and Undo restores the old one
 
-**Off-screen mates** in the settings menu turns the marks on, and it is on by
-default. Each mark sits where the alignment is on the panel it does have,
-stopping short of the ribbons so it cannot be read as an alignment to whatever
-is directly below. A contig is marked where the sequence going there is worth
-drawing at the window you are on, so a wide view shows the chromosomes most of
-it aligns to and the scattered ones appear as you zoom in. A run of marks to one
-contig has that contig's name, which may be wider than the run itself and
-overhang it; where several contigs cover the same stretch, their names stack.
-When more stretches need a name than the band has rows, the rows go to the ones
-with the most sequence aligned.
-
-**A mark sits on the edge of the panel that still has the alignment.** An
-alignment is undrawable as soon as _either_ of its ends leaves its panel, so the
-two edges of a band mark opposite cases. A mark along the top edge means the
-upper panel still has that alignment and the lower panel cannot pair it — its
-other end is on a contig the lower panel is not displaying, or on one it has
-scrolled away from. A mark along the bottom edge is the same sentence with the
-panels swapped: the lower panel still has it, and the upper panel is the one
-that cannot pair it. Clicking a mark always moves the _other_ panel, the one
-that would have to show that contig for the two to be a ribbon.
-
-Each panel of a pair is queried for the alignments anchored in the window it is
-showing, so each edge covers the alignments of its panel. That second query,
-from the lower panel, is the setting's cost on an indexed whole-genome file;
-turning it off drops both the query and the marks.
-
-A run less than half as wide as the contig name goes unlabelled, which at
-whole-chromosome zoom is most of them. Hover any mark and it names the contig it
-points at, how much sequence on this band goes there and in how many alignments.
-Marks stack into a column at whole-genome zoom, and a pointer over one names the
-contig painted on top there. The hover also reads "Click to show" and the locus
-a click will go to.
-
-Clicking a mark shows that contig's alignments under the pointer on the facing
-panel. Where the facing panel already draws that stretch, the click scrolls
-there, and zooms out to frame it if it is wider than the panel. Otherwise the
-click adds the mate to the panel's regions without removing any. A contig the
-panel lacks is appended, and a contig the panel shows slices of gains a new
-slice beside the one nearest the mate. The panel then zooms to the mate's own
-locus, widened to at least 20kb and a little past its ends, so a single small
-anchor is shown with context around it. Right-clicking a mark offers the same
-navigation and copies the contig's name.
-
-In both cases the click raises a notification with an **Undo** that puts back
-the row's regions, its zoom and its scroll position. If the rows are following
-each other and the one clicked was not the anchor, the click also makes it the
-anchor, since the follow would otherwise pull the row straight back off the
-contig it was just sent to, and the notification reports that. That undo
-restores the previous anchor too.
+Scrolling the facing panel onto the mate turns the mark into the ribbon.
 
 <Figure caption="Peach chr1 over grape chr1 from MCScan blocks. Grey marks along the band's top edge are alignments whose grape end is on a chromosome not shown." src="/img/synteny_offscreen_mates.png" />
-
-### Alignments anchored on the lower panel
-
-An alignment anchored on a contig the lower panel is showing, whose other end is
-somewhere the upper panel is not, only comes back from the lower panel's own
-query. What it returns splits two ways. An alignment whose other end is on a
-contig the upper panel is not displaying at all has no second endpoint, so it
-becomes a mark; clicking one of those navigates the **upper** panel. An
-alignment whose other end is on a contig the upper panel _is_ displaying,
-outside the window it is showing, is a ribbon in principle, but a ribbon with
-one end that far off the edge is not drawn, which is the same rule that governs
-any alignment reaching a long way off screen, so it becomes a mark too.
-
-### Smaller insertions
-
-The human/chimp synteny alignment plus RepeatMasker resolves a lineage-specific
-insertion an order of magnitude smaller than the L1HS above, and it is still a
-gap in the alignment with the element named at the indel:
-
-<Figure caption="A human-specific AluYb8 in PICALM, drawn as an indel in the ribbon." src="/img/synteny_te_picalm_alu.png" />
 
 ## See also
 
