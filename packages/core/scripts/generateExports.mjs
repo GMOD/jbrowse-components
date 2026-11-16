@@ -44,6 +44,9 @@ const preservedExports = [
   // `getRegionQuantitativeStats` is gone (ADR-124), and BigWigAdapter was the
   // subpath's last in-repo importer.
   '@jbrowse/core/util/stats',
+  // The menu component and `MenuItem` type plugins build menus with; the track
+  // selector's favorites/recent popovers were its last in-repo subpath import.
+  '@jbrowse/core/ui/Menu',
   // jest.mock target for stable adapter ids in tests
   '@jbrowse/core/data_adapters/BaseAdapter/getAdapterId',
   // util/index.ts <-> offscreenCanvasPonyfill.ts re-export each other; only
