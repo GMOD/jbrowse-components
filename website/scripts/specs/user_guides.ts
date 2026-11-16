@@ -1,5 +1,6 @@
 import {
   DEMO_CONFIG,
+  HG38_RMSK_TRACK,
   VOLVOX,
   lgvSession,
   menuCascade,
@@ -15,6 +16,8 @@ const KG_TRACK =
 
 // A protospacer on the forward strand with its NGG PAM, in the window below.
 const CRISPR_GUIDE = 'CGCTCGATCAAACTCATCAT'
+
+const ROWS_FIELD = '[data-testid="rows-by-attribute"]'
 
 export const userGuideSpecs: ScreenshotSpec[] = [
   {
@@ -204,6 +207,43 @@ export const userGuideSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Y axis...' },
       { type: 'waitForText', text: 'Reference lines' },
       { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // No rows stated and no `type` in a RepeatMasker table, so the display
+  // opens the picker itself.
+  {
+    mode: 'url',
+    name: 'multirow/rows_field_picker',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [HG38_RMSK_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:45,700,000-45,750,000',
+          tracks: [
+            {
+              trackId: 'rmsk_hg38_ucsc',
+              type: 'LinearMultiRowFeatureDisplay',
+              height: 120,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'One row per attribute',
+    readyTimeout: 60000,
+    viewportHeight: 530,
+    actions: [
+      { type: 'click', selector: ROWS_FIELD },
+      { type: 'press', key: 'End' },
+      ...Array.from({ length: 'type'.length }, () => ({
+        type: 'press' as const,
+        key: 'Backspace' as const,
+      })),
+      { type: 'type', selector: ROWS_FIELD, value: 'rep' },
+      { type: 'waitForText', text: 'repFamily' },
     ],
   },
 ]
