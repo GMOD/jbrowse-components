@@ -12,7 +12,7 @@ import { parseTaggedComment } from './jsDocTags.ts'
 import { codeBlock, exampleSection, section } from './markdown.ts'
 import { repoRelative } from './util.ts'
 
-import type { ExtractedNode } from './docProgram.ts'
+import type { ApiNode, ExtractedNode } from './docProgram.ts'
 import type { Example } from './jsDocTags.ts'
 import type * as ts from 'typescript'
 
@@ -72,7 +72,7 @@ export function accumulateApi(
       docs,
       examples,
       signature: obj.signature,
-      declaresType: !!obj.declaresType,
+      declaresType: obj.declaresType,
       importAs: importSpecifier(program, obj),
       filename: repoRelative(obj.filename),
     })
@@ -256,7 +256,7 @@ function closingQuote(sig: string, open: number) {
 // point reaches.
 function importSpecifier(
   program: ts.Program,
-  { name, filename, declaresType, selfDeclId }: ExtractedNode,
+  { name, filename, declaresType, selfDeclId }: ApiNode,
 ) {
   const root = packageRoot(repoRelative(filename))
   const manifest = root ? packageManifest(root) : undefined

@@ -57,7 +57,7 @@ import type {
   ConfigWithHeader,
   Item,
 } from './configTypes.ts'
-import type { ExtractedNode } from './docProgram.ts'
+import type { ExtractedNode, SlotNode } from './docProgram.ts'
 import type { Example } from './jsDocTags.ts'
 import type { SlotMeta } from './slotSource.ts'
 
@@ -276,7 +276,7 @@ export function accumulateConfig(
 // A slot's row name: a tag spelling the slot alone (`#slot invalid`, or a bare
 // `#slot`) inside a sub-schema names it by its path from the page's schema
 // (`scale.invalid`), as a spread's rows are; a dotted tag is already a path.
-function slotPathOf(obj: ExtractedNode, name: string) {
+function slotPathOf(obj: SlotNode, name: string) {
   return name.includes('.') ? name : `${obj.slotPrefix ?? ''}${name}`
 }
 

@@ -30,23 +30,10 @@ import { removeComments, repoRelative } from './util.ts'
 import type { Example, MemberTag, TagType } from './jsDocTags.ts'
 import type { PrintedType } from './typeSignatures.ts'
 
-export interface ExtractedNode {
-  type: TagType
+interface NodeBase {
   name: string
-  // For `#slot` nodes only: the dotted path of the sub-schemas the slot sits
-  // in (`scale.`), which a tag naming the slot alone leaves out
-  slotPrefix?: string
-  // For a `#slot` a spread's JSDoc documents: the row name the spread gives
-  // the slot undocumented, which a dotted tag (`configuration.shareURL`)
-  // replaces
-  spreadSlot?: string
   comment: string
   signature: string
-  // For `#api` nodes: a type or interface, whose `signature` is its declaration
-  declaresType?: boolean
-  // For `#property` nodes only: what MST fills the property with when a
-  // snapshot leaves it out
-  propertyDefault?: string
   node: string
   filename: string
   // Stable identity of the declaration this node's symbol resolves to
@@ -55,46 +42,91 @@ export interface ExtractedNode {
   // name — robust to default-export aliasing (e.g. a const `BaseConnectionConfig`
   // imported as `baseConnectionConfig`).
   selfDeclId?: string
-  // For `#baseConfiguration` nodes only: the declId of the base config the
-  // right-hand-side expression references (alias-followed). undefined when the
-  // base can't be resolved statically (e.g. `pluginManager.getDisplayType(...)`).
-  baseDeclId?: string
-  // For `#baseConfiguration` nodes only: a string literal found in the RHS, used
-  // as a name fallback when declId resolution fails — e.g.
-  // `pluginManager.getDisplayType('LinearWiggleDisplay')!.configSchema` links to
-  // the config named "LinearWiggleDisplay".
-  baseConfigName?: string
-  // For `#slot` nodes only: the declIds a slot's value expression names, nearest
-  // first (`facet: facetConfigSchema`; `encoding: yEncodingSchema(...)`), so its row
-  // can link the page of the first one that is a `#config`.
+}
+
+export interface ReachedSchema {
+  name: string
+  list: boolean
+}
+
+export interface SlotNode extends NodeBase {
+  type: 'slot'
+  // The dotted path of the sub-schemas the slot sits in (`scale.`), which a
+  // tag naming the slot alone leaves out
+  slotPrefix?: string
+  // For a `#slot` a spread's JSDoc documents: the row name the spread gives
+  // the slot undocumented, which a dotted tag (`configuration.shareURL`)
+  // replaces
+  spreadSlot?: string
+  // The declIds a slot's value expression names, nearest first (`facet:
+  // facetConfigSchema`; `encoding: yEncodingSchema(...)`), so its row can link
+  // the page of the first one that is a `#config`.
   valueDeclIds?: string[]
-  // For `#slot` nodes only: the `ConfigurationSchema('Name', …)` declarations
-  // the same walk reaches, each marked when a `types.array` holds it, so a
-  // slot a factory builds (`markListSchema([...])`) can link the rows that
-  // document its schema on whichever page has them.
+  // The `ConfigurationSchema('Name', …)` declarations the same walk reaches,
+  // each marked when a `types.array` holds it, so a slot a factory builds
+  // (`markListSchema([...])`) can link the rows that document its schema on
+  // whichever page has them.
   valueSchemas?: ReachedSchema[]
-  // For `#slot` nodes only: what the factory the slot's value calls returns
+  // What the factory the slot's value calls returns
   // (`types.array(types.union(...))` for
   // `multiQuantitativeDisplaySchemas(pluginManager)`).
   valueReturnedCode?: string
-  // For `#slot` nodes only: whether the slot's `defaultValue` names a parameter
-  // of the factory declaring it, so the value is whatever each caller passed and
-  // the source text names nothing a reader can look up.
+  // Whether the slot's `defaultValue` names a parameter of the factory
+  // declaring it, so the value is whatever each caller passed and the source
+  // text names nothing a reader can look up.
   parameterisedDefault?: boolean
-  // For `#stateModel` nodes only: the models passed to this model's
-  // `types.compose(...)` call, alias-followed. Lets the state-model generator
-  // derive the composition graph from code instead of a hand-authored
-  // `composed of` comment, the same way `baseDeclId` derives config inheritance.
-  composedOf?: ComposedRef[]
-  // For `#stateModel` nodes only: whether the annotated declaration actually
-  // contains a `types.model` / `types.compose` call. False means the tag is
-  // attached to something else — the failure this catches is a declaration
-  // sliding in between the JSDoc and its factory, which still renders a page
-  // (the header parses from the comment) while `composedOf` resolves empty, so
-  // every inherited member silently vanishes from the table. See the
-  // misattached-#stateModel gap section in generate.ts.
-  definesModel?: boolean
 }
+
+interface BaseConfigurationNode extends NodeBase {
+  type: 'baseConfiguration'
+  // The declId of the base config the right-hand-side expression references
+  // (alias-followed). undefined when the base can't be resolved statically
+  // (e.g. `pluginManager.getDisplayType(...)`).
+  baseDeclId?: string
+  // A string literal found in the RHS, used as a name fallback when declId
+  // resolution fails — e.g.
+  // `pluginManager.getDisplayType('LinearWiggleDisplay')!.configSchema` links to
+  // the config named "LinearWiggleDisplay".
+  baseConfigName?: string
+}
+
+interface StateModelNode extends NodeBase {
+  type: 'stateModel'
+  // The models passed to this model's `types.compose(...)` call,
+  // alias-followed. Lets the state-model generator derive the composition
+  // graph from code instead of a hand-authored `composed of` comment, the same
+  // way `baseDeclId` derives config inheritance.
+  composedOf: ComposedRef[]
+  // Whether the annotated declaration actually contains a `types.model` /
+  // `types.compose` call. False means the tag is attached to something else —
+  // the failure this catches is a declaration sliding in between the JSDoc and
+  // its factory, which still renders a page (the header parses from the
+  // comment) while `composedOf` resolves empty, so every inherited member
+  // silently vanishes from the table. See the misattached-#stateModel gap
+  // section in generate.ts.
+  definesModel: boolean
+}
+
+export interface ApiNode extends NodeBase {
+  type: 'api'
+  // A type or interface, whose `signature` is its declaration
+  declaresType: boolean
+}
+
+interface MemberNode extends NodeBase {
+  type: MemberTag
+  // For a `#property`: what MST fills the property with when a snapshot leaves
+  // it out
+  propertyDefault?: string
+}
+
+export type ExtractedNode =
+  | SlotNode
+  | BaseConfigurationNode
+  | StateModelNode
+  | ApiNode
+  | MemberNode
+  | (NodeBase & { type: 'config' | 'identifier' | 'preProcessSnapshot' })
 
 // A model referenced inside a `types.compose(...)` call, identified two ways so
 // the generator can match it back to the #stateModel page that documents it:
@@ -102,11 +134,6 @@ export interface ExtractedNode {
 // binding, e.g. `TrackHeightMixin`), and by resolved name (works when the tag
 // sits on an inner factory whose result is re-exported, e.g.
 // `export const BaseDisplay = stateModelFactory()`).
-export interface ReachedSchema {
-  name: string
-  list: boolean
-}
-
 export interface ComposedRef {
   declId?: string
   name?: string
@@ -267,52 +294,29 @@ export function extractWithComment(
     } else if (ts.isSpreadAssignment(node) && tags.includes('slot')) {
       emitSpreadSlots(node, comment, cb)
     } else if (tags.length && !delegatedAway) {
-      const { name, signature, declaresType, propertyDefault, declId } =
-        describeSymbol(
-          checker,
-          named,
-          node,
-          tags.includes('property'),
-          tags.includes('api') ? Infinity : undefined,
-        )
+      const described = describeSymbol(
+        checker,
+        named,
+        node,
+        tags.includes('property'),
+        tags.includes('api') ? Infinity : undefined,
+      )
+      const filename = node.getSourceFile().fileName
       if (!isStateModel && tags.some(isMemberTag)) {
         memberTagged.set(
           memberKey(node),
-          `${repoRelative(node.getSourceFile().fileName)} ${name}`,
+          `${repoRelative(filename)} ${described.name}`,
         )
       }
-      const base = {
-        name,
+      const base = nodeBase(
+        described,
         comment,
-        signature,
-        declaresType,
-        propertyDefault,
-        node:
-          (tags.includes('slot') && slotTableEntry(node)) || node.getFullText(),
-        filename: node.getSourceFile().fileName,
-        selfDeclId: declId,
-        baseDeclId: tags.includes('baseConfiguration')
-          ? referencedDeclId(checker, node)
-          : undefined,
-        ...(tags.includes('slot') ? slotValueReferences(checker, node) : {}),
-        parameterisedDefault: tags.includes('slot')
-          ? hasParameterisedDefault(checker, node)
-          : undefined,
-        slotPrefix: tags.includes('slot') ? subSchemaPrefix(node) : undefined,
-        baseConfigName:
-          tags.includes('baseConfiguration') && ts.isPropertyAssignment(node)
-            ? findStringLiteral(node.initializer)
-            : undefined,
-        composedOf: tags.includes('stateModel')
-          ? resolveComposedModels(checker, node)
-          : undefined,
-        definesModel: tags.includes('stateModel')
-          ? definesStateModel(node)
-          : undefined,
-      }
-      collectDocsBehindATag(node, comment, name, behindATag)
+        (tags.includes('slot') && slotTableEntry(node)) || node.getFullText(),
+        filename,
+      )
+      collectDocsBehindATag(node, comment, described.name, behindATag)
       for (const type of tags) {
-        cb({ type, ...base })
+        cb(taggedNode(checker, node, type, base, described))
       }
     } else if (isStateModel) {
       // Untagged members are recovered structurally from their position in the
@@ -589,23 +593,18 @@ function emitUntaggedMember(
   }
   const type = memberType(node, block)
   if (type) {
-    const { name, signature, propertyDefault, declId } = describeSymbol(
-      checker,
-      named,
-      node,
-      type === 'property',
-    )
-    if (name && !(block === 'actions' && LIFECYCLE_HOOKS.has(name))) {
-      cb({
-        type,
-        name,
+    const described = describeSymbol(checker, named, node, type === 'property')
+    if (
+      described.name &&
+      !(block === 'actions' && LIFECYCLE_HOOKS.has(described.name))
+    ) {
+      const base = nodeBase(
+        described,
         comment,
-        signature,
-        propertyDefault,
-        node: node.getFullText(),
-        filename: node.getSourceFile().fileName,
-        selfDeclId: declId,
-      })
+        node.getFullText(),
+        node.getSourceFile().fileName,
+      )
+      cb(taggedNode(checker, node, type, base, described))
     }
   } else if (
     (block === 'views' || block === 'actions') &&
@@ -960,7 +959,7 @@ function emitDelegatedMembers(
       : structural
         ? [structural]
         : []
-    const { name, signature, propertyDefault, declId } = describeSymbol(
+    const described = describeSymbol(
       checker,
       named,
       prop,
@@ -968,22 +967,14 @@ function emitDelegatedMembers(
     )
     if (
       !types.length ||
-      !name ||
-      (kind === 'actions' && LIFECYCLE_HOOKS.has(name))
+      !described.name ||
+      (kind === 'actions' && LIFECYCLE_HOOKS.has(described.name))
     ) {
       continue
     }
+    const base = nodeBase(described, comment, prop.getFullText(), modelFile)
     for (const type of types) {
-      cb({
-        type,
-        name,
-        comment,
-        signature,
-        propertyDefault,
-        node: prop.getFullText(),
-        filename: modelFile,
-        selfDeclId: declId,
-      })
+      cb(taggedNode(checker, prop, type, base, described))
     }
   }
 }
@@ -1090,6 +1081,57 @@ function describeSymbol(
     propertyDefault: property?.defaultValue,
     declId: symbolDeclId(checker, symbol),
   }
+}
+
+type Described = ReturnType<typeof describeSymbol>
+
+function nodeBase(
+  { name, signature, declId }: Described,
+  comment: string,
+  node: string,
+  filename: string,
+): NodeBase {
+  return { name, comment, signature, node, filename, selfDeclId: declId }
+}
+
+// One tag's node: the fields every node carries plus what that tag's consumer
+// reads off the declaration.
+function taggedNode(
+  checker: ts.TypeChecker,
+  node: ts.Node,
+  type: TagType,
+  base: NodeBase,
+  { declaresType, propertyDefault }: Described,
+): ExtractedNode {
+  return type === 'slot'
+    ? {
+        ...base,
+        type,
+        ...slotValueReferences(checker, node),
+        parameterisedDefault: hasParameterisedDefault(checker, node),
+        slotPrefix: subSchemaPrefix(node),
+      }
+    : type === 'baseConfiguration'
+      ? {
+          ...base,
+          type,
+          baseDeclId: referencedDeclId(checker, node),
+          baseConfigName: ts.isPropertyAssignment(node)
+            ? findStringLiteral(node.initializer)
+            : undefined,
+        }
+      : type === 'stateModel'
+        ? {
+            ...base,
+            type,
+            composedOf: resolveComposedModels(checker, node),
+            definesModel: definesStateModel(node),
+          }
+        : type === 'api'
+          ? { ...base, type, declaresType }
+          : isMemberTag(type)
+            ? { ...base, type, propertyDefault }
+            : { ...base, type }
 }
 
 const declarationPrinter = ts.createPrinter({ removeComments: true })
@@ -1555,6 +1597,6 @@ export function parseNode(obj: ExtractedNode): ParsedNode {
     trackType,
     code: removeComments(obj.node),
     signature: obj.signature,
-    propertyDefault: obj.propertyDefault,
+    propertyDefault: 'propertyDefault' in obj ? obj.propertyDefault : undefined,
   }
 }

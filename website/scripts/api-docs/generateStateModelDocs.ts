@@ -169,7 +169,7 @@ export function accumulateModel(
       examples: member.examples,
       id: modelPageId(member.name),
       selfDeclId: obj.selfDeclId,
-      composedOf: obj.composedOf ?? [],
+      composedOf: obj.composedOf,
       category: member.category,
       definesModel: obj.definesModel,
     }

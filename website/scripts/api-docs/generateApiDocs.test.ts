@@ -114,7 +114,9 @@ export interface Op {
       node => nodes.push(node),
       () => {},
     )
-    expect(nodes.map(n => [n.signature, n.declaresType])).toEqual([
+    expect(
+      nodes.map(n => [n.signature, n.type === 'api' && n.declaresType]),
+    ).toEqual([
       ["interface Op {\n  op: 'sum' | 'mean';\n  field?: string;\n}", true],
     ])
   })
