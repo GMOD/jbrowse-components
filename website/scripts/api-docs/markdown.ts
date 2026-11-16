@@ -207,22 +207,29 @@ ${body}
 // A page's meta description: the opening of its docstring as plain text, or
 // `fallback` for a type whose docstring says nothing. A long opening ends at
 // the last whole sentence that fits, and is cut mid-sentence only when its
-// first sentence alone is too long.
+// first sentence alone is too long. Sentences are split on the markdown, where
+// one opening on a code span or a link still shows where it starts.
 const DESCRIPTION_CHARS = 200
+const SENTENCE_BREAK = /(?<=(?<!\b(?:e\.g|i\.e|cf|vs))[.!?])\s+(?=[A-Z"(`*_[])/
 
-export function pageDescription(docs: string, fallback: string) {
-  const text = firstParagraph(docs, Infinity)
+function plainText(markdown: string) {
+  return markdown
     .replaceAll(/\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replaceAll(/[`*_]/g, '')
-  const sentenceEnds = [
-    ...text.slice(0, DESCRIPTION_CHARS + 1).matchAll(/[.!?](?=\s+[A-Z"(])/g),
-  ]
-  const lastEnd = sentenceEnds.at(-1)?.index
+}
+
+export function pageDescription(docs: string, fallback: string) {
+  const sentences = firstParagraph(docs, Infinity)
+    .split(SENTENCE_BREAK)
+    .map(plainText)
+  const text = sentences.join(' ')
+  const fitting = sentences
+    .map((_, i) => sentences.slice(0, i + 1).join(' '))
+    .filter(opening => opening.length <= DESCRIPTION_CHARS)
+    .at(-1)
   return text.length <= DESCRIPTION_CHARS
     ? text || fallback
-    : lastEnd !== undefined
-      ? text.slice(0, lastEnd + 1)
-      : firstParagraph(text, DESCRIPTION_CHARS)
+    : (fitting ?? firstParagraph(text, DESCRIPTION_CHARS))
 }
 
 // Where a documented element comes from, derived from its source path: which

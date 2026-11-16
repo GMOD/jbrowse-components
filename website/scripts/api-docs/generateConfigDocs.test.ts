@@ -23,6 +23,7 @@ import {
   slotRecord,
   slotRow,
 } from './generateConfigDocs.ts'
+import { pageDescription } from './markdown.ts'
 
 import type { ManifestSlot, TypedManifestEntry } from './configManifest.ts'
 import type { Config } from './configTypes.ts'
@@ -644,6 +645,25 @@ export const recordFixture = ConfigurationSchema('Facet', {
     expect(sort?.line).toBe(
       '- `sort: stringArray of strings or numbers = []`: The values first.',
     )
+  })
+})
+
+describe("a page's meta description", () => {
+  const opening =
+    "A variant chord's `encoding.color`: a CSS color or `jexl:` callback in `value` for every chord, or a `field` of the record whose values each take a range color, with a key on the circle."
+
+  test('ends at a sentence the next one, opening on a code span, follows', () => {
+    expect(
+      pageDescription(
+        `${opening} \`svType\` paints the structural-variant classes the variant displays paint. A string is the field.`,
+        'fallback',
+      ),
+    ).toBe(opening.replaceAll('`', ''))
+  })
+
+  test('an abbreviation ends no sentence', () => {
+    const long = `Colors by a field, e.g. \`strand\`, which ${'reads on '.repeat(20)}and on.`
+    expect(pageDescription(long, 'fallback')).toMatch(/…$/)
   })
 })
 
