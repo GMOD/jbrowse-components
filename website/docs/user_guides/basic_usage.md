@@ -11,7 +11,7 @@ Web and Desktop.
 
 ## Linear genome view
 
-Open a linear genome view (LGV) from the menu bar: `Add` → `Linear genome view`
+Open a linear genome view (LGV) from the menu bar: **Add → Linear genome view**
 
 ### Scrolling
 
@@ -91,8 +91,8 @@ appears only when the hits point at different places.
 
 ## Opening tracks
 
-Menu bar: `File` → `Open track...`. For a whole track hub (UCSC track hub or
-JBrowse 1 data directory), `File` → `Open connection...`; see
+Menu bar: **File → Open track...**. For a whole track hub (UCSC track hub or
+JBrowse 1 data directory), **File → Open connection...**; see
 [](/docs/user_guides/connections).
 
 <Figure caption="File → Open track... opens the Add a track form as a drawer widget." src="/img/add_track_form.png" />
@@ -174,7 +174,7 @@ to other users. The address-bar URL does not capture full session state, so
 always use the Share button.
 
 JBrowse Desktop has no Share button, since its sessions are files. It opens a
-shared link via `File` → `Session` → `Open JBrowse Web link...`.
+shared link via **File → Session → Open JBrowse Web link...**.
 
 <Figure caption="The session share dialog." src="/img/share_button.png" />
 
