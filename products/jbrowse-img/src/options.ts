@@ -93,7 +93,7 @@ const optionDefs: OptionDef[] = [
   {
     name: 'out',
     description:
-      'Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats',
+      'Output file path, -o for short (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout',
   },
   {
     name: 'width',
@@ -230,25 +230,14 @@ export function getString(rest: Record<string, unknown>, key: string) {
   return typeof v === 'string' ? v : undefined
 }
 
-// Warns rather than throws, unlike launch-args' parseBool for track modifiers:
-// these flags are cosmetic, a modifier changes what the image shows.
-export function getBooleanValue(value: unknown, label: string) {
-  const result =
-    value === true || value === 'true'
-      ? true
-      : value === undefined || value === false || value === 'false'
-        ? false
-        : undefined
-  if (result === undefined) {
-    console.warn(
-      `Warning: expected true or false for ${label}, got "${String(value)}"; treating as false`,
-    )
-  }
-  return result ?? false
-}
-
 export function getBoolean(rest: Record<string, unknown>, key: string) {
-  return getBooleanValue(rest[key], `--${key}`)
+  const value = rest[key]
+  if (value === true || value === 'true') {
+    return true
+  } else if (value === undefined || value === false || value === 'false') {
+    return false
+  }
+  throw new Error(`--${key} takes true or false, got "${String(value)}"`)
 }
 
 // `Number('')` is 0, so an empty value counts as unusable
@@ -259,10 +248,7 @@ export function getOptionalNumber(rest: Record<string, unknown>, key: string) {
   }
   const n = typeof v === 'string' && v.trim() !== '' ? Number(v) : Number.NaN
   if (!Number.isFinite(n)) {
-    console.warn(
-      `Warning: expected a number for --${key}, got "${String(v)}"; ignoring`,
-    )
-    return undefined
+    throw new Error(`--${key} needs a number, got "${String(v)}"`)
   }
   return n
 }
@@ -279,10 +265,7 @@ export function getNumber(
 export function getOptionalCount(rest: Record<string, unknown>, key: string) {
   const n = getOptionalNumber(rest, key)
   if (n !== undefined && (n < 0 || !Number.isInteger(n))) {
-    console.warn(
-      `Warning: --${key} takes a whole number of 0 or more, got "${n}"; ignoring`,
-    )
-    return undefined
+    throw new Error(`--${key} needs a whole number of 0 or more, got "${n}"`)
   }
   return n
 }
@@ -295,9 +278,7 @@ function getEnum<T extends string>(
   const v = getString(rest, key)
   const match = allowed.find(a => a === v)
   if (v !== undefined && !match) {
-    console.warn(
-      `Warning: unknown --${key} "${v}" (expected ${allowed.join(', ')}); ignoring`,
-    )
+    throw new Error(`--${key} takes one of ${allowed.join(', ')}, got "${v}"`)
   }
   return match
 }

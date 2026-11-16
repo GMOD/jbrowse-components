@@ -10,7 +10,6 @@ import {
   buildFullHelp,
   buildHelp,
   getBoolean,
-  getBooleanValue,
   getFormat,
   getNumber,
   getOptionalCount,
@@ -51,106 +50,49 @@ test('applies fallbacks when options are absent', () => {
   expect(getString(rest, 'fasta')).toBeUndefined()
 })
 
-test('validates trackLabels against the allowed modes', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  try {
-    expect(getTrackLabels(parse('--trackLabels offset'))).toBe('offset')
-    expect(getTrackLabels(parse('--trackLabels bogus'))).toBeUndefined()
-  } finally {
-    warn.mockRestore()
+test('an enum flag takes one of its values and refuses any other', () => {
+  expect(getTrackLabels(parse('--trackLabels offset'))).toBe('offset')
+  expect(getThemeName(parse('--themeName stock'))).toBe('stock')
+  expect(getThemeName(parse('--loc chr1'))).toBeUndefined()
+  expect(() => getThemeName(parse('--themeName darkStock'))).toThrow(
+    '--themeName takes one of',
+  )
+  expect(() => getTrackLabels(parse('--trackLabels lft'))).toThrow('got "lft"')
+})
+
+test('a boolean flag takes true, false or nothing, and refuses a loose value', () => {
+  expect(getBoolean(parse('--refseq'), 'refseq')).toBe(true)
+  expect(getBoolean(parse('--refseq true'), 'refseq')).toBe(true)
+  expect(getBoolean(parse('--refseq false'), 'refseq')).toBe(false)
+  expect(getBoolean(parse('--loc chr1'), 'refseq')).toBe(false)
+  for (const loose of ['0', 'yes']) {
+    expect(() => getBoolean({ refseq: loose }, 'refseq')).toThrow(
+      `--refseq takes true or false, got "${loose}"`,
+    )
   }
 })
 
-test('warns on an invalid enum value instead of silently defaulting', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  try {
-    expect(getThemeName(parse('--themeName stock'))).toBe('stock')
-    expect(warn).not.toHaveBeenCalled()
-
-    expect(getThemeName(parse('--themeName darkStock'))).toBeUndefined()
-    expect(getTrackLabels(parse('--trackLabels lft'))).toBeUndefined()
-    expect(warn).toHaveBeenCalledTimes(2)
-  } finally {
-    warn.mockRestore()
-  }
-})
-
-test('absent enum flags return undefined without warning', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-  try {
-    expect(getThemeName(parse('--loc chr1'))).toBeUndefined()
-    expect(warn).not.toHaveBeenCalled()
-  } finally {
-    warn.mockRestore()
-  }
-})
-
-describe('getBooleanValue', () => {
-  test('true/false and bare flag map directly without warning', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    try {
-      expect(getBooleanValue(true, 'x')).toBe(true)
-      expect(getBooleanValue('true', 'x')).toBe(true)
-      expect(getBooleanValue(false, 'x')).toBe(false)
-      expect(getBooleanValue('false', 'x')).toBe(false)
-      expect(getBooleanValue(undefined, 'x')).toBe(false)
-      expect(warn).not.toHaveBeenCalled()
-    } finally {
-      warn.mockRestore()
-    }
-  })
-
-  test('a loose value like "0" warns and is false (not silently truthy)', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    try {
-      expect(getBooleanValue('0', 'coverage')).toBe(false)
-      expect(getBooleanValue('yes', 'coverage')).toBe(false)
-      expect(getBooleanValue('ture', 'coverage')).toBe(false)
-      expect(warn).toHaveBeenCalledTimes(3)
-    } finally {
-      warn.mockRestore()
-    }
-  })
-})
-
-// Numbers were the last flag type that fell back in silence: `--width 120O`
-// rendered at the default 1500 with nothing said, while a bad enum or boolean
-// already reported itself.
 describe('numeric flags', () => {
-  test('a usable number parses without warning', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    try {
-      expect(getNumber(parse('--width 1200'), 'width', 1500)).toBe(1200)
-      expect(getOptionalNumber(parse('--jobs 4'), 'jobs')).toBe(4)
-      expect(getOptionalNumber(parse('--loc chr1'), 'jobs')).toBeUndefined()
-      expect(warn).not.toHaveBeenCalled()
-    } finally {
-      warn.mockRestore()
-    }
+  test('a usable number parses', () => {
+    expect(getNumber(parse('--width 1200'), 'width', 1500)).toBe(1200)
+    expect(getOptionalNumber(parse('--jobs 4'), 'jobs')).toBe(4)
+    expect(getOptionalNumber(parse('--loc chr1'), 'jobs')).toBeUndefined()
   })
 
-  test('a non-numeric value warns and falls back rather than silently defaulting', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    try {
-      expect(getNumber(parse('--width 120O'), 'width', 1500)).toBe(1500)
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringContaining('expected a number for --width'),
-      )
-    } finally {
-      warn.mockRestore()
-    }
+  test('a non-numeric value is refused rather than rendering at the default', () => {
+    expect(() => getNumber(parse('--width 120O'), 'width', 1500)).toThrow(
+      '--width needs a number, got "120O"',
+    )
   })
 
   // `Number('')` is 0, so an empty value used to render a zero-width image
-  test('a bare or empty numeric flag warns instead of becoming 0', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    try {
-      expect(getNumber(parse('--width='), 'width', 1500)).toBe(1500)
-      expect(getNumber(parse('--width --loc chr1'), 'width', 1500)).toBe(1500)
-      expect(warn).toHaveBeenCalledTimes(2)
-    } finally {
-      warn.mockRestore()
-    }
+  test('a bare or empty numeric flag is refused instead of becoming 0', () => {
+    expect(() => getNumber(parse('--width='), 'width', 1500)).toThrow(
+      '--width needs a number',
+    )
+    expect(() => getNumber(parse('--width --loc chr1'), 'width', 1500)).toThrow(
+      '--width needs a number',
+    )
   })
 })
 
@@ -222,34 +164,25 @@ test('an option its view does not draw is named, and one it does is not', () => 
 
 describe('batch options', () => {
   test('a count rejects a fraction or a negative rather than acting on it', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    try {
-      expect(getOptionalCount(parse('--limit 20'), 'limit')).toBe(20)
-      expect(getOptionalCount(parse('--limit 0'), 'limit')).toBe(0)
-      // `slice(0, -2)` renders all but the LAST two, silently
-      expect(getOptionalCount(parse('--limit=-2'), 'limit')).toBeUndefined()
-      // a negative flank inverts the window into a start-greater-than-end that
-      // every record then fails on separately
-      expect(getOptionalCount(parse('--flank=-500'), 'flank')).toBeUndefined()
-      expect(getOptionalCount(parse('--limit 2.5'), 'limit')).toBeUndefined()
-      expect(warn).toHaveBeenCalledTimes(3)
-    } finally {
-      warn.mockRestore()
+    expect(getOptionalCount(parse('--limit 20'), 'limit')).toBe(20)
+    expect(getOptionalCount(parse('--limit 0'), 'limit')).toBe(0)
+    // `slice(0, -2)` renders all but the LAST two, silently
+    // a negative flank inverts the window into a start-greater-than-end that
+    // every record then fails on separately
+    for (const bad of ['--limit=-2', '--flank=-500', '--limit 2.5']) {
+      const key = bad.slice(2).split(/[= ]/)[0]!
+      expect(() => getOptionalCount(parse(bad), key)).toThrow(
+        `--${key} needs a whole number of 0 or more`,
+      )
     }
   })
 
-  test('an unknown --format warns instead of quietly writing a PNG', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    try {
-      expect(getFormat(parse('--format svg'))).toBe('svg')
-      expect(getFormat(parse('--format pdf'))).toBe('pdf')
-      expect(getFormat(parse('--format jpg'))).toBeUndefined()
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringContaining('unknown --format "jpg"'),
-      )
-    } finally {
-      warn.mockRestore()
-    }
+  test('an unknown --format is refused instead of quietly writing a PNG', () => {
+    expect(getFormat(parse('--format svg'))).toBe('svg')
+    expect(getFormat(parse('--format pdf'))).toBe('pdf')
+    expect(() => getFormat(parse('--format jpg'))).toThrow(
+      '--format takes one of png, svg, pdf, got "jpg"',
+    )
   })
 
   test('batch help offers only what a batch can honor', () => {

@@ -1,8 +1,7 @@
-import { genomeConfigUrl, trackMatches } from '@jbrowse/launch-args'
+import { HOSTED_LIST_URL, genomeConfigUrl } from '@jbrowse/launch-args'
 
-import type { Track } from '@jbrowse/launch-args'
+import type { HostedGenome, Track } from '@jbrowse/launch-args'
 
-const HUB_HOST = 'https://jbrowse.org'
 const FETCH_TIMEOUT_MS = 30000
 
 const BROWSE_HINT =
@@ -29,38 +28,18 @@ export async function fetchJson(url: string, what: string): Promise<unknown> {
   return res.json()
 }
 
-interface HostedAssembly {
-  name: string
-  organism?: string
-  description?: string
-}
-
-/**
- * The UCSC assemblies genomes.jbrowse.org hosts. Its thousands of GenArk
- * accessions are not listed.
- */
-export async function listHubAssemblies(): Promise<HostedAssembly[]> {
+export async function hostedGenomes() {
   const { ucscGenomes = {} } = (await fetchJson(
-    `${HUB_HOST}/ucsc/list.json`,
+    HOSTED_LIST_URL,
     'the hosted assembly list',
-  )) as { ucscGenomes?: Record<string, Omit<HostedAssembly, 'name'>> }
-  return Object.entries(ucscGenomes)
-    .map(([name, { organism, description }]) => ({
-      name,
-      organism,
-      description,
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name))
+  )) as { ucscGenomes?: Record<string, HostedGenome> }
+  return ucscGenomes
 }
 
-/** The tracks a hosted assembly publishes, optionally narrowed by `filter`. */
-export async function listHubTracks(genome: string, filter?: string) {
+export async function hostedTracks(genome: string) {
   const { tracks = [] } = (await fetchJson(
     genomeConfigUrl(genome),
     `genome "${genome}"`,
-  )) as {
-    tracks?: Track[]
-  }
-  const needle = filter?.toLowerCase()
-  return needle ? tracks.filter(t => trackMatches(t, needle)) : tracks
+  )) as { tracks?: Track[] }
+  return tracks
 }

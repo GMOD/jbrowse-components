@@ -30,6 +30,8 @@ import {
 } from './options.ts'
 import { outFormat, writeRendered } from './util.ts'
 
+import type { Entry } from '@jbrowse/launch-args'
+
 // The render stack is imported lazily, since most commands never draw.
 
 const scriptName = 'jb2export'
@@ -66,7 +68,9 @@ async function main() {
   } else if (first === 'list') {
     console.log(await runList(argv.slice(1)))
   } else {
-    const parsed = parseArgv(args, { booleans: exportBooleanFlags })
+    const parsed = parseArgv(args, { booleans: exportBooleanFlags }).map(
+      ([key, values]): Entry => [key === 'o' ? 'out' : key, values],
+    )
     // a comparative view's --genome rows are read from the entries
     const { trackList, ...rest } = standardizeArgv(
       parsed,
@@ -185,6 +189,8 @@ main()
     finished = true
   })
   .catch((e: unknown) => {
-    console.error(e)
+    console.error(
+      `${scriptName}: ${e instanceof Error ? (e.constructor === Error ? e.message : e.stack) : e}`,
+    )
     process.exit(1)
   })

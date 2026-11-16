@@ -1,61 +1,32 @@
-import { trackMatches, trackName, trackType } from '@jbrowse/launch-args'
+import {
+  HOSTED_LIST_URL,
+  formatHostedGenomes,
+  formatHostedTracks,
+} from '@jbrowse/launch-args'
 
 import { fetchJson, resolveConfigObject } from './resolveHub.ts'
 
-import type { Track } from './types.ts'
+import type { HostedGenome } from '@jbrowse/launch-args'
 
-interface UcscGenome {
-  organism?: string
-  description?: string
-  scientificName?: string
-}
+const LISTING = { command: 'jb2export', out: 'out.svg' }
 
-const LIST_URL = 'https://jbrowse.org/ucsc/list.json'
-
-export function formatAssemblies(genomes: Record<string, UcscGenome>) {
-  const names = Object.keys(genomes).sort()
-  const pad = Math.max(0, ...names.map(n => n.length))
-  const lines = names.map(name => {
-    const g = genomes[name]!
-    const about = [g.organism, g.description].filter(Boolean).join(' — ')
-    return `  ${name.padEnd(pad)}  ${about}`
-  })
-  return [
-    `UCSC assemblies on genomes.jbrowse.org (${names.length}); a GenArk accession (GCA_/GCF_...) works as --genome too:`,
-    ...lines,
-    '',
-    'Render one:      jb2export --genome <name> --loc <region> --out out.svg',
-    'List its tracks: jb2export list <name> [filter]',
-  ].join('\n')
-}
-
-export function formatTracks(genome: string, tracks: Track[], filter?: string) {
-  const needle = filter?.toLowerCase()
-  const matched = needle ? tracks.filter(t => trackMatches(t, needle)) : tracks
-  const pad = Math.min(60, Math.max(0, ...matched.map(t => t.trackId.length)))
-  const lines = matched.map(
-    t =>
-      `  ${t.trackId.padEnd(pad)}  ${trackType(t).padEnd(18)}  ${trackName(t)}`,
-  )
-  const count = filter
-    ? `${matched.length} of ${tracks.length} matching "${filter}"`
-    : `${matched.length}`
-  return [
-    `Tracks in ${genome} (${count}):`,
-    ...lines,
-    '',
-    `Show one: jb2export --genome ${genome} --track <trackId> --loc <region> --out out.svg`,
-  ].join('\n')
-}
-
-export async function runList(args: string[]) {
-  const [genome, filter] = args
+export async function runList([genome, filter]: string[]) {
   if (genome) {
     const config = await resolveConfigObject({ genome })
-    return formatTracks(genome, config?.tracks ?? [], filter)
+    const { text, matched } = formatHostedTracks(
+      genome,
+      config?.tracks ?? [],
+      filter,
+      LISTING,
+    )
+    if (matched === 0) {
+      process.exitCode = 1
+    }
+    return text
   }
-  const data = (await fetchJson(LIST_URL, 'Failed to fetch assembly list')) as {
-    ucscGenomes?: Record<string, UcscGenome>
-  }
-  return formatAssemblies(data.ucscGenomes ?? {})
+  const data = (await fetchJson(
+    HOSTED_LIST_URL,
+    'Failed to fetch assembly list',
+  )) as { ucscGenomes?: Record<string, HostedGenome> }
+  return formatHostedGenomes(data.ucscGenomes ?? {}, LISTING)
 }

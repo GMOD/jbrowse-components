@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { trackName, trackType } from '@jbrowse/launch-args'
+import { formatHostedGenomes, formatHostedTracks } from '@jbrowse/launch-args'
 
 import { parseArgs } from './args.ts'
 import { captureBatch, captureJBrowse } from './capture.ts'
 import { resolveAgainstConfig } from './catalog.ts'
-import { listHubAssemblies, listHubTracks } from './genome.ts'
+import { hostedGenomes, hostedTracks } from './genome.ts'
 import {
   batchCapture,
   readAnnotations,
@@ -18,6 +18,8 @@ import { version } from './version.ts'
 import type { ParsedArgs } from './args.ts'
 import type { CaptureOptions } from './capture.ts'
 import type { ReadyReport } from './ready.ts'
+
+const LISTING = { command: 'jb2capture', out: 'out.png' }
 
 const HELP = `jb2capture — screenshot a live JBrowse 2 view, once it has finished drawing
 
@@ -147,11 +149,11 @@ function warn(
   indent = '',
 ) {
   if (unsettled.length) {
-    console.error(`${indent}warning: --allowUnsettled: ${unsettled.join('; ')}`)
+    console.error(`${indent}Warning: --allowUnsettled: ${unsettled.join('; ')}`)
   }
   if (tooLarge.length) {
     console.error(
-      `${indent}warning: ${tooLarge.length} display(s) show "too much data" instead of their features ` +
+      `${indent}Warning: ${tooLarge.length} display(s) show "too much data" instead of their features ` +
         `(${tooLarge.map(d => d.name).join(', ')}). Narrow --loc to draw them.`,
     )
   }
@@ -191,35 +193,20 @@ async function runBatch(args: ParsedArgs) {
   }
 }
 
-async function runList(positionals: string[]) {
-  const [genome, filter] = positionals
-  if (!genome) {
-    const assemblies = await listHubAssemblies()
-    const pad = Math.max(...assemblies.map(a => a.name.length))
-    for (const a of assemblies) {
-      const about = [a.organism, a.description].filter(Boolean).join(' — ')
-      console.log(`  ${a.name.padEnd(pad)}  ${about}`)
+async function runList([genome, filter]: string[]) {
+  if (genome) {
+    const { text, matched } = formatHostedTracks(
+      genome,
+      await hostedTracks(genome),
+      filter,
+      LISTING,
+    )
+    console.log(text)
+    if (matched === 0) {
+      process.exitCode = 1
     }
-    console.log(
-      '\nGenArk accessions (GCA_…/GCF_…) work as --genome too; browse them at ' +
-        "https://genomes.jbrowse.org. List one assembly's tracks with " +
-        '`jb2capture list <name> [filter]`.',
-    )
-    return
-  }
-  const tracks = await listHubTracks(genome, filter)
-  if (!tracks.length) {
-    throw new Error(
-      filter
-        ? `no track in ${genome} matches "${filter}"`
-        : `${genome} publishes no tracks`,
-    )
-  }
-  const pad = Math.min(60, Math.max(...tracks.map(t => t.trackId.length)))
-  for (const t of tracks) {
-    console.log(
-      `  ${t.trackId.padEnd(pad)}  ${trackType(t).padEnd(18)}  ${trackName(t)}`,
-    )
+  } else {
+    console.log(formatHostedGenomes(await hostedGenomes(), LISTING))
   }
 }
 
@@ -262,6 +249,8 @@ async function main() {
 try {
   await main()
 } catch (error) {
-  console.error(`jb2capture: ${error instanceof Error ? error.message : error}`)
+  console.error(
+    `jb2capture: ${error instanceof Error ? (error.constructor === Error ? error.message : error.stack) : error}`,
+  )
   process.exitCode = 1
 }
