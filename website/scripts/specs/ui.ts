@@ -673,7 +673,6 @@ export const uiSpecs: ScreenshotSpec[] = [
               forceLoad: true,
               pileup: { show: false },
               coverage: {
-                height: 190,
                 encoding: { y: { scale: { share: 'depth' } } },
               },
               readConnections: {

@@ -89,8 +89,6 @@ const bandLabel = (
 const FIXED_CHROME = 472
 // the read cloud's legend lists nine classes
 const CLOUD_FLOOR = 138
-// the read-pair arcs' band sits under a coverage band and a margin
-const ARCS_MARGIN = 10
 // lets a compact coverage band hold its label's box above the read-pair arcs
 const COMPACT_COVERAGE_PAD = 6
 // a track's label row and resize handle
@@ -174,7 +172,7 @@ const readEvidence = ({
   compact = print.rowScale < 1,
   arcs = h(arcsHeight),
   illuminaCoverage = h(60) + (compact ? COMPACT_COVERAGE_PAD : 0),
-  arcsTrack = arcs + illuminaCoverage + ARCS_MARGIN,
+  arcsTrack = arcs + illuminaCoverage,
   layout = compact ? paper : { reads: SCREEN_READS },
   reads = layout.reads,
   hifiCoverage = layout.hifiCoverage ?? true,
@@ -242,7 +240,6 @@ const readEvidence = ({
             ? [
                 {
                   ...connections,
-                  coverage: { height: h(60) },
                   trackId: HIFI_COV,
                   pileup: { show: false },
                   height: h(62),
@@ -291,7 +288,6 @@ const readEvidence = ({
               show: true,
               mark: 'rule',
               ordinaryPairs: { show: true },
-              height: Math.max(h(215), CLOUD_FLOOR) - 15,
             },
             height: Math.max(h(215), CLOUD_FLOOR),
             legend: { show: true },

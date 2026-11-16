@@ -506,7 +506,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--bam',
     'data/volvox/volvox-sorted.bam',
     'pileup.show=false',
-    'coverage.height=200',
     'height:200',
     '--loc',
     'ctgA:1-20000',
