@@ -178,9 +178,9 @@ const answer = ({
 
 describe('the fit solve across settles of the view', () => {
   it('packs nothing on a settle that moves only the on-screen set', () => {
-    const data = labelled(spaced(1500, 6), 60, () => 10)
-    const cached = fitDisplay(data)
-    const uncached = uncachedFitDisplay(data)
+    const data = labelled(unevenlySpaced(400), 5, () => 10)
+    const cached = fitDisplay(data, 60)
+    const uncached = uncachedFitDisplay(data, 60)
     const before = cached.display.onScreenFeatureIds!
 
     const packsOnSettle = (d: typeof cached) => {
@@ -194,7 +194,7 @@ describe('the fit solve across settles of the view', () => {
 
     const after = cached.display.onScreenFeatureIds!
     expect([...after].some(id => !before.has(id))).toBe(true)
-    expect(cached.display.fitStage.level).toBe('bodies')
+    expect(cached.display.fitStage.level).toBe('decimated')
     expect(uncachedPacks).toBeGreaterThan(0)
     expect(cachedPacks).toBe(0)
     expect(answer(cached.display.fitStage)).toEqual(
