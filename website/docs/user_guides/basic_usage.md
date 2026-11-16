@@ -198,12 +198,12 @@ label); basics like "About track" are always available from the track selector.
 
 ## Favorite and recently used tracks
 
-Mark favorites from the Track menu and view them under the star icon in the top
-right of the Available tracks widget.
+Mark favorites from the Track menu. The All | Favorites | Recent toggle at the
+top of Available tracks narrows the tree, or the table, to your favorites or to
+the tracks you opened recently; the menu at the left of the filter box clears
+either list.
 
 <Figure caption="Adding a track to the favorites from its track menu, and the favorites list." src="/img/favorite_tracks.png" />
-
-Recently opened tracks are listed under the clock icon.
 
 <Figure caption="The recently used tracks list." src="/img/recent_tracks.png" />
 

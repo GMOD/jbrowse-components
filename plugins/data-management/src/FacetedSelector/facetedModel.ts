@@ -269,15 +269,19 @@ export function facetedStateTreeF() {
        * are dropped unless showSparse.
        */
       get facetFields() {
+        // every row has a kind, so a short list (favorites) keeps the column
         const candidates = [
-          ...nonMetadataKeys,
+          ...nonMetadataKeys.filter(k => k !== 'kind'),
           ...this.metadataKeys.map(metadataFacet),
         ]
-        return self.showSparse
-          ? candidates
-          : findNonSparseKeys(candidates, self.allRows, (r, f) =>
-              getRowStr(f, r),
-            )
+        return [
+          'kind',
+          ...(self.showSparse
+            ? candidates
+            : findNonSparseKeys(candidates, self.allRows, (r, f) =>
+                getRowStr(f, r),
+              )),
+        ]
       },
       /**
        * #getter

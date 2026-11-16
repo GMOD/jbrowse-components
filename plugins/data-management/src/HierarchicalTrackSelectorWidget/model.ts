@@ -170,6 +170,8 @@ function findRowAtOffset(rows: TreeRow[], offset: number) {
  * Lists a view's available tracks as a tree of categories, with a filter box,
  * favorites and recently used tracks, and a group for each connection.
  */
+export type TrackList = 'all' | 'favorites' | 'recent'
+
 export default function stateTreeFactory(pluginManager: PluginManager) {
   return types
     .model('HierarchicalTrackSelectorWidget', {
@@ -254,12 +256,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       tableDrawerWidth: undefined as number | undefined,
       /**
        * #volatile
+       * which tracks the tree and the table list: all of them, or only the
+       * favorites or the recently used
        */
-      recentlyUsedCounter: 0,
-      /**
-       * #volatile
-       */
-      favoritesCounter: 0,
+      trackList: 'all' as TrackList,
     }))
     .views(self => ({
       /**
@@ -375,7 +375,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       addToFavorites(trackId: string) {
         if (!self.favoritesSet.has(trackId)) {
-          self.favoritesCounter += 1
           self.favorites = [...self.favorites, trackId]
         }
       },
@@ -384,9 +383,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       removeFromFavorites(trackId: string) {
         if (self.favoritesSet.has(trackId)) {
-          // don't touch favoritesCounter: it tracks additions unseen since the
-          // dropdown was last opened, so removing an already-seen favorite must
-          // not decrement it (that would under-count genuinely new additions)
           self.favorites = self.favorites.filter(f => f !== trackId)
         }
       },
@@ -395,14 +391,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       clearFavorites() {
         self.favorites = []
-        self.favoritesCounter = 0
-      },
-
-      /**
-       * #action
-       */
-      setRecentlyUsedCounter(val: number) {
-        self.recentlyUsedCounter = val
       },
       /**
        * #action
@@ -413,31 +401,22 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setFavoritesCounter(val: number) {
-        self.favoritesCounter = val
-      },
-      /**
-       * #action
-       */
       addToRecentlyUsed(id: string) {
-        const isNew = !self.recentlyUsedSet.has(id)
-        // re-using an existing track moves it to the most-recent (end) slot;
-        // only a genuinely new track bumps the unseen-since-opened badge counter
+        // re-using a track moves it to the most recent (end) slot
         const next = [...self.recentlyUsed.filter(f => f !== id), id]
         self.recentlyUsed = next.slice(-MAX_RECENTLY_USED)
-        if (isNew) {
-          self.recentlyUsedCounter = Math.min(
-            self.recentlyUsedCounter + 1,
-            MAX_RECENTLY_USED,
-          )
-        }
       },
       /**
        * #action
        */
       clearRecentlyUsed() {
         self.recentlyUsed = []
-        self.recentlyUsedCounter = 0
+      },
+      /**
+       * #action
+       */
+      setTrackList(trackList: TrackList) {
+        self.trackList = trackList
       },
       /**
        * #action
@@ -628,7 +607,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * (isFilterForcedOpen)
        */
       get filterActive() {
-        return this.filterQuery !== ''
+        return this.filterQuery !== '' || self.trackList !== 'all'
       },
     }))
     .views(self => {
@@ -756,6 +735,28 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           .map(t => self.allTrackConfigurationMap.get(t))
           .filter(notEmpty)
       },
+      /**
+       * #getter
+       * the trackIds the favorites or recent list limits the tree and table
+       * to; undefined when listing all
+       */
+      get listedTrackIds() {
+        return self.trackList === 'favorites'
+          ? self.favoritesSet
+          : self.trackList === 'recent'
+            ? self.recentlyUsedSet
+            : undefined
+      },
+      /**
+       * #getter
+       * the track configs the table lists
+       */
+      get listedTrackConfigurations() {
+        const ids = this.listedTrackIds
+        return ids
+          ? self.allTrackConfigurations.filter(t => ids.has(t.trackId))
+          : self.allTrackConfigurations
+      },
     }))
     .views(self => ({
       /**
@@ -764,24 +765,49 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * empty connection still shows in the tree
        */
       get hierarchy() {
-        const { filterQuery } = self
+        const { filterQuery, trackList } = self
         return {
           name: 'Root',
           id: 'Root',
           type: 'category' as const,
-          children: self.allTracks.map(s => ({
-            name: s.group,
-            id: s.id,
-            type: 'category' as const,
-            nestingLevel: 0,
-            defaultCollapsed: s.defaultCollapsed,
-            loading: s.loading,
-            children: generateHierarchy(
-              s.tracks.filter(t => t.searchText.includes(filterQuery)),
-              s.id,
-            ),
-          })),
+          children:
+            trackList === 'all'
+              ? self.allTracks.map(s => ({
+                  name: s.group,
+                  id: s.id,
+                  type: 'category' as const,
+                  nestingLevel: 0,
+                  defaultCollapsed: s.defaultCollapsed,
+                  loading: s.loading,
+                  children: generateHierarchy(
+                    s.tracks.filter(t => t.searchText.includes(filterQuery)),
+                    s.id,
+                  ),
+                }))
+              : this.flatList,
         }
+      },
+      /**
+       * #getter
+       * the favorites or recently used tracks as a flat list in the list's own
+       * order, newest first for recent, with no category tree or group header:
+       * the toggle above already names the list
+       */
+      get flatList(): TreeNode[] {
+        const { filterQuery, trackList } = self
+        const sources = new Map(
+          self.allTracks.flatMap(s => s.tracks.map(t => [t.conf.trackId, t])),
+        )
+        const order =
+          trackList === 'recent'
+            ? self.recentlyUsed.toReversed()
+            : self.favorites
+        const tracks = order
+          .map(id => sources.get(id))
+          .filter(notEmpty)
+          .filter(t => t.searchText.includes(filterQuery))
+          .map(t => ({ ...t, categories: [] }))
+        return generateHierarchy(tracks, trackList)
       },
     }))
     .views(self => ({

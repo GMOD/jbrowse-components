@@ -23,10 +23,14 @@ const TrackTable = observer(function TrackTable({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
-  const faceted = useFacetedModel(model, () => model.allTrackConfigurations, {
-    filterText: model.filterText,
-    showFilters: false,
-  })
+  const faceted = useFacetedModel(
+    model,
+    () => model.listedTrackConfigurations,
+    {
+      filterText: model.filterText,
+      showFilters: false,
+    },
+  )
   const [ref, { width, height }] = useMeasure()
   const measured = Boolean(width && height)
   useEffect(() => {

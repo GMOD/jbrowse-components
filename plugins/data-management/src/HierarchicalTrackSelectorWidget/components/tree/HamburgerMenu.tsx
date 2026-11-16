@@ -86,6 +86,20 @@ const HamburgerMenu = observer(function HamburgerMenu({
               ]
             : []),
           {
+            label: 'Clear favorites',
+            disabled: model.favorites.length === 0,
+            onClick: () => {
+              model.clearFavorites()
+            },
+          },
+          {
+            label: 'Clear recently used',
+            disabled: model.recentlyUsed.length === 0,
+            onClick: () => {
+              model.clearRecentlyUsed()
+            },
+          },
+          {
             label: 'Sort',
             subMenu: [
               {

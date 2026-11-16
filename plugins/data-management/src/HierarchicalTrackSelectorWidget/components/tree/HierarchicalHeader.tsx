@@ -1,11 +1,8 @@
 import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import GradeIcon from '@mui/icons-material/Grade'
-import HistoryIcon from '@mui/icons-material/History'
 import { observer } from 'mobx-react'
 
 import ShoppingCart from '../ShoppingCart.tsx'
-import BadgeDropdownTracks from './BadgeDropdownTracks.tsx'
 import HamburgerMenu from './HamburgerMenu.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
@@ -41,38 +38,6 @@ const HierarchicalTrackSelectorHeader = observer(
           value={model.filterText}
           onChange={v => {
             model.setFilterText(v)
-          }}
-        />
-        <BadgeDropdownTracks
-          data-testid="recently-used-tracks-button"
-          model={model}
-          tracks={model.recentlyUsedTracks}
-          counter={model.recentlyUsedCounter}
-          icon={<HistoryIcon />}
-          tooltip="Recently used tracks"
-          clearLabel="Clear recently used"
-          emptyLabel="No recently used"
-          onClear={() => {
-            model.clearRecentlyUsed()
-          }}
-          onOpen={() => {
-            model.setRecentlyUsedCounter(0)
-          }}
-        />
-        <BadgeDropdownTracks
-          data-testid="favorite-tracks-button"
-          model={model}
-          tracks={model.favoriteTracks}
-          counter={model.favoritesCounter}
-          icon={<GradeIcon />}
-          tooltip="Favorite tracks"
-          clearLabel="Clear favorites"
-          emptyLabel="No favorite tracks yet"
-          onClear={() => {
-            model.clearFavorites()
-          }}
-          onOpen={() => {
-            model.setFavoritesCounter(0)
           }}
         />
       </div>

@@ -1407,14 +1407,14 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 800 },
       {
         type: 'click',
-        selector: '[data-testid="recently-used-tracks-button"]',
+        selector: '[data-testid="list-recent"]',
       },
       { type: 'waitForText', text: 'NCBI RefSeq w/ top-level feature details' },
     ],
     annotations: [
       {
         type: 'circle',
-        anchor: { selector: '[data-testid="recently-used-tracks-button"]' },
+        anchor: { selector: '[data-testid="list-recent"]' },
       },
     ],
   },
@@ -1456,13 +1456,13 @@ export const uiSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Add to favorites' },
           { type: 'delay', ms: 500 },
-          { type: 'click', selector: '[data-testid="favorite-tracks-button"]' },
+          { type: 'click', selector: '[data-testid="list-favorites"]' },
           { type: 'waitForText', text: 'volvox-sorted.bam' },
         ],
         annotations: [
           {
             type: 'circle',
-            anchor: { selector: '[data-testid="favorite-tracks-button"]' },
+            anchor: { selector: '[data-testid="list-favorites"]' },
           },
         ],
       },

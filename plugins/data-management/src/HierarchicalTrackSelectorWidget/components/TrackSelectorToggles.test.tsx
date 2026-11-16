@@ -1,7 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 
 import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
 
@@ -119,4 +119,40 @@ test('closing the selector leaves table mode, so reopening it shows the tree', (
   expect(model.showTable).toBe(false)
   session.showWidget(model)
   expect(session.effectiveDrawerWidth).toBe(session.drawerWidth)
+})
+
+test('the recent list is flat, newest first, with no category tree or group header', () => {
+  const { model } = setup()
+  model.addToRecentlyUsed('genes')
+  model.addToRecentlyUsed('chromatin')
+  model.setTrackList('recent')
+  expect(
+    model.rows.map(({ item }) =>
+      item.type === 'track' ? item.trackId : `[${item.name}]`,
+    ),
+  ).toEqual(['chromatin', 'genes'])
+})
+
+test('the favorites list narrows the tree and the table to favorite tracks, and says when there are none', async () => {
+  const { model } = setup()
+  const { getByTestId, findByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} />
+    </ThemeProvider>,
+  )
+  fireEvent.click(getByTestId('list-favorites'))
+  expect(
+    await findByText('No favorite tracks yet. Add one from a track’s menu.'),
+  ).toBeTruthy()
+
+  act(() => {
+    model.addToFavorites('genes')
+  })
+  expect(getByTestId('list-favorites').textContent).toBe('Favorites 1')
+  expect(model.listedTrackConfigurations.map(t => t.trackId)).toEqual(['genes'])
+  expect(
+    model.rows.flatMap(({ item }) =>
+      item.type === 'track' ? [item.trackId] : [],
+    ),
+  ).toEqual(['genes'])
 })
