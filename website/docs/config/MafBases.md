@@ -1,7 +1,7 @@
 ---
 id: mafbases
 title: MafBases
-description: "The MAF display's alignments.bases layer, a cell per position over the rows, as alignments' pileup.bases: show turns it on and encoding.color names what it paints. base paints every base in its color…"
+description: "The MAF display's alignments.bases layer, a cell per position over the rows, as alignments' pileup.bases: show turns it on and encoding.color names what it paints."
 sidebar_label: Display setting -> MafBases
 ---
 
@@ -38,4 +38,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw the per-position layer over the rows |
 | <span id="slot-encoding">**encoding**</span><br>[MafBasesEncoding sub-schema](#slot-encodingcolor) | The layer's channels: `encoding.color`, the per-position variable. |
 | <span id="slot-encodingcolor">**encoding.color**</span><br>[MafBasesColor sub-schema](#slot-encodingcolorfield) | The per-position variable the layer paints: `base` or `codon`. |
-| <span id="slot-encodingcolorfield">**encoding.color.field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (base, codon) = <code>'base'</code> | the per-position variable: base, every base in its color, or codon, each codon by its amino-acid change |
+| <span id="slot-encodingcolorfield">**encoding.color.field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('base', 'codon') = <code>'base'</code> | the per-position variable: base, every base in its color, or codon, each codon by its amino-acid change |

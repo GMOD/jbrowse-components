@@ -40,5 +40,5 @@ A setting written to it names members one by one: a member left out stays as it 
 | --- | --- |
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the sashimi arcs |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>40</code> | height of the strip below coverage that down arcs draw in, in pixels |
-| <span id="slot-placement">**placement**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (up, down, auto) = <code>'up'</code> | where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down |
+| <span id="slot-placement">**placement**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('up', 'down', 'auto') = <code>'up'</code> | where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down |
 | <span id="slot-labels">**labels**</span><br>[SashimiLabels](../sashimilabels) | The read count on each arc: `show`. |

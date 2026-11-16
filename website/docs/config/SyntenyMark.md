@@ -24,4 +24,4 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-interpolate">**interpolate**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, bump) = <code>'linear'</code> | the curve of each ribbon side: linear is straight, bump the S-curve that leaves and meets each row square |
+| <span id="slot-interpolate">**interpolate**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('linear', 'bump') = <code>'linear'</code> | the curve of each ribbon side: linear is straight, bump the S-curve that leaves and meets each row square |

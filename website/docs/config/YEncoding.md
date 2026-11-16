@@ -26,4 +26,4 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-y">**y**</span><br><code>y</code> | The value axis every mark's `encoding.y` is read through: `scale`, `axis` and `rules`. |
+| <span id="slot-y">**y**</span><br>sub-schema, per display | The value axis every mark's `encoding.y` is read through: `scale`, `axis` and `rules`. |

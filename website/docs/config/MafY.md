@@ -23,4 +23,4 @@ A setting written to it replaces it whole: a member left out returns to its defa
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (identity) | Unset, each row is one band of cells. `identity` draws each row as a bar chart of its identity to the reference, the bars painted by `encoding.color` where it is `identity` and in one color otherwise. |
+| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) ('identity') | Unset, each row is one band of cells. `identity` draws each row as a bar chart of its identity to the reference, the bars painted by `encoding.color` where it is `identity` and in one color otherwise. |

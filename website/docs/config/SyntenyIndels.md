@@ -1,7 +1,7 @@
 ---
 id: syntenyindels
 title: SyntenyIndels
-description: "The linear synteny and dotplot views' indels part: the insertions and deletions inside each alignment, read from its CIGAR. show: false draws each alignment as one block or one straight segment; an…"
+description: "The linear synteny and dotplot views' indels part: the insertions and deletions inside each alignment, read from its CIGAR."
 sidebar_label: View -> SyntenyIndels
 ---
 

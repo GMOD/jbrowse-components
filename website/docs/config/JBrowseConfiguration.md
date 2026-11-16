@@ -25,7 +25,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-configurationrpc">**configuration.rpc**</span><br><code>RpcManager.configSchema</code> | configuration for the RPC system that runs data adapters in web workers, see RpcOptions |
+| <span id="slot-configurationrpc">**configuration.rpc**</span><br>[RpcOptions](../rpcoptions) | configuration for the RPC system that runs data adapters in web workers, see RpcOptions |
 | <span id="slot-configurationformatdetails">**configuration.formatDetails**</span><br>[FormatDetails](../formatdetails) | jexl callbacks that add, rewrite or hide fields in the feature-details panel of every track at once. A track can set the same ones in the track's `formatDetails` and override individual keys. |
 | <span id="slot-configurationformatabout">**configuration.formatAbout**</span><br>[FormatAbout](../formatabout) | jexl callbacks that add, rewrite or hide fields in the About dialog of every track at once. A track can set the same ones in the track's `formatAbout` and override individual keys. |
 | <span id="slot-configurationshareurl">**configuration.shareURL**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'https://share.jbrowse.org/api/v1/'</code> | URL of the session-sharing backend used by the Share button, a JBrowse-hosted service by default<br>_advanced_ |

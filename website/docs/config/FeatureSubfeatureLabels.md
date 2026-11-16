@@ -25,4 +25,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the names of a feature's parts |
-| <span id="slot-placement">**placement**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, below, overlay) = <code>'auto'</code> | `auto` names a polyprotein's cleavage products on their rows and no other part; `below` and `overlay` name every part, under its row or over it |
+| <span id="slot-placement">**placement**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('auto', 'below', 'overlay') = <code>'auto'</code> | `auto` names a polyprotein's cleavage products on their rows and no other part; `below` and `overlay` name every part, under its row or over it |

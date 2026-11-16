@@ -1,7 +1,7 @@
 ---
 id: coverageencoding
 title: CoverageEncoding
-description: "The coverage band's encoding: y, its depth axis, a YChannel. scale.constant starts at 1, which makes symlog exactly log(depth+1) with the knee at one read. scale.fenceQuantile stays at 1, the deepest…"
+description: "The coverage band's encoding: y, its depth axis, a YChannel. scale.constant starts at 1, which makes symlog exactly log(depth+1) with the knee at one read."
 sidebar_label: Display setting -> CoverageEncoding
 ---
 

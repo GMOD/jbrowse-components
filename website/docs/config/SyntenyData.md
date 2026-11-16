@@ -24,4 +24,4 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-resolution">**resolution**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, fine, coarse) = <code>'auto'</code> | the stored tier to fetch: 'auto' switches at the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, 'coarse' the tier whose CIGAR is folded to its large indels |
+| <span id="slot-resolution">**resolution**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('auto', 'fine', 'coarse') = <code>'auto'</code> | the stored tier to fetch: 'auto' switches at the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, 'coarse' the tier whose CIGAR is folded to its large indels |

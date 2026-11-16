@@ -1,7 +1,7 @@
 ---
 id: tabixindex
 title: TabixIndex
-description: "The index every tabix-indexed adapter hangs off itself: where the index is, and which of the two kinds it is. indexType is derived from the index file's own name where the config names a .csi and…"
+description: "The index every tabix-indexed adapter hangs off itself: where the index is, and which of the two kinds it is."
 sidebar_label: Adapter -> TabixIndex
 ---
 
@@ -22,5 +22,5 @@ without `indexType` as well.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-indextype">**indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> | `TBI` is the usual `tabix` output. `CSI` is required for a reference longer than 512 Mb, which TBI cannot address. Derived from the index file name where the config names a `.csi` and leaves this unset. |
+| <span id="slot-indextype">**indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('TBI', 'CSI') = <code>'TBI'</code> | `TBI` is the usual `tabix` output. `CSI` is required for a reference longer than 512 Mb, which TBI cannot address. Derived from the index file name where the config names a `.csi` and leaves this unset. |
 | <span id="slot-location">**location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gz.tbi', locationType: 'UriLocation' }</code> | location of the tabix index. Only needed when it is not named `<file>.tbi`, which is what the `uri` shorthand assumes — a `.csi` beside the file is reached with `csi: true` rather than by spelling this out. |

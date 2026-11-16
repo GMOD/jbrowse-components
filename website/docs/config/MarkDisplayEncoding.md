@@ -1,7 +1,7 @@
 ---
 id: markdisplayencoding
 title: MarkDisplayEncoding
-description: "The mark display's encoding: the channels every mark reads unless it says otherwise, as ggplot2's plot-level aesthetics are each layer's. y is the value axis every mark's encoding.y is read through;…"
+description: "The mark display's encoding: the channels every mark reads unless it says otherwise, as ggplot2's plot-level aesthetics are each layer's."
 sidebar_label: Display setting -> MarkDisplayEncoding
 ---
 

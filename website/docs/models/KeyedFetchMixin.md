@@ -1,7 +1,7 @@
 ---
 id: keyedfetchmixin
 title: KeyedFetchMixin
-description: "FetchMixin plus the freshness compare a single-payload fetch runs: the key the view, settings and adapter call for (currentFetchKey) against the key the held data was committed under…"
+description: "FetchMixin plus the freshness compare a single-payload fetch runs: the key the view, settings and adapter call for (currentFetchKey) against the key the held data was committed under (loadedFetchKey)."
 sidebar_label: Mixin -> KeyedFetchMixin
 ---
 

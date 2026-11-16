@@ -46,8 +46,8 @@ A setting written to it replaces it whole: a member left out returns to its defa
 | Slot | Description |
 | --- | --- |
 | <span id="slot-value">**value**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | Every mismatch's opacity, 0 to 1, while no field fades them; a base whose read carries no qualities still draws opaque. Writing `opacity: 1` lands here. |
-| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (baseQuality) | baseQuality fades each mismatched base by its Phred quality; unset follows value, and with neither written fades by baseQuality |
+| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) ('baseQuality') | baseQuality fades each mismatched base by its Phred quality; unset follows value, and with neither written fades by baseQuality |
 | <span id="slot-scale">**scale**</span><br>[PileupMismatchesOpacityScale sub-schema](#slot-scaledomainmin) | How a base quality maps to an opacity. |
 | <span id="slot-scaledomainmin">**scale.domainMin**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5</code> | the Phred quality that takes the first opacity in range |
 | <span id="slot-scaledomainmax">**scale.domainMax**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>20</code> | the Phred quality that takes the last opacity in range |
-| <span id="slot-scalerange">**scale.range**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>QUALITY_OPACITY_RANGE.map(String)</code> | A quality past the domain takes the nearer end, as on every scale: a line that runs on to 0 or 1 is a wider domain under `[0, 1]`. |
+| <span id="slot-scalerange">**scale.range**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>['0.1', '1']</code> | A quality past the domain takes the nearer end, as on every scale: a line that runs on to 0 or 1 is a wider domain under `[0, 1]`. |

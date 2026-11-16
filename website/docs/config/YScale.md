@@ -27,7 +27,7 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-type">**type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, log, symlog) = <code>'linear'</code> | The axis's scale type, which sets the ticks, the cross-hatches and the renderer's placement. `log` cannot represent 0 or negative values and floors the domain above them; `symlog` is log-like away from zero and linear through it. |
+| <span id="slot-type">**type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('linear', 'log', 'symlog') = <code>'linear'</code> | The axis's scale type, which sets the ticks, the cross-hatches and the renderer's placement. `log` cannot represent 0 or negative values and floors the domain above them; `symlog` is log-like away from zero and linear through it. |
 | <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The bottom of the axis. Unset autoscales that end to the loaded regions. The axis panel's Min field writes here. |
 | <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The top of the axis. Unset autoscales that end. |
 | <span id="slot-zero">**zero**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Whether an autoscaled linear or symlog axis reaches 0 whatever the loaded values span, Vega-Lite's `zero`. A pinned end is unmoved either way, and a log axis has no 0. The axis panel's "Include 0" toggles it. |

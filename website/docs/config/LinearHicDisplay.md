@@ -60,7 +60,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearHicDisplay",
 | <span id="slot-data">**data**</span><br>[HicData](../hicdata) | What the fetch reads, a [](/docs/config/hicdata) object: `resolution` steps the binsize from the zoom's pick, `normalization` names the matrix normalization. |
 | <span id="slot-filter">**filter**</span><br>[list of FieldPredicate entries](../fieldpredicate) | Floors, written `gte` or `gt`, on the counts a cell is built from: `observed`, the map's count, and under observed/control `control`, the control's, both before the depth scaling. A cell below a floor is left out before its ratio, so a ratio of two near-empty bins does not speckle the triangle. A floor on `observed` alone drops the contacts a condition lost; floor `control`, or both, to keep them. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | default height for the Hi-C track |
-| <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (fixed, fit) = <code>'fixed'</code> | fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height |
+| <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('fixed', 'fit') = <code>'fixed'</code> | fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height |
 
 ## Retired keys
 

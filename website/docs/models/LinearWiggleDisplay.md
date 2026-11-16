@@ -1,7 +1,7 @@
 ---
 id: linearwiggledisplay
 title: LinearWiggleDisplay
-description: "The quantitative display: one plot per rendering, drawn over one source or over many. rows: 'source' puts each source in a separate row, with the clustering sidebar, row labels and separators beside…"
+description: "The quantitative display: one plot per rendering, drawn over one source or over many."
 sidebar_label: Display -> LinearWiggleDisplay
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: featuretranscripts
 title: FeatureTranscripts
-description: "The feature display's transcripts: which children read as a gene's isoforms, and the order they rank in. field names the attribute holding a curated tag and sort the tag values that rank first, in…"
+description: "The feature display's transcripts: which children read as a gene's isoforms, and the order they rank in."
 sidebar_label: Display setting -> FeatureTranscripts
 ---
 

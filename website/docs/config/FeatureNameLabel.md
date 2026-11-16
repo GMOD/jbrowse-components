@@ -26,4 +26,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw a name beside each feature |
-| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>'jexl:get(feature,'name') &#124;&#124; get(feature,'id')'</code> | the field the name reads, such as `gene_name`, or a `jexl:` expression over `feature`; the default reads the name, else the ID, and an empty value draws no name |
+| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>"jexl:get(feature,'name') &#124;&#124; get(feature,'id')"</code> | the field the name reads, such as `gene_name`, or a `jexl:` expression over `feature`; the default reads the name, else the ID, and an empty value draws no name |

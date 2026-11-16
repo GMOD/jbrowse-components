@@ -30,4 +30,4 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-type">**type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (link, rule) = <code>'link'</code> | link, a dome between each pair's ends, or rule, the read cloud's flat line at each pair's insert size |
+| <span id="slot-type">**type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('link', 'rule') = <code>'link'</code> | link, a dome between each pair's ends, or rule, the read cloud's flat line at each pair's insert size |

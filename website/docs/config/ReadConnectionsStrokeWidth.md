@@ -40,7 +40,7 @@ A setting written to it replaces it whole: a member left out returns to its defa
 | Slot | Description |
 | --- | --- |
 | <span id="slot-value">**value**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The px every connection strokes at while no field is written; the Line width menu writes it. Unset, `reads` maps through the scale. |
-| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (reads) | `reads`, the reads that agree on a connection, the one count a width reads; a written field maps through `scale` over any `value`. |
+| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) ('reads') | `reads`, the reads that agree on a connection, the one count a width reads; a written field maps through `scale` over any `value`. |
 | <span id="slot-scale">**scale**</span><br>[ReadConnectionsStrokeWidthScale sub-schema](#slot-scaletype) | How `reads` map to a width: from one read to 44, past which more reads add no width. |
-| <span id="slot-scaletype">**scale.type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (log, linear) = <code>'log'</code> | log adds the same width per doubling of reads; linear the same per read |
-| <span id="slot-scalerange">**scale.range**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The px at one read and at 44, thinnest first. Empty is 1 to 4. |
+| <span id="slot-scaletype">**scale.type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('log', 'linear') = <code>'log'</code> | log adds the same width per doubling of reads; linear the same per read |
+| <span id="slot-scalerange">**scale.range**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The px at one read and at 44, thinnest first. Empty is 1 to 4. |

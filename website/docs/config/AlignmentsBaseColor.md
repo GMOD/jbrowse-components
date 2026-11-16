@@ -1,7 +1,7 @@
 ---
 id: alignmentsbasecolor
 title: AlignmentsBaseColor
-description: "The pileup.bases.encoding.color channel: the per-base variable painted as a cell per base over the reads, whatever encoding.color fills them with. modifications paints the MM/ML calls and bisulfite…"
+description: "The pileup.bases.encoding.color channel: the per-base variable painted as a cell per base over the reads, whatever encoding.color fills them with."
 sidebar_label: Display setting -> AlignmentsBaseColor
 ---
 
@@ -31,4 +31,4 @@ A setting written to it replaces it whole: a member left out returns to its defa
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (baseQuality, base, modifications, bisulfite) | the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset paints none |
+| <span id="slot-field">**field**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) ('baseQuality', 'base', 'modifications', 'bisulfite') | the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset paints none |
