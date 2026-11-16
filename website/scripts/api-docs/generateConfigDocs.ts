@@ -502,13 +502,13 @@ function relatedConfigsLines(
     ),
     ...relatedConfigLines(
       'Adapter',
-      fedTrack && links.adaptersByTrack.get(fedTrack),
+      fedTrack ? links.adaptersByTrack.get(fedTrack) : undefined,
       links,
     ),
-    ...relatedConfigLines('Track', usedIn && [usedIn], links),
+    ...relatedConfigLines('Track', usedIn ? [usedIn] : undefined, links),
     ...relatedConfigLines(
       'Display',
-      usedIn && links.displayTypesByTrack.get(usedIn),
+      usedIn ? links.displayTypesByTrack.get(usedIn) : undefined,
       links,
     ),
     ...relatedConfigLines('Extended by', links.extendedBy.get(name), links),

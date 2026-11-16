@@ -104,7 +104,10 @@ function objectSlotMeta(slot: ts.ObjectLiteralExpression, value: string) {
 // A spread (`...regionTooLargeConfigSchemaFields.fetchSizeLimit`) applies the
 // slot it names first, so the properties written after it override it, as
 // object spread does.
-function applySlotElement(meta: SlotMeta, p: ts.ObjectLiteralElementLike) {
+function applySlotElement(
+  meta: SlotMeta,
+  p: ts.ObjectLiteralElementLike,
+): boolean {
   const spread = ts.isSpreadAssignment(p)
     ? referencedObjectLiteral(p.expression)
     : undefined
@@ -250,7 +253,7 @@ function numbersAsStrings(node: ts.Expression) {
     node.arguments[0]?.getText() === 'String'
       ? literalConstantValue(node.expression.expression)
       : undefined
-  const numbers = list && /^\[(.*)\]$/.exec(list)?.[1]?.split(', ')
+  const numbers = list ? /^\[(.*)\]$/.exec(list)?.[1]?.split(', ') : undefined
   return numbers?.every(n => /^-?[\d.]+$/.test(n))
     ? `[${numbers.map(quoteString).join(', ')}]`
     : undefined
@@ -379,7 +382,7 @@ function unionValue(
 // `pluginManager.getTrackType('ReferenceSequenceTrack').configSchema`: one
 // named element's config, by its type name
 function namedElementSchema(node: ts.Expression) {
-  let owner =
+  let owner: ts.Expression | undefined =
     ts.isPropertyAccessExpression(node) && node.name.text === 'configSchema'
       ? node.expression
       : undefined
