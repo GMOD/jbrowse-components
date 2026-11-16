@@ -122,7 +122,7 @@ describe('alignments grow-mode reactive height', () => {
     expect(grown).not.toBe(250)
     // height tracks the content, but the persisted slot is untouched.
     expect(display.height).toBe(grown)
-    expect(readConfObject(display.configuration, 'height')).toBe(250)
+    expect(readConfObject(display.configuration, 'height')).toBeUndefined()
 
     // Leaving grow bakes the visual height into the slot (one deliberate write).
     display.setHeightMode('fixed')
@@ -140,7 +140,7 @@ describe('alignments grow-mode reactive height', () => {
     const grown = display.grownHeight
     expect(grown).not.toBe(250)
     expect(display.height).toBe(grown)
-    expect(readConfObject(display.configuration, 'height')).toBe(250)
+    expect(readConfObject(display.configuration, 'height')).toBeUndefined()
 
     // Reset the slot to its unset sentinel default, exactly as clearing a
     // customized value does. Resolved heightMode falls to 'fixed' with no
