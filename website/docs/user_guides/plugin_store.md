@@ -154,4 +154,3 @@ An embedded component takes its plugins as a prop; see
 - [Plugin store page](/plugin_store)
 - [](/docs/config_guides/plugins)
 - [](/docs/developer_guide)
-- [PLUGIN_LISTS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PLUGIN_LISTS.md)

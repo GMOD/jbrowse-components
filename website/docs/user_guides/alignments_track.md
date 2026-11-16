@@ -444,12 +444,6 @@ follows a read across a three-chromosome chain this way.
 - [](/docs/user_guides/variant_track)
 - [Alignments track configuration](/docs/config_guides/alignments_track)
 - [LinearAlignmentsDisplay config schema](/docs/config/linearalignmentsdisplay)
-- [MODIFICATION_TAGS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MODIFICATION_TAGS.md)
-  — how this repo reads MM/ML base-modification tags, checked line by line
-  against htslib, and the one place it deliberately differs
-- [DEEP_COVERAGE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DEEP_COVERAGE.md)
-  — what these defaults do at 300x, where the insert-size cut flags a tight
-  library's own tail, and why a support floor has to count over a window
 
 [^placed]:
     A read counts only when both ends are placed at mapping quality above 0: a

@@ -1054,10 +1054,7 @@ feature, and clicking a binned or coverage bar opens the bin remade over the
 features under it.
 
 The full slot list is the
-[LinearMarkDisplay config reference](/docs/config/linearmarkdisplay); how the
-encoding is evaluated, and what a `jexl:` channel measured against a field read,
-is
-[MARK_ENCODING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MARK_ENCODING.md).
+[LinearMarkDisplay config reference](/docs/config/linearmarkdisplay).
 
 ## On the circular view
 

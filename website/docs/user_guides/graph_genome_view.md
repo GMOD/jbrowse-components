@@ -578,7 +578,3 @@ reference-position ramp shows _where_ each segment sits.
 - [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cactus)
 - [Configuring plugins](/docs/config_guides/plugins)
-- [PANGENOME_GRAPHS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PANGENOME_GRAPHS.md)
-  — the coordinates and haplotype membership that rGFA and plain GFA record, the
-  one-node-per-bubble level of detail, and the decisions here that look like
-  bugs

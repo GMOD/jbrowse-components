@@ -565,6 +565,3 @@ its first-genome chromosome's ideogram color.
 - [](/docs/user_guides/dotplot_view)
 - [](/docs/config_guides/grouping_and_ordering)
 - [Synteny visualization tutorial](/docs/tutorials/synteny_visualization)
-- [ORTHOLOG_TABLES.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/ORTHOLOG_TABLES.md)
-  — what a `.blocks` table can and cannot express, and why all-vs-all is a
-  question about the producer rather than about the format
