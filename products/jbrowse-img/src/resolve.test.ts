@@ -15,6 +15,14 @@ test('leaves jbrowse-img own source alone', () => {
   ).toBeUndefined()
 })
 
+test('leaves the pure-.ts grammar packages it shares with jb2capture on src', () => {
+  for (const pkg of ['launch-args', 'add-track-core', 'cigar-utils']) {
+    expect(
+      builtUrl(`file:///repo/packages/${pkg}/src/index.ts`),
+    ).toBeUndefined()
+  }
+})
+
 test('names a stale esm/ when one of its modules has gone', () => {
   expect(
     staleEsmImport(

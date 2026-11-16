@@ -16,9 +16,11 @@ export function transitionGroup(specifier: string) {
 // Workspace packages export their `src`, which holds `.tsx` that Node's type
 // stripping cannot load, so they are pointed at their built `esm/`, as an
 // installed jb2export resolves them. jbrowse-img's own src is pure `.ts` and
-// stays live.
+// stays live, as do the pure-`.ts` packages of the grammar it shares with
+// jb2capture, which loads them from src too: an edit there reaches both
+// without a rebuild.
 const SRC_PATH =
-  /^(file:\/\/(?!.*\/node_modules\/).*\/((?:packages|plugins|products)\/(?!jbrowse-img\/)[^/]+))\/src\/(.+)\.tsx?$/
+  /^(file:\/\/(?!.*\/node_modules\/).*\/((?:packages|plugins|products)\/(?!(?:jbrowse-img|launch-args|add-track-core|cigar-utils)\/)[^/]+))\/src\/(.+)\.tsx?$/
 
 const staleReported = new Set<string>()
 

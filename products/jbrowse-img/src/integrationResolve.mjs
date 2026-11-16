@@ -2,11 +2,11 @@
 // the same source — see src/resolve.ts for what they do and why. Only the hook
 // signature differs: the loader thread's `nextResolve` is async.
 //
-// Hand-authored .mjs on purpose (the loader thread reads this file directly, so
-// it cannot be a `.ts` that something else has to strip first), which is why it
-// reads the helpers out of esm/ rather than src/. `pnpm build` at the repo root
-// is a prerequisite of these tests regardless — builtUrl throws without it.
-import { builtUrl, staleEsmImport, transitionGroup } from '../esm/resolve.js'
+// The helpers come from src, which Node strips as it loads them, so an edit to
+// resolve.ts reaches these tests without a rebuild. `pnpm build` at the repo
+// root is a prerequisite of these tests regardless — builtUrl throws without
+// it.
+import { builtUrl, staleEsmImport, transitionGroup } from './resolve.ts'
 
 export async function resolve(specifier, context, nextResolve) {
   let resolved
