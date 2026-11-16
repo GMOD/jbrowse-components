@@ -732,9 +732,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "coverage": {
-            "height": 100,
-          },
           "displayId": "volvox_cram_snpcoverage_snpcoverage",
           "height": 100,
           "pileup": {
@@ -823,9 +820,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "coverage": {
-            "height": 100,
-          },
           "displayId": "volvox_cram_pileup_ctga_snpcoverage",
           "height": 100,
           "pileup": {
@@ -914,9 +908,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "coverage": {
-            "height": 100,
-          },
           "displayId": "volvox_bam_snpcoverage_snpcoverage",
           "height": 100,
           "pileup": {

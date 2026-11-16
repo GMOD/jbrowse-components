@@ -114,6 +114,7 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
     },
     "coverageScale": {
       "domain": "array",
+      "heightPx": "number",
       "symlogConstant": "number",
       "ticks": "array",
       "type": "string",
@@ -389,6 +390,7 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
     },
     "coverageScale": {
       "domain": "array",
+      "heightPx": "number",
       "symlogConstant": "number",
       "ticks": "array",
       "type": "string",
