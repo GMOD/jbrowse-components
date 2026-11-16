@@ -149,6 +149,7 @@ export type {
 } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 export type {
   BelowCoverageBandsSettings,
+  LaneBandHeights,
   Section,
   SectionsLayout,
 } from './LinearAlignmentsDisplay/sectionLayout.ts'
