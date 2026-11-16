@@ -11,7 +11,7 @@ import {
   schemaProblems,
 } from '../../../products/jbrowse-cli/src/commands/validate/schemaValidate.ts'
 import { configManifest } from './configManifest.ts'
-import { codeBlock, section } from './markdown.ts'
+import { fence, section } from './markdown.ts'
 
 import type { TypedManifestEntry } from './configManifest.ts'
 import type { ConfigWithHeader } from './configTypes.ts'
@@ -176,13 +176,13 @@ export function looseTrackExample(content: string) {
     trackTypeForAdapter(adapterType, file) === trackType
     ? section(
         `JBrowse infers \`${adapterType}\` and \`${trackType}\` from \`${file}\`, and \`name\` defaults to the file name. In a config declaring one assembly, \`assemblyNames\` comes from there too — see [the shortest track](${SHORTEST_TRACK}).`,
-        codeBlock(
+        fence('js', [
           '{',
           `  trackId: '${track.trackId}',`,
           `  uri: '${uri}',`,
           `  assemblyNames: [${track.assemblyNames.map(n => `'${n}'`).join(', ')}],`,
           '}',
-        ),
+        ]),
       )
     : ''
 }

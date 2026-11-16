@@ -1,7 +1,9 @@
 import fs from 'fs'
+import path from 'path'
 
 import slugify from 'slugify'
 
+import { symbolDeclId } from './docProgram.ts'
 import { writeDoc, writePage } from './format.ts'
 import { parseTaggedComment } from './jsDocTags.ts'
 import { codeBlock, exampleSection, section } from './markdown.ts'
@@ -9,12 +11,15 @@ import { repoRelative } from './util.ts'
 
 import type { ExtractedNode } from './docProgram.ts'
 import type { Example } from './jsDocTags.ts'
+import type * as ts from 'typescript'
 
 interface ApiExport {
   name: string
   docs: string
   examples: Example[]
   signature: string
+  declaresType: boolean
+  importAs?: { specifier: string; name: string }
   filename: string
 }
 export interface ApiGroup {
@@ -43,6 +48,7 @@ function groupId(group: string) {
 export function accumulateApi(
   byGroup: Record<string, ApiGroup>,
   obj: ExtractedNode,
+  program: ts.Program,
 ) {
   if (obj.type === 'api' && obj.name) {
     const {
@@ -63,6 +69,8 @@ export function accumulateApi(
       docs,
       examples,
       signature: obj.signature,
+      declaresType: !!obj.declaresType,
+      importAs: importSpecifier(program, obj),
       filename: repoRelative(obj.filename),
     })
   }
@@ -72,64 +80,253 @@ export function accumulateApi(
 // render exports as top-level `##` sections; the README nests them under its
 // own `## API` heading, so there they render one level deeper as `###`.
 function renderExport(
-  { name, docs, examples, signature, filename }: ApiExport,
+  {
+    name,
+    docs,
+    examples,
+    signature,
+    declaresType,
+    importAs,
+    filename,
+  }: ApiExport,
   heading = '###',
 ) {
-  const from = servedSpecifier(name, filename)
+  const root = packageRoot(filename)
   return section(
     `${heading} ${name}`,
     docs,
     signature &&
       codeBlock(
-        ...(from ? [`import { ${name} } from '${from}'`, ''] : []),
-        '// type signature',
-        signature,
+        importAs
+          ? `import ${declaresType ? 'type ' : ''}{ ${importAs.name} } from '${importAs.specifier}'`
+          : `// no entry point of ${(root && packageManifest(root).name) ?? 'its package'} exports it`,
+        '',
+        declaresType
+          ? signature
+          : declarations(importAs?.name ?? name, signature),
       ),
     exampleSection(examples, `${heading}# Example usage`),
     `[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${filename})`,
   )
 }
 
-// The module a plugin imports an export from at runtime: the shortest
-// specifier of the export's own package that the re-export manifest serves the
-// name under (`@jbrowse/core/util`, not `@jbrowse/core/util/mstUtils`).
-// Undefined for an export no plugin can reach that way.
-const REEXPORTS = 'packages/core/src/ReExports/reExports.generated.json'
-let specifiersByName: Map<string, { specifier: string; pkg: string }[]>
+// A value's signature as the statements declaring it, one per overload:
+// `function f(a: A): R` for a function type, else `const f: T`. An arrow type
+// on its own is an expression statement to a formatter, which prefixes it
+// with `;` in a README.
+export function declarations(name: string, signature: string) {
+  return signature
+    .split('\n')
+    .map(line => {
+      const sig = nameBindingPatterns(line)
+      const fn = splitArrow(sig)
+      return fn
+        ? `function ${name}${fn.parameters}: ${fn.returns}`
+        : `const ${name}: ${sig}`
+    })
+    .join('\n')
+}
 
-function servedSpecifier(name: string, filename: string) {
-  if (!specifiersByName) {
-    const { modules } = JSON.parse(fs.readFileSync(REEXPORTS, 'utf8')) as {
-      modules: Record<string, { package: string; names: string[] }>
+function splitArrow(sig: string) {
+  const parametersStart = sig.startsWith('<') ? closingIndex(sig, 0) + 1 : 0
+  const parametersEnd =
+    sig[parametersStart] === '(' ? closingIndex(sig, parametersStart) : -1
+  return parametersEnd > 0 && sig.startsWith(' => ', parametersEnd + 1)
+    ? {
+        parameters: sig.slice(0, parametersEnd + 1),
+        returns: sig.slice(parametersEnd + 5),
+      }
+    : undefined
+}
+
+const PARAMETER_NAMES = ['opts', 'args', 'params']
+
+// A destructured parameter printed as its pattern repeats every key its type
+// spells out again (`({ a, b }: { a: A; b: B })`), so it reads as a named
+// parameter instead: `(opts: { a: A; b: B })`.
+export function nameBindingPatterns(sig: string) {
+  const taken = new Set(
+    PARAMETER_NAMES.filter(n => new RegExp(`[(,] ?${n}\\??:`).test(sig)),
+  )
+  let out = ''
+  for (let i = 0; i < sig.length; i++) {
+    const end =
+      sig[i] === '{' && (out.endsWith('(') || out.endsWith(', '))
+        ? closingIndex(sig, i)
+        : -1
+    const name =
+      end > 0 && /^\??:/.test(sig.slice(end + 1, end + 3))
+        ? PARAMETER_NAMES.find(n => !taken.has(n))
+        : undefined
+    if (name) {
+      taken.add(name)
+      out += name
+      i = end
+    } else {
+      out += sig[i]
     }
-    specifiersByName = new Map()
-    for (const [specifier, { package: pkg, names }] of Object.entries(
-      modules,
-    )) {
-      for (const n of names) {
-        specifiersByName.set(n, [
-          ...(specifiersByName.get(n) ?? []),
-          { specifier, pkg },
-        ])
+  }
+  return out
+}
+
+// The index of the bracket closing the one at `open`, counting every bracket
+// kind; the `>` of a `=>` closes nothing, and a quoted string is skipped whole.
+function closingIndex(sig: string, open: number) {
+  let depth = 0
+  for (let i = open; i < sig.length; i++) {
+    const c = sig[i]!
+    if (c === '"' || c === "'" || c === '`') {
+      i = closingQuote(sig, i)
+    } else if ('<{(['.includes(c)) {
+      depth++
+    } else if ('>})]'.includes(c) && !(c === '>' && sig[i - 1] === '=')) {
+      depth--
+      if (depth === 0) {
+        return i
       }
     }
   }
-  const pkg = packageName(filename)
-  return (specifiersByName.get(name) ?? [])
-    .filter(s => s.pkg === pkg)
-    .map(s => s.specifier)
-    .sort((a, b) => a.length - b.length)[0]
+  return -1
 }
 
-function packageName(filename: string) {
-  const root = packageRoot(filename)
-  return root && fs.existsSync(`${root}/package.json`)
-    ? (
-        JSON.parse(fs.readFileSync(`${root}/package.json`, 'utf8')) as {
-          name?: string
+function closingQuote(sig: string, open: number) {
+  let i = open + 1
+  while (i < sig.length && sig[i] !== sig[open]) {
+    i += sig[i] === '\\' ? 2 : 1
+  }
+  return i
+}
+
+// The module a plugin imports an export from. A value the host serves comes
+// from the shortest specifier of its own package that the re-export manifest
+// lists it under (`@jbrowse/core/util`, not `@jbrowse/core/util/mstUtils`), so
+// the plugin shares the host's copy. Anything else comes from the shortest
+// entry of its package's `exports` map whose module exports this declaration
+// under its own name, or failing that under another (`plainTrackControl` for
+// the default-exported `PlainTrackControl`). Undefined for an export no entry
+// point reaches.
+function importSpecifier(
+  program: ts.Program,
+  { name, filename, declaresType, selfDeclId }: ExtractedNode,
+) {
+  const root = packageRoot(repoRelative(filename))
+  const manifest = root ? packageManifest(root) : undefined
+  const served =
+    manifest && !declaresType ? servedSpecifier(name, manifest.name) : undefined
+  return served
+    ? { specifier: served, name }
+    : manifest?.entrypoints
+        .flatMap(({ specifier, file }) =>
+          exportedNames(program, file, selfDeclId).map(exported => ({
+            specifier,
+            name: exported,
+          })),
+        )
+        .sort(
+          (a, b) =>
+            Number(a.name !== name) - Number(b.name !== name) ||
+            a.specifier.length - b.specifier.length,
+        )[0]
+}
+
+function exportedNames(
+  program: ts.Program,
+  file: string,
+  declId: string | undefined,
+) {
+  const checker = program.getTypeChecker()
+  const source = program.getSourceFile(file)
+  const module = source && checker.getSymbolAtLocation(source)
+  return (module ? checker.getExportsOfModule(module) : [])
+    .filter(s => s.name !== 'default' && symbolDeclId(checker, s) === declId)
+    .map(s => s.name)
+}
+
+function shortest(specifiers: string[]) {
+  return specifiers.sort((a, b) => a.length - b.length)[0]
+}
+
+function servedSpecifier(name: string, pkg: string | undefined) {
+  return shortest(
+    (servedModules().get(name) ?? [])
+      .filter(s => s.pkg === pkg)
+      .map(s => s.specifier),
+  )
+}
+
+const REEXPORTS = 'packages/core/src/ReExports/reExports.generated.json'
+let servedModulesByName: ReturnType<typeof readServedModules> | undefined
+
+function servedModules() {
+  servedModulesByName ??= readServedModules()
+  return servedModulesByName
+}
+
+function readServedModules() {
+  const byName = new Map<string, { specifier: string; pkg: string }[]>()
+  const modules = fields(
+    fields(JSON.parse(fs.readFileSync(REEXPORTS, 'utf8'))).get('modules'),
+  )
+  for (const [specifier, module] of modules) {
+    const entry = fields(module)
+    const pkg = stringField(entry, 'package')
+    const names = entry.get('names')
+    if (pkg && Array.isArray(names)) {
+      for (const n of names) {
+        if (typeof n === 'string') {
+          byName.set(n, [...(byName.get(n) ?? []), { specifier, pkg }])
         }
-      ).name
-    : undefined
+      }
+    }
+  }
+  return byName
+}
+
+function fields(value: unknown) {
+  return new Map<string, unknown>(
+    typeof value === 'object' && value ? Object.entries(value) : [],
+  )
+}
+
+function stringField(record: Map<string, unknown>, key: string) {
+  const value = record.get(key)
+  return typeof value === 'string' ? value : undefined
+}
+
+// A package's name and description, and each entry point a consumer imports as
+// `<name><subpath>`: its `exports` map, or `main` as `.` without one.
+function readPackageManifest(root: string) {
+  const file = `${root}/package.json`
+  const json = fields(
+    fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {},
+  )
+  const name = stringField(json, 'name')
+  const exportsMap = fields(json.get('exports'))
+  const targets = exportsMap.size
+    ? [...exportsMap].map(([subpath, target]) => ({ subpath, target }))
+    : [{ subpath: '.', target: json.get('main') }]
+  return {
+    name,
+    description: stringField(json, 'description'),
+    entrypoints: targets.flatMap(({ subpath, target }) =>
+      name && typeof target === 'string'
+        ? [
+            {
+              specifier: `${name}${subpath.slice(1)}`,
+              file: path.join(root, target),
+            },
+          ]
+        : [],
+    ),
+  }
+}
+
+const manifests = new Map<string, ReturnType<typeof readPackageManifest>>()
+
+function packageManifest(root: string) {
+  const manifest = manifests.get(root) ?? readPackageManifest(root)
+  manifests.set(root, manifest)
+  return manifest
 }
 
 function sortByName(exports: ApiExport[]) {
@@ -141,19 +338,14 @@ function sortByName(exports: ApiExport[]) {
 // and described by that package's manifest.
 function groupHeading({ group, exports }: ApiGroup) {
   const root = packageRoot(exports[0]!.filename)
-  const manifest = root
-    ? (JSON.parse(fs.readFileSync(`${root}/package.json`, 'utf8')) as {
-        name?: string
-        description?: string
-      })
-    : {}
+  const manifest = root ? packageManifest(root) : undefined
   const short = root?.split('/').at(-1)
   const rest =
     short && group.startsWith(`${short}/`) ? group.slice(short.length + 1) : ''
-  const name = manifest.name ?? group
+  const name = manifest?.name ?? group
   return {
     title: rest ? `${name} (${rest})` : name,
-    description: manifest.description,
+    description: manifest?.description,
   }
 }
 
@@ -207,10 +399,7 @@ function renderReadmeSection(exports: ApiExport[]) {
 // A minimal README seeded from package.json for packages that have `#api`
 // exports but no README yet, so the API block has somewhere to live.
 function seedReadme(root: string) {
-  const pkgPath = `${root}/package.json`
-  const { name, description } = JSON.parse(
-    fs.readFileSync(pkgPath, 'utf8'),
-  ) as { name?: string; description?: string }
+  const { name, description } = packageManifest(root)
   return section(`# ${name ?? root}`, description) + '\n'
 }
 

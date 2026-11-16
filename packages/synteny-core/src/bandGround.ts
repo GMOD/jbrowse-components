@@ -4,6 +4,8 @@ import {
   resolvePalette,
 } from '@jbrowse/core/ui/palette'
 
+const BAND_GROUND_COLOR = '#fff'
+
 /**
  * #api
  * The color a comparative band is painted on, for every surface that has to
@@ -17,15 +19,13 @@ import {
  * with a fixed light ground. The dotplot's plot area is the same sheet, since
  * it paints the same color schemes, whose default is black.
  */
-export const BAND_GROUND_COLOR = '#fff'
-
 export function bandGroundColor() {
   return BAND_GROUND_COLOR
 }
 
 /**
  * #api
- * The light palette, whose paper is `BAND_GROUND_COLOR`. Chrome on the band
+ * The light palette, whose paper is `bandGroundColor()`. Chrome on the band
  * with a palette token, such as the dotplot's gridlines and region boundaries,
  * takes it from this palette and so matches the light theme in either mode.
  */

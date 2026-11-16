@@ -3,8 +3,12 @@ import { firstParagraph } from './agentText.ts'
 import type { Example } from './jsDocTags.ts'
 
 // Shared markdown builders used by both generators.
+export function fence(language: string, lines: string[]) {
+  return [`\`\`\`${language}`, ...lines, '```'].join('\n')
+}
+
 export function codeBlock(...lines: string[]) {
-  return ['```js', ...lines, '```'].join('\n')
+  return fence('ts', lines)
 }
 
 // Flatten free-form JSDoc prose into one safe table cell: collapse newlines

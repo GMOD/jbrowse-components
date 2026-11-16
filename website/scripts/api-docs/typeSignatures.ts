@@ -158,11 +158,12 @@ export function typeSignature(
   named: PrintedType[],
   symbol: ts.Symbol,
   decl: ts.Declaration,
+  max = MAX_SIGNATURE,
 ) {
   const type = declaredType(checker, symbol, decl)
   const written = writtenSignature(checker, named, decl, type)
   if (written) {
-    return shortenSignature(written)
+    return shortenSignature(written, max)
   }
   const overloads = type.getCallSignatures()
   // An overloaded function prints as one object type of call signatures, which
@@ -180,6 +181,7 @@ export function typeSignature(
                 ts.TypeFormatFlags.WriteArrowStyleSignature,
             ),
           ),
+          max,
         ),
       )
       .join('\n')
@@ -196,6 +198,7 @@ export function typeSignature(
           ),
         )
       : printed,
+    max,
   )
 }
 
@@ -416,8 +419,8 @@ function unwrapBefore(sig: string, close: number) {
 // members from the middle of a nested type, and a nested group emptied whole.
 const TRUNCATED = /\.\.\.$|\.\.\. \d+ more \.\.\.|<\.\.\.>|\{ \.\.\.; \}/
 
-function shortenSignature(sig: string) {
-  return elideSignature(sortUnionMembers(dropNodeTails(sig)))
+function shortenSignature(sig: string, max: number) {
+  return elideSignature(sortUnionMembers(dropNodeTails(sig)), max)
 }
 
 // The checker prints a union in its own order, not ours, and that order moves

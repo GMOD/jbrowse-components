@@ -33,6 +33,8 @@ export interface ExtractedNode {
   spreadSlot?: string
   comment: string
   signature: string
+  // For `#api` nodes: a type or interface, whose `signature` is its declaration
+  declaresType?: boolean
   node: string
   filename: string
   // Stable identity of the declaration this node's symbol resolves to
@@ -253,7 +255,12 @@ export function extractWithComment(
     } else if (ts.isSpreadAssignment(node) && tags.includes('slot')) {
       emitSpreadSlots(node, comment, cb)
     } else if (tags.length && !delegatedAway) {
-      const { name, signature, declId } = describeSymbol(checker, named, node)
+      const { name, signature, declaresType, declId } = describeSymbol(
+        checker,
+        named,
+        node,
+        tags.includes('api') ? Infinity : undefined,
+      )
       if (!isStateModel && tags.some(isMemberTag)) {
         memberTagged.set(
           memberKey(node),
@@ -264,6 +271,7 @@ export function extractWithComment(
         name,
         comment,
         signature,
+        declaresType,
         node:
           (tags.includes('slot') && slotTableEntry(node)) || node.getFullText(),
         filename: node.getSourceFile().fileName,
@@ -1065,11 +1073,14 @@ function describeSymbol(
   checker: ts.TypeChecker,
   named: PrintedType[],
   node: ts.Node,
+  maxSignature?: number,
 ) {
   const nameNode = getNameNode(node)
   const symbol = nameNode ? checker.getSymbolAtLocation(nameNode) : undefined
   const decl = symbol?.valueDeclaration
   const symbolName = symbol?.getName() ?? ''
+  const declaresType =
+    ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)
   return {
     // `export default function Foo()` gives the symbol the name "default",
     // which is what the module exports it as and not what anyone calls it. The
@@ -1081,10 +1092,25 @@ function describeSymbol(
       symbolName === 'default' && nameNode && ts.isIdentifier(nameNode)
         ? nameNode.text
         : symbolName,
-    signature:
-      symbol && decl ? typeSignature(checker, named, symbol, decl) : '',
+    signature: declaresType
+      ? typeDeclaration(node)
+      : symbol && decl
+        ? typeSignature(checker, named, symbol, decl, maxSignature)
+        : '',
+    declaresType,
     declId: symbolDeclId(checker, symbol),
   }
+}
+
+const declarationPrinter = ts.createPrinter({ removeComments: true })
+
+function typeDeclaration(
+  node: ts.InterfaceDeclaration | ts.TypeAliasDeclaration,
+) {
+  return declarationPrinter
+    .printNode(ts.EmitHint.Unspecified, node, node.getSourceFile())
+    .replace(/^export /, '')
+    .replaceAll(/^(?: {4})+/gm, indent => ' '.repeat(indent.length / 2))
 }
 
 // Follow import aliases to the original symbol so two references to the same
@@ -1102,7 +1128,10 @@ function followAlias(checker: ts.TypeChecker, symbol: ts.Symbol) {
 }
 
 // "file:pos" of the declaration a symbol resolves to, alias-followed.
-function symbolDeclId(checker: ts.TypeChecker, symbol: ts.Symbol | undefined) {
+export function symbolDeclId(
+  checker: ts.TypeChecker,
+  symbol: ts.Symbol | undefined,
+) {
   if (!symbol) {
     return undefined
   }

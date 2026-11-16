@@ -105,7 +105,7 @@ async function main() {
     obj => {
       accumulateConfig(configs, obj)
       accumulateModel(models, obj)
-      accumulateApi(api, obj)
+      accumulateApi(api, obj, docProgram.program)
     },
     link => displayLinks.push(link),
   )
