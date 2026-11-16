@@ -104,7 +104,11 @@ import {
 } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
-import { filledMafTopBands, mafTopBands } from './mafTopBands.ts'
+import {
+  drawnMafTopBands,
+  mafTopBands,
+  rowsHiddenTrackHeight,
+} from './mafTopBands.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
@@ -823,20 +827,18 @@ export default function stateModelFactory(
          * The band stack as drawn, coverage above conservation: the stated
          * stack while the rows show, and while they are hidden the bands
          * filling the plot in proportion to their stated heights
-         * (`filledMafTopBands`), under the canvas's backing-store limit. Every
+         * (`drawnMafTopBands`), under the canvas's backing-store limit. Every
          * top, height and offset reads this; a band that reserves 0 px does
          * not draw.
          */
         get topBands() {
-          return self.showAlignments
-            ? this.statedTopBands
-            : filledMafTopBands(self.statedBands, {
-                ...self.bandPlot,
-                height: Math.min(
-                  self.bandPlot.height,
-                  maxCanvasCssPx() - self.rowsLeadHeight,
-                ),
-              })
+          return drawnMafTopBands({
+            bands: self.statedBands,
+            plot: self.bandPlot,
+            showRows: self.showAlignments,
+            allottedHeight: self.allottedHeight,
+            rowsLeadHeight: self.rowsLeadHeight,
+          })
         },
       }))
       .views(self => ({
@@ -940,7 +942,7 @@ export default function stateModelFactory(
         get height() {
           return self.showAlignments
             ? self.rowsHeight + self.rowsTopOffset
-            : Math.min(self.allottedHeight, maxCanvasCssPx())
+            : rowsHiddenTrackHeight(self.allottedHeight)
         },
         /**
          * #getter

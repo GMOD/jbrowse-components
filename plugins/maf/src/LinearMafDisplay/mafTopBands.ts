@@ -10,6 +10,7 @@ import {
   fillStackedBands,
   stackBands,
 } from '@jbrowse/core/util/bandLayout'
+import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 
 import type { Band, BandPlot, BandStack } from '@jbrowse/core/util/bandLayout'
 
@@ -72,4 +73,39 @@ export function filledMafTopBands(
       },
     }),
   )
+}
+
+/**
+ * The height a track whose rows are hidden draws at: its own, under the
+ * canvas's backing-store limit, since the bands fill it.
+ */
+export function rowsHiddenTrackHeight(allottedHeight: number) {
+  return Math.min(allottedHeight, maxCanvasCssPx())
+}
+
+/**
+ * The bands as drawn: the stated stack ({@link mafTopBands}) while the rows
+ * show, and while they are hidden the bands filling the plot
+ * ({@link filledMafTopBands}) under the track's {@link rowsHiddenTrackHeight},
+ * less the lines the sidebar keeps above the rows.
+ */
+export function drawnMafTopBands({
+  bands,
+  plot,
+  showRows,
+  allottedHeight,
+  rowsLeadHeight,
+}: {
+  bands: Record<MafBandKey, Band>
+  plot: BandPlot
+  showRows: boolean
+  allottedHeight: number
+  rowsLeadHeight: number
+}) {
+  return showRows
+    ? mafTopBands(bands, plot)
+    : filledMafTopBands(bands, {
+        ...plot,
+        height: rowsHiddenTrackHeight(allottedHeight) - rowsLeadHeight,
+      })
 }
