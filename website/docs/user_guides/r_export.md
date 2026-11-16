@@ -39,11 +39,13 @@ print(fig)
 ```
 
 Each reader returns the tables its track draws, and every band is an ordinary
-`ggplot2` plot, so a figure is edited the usual way: draw one band alone with
-`autoplot(reads, "pileup")` and add a `geom_*`, a scale or a theme, or join your
-own table to `genes$features`. A feature track exports at the height the view
-gives it, so it drops the labels the view drops; change `"fit"` to `"grow"` to
-draw them all.
+`ggplot2` plot:
+
+- **One band:** draw it alone with `autoplot(reads, "pileup")` and add a
+  `geom_*`, a scale or a theme
+- **Your own data:** join your table to `genes$features`
+- **Labels:** a feature track exports at the height the view gives it, so it
+  drops the labels the view drops; change `"fit"` to `"grow"` to draw them all
 
 ## What it draws
 
@@ -63,14 +65,14 @@ top of the script that lists where the figure differs from the view.
 The script opens each track by its path or URL, so every track needs one an R
 session can open.
 
-- A track opened with **Choose File** in jbrowse-web has neither, because the
-  browser keeps the file handle to itself. The exporter leaves it out and names
-  it in the header. [JBrowse Desktop](/docs/quickstart_desktop) opens files by
-  path, which the script uses directly.
-- A file over HTTP needs its index beside it at the usual name, or the track's
-  declared index, which the script passes along.
-- A contig the assembly calls `chr1` and the file calls `1` reads under the
-  file's name, from the assembly's aliases.
+- **Local files on the web:** a track opened with **Choose File** in jbrowse-web
+  has neither, so the exporter leaves it out and names it in the header.
+  [JBrowse Desktop](/docs/quickstart_desktop) opens files by path, which the
+  script uses directly.
+- **Indexes:** a file over HTTP needs its index beside it at the usual name, or
+  the track's declared index, which the script passes along.
+- **Contig names:** a contig the assembly calls `chr1` and the file calls `1`
+  reads under the file's name, from the assembly's aliases.
 
 ## Requirements
 
@@ -83,5 +85,4 @@ installed ggjbrowse is older.
 ## How close to the view it is
 
 The data, rows, colors and keys are the browser's own, computed by the same
-engine. The drawing is ggplot2's: its text, antialiasing and panel spacing, so
-the figure shows what the view shows without being a screenshot of it.
+engine. The text, antialiasing and panel spacing are ggplot2's.
