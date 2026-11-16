@@ -91,6 +91,7 @@ import { syntenySpecs } from './specs/synteny.ts'
 import { tcgaSpecs } from './specs/tcga.ts'
 import { trioSpecs } from './specs/trio.ts'
 import { uiSpecs } from './specs/ui.ts'
+import { userGuideSpecs } from './specs/user_guides.ts'
 import { variantsSpecs } from './specs/variants.ts'
 
 import type { ScreenshotSpec, SessionUrlSpec } from './screenshot-spec-types.ts'
@@ -123,6 +124,7 @@ export const specs: ScreenshotSpec[] = [
   ...proteinBrca1M1775rSpecs,
   ...proteinSncaE46kSpecs,
   ...uiSpecs,
+  ...userGuideSpecs,
   ...methylationSpecs,
   ...ldSpecs,
   ...popgenSpecs,

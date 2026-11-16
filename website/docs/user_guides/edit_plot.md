@@ -17,15 +17,11 @@ applied.
 
 ## What the box shows
 
+<Figure src="/img/edit_plot/dialog.png" caption="Edit plot on a gene track with the help open: each setting linked to the config reference, the example buttons, and the plot as text." />
+
 The text holds the current values of this display's settings, leaving out any at
-its default, as a config file does. Above it:
-
-- **Show help** links each setting to its row in the config reference
-- **Config reference** opens the display's page in the
-  [config reference](/docs/config_guide), which spells out each setting's
-  members
-
-Which settings appear depends on the display:
+its default, as a config file does. Which settings appear depends on the
+display:
 
 <!-- BEGIN GENERATED PLOT_SETTINGS -->
 
@@ -57,9 +53,9 @@ is under the view menu's Tracks entry.
 
 ## Examples
 
-The buttons above the text are worked examples for that display. A button fills
-the text with its example laid over the current settings, so you can read what
-it changes before applying it. For a feature track:
+An example button fills the text with its example laid over the current
+settings, so you can read what it changes before applying it. For a feature
+track:
 
 ```json
 { "facet": "strand", "encoding": { "color": "type" } }
