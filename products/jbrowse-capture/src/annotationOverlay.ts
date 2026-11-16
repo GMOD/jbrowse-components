@@ -215,7 +215,9 @@ export interface Annotation {
   // The anchor is then what the callout NAMES, and `dx`/`dy` place the label off
   // it: `dx`'s sign picks the side, its magnitude is the gap between the target
   // and the pill's facing edge (so a column of callouts lines up whatever each
-  // one says), and `dy` centres the pill on that line.
+  // one says), and `dy` centres the pill on that line. A `dx` of 0 stacks the
+  // label above or below instead: the pill centres on the target's x and `dy`
+  // is the gap to its facing edge.
   leader?: boolean
   fontSize?: number // label size: text default 22, legend 20, circle 18; text and legend floor at 13
   strokeWidth?: number // box/circle stroke width (default 5); arrow line+head (default 4)
@@ -1137,8 +1139,17 @@ export function drawAnnotationOverlay(
         // reports the element's own user space, so the numbers above stay the ones
         // that were measured.
         if (a.leader && a.target) {
-          const wantLeft = a.target.x > cx ? cx - width : cx
-          const wantTop = cy - height / 2
+          const stacked = (a.dx ?? 0) === 0
+          const wantLeft = stacked
+            ? cx - width / 2
+            : a.target.x > cx
+              ? cx - width
+              : cx
+          const wantTop = !stacked
+            ? cy - height / 2
+            : a.target.y > cy
+              ? cy - height
+              : cy
           text.setAttribute(
             'transform',
             `translate(${wantLeft - left},${wantTop - top})`,
@@ -1175,7 +1186,7 @@ export function drawAnnotationOverlay(
             misses.push(
               JSON.stringify({
                 leader: a.target
-                  ? 'the label sits on what it names — raise dx'
+                  ? 'the label sits on what it names — raise dx or dy'
                   : 'a leader needs an anchor to point back at',
                 text: a.text,
                 anchor: a.anchor,

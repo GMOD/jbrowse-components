@@ -10,6 +10,12 @@ export interface ViewportRect {
   height: number
 }
 
+export function atFracY<T extends ViewportRect>(rect: T, fracY?: number) {
+  return fracY === undefined
+    ? rect
+    : { ...rect, top: rect.top + fracY * rect.height, height: 0 }
+}
+
 // The bounding box of a node's drawn polyline, plus a point that is guaranteed
 // to be ON it. They are not the same thing: a force-directed drawing bends a
 // long node into an arc, and the centre of its bounding box can sit in the empty

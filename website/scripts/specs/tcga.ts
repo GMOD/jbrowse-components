@@ -442,6 +442,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
           alignX: 'left',
           dx: 400,
         },
+        dx: 20,
         dy: -185,
       },
     ],

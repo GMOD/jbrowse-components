@@ -52,7 +52,7 @@ async function withRegion(
         : anchor.row
           ? await rowRect(page, anchor, wrapBase)
           : isDotplot
-            ? await dotplotAnchorRect(page, anchor)
+            ? await dotplotAnchorRect(page, anchor, wrapBase)
             : anchor.residue
               ? await residueRect(page, anchor, wantBounds)
               : undefined,

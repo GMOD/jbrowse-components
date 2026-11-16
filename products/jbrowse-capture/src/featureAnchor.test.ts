@@ -19,12 +19,17 @@ function setSession(boxes: Record<string, { left: number; width: number }[]>) {
         id: 'lgv',
         assemblyNames: ['hg38'],
         getHighlightCoords: ({
+          refName,
           start,
           end,
         }: {
+          refName: string
           start: number
           end: number
-        }) => ({ left: start / 10, width: Math.max(3, (end - start) / 10) }),
+        }) =>
+          refName === 'chr1'
+            ? { left: start / 10, width: Math.max(3, (end - start) / 10) }
+            : undefined,
         tracks: [
           {
             configuration: { trackId: 'genes' },
@@ -44,7 +49,10 @@ function setSession(boxes: Record<string, { left: number; width: number }[]>) {
   }
 }
 
-const rect = (name: string, region?: { start: number; end: number }) =>
+const rect = (
+  name: string,
+  region?: { start: number; end: number; refName?: string },
+) =>
   featureRectInPage(
     [0],
     'genes',
@@ -109,4 +117,11 @@ test('a locus picks one of two copies, and a name on two copies alone misses', (
     width: 5,
     height: 10,
   })
+})
+
+test('a locus the view cannot place misses rather than boxing the whole feature', () => {
+  setSession({ TP53: [{ left: 100, width: 300 }] })
+  expect(
+    rect('TP53', { refName: 'chr2', start: 1500, end: 1503 }),
+  ).toBeUndefined()
 })

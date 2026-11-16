@@ -1,7 +1,7 @@
-import { parseAnnotationLocus } from './annotationOverlay.ts'
+import { parseAnnotationLocus, viewPathOf } from './annotationOverlay.ts'
+import { atFracY } from './graphAnchor.ts'
 
 import type { AnnotationAnchor, AnnotationRegion } from './annotationOverlay.ts'
-import type { ViewportRect } from './graphAnchor.ts'
 import type { Page } from 'puppeteer'
 
 // Where a row display drew a row it names, in viewport CSS px: the strip the
@@ -149,7 +149,7 @@ async function rowBox(page: Page, anchor: AnnotationAnchor, wrap: boolean) {
     ? undefined
     : page.evaluate(
         rowRectInPage,
-        Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0],
+        viewPathOf(anchor),
         anchor.trackId,
         anchor.row,
         anchor.loc ? parseAnnotationLocus(anchor.loc, wrap) : undefined,
@@ -163,9 +163,7 @@ export async function rowRect(
   page: Page,
   anchor: AnnotationAnchor,
   wrap: boolean,
-): Promise<ViewportRect | undefined> {
+) {
   const box = await rowBox(page, anchor, wrap)
-  return box && anchor.fracY !== undefined
-    ? { ...box, top: box.top + anchor.fracY * box.height, height: 0 }
-    : box
+  return box && atFracY(box, anchor.fracY)
 }

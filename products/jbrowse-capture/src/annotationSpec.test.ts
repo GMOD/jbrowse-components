@@ -86,6 +86,11 @@ test.each<[string, Annotation, string]>([
     { type: 'box', anchor: { feature: 'BRCA1' } },
     'needs the trackId of the track that drew "BRCA1"',
   ],
+  [
+    'a row with no track',
+    { type: 'box', anchor: { row: 'Gaur' } },
+    'needs the trackId of the track that drew row "Gaur"',
+  ],
 ])('%s fails before a browser launches', (_name, annotation, why) => {
   expect(() => {
     assertValidAnnotations([annotation])

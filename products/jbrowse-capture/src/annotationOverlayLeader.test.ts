@@ -48,7 +48,7 @@ afterAll(() => {
 
 // The one anchor kind that arrives pre-resolved, so the target is a number this
 // test chose rather than a layout jsdom cannot do.
-function callout(text: string, dx: number): PayloadAnnotation {
+function callout(text: string, dx: number, dy = 0): PayloadAnnotation {
   return {
     type: 'text',
     text,
@@ -59,6 +59,7 @@ function callout(text: string, dx: number): PayloadAnnotation {
       rect: { left: 500, top: 100, width: 0, height: 0 },
     },
     dx,
+    dy,
   }
 }
 
@@ -125,7 +126,28 @@ test('a label sitting on what it names is a reported miss', () => {
   const { unresolved, line } = draw([callout('IGF1', 10)])
   expect(line).toBeNull()
   expect(unresolved).toHaveLength(1)
-  expect(unresolved[0]).toMatch(/raise dx/)
+  expect(unresolved[0]).toMatch(/raise dx or dy/)
+})
+
+test('a dx of 0 stacks the pill centred above or below, dy off its facing edge', () => {
+  const below = draw([callout('IGF1', 0, 60)])
+  expect(below.unresolved).toEqual([])
+  expect((below.pill!.left + below.pill!.right) / 2).toBe(500)
+  expect(below.pill!.top).toBe(160)
+  const above = draw([callout('IGF1', 0, -60)])
+  expect((above.pill!.left + above.pill!.right) / 2).toBe(500)
+  expect(above.pill!.bottom).toBe(40)
+  const arrow = document.querySelector('line')!
+  expect(Number(arrow.getAttribute('x1'))).toBe(500)
+  expect(Number(arrow.getAttribute('x2'))).toBe(500)
+  expect(Number(arrow.getAttribute('y2'))).toBeGreaterThan(
+    Number(arrow.getAttribute('y1')),
+  )
+})
+
+test('an omitted dx stacks the pill as a dx of 0 does', () => {
+  const { dx: _, ...omitted } = callout('IGF1', 0, 60)
+  expect(draw([omitted]).pill).toEqual(draw([callout('IGF1', 0, 60)]).pill)
 })
 
 test('a leader with nothing to point at is a reported miss', () => {

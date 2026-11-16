@@ -17,6 +17,7 @@ import { version } from './version.ts'
 
 import type { ParsedArgs } from './args.ts'
 import type { CaptureOptions } from './capture.ts'
+import type { ReadyReport } from './ready.ts'
 
 const HELP = `jb2capture — screenshot a live JBrowse 2 view, once it has finished drawing
 
@@ -141,6 +142,21 @@ function captureOptions(args: ParsedArgs): CaptureOptions {
   }
 }
 
+function warn(
+  { tooLarge, unsettled }: Pick<ReadyReport, 'tooLarge' | 'unsettled'>,
+  indent = '',
+) {
+  if (unsettled.length) {
+    console.error(`${indent}warning: --allowUnsettled: ${unsettled.join('; ')}`)
+  }
+  if (tooLarge.length) {
+    console.error(
+      `${indent}warning: ${tooLarge.length} display(s) show "too much data" instead of their features ` +
+        `(${tooLarge.map(d => d.name).join(', ')}). Narrow --loc to draw them.`,
+    )
+  }
+}
+
 async function runBatch(args: ParsedArgs) {
   const [manifest, ...extra] = args.positionals
   if (!manifest || extra.length) {
@@ -160,6 +176,7 @@ async function runBatch(args: ParsedArgs) {
       const label = `[${index + 1}/${captures.length}] ${result.out} ${(result.ms / 1000).toFixed(1)}s`
       if (result.ok) {
         console.log(`wrote ${label}`)
+        warn(result, '  ')
       } else {
         console.error(`FAILED ${label}: ${result.error.message}`)
       }
@@ -239,15 +256,7 @@ async function main() {
   })
   console.log(`wrote ${args.out}`)
   console.log(`from  ${url}`)
-  if (unsettled.length) {
-    console.error(`warning: --allowUnsettled: ${unsettled.join('; ')}`)
-  }
-  if (tooLarge.length) {
-    console.error(
-      `warning: ${tooLarge.length} display(s) show "too much data" instead of their features ` +
-        `(${tooLarge.map(d => d.name).join(', ')}). Narrow --loc to draw them.`,
-    )
-  }
+  warn({ tooLarge, unsettled })
 }
 
 try {

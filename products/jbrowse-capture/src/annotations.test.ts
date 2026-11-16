@@ -109,3 +109,23 @@ test('a graph node anchor is resolved out here, against the view layout', async 
   ])
   expect(boxes()).toEqual([[15, 57, 200, 0]])
 })
+
+test('a box on one base of a dotplot axis wraps that base', async () => {
+  element(
+    element(document.body, 'view-container-d', {}),
+    'dotplot_webgl_canvas',
+    { left: 10, top: 20, width: 800, height: 400 },
+  )
+  const axis = {
+    offsetPx: 0,
+    displayedRegions: [{ refName: 'chr4', start: 0, end: 400 }],
+    bpToPx: ({ coord }: { coord: number }) => coord * 2,
+  }
+  ;(window as unknown as { JBrowseSession: unknown }).JBrowseSession = {
+    views: [{ id: 'd', hview: axis, vview: axis }],
+  }
+  await drawAnnotations(fakePage(), [
+    { type: 'box', anchor: { hLoc: 'chr4:100' }, pad: 0, strokeWidth: 0 },
+  ])
+  expect(boxes()).toEqual([[208, 20, 2, 400]])
+})

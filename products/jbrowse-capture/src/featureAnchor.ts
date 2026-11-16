@@ -1,7 +1,7 @@
 import { parseAnnotationLocus, viewPathOf } from './annotationOverlay.ts'
+import { atFracY } from './graphAnchor.ts'
 
 import type { AnnotationAnchor, AnnotationRegion } from './annotationOverlay.ts'
-import type { ViewportRect } from './graphAnchor.ts'
 import type { Page } from 'puppeteer'
 
 // Where a track's display drew a feature or record it names, in viewport CSS
@@ -72,7 +72,7 @@ export function featureRectInPage(
       )
     : matches
   const box = candidates.length === 1 ? candidates[0]?.box : undefined
-  if (!box || !container) {
+  if (!box || !container || (region && !span)) {
     return undefined
   }
   const r = container.getBoundingClientRect()
@@ -112,9 +112,7 @@ export async function featureRect(
   page: Page,
   anchor: AnnotationAnchor,
   wrap: boolean,
-): Promise<ViewportRect | undefined> {
+) {
   const box = await featureBox(page, anchor, wrap)
-  return box && anchor.fracY !== undefined
-    ? { ...box, top: box.top + anchor.fracY * box.height, height: 0 }
-    : box
+  return box && atFracY(box, anchor.fracY)
 }

@@ -41,12 +41,20 @@ function thrown(check: () => unknown) {
 }
 
 // what parses only once the page has drawn, checked here instead
-function anchorProblem({ loc, residue, feature, trackId }: AnnotationAnchor) {
+function anchorProblem({
+  loc,
+  residue,
+  feature,
+  row,
+  trackId,
+}: AnnotationAnchor) {
   return feature !== undefined && trackId === undefined
     ? `a feature anchor needs the trackId of the track that drew "${feature}"`
-    : ((loc === undefined
-        ? undefined
-        : thrown(() => parseAnnotationLocus(loc))) ??
+    : row !== undefined && trackId === undefined
+      ? `a row anchor needs the trackId of the track that drew row "${row}"`
+      : ((loc === undefined
+          ? undefined
+          : thrown(() => parseAnnotationLocus(loc))) ??
         (residue === undefined
           ? undefined
           : thrown(() => parseResidue(residue))))

@@ -1824,6 +1824,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         text: 'XR = 3L',
         fontSize: 20,
         anchor: { text: 'X [rev]', alignX: 'left' },
+        dx: 20,
         dy: -70,
         leader: true,
       },
