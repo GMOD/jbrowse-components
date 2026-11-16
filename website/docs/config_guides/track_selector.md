@@ -63,6 +63,19 @@ empty for every track are hidden.
 [](/docs/user_guides/basic_usage#faceted-track-selector) covers the filter
 panel.
 
+The kind column groups tracks by what they hold: the track type ("Alignments",
+"Variant", "Quantitative") unless the track's `metadata.kind` says otherwise.
+Set it where the type undersells the data, as for variants served as bigBed
+features:
+
+```json
+{
+  "trackId": "clinvar",
+  "type": "FeatureTrack",
+  "metadata": { "kind": "Variants" }
+}
+```
+
 ## See also
 
 - [](/docs/user_guides/basic_usage)

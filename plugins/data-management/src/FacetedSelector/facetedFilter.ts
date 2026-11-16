@@ -12,6 +12,7 @@ import type { Row } from './components/util.ts'
  */
 export function rowSearchText(row: {
   name: string
+  kind?: string
   category?: string
   adapter?: string
   description?: string
@@ -19,6 +20,7 @@ export function rowSearchText(row: {
 }) {
   return buildSearchText([
     row.name,
+    row.kind,
     row.category,
     row.adapter,
     row.description,

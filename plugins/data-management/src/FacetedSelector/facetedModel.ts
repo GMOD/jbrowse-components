@@ -28,7 +28,7 @@ import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-const nonMetadataKeys = ['category', 'adapter', 'description'] as const
+const nonMetadataKeys = ['kind', 'category', 'adapter', 'description'] as const
 
 // smallest useful width for either of the two panes, applied to the filter
 // panel when dragging its handle and to the data pane when laying out
@@ -113,6 +113,12 @@ export function facetedStateTreeF() {
        * #volatile
        */
       session: undefined as TrackCatalog | undefined,
+      /**
+       * #volatile
+       * a track type's name for the kind column, when its config sets no
+       * `metadata.kind`
+       */
+      trackTypeName: (type: string) => type,
     }))
     .actions(self => ({
       /**
@@ -132,6 +138,12 @@ export function facetedStateTreeF() {
         self.hiddenColumns.replace(
           localStorageGetStringArray(hiddenColumnsKey(assemblyNames)),
         )
+      },
+      /**
+       * #action
+       */
+      setTrackTypeName(trackTypeName: (type: string) => string) {
+        self.trackTypeName = trackTypeName
       },
       /**
        * #action
@@ -208,14 +220,19 @@ export function facetedStateTreeF() {
         const session = self.session
         return session
           ? self.getTracks().map(track => {
+              const metadata = (track.metadata ?? {}) as Record<string, unknown>
               const row = {
                 id: track.trackId,
                 conf: track,
                 name: getTrackName(track, session),
+                kind:
+                  typeof metadata.kind === 'string' && metadata.kind
+                    ? metadata.kind
+                    : self.trackTypeName(String(track.type)),
                 category: (track.category as string[] | undefined)?.join(', '),
                 adapter: (track.adapter as { type?: string } | undefined)?.type,
                 description: track.description as string | undefined,
-                metadata: (track.metadata ?? {}) as Record<string, unknown>,
+                metadata,
               }
               return { ...row, searchText: rowSearchText(row) } as const
             })
@@ -238,7 +255,11 @@ export function facetedStateTreeF() {
        */
       get metadataKeys() {
         return [
-          ...new Set(self.allRows.flatMap(row => getRootKeys(row.metadata))),
+          ...new Set(
+            self.allRows.flatMap(row =>
+              getRootKeys(row.metadata).filter(key => key !== 'kind'),
+            ),
+          ),
         ]
       },
       /**

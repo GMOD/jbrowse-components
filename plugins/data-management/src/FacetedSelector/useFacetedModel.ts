@@ -1,8 +1,9 @@
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { useCreateOnce, useFinalUnmount } from '@jbrowse/core/util/hooks'
 import { destroy } from '@jbrowse/mobx-state-tree'
 
 import { facetedStateTreeF } from './facetedModel.ts'
+import { trackTypeShortName } from './facetedUtil.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
@@ -30,6 +31,12 @@ export function useFacetedModel(
   const faceted = useCreateOnce(() => {
     const ret = facetedStateTreeF().create(initial)
     ret.setTrackSource(getTracks, getSession(model), model.assemblyNames)
+    const names = new Map(
+      getEnv(model)
+        .pluginManager.getTrackElements()
+        .map(t => [t.name, trackTypeShortName(t.displayName)]),
+    )
+    ret.setTrackTypeName(type => names.get(type) ?? type)
     return ret
   })
   useFinalUnmount(() => {
