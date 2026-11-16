@@ -12,10 +12,10 @@ coloring to show linkage to an index SNP.
 
 <Figure caption="A GWAS track as a Manhattan plot, each point a variant at its -log₁₀(p)." src="/img/gwas/manhattan.png" />
 
-For a genome-wide example, the embedded
+The embedded
 [Pan-UKB GWAS example](https://jbrowse.org/storybook/lgv/pan-ukb-gwas/) browses
-the full Pan-UK Biobank catalog of ~7,200 phenotypes, loading each trait's
-summary statistics straight from the Pan-UKBB public S3 bucket.
+the Pan-UK Biobank catalog of ~7,200 phenotypes, reading each trait's summary
+statistics from the Pan-UKBB public S3 bucket.
 
 ## Example file
 
@@ -27,19 +27,15 @@ statistics file (with `neg_log_pvalue` as the score column) into the
 https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz
 ```
 
-Its peaks are the loci a BMI scan is known for: FTO at chr16:53.8 Mb first by a
-wide margin, then TMEM18, MC4R and SEC16B, so a view at any of them shows a
-peak.
-
-The BMI summary statistics file above has no LD data. The LD-colored demo below
-is a second pair, `gwas_giant-bmi_meta_women-only.gz` with a PLINK table beside
-it, both under `jbrowse.org/demos/gwas/` and wired together by the demo config.
+Its peaks include FTO at chr16:53.8 Mb, TMEM18, MC4R and SEC16B. The file has no
+LD data; the LD-colored demo below pairs `gwas_giant-bmi_meta_women-only.gz`
+with a PLINK table, both under `jbrowse.org/demos/gwas/`.
 
 ## Public data sources
 
-Most public GWAS repositories use differing TSV column layouts. GWASAdapter
-requires BED, so a conversion step is needed before loading. See the
-[config guide](/docs/config_guides/gwas_track) for the preprocessing pipeline.
+Public GWAS repositories use differing column layouts, and most need converting
+to a tabix-indexed BED before loading; the
+[config guide](/docs/config_guides/gwas_track) has the preprocessing pipeline.
 
 | Source                                                                  | Notes                                                                  |
 | ----------------------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -50,35 +46,35 @@ requires BED, so a conversion step is needed before loading. See the
 
 ## LD data
 
-With an LD file loaded, the track colors points by r² to an index SNP, so you
-can see which nearby variants are in linkage with the lead signal (see
-[Adding a GWAS track](#adding-a-gwas-track) for how the index is chosen).
+With an LD file loaded, the track colors points by r² to an index SNP, marking
+the nearby variants in linkage with the lead signal. JBrowse picks the index as
+described under [Adding a GWAS track](#adding-a-gwas-track).
 
 <Figure caption="LD coloring at STAT4: the lead SNP is the diamond, and other points shade by their r² to it." src="/img/gwas/locuszoom_ld.png" />
 
 The embedded
 [LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld/)
-runs this r² coloring live in a React app, over an LD triangle painted in the
-same bins.
+runs this r² coloring live in a React app, over an LD triangle. The triangle is
+a separate track drawing r² between every pair of nearby variants as a heatmap,
+read from a PLINK LD file; the
+[linkage disequilibrium tutorial](/docs/tutorials/ld_human) builds one.
 
-The LD triangle is a separate feature: it draws r² between every pair of nearby
-variants as a heatmap, read from a PLINK LD file. See the
-[linkage disequilibrium tutorial](/docs/tutorials/ld_human).
+LD data must be a PLINK LD table, 1.9's `.ld` or 2.0's `.vcor`, bgzipped or not.
+Generate it from:
 
-LD data must be in PLINK LD table format, either 1.9's `.ld` or 2.0's `.vcor`,
-bgzipped or not. Generate it from:
+- **Your own cohort:**
+  `plink2 --r2-unphased --ld-window-kb 1000 --ld-window-r2 0`, or 1.9's
+  `plink --r2 --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0` (1.9
+  otherwise pairs each variant with only its next 9).[^ld-snp]
+- **A reference panel:** 1000 Genomes phase 3 at
+  `ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/`, subset to EUR, AFR,
+  EAS, AMR or SAS. Point `bcftools` at the `.bcf` files under
+  `supporting/bcf_files/`; a remote region of the `.vcf.gz` beside them fails
+  with "Illegal seek".
 
-- Your own cohort - `plink2 --r2-unphased --ld-window-kb 1000 --ld-window-r2 0`,
-  or 1.9's `plink --r2 --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0`
-  (1.9 otherwise pairs each variant with only its next 9). A table written with
-  `--ld-snp` holds r² to the SNPs it lists and no others, so only those can be
-  the index, and the track names them when another SNP is picked
-- Reference panel - 1000 Genomes phase 3 at
-  `ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/` (choose EUR, AFR, EAS,
-  AMR, or SAS by population). Point `bcftools` at the `.bcf` files under
-  `supporting/bcf_files/` rather than the `.vcf.gz` beside them: htslib reads a
-  remote region from the BCF and its `.csi` in seconds, while the `.vcf.gz`
-  index points it at an offset that fails with "Illegal seek"
+[^ld-snp]:
+    A table written with `--ld-snp` holds r² to the SNPs it lists, so only those
+    can be the index, and the track names them when another SNP is picked.
 
 ## Clumping the peak
 
@@ -139,7 +135,9 @@ tabix index unless it sits at `<file>.tbi`.
   adapter** under **Adapter type**, which offers it below the field.
 - _Score column_ and _Score transform_ name the column and how it maps onto
   -log₁₀(p) (the [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) and
-  [`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform) slots).
+  [`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform) slots). The
+  [dog selection tutorial](/docs/tutorials/dog10k_selection#scanning-the-genome-for-toy-versus-giant-fst-peaks)
+  plots an Fst column this way.
 - _PLINK LD table_ (optional) takes a `.ld` or `.vcor`, bgzipped or not. A
   bgzipped one gets a field for its tabix index.
 
