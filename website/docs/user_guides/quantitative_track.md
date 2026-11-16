@@ -31,16 +31,15 @@ at, finer or coarser than one per pixel, and **Bin summary** sits beneath it.
 
 **Y axis...** opens the track's axis settings in the side drawer. The track
 redraws as you change them, and **Reset to defaults** returns to the track's
-configuration. The menu row names a pinned end and a non-linear scale, such as
-**Y axis (190 – auto, log)...**. On an alignments track the row is **Coverage
-axis...**, and on a density plot **Score range...**.
+configuration. On an alignments track the row is **Coverage axis...**, and on a
+density plot **Score range...**.
 
-- **Scale:** linear, log or signed log; signed log keeps zero and negative
-  scores.
+<Figure src="/img/bigwig/y_axis_panel.png" caption="A BigWig's Y axis drawer with Max pinned and one labelled reference line. Bars past the pinned Max end in a red strip." />
+
+- **Scale:** signed log keeps zero and negative scores.
 - **Min** and **Max** pin either end of the axis
   ([`encoding.y.scale.domainMin`](/docs/config/yscale/#slot-domainmin)); an
-  empty field follows the data in view, whose range shows beneath them. A bar
-  past a pinned end is cut at the edge with a red strip.
+  empty field follows the data in view.
 - **Include 0** ([`encoding.y.scale.zero`](/docs/config/yscale/#slot-zero)),
   ticked by default, extends an empty end to 0, so a bar shows its whole height.
   Unticked, the axis spans the values in view, so a GC track holding 30 to 60%
@@ -55,8 +54,6 @@ axis...**, and on a density plot **Score range...**.
   axis, which then autoscales over all of their data as you pan and zoom
   ([`encoding.y.scale.share`](/docs/config/yscale/#slot-share)). A coverage
   band, a mark display and a Manhattan plot take the same `share`.
-- **Grid lines** rule the plot at every tick, and **Reference lines** draw a
-  darker line at each value you add, each with an optional label and color.
 
 Include 0 and Clip extreme outliers move only an end left empty, so both grey
 out once Min and Max are both set; Include 0 also greys out on a log axis, which

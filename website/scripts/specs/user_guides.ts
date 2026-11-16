@@ -174,4 +174,36 @@ export const userGuideSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
     ],
   },
+
+  // The pinned Max cuts the tallest bars, which the strip at the top marks.
+  {
+    mode: 'url',
+    name: 'bigwig/y_axis_panel',
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: [
+        {
+          trackId: 'volvox_microarray',
+          height: 260,
+          encoding: {
+            y: {
+              scale: { domainMax: 600 },
+              rules: [{ value: 300, label: 'cutoff' }],
+            },
+          },
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    viewportHeight: 600,
+    tooltip: 'hide',
+    actions: [
+      trackMenuIcon('volvox_microarray'),
+      { type: 'waitForText', text: 'Y axis...' },
+      { type: 'click', text: 'Y axis...' },
+      { type: 'waitForText', text: 'Reference lines' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
 ]
