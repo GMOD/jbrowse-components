@@ -67,3 +67,14 @@ it('follows encoding.y.axis.show when it changes', () => {
   setConf(display, ['encoding', 'y', 'axis', 'show'], false)
   expect(display.prefersOffset).toBe(false)
 })
+
+it('offsets an overlay whose rows are narrowed, as the narrowing chip sits at its top-left', () => {
+  for (const config of [AXIS_OFF, { mark: 'rect' }]) {
+    const { before, after } = offsetBeforeAndAfterData({
+      ...config,
+      rows: { field: '', kept: ['a'] },
+    })
+    expect(before.offset).toBe(true)
+    expect(after.offset).toBe(true)
+  }
+})

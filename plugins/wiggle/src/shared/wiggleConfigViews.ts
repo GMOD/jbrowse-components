@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { narrows } from '@jbrowse/tree-sidebar/narrowRows'
 
 import {
   DEFAULT_LINE_WIDTH_PX,
@@ -13,6 +14,7 @@ import type { LinearWiggleDisplayConfigSchema } from '../LinearWiggleDisplay/con
 import type { WiggleRendering } from '../renderingTypes.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { RowNarrowing } from '@jbrowse/tree-sidebar/narrowRows'
 import type { Extent } from '@jbrowse/wiggle-core'
 
 /** What {@link wiggleConfigViews} reads: the display's config. */
@@ -143,15 +145,21 @@ export function wiggleLabelViews(self: {
   isDensityMode: boolean
   isRowLayout: boolean
   showAxis: boolean
+  rowNarrowing: RowNarrowing
 }) {
   return {
     /**
      * #getter
-     * Rows and their names, or one plot's y-axis; one density plot, or one
-     * with `axis.show` off, has nothing at its top-left.
+     * Rows, the "Showing N of M rows" chip a narrowing draws in any layout,
+     * or one plot's y-axis; one density plot, or one with `axis.show` off,
+     * has nothing else at its top-left.
      */
     get prefersOffset() {
-      return self.isRowLayout || (!self.isDensityMode && self.showAxis)
+      return (
+        self.isRowLayout ||
+        narrows(self.rowNarrowing) ||
+        (!self.isDensityMode && self.showAxis)
+      )
     },
   }
 }

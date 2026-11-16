@@ -33,9 +33,11 @@ export interface LinearDisplayModel extends DisplayModel {
    * In 'overlapping' track-label mode, true moves the label to its own row
    * above the display, for one whose settings put something at its top-left
    * that the label would hide: an axis, rows and their names, a section chip,
-   * a connector or label band. Answered from settings alone: the label is placed before
-   * data lands, and its row moves every track below. An ungrouped alignments
-   * track leaves its coverage axis under the label (ADR-109).
+   * a connector or label band. Answered from settings, never from the
+   * features a region fetch brings: the label is placed before they land, and
+   * its row moves every track below. The variant display also reads its
+   * file's sample list, which lands once. An ungrouped alignments track leaves
+   * its coverage axis under the label (ADR-109).
    */
   prefersOffset?: boolean
   /**

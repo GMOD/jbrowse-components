@@ -86,13 +86,13 @@ function wiggleStaticHost(
     .views(ungroupedAutoscaleViews)
     .views(self => wiggleConfigViews(self))
     .views(self => wiggleModeViews(self))
-    .views(self => wiggleLabelViews(self))
     .views(self => treeSidebarAxisConfigViews(self))
     .views(self => treeSidebarRowsConfigViews(self))
   const scored = wiggleScoreStages(treeSidebarRowStages<Source>()(base))
     .views(self => rowsContentHeightViews(self))
     .views(self => hierarchyViews(self))
     .views(self => rowSidebarViews(self))
+    .views(self => wiggleLabelViews(self))
   return wiggleSidebarStages(scored)
 }
 
