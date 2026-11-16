@@ -10,12 +10,12 @@ track selector.
 
 JBrowse supports three built-in connection types:
 
-- UCSC Track Hub - any
+- **UCSC Track Hub:** any
   [UCSC Genome Browser track hub](https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html)
   reachable over the network
-- JB2 Track Hub - a track hub based on a
+- **JB2 Track Hub:** a track hub based on a
   [JBrowse 2 config file](/docs/config_guides/from_config)
-- JBrowse 1 data directory - a legacy JBrowse 1 data directory with a
+- **JBrowse 1 data directory:** a legacy JBrowse 1 data directory with a
   `trackList.json`
 
 ## Connections in the track selector
@@ -24,37 +24,30 @@ Every connection appears as a separate **category** in the track selector,
 listed below your regular tracks and named after the connection.
 
 A connection is loaded **lazily**: expanding its category fetches the hub's
-track list. This keeps large hubs (which can contain thousands of tracks) out of
-the way until you want them. Once expanded, its tracks appear underneath and you
-open them with their checkboxes like any other track.
-
-Because loading only happens on expand, adding several connections is cheap.
-Expand the one you want; leave the rest collapsed.
+track list, and its tracks open with their checkboxes like any other track.
+JBrowse fetches nothing for a collapsed connection, so adding several is cheap.
 
 ## Opening a connection
 
 Open the form from either route:
 
-- Menu bar: `File` → `Open connection...`
-- Track selector's hamburger menu → `Connections` → `Add connection...`
+- **File → Open connection...** in the menu bar
+- **Connections → Add connection...** in the track selector's hamburger menu
 
-Paste the hub URL (see below for the format), choose the connection type, and
-submit. A newly added connection loads right away, so its tracks appear
-immediately.
+Paste the hub URL ([format below](#ucsc-track-hub-url-format)), choose the
+connection type, and submit. A newly added connection loads right away.
 
 ## Connections and saved sessions
 
-Opening a track from a connection remembers it in your session, so after a page
-reload it reopens immediately without re-fetching the whole hub. The
-connection's category shows collapsed; expand it again to browse the rest.
-
-Only the tracks you opened are stored, so sharing or saving a session that uses
-a connection stays lightweight even when the underlying hub is huge.
+The session stores the tracks you opened from a connection, and only those, so
+after a reload they reopen without re-fetching the hub, and a shared session
+stays small however large the hub is. The connection's category shows collapsed;
+expand it again to browse the rest.
 
 ## Removing a connection
 
-Open the track selector's hamburger menu → `Connections` →
-`Delete connections...` and choose the connection to remove.
+**Connections → Delete connections...** in the track selector's hamburger menu
+lists the connections to remove.
 
 ## UCSC track hub URL format
 
@@ -68,9 +61,9 @@ Public hubs are listed in the
 [UCSC Public Hub directory](https://genome.ucsc.edu/cgi-bin/hgHubConnect); paste
 the URL from its "URL" column into the connection form.
 
-JBrowse matches hub tracks to assemblies by genome ID. Tracks targeting an
-assembly not configured in your JBrowse instance will not appear. You can filter
-by assembly name in the connection form.
+JBrowse matches hub tracks to assemblies by genome ID, so a track appears only
+when its assembly is configured in your JBrowse instance. The connection form
+can filter by assembly name.
 
 ## JBrowse 1 connection URL format
 
