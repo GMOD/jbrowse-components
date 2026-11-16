@@ -144,15 +144,23 @@ describe('a display with the pileup hidden', () => {
       const coverageHeight = display.coverageHeight
       const height = display.height
       const layout = display.laidOutByGroup
+      const overheads = display.laneBandOverheads
+      const fittedFeatureHeight = display.fittedFeatureHeight
+      const featureHeight = display.featureHeight
+      const unchanged = () => {
+        expect(display.coverageHeight).toBe(coverageHeight)
+        expect(display.height).toBe(height)
+        expect(display.laidOutByGroup).toBe(layout)
+        expect(display.laneBandOverheads).toEqual(overheads)
+        expect(display.fittedFeatureHeight).toBe(fittedFeatureHeight)
+        expect(display.featureHeight).toBe(featureHeight)
+      }
       display.setShowPileup(false)
       expect(display.coverageBandHeight).not.toBe(coverageHeight)
-      expect(display.coverageHeight).toBe(coverageHeight)
-      expect(display.height).toBe(height)
-      expect(display.laidOutByGroup).toBe(layout)
+      unchanged()
       display.setShowPileup(true)
       expect(display.coverageBandHeight).toBe(coverageHeight)
-      expect(display.height).toBe(height)
-      expect(display.laidOutByGroup).toBe(layout)
+      unchanged()
     },
   )
 })
