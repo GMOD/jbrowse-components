@@ -20,7 +20,7 @@
         },
         {
           "trackId": "NCI-H596_RNA",
-          "height": 90,
+          "height": 70,
           "pileup": {
             "show": false
           },
@@ -32,7 +32,7 @@
         },
         {
           "trackId": "EBC-1_RNA_5pct",
-          "height": 90,
+          "height": 70,
           "pileup": {
             "show": false
           },
