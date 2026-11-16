@@ -465,7 +465,7 @@ function typeNameOf(type: ts.TypeNode | undefined) {
 const ownMeta = new WeakMap<Item, SlotMeta>()
 const inheritedMeta = new WeakMap<Item, SlotMeta>()
 
-export function rawSlotValue(item: Item) {
+function rawSlotValue(item: Item) {
   return stripPropertyName(item.code)
 }
 

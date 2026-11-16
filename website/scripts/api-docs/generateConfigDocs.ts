@@ -119,22 +119,19 @@ function spreadSlots(sf: ts.SourceFile): Item[] {
     // passed whole, `ConfigurationSchema('X', scaleSlots('Y'))`, is a spread of
     // that table, and so is the table a schema factory's call builds
     // (`scale: rowColorScaleConfigSchema({ … })`).
-    const property =
-      ts.isPropertyAssignment(node) && ts.isIdentifier(node.name)
-        ? { name: node.name.text, value: node.initializer }
-        : undefined
-    const table =
-      property && isSchemaCall(property.value)
-        ? property.value.arguments[1]
-        : undefined
+    const named = ts.isPropertyAssignment(node) && ts.isIdentifier(node.name)
+    const value = named ? node.initializer : undefined
+    const schema = value && isSchemaCall(value) ? value : undefined
+    const table = schema?.arguments[1]
     const factory =
-      property &&
-      ts.isCallExpression(property.value) &&
-      ts.isIdentifier(property.value.expression) &&
-      isSchemaFactory(property.value.expression.text)
-        ? property.value
+      value &&
+      ts.isCallExpression(value) &&
+      ts.isIdentifier(value.expression) &&
+      isSchemaFactory(value.expression.text)
+        ? value
         : undefined
-    const nested = table || factory ? `${prefix}${property?.name}.` : prefix
+    const nested =
+      named && (schema || factory) ? `${prefix}${node.name.text}.` : prefix
     if (table && !ts.isObjectLiteralExpression(table)) {
       addPairs(table, nested)
     }
