@@ -16,6 +16,7 @@ import { rowsExceedSnapshotBudget } from './snapshotBudget.ts'
 import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
 import type { SpreadsheetViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -311,7 +312,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
           /**
            * #method
            */
-          menuItems() {
+          menuItems(): MenuItem[] {
             return [
               {
                 label: 'Return to import form',

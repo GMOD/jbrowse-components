@@ -273,7 +273,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
       // state model and a component, so the menus should read the same way. The
       // per-setting curation (which color schemes, which sort modes, which
       // layers) is what makes this synteny's menu rather than a copy.
-      trackMenuItems() {
+      trackMenuItems(): MenuItem[] {
         const pileupGate = {
           disabled: !self.showPileup,
           disabledHelpText: `Turn on "Show alignments" to change ${self.featureNoun} height`,

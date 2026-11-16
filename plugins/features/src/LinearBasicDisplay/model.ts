@@ -34,6 +34,7 @@ import type {
   LinearBasicDisplayConfig,
   LinearBasicDisplayConfigModel,
 } from './configSchema.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -277,7 +278,7 @@ export default function stateModelFactory(
           ]
         },
 
-        trackMenuItems() {
+        trackMenuItems(): MenuItem[] {
           return [
             ...superTrackMenuItems(),
             {

@@ -1478,7 +1478,7 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #method
          */
-        menuItems() {
+        menuItems(): MenuItem[] {
           const session = getSession(self)
           return [
             {

@@ -2892,7 +2892,7 @@ export default function stateModelFactory(
          * #method
          * Track menu items
          */
-        trackMenuItems() {
+        trackMenuItems(): MenuItem[] {
           const pileupGate = {
             disabled: !self.showPileup,
             disabledHelpText: 'Turn on "Show pileup" to change read height',
