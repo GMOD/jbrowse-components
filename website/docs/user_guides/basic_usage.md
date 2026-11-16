@@ -80,8 +80,8 @@ Name searching needs a text index; see
 
 Picking a gene or feature from the results navigates to it and highlights it,
 pinned toward the top of its track. The highlight follows the feature as you pan
-and zoom. Search again to move it, or click "Clear search highlight" in the
-header bar.
+and zoom. Search again to move it, or click the "Clear feature highlights"
+button in the header bar.
 
 <Figure caption="A feature picked from the search results, pinned to the top of its track and boxed." src="/img/search_feature_highlight.png" />
 
@@ -117,26 +117,29 @@ For remote files the index is inferred from conventional names (`file.bam` →
 ### Opening local files
 
 The **File** toggle in the "Add a track" form opens a file from your own
-machine. The bytes are read in the browser, not uploaded anywhere.
+machine. The browser reads the bytes and uploads nothing.
 
-Where the browser has the File System Access API (Chrome and Edge), JBrowse Web
-remembers which file you picked, so a reopened session can get the track back.
-The browser still asks you to re-grant read permission after a reload; the
-"local files need permission to be restored" banner and its **Restore access**
-button do that. Elsewhere (Firefox), a local file lasts for the life of the tab,
-and after a refresh the track shows "(need to reload)".
-
-A share link never includes a local file, and its index has to be picked by
-hand. [JBrowse Desktop](/docs/quickstart_desktop) has neither limit, since it
-stores the path.
+- **Chrome and Edge:** JBrowse Web remembers which file you picked, so a
+  reopened session can get the track back. After a reload, the "local files need
+  permission to be restored" banner's **Restore access** button re-grants read
+  permission.
+- **Firefox:** a local file lasts for the life of the tab, and after a refresh
+  the track shows "(need to reload)".
+- **Share links** never include a local file, and its index has to be picked by
+  hand.
+- **[JBrowse Desktop](/docs/quickstart_desktop)** stores the path, so it has
+  none of these limits.
 
 ### Adding many tracks at once
 
 **Add multiple tracks at once** in the "Add a track" form takes file URLs, one
-per line, or a set of local files dropped on it. Each row is typed from its
-extension, and an index (`.bai`, `.csi`, `.tbi`, `.crai`) is paired with the
-data file it indexes whatever the order. The preview table is where a row is
-renamed or removed, and one assembly serves the batch.
+per line, or a set of local files dropped on it.
+
+- **Types:** each row is typed from its extension.
+- **Indexes:** an index (`.bai`, `.csi`, `.tbi`, `.crai`) is paired with the
+  data file it indexes, in any order.
+- **Preview table:** rename or remove a row here.
+- **Assembly:** one assembly serves the batch.
 
 <Video src="/media/ui/bulk_add_tracks.mp4" caption="Four URLs pasted in one box, and the table pairing each index with its data file." />
 
@@ -236,11 +239,13 @@ so it is how to look up what one contig is called elsewhere.
 
 ## Editing track configs
 
-**Track actions → Settings** in the track menu edits any track's settings. Edits
-are saved in the session as an override of the track's config, so they persist,
-share with the session and undo without touching the config file everyone else
-is served. An admin can write them into that file with **Admin → Save track
-settings to config**.
+**Track actions → Settings** in the track menu edits any track's settings. The
+session stores each edit as an override of the track's config:
+
+- **In the session:** edits persist, share and undo with the session, and the
+  config file everyone else is served stays as it was.
+- **Into the config:** an admin writes them into that file with **Admin → Save
+  track settings to config**.
 
 <Figure caption="Track actions → Settings in the track menu." src="/img/edit_track_settings.png" />
 
@@ -248,7 +253,7 @@ The form shows the track's name, description, category and data files, and the
 settings of the display this view draws. What the display draws (color,
 grouping, filters) is under the track menu's **Advanced → Edit plot...**.
 
-- A field's reset button returns it to the track's config.
+- **Reset button:** returns a field to the track's config.
 - **Edit as JSON...** edits every setting as `config.json` writes it. A key the
   track does not take is refused under the text.
 - **Reset track settings** in the track menu reverts to the underlying config.
@@ -267,13 +272,13 @@ The main scale bar's menu holds **Zoom to region**, **Get sequence...**, **Copy
 range**, **Highlight region** ([](/docs/user_guides/highlights)), then a
 **Launch** submenu of what can open from the selection:
 
-- **Linear genome view**, a new view of the span with this view's tracks and
-  their settings. It scrolls and zooms independently, like any other view
-- [](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at),
-  when a synteny dataset in the session covers this assembly. It opens one panel
-  per assembly aligning to the selection, whether or not the synteny track is
-  turned on
-- [](/docs/user_guides/consensus_sequence), when an alignments track is open
+- **Linear genome view:** a new view of the span with this view's tracks and
+  their settings, which scrolls and zooms independently
+- [](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at):
+  when a synteny dataset in the session covers this assembly, one panel per
+  assembly aligning to the selection, whether or not the synteny track is turned
+  on
+- [](/docs/user_guides/consensus_sequence): when an alignments track is open
 
 Each of these has a track-menu twin that takes the visible window instead of a
 selection: **Get sequence (visible region)...** on the reference sequence track,
@@ -286,10 +291,9 @@ Clicking the scale bar without dragging names a single base. Its menu holds
 
 The [synteny](/docs/user_guides/linear_synteny_view) and
 [breakpoint split](/docs/user_guides/sv_visualization#breakpoint-split-view)
-views have one strip for the whole stack. A drag there leads with **Zoom to
-region(s)**, which zooms every row at once; below it, one row per genome has
-that row's own menu, because a sequence to fetch or a coordinate to copy belongs
-to one assembly.
+views have one scale bar for the whole stack. A drag there leads with **Zoom to
+region(s)**, which zooms every row at once; below it, one entry per genome opens
+that genome's own selection menu.
 
 ## Scalebar chromosome name menu
 
@@ -305,7 +309,7 @@ The chromosome names along the scale bar are clickable. The menu holds:
 
 ## View and layout controls
 
-Four layout controls sit in the view's hamburger menu and the header bar.
+These layout controls sit in the view's hamburger menu and the header bar.
 
 ### Ideogram
 
