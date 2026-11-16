@@ -51,6 +51,7 @@ export const figureLiveRefs: Record<string, string> = {
   "multiway_synteny/ecoli_one_vs_all": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1%2C440%2C000-1%2C473%2C000%22%2C%22highlight%22%3A%5B%7B%22refName%22%3A%22chr%22%2C%22start%22%3A1446100%2C%22end%22%3A1467909%2C%22color%22%3A%22rgba(214%2C137%2C16%2C0.13)%22%7D%5D%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22K12_genes%22%2C%22filter%22%3A%5B%22geneLike%22%5D%2C%22displayMode%22%3A%22compact%22%7D%2C%7B%22trackId%22%3A%22ecoli_minigraph_segments%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22encoding%22%3A%7B%22color%22%3A%7B%22value%22%3A%22jexl%3Aget(feature%2C'rank')%3E0%20%3F%20'rgb(60%2C65%2C72)'%20%3A%20'hsl('%20%2B%20min(300%2C%20max(0%2C%20((get(feature%2C'start')%2Bget(feature%2C'end'))%2F2%20-%201445000)%20%2F%2029500%20*%20300))%20%2B%20'%2C70%25%2C50%25)'%22%7D%7D%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22ecoli_ava%22%2C%22facet%22%3A%7B%22field%22%3A%22mateAssembly%22%2C%22hidden%22%3A%5B%22K12%22%5D%7D%2C%22pileup%22%3A%7B%22mark%22%3A%7B%22height%22%3A14%7D%7D%2C%22height%22%3A135%7D%5D%7D%2C%7B%22type%22%3A%22GraphGenomeView%22%2C%22gfaLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_paa_subgraph.gfa%22%7D%2C%22layoutMode%22%3A%22force%22%2C%22color%22%3A%7B%22field%22%3A%22position%22%2C%22domainMin%22%3A1445000%2C%22domainMax%22%3A1474500%7D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/ecoli_launch_selection": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A795%2C000-815%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ecoli_ava%22%2C%22facet%22%3A%7B%22field%22%3A%22mateAssembly%22%2C%22hidden%22%3A%5B%22K12%22%5D%7D%2C%22pileup%22%3A%7B%22mark%22%3A%7B%22height%22%3A14%7D%7D%2C%22height%22%3A135%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/ecoli_launch_result": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A795%2C000-815%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ecoli_ava%22%2C%22facet%22%3A%7B%22field%22%3A%22mateAssembly%22%2C%22hidden%22%3A%5B%22K12%22%5D%7D%2C%22pileup%22%3A%7B%22mark%22%3A%7B%22height%22%3A14%7D%7D%2C%22height%22%3A135%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "multiway_synteny/ecoli_launch_dialog": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A795%2C000-815%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ecoli_ava%22%2C%22facet%22%3A%7B%22field%22%3A%22mateAssembly%22%2C%22hidden%22%3A%5B%22K12%22%5D%7D%2C%22pileup%22%3A%7B%22mark%22%3A%7B%22height%22%3A14%7D%7D%2C%22height%22%3A135%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/ecoli_one_vs_all_whole_genome": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1-4%2C641%2C652%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ecoli_ava%22%2C%22facet%22%3A%7B%22field%22%3A%22mateAssembly%22%2C%22hidden%22%3A%5B%22K12%22%5D%7D%2C%22pileup%22%3A%7B%22mismatches%22%3A%7B%22show%22%3Afalse%7D%2C%22mark%22%3A%7B%22height%22%3A20%7D%7D%2C%22height%22%3A100%7D%5D%7D%2C%7B%22assembly%22%3A%22IAI39%22%7D%2C%7B%22assembly%22%3A%22Sakai%22%7D%2C%7B%22assembly%22%3A%22CFT073%22%7D%2C%7B%22assembly%22%3A%22NCTC86%22%7D%5D%2C%22tracks%22%3A%5B%22ecoli_ava%22%5D%2C%22mark%22%3A%7B%22interpolate%22%3A%22linear%22%7D%2C%22encoding%22%3A%7B%22color%22%3A%22strand%22%7D%2C%22filter%22%3A%5B%7B%22field%22%3A%22length%22%2C%22gte%22%3A10000%7D%5D%2C%22collapseEmptyRows%22%3Atrue%2C%22levelHeights%22%3A%5B120%2C120%2C120%2C120%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/ecoli_identity_rows": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22SyntenyTrack%22%2C%22trackId%22%3A%22ecoli_ava_identity%22%2C%22name%22%3A%22K-12%20against%20each%20strain%2C%20identity%22%2C%22assemblyNames%22%3A%5B%22K12%22%2C%22Sakai%22%2C%22CFT073%22%2C%22NCTC86%22%2C%22IAI39%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22MultiGenomePAFAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fall_vs_all.paf.gz%22%2C%22assemblyNames%22%3A%5B%22K12%22%2C%22Sakai%22%2C%22CFT073%22%2C%22NCTC86%22%2C%22IAI39%22%5D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearMarkDisplay%22%2C%22displayId%22%3A%22ecoli_ava_identity-LinearMarkDisplay%22%2C%22rows%22%3A%22mate.assemblyName%22%2C%22filter%22%3A%5B%22jexl%3Afeature.mate.assemblyName%20!%3D%20'K12'%22%5D%2C%22encoding%22%3A%7B%22y%22%3A%7B%22scale%22%3A%7B%22zero%22%3Afalse%7D%7D%7D%2C%22marks%22%3A%5B%7B%22mark%22%3A%22rule%22%2C%22encoding%22%3A%7B%22y%22%3A%22identity%22%2C%22strokeWidth%22%3A2%7D%7D%5D%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1-4%2C641%2C652%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ecoli_ava_identity%22%2C%22height%22%3A400%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "multiway_synteny/ecoli_import_form": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
@@ -257,6 +258,14 @@ export const figureLiveRefs: Record<string, string> = {
   "chromhmm_encode_hoxa": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr7%3A27%2C110%2C000-27%2C265%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22labels%22%3A%7B%22description%22%3A%7B%22show%22%3Afalse%7D%7D%2C%22filter%22%3A%5B%22geneLike%22%2C%22jexl%3Afeature.type!%3D'pseudogene'%22%5D%2C%22height%22%3A110%7D%2C%7B%22trackId%22%3A%22broad_chromhmm_multirow_hg19%22%2C%22height%22%3A240%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "multirow/display_types_pick": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22rmsk_hg38_ucsc%22%2C%22name%22%3A%22RepeatMasker%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedTabixAdapter%22%2C%22bedGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22CSI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz.csi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A45%2C700%2C000-45%2C750%2C000%22%2C%22tracks%22%3A%5B%22rmsk_hg38_ucsc%22%5D%7D%5D%7D&sessionName=Screenshot",
   "multirow/display_types_rows": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22rmsk_hg38_ucsc%22%2C%22name%22%3A%22RepeatMasker%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedTabixAdapter%22%2C%22bedGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22CSI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz.csi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A45%2C700%2C000-45%2C750%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22rmsk_hg38_ucsc%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22rows%22%3A%7B%22field%22%3A%22repClass%22%2C%22axis%22%3A%7B%22grid%22%3Atrue%7D%7D%2C%22height%22%3A260%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "edit_plot/dialog": "?config=test_data%2Fvolvox%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%22gff3tabix_genes_jexl_color_and_label%22%5D%7D%5D%7D&sessionName=Screenshot",
+  "consensus/iupac_panel": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%221%3A161%2C176%2C108-161%2C176%2C167%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22illumina_hg002%22%2C%22height%22%3A300%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "sequence_search/crispr_guides": "?config=test_data%2Fvolvox%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22crispr_spcas9%22%2C%22name%22%3A%22SpCas9%20guides%22%2C%22assemblyNames%22%3A%5B%22volvox%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22CrisprGuideAdapter%22%2C%22minGcPercent%22%3A40%2C%22maxGcPercent%22%3A60%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A5031-5110%22%2C%22tracks%22%3A%5B%22volvox_refseq%22%2C%7B%22trackId%22%3A%22crispr_spcas9%22%2C%22height%22%3A260%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "spreadsheet/feature_menu": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22SpreadsheetView%22%2C%22assembly%22%3A%22hg19%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2Fhg19%2Fskbr3%2Freads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf%22%7D%5D%7D&sessionName=Screenshot",
+  "variants/filter_sliders": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%221%3A155%2C020%2C000-155%2C030%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%221kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf%22%2C%22variantLayout%22%3A%22columns%22%2C%22height%22%3A500%2C%22filter%22%3A%5B%7B%22field%22%3A%22minorAlleleFrequency%22%2C%22gte%22%3A0.05%7D%5D%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "bigwig/y_axis_panel": "?config=test_data%2Fvolvox%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-50000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22volvox_microarray%22%2C%22height%22%3A260%2C%22encoding%22%3A%7B%22y%22%3A%7B%22scale%22%3A%7B%22domainMax%22%3A600%7D%2C%22rules%22%3A%5B%7B%22value%22%3A300%2C%22label%22%3A%22cutoff%22%7D%5D%7D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "multirow/rows_field_picker": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22rmsk_hg38_ucsc%22%2C%22name%22%3A%22RepeatMasker%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedTabixAdapter%22%2C%22bedGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22CSI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz.csi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A45%2C700%2C000-45%2C750%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22rmsk_hg38_ucsc%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22height%22%3A120%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "clustering/kept_rows": "?config=test_data%2Fvolvox%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-50000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22volvox_test_vcf%22%2C%22variantLayout%22%3A%22columns%22%2C%22height%22%3A360%2C%22runClustering%22%3Atrue%2C%22rows%22%3A%7B%22kept%22%3A%5B%22HG00096%22%2C%22HG00097%22%2C%22HG00099%22%2C%22HG00100%22%2C%22HG00101%22%2C%22HG00102%22%2C%22HG00103%22%2C%22HG00104%22%2C%22HG00106%22%2C%22HG00108%22%2C%22HG00109%22%2C%22HG00110%22%2C%22HG00111%22%2C%22HG00112%22%2C%22HG00113%22%2C%22HG00114%22%5D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "methylation/arabidopsis_wgbs_contexts": "?config=test_data%2Farabidopsis_methylation%2Fconfig_emseq_bisulfite.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22arabidopsis_wgbs_cg%22%2C%22name%22%3A%22Per-read%20WGBS%20%E2%80%94%20CpG%20context%22%2C%22assemblyNames%22%3A%5B%22GCF_000001735.4%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22CramAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fbisulfite%2Farabidopsis_wgbs_bisulfite.cram%22%7D%7D%2C%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22arabidopsis_wgbs_chg%22%2C%22name%22%3A%22Per-read%20WGBS%20%E2%80%94%20CHG%20context%22%2C%22assemblyNames%22%3A%5B%22GCF_000001735.4%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22CramAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fbisulfite%2Farabidopsis_wgbs_bisulfite.cram%22%7D%7D%2C%7B%22type%22%3A%22AlignmentsTrack%22%2C%22trackId%22%3A%22arabidopsis_wgbs_chh%22%2C%22name%22%3A%22Per-read%20WGBS%20%E2%80%94%20CHH%20context%22%2C%22assemblyNames%22%3A%5B%22GCF_000001735.4%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22CramAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fbisulfite%2Farabidopsis_wgbs_bisulfite.cram%22%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_000001735.4%22%2C%22loc%22%3A%22chr1%3A4%2C398%2C000-4%2C412%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22GCF_000001735.4-ncbiRefSeq%22%7D%2C%7B%22trackId%22%3A%22GCF_000001735.4-repeatMasker%22%2C%22filter%22%3A%5B%22jexl%3Afeature.end-feature.start%3E1000%22%5D%2C%22height%22%3A50%7D%2C%7B%22trackId%22%3A%22arabidopsis_methyldackel%22%2C%22mark%22%3A%22bar%22%2C%22encoding%22%3A%7B%22y%22%3A%7B%22scale%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A100%7D%2C%22axis%22%3A%7B%22title%22%3A%22%25%20methylated%22%7D%7D%7D%2C%22height%22%3A170%7D%2C%7B%22trackId%22%3A%22arabidopsis_wgbs_cg%22%2C%22coverage%22%3A%7B%22show%22%3Afalse%7D%2C%22pileup%22%3A%7B%22mark%22%3A%7B%22height%22%3A3%7D%2C%22bases%22%3A%7B%22show%22%3Atrue%2C%22encoding%22%3A%7B%22color%22%3A%22bisulfite%22%7D%2C%22filter%22%3A%5B%7B%22field%22%3A%22context%22%2C%22oneOf%22%3A%5B%22CG%22%5D%7D%5D%7D%7D%2C%22heightMode%22%3A%22fixed%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22arabidopsis_wgbs_chg%22%2C%22coverage%22%3A%7B%22show%22%3Afalse%7D%2C%22pileup%22%3A%7B%22mark%22%3A%7B%22height%22%3A3%7D%2C%22bases%22%3A%7B%22show%22%3Atrue%2C%22encoding%22%3A%7B%22color%22%3A%22bisulfite%22%7D%2C%22filter%22%3A%5B%7B%22field%22%3A%22context%22%2C%22oneOf%22%3A%5B%22CHG%22%5D%7D%5D%7D%7D%2C%22heightMode%22%3A%22fixed%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22arabidopsis_wgbs_chh%22%2C%22coverage%22%3A%7B%22show%22%3Afalse%7D%2C%22pileup%22%3A%7B%22mark%22%3A%7B%22height%22%3A3%7D%2C%22bases%22%3A%7B%22show%22%3Atrue%2C%22encoding%22%3A%7B%22color%22%3A%22bisulfite%22%7D%2C%22filter%22%3A%5B%7B%22field%22%3A%22context%22%2C%22oneOf%22%3A%5B%22CHH%22%5D%7D%5D%7D%7D%2C%22heightMode%22%3A%22fixed%22%2C%22height%22%3A90%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "methylation/chromatin_accessibility_6ma": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22gencode_promoter_hg38_ucsc%22%2C%22name%22%3A%22GENCODE%20v48%20promoter%20windows%20(UCSC)%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22Gff3TabixAdapter%22%2C%22gffGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fgencode.v48.promoter_windows.sorted.gff3.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fgencode.v48.promoter_windows.sorted.gff3.gz.csi%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22indexType%22%3A%22CSI%22%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr12%3A6%2C528%2C000-6%2C543%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22geneGlyphMode%22%3A%22representative%22%7D%2C%22gencode_promoter_hg38_ucsc%22%2C%7B%22trackId%22%3A%22PAY22766-nanopore%22%2C%22forceLoad%22%3Atrue%2C%22heightMode%22%3A%22fixed%22%2C%22pileup%22%3A%7B%22mark%22%3A%7B%22height%22%3A3%7D%2C%22bases%22%3A%7B%22show%22%3Atrue%2C%22encoding%22%3A%7B%22color%22%3A%22modifications%22%7D%2C%22filter%22%3A%5B%7B%22field%22%3A%22code%22%2C%22oneOf%22%3A%5B%22a%22%5D%7D%5D%7D%7D%2C%22legend%22%3A%7B%22show%22%3Atrue%7D%7D%2C%7B%22trackId%22%3A%22PBA15131-nanopore%22%2C%22forceLoad%22%3Atrue%2C%22heightMode%22%3A%22fixed%22%2C%22pileup%22%3A%7B%22mark%22%3A%7B%22height%22%3A3%7D%2C%22bases%22%3A%7B%22show%22%3Atrue%2C%22encoding%22%3A%7B%22color%22%3A%22modifications%22%7D%2C%22filter%22%3A%5B%7B%22field%22%3A%22code%22%2C%22oneOf%22%3A%5B%22a%22%5D%7D%5D%7D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "methylation/hg002_snrpn_ungrouped": "?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr15%3A24%2C948%2C000-24%2C962%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22cpgisland_ucsc_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22geneGlyphMode%22%3A%22representative%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22HG002_snrpn_5mC_reads%22%2C%22height%22%3A320%2C%22forceLoad%22%3Atrue%2C%22pileup%22%3A%7B%22bases%22%3A%7B%22show%22%3Atrue%2C%22encoding%22%3A%7B%22color%22%3A%22modifications%22%7D%2C%22unmodified%22%3A%7B%22show%22%3Atrue%7D%7D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -633,6 +642,7 @@ export const figureSlowSpecs: string[] = [
   "multiway_synteny/ecoli_alignment_menu",
   "multiway_synteny/ecoli_identity_rows",
   "multiway_synteny/ecoli_island_lanes",
+  "multiway_synteny/ecoli_launch_dialog",
   "multiway_synteny/ecoli_launch_result",
   "multiway_synteny/ecoli_launch_selection",
   "multiway_synteny/ecoli_one_vs_all",
@@ -791,6 +801,7 @@ export const figureSlowSpecs: string[] = [
   "tcga/mutations_cdh1_histology",
   "tcga/mutations_pik3ca_grouped",
   "variants/consequence_impact_1000g",
+  "variants/filter_sliders",
   "variants/potato_missingness"
 ]
 
@@ -1016,6 +1027,11 @@ export const figureFrames: Record<
   "multiway_synteny/ecoli_launch_result": {
     "width": 1500,
     "height": 620,
+    "timeout": 120000
+  },
+  "multiway_synteny/ecoli_launch_dialog": {
+    "width": 1500,
+    "height": 680,
     "timeout": 120000
   },
   "multiway_synteny/ecoli_one_vs_all_whole_genome": {
@@ -1908,6 +1924,39 @@ export const figureFrames: Record<
   "multirow/display_types_rows": {
     "width": 1000,
     "height": 470
+  },
+  "edit_plot/dialog": {
+    "width": 1500,
+    "height": 850
+  },
+  "consensus/iupac_panel": {
+    "width": 1500,
+    "height": 800
+  },
+  "sequence_search/crispr_guides": {
+    "width": 1500,
+    "height": 660
+  },
+  "spreadsheet/feature_menu": {
+    "width": 1500,
+    "height": 500
+  },
+  "variants/filter_sliders": {
+    "width": 1500,
+    "height": 760,
+    "timeout": 120000
+  },
+  "bigwig/y_axis_panel": {
+    "width": 1500,
+    "height": 600
+  },
+  "multirow/rows_field_picker": {
+    "width": 1500,
+    "height": 530
+  },
+  "clustering/kept_rows": {
+    "width": 1500,
+    "height": 600
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "width": 1500,
@@ -3139,6 +3188,7 @@ export const figureCallouts: Record<string, object[]> = {
   "chromhmm": [{"type":"box","anchor":{"trackId":"roadmap_chromhmm_multirow_hg19","loc":"chr9:36,833,266-37,034,265"},"pad":2},{"type":"text","text":"PAX5 transcribed, with genic enhancers, in B cells only","leader":true,"anchor":{"trackId":"roadmap_chromhmm_multirow_hg19","row":"Primary B cells from peripheral blood","loc":"chr9:36,900,000","fracY":0},"dx":-260,"dy":-60}],
   "chromhmm_hoxa_fibroblasts": [{"type":"box","anchor":{"trackId":"roadmap_chromhmm_multirow_hg19","loc":"chr7:27,132,613-27,196,294"},"pad":2},{"type":"box","anchor":{"trackId":"roadmap_chromhmm_multirow_hg19","loc":"chr7:27,202,056-27,246,878"},"pad":2,"color":"#1565c0"}],
   "multirow/display_types_pick": [{"type":"box","anchor":{"selector":"[data-testid=\"cascading-submenu-display_types\"]"}},{"type":"box","anchor":{"selector":"[data-testid=\"cascading-menuitem-multi-row_display\"], [data-testid=\"cascading-submenu-multi-row_display\"]"}}],
+  "clustering/kept_rows": [{"type":"text","text":"Kept rows, and Show all","fontSize":18,"leader":true,"anchor":{"selector":"[data-testid=\"row_focus_hint\"]","alignX":"right"},"dx":90}],
   "methylation/arabidopsis_wgbs_contexts": [{"type":"text","text":"expressed gene body: CpG only","fontSize":20,"anchor":{"trackId":"GCF_000001735.4-ncbiRefSeq","loc":"chr1:4,398,322-4,405,669","fracY":1,"dy":-16}},{"type":"text","text":"LTR/Copia transposon, silenced: all three contexts","fontSize":20,"maxWidth":300,"anchor":{"trackId":"GCF_000001735.4-ncbiRefSeq","loc":"chr1:4,405,996-4,411,119","fracY":1,"dy":-16}},{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_wgbs_cg\"]"},"dx":-690,"fontSize":22,"text":"CpG"},{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_wgbs_chg\"]"},"dx":-690,"fontSize":22,"text":"CHG"},{"type":"text","anchor":{"selector":"[data-testid^=\"trackRenderingContainer-\"][data-testid$=\"-arabidopsis_wgbs_chh\"]"},"dx":-690,"fontSize":22,"text":"CHH"}],
   "methylation/chromatin_accessibility_6ma": [{"type":"text","text":"Hia5-treated","fontSize":22,"anchor":{"trackId":"PAY22766-nanopore","loc":"chr12:6,530,200","fracY":0.28}},{"type":"text","text":"No-enzyme control","fontSize":22,"anchor":{"trackId":"PBA15131-nanopore","loc":"chr12:6,530,200","fracY":0.28}}],
   "methylation/hg002_snrpn_ungrouped": [{"type":"box","anchor":{"selector":"[data-testid=\"cascading-submenu-group_by\"]"}},{"type":"box","anchor":{"selector":"[data-testid=\"cascading-menuitem-tag...\"], [data-testid=\"cascading-submenu-tag...\"]"}}],
@@ -3258,6 +3308,7 @@ export const figureClicks: Record<
   "multiway_synteny/primate_tp53_lanes": {"change":"close the legend's gene cluster section"},
   "multiway_synteny/ecoli_launch_selection": {},
   "multiway_synteny/ecoli_launch_result": {},
+  "multiway_synteny/ecoli_launch_dialog": {},
   "multiway_synteny/ecoli_import_form": {"change":"open a Linear synteny view's import form from the Add menu"},
   "genomes_synteny/ribbons_default": {},
   "genomes_synteny/launch_sequence": {"stages":4},
@@ -3328,6 +3379,13 @@ export const figureClicks: Record<
   "default_session_form": {"stages":2},
   "chromhmm": {"change":"expand the legend to its full list"},
   "multirow/display_types_pick": {},
+  "edit_plot/dialog": {},
+  "consensus/iupac_panel": {},
+  "sequence_search/crispr_guides": {},
+  "spreadsheet/feature_menu": {},
+  "variants/filter_sliders": {},
+  "bigwig/y_axis_panel": {},
+  "multirow/rows_field_picker": {},
   "methylation/hg002_snrpn_ungrouped": {},
   "sv_inspector_importform_filtered": {},
   "inverted_duplication": {},
