@@ -41,14 +41,12 @@ works this layout with per-haplotype rows.
 
 ## Filtering by allele frequency and missingness
 
-Two sliders under **Filter by** in the track menu thin a dense callset:
+Two sliders under **Filter by** in the track menu thin a dense callset. **MAF**
+hides variants whose minor allele frequency is below it, and **Max missingness**
+hides variants whose fraction of uncalled alleles is above it, which matters
+most in equal-width columns.
 
-- **Minor allele frequency** hides variants whose minor allele frequency is
-  below the threshold, so singletons and near-monomorphic sites drop out.
-- **Missingness** hides variants whose fraction of uncalled alleles is above the
-  threshold. It starts at 1, keeping every variant; lowering it drops the
-  columns that are mostly missing data, which matters most in equal-width
-  columns.
+<Figure src="/img/variants/filter_sliders.png" caption="The 1000 Genomes track's Filter by submenu, with MAF raised and Max missingness off." />
 
 <Figure src="/img/variants/potato_missingness.png" caption="One tetraploid VCF twice as a genotype matrix. Top: the default missingness ceiling. Bottom: a 0.1 ceiling." />
 

@@ -10,6 +10,9 @@ import { SKBR3_SNIFFLES_VCF } from './sv.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
+const KG_TRACK =
+  '1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf'
+
 // A protospacer on the forward strand with its NGG PAM, in the window below.
 const CRISPR_GUIDE = 'CGCTCGATCAAACTCATCAT'
 
@@ -135,6 +138,40 @@ export const userGuideSpecs: ScreenshotSpec[] = [
         selector: '.MuiDataGrid-row[data-rowindex="0"] button',
       },
       { type: 'waitForText', text: 'Open in breakpoint split view' },
+    ],
+  },
+
+  {
+    mode: 'url',
+    name: 'variants/filter_sliders',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: '1:155,020,000-155,030,000',
+      tracks: [
+        {
+          trackId: KG_TRACK,
+          variantLayout: 'columns',
+          height: 500,
+          filter: [{ field: 'minorAlleleFrequency', gte: 0.05 }],
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 120000,
+    viewportHeight: 760,
+    tooltip: 'hide',
+    actions: [
+      trackMenuIcon(KG_TRACK),
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid^="cascading-submenu-filter_by"]',
+      },
+      {
+        type: 'hover',
+        selector: '[data-testid^="cascading-submenu-filter_by"]',
+      },
+      { type: 'waitForText', text: 'Max missingness' },
+      { type: 'delay', ms: 500 },
     ],
   },
 ]
