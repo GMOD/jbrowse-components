@@ -28,70 +28,62 @@ dotplot-specific:
 
 ### Cutting clutter on a busy plot
 
-Two toolbar controls do most of the work on a whole-genome plot, and the figure
-below uses the second:
-
-- The palette button's **Color by** menu. **Query** colors each sequence on the
-  horizontal axis differently, and **Strand** colors by strand instead. The
-  numbers an alignment has, identity and mapping quality among them, sit under
-  **Color by value**. Each option has a description of what it colors. A text
-  column there paints one color per label, and a label keeps its color as more
-  labels load. The view's `encoding.color.scale.domain` lists labels that take
-  the palette in order and lead the legend. With more than one alignment file
-  plotted together, **Distinct color per track** gives each track a separate
-  color, and **Track colors** below it pins the color for one track at a time.
-  On a plot whose blocks are all a single pixel wide, reach for **Min length**
-  first.
-- **Min length**, in the settings menu, drops alignments shorter than the slider
-  value. Divergent genomes align in many short fragments, and hiding them is
-  usually what makes the syntenic blocks visible.
-
-The settings menu, the sliders button in the header, holds the rest of what the
-plot looks like: **Opacity** and **Line width** for how each alignment draws,
-**Identity fade** for fading each one by its sequence identity, **CIGAR indels**
-for whether per-base indels are drawn inside one, **Level of detail** for how
-much of a tiered file is loaded, and **Gridlines**, which extends each axis'
-ruler ticks across the plot. At whole-genome zoom neither axis has room for tick
-numbers, so the gridlines row reads **none at this zoom** while it stays ticked.
+On a whole-genome plot, start with **Min length** in the settings menu (the
+sliders button in the header). It drops alignments shorter than the slider
+value, and divergent genomes align in many short fragments, so hiding them
+usually makes the syntenic blocks visible. A plot that still reads as specks is
+too divergent for whole-genome scale; zoom to a smaller window.
 
 <Figure caption="Grape (y) against peach (x) with a minimum alignment length applied." src="/img/dotplot.png" />
 
-When a plot still reads as specks after Min length, the pair is too divergent to
-show synteny at whole-genome scale; zoom to a smaller window.
+The palette button's **Color by** menu sets what the color means; each option
+has a description:
+
+- **Query** colors each sequence on the horizontal axis differently, and
+  **Strand** colors by strand
+- **Color by value** holds the numbers an alignment has, identity and mapping
+  quality among them. A text column there paints one color per label (worked in
+  [](/docs/tutorials/odp_linkage_groups_synteny)), and the view's
+  `encoding.color.scale.domain` lists labels that take the palette in order and
+  lead the legend
+- **Distinct color per track** gives each of several plotted alignment files a
+  separate color, and **Track colors** below it pins one track's color
+
+The rest of the settings menu:
+
+- **Opacity** and **Line width** set how each alignment draws
+- **Identity fade** fades each alignment by its sequence identity
+- **CIGAR indels** draws per-base indels inside an alignment
+- **Level of detail** sets how much of a tiered file is loaded
+- **Gridlines** extends each axis' ruler ticks across the plot. At whole-genome
+  zoom neither axis has room for ticks, so the row reads **none at this zoom**
+  while it stays ticked
 
 ## A genome against itself
 
 Aligning a sequence to itself puts its internal repeat structure on the plot.
 Tandem arrays draw as filled wedges sitting on the diagonal, and inverted
-repeats draw as crossings off it. Everything else on the plot is real too: the
-male-specific Y is dense in dispersed repeats, and at any minimum length that
-keeps the palindromes those blocks are drawn as well.
+repeats draw as crossings off it. The male-specific Y is also dense in dispersed
+repeats, drawn at any minimum length that keeps the palindromes.
 
 <Figure caption="T2T-CHM13 chrY against itself at a 25 kb minimum length, with the TSPY array and the P1 to P5 palindromes boxed." src="/img/dotplot_self_chry.png" />
 
-The tandem array and the inverted repeats are both described in the T2T-CHM13 Y
-chromosome paper
-([Rhie et al. 2023](https://www.nature.com/articles/s41586-023-06457-y)), which
-is where the coordinates the boxes use come from.
-
-The plot marks where the palindromes are. Zooming it to the boxed 4.8 Mb
-separates the family into four crossings, and the same track opens one of them
-in a [linear synteny view](/docs/user_guides/linear_synteny_view), both panels
-framing one palindrome and colored by strand: the arms draw as a single
-minus-strand ribbon over the plus-strand match of the sequence to itself.
-
-The gene lanes show the same pattern from the annotation. Each arm has copies of
-the same Y-linked families, RBMY1B and RBMY1A1 on one side against RBMY1D and
-RBMY1E on the other, CDY10P and CDY11P either side of the centre. The unpainted
-gaps inside the arms are where the two copies differ.
+The boxes' coordinates come from the T2T-CHM13 Y chromosome paper
+([Rhie et al. 2023](https://www.nature.com/articles/s41586-023-06457-y)).
+Zooming to the boxed 4.8 Mb separates the palindromes into four crossings, and
+the same track opens one of them in a
+[linear synteny view](/docs/user_guides/linear_synteny_view) colored by strand:
+the arms draw as a single minus-strand ribbon over the plus-strand match of the
+sequence to itself. In the gene lanes each arm has copies of the same Y-linked
+families (RBMY1B and RBMY1A1 against RBMY1D and RBMY1E, CDY10P and CDY11P either
+side of the centre), and the unpainted gaps inside the arms are where the two
+copies differ.
 
 <Figure caption="Top: the boxed span replotted at a 100 kb minimum length. Bottom: one crossing in a linear synteny view, colored by strand." src="/img/synteny_self_chry_palindromes.png" />
 
-The choice of view depends on how many alignments are in frame. Every ribbon
-spans the full height of the strip, so ribbons stack rather than separate. The
-same track over the whole 4.8 Mb box above draws as a solid block of overlapping
-ribbons, whereas a dotplot spreads the alignments across two axes. Use the plot
-to find the structures and a synteny view on one of them.
+Use the plot to find the structures and a synteny view on one of them: ribbons
+span the full height of the strip and stack, so the whole 4.8 Mb box draws as a
+solid block in a synteny view.
 
 Align the sequence to itself with one extra minimap2 flag:
 
