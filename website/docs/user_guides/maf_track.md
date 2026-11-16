@@ -175,9 +175,9 @@ Drag a selection across the track and the menu that opens on release offers
 **View subsequences → All rows**, or **Selected rows** to take only the rows the
 drag covered. Either opens the aligned columns for that window, one sequence per
 species, with **Download as FASTA** and **Copy to clipboard** in its menu.
-Without a drag, the track menu's **Launch → View subsequences (visible region)**
-takes the whole window and every row. A drag crossing a region boundary clips to
-the region it began in.
+Without a drag, the track menu's **Advanced → Launch → View subsequences
+(visible region)** takes the whole window and every row. A drag crossing a
+region boundary clips to the region it began in.
 
 The **View subsequences** menu also offers **Show only differences**, which
 blanks every base matching the reference, plus **Include insertions**, **Single
@@ -188,7 +188,7 @@ line format**, **Color background**, and **Show sample names**.
 The menu a drag raises has an **Open aligned genome at the matching region**
 submenu, one entry per species the selection covers, naming the locus in that
 species' coordinates; clicking one opens a view there. The track menu's
-**Launch** submenu lists the same entries over the visible window.
+**Advanced → Launch** submenu lists the same entries over the visible window.
 
 A species is listed when it has aligned bases in the selection and its sample
 names a genome the session can open: a sample configured with an
@@ -199,8 +199,8 @@ are. A configured assembly the session has not loaded is fetched at click time.
 
 ## Comparing a species against the reference
 
-A drag-selected span — or the visible window, from the track menu's **Launch**
-submenu — opens as a two-row
+A drag-selected span — or the visible window, from the track menu's **Advanced →
+Launch** submenu — opens as a two-row
 [linear synteny view](/docs/user_guides/linear_synteny_view): **Linear synteny
 view, \<ref\> vs** lists the same species, and picking one opens the reference
 over that species' genome with the ribbons drawn from the MAF's columns, so no
