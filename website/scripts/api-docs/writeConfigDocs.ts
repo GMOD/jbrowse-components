@@ -21,6 +21,7 @@ import {
 import { assertUniquePages, headerGaps } from './util.ts'
 
 import type { Config, ConfigWithHeader } from './configTypes.ts'
+import type { ConstantIndex } from './enumConstants.ts'
 import type { DisplayLinkContext } from './generateConfigDocs.ts'
 
 // Group every documented adapter by the track type it declares via #trackType,
@@ -51,9 +52,10 @@ export function writeConfigDocs(
   displayTypesByTrack: Map<string, string[]>,
   displayToTrackType: Map<string, string>,
   modelNames: Set<string>,
+  constants: ConstantIndex,
 ) {
   const dir = 'website/docs/config'
-  const { withHeader, index } = linkedConfigs(byFile)
+  const { withHeader, index } = linkedConfigs(byFile, constants)
   const { byName } = index
   // All before the write loop, so a run that would emit a blank cell, drop a
   // slot, or write one page for two types fails without having rewritten

@@ -8,7 +8,11 @@ import {
   isTypesCall,
   schemaCallName,
 } from './astShapes.ts'
-import { slotSpreadPairs, slotSpreadPart } from './enumConstants.ts'
+import {
+  buildEnumConstantIndex,
+  slotSpreadPairs,
+  slotSpreadPart,
+} from './enumConstants.ts'
 import {
   MEMBER_TAGS,
   TAG_TYPES,
@@ -27,6 +31,7 @@ import {
 } from './typeSignatures.ts'
 import { removeComments, repoRelative } from './util.ts'
 
+import type { ConstantIndex } from './enumConstants.ts'
 import type { Example, MemberTag, TagType } from './jsDocTags.ts'
 import type { PrintedType } from './typeSignatures.ts'
 
@@ -173,10 +178,12 @@ const LIFECYCLE_HOOKS = new Set([
 // Building the program is the dominant cost of a run (~10s), so it is built once
 // here and every pass that needs an AST reads `sources` rather than reparsing.
 // The enum-constant index used to `createSourceFile` all ~4000 files itself,
-// paying a second full parse (~4s) for trees the program already had.
+// paying a second full parse (~4s) for trees the program already had; it is
+// built here from `sources`, before any pass that resolves a name through it.
 interface DocProgram {
   program: ts.Program
   sources: ts.SourceFile[]
+  constants: ConstantIndex
 }
 
 export function createDocProgram(
@@ -189,18 +196,14 @@ export function createDocProgram(
   // Both are resolved before comparing — matching raw strings silently dropped
   // the 2143 root files TypeScript never had to resolve through an import.
   const roots = new Set(fileNames.map(f => path.resolve(f)))
-  return {
-    program,
-    sources: program
-      .getSourceFiles()
-      .filter(
-        sf => !sf.isDeclarationFile && roots.has(path.resolve(sf.fileName)),
-      ),
-  }
+  const sources = program
+    .getSourceFiles()
+    .filter(sf => !sf.isDeclarationFile && roots.has(path.resolve(sf.fileName)))
+  return { program, sources, constants: buildEnumConstantIndex(sources) }
 }
 
 export function extractWithComment(
-  { program, sources }: DocProgram,
+  { program, sources, constants }: DocProgram,
   cb: (obj: ExtractedNode) => void,
   onDisplayLink: (link: DisplayTrackLink) => void,
 ) {
@@ -292,7 +295,7 @@ export function extractWithComment(
       // Each declaration under it reads this JSDoc (getOwnJSDocText) and is
       // visited next, with a name to carry it.
     } else if (ts.isSpreadAssignment(node) && tags.includes('slot')) {
-      emitSpreadSlots(node, comment, cb)
+      emitSpreadSlots(constants, node, comment, cb)
     } else if (tags.length && !delegatedAway) {
       const described = describeSymbol(
         checker,
@@ -349,6 +352,7 @@ function slotTableEntry(node: ts.Node) {
 // Each section's source is the slot the spread produces, read the way the
 // config generator reads an undocumented spread (`slotSpreadPart`).
 function emitSpreadSlots(
+  constants: ConstantIndex,
   node: ts.SpreadAssignment,
   comment: string,
   cb: (obj: ExtractedNode) => void,
@@ -358,7 +362,7 @@ function emitSpreadSlots(
   const part = slotSpreadPart(node.expression, sf)
   const prefix = subSchemaPrefix(node)
   const produced = new Map(
-    ((part && slotSpreadPairs(part)) ?? []).map(([name, value]) => [
+    ((part && slotSpreadPairs(constants, part)) ?? []).map(([name, value]) => [
       `${prefix}${name}`,
       `${name}: ${value}`,
     ]),

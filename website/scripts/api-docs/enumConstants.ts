@@ -32,33 +32,7 @@ import * as ts from 'typescript'
 
 import { isSchemaCall, schemaCallName } from './astShapes.ts'
 
-// name -> members, or null once a conflicting definition is seen
-const index = new Map<string, string[] | null>()
-
-// The same idea for a lone string constant used as a slot's `defaultValue`, e.g.
-//
-//   defaultValue: DEFAULT_SCORE_COLUMN
-//
-// A slot default is written that way for the same reason as the enum spreads
-// above — the runtime default and the schema default are one fact — and the
-// reader still wants the value, not the identifier. Same conflict rule: a name
-// defined twice with different values is dropped, so it degrades to printing the
-// identifier rather than documenting the wrong default.
-const scalarIndex = new Map<string, string | null>()
-
-// And for a *numeric* one, which is the same fact about the reader and a
-// different fact about the rendering — a string default prints quoted and a
-// number must not. Kept as its own index rather than a flag on the one above so
-// neither call site can print the other's form.
-//
-// Slot defaults naming a shared number are common (`GROW_MAX_HEIGHT` is the
-// grow ceiling both height-mode displays cap at, `MAX_LABEL_FEATURE_DENSITY`
-// the zoom threshold the worker also reads), and every one of them used to
-// print its identifier — 18 rows across the config pages telling a reader the
-// name of the number instead of the number.
-const numericIndex = new Map<string, string | null>()
-
-// And for any literal a default names, or a member of a constant object:
+// Any literal a default names, or a member of a constant object:
 //
 //   defaultValue: GENE_GLYPH_DEFAULTS.subfeatureLabels
 //   defaultValue: DEFAULT_BIN_AS
@@ -74,22 +48,6 @@ interface ConstantSource {
   sf: ts.SourceFile
   text: string
 }
-const constantSources = new Map<string, ConstantSource | null>()
-
-// And the same idea one level up: a constant holding a whole *group* of slots,
-// spread into a schema's slot table:
-//
-//   const wiggleConfigSchemaFields = { minScore: { type: 'number', ... }, ... }
-//   ConfigurationSchema('LinearWiggleDisplay', { ..., ...wiggleConfigSchemaFields })
-//
-// Those slots are real slots of every schema that spreads them, but they carry no
-// `#slot` JSDoc of their own (they aren't in a `#config` file), so without this
-// they were absent from the config pages entirely — 20 wiggle slots, autoscale
-// and minScore/maxScore among them, documented nowhere. Same conflict rule as
-// above: a name defined twice is dropped rather than guessed at.
-//
-// name -> ordered `slotName: { ... }` source pairs, or null on a conflict
-const slotFieldsIndex = new Map<string, [string, string][] | null>()
 
 // The same table, one indirection further out: a slot table written as a
 // *function* of its per-display prose.
@@ -109,7 +67,7 @@ const slotFieldsIndex = new Map<string, [string, string][] | null>()
 // A factory's recorded slot sources still name its parameters
 // (`description: tree`), so the pairs are only meaningful once a call site's
 // arguments are substituted in — hence the separate index and
-// `slotFieldFactoryPairs` rather than an entry in `slotFieldsIndex`.
+// `slotFieldFactoryPairs` rather than an entry in `slotFields`.
 
 // One property of a factory's destructured parameter, or one positional
 // parameter, keyed in `params` by the name the slot bodies reference (the
@@ -135,15 +93,57 @@ interface SlotFieldFactory {
   schema: boolean
 }
 
-// name -> the factory, or null on a conflict
-const slotFieldFactoryIndex = new Map<string, SlotFieldFactory | null>()
-
-// And the schema a factory returns, by the factory's name, and the factory a
-// schema type names (`type BaseAssemblyConfigSchema = ReturnType<typeof
-// assemblyConfigSchema>`), so a slot holding a parameter of that type, or the
-// factory's call, names the schema and links its page.
-const factorySchemaIndex = new Map<string, string | null>()
-const typeFactoryIndex = new Map<string, string | null>()
+// Every name this file resolves, built once by `buildEnumConstantIndex` and
+// passed to the readers below
+export interface ConstantIndex {
+  // name -> members, or null once a conflicting definition is seen
+  strings: Map<string, string[] | null>
+  // A lone string constant used as a slot's `defaultValue`, e.g.
+  //
+  //   defaultValue: DEFAULT_SCORE_COLUMN
+  //
+  // A slot default is written that way for the same reason as the enum spreads
+  // above — the runtime default and the schema default are one fact — and the
+  // reader still wants the value, not the identifier. Same conflict rule: a name
+  // defined twice with different values is dropped, so it degrades to printing the
+  // identifier rather than documenting the wrong default.
+  scalars: Map<string, string | null>
+  // A lone numeric constant, which is the same fact about the reader and a
+  // different fact about the rendering — a string default prints quoted and a
+  // number must not. Kept as its own index rather than a flag on the one above so
+  // neither call site can print the other's form.
+  //
+  // Slot defaults naming a shared number are common (`GROW_MAX_HEIGHT` is the
+  // grow ceiling both height-mode displays cap at, `MAX_LABEL_FEATURE_DENSITY`
+  // the zoom threshold the worker also reads), and every one of them used to
+  // print its identifier — 18 rows across the config pages telling a reader the
+  // name of the number instead of the number.
+  numerics: Map<string, string | null>
+  // each constant's initializer, read on lookup (see ConstantSource)
+  sources: Map<string, ConstantSource | null>
+  // A constant holding a whole *group* of slots,
+  // spread into a schema's slot table:
+  //
+  //   const wiggleConfigSchemaFields = { minScore: { type: 'number', ... }, ... }
+  //   ConfigurationSchema('LinearWiggleDisplay', { ..., ...wiggleConfigSchemaFields })
+  //
+  // Those slots are real slots of every schema that spreads them, but they carry no
+  // `#slot` JSDoc of their own (they aren't in a `#config` file), so without this
+  // they were absent from the config pages entirely — 20 wiggle slots, autoscale
+  // and minScore/maxScore among them, documented nowhere. Same conflict rule as
+  // above: a name defined twice is dropped rather than guessed at.
+  //
+  // name -> ordered `slotName: { ... }` source pairs, or null on a conflict
+  slotFields: Map<string, [string, string][] | null>
+  // name -> the slot-table factory, or null on a conflict
+  slotFieldFactories: Map<string, SlotFieldFactory | null>
+  // The schema a factory returns, by the factory's name, and the factory a
+  // schema type names (`type BaseAssemblyConfigSchema = ReturnType<typeof
+  // assemblyConfigSchema>`), so a slot holding a parameter of that type, or the
+  // factory's call, names the schema and links its page.
+  factorySchemas: Map<string, string | null>
+  typeFactories: Map<string, string | null>
+}
 
 // One entry of a slot table's source: a slot of its own, another slot table it
 // spreads in by name, or a slot-table factory it spreads in as a call.
@@ -205,17 +205,18 @@ export function slotSpreadPart(
  * it spreads a name or calls a factory that is unknown or ambiguous.
  */
 export function slotSpreadPairs(
+  constants: ConstantIndex,
   part: SlotPart,
 ): [string, string][] | undefined {
   if ('pair' in part) {
     const [name, source] = part.pair
-    const inlined = inlineMemberSpreads(source)
+    const inlined = inlineMemberSpreads(constants, source)
     return inlined === undefined ? undefined : [[name, inlined]]
   }
   if ('spread' in part) {
-    return slotFieldConstantPairs(part.spread)
+    return slotFieldConstantPairs(constants, part.spread)
   }
-  return slotFieldFactoryPairs(part.call, part.args)
+  return slotFieldFactoryPairs(constants, part.call, part.args)
 }
 
 // Slot-shaped object literal: every property is either `name: { ... }` with a
@@ -271,7 +272,7 @@ function slotFieldParts(
 // description }`, as the one object it is: the member's properties, then the
 // slot's own, a repeated name taking the later value. Undefined when a spread
 // names nothing this index can read.
-function inlineMemberSpreads(source: string) {
+function inlineMemberSpreads(constants: ConstantIndex, source: string) {
   const sf = ts.createSourceFile(
     'slot.ts',
     `const __slot = ${source}`,
@@ -290,7 +291,7 @@ function inlineMemberSpreads(source: string) {
   const props = new Map<string, string>()
   for (const p of init.properties) {
     const spread = ts.isSpreadAssignment(p)
-      ? referencedSource(p.expression)
+      ? referencedSource(constants, p.expression)
       : undefined
     const object = spread && unwrapAssertion(spread.node)
     if (ts.isSpreadAssignment(p)) {
@@ -315,10 +316,13 @@ function propertyKey(p: ts.ObjectLiteralElementLike, sf: ts.SourceFile) {
 // order so a spread contributes where it is written. Undefined if any spread is
 // unknown or ambiguous — the same "drop rather than guess" rule as everything
 // else here.
-function resolveSlotParts(parts: SlotPart[]): [string, string][] | undefined {
+function resolveSlotParts(
+  constants: ConstantIndex,
+  parts: SlotPart[],
+): [string, string][] | undefined {
   const out: [string, string][] = []
   for (const part of parts) {
-    const pairs = slotSpreadPairs(part)
+    const pairs = slotSpreadPairs(constants, part)
     if (!pairs) {
       return undefined
     }
@@ -455,28 +459,30 @@ function substituteParams(
 }
 
 function recordConstantSource(
+  sources: ConstantIndex['sources'],
   name: string,
   node: ts.Expression,
   sf: ts.SourceFile,
 ) {
   const text = node.getText(sf)
-  const prior = constantSources.get(name)
+  const prior = sources.get(name)
   if (prior === undefined) {
-    constantSources.set(name, { node, sf, text })
+    sources.set(name, { node, sf, text })
   } else if (prior?.text !== text) {
-    constantSources.set(name, null)
+    sources.set(name, null)
   }
 }
 
 // The initializer a `NAME` or `NAME.member` reference reads, as written.
 function referencedSource(
+  constants: ConstantIndex,
   reference: ts.Expression,
 ): ConstantSource | undefined {
   if (ts.isIdentifier(reference)) {
-    return constantSources.get(reference.text) ?? undefined
+    return constants.sources.get(reference.text) ?? undefined
   }
   if (ts.isElementAccessExpression(reference)) {
-    const owner = referencedSource(reference.expression)
+    const owner = referencedSource(constants, reference.expression)
     const array = owner && unwrapAssertion(owner.node)
     const element =
       array &&
@@ -492,12 +498,14 @@ function referencedSource(
     return undefined
   }
   const classStatic = ts.isIdentifier(reference.expression)
-    ? constantSources.get(`${reference.expression.text}.${reference.name.text}`)
+    ? constants.sources.get(
+        `${reference.expression.text}.${reference.name.text}`,
+      )
     : undefined
   if (classStatic) {
     return classStatic
   }
-  const owner = referencedSource(reference.expression)
+  const owner = referencedSource(constants, reference.expression)
   const object = owner && unwrapAssertion(owner.node)
   const member =
     object && ts.isObjectLiteralExpression(object)
@@ -560,6 +568,7 @@ export function quoteString(text: string) {
 // arrays and objects on one line, a named constant read through. Undefined for
 // anything holding a non-literal, and past a few references deep.
 function literalText(
+  constants: ConstantIndex,
   node: ts.Expression,
   sf: ts.SourceFile,
   depth = 0,
@@ -587,14 +596,17 @@ function literalText(
     ts.isPropertyAccessExpression(value) ||
     ts.isElementAccessExpression(value)
   ) {
-    const source = referencedSource(value)
-    return source && literalText(source.node, source.sf, depth + 1)
+    const source = referencedSource(constants, value)
+    return source && literalText(constants, source.node, source.sf, depth + 1)
   }
   if (ts.isArrayLiteralExpression(value)) {
     const items = value.elements.map(e =>
       ts.isSpreadElement(e)
-        ? literalText(e.expression, sf, depth + 1)?.replace(/^\[(.*)\]$/, '$1')
-        : literalText(e, sf, depth),
+        ? literalText(constants, e.expression, sf, depth + 1)?.replace(
+            /^\[(.*)\]$/,
+            '$1',
+          )
+        : literalText(constants, e, sf, depth),
     )
     return items.every(i => i !== undefined)
       ? `[${items.filter(Boolean).join(', ')}]`
@@ -603,7 +615,7 @@ function literalText(
   if (ts.isObjectLiteralExpression(value)) {
     const entries = value.properties.map(prop => {
       const member = ts.isPropertyAssignment(prop)
-        ? literalText(prop.initializer, sf, depth)
+        ? literalText(constants, prop.initializer, sf, depth)
         : undefined
       return member === undefined
         ? undefined
@@ -773,7 +785,19 @@ function tableProjections(value: ts.Expression): TableProjections {
  * the shared program's trees (see createDocProgram) rather than paths: reparsing
  * the repo here cost a second full parse of everything the program already had.
  */
-export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
+export function buildEnumConstantIndex(
+  sourceFiles: ts.SourceFile[],
+): ConstantIndex {
+  const constants: ConstantIndex = {
+    strings: new Map(),
+    scalars: new Map(),
+    numerics: new Map(),
+    sources: new Map(),
+    slotFields: new Map(),
+    slotFieldFactories: new Map(),
+    factorySchemas: new Map(),
+    typeFactories: new Map(),
+  }
   const tables = new Map<string, TableProjections | null>()
   const derived = new Map<string, Projection | null>()
   const slotParts = new Map<string, SlotPart[] | null>()
@@ -797,10 +821,10 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
         const factory = slotFieldFactory(stmt, sf)
         const schema = returnedSchemaName(stmt)
         if (factory) {
-          recordUnique(slotFieldFactoryIndex, stmt.name.text, factory)
+          recordUnique(constants.slotFieldFactories, stmt.name.text, factory)
         }
         if (schema) {
-          recordUnique(factorySchemaIndex, stmt.name.text, schema)
+          recordUnique(constants.factorySchemas, stmt.name.text, schema)
         }
       }
       if (ts.isClassDeclaration(stmt) && stmt.name) {
@@ -812,6 +836,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
             member.modifiers?.some(m => m.kind === ts.SyntaxKind.StaticKeyword)
           ) {
             recordConstantSource(
+              constants.sources,
               `${stmt.name.text}.${member.name.text}`,
               unwrapAssertion(member.initializer),
               sf,
@@ -822,7 +847,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
       if (ts.isTypeAliasDeclaration(stmt)) {
         const factory = returnTypeOf(stmt.type)
         if (factory) {
-          recordUnique(typeFactoryIndex, stmt.name.text, factory)
+          recordUnique(constants.typeFactories, stmt.name.text, factory)
         }
       }
       if (ts.isVariableStatement(stmt)) {
@@ -832,7 +857,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
             const name = decl.name.text
             // `as const` and `satisfies` wrap the literal
             const value = unwrapAssertion(init)
-            recordConstantSource(name, value, sf)
+            recordConstantSource(constants.sources, name, value, sf)
             const direct = stringsOf(value)
             const numeric = numericLiteralText(value, sf)
             const parts = slotFieldParts(value, sf)
@@ -840,11 +865,11 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
               recordUnique(slotParts, name, parts)
             }
             if (ts.isStringLiteralLike(value)) {
-              recordUnique(scalarIndex, name, value.text)
+              recordUnique(constants.scalars, name, value.text)
             } else if (numeric !== undefined) {
-              recordUnique(numericIndex, name, numeric)
+              recordUnique(constants.numerics, name, numeric)
             } else if (direct) {
-              recordUnique(index, name, direct)
+              recordUnique(constants.strings, name, direct)
               recordUnique(tables, name, tableProjections(value))
             } else if (
               tupleHeads(value) ??
@@ -870,13 +895,13 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
   // unresolved after it spreads a name that is unknown or ambiguous, and gets no
   // entry at all rather than a partial one.
   let resolvedCount = -1
-  while (resolvedCount !== slotFieldsIndex.size) {
-    resolvedCount = slotFieldsIndex.size
+  while (resolvedCount !== constants.slotFields.size) {
+    resolvedCount = constants.slotFields.size
     for (const [name, parts] of slotParts) {
-      if (parts && !slotFieldsIndex.has(name)) {
-        const pairs = resolveSlotParts(parts)
+      if (parts && !constants.slotFields.has(name)) {
+        const pairs = resolveSlotParts(constants, parts)
         if (pairs) {
-          recordUnique(slotFieldsIndex, name, pairs)
+          recordUnique(constants.slotFields, name, pairs)
         }
       }
     }
@@ -893,15 +918,16 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
           : (table.heads ?? table.valueProps)
         : undefined
       if (values) {
-        recordUnique(index, name, values)
+        recordUnique(constants.strings, name, values)
       }
     }
   }
+  return constants
 }
 
 /** Members of a named string-array constant, or undefined if unknown/ambiguous. */
-export function enumConstantValues(name: string) {
-  return constantStrings(name, 0)
+export function enumConstantValues(constants: ConstantIndex, name: string) {
+  return constantStrings(constants, name, 0)
 }
 
 function listOfOne(value: string | null | undefined) {
@@ -910,43 +936,50 @@ function listOfOne(value: string | null | undefined) {
 
 // A list built from other constants, `[...FIELD_COLOR_SCALES, IDENTITY_SCALE]`,
 // is read from its initializer once every file has been seen.
-function constantStrings(name: string, depth: number): string[] | undefined {
-  const source = constantSources.get(name)
+function constantStrings(
+  constants: ConstantIndex,
+  name: string,
+  depth: number,
+): string[] | undefined {
+  const source = constants.sources.get(name)
   const value = source && unwrapAssertion(source.node)
   const items =
     depth < 5 && value && ts.isArrayLiteralExpression(value)
       ? value.elements.map(e =>
           ts.isSpreadElement(e) && ts.isIdentifier(e.expression)
-            ? constantStrings(e.expression.text, depth + 1)
+            ? constantStrings(constants, e.expression.text, depth + 1)
             : ts.isStringLiteralLike(e)
               ? [e.text]
               : ts.isIdentifier(e)
-                ? listOfOne(scalarIndex.get(e.text))
+                ? listOfOne(constants.scalars.get(e.text))
                 : undefined,
         )
       : undefined
   return (
-    index.get(name) ??
+    constants.strings.get(name) ??
     (items?.every(i => i !== undefined) ? items.flat() : undefined)
   )
 }
 
 /** Value of a named string constant, or undefined if unknown/ambiguous. */
-export function scalarConstantValue(name: string) {
-  return scalarIndex.get(name) ?? undefined
+export function scalarConstantValue(constants: ConstantIndex, name: string) {
+  return constants.scalars.get(name) ?? undefined
 }
 
 /**
  * Source of a named numeric constant, or undefined if unknown/ambiguous.
  * Rendered unquoted, unlike {@link scalarConstantValue}.
  */
-export function numericConstantValue(name: string) {
-  return numericIndex.get(name) ?? undefined
+export function numericConstantValue(constants: ConstantIndex, name: string) {
+  return constants.numerics.get(name) ?? undefined
 }
 // `NAME` or `NAME.member`'s literal, read through any constants it names.
-export function literalConstantValue(expression: ts.Expression) {
+export function literalConstantValue(
+  constants: ConstantIndex,
+  expression: ts.Expression,
+) {
   return namesConstant(expression)
-    ? literalText(expression, expression.getSourceFile())
+    ? literalText(constants, expression, expression.getSourceFile())
     : undefined
 }
 
@@ -967,8 +1000,11 @@ function namesConstant(expression: ts.Expression) {
  * written as a shared slot constant (`domainMid: colorRampSlots.domainMid`)
  * reads as the slot object it is.
  */
-export function referencedObjectLiteral(reference: ts.Expression) {
-  const source = referencedSource(reference)
+export function referencedObjectLiteral(
+  constants: ConstantIndex,
+  reference: ts.Expression,
+) {
+  const source = referencedSource(constants, reference)
   const object = source && unwrapAssertion(source.node)
   return object && ts.isObjectLiteralExpression(object) ? object : undefined
 }
@@ -977,8 +1013,8 @@ export function referencedObjectLiteral(reference: ts.Expression) {
  * `slotName: { ... }` source pairs of a named slot-table constant a schema
  * spreads, or undefined if the name is unknown, ambiguous, or not slot-shaped.
  */
-export function slotFieldConstantPairs(name: string) {
-  return slotFieldsIndex.get(name) ?? undefined
+export function slotFieldConstantPairs(constants: ConstantIndex, name: string) {
+  return constants.slotFields.get(name) ?? undefined
 }
 
 /**
@@ -995,17 +1031,18 @@ export function slotFieldConstantPairs(name: string) {
  * the slot.
  */
 export function slotFieldFactoryPairs(
+  constants: ConstantIndex,
   name: string,
   args: SlotCallArgs,
 ): [string, string][] | undefined {
-  const factory = slotFieldFactoryIndex.get(name)
+  const factory = constants.slotFieldFactories.get(name)
   const taken = new Set(
     [...(factory?.params.values() ?? [])].map(p => p.argument),
   )
   if (!factory || [...args.keys()].some(key => !taken.has(key))) {
     return undefined
   }
-  const pairs = resolveSlotParts(factory.parts)
+  const pairs = resolveSlotParts(constants, factory.parts)
   return pairs?.map(([slot, source]) => [
     slot,
     substituteParams(source, factory.params, args),
@@ -1013,23 +1050,26 @@ export function slotFieldFactoryPairs(
 }
 
 /** The expression a `NAME`, `NAME.member` or `Class.staticMember` reads. */
-export function referencedExpression(reference: ts.Expression) {
-  const source = referencedSource(reference)
+export function referencedExpression(
+  constants: ConstantIndex,
+  reference: ts.Expression,
+) {
+  const source = referencedSource(constants, reference)
   return source && unwrapAssertion(source.node)
 }
 
 /** The schema a named factory returns, by its `ConfigurationSchema` name. */
-export function factorySchemaName(name: string) {
-  return factorySchemaIndex.get(name) ?? undefined
+export function factorySchemaName(constants: ConstantIndex, name: string) {
+  return constants.factorySchemas.get(name) ?? undefined
 }
 
 /** The schema a `ReturnType<typeof factory>` type alias names. */
-export function typeSchemaName(name: string) {
-  const factory = typeFactoryIndex.get(name)
-  return factory ? factorySchemaName(factory) : undefined
+export function typeSchemaName(constants: ConstantIndex, name: string) {
+  const factory = constants.typeFactories.get(name)
+  return factory ? factorySchemaName(constants, factory) : undefined
 }
 
 /** Whether a named factory returns a `ConfigurationSchema` of a slot table. */
-export function isSchemaFactory(name: string) {
-  return !!slotFieldFactoryIndex.get(name)?.schema
+export function isSchemaFactory(constants: ConstantIndex, name: string) {
+  return !!constants.slotFieldFactories.get(name)?.schema
 }

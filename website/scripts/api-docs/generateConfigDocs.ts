@@ -58,6 +58,7 @@ import type {
   Item,
 } from './configTypes.ts'
 import type { ExtractedNode, SlotNode } from './docProgram.ts'
+import type { ConstantIndex } from './enumConstants.ts'
 import type { Example } from './jsDocTags.ts'
 import type { SlotMeta } from './slotSource.ts'
 
@@ -83,9 +84,13 @@ import type { SlotMeta } from './slotSource.ts'
 //
 // A schema's spread, a const or a factory call, reads the way a slot table's
 // own does (`slotSpreadPart`), so the two never disagree on a shape.
-function spreadPairs(expr: ts.Expression, sf: ts.SourceFile) {
+function spreadPairs(
+  constants: ConstantIndex,
+  expr: ts.Expression,
+  sf: ts.SourceFile,
+) {
   const part = slotSpreadPart(expr, sf)
-  return part && slotSpreadPairs(part)
+  return part && slotSpreadPairs(constants, part)
 }
 
 function parseConfigNode(configNode: string) {
@@ -97,10 +102,10 @@ function parseConfigNode(configNode: string) {
   )
 }
 
-function spreadSlots(sf: ts.SourceFile): Item[] {
+function spreadSlots(constants: ConstantIndex, sf: ts.SourceFile): Item[] {
   const slots: Item[] = []
   const addPairs = (expr: ts.Expression, prefix: string) => {
-    for (const [name, value] of spreadPairs(expr, sf) ?? []) {
+    for (const [name, value] of spreadPairs(constants, expr, sf) ?? []) {
       slots.push({
         name: `${prefix}${name}`,
         docs: '',
@@ -126,7 +131,7 @@ function spreadSlots(sf: ts.SourceFile): Item[] {
       value &&
       ts.isCallExpression(value) &&
       ts.isIdentifier(value.expression) &&
-      isSchemaFactory(value.expression.text)
+      isSchemaFactory(constants, value.expression.text)
         ? value
         : undefined
     const nested =
@@ -212,6 +217,7 @@ export function mergeSpreadSlots(byFile: Record<string, Config>) {
 export function accumulateConfig(
   byFile: Record<string, Config>,
   obj: ExtractedNode,
+  constants: ConstantIndex,
 ) {
   const fn = obj.filename
   byFile[fn] ??= { slots: [], filename: repoRelative(fn) }
@@ -245,7 +251,7 @@ export function accumulateConfig(
       schemaName: shape.name,
     }
     file.source = obj.node
-    file.spreadSlots = spreadSlots(sf)
+    file.spreadSlots = spreadSlots(constants, sf)
   } else if (obj.type === 'baseConfiguration') {
     file.derives = item
     file.baseDeclId = obj.baseDeclId
@@ -1041,7 +1047,10 @@ export function slotRow(item: Item, schema: string) {
   return slotRecordRow(slotRecord(item, schema))
 }
 
-export function linkedConfigs(byFile: Record<string, Config>) {
+export function linkedConfigs(
+  byFile: Record<string, Config>,
+  constants: ConstantIndex,
+) {
   mergeSpreadSlots(byFile)
   const withHeader = withHeaders(byFile)
   const index: ConfigIndex = {
@@ -1049,9 +1058,9 @@ export function linkedConfigs(byFile: Record<string, Config>) {
     byName: mapByKey(withHeader, c => c.header.name),
   }
   for (const config of withHeader) {
-    const locals = scopeLocals(config.source ?? '')
+    const scope = { constants, locals: scopeLocals(config.source ?? '') }
     for (const slot of config.slots) {
-      slot.locals = locals
+      slot.scope = scope
     }
   }
   resolveInheritedSlotMeta(withHeader, index)

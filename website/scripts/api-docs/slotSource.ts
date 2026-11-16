@@ -2,6 +2,7 @@ import * as ts from 'typescript'
 
 import { schemaCallName, typesMemberName } from './astShapes.ts'
 import {
+  buildEnumConstantIndex,
   enumConstantValues,
   factorySchemaName,
   literalConstantValue,
@@ -15,7 +16,8 @@ import {
 } from './enumConstants.ts'
 import { stripPropertyName } from './util.ts'
 
-import type { Item, SlotLocal, SlotLocals } from './configTypes.ts'
+import type { Item, SlotLocal, SlotLocals, SlotScope } from './configTypes.ts'
+import type { ConstantIndex } from './enumConstants.ts'
 
 // What a slot whose value is an MST type rather than a `{ type, ... }` object
 // holds: another pluggable element's config (`'display'`), a schema by its
@@ -66,35 +68,42 @@ function parseValue(value: string) {
 // value that is an MST type instead is described by what it holds.
 export function parseSlotMeta(
   value: string,
-  locals: SlotLocals = new Map(),
+  scope: SlotScope,
   returnedCode?: string,
 ): SlotMeta {
+  const { constants } = scope
   const { init } = parseValue(value)
   const slot =
     init &&
     (ts.isIdentifier(init) || ts.isPropertyAccessExpression(init)
-      ? (referencedObjectLiteral(init) ?? init)
+      ? (referencedObjectLiteral(constants, init) ?? init)
       : init)
   const returned = returnedCode && parseValue(returnedCode).init
   const described =
     slot && !ts.isObjectLiteralExpression(slot)
-      ? (describeValue(slot, locals, 0) ??
-        (returned ? describeValue(returned, new Map(), 0) : undefined))
+      ? (describeValue(slot, scope, 0) ??
+        (returned
+          ? describeValue(returned, { constants, locals: new Map() }, 0)
+          : undefined))
       : undefined
   return slot && ts.isObjectLiteralExpression(slot)
-    ? objectSlotMeta(slot, value)
+    ? objectSlotMeta(constants, slot, value)
     : described?.holds || described?.type
       ? described
       : { valueCode: value }
 }
 
-function objectSlotMeta(slot: ts.ObjectLiteralExpression, value: string) {
+function objectSlotMeta(
+  constants: ConstantIndex,
+  slot: ts.ObjectLiteralExpression,
+  value: string,
+) {
   const meta: SlotMeta = {}
   for (const p of slot.properties) {
     // a shorthand/computed property, a spread of nothing the constant index
     // knows, or a key no column names, can't be summarized — the whole source
     // stands in for it
-    if (!applySlotElement(meta, p)) {
+    if (!applySlotElement(constants, meta, p)) {
       meta.valueCode = value
     }
   }
@@ -105,22 +114,26 @@ function objectSlotMeta(slot: ts.ObjectLiteralExpression, value: string) {
 // slot it names first, so the properties written after it override it, as
 // object spread does.
 function applySlotElement(
+  constants: ConstantIndex,
   meta: SlotMeta,
   p: ts.ObjectLiteralElementLike,
 ): boolean {
   const spread = ts.isSpreadAssignment(p)
-    ? referencedObjectLiteral(p.expression)
+    ? referencedObjectLiteral(constants, p.expression)
     : undefined
   return spread
-    ? spread.properties.every(member => applySlotElement(meta, member))
+    ? spread.properties.every(member =>
+        applySlotElement(constants, meta, member),
+      )
     : ts.isPropertyAssignment(p) &&
         ts.isIdentifier(p.name) &&
-        applySlotProperty(meta, p.name.text, p.initializer)
+        applySlotProperty(constants, meta, p.name.text, p.initializer)
 }
 
 // Fills in the column this slot property feeds; false when the key is one no
 // column covers.
 function applySlotProperty(
+  constants: ConstantIndex,
   meta: SlotMeta,
   key: string,
   node: ts.Expression,
@@ -130,10 +143,12 @@ function applySlotProperty(
   } else if (key === 'description' && ts.isStringLiteralLike(node)) {
     meta.description = node.text
   } else if (key === 'defaultValue') {
-    meta.defaultValue = renderDefault(node)
+    meta.defaultValue = renderDefault(constants, node)
   } else if (key === 'model') {
-    meta.enumValues = enumerationValues(node)
-    meta.literalValues = meta.enumValues ? undefined : unionLiterals(node)
+    meta.enumValues = enumerationValues(constants, node)
+    meta.literalValues = meta.enumValues
+      ? undefined
+      : unionLiterals(constants, node)
   } else if (
     key === 'advanced' &&
     (node.kind === ts.SyntaxKind.TrueKeyword ||
@@ -165,10 +180,13 @@ function applySlotProperty(
 // spread of a named constant (`[...HEIGHT_MODE_VALUES]`) resolves through the
 // enum-constant index — schemas share those tables with the track menus, and a
 // reader still needs the members.
-function enumerationValues(node: ts.Expression): string[] | undefined {
+function enumerationValues(
+  constants: ConstantIndex,
+  node: ts.Expression,
+): string[] | undefined {
   const named = ts.isCallExpression(node) ? node.arguments.at(1) : undefined
   if (named && ts.isIdentifier(named)) {
-    return enumConstantValues(named.text)
+    return enumConstantValues(constants, named.text)
   }
   const arr = ts.isCallExpression(node)
     ? node.arguments.find(ts.isArrayLiteralExpression)
@@ -177,7 +195,7 @@ function enumerationValues(node: ts.Expression): string[] | undefined {
     ts.isStringLiteralLike(el)
       ? [el.text]
       : ts.isSpreadElement(el) && ts.isIdentifier(el.expression)
-        ? (enumConstantValues(el.expression.text) ?? [])
+        ? (enumConstantValues(constants, el.expression.text) ?? [])
         : [],
   )
   return values?.length ? values : undefined
@@ -186,7 +204,10 @@ function enumerationValues(node: ts.Expression): string[] | undefined {
 // The `types.literal(...)` members of a `types.union(...)` model, each as its
 // value, when every other member is a primitive type the slot's declared type
 // already names.
-function unionLiterals(node: ts.Expression): string[] | undefined {
+function unionLiterals(
+  constants: ConstantIndex,
+  node: ts.Expression,
+): string[] | undefined {
   const members =
     ts.isCallExpression(node) && node.expression.getText() === 'types.union'
       ? node.arguments
@@ -202,7 +223,9 @@ function unionLiterals(node: ts.Expression): string[] | undefined {
           ts.isStringLiteralLike(arg)
             ? quoteString(arg.text)
             : ts.isIdentifier(arg)
-              ? quoteString(scalarConstantValue(arg.text) ?? arg.text)
+              ? quoteString(
+                  scalarConstantValue(constants, arg.text) ?? arg.text,
+                )
               : arg.getText(),
         ]
       : []
@@ -215,11 +238,13 @@ function unionLiterals(node: ts.Expression): string[] | undefined {
 // `'neg_log_pvalue'`, of `defaultValue: GROW_MAX_HEIGHT` wants `800` — and
 // anything else as its source. `undefined` is no default at all. Its length is
 // the cell's business (`codeCell`), which folds a long one behind a dialog.
-function renderDefault(written: ts.Expression) {
+function renderDefault(constants: ConstantIndex, written: ts.Expression) {
   const node = unwrapAssertion(written)
   const name = ts.isIdentifier(node) ? node.text : undefined
-  const scalar = name === undefined ? undefined : scalarConstantValue(name)
-  const numeric = name === undefined ? undefined : numericConstantValue(name)
+  const scalar =
+    name === undefined ? undefined : scalarConstantValue(constants, name)
+  const numeric =
+    name === undefined ? undefined : numericConstantValue(constants, name)
   return name === 'undefined'
     ? undefined
     : ts.isStringLiteralLike(node)
@@ -235,8 +260,8 @@ function renderDefault(written: ts.Expression) {
             : ts.isPrefixUnaryExpression(node) &&
                 ts.isNumericLiteral(node.operand)
               ? `${ts.tokenToString(node.operator)}${node.operand.text}`
-              : (numbersAsStrings(node) ??
-                literalConstantValue(node) ??
+              : (numbersAsStrings(constants, node) ??
+                literalConstantValue(constants, node) ??
                 (ts.isObjectLiteralExpression(node) ||
                 ts.isArrayLiteralExpression(node)
                   ? node.getText().replace(/,(\s*[}\]])/g, '$1')
@@ -245,13 +270,13 @@ function renderDefault(written: ts.Expression) {
 
 // `QUALITY_OPACITY_RANGE.map(String)`, a constant list of numbers written as
 // the strings a `stringArray` holds
-function numbersAsStrings(node: ts.Expression) {
+function numbersAsStrings(constants: ConstantIndex, node: ts.Expression) {
   const list =
     ts.isCallExpression(node) &&
     ts.isPropertyAccessExpression(node.expression) &&
     node.expression.name.text === 'map' &&
     node.arguments[0]?.getText() === 'String'
-      ? literalConstantValue(node.expression.expression)
+      ? literalConstantValue(constants, node.expression.expression)
       : undefined
   const numbers = list ? /^\[(.*)\]$/.exec(list)?.[1]?.split(', ') : undefined
   return numbers?.every(n => /^-?[\d.]+$/.test(n))
@@ -268,17 +293,18 @@ const DESCRIBE_DEPTH = 8
 // `{}`; undefined is a value this cannot read.
 function describeValue(
   node: ts.Expression,
-  locals: SlotLocals,
+  scope: SlotScope,
   depth: number,
 ): SlotMeta | undefined {
-  const next = (expr: ts.Expression) => describeValue(expr, locals, depth + 1)
+  const { constants, locals } = scope
+  const next = (expr: ts.Expression) => describeValue(expr, scope, depth + 1)
   const local = ts.isIdentifier(node) ? locals.get(node.text) : undefined
   const element = pluggableElement(node)
   const schema =
     schemaCallName(node) ??
     namedElementSchema(node) ??
     (ts.isCallExpression(node) && ts.isIdentifier(node.expression)
-      ? factorySchemaName(node.expression.text)
+      ? factorySchemaName(constants, node.expression.text)
       : undefined)
   return depth > DESCRIBE_DEPTH
     ? undefined
@@ -290,7 +316,7 @@ function describeValue(
       : local
         ? 'initializer' in local
           ? next(local.initializer)
-          : { holds: parameterHolds(local.typeName) }
+          : { holds: parameterHolds(constants, local.typeName) }
         : element
           ? { holds: { element } }
           : schema
@@ -298,9 +324,9 @@ function describeValue(
             : node.getText() === 'types.undefined'
               ? {}
               : ts.isCallExpression(node)
-                ? typesCallValue(node, next)
+                ? typesCallValue(constants, node, next)
                 : ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)
-                  ? referencedValue(node, depth)
+                  ? referencedValue(constants, node, depth)
                   : undefined
 }
 
@@ -318,6 +344,7 @@ function pluggableElement(node: ts.Expression) {
 // `types.array`, `types.frozen`, `types.optional`, `types.maybe` and
 // `types.union` around what they hold
 function typesCallValue(
+  constants: ConstantIndex,
   call: ts.CallExpression,
   next: (expr: ts.Expression) => SlotMeta | undefined,
 ) {
@@ -327,7 +354,7 @@ function typesCallValue(
   const optional = member === 'optional' ? inner() : undefined
   const list = member === 'array' ? inner() : undefined
   return member === 'frozen'
-    ? { type: 'frozen', defaultValue: first && renderDefault(first) }
+    ? { type: 'frozen', defaultValue: first && renderDefault(constants, first) }
     : member === 'union'
       ? unionValue(call, next)
       : member === 'maybe'
@@ -336,20 +363,30 @@ function typesCallValue(
           ? { ...list, list: true }
           : optional && {
               ...optional,
-              defaultValue: second && renderDefault(second),
+              defaultValue: second && renderDefault(constants, second),
             }
 }
 
 // A schema typed by a `ReturnType<typeof factory>` alias names that factory's
 // schema; any other is whichever one each caller passes
-function parameterHolds(typeName: string | undefined): SlotHolds {
-  const schema = typeName && typeSchemaName(typeName)
+function parameterHolds(
+  constants: ConstantIndex,
+  typeName: string | undefined,
+): SlotHolds {
+  const schema = typeName && typeSchemaName(constants, typeName)
   return schema ? { schema } : { parameter: true }
 }
 
-function referencedValue(node: ts.Expression, depth: number) {
-  const referenced = referencedExpression(node)
-  return referenced && describeValue(referenced, new Map(), depth + 1)
+function referencedValue(
+  constants: ConstantIndex,
+  node: ts.Expression,
+  depth: number,
+) {
+  const referenced = referencedExpression(constants, node)
+  return (
+    referenced &&
+    describeValue(referenced, { constants, locals: new Map() }, depth + 1)
+  )
 }
 
 // A union of one kind of value beside members holding nothing, or every
@@ -471,7 +508,15 @@ function rawSlotValue(item: Item) {
 function ownSlotMeta(item: Item) {
   const cached = ownMeta.get(item)
   const meta =
-    cached ?? parseSlotMeta(rawSlotValue(item), item.locals, item.returnedCode)
+    cached ??
+    parseSlotMeta(
+      rawSlotValue(item),
+      item.scope ?? {
+        constants: buildEnumConstantIndex([]),
+        locals: new Map(),
+      },
+      item.returnedCode,
+    )
   ownMeta.set(item, meta)
   return meta
 }

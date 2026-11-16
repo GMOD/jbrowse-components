@@ -16,8 +16,6 @@ import { parseSourceFileSyntactic } from './sourceCorpus.ts'
 
 import type * as ts from 'typescript'
 
-// The index is module-level and additive, so every constant used here carries a
-// suffix unique to this file rather than being reset between tests.
 let dir: string
 
 // The index reads parsed trees (the generator hands it the shared program's),
@@ -38,64 +36,71 @@ afterAll(() => {
 
 describe('scalarConstantValue', () => {
   test('resolves a string constant so a slot default documents its value', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'scalar.ts',
         `export const DEFAULT_SCHEME_T1 = 'juicebox'
          const NOT_EXPORTED_T1 = 'still-indexed'`,
       ),
     ])
-    expect(scalarConstantValue('DEFAULT_SCHEME_T1')).toBe('juicebox')
+    expect(scalarConstantValue(constants, 'DEFAULT_SCHEME_T1')).toBe('juicebox')
     // export-ness is irrelevant; the generator resolves by name
-    expect(scalarConstantValue('NOT_EXPORTED_T1')).toBe('still-indexed')
+    expect(scalarConstantValue(constants, 'NOT_EXPORTED_T1')).toBe(
+      'still-indexed',
+    )
   })
 
   test('an unknown name stays unresolved, so the identifier keeps printing', () => {
-    expect(scalarConstantValue('NEVER_DECLARED_ANYWHERE')).toBeUndefined()
+    expect(
+      scalarConstantValue(
+        buildEnumConstantIndex([]),
+        'NEVER_DECLARED_ANYWHERE',
+      ),
+    ).toBeUndefined()
   })
 
   test('a name defined twice with different values is dropped, not guessed', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile('dupe-a.ts', `const AMBIGUOUS_T3 = 'one'`),
       sourceFile('dupe-b.ts', `const AMBIGUOUS_T3 = 'two'`),
     ])
-    expect(scalarConstantValue('AMBIGUOUS_T3')).toBeUndefined()
+    expect(scalarConstantValue(constants, 'AMBIGUOUS_T3')).toBeUndefined()
   })
 
   test('the same value declared twice still resolves', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile('same-a.ts', `const AGREED_T4 = 'x'`),
       sourceFile('same-b.ts', `const AGREED_T4 = 'x'`),
     ])
-    expect(scalarConstantValue('AGREED_T4')).toBe('x')
+    expect(scalarConstantValue(constants, 'AGREED_T4')).toBe('x')
   })
 
   test('a string-array constant is not mistaken for a scalar', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile('arr.ts', `export const SCHEMES_T5 = ['a', 'b'] as const`),
     ])
-    expect(scalarConstantValue('SCHEMES_T5')).toBeUndefined()
-    expect(enumConstantValues('SCHEMES_T5')).toEqual(['a', 'b'])
+    expect(scalarConstantValue(constants, 'SCHEMES_T5')).toBeUndefined()
+    expect(enumConstantValues(constants, 'SCHEMES_T5')).toEqual(['a', 'b'])
   })
 })
 
 describe('enumConstantValues, derived constants', () => {
   test('a projection of a tuple table resolves to the tuple heads', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'derived.ts',
         `const TABLE_T9 = [['a', 'A'], ['b', 'B']] as const
          const VALUES_T9 = TABLE_T9.map(([value]) => value)`,
       ),
     ])
-    expect(enumConstantValues('VALUES_T9')).toEqual(['a', 'b'])
+    expect(enumConstantValues(constants, 'VALUES_T9')).toEqual(['a', 'b'])
   })
 
   // A menu option table whose rows carry more than a label — a subLabel, help
   // text — cannot be a pair, so it is objects. The enum still spreads a
   // projection of it, and the values still have to reach the page.
   test('a projection of an object table resolves to the value properties', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'objects.ts',
         `const OPTIONS_T20 = [
@@ -105,33 +110,33 @@ describe('enumConstantValues, derived constants', () => {
          const VALUES_T20 = OPTIONS_T20.map(o => o.value)`,
       ),
     ])
-    expect(enumConstantValues('VALUES_T20')).toEqual(['a', 'b'])
+    expect(enumConstantValues(constants, 'VALUES_T20')).toEqual(['a', 'b'])
   })
 
   test('an object table missing a value on one row resolves to nothing', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'objects-partial.ts',
         `const PARTIAL_T21 = [{ value: 'a' }, { label: 'B' }] as const
          const VALUES_T21 = PARTIAL_T21.map(o => o.value)`,
       ),
     ])
-    expect(enumConstantValues('VALUES_T21')).toBeUndefined()
+    expect(enumConstantValues(constants, 'VALUES_T21')).toBeUndefined()
   })
 
   test('a flatMap over a grouped table resolves to every inner head', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'grouped.ts',
         `const GROUPS_T10 = [['Group', [['a', 'A'], ['b', 'B']]]] as const
          const VALUES_T10 = GROUPS_T10.flatMap(([, opts]) => opts.map(([v]) => v))`,
       ),
     ])
-    expect(enumConstantValues('VALUES_T10')).toEqual(['a', 'b'])
+    expect(enumConstantValues(constants, 'VALUES_T10')).toEqual(['a', 'b'])
   })
 
   test('an ambiguous source table drops the constant derived from it', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile('table-a.ts', `const AMBIG_TABLE_T11 = [['a', 'A']] as const`),
       sourceFile('table-b.ts', `const AMBIG_TABLE_T11 = [['z', 'Z']] as const`),
       sourceFile(
@@ -141,12 +146,12 @@ describe('enumConstantValues, derived constants', () => {
     ])
     // the table's own name is ambiguous, and so is anything projected from it —
     // otherwise the projection documents whichever file parsed last
-    expect(enumConstantValues('AMBIG_TABLE_T11')).toBeUndefined()
-    expect(enumConstantValues('DERIVED_T11')).toBeUndefined()
+    expect(enumConstantValues(constants, 'AMBIG_TABLE_T11')).toBeUndefined()
+    expect(enumConstantValues(constants, 'DERIVED_T11')).toBeUndefined()
   })
 
   test('the same table declared twice still resolves its derived constant', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'agree-a.ts',
         `const AGREED_TABLE_T12 = [['a', 'A']] as const`,
@@ -164,11 +169,11 @@ describe('enumConstantValues, derived constants', () => {
     ])
     // formatting differs, values don't — comparing projections rather than
     // source text keeps this resolving
-    expect(enumConstantValues('DERIVED_T12')).toEqual(['a'])
+    expect(enumConstantValues(constants, 'DERIVED_T12')).toEqual(['a'])
   })
 
   test('a derived name projected from two different tables is dropped', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'two-src-a.ts',
         `const LEFT_T13 = [['a', 'A']] as const
@@ -180,11 +185,11 @@ describe('enumConstantValues, derived constants', () => {
          const DERIVED_T13 = RIGHT_T13.map(([value]) => value)`,
       ),
     ])
-    expect(enumConstantValues('DERIVED_T13')).toBeUndefined()
+    expect(enumConstantValues(constants, 'DERIVED_T13')).toBeUndefined()
   })
 
   test('a list spread from other constants and naming a string constant resolves', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'composed-a.ts',
         `const ALL_T21 = [...SOME_T21, 'log', LAST_T21] as const`,
@@ -195,7 +200,7 @@ describe('enumConstantValues, derived constants', () => {
          const LAST_T21 = 'identity'`,
       ),
     ])
-    expect(enumConstantValues('ALL_T21')).toEqual([
+    expect(enumConstantValues(constants, 'ALL_T21')).toEqual([
       'ordinal',
       'threshold',
       'log',
@@ -204,19 +209,19 @@ describe('enumConstantValues, derived constants', () => {
   })
 
   test('a list under `as const satisfies` resolves', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'satisfies.ts',
         `const MODES_T22 = ['fixed', 'fit'] as const satisfies readonly Mode[]`,
       ),
     ])
-    expect(enumConstantValues('MODES_T22')).toEqual(['fixed', 'fit'])
+    expect(enumConstantValues(constants, 'MODES_T22')).toEqual(['fixed', 'fit'])
   })
 })
 
 describe('slotFieldConstantPairs', () => {
   test('a shared slot table resolves to its slots, in declaration order', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'slot-fields.ts',
         `export const WIGGLE_FIELDS_T6 = {
@@ -225,27 +230,27 @@ describe('slotFieldConstantPairs', () => {
          } as const`,
       ),
     ])
-    const pairs = slotFieldConstantPairs('WIGGLE_FIELDS_T6')
+    const pairs = slotFieldConstantPairs(constants, 'WIGGLE_FIELDS_T6')
     expect(pairs?.map(([name]) => name)).toEqual(['minScore', 'lineWidth'])
     expect(pairs?.[1]?.[1]).toContain('defaultValue: 1')
   })
 
   test('an object of anything other than slots is not a slot table', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'not-slots.ts',
         `const RENDER_OPTS_T7 = { mode: { fast: true }, label: 'x' }
          const NO_SLOT_TYPE_T7 = { color: { defaultValue: 'red' } }`,
       ),
     ])
-    expect(slotFieldConstantPairs('RENDER_OPTS_T7')).toBeUndefined()
+    expect(slotFieldConstantPairs(constants, 'RENDER_OPTS_T7')).toBeUndefined()
     // every property must look like a slot (have a `type`), or the whole
     // constant is left alone rather than half-documented
-    expect(slotFieldConstantPairs('NO_SLOT_TYPE_T7')).toBeUndefined()
+    expect(slotFieldConstantPairs(constants, 'NO_SLOT_TYPE_T7')).toBeUndefined()
   })
 
   test('a name defined twice is dropped rather than guessed at', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'fields-a.ts',
         `const AMBIG_FIELDS_T8 = { a: { type: 'number' } }`,
@@ -255,13 +260,13 @@ describe('slotFieldConstantPairs', () => {
         `const AMBIG_FIELDS_T8 = { b: { type: 'string' } }`,
       ),
     ])
-    expect(slotFieldConstantPairs('AMBIG_FIELDS_T8')).toBeUndefined()
+    expect(slotFieldConstantPairs(constants, 'AMBIG_FIELDS_T8')).toBeUndefined()
   })
 
   // The arc displays' color object shares its field slots as a table of
   // display-kit factory calls, so the table has no literal slot of its own.
   test('a table of factory calls resolves through them, with the call arguments substituted', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'call-table.ts',
         `export function fieldSlot_T16({ field }: { field: string }) {
@@ -280,14 +285,14 @@ describe('slotFieldConstantPairs', () => {
          } as const`,
       ),
     ])
-    const pairs = slotFieldConstantPairs('COLOR_FIELDS_T16')
+    const pairs = slotFieldConstantPairs(constants, 'COLOR_FIELDS_T16')
     expect(pairs?.map(([name]) => name)).toEqual(['field', 'range'])
     expect(pairs?.[0]?.[1]).toContain(`description: 'the field that paints'`)
     expect(pairs?.[1]?.[1]).toContain(`description: 'the default sentence'`)
   })
 
   test('a table of nothing but slot tables by name is one', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'spread-only.ts',
         `export const TITLE_T18 = { title: { type: 'maybeString' } } as const
@@ -296,17 +301,16 @@ describe('slotFieldConstantPairs', () => {
          export const NOT_SLOTS_T18 = { ...RENDER_OPTS_UNKNOWN_T18 }`,
       ),
     ])
-    expect(slotFieldConstantPairs('LEGEND_T18')?.map(([n]) => n)).toEqual([
-      'title',
-      'descending',
-    ])
-    expect(slotFieldConstantPairs('NOT_SLOTS_T18')).toBeUndefined()
+    expect(
+      slotFieldConstantPairs(constants, 'LEGEND_T18')?.map(([n]) => n),
+    ).toEqual(['title', 'descending'])
+    expect(slotFieldConstantPairs(constants, 'NOT_SLOTS_T18')).toBeUndefined()
   })
 
   // colorDiscreteSchemeSlots rewrites colorRampSlots.scheme's prose and
   // nothing else, so its `type` and `model` arrive through the spread
   test("a slot spreading another table's slot reads as the merged object", () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'member-spread.ts',
         `export const RAMP_T19 = {
@@ -317,7 +321,8 @@ describe('slotFieldConstantPairs', () => {
          } as const`,
       ),
     ])
-    const [[name, source] = []] = slotFieldConstantPairs('DISCRETE_T19') ?? []
+    const [[name, source] = []] =
+      slotFieldConstantPairs(constants, 'DISCRETE_T19') ?? []
     expect(name).toBe('scheme')
     expect(source).toContain(`type: 'maybeStringEnum'`)
     expect(source).toContain(`description: 'discrete prose'`)
@@ -325,7 +330,7 @@ describe('slotFieldConstantPairs', () => {
   })
 
   test('a table calling something that is not a slot factory is left alone', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'call-not-table.ts',
         `function opts_T17({ mode }: { mode: string }) {
@@ -334,13 +339,13 @@ describe('slotFieldConstantPairs', () => {
          export const RENDER_T17 = { ...opts_T17({ mode: 'fast' }) } as const`,
       ),
     ])
-    expect(slotFieldConstantPairs('RENDER_T17')).toBeUndefined()
+    expect(slotFieldConstantPairs(constants, 'RENDER_T17')).toBeUndefined()
   })
 })
 
 describe('numericConstantValue', () => {
   test('resolves a numeric constant so a slot default documents the number', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'numeric.ts',
         `export const GROW_CEILING_T9 = 800
@@ -348,26 +353,26 @@ describe('numericConstantValue', () => {
          const NEGATIVE_T9 = -1`,
       ),
     ])
-    expect(numericConstantValue('GROW_CEILING_T9')).toBe('800')
+    expect(numericConstantValue(constants, 'GROW_CEILING_T9')).toBe('800')
     // the author's own source, so a separated literal keeps its separators
-    expect(numericConstantValue('SEPARATED_T9')).toBe('1_000_000')
-    expect(numericConstantValue('NEGATIVE_T9')).toBe('-1')
+    expect(numericConstantValue(constants, 'SEPARATED_T9')).toBe('1_000_000')
+    expect(numericConstantValue(constants, 'NEGATIVE_T9')).toBe('-1')
   })
 
   test('a string constant stays on the string index, so it keeps its quotes', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile('numeric-str.ts', `const A_STRING_T10 = 'juicebox'`),
     ])
-    expect(numericConstantValue('A_STRING_T10')).toBeUndefined()
-    expect(scalarConstantValue('A_STRING_T10')).toBe('juicebox')
+    expect(numericConstantValue(constants, 'A_STRING_T10')).toBeUndefined()
+    expect(scalarConstantValue(constants, 'A_STRING_T10')).toBe('juicebox')
   })
 
   test('a name defined twice with different numbers is dropped', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile('num-a.ts', `const AMBIG_NUM_T11 = 1`),
       sourceFile('num-b.ts', `const AMBIG_NUM_T11 = 2`),
     ])
-    expect(numericConstantValue('AMBIG_NUM_T11')).toBeUndefined()
+    expect(numericConstantValue(constants, 'AMBIG_NUM_T11')).toBeUndefined()
   })
 })
 
@@ -392,8 +397,11 @@ describe('slotFieldFactoryPairs', () => {
     }`
 
   test("a call site's arguments become the slots' descriptions", () => {
-    buildEnumConstantIndex([sourceFile('factory.ts', factory)])
+    const constants = buildEnumConstantIndex([
+      sourceFile('factory.ts', factory),
+    ])
     const pairs = slotFieldFactoryPairs(
+      constants,
       'rowFields_T12',
       new Map([['tree', `'show the species tree sidebar'`]]),
     )
@@ -413,7 +421,7 @@ describe('slotFieldFactoryPairs', () => {
     // `heightMode` is both a parameter and the enum's own name inside the same
     // slot. A textual substitution rewrites the second one too, replacing the
     // enum name with a paragraph of prose.
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'collide.ts',
         `export function heightFields_T13({ heightMode }: { heightMode: string }) {
@@ -429,6 +437,7 @@ describe('slotFieldFactoryPairs', () => {
     ])
     const [[, source] = []] =
       slotFieldFactoryPairs(
+        constants,
         'heightFields_T13',
         new Map([['heightMode', `'Track-sizing strategy'`]]),
       ) ?? []
@@ -437,7 +446,7 @@ describe('slotFieldFactoryPairs', () => {
   })
 
   test('a function that is not a slot table resolves to nothing', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'not-factory.ts',
         `export function notATable_T14({ a }: { a: string }) {
@@ -449,13 +458,17 @@ describe('slotFieldFactoryPairs', () => {
       ),
     ])
     // no property carries a `type`, so it is not slot-shaped
-    expect(slotFieldFactoryPairs('notATable_T14', new Map())).toBeUndefined()
+    expect(
+      slotFieldFactoryPairs(constants, 'notATable_T14', new Map()),
+    ).toBeUndefined()
     // more than the single destructured parameter the substitution understands
-    expect(slotFieldFactoryPairs('twoParams_T14', new Map())).toBeUndefined()
+    expect(
+      slotFieldFactoryPairs(constants, 'twoParams_T14', new Map()),
+    ).toBeUndefined()
   })
 
   test('a positional factory takes its arguments by position', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'positional.ts',
         `export function scaleFields_T20(scaleName: string, prose = 'default prose') {
@@ -470,21 +483,30 @@ describe('slotFieldFactoryPairs', () => {
       ),
     ])
     const [[, source] = []] =
-      slotFieldFactoryPairs('scaleFields_T20', new Map([[0, `'ScaleType'`]])) ??
-      []
+      slotFieldFactoryPairs(
+        constants,
+        'scaleFields_T20',
+        new Map([[0, `'ScaleType'`]]),
+      ) ?? []
     expect(source).toContain(`types.enumeration('ScaleType',`)
     expect(source).toContain(`description: 'default prose'`)
   })
 
   test('an argument no parameter takes resolves nothing', () => {
-    buildEnumConstantIndex([sourceFile('factory.ts', factory)])
+    const constants = buildEnumConstantIndex([
+      sourceFile('factory.ts', factory),
+    ])
     expect(
-      slotFieldFactoryPairs('rowFields_T12', new Map([[0, `someObject`]])),
+      slotFieldFactoryPairs(
+        constants,
+        'rowFields_T12',
+        new Map([[0, `someObject`]]),
+      ),
     ).toBeUndefined()
   })
 
   test('a name defined twice is dropped rather than guessed at', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'factory-a.ts',
         `export function ambigFactory_T15({ a }: { a: string }) {
@@ -498,7 +520,9 @@ describe('slotFieldFactoryPairs', () => {
          }`,
       ),
     ])
-    expect(slotFieldFactoryPairs('ambigFactory_T15', new Map())).toBeUndefined()
+    expect(
+      slotFieldFactoryPairs(constants, 'ambigFactory_T15', new Map()),
+    ).toBeUndefined()
   })
 })
 
@@ -509,7 +533,7 @@ describe('literalConstantValue', () => {
       .expression
 
   test('reads a constant object member, through the constants it names', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'literal.ts',
         `const CANONICAL_T16 = { field: 'tag', tags: ['MANE Select', 'RefSeq Select'] } as const
@@ -522,76 +546,87 @@ describe('literalConstantValue', () => {
          }`,
       ),
     ])
-    expect(literalConstantValue(reference('GLYPH_DEFAULTS_T16.subParts'))).toBe(
-      "'CDS,UTR'",
-    )
     expect(
-      literalConstantValue(reference('GLYPH_DEFAULTS_T16.impliedUTRs')),
+      literalConstantValue(constants, reference('GLYPH_DEFAULTS_T16.subParts')),
+    ).toBe("'CDS,UTR'")
+    expect(
+      literalConstantValue(
+        constants,
+        reference('GLYPH_DEFAULTS_T16.impliedUTRs'),
+      ),
     ).toBe('true')
-    expect(literalConstantValue(reference('GLYPH_DEFAULTS_T16.field'))).toBe(
-      "'tag'",
-    )
-    expect(literalConstantValue(reference('GLYPH_DEFAULTS_T16.tags'))).toBe(
-      "['MANE Select', 'RefSeq Select', 'extra']",
-    )
+    expect(
+      literalConstantValue(constants, reference('GLYPH_DEFAULTS_T16.field')),
+    ).toBe("'tag'")
+    expect(
+      literalConstantValue(constants, reference('GLYPH_DEFAULTS_T16.tags')),
+    ).toBe("['MANE Select', 'RefSeq Select', 'extra']")
     // a member that isn't a literal, and so the object as a whole
     expect(
-      literalConstantValue(reference('GLYPH_DEFAULTS_T16.color')),
+      literalConstantValue(constants, reference('GLYPH_DEFAULTS_T16.color')),
     ).toBeUndefined()
     expect(
-      literalConstantValue(reference('GLYPH_DEFAULTS_T16')),
+      literalConstantValue(constants, reference('GLYPH_DEFAULTS_T16')),
     ).toBeUndefined()
   })
 
   test('one name written with and without `as const` is one value', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile('lit-a.ts', `const FIELDS_T17 = ['start', 'end'] as const`),
       sourceFile(
         'lit-b.ts',
         `const FIELDS_T17: [string, string] = ['start', 'end']`,
       ),
     ])
-    expect(literalConstantValue(reference('FIELDS_T17'))).toBe(
+    expect(literalConstantValue(constants, reference('FIELDS_T17'))).toBe(
       "['start', 'end']",
     )
   })
 
   test('a name defined twice with different values is dropped', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile('lit-c.ts', `const AMBIG_LIT_T18 = { height: 300 }`),
       sourceFile('lit-d.ts', `const AMBIG_LIT_T18 = { height: 200 }`),
     ])
     expect(
-      literalConstantValue(reference('AMBIG_LIT_T18.height')),
+      literalConstantValue(constants, reference('AMBIG_LIT_T18.height')),
     ).toBeUndefined()
   })
 
   test("reads a constant array's element and a copy spread from it", () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile('lit-e.ts', `const DOMAIN_T19 = [5, 20] as const`),
     ])
-    expect(literalConstantValue(reference('DOMAIN_T19[1]'))).toBe('20')
-    expect(literalConstantValue(reference('[...DOMAIN_T19]'))).toBe('[5, 20]')
-    expect(literalConstantValue(reference('DOMAIN_T19[2]'))).toBeUndefined()
+    expect(literalConstantValue(constants, reference('DOMAIN_T19[1]'))).toBe(
+      '20',
+    )
+    expect(literalConstantValue(constants, reference('[...DOMAIN_T19]'))).toBe(
+      '[5, 20]',
+    )
+    expect(
+      literalConstantValue(constants, reference('DOMAIN_T19[2]')),
+    ).toBeUndefined()
   })
 })
 
 describe('parseSlotMeta, through the constant index', () => {
   test('a slot written as a shared slot constant reads as that slot', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'slot-ref.ts',
         `const RAMP_T23 = { mid: { type: 'maybeNumber', description: 'the middle' } } as const`,
       ),
     ])
-    expect(parseSlotMeta('RAMP_T23.mid')).toEqual({
+    expect(
+      parseSlotMeta('RAMP_T23.mid', { constants, locals: new Map() }),
+    ).toEqual({
       type: 'maybeNumber',
       description: 'the middle',
     })
   })
 
   test('an enumeration over a named list documents its members', () => {
-    buildEnumConstantIndex([
+    const constants = buildEnumConstantIndex([
       sourceFile(
         'slot-enum.ts',
         `const UNITS_T24 = ['base', 'codon'] as const`,
@@ -600,6 +635,7 @@ describe('parseSlotMeta, through the constant index', () => {
     expect(
       parseSlotMeta(
         `{ type: 'stringEnum', model: types.enumeration('Unit', UNITS_T24) }`,
+        { constants, locals: new Map() },
       ).enumValues,
     ).toEqual(['base', 'codon'])
   })

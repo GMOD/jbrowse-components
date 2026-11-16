@@ -1,4 +1,5 @@
 import type { ReachedSchema } from './docProgram.ts'
+import type { ConstantIndex } from './enumConstants.ts'
 import type { Example } from './jsDocTags.ts'
 import type * as ts from 'typescript'
 
@@ -8,6 +9,13 @@ export type SlotLocal =
   | { initializer: ts.Expression }
   | { typeName: string | undefined }
 export type SlotLocals = ReadonlyMap<string, SlotLocal>
+
+// What a slot's source can name: the locals of the `#config` declaring it, and
+// the constants shared across the repo
+export interface SlotScope {
+  constants: ConstantIndex
+  locals: SlotLocals
+}
 
 export interface Item {
   name: string
@@ -35,8 +43,7 @@ export interface Item {
   parameterisedDefault?: boolean
   // a slot a spread's JSDoc documents: the row the spread gives it undocumented
   spreadSlot?: string
-  // the names the source of the `#config` declaring the slot binds
-  locals?: SlotLocals
+  scope?: SlotScope
 }
 export interface ConfigHeader {
   name: string

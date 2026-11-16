@@ -7,7 +7,6 @@ import {
   createDocProgram,
   extractWithComment,
 } from './docProgram.ts'
-import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
   flushDocs,
   staleDocs,
@@ -97,13 +96,10 @@ async function main() {
   // the same 3,900 sources a second time.
   const docProgram = createDocProgram(corpusFiles(files))
   const corpus = sourceCorpus(files, docProgram.sources)
-  // enum tables first: the config generator resolves `[...NAME]` spreads in
-  // stringEnum models against this while rendering slots
-  buildEnumConstantIndex(docProgram.sources)
   const { blindSpots, orphanMembers } = extractWithComment(
     docProgram,
     obj => {
-      accumulateConfig(configs, obj)
+      accumulateConfig(configs, obj, docProgram.constants)
       accumulateModel(models, obj)
       accumulateApi(api, obj, docProgram.program)
     },
@@ -160,6 +156,7 @@ async function main() {
     displayTypesByTrack,
     displayToTrackType,
     modelNames,
+    docProgram.constants,
   )
   writeConfigTypeIndex()
   const modelGaps = writeModelDocs(models, configNames)

@@ -401,12 +401,11 @@ ${spreadDoc.map(line => `   * ${line}`).join('\n')}
     fs.writeFileSync(kit, KIT)
     fs.writeFileSync(schemaFile, schema(spreadDoc))
     const program = createDocProgram([kit, schemaFile])
-    buildEnumConstantIndex(program.sources)
     const byFile: Record<string, Config> = {}
     extractWithComment(
       program,
       obj => {
-        accumulateConfig(byFile, obj)
+        accumulateConfig(byFile, obj, program.constants)
       },
       () => {},
     )
@@ -534,12 +533,11 @@ export const wholeTableFixture = ConfigurationSchema('WholeTableFixture', {
     fs.writeFileSync(kit, KIT)
     fs.writeFileSync(schemaFile, SCHEMA)
     const program = createDocProgram([kit, schemaFile])
-    buildEnumConstantIndex(program.sources)
     const byFile: Record<string, Config> = {}
     extractWithComment(
       program,
       obj => {
-        accumulateConfig(byFile, obj)
+        accumulateConfig(byFile, obj, program.constants)
       },
       () => {},
     )
@@ -609,16 +607,15 @@ export const recordFixture = ConfigurationSchema('Facet', {
     const file = path.join(dir, 'schema.ts')
     fs.writeFileSync(file, SCHEMA)
     const program = createDocProgram([file])
-    buildEnumConstantIndex(program.sources)
     const byFile: Record<string, Config> = {}
     extractWithComment(
       program,
       obj => {
-        accumulateConfig(byFile, obj)
+        accumulateConfig(byFile, obj, program.constants)
       },
       () => {},
     )
-    const { withHeader } = linkedConfigs(byFile)
+    const { withHeader } = linkedConfigs(byFile, program.constants)
     return withHeader.flatMap(({ header, slots }) =>
       slots.map(s => ({
         row: slotRow(s, header.name),
@@ -814,16 +811,15 @@ export const fixtureLane = ConfigurationSchema('FixtureLane', {
       return file
     })
     const program = createDocProgram(files)
-    buildEnumConstantIndex(program.sources)
     const byFile: Record<string, Config> = {}
     extractWithComment(
       program,
       obj => {
-        accumulateConfig(byFile, obj)
+        accumulateConfig(byFile, obj, program.constants)
       },
       () => {},
     )
-    const { withHeader } = linkedConfigs(byFile)
+    const { withHeader } = linkedConfigs(byFile, program.constants)
     return Object.fromEntries(
       withHeader.flatMap(({ header, slots }) =>
         slots.map(s => [
@@ -1042,16 +1038,15 @@ export function displayT5<Y>(y: Y) {
       return file
     })
     const program = createDocProgram(files)
-    buildEnumConstantIndex(program.sources)
     const byFile: Record<string, Config> = {}
     extractWithComment(
       program,
       obj => {
-        accumulateConfig(byFile, obj)
+        accumulateConfig(byFile, obj, program.constants)
       },
       () => {},
     )
-    const { withHeader } = linkedConfigs(byFile)
+    const { withHeader } = linkedConfigs(byFile, program.constants)
     return {
       cells: Object.fromEntries(
         withHeader.flatMap(({ header, slots }) =>
@@ -1138,6 +1133,7 @@ test("a #config block's own #example naming a schema does not make it sit on one
         node: `${comment}\nfunction normalizeSnapshot(s: unknown) {\n  return s\n}`,
         filename: 'misplaced.ts',
       },
+      buildEnumConstantIndex([]),
     )
   }).toThrow(/not a schema/)
 })
