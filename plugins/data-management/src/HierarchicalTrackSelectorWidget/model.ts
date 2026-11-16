@@ -487,6 +487,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * shows this view's tracks as a table in the drawer, which widens to
+       * the larger of its current width and 45% of the room it shares with
+       * the views
        * @param drawer - the drawer's current width and the width it shares
        * with the views, measured by the caller; absent when there is no drawer
        * column (popped out, or a phone host), and the table then asks for no
