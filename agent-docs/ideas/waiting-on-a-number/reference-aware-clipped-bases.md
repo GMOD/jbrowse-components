@@ -1,6 +1,6 @@
 ---
 name: reference-aware-clipped-bases
-description: Shown soft clips paint every base, so a tail that matches the reference past a breakpoint looks as loud as one that does not. Letting the clip layer take the mismatch layer's filter and quality opacity would quiet the matching bases; measure how much of a breakpoint's clipped sequence matches the reference first.
+description: Shown soft clips paint every base, so a tail matching the reference past a breakpoint looks as loud as one that does not. Giving the clip layer the mismatch layer's filter and opacity would quiet it; measure how much clipped sequence matches first.
 ---
 
 # Reference-aware clipped bases

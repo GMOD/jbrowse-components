@@ -1,6 +1,6 @@
 ---
 name: fetch-reads-whose-soft-clip-reaches-the-window
-description: With soft clips shown, a read whose aligned part sits outside the loaded window never arrives, so a long read's kilobase tail vanishes as you pan off a breakpoint. A worker-side fetch of region ± a constant reach would bring it back; time that fetch against the plain region on short- and long-read BAM and CRAM first.
+description: With soft clips shown, a read aligned outside the loaded window never arrives, so a long read's kilobase tail vanishes as you pan off a breakpoint. A worker-side fetch of region ± a constant reach would bring it back; time that fetch first.
 ---
 
 # Fetch reads whose soft clip reaches the window

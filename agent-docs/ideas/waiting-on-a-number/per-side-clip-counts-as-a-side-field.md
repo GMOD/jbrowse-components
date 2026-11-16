@@ -1,6 +1,6 @@
 ---
 name: per-side-clip-counts-as-a-side-field
-description: The clip indicator pools left and right clips, so its hover cannot say whether a breakpoint's pile is one-sided or two. A `side` field on the interbase event, set in the worker, would let the hover table split rows by it; count how often the two sides disagree at real breakpoints first.
+description: The clip indicator pools left and right clips, so its hover cannot say whether a breakpoint's pile is one-sided or two. A `side` field on the interbase event would let the hover split rows; count how often the sides disagree first.
 ---
 
 # Per-side clip counts as a `side` field

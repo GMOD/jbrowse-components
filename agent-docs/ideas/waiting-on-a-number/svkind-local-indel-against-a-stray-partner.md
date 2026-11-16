@@ -1,6 +1,6 @@
 ---
 name: svkind-local-indel-against-a-stray-partner
-description: A long read with an SV-size CIGAR indel and one stray supplementary on another chromosome files under "Partner elsewhere", against ADR-258's "a local event outranks a partner elsewhere". Count, at a known long-read translocation, how many partner-band reads carry an SV-size indel before ranking the two.
+description: A long read with an SV-size CIGAR indel and a stray supplementary on another chromosome files under "Partner elsewhere", against ADR-258's "a local event outranks a partner elsewhere". Count partner-band reads with an SV-size indel at a known translocation first.
 ---
 
 # svKind: a local indel against a stray partner

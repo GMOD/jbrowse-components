@@ -1,6 +1,6 @@
 ---
 name: split-arc-hover-words-its-distance-by-class
-description: A split arc's hover could say how its two pieces sit on the reference by class and print the read bases between them as a min-max over the arc's reads, but the read gap lives only on the pending arc. Count how often the reads coalesced onto one arc disagree on their read gap first.
+description: A split arc's hover could say how its pieces sit on the reference by class and print the read bases between them, but the read gap lives only on the pending arc. Count how often an arc's reads disagree on their read gap first.
 ---
 
 # A split arc's hover words its distance by class
