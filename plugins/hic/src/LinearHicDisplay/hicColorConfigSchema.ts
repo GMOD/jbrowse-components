@@ -119,7 +119,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
      * #slot scale
      * How a bin's value maps to a color, Vega-Lite's scale object. No
      * `range`: `MatrixRampMixin` builds the ramp from `scheme` and `reverse`
-     * alone (Colin, 2026-10-30).
+     * alone.
      */
     scale: ConfigurationSchema(
       'HicColorScale',

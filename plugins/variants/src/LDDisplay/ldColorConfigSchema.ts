@@ -96,8 +96,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
      * #slot scale
      * The ramp the statistic runs along, or the intervals it is cut into,
      * Vega-Lite's scale object. `range` colors a threshold's intervals only:
-     * `MatrixRampMixin` builds the ramp from `scheme` and `reverse` alone
-     * (Colin, 2026-10-30).
+     * `MatrixRampMixin` builds the ramp from `scheme` and `reverse` alone.
      */
     scale: ConfigurationSchema(
       'LDColorScale',

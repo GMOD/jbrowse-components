@@ -54,8 +54,7 @@ export const chordColorConfigSchema = ConfigurationSchema(
     /**
      * #slot scale
      * How the field's values map to colors, Vega-Lite's scale object. Only
-     * the discrete scales, no ramp: a chord paints a category or an interval
-     * (Colin, 2026-10-30).
+     * the discrete scales, no ramp: a chord paints a category or an interval.
      */
     scale: ConfigurationSchema(
       'ChordColorScale',
