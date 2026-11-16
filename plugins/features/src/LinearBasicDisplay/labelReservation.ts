@@ -57,8 +57,8 @@ export function namedLabelTiers(
   regions: Iterable<FeatureDataResult>,
   measureIds?: ReadonlySet<string>,
 ) {
-  const isGene = [...namedFeatureIsGene(regions, measureIds).values()]
-  return { gene: isGene.includes(true), other: isGene.includes(false) }
+  const isGene = new Set(namedFeatureIsGene(regions, measureIds).values())
+  return { gene: isGene.has(true), other: isGene.has(false) }
 }
 
 // The padding is a fixed gap, added after the scale rather than scaled with

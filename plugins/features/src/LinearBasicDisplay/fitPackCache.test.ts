@@ -290,6 +290,7 @@ describe('the pack cache', () => {
     maxIsoformsPerGene: undefined,
     labelRoomFactor: 0,
     geneLabelRoomFactor: undefined,
+    keptNameIds: undefined,
   }
   const uncachedHeight = (
     knobs: PackKnobs,

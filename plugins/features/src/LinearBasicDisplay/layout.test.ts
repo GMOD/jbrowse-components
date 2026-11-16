@@ -1607,7 +1607,8 @@ describe('gene names claim the height first', () => {
       packHeight({
         bodyScale: undefined,
         maxIsoformsPerGene: undefined,
-        ...factors,
+        labelRoomFactor: factors.labelRoomFactor,
+        geneLabelRoomFactor: factors.geneLabelRoomFactor,
         keptNameIds,
       }) <= bodies
     expect(fits(new Set(['piled']))).toBe(false)
