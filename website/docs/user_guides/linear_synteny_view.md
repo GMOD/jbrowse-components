@@ -56,11 +56,11 @@ With a synteny track open in a linear genome view, JBrowse can frame the panels
 from the track's ribbons. The import form above is for a dataset that is
 configured but closed.
 
+<Figure src="/img/multiway_synteny/ecoli_launch_dialog.png" caption="The Launch → Linear synteny view dialog after a drag over an all-vs-all dataset: one panel per strain, top to bottom, each with the locus it opens on." />
+
 - **Drag-select a region** on the scale bar and pick **Launch → Linear synteny
   view**. JBrowse opens a panel for every assembly aligning to the region in the
   dialog's **synteny dataset** (a select when the view has more than one open).
-  The dialog lists the panels top to bottom with the locus and size each opens
-  on, and up/down arrows to reorder them: ribbons join neighbouring panels only.
   This is the route for an [all-vs-all](/docs/tutorials/allvsall_synteny)
   dataset, where a locus aligns to several assemblies.
 - **The whole view:** with nothing to select, the view's hamburger menu has the

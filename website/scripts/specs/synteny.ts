@@ -639,6 +639,20 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
         },
       ],
     },
+    {
+      ...base,
+      name: 'multiway_synteny/ecoli_launch_dialog',
+      viewportHeight: 680,
+      actions: [
+        ...select,
+        {
+          type: 'click',
+          selector: '[data-testid="cascading-menuitem-linear_synteny_view..."]',
+        },
+        { type: 'waitForText', text: 'Panels, top to bottom' },
+        { type: 'waitForAppSettled' },
+      ],
+    },
   ]
 }
 
