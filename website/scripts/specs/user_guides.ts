@@ -19,6 +19,27 @@ const CRISPR_GUIDE = 'CGCTCGATCAAACTCATCAT'
 
 const ROWS_FIELD = '[data-testid="rows-by-attribute"]'
 
+const ROW_FOCUS_HINT = '[data-testid="row_focus_hint"]'
+
+const CLUSTERED_SAMPLES = [
+  'HG00096',
+  'HG00097',
+  'HG00099',
+  'HG00100',
+  'HG00101',
+  'HG00102',
+  'HG00103',
+  'HG00104',
+  'HG00106',
+  'HG00108',
+  'HG00109',
+  'HG00110',
+  'HG00111',
+  'HG00112',
+  'HG00113',
+  'HG00114',
+]
+
 export const userGuideSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -244,6 +265,39 @@ export const userGuideSpecs: ScreenshotSpec[] = [
       })),
       { type: 'type', selector: ROWS_FIELD, value: 'rep' },
       { type: 'waitForText', text: 'repFamily' },
+    ],
+  },
+
+  // Sixteen samples kept, then clustered, so the chip and the tree share rows.
+  {
+    mode: 'url',
+    name: 'clustering/kept_rows',
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: [
+        {
+          trackId: 'volvox_test_vcf',
+          variantLayout: 'columns',
+          height: 360,
+          runClustering: true,
+          rows: { kept: CLUSTERED_SAMPLES },
+        },
+      ],
+    }),
+    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
+    readyTimeout: 60000,
+    viewportHeight: 600,
+    actions: [{ type: 'waitForSelector', selector: ROW_FOCUS_HINT }],
+    annotations: [
+      {
+        type: 'text',
+        text: 'Kept rows, and Show all',
+        fontSize: 18,
+        leader: true,
+        anchor: { selector: ROW_FOCUS_HINT, alignX: 'right' },
+        dx: 90,
+      },
     ],
   },
 ]

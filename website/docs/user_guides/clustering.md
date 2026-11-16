@@ -68,16 +68,15 @@ display clusters on which bins each row covers at all.
 
 ## Reading and using the dendrogram
 
-After a run, rows are reordered so similar rows sit together and a dendrogram is
-drawn in the sidebar.
+<Figure src="/img/clustering/kept_rows.png" caption="A multi-sample variant track narrowed to a few samples and clustered: the dendrogram beside their rows, and the chip counting the rows shown." />
 
 - **Show → Show tree** toggles the dendrogram. It stays disabled until
   clustering has been run; the row labels have a separate toggle beside it.
 - **Show → Show tree branch lengths** draws the tree with branch lengths, so the
   horizontal extent of each branch reflects distance.
-- Click any internal node to filter the track down to that subtree. Click it
-  again to clear, or use **Show all rows**. A chip above the rows reads "Showing
-  N of M rows · Show all"; clicking it shows every row again.
+- Click any internal node and pick **Show only subtree** to filter the track
+  down to it; **Show all rows** in the same menu, or the chip above the rows,
+  shows every row again.
 - A chip at the top of the sidebar names the locus the tree was computed from.
   Navigating away from that region marks it; re-run clustering, or reset the row
   order, to bring the two back together.
