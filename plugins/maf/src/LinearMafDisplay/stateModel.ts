@@ -321,8 +321,8 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Offsets the track label above the plot, since the left y-axis gutter
-         * would sit under an overlapping label.
+         * A band's y-axis, else the species rows and their names, sits at
+         * the top-left.
          */
         get prefersOffset() {
           return true

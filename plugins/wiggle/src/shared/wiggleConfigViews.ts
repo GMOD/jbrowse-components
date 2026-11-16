@@ -142,17 +142,16 @@ export function wiggleModeViews(self: WiggleModeHost) {
 export function wiggleLabelViews(self: {
   isDensityMode: boolean
   isRowLayout: boolean
+  showAxis: boolean
 }) {
   return {
     /**
      * #getter
-     * Offset the track label above the plot so the left y-axis stays pinned
-     * to the content edge instead of dodging right of the label, and so a
-     * stack of rows is not hidden behind it. One density plot draws no left
-     * axis (just a top score legend), so there let the label overlap.
+     * Rows and their names, or one plot's y-axis; one density plot, or one
+     * with `axis.show` off, has nothing at its top-left.
      */
     get prefersOffset() {
-      return !self.isDensityMode || self.isRowLayout
+      return self.isRowLayout || (!self.isDensityMode && self.showAxis)
     },
   }
 }

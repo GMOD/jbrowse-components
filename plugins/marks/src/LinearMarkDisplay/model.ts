@@ -241,13 +241,6 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * the track label sits above the plot so the y-axis stays on the edge
-         */
-        get prefersOffset() {
-          return true
-        },
-        /**
-         * #getter
          * Overridable hook: what every region's fetch hands the adapter beside
          * the region and the zoom, or undefined for nothing. A fetch input, so
          * a change refetches; `resolveAdapterOptions` places it on each region.
@@ -320,6 +313,20 @@ export function stateModelFactory(
       .views(self => markEntryViews(self))
       .views(self => markRowsViews(self))
       .views(self => markRequestViews(self))
+      .views(self => ({
+        /**
+         * #getter
+         * Rows, the facet's section chips, or a shown y-axis with a mark
+         * standing on it; marks at no value never draw an axis.
+         */
+        get prefersOffset() {
+          return (
+            self.drawsRows ||
+            self.facet !== undefined ||
+            (self.showAxis && self.markEntries.some(entry => entry.valued))
+          )
+        },
+      }))
       .views(self => ({
         /**
          * #getter

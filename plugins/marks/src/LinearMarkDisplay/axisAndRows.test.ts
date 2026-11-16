@@ -114,3 +114,61 @@ test('hiding a section leaves a log stroke width scale over the positive values 
   display.hideGroup('b')
   expect(display.sizeScales[0]!.domain).toEqual([5, 50])
 })
+
+describe('prefersOffset', () => {
+  const BAR = [{ mark: 'bar', encoding: { y: 'score' } }]
+  const AXIS_OFF = { encoding: { y: { axis: { show: false } } } }
+
+  function offsetBeforeAndAfterData(displayConfig: Record<string, unknown>) {
+    const { display } = createTestEnvironment(displayConfig).createDisplay()
+    const before = { offset: display.prefersOffset, axes: display.axes.length }
+    display.setRpcData(
+      0,
+      workerResult(
+        display,
+        features([
+          { source: 'a', kind: 'k1', start: 0, end: 100, score: 4 },
+          { source: 'b', kind: 'k2', start: 200, end: 300, score: 1000 },
+        ]),
+      ),
+      REGION,
+    )
+    const after = { offset: display.prefersOffset, axes: display.axes.length }
+    return { before, after }
+  }
+
+  test('offsets a valued plot before its axis exists', () => {
+    expect(offsetBeforeAndAfterData({ marks: BAR })).toEqual({
+      before: { offset: true, axes: 0 },
+      after: { offset: true, axes: 1 },
+    })
+  })
+
+  test('overlaps a valued plot whose axis is hidden', () => {
+    const { before, after } = offsetBeforeAndAfterData({
+      marks: BAR,
+      ...AXIS_OFF,
+    })
+    expect(before.offset).toBe(false)
+    expect(after).toEqual({ offset: false, axes: 1 })
+  })
+
+  test('overlaps marks that stand at no value, which never draw an axis', () => {
+    expect(offsetBeforeAndAfterData({ marks: [{ mark: 'rect' }] })).toEqual({
+      before: { offset: false, axes: 0 },
+      after: { offset: false, axes: 0 },
+    })
+  })
+
+  test('offsets rows and facet sections with the axis hidden', () => {
+    for (const config of [{ rows: { field: 'source' } }, { facet: 'kind' }]) {
+      const { before, after } = offsetBeforeAndAfterData({
+        marks: BAR,
+        ...AXIS_OFF,
+        ...config,
+      })
+      expect(before.offset).toBe(true)
+      expect(after.offset).toBe(true)
+    }
+  })
+})

@@ -222,6 +222,11 @@ test('one row is a written choice the default never overrides, and Type returns 
   expect(sampled.featuresCarryRowsField).toBe(true)
 })
 
+test('the track label takes its own row over the type rows, and overlaps one row of rects, which draws no axis', () => {
+  expect(display({}).prefersOffset).toBe(true)
+  expect(display({ rows: '' }).prefersOffset).toBe(false)
+})
+
 test("a pick off the default type drops the arrangement naming the types' rows", () => {
   const model = display({
     rows: { sort: ['Deletion'], labels: { Deletion: 'Del' } },

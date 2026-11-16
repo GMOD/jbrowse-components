@@ -29,6 +29,14 @@ export interface LinearDisplayModel extends DisplayModel {
    * display that has nothing hidden.
    */
   expandToContentHeight?: () => void
+  /**
+   * In 'overlapping' track-label mode, true moves the label to its own row
+   * above the display, for one whose settings put something at its top-left
+   * that the label would hide: an axis, rows and their names, a section chip,
+   * a connector or label band. Answered from settings alone: the label is placed before
+   * data lands, and its row moves every track below. An ungrouped alignments
+   * track leaves its coverage axis under the label (ADR-109).
+   */
   prefersOffset?: boolean
   /**
    * False while the display lays its content out on its own x axis rather

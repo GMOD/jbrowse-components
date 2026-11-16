@@ -142,6 +142,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
+       * The connector band, else the matrix, starts at the top-left.
        */
       get prefersOffset() {
         return true
