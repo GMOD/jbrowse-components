@@ -1,12 +1,14 @@
 import {
   DEMO_CONFIG,
   HG38_RMSK_TRACK,
+  UCSC_HG38_CONFIG,
   VOLVOX,
   lgvSession,
   menuCascade,
   sessionSpec,
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
+import { pageTrack } from './pageTrack.ts'
 import { SKBR3_SNIFFLES_VCF } from './sv.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -19,24 +21,21 @@ const CRISPR_GUIDE = 'CGCTCGATCAAACTCATCAT'
 
 const ROW_FOCUS_HINT = '[data-testid="row_focus_hint"]'
 
-const CLUSTERED_SAMPLES = [
-  'HG00096',
-  'HG00097',
-  'HG00099',
-  'HG00100',
-  'HG00101',
-  'HG00102',
-  'HG00103',
-  'HG00104',
-  'HG00106',
-  'HG00108',
-  'HG00109',
-  'HG00110',
-  'HG00111',
-  'HG00112',
-  'HG00113',
-  'HG00114',
-]
+// Samples from five of ld_human's six populations, each labelled with its own.
+const CLUSTERED_SAMPLES = {
+  NA06989: 'CEU NA06989',
+  NA07000: 'CEU NA07000',
+  NA06984: 'CEU NA06984',
+  NA07037: 'CEU NA07037',
+  HG00171: 'FIN HG00171',
+  HG00186: 'FIN HG00186',
+  HG01593: 'PJL HG01593',
+  HG02490: 'PJL HG02490',
+  NA18486: 'YRI NA18486',
+  NA18488: 'YRI NA18488',
+  NA18525: 'CHB NA18525',
+  NA18526: 'CHB NA18526',
+}
 
 export const userGuideSpecs: ScreenshotSpec[] = [
   {
@@ -264,26 +263,43 @@ export const userGuideSpecs: ScreenshotSpec[] = [
     parts: ['multirow/one_row', 'multirow/display_types_rows'],
   },
 
-  // Sixteen samples kept, then clustered, so the chip and the tree share rows.
+  // Twelve samples kept, then clustered over LCT/MCM6, so the chip and the
+  // tree share rows. The connector fan ties columns to positions, which this
+  // figure does not read.
   {
     mode: 'url',
     name: 'clustering/kept_rows',
-    url: lgvSession(VOLVOX, {
-      assembly: 'volvox',
-      loc: 'ctgA:1-50000',
-      tracks: [
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      sessionTracks: [pageTrack('tutorials/ld_human.md', 'kgp_lct_haplotypes')],
+      views: [
         {
-          trackId: 'volvox_test_vcf',
-          variantLayout: 'columns',
-          height: 360,
-          runClustering: true,
-          rows: { kept: CLUSTERED_SAMPLES },
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr2:135,787,850-135,876,467',
+          tracks: [
+            {
+              trackId: 'hg38-ncbiRefSeqCurated',
+              height: 70,
+              filter: ['geneLike'],
+            },
+            {
+              trackId: 'kgp_lct_haplotypes',
+              height: 440,
+              connectors: { show: false },
+              runClustering: true,
+              rows: {
+                field: 'haplotype',
+                kept: Object.keys(CLUSTERED_SAMPLES),
+                labels: CLUSTERED_SAMPLES,
+              },
+            },
+          ],
         },
       ],
     }),
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
-    readyTimeout: 60000,
-    viewportHeight: 600,
+    readyTimeout: 120000,
+    viewportHeight: 760,
     actions: [{ type: 'waitForSelector', selector: ROW_FOCUS_HINT }],
     annotations: [
       {

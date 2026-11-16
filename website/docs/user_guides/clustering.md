@@ -68,7 +68,7 @@ display clusters on which bins each row covers at all.
 
 ## Reading and using the dendrogram
 
-<Figure src="/img/clustering/kept_rows.png" caption="A multi-sample variant track narrowed to a few samples and clustered: the dendrogram beside their rows, and the chip counting the rows shown." />
+<Figure src="/img/clustering/kept_rows.png" caption="A 1000 Genomes track across LCT, one row per haplotype, narrowed to a few samples and clustered: the dendrogram beside their rows, and the chip counting the rows shown." />
 
 - **Show → Show tree** toggles the dendrogram. It stays disabled until
   clustering has been run; the row labels have a separate toggle beside it.
