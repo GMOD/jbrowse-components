@@ -28,24 +28,33 @@ export function isFile(file: string) {
   }
 }
 
+const OUT_FORMAT = /\.(svg|png|pdf)$/i
+
+export function outFormat(outFile: string) {
+  const format = OUT_FORMAT.exec(outFile)?.[1]?.toLowerCase()
+  if (!format) {
+    throw new Error(
+      `--out needs a .svg, .png or .pdf path, got "${outFile}" (for .jpg or .webp, @jbrowse/capture screenshots the live app)`,
+    )
+  }
+  return format
+}
+
 export function writeRendered(
   result: string,
   outFile: string | undefined,
   width: number,
 ) {
   if (outFile) {
-    const lower = outFile.toLowerCase()
-    if (lower.endsWith('.png')) {
-      convert(result, { out: outFile, width: String(width) })
-    } else if (lower.endsWith('.pdf')) {
-      convert(result, { out: outFile, width: String(width) }, ['-f', 'pdf'])
-    } else {
-      if (!lower.endsWith('.svg')) {
-        console.warn(
-          `Warning: writing SVG to "${outFile}"; only .png and .pdf are converted`,
-        )
-      }
+    const format = outFormat(outFile)
+    if (format === 'svg') {
       fs.writeFileSync(outFile, result)
+    } else {
+      convert(
+        result,
+        { out: outFile, width: String(width) },
+        format === 'pdf' ? ['-f', 'pdf'] : [],
+      )
     }
   } else {
     console.log(result)

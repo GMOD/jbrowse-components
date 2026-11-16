@@ -28,7 +28,7 @@ import {
   getTrackLabels,
   knownOptions,
 } from './options.ts'
-import { writeRendered } from './util.ts'
+import { outFormat, writeRendered } from './util.ts'
 
 // The render stack is imported lazily, since most commands never draw.
 
@@ -58,13 +58,13 @@ async function main() {
         ? buildBatchHelp(scriptName)
         : buildHelp(scriptName, trackTypes, syntenyTrackTypes, mode),
     )
-  } else if (first === 'list') {
-    console.log(await runList(argv.slice(1)))
   } else if (args.includes('--version') || args.includes('-v')) {
     const { version } = JSON.parse(
       fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
     ) as { version: string }
     console.log(version)
+  } else if (first === 'list') {
+    console.log(await runList(argv.slice(1)))
   } else {
     const parsed = parseArgv(args, { booleans: exportBooleanFlags })
     // a comparative view's --genome rows are read from the entries
@@ -155,14 +155,14 @@ async function main() {
         process.exitCode = 1
       }
     } else {
+      const out = getString(rest, 'out')
+      if (out) {
+        outFormat(out)
+      }
       const { setupEnv } = await import('./setupEnv.ts')
       setupEnv()
       const { renderRegion } = await import('./renderRegion.ts')
-      writeRendered(
-        await renderRegion(renderOpts),
-        getString(rest, 'out'),
-        width,
-      )
+      writeRendered(await renderRegion(renderOpts), out, width)
     }
   }
 }

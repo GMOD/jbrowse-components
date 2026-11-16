@@ -4,7 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 
 import { DEFAULT_WIDTH } from './options.ts'
-import { convert, isFile } from './util.ts'
+import { convert, isFile, outFormat } from './util.ts'
 
 jest.mock('node:child_process', () => ({ spawnSync: jest.fn() }))
 
@@ -101,4 +101,21 @@ describe('isFile', () => {
   test('inline JSON too long to be a path is not a file', () => {
     expect(isFile(`{"type":"DotplotView"}`.padEnd(5000, ' '))).toBe(false)
   })
+})
+
+describe('outFormat', () => {
+  test.each([
+    ['out.svg', 'svg'],
+    ['OUT.PNG', 'png'],
+    ['a/b.pdf', 'pdf'],
+  ])('%s is %s', (out, format) => {
+    expect(outFormat(out)).toBe(format)
+  })
+
+  test.each(['out.jpg', 'out.webp', 'out'])(
+    '%s is refused rather than written as SVG under that name',
+    out => {
+      expect(() => outFormat(out)).toThrow('--out needs a .svg, .png or .pdf')
+    },
+  )
 })
