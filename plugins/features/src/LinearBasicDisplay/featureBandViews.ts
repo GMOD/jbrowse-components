@@ -13,10 +13,10 @@ import { buildRegionInstanceIndex } from './featureHighlightInk.ts'
 import {
   MIN_FIT_BOX_PX,
   fitLadderRungs,
+  keepNamesThatFit,
   labeledBodyFloorScale,
   renderedLabelContext,
   resolveFitLadder,
-  keepNamesThatFit,
   solveBodyScale,
   solveIsoformCount,
   solveLabelRoomFactors,
@@ -523,10 +523,15 @@ export function featureBandViews(self: FeatureBandHost) {
         self.layoutReady && self.showLabels
           ? this.solveLabelRoomFactors(self.fitTargetHeight)
           : undefined
-      return factors === undefined ||
+      const keptNameIds =
+        factors === undefined ||
         keepsAnyName(this.decimatedLayoutAt(factors), self.fitMeasureFeatureIds)
-        ? factors
-        : { ...factors, keptNameIds: this.namesThatFit(factors) }
+          ? undefined
+          : this.namesThatFit(factors)
+      // An empty set would repack the stack the ladder is about to reject.
+      return factors && keptNameIds?.size
+        ? { ...factors, keptNameIds }
+        : factors
     },
     /**
      * #method

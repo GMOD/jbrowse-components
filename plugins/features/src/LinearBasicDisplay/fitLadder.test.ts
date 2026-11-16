@@ -5,7 +5,9 @@ import {
 import {
   bisectLargestFitting,
   bisectSmallestFitting,
+  keepNamesThatFit,
   LABELED_BODY_TO_FONT_RATIO,
+  MAX_KEPT_NAME_CANDIDATES,
   fitScaleToFill,
   labeledBodyFloorScale,
   resolveFitLadder,
@@ -525,5 +527,30 @@ describe('resolveFitLadder', () => {
     expect(full.calls.count).toBe(1)
     expect(labels.calls.count).toBe(1)
     expect(bodies.calls.count).toBe(1)
+  })
+})
+
+describe('keepNamesThatFit', () => {
+  it('keeps each name that still fits beside the ones already kept', () => {
+    const cost: Record<string, number> = { piled: 11, lone: 0, other: 6 }
+    const fits = (ids: ReadonlySet<string>) =>
+      [...ids].reduce((sum, id) => sum + cost[id]!, 0) <= 8
+    expect([...keepNamesThatFit(['piled', 'lone', 'other'], fits)]).toEqual([
+      'lone',
+      'other',
+    ])
+  })
+
+  it('tries no more than its candidate cap', () => {
+    const tried: number[] = []
+    const ids = Array.from(
+      { length: MAX_KEPT_NAME_CANDIDATES + 5 },
+      (_, i) => `n${i}`,
+    )
+    keepNamesThatFit(ids, kept => {
+      tried.push(kept.size)
+      return false
+    })
+    expect(tried).toHaveLength(MAX_KEPT_NAME_CANDIDATES)
   })
 })
