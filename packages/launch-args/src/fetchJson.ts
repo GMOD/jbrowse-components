@@ -5,7 +5,10 @@ export const HOSTED_HINT =
 
 /**
  * Fetch JSON with a timeout, throwing a message that names `what` and the URL,
- * the budget only when it ran out, and `hint` after either failure.
+ * the budget only when it ran out, and `hint` after either failure. Uncached:
+ * a capture batch fetches hg38's 1.5 MB config once per image (~0.3s), and a
+ * module cache would leak between tests and serve a long-lived process a
+ * stale config.
  */
 export async function fetchJson(
   url: string,

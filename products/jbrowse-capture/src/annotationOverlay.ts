@@ -499,7 +499,9 @@ export function drawAnnotationOverlay(
     // a graph-node, dotplot or residue anchor arrives already resolved by the
     // caller — each is one canvas with nothing per feature to measure in here
     // — and an unresolved one carries no rect, so it falls through to the
-    // miss below
+    // miss below. Named by key rather than by a flag the resolver sets: the
+    // desktop harness resolves none, and its feature or row anchor would then
+    // read as a model anchor and box the whole track.
     const preResolved =
       anchor.graphNode !== undefined ||
       anchor.feature !== undefined ||
