@@ -1,5 +1,3 @@
-import fs from 'fs'
-
 import slugify from 'slugify'
 
 import {
@@ -28,7 +26,6 @@ import {
   assertSingleHeader,
   assertUniquePages,
   collectTransitive,
-  filterUnseenByName,
   headerGaps,
   lookupByIdOrName,
   mapByKey,
@@ -48,16 +45,15 @@ interface Member {
   category?: string
   code: string
   signature: string
+  propertyDefault?: string
 }
 type MemberKey = 'properties' | 'volatiles' | 'getters' | 'methods' | 'actions'
 
 // The five MST member kinds in render order. Each row ties together the tag that
 // routes a member here (also its anchor prefix), the StateModel bucket it lands
-// in, its section heading, and which code the Member cell shows: a
-// property/volatile is best read as the source line that declares it
-// (`types.stripDefault(types.boolean, false)` says more than
-// `IOptionalIType<ISimpleType<boolean>, [undefined]>`), everything else as its
-// type signature. This one table drives accumulation and every rendered section.
+// in, its section heading, and the type the Member cell shows. A property whose
+// MST type `propertyType` could not read shows the source that declares it.
+// This one table drives accumulation and every rendered section.
 export const MEMBER_KINDS: {
   key: MemberKey
   tag: TagType
@@ -68,13 +64,13 @@ export const MEMBER_KINDS: {
     key: 'properties',
     tag: 'property',
     label: 'Properties',
-    memberCode: m => stripPropertyName(m.code),
+    memberCode: m => m.signature || stripPropertyName(m.code),
   },
   {
     key: 'volatiles',
     tag: 'volatile',
     label: 'Volatiles',
-    memberCode: m => m.signature || m.code,
+    memberCode: m => m.signature,
   },
   {
     key: 'getters',
@@ -97,13 +93,13 @@ export const MEMBER_KINDS: {
 ]
 type MemberKind = (typeof MEMBER_KINDS)[number]
 
-function emptyMembers(): Record<MemberKey, Member[]> {
+function byKind<T>(value: (key: MemberKey) => T): Record<MemberKey, T> {
   return {
-    properties: [],
-    volatiles: [],
-    getters: [],
-    methods: [],
-    actions: [],
+    properties: value('properties'),
+    volatiles: value('volatiles'),
+    getters: value('getters'),
+    methods: value('methods'),
+    actions: value('actions'),
   }
 }
 
@@ -132,10 +128,16 @@ export interface StateModel {
   filename: string
 }
 type ModelWithHeader = StateModel & { header: ModelHeader }
-interface ModelIndex {
-  byDeclId: Map<string, ModelWithHeader>
-  bySlug: Map<string, ModelWithHeader>
+
+function modelIndex(byFile: Record<string, StateModel>) {
+  const models = withHeaders(byFile)
+  return {
+    models,
+    byDeclId: mapByKey(models, m => m.header.selfDeclId),
+    bySlug: mapByKey(models, m => m.header.id),
+  }
 }
+type ModelIndex = ReturnType<typeof modelIndex>
 
 // Route one extracted node into its file's state-model bucket. Called from the
 // shared single-program-load driver in generate.ts.
@@ -144,7 +146,7 @@ export function accumulateModel(
   obj: ExtractedNode,
 ) {
   const fn = obj.filename
-  byFile[fn] ??= { members: emptyMembers(), filename: repoRelative(fn) }
+  byFile[fn] ??= { members: byKind(() => []), filename: repoRelative(fn) }
   const file = byFile[fn]
   const member = parseNode(obj)
 
@@ -247,20 +249,6 @@ function stateModelCategory(name: string, explicit?: string): string {
     : suffixCategory(name, explicit, MODEL_CATEGORIES)
 }
 
-// A per-kind seen-by-name set seeded from a model's own members, so the walk
-// outward along the composition chain shows each member once, at its
-// most-specific definition (see filterUnseenByName). Built explicitly per kind
-// like emptyMembers() so it stays type-safe without a cast.
-function seenByKind(members: Record<MemberKey, Member[]>) {
-  return {
-    properties: new Set(members.properties.map(m => m.name)),
-    volatiles: new Set(members.volatiles.map(m => m.name)),
-    getters: new Set(members.getters.map(m => m.name)),
-    methods: new Set(members.methods.map(m => m.name)),
-    actions: new Set(members.actions.map(m => m.name)),
-  }
-}
-
 // One ancestor's contribution to a model after dedup: the ancestor itself, plus
 // the members it defines that no nearer model (this one, or a closer ancestor)
 // already declares.
@@ -269,32 +257,33 @@ interface InheritedGroup {
   members: Record<MemberKey, Member[]>
 }
 
+function memberNames(members: Record<MemberKey, Member[]>) {
+  return MEMBER_KINDS.flatMap(k => members[k.key].map(m => m.name))
+}
+
 // The members each ancestor contributes to a model, deduped left-to-right along
 // the composition chain: a member the model (or a closer ancestor) redeclares is
 // shown once, at its most-specific definition, and dropped from every farther
-// ancestor rather than repeated as a live alternative. Ancestors that contribute
-// nothing after dedup are dropped. Mirrors the config page's
-// inheritedSlotsSection dedup.
+// ancestor rather than repeated as a live alternative. A name is one member
+// whatever its kind, so a model's own `width` getter hides the `width` volatile
+// it replaces. Ancestors that contribute nothing after dedup are dropped.
+// Mirrors the config page's inheritedSlotsSection dedup.
 function collectInheritedMembers(
   ownMembers: Record<MemberKey, Member[]>,
   ancestors: ModelWithHeader[],
 ): InheritedGroup[] {
-  const seen = seenByKind(ownMembers)
+  const seen = new Set(memberNames(ownMembers))
   return ancestors
-    .map(model => ({
-      model,
-      members: {
-        properties: filterUnseenByName(
-          seen.properties,
-          model.members.properties,
-        ),
-        volatiles: filterUnseenByName(seen.volatiles, model.members.volatiles),
-        getters: filterUnseenByName(seen.getters, model.members.getters),
-        methods: filterUnseenByName(seen.methods, model.members.methods),
-        actions: filterUnseenByName(seen.actions, model.members.actions),
-      },
-    }))
-    .filter(g => MEMBER_KINDS.some(k => g.members[k.key].length))
+    .map(model => {
+      const members = byKind(key =>
+        model.members[key].filter(m => !seen.has(m.name)),
+      )
+      for (const name of memberNames(members)) {
+        seen.add(name)
+      }
+      return { model, members }
+    })
+    .filter(g => memberNames(g.members).length > 0)
 }
 
 // The in-page anchor of a member's row, so another model's page can deep-link
@@ -307,31 +296,42 @@ export function modelPageId(name: string) {
   return slugify(name, { lower: true })
 }
 
-// One row: the member's name over its type/declaration in a single cell, then
-// its full documentation. Name and code share a cell so the description gets
-// the width — a member is looked up by name and read by description, and a
-// separate type column only squeezes the prose. Long code folds (see codeCell)
-// rather than holding the row open.
-//
 // `seen` carries the anchors already emitted on this page, and only the first
-// row for a name gets the `id`: anchors are lowercased, so two names differing
-// only in case would otherwise render duplicate ids, which the website build
-// fails on.
+// name for an anchor gets the `id`: anchors are lowercased, so two names
+// differing only in case would otherwise render duplicate ids, which the
+// website build fails on.
+function anchored(
+  def: MemberKind,
+  name: string,
+  text: string,
+  seen: Set<string>,
+) {
+  const anchor = memberAnchor(def.tag, name)
+  const named = seen.has(anchor) ? text : `<span id="${anchor}">${text}</span>`
+  seen.add(anchor)
+  return named
+}
+
+// One row: the member's name over its type in a single cell, then its full
+// documentation. Name and type share a cell so the description gets the width
+// — a member is looked up by name and read by description, and a separate type
+// column only squeezes the prose. Long code folds (see codeCell) rather than
+// holding the row open.
 function memberRow(
   def: MemberKind,
   m: Member,
+  docs: string,
   seen: Set<string>,
   link: TypeLinker,
 ) {
-  const description = [proseCell(m.docs), exampleCell(m.examples)]
+  const description = [proseCell(docs), exampleCell(m.examples)]
     .filter(Boolean)
     .join('<br>')
-  const anchor = memberAnchor(def.tag, m.name)
-  const named = seen.has(anchor)
-    ? `**${m.name}**`
-    : `<span id="${anchor}">**${m.name}**</span>`
-  seen.add(anchor)
-  return `| ${named}<br>${codeCell(def.memberCode(m), link)} | ${description} |`
+  const defaulted =
+    m.propertyDefault === undefined
+      ? ''
+      : ` · default ${codeCell(m.propertyDefault)}`
+  return `| ${anchored(def, m.name, `**${m.name}**`, seen)}<br>${codeCell(def.memberCode(m), link)}${defaulted} | ${description} |`
 }
 
 // What one ancestor contributes to a kind: each name, linked to its row on the
@@ -344,15 +344,14 @@ function inheritedLine(
   seen: Set<string>,
 ) {
   const page = `../${model.header.id}`
-  const names = members[def.key].map(m => {
-    const anchor = memberAnchor(def.tag, m.name)
-    const link = `[\`${m.name}\`](${page}#${anchor})`
-    const named = seen.has(anchor)
-      ? link
-      : `<span id="${anchor}">${link}</span>`
-    seen.add(anchor)
-    return named
-  })
+  const names = members[def.key].map(m =>
+    anchored(
+      def,
+      m.name,
+      `[\`${m.name}\`](${page}#${memberAnchor(def.tag, m.name)})`,
+      seen,
+    ),
+  )
   return {
     count: names.length,
     line: `From [${model.header.name}](${page}): ${names.join(', ')}`,
@@ -363,15 +362,19 @@ function inheritedLine(
 // names each ancestor contributes, folded under one count. A full row per
 // inherited member put a copy of every BaseDisplay docstring on 21 pages, and
 // the unfolded names were a third of this directory's bytes. The docs layout
-// opens the fold around a deep link that lands inside it.
+// opens the fold around a deep link that lands inside it, and a section with no
+// rows of its own opens it from the start, since the fold is all it holds.
 function kindSection(
   def: MemberKind,
   ownMembers: Member[],
   inherited: InheritedGroup[],
+  configPage: string | undefined,
   link: TypeLinker,
 ) {
   const seen = new Set<string>()
-  const rows = ownMembers.map(m => memberRow(def, m, seen, link))
+  const rows = ownMembers.map(m =>
+    memberRow(def, m, memberDocs(def.key, m, configPage), seen, link),
+  )
   const lines = inherited
     .map(g => inheritedLine(def, g, seen))
     .filter(l => l.count > 0)
@@ -384,7 +387,7 @@ function kindSection(
         rows.length > 0 && markdownTable(['Member', 'Description'], rows),
         lines.length > 0 &&
           [
-            '<details class="inherited-members" data-pagefind-ignore>',
+            `<details class="inherited-members" data-pagefind-ignore${rows.length ? '' : ' open'}>`,
             `<summary>${count} inherited ${noun} from ${models}</summary>`,
             '',
             lines.map(l => l.line).join('\n\n'),
@@ -400,10 +403,28 @@ function kindSection(
 // link a model to its config page when one with the same name is documented.
 // Name-match mirrors the config-wins-for-shared-name heuristic the site's
 // render-layer autolinker uses.
-function configLinkSection(name: string, id: string, configNames: Set<string>) {
-  return configNames.has(name)
-    ? `The configuration slots for this model are documented on its [config schema page](../../config/${id}).`
-    : ''
+function configPageOf(header: ModelHeader, configNames: Set<string>) {
+  return configNames.has(header.name) ? `../../config/${header.id}` : undefined
+}
+
+// A member's docs, or for the `id`, `type` and `configuration` properties
+// every pluggable element declares, what their declarations already say.
+function memberDocs(key: MemberKey, m: Member, configPage?: string) {
+  const literal = /^"[^"]*"$/.test(m.signature)
+  return (
+    m.docs.trim() ||
+    (key !== 'properties'
+      ? ''
+      : m.name === 'type'
+        ? literal
+          ? `Always \`${m.signature}\`, the name a snapshot selects this model by.`
+          : 'The registered name of the concrete type, which a snapshot selects it by.'
+        : m.name === 'id'
+          ? `The identifier references to this node resolve through. ${m.propertyDefault === undefined ? 'A snapshot must set it.' : 'A snapshot that leaves it out gets a generated one.'}`
+          : m.name === 'configuration'
+            ? `The config node this model reads its settings from, through \`getConf\`.${configPage ? ` Its slots are documented on its [config schema page](${configPage}).` : ''}`
+            : '')
+  )
 }
 
 function renderModel(
@@ -414,14 +435,16 @@ function renderModel(
 ): string {
   const { header, filename } = model
   const inherited = collectInheritedMembers(model.members, ancestors)
-  const own = MEMBER_KINDS.reduce((n, k) => n + model.members[k.key].length, 0)
+  const own = memberNames(model.members).length
+  const configPage = configPageOf(header, configNames)
 
   // the member tables are h2 sections of their own, so the intro prose is
   // emitted bare rather than under an `## Overview` heading it would outweigh
   const body = section(
     header.docs,
     exampleSection(header.examples),
-    configLinkSection(header.name, header.id, configNames),
+    configPage &&
+      `The configuration slots for this model are documented on its [config schema page](${configPage}).`,
     // A model that composes others and declares nothing of its own renders a
     // page of entirely other models' members, which reads as its surface when
     // none of it is (PreferencesSessionMixin: 52 rows, 43 from BaseSessionModel
@@ -434,7 +457,7 @@ function renderModel(
       inherited.length &&
       'Each section ends with the members a composed model contributes, linked to the page that documents them.',
     ...MEMBER_KINDS.map(k =>
-      kindSection(k, model.members[k.key], inherited, link),
+      kindSection(k, model.members[k.key], inherited, configPage, link),
     ),
   )
 
@@ -488,11 +511,11 @@ function renderAgentModel(
         memberLine(
           m.name,
           key === 'properties'
-            ? ` = ${flatCode(kind.memberCode(m))}`
+            ? propertyText(m)
             : key === 'getters'
               ? `: ${flatCode(kind.memberCode(m))}`
               : flatCode(kind.memberCode(m)),
-          m.docs,
+          memberDocs(key, m),
         ),
       ),
     }
@@ -531,12 +554,8 @@ export function resolvedProperties(
   byFile: Record<string, StateModel>,
   modelName: string,
 ): { member: Member; declaredBy: string }[] {
-  const withHeader = withHeaders(byFile)
-  const index: ModelIndex = {
-    byDeclId: mapByKey(withHeader, m => m.header.selfDeclId),
-    bySlug: mapByKey(withHeader, m => m.header.id),
-  }
-  const model = withHeader.find(m => m.header.name === modelName)
+  const index = modelIndex(byFile)
+  const model = index.models.find(m => m.header.name === modelName)
   if (!model) {
     return []
   }
@@ -557,6 +576,14 @@ export function resolvedProperties(
   ]
 }
 
+// `windowStartBp: number = 0`, or the declaring source when the type could
+// not be read.
+function propertyText(m: Member) {
+  return m.signature
+    ? `: ${flatCode(m.signature)}${m.propertyDefault === undefined ? '' : ` = ${flatCode(m.propertyDefault)}`}`
+    : ` = ${flatCode(stripPropertyName(m.code))}`
+}
+
 type TypeLinker = (html: string) => string
 
 // A signature names another model, or a config node as `<schema>Config`, where
@@ -570,7 +597,7 @@ function typeLinker(modelNames: string[], configNames: Set<string>) {
   // last, wins over an alias that happens to spell it.
   const pages = new Map([
     ...[...configNames].flatMap(name => {
-      const page = `../../config/${slugify(name, { lower: true })}`
+      const page = `../../config/${modelPageId(name)}`
       const node = configNodeName(name)
       return [
         [`${node}Model`, page],
@@ -578,7 +605,7 @@ function typeLinker(modelNames: string[], configNames: Set<string>) {
       ] as const
     }),
     ...modelNames.flatMap(name => {
-      const page = `../${slugify(name, { lower: true })}`
+      const page = `../${modelPageId(name)}`
       return [
         [`${name}Model`, page],
         [name, page],
@@ -596,16 +623,33 @@ function typeLinker(modelNames: string[], configNames: Set<string>) {
     })
 }
 
-// Properties every pluggable element declares the same way, which a docstring
-// could only restate.
-const SELF_EVIDENT = new Set(['id', 'type', 'configuration'])
+// Each documented model with its page and its agent text.
+export function renderModels(
+  byFile: Record<string, StateModel>,
+  configNames: Set<string>,
+) {
+  const index = modelIndex(byFile)
+  const link = typeLinker(
+    index.models.map(m => m.header.name),
+    configNames,
+  )
+  return index.models.map(model => {
+    const ancestors = collectAncestors(model, index)
+    return {
+      model,
+      page: renderModel(model, ancestors, configNames, link),
+      agent: renderAgentModel(model, ancestors, configNames),
+    }
+  })
+}
 
 export function writeModelDocs(
   byFile: Record<string, StateModel>,
   configNames: Set<string>,
 ) {
   const dir = 'website/docs/models'
-  const withHeader = withHeaders(byFile)
+  const rendered = renderModels(byFile, configNames)
+  const withHeader = rendered.map(r => r.model)
   assertUniquePages(
     '#stateModel',
     withHeader.map(m => ({
@@ -614,29 +658,13 @@ export function writeModelDocs(
       filename: m.filename,
     })),
   )
-  const index: ModelIndex = {
-    byDeclId: mapByKey(withHeader, m => m.header.selfDeclId),
-    bySlug: mapByKey(withHeader, m => m.header.id),
-  }
-  const agentPages: Record<string, { category: string; text: string }> = {}
-  const link = typeLinker(
-    withHeader.map(m => m.header.name),
-    configNames,
-  )
-  for (const model of withHeader) {
-    const ancestors = collectAncestors(model, index)
-    writePage(
-      `${dir}/${model.header.name}.md`,
-      renderModel(model, ancestors, configNames, link),
-    )
-    agentPages[model.header.name] = renderAgentModel(
-      model,
-      ancestors,
-      configNames,
-    )
+  for (const { model, page } of rendered) {
+    writePage(`${dir}/${model.header.name}.md`, page)
   }
   return {
-    agentPages,
+    agentPages: Object.fromEntries(
+      rendered.map(r => [r.model.header.name, r.agent]),
+    ),
     ...headerGaps({
       items: withHeader,
       getName: m => m.header.name,
@@ -665,21 +693,22 @@ export function writeModelDocs(
     undocumented: withHeader.flatMap(m =>
       MEMBER_KINDS.flatMap(k =>
         m.members[k.key]
-          .filter(
-            member =>
-              !member.docs.trim() &&
-              !(k.key === 'properties' && SELF_EVIDENT.has(member.name)),
-          )
+          .filter(member => !memberDocs(k.key, member))
           .map(member => `${m.header.name}.${member.name}`),
       ),
     ),
     // A member whose cell prints MST internals or collapses to nothing: the
     // model it names has no `#stateModel` tag for `printedTypes` to name it by,
-    // or nothing in the source names the type it returns.
+    // or nothing in the source names the type it returns. A property shows its
+    // source instead, so it counts when `propertyType` could not read it.
     unreadableTypes: withHeader.flatMap(m =>
-      MEMBER_KINDS.filter(k => k.key !== 'properties').flatMap(k =>
+      MEMBER_KINDS.flatMap(k =>
         m.members[k.key]
-          .filter(member => unreadableSignature(k.memberCode(member)))
+          .filter(member =>
+            k.key === 'properties'
+              ? !member.signature
+              : unreadableSignature(k.memberCode(member)),
+          )
           .map(member => `${m.header.name}.${member.name}`),
       ),
     ),
