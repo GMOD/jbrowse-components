@@ -20,12 +20,13 @@ name or its `#FusionName` header.
 
 ## Working with the table
 
-- Click a column header to sort; use the column and text filters to narrow rows
-- Each row has a feature menu (triangle dropdown):
-  - **Open in linear genome view** navigates a linear genome view to that
-    feature
-  - **Open in breakpoint split view** opens the row's two breakpoints stacked,
-    for a paired or breakend row
+Click a column header to sort, and use the column and text filters to narrow
+rows.
+
+<Figure src="/img/spreadsheet/feature_menu.png" caption="An SV callset in the spreadsheet view, with the feature menu open from the triangle beside the first row's location." />
+
+**Open in breakpoint split view** stacks the row's two breakpoints, for a paired
+or breakend row.
 
 For long-range structural variants specifically, the
 [SV inspector](/docs/user_guides/sv_inspector_view) pairs this table with a

@@ -6,6 +6,7 @@ import {
   sessionSpec,
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
+import { SKBR3_SNIFFLES_VCF } from './sv.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -113,6 +114,27 @@ export const userGuideSpecs: ScreenshotSpec[] = [
         anchor: { trackId: 'crispr_spcas9', feature: CRISPR_GUIDE },
       },
       { type: 'waitForText', text: 'gcPercent' },
+    ],
+  },
+
+  {
+    mode: 'url',
+    name: 'spreadsheet/feature_menu',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        { type: 'SpreadsheetView', assembly: 'hg19', uri: SKBR3_SNIFFLES_VCF },
+      ],
+    }),
+    formAssembly: true,
+    readySelector: '.MuiDataGrid-row[data-rowindex="0"]',
+    readyTimeout: 60000,
+    viewportHeight: 500,
+    actions: [
+      {
+        type: 'click',
+        selector: '.MuiDataGrid-row[data-rowindex="0"] button',
+      },
+      { type: 'waitForText', text: 'Open in breakpoint split view' },
     ],
   },
 ]
