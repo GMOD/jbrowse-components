@@ -29,7 +29,7 @@ test.each([
     'LinearPileupDisplay',
     { coverage: { show: false }, sashimi: { show: false } },
   ],
-  ['LinearSNPCoverageDisplay', { pileup: { show: false }, height: 100 }],
+  ['LinearSNPCoverageDisplay', { pileup: { show: false } }],
   [
     'LinearReadArcsDisplay',
     {

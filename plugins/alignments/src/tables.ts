@@ -29,7 +29,6 @@ import {
 } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import {
   fullConfSnapshot,
-  getConf,
   readConfObject,
   refusingUndeclaredKeys,
 } from '@jbrowse/core/configuration'
@@ -631,7 +630,7 @@ const AlignmentsTablesHost = types
       return detectedModificationsOf(self.rpcDataMap)
     },
     get fitTargetHeight(): number {
-      return getConf(self, 'height')
+      return self.configuredHeight
     },
   }))
   .views(self => connectorSettingViews(self))

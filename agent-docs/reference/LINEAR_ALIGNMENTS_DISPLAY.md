@@ -162,6 +162,17 @@ cost is blank space under a stack whose lane was shrunk.
 
 ## Read height vs track height
 
+**The `height` slot is unset by default, and `configuredHeight` resolves it**
+(`trackHeight.ts`): 250 px while the pileup shows, 100 while it is hidden, so a
+coverage-only track opens compact. A `number` slot could not hold this:
+`stripDefault` drops a written 250 from the snapshot, and a track whose pileup
+was hidden at runtime would reload at 100. `setShowPileup` writes the resolved
+height before it flips `pileup.show`, so the menu toggle never resizes the
+track, before or after a reload. Everything that sizes the track reads
+`configuredHeight` (the drag, `fitTargetHeight`, grow, the tables), never the
+raw slot. A config editor or session spec writing `pileup.show` directly does
+not record the height.
+
 **`fit` is the sole `heightMode` that also drives the read-height axis**; every
 special case follows, including the fit cap using the Normal height.
 `self.featureHeight` is the fit-squeezed value — editors that mutate the size

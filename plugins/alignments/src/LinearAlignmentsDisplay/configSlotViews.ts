@@ -49,6 +49,7 @@ import {
   normalInsertSizeProblems,
   pinnedInsertSizeBandOf,
 } from './normalInsertSizeConfigSchema.ts'
+import { resolvedTrackHeight } from './trackHeight.ts'
 
 import type {
   MismatchOpacityField,
@@ -225,6 +226,15 @@ export function configSlotViews(
     /** #getter */
     get showPileup(): boolean {
       return getConf(self, ['pileup', 'show'])
+    },
+    /**
+     * #getter
+     * The `height` slot resolved (`resolvedTrackHeight`). Overrides
+     * `TrackHeightMixin.configuredHeight`, so the drag, `fit` and grow read
+     * it.
+     */
+    get configuredHeight(): number {
+      return resolvedTrackHeight(getConf(self, 'height'), this.showPileup)
     },
     /**
      * #getter
@@ -592,8 +602,18 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
+     * Writes the height the track has before the switch, so an unset `height`
+     * resolving off `pileup.show` does not resize the track now or on reload.
      */
     setShowPileup(show: boolean) {
+      setConf(
+        self,
+        'height',
+        resolvedTrackHeight(
+          getConf(self, 'height'),
+          getConf(self, ['pileup', 'show']),
+        ),
+      )
       setConf(self, ['pileup', 'show'], show)
     },
 

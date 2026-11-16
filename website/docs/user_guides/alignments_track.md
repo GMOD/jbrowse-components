@@ -17,9 +17,11 @@ there. The track menu's **Show → Show coverage** and **Show → Show pileup**
 toggles turn either panel off independently: pileup-only gives the reads the
 vertical space, and coverage-only fills the track's height with the coverage
 band, split evenly between the sections when the reads are grouped, so it never
-scrolls. Drag the track's bottom edge to resize it. A read-connections or
-sashimi strip drawn below the coverage keeps its own height, and the coverage
-takes the rest; drag the strip's top edge to resize it.
+scrolls. A track configured with its pileup hidden opens at 100 px rather than
+250; the toggles keep whatever height the track has. Drag the track's bottom
+edge to resize it. A read-connections or sashimi strip drawn below the coverage
+keeps its own height, and the coverage takes the rest; drag the strip's top edge
+to resize it.
 
 ## Sorting reads
 

@@ -41,6 +41,13 @@ test('the feature height menu greys out while the alignments are hidden', () => 
   expect(featureHeightDisabled(display)).toBe(true)
 })
 
+test('the track opens at 250 and hiding the alignments keeps that height', () => {
+  const display = createDisplay()
+  expect(display.height).toBe(250)
+  display.setShowPileup(false)
+  expect(display.height).toBe(250)
+})
+
 // `strand` paints only while the channel names neither a field nor a
 // constant, so a written `value` is the fill and a written field wins over it.
 test('a written value is the constant fill, over the strand default', () => {

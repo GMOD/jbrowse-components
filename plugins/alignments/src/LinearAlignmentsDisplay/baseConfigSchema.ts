@@ -38,10 +38,10 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * #slot
      */
     height: {
-      type: 'number',
-      defaultValue: 250,
+      type: 'maybeNumber',
+      defaultValue: undefined,
       description:
-        'Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does',
+        'Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does. Unset, the track opens at 250 with the pileup shown and at 100 with it hidden, and showing or hiding the pileup from the menu writes the height it had, so the toggle never resizes the track',
     },
     // `growMaxHeight` rides along, so both of `HeightModeMixin`'s slots are
     // declared here at once.
