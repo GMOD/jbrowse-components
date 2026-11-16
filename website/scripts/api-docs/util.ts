@@ -288,10 +288,6 @@ export function withHeaders<T extends { header?: object }>(
   )
 }
 
-// Build a Map keyed by an accessor, dropping items whose key is undefined (last
-// wins on collision, matching `new Map(entries)`). Shared by both generators'
-// index construction: byDeclId from an optional declaration id, byName/bySlug
-// from the always-present name/slug.
 // Fail when two documented entities would write the same page, or answer to the
 // same link slug.
 //
@@ -336,6 +332,10 @@ export function assertUniquePages(
   }
 }
 
+// Build a Map keyed by an accessor, dropping items whose key is undefined (last
+// wins on collision, matching `new Map(entries)`). Shared by both generators'
+// index construction: byDeclId from an optional declaration id, byName/bySlug
+// from the always-present name/slug.
 export function mapByKey<T>(
   items: T[],
   key: (item: T) => string | undefined,

@@ -23,10 +23,7 @@ import type { ConstantIndex } from './enumConstants.ts'
 // holds: another pluggable element's config (`'display'`), a schema by its
 // `ConfigurationSchema` name, or a schema the factory declaring the slot takes
 // as a parameter, which each caller chooses.
-export type SlotHolds =
-  | { element: string }
-  | { schema: string }
-  | { parameter: true }
+type SlotHolds = { element: string } | { schema: string } | { parameter: true }
 
 export interface SlotMeta {
   type?: string

@@ -95,7 +95,7 @@ const STRUCTURAL = new Set(['views', 'tracks'])
 // the derived form.
 const MIGRATION_ONLY = new Set(['legacyBpPerPx'])
 
-export interface SpecKey {
+interface SpecKey {
   name: string
   docs: string
 }
@@ -243,7 +243,7 @@ export function scanLaunchArgs(corpus: SourceCorpus) {
  * Walk every source file once, collecting the tagged buckets, every interface
  * (so extends clauses resolve), and the tagged value lists.
  */
-export function scanSpecKeys(corpus: SourceCorpus): Scan {
+function scanSpecKeys(corpus: SourceCorpus): Scan {
   let scan = scans.get(corpus)
   if (!scan) {
     scan = walkSpecKeys(corpus)

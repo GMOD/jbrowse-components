@@ -54,7 +54,7 @@ function composedMixins(corpus: SourceCorpus, file: string, name: string) {
     .flatMap(call => call.mixins)
 }
 
-export function collectFoundations(corpus: SourceCorpus) {
+function collectFoundations(corpus: SourceCorpus) {
   const defs = new Map<string, string>()
   const defFiles = new Map<string, string>()
   const uses = new Map<string, string[]>()

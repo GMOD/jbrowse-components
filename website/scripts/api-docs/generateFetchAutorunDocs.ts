@@ -138,7 +138,7 @@ function tagAbove(node: ts.Node, text: string) {
   return undefined
 }
 
-export function collectAutoruns(): Autorun[] {
+function collectAutoruns(): Autorun[] {
   const source = parseSourceFileSyntactic(SOURCE)
   const text = source.getFullText()
   const out: Autorun[] = []

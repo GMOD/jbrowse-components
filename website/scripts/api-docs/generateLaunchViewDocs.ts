@@ -33,7 +33,7 @@ import type { SourceCorpus } from './sourceCorpus.ts'
 // complete.
 const URLPARAMS = 'website/docs/urlparams.md'
 
-export interface LaunchViewRow {
+interface LaunchViewRow {
   /** the extension point id, `LaunchView-` plus the view type */
   id: string
   /** heading text of that view type's section on the URL parameters page */
@@ -94,7 +94,7 @@ function argsTypeFiles(corpus: SourceCorpus) {
   return files
 }
 
-export function collectLaunchViews(corpus: SourceCorpus): LaunchViewRow[] {
+function collectLaunchViews(corpus: SourceCorpus): LaunchViewRow[] {
   const launchArgs = scanLaunchArgs(corpus)
   const sections = specKeySections()
   const files = argsTypeFiles(corpus)

@@ -119,7 +119,7 @@ function assertDocumented(keys: Key[]) {
   }
 }
 
-export function collectPaletteKeys(): Key[] {
+function collectPaletteKeys(): Key[] {
   // StringColors first: `Palette extends StringColors`, so that is the order a
   // reader of the augmentation meets them in.
   const keys = [

@@ -195,8 +195,7 @@ export function outerSchemaName(configNode: string) {
 // Fold each config's spread-in slots into its slot list, after accumulation so a
 // `#slot` the schema declares itself always wins over the shared table's version
 // of the same name. A `#slot` on a schema factory's argument documents the slot
-// the factory builds with it, whose source it then takes. Idempotent, so both
-// writers below can call it.
+// the factory builds with it, whose source it then takes.
 export function mergeSpreadSlots(byFile: Record<string, Config>) {
   for (const config of Object.values(byFile)) {
     const spread = new Map(config.spreadSlots?.map(s => [s.name, s]))

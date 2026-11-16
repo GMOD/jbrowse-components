@@ -27,7 +27,7 @@ const GRAPH_PLUGIN = 'GraphGenomeView'
 // to a build hash while the other tracks the rolling URL — and that is the case
 // where a single fence stops being true for one of the pages using it. Other
 // plugins a demo loads beside it are not the fence's.
-export function collectGraphPlugin(): PluginEntry[] {
+function collectGraphPlugin(): PluginEntry[] {
   const seen = CONFIGS.map(file => {
     const { plugins } = JSON.parse(fs.readFileSync(file, 'utf8')) as {
       plugins?: PluginEntry[]

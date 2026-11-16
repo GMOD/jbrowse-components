@@ -276,7 +276,7 @@ export function printedTypes(
     const tags = (['stateModel', 'config'] as const).filter(tag =>
       startsWithTag(text, tag),
     )
-    if (/\.test\.tsx?$/.test(sourceFile.fileName) || !tags.length) {
+    if (!tags.length) {
       continue
     }
     const walk = (node: ts.Node) => {
@@ -407,7 +407,7 @@ function shortenSignature(sig: string, max: number) {
 }
 
 // The checker prints a union in its own order, not ours, and that order moves
-// with the composition of the program — which `getAllFiles` builds from
+// with the composition of the program — which `corpusFiles` builds from
 // `git ls-files --cached --others`, untracked files included. `pnpm autogen
 // --check` is a CI gate, so a doc nobody touched goes red for it; 161d06e858
 // fixed the display-link half of this and measured the half left over, a union
@@ -443,7 +443,7 @@ export function sortUnionMembers(sig: string) {
 // [undefined]>`, so the `types.*` combinators are read off the source and the
 // checker is asked only for what they wrap. Undefined when any part of it
 // prints as nothing a reader could use.
-export interface PropertyType {
+interface PropertyType {
   type: string
   defaultValue?: string
 }

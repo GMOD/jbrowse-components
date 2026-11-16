@@ -26,14 +26,14 @@ import { codeCell, markdownTable, tableCell } from './markdown.ts'
 //   row naming the wrong thing rather than as nothing at all.
 const FILE = 'packages/core/src/PluginManager.ts'
 
-export interface ElementPhase {
+interface ElementPhase {
   /** the group string the scheduler and `addElementType` share */
   group: string
   /** `pluginManager.<method>` a plugin calls to register one */
   method: string
 }
 
-export function collectElementPhases(): ElementPhase[] {
+function collectElementPhases(): ElementPhase[] {
   const text = fs.readFileSync(FILE, 'utf8')
 
   const declaration =

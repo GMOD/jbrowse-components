@@ -77,7 +77,7 @@ export function servedPackages() {
   return new Set(Object.values(readManifest().modules).map(m => m.package))
 }
 
-export function collectReExports(): Row[] {
+function collectReExports(): Row[] {
   const byPackage = new Map<string, Row>()
   for (const mod of Object.values(readManifest().modules)) {
     let row = byPackage.get(mod.package)

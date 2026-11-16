@@ -76,7 +76,7 @@ function wrap(command: string, args: string[], width = WIDTH) {
   return lines
 }
 
-export function renderInstall(tools: string[], where: string) {
+function renderInstall(tools: string[], where: string) {
   const entries = tools.map(tool => {
     const entry = REGISTRY[tool]
     if (!entry) {

@@ -35,7 +35,7 @@ function enumReadType(name: string) {
     : "the `model` enumeration's members"
 }
 
-export interface SlotTypeRow {
+interface SlotTypeRow {
   name: string
   /** the MST type the slot's value is built from */
   model: string

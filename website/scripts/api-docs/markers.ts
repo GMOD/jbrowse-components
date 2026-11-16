@@ -19,7 +19,7 @@ import { assertMarkersAndDocsAgree } from '../markerDocs.ts'
 // once (a `#color` tag renders into both a guide and the spec).
 import { flushDocs, staleDocs } from './format.ts'
 import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
-import { getAllFiles, sourceCorpus } from './sourceCorpus.ts'
+import { corpusFiles, sourceCorpus } from './sourceCorpus.ts'
 
 const args = process.argv.slice(2)
 const check = args.includes('--check')
@@ -40,7 +40,7 @@ if (!selected.length) {
   process.exit(1)
 }
 
-const corpus = sourceCorpus(await getAllFiles())
+const corpus = sourceCorpus(corpusFiles())
 // A generator that throws is reported under its label and the rest still run,
 // for the same reason no stale table stops the run.
 const failed = new Map<string, unknown>()

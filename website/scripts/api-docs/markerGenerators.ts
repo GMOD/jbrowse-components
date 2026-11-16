@@ -64,7 +64,7 @@ import type { SourceCorpus } from './sourceCorpus.ts'
 // writes). It is what names the stale table by label, `markers.ts <label>`
 // narrows a development loop to one table, and the whole set costs one
 // TypeScript load rather than gendocs' whole-repo program.
-export interface MarkerGenerator {
+interface MarkerGenerator {
   // Names the table in the run's output, and what `markers.ts <filter>` matches.
   label: string
   // Returns the docs whose block changed; under `--check` none reach disk.

@@ -28,7 +28,7 @@ const CALL = /\bsharedBgzfWorkerPool\(\)/
 
 // The workspace a call site belongs to. Every reader that wires the pool today
 // is a plugin, but the row is derived rather than assumed — see the throw below.
-// `getAllFiles` already limits the corpus to these three trees, so what this has
+// `corpusFiles` already limits the corpus to these three trees, so what this has
 // to place is the workspace NAME, and what the throw catches is a shape it
 // cannot: a source file sitting directly in one of them rather than in a
 // package under it.
@@ -43,14 +43,10 @@ interface Site {
   file: string
 }
 
-export function collectBgzfPoolSites(corpus: SourceCorpus): Site[] {
+function collectBgzfPoolSites(corpus: SourceCorpus): Site[] {
   const out: Site[] = []
   for (const file of corpus.files) {
-    if (
-      file.includes('.test.') ||
-      file.endsWith(DEFINITION) ||
-      !CALL.test(corpus.read(file))
-    ) {
+    if (file.endsWith(DEFINITION) || !CALL.test(corpus.read(file))) {
       continue
     }
     const m = WORKSPACE_PATH.exec(file)

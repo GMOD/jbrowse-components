@@ -32,7 +32,7 @@ import {
 import { removeComments, repoRelative } from './util.ts'
 
 import type { ConstantIndex } from './enumConstants.ts'
-import type { Example, MemberTag, TagType } from './jsDocTags.ts'
+import type { MemberTag, TagType } from './jsDocTags.ts'
 import type { PrintedType } from './typeSignatures.ts'
 
 interface NodeBase {
@@ -225,21 +225,16 @@ export function extractWithComment(
   const memberTagged = new Map<string, string>()
 
   for (const sourceFile of sources) {
-    // Test files are excluded outright: their fixtures (a `#config` fixture
-    // comment, a hand-built `new DisplayType(...)`) would otherwise be mistaken
-    // for real documented entities or track/display links.
-    if (!/\.test\.tsx?$/.test(sourceFile.fileName)) {
-      // Structural member detection only runs in files that document a
-      // #stateModel, and the untagged-slot audit only in files that document a
-      // #config, so helper files with their own .actions() chains or internal
-      // ConfigurationSchema calls don't contribute spurious members/gaps.
-      const text = sourceFile.getFullText()
-      const isStateModel = startsWithTag(text, 'stateModel')
-      const isConfig = startsWithTag(text, 'config')
-      ts.forEachChild(sourceFile, node => {
-        visit(node, isStateModel, isConfig)
-      })
-    }
+    // Structural member detection only runs in files that document a
+    // #stateModel, and the untagged-slot audit only in files that document a
+    // #config, so helper files with their own .actions() chains or internal
+    // ConfigurationSchema calls don't contribute spurious members/gaps.
+    const text = sourceFile.getFullText()
+    const isStateModel = startsWithTag(text, 'stateModel')
+    const isConfig = startsWithTag(text, 'config')
+    ts.forEachChild(sourceFile, node => {
+      visit(node, isStateModel, isConfig)
+    })
   }
   assertNoUntaggedSlots(slotGaps)
   assertNoDocsBehindATag(behindATag)
@@ -547,7 +542,7 @@ function assertNoUntaggedSlots(gaps: ConfigSlotGap[]) {
  * Both times it was found by a person reading a docs page, not by a check. The
  * fix both times was one annotated file per registered type.
  *
- * `sources` excludes test files (see `extractWithComment`), so the fixtures that
+ * `sources` excludes test files (see `corpusFiles`), so the fixtures that
  * hand-build a `new DisplayType(...)` never reach `displayToTrackType` and this
  * needs no exclusion list of its own.
  */
@@ -895,10 +890,7 @@ function collectDelegatedClaims(
   const claimed = new Set<string>()
   const unresolved: UnresolvedBlock[] = []
   for (const sourceFile of sources) {
-    if (
-      /\.test\.tsx?$/.test(sourceFile.fileName) ||
-      !startsWithTag(sourceFile.getFullText(), 'stateModel')
-    ) {
+    if (!startsWithTag(sourceFile.getFullText(), 'stateModel')) {
       continue
     }
     const walk = (node: ts.Node) => {
@@ -1568,28 +1560,11 @@ function getNameNode(node: ts.Node): ts.Node | undefined {
   return undefined
 }
 
-interface ParsedNode {
-  name: string
-  docs: string
-  examples: Example[]
-  // `#gotcha <text>` blocks — footguns rendered as a caution callout on the
-  // generated page, so a warning lives at the definition site rather than in a
-  // hand-written guide that silently goes stale
-  gotchas: string[]
-  category?: string
-  // `#trackType <TrackType>` on an adapter's #config — the track type its
-  // example should be wrapped in (see wrapAdapterExample in configExamples.ts)
-  trackType?: string
-  code: string
-  signature: string
-  propertyDefault?: string
-}
-
 // Parse one extracted node into the fields the config and state-model generators
 // both build their Item/Member records from: the tag-parsed name/docs/examples/
 // category, plus the comment-stripped source and type signature. Shared so the
 // two near-identical buildItem/buildMember helpers don't drift.
-export function parseNode(obj: ExtractedNode): ParsedNode {
+export function parseNode(obj: ExtractedNode) {
   const { name, docs, examples, gotchas, category, trackType } =
     parseTaggedComment(obj.comment, obj.type, obj.name)
   return {

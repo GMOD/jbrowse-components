@@ -33,7 +33,7 @@ const CUTS = [
   },
 ]
 
-export interface OrthofinderSet {
+interface OrthofinderSet {
   /** the `$1` a reader passes to the script */
   name: string
   /** short names, which are also the JBrowse assembly names, in row order */
@@ -54,7 +54,7 @@ function annotationSource(accessions: string[]) {
       : 'RefSeq'
 }
 
-export function collectOrthofinderSets(): OrthofinderSet[] {
+function collectOrthofinderSets(): OrthofinderSet[] {
   const text = fs.readFileSync(FILE, 'utf8')
   const sets: OrthofinderSet[] = []
 
@@ -94,7 +94,7 @@ export function collectOrthofinderSets(): OrthofinderSet[] {
   return sets
 }
 
-export function collectOrthofinderCuts() {
+function collectOrthofinderCuts() {
   const text = fs.readFileSync(FILE, 'utf8')
   return CUTS.map(cut => {
     // `MAXSEQ="${MAXSEQ:-30}"`

@@ -42,7 +42,7 @@ export function readDoc(file: string) {
 
 // Repo-relative, so a generator passing an absolute path and one passing a
 // relative path share one cache entry rather than overwriting each other.
-export function docKey(file: string) {
+function docKey(file: string) {
   return path.relative(repoRoot, path.resolve(repoRoot, file))
 }
 

@@ -68,7 +68,7 @@ function requiredMembers(text: string, name: string) {
   )
 }
 
-export function collectAdapterBases(corpus: SourceCorpus): AdapterBase[] {
+function collectAdapterBases(corpus: SourceCorpus): AdapterBase[] {
   const bases: AdapterBase[] = []
   const untagged: string[] = []
   const files = corpus.files.filter(

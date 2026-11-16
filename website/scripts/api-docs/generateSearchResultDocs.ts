@@ -30,7 +30,7 @@ interface ResultField {
   description: string
 }
 
-export function collectResultFields(corpus: SourceCorpus): ResultField[] {
+function collectResultFields(corpus: SourceCorpus): ResultField[] {
   const declaration = corpus
     .parse(FILE)
     .statements.filter(ts.isInterfaceDeclaration)

@@ -39,7 +39,7 @@ interface ShaderExport {
   description: string
 }
 
-export function collectShaderExports(): ShaderExport[] {
+function collectShaderExports(): ShaderExport[] {
   const lines = fs.readFileSync(EMITTER, 'utf8').split('\n')
   const exports: ShaderExport[] = []
   const untagged: number[] = []

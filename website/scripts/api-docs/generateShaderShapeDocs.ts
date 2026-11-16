@@ -45,7 +45,7 @@ function label(file: string) {
   return `${file.split('/')[1]}/${path.basename(file, '.slang')}`
 }
 
-export function collectShapeConsumers(corpus: SourceCorpus) {
+function collectShapeConsumers(corpus: SourceCorpus) {
   const files = slangFiles()
   const modules = files
     .filter(f => path.dirname(f) === SHARED_SHADER_DIR)

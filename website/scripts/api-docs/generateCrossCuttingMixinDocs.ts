@@ -94,7 +94,7 @@ function collectDefs(corpus: SourceCorpus, file: string) {
   return defs
 }
 
-export function collectCrossCuttingMixins(corpus: SourceCorpus) {
+function collectCrossCuttingMixins(corpus: SourceCorpus) {
   const defs = new Map<string, string>()
   const composedBy = new Map<string, Set<string>>()
   for (const file of corpus.files) {

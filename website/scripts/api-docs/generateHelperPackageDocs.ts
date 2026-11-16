@@ -87,7 +87,7 @@ function hasApiExports(corpus: SourceCorpus, dir: string) {
   )
 }
 
-export function collectHelperPackages(corpus: SourceCorpus): Pkg[] {
+function collectHelperPackages(corpus: SourceCorpus): Pkg[] {
   const served = servedPackages()
   const out: Pkg[] = []
   for (const entry of fs.readdirSync(PACKAGES_DIR, { withFileTypes: true })) {

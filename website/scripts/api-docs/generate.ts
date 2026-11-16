@@ -30,7 +30,7 @@ import {
 import { writeSpecKeyDocs } from './generateSpecKeyDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
-import { corpusFiles, getAllFiles, sourceCorpus } from './sourceCorpus.ts'
+import { corpusFiles, sourceCorpus } from './sourceCorpus.ts'
 import { unreadableSignature } from './typeSignatures.ts'
 import { writeConfigDocs } from './writeConfigDocs.ts'
 
@@ -89,12 +89,12 @@ async function main() {
   const models: Record<string, StateModel> = {}
   const api: Record<string, ApiGroup> = {}
   const displayLinks: DisplayTrackLink[] = []
-  const files = await getAllFiles()
+  const files = corpusFiles()
   // Roots are the corpus's own files — no test files, which carry no tags and
   // are imported by nothing, so they only ever cost the program their parse.
   // The corpus then reads its syntax trees off the program rather than parsing
   // the same 3,900 sources a second time.
-  const docProgram = createDocProgram(corpusFiles(files))
+  const docProgram = createDocProgram(files)
   const corpus = sourceCorpus(files, docProgram.sources)
   const { blindSpots, orphanMembers } = extractWithComment(
     docProgram,
@@ -128,7 +128,7 @@ async function main() {
     }
   }
   // Push order is extractor traversal order, which moves with the composition
-  // of the TS program — and `getAllFiles` includes untracked files, so one
+  // of the TS program — and `corpusFiles` includes untracked files, so one
   // scratch `.ts` reorders these bullets across 19 pages. Sort, so the artifact
   // is a function of the sources.
   for (const displayNames of displayTypesByTrack.values()) {
