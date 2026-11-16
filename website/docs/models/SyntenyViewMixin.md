@@ -18,8 +18,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-data">**data**</span><br><code>types.stripDefault(syntenyDataConfigSchema, {})</code> | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. One value for the view, so every track draws at the same tier. |
-| <span id="property-legend">**legend**</span><br><code>types.stripDefault(legendConfigSchema, {})</code> | Whether the view draws its color key, a [](/docs/config/legend) object. The key's close button hides it for the current mode only and is never saved. |
+| <span id="property-data">**data**</span><br><code><a href="../../config/syntenydata">SyntenyDataConfig</a></code> · default <code>{}</code> | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. One value for the view, so every track draws at the same tier. |
+| <span id="property-legend">**legend**</span><br><code><a href="../../config/legend">LegendConfig</a></code> · default <code>{}</code> | Whether the view draws its color key, a [](/docs/config/legend) object. The key's close button hides it for the current mode only and is never saved. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>4 inherited properties from 3 models</summary>
@@ -71,7 +71,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="getter-predicates">[
 
 ## Methods
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>11 inherited methods from 4 models</summary>
 
 From [SyntenyColorsMixin](../syntenycolorsmixin): <span id="method-syntenytracks">[`syntenyTracks`](../syntenycolorsmixin#method-syntenytracks)</span>, <span id="method-colorabletrackconfigs">[`colorableTrackConfigs`](../syntenycolorsmixin#method-colorabletrackconfigs)</span>, <span id="method-colorableattributenames">[`colorableAttributeNames`](../syntenycolorsmixin#method-colorableattributenames)</span>, <span id="method-legendalpha">[`legendAlpha`](../syntenycolorsmixin#method-legendalpha)</span>

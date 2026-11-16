@@ -132,7 +132,7 @@ import { carriedSyntenySettings } from '@jbrowse/synteny-core'
 function carriedSyntenySettings(view: SyntenyColorsModel): {
   trackColors: IKeyValueMap<string>
   filter: ModelSnapshotType<Record<string, IAnyType>>[]
-  encoding?: { color: ModelSnapshotType<Record<string, IAnyType>> } | undefined
+  encoding?: { color: ModelSnapshotType<Record<string, IAnyType>> }
 }
 ```
 
@@ -186,16 +186,16 @@ import { colorByScales } from '@jbrowse/synteny-core'
 function colorByScales(
   field: string | undefined,
   opts?: {
-    pointBased?: boolean | undefined
-    cigarOps?: number | undefined
-    trackChips?: ColorChip[] | undefined
-    attributeRanges?: Record<string, AttributeRange> | undefined
-    hideUnlabelled?: boolean | undefined
-    missingColor?: string | undefined
-    names?: readonly string[] | undefined
-    descending?: boolean | undefined
-    paint?: SyntenyColorPaint | undefined
-  } & { alpha?: number | undefined; title?: string | undefined },
+    pointBased?: boolean
+    cigarOps?: number
+    trackChips?: ColorChip[]
+    attributeRanges?: Record<string, AttributeRange>
+    hideUnlabelled?: boolean
+    missingColor?: string
+    names?: readonly string[]
+    descending?: boolean
+    paint?: SyntenyColorPaint
+  } & { alpha?: number; title?: string },
 ): ColorScale[]
 ```
 
@@ -498,7 +498,7 @@ import { opacityLevel } from '@jbrowse/synteny-core'
 function opacityLevel(
   setting: SyntenyOpacitySnapshot,
   defaultValue: number,
-  ranges?: Record<string, AttributeRange> | undefined,
+  ranges?: Record<string, AttributeRange>,
 ): number
 ```
 
@@ -535,7 +535,7 @@ import { opacityRangeAt } from '@jbrowse/synteny-core'
 function opacityRangeAt(
   setting: SyntenyOpacitySnapshot,
   value: number,
-  ranges?: Record<string, AttributeRange> | undefined,
+  ranges?: Record<string, AttributeRange>,
 ): string[]
 ```
 

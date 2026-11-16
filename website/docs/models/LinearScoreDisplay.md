@@ -45,8 +45,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('LinearScoreDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>"LinearScoreDisplay"</code> | Always `"LinearScoreDisplay"`, the name a snapshot selects this model by. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/linearscoredisplay">LinearScoreDisplayConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/linearscoredisplay). |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>1 inherited property from one model</summary>
@@ -57,7 +57,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>22 inherited volatiles from 6 models</summary>
 
 From [StoredHoverMixin](../storedhovermixin): <span id="volatile-storedhoveredfeature">[`storedHoveredFeature`](../storedhovermixin#volatile-storedhoveredfeature)</span>
@@ -127,9 +127,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-fetchneeded">**fetchNeeded**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(needed: { region: Region; displayedRegionIndex: number; }[]) =…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(needed: { region: Region; displayedRegionIndex: number; }[]) =&gt; Promise&lt;void&gt;</code></pre></dialog></span> |  |
+| <span id="action-fetchneeded">**fetchNeeded**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(needed: { region: Region; … }[]) =&gt; Promise&lt;void&gt;</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(needed: { region: Region; displayedRegionIndex: number; }[]) =&gt; Promise&lt;void&gt;</code></pre></dialog></span> |  |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: ScoreRenderingBackend) =&gt; void</code> |  |
-| <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></dialog></span> | The SVG export, lazily loaded with the mark list it paints through. Its own block: the export reads `self` as the slice `renderSvg.tsx` declares, and MST does not type a block's own members onto its `self` |
+| <span id="action-rendersvg">**renderSvg**</span><br><code>(opts?: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> | The SVG export, lazily loaded with the mark list it paints through. Its own block: the export reads `self` as the slice `renderSvg.tsx` declares, and MST does not type a block's own members onto its `self` |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>42 inherited actions from 7 models</summary>

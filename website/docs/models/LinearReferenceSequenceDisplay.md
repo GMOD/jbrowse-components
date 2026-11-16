@@ -22,8 +22,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('LinearReferenceSequenceDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>"LinearReferenceSequenceDisplay"</code> | Always `"LinearReferenceSequenceDisplay"`, the name a snapshot selects this model by. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/linearreferencesequencedisplay">LinearReferenceSequenceDisplayConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/linearreferencesequencedisplay). |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>1 inherited property from one model</summary>
@@ -34,7 +34,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>21 inherited volatiles from 5 models</summary>
 
 From [MultiRegionDisplayMixin](../multiregiondisplaymixin): <span id="volatile-loadedregions">[`loadedRegions`](../multiregiondisplaymixin#volatile-loadedregions)</span>
@@ -97,7 +97,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | --- | --- |
 | <span id="method-colorpalettein">**colorPaletteIn**</span><br><code>(palette: JBrowsePalette) =&gt; ColorPalette</code> | `colorPalette` in another palette: the SVG export's, whose theme need not be the session's. |
 | <span id="method-hoverat">**hoverAt**</span><br><code>(offsetX: number, offsetY: number) =&gt; SequenceHover &#124; undefined</code> | Resolve the genomic position, reference base, and codon/amino-acid under a cursor at track-relative pixel `(offsetX, offsetY)`. Drives the hover tooltip; returns undefined when no sequence is painted, off a fetched region, or between rows. |
-| <span id="method-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></dialog></span> |  |
+| <span id="method-rendersvg">**renderSvg**</span><br><code>(opts?: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
@@ -119,7 +119,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-toggleshowforward">**toggleShowForward**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-toggleshowreverse">**toggleShowReverse**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-toggleshowtranslation">**toggleShowTranslation**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRend…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRenderState&gt;) =&gt; void</code></pre></dialog></span> |  |
+| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(backend: PerRegionRenderingBackend&lt;…&gt;) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(backend: PerRegionRenderingBackend&lt;SequenceCells, SequenceRenderState&gt;) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; Promise&lt;void&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

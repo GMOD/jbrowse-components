@@ -28,7 +28,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Properties
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>14 inherited properties from 3 models</summary>
 
 From [BaseSessionModel](../basesessionmodel): <span id="property-id">[`id`](../basesessionmodel#property-id)</span>, <span id="property-name">[`name`](../basesessionmodel#property-name)</span>, <span id="property-focusedviewid">[`focusedViewId`](../basesessionmodel#property-focusedviewid)</span>, <span id="property-highlights">[`highlights`](../basesessionmodel#property-highlights)</span>, <span id="property-highlightsvisible">[`highlightsVisible`](../basesessionmodel#property-highlightsvisible)</span>, <span id="property-highlightlabelsvisible">[`highlightLabelsVisible`](../basesessionmodel#property-highlightlabelsvisible)</span>, <span id="property-heldformissingplugins">[`heldForMissingPlugins`](../basesessionmodel#property-heldformissingplugins)</span>
@@ -41,7 +41,7 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="property
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>10 inherited volatiles from 4 models</summary>
 
 From [EmbeddedSessionThemeMixin](../embeddedsessionthememixin): <span id="volatile-sessionthememode">[`sessionThemeMode`](../embeddedsessionthememixin#volatile-sessionthememode)</span>
@@ -81,7 +81,7 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-v
 
 ## Methods
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>8 inherited methods from 4 models</summary>
 
 From [EmbeddedSessionThemeMixin](../embeddedsessionthememixin): <span id="method-getactivethemeoptions">[`getActiveThemeOptions`](../embeddedsessionthememixin#method-getactivethemeoptions)</span>
@@ -96,7 +96,7 @@ From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <spa
 
 ## Actions
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>52 inherited actions from 6 models</summary>
 
 From [EmbeddedSessionThemeMixin](../embeddedsessionthememixin): <span id="action-setthememode">[`setThemeMode`](../embeddedsessionthememixin#action-setthememode)</span>

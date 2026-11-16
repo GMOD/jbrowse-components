@@ -43,8 +43,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('LinearHicDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>"LinearHicDisplay"</code> | Always `"LinearHicDisplay"`, the name a snapshot selects this model by. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/linearhicdisplay">LinearHicDisplayConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/linearhicdisplay). |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited properties from 2 models</summary>
@@ -151,7 +151,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { normalization: string; field: HicColorField; floors: Hi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { normalization: string; field: HicColorField; floors: HicCountFloors; }</code></pre></dialog></span> | The settings that refetch. The binsize is zoom-derived and the quantile reselects on the main thread, so both ride as call arguments. |
+| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { normalization: string; field: HicColorField; … }</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { normalization: string; field: HicColorField; floors: HicCountFloors; }</code></pre></dialog></span> | The settings that refetch. The binsize is zoom-derived and the quantile reselects on the main thread, so both ride as call arguments. |
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | The contact under a display-px point, through the inverse of the transform the matrix was drawn with. |
 | <span id="method-hoverhitat">**hoverHitAt**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | No contact while the matrix loads: a global display replaces its whole frame, so the cells it holds are on their way out. |
 | <span id="method-configproblemsof">**configProblemsOf**</span><br><code>(conf: AnyConfigurationModel) =&gt; string[]</code> | The schema's rules, then the `filter` entries the worker cannot apply. |

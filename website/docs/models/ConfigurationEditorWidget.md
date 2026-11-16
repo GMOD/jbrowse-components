@@ -16,9 +16,9 @@ edits back to the session.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>types.literal('ConfigurationEditorWidget')</code> |  |
-| <span id="property-trackid">**trackId**</span><br><code>types.maybe(types.string)</code> | the track whose working copy this edits, re-resolved on every read so an undo that replaces the copy moves the editor with it |
+| <span id="property-id">**id**</span><br><code>string</code> · default <code>createElementId()</code> | The identifier references to this node resolve through. A snapshot that leaves it out gets a generated one. |
+| <span id="property-type">**type**</span><br><code>"ConfigurationEditorWidget"</code> | Always `"ConfigurationEditorWidget"`, the name a snapshot selects this model by. |
+| <span id="property-trackid">**trackId**</span><br><code>string &#124; undefined</code> | the track whose working copy this edits, re-resolved on every read so an undo that replaces the copy moves the editor with it |
 
 ## Volatiles
 

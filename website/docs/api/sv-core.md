@@ -143,9 +143,9 @@ view, never a circle, whose tracks have displays a linear panel cannot draw.
 ```ts
 import { linearGenomeViewOf } from '@jbrowse/sv-core'
 
-function linearGenomeViewOf(
-  view?: { type: string } | undefined,
-): LinearGenomeView | undefined
+function linearGenomeViewOf(view?: {
+  type: string
+}): LinearGenomeView | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -169,7 +169,7 @@ import { makeFeaturePair } from '@jbrowse/sv-core'
 
 function makeFeaturePair(
   feature: Feature,
-  alt?: string | undefined,
+  alt?: string,
 ): {
   k1: { refName: string; start: number; end: number; mateDirection: number }
   k2: FeatureEnd
@@ -191,7 +191,7 @@ import { navToLoc } from '@jbrowse/sv-core'
 function navToLoc(
   locString: string,
   model: IAnyStateTreeNode,
-  grow?: number | undefined,
+  grow?: number,
 ): void
 ```
 
@@ -243,11 +243,8 @@ function splitRegionAtPosition<
 >(
   region: T,
   pos: number,
-  assemblyName?: string | undefined,
-): [
-  T & { assemblyName?: string | undefined },
-  T & { assemblyName?: string | undefined },
-]
+  assemblyName?: string,
+): [T & { assemblyName?: string }, T & { assemblyName?: string }]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)

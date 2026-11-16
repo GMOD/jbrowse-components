@@ -38,7 +38,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>2 inherited volatiles from one model</summary>
 
 From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`scrollTop`](../trackheightmixin#volatile-scrolltop)</span>, <span id="volatile-hostheight">[`hostHeight`](../trackheightmixin#volatile-hostheight)</span>

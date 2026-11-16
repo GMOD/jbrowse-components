@@ -19,9 +19,9 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('LinearManhattanDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
-| <span id="property-indexsnp">**indexSnp**</span><br><code>types.maybe(types.string)</code> | The index SNP the LD join reads r² to, as a 1-based `chr:bp`. The display picks the top hit on screen once, when a plot first joins LD or LD coloring is turned on; after that only the user moves it. |
+| <span id="property-type">**type**</span><br><code>"LinearManhattanDisplay"</code> | Always `"LinearManhattanDisplay"`, the name a snapshot selects this model by. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/linearmanhattandisplay">LinearManhattanDisplayConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/linearmanhattandisplay). |
+| <span id="property-indexsnp">**indexSnp**</span><br><code>string &#124; undefined</code> | The index SNP the LD join reads r² to, as a 1-based `chr:bp`. The display picks the top hit on screen once, when a plot first joins LD or LD coloring is turned on; after that only the user moves it. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>5 inherited properties from 3 models</summary>
@@ -36,7 +36,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>36 inherited volatiles from 11 models</summary>
 
 From [LinearMarkDisplay](../linearmarkdisplay): <span id="volatile-sourcelisting">[`sourceListing`](../linearmarkdisplay#volatile-sourcelisting)</span>, <span id="volatile-plotfields">[`plotFields`](../linearmarkdisplay#volatile-plotfields)</span>, <span id="volatile-plotfieldserror">[`plotFieldsError`](../linearmarkdisplay#volatile-plotfieldserror)</span>, <span id="volatile-plotdefaultchecked">[`plotDefaultChecked`](../linearmarkdisplay#volatile-plotdefaultchecked)</span>, <span id="volatile-plotfieldspromise">[`plotFieldsPromise`](../linearmarkdisplay#volatile-plotfieldspromise)</span>, <span id="volatile-plotscanned">[`plotScanned`](../linearmarkdisplay#volatile-plotscanned)</span>, <span id="volatile-detailsrotation">[`detailsRotation`](../linearmarkdisplay#volatile-detailsrotation)</span>, <span id="volatile-plotscanrotation">[`plotScanRotation`](../linearmarkdisplay#volatile-plotscanrotation)</span>
@@ -122,7 +122,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-resolveadapteroptions">**resolveAdapterOptions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ ld }: { ld: string; }, region: Region, signal: AbortSignal)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ ld }: { ld: string; }, region: Region, signal: AbortSignal) =&gt; Promise&lt;{ ld: LdJoin; } &#124; undefined&gt;</code></pre></dialog></span> | The LD join as one region's fetch asks the adapter for it. |
+| <span id="method-resolveadapteroptions">**resolveAdapterOptions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ ld }: {…}, region: Region, signal: AbortSignal) =&gt; Promise&lt;…&gt;</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ ld }: { ld: string; }, region: Region, signal: AbortSignal) =&gt; Promise&lt;{ ld: LdJoin; } &#124; undefined&gt;</code></pre></dialog></span> | The LD join as one region's fetch asks the adapter for it. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
@@ -148,7 +148,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setindexsnp">**setIndexSnp**</span><br><code>(snp?: string &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setindexsnp">**setIndexSnp**</span><br><code>(snp?: string) =&gt; void</code> |  |
 | <span id="action-setldcoloring">**setLdColoring**</span><br><code>(on: boolean) =&gt; void</code> | Color each point by its r² to the index SNP, the index a pink diamond over them, or take that coloring off, leaving every other member and mark of the plot as it was (`withLd`, `withoutLd`). Turning it on picks the top hit on screen as the index, or leaves the pick for the load in flight to make. |
 | <span id="action-colorbyldtohit">**colorByLdToHit**</span><br><code>(hit: { refName: string; start: number; }) =&gt; void</code> | Right-click "Color by LD to this SNP": color by r² to the clicked point as the index, in one action so the fetch inputs settle once. |
 | <span id="action-setindexsnptotophit">**setIndexSnpToTopHit**</span><br><code>() =&gt; void</code> | Make the top hit on screen the index. |

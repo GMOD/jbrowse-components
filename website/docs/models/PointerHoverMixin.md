@@ -50,4 +50,4 @@ Compose it after `BaseDisplay` so the typed getter wins, and override
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setpointer">**setPointer**</span><br><code>(state?: PointerPx &#124; undefined) =&gt; void</code> | the chrome's `onPointerPosition` |
+| <span id="action-setpointer">**setPointer**</span><br><code>(state?: PointerPx) =&gt; void</code> | the chrome's `onPointerPosition` |

@@ -17,7 +17,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-gettrackactions">**getTrackActions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConfig: AnyTrackConfig, view?: TrackActionView &#124; undefine…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConfig: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt; MenuItem[]</code></pre></dialog></span> | raw track actions (Settings, Copy, Delete, Index) without submenu wrapper |
+| <span id="method-gettrackactions">**getTrackActions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConfig, view?) =&gt; MenuItem[]</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConfig: AnyTrackConfig, view?: TrackActionView) =&gt; MenuItem[]</code></pre></dialog></span> | raw track actions (Settings, Copy, Delete, Index) without submenu wrapper |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited methods from one model</summary>

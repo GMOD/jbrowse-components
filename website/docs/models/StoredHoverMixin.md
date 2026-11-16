@@ -39,5 +39,5 @@ nothing and invalidates no observer.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-sethoveredfeature">**setHoveredFeature**</span><br><code>(hit?: T &#124; undefined) =&gt; void</code> |  |
+| <span id="action-sethoveredfeature">**setHoveredFeature**</span><br><code>(hit?: T) =&gt; void</code> |  |
 | <span id="action-clearhoveredfeature">**clearHoveredFeature**</span><br><code>() =&gt; void</code> |  |

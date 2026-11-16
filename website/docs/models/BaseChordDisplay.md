@@ -18,7 +18,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Properties
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>2 inherited properties from one model</summary>
 
 From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>, <span id="property-type">[`type`](../basedisplay#property-type)</span>

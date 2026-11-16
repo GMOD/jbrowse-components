@@ -18,8 +18,8 @@ and ExternalTokenInternetAccount.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal(typeName)</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>STNValue&lt;Type, ILiteralType&lt;Type&gt;&gt;</code> | The registered name of the concrete type, which a snapshot selects it by. |
+| <span id="property-configuration">**configuration**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ExternalTokenInternetAccountConfig &#124; …</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code><a href="../../config/externaltokeninternetaccount">ExternalTokenInternetAccountConfig</a> &#124; <a href="../../config/externaltokeninternetaccount">ExternalTokenInternetAccountConfig</a></code></pre></dialog></span> | The config node this model reads its settings from, through `getConf`. |
 
 ## Getters
 
@@ -33,5 +33,5 @@ and ExternalTokenInternetAccount.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-gettokenfromuser">**getTokenFromUser**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; vo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; void) =&gt; void</code></pre></dialog></span> | Prompt the user for a token via the account's dialog form, resolving with the entered token or rejecting if the user cancels. |
+| <span id="action-gettokenfromuser">**getTokenFromUser**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(resolve, reject) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; void) =&gt; void</code></pre></dialog></span> | Prompt the user for a token via the account's dialog form, resolving with the entered token or rejecting if the user cancels. |
 | <span id="action-validatetoken">**validateToken**</span><br><code>(token: string, location: UriLocation) =&gt; Promise&lt;string&gt;</code> | Optionally validate the token with a HEAD request before use, per the `validateWithHEAD` config slot. Only a 401 drops the token: there is nothing to renew it with, so the next read re-opens the dialog. |

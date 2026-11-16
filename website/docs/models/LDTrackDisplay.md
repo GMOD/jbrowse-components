@@ -19,8 +19,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('LDTrackDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>"LDTrackDisplay"</code> | Always `"LDTrackDisplay"`, the name a snapshot selects this model by. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/ldtrackdisplay">LDTrackDisplayConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/ldtrackdisplay). |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited properties from 2 models</summary>

@@ -24,7 +24,7 @@ import { alignmentConnectorCurves } from '@jbrowse/plugin-alignments/tables'
 
 function alignmentConnectorCurves(opts: {
   pxPerBp: number
-  reversed?: boolean | undefined
+  reversed?: boolean
   featureHeight: number
   featureSpacing: number
   connectors: {
@@ -32,7 +32,7 @@ function alignmentConnectorCurves(opts: {
     end: readonly number[]
     row: readonly number[]
     endRow: readonly number[]
-    kind: readonly ('bow' | 'curve' | 'loop' | 'straight')[]
+    kind: readonly ('straight' | 'curve' | 'bow' | 'loop')[]
     dip: readonly number[]
     strand: readonly number[]
     endStrand: readonly number[]
@@ -83,21 +83,17 @@ import { alignmentMarkAlpha } from '@jbrowse/plugin-alignments/tables'
 
 function alignmentMarkAlpha(opts: {
   pxPerBp: number
-  featureHeight?: number | undefined
-  fadeLowFrequency?: boolean | undefined
-  mismatchOpacity?: PileupMismatchesOpacitySnapshot | undefined
-  insertions?: { length: MarkColumn; fade: MarkColumn } | undefined
-  deletions?:
-    | {
-        length: MarkColumn
-        fade: MarkColumn
-        visibleLength?: MarkColumn | null | undefined
-      }
-    | undefined
-  mismatches?:
-    | { fade: MarkColumn; quality?: MarkColumn | undefined }
-    | undefined
-  clips?: { fade: MarkColumn } | undefined
+  featureHeight?: number
+  fadeLowFrequency?: boolean
+  mismatchOpacity?: PileupMismatchesOpacitySnapshot
+  insertions?: { length: MarkColumn; fade: MarkColumn }
+  deletions?: {
+    length: MarkColumn
+    fade: MarkColumn
+    visibleLength?: MarkColumn | null
+  }
+  mismatches?: { fade: MarkColumn; quality?: MarkColumn }
+  clips?: { fade: MarkColumn }
 }): {
   insertions: { widthPx: number[]; alpha: number[] }
   deletions: { alpha: number[]; labelAlpha: number[] }

@@ -15,10 +15,10 @@ manager. Every JBrowse product's root model composes this one.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-jbrowse">**jbrowse**</span><br><code>jbrowseModelType</code> | `jbrowse` is a mapping of the config.json into the in-memory state tree |
-| <span id="property-session">**session**</span><br><code>types.maybe(sessionModelType)</code> | `session` encompasses the currently active state of the app, including views open, tracks open in those views, etc. |
-| <span id="property-sessionpath">**sessionPath**</span><br><code>types.stripDefault(types.string, '')</code> |  |
-| <span id="property-assemblymanager">**assemblyManager**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.optional( assemblyManagerFactory(assemblyConfigSchema, pl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.optional(&#10;&#160;&#160;assemblyManagerFactory(assemblyConfigSchema, pluginManager),&#10;&#160;&#160;{},&#10;)</code></pre></dialog></span> |  |
+| <span id="property-jbrowse">**jbrowse**</span><br><code>EditableJBrowseConfigModel</code> | `jbrowse` is a mapping of the config.json into the in-memory state tree |
+| <span id="property-session">**session**</span><br><code>RootSession &#124; undefined</code> | `session` encompasses the currently active state of the app, including views open, tracks open in those views, etc. |
+| <span id="property-sessionpath">**sessionPath**</span><br><code>string</code> · default <code>''</code> |  |
+| <span id="property-assemblymanager">**assemblyManager**</span><br><code><a href="../assemblymanager">AssemblyManager</a></code> · default <code>{}</code> |  |
 
 ## Volatiles
 

@@ -16,8 +16,8 @@ Holds the tracks a connection has loaded. Each connection type overrides
 | Member | Description |
 | --- | --- |
 | <span id="property-tracks">**tracks**</span><br><code>types.array(pluginManager.pluggableConfigSchemaType('track'))</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
-| <span id="property-silent">**silent**</span><br><code>types.optional(types.boolean, false)</code> | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. Runtime-only: connection instances aren't serialized. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/baseconnection">BaseConnectionConfig</a></code> | The config node this model reads its settings from, through `getConf`. |
+| <span id="property-silent">**silent**</span><br><code>boolean</code> · default <code>false</code> | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. Runtime-only: connection instances aren't serialized. |
 
 ## Volatiles
 
@@ -41,6 +41,6 @@ Holds the tracks a connection has loaded. Each connection type overrides
 | --- | --- |
 | <span id="action-connect">**connect**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | no-op hook; concrete connections (UCSC/JB2 track hubs, etc.) override this to fetch and populate their `tracks`. Returns a promise so `afterAttach` can clear the loading flag once the fetch settles. |
 | <span id="action-setloading">**setLoading**</span><br><code>(loading: boolean) =&gt; void</code> |  |
-| <span id="action-addtrackconf">**addTrackConf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConf: TrackConf) =&gt; ConfigNodeProps&lt;TrackConfigDefinition…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConf: TrackConf) =&gt; ConfigNodeProps&lt;TrackConfigDefinition&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;TrackConfigSchema&gt; &amp; { readonly [key: string]: unknown; }</code></pre></dialog></span> |  |
+| <span id="action-addtrackconf">**addTrackConf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConf) =&gt; ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConf: TrackConf) =&gt; ConfigNodeProps&lt;TrackConfigDefinition&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;TrackConfigSchema&gt; &amp; { readonly [key: string]: unknown; }</code></pre></dialog></span> |  |
 | <span id="action-addtrackconfs">**addTrackConfs**</span><br><code>(trackConfs: TrackConf[]) =&gt; void</code> |  |
 | <span id="action-settrackconfs">**setTrackConfs**</span><br><code>(trackConfs: TrackConf[]) =&gt; void</code> |  |

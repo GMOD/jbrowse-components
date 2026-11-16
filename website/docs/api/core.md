@@ -427,7 +427,7 @@ import { colorEntryReader } from '@jbrowse/core/util/markEncoding'
 function colorEntryReader(
   table: FeatureTable,
   color: MarkColorEncoding,
-  jexl?: JexlInstance | undefined,
+  jexl?: JexlInstance,
 ): ((i: number) => string | number) | undefined
 ```
 
@@ -932,7 +932,7 @@ function facetLayers(
   input: readonly Feature[] | FeatureTable,
   facet: FacetSpec,
   layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[],
-  jexl?: JexlInstance | undefined,
+  jexl?: JexlInstance,
 ): { layers: FacetedLayer[]; sections: FacetSection[] }
 ```
 
@@ -1192,9 +1192,7 @@ or split-view a mate must drop both rather than treat `<DEL>` as a refName.
 ```ts
 import { getBreakendMateLocString } from '@jbrowse/core/util/svAlt'
 
-function getBreakendMateLocString(
-  breakend?: Breakend | undefined,
-): string | undefined
+function getBreakendMateLocString(breakend?: Breakend): string | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -1339,8 +1337,8 @@ import { junctionEnds } from '@jbrowse/core/util/svAlt'
 
 function junctionEnds(
   feature: Feature,
-  alt?: string | undefined,
-  alleleIndex?: number | undefined,
+  alt?: string,
+  alleleIndex?: number,
 ): { own: JunctionEnd; mate: JunctionEnd } | undefined
 ```
 
@@ -1433,7 +1431,7 @@ function layerRootRows(
     facet?: FacetSpec
     layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[]
   },
-  jexl?: JexlInstance | undefined,
+  jexl?: JexlInstance,
 ): {
   table: FeatureTable
   inputRow: (i: number) => number | undefined
@@ -1461,12 +1459,9 @@ function layerTables(
     facet?: FacetSpec
     layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[]
   },
-  jexl?: JexlInstance | undefined,
+  jexl?: JexlInstance,
 ): {
-  layers: {
-    table: FeatureTable
-    row: string | Uint32Array<ArrayBufferLike> | undefined
-  }[]
+  layers: { table: FeatureTable; row: FieldRef | Uint32Array | undefined }[]
   sections: FacetSection[] | undefined
 }
 ```
@@ -1789,7 +1784,7 @@ import { parseSvAlt } from '@jbrowse/core/util/svAlt'
 
 function parseSvAlt(
   feature: Feature,
-  alt?: string | undefined,
+  alt?: string,
   alleleIndex?: number,
 ):
   | {
@@ -1818,7 +1813,7 @@ function pathSeries(
   row: RowEncoding,
   path: PathSpec,
   steps: readonly TransformStep[],
-  jexl?: JexlInstance | undefined,
+  jexl?: JexlInstance,
 ): {
   table: FeatureTable
   row: RowEncoding
@@ -2129,7 +2124,7 @@ import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 function runTransforms(
   input: readonly Feature[] | FeatureTable,
   steps: readonly TransformStep[],
-  jexl?: JexlInstance | undefined,
+  jexl?: JexlInstance,
 ): FeatureTable
 ```
 
@@ -2290,7 +2285,7 @@ import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 
 function SessionPaletteProvider(opts: {
   session: ThemeModeSession
-  mode?: 'dark' | 'light' | undefined
+  mode?: 'dark' | 'light'
   children: ReactNode
 }): Element
 ```
@@ -2611,7 +2606,7 @@ function thresholdKeyEntries(
   range: readonly string[] | undefined,
   met: { missing?: boolean; notNumber?: boolean },
   names?: readonly string[],
-): { value: string; label: string; color: string; missing?: true | undefined }[]
+): { value: string; label: string; color: string; missing?: true }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -2694,8 +2689,8 @@ import { trackCatalog } from '@jbrowse/core/util/tracks'
 
 function trackCatalog(session: {
   tracks: TrackConfigEntry[]
-  connectionInstances?: { tracks: TrackConfigNode[] }[] | undefined
-  assemblies: BaseAssemblyConfig[]
+  connectionInstances?: { tracks: TrackConfigNode[] }[]
+  assemblies: BaseAssemblyConfigModel[]
 }): { trackId: string; name: string; category: string[]; description: string }[]
 ```
 
@@ -2819,7 +2814,7 @@ import { withColumns } from '@jbrowse/core/util/featureTable'
 function withColumns(
   table: FeatureTable,
   written: ReadonlyMap<string, Column>,
-  rows?: Uint32Array<ArrayBufferLike> | undefined,
+  rows?: Uint32Array<ArrayBufferLike>,
 ): FeatureTable
 ```
 

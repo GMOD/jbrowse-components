@@ -15,7 +15,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Properties
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>25 inherited properties from 9 models</summary>
 
 From [BaseWebSessionModel](../basewebsessionmodel): <span id="property-sessionplugins">[`sessionPlugins`](../basewebsessionmodel#property-sessionplugins)</span>
@@ -65,7 +65,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="volatile
 
 ## Getters
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>42 inherited getters from 11 models</summary>
 
 From [WebSessionManagementMixin](../websessionmanagementmixin): <span id="getter-savedsessionmetadata">[`savedSessionMetadata`](../websessionmanagementmixin#getter-savedsessionmetadata)</span>
@@ -94,7 +94,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="getter-t
 
 ## Methods
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>26 inherited methods from 10 models</summary>
 
 From [BaseWebSessionModel](../basewebsessionmodel): <span id="method-canedittrack">[`canEditTrack`](../basewebsessionmodel#method-canedittrack)</span>, <span id="method-gettrackactions">[`getTrackActions`](../basewebsessionmodel#method-gettrackactions)</span>

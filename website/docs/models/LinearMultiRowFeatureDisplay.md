@@ -21,8 +21,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('LinearMultiRowFeatureDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>"LinearMultiRowFeatureDisplay"</code> | Always `"LinearMultiRowFeatureDisplay"`, the name a snapshot selects this model by. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/linearmultirowfeaturedisplay">LinearMultiRowFeatureDisplayConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/linearmultirowfeaturedisplay). |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>6 inherited properties from 4 models</summary>
@@ -128,7 +128,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-scangroupbycandidates">**scanGroupByCandidates**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts: AttributeScanOptions) =&gt; Promise&lt;RegionTooLargeResult &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts: AttributeScanOptions) =&gt; Promise&lt;RegionTooLargeResult &#124; GroupByCandidate[]&gt;</code></pre></dialog></span> | The attributes the features in view carry and the values of each, for the One row per and Color by pickers: the render fetch's download over the visible blocks on the track's genomes, refused where the display's byte budget refuses it. |
+| <span id="method-scangroupbycandidates">**scanGroupByCandidates**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts: AttributeScanOptions) =&gt; Promise&lt;…&gt;</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts: AttributeScanOptions) =&gt; Promise&lt;RegionTooLargeResult &#124; GroupByCandidate[]&gt;</code></pre></dialog></span> | The attributes the features in view carry and the values of each, for the One row per and Color by pickers: the render fetch's download over the visible blocks on the track's genomes, refused where the display's byte budget refuses it. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

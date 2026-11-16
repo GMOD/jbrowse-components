@@ -51,8 +51,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('ChordSyntenyDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>"ChordSyntenyDisplay"</code> | Always `"ChordSyntenyDisplay"`, the name a snapshot selects this model by. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/chordsyntenydisplay">ChordSyntenyDisplayConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/chordsyntenydisplay). |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>1 inherited property from one model</summary>
@@ -63,7 +63,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>8 inherited volatiles from 3 models</summary>
 
 From [BaseChordDisplay](../basechorddisplay): <span id="volatile-features">[`features`](../basechorddisplay#volatile-features)</span>, <span id="volatile-reloadcounter">[`reloadCounter`](../basechorddisplay#volatile-reloadcounter)</span>
@@ -87,7 +87,7 @@ From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../based
 | <span id="getter-alignmentends">**alignmentEnds**</span><br><code>AlignmentEnds[]</code> | each held alignment's two ends by its place in `features`, on the circle's assemblies and in their canonical refNames: resolved once per fetch, which everything placing, coloring or reordering the alignments reads |
 | <span id="getter-ribboncolors">**ribbonColors**</span><br><code>Uint32Array&lt;ArrayBufferLike&gt;</code> | each alignment's packed color under the view's `encoding.color`, by its place in `features`. A chromosome mode paints the ideogram color of the chromosome it joins, so a ribbon matches the arc it leaves; a label the view hides paints at zero alpha |
 | <span id="getter-shapealpha">**shapeAlpha**</span><br><code>number</code> | the fill opacity every resting ribbon draws at, the view's `opacityLevel`; a ribbon's own color alpha (an `encoding.color.value`'s, an `encoding.opacity` field's fade) rides its lane |
-| <span id="getter-ribbonfeet">**ribbonFeet**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ x1: Float32Array&lt;ArrayBuffer&gt;; x2: Float32Array&lt;ArrayBuffer&gt;;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ x1: Float32Array&lt;ArrayBuffer&gt;; x2: Float32Array&lt;ArrayBuffer&gt;; y1: Float32Array&lt;ArrayBuffer&gt;; y2: Float32Array&lt;ArrayBuffer&gt;; xGaps: Uint32Array&lt;ArrayBuffer&gt;; yGaps: Uint32Array&lt;ArrayBuffer&gt;; xSlice: Int32Array&lt;ArrayBuffer&gt;; ySlice: Int32Array&lt;ArrayBuffer&gt;; strand: Float32Array&lt;ArrayBuffer&gt;; }</code></pre></dialog></span> | every held alignment's feet on the circle's unrolled axis and the slice index of each end, -1 off the circle, by its place in `features`: rebuilt by a fetch or a change to the regions, never by a recolor, a zoom or a rotation |
+| <span id="getter-ribbonfeet">**ribbonFeet**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ x1: Float32Array&lt;…&gt;; x2: Float32Array&lt;…&gt;; … }</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ x1: Float32Array&lt;ArrayBuffer&gt;; x2: Float32Array&lt;ArrayBuffer&gt;; y1: Float32Array&lt;ArrayBuffer&gt;; y2: Float32Array&lt;ArrayBuffer&gt;; xGaps: Uint32Array&lt;ArrayBuffer&gt;; yGaps: Uint32Array&lt;ArrayBuffer&gt;; xSlice: Int32Array&lt;ArrayBuffer&gt;; ySlice: Int32Array&lt;ArrayBuffer&gt;; strand: Float32Array&lt;ArrayBuffer&gt;; }</code></pre></dialog></span> | every held alignment's feet on the circle's unrolled axis and the slice index of each end, -1 off the circle, by its place in `features`: rebuilt by a fetch or a change to the regions, never by a recolor, a zoom or a rotation |
 | <span id="getter-ribbonpicks">**ribbonPicks**</span><br><code>Uint32Array&lt;ArrayBufferLike&gt;</code> | the alignments the canvas draws, by their place in `features`, the widest first so every narrower ribbon draws over them: both ends on the circle, and not hidden by the view's color or its `filter`, which `ribbonColors` paints at zero alpha |
 | <span id="getter-ribbonlanes">**ribbonLanes**</span><br><code>RibbonLanes</code> | the drawn alignments as the ribbon mark's lanes, each in its color at that color's own alpha |
 | <span id="getter-paintedassemblyname">**paintedAssemblyName**</span><br><code>string &#124; undefined</code> | the genome whose ideogram this track paints: the second of the two it joins on the circle, none for a genome aligned to itself |
@@ -119,7 +119,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | --- | --- |
 | <span id="method-shapeat">**shapeAt**</span><br><code>(i: number) =&gt; RibbonShape</code> | lane `i` as the SVG side draws it, on the unrotated figure |
 | <span id="method-shapelabel">**shapeLabel**</span><br><code>(feature: Feature) =&gt; string</code> |  |
-| <span id="method-alignmentsbetween">**alignmentsBetween**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(referenceAssembly: string, currentAssembly: string) =&gt; Alignme…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(referenceAssembly: string, currentAssembly: string) =&gt; AlignmentData[]</code></pre></dialog></span> | the held alignments joining two assemblies on the circle, in canonical refNames and oriented reference side first, which is what the view's reorder reads instead of fetching the file again |
+| <span id="method-alignmentsbetween">**alignmentsBetween**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(referenceAssembly, currentAssembly) =&gt; AlignmentData[]</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(referenceAssembly: string, currentAssembly: string) =&gt; AlignmentData[]</code></pre></dialog></span> | the held alignments joining two assemblies on the circle, in canonical refNames and oriented reference side first, which is what the view's reorder reads instead of fetching the file again |
 | <span id="method-partnerspans">**partnerSpans**</span><br><code>(index: number) =&gt; PartnerSpan[]</code> | each drawn alignment's stretch on slice `index`, named by the chromosome at its other end |
 | <span id="method-laneat">**laneAt**</span><br><code>(x: number, y: number) =&gt; number &#124; undefined</code> | the topmost ribbon covering a figure point, measured on the unrotated figure so a rotation keeps the held geometry |
 | <span id="method-rendersvg">**renderSvg**</span><br><code>() =&gt; Promise&lt;Element &#124; null&gt;</code> |  |

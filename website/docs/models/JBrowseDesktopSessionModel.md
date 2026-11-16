@@ -14,7 +14,7 @@ JBrowseDesktopSessionModel adds no members: it composes the models below, and ev
 
 ## Properties
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>23 inherited properties from 7 models</summary>
 
 From [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin): <span id="property-connectioninstances">[`connectionInstances`](../connectionmanagementsessionmixin#property-connectioninstances)</span>, <span id="property-connectiontrackconfigs">[`connectionTrackConfigs`](../connectionmanagementsessionmixin#property-connectiontrackconfigs)</span>
@@ -35,7 +35,7 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="property
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>12 inherited volatiles from 5 models</summary>
 
 From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="volatile-editabletrackconfigs">[`editableTrackConfigs`](../sessiontracksmanagersessionmixin#volatile-editabletrackconfigs)</span>
@@ -52,7 +52,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="volatile
 
 ## Getters
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>40 inherited getters from 9 models</summary>
 
 From [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin): <span id="getter-connections">[`connections`](../connectionmanagementsessionmixin#getter-connections)</span>
@@ -77,7 +77,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="getter-t
 
 ## Methods
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>25 inherited methods from 10 models</summary>
 
 From [DesktopSessionTrackMenuMixin](../desktopsessiontrackmenumixin): <span id="method-gettrackactions">[`getTrackActions`](../desktopsessiontrackmenumixin#method-gettrackactions)</span>
@@ -104,7 +104,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="method-a
 
 ## Actions
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>104 inherited actions from 11 models</summary>
 
 From [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin): <span id="action-makeconnection">[`makeConnection`](../connectionmanagementsessionmixin#action-makeconnection)</span>, <span id="action-breakconnection">[`breakConnection`](../connectionmanagementsessionmixin#action-breakconnection)</span>, <span id="action-teardownconnection">[`teardownConnection`](../connectionmanagementsessionmixin#action-teardownconnection)</span>, <span id="action-deleteconnection">[`deleteConnection`](../connectionmanagementsessionmixin#action-deleteconnection)</span>, <span id="action-addconnectionconf">[`addConnectionConf`](../connectionmanagementsessionmixin#action-addconnectionconf)</span>, <span id="action-clearconnections">[`clearConnections`](../connectionmanagementsessionmixin#action-clearconnections)</span>, <span id="action-captureconnectiontrack">[`captureConnectionTrack`](../connectionmanagementsessionmixin#action-captureconnectiontrack)</span>, <span id="action-updateconnectiontrackconfig">[`updateConnectionTrackConfig`](../connectionmanagementsessionmixin#action-updateconnectiontrackconfig)</span>, <span id="action-setconnectiontrackconfig">[`setConnectionTrackConfig`](../connectionmanagementsessionmixin#action-setconnectiontrackconfig)</span>, <span id="action-pruneconnectiontrackconfig">[`pruneConnectionTrackConfig`](../connectionmanagementsessionmixin#action-pruneconnectiontrackconfig)</span>, <span id="action-hydrateconnection">[`hydrateConnection`](../connectionmanagementsessionmixin#action-hydrateconnection)</span>

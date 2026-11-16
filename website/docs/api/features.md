@@ -32,7 +32,7 @@ function featureAttributeTables(
   pluginManager: PluginManager,
   opts: {
     adapterConfig: Record<string, unknown>
-    sequenceAdapter?: Record<string, unknown> | undefined
+    sequenceAdapter?: Record<string, unknown>
     regions: TablesRegion[]
     ids: readonly string[]
     subfeatureIds: readonly string[]
@@ -122,7 +122,7 @@ function featureTables(
     refName: string
     start: number
     end: number
-    originalRefName?: string | undefined
+    originalRefName?: string
     assemblyName: string
   }[]
   height: number

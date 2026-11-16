@@ -18,11 +18,11 @@ Its page sits under General because it is not a pluggable view type.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
-| <span id="property-displayedregions">**displayedRegions**</span><br><code>types.optional(types.frozen&lt;IRegion[]&gt;(), [])</code> |  |
-| <span id="property-bpperpx">**bpPerPx**</span><br><code>0</code> |  |
-| <span id="property-offsetpx">**offsetPx**</span><br><code>0</code> |  |
-| <span id="property-minimumblockwidth">**minimumBlockWidth**</span><br><code>types.stripDefault(types.number, 0)</code> |  |
+| <span id="property-id">**id**</span><br><code>string</code> · default <code>createElementId()</code> | The identifier references to this node resolve through. A snapshot that leaves it out gets a generated one. |
+| <span id="property-displayedregions">**displayedRegions**</span><br><code>Region[]</code> · default <code>[]</code> |  |
+| <span id="property-bpperpx">**bpPerPx**</span><br><code>number</code> · default <code>0</code> |  |
+| <span id="property-offsetpx">**offsetPx**</span><br><code>number</code> · default <code>0</code> |  |
+| <span id="property-minimumblockwidth">**minimumBlockWidth**</span><br><code>number</code> · default <code>0</code> |  |
 
 ## Volatiles
 
@@ -54,7 +54,7 @@ Its page sits under General because it is not a pluggable view type.
 | Member | Description |
 | --- | --- |
 | <span id="method-pxtobp">**pxToBp**</span><br><code>(px: number) =&gt; PxToBpResult</code> |  |
-| <span id="method-bptopx">**bpToPx**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(args: { refName: string; coord: number; displayedRegionIndex?:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(args: { refName: string; coord: number; displayedRegionIndex?: number &#124; undefined; }) =&gt; number &#124; undefined</code></pre></dialog></span> |  |
+| <span id="method-bptopx">**bpToPx**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(args: { refName: string; … }) =&gt; number &#124; undefined</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(args: { refName: string; coord: number; displayedRegionIndex?: number; }) =&gt; number &#124; undefined</code></pre></dialog></span> |  |
 
 ## Actions
 
@@ -67,8 +67,8 @@ Its page sits under General because it is not a pluggable view type.
 | <span id="action-showallregions">**showAllRegions**</span><br><code>() =&gt; void</code> | this makes a zoomed out view that shows all displayedRegions that makes the overview bar square with the scale bar |
 | <span id="action-zoomout">**zoomOut**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-zoomin">**zoomIn**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-zoomto">**zoomTo**</span><br><code>(bpPerPx: number, offset?: any) =&gt; number</code> |  |
+| <span id="action-zoomto">**zoomTo**</span><br><code>(bpPerPx: number, offset?: number) =&gt; number</code> |  |
 | <span id="action-scrollto">**scrollTo**</span><br><code>(offsetPx: number) =&gt; number</code> |  |
-| <span id="action-centerat">**centerAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(coord: number, refName: string &#124; undefined, displayedRegionInd…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(coord: number, refName: string &#124; undefined, displayedRegionIndex: number) =&gt; void</code></pre></dialog></span> |  |
+| <span id="action-centerat">**centerAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(coord, refName, displayedRegionIndex) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(coord: number, refName: string &#124; undefined, displayedRegionIndex: number) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-scroll">**scroll**</span><br><code>(distance: number) =&gt; number</code> | note: the scroll is clamped to keep the view on the main screen |
-| <span id="action-moveto">**moveTo**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(start?: BpOffset &#124; undefined, end?: BpOffset &#124; undefined, minB…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(start?: BpOffset &#124; undefined, end?: BpOffset &#124; undefined, minBpPerPx?: number &#124; undefined) =&gt; void</code></pre></dialog></span> | offset is the base-pair-offset in the displayed region, index is the index of the displayed region in the linear genome view |
+| <span id="action-moveto">**moveTo**</span><br><code>(start?: BpOffset, end?: BpOffset, minBpPerPx?: number) =&gt; void</code> | offset is the base-pair-offset in the displayed region, index is the index of the displayed region in the linear genome view |

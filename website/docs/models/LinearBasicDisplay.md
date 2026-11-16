@@ -42,7 +42,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Properties
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>10 inherited properties from 3 models</summary>
 
 From [LinearFeatureBaseDisplay](../linearfeaturebasedisplay): <span id="property-configuration">[`configuration`](../linearfeaturebasedisplay#property-configuration)</span>, <span id="property-pinnedfeatureids">[`pinnedFeatureIds`](../linearfeaturebasedisplay#property-pinnedfeatureids)</span>, <span id="property-solofeatureids">[`soloFeatureIds`](../linearfeaturebasedisplay#property-solofeatureids)</span>, <span id="property-soloapplied">[`soloApplied`](../linearfeaturebasedisplay#property-soloapplied)</span>, <span id="property-hiddenfeatureids">[`hiddenFeatureIds`](../linearfeaturebasedisplay#property-hiddenfeatureids)</span>, <span id="property-expandedgeneids">[`expandedGeneIds`](../linearfeaturebasedisplay#property-expandedgeneids)</span>, <span id="property-featurehighlights">[`featureHighlights`](../linearfeaturebasedisplay#property-featurehighlights)</span>
@@ -104,7 +104,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-geneglyphisoformcap">**geneGlyphIsoformCap**</span><br><code>number &#124; undefined</code> | The isoform count the fit ladder trimmed to, or undefined when nothing on screen was trimmed. |
 | <span id="getter-geneglyphcollapsed">**geneGlyphCollapsed**</span><br><code>boolean</code> |  |
 | <span id="getter-isgenelike">**isGeneLike**</span><br><code>boolean</code> | whether the right-clicked feature is a gene, transcript or RNA |
-| <span id="getter-geneglyphnotice">**geneGlyphNotice**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ collapsed: boolean; maxIsoforms: number &#124; undefined; picks: I…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ collapsed: boolean; maxIsoforms: number &#124; undefined; picks: IsoformPicks; dismissed: boolean; mode: "all" &#124; "auto" &#124; "representative"; setMode: (value: "all" &#124; "auto" &#124; "representative") =&gt; void; dismiss: () =&gt; void; } &#124; undefined</code></pre></dialog></span> | This display's answer to the base's isoform-collapse chrome hook (see `geneGlyphNotice` on the canvas base): absent unless the loaded data has a multi-isoform gene, so switching modes is meaningful. |
+| <span id="getter-geneglyphnotice">**geneGlyphNotice**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ collapsed: boolean; … } &#124; undefined</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ collapsed: boolean; maxIsoforms: number &#124; undefined; picks: IsoformPicks; dismissed: boolean; mode: "all" &#124; "auto" &#124; "representative"; setMode: (value: "all" &#124; "auto" &#124; "representative") =&gt; void; dismiss: () =&gt; void; } &#124; undefined</code></pre></dialog></span> | This display's answer to the base's isoform-collapse chrome hook (see `geneGlyphNotice` on the canvas base): absent unless the loaded data has a multi-isoform gene, so switching modes is meaningful. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>217 inherited getters from 14 models</summary>
@@ -146,7 +146,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | --- | --- |
 | <span id="method-filtersubmenuitems">**filterSubMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-showsubmenucheckboxitems">**showSubmenuCheckboxItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
-| <span id="method-trackmenuitems">**trackMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; (MenuDivider &#124; MenuSubHeader &#124; NormalMenuItem &#124; CheckboxM…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; (MenuDivider &#124; MenuSubHeader &#124; NormalMenuItem &#124; CheckboxMenuItem &#124; RadioMenuItem &#124; SubMenuItem &#124; CustomMenuItem &#124; { label: string; icon: OverridableComponent&lt;SvgIconTypeMap&lt;{}, "svg"&gt;&gt; &amp; { muiName: string; }; subMenu: MenuItem[]; } &#124; { label: string; icon: OverridableComponent&lt;SvgIconTypeMap&lt;{}, "svg"&gt;&gt; &amp; { muiName: string; }; subMenu: (RadioMenuItem &#124; { label: string; icon: OverridableComponent&lt;SvgIconTypeMap&lt;{}, "svg"&gt;&gt; &amp; { muiName: string; }; onClick: () =&gt; void; })[]; })[]</code></pre></dialog></span> |  |
+| <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
@@ -176,9 +176,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setsubfeaturelabels">**setSubfeatureLabels**</span><br><code>(value: "auto" &#124; "below" &#124; "none" &#124; "overlay") =&gt; void</code> |  |
 | <span id="action-setgeneglyphmode">**setGeneGlyphMode**</span><br><code>(value: "all" &#124; "auto" &#124; "representative") =&gt; void</code> |  |
 | <span id="action-dismissgeneglyphnotice">**dismissGeneGlyphNotice**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-setgenesfilter">**setGenesFilter**</span><br><code>(value?: "exclude" &#124; "only" &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setgenesfilter">**setGenesFilter**</span><br><code>(value?: "exclude" &#124; "only") =&gt; void</code> |  |
 | <span id="action-setshowchevrons">**setShowChevrons**</span><br><code>(value: boolean) =&gt; void</code> |  |
-| <span id="action-setutrcolor">**setUtrColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setutrcolor">**setUtrColor**</span><br><code>(color?: string) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>96 inherited actions from 15 models</summary>

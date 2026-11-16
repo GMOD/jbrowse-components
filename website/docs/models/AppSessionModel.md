@@ -15,7 +15,7 @@ AppSessionModel adds no members: it composes the models below, and every member 
 
 ## Properties
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>21 inherited properties from 6 models</summary>
 
 From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="property-layout">[`layout`](../workspacelayoutmixin#property-layout)</span>, <span id="property-activepanelid">[`activePanelId`](../workspacelayoutmixin#property-activepanelid)</span>, <span id="property-maximizedpanelid">[`maximizedPanelId`](../workspacelayoutmixin#property-maximizedpanelid)</span>
@@ -34,7 +34,7 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="property
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>12 inherited volatiles from 5 models</summary>
 
 From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="volatile-editabletrackconfigs">[`editableTrackConfigs`](../sessiontracksmanagersessionmixin#volatile-editabletrackconfigs)</span>
@@ -51,7 +51,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="volatile
 
 ## Getters
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>39 inherited getters from 8 models</summary>
 
 From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="getter-tree">[`tree`](../workspacelayoutmixin#getter-tree)</span>, <span id="getter-panels">[`panels`](../workspacelayoutmixin#getter-panels)</span>, <span id="getter-tabs">[`tabs`](../workspacelayoutmixin#getter-tabs)</span>, <span id="getter-visibletree">[`visibleTree`](../workspacelayoutmixin#getter-visibletree)</span>
@@ -74,7 +74,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="getter-t
 
 ## Methods
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>22 inherited methods from 8 models</summary>
 
 From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="method-haspanel">[`hasPanel`](../workspacelayoutmixin#method-haspanel)</span>, <span id="method-findtab">[`findTab`](../workspacelayoutmixin#method-findtab)</span>, <span id="method-tabcontainingview">[`tabContainingView`](../workspacelayoutmixin#method-tabcontainingview)</span>, <span id="method-panelcontainingview">[`panelContainingView`](../workspacelayoutmixin#method-panelcontainingview)</span>
@@ -97,7 +97,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="method-a
 
 ## Actions
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>93 inherited actions from 10 models</summary>
 
 From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="action-setactivepanelid">[`setActivePanelId`](../workspacelayoutmixin#action-setactivepanelid)</span>, <span id="action-togglemaximizedpanel">[`toggleMaximizedPanel`](../workspacelayoutmixin#action-togglemaximizedpanel)</span>, <span id="action-restorepanels">[`restorePanels`](../workspacelayoutmixin#action-restorepanels)</span>, <span id="action-setactivetab">[`setActiveTab`](../workspacelayoutmixin#action-setactivetab)</span>, <span id="action-renametab">[`renameTab`](../workspacelayoutmixin#action-renametab)</span>, <span id="action-splitpanel">[`splitPanel`](../workspacelayoutmixin#action-splitpanel)</span>, <span id="action-closepanel">[`closePanel`](../workspacelayoutmixin#action-closepanel)</span>, <span id="action-addtab">[`addTab`](../workspacelayoutmixin#action-addtab)</span>, <span id="action-closetab">[`closeTab`](../workspacelayoutmixin#action-closetab)</span>, <span id="action-addviewtotab">[`addViewToTab`](../workspacelayoutmixin#action-addviewtotab)</span>, <span id="action-closeview">[`closeView`](../workspacelayoutmixin#action-closeview)</span>, <span id="action-droptabinpanel">[`dropTabInPanel`](../workspacelayoutmixin#action-droptabinpanel)</span>, <span id="action-droptabinnewsplit">[`dropTabInNewSplit`](../workspacelayoutmixin#action-droptabinnewsplit)</span>, <span id="action-setsizes">[`setSizes`](../workspacelayoutmixin#action-setsizes)</span>, <span id="action-applylayoutspec">[`applyLayoutSpec`](../workspacelayoutmixin#action-applylayoutspec)</span>, <span id="action-moveviewtonewtab">[`moveViewToNewTab`](../workspacelayoutmixin#action-moveviewtonewtab)</span>, <span id="action-moveviewtosplit">[`moveViewToSplit`](../workspacelayoutmixin#action-moveviewtosplit)</span>, <span id="action-moveviewtotab">[`moveViewToTab`](../workspacelayoutmixin#action-moveviewtotab)</span>, <span id="action-homeunassignedviews">[`homeUnassignedViews`](../workspacelayoutmixin#action-homeunassignedviews)</span>, <span id="action-setpendingmove">[`setPendingMove`](../workspacelayoutmixin#action-setpendingmove)</span>, <span id="action-tileviews">[`tileViews`](../workspacelayoutmixin#action-tileviews)</span>, <span id="action-layoutviews">[`layoutViews`](../workspacelayoutmixin#action-layoutviews)</span>

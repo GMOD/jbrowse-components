@@ -15,7 +15,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Properties
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>7 inherited properties from one model</summary>
 
 From [BaseSessionModel](../basesessionmodel): <span id="property-id">[`id`](../basesessionmodel#property-id)</span>, <span id="property-name">[`name`](../basesessionmodel#property-name)</span>, <span id="property-focusedviewid">[`focusedViewId`](../basesessionmodel#property-focusedviewid)</span>, <span id="property-highlights">[`highlights`](../basesessionmodel#property-highlights)</span>, <span id="property-highlightsvisible">[`highlightsVisible`](../basesessionmodel#property-highlightsvisible)</span>, <span id="property-highlightlabelsvisible">[`highlightLabelsVisible`](../basesessionmodel#property-highlightlabelsvisible)</span>, <span id="property-heldformissingplugins">[`heldForMissingPlugins`](../basesessionmodel#property-heldformissingplugins)</span>
@@ -24,7 +24,7 @@ From [BaseSessionModel](../basesessionmodel): <span id="property-id">[`id`](../b
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>7 inherited volatiles from 2 models</summary>
 
 From [BaseSessionModel](../basesessionmodel): <span id="volatile-selection">[`selection`](../basesessionmodel#volatile-selection)</span>, <span id="volatile-selectiontrackid">[`selectionTrackId`](../basesessionmodel#volatile-selectiontrackid)</span>, <span id="volatile-hovered">[`hovered`](../basesessionmodel#volatile-hovered)</span>, <span id="volatile-queueofdialogs">[`queueOfDialogs`](../basesessionmodel#volatile-queueofdialogs)</span>, <span id="volatile-preferencesoverrides">[`preferencesOverrides`](../basesessionmodel#volatile-preferencesoverrides)</span>
@@ -76,7 +76,7 @@ From [BaseSessionModel](../basesessionmodel): <span id="method-getpreferencedefa
 | Member | Description |
 | --- | --- |
 | <span id="action-publishtrackconf">**publishTrackConf**</span><br><code>(trackConf: AnyConfiguration) =&gt; TrackConfigEntry &#124; undefined</code> | Add a track config wherever *this user's* catalog edits belong — the "Add track" workflows, where an admin adding a track means to add it for the whole site. `SessionTracksManagerSessionMixin` overrides it to send a non-admin's to the session instead; here there is only the one destination.<br><br>Anything that is not an Add-track workflow wants `addSessionTrackConf`: a track a feature stands up on the user's behalf — a search result, a computed consensus, a reconstruction's labels — is not a catalog entry, and publishing one writes it into the config.json every visitor is served, once per click. |
-| <span id="action-updatetrackconfiguration">**updateTrackConfiguration**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; vo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; void</code></pre></dialog></span> | Persist edited track config back to the in-memory jbrowse config. The session-tracks mixin overrides this so a non-admin's edits become a shareable session-track override instead. |
+| <span id="action-updatetrackconfiguration">**updateTrackConfiguration**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConf: { [key: string]: unknown; … }) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; void</code></pre></dialog></span> | Persist edited track config back to the in-memory jbrowse config. The session-tracks mixin overrides this so a non-admin's edits become a shareable session-track override instead. |
 | <span id="action-deletetrackconf">**deleteTrackConf**</span><br><code>(trackConf: AnyTrackConfig) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

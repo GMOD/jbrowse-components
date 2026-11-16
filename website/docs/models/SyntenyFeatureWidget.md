@@ -17,7 +17,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('SyntenyFeatureWidget')</code> |  |
+| <span id="property-type">**type**</span><br><code>"SyntenyFeatureWidget"</code> | Always `"SyntenyFeatureWidget"`, the name a snapshot selects this model by. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>9 inherited properties from one model</summary>
@@ -28,7 +28,7 @@ From [BaseFeatureWidget](../basefeaturewidget): <span id="property-id">[`id`](..
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>1 inherited volatile from one model</summary>
 
 From [BaseFeatureWidget](../basefeaturewidget): <span id="volatile-sequencehoverposition">[`sequenceHoverPosition`](../basefeaturewidget#volatile-sequencehoverposition)</span>
@@ -51,7 +51,7 @@ From [BaseFeatureWidget](../basefeaturewidget): <span id="getter-trackconfigurat
 
 ## Actions
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>3 inherited actions from one model</summary>
 
 From [BaseFeatureWidget](../basefeaturewidget): <span id="action-setsequencehoverposition">[`setSequenceHoverPosition`](../basefeaturewidget#action-setsequencehoverposition)</span>, <span id="action-setfeaturedata">[`setFeatureData`](../basefeaturewidget#action-setfeaturedata)</span>, <span id="action-clearfeaturedata">[`clearFeatureData`](../basefeaturewidget#action-clearfeaturedata)</span>

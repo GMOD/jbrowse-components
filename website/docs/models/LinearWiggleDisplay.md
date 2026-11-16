@@ -77,8 +77,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('LinearWiggleDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>"LinearWiggleDisplay"</code> | Always `"LinearWiggleDisplay"`, the name a snapshot selects this model by. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/linearwiggledisplay">LinearWiggleDisplayConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/linearwiggledisplay). |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>5 inherited properties from 3 models</summary>
@@ -93,7 +93,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>28 inherited volatiles from 10 models</summary>
 
 From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo">[`contextMenuInfo`](../contextmenumixin#volatile-contextmenuinfo)</span>
@@ -209,23 +209,23 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setrpcdata">**setRpcData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(displayedRegionIndex: number, data: WiggleDataResult, region:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(displayedRegionIndex: number, data: WiggleDataResult, region: Region) =&gt; void</code></pre></dialog></span> | Stage a region as fetched, with this mixin's payload shape — so a test stands up a loaded display in one call. Production goes through `ctx.commitRegion`. |
+| <span id="action-setrpcdata">**setRpcData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(displayedRegionIndex, data, region) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(displayedRegionIndex: number, data: WiggleDataResult, region: Region) =&gt; void</code></pre></dialog></span> | Stage a region as fetched, with this mixin's payload shape — so a test stands up a loaded display in one call. Production goes through `ctx.commitRegion`. |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feat: WiggleHoveredFeature) =&gt; void</code> |  |
 | <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  |
-| <span id="action-setorigin">**setOrigin**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setmark">**setMark**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(mark: "bar" &#124; "line" &#124; "point" &#124; "rect", interpolate?: "linear…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(mark: "bar" &#124; "line" &#124; "point" &#124; "rect", interpolate?: "linear" &#124; "step" &#124; undefined) =&gt; void</code></pre></dialog></span> | The plot's `mark.type`, and a line's `mark.interpolate`; any other type resets `interpolate`, which only a line reads. |
+| <span id="action-setorigin">**setOrigin**</span><br><code>(val?: number) =&gt; void</code> |  |
+| <span id="action-setmark">**setMark**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(mark, interpolate?) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(mark: "bar" &#124; "line" &#124; "point" &#124; "rect", interpolate?: "linear" &#124; "step") =&gt; void</code></pre></dialog></span> | The plot's `mark.type`, and a line's `mark.interpolate`; any other type resets `interpolate`, which only a line reads. |
 | <span id="action-sety">**setY**</span><br><code>(field: string) =&gt; void</code> | The field plotted on the value axis: a stored summary (`score`, `minScore`, `maxScore`) or any feature field. |
 | <span id="action-setextent">**setExtent**</span><br><code>(val: "min-max" &#124; "none") =&gt; void</code> |  |
-| <span id="action-setpointsize">**setPointSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setstrokewidth">**setStrokeWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setpointsize">**setPointSize**</span><br><code>(val?: number) =&gt; void</code> |  |
+| <span id="action-setstrokewidth">**setStrokeWidth**</span><br><code>(val?: number) =&gt; void</code> |  |
 | <span id="action-setrowlayout">**setRowLayout**</span><br><code>(on: boolean) =&gt; void</code> | The layout half of a Plot type leaf — `Multi-row` or `Overlapping`, each holding the five plot names. Writes the field alone, so the arrangement survives a trip through the shared plot and comes back with the rows. |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: WiggleRenderingBackend) =&gt; void</code> |  |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setplot">**setPlot**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ mark, rowLayout, }: { mark: WiggleMarkObject; rowLayout: boo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ mark, rowLayout, }: { mark: WiggleMarkObject; rowLayout: boolean; }) =&gt; void</code></pre></dialog></span> | A Plot type leaf whole: `setMark` then `setRowLayout` in one action, so the regions encode once and never as the new plot in the old layout. |
-| <span id="action-openplotdialog">**openPlotDialog**</span><br><code>(seed?: Plot &#124; undefined) =&gt; void</code> | The arrangement dialog's "Edit plot..." button: the color object and the rows beside it as text, the escape for a ramp, several cut points or a typed row order, none of which the dialog's own controls offer. |
+| <span id="action-setplot">**setPlot**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ mark, rowLayout, }: { mark: WiggleMarkObject; … }) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ mark, rowLayout, }: { mark: WiggleMarkObject; rowLayout: boolean; }) =&gt; void</code></pre></dialog></span> | A Plot type leaf whole: `setMark` then `setRowLayout` in one action, so the regions encode once and never as the new plot in the old layout. |
+| <span id="action-openplotdialog">**openPlotDialog**</span><br><code>(seed?: Plot) =&gt; void</code> | The arrangement dialog's "Edit plot..." button: the color object and the rows beside it as text, the escape for a ramp, several cut points or a typed row order, none of which the dialog's own controls offer. |
 | <span id="action-sortrowsbyscoreat">**sortRowsByScoreAt**</span><br><code>(refName: string, pos: number) =&gt; boolean</code> | Rank the rows by each source's score at one genomic base. Reads the region data already in hand — no refetch, no RPC — and writes the order through `rows.sort`, the same channel clustering and the arrangement dialog write, so "Reset row order" undoes all three.<br><br>Named by coordinate rather than by loaded-region index because both entry points are: the right-click hit resolves to one, and a session's `sortRowsBy` holds one across a reload. Resolving that region and refusing the two cases where a sort would only cost a `rows.sort` write are `sortRowsAtColumn`'s, shared with the multi-row feature display's twin, and so is the returned "did it sort" the declarative entry point reads to decide whether to keep its trigger for a later fetch. |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; Promise&lt;void&gt;</code> |  |
-| <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></dialog></span> |  |
+| <span id="action-rendersvg">**renderSvg**</span><br><code>(opts?: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>76 inherited actions from 12 models</summary>

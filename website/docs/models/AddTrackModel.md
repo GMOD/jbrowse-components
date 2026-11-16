@@ -16,10 +16,10 @@ list for adding several tracks at once.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>types.literal('AddTrackWidget')</code> |  |
-| <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.safeReference( pluginManager.pluggableMstType('view', 'st…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.safeReference(&#10;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;)</code></pre></dialog></span> |  |
-| <span id="property-trackcontainerid">**trackContainerId**</span><br><code>types.maybe(types.string)</code> | Which of the view's track containers the new track opens in, by id. Absent, the usual case, means the view itself. The same property on HierarchicalTrackSelectorWidget sets this one. |
+| <span id="property-id">**id**</span><br><code>string</code> · default <code>createElementId()</code> | The identifier references to this node resolve through. A snapshot that leaves it out gets a generated one. |
+| <span id="property-type">**type**</span><br><code>"AddTrackWidget"</code> | Always `"AddTrackWidget"`, the name a snapshot selects this model by. |
+| <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>BaseViewModel &amp; Pick&lt;…&gt; &#124; undefined</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code><a href="../baseviewmodel">BaseViewModel</a> &amp; Pick&lt;AbstractViewModel, "assemblyNames" &#124; "regionHost" &#124; "trackContainerFor" &#124; "trackContainers" &#124; "type"&gt; &#124; undefined</code></pre></dialog></span> |  |
+| <span id="property-trackcontainerid">**trackContainerId**</span><br><code>string &#124; undefined</code> | Which of the view's track containers the new track opens in, by id. Absent, the usual case, means the view itself. The same property on HierarchicalTrackSelectorWidget sets this one. |
 
 ## Volatiles
 
@@ -57,7 +57,7 @@ list for adding several tracks at once.
 | <span id="getter-assembly">**assembly**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-trackadaptertype">**trackAdapterType**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-tracktype">**trackType**</span><br><code>string</code> |  |
-| <span id="getter-warningmessage">**warningMessage**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>"" &#124; "Warning: JBrowse cannot access files using the ftp protoc…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>"" &#124; "Warning: JBrowse cannot access files using the ftp protocol" &#124; "Warning: You entered a http:// resources but we cannot access HTTP\n resources from JBrowse when it is running on https. Please use an\n https URL for your track, or access the JBrowse app from the http\n protocol" &#124; "Warning: one or more of your files do not provide the protocol e.g.\n https://, please provide an absolute URL unless you are sure a\n relative URL is intended."</code></pre></dialog></span> |  |
+| <span id="getter-warningmessage">**warningMessage**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>"" &#124; …</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>"" &#124; "Warning: JBrowse cannot access files using the ftp protocol" &#124; "Warning: You entered a http:// resources but we cannot access HTTP\n resources from JBrowse when it is running on https. Please use an\n https URL for your track, or access the JBrowse app from the http\n protocol" &#124; "Warning: one or more of your files do not provide the protocol e.g.\n https://, please provide an absolute URL unless you are sure a\n relative URL is intended."</code></pre></dialog></span> |  |
 
 ## Methods
 
@@ -71,7 +71,7 @@ list for adding several tracks at once.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setmixindata">**setMixinData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(arg: Record&lt;string, unknown&gt;, missing?: string &#124; undefined) =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(arg: Record&lt;string, unknown&gt;, missing?: string &#124; undefined) =&gt; void</code></pre></dialog></span> | What the adapter's picker adds to the track config, and why it cannot make a track yet, if it cannot. |
+| <span id="action-setmixindata">**setMixinData**</span><br><code>(arg: Record&lt;string, unknown&gt;, missing?: string) =&gt; void</code> | What the adapter's picker adds to the track config, and why it cannot make a track yet, if it cannot. |
 | <span id="action-setworkflowform">**setWorkflowForm**</span><br><code>(key: string, form: object) =&gt; void</code> | Store one workflow's form; `workflowForm` in core reads and patches it. |
 | <span id="action-setworkflowname">**setWorkflowName**</span><br><code>(name: string) =&gt; void</code> |  |
 | <span id="action-setadapterhint">**setAdapterHint**</span><br><code>(obj: string) =&gt; void</code> |  |

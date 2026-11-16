@@ -46,7 +46,7 @@ directly, the global and comparative families through `KeyedFetchMixin`.
 | Member | Description |
 | --- | --- |
 | <span id="action-seterror">**setError**</span><br><code>(error?: unknown) =&gt; void</code> |  |
-| <span id="action-setstatusmessage">**setStatusMessage**</span><br><code>(status?: RpcStatus &#124; undefined) =&gt; void</code> | Unthrottled, so a phase label written by hand always lands; the RPC stream is thinned by the slots `statusWindow` hands out. |
+| <span id="action-setstatusmessage">**setStatusMessage**</span><br><code>(status?: RpcStatus) =&gt; void</code> | Unthrottled, so a phase label written by hand always lands; the RPC stream is thinned by the slots `statusWindow` hands out. |
 | <span id="action-stopactivefetch">**stopActiveFetch**</span><br><code>() =&gt; void</code> | Abort the in-flight fetch, if any, and retire its status slot: the shared preamble of both cancel paths. It never resets the window, which would drop a sibling operation's queued status write on every `clearAllRpcData` (ADR-081); only teardown resets it. |
 | <span id="action-openstatusstream">**openStatusStream**</span><br><code>(isCurrent: () =&gt; boolean) =&gt; StatusStream</code> | Open a slot on the display's status field for an operation outside any fetch, such as the tree sidebar's clustering run: a throttled RPC `statusCallback` and the `clear` that retires it. `isCurrent` is required because a live node is not enough: a superseded run's late status must not repaint the overlay of the run that replaced it. |
 | <span id="action-cancelfetch">**cancelFetch**</span><br><code>() =&gt; void</code> | Cancel any in-flight fetch, clear a user cancel and bump `fetchGeneration`, so the fetch autoruns re-fetch. The internal reset `clearAllRpcData` runs. |

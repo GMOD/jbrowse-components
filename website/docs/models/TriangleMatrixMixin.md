@@ -30,7 +30,7 @@ A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payloa
 | <span id="getter-matrixheight">**matrixHeight**</span><br><code>number</code> |  |
 | <span id="getter-matrixblocks">**matrixBlocks**</span><br><code>RenderBlock[]</code> |  |
 | <span id="getter-yscalar">**yScalar**</span><br><code>number</code> | The squash takes the content's base, without the boundary padding a scroll past either end adds. |
-| <span id="getter-triangletransform">**triangleTransform**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ yScalar: number; yOffsetPx: number; viewScale: number; viewOf…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ yScalar: number; yOffsetPx: number; viewScale: number; viewOffsetX: number; }</code></pre></dialog></span> |  |
+| <span id="getter-triangletransform">**triangleTransform**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ yScalar: number; yOffsetPx: number; viewScale: number; … }</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ yScalar: number; yOffsetPx: number; viewScale: number; viewOffsetX: number; }</code></pre></dialog></span> |  |
 | <span id="getter-triangleframe">**triangleFrame**</span><br><code>TriangleFrame</code> |  |
 
 ## Methods

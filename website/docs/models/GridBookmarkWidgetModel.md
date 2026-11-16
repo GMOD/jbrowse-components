@@ -15,8 +15,8 @@ recolors or removes the selected ones.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>types.literal('GridBookmarkWidget')</code> |  |
+| <span id="property-id">**id**</span><br><code>string</code> · default <code>createElementId()</code> | The identifier references to this node resolve through. A snapshot that leaves it out gets a generated one. |
+| <span id="property-type">**type**</span><br><code>"GridBookmarkWidget"</code> | Always `"GridBookmarkWidget"`, the name a snapshot selects this model by. |
 
 ## Volatiles
 

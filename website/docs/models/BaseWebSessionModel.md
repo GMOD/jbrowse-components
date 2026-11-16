@@ -19,7 +19,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-sessionplugins">**sessionPlugins**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.array( types.frozen&lt;PluginDefinition &amp; { name: string }&gt;(…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.array(&#10;&#160;&#160;types.frozen&lt;PluginDefinition &amp; { name: string }&gt;(),&#10;)</code></pre></dialog></span> |  |
+| <span id="property-sessionplugins">**sessionPlugins**</span><br><code>(PluginDefinition &amp; { name: string; })[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>24 inherited properties from 8 models</summary>
@@ -102,7 +102,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="getter-t
 | Member | Description |
 | --- | --- |
 | <span id="method-canedittrack">**canEditTrack**</span><br><code>(trackId: string) =&gt; boolean</code> | whether the user may edit this track's config (admins may edit any; everyone else only session tracks) |
-| <span id="method-gettrackactions">**getTrackActions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(config: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(config: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt; MenuItem[]</code></pre></dialog></span> | raw track actions (Settings, Copy, Delete) without submenu wrapper |
+| <span id="method-gettrackactions">**getTrackActions**</span><br><code>(config: AnyTrackConfig, view?: TrackActionView) =&gt; MenuItem[]</code> | raw track actions (Settings, Copy, Delete) without submenu wrapper |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>24 inherited methods from 9 models</summary>

@@ -47,7 +47,7 @@ import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
 
 function buildReadVsRefFeatures(
   feature: ReadVsRefInput,
-  getCanonicalRefName?: ((refName: string) => string | undefined) | undefined,
+  getCanonicalRefName?: (refName: string) => string | undefined,
 ): ReadVsRefFeatures
 ```
 
@@ -108,7 +108,7 @@ function featurizeSAEntries(
   id: string,
   strand: number | undefined,
   readName: string | undefined,
-  normalize?: boolean | undefined,
+  normalize?: boolean,
 ): {
   refName: string
   start: number
@@ -171,11 +171,11 @@ its CIGAR, optional MD tag, sequence, reference, and quality.
 import { getMismatches } from '@jbrowse/cigar-utils'
 
 function getMismatches(
-  cigar?: string | undefined,
-  md?: string | undefined,
-  seq?: string | undefined,
-  ref?: string | undefined,
-  qual?: Uint8Array<ArrayBufferLike> | undefined,
+  cigar?: string,
+  md?: string,
+  seq?: string,
+  ref?: string,
+  qual?: Uint8Array<ArrayBufferLike>,
 ): Mismatch[]
 ```
 
@@ -219,7 +219,7 @@ function getNextRefPos(
   cigarOps: ArrayLike<number>,
   positions: number[],
   callback: (ref: number, idx: number) => void,
-  from?: CigarCursor | undefined,
+  from?: CigarCursor,
 ): void
 ```
 

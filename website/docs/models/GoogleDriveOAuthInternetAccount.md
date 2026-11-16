@@ -19,8 +19,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('GoogleDriveOAuthInternetAccount')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>"GoogleDriveOAuthInternetAccount"</code> | Always `"GoogleDriveOAuthInternetAccount"`, the name a snapshot selects this model by. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/googledriveoauthinternetaccount">GoogleDriveOAuthInternetAccountConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/googledriveoauthinternetaccount). |
 
 ## Getters
 
@@ -46,7 +46,7 @@ From [OAuthInternetAccount](../oauthinternetaccount): <span id="getter-conf">[`c
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-getfetcher">**getFetcher**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(location?: UriLocation &#124; undefined) =&gt; (input: RequestInfo, in…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(location?: UriLocation &#124; undefined) =&gt; (input: RequestInfo, init?: RequestInitWithMetadata &#124; undefined) =&gt; Promise&lt;Response&gt;</code></pre></dialog></span> |  |
+| <span id="method-getfetcher">**getFetcher**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(location?) =&gt; (input: RequestInfo, init?:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(location?: UriLocation) =&gt; (input: RequestInfo, init?: RequestInitWithMetadata) =&gt; Promise&lt;Response&gt;</code></pre></dialog></span> |  |
 | <span id="method-openlocation">**openLocation**</span><br><code>(location: UriLocation) =&gt; GoogleDriveFile</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

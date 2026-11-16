@@ -19,8 +19,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
-| <span id="property-type">**type**</span><br><code>types.literal('JBrowse1Connection')</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/jbrowse1connection">JBrowse1ConnectionConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/jbrowse1connection). |
+| <span id="property-type">**type**</span><br><code>"JBrowse1Connection"</code> | Always `"JBrowse1Connection"`, the name a snapshot selects this model by. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited properties from one model</summary>
@@ -31,7 +31,7 @@ From [BaseConnectionModel](../baseconnectionmodel): <span id="property-tracks">[
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>1 inherited volatile from one model</summary>
 
 From [BaseConnectionModel](../baseconnectionmodel): <span id="volatile-loading">[`loading`](../baseconnectionmodel#volatile-loading)</span>
@@ -40,7 +40,7 @@ From [BaseConnectionModel](../baseconnectionmodel): <span id="volatile-loading">
 
 ## Getters
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>2 inherited getters from one model</summary>
 
 From [BaseConnectionModel](../baseconnectionmodel): <span id="getter-connectionid">[`connectionId`](../baseconnectionmodel#getter-connectionid)</span>, <span id="getter-name">[`name`](../baseconnectionmodel#getter-name)</span>

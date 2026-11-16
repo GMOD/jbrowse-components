@@ -18,7 +18,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Properties
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>2 inherited properties from one model</summary>
 
 From [TokenEntryInternetAccount](../tokenentryinternetaccount): <span id="property-type">[`type`](../tokenentryinternetaccount#property-type)</span>, <span id="property-configuration">[`configuration`](../tokenentryinternetaccount#property-configuration)</span>
@@ -41,7 +41,7 @@ From [TokenEntryInternetAccount](../tokenentryinternetaccount): <span id="getter
 
 ## Actions
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>2 inherited actions from one model</summary>
 
 From [TokenEntryInternetAccount](../tokenentryinternetaccount): <span id="action-gettokenfromuser">[`getTokenFromUser`](../tokenentryinternetaccount#action-gettokenfromuser)</span>, <span id="action-validatetoken">[`validateToken`](../tokenentryinternetaccount#action-validatetoken)</span>

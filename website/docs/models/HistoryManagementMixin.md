@@ -15,4 +15,4 @@ and Ctrl+Y (Cmd on macOS).
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-history">**history**</span><br><code>types.optional(<a href="../timetraveller">TimeTraveller</a>, { targetPath: '../session' })</code> | used for undo/redo |
+| <span id="property-history">**history**</span><br><code><a href="../timetraveller">TimeTraveller</a></code> · default <code>{ targetPath: '../session' }</code> | used for undo/redo |

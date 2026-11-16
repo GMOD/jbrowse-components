@@ -68,11 +68,11 @@ From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[
 | <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: "linear" &#124; "log" &#124; "symlog") =&gt; void</code> |  |
 | <span id="action-setscalezero">**setScaleZero**</span><br><code>(zero: boolean) =&gt; void</code> |  |
 | <span id="action-setfencequantile">**setFenceQuantile**</span><br><code>(quantile: number) =&gt; void</code> |  |
-| <span id="action-setdomainmin">**setDomainMin**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setdomainmax">**setDomainMax**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setminscore">**setMinScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> | v4's name for `setDomainMin`. |
-| <span id="action-setmaxscore">**setMaxScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> | v4's name for `setDomainMax`. |
-| <span id="action-setautoscalegroup">**setAutoscaleGroup**</span><br><code>(group?: string &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setdomainmin">**setDomainMin**</span><br><code>(val?: number) =&gt; void</code> |  |
+| <span id="action-setdomainmax">**setDomainMax**</span><br><code>(val?: number) =&gt; void</code> |  |
+| <span id="action-setminscore">**setMinScore**</span><br><code>(val?: number) =&gt; void</code> | v4's name for `setDomainMin`. |
+| <span id="action-setmaxscore">**setMaxScore**</span><br><code>(val?: number) =&gt; void</code> | v4's name for `setDomainMax`. |
+| <span id="action-setautoscalegroup">**setAutoscaleGroup**</span><br><code>(group?: string) =&gt; void</code> |  |
 | <span id="action-setgrid">**setGrid**</span><br><code>(grid: boolean) =&gt; void</code> |  |
 | <span id="action-setscorerules">**setScoreRules**</span><br><code>(rules: (number &#124; ValueScaleRule)[]) =&gt; void</code> | Replaces the y scale's rules whole, each entry in a form the config takes: a number, or `{ value, color, label }`. |
 | <span id="action-resetyscale">**resetYScale**</span><br><code>() =&gt; void</code> | Back to what the config.json says, or to what a session-owned track was added with, so an admin's declared axis survives a reset; slots the base leaves unset take their defaults. |

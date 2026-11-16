@@ -290,7 +290,7 @@ function dragBandHeight<K extends string>(
   key: K,
   plot: BandPlot,
   target: number,
-  min?: number | undefined,
+  min?: number,
 ): number
 ```
 

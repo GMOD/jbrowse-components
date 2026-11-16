@@ -224,8 +224,8 @@ import { SyntenyStack } from '@jbrowse/plugin-linear-comparative-view'
 
 function SyntenyStack(opts: {
   view: LinearSyntenyView
-  renderRow?: ((row: LinearGenomeView, index: number) => ReactNode) | undefined
-  style?: CSSProperties | undefined
+  renderRow?: (row: LinearGenomeView, index: number) => ReactNode
+  style?: CSSProperties
 }): Element
 ```
 

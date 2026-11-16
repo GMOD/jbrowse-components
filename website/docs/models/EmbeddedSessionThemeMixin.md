@@ -17,7 +17,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Properties
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>7 inherited properties from one model</summary>
 
 From [BaseSessionModel](../basesessionmodel): <span id="property-id">[`id`](../basesessionmodel#property-id)</span>, <span id="property-name">[`name`](../basesessionmodel#property-name)</span>, <span id="property-focusedviewid">[`focusedViewId`](../basesessionmodel#property-focusedviewid)</span>, <span id="property-highlights">[`highlights`](../basesessionmodel#property-highlights)</span>, <span id="property-highlightsvisible">[`highlightsVisible`](../basesessionmodel#property-highlightsvisible)</span>, <span id="property-highlightlabelsvisible">[`highlightLabelsVisible`](../basesessionmodel#property-highlightlabelsvisible)</span>, <span id="property-heldformissingplugins">[`heldForMissingPlugins`](../basesessionmodel#property-heldformissingplugins)</span>
@@ -64,7 +64,7 @@ From [SnackbarModel](../snackbarmodel): <span id="getter-snackbarmessageset">[`s
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-getactivethemeoptions">**getActiveThemeOptions**</span><br><code>(_name?: string &#124; undefined) =&gt; ThemeOptions &#124; undefined</code> | Raw `ThemeOptions` for the active theme, which every view's SVG export threads into each display's `renderSvg` as a `configTheme` and rebuilds outside React. The config slot is the whole answer here because it is the whole of an embedded product's theming: no picker, no `allThemes`, and it is what `setThemeMode` writes and `palette` resolves from. `name` is ignored here — the app session's counterpart looks a named preset up in `allThemes()`. |
+| <span id="method-getactivethemeoptions">**getActiveThemeOptions**</span><br><code>(_name?: string) =&gt; ThemeOptions &#124; undefined</code> | Raw `ThemeOptions` for the active theme, which every view's SVG export threads into each display's `renderSvg` as a `configTheme` and rebuilds outside React. The config slot is the whole answer here because it is the whole of an embedded product's theming: no picker, no `allThemes`, and it is what `setThemeMode` writes and `palette` resolves from. `name` is ignored here — the app session's counterpart looks a named preset up in `allThemes()`. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>3 inherited methods from one model</summary>

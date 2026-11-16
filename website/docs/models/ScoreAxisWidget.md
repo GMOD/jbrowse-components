@@ -16,7 +16,7 @@ than leaving the widget writing to a dead node.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>types.literal('ScoreAxisWidget')</code> |  |
-| <span id="property-display">**display**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.safeReference( pluginManager.pluggableMstType('display',…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.safeReference(&#10;&#160;&#160;pluginManager.pluggableMstType('display', 'stateModel'),&#10;)</code></pre></dialog></span> |  |
-| <span id="property-label">**label**</span><br><code>types.optional(types.string, 'Y axis')</code> | The name of the menu row that opened the widget, "Y axis" or "Coverage axis"; the heading shows the same name. |
+| <span id="property-id">**id**</span><br><code>string</code> · default <code>createElementId()</code> | The identifier references to this node resolve through. A snapshot that leaves it out gets a generated one. |
+| <span id="property-type">**type**</span><br><code>"ScoreAxisWidget"</code> | Always `"ScoreAxisWidget"`, the name a snapshot selects this model by. |
+| <span id="property-display">**display**</span><br><code>DisplayModel &#124; undefined</code> |  |
+| <span id="property-label">**label**</span><br><code>string</code> · default <code>'Y axis'</code> | The name of the menu row that opened the widget, "Y axis" or "Coverage axis"; the heading shows the same name. |

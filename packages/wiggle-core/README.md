@@ -68,7 +68,7 @@ itself, so no consumer has to guess what a backwards or a flat domain means.
 import { getNiceDomain } from '@jbrowse/wiggle-core'
 
 function getNiceDomain(opts: {
-  scaleType: 'linear' | 'log' | 'symlog'
+  scaleType: ScaleType
   domain: readonly [number, number]
   bounds: readonly [number | undefined, number | undefined]
   zero: boolean
@@ -87,7 +87,7 @@ import { getNiceScale } from '@jbrowse/wiggle-core'
 
 function getNiceScale(
   maxScore: number,
-  useLogScale?: boolean | undefined,
+  useLogScale?: boolean,
 ): { min: number; max: number }
 ```
 

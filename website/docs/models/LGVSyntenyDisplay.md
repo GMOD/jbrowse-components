@@ -46,8 +46,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>types.literal('LGVSyntenyDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(schema)</code> |  |
+| <span id="property-type">**type**</span><br><code>"LGVSyntenyDisplay"</code> | Always `"LGVSyntenyDisplay"`, the name a snapshot selects this model by. |
+| <span id="property-configuration">**configuration**</span><br><code><a href="../../config/lgvsyntenydisplay">LGVSyntenyDisplayConfig</a></code> | The config node this model reads its settings from, through `getConf`. Its slots are documented on its [config schema page](../../config/lgvsyntenydisplay). |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited properties from 2 models</summary>
@@ -60,7 +60,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>30 inherited volatiles from 10 models</summary>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderread">[`adapterHeaderRead`](../lodtierinfomixin#volatile-adapterheaderread)</span>
@@ -143,7 +143,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | --- | --- |
 | <span id="method-groupchiplabel">**groupChipLabel**</span><br><code>(label: string) =&gt; string</code> | A mate-assembly chip reads the assembly's display name |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
-| <span id="method-trackmenuitems">**trackMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; (MenuItem &#124; { label: string; disabled: boolean; onClick:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; (MenuItem &#124; { label: string; disabled: boolean; onClick: () =&gt; void; } &#124; { subMenu: MenuItem[]; label: string; icon: OverridableComponent&lt;SvgIconTypeMap&lt;{}, "svg"&gt;&gt; &amp; { muiName: string; }; type: "subMenu"; })[]</code></pre></dialog></span> |  |
+| <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>33 inherited methods from 6 models</summary>

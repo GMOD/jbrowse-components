@@ -15,11 +15,11 @@ installable plugin list and the view it was opened from.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>types.literal('PluginStoreWidget')</code> |  |
-| <span id="property-filtertext">**filterText**</span><br><code>''</code> |  |
-| <span id="property-tagfilters">**tagFilters**</span><br><code>types.optional(types.array(types.string), [])</code> | Tags a plugin must have to stay in the list. Plain strings, because the tag vocabulary is published in the store manifest rather than defined here — a tag this build has never seen still filters correctly. |
-| <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.safeReference( pluginManager.pluggableMstType('view', 'st…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.safeReference(&#10;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;)</code></pre></dialog></span> |  |
+| <span id="property-id">**id**</span><br><code>string</code> · default <code>createElementId()</code> | The identifier references to this node resolve through. A snapshot that leaves it out gets a generated one. |
+| <span id="property-type">**type**</span><br><code>"PluginStoreWidget"</code> | Always `"PluginStoreWidget"`, the name a snapshot selects this model by. |
+| <span id="property-filtertext">**filterText**</span><br><code>string</code> · default <code>''</code> |  |
+| <span id="property-tagfilters">**tagFilters**</span><br><code>string[]</code> · default <code>[]</code> | Tags a plugin must have to stay in the list. Plain strings, because the tag vocabulary is published in the store manifest rather than defined here — a tag this build has never seen still filters correctly. |
+| <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>BaseViewModel &amp; Pick&lt;…&gt; &#124; undefined</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code><a href="../baseviewmodel">BaseViewModel</a> &amp; Pick&lt;AbstractViewModel, "assemblyNames" &#124; "regionHost" &#124; "trackContainerFor" &#124; "trackContainers" &#124; "type"&gt; &#124; undefined</code></pre></dialog></span> |  |
 
 ## Getters
 

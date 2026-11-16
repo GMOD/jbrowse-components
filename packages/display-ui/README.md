@@ -156,8 +156,8 @@ See
 import { DisplayUIProvider } from '@jbrowse/display-ui'
 
 function DisplayUIProvider(opts: {
-  overlays?: Partial<DisplayChromeOverlays> | undefined
-  trackControl?: TrackControlComponent | undefined
+  overlays?: Partial<DisplayChromeOverlays>
+  trackControl?: TrackControlComponent
   children: ReactNode
 }): Element
 ```
@@ -297,7 +297,7 @@ import { Tooltip } from '@jbrowse/display-ui'
 
 function Tooltip(opts: {
   title: ReactNode
-  placement?: TooltipPlacement | undefined
+  placement?: TooltipPlacement
   children: ReactElement<TriggerProps, string | JSXElementConstructor<any>>
 }): Element
 ```
@@ -323,7 +323,7 @@ import { TrackOverlayPortal } from '@jbrowse/display-ui'
 
 function TrackOverlayPortal(opts: {
   children: ReactNode
-  fallbackInline?: boolean | undefined
+  fallbackInline?: boolean
 }): ReactNode
 ```
 
@@ -377,9 +377,9 @@ import { TrackOverlaySlot } from '@jbrowse/display-ui'
 function TrackOverlaySlot(opts: {
   children: ReactNode
   zIndex: number
-  style?: CSSProperties | undefined
-  overlayStyle?: CSSProperties | undefined
-  labelBand?: number | undefined
+  style?: CSSProperties
+  overlayStyle?: CSSProperties
+  labelBand?: number
 }): Element
 ```
 
@@ -412,7 +412,7 @@ import { useTooltip } from '@jbrowse/display-ui'
 
 function useTooltip(
   title: ReactNode,
-  opts?: { placement?: TooltipPlacement | undefined },
+  opts?: { placement?: TooltipPlacement },
 ): TooltipTrigger
 ```
 
@@ -434,9 +434,7 @@ holds position only.
 ```ts
 import { useTrackControlMenu } from '@jbrowse/display-ui'
 
-function useTrackControlMenu(
-  onClose?: (() => void) | undefined,
-): TrackControlMenu
+function useTrackControlMenu(onClose?: () => void): TrackControlMenu
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/trackControl/useTrackControlMenu.tsx)

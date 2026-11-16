@@ -17,7 +17,7 @@ PreferencesSessionMixin adds no members: it composes the models below, and every
 
 ## Properties
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>7 inherited properties from one model</summary>
 
 From [BaseSessionModel](../basesessionmodel): <span id="property-id">[`id`](../basesessionmodel#property-id)</span>, <span id="property-name">[`name`](../basesessionmodel#property-name)</span>, <span id="property-focusedviewid">[`focusedViewId`](../basesessionmodel#property-focusedviewid)</span>, <span id="property-highlights">[`highlights`](../basesessionmodel#property-highlights)</span>, <span id="property-highlightsvisible">[`highlightsVisible`](../basesessionmodel#property-highlightsvisible)</span>, <span id="property-highlightlabelsvisible">[`highlightLabelsVisible`](../basesessionmodel#property-highlightlabelsvisible)</span>, <span id="property-heldformissingplugins">[`heldForMissingPlugins`](../basesessionmodel#property-heldformissingplugins)</span>
@@ -26,7 +26,7 @@ From [BaseSessionModel](../basesessionmodel): <span id="property-id">[`id`](../b
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>7 inherited volatiles from 2 models</summary>
 
 From [BaseSessionModel](../basesessionmodel): <span id="volatile-selection">[`selection`](../basesessionmodel#volatile-selection)</span>, <span id="volatile-selectiontrackid">[`selectionTrackId`](../basesessionmodel#volatile-selectiontrackid)</span>, <span id="volatile-hovered">[`hovered`](../basesessionmodel#volatile-hovered)</span>, <span id="volatile-queueofdialogs">[`queueOfDialogs`](../basesessionmodel#volatile-queueofdialogs)</span>, <span id="volatile-preferencesoverrides">[`preferencesOverrides`](../basesessionmodel#volatile-preferencesoverrides)</span>
@@ -37,7 +37,7 @@ From [SnackbarModel](../snackbarmodel): <span id="volatile-snackbarmessages">[`s
 
 ## Getters
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>13 inherited getters from 2 models</summary>
 
 From [BaseSessionModel](../basesessionmodel): <span id="getter-root">[`root`](../basesessionmodel#getter-root)</span>, <span id="getter-jbrowse">[`jbrowse`](../basesessionmodel#getter-jbrowse)</span>, <span id="getter-rpcmanager">[`rpcManager`](../basesessionmodel#getter-rpcmanager)</span>, <span id="getter-configuration">[`configuration`](../basesessionmodel#getter-configuration)</span>, <span id="getter-adminmode">[`adminMode`](../basesessionmodel#getter-adminmode)</span>, <span id="getter-textsearchmanager">[`textSearchManager`](../basesessionmodel#getter-textsearchmanager)</span>, <span id="getter-assemblies">[`assemblies`](../basesessionmodel#getter-assemblies)</span>, <span id="getter-dialogcomponent">[`DialogComponent`](../basesessionmodel#getter-dialogcomponent)</span>, <span id="getter-dialogprops">[`DialogProps`](../basesessionmodel#getter-dialogprops)</span>, <span id="getter-animationmode">[`animationMode`](../basesessionmodel#getter-animationmode)</span>, <span id="getter-scrollzoom">[`scrollZoom`](../basesessionmodel#getter-scrollzoom)</span>, <span id="getter-numbergrouping">[`numberGrouping`](../basesessionmodel#getter-numbergrouping)</span>
@@ -48,7 +48,7 @@ From [SnackbarModel](../snackbarmodel): <span id="getter-snackbarmessageset">[`s
 
 ## Methods
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>3 inherited methods from one model</summary>
 
 From [BaseSessionModel](../basesessionmodel): <span id="method-getpreferencedefault">[`getPreferenceDefault`](../basesessionmodel#method-getpreferencedefault)</span>, <span id="method-getpreference">[`getPreference`](../basesessionmodel#method-getpreference)</span>, <span id="method-getpreferencechanges">[`getPreferenceChanges`](../basesessionmodel#method-getpreferencechanges)</span>
@@ -57,7 +57,7 @@ From [BaseSessionModel](../basesessionmodel): <span id="method-getpreferencedefa
 
 ## Actions
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>24 inherited actions from 2 models</summary>
 
 From [BaseSessionModel](../basesessionmodel): <span id="action-setselection">[`setSelection`](../basesessionmodel#action-setselection)</span>, <span id="action-clearselection">[`clearSelection`](../basesessionmodel#action-clearselection)</span>, <span id="action-sethovered">[`setHovered`](../basesessionmodel#action-sethovered)</span>, <span id="action-sethighlightsvisible">[`setHighlightsVisible`](../basesessionmodel#action-sethighlightsvisible)</span>, <span id="action-sethighlightlabelsvisible">[`setHighlightLabelsVisible`](../basesessionmodel#action-sethighlightlabelsvisible)</span>, <span id="action-addhighlight">[`addHighlight`](../basesessionmodel#action-addhighlight)</span>, <span id="action-removehighlight">[`removeHighlight`](../basesessionmodel#action-removehighlight)</span>, <span id="action-updatehighlight">[`updateHighlight`](../basesessionmodel#action-updatehighlight)</span>, <span id="action-sethighlights">[`setHighlights`](../basesessionmodel#action-sethighlights)</span>, <span id="action-setpreferenceoverride">[`setPreferenceOverride`](../basesessionmodel#action-setpreferenceoverride)</span>, <span id="action-clearpreferenceoverrides">[`clearPreferenceOverrides`](../basesessionmodel#action-clearpreferenceoverrides)</span>, <span id="action-clearpreferenceoverride">[`clearPreferenceOverride`](../basesessionmodel#action-clearpreferenceoverride)</span>, <span id="action-setscrollzoom">[`setScrollZoom`](../basesessionmodel#action-setscrollzoom)</span>, <span id="action-setname">[`setName`](../basesessionmodel#action-setname)</span>, <span id="action-setfocusedviewid">[`setFocusedViewId`](../basesessionmodel#action-setfocusedviewid)</span>, <span id="action-removeactivedialog">[`removeActiveDialog`](../basesessionmodel#action-removeactivedialog)</span>, <span id="action-queuedialog">[`queueDialog`](../basesessionmodel#action-queuedialog)</span>, <span id="action-removedialog">[`removeDialog`](../basesessionmodel#action-removedialog)</span>

@@ -82,7 +82,7 @@ function variantRecordTables(
   pluginManager: PluginManager,
   opts: {
     adapterConfig: Record<string, unknown>
-    sequenceAdapter?: Record<string, unknown> | undefined
+    sequenceAdapter?: Record<string, unknown>
     regions: { refName: string; start: number; end: number }[]
     ids: readonly string[]
   },

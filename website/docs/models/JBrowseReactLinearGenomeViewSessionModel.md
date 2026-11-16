@@ -20,7 +20,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-view">**view**</span><br><code>pluginManager.getViewType('LinearGenomeView').stateModel</code> |  |
+| <span id="property-view">**view**</span><br><code><a href="../lineargenomeview">LinearGenomeView</a></code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>16 inherited properties from 4 models</summary>
@@ -37,7 +37,7 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="property
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>11 inherited volatiles from 5 models</summary>
 
 From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="volatile-editabletrackconfigs">[`editableTrackConfigs`](../sessiontracksmanagersessionmixin#volatile-editabletrackconfigs)</span>
@@ -82,7 +82,7 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-v
 
 ## Methods
 
-<details class="inherited-members" data-pagefind-ignore>
+<details class="inherited-members" data-pagefind-ignore open>
 <summary>17 inherited methods from 6 models</summary>
 
 From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="method-withtrackedits">[`withTrackEdits`](../sessiontracksmanagersessionmixin#method-withtrackedits)</span>, <span id="method-withsequenceedits">[`withSequenceEdits`](../sessiontracksmanagersessionmixin#method-withsequenceedits)</span>, <span id="method-basetrackconfig">[`baseTrackConfig`](../sessiontracksmanagersessionmixin#method-basetrackconfig)</span>, <span id="method-geteditabletrackconfig">[`getEditableTrackConfig`](../sessiontracksmanagersessionmixin#method-geteditabletrackconfig)</span>, <span id="method-gettrackconfigchanges">[`getTrackConfigChanges`](../sessiontracksmanagersessionmixin#method-gettrackconfigchanges)</span>, <span id="method-istrackoverride">[`isTrackOverride`](../sessiontracksmanagersessionmixin#method-istrackoverride)</span>
@@ -104,9 +104,9 @@ From [TrackMenuSessionMixin](../trackmenusessionmixin): <span id="method-gettrac
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-addview">**addView**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>&lt;N extends string&gt;(typeName: N, initialState?: NoInfer&lt;ViewSnap…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>&lt;N extends string&gt;(typeName: N, initialState?: NoInfer&lt;ViewSnapshotInput&lt;N&gt;&gt; &#124; undefined) =&gt; <a href="../lineargenomeview">LinearGenomeView</a></code></pre></dialog></span> |  |
+| <span id="action-addview">**addView**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(typeName, initialState?) =&gt; LinearGenomeView</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>&lt;N extends string&gt;(typeName: N, initialState?: ViewSnapshotInput&lt;N&gt;) =&gt; <a href="../lineargenomeview">LinearGenomeView</a></code></pre></dialog></span> |  |
 | <span id="action-removeview">**removeView**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-launchview">**launchView**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(typeName: string, initialState?: any) =&gt; Promise&lt;LinearGenomeV…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(typeName: string, initialState?: any) =&gt; Promise&lt;<a href="../lineargenomeview">LinearGenomeView</a>&gt;</code></pre></dialog></span> | same as addView — the single view type here is always eagerly registered, so there is nothing to load; async to satisfy the AbstractViewContainer contract |
+| <span id="action-launchview">**launchView**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(typeName: string, initialState?: {…}) =&gt; Promise&lt;…&gt;</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(typeName: string, initialState?: {}) =&gt; Promise&lt;<a href="../lineargenomeview">LinearGenomeView</a>&gt;</code></pre></dialog></span> | same as addView — the single view type here is always eagerly registered, so there is nothing to load; async to satisfy the AbstractViewContainer contract |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>59 inherited actions from 7 models</summary>

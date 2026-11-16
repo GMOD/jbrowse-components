@@ -21,7 +21,7 @@ same root delegations. The root must satisfy AppSessionRoot.
 | <span id="getter-root">**root**</span><br><code>AppSessionRoot</code> |  |
 | <span id="getter-version">**version**</span><br><code>string</code> |  |
 | <span id="getter-gitcommit">**gitCommit**</span><br><code>string &#124; undefined</code> |  |
-| <span id="getter-history">**history**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): voi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; } &#124; undefined</code></pre></dialog></span> |  |
+| <span id="getter-history">**history**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ canUndo: boolean; canRedo: boolean; … } &#124; undefined</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; } &#124; undefined</code></pre></dialog></span> |  |
 | <span id="getter-assemblymanager">**assemblyManager**</span><br><code><a href="../assemblymanager">AssemblyManager</a></code> |  |
 
 ## Methods

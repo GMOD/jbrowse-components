@@ -21,7 +21,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-jobsmanager">**jobsManager**</span><br><code>types.optional(JobsManager, {})</code> |  |
+| <span id="property-jobsmanager">**jobsManager**</span><br><code>JobsManager</code> · default <code>{}</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>6 inherited properties from 3 models</summary>
@@ -72,7 +72,7 @@ From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcMana
 | <span id="action-setopenlinkcallback">**setOpenLinkCallback**</span><br><code>(cb: (arg: string) =&gt; Promise&lt;void&gt;) =&gt; void</code> | Wired by the Loader to open a JBrowse Web link as a new session (the Loader owns plugin-manager lifecycle, as with openNewSessionCallback). |
 | <span id="action-setreturntostartscreencallback">**setReturnToStartScreenCallback**</span><br><code>(cb: () =&gt; void) =&gt; void</code> | Wired by the Loader to tear down this plugin manager and show the start screen (the Loader owns plugin-manager lifecycle). |
 | <span id="action-savesession">**saveSession**</span><br><code>(val: SessionSnap, sessionPath?: string) =&gt; Promise&lt;void&gt;</code> |  |
-| <span id="action-updatetrackbase">**updateTrackBase**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; vo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; void</code></pre></dialog></span> | Replace a track's base config: its sessionTracks entry when the session owns the track, otherwise its jbrowse.tracks entry. |
+| <span id="action-updatetrackbase">**updateTrackBase**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConf: { [key: string]: unknown; … }) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; void</code></pre></dialog></span> | Replace a track's base config: its sessionTracks entry when the session owns the track, otherwise its jbrowse.tracks entry. |
 | <span id="action-reloadplugins">**reloadPlugins**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Persist the session, then rebuild the plugin manager from disk so the changed plugin set takes effect. Run by `onPluginsUpdated`, which reports a failure on the session it leaves open |
 | <span id="action-flushsession">**flushSession**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Save now rather than waiting out the autosave's 1s throttle. Every path that tears the session down has to call this first. |
 
