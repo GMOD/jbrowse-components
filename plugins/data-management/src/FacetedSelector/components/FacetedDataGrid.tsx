@@ -12,11 +12,14 @@ import {
   ROW_HEIGHT,
   useFacetedTableStyles,
 } from './facetedTableStyles.ts'
+import { fitColumnWidths } from './fitColumnWidths.ts'
 import { useColumnResize } from './useColumnResize.ts'
 import { useVirtualRows } from './useVirtualRows.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
+
+const SCROLLBAR_ALLOWANCE = 16
 
 export interface FacetedColumn {
   id: string
@@ -40,12 +43,14 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   columns,
   shownTrackIds,
   selectionSet,
+  width,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
   columns: FacetedColumn[]
   shownTrackIds: Set<string>
   selectionSet: Set<string>
+  width: number
 }) {
   const { classes } = useFacetedTableStyles()
   const {
@@ -59,7 +64,18 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   } = faceted
 
   const visibleColumns = columns.filter(col => visible[col.id] !== false)
-  const { colWidths, onResizeStart } = useColumnResize(initialWidths)
+  const { colWidths, onResizeStart } = useColumnResize(
+    fitColumnWidths(
+      Object.fromEntries(
+        visibleColumns.map(col => [
+          col.id,
+          initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
+        ]),
+      ),
+      width - CHECKBOX_WIDTH - SCROLLBAR_ALLOWANCE,
+      DEFAULT_COL_WIDTH,
+    ),
+  )
   const { selectedIds, allSelected, someSelected, toggleAll, toggleRow } =
     getRowSelectionState({
       model,
@@ -79,7 +95,17 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
 
   return (
     <div ref={parentRef} className={classes.root}>
-      <table className={classes.table}>
+      <table
+        className={classes.table}
+        style={{
+          width:
+            CHECKBOX_WIDTH +
+            visibleColumns.reduce(
+              (sum, col) => sum + (colWidths[col.id] ?? DEFAULT_COL_WIDTH),
+              0,
+            ),
+        }}
+      >
         <colgroup>
           <col style={{ width: CHECKBOX_WIDTH }} />
           {visibleColumns.map(col => (
@@ -94,7 +120,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           columns={visibleColumns}
           allSelected={allSelected}
           someSelected={someSelected}
-          onSelectAll={toggleAll}
+          onSelectAll={useShoppingCart ? toggleAll : undefined}
           onResizeStart={onResizeStart}
           sortField={sortField}
           sortAscending={sortAscending}

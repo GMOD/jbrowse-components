@@ -2,7 +2,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, waitFor, within } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
 import { facetedStateTreeF } from '../facetedModel.ts'
@@ -79,6 +79,7 @@ function renderGrid(
         columns={columns}
         shownTrackIds={model.shownTrackIds}
         selectionSet={model.selectionSet}
+        width={1200}
       />
     )
   })
@@ -115,15 +116,17 @@ test('clicking a row checkbox shows then hides the track on the view', async () 
   })
 })
 
-test('select-all checkbox shows every filtered track', async () => {
+test('select-all adds every filtered track to the selection, and only in add-to-selection mode', () => {
   const { view, model, faceted } = setup()
-  const { getAllByRole } = renderGrid(model, faceted)
+  const { queryByLabelText, getByLabelText } = renderGrid(model, faceted)
+  expect(queryByLabelText('Select all tracks')).toBeNull()
 
-  // the first checkbox is the header select-all
-  fireEvent.click(getAllByRole('checkbox')[0]!)
-  await waitFor(() => {
-    expect(view.tracks.length).toBe(faceted.filteredRows.length)
+  act(() => {
+    faceted.setUseShoppingCart(true)
   })
+  fireEvent.click(getByLabelText('Select all tracks'))
+  expect(model.selection.length).toBe(faceted.filteredRows.length)
+  expect(view.tracks.length).toBe(0)
 })
 
 test('shows an empty message when nothing matches the filter', () => {

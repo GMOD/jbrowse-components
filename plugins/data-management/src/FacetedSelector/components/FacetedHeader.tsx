@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { Grid, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -12,24 +13,36 @@ import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSele
 import type { FacetedModel } from '../facetedModel.ts'
 import type { FacetedColumn } from './FacetedDataGrid.tsx'
 
+const useStyles = makeStyles()(theme => ({
+  searchBox: {
+    flexGrow: 1,
+    margin: theme.spacing(1, 1, 1, 0),
+  },
+}))
+
 const FacetedHeader = observer(function FacetedHeader({
   model,
   faceted,
   columns,
+  start,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
   columns: FacetedColumn[]
+  start?: React.ReactNode
 }) {
+  const { classes } = useStyles()
   const { filterText, showFilters, showSparse, useShoppingCart, visible } =
     faceted
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
   return (
     <>
-      <Grid container sx={{ alignItems: 'center' }}>
+      <Grid container sx={{ alignItems: 'center', flexWrap: 'nowrap' }}>
+        {start}
         <ClearableSearchField
-          label="Search..."
+          className={classes.searchBox}
+          label="Filter tracks"
           value={filterText}
           onChange={value => {
             faceted.setFilterText(value)

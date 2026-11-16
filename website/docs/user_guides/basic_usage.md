@@ -341,9 +341,9 @@ starts on the right.
 
 ## Faceted track selector
 
-The filter icon in the top right of the "Available tracks" widget shows all
-tracks as a filterable table. Tracks with `metadata` fields get extra filterable
-columns:
+"Browse as a table", under the "Available tracks" filter box, shows all tracks
+as a filterable table, starting from whatever is typed in the box. Tracks with
+`metadata` fields get extra filterable columns:
 
 ```json
 {

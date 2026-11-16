@@ -571,6 +571,9 @@ export interface Widget extends IStateTreeNode {
   type: string
   id: string
   view?: { id: string }
+  /** a drawer width drawn in place of the saved one, without changing it */
+  preferredDrawerWidth?: number
+  setPreferredDrawerWidth?: (width: number) => void
 }
 
 /** Minimal map interface compatible with both native Map and MST IMSTMap */
@@ -621,6 +624,8 @@ export type DrawerPosition = 'left' | 'right'
 /* only some sessions with widgets use a drawer widget */
 export interface SessionWithDrawerWidgets extends SessionWithWidgets {
   drawerWidth: number
+  /** the visible widget's preferred width when it has one, else `drawerWidth` */
+  effectiveDrawerWidth: number
   /**
    * @param distance - px the handle travelled
    * @param availableWidth - width the drawer and the main area share, which

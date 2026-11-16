@@ -16,6 +16,8 @@ import type { DrawerPosition } from '@jbrowse/core/util'
 export interface DrawerChromeSession {
   drawerPosition: DrawerPosition
   drawerWidth: number
+  /** the width the drawer is drawn at, when it can differ from `drawerWidth` */
+  effectiveDrawerWidth?: number
   updateDrawerWidth: (drawerWidth: number, availableWidth?: number) => number
 }
 
@@ -69,7 +71,7 @@ const Drawer = observer(function Drawer({
   const rootRef = useRef<HTMLDivElement>(null)
 
   return (
-    <div ref={rootRef} className={classes.root}>
+    <div ref={rootRef} className={classes.root} data-drawer-column>
       <Paper
         ref={ref}
         className={classes.paper}
@@ -80,7 +82,7 @@ const Drawer = observer(function Drawer({
         {children}
       </Paper>
       <ResizeHandle
-        value={session.drawerWidth}
+        value={session.effectiveDrawerWidth ?? session.drawerWidth}
         // the handle is on the drawer's inner edge, so toward a right drawer
         // narrows it
         reverse={drawerPosition === 'right'}

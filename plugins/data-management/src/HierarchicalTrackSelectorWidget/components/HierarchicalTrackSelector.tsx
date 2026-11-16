@@ -3,6 +3,8 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { observer } from 'mobx-react'
 
 import HierarchicalFab from './HierarchicalFab.tsx'
+import TrackTable from './TrackTable.tsx'
+import BrowseAsTable from './tree/BrowseAsTable.tsx'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
 import HierarchicalTree from './tree/HierarchicalTree.tsx'
 
@@ -19,6 +21,25 @@ const useStyles = makeStyles()({
   },
 })
 
+const TrackTree = observer(function TrackTree({
+  model,
+}: {
+  model: HierarchicalTrackSelectorModel
+}) {
+  const { classes } = useStyles()
+  const [ref, { height }] = useMeasure('height')
+  return (
+    <>
+      <HierarchicalHeader model={model} />
+      <BrowseAsTable model={model} />
+      <div ref={ref} className={classes.treeContainer}>
+        {height ? <HierarchicalTree height={height} model={model} /> : null}
+      </div>
+      <HierarchicalFab model={model} />
+    </>
+  )
+})
+
 const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   model,
   toolbarHeight = 0,
@@ -27,17 +48,16 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   toolbarHeight?: number
 }) {
   const { classes } = useStyles()
-  const [ref, { height }] = useMeasure('height')
   return (
     <div
       className={classes.container}
       style={{ height: `calc(100% - ${toolbarHeight}px)` }}
     >
-      <HierarchicalHeader model={model} />
-      <div ref={ref} className={classes.treeContainer}>
-        {height ? <HierarchicalTree height={height} model={model} /> : null}
-      </div>
-      <HierarchicalFab model={model} />
+      {model.showTable ? (
+        <TrackTable model={model} />
+      ) : (
+        <TrackTree model={model} />
+      )}
     </div>
   )
 })

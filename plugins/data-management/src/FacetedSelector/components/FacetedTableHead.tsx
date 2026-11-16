@@ -18,7 +18,7 @@ const FacetedTableHead = observer(function FacetedTableHead({
   columns: FacetedColumn[]
   allSelected: boolean
   someSelected: boolean
-  onSelectAll: () => void
+  onSelectAll?: () => void
   onResizeStart: (colId: string, e: React.MouseEvent) => void
   sortField: string
   sortAscending: boolean
@@ -30,16 +30,18 @@ const FacetedTableHead = observer(function FacetedTableHead({
     <thead className={classes.thead}>
       <tr>
         <th className={classes.checkboxCell}>
-          <Checkbox
-            size="small"
-            checked={allSelected}
-            indeterminate={someSelected}
-            onChange={() => {
-              onSelectAll()
-            }}
-            slotProps={{ input: { 'aria-label': 'Select all tracks' } }}
-            sx={checkboxSx}
-          />
+          {onSelectAll ? (
+            <Checkbox
+              size="small"
+              checked={allSelected}
+              indeterminate={someSelected}
+              onChange={() => {
+                onSelectAll()
+              }}
+              slotProps={{ input: { 'aria-label': 'Select all tracks' } }}
+              sx={checkboxSx}
+            />
+          ) : null}
         </th>
         {columns.map(col => (
           <th key={col.id} scope="col" className={classes.headerCell}>

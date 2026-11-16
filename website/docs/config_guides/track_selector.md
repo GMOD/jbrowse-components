@@ -55,9 +55,9 @@ it. Plugins replace the folder dialog through
 ## Faceted track selector
 
 The faceted selector shows all tracks as a filterable table, opened from the
-filter icon in the "Available tracks" widget or a folder's context menu. Every
-top-level key of a track's `metadata` object becomes a column to filter or sort
-on, as in the
+"Browse as a table" link under the "Available tracks" filter box or a folder's
+context menu. Every top-level key of a track's `metadata` object becomes a
+column to filter or sort on, as in the
 [cookbook's metadata track](/docs/cookbook#instance-wide-settings), and columns
 empty for every track are hidden.
 [](/docs/user_guides/basic_usage#faceted-track-selector) covers the filter

@@ -25,9 +25,10 @@ import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 export function useFacetedModel(
   model: HierarchicalTrackSelectorModel,
   getTracks: () => AnyTrackConfig[],
+  initial?: { filterText?: string; showFilters?: boolean },
 ) {
   const faceted = useCreateOnce(() => {
-    const ret = facetedStateTreeF().create({})
+    const ret = facetedStateTreeF().create(initial)
     ret.setTrackSource(getTracks, getSession(model), model.assemblyNames)
     return ret
   })

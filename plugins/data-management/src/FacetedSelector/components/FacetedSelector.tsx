@@ -17,11 +17,16 @@ const useStyles = makeStyles()({
     marginLeft: 5,
     width: 5,
   },
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
   container: {
     display: 'flex',
     overflow: 'hidden',
   },
   dataPane: {
+    height: '100%',
     overflow: 'hidden',
   },
   filterPane: {
@@ -34,9 +39,13 @@ const frac = 0.75
 const FacetedSelector = observer(function FacetedSelector({
   model,
   faceted,
+  size,
+  headerStart,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
+  size?: { width: number; height: number }
+  headerStart?: React.ReactNode
 }) {
   const { classes } = useStyles()
   const { width, height } = useWindowSize()
@@ -45,8 +54,7 @@ const FacetedSelector = observer(function FacetedSelector({
 
   const columns = getFacetedColumns({ faceted, model })
 
-  const h = height * frac
-  const w = width * frac
+  const w = size?.width ?? width * frac
   // a persisted panel width wider than the current window would leave the data
   // pane with no room, so the saved value is clamped against the container. The
   // outer max keeps a window too narrow for both panes from handing the filter
@@ -57,15 +65,27 @@ const FacetedSelector = observer(function FacetedSelector({
   )
 
   return (
-    <>
-      <FacetedHeader model={model} faceted={faceted} columns={columns} />
-      <div className={classes.container} style={{ height: h, width: w }}>
+    <div
+      className={classes.root}
+      style={size ? { width: w, height: size.height } : undefined}
+    >
+      <FacetedHeader
+        model={model}
+        faceted={faceted}
+        columns={columns}
+        start={headerStart}
+      />
+      <div
+        className={classes.container}
+        style={
+          size
+            ? { width: w, flex: 1, minHeight: 0 }
+            : { width: w, height: height * frac }
+        }
+      >
         <div
           className={classes.dataPane}
-          style={{
-            height: h,
-            width: w - (showFilters ? panelWidth : 0),
-          }}
+          style={{ width: w - (showFilters ? panelWidth : 0) }}
         >
           <FacetedDataGrid
             model={model}
@@ -73,6 +93,7 @@ const FacetedSelector = observer(function FacetedSelector({
             columns={columns}
             shownTrackIds={shownTrackIds}
             selectionSet={selectionSet}
+            width={w - (showFilters ? panelWidth : 0)}
           />
         </div>
 
@@ -93,7 +114,7 @@ const FacetedSelector = observer(function FacetedSelector({
           </>
         ) : null}
       </div>
-    </>
+    </div>
   )
 })
 

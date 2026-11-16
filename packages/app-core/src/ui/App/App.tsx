@@ -60,8 +60,12 @@ interface Props {
 const App = observer(function App(props: Props) {
   const { session } = props
   const { classes } = useStyles()
-  const { drawerVisible, drawerWidth, drawerPosition, modalWidgetVisible } =
-    session
+  const {
+    drawerVisible,
+    effectiveDrawerWidth,
+    drawerPosition,
+    modalWidgetVisible,
+  } = session
   // a phone has no room for a drawer column beside the views
   const narrow = useMediaQuery(useTheme().breakpoints.down('sm'), {
     noSsr: true,
@@ -72,7 +76,7 @@ const App = observer(function App(props: Props) {
   const gridTemplateColumns = drawerGridTemplateColumns({
     drawerVisible,
     drawerPosition,
-    drawerWidth,
+    drawerWidth: effectiveDrawerWidth,
   })
 
   return (

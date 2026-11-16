@@ -19,11 +19,6 @@ import {
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 
-// lazies
-const FacetedDialog = lazy(
-  () => import('../../../FacetedSelector/components/FacetedDialog.tsx'),
-)
-
 // lazy components
 const DeleteConnectionDialog = lazy(
   () => import('../dialogs/DeleteConnectionDialog.tsx'),
@@ -46,7 +41,6 @@ const HamburgerMenu = observer(function HamburgerMenu({
   const [deleteDialogDetails, setDeleteDialogDetails] =
     useState<DialogDetails>()
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
-  const [facetedOpen, setFacetedOpen] = useState(false)
 
   return (
     <>
@@ -54,12 +48,6 @@ const HamburgerMenu = observer(function HamburgerMenu({
         data-testid="track-selector-hamburger"
         tooltip="Track selector menu"
         menuItems={() => [
-          {
-            label: 'Open faceted track selector',
-            onClick: () => {
-              setFacetedOpen(true)
-            },
-          },
           ...(isSessionWithPublishTrackConf(session)
             ? [
                 {
@@ -171,14 +159,6 @@ const HamburgerMenu = observer(function HamburgerMenu({
               })
             }}
             session={session}
-          />
-        ) : null}
-        {facetedOpen ? (
-          <FacetedDialog
-            handleClose={() => {
-              setFacetedOpen(false)
-            }}
-            model={model}
           />
         ) : null}
       </Suspense>

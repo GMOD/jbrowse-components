@@ -213,6 +213,7 @@ function displayState(track: TrackSelf) {
 interface SessionChrome {
   drawerVisible?: boolean
   drawerWidth?: number
+  effectiveDrawerWidth?: number
   visibleWidget?: { type?: string }
   DialogComponent?: unknown
   views?: PickerView[]
@@ -238,14 +239,13 @@ function raisesPicker(views?: PickerView[]): boolean {
  */
 function sessionChrome(session: AbstractSessionModel) {
   const s = session as unknown as SessionChrome
+  const width = s.effectiveDrawerWidth ?? s.drawerWidth
   const drawer =
     s.drawerVisible && s.visibleWidget
       ? {
           drawer: {
             widget: s.visibleWidget.type,
-            ...(typeof s.drawerWidth === 'number'
-              ? { width: s.drawerWidth }
-              : {}),
+            ...(width === undefined ? {} : { width }),
             note: 'the drawer takes this width off every view; session.hideAllWidgets() closes it',
           },
         }

@@ -1,6 +1,7 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
   getSession,
+  isSessionModelWithWidgets,
   isSessionWithSessionTracks,
   isTrackContainer,
   localStorageGetJSON,
@@ -50,6 +51,8 @@ const sortCategoriesK = 'sortCategories'
 const mainGroupId = 'Tracks'
 
 type CategoryModes = ReadonlyMap<string, CategoryMode>
+
+const tableDrawerFraction = 0.45
 
 function recentlyUsedK(assemblyNames: string[]) {
   return configScopedKey('recentlyUsedTracks', assemblyNames)
@@ -238,6 +241,25 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       filterText: '',
       /**
        * #volatile
+       * the view whose tracks the drawer shows as a table in place of the tree.
+       * Keyed by view because every view's selector is this one widget, so
+       * table mode opened for one view stays with it
+       */
+      tableViewId: undefined as string | undefined,
+      /**
+       * #volatile
+       * the drawer width the table asks for, read by the session as
+       * `preferredDrawerWidth` and never written into its saved width
+       */
+      tableDrawerWidth: undefined as number | undefined,
+      /**
+       * #volatile
+       * true after the table closes, so the link that opened it takes focus
+       * back when the tree remounts
+       */
+      returnedFromTable: false,
+      /**
+       * #volatile
        */
       recentlyUsedCounter: 0,
       /**
@@ -257,6 +279,24 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           return view?.trackContainerFor?.(trackContainerId)
         }
         return isTrackContainer(view) ? view : undefined
+      },
+      /**
+       * #getter
+       * whether the drawer shows this view's tracks as a table
+       */
+      get showTable() {
+        return (
+          self.tableViewId !== undefined && self.tableViewId === self.view?.id
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the drawer width the session draws while the table shows
+       */
+      get preferredDrawerWidth() {
+        return self.showTable ? self.tableDrawerWidth : undefined
       },
     }))
     .views(self => {
@@ -444,6 +484,53 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       setFilterText(newText: string) {
         self.filterText = newText
+      },
+      /**
+       * #action
+       * @param drawer - the drawer's current width and the width it shares
+       * with the views, measured by the caller; absent when there is no drawer
+       * column (popped out, or a phone host), and the table then asks for no
+       * width
+       */
+      openTable(drawer?: { width: number; availableWidth: number }) {
+        self.tableViewId = self.view?.id
+        self.returnedFromTable = false
+        self.tableDrawerWidth = drawer
+          ? Math.max(
+              drawer.width,
+              Math.round(drawer.availableWidth * tableDrawerFraction),
+            )
+          : undefined
+      },
+      /**
+       * #action
+       */
+      leaveTable() {
+        self.tableViewId = undefined
+        self.tableDrawerWidth = undefined
+      },
+      /**
+       * #action
+       */
+      clearReturnedFromTable() {
+        self.returnedFromTable = false
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      closeTable() {
+        self.leaveTable()
+        self.returnedFromTable = true
+      },
+      /**
+       * #action
+       * a drag of the drawer edge while the table is open resizes the table's
+       * width, so closing it returns to the user's own
+       */
+      setPreferredDrawerWidth(width: number) {
+        self.tableDrawerWidth = width
       },
     }))
     .actions(self => ({
@@ -901,6 +988,22 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           addDisposer(
             self,
             autorun(loadFromLocalStorage, { name: 'TrackSelectorInit' }),
+          )
+          addDisposer(
+            self,
+            autorun(
+              function leaveTableWhenClosed() {
+                const session = getSession(self)
+                if (
+                  self.tableViewId !== undefined &&
+                  isSessionModelWithWidgets(session) &&
+                  !session.activeWidgets.has(self.id)
+                ) {
+                  self.leaveTable()
+                }
+              },
+              { name: 'TrackSelectorLeaveTable' },
+            ),
           )
           persist(() => {
             localStorageSetJSON(favoritesK(), self.favorites)

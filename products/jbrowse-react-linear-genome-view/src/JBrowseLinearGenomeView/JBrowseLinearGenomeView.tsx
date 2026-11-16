@@ -50,11 +50,11 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   const { ReactComponent } = pluginManager.getViewType(view.type)
   const { classes } = useStyles()
 
-  const { drawerPosition, drawerWidth, drawerVisible } = session
+  const { drawerPosition, effectiveDrawerWidth, drawerVisible } = session
   const gridTemplateColumns = drawerGridTemplateColumns({
     drawerVisible,
     drawerPosition,
-    drawerWidth,
+    drawerWidth: effectiveDrawerWidth,
   })
 
   const { effectiveHeight: height } = viewState

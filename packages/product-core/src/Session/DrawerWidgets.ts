@@ -157,6 +157,14 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * the visible widget's preferred width while it has one, else the saved
+       * `drawerWidth`, which a wide mode therefore never overwrites
+       */
+      get effectiveDrawerWidth(): number {
+        return self.visibleWidget?.preferredDrawerWidth ?? self.drawerWidth
+      },
+      /**
+       * #getter
        * whether the visible widget shows in a modal: popped out of the drawer,
        * or on a host with no room for one
        */
@@ -168,142 +176,157 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         )
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setDrawerPosition(arg: DrawerPosition) {
-        self.drawerPosition = arg
-      },
-
-      /**
-       * #action
-       */
-      updateDrawerWidth(
-        drawerWidth: number,
-        availableWidth: number = window.innerWidth,
-      ) {
-        self.drawerWidth = clampDrawerWidth(drawerWidth, availableWidth)
-        return self.drawerWidth
-      },
-
-      /**
-       * #action
-       */
-      resizeDrawer(
-        distance: number,
-        availableWidth: number = window.innerWidth,
-      ) {
-        const signed = self.drawerPosition === 'left' ? -distance : distance
-        const oldDrawerWidth = self.drawerWidth
-        self.drawerWidth = clampDrawerWidth(
-          oldDrawerWidth - signed,
-          availableWidth,
-        )
-        return oldDrawerWidth - self.drawerWidth
-      },
-
-      /**
-       * #action
-       */
-      addWidget(
-        typeName: string,
-        id: string,
-        initialState = {},
-        conf?: unknown,
-      ) {
-        self.widgets.set(id, {
-          ...initialState,
-          id,
-          type: typeName,
-          configuration: conf ?? { type: typeName },
-        })
-        return self.widgets.get(id)!
-      },
-
-      /**
-       * #action
-       */
-      showWidget(widget: WidgetStateModel) {
-        if (self.activeWidgets.has(widget.id)) {
-          self.activeWidgets.delete(widget.id)
-        }
-        self.activeWidgets.set(widget.id, widget)
-        self.minimized = false
-      },
-
-      /**
-       * #action
-       * closes the widget, and removes it from the session when its type sets
-       * `discardOnClose`. Minimizing the drawer is not closing.
-       */
-      hideWidget(widget: WidgetStateModel) {
-        self.activeWidgets.delete(widget.id)
-        if (self.activeWidgets.size === 0) {
-          self.poppedOut = false
-        }
+    .actions(self => {
+      function setEffectiveDrawerWidth(width: number) {
+        const widget = self.visibleWidget
         if (
-          self.widgets.get(widget.id) === widget &&
-          pluginManager.getWidgetType(widget.type).discardOnClose
+          widget?.preferredDrawerWidth !== undefined &&
+          widget.setPreferredDrawerWidth
         ) {
-          detach(widget)
-          scheduleDetachedDestroy(widget)
+          widget.setPreferredDrawerWidth(width)
+        } else {
+          self.drawerWidth = width
         }
-      },
+      }
+      return {
+        /**
+         * #action
+         */
+        setDrawerPosition(arg: DrawerPosition) {
+          self.drawerPosition = arg
+        },
 
-      /**
-       * #action
-       */
-      minimizeWidgetDrawer() {
-        self.minimized = true
-      },
-      /**
-       * #action
-       */
-      showWidgetDrawer() {
-        self.minimized = false
-      },
-      /**
-       * #action
-       * show the visible widget in a modal dialog, freeing the drawer column
-       */
-      popoutWidget() {
-        self.poppedOut = true
-      },
-      /**
-       * #action
-       */
-      returnWidgetToDrawer() {
-        self.poppedOut = false
-      },
-      /**
-       * #action
-       */
-      setModalWidgets(flag: boolean) {
-        self.modalWidgets = flag
-      },
-      /**
-       * #action
-       */
-      hideAllWidgets() {
-        for (const widget of [...self.activeWidgets.values()]) {
-          this.hideWidget(widget)
-        }
-        self.poppedOut = false
-      },
+        /**
+         * #action
+         */
+        updateDrawerWidth(
+          drawerWidth: number,
+          availableWidth: number = window.innerWidth,
+        ) {
+          const width = clampDrawerWidth(drawerWidth, availableWidth)
+          setEffectiveDrawerWidth(width)
+          return width
+        },
 
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function drawerPositionAutorun() {
-              localStorageSetItem('drawerPosition', self.drawerPosition)
-            },
-            { name: 'DrawerPosition' },
-          ),
-        )
-      },
-    }))
+        /**
+         * #action
+         */
+        resizeDrawer(
+          distance: number,
+          availableWidth: number = window.innerWidth,
+        ) {
+          const signed = self.drawerPosition === 'left' ? -distance : distance
+          const oldDrawerWidth = self.effectiveDrawerWidth
+          const width = clampDrawerWidth(
+            oldDrawerWidth - signed,
+            availableWidth,
+          )
+          setEffectiveDrawerWidth(width)
+          return oldDrawerWidth - width
+        },
+
+        /**
+         * #action
+         */
+        addWidget(
+          typeName: string,
+          id: string,
+          initialState = {},
+          conf?: unknown,
+        ) {
+          self.widgets.set(id, {
+            ...initialState,
+            id,
+            type: typeName,
+            configuration: conf ?? { type: typeName },
+          })
+          return self.widgets.get(id)!
+        },
+
+        /**
+         * #action
+         */
+        showWidget(widget: WidgetStateModel) {
+          if (self.activeWidgets.has(widget.id)) {
+            self.activeWidgets.delete(widget.id)
+          }
+          self.activeWidgets.set(widget.id, widget)
+          self.minimized = false
+        },
+
+        /**
+         * #action
+         * closes the widget, and removes it from the session when its type sets
+         * `discardOnClose`. Minimizing the drawer is not closing.
+         */
+        hideWidget(widget: WidgetStateModel) {
+          self.activeWidgets.delete(widget.id)
+          if (self.activeWidgets.size === 0) {
+            self.poppedOut = false
+          }
+          if (
+            self.widgets.get(widget.id) === widget &&
+            pluginManager.getWidgetType(widget.type).discardOnClose
+          ) {
+            detach(widget)
+            scheduleDetachedDestroy(widget)
+          }
+        },
+
+        /**
+         * #action
+         */
+        minimizeWidgetDrawer() {
+          self.minimized = true
+        },
+        /**
+         * #action
+         */
+        showWidgetDrawer() {
+          self.minimized = false
+        },
+        /**
+         * #action
+         * show the visible widget in a modal dialog, freeing the drawer column
+         */
+        popoutWidget() {
+          self.poppedOut = true
+        },
+        /**
+         * #action
+         */
+        returnWidgetToDrawer() {
+          self.poppedOut = false
+        },
+        /**
+         * #action
+         */
+        setModalWidgets(flag: boolean) {
+          self.modalWidgets = flag
+        },
+        /**
+         * #action
+         */
+        hideAllWidgets() {
+          for (const widget of [...self.activeWidgets.values()]) {
+            this.hideWidget(widget)
+          }
+          self.poppedOut = false
+        },
+
+        afterAttach() {
+          addDisposer(
+            self,
+            autorun(
+              function drawerPositionAutorun() {
+                localStorageSetItem('drawerPosition', self.drawerPosition)
+              },
+              { name: 'DrawerPosition' },
+            ),
+          )
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action
