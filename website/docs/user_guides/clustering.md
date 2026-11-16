@@ -19,34 +19,32 @@ naming what is being clustered.
 
 <Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="Cluster rows by genotype on a multi-sample variant track, which reorders the rows and draws a dendrogram." />
 
-Clustering reads **only the region currently in view**, so it describes one
-window: a clustered painting is genome-wide relatedness only when the view is
-the whole genome. After a run, the locus the tree was computed from is shown
-beside the dendrogram and is included in an SVG export, so the figure includes
-its scope.
+Clustering reads **only the region currently in view**, so a clustered painting
+is genome-wide relatedness only when the view is the whole genome. After a run,
+the locus the tree was computed from is shown beside the dendrogram and in an
+SVG export.
 
 Hierarchical clustering returns a fully resolved tree for any input, including
-one with no structure in it, so re-running across loci until the rows separate
-as expected selects a window rather than establishing a grouping. A grouping
-found that way is a hypothesis to check on independent data.
+one with no structure in it, so a grouping found by re-running across loci until
+the rows separate is a hypothesis to check on independent data.
 
 ## What the dendrogram measures
 
-The dendrogram summarizes similarity over the visible window. It is not a
-phylogeny: no evolutionary model is fitted, branch lengths are merge distances,
-and no support values are computed, so a crisply drawn group is not a
-well-supported one. A [](/docs/user_guides/maf_track) can show a real phylogeny,
-read from an `.nh` file; that tree has no locus caption, which distinguishes the
-two on screen.
+The dendrogram summarizes similarity over the visible window, and is not a
+phylogeny:
 
-For genotype data the window matters in one more way. A tree needs a single
-distance summarizing the whole window, and a haplotype is a mosaic of segments
-with different histories, so past the first recombination breakpoint a
-window-averaged distance describes no position in particular. The multi-sample
-variant display's **Sort rows by genotype here** (right-click a variant)
-addresses that directly: it orders rows by their allele at that variant and then
-by how far they agree outward, so the shared block reads as a solid rectangle
-and frays exactly where recombination ends it.
+- **No model:** no evolutionary model is fitted, and branch lengths are merge
+  distances
+- **No support values:** a crisply drawn group is not a well-supported one
+- **A real phylogeny:** a [](/docs/user_guides/maf_track) draws one, read from
+  an `.nh` file, with no locus caption beside it
+
+On genotype data a haplotype is a mosaic of segments with different histories,
+so past the first recombination breakpoint a window-averaged distance describes
+no position in particular. **Sort rows by genotype here**, from a variant's
+right-click menu on a multi-sample variant track, orders rows by their allele at
+that variant and then by how far they agree outward, so the shared block reads
+as a solid rectangle and frays where recombination ends it.
 
 ## Auto and manual modes
 
@@ -81,9 +79,8 @@ drawn in the sidebar.
   again to clear, or use **Show all rows**. A chip above the rows reads "Showing
   N of M rows · Show all"; clicking it shows every row again.
 - A chip at the top of the sidebar names the locus the tree was computed from.
-  Navigating away from that region marks it, since the tree describes the region
-  it was run on. Re-run clustering, or reset the row order, to bring the two
-  back together.
+  Navigating away from that region marks it; re-run clustering, or reset the row
+  order, to bring the two back together.
 - On a track banded by `facet` (a multi-sample variant track's samples column,
   or a multi-row track's `group`), clustering runs within each band and draws a
   dendrogram per band, all on one depth scale. A tree run before the bands were
@@ -113,13 +110,17 @@ describes. `rows` replaces the display's setting whole, so name `field` too:
 }
 ```
 
-Add `kept` to open on one clade; a `kept` naming no current row shows none, and
-the track's notice says which names it missed. `filter` keeps rows by an
-attribute instead, a samples file's column or a subtrack's `group`:
-`"filter": [{ "field": "population", "oneOf": ["EUR", "AFR"] }]`. A row's own
-name goes in `kept`. On a multi-sample variant track the rows are the samples,
-so its [`rows`](/docs/config/rowarrangement) takes the same members with no
-`field`. In phased mode the names are haplotypes, `"<sample> HP<n>"`:
+Two more members pick which rows show:
+
+- **`kept`** opens on one clade, by the rows' own names. A `kept` naming no
+  current row shows none, and the track's notice lists the names it missed
+- **`filter`** keeps rows by an attribute instead, a samples file's column or a
+  subtrack's `group`:
+  `"filter": [{ "field": "population", "oneOf": ["EUR", "AFR"] }]`
+
+On a multi-sample variant track the rows are the samples, so its
+[`rows`](/docs/config/rowarrangement) takes the same members with no `field`. In
+phased mode the names are haplotypes, `"<sample> HP<n>"`:
 
 ```json
 {
