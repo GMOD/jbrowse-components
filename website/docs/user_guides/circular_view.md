@@ -32,22 +32,20 @@ deletions and duplications load but don't produce an informative chord.
 
 A track whose display draws in the linear genome view draws on the circle as a
 ring: open it from the view's track selector, or name it in the view's `tracks`.
-Each track's menu is under **Tracks** in the view menu, since a ring has no
-label to hang it off, and **Show legend** in the same menu names each ring,
-chord and ribbon track beside the color or density ramp it draws in (a view's
-`legend: { show: true }` opens with it). A quantitative ring draws its score
-axis radially in the gap before the first chromosome. Rings stack inward from
-the ideogram in the order the tracks were opened, each as tall as the display's
-height, and the chords and ribbons draw inside the innermost ring. Every setting
-the display has on a linear view — a wiggle's plot type and color, a mark
-display's `marks` — applies on the ring, and hovering or clicking a ring is the
-same hover and click as on the linear track: the tooltip and the feature details
-are the display's own.
 
-A ring is the display's linear rendering wrapped around the circle: the display
-draws a strip as long as the circumference, and the view resamples it so each
-base sits at its arc. Inner rings are drawn from the same strip and so resolve a
-little coarser than the outer ones.
+- **Track menus:** each track's menu is under **Tracks** in the view menu
+- **Legend:** **Show legend** in the same menu names each ring, chord and ribbon
+  track beside the color or density ramp it draws in (a view's
+  `legend: { show: true }` opens with it)
+- **Stacking:** rings stack inward from the ideogram in the order the tracks
+  were opened, each as tall as the display's height, and the chords and ribbons
+  draw inside the innermost ring. Inner rings resolve a little coarser than
+  outer ones
+- **Axis:** a quantitative ring draws its score axis radially in the gap before
+  the first chromosome
+- **Settings and hover:** every setting the display has on a linear view (a
+  wiggle's plot type and color, a mark display's `marks`) applies on the ring,
+  and the tooltip and feature details are the display's own
 
 <!-- include: products/jbrowse-web/src/tests/CircularViewRing.test.tsx#ringView -->
 
@@ -62,68 +60,57 @@ const ringView = {
 <Figure src="/img/circular_view/coverage_ring_chords.png" caption="A cancer cell line's coverage as a ring on a log scale, its translocations as chords."/>
 
 A multi-source quantitative track with its sources on rows gives each source a
-band inside one ring, so a sample pair or a small cohort is one nested set
-rather than a ring each. The bands are drawn against the display's single score
-domain, and a stack of rows has no axis, so name that domain where the bands are
-meant to be read against each other. Color identifies the sources here, because
-the row labels are part of the display's chrome and a ring samples only its
-canvas, so give each subtrack a `color` in the adapter.
+band inside one ring. The bands share the display's score domain and draw no
+axis or row labels, so name that domain where the bands are read against each
+other, and give each subtrack a `color` in the adapter to tell them apart.
 
 <Figure src="/img/circular_view/tumor_normal_rings.png" caption="A tumour and its matched normal as two bands of one multi-source quantitative track, with the SV truth set as chords." />
 
-A variant or synteny track keeps its chords and ribbons; a track that has both a
-linear and a circular display takes the circular one unless the entry names the
-other, as `{ trackId, displaySnapshot: { type: 'LinearMarkDisplay' } }` does for
-a density ring over a variant track. An alignments track draws its coverage and
-pileup as a ring; for a coverage ring alone, open the track as a
-[mark display](/docs/config/linearmarkdisplay) with a `coverage` transform. A
-mirrored arc's ring is mirrored with it, so a ring bin stays under the stretch
-of ideogram it belongs to.
+- **Variant and synteny tracks** keep their chords and ribbons. A track with
+  both a linear and a circular display takes the circular one unless the entry
+  names the other, as
+  `{ trackId, displaySnapshot: { type: 'LinearMarkDisplay' } }` does for a
+  density ring over a variant track
+- **Alignments tracks** draw coverage and pileup as a ring; for a coverage ring
+  alone, open the track as a [mark display](/docs/config/linearmarkdisplay) with
+  a `coverage` transform
+- **Mirrored arcs** mirror their rings too, so a ring bin stays under its
+  stretch of ideogram
 
 <Figure src="/img/circular_synteny/rings.png" caption="Human and mouse on one circle with a gene density ring inside the ideogram and liftOver blocks as ribbons." />
 
 ## Synteny ribbons
 
 A `SyntenyTrack` draws each alignment as a ribbon between the span it covers on
-one side and the span its mate covers on the other, so a block's extent is on
-the figure and an inversion reads as a twist. A track aligning two genomes needs
-both of them on the circle, set with `assembly: ['hg38', 'mm39']` — each
-assembly lays its chromosomes out in turn. The import form opens one the way the
-dotplot's does: **Quick start** picks a synteny track and opens its two genomes,
-and **Manual** takes **Add a second assembly** and a track for the pair, with a
-chromosome box per genome.
+one side and the span its mate covers on the other, so an inversion reads as a
+twist. Worked through in [](/docs/tutorials/circular_synteny).
 
-A two-genome circle runs both arcs the same way round, so a genome left in its
-contig order puts every matching pair of chromosomes at opposite ends of a
-diameter and sends every ribbon through the middle. The circle reorders as it
-opens, and **Re-order chromosomes** in the view's menu does it on demand. The
-reorder puts the second genome's chromosomes in the order of the first's, by how
-many aligned bases each pair shares, and the circle lays that genome out
-mirrored so the ribbons come out as a band of parallel arcs.
-`autoDiagonalize: false` on the view keeps each genome in its contig order. The
-reorder is the same pass the linear synteny view and the dotplot run, over the
-same alignment file, and it is offered on a two-genome circle with a synteny
-track and nowhere else.
-
-A synteny circle, of one genome or two, opens with each ribbon in the ideogram
-color of the first genome's chromosome it leaves. **Color by** in the view's
-menu offers what the linear synteny view's palette offers: either genome's
-chromosome, strand, identity or another measurement, a column the track
-declares, or one color per track when several overlay. **Opacity**, **Identity
-fade**, **Min length** and **Min identity** sit beside it, and as view settings
-they go in a session as `encoding.color`, `encoding.opacity` and `filter`; the
-identity fade is `encoding: { opacity: { field: 'identity' } }`.
-
-An alignment narrower than a pixel draws at the share of the pixel it covers, as
-in the linear synteny view, so a circle of tens of thousands of short alignments
-shows where they pile up. `render: { antialias: false }` on the view draws every
-ribbon at full opacity.
+- **Two genomes:** a track aligning two genomes needs both on the circle, set
+  with `assembly: ['hg38', 'mm39']`; each lays its chromosomes out in turn
+- **Import form:** as in the dotplot, **Quick start** picks a synteny track and
+  opens its two genomes, and **Manual** takes **Add a second assembly** and a
+  track for the pair, with a chromosome box per genome
+- **Chromosome order:** a two-genome circle opens reordered, the second genome's
+  chromosomes in the order of the first's by shared aligned bases and laid out
+  mirrored, so the ribbons form a band of parallel arcs. **Re-order
+  chromosomes** in the view's menu, offered only on such a circle, reorders on
+  demand, and `autoDiagonalize: false` on the view keeps each genome in its
+  contig order
+- **Color:** ribbons open in the ideogram color of the first genome's chromosome
+  they leave. **Color by** in the view's menu offers what the linear synteny
+  view's palette offers: either genome's chromosome, strand, identity or another
+  measurement, a column the track declares, or one color per track when several
+  overlay
+- **Opacity**, **Identity fade**, **Min length** and **Min identity** sit beside
+  it. In a session they are `encoding.color`, `encoding.opacity` and `filter`;
+  the identity fade is `encoding: { opacity: { field: 'identity' } }`
+- **Sub-pixel alignments** draw at the share of the pixel they cover, so a dense
+  circle shows where short alignments pile up; `render: { antialias: false }` on
+  the view draws every ribbon at full opacity
+- **Hover** a ribbon or chord to highlight and name it; **click** to open its
+  details
 
 <Figure src="/img/circular_synteny/color_by_strand.png" caption="Color by → Strand on the human and mouse circle." />
-
-Hovering a ribbon or a chord highlights it and names it in a tooltip; clicking
-opens its details. Ribbons and chords draw on the GPU, so a circle holding tens
-of thousands of them still turns and zooms without a pause.
 
 ### Karyotype changes on other pairs
 
