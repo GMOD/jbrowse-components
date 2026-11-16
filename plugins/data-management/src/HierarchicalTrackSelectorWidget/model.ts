@@ -254,12 +254,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       tableDrawerWidth: undefined as number | undefined,
       /**
        * #volatile
-       * true after the table closes, so the link that opened it takes focus
-       * back when the tree remounts
-       */
-      returnedFromTable: false,
-      /**
-       * #volatile
        */
       recentlyUsedCounter: 0,
       /**
@@ -497,7 +491,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       openTable(drawer?: { width: number; availableWidth: number }) {
         self.tableViewId = self.view?.id
-        self.returnedFromTable = false
         self.tableDrawerWidth = drawer
           ? Math.max(
               drawer.width,
@@ -508,24 +501,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      leaveTable() {
+      closeTable() {
         self.tableViewId = undefined
         self.tableDrawerWidth = undefined
-      },
-      /**
-       * #action
-       */
-      clearReturnedFromTable() {
-        self.returnedFromTable = false
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      closeTable() {
-        self.leaveTable()
-        self.returnedFromTable = true
       },
       /**
        * #action
@@ -995,17 +973,17 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           addDisposer(
             self,
             autorun(
-              function leaveTableWhenClosed() {
+              function closeTableWhenClosed() {
                 const session = getSession(self)
                 if (
                   self.tableViewId !== undefined &&
                   isSessionModelWithWidgets(session) &&
                   !session.activeWidgets.has(self.id)
                 ) {
-                  self.leaveTable()
+                  self.closeTable()
                 }
               },
-              { name: 'TrackSelectorLeaveTable' },
+              { name: 'TrackSelectorCloseTable' },
             ),
           )
           persist(() => {

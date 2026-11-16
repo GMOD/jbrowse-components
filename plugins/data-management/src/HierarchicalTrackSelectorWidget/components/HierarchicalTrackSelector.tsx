@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import HierarchicalFab from './HierarchicalFab.tsx'
 import TrackTable from './TrackTable.tsx'
-import BrowseAsTable from './tree/BrowseAsTable.tsx'
+import TreeTableToggle from './TreeTableToggle.tsx'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
 import HierarchicalTree from './tree/HierarchicalTree.tsx'
 
@@ -31,7 +31,6 @@ const TrackTree = observer(function TrackTree({
   return (
     <>
       <HierarchicalHeader model={model} />
-      <BrowseAsTable model={model} />
       <div ref={ref} className={classes.treeContainer}>
         {height ? <HierarchicalTree height={height} model={model} /> : null}
       </div>
@@ -53,6 +52,7 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
       className={classes.container}
       style={{ height: `calc(100% - ${toolbarHeight}px)` }}
     >
+      <TreeTableToggle model={model} />
       {model.showTable ? (
         <TrackTable model={model} />
       ) : (

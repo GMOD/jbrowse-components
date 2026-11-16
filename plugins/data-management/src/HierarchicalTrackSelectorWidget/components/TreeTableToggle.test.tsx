@@ -1,11 +1,11 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
-import HierarchicalTrackSelector from '../HierarchicalTrackSelector.tsx'
+import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
 
-import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -55,46 +55,29 @@ function setup() {
   return { session, model, addView }
 }
 
-test('the link names the tree query', async () => {
-  const { model } = setup()
-  const { getByTestId } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} />
-    </ThemeProvider>,
-  )
-  const button = getByTestId('browse-as-table')
-  expect(button.textContent).toBe('Browse as a table')
-  model.setFilterText(' chrom ')
-  await waitFor(() => {
-    expect(button.textContent).toBe('Search “chrom” in the table')
-  })
-})
-
-test('the table replaces the tree, seeded with the query and with facets hidden, and going back restores the tree', async () => {
+test('the toggle swaps the tree for a table seeded with its query, with facets and select-all hidden, and back', async () => {
   const { model } = setup()
   model.setFilterText(' chrom ')
-  const {
-    getByTestId,
-    findByLabelText,
-    findAllByText,
-    queryByText,
-    queryByLabelText,
-  } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} />
-    </ThemeProvider>,
-  )
+  const { getByTestId, findByLabelText, queryByText, queryByLabelText } =
+    render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <HierarchicalTrackSelector model={model} />
+      </ThemeProvider>,
+    )
+  const tree = getByTestId('show-as-tree')
+  const table = getByTestId('show-as-table')
+  expect(tree.getAttribute('aria-pressed')).toBe('true')
 
-  fireEvent.click(getByTestId('browse-as-table'))
+  fireEvent.click(table)
   const search = await findByLabelText('Filter tracks')
   expect((search as HTMLInputElement).value).toBe(' chrom ')
-  expect(queryByText('Browse as a table')).toBeNull()
+  expect(table.getAttribute('aria-pressed')).toBe('true')
   expect(queryByText('Clear all filters')).toBeNull()
   expect(queryByLabelText('Select all tracks')).toBeNull()
 
-  fireEvent.click(getByTestId('back-to-tree'))
-  expect(await findAllByText('Search “chrom” in the table')).toHaveLength(1)
-  expect(document.activeElement).toBe(getByTestId('browse-as-table'))
+  fireEvent.click(tree)
+  expect(model.showTable).toBe(false)
+  expect(getByTestId('show-as-tree')).toBe(tree)
 })
 
 test('the table widens the drawer without touching the saved width, a drag resizes the table width, and closing returns to the saved one', () => {

@@ -40,12 +40,10 @@ const FacetedSelector = observer(function FacetedSelector({
   model,
   faceted,
   size,
-  headerStart,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
   size?: { width: number; height: number }
-  headerStart?: React.ReactNode
 }) {
   const { classes } = useStyles()
   const { width, height } = useWindowSize()
@@ -69,12 +67,7 @@ const FacetedSelector = observer(function FacetedSelector({
       className={classes.root}
       style={size ? { width: w, height: size.height } : undefined}
     >
-      <FacetedHeader
-        model={model}
-        faceted={faceted}
-        columns={columns}
-        start={headerStart}
-      />
+      <FacetedHeader model={model} faceted={faceted} columns={columns} />
       <div
         className={classes.container}
         style={

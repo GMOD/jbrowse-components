@@ -16,7 +16,7 @@ import type { FacetedColumn } from './FacetedDataGrid.tsx'
 const useStyles = makeStyles()(theme => ({
   searchBox: {
     flexGrow: 1,
-    margin: theme.spacing(1, 1, 1, 0),
+    margin: theme.spacing(1, 1, 1, 1.5),
   },
 }))
 
@@ -24,12 +24,10 @@ const FacetedHeader = observer(function FacetedHeader({
   model,
   faceted,
   columns,
-  start,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
   columns: FacetedColumn[]
-  start?: React.ReactNode
 }) {
   const { classes } = useStyles()
   const { filterText, showFilters, showSparse, useShoppingCart, visible } =
@@ -39,7 +37,6 @@ const FacetedHeader = observer(function FacetedHeader({
   return (
     <>
       <Grid container sx={{ alignItems: 'center', flexWrap: 'nowrap' }}>
-        {start}
         <ClearableSearchField
           className={classes.searchBox}
           label="Filter tracks"

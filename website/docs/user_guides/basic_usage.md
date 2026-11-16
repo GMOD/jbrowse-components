@@ -345,8 +345,8 @@ starts on the right.
 
 ## Faceted track selector
 
-"Browse as a table", under the "Available tracks" filter box, shows all tracks
-as a filterable table, starting from whatever is typed in the box. Tracks with
+The Tree | Table toggle at the top of "Available tracks" shows all tracks as a
+filterable table, starting from whatever is typed in the filter box. Tracks with
 `metadata` fields get extra filterable columns:
 
 ```json

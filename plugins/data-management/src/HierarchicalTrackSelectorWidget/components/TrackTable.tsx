@@ -2,8 +2,6 @@ import { useEffect } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import FacetedSelector from '../../FacetedSelector/components/FacetedSelector.tsx'
@@ -43,19 +41,6 @@ const TrackTable = observer(function TrackTable({
           model={model}
           faceted={faceted}
           size={{ width, height }}
-          headerStart={
-            <Tooltip title="Back to tree">
-              <IconButton
-                data-testid="back-to-tree"
-                aria-label="Back to tree"
-                onClick={() => {
-                  model.closeTable()
-                }}
-              >
-                <ArrowBackIcon />
-              </IconButton>
-            </Tooltip>
-          }
         />
       ) : null}
     </div>
