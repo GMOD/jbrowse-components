@@ -12,18 +12,11 @@ instead and its sign flips at a bacterial replication origin.
 
 ## Launching a GC content track from the sequence
 
-Because the track computes the signal from the reference sequence, launch it
-straight off the reference sequence track:
-
-- From the track selector, open the track menu (vertical "...") on the reference
-  sequence track and choose **Add GC content track**.
-- From an open sequence track, the sequence display's track menu has the same
-  **Add GC content track** item.
-
-**Add GC content track** creates a `GCContentTrack` whose `GCContentAdapter`
-reads the sequence of the assembly it is shown against, so it works for any
-assembly, whether its sequence is a 2bit, indexed FASTA, or bgzip-indexed FASTA.
-The adapter fetches no new data beyond the sequence the browser already reads.
+**Add GC content track** sits in the reference sequence track's menu, both in
+the track selector (vertical "...") and on an open sequence track. It creates a
+`GCContentTrack` whose `GCContentAdapter` reads the sequence of the assembly it
+is shown against, so it works for any assembly, whether its sequence is a 2bit,
+indexed FASTA, or bgzip-indexed FASTA.
 
 <Figure caption="GC content (top) and GC skew (bottom) computed on the fly across the H. pylori chromosome." src="/img/gc_content.png" />
 
@@ -33,40 +26,35 @@ The adapter fetches no new data beyond the sequence the browser already reads.
 the two calculations (the adapter's
 [`op`](/docs/config/gccontentadapter/#slot-op) slot):
 
-- GC content is the fraction of A, C, G and T bases in each window that are G or
-  C, a value between 0 and 1. High values mark GC-rich regions.
-- GC skew is `(G − C) / (G + C)`, which measures the strand imbalance between G
-  and C. It swings positive and negative around zero, and in many bacterial
-  genomes the sign flips at the replication origin and terminus.
+- **GC content:** the fraction of A, C, G and T bases in each window that are G
+  or C, between 0 and 1.
+- **GC skew:** `(G − C) / (G + C)`, the strand imbalance between G and C. It
+  swings around zero, and in many bacterial genomes the sign flips at the
+  replication origin and terminus.
 
 ## Adjusting the window
 
 The track menu's **GC parameters** submenu sets the sliding window:
 
 - **Window size** is how many bases each point averages over. Larger windows
-  smooth the signal and suppress local noise; smaller windows resolve finer
-  structure.
-- **Step follows zoom**, on by default, places about one point per pixel, so
-  zoomed out each point covers more bases. Where the step is wider than the
-  window, the window widens to the step, and every base counts toward a point.
-- Turning it off shows a **Step size** slider for a fixed distance between
-  successive windows. A step smaller than the window overlaps the windows, which
-  gives a smoother curve at the cost of more points to compute. The slider's
-  reset turns **Step follows zoom** back on.
+  smooth the signal; smaller ones resolve finer structure.
+- **Step follows zoom**, on by default, places about one point per pixel. Where
+  the step is wider than the window, the window widens to the step, so every
+  base counts toward a point.
+- **Step size** appears with **Step follows zoom** off and sets a fixed distance
+  between windows. A step smaller than the window overlaps them for a smoother
+  curve. The slider's reset turns **Step follows zoom** back on.
 
 `N` and the other ambiguity codes count toward neither the GC bases nor the
-total, so the track draws nothing over an assembly gap.
-
-Zoomed out across a whole chromosome, the track still reads every base of it.
-For a large genome viewed whole, a precomputed GC bigWig such as UCSC's
-`gc5Base` loads faster.
+total, so the track draws nothing over an assembly gap. Zoomed out across a
+whole chromosome the track reads every base of it, so for a large genome viewed
+whole a precomputed GC bigWig such as UCSC's `gc5Base` loads faster.
 
 ## Display options
 
-The GC content track is a quantitative (wiggle) track, so it inherits the full
-set of [quantitative track](/docs/user_guides/quantitative_track) display
-options from the same track menu: bar plot / line / density / scatter rendering,
-linear vs log scale, outlier clipping, and manual min/max.
+The track menu also has every
+[quantitative track](/docs/user_guides/quantitative_track) display option: plot
+type, linear or log scale, outlier clipping, and a pinned min and max.
 
 ## See also
 
