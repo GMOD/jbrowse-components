@@ -34,8 +34,7 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="volatile-filtertext">**filterText**</span><br><code>string</code> |  |
 | <span id="volatile-tableviewid">**tableViewId**</span><br><code>string &#124; undefined</code> | the view whose tracks the drawer shows as a table in place of the tree. Keyed by view because every view's selector is this one widget, so table mode opened for one view stays with it |
 | <span id="volatile-tabledrawerwidth">**tableDrawerWidth**</span><br><code>number &#124; undefined</code> | the drawer width the table asks for, read by the session as `preferredDrawerWidth` and never written into its saved width |
-| <span id="volatile-recentlyusedcounter">**recentlyUsedCounter**</span><br><code>number</code> |  |
-| <span id="volatile-favoritescounter">**favoritesCounter**</span><br><code>number</code> |  |
+| <span id="volatile-tracklist">**trackList**</span><br><code>TrackList</code> | which tracks the tree and the table list: all of them, or only the favorites or the recently used |
 
 ## Getters
 
@@ -63,11 +62,12 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="getter-selectionset">**selectionSet**</span><br><code>Set&lt;string&gt;</code> | the selected trackIds that still resolve to a track |
 | <span id="getter-favoritetracks">**favoriteTracks**</span><br><code>(TrackConfigNode &#124; TrackConfigEntry)[]</code> | filters out tracks that are not in the favorites group |
 | <span id="getter-recentlyusedtracks">**recentlyUsedTracks**</span><br><code>(TrackConfigNode &#124; TrackConfigEntry)[]</code> | filters out tracks that are not in the recently used group |
-| <span id="getter-hierarchy">**hierarchy**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ name: string; id: string; type: "category"; children: {…}[]; }</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ name: string; id: string; type: "category"; children: { name: string; id: string; type: "category"; nestingLevel: number; defaultCollapsed: boolean; loading: boolean; children: TreeNode[]; }[]; }</code></pre></dialog></span> | a group is kept even when no track in it survives the filter, so an empty connection still shows in the tree |
+| <span id="getter-listedtrackids">**listedTrackIds**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | the trackIds the favorites or recent list limits the tree and table to; undefined when listing all |
+| <span id="getter-listedtrackconfigurations">**listedTrackConfigurations**</span><br><code>AnyTrackConfig[]</code> | the track configs the table lists |
+| <span id="getter-hierarchy">**hierarchy**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ name: string; id: string; type: "category"; … }</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ name: string; id: string; type: "category"; children: TreeNode[]; }</code></pre></dialog></span> | a group is kept even when no track in it survives the filter, so an empty connection still shows in the tree |
+| <span id="getter-flatlist">**flatList**</span><br><code>TreeNode[]</code> | the favorites or recently used tracks as a flat list in the list's own order, newest first for recent, with no category tree or group header: the toggle above already names the list |
 | <span id="getter-rows">**rows**</span><br><code>TreeRow[]</code> | every rendered row, in order, with its height and scroll offset |
 | <span id="getter-treeheight">**treeHeight**</span><br><code>number</code> |  |
-| <span id="getter-foldertracknodes">**folderTrackNodes**</span><br><code>Map&lt;string, TreeTrackNode[]&gt;</code> |  |
-| <span id="getter-foldercategorystats">**folderCategoryStats**</span><br><code>Map&lt;string, { active: number; total: number; }&gt;</code> |  |
 | <span id="getter-hasanysubcategories">**hasAnySubcategories**</span><br><code>boolean</code> |  |
 
 ## Methods
@@ -94,11 +94,10 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="action-addtofavorites">**addToFavorites**</span><br><code>(trackId: string) =&gt; void</code> |  |
 | <span id="action-removefromfavorites">**removeFromFavorites**</span><br><code>(trackId: string) =&gt; void</code> |  |
 | <span id="action-clearfavorites">**clearFavorites**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-setrecentlyusedcounter">**setRecentlyUsedCounter**</span><br><code>(val: number) =&gt; void</code> |  |
 | <span id="action-setrecentlyused">**setRecentlyUsed**</span><br><code>(str: string[]) =&gt; void</code> |  |
-| <span id="action-setfavoritescounter">**setFavoritesCounter**</span><br><code>(val: number) =&gt; void</code> |  |
 | <span id="action-addtorecentlyused">**addToRecentlyUsed**</span><br><code>(id: string) =&gt; void</code> |  |
 | <span id="action-clearrecentlyused">**clearRecentlyUsed**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-settracklist">**setTrackList**</span><br><code>(trackList: TrackList) =&gt; void</code> |  |
 | <span id="action-setview">**setView**</span><br><code>(view: IBaseViewModel &#124; undefined) =&gt; void</code> |  |
 | <span id="action-settrackcontainerid">**setTrackContainerId**</span><br><code>(id: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setcategorymode">**setCategoryMode**</span><br><code>(id: string, mode: CategoryMode &#124; undefined) =&gt; void</code> |  |

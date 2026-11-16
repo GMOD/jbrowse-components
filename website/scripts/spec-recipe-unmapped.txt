@@ -8,6 +8,7 @@
 color
 colorScheme
 connectedView
+connectors.show
 encoding.color
 encoding.opacity
 gene

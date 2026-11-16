@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1251)
+# model members with no description (1246)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -454,29 +454,24 @@ HierarchicalTrackSelectorWidget.collapseSubCategories
 HierarchicalTrackSelectorWidget.collapseTopLevelCategories
 HierarchicalTrackSelectorWidget.expandAllCategories
 HierarchicalTrackSelectorWidget.favorites
-HierarchicalTrackSelectorWidget.favoritesCounter
 HierarchicalTrackSelectorWidget.favoritesSet
 HierarchicalTrackSelectorWidget.filterText
-HierarchicalTrackSelectorWidget.folderCategoryStats
-HierarchicalTrackSelectorWidget.folderTrackNodes
 HierarchicalTrackSelectorWidget.hasAnySubcategories
 HierarchicalTrackSelectorWidget.isFavorite
 HierarchicalTrackSelectorWidget.isRecentlyUsed
 HierarchicalTrackSelectorWidget.isSelected
 HierarchicalTrackSelectorWidget.recentlyUsed
-HierarchicalTrackSelectorWidget.recentlyUsedCounter
 HierarchicalTrackSelectorWidget.recentlyUsedSet
 HierarchicalTrackSelectorWidget.removeFromFavorites
 HierarchicalTrackSelectorWidget.removeFromSelection
 HierarchicalTrackSelectorWidget.setCategoryMode
-HierarchicalTrackSelectorWidget.setFavoritesCounter
 HierarchicalTrackSelectorWidget.setFilterText
 HierarchicalTrackSelectorWidget.setRecentlyUsed
-HierarchicalTrackSelectorWidget.setRecentlyUsedCounter
 HierarchicalTrackSelectorWidget.setSelection
 HierarchicalTrackSelectorWidget.setSortCategories
 HierarchicalTrackSelectorWidget.setSortTrackNames
 HierarchicalTrackSelectorWidget.setTrackContainerId
+HierarchicalTrackSelectorWidget.setTrackList
 HierarchicalTrackSelectorWidget.setView
 HierarchicalTrackSelectorWidget.shownTrackIds
 HierarchicalTrackSelectorWidget.sortCategories
@@ -1436,5 +1431,6 @@ SyntenyFilterMixin.filter
 WorkspaceLayoutMixin.layout
 api:synteny-core.carriedSyntenySettings
 
-# #stateModel tags attached to a declaration that builds no model (0)
+# #stateModel tags attached to a declaration that builds no model (1)
 # fix: move the #stateModel JSDoc back onto its factory — a declaration in between takes the tag, and every inherited member row silently disappears
+HierarchicalTrackSelectorWidget	plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
