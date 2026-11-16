@@ -35,14 +35,14 @@ genomes in tree order makes the second kind read as a walk down the tree.
 
 Each lane has its own scale, printed in its header:
 
-- the left end shows where the lane starts, with `[rev]` where the lane runs
-  against the anchor
-- the right end of a lane zoomed out past the anchor shows the span the lane
-  draws, and that span as a multiple of the anchor's window, rounded to one of a
-  few fixed steps; a lane at the anchor's scale prints no span
-- the ticks fall at one interval shared by every lane
-- `also at` names a second stretch the window aligns to, a window or more away
-  from the one the lane draws
+- **Left end:** where the lane starts, with `[rev]` where the lane runs against
+  the anchor
+- **Right end:** on a lane zoomed out past the anchor, the span the lane draws
+  and that span as a multiple of the anchor's window; a lane at the anchor's
+  scale prints no span
+- **Ticks** fall at one interval shared by every lane
+- **`also at`** names a second stretch the window aligns to, a window or more
+  away from the one the lane draws
 
 A lane with no readable gene track (GFF3, GTF, BigBed or BED) on its assembly
 outlines gene spans from the table where it has them, labeled `no annotation`.
@@ -52,20 +52,18 @@ The view's gridlines stop at the anchor, the one lane they fit.
 
 - **Color by → Strand**, under **Ribbons** in the track menu, is the default:
   red where the two lanes a ribbon joins run the same way, blue where one is
-  reversed. A lane drawn reversed has its ribbons run straight on screen while
-  the color still marks them as inverted.
-- Hover a ribbon to light the same alignment or ortholog group in every lane it
-  reaches. The tooltip names the two lanes the ribbon joins, each with its
-  stretch and length.
-- Click a ribbon to open its details; click empty canvas to clear the outline.
-  The details of an alignment against the anchor end in a **Link to view** card,
+  reversed. A lane drawn reversed has straight ribbons that are still blue.
+- **Hover** a ribbon to light the same alignment or ortholog group in every lane
+  it reaches; the tooltip names the two lanes it joins, each with its stretch
+  and length.
+- **Click** a ribbon to open its details, and empty canvas to clear the outline.
+  An alignment against the anchor ends its details in a **Link to view** card,
   which opens the other genome at the matching region or launches a synteny view
   of the pair.
 - **Opacity** in the track menu sets how far overlapping ribbons show through
   each other.
-- A ribbon joins a gene to the next lane that places it when the lane between
-  places nothing, so a sparse lane mid-stack cuts no chain. A track whose
-  ribbons all join the anchor draws each gutter against the anchor instead.
+- **Skipped lanes:** a ribbon joins a gene to the next lane that places it when
+  the lane between places nothing, so a sparse lane mid-stack cuts no chain.
 
 ## Choosing and ordering lanes
 
@@ -78,11 +76,10 @@ The **Lanes** submenu in the track menu holds the stack's controls:
 - **Freeze lanes** keeps every lane where it is as you pan and zoom. While
   frozen, drag a lane to slide it.
 
-Drag a lane label to move that lane. In the display config, `rows.sort` pins the
-lanes it names to the top, in that order, and the rest follow densest-first, so
-the order holds across a pan;
-[grouping and ordering](/docs/config_guides/grouping_and_ordering#multiway-synteny)
-has the `rows` config.
+Drag a lane label to move that lane. To fix the order across a pan, the display
+config's `rows.sort` pins the lanes it names to the top, in that order, and the
+rest follow densest-first
+([grouping and ordering](/docs/config_guides/grouping_and_ordering#multiway-synteny)).
 
 ## Where a lane draws
 
@@ -115,8 +112,8 @@ same items.
 
 ## Opening a stacked synteny view
 
-Two routes open a [linear synteny view](/docs/user_guides/linear_synteny_view)
-with a row per genome:
+These open a [linear synteny view](/docs/user_guides/linear_synteny_view) with a
+row per genome:
 
 - **Advanced → Launch → Linear synteny view (visible region)...** in the track
   menu offers a row to every genome that aligns to the window.
