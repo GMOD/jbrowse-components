@@ -1,11 +1,12 @@
 import { buildSearchText, normalizeSearchQuery } from '../shared/searchText.ts'
 import { getRowStr } from './components/util.ts'
+import { getRootKeys } from './facetedUtil.ts'
 
 import type { Row } from './components/util.ts'
 
 /**
  * The text a free-text query matches a row against: every column the grid
- * renders — name, category, adapter, description and each metadata value —
+ * renders — name, category, adapter, description and each metadata column —
  * normalized by buildSearchText, which the tree's rows go through too. Built
  * once per row in allRows (mirroring the tree's trackNodeSourceFor) so a
  * keystroke neither re-reads configs nor re-strips HTML.
@@ -24,7 +25,7 @@ export function rowSearchText(row: {
     row.category,
     row.adapter,
     row.description,
-    ...Object.values(row.metadata),
+    ...getRootKeys(row.metadata).map(key => row.metadata[key]),
   ])
 }
 
@@ -88,6 +89,13 @@ export function computeFacetCategoryCounts<T extends Row>(
         const key = getRowStr(facet, row)
         if (passesOthers && key) {
           categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
+        }
+      }
+      // a selected value stays listed, at 0, when no row shows it any more,
+      // so an active filter never hides its own option
+      for (const value of filters.get(facet) ?? []) {
+        if (!categoryCountMap.has(value)) {
+          categoryCountMap.set(value, 0)
         }
       }
       return [facet, categoryCountMap] as const

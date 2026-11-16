@@ -125,7 +125,13 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           sortField={sortField}
           sortAscending={sortAscending}
           onSort={field => {
-            faceted.setSort(field, sortField === field ? !sortAscending : true)
+            if (sortField !== field) {
+              faceted.setSort(field, true)
+            } else if (sortAscending) {
+              faceted.setSort(field, false)
+            } else {
+              faceted.setSort('', true)
+            }
           }}
         />
         <tbody>
@@ -149,7 +155,9 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
                 colSpan={visibleColumns.length + 2}
                 className={classes.emptyCell}
               >
-                No tracks match the current search and filters
+                {faceted.allRows.length
+                  ? 'No tracks match the current search and filters'
+                  : 'No tracks'}
               </td>
             </tr>
           ) : null}

@@ -37,19 +37,9 @@ const TrackTree = observer(function TrackTree({
 }) {
   const { classes } = useStyles()
   const [ref, { height }] = useMeasure('height')
-  const { trackList, listedTrackConfigurations } = model
   return (
     <>
       <HierarchicalHeader model={model} />
-      {trackList !== 'all' && listedTrackConfigurations.length === 0 ? (
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          className={classes.empty}
-        >
-          {emptyListMessage[trackList]}
-        </Typography>
-      ) : null}
       <div ref={ref} className={classes.treeContainer}>
         {height ? <HierarchicalTree height={height} model={model} /> : null}
       </div>
@@ -72,6 +62,16 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
       style={{ height: `calc(100% - ${toolbarHeight}px)` }}
     >
       <TrackSelectorToggles model={model} />
+      {model.trackList !== 'all' &&
+      model.listedTrackConfigurations.length === 0 ? (
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          className={classes.empty}
+        >
+          {emptyListMessage[model.trackList]}
+        </Typography>
+      ) : null}
       {model.showTable ? (
         <TrackTable model={model} />
       ) : (

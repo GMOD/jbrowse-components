@@ -55,6 +55,14 @@ describe('rowSearchText', () => {
     expect(searchText).toBe('genes\nsee link')
     expect(searchText).not.toContain('href')
   })
+
+  test('leaves out nested metadata, which the grid shows no column for', () => {
+    const searchText = rowSearchText({
+      name: 'Genes',
+      metadata: { assay: 'RNA', ucsc: { visibility: 'dense' }, tags: ['a'] },
+    })
+    expect(searchText).toBe('genes\nrna')
+  })
 })
 
 describe('filterRowsByText', () => {
@@ -119,6 +127,15 @@ describe('filterRowsByFacets', () => {
 
 describe('computeFacetCategoryCounts', () => {
   const facets = ['category', 'metadata.sampleType', 'metadata.assay']
+
+  test('a selected value no row shows any more stays listed, at 0', () => {
+    const counts = computeFacetCategoryCounts(
+      rows.filter(r => r.id === 't1'),
+      facets,
+      new Map([['metadata.assay', ['DNA']]]),
+    )
+    expect(counts.get('metadata.assay')!.get('DNA')).toBe(0)
+  })
 
   test('counts every facet over all rows when nothing is filtered', () => {
     const counts = computeFacetCategoryCounts(rows, facets, new Map())

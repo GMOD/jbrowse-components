@@ -139,6 +139,25 @@ test('shows an empty message when nothing matches the filter', () => {
   expect(queryByText('fooC')).toBeNull()
 })
 
+test('a header names its column in full on hover, and a click cycles ascending, descending, unsorted', () => {
+  const { model, faceted } = setup()
+  const { getByRole } = renderGrid(model, faceted)
+  const header = () => getByRole('columnheader', { name: 'name' })
+  expect(header().getAttribute('title')).toBe('name')
+  expect(header().getAttribute('aria-sort')).toBeNull()
+
+  const click = () => {
+    fireEvent.click(within(header()).getByRole('button'))
+  }
+  click()
+  expect(header().getAttribute('aria-sort')).toBe('ascending')
+  click()
+  expect(header().getAttribute('aria-sort')).toBe('descending')
+  click()
+  expect(header().getAttribute('aria-sort')).toBeNull()
+  expect(faceted.sortField).toBe('')
+})
+
 test('a column hidden via visible is not rendered', () => {
   const { model, faceted } = setup()
   faceted.setShowSparse(true)

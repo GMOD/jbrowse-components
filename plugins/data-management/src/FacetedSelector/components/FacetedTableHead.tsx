@@ -1,3 +1,5 @@
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
 
@@ -25,7 +27,6 @@ const FacetedTableHead = observer(function FacetedTableHead({
   onSort: (colId: string) => void
 }) {
   const { classes } = useFacetedTableStyles()
-  const lastColId = columns.at(-1)?.id
   return (
     <thead className={classes.thead}>
       <tr>
@@ -43,18 +44,38 @@ const FacetedTableHead = observer(function FacetedTableHead({
             />
           ) : null}
         </th>
-        {columns.map(col => (
-          <th key={col.id} scope="col" className={classes.headerCell}>
-            <span
-              className={classes.sortLabel}
-              onClick={() => {
-                onSort(col.id)
-              }}
+        {columns.map(col => {
+          const sorted = sortField === col.id
+          return (
+            <th
+              key={col.id}
+              scope="col"
+              className={classes.headerCell}
+              title={col.header}
+              aria-sort={
+                sorted
+                  ? sortAscending
+                    ? 'ascending'
+                    : 'descending'
+                  : undefined
+              }
             >
-              {col.header}
-              {sortField === col.id ? (sortAscending ? ' ▲' : ' ▼') : null}
-            </span>
-            {col.id !== lastColId ? (
+              <button
+                type="button"
+                className={classes.sortButton}
+                onClick={() => {
+                  onSort(col.id)
+                }}
+              >
+                <span className={classes.headerLabel}>{col.header}</span>
+                {sorted ? (
+                  sortAscending ? (
+                    <ArrowUpwardIcon className={classes.sortIcon} />
+                  ) : (
+                    <ArrowDownwardIcon className={classes.sortIcon} />
+                  )
+                ) : null}
+              </button>
               <div
                 className={classes.resizeHandle}
                 onMouseDown={e => {
@@ -63,9 +84,9 @@ const FacetedTableHead = observer(function FacetedTableHead({
               >
                 <div className={classes.resizeLine} />
               </div>
-            ) : null}
-          </th>
-        ))}
+            </th>
+          )
+        })}
         <th className={classes.fillerCell} />
       </tr>
     </thead>

@@ -40,10 +40,12 @@ const FacetedSelector = observer(function FacetedSelector({
   model,
   faceted,
   size,
+  onFilterTextChange,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
   size?: { width: number; height: number }
+  onFilterTextChange?: (value: string) => void
 }) {
   const { classes } = useStyles()
   const { width, height } = useWindowSize()
@@ -67,7 +69,12 @@ const FacetedSelector = observer(function FacetedSelector({
       className={classes.root}
       style={size ? { width: w, height: size.height } : undefined}
     >
-      <FacetedHeader model={model} faceted={faceted} columns={columns} />
+      <FacetedHeader
+        model={model}
+        faceted={faceted}
+        columns={columns}
+        onFilterTextChange={onFilterTextChange}
+      />
       <div
         className={classes.container}
         style={

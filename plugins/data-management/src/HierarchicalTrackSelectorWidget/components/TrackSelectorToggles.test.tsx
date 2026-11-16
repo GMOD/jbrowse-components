@@ -75,9 +75,11 @@ test('the toggle swaps the tree for a table seeded with its query, with facets a
   expect(queryByText('Clear all filters')).toBeNull()
   expect(queryByLabelText('Select all tracks')).toBeNull()
 
+  fireEvent.change(search, { target: { value: 'genes' } })
   fireEvent.click(tree)
   expect(model.showTable).toBe(false)
   expect(getByTestId('show-as-tree')).toBe(tree)
+  expect(model.filterText).toBe('genes')
 })
 
 test('the table widens the drawer without touching the saved width, a drag resizes the table width, and closing returns to the saved one', () => {

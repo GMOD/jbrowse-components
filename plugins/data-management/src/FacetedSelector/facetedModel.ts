@@ -15,7 +15,12 @@ import { observable } from 'mobx'
 import { trackNameCollator } from '../shared/collator.ts'
 import { configScopedKey } from '../shared/configScopedKey.ts'
 import { measureNameColumnWidth } from '../shared/trackGridUtils.ts'
-import { getRowStr, isMetadataFacet, metadataFacet } from './components/util.ts'
+import {
+  facetLabel,
+  getRowStr,
+  isMetadataFacet,
+  metadataFacet,
+} from './components/util.ts'
 import {
   computeFacetCategoryCounts,
   filterRowsByFacets,
@@ -338,9 +343,16 @@ export function facetedStateTreeF() {
             f,
             f === 'name'
               ? measureNameColumnWidth(self.allRows)
-              : measureGridWidth(
-                  self.allRows.map(r => getRowStr(f, r)),
-                  { maxWidth: 400, stripHTML: true },
+              : Math.max(
+                  measureGridWidth(
+                    self.allRows.map(r => getRowStr(f, r)),
+                    { maxWidth: 400, stripHTML: true },
+                  ),
+                  measureGridWidth([facetLabel(f, this.nonMetadataFieldSet)], {
+                    fontSize: 14,
+                    padding: 46,
+                    maxWidth: 400,
+                  }),
                 ),
           ]),
         )

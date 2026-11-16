@@ -45,6 +45,9 @@ const TrackTable = observer(function TrackTable({
           model={model}
           faceted={faceted}
           size={{ width, height }}
+          onFilterTextChange={value => {
+            model.setFilterText(value)
+          }}
         />
       ) : null}
     </div>

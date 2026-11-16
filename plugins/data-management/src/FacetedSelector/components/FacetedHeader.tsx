@@ -24,10 +24,12 @@ const FacetedHeader = observer(function FacetedHeader({
   model,
   faceted,
   columns,
+  onFilterTextChange,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
   columns: FacetedColumn[]
+  onFilterTextChange?: (value: string) => void
 }) {
   const { classes } = useStyles()
   const { filterText, showFilters, showSparse, useShoppingCart, visible } =
@@ -43,9 +45,11 @@ const FacetedHeader = observer(function FacetedHeader({
           value={filterText}
           onChange={value => {
             faceted.setFilterText(value)
+            onFilterTextChange?.(value)
           }}
         />
         <IconButton
+          aria-label="Table options"
           onClick={event => {
             setAnchorEl(event.currentTarget)
           }}
