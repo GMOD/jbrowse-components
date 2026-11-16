@@ -112,6 +112,10 @@ export function wrapAdapterExample(
 
 const SHORTEST_TRACK = '/docs/config_guides/tracks#the-shortest-track'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 // A `#example` fence is JS object literal syntax, not JSON: bare keys and single
 // quotes. Requote both and drop trailing commas, so the loose form is derived
 // from the config a page actually shows rather than from a second copy of it.
@@ -120,12 +124,13 @@ const SHORTEST_TRACK = '/docs/config_guides/tracks#the-shortest-track'
 function parseFence(content: string) {
   const inner = /```(?:js|javascript|json)?\n([\s\S]*?)\n```/.exec(content)?.[1]
   try {
-    return JSON.parse(
+    const parsed: unknown = JSON.parse(
       (inner ?? '')
         .replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g, '$1"$2":')
         .replace(/'([^']*)'/g, '"$1"')
         .replace(/,(\s*[}\]])/g, '$1'),
-    ) as Record<string, unknown>
+    )
+    return isRecord(parsed) ? parsed : undefined
   } catch {
     return undefined
   }
@@ -143,7 +148,8 @@ const LOOSE_TOP_KEYS = new Set(['type', 'trackId', 'name', 'assemblyNames'])
 // reachable only by naming its type then correctly offers nothing.
 export function looseTrackExample(content: string) {
   const track = parseFence(content)
-  const adapter = (track?.adapter ?? {}) as Record<string, unknown>
+  const written = track?.adapter
+  const adapter = isRecord(written) ? written : {}
   const uri = typeof adapter.uri === 'string' ? adapter.uri : undefined
   const file = uri?.split('/').pop()
   const spec = file ? matchFormat(file)?.spec : undefined
@@ -307,8 +313,8 @@ function exampleSchemaProblems(code: string) {
       node.forEach((child, i) => {
         descend(child, `${path}[${i}]`)
       })
-    } else if (node && typeof node === 'object') {
-      const { type } = node as { type?: unknown }
+    } else if (isRecord(node)) {
+      const { type } = node
       if (typeof type === 'string' && hasSchemaDefinition(type)) {
         for (const p of schemaProblems(node, `/$defs/${type}`)) {
           problems.push(`${path}${p.where}: ${p.message}`)
