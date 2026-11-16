@@ -1,4 +1,8 @@
-import { boundBandHeight, clampBandHeight } from './bandHeight.ts'
+import {
+  boundBandHeight,
+  clampBandHeight,
+  scaleBandHeights,
+} from './bandHeight.ts'
 
 import type { BandBounds } from './bandHeight.ts'
 
@@ -137,6 +141,25 @@ export function boundStackedBands<K extends string>(
     taken += reservedPx(bound[key])
   }
   return bound
+}
+
+/**
+ * #api core/util
+ * A stack that fills `height` exactly, for a plot that draws nothing under its
+ * bands: every band reserving px takes a share of `height` in proportion to
+ * the px it reserves ({@link scaleBandHeights}, whole px, from 0), and every
+ * other band fills 0. Answers each band's filled height by key.
+ */
+export function fillStackedBands<K extends string>(
+  order: readonly K[],
+  bands: Record<K, Band>,
+  height: number,
+) {
+  const pooled = order.filter(key => reservedPx(bands[key]) > 0)
+  const stated = pooled.map(key => reservedPx(bands[key]))
+  const total = stated.reduce((a, b) => a + b, 0)
+  const filled = scaleBandHeights(stated, height - total, 0)
+  return (key: K) => filled[pooled.indexOf(key)] ?? 0
 }
 
 // The most px band `key` may take: the room the plot leaves less every other

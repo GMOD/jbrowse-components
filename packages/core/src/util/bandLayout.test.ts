@@ -3,6 +3,7 @@ import {
   bandDragBounds,
   boundStackedBands,
   dragBandHeight,
+  fillStackedBands,
   reservedPx,
   stackBands,
 } from './bandLayout.ts'
@@ -189,5 +190,50 @@ describe('a drag in a bound stack', () => {
 
   test('a band brings its own floor', () => {
     expect(dragBandHeight(stackOf(45, 40), 'coverage', plot, 0, 10)).toBe(10)
+  })
+})
+
+describe('a stack filling its plot', () => {
+  const order = ['a', 'b', 'c'] as const
+
+  it('splits the height by the stated px, in whole px', () => {
+    const filled = fillStackedBands(
+      order,
+      {
+        a: { active: true, height: 45 },
+        b: { active: true, height: 35 },
+        c: { active: false, height: 30 },
+      },
+      250,
+    )
+    expect(order.map(filled)).toEqual([141, 109, 0])
+  })
+
+  it('fills nothing from a band that reserves no px', () => {
+    const filled = fillStackedBands(
+      order,
+      {
+        a: { active: true, height: 0 },
+        b: { active: true, height: 20 },
+        c: { active: false, height: 20 },
+      },
+      100,
+    )
+    expect(order.map(filled)).toEqual([0, 100, 0])
+  })
+
+  it('sums to the height whatever it is', () => {
+    for (let height = 0; height < 300; height += 7) {
+      const filled = fillStackedBands(
+        order,
+        {
+          a: { active: true, height: 45 },
+          b: { active: true, height: 13 },
+          c: { active: true, height: 29 },
+        },
+        height,
+      )
+      expect(order.map(filled).reduce((x, y) => x + y, 0)).toBe(height)
+    }
   })
 })
