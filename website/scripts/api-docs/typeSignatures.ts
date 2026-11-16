@@ -453,7 +453,7 @@ export function propertyType(
   initializer: ts.Expression,
 ) {
   const read = mstProperty(checker, named, initializer)
-  return read && { ...read, type: shortenSignature(read.type) }
+  return read && { ...read, type: shortenSignature(read.type, MAX_SIGNATURE) }
 }
 
 const DEFAULTED = new Set(['optional', 'stripDefault'])

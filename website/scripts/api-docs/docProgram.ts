@@ -266,7 +266,7 @@ export function extractWithComment(
           node,
           tags.includes('property'),
           tags.includes('api') ? Infinity : undefined,
-      )
+        )
       if (!isStateModel && tags.some(isMemberTag)) {
         memberTagged.set(
           memberKey(node),
