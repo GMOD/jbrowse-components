@@ -76,13 +76,16 @@ function collectElementPhases(): ElementPhase[] {
     }
   }
 
-  const unregistered = groups.filter(g => !methods.has(g))
+  const phases = groups.map(group => ({ group, method: methods.get(group) }))
+  const unregistered = phases.filter(p => !p.method).map(p => p.group)
   if (unregistered.length > 0) {
     throw new Error(
       `${FILE}: these element groups are scheduled but no \`addXType\` method registers into them, so the pluggable-elements guide would name a phase a plugin has no way to reach: ${unregistered.join(', ')}`,
     )
   }
-  return groups.map(group => ({ group, method: methods.get(group)! }))
+  return phases.flatMap(({ group, method }) =>
+    method ? [{ group, method }] : [],
+  )
 }
 
 // The group strings are lowercase identifiers, and the one word among them that

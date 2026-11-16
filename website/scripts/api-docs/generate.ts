@@ -272,9 +272,9 @@ async function main() {
   writeDisplayViewTypeDocs(displayLinks, configNames)
   writeGotchaDocs(
     new Map(
-      Object.values(configs)
-        .filter(c => c.header?.gotchas.length)
-        .map(c => [c.header!.name, c.header!.gotchas]),
+      Object.values(configs).flatMap(({ header }): [string, string[]][] =>
+        header?.gotchas.length ? [[header.name, header.gotchas]] : [],
+      ),
     ),
   )
   const leftover = unwrittenPages()

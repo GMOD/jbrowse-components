@@ -138,17 +138,22 @@ function onDisk(key: string) {
 // A spliced doc is compared after formatting, since that is what the write run
 // commits, but only when the raw text already disagrees: raw text equal to a
 // formatted file is formatted.
-export function staleDocs() {
-  return [...written].filter(file => {
-    const content = docText.get(file)!
+function staleWrites() {
+  return [...written].flatMap(file => {
+    const content = docText.get(file)
     const committed = onDisk(file)
-    return (
+    return content !== undefined &&
       committed !== content &&
       (unformatted.has(file) ||
         committed === undefined ||
         formatMarkdown(content, file) !== committed)
-    )
+      ? [{ file, content }]
+      : []
   })
+}
+
+export function staleDocs() {
+  return staleWrites().map(({ file }) => file)
 }
 
 // Write every doc whose bytes this run changed, then format the spliced ones
@@ -158,12 +163,13 @@ export function staleDocs() {
 // odds. A doc is touched only when `staleDocs` names it, the same test
 // `--check` applies, so a dev server watching the tree sees only what moved.
 export async function flushDocs() {
-  const changed = staleDocs()
-  for (const file of changed) {
+  const stale = staleWrites()
+  for (const { file, content } of stale) {
     const target = path.join(repoRoot, file)
     fs.mkdirSync(path.dirname(target), { recursive: true })
-    writeFileAtomic(target, docText.get(file)!)
+    writeFileAtomic(target, content)
   }
+  const changed = stale.map(({ file }) => file)
   await formatWithOxfmt(changed.filter(file => !unformatted.has(file)))
   return changed
 }

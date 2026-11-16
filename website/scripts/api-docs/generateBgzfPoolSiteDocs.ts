@@ -1,3 +1,5 @@
+import path from 'path'
+
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { markdownTable } from './markdown.ts'
 
@@ -67,10 +69,7 @@ function collectBgzfPoolSites(corpus: SourceCorpus): Site[] {
     // `PifFile.ts` sits straight in `src/`.
     out.push({
       plugin: m[1] ?? '',
-      reader: file
-        .split('/')
-        .pop()!
-        .replace(/\.tsx?$/, ''),
+      reader: path.basename(file).replace(/\.tsx?$/, ''),
       file,
     })
   }

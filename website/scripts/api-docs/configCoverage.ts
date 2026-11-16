@@ -20,12 +20,13 @@ export function unresolvedBases(
   configs: ConfigWithHeader[],
   index: ConfigIndex,
 ) {
-  return configs
-    .filter(config => config.derives && !resolveBase(config, index))
-    .map(
-      config =>
-        `${config.header.name} (${config.derives!.code.replace(/\s+/g, ' ').trim()})`,
-    )
+  return configs.flatMap(config =>
+    config.derives && !resolveBase(config, index)
+      ? [
+          `${config.header.name} (${config.derives.code.replace(/\s+/g, ' ').trim()})`,
+        ]
+      : [],
+  )
 }
 
 // An adapter page wraps its #example in a full track config of its #trackType.

@@ -24,7 +24,9 @@ const ROOTED_ELSEWHERE = new Set(['LinearGenomeViewConfigSchema'])
 
 function resolved(node: Json | undefined): Json | undefined {
   const ref = node?.$ref
-  return typeof ref === 'string' ? defs[ref.split('/').pop()!] : node
+  return typeof ref === 'string'
+    ? defs[ref.slice(ref.lastIndexOf('/') + 1)]
+    : node
 }
 
 function pathsOf(node: Json | undefined, prefix: string, out: Set<string>) {

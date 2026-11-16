@@ -868,7 +868,7 @@ function unresolvedDelegation(checker: ts.TypeChecker, node: ts.Node) {
   const kind = delegatingCallKind(node)
   return kind &&
     (ts.isIdentifier(node) || ts.isCallExpression(node)) &&
-    !delegatedMembersObject(checker, node as ts.Expression)
+    !delegatedMembersObject(checker, node)
     ? { filename: node.getSourceFile().fileName, kind, text: node.getText() }
     : undefined
 }
@@ -1250,8 +1250,8 @@ function slotValueReferences(checker: ts.TypeChecker, node: ts.Node) {
     : undefined
   let returnedCode: string | undefined
   const queue = [{ expr: node.initializer, depth: 0, list: false }]
-  while (queue.length) {
-    const { expr, depth, list } = queue.shift()!
+  for (let item = queue.shift(); item; item = queue.shift()) {
+    const { expr, depth, list } = item
     if (depth > SLOT_VALUE_DEPTH) {
       continue
     }
@@ -1548,16 +1548,12 @@ function stringPropValues(obj: ts.ObjectLiteralExpression, key: string) {
   return literals.filter(ts.isStringLiteral).map(l => l.text)
 }
 
-function getNameNode(node: ts.Node): ts.Node | undefined {
-  if (
-    'name' in node &&
-    node.name &&
-    typeof node.name === 'object' &&
-    'kind' in node.name
-  ) {
-    return node.name as ts.Node
-  }
-  return undefined
+// A declaration's `name`, found among its children so it is typed as a node
+function getNameNode(node: ts.Node) {
+  const name = 'name' in node ? node.name : undefined
+  return name
+    ? ts.forEachChild(node, child => (child === name ? child : undefined))
+    : undefined
 }
 
 // Parse one extracted node into the fields the config and state-model generators

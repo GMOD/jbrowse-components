@@ -108,7 +108,7 @@ function renderInstall(tools: string[], where: string) {
     entry.download && !entry.apt ? entry.download : [],
   )
   if (urls.length) {
-    const names = urls.map(u => u.split('/').pop()!)
+    const names = urls.map(u => u.slice(u.lastIndexOf('/') + 1))
     lines.push(
       '# or Linux x86_64 binaries for the tools apt lacks',
       ...wrap('wget -P ~/.local/bin', urls, 0),

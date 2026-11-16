@@ -433,7 +433,7 @@ const STRING_LITERAL_UNION = /"(?:[^"\\]|\\.)*"(?:\s*\|\s*"(?:[^"\\]|\\.)*")+/g
 
 export function sortUnionMembers(sig: string) {
   return sig.replaceAll(STRING_LITERAL_UNION, run =>
-    run.match(STRING_LITERAL)!.sort().join(' | '),
+    (run.match(STRING_LITERAL) ?? []).sort().join(' | '),
   )
 }
 

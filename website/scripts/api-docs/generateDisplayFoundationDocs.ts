@@ -55,8 +55,7 @@ function composedMixins(corpus: SourceCorpus, file: string, name: string) {
 }
 
 function collectFoundations(corpus: SourceCorpus) {
-  const defs = new Map<string, string>()
-  const defFiles = new Map<string, string>()
+  const defs = new Map<string, { brings: string; file: string }>()
   const uses = new Map<string, string[]>()
   for (const file of corpus.files) {
     if (corpus.read(file).includes('#displayFoundation')) {
@@ -65,8 +64,7 @@ function collectFoundations(corpus: SourceCorpus) {
         const [brings] = tagValues(comment, 'displayFoundationDef')
         const foundation = tagName(comment, 'displayFoundation')
         if (model && brings) {
-          defs.set(model, brings)
-          defFiles.set(model, file)
+          defs.set(model, { brings, file })
         }
         if (model && foundation) {
           uses.set(foundation, [...(uses.get(foundation) ?? []), model])
@@ -81,14 +79,16 @@ function collectFoundations(corpus: SourceCorpus) {
       )
     }
   }
-  const foundations: Foundation[] = [...defs].map(([name, brings]) => ({
-    name,
-    brings,
-    composes: composedMixins(corpus, defFiles.get(name)!, name),
-    displays: [...(uses.get(name) ?? [])].sort((a, b) =>
-      a.localeCompare(b, 'en'),
-    ),
-  }))
+  const foundations: Foundation[] = [...defs].map(
+    ([name, { brings, file }]) => ({
+      name,
+      brings,
+      composes: composedMixins(corpus, file, name),
+      displays: [...(uses.get(name) ?? [])].sort((a, b) =>
+        a.localeCompare(b, 'en'),
+      ),
+    }),
+  )
   // Most-used first, so the common case leads; name breaks ties for stability.
   return foundations.sort(
     (a, b) =>

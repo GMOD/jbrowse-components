@@ -31,7 +31,7 @@ function readSourceIfPresent(file: string) {
   try {
     return fs.readFileSync(file, 'utf8')
   } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
+    if (e instanceof Error && 'code' in e && e.code === 'ENOENT') {
       return undefined
     }
     throw e

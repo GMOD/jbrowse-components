@@ -617,9 +617,9 @@ function literalText(
       const member = ts.isPropertyAssignment(prop)
         ? literalText(constants, prop.initializer, sf, depth)
         : undefined
-      return member === undefined
+      return member === undefined || !prop.name
         ? undefined
-        : `${prop.name!.getText(sf)}: ${member}`
+        : `${prop.name.getText(sf)}: ${member}`
     })
     return entries.every(e => e !== undefined)
       ? entries.length

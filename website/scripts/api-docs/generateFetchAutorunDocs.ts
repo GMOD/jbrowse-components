@@ -98,7 +98,7 @@ function optionsArg(node: ts.CallExpression) {
   }
   return {
     name: name.text,
-    delay: delay ? Number((delay as ts.NumericLiteral).text) : undefined,
+    delay: delay && ts.isNumericLiteral(delay) ? Number(delay.text) : undefined,
     idleLeading: idleLeading?.kind === ts.SyntaxKind.TrueKeyword,
   }
 }

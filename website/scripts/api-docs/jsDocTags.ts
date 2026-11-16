@@ -62,13 +62,19 @@ function jsDocPartText(part: ts.JSDocComment): string {
   return part.text
 }
 
+// The parser's internal `jsDoc` array, which TypeScript does not declare
+function ownJSDocs(node: ts.Node) {
+  return 'jsDoc' in node && Array.isArray(node.jsDoc)
+    ? node.jsDoc.filter(ts.isJSDoc)
+    : []
+}
+
 // Flatten the comment bodies of a node's `jsDoc` parser array into one string. A
 // JSDoc comment is either a plain string or an array of parts (when it contains
 // `{@link}`-style nodes), so both shapes are normalized here. Shared by every
 // place that reads JSDoc text off a node.
 export function jsDocText(node: ts.Node): string {
-  const jsDoc = (node as { jsDoc?: ts.JSDoc[] }).jsDoc
-  return (jsDoc ?? [])
+  return ownJSDocs(node)
     .map(jd =>
       typeof jd.comment === 'string'
         ? jd.comment
@@ -84,8 +90,7 @@ export function jsDocText(node: ts.Node): string {
 // publishes with a blank Description cell. Reading this side is how
 // `assertNoDocsBehindATag` tells that apart from a member nobody documented.
 function jsDocTagText(node: ts.Node): string {
-  const jsDoc = (node as { jsDoc?: ts.JSDoc[] }).jsDoc
-  return (jsDoc ?? [])
+  return ownJSDocs(node)
     .flatMap(jd => jd.tags ?? [])
     .map(tag =>
       typeof tag.comment === 'string'

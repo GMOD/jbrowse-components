@@ -194,16 +194,17 @@ export function collectSlotTypes(): SlotTypeRow[] {
     } else if (!labels.has(component)) {
       unlabelled.add(component)
     }
-    const readsAs = readTypes.get(name)
-    if (!isEnum && !readsAs) {
+    const readsAs = isEnum ? enumReadType(name) : readTypes.get(name)
+    const entry = isEnum ? undefined : models.get(name)
+    if (!readsAs) {
       throw new Error(
         `${TYPES_FILE}: \`SlotValueByType\` has no \`${name}\` row, so the configuration-schema guide would say nothing about what reading a \`${name}\` slot returns. The two tables are meant to name the same set — see the assertion under \`SlotValueByType\`.`,
       )
     }
     return {
       name,
-      model: isEnum ? ENUM_MODEL : modelExpression(models.get(name)!, name),
-      readsAs: isEnum ? enumReadType(name) : readsAs!,
+      model: entry === undefined ? ENUM_MODEL : modelExpression(entry, name),
+      readsAs,
       editor: component ? (labels.get(component) ?? '') : '',
       fromModel: isEnum,
     }

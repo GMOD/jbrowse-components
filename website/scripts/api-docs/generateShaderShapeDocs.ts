@@ -60,13 +60,13 @@ function collectShapeConsumers(corpus: SourceCorpus) {
       // would otherwise list the module as importing itself. `__exported
       // import` is an import that also re-exports.
       if (new RegExp(`^(?:__exported\\s+)?import ${m};`, 'm').test(text)) {
-        consumers.get(m)!.push(label(file))
+        consumers.get(m)?.push(label(file))
       }
     }
   }
   return modules.map(name => ({
     name,
-    importers: [...new Set(consumers.get(name)!)].sort(),
+    importers: [...new Set(consumers.get(name))].sort(),
   }))
 }
 
