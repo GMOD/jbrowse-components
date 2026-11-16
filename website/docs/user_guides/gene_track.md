@@ -18,45 +18,49 @@ around a gene by collapsing its introns.
 The **Gene glyph** option in the track menu controls how a gene's transcripts
 are drawn:
 
-- Auto (default) - stacks every transcript zoomed in, collapses each gene to one
-  transcript zoomed out, and keeps only as many isoforms per gene as the track's
-  height has rows for
-- All transcripts - every transcript in a separate row, whatever the zoom or
+- **Auto** (default): stacks every transcript zoomed in, collapses each gene to
+  one transcript zoomed out, and keeps only as many isoforms per gene as the
+  track's height has rows for
+- **All transcripts:** every transcript in a separate row, whatever the zoom or
   track height. A stack taller than the track scrolls
-- Representative transcript - one isoform per gene
+- **Representative transcript:** one isoform per gene, which is also drawn first
+  when a gene is stacked
 
-The representative isoform is the one the annotation tags: `RefSeq Select` or
-`MANE Select` (NCBI), `MANE_Select` or `Ensembl_canonical` (Ensembl, GENCODE).
-It is also drawn first when a gene is stacked. Without a tag, it is the longest
-by protein length, or by genomic span for a gene with no coding isoform. The
-[`transcripts`](/docs/config/featuretranscripts) setting names the attribute
-(`transcripts.field`) and the tags that rank first, in order
-(`transcripts.sort`).
+The representative isoform is:
 
-A gene drawn with fewer transcripts than it has shows **+N more** beside its
-name. Clicking it opens that one gene, and the badge then reads **show fewer**.
-The **Gene glyph** submenu grows a row to re-collapse every gene opened this
-way. The badge appears wherever the gene is wide enough on screen to hold it.
+- **Tagged:** the one the annotation tags, `RefSeq Select` or `MANE Select`
+  (NCBI), `MANE_Select` or `Ensembl_canonical` (Ensembl, GENCODE)
+- **Untagged:** the longest by protein length, or by genomic span for a gene
+  with no coding isoform
+- **Configured:** the [`transcripts`](/docs/config/featuretranscripts) setting
+  names the attribute (`transcripts.field`) and the tags that rank first, in
+  order (`transcripts.sort`)
 
-While the display leaves transcripts out, a chip in the track's bottom-right
-corner names the rule: `Isoforms trimmed` where the track's height is the
-constraint, otherwise the tag responsible for most genes on screen
-(`RefSeq Select`, `MANE Select`, or `Longest isoform`). Its tooltip counts the
-genes under each rule. Clicking it opens the same three modes.
+While the display leaves transcripts out:
+
+- **+N more** beside a gene's name, wherever the gene is wide enough on screen
+  to hold it, opens that one gene, and then reads **show fewer**. The **Gene
+  glyph** submenu grows a row to re-collapse every gene opened this way
+- **A chip** in the track's bottom-right corner names the rule:
+  `Isoforms trimmed` where the track's height is the constraint, otherwise the
+  tag responsible for most genes on screen (`RefSeq Select`, `MANE Select`, or
+  `Longest isoform`). Its tooltip counts the genes under each rule, and clicking
+  it opens the same three modes
 
 ## Collapsing introns
 
 **Collapse introns...**, from a gene's right-click menu, replaces the view's
-displayed regions with that gene's exons side by side. A window-size setting
-keeps some flanking sequence around each splice boundary. Right-clicking a
-transcript offers that isoform as well as the whole gene (exons unioned), and
-the dialog's transcript dropdown reaches an isoform that isn't drawn. Picking
-one isoform opens the gene to all of them.
+displayed regions with that gene's exons side by side.
 
-Each exon after the first is labeled with its first coordinate on the ruler. To
-bring the introns back, click **Undo** on the notice, or click the chromosome
-name on the ruler and choose its **Show the whole span** row. The **1 feature**
-chip on the gene track brings back the other genes.
+- **Flank:** a window-size setting keeps some flanking sequence around each
+  splice boundary
+- **One isoform:** right-clicking a transcript offers that isoform as well as
+  the whole gene (exons unioned), and the dialog's transcript dropdown reaches
+  an isoform that isn't drawn. Picking one isoform opens the gene to all of them
+- **Ruler:** each exon after the first is labeled with its first coordinate
+- **Undo:** click **Undo** on the notice, or click the chromosome name on the
+  ruler and choose its **Show the whole span** row. The **1 feature** chip on
+  the gene track brings back the other genes
 
 With an [RNA-seq track](/docs/tutorials/rnaseq), the spliced reads' **sashimi
 arcs** then span directly between adjacent exons.
@@ -67,26 +71,27 @@ arcs** then span directly between adjacent exons.
 
 Track-menu toggles:
 
-- Display mode - _Normal_, _Compact_, or _Super-compact_ feature heights
-- Subfeature labels - each transcript's name on its row, placed _Auto_, _Below_
-  or _Overlay_, or _Off_
-- Show → Show chevrons - strand chevrons along the intron lines (on by default)
-- Filter by → Genes - _Only genes_ hides non-gene features, _Hide genes_ the
+- **Display mode:** _Normal_, _Compact_, or _Super-compact_ feature heights
+- **Subfeature labels:** each transcript's name on its row, placed _Auto_,
+  _Below_ or _Overlay_, or _Off_
+- **Show → Show chevrons:** strand chevrons along the intron lines (on by
+  default)
+- **Filter by → Genes:** _Only genes_ hides non-gene features, _Hide genes_ the
   genes
-- Group by - _Strand_ packs the forward-strand features into one labelled
-  section above the reverse-strand ones, unstranded features last, so convergent
-  and divergent neighbours read apart. _Attribute..._ opens a dialog for a
-  feature attribute, `biotype` or `source` say, and packs one section per value,
-  with the features with none last
+- **Group by:** _Strand_ packs the forward-strand features into one labelled
+  section above the reverse-strand ones, unstranded features last.
+  _Attribute..._ opens a dialog for a feature attribute, `biotype` or `source`
+  say, and packs one section per value, with the features with none last
 
 ## Grouping features into sections
 
-Each section has a chip naming it, and the × on a chip hides that section. The
-**Show N hidden** chip at the top of the track, or **Show → Show N hidden
-groups**,<!-- menu-path-ok --> puts every hidden section back, and changing the
-grouping clears them. Drag a chip onto another section to move its section
-there; **Reset section order** in the track menu returns them to the sorted
-order.
+Each section has a chip naming it:
+
+- **Hide:** the × on a chip hides that section. The **Show N hidden** chip at
+  the top of the track, or **Show → Show N hidden groups**,<!-- menu-path-ok -->
+  puts every hidden section back, and changing the grouping clears them
+- **Reorder:** drag a chip onto another section to move its section there;
+  **Reset section order** in the track menu returns them to the sorted order
 
 <Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes grouped and colored by gene_biotype from Group by, then the protein_coding chip dragged to the top." />
 
@@ -94,8 +99,7 @@ The `facet` setting pre-groups a track, so a shared link opens grouped. As a
 string it names the field: a feature attribute, a dotted path into a structured
 one such as `INFO.SVTYPE`, or `strand`. As an object it adds the section order,
 `{ "field": …, "sort": [...] }`: the values listed stack first, in that order,
-and the rest follow sorted. A chip drag writes the same setting, so what a
-config author declares and what a reader arranges are one setting:
+and the rest follow sorted. A chip drag writes the same setting:
 
 ```json addtrack
 {
@@ -123,14 +127,19 @@ choice by hand.
 
 **Advanced → Edit plot...** in the track menu, also a button at the foot of the
 Group by and Color by attribute dialogs, opens the track's grouping, color and
-filter as text ([](/docs/user_guides/edit_plot)). `facet` and `encoding.color`
-are the display's settings of those names, in the shape a config file takes
-them: `facet` stacks a section per value of a field, in the order its `sort`
-lists; `encoding.color` is a field for one color per value, or `{ "value": … }`
-holding a CSS color or a jexl expression; `filter` is the list of tests **Filter
-by** edits: `jexl:` expressions that must hold, and `geneLike` for the gene-like
-features. Applying a spec changes only the channels it names, an object replaces
-the setting whole, and `null` clears one. Each of these pastes as it is:
+filter as text ([](/docs/user_guides/edit_plot)), as the display's settings in
+the shape a config file takes them:
+
+- **`facet`** stacks a section per value of a field, in the order its `sort`
+  lists
+- **`encoding.color`** is a field for one color per value, or `{ "value": … }`
+  holding a CSS color or a jexl expression
+- **`filter`** is the list of tests **Filter by** edits: `jexl:` expressions
+  that must hold, and `geneLike` for the gene-like features
+
+The text is the whole plot, so a setting deleted from it returns to its default,
+and `null` resets one. Each spec below changes the settings it names, written
+over those settings in the text:
 
 - `{ "facet": "strand" }` one section per strand
 - `{ "facet": { "field": "gene_biotype", "sort": ["protein_coding", "lncRNA"] } }`
@@ -144,9 +153,10 @@ the setting whole, and `null` clears one. Each of these pastes as it is:
 - `{ "filter": ["jexl:feature.score > 100"] }` scores above 100
 - `{ "facet": null, "encoding": null }` ungrouped, default color
 
-The dialog lists the same examples. This one groups by biotype in a chosen
-order, gives each of the four biotypes a distinct color, and leaves the track's
-filter alone:
+The dialog's example buttons lay several of these over the plot as it stands.
+This one groups by biotype in a chosen order and gives each of the four biotypes
+a distinct color; written over `facet` and `encoding`, it leaves the filter as
+it was:
 
 ```json
 {
@@ -169,16 +179,18 @@ filter alone:
 
 A color by a field is the `encoding.color` setting's
 `{ "field", "scale": { "domain", "range" } }` form, and the track draws a key
-from the values it painted. A `scale.domain` assigns the `scale.range` colors to
-the values it lists, in order, and a value it leaves out never takes one of
-their colors. Every other value takes a distinct color the first time the track
-shows it, and keeps it while the track is open; a value that no other value
-competes with gets a color derived from the value, the same on every reload. A
-transcript and all its parts take the transcript's value, or its gene's where
-the transcript has none. `strand` is a field too, painting forward tomato and
-reverse cornflowerblue unless a domain or range says otherwise. Each channel is
-the same setting its menu writes, so the Sections menu reorders a facet written
-this way.
+from the values it painted:
+
+- **Listed values:** a `scale.domain` assigns the `scale.range` colors to the
+  values it lists, in order, and a value it leaves out never takes one of their
+  colors
+- **Other values:** each takes a distinct color the first time the track shows
+  it, and keeps it while the track is open; a value that no other value competes
+  with gets a color derived from the value, the same on every reload
+- **Transcripts:** a transcript and all its parts take the transcript's value,
+  or its gene's where the transcript has none
+- **Strand:** `strand` is a field too, painting forward tomato and reverse
+  cornflowerblue unless a domain or range sets them
 
 ## Color by CDS
 
@@ -193,11 +205,13 @@ the view, and JBrowse remembers it across sessions.
 ## Color transcripts by a value in the file
 
 The [`encoding.color`](/docs/config/featurecolor) object binds a field in the
-GFF3 attribute column to a scale. Under `ordinal` each value takes a distinct
-color; under `threshold` a number takes the color of the interval it falls in,
-between the cut points `scale.domain` lists, with one `scale.range` color per
-interval. A transcript's exons, CDS and UTRs take the transcript's value, and a
-UTR follows `encoding.color` unless `utrs.encoding.color` overrides it.
+GFF3 attribute column to a scale:
+
+- **`ordinal`:** each value takes a distinct color
+- **`threshold`:** a number takes the color of the interval it falls in, between
+  the cut points `scale.domain` lists, with one `scale.range` color per interval
+- **Parts:** a transcript's exons, CDS and UTRs take the transcript's value, and
+  a UTR follows `encoding.color` unless `utrs.encoding.color` overrides it
 
 - **JBrowse lowercases attribute names.** `dIF=0.79` reads under the key `dif`,
   so the field is `dif`
@@ -224,11 +238,14 @@ in the view menu's **Show** submenu, to keep the view from fetching the
 reference.
 
 The translation follows the transcript's strand and CDS phase, splitting codons
-that straddle an exon boundary. A CDS with a `transl_table` attribute (NCBI
-convention, e.g. `transl_table=2` for vertebrate mitochondria) translates with
-that code. The first codon shows as `M` when it is a valid start for that table
-(including `GTG` or `TTG`); the track applies and highlights any `transl_except`
-override (e.g. selenocysteine `U`).
+that straddle an exon boundary:
+
+- **Genetic code:** a CDS with a `transl_table` attribute (NCBI convention, e.g.
+  `transl_table=2` for vertebrate mitochondria) translates with that code
+- **Start codon:** the first codon shows as `M` when it is a valid start for
+  that table (including `GTG` or `TTG`)
+- **Exceptions:** the track applies and highlights any `transl_except` override
+  (e.g. selenocysteine `U`)
 
 <Figure caption="GPX1 on hg19, its transl_except codon drawn as a highlighted U. The sequence track's six-frame translation above shows a stop there." src="/img/gene_track_selenocysteine.png" />
 
@@ -260,8 +277,7 @@ The [Protein3d plugin](/docs/tutorials/genomes_proteins) uses the same
 transcript-to-protein mapping. Right click a gene and launch the protein
 structure viewer for an interactive 3D structure (an AlphaFold model, a PDB
 entry, or a file of your own) linked to the genome view: hovering a position
-highlights the residue, and vice versa. See the
-[proteins tutorial](/docs/tutorials/genomes_proteins) for launch routes and
+highlights the residue, and vice versa. The tutorial covers launch routes and
 installation.
 
 ## A whole chromosome of genes
