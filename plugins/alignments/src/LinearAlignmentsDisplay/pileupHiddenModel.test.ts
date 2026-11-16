@@ -113,6 +113,57 @@ describe('a display with the pileup hidden', () => {
     expect(display.scrollableHeight).toBe(0)
   })
 
+  test('fits the grow ceiling in grow mode when the stored height is above it', () => {
+    const display = seed(40)
+    display.setHeight(1000)
+    display.setHeightMode('grow')
+    display.setShowPileup(false)
+    expect(display.height).toBe(800)
+    expect(display.sections.contentHeight).toBeLessThanOrEqual(800)
+    expect(display.scrollableHeight).toBe(0)
+  })
+
+  // Only the middle lane holds a pair: every lane takes the same slot and
+  // the same coverage height, and only the middle one reserves its arcs.
+  test('gives lanes with and without arcs the same slot', () => {
+    const display = createEnv()
+    display.setDrawnReadConnections('link')
+    display.setReadConnectionsPlacement('down')
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          { key: 'a', label: 'A', data: oneReadWithMate() },
+          {
+            key: 'b',
+            label: 'B',
+            data: oneReadWithMate(2000, { key: 'r1', name: 'readB' }),
+          },
+          {
+            key: 'c',
+            label: 'C',
+            data: oneReadWithMate(undefined, { key: 'r2', name: 'readC' }),
+          },
+        ],
+      },
+      { refName: 'ctgA', start: 0, end: 10_000, assemblyName: 'volvox' },
+    )
+    display.setShowPileup(false)
+    const { sections, contentHeight } = display.sections
+    expect(sections.map(s => [s.groupKey, s.height])).toEqual([
+      ['a', 83],
+      ['b', 83],
+      ['c', 83],
+    ])
+    expect(sections.map(s => s.bands.reserved)).toEqual([
+      { coverage: 47, readConnections: 0, sashimi: 0 },
+      { coverage: 47, readConnections: 36, sashimi: 0 },
+      { coverage: 47, readConnections: 0, sashimi: 0 },
+    ])
+    expect(contentHeight).toBeLessThanOrEqual(display.height)
+    expect(display.scrollableHeight).toBe(0)
+  })
+
   // The pileup's row floor is no part of a hidden pileup's stack: at 60 px
   // the arcs still draw beside 45 px of coverage instead of binding to 0.
   test('fills a short track from every band that fits', () => {
