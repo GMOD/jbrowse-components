@@ -3,39 +3,60 @@ import path from 'path'
 import * as ts from 'typescript'
 
 import {
-  headIdentifier,
   isSchemaCall,
   isTypesCall,
+  returnedExpression,
   schemaCallName,
 } from './astShapes.ts'
+import {
+  definesStateModel,
+  findStringLiteral,
+  referencedDeclId,
+  resolveComposedModels,
+} from './composition.ts'
+import {
+  assertNoDocsBehindATag,
+  assertNoUntaggedSlots,
+  collectDocsBehindATag,
+  collectUntaggedSlots,
+} from './docAsserts.ts'
 import {
   buildEnumConstantIndex,
   slotSpreadPairs,
   slotSpreadPart,
 } from './enumConstants.ts'
 import {
-  MEMBER_TAGS,
   TAG_TYPES,
-  getOwnJSDocTagText,
   getOwnJSDocText,
   isMemberTag,
-  jsDocText,
   parseTaggedComment,
   startsWithTag,
 } from './jsDocTags.ts'
 import {
-  printedTypes,
-  propertyType,
-  typeSignature,
-  writtenFunction,
-} from './typeSignatures.ts'
+  assertNoUnresolvedDelegations,
+  collectDelegatedClaims,
+  delegatedBlockAt,
+  emitDelegatedMembers,
+  emitUntaggedMember,
+  memberKey,
+  memberNode,
+} from './mstMembers.ts'
+import {
+  describeSymbol,
+  followAlias,
+  nodeBase,
+  symbolDeclId,
+} from './symbols.ts'
+import { printedTypes, writtenFunction } from './typeSignatures.ts'
 import { removeComments, repoRelative } from './util.ts'
 
+import type { ConfigSlotGap, DocsBehindTagGap } from './docAsserts.ts'
 import type { ConstantIndex } from './enumConstants.ts'
 import type { MemberTag, TagType } from './jsDocTags.ts'
-import type { PrintedType } from './typeSignatures.ts'
+import type { BlindSpot } from './mstMembers.ts'
+import type { Described } from './symbols.ts'
 
-interface NodeBase {
+export interface NodeBase {
   name: string
   comment: string
   signature: string
@@ -159,17 +180,6 @@ export interface DisplayTrackLink {
    */
   viewType?: string
 }
-
-// MST lifecycle hooks live in `.actions()` blocks but are not public API, so
-// they are skipped during structural member detection.
-const LIFECYCLE_HOOKS = new Set([
-  'afterCreate',
-  'afterAttach',
-  'afterDetach',
-  'beforeDestroy',
-  'beforeDetach',
-  'afterCreationFinalization',
-])
 
 // The whole-repo TypeScript program plus the subset of its source files that
 // belong to this repo — the program also parses node_modules and lib `.d.ts` to
@@ -416,680 +426,6 @@ function subSchemaPrefix(slot: ts.Node): string {
     : ''
 }
 
-// A documented member whose only prose sits after a JSDoc `@tag`, where the
-// generator cannot see it.
-interface DocsBehindTagGap {
-  filename: string
-  name: string
-}
-
-// Whether a docs-tagged block carries prose of its own: any line that is neither
-// blank nor one of the `#tag` lines the generator reads as structure.
-function hasOwnProse(comment: string) {
-  return comment
-    .split('\n')
-    .some(line => line.trim() && !/^#\w+/.test(line.trim()))
-}
-
-function collectDocsBehindATag(
-  node: ts.Node,
-  comment: string,
-  name: string,
-  gaps: DocsBehindTagGap[],
-) {
-  if (!hasOwnProse(comment) && getOwnJSDocTagText(node).trim()) {
-    gaps.push({ filename: node.getSourceFile().fileName, name })
-  }
-}
-
-// Fatal, on the argument assertNoBlankSlotDescriptions makes: the count is zero
-// and the fix is moving one sentence within the docstring the error names.
-//
-// A member with no prose at all renders a blank cell too, and 2,887 of those
-// exist — a backlog, not a bug. This one is narrower and worse: the author DID
-// write the sentence, and the page shows nothing. Three members reached the site
-// that way (both mixins' `addTrackConf` and `getTracksById`), each of them the
-// row telling a plugin author that a deprecated name still resolves and what to
-// call instead.
-function assertNoDocsBehindATag(gaps: DocsBehindTagGap[]) {
-  if (gaps.length) {
-    throw new Error(
-      `${gaps.length} documented member(s) put every word of their prose after a JSDoc @tag, so TypeScript files it under \`tags\` and the generator publishes a blank Description cell. Lead with the prose and leave the bare tag under it (\`@deprecated\` on its own line):\n${gaps
-        .map(g => `  ${repoRelative(g.filename)} ${g.name}`)
-        .join('\n')}`,
-    )
-  }
-}
-
-// A config slot that a #config schema declares but never tags with #slot, so it
-// is silently absent from the generated docs (the failure mode that hid
-// configuration.shareURL when its comment used /* instead of /**).
-interface ConfigSlotGap {
-  filename: string
-  schema: string
-  slot: string
-}
-
-// Audit one `ConfigurationSchema('Name', { ...slots })` call: every own property
-// of the slots object should carry a #slot tag. A property whose value is itself
-// an inline `ConfigurationSchema(...)` is a grouping sub-schema (its children are
-// the slots, e.g. hierarchical.sort), so it is skipped; spreads (plugin/extra
-// slot injection) are skipped too.
-function collectUntaggedSlots(node: ts.Node, gaps: ConfigSlotGap[]) {
-  if (isSchemaCall(node)) {
-    const schema = schemaCallName(node) ?? '(anonymous)'
-    const slots = node.arguments[1]
-    if (slots && ts.isObjectLiteralExpression(slots)) {
-      for (const prop of slots.properties) {
-        if (
-          ts.isPropertyAssignment(prop) &&
-          ts.isIdentifier(prop.name) &&
-          !isSchemaCall(prop.initializer) &&
-          !startsWithTag(jsDocText(prop), 'slot')
-        ) {
-          gaps.push({
-            filename: prop.getSourceFile().fileName,
-            schema,
-            slot: prop.name.text,
-          })
-        }
-      }
-    }
-  }
-}
-
-// Fatal, not a warning. A slot a `#config` schema declares but never tags is
-// absent from the generated page entirely — the failure mode that hid
-// `configuration.shareURL` when its comment used `/*` instead of `/**`. The
-// count is zero, and the fix is unambiguous and local, so the only way it stays
-// zero is if adding one stops the build rather than printing a line nobody
-// reads. Everything with a real backlog goes in the committed coverage list
-// instead; this is the one that can be held at zero.
-function assertNoUntaggedSlots(gaps: ConfigSlotGap[]) {
-  if (gaps.length) {
-    const byFile = new Map<string, ConfigSlotGap[]>()
-    for (const gap of gaps) {
-      const file = repoRelative(gap.filename)
-      byFile.set(file, [...(byFile.get(file) ?? []), gap])
-    }
-    throw new Error(
-      `${gaps.length} config slot(s) in a #config schema have no #slot tag, so they are silently missing from the generated docs. Add a /** #slot */ comment (a single-star /* comment is ignored):\n${[
-        ...byFile,
-      ]
-        .map(
-          ([file, list]) =>
-            `  ${file}: ${list.map(g => `${g.schema}.${g.slot}`).join(', ')}`,
-        )
-        .join('\n')}`,
-    )
-  }
-}
-
-/**
- * Every registered display type must have a `#config` block of its own name.
- *
- * Fatal, like `assertNoUntaggedSlots` above and for the same reason: the count
- * is zero, and the fix is local and unambiguous. What it prevents is entirely
- * silent — a display whose schema is built by a `makeConfigSchema(typeName)`
- * helper has no `#config` block anywhere, because the generator keys a block to
- * its FILE and cannot see a name that only exists as a parameter at runtime. So
- * the display gets no config page, renders as bare unlinked text in the
- * track-type table, and — worst — the shared base it derives from is left as
- * the only documented name, so ITS slot table tells readers to write
- * `type: '<Base>Display'`, which nothing accepts.
- *
- * That has happened twice: the two GC-content displays, then the two LD ones.
- * Both times it was found by a person reading a docs page, not by a check. The
- * fix both times was one annotated file per registered type.
- *
- * `sources` excludes test files (see `corpusFiles`), so the fixtures that
- * hand-build a `new DisplayType(...)` never reach `displayToTrackType` and this
- * needs no exclusion list of its own.
- */
-export function assertEveryDisplayTypeIsDocumented(
-  displayToTrackType: Map<string, string>,
-  configNames: Set<string>,
-) {
-  const missing = [...displayToTrackType.keys()]
-    .filter(name => !configNames.has(name))
-    .sort((a, b) => a.localeCompare(b, 'en'))
-  if (missing.length) {
-    throw new Error(
-      `${missing.length} registered display type(s) have no #config block of their own name, so they get no config page and drop out of every generated table. Give each one an annotated schema file — a schema built from a \`makeConfigSchema(typeName)\` helper cannot be seen, since a #config block is keyed to its file:\n${missing
-        .map(name => `  ${name}`)
-        .join('\n')}`,
-    )
-  }
-}
-
-// A member that sits in an MST block but the structural pass can't document and
-// no tag rescued: an untagged `{ foo }` shorthand returning a local function in
-// .views()/.actions(). Surfaced as a warning so the gap is visible, not silent.
-interface BlindSpot {
-  filename: string
-  kind: MemberBlock
-  name: string
-}
-
-// Emit an ExtractedNode for an untagged MST member, classified by which block of
-// the factory chain encloses it. Tagged members never reach here, so this only
-// fills the documentation gaps that hand-written tags missed. Members in a block
-// that resist structural classification are recorded as blind spots instead.
-function emitUntaggedMember(
-  checker: ts.TypeChecker,
-  named: PrintedType[],
-  node: ts.Node,
-  comment: string,
-  cb: (obj: ExtractedNode) => void,
-  blindSpots: BlindSpot[],
-) {
-  const block = enclosingMemberBlock(node)
-  if (
-    !block ||
-    !modelDeclarations(node.getSourceFile()).some(d => encloses(d, node))
-  ) {
-    return
-  }
-  const type = memberType(node, block)
-  if (type) {
-    const described = describeSymbol(checker, named, node, type === 'property')
-    if (
-      described.name &&
-      !(block === 'actions' && LIFECYCLE_HOOKS.has(described.name))
-    ) {
-      const base = nodeBase(
-        described,
-        comment,
-        node.getFullText(),
-        node.getSourceFile().fileName,
-      )
-      cb(taggedNode(checker, node, type, base, described))
-    }
-  } else if (
-    (block === 'views' || block === 'actions') &&
-    ts.isShorthandPropertyAssignment(node) &&
-    isUndocumentedLocal(checker, node)
-  ) {
-    blindSpots.push({
-      filename: node.getSourceFile().fileName,
-      kind: block,
-      name: node.name.text,
-    })
-  }
-}
-
-function encloses(outer: ts.Node, inner: ts.Node) {
-  return outer.pos <= inner.pos && inner.end <= outer.end
-}
-
-// The declarations whose MST blocks are the documented model: the one the
-// `#stateModel` JSDoc sits on, and every same-file declaration it reaches as a
-// `types.compose` argument or as the base a `.props/.views/...` chain extends.
-// A `types.model` reached only as a property's type — `types.array(LayoutTab)`
-// — is a different node's model, and its members are not this one's.
-const modelDeclarationCache = new WeakMap<ts.SourceFile, ts.Node[]>()
-
-function modelDeclarations(sourceFile: ts.SourceFile) {
-  let found = modelDeclarationCache.get(sourceFile)
-  if (!found) {
-    const topLevel = new Map<string, ts.Node>()
-    for (const statement of sourceFile.statements) {
-      if (ts.isFunctionDeclaration(statement) && statement.name) {
-        topLevel.set(statement.name.text, statement)
-      } else if (ts.isVariableStatement(statement)) {
-        for (const decl of statement.declarationList.declarations) {
-          if (ts.isIdentifier(decl.name)) {
-            topLevel.set(decl.name.text, decl)
-          }
-        }
-      }
-    }
-    const owned: ts.Node[] = []
-    const own = (node: ts.Node | undefined) => {
-      if (node && !owned.includes(node)) {
-        owned.push(node)
-        ts.forEachChild(node, reach)
-      }
-    }
-    const ownNamed = (expr: ts.Expression) => {
-      const head = headIdentifier(
-        expr,
-        name => MODEL_CHAIN_METHODS.has(name) || name === 'named',
-      )
-      if (head) {
-        own(topLevel.get(head.text))
-      }
-    }
-    const reach = (node: ts.Node) => {
-      if (isTypesCall(node, 'compose')) {
-        node.arguments.forEach(ownNamed)
-      } else if (
-        ts.isCallExpression(node) &&
-        ts.isPropertyAccessExpression(node.expression) &&
-        MODEL_CHAIN_METHODS.has(node.expression.name.text)
-      ) {
-        ownNamed(node.expression.expression)
-      }
-      ts.forEachChild(node, reach)
-    }
-    const visitHeader = (node: ts.Node) => {
-      if (startsWithTag(getOwnJSDocText(node), 'stateModel')) {
-        own(node)
-      } else {
-        ts.forEachChild(node, visitHeader)
-      }
-    }
-    ts.forEachChild(sourceFile, visitHeader)
-    found = owned
-    modelDeclarationCache.set(sourceFile, found)
-  }
-  return found
-}
-
-// True when a `{ foo }` shorthand's target declaration carries no member tag, so
-// the tag pass didn't already document it from the declaration. Tagged
-// local-function returns (e.g. LinearGenomeView `slide`/`zoom`) are excluded.
-function isUndocumentedLocal(
-  checker: ts.TypeChecker,
-  node: ts.ShorthandPropertyAssignment,
-) {
-  const symbol = checker.getShorthandAssignmentValueSymbol(node)
-  const decl = symbol?.valueDeclaration ?? symbol?.declarations?.[0]
-  const doc = decl ? getOwnJSDocText(decl) : ''
-  return !MEMBER_TAGS.some(t => startsWithTag(doc, t))
-}
-
-type MemberBlock = 'property' | 'volatile' | 'views' | 'actions'
-
-// The MST member block a call introduces, or undefined. `types.model({...})`
-// carries the persisted properties; `.volatile()`, `.views()`, and `.actions()`
-// each contribute their named kind. Detected structurally so members need no
-// per-member JSDoc tag to be documented.
-function memberBlockKind(node: ts.Node): MemberBlock | undefined {
-  const name =
-    ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)
-      ? node.expression.name.text
-      : undefined
-  return isTypesCall(node, 'model')
-    ? 'property'
-    : name === 'volatile' || name === 'views' || name === 'actions'
-      ? name
-      : undefined
-}
-
-// The object literal a member block exposes: the last object-literal argument of
-// `types.model(...)`, or the object returned by a `self => ({...})` /
-// `() => {...; return {...}}` callback for volatile/views/actions.
-function memberObjectLiteral(node: ts.CallExpression, kind: MemberBlock) {
-  if (kind === 'property') {
-    return node.arguments.findLast(ts.isObjectLiteralExpression)
-  }
-  const cb = node.arguments.at(-1)
-  return cb && (ts.isArrowFunction(cb) || ts.isFunctionExpression(cb))
-    ? returnedObjectLiteral(cb)
-    : undefined
-}
-
-// The object literal a callback yields, covering both the concise
-// `self => ({...})` body and the `self => { ...; return {...} }` block body.
-function returnedObjectLiteral(fn: ts.FunctionLikeDeclaration) {
-  const body = fn.body
-  const expr =
-    body && ts.isBlock(body)
-      ? body.statements.find(ts.isReturnStatement)?.expression
-      : body
-  const unwrapped =
-    expr && ts.isParenthesizedExpression(expr) ? expr.expression : expr
-  return unwrapped && ts.isObjectLiteralExpression(unwrapped)
-    ? unwrapped
-    : undefined
-}
-
-// A member block whose argument names a declaration elsewhere instead of
-// writing the object inline — `.views(configSlotViews)`, or the
-// `.volatile(() => CONSTANTS)` shape that returns a shared object. The
-// generator buckets members by the FILE they are written in, so without this
-// every row in such a block lands in a bucket with no #stateModel header and
-// `withHeaders` drops it: the page loses the members and nothing says so.
-//
-// This is what makes a model file splittable at all. Extracting a getter's
-// BODY to a sibling module has always been free (the thin getter stays behind,
-// carrying the docstring), but extracting the getters themselves was not, and
-// that is the difference between moving a few hundred lines and moving the
-// ~1,500 lines of config-slot plumbing the display models are mostly made of.
-// `types.compose` was the one extraction the generator already followed, which
-// is why a shared concern could become a mixin and a per-model one could not.
-interface DelegatedBlock {
-  kind: MemberBlock
-  obj: ts.ObjectLiteralExpression
-}
-
-// The member-block call `node` is the members argument of, if any. `types.model`
-// is excluded: its argument is a plain object literal, never a callback, so
-// there is no indirection to follow.
-function delegatingCallKind(node: ts.Node): MemberBlock | undefined {
-  const call = node.parent
-  if (!ts.isCallExpression(call) || call.arguments.at(-1) !== node) {
-    return undefined
-  }
-  const kind = memberBlockKind(call)
-  return kind && kind !== 'property' ? kind : undefined
-}
-
-// Resolve a member-block argument that names its object rather than writing it,
-// following one level of indirection. Returns undefined when the argument is an
-// ordinary inline callback (already handled by `memberObjectLiteral`) or when
-// nothing can be resolved — `unresolvedDelegation` decides which of those it is.
-function delegatedBlockAt(
-  checker: ts.TypeChecker,
-  node: ts.Node,
-): DelegatedBlock | undefined {
-  const kind = delegatingCallKind(node)
-  if (!kind || !ts.isExpression(node)) {
-    return undefined
-  }
-  const obj = delegatedMembersObject(checker, node)
-  return obj ? { kind, obj } : undefined
-}
-
-// The members object an argument ultimately yields. Four shapes, all of which
-// `memberObjectLiteral` gives up on: a bare identifier naming the callback
-// (`.views(sharedViews)`), a callback that returns an identifier naming a shared
-// object (`.volatile(() => CONSTANTS)`), a factory call returning the callback
-// (`.views(makeViews(schema))`) — the shape a block that needs an argument
-// beyond `self` takes, and the one this would otherwise make fatal while
-// encouraging people to extract blocks in the first place — and a callback that
-// CALLS the shared one (`.views(self => sharedViews(self))`,
-// `.volatile(() => createVolatileState())`), which an author writes when the
-// shared block declares its own host type or takes no `self` at all.
-//
-// That last shape resolved to nothing, and an ArrowFunction is not what
-// `unresolvedDelegation` fires on, so it lost members with nothing said — the one
-// outcome the fatal check exists to prevent. It cost four of wiggle's getters and
-// methods, which at least showed up in the orphan-members coverage gap, and every
-// volatile the add-track form has, which showed up in no gap at all: they carry no
-// member tag, so the page simply had no Volatiles section.
-function delegatedMembersObject(
-  checker: ts.TypeChecker,
-  arg: ts.Expression,
-): ts.ObjectLiteralExpression | undefined {
-  if (ts.isCallExpression(arg) && ts.isIdentifier(arg.expression)) {
-    return objectLiteralBehind(checker, arg.expression)
-  }
-  if (ts.isArrowFunction(arg) || ts.isFunctionExpression(arg)) {
-    const ret = returnedExpression(arg)
-    return ret && (ts.isIdentifier(ret) || ts.isCallExpression(ret))
-      ? delegatedMembersObject(checker, ret)
-      : undefined
-  }
-  return ts.isIdentifier(arg) ? objectLiteralBehind(checker, arg) : undefined
-}
-
-// The object literal an identifier stands for: the object a named callback
-// returns (`const sharedViews = self => ({...})`, or a function declaration), or
-// a named object constant. Alias-followed, so an import resolves to the
-// declaration in the file that owns it.
-function objectLiteralBehind(checker: ts.TypeChecker, id: ts.Identifier) {
-  const symbol = checker.getSymbolAtLocation(id)
-  const decl = symbol && followAlias(checker, symbol).declarations?.[0]
-  if (!decl) {
-    return undefined
-  }
-  const fn = writtenFunction(decl)
-  if (fn) {
-    // One extra hop for a factory: `makeViews = schema => self => ({...})`
-    // returns the callback rather than the members, so the object is a level
-    // further in than for a callback named directly.
-    const direct = returnedObjectLiteral(fn)
-    if (direct) {
-      return direct
-    }
-    const inner = returnedExpression(fn)
-    return inner &&
-      (ts.isArrowFunction(inner) || ts.isFunctionExpression(inner))
-      ? returnedObjectLiteral(inner)
-      : undefined
-  }
-  return ts.isVariableDeclaration(decl) &&
-    decl.initializer &&
-    ts.isObjectLiteralExpression(decl.initializer)
-    ? decl.initializer
-    : undefined
-}
-
-// A member-block argument that names something the generator could not reduce
-// to an object literal. Every row the block declares would silently vanish, so
-// this is fatal rather than a coverage-gap line — the same reasoning as
-// `assertNoUntaggedSlots`: the count is zero, and the fix is local. An inline
-// callback the structural pass merely finds nothing in is NOT this; it keeps
-// its existing non-fatal treatment, because there is nothing to point the
-// author at.
-function unresolvedDelegation(checker: ts.TypeChecker, node: ts.Node) {
-  const kind = delegatingCallKind(node)
-  return kind &&
-    (ts.isIdentifier(node) || ts.isCallExpression(node)) &&
-    !delegatedMembersObject(checker, node)
-    ? { filename: node.getSourceFile().fileName, kind, text: node.getText() }
-    : undefined
-}
-
-interface UnresolvedBlock {
-  filename: string
-  kind: MemberBlock
-  text: string
-}
-
-// Walk the #stateModel files once before anything is emitted, resolving every
-// delegated member block. Cheap — the program has already parsed these trees,
-// and it is a small fraction of the corpus — and it is what makes the two
-// answers that depend on a delegation independent of file order.
-function collectDelegatedClaims(
-  checker: ts.TypeChecker,
-  sources: readonly ts.SourceFile[],
-) {
-  const claimed = new Set<string>()
-  const unresolved: UnresolvedBlock[] = []
-  for (const sourceFile of sources) {
-    if (!startsWithTag(sourceFile.getFullText(), 'stateModel')) {
-      continue
-    }
-    const walk = (node: ts.Node) => {
-      const delegated = delegatedBlockAt(checker, node)
-      if (delegated) {
-        for (const prop of delegated.obj.properties) {
-          claimed.add(memberKey(prop))
-        }
-      } else {
-        const bad = unresolvedDelegation(checker, node)
-        if (bad) {
-          unresolved.push(bad)
-        }
-      }
-      ts.forEachChild(node, walk)
-    }
-    ts.forEachChild(sourceFile, walk)
-  }
-  return { claimed, unresolved }
-}
-
-function assertNoUnresolvedDelegations(blocks: UnresolvedBlock[]) {
-  if (blocks.length) {
-    throw new Error(
-      `${blocks.length} MST member block(s) name a declaration this generator cannot resolve to an object literal, so every member they declare would be dropped from the model page with no warning. Point the call at a directly-named callback (\`.views(sharedViews)\` where \`sharedViews\` is a \`const\`/\`function\` in scope), or write the block inline:\n${blocks
-        .map(b => `  ${repoRelative(b.filename)} .${b.kind}(${b.text})`)
-        .join('\n')}`,
-    )
-  }
-}
-
-// Emit one delegated block's members as if they had been written inline in the
-// model file. `filename` is the MODEL's, which is the whole mechanism: that is
-// the key `accumulateModel` buckets by, and the bucket the #stateModel header
-// sits on. Called at the point the walk reaches the argument, so the members
-// land in chain position — a model page's tables are in source order, and a
-// block hoisted to the front of one reads as a different model.
-function emitDelegatedMembers(
-  checker: ts.TypeChecker,
-  named: PrintedType[],
-  { kind, obj }: DelegatedBlock,
-  modelFile: string,
-  cb: (obj: ExtractedNode) => void,
-) {
-  // A block delegated to from inside the model's own file is already bucketed
-  // to the right page by whichever pass sees it — but only the TAG pass sees
-  // it, since `enclosingMemberBlock` cannot climb from a standalone `const
-  // localViews = () => ({...})` to a chain call. So a tagged member here would
-  // be emitted twice and an untagged one not at all; take exactly the second.
-  const sameFile = obj.getSourceFile().fileName === modelFile
-  for (const prop of obj.properties) {
-    const comment = getOwnJSDocText(prop)
-    const tagged = comment
-      ? MEMBER_TAGS.filter(t => startsWithTag(comment, t))
-      : []
-    if (sameFile && tagged.length) {
-      continue
-    }
-    const structural = memberType(prop, kind)
-    const types: MemberTag[] = tagged.length
-      ? [...tagged]
-      : structural
-        ? [structural]
-        : []
-    const described = describeSymbol(
-      checker,
-      named,
-      prop,
-      types.includes('property'),
-    )
-    if (
-      !types.length ||
-      !described.name ||
-      (kind === 'actions' && LIFECYCLE_HOOKS.has(described.name))
-    ) {
-      continue
-    }
-    const base = nodeBase(described, comment, prop.getFullText(), modelFile)
-    for (const type of types) {
-      cb(taggedNode(checker, prop, type, base, described))
-    }
-  }
-}
-
-// Identity of one member node, independent of which model claimed it — a shared
-// block reached by two models is claimed by both and emitted onto both pages.
-function memberKey(node: ts.Node) {
-  return `${node.getSourceFile().fileName}:${node.pos}`
-}
-
-// The MemberBlock whose members object directly contains `node`, or undefined.
-// Climbs from the node's parent object literal through the callback wrappers
-// (parens, arrow/function body, block return) to the owning chain call, then
-// confirms that object literal really is that block's members object — so an
-// unrelated object literal nested inside a member's body is not mistaken for a
-// member block.
-function enclosingMemberBlock(node: ts.Node): MemberBlock | undefined {
-  const obj = node.parent
-  if (!ts.isObjectLiteralExpression(obj)) {
-    return undefined
-  }
-  let cur: ts.Node = obj.parent
-  while (
-    ts.isParenthesizedExpression(cur) ||
-    ts.isReturnStatement(cur) ||
-    ts.isBlock(cur) ||
-    ts.isArrowFunction(cur) ||
-    ts.isFunctionExpression(cur)
-  ) {
-    cur = cur.parent
-  }
-  if (ts.isCallExpression(cur)) {
-    const kind = memberBlockKind(cur)
-    if (kind && memberObjectLiteral(cur, kind) === obj) {
-      return kind
-    }
-  }
-  return undefined
-}
-
-// The documented kind of one object-literal member within a given block, or
-// undefined for members that aren't documentable API (spreads, setters, plain
-// non-function values, and the shorthand `{ slide }` returns whose tagged
-// declaration the tag pass already emitted).
-function memberType(node: ts.Node, kind: MemberBlock): MemberTag | undefined {
-  const isField =
-    ts.isPropertyAssignment(node) || ts.isShorthandPropertyAssignment(node)
-  if (kind === 'property') {
-    return isField ? 'property' : undefined
-  }
-  if (kind === 'volatile') {
-    return isField ? 'volatile' : undefined
-  }
-  const isFn =
-    ts.isMethodDeclaration(node) ||
-    (ts.isPropertyAssignment(node) &&
-      (ts.isArrowFunction(node.initializer) ||
-        ts.isFunctionExpression(node.initializer)))
-  if (kind === 'views') {
-    return ts.isGetAccessorDeclaration(node)
-      ? 'getter'
-      : isFn
-        ? 'method'
-        : undefined
-  }
-  return isFn ? 'action' : undefined
-}
-
-function describeSymbol(
-  checker: ts.TypeChecker,
-  named: PrintedType[],
-  node: ts.Node,
-  isProperty: boolean,
-  maxSignature?: number,
-) {
-  const nameNode = getNameNode(node)
-  const symbol = nameNode ? checker.getSymbolAtLocation(nameNode) : undefined
-  const decl = symbol?.valueDeclaration
-  const symbolName = symbol?.getName() ?? ''
-  const declaresType =
-    ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)
-  const property =
-    isProperty && ts.isPropertyAssignment(node)
-      ? propertyType(checker, named, node.initializer)
-      : undefined
-  return {
-    // `export default function Foo()` gives the symbol the name "default",
-    // which is what the module exports it as and not what anyone calls it. The
-    // declaration still carries `Foo`, so prefer that. Two such exports in one
-    // package otherwise render as two `## default` sections on one page —
-    // duplicate anchors, and nothing to tell them apart. (A default-exported
-    // *const* already reads correctly; that aliasing is handled above.)
-    name:
-      symbolName === 'default' && nameNode && ts.isIdentifier(nameNode)
-        ? nameNode.text
-        : symbolName,
-    signature: declaresType
-      ? typeDeclaration(node)
-      : (property?.type ??
-        (symbol && decl && !isProperty
-          ? typeSignature(checker, named, symbol, decl, maxSignature)
-          : '')),
-    declaresType,
-    propertyDefault: property?.defaultValue,
-    declId: symbolDeclId(checker, symbol),
-  }
-}
-
-type Described = ReturnType<typeof describeSymbol>
-
-function nodeBase(
-  { name, signature, declId }: Described,
-  comment: string,
-  node: string,
-  filename: string,
-): NodeBase {
-  return { name, comment, signature, node, filename, selfDeclId: declId }
-}
-
 // One tag's node: the fields every node carries plus what that tag's consumer
 // reads off the declaration.
 function taggedNode(
@@ -1097,7 +433,7 @@ function taggedNode(
   node: ts.Node,
   type: TagType,
   base: NodeBase,
-  { declaresType, propertyDefault }: Described,
+  described: Described,
 ): ExtractedNode {
   return type === 'slot'
     ? {
@@ -1124,61 +460,10 @@ function taggedNode(
             definesModel: definesStateModel(node),
           }
         : type === 'api'
-          ? { ...base, type, declaresType }
+          ? { ...base, type, declaresType: described.declaresType }
           : isMemberTag(type)
-            ? { ...base, type, propertyDefault }
+            ? memberNode(type, base, described)
             : { ...base, type }
-}
-
-const declarationPrinter = ts.createPrinter({ removeComments: true })
-
-function typeDeclaration(
-  node: ts.InterfaceDeclaration | ts.TypeAliasDeclaration,
-) {
-  return declarationPrinter
-    .printNode(ts.EmitHint.Unspecified, node, node.getSourceFile())
-    .replace(/^export /, '')
-    .replaceAll(/^(?: {4})+/gm, indent => ' '.repeat(indent.length / 2))
-}
-
-// Follow import aliases to the original symbol so two references to the same
-// declaration (under different local/imported names) resolve identically.
-function followAlias(checker: ts.TypeChecker, symbol: ts.Symbol) {
-  let s = symbol
-  while (s.flags & ts.SymbolFlags.Alias) {
-    const aliased = checker.getAliasedSymbol(s)
-    if (aliased === s) {
-      break
-    }
-    s = aliased
-  }
-  return s
-}
-
-// "file:pos" of the declaration a symbol resolves to, alias-followed.
-export function symbolDeclId(
-  checker: ts.TypeChecker,
-  symbol: ts.Symbol | undefined,
-) {
-  if (!symbol) {
-    return undefined
-  }
-  const s = followAlias(checker, symbol)
-  const decl = s.declarations?.[0] ?? s.valueDeclaration
-  return decl
-    ? `${decl.getSourceFile().fileName}:${decl.getStart()}`
-    : undefined
-}
-
-// For a `baseConfiguration: <expr>` or sub-schema slot property, the declId of
-// the schema the expr's head identifier references (`createBaseTrackConfig(pm)`
-// -> `createBaseTrackConfig`); undefined for non-identifier heads like
-// `pluginManager.getDisplayType(...)` and for a slot's object literal.
-function referencedDeclId(checker: ts.TypeChecker, node: ts.Node) {
-  const head = ts.isPropertyAssignment(node)
-    ? headIdentifier(node.initializer)
-    : undefined
-  return head && symbolDeclId(checker, checker.getSymbolAtLocation(head))
 }
 
 // Whether a slot's `defaultValue` names a parameter of the factory that
@@ -1306,192 +591,6 @@ function slotValueReferences(checker: ts.TypeChecker, node: ts.Node) {
   }
 }
 
-// Whether a `#stateModel` tag landed on something that can plausibly BUILD a
-// model, as opposed to a plain piece of data.
-//
-// This checks tag ATTACHMENT, not content. TypeScript binds a JSDoc block to
-// whatever declaration follows it, so a `const` that lands between a
-// `#stateModel` block and its factory quietly takes the tag. The page still
-// renders — name and prose come from the comment — but the composition walk now
-// searches that `const` instead of the factory and finds no compose call, so
-// every inherited member row vanishes with no warning. That is what happened to
-// the multi-wiggle display (17 rows, silently, for who knows how long).
-//
-// Three shapes all count as correctly attached, and the middle one is why this
-// can't just look for a `types.*` call: a factory may build its model by chaining
-// `.views()/.actions()` onto ANOTHER factory's result and never mention `types`
-// itself (LinearBasicDisplay, the OAuth accounts).
-//   - a function returning a call: `function F() { return Base().views(…) }`
-//   - a variable initialized from a call: `const M = someFactory(…)`
-//   - anything containing a literal `types.compose(…)` / `types.model(…)`, or
-//     a `.props()`/`.views()`/`.actions()` chain on a model held in a local
-//
-// A function is not enough by itself: a helper declared between the JSDoc and
-// the factory takes the tag just as a `const` does.
-//
-// Deliberately not `composedOf.length === 0`: a bare `types.model` composes
-// nothing legitimately, so an empty composedOf can't tell the two cases apart.
-const MODEL_CHAIN_METHODS = new Set(['props', 'volatile', 'views', 'actions'])
-
-function definesStateModel(node: ts.Node) {
-  const fn = writtenFunction(node)
-  const returned = fn && returnedExpression(fn)
-  if (returned && ts.isCallExpression(returned)) {
-    return true
-  }
-  if (
-    ts.isVariableDeclaration(node) &&
-    node.initializer &&
-    ts.isCallExpression(node.initializer)
-  ) {
-    return true
-  }
-  let found = false
-  const walk = (n: ts.Node) => {
-    if (found) {
-      return
-    }
-    if (
-      isTypesCall(n, 'compose') ||
-      isTypesCall(n, 'model') ||
-      (ts.isCallExpression(n) &&
-        ts.isPropertyAccessExpression(n.expression) &&
-        MODEL_CHAIN_METHODS.has(n.expression.name.text))
-    ) {
-      found = true
-      return
-    }
-    ts.forEachChild(n, walk)
-  }
-  walk(node)
-  return found
-}
-
-// The models a `#stateModel` declaration composes. Two patterns are covered:
-//
-//   A. `types.compose('Name', Base, Mixin(), types.model({...}))` — each
-//      argument is resolved (alias-followed); `Mixin` resolves directly,
-//      `Mixin(args)` reduces to its head identifier, and the string-literal name
-//      and inline `types.model(...)` (any `types.*` literal) yield no identifier
-//      and are skipped.
-//   B. `return BaseFactory(args).views(...).actions(...)` — a model built by
-//      extending another factory's result rather than composing. The base is the
-//      head identifier of the factory's own returned chain.
-//
-// Deduped by declId/name, in source order. Requires the #stateModel JSDoc to sit
-// on the model's factory (or its `types.compose`), not an unrelated preceding
-// declaration — which is what `definesStateModel` above checks.
-function resolveComposedModels(checker: ts.TypeChecker, node: ts.Node) {
-  const out: ComposedRef[] = []
-  const seen = new Set<string>()
-  const add = (ref: ComposedRef | undefined) => {
-    const key = ref && (ref.declId ?? ref.name)
-    if (ref && key && !seen.has(key)) {
-      seen.add(key)
-      out.push(ref)
-    }
-  }
-  const walk = (n: ts.Node) => {
-    if (isTypesCall(n, 'compose')) {
-      for (const arg of n.arguments) {
-        const head = headIdentifier(arg)
-        const ref = head && identifierRef(checker, head)
-        if (ref) {
-          add(ref)
-        } else {
-          walk(arg)
-        }
-      }
-    } else {
-      ts.forEachChild(n, walk)
-    }
-  }
-  walk(node)
-  add(returnedBaseRef(checker, node))
-  return out
-}
-
-// Pattern B: the base factory a model extends by chaining `.views()/.actions()/
-// ...` onto another factory's result. Peels the factory's own returned method
-// chain to the root call and returns its callee when it is a bare identifier.
-// `types.compose(...)` / `types.model(...)` roots return undefined (compose is
-// handled by the walk above; a plain model has no base).
-function returnedBaseRef(checker: ts.TypeChecker, node: ts.Node) {
-  const fn = writtenFunction(node)
-  const ret = fn && returnedExpression(fn)
-  if (!ret) {
-    return undefined
-  }
-  let expr: ts.Expression = ret
-  while (
-    ts.isCallExpression(expr) &&
-    ts.isPropertyAccessExpression(expr.expression) &&
-    ts.isCallExpression(expr.expression.expression)
-  ) {
-    expr = expr.expression.expression
-  }
-  return ts.isCallExpression(expr) && ts.isIdentifier(expr.expression)
-    ? identifierRef(checker, expr.expression)
-    : undefined
-}
-
-// The expression a factory returns: an arrow's expression body, or the first
-// top-level `return` in a block body (nested returns inside view/action
-// callbacks are intentionally ignored).
-function returnedExpression(fn: ts.FunctionLikeDeclaration) {
-  const body = fn.body
-  if (body && !ts.isBlock(body)) {
-    return body
-  }
-  return body?.statements.find(ts.isReturnStatement)?.expression
-}
-
-// Resolve an identifier naming a composed/base model to a ComposedRef, returning
-// both declId and alias-followed name so the generator can match on either. When
-// it resolves to a `const X = Factory(...)` — the common "export the factory's
-// result" shape, and the `const base = factory(schema)` local that's then
-// composed — follow the initializer to the factory identifier, which carries the
-// #stateModel tag so its declId matches the model's page.
-function identifierRef(
-  checker: ts.TypeChecker,
-  id: ts.Identifier,
-  depth = 0,
-): ComposedRef | undefined {
-  const symbol = checker.getSymbolAtLocation(id)
-  if (!symbol) {
-    return undefined
-  }
-  const aliased = followAlias(checker, symbol)
-  const decl = aliased.declarations?.[0]
-  const head =
-    depth < 3 && decl && ts.isVariableDeclaration(decl) && decl.initializer
-      ? headIdentifier(decl.initializer)
-      : undefined
-  return (
-    (head && identifierRef(checker, head, depth + 1)) ?? {
-      declId: symbolDeclId(checker, aliased),
-      name: aliased.getName(),
-    }
-  )
-}
-
-// First string literal anywhere in an expression (depth-first). Used to recover
-// a config name from a dynamic `getDisplayType('Name')` base reference.
-function findStringLiteral(node: ts.Node): string | undefined {
-  let found: string | undefined
-  const walk = (n: ts.Node) => {
-    if (found === undefined) {
-      if (ts.isStringLiteral(n)) {
-        found = n.text
-      } else {
-        ts.forEachChild(n, walk)
-      }
-    }
-  }
-  walk(node)
-  return found
-}
-
 // Matches `new DisplayType({ name: 'X', trackType: 'Y', ... })` — the only
 // place in the codebase a Display declares which Track it attaches to — and
 // emits one link per track type, since `trackType` may be an array. Plain
@@ -1546,14 +645,6 @@ function stringPropValues(obj: ts.ObjectLiteralExpression, key: string) {
     ? [...init.elements]
     : [init]
   return literals.filter(ts.isStringLiteral).map(l => l.text)
-}
-
-// A declaration's `name`, found among its children so it is typed as a node
-function getNameNode(node: ts.Node) {
-  const name = 'name' in node ? node.name : undefined
-  return name
-    ? ts.forEachChild(node, child => (child === name ? child : undefined))
-    : undefined
 }
 
 // Parse one extracted node into the fields the config and state-model generators

@@ -46,3 +46,21 @@ export function schemaCallName(node: ts.Node) {
   const [name] = isSchemaCall(node) ? node.arguments : []
   return name && ts.isStringLiteralLike(name) ? name.text : undefined
 }
+
+// The chain methods that extend a model with members
+export const MODEL_CHAIN_METHODS = new Set([
+  'props',
+  'volatile',
+  'views',
+  'actions',
+])
+
+// The expression a factory returns: an arrow's expression body, or the first
+// top-level `return` in a block body (nested returns inside view/action
+// callbacks are intentionally ignored).
+export function returnedExpression(fn: ts.FunctionLikeDeclaration) {
+  const body = fn.body
+  return body && !ts.isBlock(body)
+    ? body
+    : body?.statements.find(ts.isReturnStatement)?.expression
+}

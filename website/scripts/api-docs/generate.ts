@@ -2,11 +2,8 @@ import fs from 'fs'
 
 import { check } from '../check-utils.ts'
 import { assertMarkersAndDocsAgree, unwrittenMarkers } from '../markerDocs.ts'
-import {
-  assertEveryDisplayTypeIsDocumented,
-  createDocProgram,
-  extractWithComment,
-} from './docProgram.ts'
+import { assertEveryDisplayTypeIsDocumented } from './docAsserts.ts'
+import { createDocProgram, extractWithComment } from './docProgram.ts'
 import {
   flushDocs,
   staleDocs,

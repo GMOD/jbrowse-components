@@ -6,10 +6,10 @@ import slugify from 'slugify'
 
 import { oxfmtBin } from '../check-utils.ts'
 import { repoRoot } from '../paths.ts'
-import { symbolDeclId } from './docProgram.ts'
 import { writeDoc, writePage } from './format.ts'
 import { parseTaggedComment } from './jsDocTags.ts'
 import { codeBlock, exampleSection, section } from './markdown.ts'
+import { symbolDeclId } from './symbols.ts'
 import { repoRelative } from './util.ts'
 
 import type { ApiNode, ExtractedNode } from './docProgram.ts'
