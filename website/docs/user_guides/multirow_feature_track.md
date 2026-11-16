@@ -41,8 +41,6 @@ labelled row per repeat class.
   run are kept by row value, so they apply to no row under a new partition and
   apply again when the field comes back
 
-<Figure src="/img/multirow/display_types_menu.png" caption="The RepeatMasker track's Display types submenu (top), and the same window partitioned by repeat class (bottom)." />
-
 To fix the column in config, set
 [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) in the track
 config:
