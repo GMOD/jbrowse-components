@@ -14,9 +14,9 @@ from the reference (also openable directly as a variant track).
 
 The panel opens two ways, which differ in the region it opens on:
 
-- **From the track menu:** **Launch → Consensus sequence (visible region)...**
-  on the alignments track. The panel opens on what the view is showing, and its
-  **Region** field can be edited before you run the call.
+- **From the track menu:** **Advanced → Launch → Consensus sequence (visible
+  region)...** on the alignments track. The panel opens on what the view is
+  showing, and its **Region** field can be edited before you run the call.
 - **From a selection:** click and drag across the region of interest, then
   **Launch → Consensus sequence** in the menu that appears, then the alignments
   track to call from. That last step is there even with a single track open, and
@@ -39,9 +39,11 @@ the read has a deletion:
 
 ## Settings
 
-The panel opens showing just the called sequence. Tick **Show options** to
-adjust how it was called; every setting, including whether the options are
-showing, is remembered for the next consensus you run.
+<Figure src="/img/consensus/iupac_panel.png" caption="The consensus panel over HG002 Illumina reads with its options shown and ambiguity codes on. The heterozygous A/G site is called R, and Download VCF counts no variant." />
+
+Tick **Show options** to adjust how the sequence was called; every setting,
+including whether the options are showing, is remembered for the next consensus
+you run.
 
 - **Min read depth:** positions covered by fewer reads than this are N,
   regardless of how well the reads agree. Defaults to 1.
@@ -79,10 +81,8 @@ more ambiguity codes. Two cases fall outside the notation:
 
 ## Exporting
 
-The called sequence is shown in the panel and can be copied to the clipboard or
-downloaded as FASTA. Positions where the consensus differs from the reference
-are also collected as variants, downloadable as VCF or openable as a variant
-track in the current session; the button shows how many were found.
+Positions where the consensus differs from the reference are collected as
+variants, for the VCF download or a variant track in the current session.
 
 The VCF holds definite calls, and leaves out:
 
