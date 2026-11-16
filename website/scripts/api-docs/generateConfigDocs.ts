@@ -6,7 +6,6 @@ import { colorChannelsSection, presetFieldsSection } from './colorChannels.ts'
 import { looseTrackExample, wrapAdapterExample } from './configExamples.ts'
 import {
   configManifest,
-  liftsNumbers,
   manifestSlot,
   shorthandKeysByAdapter,
   writesLine,
@@ -960,7 +959,7 @@ export function slotRecord(item: Item, schema: string): SlotRecord {
   return {
     name: item.name,
     type: slotTypeOf(item, meta),
-    liftsNumbers: liftsNumbers(schema, item.name),
+    liftsNumbers: !!manifestSlot(schema, item.name)?.liftsNumbers,
     default: item.parameterisedDefault
       ? { perDisplay: true }
       : {

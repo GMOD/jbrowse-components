@@ -647,6 +647,21 @@ export const recordFixture = ConfigurationSchema('Facet', {
   })
 })
 
+// ChordColor's manifest nests the lift under `scale`, so the row is found by
+// its dotted path from the page's schema
+test('a nested list taking numbers says so', () => {
+  const record = slotRecord(
+    {
+      name: 'scale.domain',
+      docs: 'The values.',
+      examples: [],
+      code: "domain: { type: 'stringArray', defaultValue: [] }",
+    },
+    'ChordColor',
+  )
+  expect(record.liftsNumbers).toBe(true)
+})
+
 describe('a slot a schema factory builds', () => {
   let dir: string
 
