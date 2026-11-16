@@ -64,6 +64,15 @@ describe('the conservation band paints the height it reserved', () => {
     expect(display.rowsTopOffset - 4).toBeLessThan(display.height)
   })
 
+  // with the rows hidden the bands fill the track, so the track's own bottom
+  // edge sizes them and no band has a handle of its own
+  it('offers no band handle while the rows are hidden', () => {
+    const display = overStatedBand()
+    display.setShowAlignments(false)
+    const { container } = render(<MafBandHandles model={display} />)
+    expect(container.querySelectorAll('div')).toHaveLength(0)
+  })
+
   // The axis is the chrome's, off `axes`: the band it declares is the
   // reservation, and its ticks are laid out in it.
   it('declares its axis at the reservation', () => {

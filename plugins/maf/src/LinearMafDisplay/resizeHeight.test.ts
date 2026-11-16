@@ -178,6 +178,19 @@ describe('resizable band height floor', () => {
   })
 })
 
+// With the rows hidden the bands fill the track, so the track keeps the height
+// it was given and a drag moves that height, not the band stack's.
+test('a drag with the rows hidden works from the stored height', () => {
+  const display = setup(10)
+  display.setShowAlignments(false)
+  expect(display.height).toBe(DEFAULTS.height)
+  display.resizeHeight(+100)
+  expect(display.height).toBe(DEFAULTS.height + 100)
+  expect(display.topBands.bottom).toBe(DEFAULTS.height + 100)
+  display.setShowAlignments(true)
+  expect(display.height).toBeCloseTo(DEFAULTS.height + 100)
+})
+
 test('hidden alignments draw no tree and reserve no gutter', () => {
   const { display } = createMafTestEnvironment().createDisplay()
   display.setSamples({

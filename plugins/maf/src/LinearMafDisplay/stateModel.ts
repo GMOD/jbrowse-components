@@ -104,7 +104,7 @@ import {
 } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
-import { mafTopBands } from './mafTopBands.ts'
+import { filledMafTopBands, mafTopBands } from './mafTopBands.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
@@ -793,25 +793,50 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The band stack, coverage above conservation (`mafTopBands`): the
-         * stated heights bound against `bandPlot`, each band's tops and
-         * rect. Every top, height and offset reads this; a band that reserves
-         * 0 px does not draw.
+         * Each band's switch and stated height, coverage above conservation.
+         */
+        get statedBands() {
+          return {
+            coverage: {
+              active: self.coverageBandActive,
+              height: self.coverageHeight,
+            },
+            conservation: {
+              active: self.conservationBandActive,
+              height: self.conservationHeight,
+            },
+          }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The band stack as stated (`mafTopBands`): the stated heights bound
+         * against `bandPlot`. The band drags read it, so hiding the rows
+         * moves no stated height.
+         */
+        get statedTopBands() {
+          return mafTopBands(self.statedBands, self.bandPlot)
+        },
+        /**
+         * #getter
+         * The band stack as drawn, coverage above conservation: the stated
+         * stack while the rows show, and while they are hidden the bands
+         * filling the plot in proportion to their stated heights
+         * (`filledMafTopBands`), under the canvas's backing-store limit. Every
+         * top, height and offset reads this; a band that reserves 0 px does
+         * not draw.
          */
         get topBands() {
-          return mafTopBands(
-            {
-              coverage: {
-                active: self.coverageBandActive,
-                height: self.coverageHeight,
-              },
-              conservation: {
-                active: self.conservationBandActive,
-                height: self.conservationHeight,
-              },
-            },
-            self.bandPlot,
-          )
+          return self.showAlignments
+            ? this.statedTopBands
+            : filledMafTopBands(self.statedBands, {
+                ...self.bandPlot,
+                height: Math.min(
+                  self.bandPlot.height,
+                  maxCanvasCssPx() - self.rowsLeadHeight,
+                ),
+              })
         },
       }))
       .views(self => ({
@@ -908,10 +933,14 @@ export default function stateModelFactory(
         /**
          * #getter
          * Override BaseLinearDisplay.height so the track container matches the
-         * rendering canvases exactly (stacked bands + rows viewport).
+         * rendering canvases exactly (stacked bands + rows viewport). With the
+         * rows hidden the bands fill the track's own height, so a drag
+         * resizes from it.
          */
         get height() {
-          return self.rowsHeight + self.rowsTopOffset
+          return self.showAlignments
+            ? self.rowsHeight + self.rowsTopOffset
+            : Math.min(self.allottedHeight, maxCanvasCssPx())
         },
         /**
          * #getter
@@ -946,7 +975,12 @@ export default function stateModelFactory(
           setConf(
             self,
             ['coverage', 'height'],
-            dragBandHeight(self.topBands, 'coverage', self.bandPlot, height),
+            dragBandHeight(
+              self.statedTopBands,
+              'coverage',
+              self.bandPlot,
+              height,
+            ),
           )
         },
         /**
@@ -958,7 +992,7 @@ export default function stateModelFactory(
             self,
             ['conservation', 'height'],
             dragBandHeight(
-              self.topBands,
+              self.statedTopBands,
               'conservation',
               self.bandPlot,
               height,

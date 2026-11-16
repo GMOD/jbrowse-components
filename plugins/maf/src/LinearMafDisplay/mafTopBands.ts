@@ -5,7 +5,11 @@
  * export, the handles, the labels, the axes and the tooltip — take the band
  * from here.
  */
-import { boundStackedBands, stackBands } from '@jbrowse/core/util/bandLayout'
+import {
+  boundStackedBands,
+  fillStackedBands,
+  stackBands,
+} from '@jbrowse/core/util/bandLayout'
 
 import type { Band, BandPlot, BandStack } from '@jbrowse/core/util/bandLayout'
 
@@ -27,16 +31,7 @@ function rectOf(stack: BandStack<MafBandKey>, key: MafBandKey) {
   return { top: stack.top[key], height: stack.reserved[key] }
 }
 
-/**
- * The stated heights bound against the plot the bands share with the rows
- * (`boundStackedBands`), folded into tops and a bottom, with each band's
- * rect beside the fold.
- */
-export function mafTopBands(bands: Record<MafBandKey, Band>, plot: BandPlot) {
-  const stack = stackBands(
-    MAF_BAND_ORDER,
-    boundStackedBands(MAF_BAND_ORDER, bands, plot),
-  )
+function withRects(stack: BandStack<MafBandKey>) {
   return {
     ...stack,
     rects: {
@@ -44,4 +39,37 @@ export function mafTopBands(bands: Record<MafBandKey, Band>, plot: BandPlot) {
       conservation: rectOf(stack, 'conservation'),
     },
   }
+}
+
+/**
+ * The stated heights bound against the plot the bands share with the rows
+ * (`boundStackedBands`), folded into tops and a bottom, with each band's
+ * rect beside the fold.
+ */
+export function mafTopBands(bands: Record<MafBandKey, Band>, plot: BandPlot) {
+  return withRects(
+    stackBands(MAF_BAND_ORDER, boundStackedBands(MAF_BAND_ORDER, bands, plot)),
+  )
+}
+
+/**
+ * The bands filling the whole plot, for a track whose rows are hidden: the
+ * bound stated heights scaled in proportion to fill `plot.height`
+ * (`fillStackedBands`), folded as {@link mafTopBands} folds them.
+ */
+export function filledMafTopBands(
+  bands: Record<MafBandKey, Band>,
+  plot: BandPlot,
+) {
+  const bound = boundStackedBands(MAF_BAND_ORDER, bands, plot)
+  const filled = fillStackedBands(MAF_BAND_ORDER, bound, plot.height)
+  return withRects(
+    stackBands(MAF_BAND_ORDER, {
+      coverage: { active: bound.coverage.active, height: filled('coverage') },
+      conservation: {
+        active: bound.conservation.active,
+        height: filled('conservation'),
+      },
+    }),
+  )
 }

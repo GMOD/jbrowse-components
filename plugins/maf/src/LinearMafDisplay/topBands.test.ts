@@ -154,3 +154,63 @@ describe('two bands at their ceilings', () => {
     expect(display.topBands.bottom).toBe(slot)
   })
 })
+
+// With the rows hidden the bands are the display: they fill the track's height
+// in proportion to their stated heights, which nothing writes, so showing the
+// rows again puts every band back and moves nothing below the track.
+describe('bands with the rows hidden', () => {
+  const hidden = () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    display.setShowConservation(true)
+    display.setHeight(250)
+    display.setShowAlignments(false)
+    return display
+  }
+
+  it('fill the track height in proportion to their stated heights', () => {
+    const display = hidden()
+    expect(display.height).toBe(250)
+    expect(display.topBands.rects).toEqual({
+      coverage: { top: 0, height: 132 },
+      conservation: { top: 132, height: 118 },
+    })
+    expect(display.rowsTopOffset).toBe(250)
+  })
+
+  it('a band alone fills the track, an off band takes nothing', () => {
+    const display = hidden()
+    display.setShowConservation(false)
+    expect(display.topBands.rects.coverage.height).toBe(250)
+    expect(display.topBands.reserved.conservation).toBe(0)
+    expect(display.height).toBe(250)
+  })
+
+  it('keep the track its height with no band shown', () => {
+    const display = hidden()
+    display.setShowCoverage(false)
+    display.setShowConservation(false)
+    expect(display.topBands.bottom).toBe(0)
+    expect(display.height).toBe(250)
+  })
+
+  it('write no stated height, so showing the rows restores the bands', () => {
+    const display = hidden()
+    expect(display.coverageHeight).toBe(45)
+    expect(display.conservationHeight).toBe(40)
+    display.setShowAlignments(true)
+    expect(display.topBands.rects).toEqual({
+      coverage: { top: 0, height: 45 },
+      conservation: { top: 45, height: 40 },
+    })
+    expect(display.height).toBe(250)
+  })
+
+  it('resize from the track height, writing no band', () => {
+    const display = hidden()
+    expect(display.statedTopBands.reserved.coverage).toBe(45)
+    display.resizeHeight(+50)
+    expect(display.height).toBe(300)
+    expect(display.topBands.bottom).toBe(300)
+    expect(display.coverageHeight).toBe(45)
+  })
+})

@@ -27,6 +27,9 @@ const SET_BAND_HEIGHT: Record<
  * A band eats into the rows area, so a drag restretches every row each frame;
  * the drag sets the track's own resizing flag, which suppresses the dense
  * letter overlay as the track-height handle does.
+ *
+ * None while the rows are hidden: the bands then fill the track, so its own
+ * bottom edge sizes them.
  */
 const MafBandHandles = observer(function MafBandHandles({
   model,
@@ -35,7 +38,7 @@ const MafBandHandles = observer(function MafBandHandles({
 }) {
   const { rects } = model.topBands
   const track = getContainingTrack(model)
-  return (
+  return model.showAlignments ? (
     <>
       {MAF_BAND_ORDER.map(key => {
         const { top, height } = rects[key]
@@ -58,7 +61,7 @@ const MafBandHandles = observer(function MafBandHandles({
         ) : null
       })}
     </>
-  )
+  ) : null
 })
 
 export default MafBandHandles
