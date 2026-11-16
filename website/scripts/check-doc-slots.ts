@@ -148,7 +148,10 @@ function buildInventory() {
         stringDefault: /= <code>'([^']*)'<\/code>/.exec(line)?.[1],
       }
       if (ENUM_KINDS.has(kind) && values) {
-        decl.enumValues = new Set(values.split(',').map(v => v.trim()))
+        // members print quoted as JS strings, the way the default does
+        decl.enumValues = new Set(
+          values.split(',').map(v => v.trim().replace(/^(['"])(.*)\1$/, '$2')),
+        )
         if (pageId && anchor) {
           enumByAnchor.set(`${pageId}#${anchor}`, decl.enumValues)
         }
