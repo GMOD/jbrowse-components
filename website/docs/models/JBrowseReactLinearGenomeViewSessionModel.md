@@ -62,7 +62,7 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="volatile
 | <span id="getter-stickyviewheaders">**stickyViewHeaders**</span><br><code>boolean</code> | Pin the header, and scroll the tracks under it, whenever the view is bounded -- which is the only time it means anything, since an unbounded view scrolls with the host's page and has nothing to pin against. The LGV model reads this off the session (`stickyViewHeaders === true`) and so does the embedded view title above it, the same two readers the web app has. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>28 inherited getters from 7 models</summary>
+<summary>29 inherited getters from 7 models</summary>
 
 From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="getter-trackbasesbyid">[`trackBasesById`](../sessiontracksmanagersessionmixin#getter-trackbasesbyid)</span>, <span id="getter-tracks">[`tracks`](../sessiontracksmanagersessionmixin#getter-tracks)</span>, <span id="getter-promotabletrackids">[`promotableTrackIds`](../sessiontracksmanagersessionmixin#getter-promotabletrackids)</span>
 
@@ -76,7 +76,7 @@ From [EmbeddedSessionThemeMixin](../embeddedsessionthememixin): <span id="getter
 
 From [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin): <span id="getter-connections">[`connections`](../connectionmanagementsessionmixin#getter-connections)</span>
 
-From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-visiblewidget">[`visibleWidget`](../drawerwidgetsessionmixin#getter-visiblewidget)</span>, <span id="getter-drawervisible">[`drawerVisible`](../drawerwidgetsessionmixin#getter-drawervisible)</span>, <span id="getter-modalwidgetvisible">[`modalWidgetVisible`](../drawerwidgetsessionmixin#getter-modalwidgetvisible)</span>
+From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-visiblewidget">[`visibleWidget`](../drawerwidgetsessionmixin#getter-visiblewidget)</span>, <span id="getter-drawervisible">[`drawerVisible`](../drawerwidgetsessionmixin#getter-drawervisible)</span>, <span id="getter-effectivedrawerwidth">[`effectiveDrawerWidth`](../drawerwidgetsessionmixin#getter-effectivedrawerwidth)</span>, <span id="getter-modalwidgetvisible">[`modalWidgetVisible`](../drawerwidgetsessionmixin#getter-modalwidgetvisible)</span>
 
 </details>
 

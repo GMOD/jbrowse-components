@@ -66,7 +66,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="volatile
 ## Getters
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>41 inherited getters from 11 models</summary>
+<summary>42 inherited getters from 11 models</summary>
 
 From [WebSessionManagementMixin](../websessionmanagementmixin): <span id="getter-savedsessionmetadata">[`savedSessionMetadata`](../websessionmanagementmixin#getter-savedsessionmetadata)</span>
 
@@ -86,7 +86,7 @@ From [BaseSessionModel](../basesessionmodel): <span id="getter-jbrowse">[`jbrows
 
 From [SnackbarModel](../snackbarmodel): <span id="getter-snackbarmessageset">[`snackbarMessageSet`](../snackbarmodel#getter-snackbarmessageset)</span>
 
-From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-visiblewidget">[`visibleWidget`](../drawerwidgetsessionmixin#getter-visiblewidget)</span>, <span id="getter-drawervisible">[`drawerVisible`](../drawerwidgetsessionmixin#getter-drawervisible)</span>, <span id="getter-modalwidgetvisible">[`modalWidgetVisible`](../drawerwidgetsessionmixin#getter-modalwidgetvisible)</span>
+From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-visiblewidget">[`visibleWidget`](../drawerwidgetsessionmixin#getter-visiblewidget)</span>, <span id="getter-drawervisible">[`drawerVisible`](../drawerwidgetsessionmixin#getter-drawervisible)</span>, <span id="getter-effectivedrawerwidth">[`effectiveDrawerWidth`](../drawerwidgetsessionmixin#getter-effectivedrawerwidth)</span>, <span id="getter-modalwidgetvisible">[`modalWidgetVisible`](../drawerwidgetsessionmixin#getter-modalwidgetvisible)</span>
 
 From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="getter-themename">[`themeName`](../thememanagersessionmixin#getter-themename)</span>, <span id="getter-thememode">[`themeMode`](../thememanagersessionmixin#getter-thememode)</span>, <span id="getter-selectedthememode">[`selectedThemeMode`](../thememanagersessionmixin#getter-selectedthememode)</span>, <span id="getter-effectivethememode">[`effectiveThemeMode`](../thememanagersessionmixin#getter-effectivethememode)</span>, <span id="getter-themeisdark">[`themeIsDark`](../thememanagersessionmixin#getter-themeisdark)</span>, <span id="getter-themeoptions">[`themeOptions`](../thememanagersessionmixin#getter-themeoptions)</span>, <span id="getter-palette">[`palette`](../thememanagersessionmixin#getter-palette)</span>, <span id="getter-styletheme">[`styleTheme`](../thememanagersessionmixin#getter-styletheme)</span>, <span id="getter-theme">[`theme`](../thememanagersessionmixin#getter-theme)</span>
 

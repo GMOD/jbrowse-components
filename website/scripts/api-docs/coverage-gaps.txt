@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1253)
+# model members with no description (1256)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -448,7 +448,9 @@ HierarchicalTrackSelectorWidget.clearCategoryModes
 HierarchicalTrackSelectorWidget.clearFavorites
 HierarchicalTrackSelectorWidget.clearFilterText
 HierarchicalTrackSelectorWidget.clearRecentlyUsed
+HierarchicalTrackSelectorWidget.clearReturnedFromTable
 HierarchicalTrackSelectorWidget.clearSelection
+HierarchicalTrackSelectorWidget.closeTable
 HierarchicalTrackSelectorWidget.collapseSubCategories
 HierarchicalTrackSelectorWidget.collapseTopLevelCategories
 HierarchicalTrackSelectorWidget.expandAllCategories
@@ -462,6 +464,7 @@ HierarchicalTrackSelectorWidget.hasAnySubcategories
 HierarchicalTrackSelectorWidget.isFavorite
 HierarchicalTrackSelectorWidget.isRecentlyUsed
 HierarchicalTrackSelectorWidget.isSelected
+HierarchicalTrackSelectorWidget.leaveTable
 HierarchicalTrackSelectorWidget.recentlyUsed
 HierarchicalTrackSelectorWidget.recentlyUsedCounter
 HierarchicalTrackSelectorWidget.recentlyUsedSet

@@ -45,9 +45,9 @@ From [SnackbarModel](../snackbarmodel): <span id="volatile-snackbarmessages">[`s
 ## Getters
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited getters from 3 models</summary>
+<summary>17 inherited getters from 3 models</summary>
 
-From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-visiblewidget">[`visibleWidget`](../drawerwidgetsessionmixin#getter-visiblewidget)</span>, <span id="getter-drawervisible">[`drawerVisible`](../drawerwidgetsessionmixin#getter-drawervisible)</span>, <span id="getter-modalwidgetvisible">[`modalWidgetVisible`](../drawerwidgetsessionmixin#getter-modalwidgetvisible)</span>
+From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-visiblewidget">[`visibleWidget`](../drawerwidgetsessionmixin#getter-visiblewidget)</span>, <span id="getter-drawervisible">[`drawerVisible`](../drawerwidgetsessionmixin#getter-drawervisible)</span>, <span id="getter-effectivedrawerwidth">[`effectiveDrawerWidth`](../drawerwidgetsessionmixin#getter-effectivedrawerwidth)</span>, <span id="getter-modalwidgetvisible">[`modalWidgetVisible`](../drawerwidgetsessionmixin#getter-modalwidgetvisible)</span>
 
 From [BaseSessionModel](../basesessionmodel): <span id="getter-root">[`root`](../basesessionmodel#getter-root)</span>, <span id="getter-jbrowse">[`jbrowse`](../basesessionmodel#getter-jbrowse)</span>, <span id="getter-rpcmanager">[`rpcManager`](../basesessionmodel#getter-rpcmanager)</span>, <span id="getter-configuration">[`configuration`](../basesessionmodel#getter-configuration)</span>, <span id="getter-adminmode">[`adminMode`](../basesessionmodel#getter-adminmode)</span>, <span id="getter-textsearchmanager">[`textSearchManager`](../basesessionmodel#getter-textsearchmanager)</span>, <span id="getter-assemblies">[`assemblies`](../basesessionmodel#getter-assemblies)</span>, <span id="getter-dialogcomponent">[`DialogComponent`](../basesessionmodel#getter-dialogcomponent)</span>, <span id="getter-dialogprops">[`DialogProps`](../basesessionmodel#getter-dialogprops)</span>, <span id="getter-animationmode">[`animationMode`](../basesessionmodel#getter-animationmode)</span>, <span id="getter-scrollzoom">[`scrollZoom`](../basesessionmodel#getter-scrollzoom)</span>, <span id="getter-numbergrouping">[`numberGrouping`](../basesessionmodel#getter-numbergrouping)</span>
 

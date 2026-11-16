@@ -65,7 +65,7 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="volatile
 | <span id="getter-assemblymanager">**assemblyManager**</span><br><code><a href="../assemblymanager">AssemblyManager</a></code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>21 inherited getters from 5 models</summary>
+<summary>22 inherited getters from 5 models</summary>
 
 From [EmbeddedSessionThemeMixin](../embeddedsessionthememixin): <span id="getter-themeoptions">[`themeOptions`](../embeddedsessionthememixin#getter-themeoptions)</span>, <span id="getter-palette">[`palette`](../embeddedsessionthememixin#getter-palette)</span>, <span id="getter-styletheme">[`styleTheme`](../embeddedsessionthememixin#getter-styletheme)</span>, <span id="getter-theme">[`theme`](../embeddedsessionthememixin#getter-theme)</span>
 
@@ -75,7 +75,7 @@ From [SnackbarModel](../snackbarmodel): <span id="getter-snackbarmessageset">[`s
 
 From [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin): <span id="getter-connections">[`connections`](../connectionmanagementsessionmixin#getter-connections)</span>
 
-From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-visiblewidget">[`visibleWidget`](../drawerwidgetsessionmixin#getter-visiblewidget)</span>, <span id="getter-drawervisible">[`drawerVisible`](../drawerwidgetsessionmixin#getter-drawervisible)</span>, <span id="getter-modalwidgetvisible">[`modalWidgetVisible`](../drawerwidgetsessionmixin#getter-modalwidgetvisible)</span>
+From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-visiblewidget">[`visibleWidget`](../drawerwidgetsessionmixin#getter-visiblewidget)</span>, <span id="getter-drawervisible">[`drawerVisible`](../drawerwidgetsessionmixin#getter-drawervisible)</span>, <span id="getter-effectivedrawerwidth">[`effectiveDrawerWidth`](../drawerwidgetsessionmixin#getter-effectivedrawerwidth)</span>, <span id="getter-modalwidgetvisible">[`modalWidgetVisible`](../drawerwidgetsessionmixin#getter-modalwidgetvisible)</span>
 
 </details>
 

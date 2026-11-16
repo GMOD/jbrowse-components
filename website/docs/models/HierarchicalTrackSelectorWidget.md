@@ -32,6 +32,9 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="volatile-sortcategories">**sortCategories**</span><br><code>boolean &#124; undefined</code> |  |
 | <span id="volatile-categorymode">**categoryMode**</span><br><code>ObservableMap&lt;string, CategoryMode&gt;</code> | per-category rendering mode; absent means expanded. Collapsed and folder are mutually exclusive by construction, so un-foldering a category can't reveal a stale collapse underneath it |
 | <span id="volatile-filtertext">**filterText**</span><br><code>string</code> |  |
+| <span id="volatile-tableviewid">**tableViewId**</span><br><code>string &#124; undefined</code> | the view whose tracks the drawer shows as a table in place of the tree. Keyed by view because every view's selector is this one widget, so table mode opened for one view stays with it |
+| <span id="volatile-tabledrawerwidth">**tableDrawerWidth**</span><br><code>number &#124; undefined</code> | the drawer width the table asks for, read by the session as `preferredDrawerWidth` and never written into its saved width |
+| <span id="volatile-returnedfromtable">**returnedFromTable**</span><br><code>boolean</code> | true after the table closes, so the link that opened it takes focus back when the tree remounts |
 | <span id="volatile-recentlyusedcounter">**recentlyUsedCounter**</span><br><code>number</code> |  |
 | <span id="volatile-favoritescounter">**favoritesCounter**</span><br><code>number</code> |  |
 
@@ -41,6 +44,8 @@ favorites and recently used tracks, and a group for each connection.
 | Member | Description |
 | --- | --- |
 | <span id="getter-trackcontainer">**trackContainer**</span><br><code>TrackContainer &#124; undefined</code> | The track list this selector shows and writes into: the view itself, or one of its containers when `trackContainerId` names one. |
+| <span id="getter-showtable">**showTable**</span><br><code>boolean</code> | whether the drawer shows this view's tracks as a table |
+| <span id="getter-preferreddrawerwidth">**preferredDrawerWidth**</span><br><code>number &#124; undefined</code> | the drawer width the session draws while the table shows |
 | <span id="getter-showntrackids">**shownTrackIds**</span><br><code>Set&lt;string&gt;</code> |  |
 | <span id="getter-favoritesset">**favoritesSet**</span><br><code>Set&lt;string&gt;</code> |  |
 | <span id="getter-recentlyusedset">**recentlyUsedSet**</span><br><code>Set&lt;string&gt;</code> |  |
@@ -101,6 +106,11 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="action-clearcategorymodes">**clearCategoryModes**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-clearfiltertext">**clearFilterText**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setfiltertext">**setFilterText**</span><br><code>(newText: string) =&gt; void</code> |  |
+| <span id="action-opentable">**openTable**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(drawer?: { width: number; availableWidth: number; } &#124; undefine…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(drawer?: { width: number; availableWidth: number; } &#124; undefined) =&gt; void</code></pre></dialog></span> | shows this view's tracks as a table in the drawer, which widens to the larger of its current width and 45% of the room it shares with the views |
+| <span id="action-leavetable">**leaveTable**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-clearreturnedfromtable">**clearReturnedFromTable**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-closetable">**closeTable**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-setpreferreddrawerwidth">**setPreferredDrawerWidth**</span><br><code>(width: number) =&gt; void</code> | a drag of the drawer edge while the table is open resizes the table's width, so closing it returns to the user's own |
 | <span id="action-setcategorycollapsed">**setCategoryCollapsed**</span><br><code>(id: string, collapsed: boolean) =&gt; void</code> | the single gate on accordion state: a folder is a mode the user picked, not an accordion that happens to be shut, so every collapse/expand — one row, a bulk menu item, or "expand all" — passes it by |
 | <span id="action-setfoldercategory">**setFolderCategory**</span><br><code>(id: string, isFolder: boolean) =&gt; void</code> | folder and collapsed are the same slot, so leaving folder mode always yields an expanded category |
 | <span id="action-expandallcategories">**expandAllCategories**</span><br><code>() =&gt; void</code> |  |

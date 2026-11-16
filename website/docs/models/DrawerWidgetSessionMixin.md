@@ -36,6 +36,7 @@ showing, and the drawer's side, width and minimized state.
 | --- | --- |
 | <span id="getter-visiblewidget">**visibleWidget**</span><br><code>Widget &#124; undefined</code> |  |
 | <span id="getter-drawervisible">**drawerVisible**</span><br><code>boolean</code> | whether the drawer column is on screen: there is something to show, it is not minimized to the FAB, and it is not currently a modal instead.<br><br>A getter rather than each host's own `&&`, because the hosts drifted -- the app shell tested `poppedOut` and the embedded view did not, so the day a popout button reaches the embedded drawer header it would render the modal and the drawer at once. |
+| <span id="getter-effectivedrawerwidth">**effectiveDrawerWidth**</span><br><code>number</code> | the visible widget's preferred width while it has one, else the saved `drawerWidth`, which a wide mode therefore never overwrites |
 | <span id="getter-modalwidgetvisible">**modalWidgetVisible**</span><br><code>boolean</code> | whether the visible widget shows in a modal: popped out of the drawer, or on a host with no room for one |
 
 ## Actions
