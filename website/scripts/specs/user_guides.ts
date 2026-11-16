@@ -63,6 +63,9 @@ export const userGuideSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'The plot as a config file writes it' },
       { type: 'delay', ms: 500 },
     ],
+    // The dialog centres in the window, so a crop rather than a shorter
+    // window drops the empty band under it.
+    crop: { x: 0, y: 0, width: 1500, height: 788 },
   },
 
   // A clean A/G heterozygous site, which ambiguity codes call R.
