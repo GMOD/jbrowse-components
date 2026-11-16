@@ -6,6 +6,7 @@ import {
   modelPageId,
   resolvedProperties,
 } from './generateStateModelDocs.ts'
+import { tagName } from './jsDocTags.ts'
 import { markdownTable, proseCell } from './markdown.ts'
 
 import type { StateModel } from './generateStateModelDocs.ts'
@@ -108,12 +109,14 @@ interface TaggedBucket {
   extends: string[]
 }
 
-// The `#tag value` on the line-comment or JSDoc block directly above a node.
+// The `#tag Name` on the line-comment or JSDoc block directly above a node.
 function tagAbove(node: ts.Node, text: string, tag: string) {
-  const comment = (ts.getLeadingCommentRanges(text, node.getFullStart()) ?? [])
-    .map(r => text.slice(r.pos, r.end))
-    .join('\n')
-  return new RegExp(String.raw`#${tag}\s+(\S+)`).exec(comment)?.[1]
+  return tagName(
+    (ts.getLeadingCommentRanges(text, node.getFullStart()) ?? [])
+      .map(r => text.slice(r.pos, r.end))
+      .join('\n'),
+    tag,
+  )
 }
 
 // A member's own description: the `//` run or JSDoc body above it, minus any

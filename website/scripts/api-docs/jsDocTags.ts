@@ -213,28 +213,67 @@ export function parseTaggedComment(
   }
 }
 
-// Parse every `#<tag> <a> | <b> | <rest...>` occurrence in a comment into
-// [a, b, rest] tuples, in source order. `a` and `b` are the tag's two required
-// leading fields (e.g. a color's group+label, a jexl function's category+
-// example); `rest` re-joins any trailing pipe-separated text so a description or
-// result may itself contain a `|`. A tag missing either leading field throws,
-// naming `where`. Shared by the `#color` and `#jexlFunction` generators.
+// The text after `#<tag>` on each line the tag heads, in order. The line may be
+// JSDoc body or raw source — a JSDoc line, a one-line JSDoc, a `//` comment — so
+// a generator scanning a file and one reading a parsed comment agree on what a
+// tag is. A `#tag` inside a sentence is prose, and the value runs to the end of
+// its line, `*` included.
+export function tagValues(text: string | undefined, tag: string) {
+  const lines = text?.includes(`#${tag}`) ? text.split('\n') : []
+  return lines.flatMap(line => {
+    const body = line
+      .replace(/^\s*(?:\/\*\*|\/\/)/, '')
+      .replace(/\s*\*\/\s*$/, '')
+    return startsWithTag(body, tag)
+      ? [body.replace(new RegExp(`^.*?#${tag}`), '').trim()]
+      : []
+  })
+}
+
+// The name a `#<tag> <Name> …` line opens with, from the first such line.
+export function tagName(text: string | undefined, tag: string) {
+  return tagValues(text, tag)[0]?.split(/\s/)[0] || undefined
+}
+
+// `tagValues`, each split on `|` into trimmed fields.
+export function tagFields(text: string | undefined, tag: string) {
+  return tagValues(text, tag).map(value => value.split('|').map(s => s.trim()))
+}
+
+// Every JSDoc in a source file, with the node it documents, in source order.
+export function forEachJSDoc(
+  sourceFile: ts.SourceFile,
+  cb: (comment: string, node: ts.Node) => void,
+) {
+  const visit = (node: ts.Node) => {
+    const comment = jsDocText(node)
+    if (comment) {
+      cb(comment, node)
+    }
+    ts.forEachChild(node, visit)
+  }
+  ts.forEachChild(sourceFile, visit)
+}
+
+// Parse every `#<tag> <a> | <b> | <rest...>` in a comment into [a, b, rest]
+// tuples, in source order. `a` and `b` are the tag's two required leading
+// fields (e.g. a color's group+label, a jexl function's category+example);
+// `rest` re-joins any trailing pipe-separated text so a description or result
+// may itself contain a `|`. A tag missing either leading field throws, naming
+// `where`.
 export function parsePipeTags(
   comment: string | undefined,
   tag: string,
   where: string,
-): [string, string, string][] {
-  const re = new RegExp(`#${tag}\\s+([^\\n]*)`, 'g')
-  const out: [string, string, string][] = []
-  for (const m of (comment ?? '').matchAll(re)) {
-    const parts = m[1]!.split('|').map(s => s.trim())
-    const [a, b] = parts
+) {
+  return tagFields(comment, tag).map(([a, b, ...rest]) => {
     if (!a || !b) {
-      throw new Error(`${where}: malformed #${tag} tag "${m[0].trim()}"`)
+      throw new Error(
+        `${where}: malformed #${tag} tag "#${tag} ${[a, b, ...rest].join(' | ')}"`,
+      )
     }
-    out.push([a, b, parts.slice(2).join(' | ')])
-  }
-  return out
+    return [a, b, rest.join(' | ')] satisfies [string, string, string]
+  })
 }
 
 // The value of a `#<tag> <value>` line inside a run of `//`-comment text, for
@@ -252,11 +291,5 @@ export function parsePipeTags(
 //   - the LAST match wins, so the tag nearest the entry is the one read, not
 //     whatever appeared earliest in the accumulated trivia.
 export function lastTaggedLine(comment: string, tag: string) {
-  const value = comment
-    .split('\n')
-    .filter(line => startsWithTag(line.replace(/^\s*\/\//, ''), tag))
-    .at(-1)
-    ?.replace(new RegExp(`^.*?#${tag}\\s*`), '')
-    .trim()
-  return value || undefined
+  return tagValues(comment, tag).at(-1) || undefined
 }

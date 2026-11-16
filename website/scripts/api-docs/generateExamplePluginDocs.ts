@@ -1,7 +1,10 @@
-import fs from 'fs'
 import path from 'path'
 
+import { repoFiles } from '../check-utils.ts'
 import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { tagFields } from './jsDocTags.ts'
+
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // The score-example plugin's file tree, rendered into both walkthroughs from the
 // directory itself.
@@ -46,37 +49,34 @@ interface Entry {
 // Files before subdirectories at each level, each alphabetically — so a
 // directory's own entry point reads above the tree of what it pulls in, and
 // `src/index.ts` heads the whole listing rather than sorting under `L`.
-function walk(dir: string, out: string[]) {
-  const names = fs.readdirSync(dir).sort()
-  const dirs: string[] = []
-  for (const name of names) {
-    const full = path.join(dir, name)
-    if (fs.statSync(full).isDirectory()) {
-      dirs.push(full)
-    } else if (isWalkthroughFile(name)) {
-      out.push(full)
-    }
+function filesFirst(a: string, b: string) {
+  const as = a.split('/')
+  const bs = b.split('/')
+  let i = 0
+  while (as[i] === bs[i]) {
+    i++
   }
-  for (const d of dirs) {
-    walk(d, out)
-  }
+  const aIsFile = i === as.length - 1
+  const bIsFile = i === bs.length - 1
+  return aIsFile === bIsFile ? (as[i]! < bs[i]! ? -1 : 1) : aIsFile ? -1 : 1
 }
 
-function collect(): Entry[] {
-  const files: string[] = []
-  walk(ROOT, files)
+function collect(corpus: SourceCorpus): Entry[] {
+  const files = repoFiles()
+    .filter(
+      f => f.startsWith(`${ROOT}/`) && isWalkthroughFile(path.basename(f)),
+    )
+    .sort(filesFirst)
   const entries: Entry[] = []
   const untagged: string[] = []
   for (const file of files) {
-    const m =
-      /#exampleFile\s+(shared|gpu)\s*\|\s*([^\n*]+?)\s*(?:\*\/|\n)/.exec(
-        fs.readFileSync(file, 'utf8'),
-      )
-    if (m) {
+    const [scope, ...description] =
+      tagFields(corpus.read(file), 'exampleFile')[0] ?? []
+    if (scope === 'shared' || scope === 'gpu') {
       entries.push({
         rel: path.relative(ROOT, file),
-        scope: m[1]!,
-        description: m[2]!.trim(),
+        scope,
+        description: description.join(' | '),
       })
     } else {
       untagged.push(path.relative(ROOT, file))
@@ -133,6 +133,6 @@ function renderTree(entries: Entry[]) {
   ].join('\n')
 }
 
-export function writeExamplePluginDocs() {
-  return rewriteMarkerBlock('EXAMPLE_PLUGIN_TREE', renderTree(collect()))
+export function writeExamplePluginDocs(corpus: SourceCorpus) {
+  return rewriteMarkerBlock('EXAMPLE_PLUGIN_TREE', renderTree(collect(corpus)))
 }

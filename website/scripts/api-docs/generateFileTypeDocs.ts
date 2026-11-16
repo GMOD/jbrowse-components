@@ -2,13 +2,11 @@ import {
   rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
 } from '../markerDocs.ts'
-import { jsDocText, parsePipeTags } from './jsDocTags.ts'
+import { forEachJSDoc, parsePipeTags, tagName } from './jsDocTags.ts'
 import { markdownTable, tableCell } from './markdown.ts'
-import { parseSourceFileSyntactic } from './sourceCorpus.ts'
 
 import type { DisplayTrackLink } from './docProgram.ts'
 import type { SourceCorpus } from './sourceCorpus.ts'
-import type { Node } from 'typescript'
 
 // Render the format -> adapter -> track type tables into the "Supported file
 // types" guide straight from the adapter config schemas, so the routing table
@@ -50,10 +48,6 @@ const NON_TRACK_SLOTS: Record<string, string> = {
   TextSearchAdapter: '`aggregateTextSearchAdapters` / `textSearching`',
 }
 
-function tagValue(comment: string, tag: string) {
-  return new RegExp(`#${tag}\\s+(\\S+)`).exec(comment)?.[1]
-}
-
 // Collect every `#fileFormat`-tagged adapter, grouped by its `#fileFormat`
 // group and preserving source order within a group. The tags sit in the same
 // JSDoc comment as `#config`, which is attached to the configSchema variable
@@ -64,15 +58,14 @@ function collectFormats(corpus: SourceCorpus, groups: Record<string, Row[]>) {
     if (!text.includes('#fileFormat')) {
       continue
     }
-    const visit = (node: Node) => {
-      const comment = jsDocText(node)
+    forEachJSDoc(corpus.parse(file), comment => {
       const tags = parsePipeTags(comment, 'fileFormat', file)
       if (tags.length) {
-        const adapter = tagValue(comment, 'config')
+        const adapter = tagName(comment, 'config')
         if (!adapter) {
           throw new Error(`${file}: #fileFormat tag with no #config name`)
         }
-        const trackType = tagValue(comment, 'trackType')
+        const trackType = tagName(comment, 'trackType')
         if (!trackType) {
           throw new Error(
             `${file}: ${adapter} has #fileFormat but no #trackType`,
@@ -82,9 +75,7 @@ function collectFormats(corpus: SourceCorpus, groups: Record<string, Row[]>) {
           ;(groups[group] ??= []).push({ format, adapter, trackType, note })
         }
       }
-      node.forEachChild(visit)
-    }
-    visit(parseSourceFileSyntactic(file, text))
+    })
   }
 }
 

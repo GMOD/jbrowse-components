@@ -1,4 +1,5 @@
 import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { tagFields } from './jsDocTags.ts'
 import { markdownTable } from './markdown.ts'
 
 import type { SourceCorpus } from './sourceCorpus.ts'
@@ -28,12 +29,14 @@ interface ExtensionPoint {
 }
 
 // `#extensionPoint <id> | <sync|async> | <description>` occurrences in one file.
-function collectFromFile(text: string, points: ExtensionPoint[]) {
-  const re =
-    /#extensionPoint\s+([\w-]+)\s*\|\s*(sync|async)\s*\|\s*([^\n*]+?)\s*(?:\*\/|\n)/g
-  let m: RegExpExecArray | null
-  while ((m = re.exec(text)) !== null) {
-    points.push({ id: m[1], kind: m[2], description: m[3].trim() })
+function collectFromFile(file: string, text: string, points: ExtensionPoint[]) {
+  for (const [id, kind, ...description] of tagFields(text, 'extensionPoint')) {
+    if (!id || (kind !== 'sync' && kind !== 'async') || !description.length) {
+      throw new Error(
+        `${file}: an #extensionPoint tag must read \`#extensionPoint <id> | <sync|async> | <description>\``,
+      )
+    }
+    points.push({ id, kind, description: description.join(' | ') })
   }
 }
 
@@ -109,7 +112,7 @@ function collectExtensionPoints(corpus: SourceCorpus): ExtensionPoint[] {
   const registryKeys = new Map<string, string | undefined>()
   for (const file of corpus.files) {
     const text = corpus.read(file)
-    collectFromFile(text, points)
+    collectFromFile(file, text, points)
     collectRegistryKeys(text, registryKeys)
   }
   const tagged = new Set(points.map(p => p.id))

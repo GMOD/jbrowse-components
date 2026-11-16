@@ -1,6 +1,7 @@
 import fs from 'fs'
 
 import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { readDoc } from './format.ts'
 import { codeCell, markdownTable, tableCell } from './markdown.ts'
 
 // The species sets `build_orthofinder_synteny.sh` knows, and the two cuts
@@ -115,7 +116,7 @@ export function collectOrthofinderCuts() {
 const TUTORIAL = 'website/docs/tutorials/orthofinder_synteny.md'
 
 function assertTutorialLinksEveryAccession(sets: OrthofinderSet[]) {
-  const page = fs.readFileSync(TUTORIAL, 'utf8')
+  const page = readDoc(TUTORIAL)
   const missing = sets.flatMap(s =>
     s.accessions.filter(a => !page.includes(`/datasets/genome/${a}/`)),
   )

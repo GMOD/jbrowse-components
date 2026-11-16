@@ -1,4 +1,5 @@
 import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { forEachJSDoc, tagName, tagValues } from './jsDocTags.ts'
 import { markdownTable } from './markdown.ts'
 import { composeCalls } from './util.ts'
 
@@ -37,27 +38,6 @@ import type { SourceCorpus } from './sourceCorpus.ts'
 // foundation by extending another display's whole model, and no compose call
 // records that.
 
-// `#stateModel <Name>` followed, within the same JSDoc, by the tag. Same
-// comment-body walk as the foundations scan, so a tag can't be picked up from
-// the next JSDoc down the file.
-//
-// The value runs to end of line, `*` included, and a same-line `*/` is trimmed
-// off after. `#displayFoundationDef`'s scan excludes `*` from the value
-// instead, which also excludes it from the *prose* — so a tag saying
-// "`minScore` / `maxScore` / `*Bound`" or "compose **after**" is truncated at
-// the first star, generating a cell that ends mid-sentence and says so
-// nowhere. Both of this table's first tags hit it.
-const DEF =
-  /#stateModel\s+(\w+)[^*]*(?:\*(?!\/)[^*]*)*?#crossCuttingMixin\s+([^\n]+)/g
-
-// Trailing `*/` where the tag is the last line of its JSDoc, plus the padding
-// before it.
-const TRAILING_COMMENT_END = /\s*\*\/\s*$/
-
-// Every `#stateModel <Name>` with its offset, so a compose call can be
-// attributed to the model whose JSDoc precedes it.
-const MODEL = /#stateModel\s+(\w+)/g
-
 interface CrossCuttingMixin {
   name: string
   supplies: string
@@ -81,16 +61,37 @@ function modelNameAt(models: { name: string; pos: number }[], pos: number) {
   return best
 }
 
+// Every `#stateModel` JSDoc in one file, with where it starts.
+function documentedModels(corpus: SourceCorpus, file: string) {
+  const models: { name: string; pos: number }[] = []
+  forEachJSDoc(corpus.parse(file), (comment, node) => {
+    const name = tagName(comment, 'stateModel')
+    if (name) {
+      models.push({ name, pos: node.getFullStart() })
+    }
+  })
+  return models
+}
+
 // Walk one file's compose calls, recording which models compose which mixins.
-function collectComposes(file: string, src: string) {
-  const models = [...src.matchAll(MODEL)].map(m => ({
-    name: m[1]!,
-    pos: m.index,
-  }))
-  return composeCalls(file, src).flatMap(call => {
+function collectComposes(corpus: SourceCorpus, file: string) {
+  const models = documentedModels(corpus, file)
+  return composeCalls(file, corpus.read(file)).flatMap(call => {
     const composer = modelNameAt(models, call.pos) ?? call.name
     return composer ? call.mixins.map(mixin => ({ mixin, composer })) : []
   })
+}
+
+function collectDefs(corpus: SourceCorpus, file: string) {
+  const defs: { name: string; supplies: string }[] = []
+  forEachJSDoc(corpus.parse(file), comment => {
+    const name = tagName(comment, 'stateModel')
+    const [supplies] = tagValues(comment, 'crossCuttingMixin')
+    if (name && supplies) {
+      defs.push({ name, supplies })
+    }
+  })
+  return defs
 }
 
 export function collectCrossCuttingMixins(corpus: SourceCorpus) {
@@ -98,11 +99,14 @@ export function collectCrossCuttingMixins(corpus: SourceCorpus) {
   const composedBy = new Map<string, Set<string>>()
   for (const file of corpus.files) {
     const src = corpus.read(file)
-    for (const [, name, supplies] of src.matchAll(DEF)) {
+    const tagged = src.includes('#crossCuttingMixin')
+      ? collectDefs(corpus, file)
+      : []
+    for (const { name, supplies } of tagged) {
       // A `|` would silently split the markdown cell it lands in and shift
       // every column after it, so reject it where it is written rather than
       // rendering a broken table.
-      if (supplies!.includes('|')) {
+      if (supplies.includes('|')) {
         throw new Error(
           `#crossCuttingMixin ${name} contains a "|", which breaks the markdown table cell`,
         )
@@ -113,17 +117,17 @@ export function collectCrossCuttingMixins(corpus: SourceCorpus) {
       // positional one ("see below the table") resolves only until the table
       // moves, and reads as nonsense in the source file the tag lives in.
       // Name the thing instead.
-      if (/\b(above|below|earlier|later) the table\b/.test(supplies!)) {
+      if (/\b(above|below|earlier|later) the table\b/.test(supplies)) {
         throw new Error(
           `#crossCuttingMixin ${name} points at where something sits in the rendered table. Name what it refers to instead — the tag is also read in ${file}, where the table does not exist.`,
         )
       }
-      defs.set(name!, supplies!.replace(TRAILING_COMMENT_END, '').trim())
+      defs.set(name, supplies)
     }
-    if (!src.includes('.compose(')) {
-      continue
-    }
-    for (const { mixin, composer } of collectComposes(file, src)) {
+    const composes = src.includes('.compose(')
+      ? collectComposes(corpus, file)
+      : []
+    for (const { mixin, composer } of composes) {
       composedBy.set(mixin, (composedBy.get(mixin) ?? new Set()).add(composer))
     }
   }

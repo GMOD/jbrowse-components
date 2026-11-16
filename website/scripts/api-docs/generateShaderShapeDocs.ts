@@ -1,8 +1,10 @@
-import fs from 'fs'
 import path from 'path'
 
+import { repoFiles } from '../check-utils.ts'
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { markdownTable } from './markdown.ts'
+
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // Which shared `.slang` module in render-core each shader imports, rendered
 // into SHADER_JS_CODEGEN.md from the import lines themselves.
@@ -28,18 +30,10 @@ import { markdownTable } from './markdown.ts'
 const SHARED_SHADER_DIR = 'packages/render-core/src/shaders'
 const SCAN_ROOTS = ['plugins', 'packages']
 
-function slangFiles(dir: string, out: string[] = []) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      if (entry.name !== 'node_modules' && entry.name !== 'esm') {
-        slangFiles(full, out)
-      }
-    } else if (entry.name.endsWith('.slang')) {
-      out.push(full)
-    }
-  }
-  return out
+function slangFiles() {
+  return repoFiles().filter(
+    f => f.endsWith('.slang') && SCAN_ROOTS.some(r => f.startsWith(`${r}/`)),
+  )
 }
 
 // `plugins/wiggle/src/shared/shaders/wiggleLine.slang` -> `wiggle/wiggleLine`,
@@ -48,20 +42,18 @@ function slangFiles(dir: string, out: string[] = []) {
 // an internal edge (coverageBar -> coverageBand) is not mistaken for a
 // consumer.
 function label(file: string) {
-  return `${file.split(path.sep)[1]}/${path.basename(file, '.slang')}`
+  return `${file.split('/')[1]}/${path.basename(file, '.slang')}`
 }
 
-export function collectShapeConsumers() {
-  const modules = fs
-    .readdirSync(SHARED_SHADER_DIR)
-    .filter(f => f.endsWith('.slang'))
+export function collectShapeConsumers(corpus: SourceCorpus) {
+  const files = slangFiles()
+  const modules = files
+    .filter(f => path.dirname(f) === SHARED_SHADER_DIR)
     .map(f => path.basename(f, '.slang'))
     .sort()
-
-  const files = SCAN_ROOTS.flatMap(root => slangFiles(root))
   const consumers = new Map<string, string[]>(modules.map(m => [m, []]))
   for (const file of files) {
-    const text = fs.readFileSync(file, 'utf8')
+    const text = corpus.read(file)
     for (const m of modules) {
       // The import statement only — not a mention in a comment, which is how
       // `diagonalGrid.slang`'s own "Imported via `import diagonalGrid;`" header
@@ -85,8 +77,8 @@ export function collectShapeConsumers() {
 // answers "all of them" in 700 characters.
 const NAME_THEM_UP_TO = 12
 
-export function writeShaderShapeDocs() {
-  const rows = collectShapeConsumers().map(({ name, importers }) => {
+export function writeShaderShapeDocs(corpus: SourceCorpus) {
+  const rows = collectShapeConsumers(corpus).map(({ name, importers }) => {
     const who = !importers.length
       ? '—'
       : importers.length > NAME_THEM_UP_TO

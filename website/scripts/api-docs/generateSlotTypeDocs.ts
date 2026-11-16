@@ -1,6 +1,9 @@
 import fs from 'fs'
+import path from 'path'
 
+import { repoFiles } from '../check-utils.ts'
 import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { readDoc } from './format.ts'
 import { codeCell, markdownTable, tableCell } from './markdown.ts'
 
 // The closed set of config slot `type` names, rendered into the
@@ -127,8 +130,11 @@ function block(file: string, opening: string, closing: string, what: string) {
 function editorLabels() {
   const dir = 'plugins/config/src/ConfigurationEditorWidget/components'
   const labels = new Map<string, string>()
-  for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.tsx'))) {
-    const text = fs.readFileSync(`${dir}/${file}`, 'utf8')
+  const files = repoFiles().filter(
+    f => path.dirname(f) === dir && f.endsWith('.tsx'),
+  )
+  for (const file of files) {
+    const text = fs.readFileSync(file, 'utf8')
     // the tag sits in a one-line JSDoc directly above the component
     for (const m of text.matchAll(
       /\/\*\* #slotEditor ([^\n]*?) \*\/\n(?:export default )?(?:const|function) (\w+)/g,
@@ -237,7 +243,7 @@ function sortByBaseType(rows: SlotTypeRow[]) {
 const GUIDE = 'website/docs/config_guides/slot_types.md'
 
 function undocumented(rows: SlotTypeRow[]) {
-  const guide = fs.readFileSync(GUIDE, 'utf8')
+  const guide = readDoc(GUIDE)
   return rows
     .map(r => r.name)
     .filter(name =>

@@ -1,8 +1,10 @@
-import fs from 'fs'
 import path from 'path'
 
 import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { tagFields } from './jsDocTags.ts'
 import { markdownTable } from './markdown.ts'
+
+import type { SourceCorpus } from './sourceCorpus.ts'
 
 // The adapter base classes a plugin extends, and what each obliges it to
 // implement, rendered into the custom-adapter guide from the declarations.
@@ -66,30 +68,27 @@ function requiredMembers(text: string, name: string) {
   )
 }
 
-export function collectAdapterBases(): AdapterBase[] {
+export function collectAdapterBases(corpus: SourceCorpus): AdapterBase[] {
   const bases: AdapterBase[] = []
   const untagged: string[] = []
-  for (const file of fs.readdirSync(DIR).sort()) {
-    if (
-      !file.endsWith('.ts') ||
-      file.endsWith('.test.ts') ||
-      NOT_A_BASE.has(file)
-    ) {
-      continue
-    }
-    const text = fs.readFileSync(path.join(DIR, file), 'utf8')
-    const tag = /#adapterBase\s+(\w+)\s*\|\s*([^\n*]+?)\s*(?:\*\/|\n)/.exec(
-      text,
-    )
-    if (tag) {
+  const files = corpus.files.filter(
+    f =>
+      path.dirname(f) === DIR &&
+      f.endsWith('.ts') &&
+      !NOT_A_BASE.has(path.basename(f)),
+  )
+  for (const file of files) {
+    const text = corpus.read(file)
+    const [name, ...description] = tagFields(text, 'adapterBase')[0] ?? []
+    if (name) {
       bases.push({
-        name: tag[1]!,
-        description: tag[2]!.trim(),
-        members: requiredMembers(text, tag[1]!),
+        name,
+        description: description.join(' | '),
+        members: requiredMembers(text, name),
         extendsNames: [...text.matchAll(/\bextends (\w+)/g)].map(m => m[1]!),
       })
     } else {
-      untagged.push(file)
+      untagged.push(path.basename(file))
     }
   }
   if (untagged.length > 0) {
@@ -122,8 +121,8 @@ function inheritedMembers(base: AdapterBase, all: AdapterBase[]): string[] {
     : base.members
 }
 
-export function writeAdapterBaseDocs() {
-  const bases = collectAdapterBases()
+export function writeAdapterBaseDocs(corpus: SourceCorpus) {
+  const bases = collectAdapterBases(corpus)
   return rewriteMarkerBlock(
     'ADAPTER_BASES',
     markdownTable(

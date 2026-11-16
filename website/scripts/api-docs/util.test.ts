@@ -1,4 +1,10 @@
-import { lastTaggedLine, parseTaggedComment } from './jsDocTags.ts'
+import {
+  lastTaggedLine,
+  parsePipeTags,
+  parseTaggedComment,
+  tagFields,
+  tagValues,
+} from './jsDocTags.ts'
 import {
   exampleSection,
   markdownTable,
@@ -64,6 +70,55 @@ describe('lastTaggedLine', () => {
 
   test('treats a tag with no value as absent rather than empty', () => {
     expect(lastTaggedLine('// #reexport', 'reexport')).toBe(undefined)
+  })
+})
+
+describe('tagFields', () => {
+  test('reads a one-line JSDoc, a JSDoc line and a line comment alike', () => {
+    expect(
+      tagFields(
+        [
+          '/** #menuItem divider | a horizontal rule */',
+          ' * #menuItem radio | a radio row',
+          '// #menuItem custom | any content',
+        ].join('\n'),
+        'menuItem',
+      ),
+    ).toEqual([
+      ['divider', 'a horizontal rule'],
+      ['radio', 'a radio row'],
+      ['custom', 'any content'],
+    ])
+  })
+
+  test('keeps a `*` in the value', () => {
+    expect(
+      tagValues(
+        ' * #crossCuttingMixin compose **after** the base',
+        'crossCuttingMixin',
+      ),
+    ).toEqual(['compose **after** the base'])
+  })
+
+  test('ignores a tag mentioned mid-line', () => {
+    expect(
+      tagFields(
+        ' * each point is tagged `#extensionPoint <id> | sync | text`',
+        'extensionPoint',
+      ),
+    ).toEqual([])
+  })
+})
+
+describe('parsePipeTags', () => {
+  test('rejoins the trailing fields and skips a mid-line mention', () => {
+    expect(
+      parsePipeTags(
+        'prose naming #color x | y | z\n#color group | Label | a | b',
+        'color',
+        'here',
+      ),
+    ).toEqual([['group', 'Label', 'a | b']])
   })
 })
 

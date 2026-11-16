@@ -1,4 +1,5 @@
 import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { forEachJSDoc, tagName, tagValues } from './jsDocTags.ts'
 import { markdownTable } from './markdown.ts'
 import { composeCalls } from './util.ts'
 
@@ -35,14 +36,6 @@ import type { SourceCorpus } from './sourceCorpus.ts'
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 
-// `#stateModel <Name>` followed, within the same JSDoc, by one of the two tags.
-// The `[^*]*(?:\*(?!/)[^*]*)*?` run walks comment body without escaping the
-// block, so a tag can't be picked up from the next JSDoc down the file.
-const DEF =
-  /#stateModel\s+(\w+)[^*]*(?:\*(?!\/)[^*]*)*?#displayFoundationDef\s+([^\n*]+)/g
-const USE =
-  /#stateModel\s+(\w+)[^*]*(?:\*(?!\/)[^*]*)*?#displayFoundation\s+(\w+)/g
-
 interface Foundation {
   name: string
   brings: string
@@ -66,16 +59,19 @@ export function collectFoundations(corpus: SourceCorpus) {
   const defFiles = new Map<string, string>()
   const uses = new Map<string, string[]>()
   for (const file of corpus.files) {
-    const src = corpus.read(file)
-    if (!src.includes('#displayFoundation')) {
-      continue
-    }
-    for (const [, name, brings] of src.matchAll(DEF)) {
-      defs.set(name!, brings!.trim())
-      defFiles.set(name!, file)
-    }
-    for (const [, model, foundation] of src.matchAll(USE)) {
-      uses.set(foundation!, [...(uses.get(foundation!) ?? []), model!])
+    if (corpus.read(file).includes('#displayFoundation')) {
+      forEachJSDoc(corpus.parse(file), comment => {
+        const model = tagName(comment, 'stateModel')
+        const [brings] = tagValues(comment, 'displayFoundationDef')
+        const foundation = tagName(comment, 'displayFoundation')
+        if (model && brings) {
+          defs.set(model, brings)
+          defFiles.set(model, file)
+        }
+        if (model && foundation) {
+          uses.set(foundation, [...(uses.get(foundation) ?? []), model])
+        }
+      })
     }
   }
   for (const foundation of uses.keys()) {

@@ -337,7 +337,7 @@ doc renders, and a doc block no generator writes, are both errors. Unchecked,
 both would be silent — the second keeps whatever was committed, and the first
 reports itself up to date forever. A block that renders empty is an error too.
 
-Tag forms (all pipe-delimited, parsed by `parsePipeTags` in `jsDocTags.ts`):
+Tag forms (pipe-delimited where a tag has several fields):
 
 ```js
 /** #color alignments-indicators | Insertion | Reads with an insertion */
@@ -345,10 +345,18 @@ Tag forms (all pipe-delimited, parsed by `parsePipeTags` in `jsDocTags.ts`):
 /** #extensionPoint Core-extendSession | sync | Extend the session model */
 ```
 
+Every marker generator reads its tag through `tagValues`/`tagFields` in
+`jsDocTags.ts`: a tag counts only when it heads its line, its value runs to the
+end of that line (`*` included), and the fields split on `|`. That holds for a
+parsed JSDoc body and for a raw source line alike, so a generator scanning text
+(`#extensionPoint`, `#adapterBase`, `#menuBuilder`) and one walking a file's
+JSDoc (`#displayFoundation`, `#crossCuttingMixin`, `#fileFormat`) agree on what
+a tag is.
+
 `#color` supports multiple groups per color (one tag each) so a color documents
-itself in every legend it appears in. `#extensionPoint` is scanned by regex
-across the whole tree (not the TS program), and a point tagged inconsistently in
-two places fails the run.
+itself in every legend it appears in. `#extensionPoint` is scanned across the
+whole corpus (not the TS program), and a point tagged inconsistently in two
+places fails the run.
 
 ## The remaining tags
 
@@ -356,7 +364,7 @@ These sit in a `#config`/`#stateModel` JSDoc alongside the tags above and change
 what the generated page says, so they are listed here rather than left to be
 discovered in `parseTaggedComment`. Every one of them is stripped from the
 rendered prose, and every one is recognized only when it **heads** its comment
-line — a mention inside a sentence is prose, not a tag.
+line (`startsWithTag`) — a mention inside a sentence is prose, not a tag.
 
 | Tag                         | On                                 | Effect                                                                                                                                                                                                                                                                                                              |
 | --------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -1,6 +1,7 @@
-import fs from 'fs'
+import * as ts from 'typescript'
 
 import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { forEachJSDoc, tagFields, tagValues } from './jsDocTags.ts'
 import { markdownTable } from './markdown.ts'
 
 import type { SourceCorpus } from './sourceCorpus.ts'
@@ -74,65 +75,70 @@ function interfaceMembers(text: string, name: string) {
   }))
 }
 
-function collectItemTypes(file: string, text: string, out: MenuItemType[]) {
-  const re =
-    /#menuItem\s+(\w+)\s*\|\s*([^\n*]+?)\s*(?:\*\/|\n)[\s\S]*?interface\s+(\w+)/g
-  let m: RegExpExecArray | null
-  while ((m = re.exec(text)) !== null) {
-    const name = m[3]!
-    const members = interfaceMembers(text, name)
-    if (!members) {
-      throw new Error(
-        `#menuItem ${m[1]} names ${name}, which is not an interface in ${file}`,
-      )
+function collectItemTypes(
+  corpus: SourceCorpus,
+  file: string,
+  out: MenuItemType[],
+) {
+  const text = corpus.read(file)
+  forEachJSDoc(corpus.parse(file), (comment, node) => {
+    for (const [value, ...description] of tagFields(comment, 'menuItem')) {
+      const name = ts.isInterfaceDeclaration(node) ? node.name.text : undefined
+      const members = name ? interfaceMembers(text, name) : undefined
+      if (!value || !name || !members) {
+        throw new Error(
+          `${file}: #menuItem ${value} documents something other than an interface`,
+        )
+      }
+      out.push({
+        value,
+        description: description.join(' | '),
+        name,
+        // `type` is the discriminant the first column already shows
+        fields: members.filter(p => p.name !== 'type').map(p => p.name),
+      })
     }
-    out.push({
-      value: m[1]!,
-      description: m[2]!.trim(),
-      name,
-      // `type` is the discriminant the first column already shows
-      fields: members.filter(p => p.name !== 'type').map(p => p.name),
-    })
-  }
+  })
 }
 
-function collectFields(text: string, out: MenuField[]) {
-  const members = interfaceMembers(text, 'BaseMenuItem')
-  if (!members) {
-    return
-  }
-  const byName = new Map(members.map(p => [p.name, p]))
-  const re = /#menuField\s+([^\n*]+?)\s*(?:\*\/|\n)[\s\S]*?^ {2}(\w+)\??:/gm
-  let m: RegExpExecArray | null
-  while ((m = re.exec(text)) !== null) {
-    const member = byName.get(m[2]!)
-    if (member) {
-      out.push({ ...member, description: m[1]!.trim() })
+function collectFields(corpus: SourceCorpus, file: string, out: MenuField[]) {
+  const members = interfaceMembers(corpus.read(file), 'BaseMenuItem')
+  if (members) {
+    const byName = new Map(members.map(p => [p.name, p]))
+    forEachJSDoc(corpus.parse(file), (comment, node) => {
+      const [description] = tagValues(comment, 'menuField')
+      const member =
+        ts.isPropertySignature(node) && ts.isIdentifier(node.name)
+          ? byName.get(node.name.text)
+          : undefined
+      if (description && member) {
+        out.push({ ...member, description })
+      }
+    })
+    const untagged = members
+      .map(p => p.name)
+      .filter(name => !out.some(f => f.name === name))
+    if (untagged.length > 0) {
+      throw new Error(
+        `BaseMenuItem fields carry no \`#menuField <description>\` JSDoc tag, so they are missing from the menus guide: ${untagged.join(', ')}`,
+      )
     }
-  }
-  const untagged = members
-    .map(p => p.name)
-    .filter(name => !out.some(f => f.name === name))
-  if (untagged.length > 0) {
-    throw new Error(
-      `BaseMenuItem fields carry no \`#menuField <description>\` JSDoc tag, so they are missing from the menus guide: ${untagged.join(', ')}`,
-    )
   }
 }
 
 function collectBuilders(text: string, out: MenuBuilder[]) {
-  const re = /#menuBuilder\s+(\w+)\s*\|\s*([^\n*]+?)\s*(?:\*\/|\n)/g
-  let m: RegExpExecArray | null
-  while ((m = re.exec(text)) !== null) {
-    out.push({ name: m[1]!, description: m[2]!.trim() })
+  for (const [name, ...description] of tagFields(text, 'menuBuilder')) {
+    if (name) {
+      out.push({ name, description: description.join(' | ') })
+    }
   }
 }
 
 // Every value `menuItems.ts` re-exports, which is the entry a plugin imports
 // from. It is the manifest that makes the builder table complete rather than
 // aspirational: a builder added there and left untagged fails the run.
-function reExportedBuilders() {
-  const text = fs.readFileSync('packages/core/src/ui/menuItems.ts', 'utf8')
+function reExportedBuilders(corpus: SourceCorpus) {
+  const text = corpus.read('packages/core/src/ui/menuItems.ts')
   return [...text.matchAll(/^export \{([\s\S]*?)\} from/gm)].flatMap(m =>
     m[1]!
       .split(',')
@@ -154,8 +160,8 @@ interface MenuAction {
  * generator stays a standalone script; the JSDoc it reads is the same text
  * `/docs/models/rootappmenumixin` renders.
  */
-function collectActions(): MenuAction[] {
-  const text = fs.readFileSync(ROOT_MENU_MIXIN, 'utf8')
+function collectActions(corpus: SourceCorpus): MenuAction[] {
+  const text = corpus.read(ROOT_MENU_MIXIN)
   const re =
     /\/\*\*\s*\n\s*\* #action\n([\s\S]*?)\*\/\s*\n\s*(\w+)\(([\s\S]*?)\)\s*[:{]/g
   const actions: MenuAction[] = []
@@ -195,8 +201,8 @@ function collect(corpus: SourceCorpus) {
   for (const file of corpus.files) {
     const text = corpus.read(file)
     if (text.includes('#menuItem ') || text.includes('#menuField ')) {
-      collectItemTypes(file, text, itemTypes)
-      collectFields(text, fields)
+      collectItemTypes(corpus, file, itemTypes)
+      collectFields(corpus, file, fields)
     }
     if (text.includes('#menuBuilder ')) {
       collectBuilders(text, builders)
@@ -206,7 +212,7 @@ function collect(corpus: SourceCorpus) {
   // `staysOpenOnClick` and `resolveSubMenu` read a built row rather than build
   // one, so they are named in the guide's prose rather than in this table
   const readers = new Set(['staysOpenOnClick', 'resolveSubMenu'])
-  const untagged = reExportedBuilders().filter(
+  const untagged = reExportedBuilders(corpus).filter(
     name => !tagged.has(name) && !readers.has(name),
   )
   if (untagged.length > 0) {
@@ -257,7 +263,7 @@ export function writeMenuDocs(corpus: SourceCorpus) {
       'MENU_ACTIONS',
       markdownTable(
         ['Action', 'Description'],
-        collectActions().map(
+        collectActions(corpus).map(
           a =>
             `| [${code(a.signature)}](/docs/models/rootappmenumixin#action-${a.signature.split('(')[0]!.toLowerCase()}) | ${a.description} |`,
         ),
