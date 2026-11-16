@@ -146,6 +146,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-tooltipfield">**tooltipField**</span><br><code>string</code> | `tooltip.field`, read raw: '' while unset |
 | <span id="getter-unit">**unit**</span><br><code>"chain" &#124; "read"</code> |  |
 | <span id="getter-showpileup">**showPileup**</span><br><code>boolean</code> |  |
+| <span id="getter-configuredheight">**configuredHeight**</span><br><code>number</code> | The `height` slot resolved (`resolvedTrackHeight`). Overrides `TrackHeightMixin.configuredHeight`, so the drag, `fit` and grow read it. |
 | <span id="getter-markheight">**markHeight**</span><br><code>number</code> | `pileup.mark.height` as configured, independent of the fit squeeze. Consumers that EDIT the size (the "Custom..." height dialog) must start from it, not the fractional fit pitch `featureHeight` resolves to in fit mode, or opening the dialog while compressed would bake the squeeze. |
 | <span id="getter-pileupmaxlayoutheight">**pileupMaxLayoutHeight**</span><br><code>number</code> |  |
 | <span id="getter-showmismatches">**showMismatches**</span><br><code>boolean</code> |  |
@@ -343,7 +344,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-gateenabled">**gateEnabled**</span><br><code>boolean</code> | Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes `resolvedByteLimit()` to `RenderAlignmentData`, whose first await is the index estimate, so an over-budget region is refused before a read downloads. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>105 inherited getters from 14 models</summary>
+<summary>104 inherited getters from 14 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 
@@ -369,7 +370,7 @@ From [RegionTooLargeMixin](../regiontoolargemixin): <span id="getter-bytegateada
 
 From [HeightModeMixin](../heightmodemixin): <span id="getter-heightmode">[`heightMode`](../heightmodemixin#getter-heightmode)</span>, <span id="getter-autoheight">[`autoHeight`](../heightmodemixin#getter-autoheight)</span>, <span id="getter-fitheighttodisplay">[`fitHeightToDisplay`](../heightmodemixin#getter-fitheighttodisplay)</span>, <span id="getter-growmaxheight">[`growMaxHeight`](../heightmodemixin#getter-growmaxheight)</span>, <span id="getter-fittargetheight">[`fitTargetHeight`](../heightmodemixin#getter-fittargetheight)</span>, <span id="getter-grownheight">[`grownHeight`](../heightmodemixin#getter-grownheight)</span>, <span id="getter-height">[`height`](../heightmodemixin#getter-height)</span>, <span id="getter-hostinitialized">[`hostInitialized`](../heightmodemixin#getter-hostinitialized)</span>
 
-From [TrackHeightMixin](../trackheightmixin): <span id="getter-configuredheight">[`configuredHeight`](../trackheightmixin#getter-configuredheight)</span>, <span id="getter-allottedheight">[`allottedHeight`](../trackheightmixin#getter-allottedheight)</span>, <span id="getter-resizing">[`resizing`](../trackheightmixin#getter-resizing)</span>, <span id="getter-scrollableheight">[`scrollableHeight`](../trackheightmixin#getter-scrollableheight)</span>
+From [TrackHeightMixin](../trackheightmixin): <span id="getter-allottedheight">[`allottedHeight`](../trackheightmixin#getter-allottedheight)</span>, <span id="getter-resizing">[`resizing`](../trackheightmixin#getter-resizing)</span>, <span id="getter-scrollableheight">[`scrollableHeight`](../trackheightmixin#getter-scrollableheight)</span>
 
 From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`](../basedisplay#getter-parenttrack)</span>, <span id="getter-selectedfeatureid">[`selectedFeatureId`](../basedisplay#getter-selectedfeatureid)</span>, <span id="getter-renderingcomponent">[`RenderingComponent`](../basedisplay#getter-renderingcomponent)</span>, <span id="getter-displayblurb">[`DisplayBlurb`](../basedisplay#getter-displayblurb)</span>, <span id="getter-adapterconfig">[`adapterConfig`](../basedisplay#getter-adapterconfig)</span>, <span id="getter-isminimized">[`isMinimized`](../basedisplay#getter-isminimized)</span>, <span id="getter-plotkeys">[`plotKeys`](../basedisplay#getter-plotkeys)</span>, <span id="getter-plot">[`plot`](../basedisplay#getter-plot)</span>, <span id="getter-confignotices">[`configNotices`](../basedisplay#getter-confignotices)</span>, <span id="getter-notices">[`notices`](../basedisplay#getter-notices)</span>, <span id="getter-cornernotices">[`cornerNotices`](../basedisplay#getter-cornernotices)</span>, <span id="getter-plotexamples">[`plotExamples`](../basedisplay#getter-plotexamples)</span>, <span id="getter-configdocsurl">[`configDocsUrl`](../basedisplay#getter-configdocsurl)</span>
 
@@ -431,7 +432,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setcoverageminallelefraction">**setCoverageMinAlleleFraction**</span><br><code>(fraction: number) =&gt; void</code> |  |
 | <span id="action-setshowinterbase">**setShowInterbase**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setfilterfields">**setFilterFields**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(patch: Readonly&lt;Record&lt;…&gt;&gt;) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(patch: Readonly&lt;Record&lt;string, readonly FieldPredicate[] &#124; undefined&gt;&gt;) =&gt; void</code></pre></dialog></span> | Replaces the entries on each field the patch names, `undefined` returning a field to its defaults; every other field keeps what was written. |
-| <span id="action-setshowpileup">**setShowPileup**</span><br><code>(show: boolean) =&gt; void</code> |  |
+| <span id="action-setshowpileup">**setShowPileup**</span><br><code>(show: boolean) =&gt; void</code> | Writes the height the track has before the switch, so an unset `height` resolving off `pileup.show` does not resize the track now or on reload. |
 | <span id="action-setshowmismatches">**setShowMismatches**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setshowsoftclips">**setShowSoftClips**</span><br><code>(value: boolean) =&gt; void</code> |  |
 | <span id="action-setshowconnectors">**setShowConnectors**</span><br><code>(flag: boolean) =&gt; void</code> | A main-thread tier-2/4 setting, not in `rpcProps`: toggling never refetches. |

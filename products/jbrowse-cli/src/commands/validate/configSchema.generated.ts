@@ -7518,8 +7518,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "height": {
-          "description": "Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does.",
-          "default": 250,
+          "description": "Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does. Unset, the track opens at 250 with the pileup shown and at 100 with it hidden, and showing or hiding the pileup from the menu writes the height it had, so the toggle never resizes the track.",
           "if": {
             "type": "null"
           },
@@ -8703,8 +8702,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "height": {
-          "description": "Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does.",
-          "default": 250,
+          "description": "Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does. Unset, the track opens at 250 with the pileup shown and at 100 with it hidden, and showing or hiding the pileup from the menu writes the height it had, so the toggle never resizes the track.",
           "if": {
             "type": "null"
           },
