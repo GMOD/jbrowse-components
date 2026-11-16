@@ -30,7 +30,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bgzf-filehandle": "^6.8.4",
+    "@gmod/bgzf-filehandle": "^6.8.5",
     "@gmod/newick": "^1.1.0",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
@@ -43,8 +43,8 @@
     "@jbrowse/wiggle-core": "workspace:^",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
-    "mobx": "^7.1.6",
-    "mobx-react": "^10.0.3",
+    "mobx": "^7.1.7",
+    "mobx-react": "^10.0.4",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
