@@ -36,11 +36,12 @@ sites.
 
 Choose an enzyme preset (SpCas9 `NGG`, SaCas9 `NNGRRT`, Cas12a `TTTV`, ...) or
 set the PAM, guide length, and PAM location by hand, and search either or both
-strands. Each guide is drawn with a dedicated guide-RNA glyph: the protospacer
-box, the PAM overpainted, and the predicted cut (one tick for a blunt cutter
-like SpCas9, a staggered pair for Cas12a).
+strands.
 
-Clicking a guide reports its sequence, PAM, cut position, GC%, and two flags:
+<Figure src="/img/sequence_search/crispr_guides.png" caption="SpCas9 guides on both strands under the reference sequence, each a protospacer box with its PAM in red and a tick at the cut. One guide's details are open." />
+
+A staggered cutter such as Cas12a draws a pair of cut ticks. Two of the fields
+in a guide's details are flags:
 
 - **`hasPolyT`:** the `TTTT` run that terminates transcription from the pol III
   promoters guides are usually expressed from.

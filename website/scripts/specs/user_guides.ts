@@ -3,10 +3,14 @@ import {
   VOLVOX,
   lgvSession,
   menuCascade,
+  sessionSpec,
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// A protospacer on the forward strand with its NGG PAM, in the window below.
+const CRISPR_GUIDE = 'CGCTCGATCAAACTCATCAT'
 
 export const userGuideSpecs: ScreenshotSpec[] = [
   {
@@ -72,6 +76,43 @@ export const userGuideSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Min het fraction' },
       { type: 'waitForAppSettled' },
       { type: 'delay', ms: 800 },
+    ],
+  },
+
+  {
+    mode: 'url',
+    name: 'sequence_search/crispr_guides',
+    url: sessionSpec(VOLVOX, {
+      sessionTracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'crispr_spcas9',
+          name: 'SpCas9 guides',
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'CrisprGuideAdapter',
+            minGcPercent: 40,
+            maxGcPercent: 60,
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:5031-5110',
+          tracks: ['volvox_refseq', { trackId: 'crispr_spcas9', height: 260 }],
+        },
+      ],
+    }),
+    readyText: 'SpCas9 guides',
+    viewportHeight: 660,
+    actions: [
+      {
+        type: 'click',
+        anchor: { trackId: 'crispr_spcas9', feature: CRISPR_GUIDE },
+      },
+      { type: 'waitForText', text: 'gcPercent' },
     ],
   },
 ]
