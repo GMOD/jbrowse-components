@@ -93,8 +93,8 @@ twist. Worked through in [](/docs/tutorials/circular_synteny).
 - **Chromosome order:** a two-genome circle opens reordered, the second genome's
   chromosomes in the order of the first's by shared aligned bases and laid out
   mirrored, so the ribbons form a band of parallel arcs. **Re-order
-  chromosomes** in the view's menu, offered only on such a circle, reorders on
-  demand, and `autoDiagonalize: false` on the view keeps each genome in its
+  chromosomes...** in the view's menu, offered only on such a circle, reorders
+  on demand, and `autoDiagonalize: false` on the view keeps each genome in its
   contig order
 - **Color:** ribbons open in the ideogram color of the first genome's chromosome
   they leave. **Color by** in the view's menu offers what the linear synteny

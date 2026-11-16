@@ -83,16 +83,18 @@ reference** and with one color under **Default**. The heatmap and the X-Y plot
 draw only while zoomed out past base level; at base level the rows take the
 default fill and the mismatches.
 
-In a display config the fill is [`encoding.color`](/docs/config/mafcolor)
-(`identity`, `refNameRank`, or a constant `value`), the per-base coloring
-[`alignments.bases`](/docs/config/mafbases), the mismatches
-[`alignments.mismatches`](/docs/config/mafmismatches), and the X-Y plot
-`encoding.y: "identity"`. The heatmap's ramp runs from 0 to 100% identity; close
-relatives all sit near its blue end, so
-`"color": { "field": "identity", "scale": { "domainMin": 0.7 } }` spreads it
-over 70 to 100%. `scale.scheme`, `scale.reverse` and `scale.domainMid` change
-the ramp itself, and the source-sequence colors take a `scale.range`, one color
-per rank.
+In a display config:
+
+- **Fill:** [`encoding.color`](/docs/config/mafcolor) (`identity`,
+  `refNameRank`, or a constant `value`)
+- **Per-base coloring:** [`alignments.bases`](/docs/config/mafbases)
+- **Mismatches:** [`alignments.mismatches`](/docs/config/mafmismatches)
+- **X-Y plot:** `encoding.y: "identity"`
+- **Ramp:** runs from 0 to 100% identity, and close relatives all sit near its
+  blue end, so `"color": { "field": "identity", "scale": { "domainMin": 0.7 } }`
+  spreads it over 70 to 100%. `scale.scheme`, `scale.reverse` and
+  `scale.domainMid` change the ramp; the source-sequence colors take a
+  `scale.range`, one color per rank
 
 With every species of the UCSC hg38 470-way shown at once, fit-to-display-height
 mode takes each row to near 1px, and the heatmap reads as a texture beside the
@@ -133,12 +135,12 @@ display) has two coding-aware options:
 - **Show CDS frames** (off by default, under **Show**) draws a thin
   reading-frame-colored strip on each species' row, marking the coding exons
   projected onto that species, over any **Color by** choice
-- **Codon changes (amino acids)**, under **Color by → Per-base coloring**,
-  replaces the mismatches with a per-codon layer: every species is translated in
-  the reference reading frame and each codon is colored by how its amino acid
-  compares to the reference. Conserved codons, including the gene's stop, show
-  the fill. The layer draws only at base level, with the residue written on each
-  codon once there is room
+- **Codon changes (amino acids)**, in the **Per-base coloring** block of **Color
+  by**, replaces the mismatches with a per-codon layer: every species is
+  translated in the reference reading frame and each codon is colored by how its
+  amino acid compares to the reference. Conserved codons, including the gene's
+  stop, show the fill. The layer draws only at base level, with the residue
+  written on each codon once there is room
 
 <!-- BEGIN GENERATED COLOR_TABLE maf -->
 

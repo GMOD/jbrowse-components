@@ -46,8 +46,9 @@ Two sliders under **Filter by** in the track menu thin a dense callset:
 - **Minor allele frequency** hides variants whose minor allele frequency is
   below the threshold, so singletons and near-monomorphic sites drop out.
 - **Missingness** hides variants whose fraction of uncalled alleles is above the
-  threshold. It starts off, keeping every variant; lowering it drops the columns
-  that are mostly missing data, which matters most in equal-width columns.
+  threshold. It starts at 1, keeping every variant; lowering it drops the
+  columns that are mostly missing data, which matters most in equal-width
+  columns.
 
 <Figure src="/img/variants/potato_missingness.png" caption="One tetraploid VCF twice as a genotype matrix. Top: the default missingness ceiling. Bottom: a 0.1 ceiling." />
 
@@ -134,10 +135,11 @@ these classes or a record whose alleles disagree.
 - **The legend** lists only the classes present in the loaded region.
 - **No class:** a record with no structural class keeps the default alt color.
 - **Where the class comes from:** the ALT allele first (`<DEL>`, `<DUP:TANDEM>`,
-  breakend notation, and 1000 Genomes' `<CN0>` as a deletion and `<CN2>` and up
-  as a duplication), then `INFO/EVENTTYPE` or `INFO/SVTYPE`, then a sequence
-  allele 50 bp or more longer or shorter than REF. JBrowse stores the result as
-  each VCF record's `svType` field.
+  breakend notation, and 1000 Genomes' `<CN0>` as a deletion, `<CN1>` as
+  copy-number variable and `<CN2>` and up as a duplication), then
+  `INFO/EVENTTYPE` or `INFO/SVTYPE`, then a sequence allele 50 bp or more longer
+  or shorter than REF. JBrowse stores the result as each VCF record's `svType`
+  field.
 
 <Figure caption="The SV callset colored by SV type, pale for a het and full for a hom." src="/img/multisv_svtype.png" />
 

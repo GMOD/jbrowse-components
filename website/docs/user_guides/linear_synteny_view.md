@@ -218,9 +218,9 @@ stacks, where they point and what leaves it.
 - **Min length** hides alignments shorter than it, clearing short spurious
   chains at whole-genome zoom
 
-CIGAR indels and Level of detail are offered only where the data has indels to
-draw and more than one stored tier. Ribbons thinner than a pixel fade in a dense
-view.
+CIGAR indels appears only where the data has indels to draw, and Level of detail
+only where it has more than one stored tier. Ribbons thinner than a pixel fade
+in a dense view.
 
 <Figure caption="Human against chimp across an RB1 intron, from a liftOver chain with RepeatMasker on both. Colored indels paints a missing L1HS as a wedge." src="/img/synteny_human_chimp_cigar_modes.png" />
 
@@ -252,9 +252,10 @@ holds what varies with the stack:
     view opens it between them
   - **Reverse row order** flips the stack top to bottom, each band keeping its
     tracks
-  - **Re-order chromosomes** opens the re-order dialog. On three rows or more it
-    asks which row to keep as it is, and sorts every other row against its
-    neighbour nearer it
+  - **Re-order chromosomes...** opens the re-order dialog. On three rows or more
+    it asks which row to keep as it is, and sorts every other row against its
+    neighbour nearer it; `diagonalizeAnchorRow` on the view sets that row in a
+    config
   - one entry per genome opens that row's own view menu, the only route to it
     for a collapsed row
 - **Show** for the header's own search boxes
@@ -269,7 +270,8 @@ nothing. **Off-screen mates** in the settings menu, on by default, marks those
 alignments:
 
 - **Where:** a mark sits on the edge of the band beside the panel that still has
-  the alignment, at its position there. A mark along the top edge means the
+  the alignment, at its position there. Marks thin out at a wide window and the
+  scattered ones appear as you zoom in. A mark along the top edge means the
   upper panel has the alignment and the lower panel cannot pair it; along the
   bottom edge, the reverse
 - **Hover** names the contig the mark points at, how much sequence goes there in

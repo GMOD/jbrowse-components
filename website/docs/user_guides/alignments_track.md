@@ -368,8 +368,9 @@ what each pattern means.
 
 - **Mate not loaded:** a large semicircle reaching toward it.
 - **Mate on another chromosome:** an arc when that chromosome is on screen, and
-  a vertical line at the breakpoint when it is not, in one color. The Read
-  connections section of **Filter by → More filters...** hides either kind.
+  a vertical line at the breakpoint when it is not, in one color.
+- **Filtering:** the Read connections section of **Filter by → More filters...**
+  hides off-screen partner or inter-chromosomal connections.
 - **Across regions:** an arc whose ends are in different displayed regions spans
   them, so a second region either side of a breakpoint shows the connection as
   one curve.

@@ -46,9 +46,9 @@ stanza. Add [`&loc=`](/docs/urlparams#loc) and
 ?config=none&hubURL=https://example.com/hub.txt&assembly=GCF_019202715.1&loc=chr1:1-100000
 ```
 
-- **`&assembly=` is required** and takes the hub's genome ID, as in its
-  `genomes.txt` (or its `genome` line, for a one-file hub). Without it, JBrowse
-  opens the hub at its default location and says why.
+- **`&assembly=` is required with `&loc=`** and takes the hub's genome ID, as in
+  its `genomes.txt` (or its `genome` line, for a one-file hub). Without it,
+  JBrowse opens the hub at its default location and says why.
 - **`&tracks=`** works the same way, naming track IDs the hub defines.
 
 ## Loading several hubs

@@ -26,9 +26,7 @@ The graph track comes from a separate plugin,
 left out of JBrowse Web because its layout engine,
 [Bandage](https://github.com/rrwick/Bandage)'s, is GPL-licensed. The plugin is
 in **beta**, and the [plugin store](/docs/user_guides/plugin_store) lists it as
-GraphGenomeView. A config names it with the entry below, where `storePlugin`
-picks the build for the JBrowse reading the config and `esmUrl` is the fallback
-when the store cannot be read
+GraphGenomeView. A config names it with the entry below
 ([configuring plugins](/docs/config_guides/plugins)).
 
 <!-- BEGIN GENERATED GRAPH_PLUGIN_CONFIG -->

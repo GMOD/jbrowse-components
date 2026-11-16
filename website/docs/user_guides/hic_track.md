@@ -54,8 +54,9 @@ Pick the ramp from the track menu's **Color scheme**:
 - **Viridis**, **Magma**, **Inferno** and **Cividis** - perceptually uniform;
   cividis is the safest choice for readers with color vision deficiency
 
-Viridis, magma, inferno and cividis run light to dark here, so the sparse
-long-range bins sit near the unpainted empty ones;
+Viridis, magma, inferno and cividis run light to dark here, so a sparse
+long-range bin draws close to the background of an empty one rather than as a
+dark speck;
 [`encoding.color.scale.reverse`](/docs/config/hiccolor/#slot-scalereverse)
 written `false` turns them back. A config names the ramp as
 [`encoding.color.scale.scheme`](/docs/config/hiccolor/#slot-scalescheme).

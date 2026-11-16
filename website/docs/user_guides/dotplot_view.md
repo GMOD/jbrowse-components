@@ -74,10 +74,8 @@ Zooming to the boxed 4.8 Mb separates the palindromes into four crossings, and
 the same track opens one of them in a
 [linear synteny view](/docs/user_guides/linear_synteny_view) colored by strand:
 the arms draw as a single minus-strand ribbon over the plus-strand match of the
-sequence to itself. In the gene lanes each arm has copies of the same Y-linked
-families (RBMY1B and RBMY1A1 against RBMY1D and RBMY1E, CDY10P and CDY11P either
-side of the centre), and the unpainted gaps inside the arms are where the two
-copies differ.
+sequence to itself. The unpainted gaps inside the arms are where the two copies
+differ.
 
 <Figure caption="Top: the boxed span replotted at a 100 kb minimum length. Bottom: one crossing in a linear synteny view, colored by strand." src="/img/synteny_self_chry_palindromes.png" />
 

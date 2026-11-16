@@ -26,10 +26,10 @@ A track whose config names no rows takes a row per feature `type`: a GFF3's
 `gene`, `mRNA` and `pseudogene`, a ClinVar bigBed's variant types. A window
 holding one type shows one labelled row.
 
-- **No `type`:** where the features in view have no `type`, as a plain BED's or
-  a RepeatMasker table's, the display draws every feature in one row, in its
-  file's own colors, and opens **One row per** once; a **One row per...** chip
-  at the head of the track brings it back
+- **No value:** where the features in view have no value for the row field (no
+  `type`, as a plain BED's or a RepeatMasker table's), the display draws every
+  feature in one row, in its file's own colors, and opens **One row per** once;
+  a **One row per...** chip at the head of the track brings it back
 - **The picker** lists every attribute the features in view have, each with how
   many rows it would make: on RepeatMasker, `repClass` makes about twenty and
   `repFamily` more

@@ -17,9 +17,9 @@ applied.
 
 ## What the box shows
 
-The text holds the current values of this display's settings:
+The text holds the current values of this display's settings, leaving out any at
+its default, as a config file does. Above it:
 
-- **Defaults** are left out, as in a config file
 - **Show help** links each setting to its row in the config reference
 - **Config reference** opens the display's page in the
   [config reference](/docs/config_guide), which spells out each setting's

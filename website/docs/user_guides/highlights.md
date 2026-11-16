@@ -30,7 +30,7 @@ every highlight with a link back to it.
 - The link in the Location column navigates the focused LGV on that assembly, or
   opens one, zoomed out a little for context. `Ctrl`/`Cmd` + `Shift` + `M`
   navigates to the newest highlight.
-- Click a Label cell and type to name a highlight. **Show → Show highlight
+- Click a Label cell and type to name a highlight. **Highlights → Show highlight
   labels** in an LGV's menu shows or hides the names on the bands in every view.
 - The Color column sets a band's color. Tick rows to recolor or delete several
   at once.
@@ -40,8 +40,8 @@ every highlight with a link back to it.
 ## Showing, hiding and removing
 
 **Show highlights** hides or shows the bands in every view at once. An LGV has
-it under **Show**, a dotplot has it at the top of its menu, and the list has it
-in its menu. Making or recoloring a highlight shows them again.
+it under **Highlights**, a dotplot has it at the top of its menu, and the list
+has it in its menu. Making or recoloring a highlight shows them again.
 
 A band's chip menu has **Dismiss highlight**. In the list, tick rows and press
 the delete icon.

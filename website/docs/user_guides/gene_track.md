@@ -23,18 +23,17 @@ are drawn:
   track's height has rows for
 - **All transcripts:** every transcript in a separate row, whatever the zoom or
   track height. A stack taller than the track scrolls
-- **Representative transcript:** one isoform per gene, which is also drawn first
-  when a gene is stacked
+- **Representative transcript:** one isoform per gene
 
-The representative isoform is:
+The representative isoform, drawn first when a gene is stacked, is:
 
 - **Tagged:** the one the annotation tags, `RefSeq Select` or `MANE Select`
   (NCBI), `MANE_Select` or `Ensembl_canonical` (Ensembl, GENCODE)
 - **Untagged:** the longest by protein length, or by genomic span for a gene
   with no coding isoform
-- **Configured:** the [`transcripts`](/docs/config/featuretranscripts) setting
-  names the attribute (`transcripts.field`) and the tags that rank first, in
-  order (`transcripts.sort`)
+- **Configured:** whatever the [`transcripts`](/docs/config/featuretranscripts)
+  setting picks, by attribute (`transcripts.field`) and the tags that rank
+  first, in order (`transcripts.sort`)
 
 While the display leaves transcripts out:
 
