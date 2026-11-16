@@ -2805,6 +2805,7 @@
         "bandDragBounds",
         "boundStackedBands",
         "dragBandHeight",
+        "fillStackedBands",
         "reservedPx",
         "stackBands"
       ],
@@ -4896,6 +4897,7 @@
         "GROUP_LABEL_RADIUS",
         "GROUP_LABEL_TINT",
         "groupChipTop",
+        "groupChipTops",
         "groupSectionLabel",
         "sectionKey"
       ],

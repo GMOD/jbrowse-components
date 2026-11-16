@@ -63,7 +63,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | Member | Description |
 | --- | --- |
 | <span id="getter-view">**view**</span><br><code><a href="../lineargenomeview">LinearGenomeView</a></code> |  |
-| <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> |  |
+| <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> | The connector band, else the matrix, starts at the top-left. |
 | <span id="getter-colorfield">**colorField**</span><br><code>LDMetric</code> | `encoding.color.field`, the statistic the fetch asks the file for. |
 | <span id="getter-shownames">**showNames**</span><br><code>boolean</code> |  |
 | <span id="getter-inring">**inRing**</span><br><code>boolean</code> | Whether a circular view's ring hosts the display (`hostHeight`). |

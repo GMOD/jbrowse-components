@@ -270,6 +270,22 @@ import { electronRenderer } from '@jbrowse/core/util/electron'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/electron.ts)
 
+## fillStackedBands
+
+A stack that fills `height` exactly, for a plot that draws nothing under its
+bands: every band reserving px takes a share of `height` in proportion to
+the px it reserves (scaleBandHeights, whole px, from 0), and every
+other band fills 0. Answers each band's filled height by key.
+
+```js
+import { fillStackedBands } from '@jbrowse/core/util/bandLayout'
+
+// type signature
+<K extends string>(order: readonly K[], bands: Record<K, Band>, height: number) => (key: K) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
+
 ## getAssemblyHost
 
 The host's assembly manager, for a module that resolves names and nothing
