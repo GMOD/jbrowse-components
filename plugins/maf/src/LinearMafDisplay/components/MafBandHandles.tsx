@@ -2,7 +2,7 @@ import { getContainingTrack } from '@jbrowse/core/util'
 import { BandSeamHandle } from '@jbrowse/display-kit/BandSeamHandle'
 import { observer } from 'mobx-react'
 
-import { MAF_BAND_ORDER } from '../mafTopBands.ts'
+import { MAF_BAND_ORDER, mafBandHandle } from '../mafTopBands.ts'
 
 import type { MafBandKey } from '../mafTopBands.ts'
 import type { LinearMafDisplayModel } from '../stateModel.ts'
@@ -28,8 +28,9 @@ const SET_BAND_HEIGHT: Record<
  * the drag sets the track's own resizing flag, which suppresses the dense
  * letter overlay as the track-height handle does.
  *
- * None while the rows are hidden: the bands then fill the track, so its own
- * bottom edge sizes them.
+ * While the rows are hidden the track's bottom edge sizes the bands and the
+ * coverage takes what the conservation band leaves, so only the conservation
+ * band gets a handle, on its top seam, where dragging up grows it.
  */
 const MafBandHandles = observer(function MafBandHandles({
   model,
@@ -38,16 +39,17 @@ const MafBandHandles = observer(function MafBandHandles({
 }) {
   const { rects } = model.topBands
   const track = getContainingTrack(model)
-  return model.showAlignments ? (
+  return (
     <>
       {MAF_BAND_ORDER.map(key => {
-        const { top, height } = rects[key]
-        return height > 0 ? (
+        const handle = mafBandHandle(rects, key, model.showAlignments)
+        return handle ? (
           <BandSeamHandle
             key={key}
-            seam={top + height}
+            seam={handle.seam}
+            reverse={handle.reverse}
             title={`Drag to resize the ${key} band`}
-            value={height}
+            value={rects[key].height}
             onChange={h => {
               SET_BAND_HEIGHT[key](model, h)
             }}
@@ -61,7 +63,7 @@ const MafBandHandles = observer(function MafBandHandles({
         ) : null
       })}
     </>
-  ) : null
+  )
 })
 
 export default MafBandHandles

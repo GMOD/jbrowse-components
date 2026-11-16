@@ -1,6 +1,6 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { renderToString } from 'react-dom/server'
 
 import MafBandHandles from './components/MafBandHandles.tsx'
@@ -64,13 +64,34 @@ describe('the conservation band paints the height it reserved', () => {
     expect(display.rowsTopOffset - 4).toBeLessThan(display.height)
   })
 
-  // with the rows hidden the bands fill the track, so the track's own bottom
-  // edge sizes them and no band has a handle of its own
-  it('offers no band handle while the rows are hidden', () => {
+  // with the rows hidden the coverage takes what the conservation band leaves
+  // of the track, so only the conservation band has a handle, on its top seam,
+  // and a drag up grows it until the coverage is down to its floor
+  it('offers the conservation band alone a handle while the rows are hidden', () => {
     const display = overStatedBand()
     display.setShowAlignments(false)
-    const { container } = render(<MafBandHandles model={display} />)
-    expect(container.querySelectorAll('div')).toHaveLength(0)
+    expect(display.topBands.rects).toEqual({
+      coverage: { top: 0, height: 20 },
+      conservation: { top: 20, height: 180 },
+    })
+    render(<MafBandHandles model={display} />)
+    expect(screen.queryByTitle('Drag to resize the coverage band')).toBeNull()
+    const seam = screen.getByTitle('Drag to resize the conservation band')
+    expect(seam.style.top).toBe('16px')
+
+    const { coverageHeight, height } = display
+    const drag = (dy: number) => {
+      fireEvent.pointerDown(seam, { clientY: 500, pointerId: 1 })
+      fireEvent.pointerMove(seam, { clientY: 500 + dy, pointerId: 1 })
+      fireEvent.pointerUp(seam, { clientY: 500 + dy, pointerId: 1 })
+    }
+    drag(100)
+    expect(display.conservationHeight).toBe(80)
+    expect(display.topBands.rects.coverage.height).toBe(120)
+    drag(-1000)
+    expect(display.conservationHeight).toBe(180)
+    expect(display.coverageHeight).toBe(coverageHeight)
+    expect(display.height).toBe(height)
   })
 
   // The axis is the chrome's, off `axes`: the band it declares is the

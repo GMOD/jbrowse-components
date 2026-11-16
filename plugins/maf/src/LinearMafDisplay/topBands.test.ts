@@ -155,9 +155,10 @@ describe('two bands at their ceilings', () => {
   })
 })
 
-// With the rows hidden the bands are the display: they fill the track's height
-// in proportion to their stated heights, which nothing writes, so showing the
-// rows again puts every band back and moves nothing below the track.
+// With the rows hidden the bands are the display: the conservation band keeps
+// its stated height and the coverage fills the rest of the track, and hiding
+// the rows writes no height, so showing them again puts every band back and
+// moves nothing below the track.
 describe('bands with the rows hidden', () => {
   const hidden = () => {
     const { display } = createMafTestEnvironment().createDisplay()
@@ -167,14 +168,38 @@ describe('bands with the rows hidden', () => {
     return display
   }
 
-  it('fill the track height in proportion to their stated heights', () => {
+  it('keep the conservation band its stated height, the coverage the rest', () => {
     const display = hidden()
     expect(display.height).toBe(250)
     expect(display.topBands.rects).toEqual({
-      coverage: { top: 0, height: 132 },
-      conservation: { top: 132, height: 118 },
+      coverage: { top: 0, height: 210 },
+      conservation: { top: 210, height: 40 },
     })
     expect(display.rowsTopOffset).toBe(250)
+  })
+
+  it('give the coverage no say, however tall it is stated', () => {
+    const display = hidden()
+    setConf(display, ['coverage', 'height'], 5000)
+    expect(display.topBands.rects).toEqual({
+      coverage: { top: 0, height: 210 },
+      conservation: { top: 210, height: 40 },
+    })
+  })
+
+  it('leave the coverage its floor on a short track', () => {
+    const display = hidden()
+    display.setHeight(50)
+    expect(display.topBands.rects).toEqual({
+      coverage: { top: 0, height: 20 },
+      conservation: { top: 20, height: 30 },
+    })
+  })
+
+  it('fill the track with the conservation band alone while coverage is off', () => {
+    const display = hidden()
+    display.setShowCoverage(false)
+    expect(display.topBands.rects.conservation).toEqual({ top: 0, height: 250 })
   })
 
   it('a band alone fills the track, an off band takes nothing', () => {

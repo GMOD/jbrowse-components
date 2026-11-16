@@ -105,8 +105,10 @@ import {
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import {
+  dragRowsHiddenConservation,
   drawnMafTopBands,
   mafTopBands,
+  rowsHiddenBandsHeight,
   rowsHiddenTrackHeight,
 } from './mafTopBands.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
@@ -826,8 +828,10 @@ export default function stateModelFactory(
          * #getter
          * The band stack as drawn, coverage above conservation: the stated
          * stack while the rows show, and while they are hidden the bands
-         * filling the plot in proportion to their stated heights
-         * (`drawnMafTopBands`), under the canvas's backing-store limit. Every
+         * filling the plot (`drawnMafTopBands`), under the canvas's
+         * backing-store limit: the conservation band at its stated height and
+         * the coverage taking the rest, or with coverage off, the
+         * conservation band alone. Every
          * top, height and offset reads this; a band that reserves 0 px does
          * not draw.
          */
@@ -987,18 +991,27 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * The conservation band's height, dragged as `setCoverageHeight` is.
+         * The conservation band's height, dragged as `setCoverageHeight` is
+         * while the rows show. While they are hidden the coverage takes what
+         * the conservation band leaves, so the drag stops where the coverage
+         * keeps its floor (`dragRowsHiddenConservation`).
          */
         setConservationHeight(height: number) {
           setConf(
             self,
             ['conservation', 'height'],
-            dragBandHeight(
-              self.statedTopBands,
-              'conservation',
-              self.bandPlot,
-              height,
-            ),
+            self.showAlignments
+              ? dragBandHeight(
+                  self.statedTopBands,
+                  'conservation',
+                  self.bandPlot,
+                  height,
+                )
+              : dragRowsHiddenConservation(
+                  self.statedBands.conservation,
+                  rowsHiddenBandsHeight(self),
+                  height,
+                ),
           )
         },
       }))

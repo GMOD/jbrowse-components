@@ -5,9 +5,12 @@
  * export, the handles, the labels, the axes and the tooltip — take the band
  * from here.
  */
+import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
 import {
   boundStackedBands,
+  dragBandHeight,
   fillStackedBands,
+  reservedPx,
   stackBands,
 } from '@jbrowse/core/util/bandLayout'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
@@ -53,26 +56,96 @@ export function mafTopBands(bands: Record<MafBandKey, Band>, plot: BandPlot) {
   )
 }
 
+// The conservation band alone, at its stated height bound to the room that
+// leaves the coverage above it its floor of `height`, and folded.
+function conservationUnderCoverage(conservation: Band, height: number) {
+  const plot = { height, floor: MIN_BAND_HEIGHT }
+  return {
+    plot,
+    stack: stackBands(
+      ['conservation'],
+      boundStackedBands(['conservation'], { conservation }, plot),
+    ),
+  }
+}
+
+function remainderHeights(bands: Record<MafBandKey, Band>, height: number) {
+  const { stack } = conservationUnderCoverage(bands.conservation, height)
+  return {
+    coverage: height - stack.bottom,
+    conservation: stack.height.conservation,
+  }
+}
+
+function proportionalHeights(bands: Record<MafBandKey, Band>, height: number) {
+  const filled = fillStackedBands(
+    MAF_BAND_ORDER,
+    boundStackedBands(MAF_BAND_ORDER, bands, { height, floor: 0 }),
+    height,
+  )
+  return { coverage: filled('coverage'), conservation: filled('conservation') }
+}
+
 /**
- * The bands filling the whole plot, for a track whose rows are hidden: the
- * bound stated heights scaled in proportion to fill `plot.height`
- * (`fillStackedBands`), folded as {@link mafTopBands} folds them.
+ * The bands filling `height`, for a track whose rows are hidden. With
+ * coverage, the conservation band keeps its stated height and the coverage
+ * takes the rest, so the coverage's stated height has no say; without it, the
+ * bound stated heights scale in proportion (`fillStackedBands`). Folded as
+ * {@link mafTopBands} folds them.
  */
 export function filledMafTopBands(
   bands: Record<MafBandKey, Band>,
-  plot: BandPlot,
+  height: number,
 ) {
-  const bound = boundStackedBands(MAF_BAND_ORDER, bands, plot)
-  const filled = fillStackedBands(MAF_BAND_ORDER, bound, plot.height)
+  const filled =
+    reservedPx(bands.coverage) > 0
+      ? remainderHeights(bands, height)
+      : proportionalHeights(bands, height)
   return withRects(
     stackBands(MAF_BAND_ORDER, {
-      coverage: { active: bound.coverage.active, height: filled('coverage') },
+      coverage: { active: bands.coverage.active, height: filled.coverage },
       conservation: {
-        active: bound.conservation.active,
-        height: filled('conservation'),
+        active: bands.conservation.active,
+        height: filled.conservation,
       },
     }),
   )
+}
+
+/**
+ * One drag of the conservation band while the rows are hidden, the coverage
+ * taking the rest of `height`: from `MIN_BAND_HEIGHT` up to the room that
+ * leaves the coverage its floor.
+ */
+export function dragRowsHiddenConservation(
+  conservation: Band,
+  height: number,
+  target: number,
+) {
+  const { stack, plot } = conservationUnderCoverage(conservation, height)
+  return dragBandHeight(stack, 'conservation', plot, target)
+}
+
+/**
+ * Where band `key`'s resize handle sits and whether a drag down lowers its
+ * height, or undefined where it has none. A band reserving no px has none.
+ * With the rows shown the handle sits on the band's bottom seam. With them
+ * hidden the coverage takes what the conservation band leaves, so it has no
+ * handle, and the conservation band's sits on its top seam.
+ */
+export function mafBandHandle(
+  rects: Record<MafBandKey, MafBandRect>,
+  key: MafBandKey,
+  showRows: boolean,
+) {
+  const { top, height } = rects[key]
+  return height > 0
+    ? showRows
+      ? { seam: top + height, reverse: false }
+      : key === 'conservation' && rects.coverage.height > 0
+        ? { seam: top, reverse: true }
+        : undefined
+    : undefined
 }
 
 /**
@@ -84,10 +157,24 @@ export function rowsHiddenTrackHeight(allottedHeight: number) {
 }
 
 /**
+ * The height the bands fill while the rows are hidden: the track's
+ * {@link rowsHiddenTrackHeight}, less the lines the sidebar keeps above the
+ * rows.
+ */
+export function rowsHiddenBandsHeight({
+  allottedHeight,
+  rowsLeadHeight,
+}: {
+  allottedHeight: number
+  rowsLeadHeight: number
+}) {
+  return rowsHiddenTrackHeight(allottedHeight) - rowsLeadHeight
+}
+
+/**
  * The bands as drawn: the stated stack ({@link mafTopBands}) while the rows
- * show, and while they are hidden the bands filling the plot
- * ({@link filledMafTopBands}) under the track's {@link rowsHiddenTrackHeight},
- * less the lines the sidebar keeps above the rows.
+ * show, and while they are hidden the bands filling
+ * {@link rowsHiddenBandsHeight} ({@link filledMafTopBands}).
  */
 export function drawnMafTopBands({
   bands,
@@ -104,8 +191,8 @@ export function drawnMafTopBands({
 }) {
   return showRows
     ? mafTopBands(bands, plot)
-    : filledMafTopBands(bands, {
-        ...plot,
-        height: rowsHiddenTrackHeight(allottedHeight) - rowsLeadHeight,
-      })
+    : filledMafTopBands(
+        bands,
+        rowsHiddenBandsHeight({ allottedHeight, rowsLeadHeight }),
+      )
 }
