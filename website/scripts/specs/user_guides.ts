@@ -173,7 +173,12 @@ export const userGuideSpecs: ScreenshotSpec[] = [
     name: 'spreadsheet/feature_menu',
     url: sessionSpec(DEMO_CONFIG, {
       views: [
-        { type: 'SpreadsheetView', assembly: 'hg19', uri: SKBR3_SNIFFLES_VCF },
+        {
+          type: 'SpreadsheetView',
+          displayName: 'SK-BR-3 Sniffles SV calls',
+          assembly: 'hg19',
+          uri: SKBR3_SNIFFLES_VCF,
+        },
       ],
     }),
     formAssembly: true,
