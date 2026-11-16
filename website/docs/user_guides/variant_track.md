@@ -8,8 +8,8 @@ A variant track displays VCF records, one glyph per call, with one row per
 sample under them when the VCF has genotypes, and a click opens a per-sample
 genotype table. The track menu's **Display types** switches to marks, which join
 each breakend to its mate. **Color by** buckets variants by SnpEff/VEP
-consequence severity or SV type with one click, or colors by any INFO field via
-a jexl expression (e.g. minor allele frequency).
+consequence severity or SV type with one click, and **Color by → Field...**
+colors by any record or INFO field (e.g. minor allele frequency).
 
 <Figure caption="Variant track marking an SNV beside the alignment track evidence." src="/img/variant_with_pileup.png" />
 
@@ -52,8 +52,9 @@ trio's genotypes this way to check whether a call is inherited.
 - **Consequence impact** buckets each variant by the severity of its most severe
   predicted consequence, read from SnpEff `ANN` or VEP `CSQ` in the INFO field:
   HIGH red, MODERATE orange, LOW yellow, MODIFIER grey
-- **SV type** colors by structural-variant class, with fixed colors per class
-  and an ascending rainbow for copy-number alleles (`<CN0>`, `<CN1>`, ...)
+- **SV type** colors by structural-variant class, one fixed color per class;
+  copy-number alleles count as a deletion (`<CN0>`), copy-number variable
+  (`<CN1>`) or duplication (`<CN2>` and up)
 - **Field...** takes a field name and colors by its value, one palette color per
   value, with a key: a record field such as `type` or `FILTER`, or a path into
   INFO such as `INFO.SVCLASS`
@@ -65,8 +66,8 @@ and [SV type](/docs/user_guides/multivariant_track#coloring-by-sv-type) list the
 terms in each tier and the color per class.
 
 For anything else, set the display's `encoding.color` to a
-[jexl](/docs/config_guides/jexl) expression. The variants plugin registers
-helpers for minor allele frequency, missingness and consequence impact; see
+[jexl](/docs/config_guides/jexl) expression, with helpers for minor allele
+frequency, missingness and consequence impact; see
 [helper functions for jexl color expressions](/docs/config_guides/variant_track#helper-functions-for-jexl-color-expressions).
 
 ## See also
