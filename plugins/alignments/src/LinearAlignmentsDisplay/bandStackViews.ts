@@ -1,6 +1,8 @@
 import { buildSashimiDownKeys } from './groupedDataMaps.ts'
 import {
   boundBelowCoverageHeights,
+  dragBelowCoverageBand,
+  dragPileupHiddenStrip,
   fittedBelowCoverageHeights,
   laneSlotHeight,
   pileupHiddenBands,
@@ -14,6 +16,7 @@ import type {
   ReadConnectionsPlacement,
   SashimiPlacement,
 } from './constants.ts'
+import type { BelowCoverageBandsInput, StripKey } from './sectionLayout.ts'
 import type { BandPlot } from '@jbrowse/core/util/bandLayout'
 
 /** What {@link sashimiDownViews} reads: the fetch and the junction settings. */
@@ -145,8 +148,11 @@ export function bandStackViews(self: BandStackHost) {
     /**
      * #getter
      * The stated stack the bands fill each lane's slot from while the pileup
-     * is hidden: bound against the track's height with no floor kept for
-     * rows (`pileupHiddenBands`), as MAF binds its bands with its rows hidden.
+     * is hidden, bound against the track's height (`pileupHiddenBands`), as
+     * MAF binds its bands with its rows hidden: with coverage, the strips
+     * keep their stated heights, leaving the coverage its floor, and the
+     * coverage takes the rest; without it, top-down with no floor kept for
+     * rows.
      */
     get pileupHiddenBandsInput() {
       return pileupHiddenBands(
@@ -171,8 +177,9 @@ export function bandStackViews(self: BandStackHost) {
      * #getter
      * The three band heights as every consumer draws them: the stated
      * heights while the pileup shows, and while it is hidden the pooled
-     * stack fitted to fill `laneSlot`, each band in proportion to its
-     * stated height.
+     * stack fitted to fill `laneSlot` (`fittedBelowCoverageHeights`): the
+     * strips at their stated heights and the coverage taking the rest, or
+     * with coverage off, the strips in proportion to their stated heights.
      */
     get bandHeights() {
       return self.showPileup
@@ -180,4 +187,39 @@ export function bandStackViews(self: BandStackHost) {
         : fittedBelowCoverageHeights(this.pileupHiddenBandsInput, this.laneSlot)
     },
   }
+}
+
+/** What {@link dragStripHeight} reads: both stacks and which one draws. */
+export interface StripDragHost {
+  showPileup: boolean
+  belowCoverageBandsInput: BelowCoverageBandsInput
+  bandPlot: BandPlot
+  pileupHiddenBandsInput: BelowCoverageBandsInput
+  laneSlot: number
+}
+
+/**
+ * The stated height one drag of strip `key` writes: clamped against the
+ * pileup's plot while it shows (`dragBelowCoverageBand`), and while it is
+ * hidden to the room that leaves each lane's coverage its floor
+ * (`dragPileupHiddenStrip`).
+ */
+export function dragStripHeight(
+  self: StripDragHost,
+  key: StripKey,
+  target: number,
+) {
+  return self.showPileup
+    ? dragBelowCoverageBand(
+        self.belowCoverageBandsInput,
+        key,
+        self.bandPlot,
+        target,
+      )
+    : dragPileupHiddenStrip(
+        self.pileupHiddenBandsInput,
+        key,
+        self.laneSlot,
+        target,
+      )
 }

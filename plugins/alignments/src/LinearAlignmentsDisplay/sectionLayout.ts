@@ -1,3 +1,4 @@
+import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
 import {
   boundStackedBands,
   dragBandHeight,
@@ -22,6 +23,11 @@ export const LANE_BAND_ORDER = [
   'sashimi',
 ] as const
 export type LaneBandKey = (typeof LANE_BAND_ORDER)[number]
+
+// The strips under the coverage histogram, which keep their stated heights
+// while the pileup is hidden, the coverage taking the rest of the slot.
+const STRIP_ORDER = ['readConnections', 'sashimi'] as const
+export type StripKey = (typeof STRIP_ORDER)[number]
 
 // The geometry of one stacked lane, in content space. The lane's own identity
 // and data ride beside it on `LaneSection`.
@@ -95,6 +101,36 @@ export function laneBandBottom(
   return section.coverageTop + top[key] + reserved[key]
 }
 
+/**
+ * Where band `key`'s resize handle sits in section `index`, how it is geared
+ * (`stackedBandGain`), and whether a drag down lowers the height, or
+ * undefined where the band has none. A band reserving no px has none. With
+ * the pileup shown the handle sits on the band's bottom seam. With it hidden
+ * the coverage takes what the strips leave of each slot, so it has no handle,
+ * and a strip's sits on its top seam, where dragging up grows it and the
+ * coverage gives way; slots never move, so it moves 1 px per px.
+ */
+export function laneBandHandle(
+  sections: readonly Pick<Section, 'coverageTop' | 'bands'>[],
+  index: number,
+  key: LaneBandKey,
+  showPileup: boolean,
+) {
+  const section = sections[index]!
+  const { top, reserved } = section.bands
+  return reserved[key] > 0
+    ? showPileup
+      ? {
+          seam: laneBandBottom(section, key),
+          gain: stackedBandGain(sections, index, key),
+          reverse: false,
+        }
+      : key !== 'coverage' && reserved.coverage > 0
+        ? { seam: section.coverageTop + top[key], gain: 1, reverse: true }
+        : undefined
+    : undefined
+}
+
 // The settings half of every lane's band stack: whether each strip MAY be
 // reserved and how tall, with neither data half answered.
 export interface BelowCoverageBandsSettings {
@@ -148,10 +184,11 @@ function coverageOverlayBand(stack: BandStack<LaneBandKey>) {
 // strip of their own otherwise. Either strip is active only for a lane with
 // something to put in it.
 export function arcsOverlayCoverage(s: BelowCoverageBandsSettings) {
-  return (
-    !s.readConnectionsDown &&
-    reservedPx({ active: s.showCoverage, height: s.coverageHeight }) > 0
-  )
+  return !s.readConnectionsDown && coverageReserves(s)
+}
+
+function coverageReserves(s: BelowCoverageBandsSettings) {
+  return reservedPx({ active: s.showCoverage, height: s.coverageHeight }) > 0
 }
 
 function arcsDrawn(s: BelowCoverageBandsSettings, lane: LaneBandData) {
@@ -237,22 +274,43 @@ export function pileupHiddenHeight(s: {
     : s.fitTargetHeight
 }
 
-// The stated stack while the pileup is hidden, bound against the height the
-// bands fill with no floor kept for rows, so a short track still draws every
-// band that fits rather than the ones above a phantom pileup.
-export function pileupHiddenBands(s: BelowCoverageBandsInput, height: number) {
-  return { ...s, ...boundBelowCoverageHeights(s, { height, floor: 0 }) }
+// The plot the strips share while the pileup is hidden: a lane's slot, less
+// the floor the coverage keeps above them.
+function stripPlot(slot: number) {
+  return { height: slot, floor: MIN_BAND_HEIGHT }
 }
 
-// Each lane's whole-px slot of `height` while the pileup is hidden; no lanes
-// draws as one.
-export function laneSlotHeight(height: number, laneCount: number) {
-  return Math.floor(height / Math.max(1, laneCount))
+// The pooled strips at their stated heights, bound top-down to the room the
+// coverage's floor leaves of `slot`, and folded.
+function stripStack(s: BelowCoverageBandsInput, slot: number) {
+  const { readConnections, sashimi } = bandStackOf(s, s)
+  return stackBands(
+    STRIP_ORDER,
+    boundStackedBands(
+      STRIP_ORDER,
+      { readConnections, sashimi },
+      stripPlot(slot),
+    ),
+  )
 }
 
-// The pooled band stack fitted to fill a lane's slot: every band the stated
-// stack reserves takes its share in proportion, every other band 0.
-export function fittedBelowCoverageHeights(
+// The strips at their stated heights, and the coverage taking what they leave
+// of `slot`.
+function coverageRemainderHeights(
+  s: BelowCoverageBandsInput,
+  slot: number,
+): LaneBandHeights {
+  const strips = stripStack(s, slot)
+  return {
+    coverageHeight: slot - strips.bottom,
+    readConnectionsHeight: strips.height.readConnections,
+    sashimiHeight: strips.height.sashimi,
+  }
+}
+
+// Every band the stated stack reserves taking its share of `slot` in
+// proportion, every other band 0.
+function proportionalHeights(
   s: BelowCoverageBandsInput,
   slot: number,
 ): LaneBandHeights {
@@ -262,6 +320,50 @@ export function fittedBelowCoverageHeights(
     readConnectionsHeight: filled('readConnections'),
     sashimiHeight: filled('sashimi'),
   }
+}
+
+// The stated stack while the pileup is hidden, bound against the height the
+// bands fill. With coverage, the strips keep their stated heights and the
+// coverage takes the rest, so its own stated height takes no room from them.
+// Without it, top-down with no floor kept for rows, so a short track still
+// draws every band that fits rather than the ones above a phantom pileup.
+export function pileupHiddenBands(s: BelowCoverageBandsInput, height: number) {
+  return {
+    ...s,
+    ...(coverageReserves(s)
+      ? coverageRemainderHeights(s, height)
+      : boundBelowCoverageHeights(s, { height, floor: 0 })),
+  }
+}
+
+// Each lane's whole-px slot of `height` while the pileup is hidden; no lanes
+// draws as one.
+export function laneSlotHeight(height: number, laneCount: number) {
+  return Math.floor(height / Math.max(1, laneCount))
+}
+
+// The pooled band stack fitted to fill a lane's slot. With coverage, the
+// strips keep their stated heights and the coverage takes the rest, one
+// height for every lane. Without it, the bands fill the slot in proportion.
+export function fittedBelowCoverageHeights(
+  s: BelowCoverageBandsInput,
+  slot: number,
+) {
+  return coverageReserves(s)
+    ? coverageRemainderHeights(s, slot)
+    : proportionalHeights(s, slot)
+}
+
+// One drag of one strip while the pileup is hidden, over the strips as each
+// lane's slot draws them: from `MIN_BAND_HEIGHT` up to the room that leaves
+// the coverage its floor beside the other strips.
+export function dragPileupHiddenStrip(
+  s: BelowCoverageBandsInput,
+  key: StripKey,
+  slot: number,
+  target: number,
+) {
+  return dragBandHeight(stripStack(s, slot), key, stripPlot(slot), target)
 }
 
 // One drag of one band over the pooled stack, which every lane's handle for

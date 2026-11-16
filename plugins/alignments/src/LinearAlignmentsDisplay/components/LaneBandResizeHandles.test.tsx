@@ -59,10 +59,20 @@ test('a band reserving no px gets no handle', () => {
   expect(screen.getAllByTitle(titleOf('read connections'))).toHaveLength(2)
 })
 
-// with the pileup hidden the bands fill the track, which its own bottom edge
-// sizes, so no band offers a drag of its own
-test('no band gets a handle while the pileup is hidden', () => {
+// with the pileup hidden the coverage takes what the strips leave of each
+// slot, so only the strips get a handle, on the seam they share with the band
+// above, one per group
+test('only the strips get a handle while the pileup is hidden, on their tops', () => {
   renderHandles({ coverage: 40, readConnections: 30, sashimi: 20 }, false)
+  expect(screen.queryAllByTitle(titleOf('coverage'))).toHaveLength(0)
+  const tops = (band: string) =>
+    screen.getAllByTitle(titleOf(band)).map(h => h.style.top)
+  expect(tops('read connections')).toEqual(['36px', '236px'])
+  expect(tops('sashimi')).toEqual(['66px', '266px'])
+})
+
+test('no strip gets a handle while the pileup is hidden and coverage is off', () => {
+  renderHandles({ coverage: 0, readConnections: 30, sashimi: 20 }, false)
   for (const band of ['coverage', 'read connections', 'sashimi']) {
     expect(screen.queryAllByTitle(titleOf(band))).toHaveLength(0)
   }

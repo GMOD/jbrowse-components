@@ -97,7 +97,11 @@ import {
   readPaletteViews,
 } from './alignmentsColorViews.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
-import { bandStackViews, sashimiDownViews } from './bandStackViews.ts'
+import {
+  bandStackViews,
+  dragStripHeight,
+  sashimiDownViews,
+} from './bandStackViews.ts'
 import { buildReadIdsByChainName } from './chainFields.ts'
 import { rgb255 } from './colorUtils.ts'
 import { firstSectionHighlight } from './components/arcHitTest.ts'
@@ -2648,33 +2652,26 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * With the pileup hidden, clamped to the room that leaves each
+           * lane's coverage its floor (`dragPileupHiddenStrip`).
            */
           setReadConnectionsHeight(height: number) {
             setConf(
               self,
               ['readConnections', 'height'],
-              dragBelowCoverageBand(
-                self.belowCoverageBandsInput,
-                'readConnections',
-                self.bandPlot,
-                height,
-              ),
+              dragStripHeight(self, 'readConnections', height),
             )
           },
 
           /**
            * #action
+           * Clamped as `setReadConnectionsHeight` is.
            */
           setSashimiHeight(height: number) {
             setConf(
               requireReadsConf(self),
               ['sashimi', 'height'],
-              dragBelowCoverageBand(
-                self.belowCoverageBandsInput,
-                'sashimi',
-                self.bandPlot,
-                height,
-              ),
+              dragStripHeight(self, 'sashimi', height),
             )
           },
 

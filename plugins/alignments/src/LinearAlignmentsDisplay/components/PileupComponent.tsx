@@ -9,11 +9,7 @@ import {
 import { groupSectionLabel } from '@jbrowse/display-kit/groupLabelStyle'
 import { observer } from 'mobx-react'
 
-import {
-  LANE_BAND_ORDER,
-  laneBandBottom,
-  stackedBandGain,
-} from '../sectionLayout.ts'
+import { LANE_BAND_ORDER, laneBandHandle } from '../sectionLayout.ts'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import PileupTruncationRule from './PileupTruncationRule.tsx'
@@ -120,6 +116,7 @@ export const PileupResizeHandle = observer(function PileupResizeHandle({
   onChange,
   title,
   gain,
+  reverse,
 }: {
   seam: number
   canvasHeight: number
@@ -127,6 +124,7 @@ export const PileupResizeHandle = observer(function PileupResizeHandle({
   onChange: (height: number) => void
   title: string
   gain?: number
+  reverse?: boolean
 }) {
   // the handle being dragged stays mounted when its seam leaves the canvas:
   // unmounting it releases the pointer and ends the drag with no pointerup
@@ -136,6 +134,7 @@ export const PileupResizeHandle = observer(function PileupResizeHandle({
     <BandSeamHandle
       seam={seam}
       gain={gain}
+      reverse={reverse}
       value={value}
       onChange={height => {
         onChange(height)
@@ -172,21 +171,17 @@ const SET_BAND_HEIGHT: Record<
   },
 }
 
-// A resize handle at the bottom seam of every band each section reserves, in
-// the stack's own order. A band height is display-global, so every handle for
-// a band resizes it in every section, and grouped mode still gets one
-// affordance per group, scrolling with its section and culled off-screen;
-// ungrouped is the single sticky section.
+// A resize handle on every band each section reserves, in the stack's own
+// order, placed and geared by `laneBandHandle`. A band height is
+// display-global, so every handle for a band resizes it in every section, and
+// grouped mode still gets one affordance per group, scrolling with its section
+// and culled off-screen; ungrouped is the single sticky section. The title
+// says the drag is display-wide, since the bands the user is NOT pointing at
+// move too.
 //
-// Gated per section on the px the band reserves: a lane that reserves no strip
-// has none to resize, and its handle would land on the pixel of the one above
-// it. The same count gears each handle, since the Nth band of a kind sits
-// below N of them and moves N px per px of height, while a lane without one
-// passes the drag straight through. The title says the drag is display-wide,
-// since the bands the user is NOT pointing at move too.
-//
-// None while the pileup is hidden: the bands then fill the track, so the
-// display's bottom edge, the track height's, is the one that sizes them.
+// While the pileup is hidden the track's bottom edge sizes each lane's slot,
+// the coverage takes what the strips leave of it, and only the strips get a
+// handle, on their top seam.
 export const LaneBandResizeHandles = observer(function LaneBandResizeHandles({
   model,
 }: {
@@ -194,29 +189,36 @@ export const LaneBandResizeHandles = observer(function LaneBandResizeHandles({
 }) {
   const { height, scrollModel: scroll, isGrouped, renderSections } = model
   const scope = isGrouped ? ' of every group' : ''
-  return model.showPileup ? (
+  return (
     <>
       {renderSections.map((section, i) => (
         <Fragment key={sectionKey(section.groupKey)}>
-          {LANE_BAND_ORDER.map(key =>
-            section.bands.reserved[key] > 0 ? (
+          {LANE_BAND_ORDER.map(key => {
+            const handle = laneBandHandle(
+              renderSections,
+              i,
+              key,
+              model.showPileup,
+            )
+            return handle ? (
               <PileupResizeHandle
                 key={key}
-                seam={bandScreenTop(laneBandBottom(section, key), scroll)}
+                seam={bandScreenTop(handle.seam, scroll)}
                 canvasHeight={height}
-                gain={stackedBandGain(renderSections, i, key)}
+                gain={handle.gain}
+                reverse={handle.reverse}
                 value={section.bands.height[key]}
                 onChange={h => {
                   SET_BAND_HEIGHT[key](model, h)
                 }}
                 title={`Drag to resize the ${BAND_NAMES[key]} band${scope}`}
               />
-            ) : null,
-          )}
+            ) : null
+          })}
         </Fragment>
       ))}
     </>
-  ) : null
+  )
 })
 
 // Per-group pileup-height drag handles (in-track grouping only). Each sits at a
