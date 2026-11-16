@@ -69,9 +69,9 @@ function interfaceMembers(text: string, name: string) {
   }
   const body = text.slice(start, i - 1)
   return [...body.matchAll(/^ {2}(\w+)(\??):\s*(.+?)$/gm)].map(p => ({
-    name: p[1]!,
+    name: p[1] ?? '',
     optional: p[2] === '?',
-    type: p[3]!.replace(/,$/, '').trim(),
+    type: (p[3] ?? '').replace(/,$/, '').trim(),
   }))
 }
 
@@ -140,7 +140,7 @@ function collectBuilders(text: string, out: MenuBuilder[]) {
 function reExportedBuilders(corpus: SourceCorpus) {
   const text = corpus.read('packages/core/src/ui/menuItems.ts')
   return [...text.matchAll(/^export \{([\s\S]*?)\} from/gm)].flatMap(m =>
-    m[1]!
+    (m[1] ?? '')
       .split(',')
       .map(s => s.trim())
       .filter(Boolean),
@@ -168,16 +168,16 @@ function collectActions(corpus: SourceCorpus): MenuAction[] {
   let m: RegExpExecArray | null
   while ((m = re.exec(text)) !== null) {
     // the prose above the first @param, unwrapped
-    const description = m[1]!
+    const description = (m[1] ?? '')
       .split('\n')
       .map(l => l.replace(/^\s*\*\s?/, ''))
       .join(' ')
-      .split('@param')[0]!
+      .replace(/@param[\s\S]*/, '')
       .replace(/\s+/g, ' ')
       .trim()
-    const params = m[3]!
+    const params = (m[3] ?? '')
       .split(',')
-      .map(p => p.trim().split(':')[0]!.trim())
+      .map(p => p.trim().split(':')[0]?.trim())
       .filter(Boolean)
       .join(', ')
     actions.push({ signature: `${m[2]}(${params})`, description })
@@ -265,7 +265,7 @@ export function writeMenuDocs(corpus: SourceCorpus) {
         ['Action', 'Description'],
         collectActions(corpus).map(
           a =>
-            `| [${code(a.signature)}](/docs/models/rootappmenumixin#action-${a.signature.split('(')[0]!.toLowerCase()}) | ${a.description} |`,
+            `| [${code(a.signature)}](/docs/models/rootappmenumixin#action-${a.signature.slice(0, a.signature.indexOf('(')).toLowerCase()}) | ${a.description} |`,
         ),
       ),
     ),

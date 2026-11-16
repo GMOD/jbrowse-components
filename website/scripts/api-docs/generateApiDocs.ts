@@ -223,7 +223,7 @@ export function nameBindingPatterns(sig: string) {
 function closingIndex(sig: string, open: number) {
   let depth = 0
   for (let i = open; i < sig.length; i++) {
-    const c = sig[i]!
+    const c = sig.charAt(i)
     if (c === '"' || c === "'" || c === '`') {
       i = closingQuote(sig, i)
     } else if ('<{(['.includes(c)) {
@@ -386,7 +386,7 @@ function sortByName(exports: ApiExport[]) {
 // group's remainder in parentheses (`core/util` -> `@jbrowse/core (util)`),
 // and described by that package's manifest.
 function groupHeading({ group, exports }: ApiGroup) {
-  const root = packageRoot(exports[0]!.filename)
+  const root = exports[0] && packageRoot(exports[0].filename)
   const manifest = root ? packageManifest(root) : undefined
   const short = root?.split('/').at(-1)
   const rest =

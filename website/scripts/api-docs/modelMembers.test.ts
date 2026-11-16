@@ -142,7 +142,7 @@ test('a member a later block redefines is one row, with the override’s text', 
     accumulateModel(byFile, node)
   }
   const [model] = Object.values(byFile)
-  expect(model!.members.getters.map(m => [m.name, m.docs.trim()])).toEqual([
+  expect(model?.members.getters.map(m => [m.name, m.docs.trim()])).toEqual([
     ['rules', 'the drawn rules'],
   ])
 })

@@ -30,7 +30,7 @@ export function scanGroups(
   let depth = 0
   let found = -1
   for (let i = from; found < 0 && i >= 0 && i < sig.length; i += step) {
-    const c = sig[i]!
+    const c = sig.charAt(i)
     const mark: Mark =
       c === '"'
         ? 'quote'
@@ -133,7 +133,7 @@ function elideGroups(sig: string, max: number, keepLeading: boolean) {
   const enclosing: { before: string; open: string }[] = []
   let out = ''
   scanGroups(sig, 0, (i, _, mark) => {
-    const c = sig[i]!
+    const c = sig.charAt(i)
     const top = enclosing.at(-1)
     if (mark === 'quote') {
       out += sig.slice(i, closingQuote(sig, i) + 1)
@@ -243,7 +243,7 @@ function parameterNames(parameters: string) {
   const open = parameters.startsWith('<') ? groupEnd(parameters, 0) : 0
   const list = parameters.slice(open + 1, groupEnd(parameters, open) - 1)
   return list.trim()
-    ? topLevelSplit(list, ',').map(p => topLevelSplit(p, ':')[0]!)
+    ? topLevelSplit(list, ',').map(p => topLevelSplit(p, ':')[0] ?? p)
     : []
 }
 

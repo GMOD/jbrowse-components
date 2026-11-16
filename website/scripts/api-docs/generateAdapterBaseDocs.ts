@@ -61,10 +61,10 @@ function requiredMembers(text: string, name: string) {
     `interface ${name} extends BaseAdapter \\{([\\s\\S]*?)\\n\\}`,
   ).exec(text)
   if (iface) {
-    return [...iface[1]!.matchAll(/^\s*(\w+)\(/gm)].map(m => m[1]!)
+    return [...(iface[1] ?? '').matchAll(/^\s*(\w+)\(/gm)].map(m => m[1] ?? '')
   }
   return [...text.matchAll(/^\s*(?:public )?abstract (\w+)\(/gm)].map(
-    m => m[1]!,
+    m => m[1] ?? '',
   )
 }
 
@@ -85,7 +85,9 @@ export function collectAdapterBases(corpus: SourceCorpus): AdapterBase[] {
         name,
         description: description.join(' | '),
         members: requiredMembers(text, name),
-        extendsNames: [...text.matchAll(/\bextends (\w+)/g)].map(m => m[1]!),
+        extendsNames: [...text.matchAll(/\bextends (\w+)/g)].map(
+          m => m[1] ?? '',
+        ),
       })
     } else {
       untagged.push(path.basename(file))

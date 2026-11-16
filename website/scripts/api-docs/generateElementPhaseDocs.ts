@@ -41,7 +41,7 @@ export function collectElementPhases(): ElementPhase[] {
       text,
     )
   const groups = [...(declaration?.[1] ?? '').matchAll(/'([^']+)'/g)].map(
-    m => m[1]!,
+    m => m[1] ?? '',
   )
   if (groups.length === 0) {
     throw new Error(
@@ -68,9 +68,9 @@ export function collectElementPhases(): ElementPhase[] {
       continue
     }
     for (let j = i - 1; j >= 0 && j > i - 40; j--) {
-      const decl = /^ {2}(add\w+)\(/.exec(lines[j]!)
+      const decl = /^ {2}(add\w+)\(/.exec(lines[j] ?? '')
       if (decl) {
-        methods.set(call[1]!, decl[1]!)
+        methods.set(call[1] ?? '', decl[1] ?? '')
         break
       }
     }

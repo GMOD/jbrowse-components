@@ -42,15 +42,15 @@ export function collectGraphPlugin(): PluginEntry[] {
   })
 
   const [first, ...rest] = seen
-  const canonical = JSON.stringify(first!.plugins)
+  const canonical = JSON.stringify(first?.plugins)
   for (const other of rest) {
     if (JSON.stringify(other.plugins) !== canonical) {
       throw new Error(
-        `${first!.file} and ${other.file} declare ${GRAPH_PLUGIN} differently, so no single fence is true for both pages that install from them:\n  ${canonical}\n  ${JSON.stringify(other.plugins)}`,
+        `${first?.file} and ${other.file} declare ${GRAPH_PLUGIN} differently, so no single fence is true for both pages that install from them:\n  ${canonical}\n  ${JSON.stringify(other.plugins)}`,
       )
     }
   }
-  return first!.plugins
+  return first?.plugins ?? []
 }
 
 export function writeGraphPluginDocs() {

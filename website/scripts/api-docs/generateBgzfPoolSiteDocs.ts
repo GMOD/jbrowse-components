@@ -70,7 +70,7 @@ export function collectBgzfPoolSites(corpus: SourceCorpus): Site[] {
     // `plugins/x/src/<Name>Adapter/<Name>Adapter.ts` where the two agree, and
     // `PifFile.ts` sits straight in `src/`.
     out.push({
-      plugin: m[1]!,
+      plugin: m[1] ?? '',
       reader: file
         .split('/')
         .pop()!

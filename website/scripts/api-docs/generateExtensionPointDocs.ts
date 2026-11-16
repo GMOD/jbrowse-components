@@ -74,10 +74,13 @@ function collectRegistryKeys(
     // the entry's own `args:` line, which is what says whether callbacks
     // accumulate into a list or hand one value along
     for (const k of block.matchAll(/^\s*'([\w-]+)':\s*\{([\s\S]*?)^\s*\}/gm)) {
-      keys.set(k[1]!, shapeOf(/^\s*args:\s*(.+)$/m.exec(k[2]!)?.[1]?.trim()))
+      keys.set(
+        k[1] ?? '',
+        shapeOf(/^\s*args:\s*(.+)$/m.exec(k[2] ?? '')?.[1]?.trim()),
+      )
     }
     for (const k of block.matchAll(UI_SHAPE_ENTRY)) {
-      keys.set(k[1]!, k[2]!)
+      keys.set(k[1] ?? '', k[2] ?? '')
     }
   }
 }

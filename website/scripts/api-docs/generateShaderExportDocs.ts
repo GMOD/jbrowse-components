@@ -61,7 +61,7 @@ export function collectShaderExports(): ShaderExport[] {
     if (tag) {
       // one tag covers a templated site that emits a family (INSTANCE_OFFSET_*)
       if (!exports.some(e => e.name === tag[1])) {
-        exports.push({ name: tag[1]!, description: tag[2]! })
+        exports.push({ name: tag[1] ?? '', description: tag[2] ?? '' })
       }
     } else {
       untagged.push(i + 1)

@@ -62,7 +62,7 @@ function modelExpression(entry: string, name: string) {
   let depth = 0
   const from = at + 'model:'.length
   for (let i = from; i < entry.length; i++) {
-    const c = entry[i]!
+    const c = entry.charAt(i)
     if (c === '(' || c === '[' || c === '{') {
       depth++
     } else if (c === ')' || c === ']' || c === '}') {
@@ -86,8 +86,8 @@ function modelExpression(entry: string, name: string) {
 function objectEntries(body: string) {
   const starts = [...body.matchAll(/^ {2}(\w+):/gm)]
   return new Map(
-    starts.map(({ 0: _m, 1: name, index }, i) => [
-      name!,
+    starts.map(({ 1: name = '', index }, i) => [
+      name,
       body.slice(index, starts[i + 1]?.index ?? body.length),
     ]),
   )
@@ -100,8 +100,8 @@ function objectEntries(body: string) {
 function interfaceMembers(body: string) {
   return new Map(
     [...body.matchAll(/^ {2}(\w+)\??: (.+?);?$/gm)].map(m => [
-      m[1]!,
-      m[2]!.trim(),
+      m[1] ?? '',
+      (m[2] ?? '').trim(),
     ]),
   )
 }
@@ -139,7 +139,7 @@ function editorLabels() {
     for (const m of text.matchAll(
       /\/\*\* #slotEditor ([^\n]*?) \*\/\n(?:export default )?(?:const|function) (\w+)/g,
     )) {
-      labels.set(m[2]!, m[1]!)
+      labels.set(m[2] ?? '', m[1] ?? '')
     }
   }
   return labels
@@ -161,7 +161,7 @@ export function collectSlotTypes(): SlotTypeRow[] {
       ']',
       'the slot types whose model the author supplies',
     ).matchAll(/'(\w+)'/g),
-  ].map(m => m[1]!)
+  ].map(m => m[1] ?? '')
 
   const readTypes = interfaceMembers(
     block(
@@ -180,7 +180,7 @@ export function collectSlotTypes(): SlotTypeRow[] {
         '\n}',
         "the config editor's slot type -> control dispatch",
       ).matchAll(/^ {2}(\w+): (\w+),$/gm),
-    ].map(m => [m[1]!, m[2]!]),
+    ].map(m => [m[1] ?? '', m[2] ?? '']),
   )
   const labels = editorLabels()
 

@@ -86,7 +86,7 @@ function argsTypeFiles(corpus: SourceCorpus) {
       .read(file)
       .matchAll(/^export (?:interface|type) (Launch\w*Args)\b/gm)) {
       files.set(
-        m[1]!,
+        m[1] ?? '',
         file.replace(/^.*?(?=(?:plugins|packages|products)\/)/, ''),
       )
     }

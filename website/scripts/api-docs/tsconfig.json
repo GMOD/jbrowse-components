@@ -6,6 +6,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "module": "esnext",
     "noEmit": true,
     "allowImportingTsExtensions": true,

@@ -62,7 +62,7 @@ export function collectOrthofinderSets(): OrthofinderSet[] {
   // which is the shape every branch of the script's `case "$SET" in` has.
   const branch = /^(\w+)\)$[\s\S]*?SPECIES=\$\(cat <<'EOF'\n([\s\S]*?)\nEOF/gm
   for (const m of text.matchAll(branch)) {
-    const rows = m[2]!
+    const rows = (m[2] ?? '')
       .split('\n')
       .map(line => line.trim().split(/\s+/))
       .filter(([name]) => name)
@@ -80,8 +80,8 @@ export function collectOrthofinderSets(): OrthofinderSet[] {
       return accession
     })
     sets.push({
-      name: m[1]!,
-      genomes: rows.map(([name]) => name!),
+      name: m[1] ?? '',
+      genomes: rows.map(([name]) => name ?? ''),
       accessions,
     })
   }
@@ -106,7 +106,7 @@ export function collectOrthofinderCuts() {
         `${FILE}: no default for ${cut.name}, which the tutorial documents as one of the two cuts the script makes`,
       )
     }
-    return { ...cut, default: m[1]! }
+    return { ...cut, default: m[1] ?? '' }
   })
 }
 

@@ -276,28 +276,25 @@ function walkSpecKeys(corpus: SourceCorpus): Scan {
         node.typeName.getText() === 'ViewInit' &&
         node.typeArguments?.length === 2
       ) {
-        const commands = node.typeArguments[1]!
-        if (ts.isTypeReferenceNode(commands)) {
+        const [, commands] = node.typeArguments
+        if (commands && ts.isTypeReferenceNode(commands)) {
           commandTypes.add(commands.typeName.getText())
         }
       }
       if (ts.isInterfaceDeclaration(node)) {
-        const keys = node.members
-          .filter(ts.isPropertySignature)
-          .filter(m => m.name)
-          .map(m => ({
-            name: m.name!.getText(),
-            docs: docsAbove(m, text),
-          }))
+        const keys = node.members.filter(ts.isPropertySignature).map(m => ({
+          name: m.name.getText(),
+          docs: docsAbove(m, text),
+        }))
         interfaces.set(node.name.text, keys)
         for (const clause of node.heritageClauses ?? []) {
           for (const t of clause.types) {
-            if (
-              t.expression.getText() === 'Omit' &&
-              t.typeArguments?.length === 2
-            ) {
-              // the second argument is the removed key, or a union of them
-              const removed = t.typeArguments[1]!
+            // the second argument is the removed key, or a union of them
+            const removed =
+              t.expression.getText() === 'Omit' && t.typeArguments?.length === 2
+                ? t.typeArguments[1]
+                : undefined
+            if (removed) {
               const literals = ts.isUnionTypeNode(removed)
                 ? removed.types
                 : [removed]

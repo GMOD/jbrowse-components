@@ -81,12 +81,12 @@ test.each(pages)('every row on %s names a declared path', name => {
   const declared = pathsOf(defs[`${name}Slots`] ?? defs[name], '', new Set())
   // a sub-schema page for a slot a track carries prints its rows under that
   // slot's name: FormatAbout's `formatAbout.config`
-  const ownKey = `${name[0]!.toLowerCase()}${name.slice(1)}.`
+  const ownKey = `${name.charAt(0).toLowerCase()}${name.slice(1)}.`
   const rows = [
     ...fs
       .readFileSync(path.join(dir, `${name}.md`), 'utf8')
       .matchAll(/<span id="slot-[^"]*">\*\*([^*]+)\*\*<\/span>/g),
-  ].map(m => m[1]!)
+  ].map(m => m[1] ?? '')
   expect(
     rows.filter(
       row =>

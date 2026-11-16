@@ -97,7 +97,7 @@ function blankLinesAroundFences(text: string) {
   for (const [i, line] of lines.entries()) {
     const ticks = /^(`{3,})/.exec(line)?.[1]
     if (open === undefined && ticks !== undefined) {
-      if (out.length > 0 && out[out.length - 1]!.trim() !== '') {
+      if (out.at(-1)?.trim()) {
         out.push('')
       }
       open = ticks

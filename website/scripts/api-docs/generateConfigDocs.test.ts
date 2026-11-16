@@ -134,8 +134,8 @@ describe('the slots a sub-schema page owes', () => {
 
   test('are owed by a page whose rows show none of them', () => {
     const owed = pages
-      .get('RibbonColor')!
-      .slots.flatMap(s => missingSlotNames(s, page('value', 'scale'), page()))
+      .get('RibbonColor')
+      ?.slots.flatMap(s => missingSlotNames(s, page('value', 'scale'), page()))
     expect(owed).toEqual(['scale.type'])
   })
 
@@ -237,11 +237,11 @@ describe('the keys of one example object', () => {
     )
 
   test('a state-model property is named as one', () => {
-    const [[key, why]] = keysOf(
-      `{ type: 'VariantTrack', displays: [{ type: 'LinearVariantDisplay', layout: [] }] }`,
-    )
-    expect(key).toBe('layout')
-    expect(why).toMatch(/state-model property/)
+    expect(
+      keysOf(
+        `{ type: 'VariantTrack', displays: [{ type: 'LinearVariantDisplay', layout: [] }] }`,
+      ),
+    ).toEqual([['layout', expect.stringMatching(/state-model property/)]])
   })
 
   test('a key that is no slot at all reads differently', () => {
@@ -396,10 +396,11 @@ ${spreadDoc.map(line => `   * ${line}`).join('\n')}
 `
 
   function slotsOf(spreadDoc: string[]) {
-    const files = ['kit.ts', 'schema.ts'].map(name => path.join(dir, name))
-    fs.writeFileSync(files[0]!, KIT)
-    fs.writeFileSync(files[1]!, schema(spreadDoc))
-    const program = createDocProgram(files)
+    const kit = path.join(dir, 'kit.ts')
+    const schemaFile = path.join(dir, 'schema.ts')
+    fs.writeFileSync(kit, KIT)
+    fs.writeFileSync(schemaFile, schema(spreadDoc))
+    const program = createDocProgram([kit, schemaFile])
     buildEnumConstantIndex(program.sources)
     const byFile: Record<string, Config> = {}
     extractWithComment(
@@ -429,10 +430,10 @@ ${spreadDoc.map(line => `   * ${line}`).join('\n')}
       'gamma',
     ])
     const [, alpha, beta, , gamma] = slots
-    expect(alpha!.docs.trim()).toBe("Alpha's page prose.")
-    expect(alpha!.code).toContain("description: 'passed alpha'")
-    expect(beta!.docs.trim()).toBe("Beta's page prose.")
-    expect(gamma!.docs).toBe('')
+    expect(alpha?.docs.trim()).toBe("Alpha's page prose.")
+    expect(alpha?.code).toContain("description: 'passed alpha'")
+    expect(beta?.docs.trim()).toBe("Beta's page prose.")
+    expect(gamma?.docs).toBe('')
   })
 
   test('a slot the JSDoc leaves out follows the literal ones', () => {
@@ -454,7 +455,7 @@ ${spreadDoc.map(line => `   * ${line}`).join('\n')}
       'beta',
       'gamma',
     ])
-    expect(slots[1]!.code).toContain("description: 'passed alpha'")
+    expect(slots[1]?.code).toContain("description: 'passed alpha'")
   })
 
   test('a section naming a slot the spread does not bring in fails', () => {
@@ -528,10 +529,11 @@ export const wholeTableFixture = ConfigurationSchema('WholeTableFixture', {
 `
 
   function slots() {
-    const files = ['kit.ts', 'schema.ts'].map(name => path.join(dir, name))
-    fs.writeFileSync(files[0]!, KIT)
-    fs.writeFileSync(files[1]!, SCHEMA)
-    const program = createDocProgram(files)
+    const kit = path.join(dir, 'kit.ts')
+    const schemaFile = path.join(dir, 'schema.ts')
+    fs.writeFileSync(kit, KIT)
+    fs.writeFileSync(schemaFile, SCHEMA)
+    const program = createDocProgram([kit, schemaFile])
     buildEnumConstantIndex(program.sources)
     const byFile: Record<string, Config> = {}
     extractWithComment(
@@ -826,7 +828,7 @@ export const fixtureLane = ConfigurationSchema('FixtureLane', {
       withHeader.flatMap(({ header, slots }) =>
         slots.map(s => [
           `${header.name} ${s.name}`,
-          slotRow(s, header.name).split('<br>')[1]!.split(' | ')[0],
+          slotRow(s, header.name).split('<br>')[1]?.split(' | ')[0],
         ]),
       ),
     )

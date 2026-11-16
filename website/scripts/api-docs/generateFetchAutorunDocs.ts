@@ -213,7 +213,9 @@ const DIAGRAM_NODE = /^\s*"([^"]+)"\s*\[/gm
 
 function checkDiagram(autoruns: Autorun[]) {
   const drawn = new Set(
-    [...readFileSync(DIAGRAM, 'utf8').matchAll(DIAGRAM_NODE)].map(m => m[1]!),
+    [...readFileSync(DIAGRAM, 'utf8').matchAll(DIAGRAM_NODE)].map(
+      m => m[1] ?? '',
+    ),
   )
   const names = new Set(autoruns.map(a => a.name))
   const missing = [...names].filter(name => !drawn.has(name))

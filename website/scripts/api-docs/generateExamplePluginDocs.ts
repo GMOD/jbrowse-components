@@ -58,7 +58,13 @@ function filesFirst(a: string, b: string) {
   }
   const aIsFile = i === as.length - 1
   const bIsFile = i === bs.length - 1
-  return aIsFile === bIsFile ? (as[i]! < bs[i]! ? -1 : 1) : aIsFile ? -1 : 1
+  return aIsFile === bIsFile
+    ? (as[i] ?? '') < (bs[i] ?? '')
+      ? -1
+      : 1
+    : aIsFile
+      ? -1
+      : 1
 }
 
 function collect(corpus: SourceCorpus): Entry[] {

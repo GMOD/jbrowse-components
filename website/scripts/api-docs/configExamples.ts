@@ -43,7 +43,9 @@ function syntenyAssemblyNames(adapterCode: string) {
         ...adapterCode.matchAll(
           /(?:assemblyNames|blockAssemblies):\s*\[([^\]]*)\]/g,
         ),
-      ].flatMap(m => [...m[1]!.matchAll(/['"]([^'"]*)['"]/g)].map(n => n[1]!)),
+      ].flatMap(m =>
+        [...(m[1] ?? '').matchAll(/['"]([^'"]*)['"]/g)].map(n => n[1] ?? ''),
+      ),
     ),
   ]
   return query && target
@@ -260,9 +262,9 @@ export function exampleObjects(
         : undefined
     const entry = typeName ? manifest[typeName] : undefined
     const defaults = propNamed(obj, 'displayDefaults')
-    if (entry) {
+    if (typeName && entry) {
       out.push({
-        typeName: typeName!,
+        typeName,
         entry,
         keys: obj.properties.map(keyOf).filter((n): n is string => !!n),
         displayDefaultKeys:
@@ -356,15 +358,15 @@ export function assertExamplesValidate(
   for (const config of configs) {
     const where = `  ${config.filename}: ${config.header.name} #example`
     for (const ex of config.header.examples) {
-      for (const [, code] of ex.content.matchAll(CONFIG_FENCE)) {
+      for (const [, code = ''] of ex.content.matchAll(CONFIG_FENCE)) {
         try {
-          for (const p of exampleSchemaProblems(code!)) {
+          for (const p of exampleSchemaProblems(code)) {
             problems.push(`${where} ${p}`)
           }
         } catch (e) {
           problems.push(`${where} does not evaluate: ${String(e)}`)
         }
-        for (const obj of exampleObjects(code!, checkable)) {
+        for (const obj of exampleObjects(code, checkable)) {
           const unknown = unknownExampleKeys(
             obj,
             checkable,

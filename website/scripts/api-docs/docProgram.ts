@@ -328,7 +328,7 @@ function slotTableEntry(node: ts.Node) {
   return init &&
     ts.isObjectLiteralExpression(init) &&
     init.properties.length === 1
-    ? init.properties[0]!.getText()
+    ? init.properties[0]?.getText()
     : undefined
 }
 
@@ -352,7 +352,7 @@ function emitSpreadSlots(
     ]),
   )
   const [lead, ...sections] = slotSections(comment)
-  if (lead!.trim()) {
+  if (lead?.trim()) {
     throw new Error(
       `${where} has prose before its first \`#slot\`, which documents no slot. Move it under the \`#slot\` it describes.`,
     )
@@ -1550,13 +1550,12 @@ function displayTrackLinks(node: ts.Node): DisplayTrackLink[] {
   if (
     !ts.isNewExpression(node) ||
     !ts.isIdentifier(node.expression) ||
-    node.expression.text !== 'DisplayType' ||
-    !node.arguments?.length
+    node.expression.text !== 'DisplayType'
   ) {
     return []
   }
-  const arg = node.arguments[0]!
-  if (!ts.isObjectLiteralExpression(arg)) {
+  const arg = node.arguments?.[0]
+  if (!arg || !ts.isObjectLiteralExpression(arg)) {
     return []
   }
   const displayName = stringPropValue(arg, 'name')

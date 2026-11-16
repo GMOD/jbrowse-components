@@ -307,38 +307,32 @@ describe('collectTransitive', () => {
     id: string
     parents: string[]
   }
-  const graph: Record<string, Node> = {
+  const graph = {
     a: { id: 'a', parents: ['b', 'c'] },
     b: { id: 'b', parents: ['d'] },
     c: { id: 'c', parents: ['d'] },
     d: { id: 'd', parents: [] },
-  }
+  } satisfies Record<string, Node>
+  const parentsIn = (nodes: Record<string, Node>) => (n: Node) =>
+    n.parents.flatMap(p => nodes[p] ?? [])
   const walk = (root: Node) =>
-    collectTransitive(
-      root,
-      n => n.id,
-      n => n.parents.map(p => graph[p]!),
-    ).map(n => n.id)
+    collectTransitive(root, n => n.id, parentsIn(graph)).map(n => n.id)
 
   test('returns parents depth-first, deduped, in reading order', () => {
     // a -> b -> d, then c (d already seen and skipped)
-    expect(walk(graph.a!)).toEqual(['b', 'd', 'c'])
+    expect(walk(graph.a)).toEqual(['b', 'd', 'c'])
   })
 
   test('guards cycles (terminates; root may reappear once via the cycle)', () => {
-    const cyclic: Record<string, Node> = {
+    const cyclic = {
       x: { id: 'x', parents: ['y'] },
       y: { id: 'y', parents: ['x'] },
-    }
+    } satisfies Record<string, Node>
     // x -> y -> x, then x's parent y is already seen and stops. The root is not
     // pre-seeded into the visited set, so it reappears once; the dedup still
     // guarantees termination (matches the original collectAncestors behavior).
     expect(
-      collectTransitive(
-        cyclic.x!,
-        n => n.id,
-        n => n.parents.map(p => cyclic[p]!),
-      ).map(n => n.id),
+      collectTransitive(cyclic.x, n => n.id, parentsIn(cyclic)).map(n => n.id),
     ).toEqual(['y', 'x'])
   })
 })
