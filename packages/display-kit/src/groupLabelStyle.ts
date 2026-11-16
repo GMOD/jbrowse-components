@@ -64,3 +64,41 @@ export function groupChipTop(
       )
     : undefined
 }
+
+/**
+ * Where each section's chip draws (`groupChipTop`), thinned where sections
+ * are shorter than a chip: every nth from the topmost on screen, which carries
+ * the stack's own controls, so each chip spans the n sections it stands for.
+ * A last run too short to hold a chip draws none, its sections falling under
+ * the chip above.
+ */
+export function groupChipTops(
+  sections: readonly { top: number; height: number }[],
+  canvasHeight: number,
+) {
+  const shortest = Math.min(...sections.map(s => s.height))
+  const stride =
+    shortest >= GROUP_LABEL_HEIGHT
+      ? 1
+      : shortest > 0
+        ? Math.ceil(GROUP_LABEL_HEIGHT / shortest)
+        : sections.length
+  const topmost = sections.findIndex(
+    s => groupChipTop(s.top, s.height, canvasHeight) !== undefined,
+  )
+  return sections.map((section, i) => {
+    const span = sections
+      .slice(i, i + stride)
+      .reduce((sum, s) => sum + s.height, 0)
+    return topmost >= 0 &&
+      i >= topmost &&
+      (i - topmost) % stride === 0 &&
+      (i === topmost || span >= GROUP_LABEL_HEIGHT)
+      ? groupChipTop(
+          section.top,
+          Math.max(span, GROUP_LABEL_HEIGHT),
+          canvasHeight,
+        )
+      : undefined
+  })
+}

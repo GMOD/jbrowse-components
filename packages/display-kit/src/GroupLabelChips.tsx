@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 
 import { useGroupLabelStyles } from './groupLabelChipStyles.ts'
 import {
-  groupChipTop,
+  groupChipTops,
   groupSectionLabel,
   sectionKey,
 } from './groupLabelStyle.ts'
@@ -45,7 +45,8 @@ export interface GroupChipSection {
  * while its section scrolls past (`groupChipTop`, which the SVG twin shares),
  * and a divider marks each section's top edge after the first. The topmost
  * chip on screen carries the way back from any hidden sections, after the
- * caller's `leading` chips: whatever heads the whole stack.
+ * caller's `leading` chips: whatever heads the whole stack. Sections shorter
+ * than a chip label every nth (`groupChipTops`).
  */
 export const GroupLabelChips = observer(function GroupLabelChips({
   sections,
@@ -67,9 +68,7 @@ export const GroupLabelChips = observer(function GroupLabelChips({
     sections,
     sections.length > 1 ? onMove : undefined,
   )
-  const chipTops = sections.map(s =>
-    groupChipTop(s.top, s.height, canvasHeight),
-  )
+  const chipTops = groupChipTops(sections, canvasHeight)
   const topmost = chipTops.findIndex(t => t !== undefined)
   const dropLine = drag.dropLineTop
   return (

@@ -11,7 +11,7 @@ import {
   GROUP_LABEL_PADDING_X,
   GROUP_LABEL_RADIUS,
   GROUP_LABEL_TINT,
-  groupChipTop,
+  groupChipTops,
   groupSectionLabel,
   sectionKey,
 } from './groupLabelStyle.ts'
@@ -71,7 +71,8 @@ export default function GroupLabelBox({
 
 /**
  * The export's twin of `GroupLabelChips`: a name box per section and a rule
- * at each section's top after the first, placed by the same `groupChipTop`.
+ * at each section's top after the first, placed and thinned by the same
+ * `groupChipTops`.
  * Rendered last, so a group's name sits over what it labels. Without the rule
  * an exported stack ran together, the chip being the only other mark of where
  * one group ends.
@@ -92,10 +93,11 @@ export function GroupLabelBoxes({
   canvasHeight: number
 }) {
   const palette = usePalette()
+  const chipTops = groupChipTops(sections, canvasHeight)
   return (
     <>
       {sections.map((section, i) => {
-        const chipTop = groupChipTop(section.top, section.height, canvasHeight)
+        const chipTop = chipTops[i]
         return (
           <Fragment key={sectionKey(section.key)}>
             {i > 0 ? (
