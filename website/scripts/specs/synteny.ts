@@ -643,6 +643,9 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
       ...base,
       name: 'multiway_synteny/ecoli_launch_dialog',
       viewportHeight: 680,
+      // The dialog centres in the window, so a crop rather than a shorter
+      // window drops the empty band under it.
+      crop: { x: 0, y: 0, width: 1500, height: 592 },
       actions: [
         ...select,
         {
