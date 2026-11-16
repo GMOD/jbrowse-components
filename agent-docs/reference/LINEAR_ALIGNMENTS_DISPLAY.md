@@ -254,7 +254,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   same constant; a different value there moves the bars while
   `interbaseBarHeightPx` and the ticks beside them do not, splitting the band
   against itself inside one frame.
-- **The three band heights are bound as one stack** (`bandHeights`,
+- **The three band heights are bound as one stack** (`statedBandHeights`,
   `boundBelowCoverageHeights`): top-down against `fitTargetHeight` less the
   pileup's floor, over the pooled answer of which strips draw. A lane reserves a
   subset of that stack, so each grouped lane's stack stays inside the plot too;
@@ -263,6 +263,29 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   reserved (`section.bands.reserved[key]` 0), so it gets no handle on top of
   the one above it. `LaneBandResizeHandles` maps over `LANE_BAND_ORDER`, so
   every band gets its handle, gate and `gain` by the same rule.
+- **Two stacks: stated and drawn** (`bandStackViews.ts`, composed by the model
+  and the tables host). The stated stack (`belowCoverageBandsInput`) feeds the
+  row budget (`laneBandOverheads`), the fit pitch and the three band setters,
+  and `bandPlot` keeps the pileup's floor whether or not it shows, so hiding
+  the pileup rebinds nothing and relays no lane. The drawn stack
+  (`bandHeights`) is the stated one while the pileup shows. **With the pileup
+  hidden the display is always-fit**, in every height mode: each lane gets
+  `laneSlot`, `floor(H / N)` px, H the track's height (capped at
+  `growMaxHeight` in grow, which `growTargetHeight` returns) and N the drawn
+  lanes or one, so `N * slot <= H` and nothing scrolls. The bands the stated
+  stack reserves fill the slot in proportion (`fittedBelowCoverageHeights`,
+  core `fillStackedBands`); every other band fills 0. Which strips reserve,
+  and whether up arcs overlay the coverage, read the stated settings, so the
+  fit never moves arcs on or off the histogram. `sections` takes the slot as
+  its `minSectionHeight`, so a lane without arcs keeps its whole slot, that
+  part blank. The coverage ticks and the export's `coverageScale.heightPx`
+  read the drawn height. No band handle draws while the pileup is hidden, and
+  the Track height mode greys out: the track's bottom edge sizes the bands,
+  and neither `coverage.height` nor `height` is written. Group chips on lanes
+  under 16 px thin to every nth (`groupChipTops`). The coverage bars keep
+  their `YSCALEBAR_LABEL_OFFSET` inset, so at 250 px a coverage-only lane
+  draws no bars from about 23 lanes (about 14 with an arcs strip); changing
+  the inset is a shader-twin change of its own.
 - **`laneBands` is the one statement of a lane's band stack**: which strips it
   reserves, their tops, and where its arcs draw — their own strip, or over the
   coverage histogram in up mode. Each `Section` carries that fold as `bands`,

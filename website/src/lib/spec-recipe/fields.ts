@@ -1988,7 +1988,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   'data.resolution': (value, { displayType }) =>
     typeof value === 'number' ? resolutionStep(value, displayType) : undefined,
   'coverage.height': numberField(() => ({
-    path: 'Drag the bottom edge of the coverage band to resize it.',
+    path: 'Drag the bottom edge of the coverage band to resize it. With the pileup hidden the bands fill the track and have no handle of their own: drag the track\'s bottom edge.',
   })),
   // Same shape as coverageHeight: the band has a drag handle at its lower edge
   // (LinesConnectingMatrixToGenomicPosition, in both the matrix and LD

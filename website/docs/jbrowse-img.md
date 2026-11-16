@@ -730,7 +730,7 @@ Settings written as slots, spelled as the display spells them:
 | `legend.show=true`                             | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                          |
 | `pileup.softClips.show=true`                   | Show soft-clipped bases                                                                                                                                  |
 | `coverage.show=false`                          | Hide the coverage subtrack                                                                                                                               |
-| `pileup.show=false`                            | Hide the pileup; with `coverage.height`, a coverage-only view                                                                                            |
+| `pileup.show=false`                            | Hide the pileup; the bands above it fill the track height                                                                                                |
 | `coverage.height=200`                          | Height of the coverage subtrack, and of `arcs:up` arcs drawn over it                                                                                     |
 | `readConnections.height=120`                   | Height of the arcs' or read cloud's band, under `arcs:down` and `arcs:cloud`, or `arcs:up` with `coverage.show=false`                                    |
 | `readConnections.encoding.strokeWidth.value=2` | Stroke width for read-connection arcs and lines                                                                                                          |
@@ -1371,9 +1371,9 @@ jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
 
 ### Render only the SNPCoverage track of an alignments track
 
-`pileup.show=false` reduces the alignments display to coverage only; size the
-coverage band with `coverage.height=N` to match `height:N`, the overall track
-height. Reproducible with the bundled volvox alignments:
+`pileup.show=false` reduces the alignments display to coverage only, and the
+coverage band fills `height:N`, the overall track height, whatever
+`coverage.height` states. Reproducible with the bundled volvox alignments:
 
 <!-- jb2export: snpcov -->
 
