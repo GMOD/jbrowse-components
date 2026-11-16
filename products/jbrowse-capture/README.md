@@ -174,8 +174,9 @@ the thing you asked to capture.
 
 Three fields on a successful capture:
 
-- **`unsettled`** — stages that hit their timeout. Empty unless you asked to
-  proceed anyway.
+- **`unsettled`** — what did not settle: a wait that timed out, a display
+  unpainted, canceled or showing an error, or an error on screen. Empty unless
+  you passed `allowUnsettled`.
 - **`pending`** — displays not showing their data when the screenshot was taken,
   each with its own phase: `loading` is a slow fetch, `error` and `renderError`
   a banner, `canceled` a user's stop, and `ready` a display claiming it finished
@@ -263,7 +264,9 @@ The manifest comes right after `batch`.
 An object names its `out` and may set `genome`, `config`, `assembly`, `loc`,
 `tracks`, `view`, `spec`, `session`, `width`, `height`, `dpr`, `fullPage` and
 `annotations`. The command-line flags are the defaults for what an object leaves
-out. `--concurrency` sets how many windows are open at once (default 4).
+out. Its paths, `out` included, resolve against the directory you run in, not
+the manifest's. `--concurrency` sets how many windows are open at once (default
+4).
 
 Each image is reported on a line of its own with the time it took. A failed
 image is reported and the rest continue, a browser that died is relaunched for

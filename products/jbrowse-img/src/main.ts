@@ -28,7 +28,7 @@ import {
   getTrackLabels,
   knownOptions,
 } from './options.ts'
-import { outFormat, writeRendered } from './util.ts'
+import { STDIN_ARG, outFormat, writeRendered } from './util.ts'
 
 import type { Entry } from '@jbrowse/launch-args'
 
@@ -91,6 +91,15 @@ async function main() {
     if (unknown.length) {
       throw new Error(
         `unknown option ${unknown.map(key => `--${key}`).join(', ')}; "${scriptName} --help" lists them`,
+      )
+    }
+
+    const fromStdin = ['config', 'session', 'trackConfigs', 'spec'].filter(
+      key => rest[key] === STDIN_ARG,
+    )
+    if (fromStdin.length > 1) {
+      throw new Error(
+        `${fromStdin.map(key => `--${key}`).join(' and ')} cannot both read stdin (-)`,
       )
     }
 

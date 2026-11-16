@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { defaultJobs, parseShard, runBatch } from './runBatch.ts'
+import { WORKER_RESULT, defaultJobs, parseShard, runBatch } from './runBatch.ts'
 
 import type { ProgressReporter } from './progress.ts'
 
@@ -82,6 +82,15 @@ describe('runBatch', () => {
     )
     await expect(runBatch(opts({ session: 's.json' }))).rejects.toThrow(
       /--session/,
+    )
+  })
+
+  it('refuses stdin for a config every worker reads', async () => {
+    await expect(runBatch(opts({ config: '-' }))).rejects.toThrow(
+      'batch reads --config in every worker, which stdin cannot feed',
+    )
+    await expect(runBatch(opts({ trackConfigs: '-' }))).rejects.toThrow(
+      /--trackConfigs/,
     )
   })
 
@@ -507,7 +516,7 @@ describe('runBatch', () => {
     return vcf
   }
 
-  it('renders only its slice as a worker, and reports each row as a line of JSON', async () => {
+  it('renders only its slice as a worker, and reports each row as a tagged line of JSON', async () => {
     const write = jest
       .spyOn(process.stdout, 'write')
       .mockImplementation(() => true)
@@ -520,7 +529,11 @@ describe('runBatch', () => {
         shard: { index: 1, of: 4 },
       })
       const lines = write.mock.calls.map(
-        c => JSON.parse(String(c[0])) as { file: string; status: string },
+        c =>
+          JSON.parse(String(c[0]).slice(WORKER_RESULT.length)) as {
+            file: string
+            status: string
+          },
       )
       expect(lines.map(l => l.file)).toEqual([
         '02_chr1_199999_ins1.svg',
@@ -554,7 +567,8 @@ for (const [i, file] of names.entries()) {
     if (index === 1 && n++ === 1) {
       process.exit(3)
     }
-    console.log(JSON.stringify({ file, status: 'ok', links: \`\${i}\` }))
+    console.log({ logged: 'by a library' })
+    console.log(${JSON.stringify(WORKER_RESULT)} + JSON.stringify({ file, status: 'ok', links: \`\${i}\` }))
   }
 }
 `,

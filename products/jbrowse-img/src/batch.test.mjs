@@ -24,6 +24,7 @@ test('renders small variants sorted and marked at the variant, and counts who di
     limit: 11,
     jobs: 1,
     manifest: true,
+    view: { axis: { grid: false } },
     progress: { step() {}, finish() {} },
   })
   assert.equal(done, 11)
@@ -44,6 +45,11 @@ test('renders small variants sorted and marked at the variant, and counts who di
     'ctgA:3163-3263',
     'ctgA:3808-3910',
   ])
+  assert.deepEqual(
+    JSON.parse(column('spec')[0]).axis,
+    { grid: false },
+    'the spec reopens the view with its --view settings',
+  )
   const alt = column('alt')
   assert.equal(alt[0], '3/3', 'an SNV every spanning read carries')
   // 13 reads have the gap; three more differ at the base by a mismatch, which

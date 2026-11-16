@@ -91,6 +91,16 @@ test.each<[string, CaptureOptions, BatchEntry]>([
     { out: 'a.png', spec: { views: [] } },
   ],
   [
+    'view settings over a default spec',
+    { genome: 'hg38', spec: { views: [] } },
+    { out: 'a.png', view: { axis: { grid: false } } },
+  ],
+  [
+    'a spec over default view settings',
+    { genome: 'hg38', view: { axis: { grid: false } } },
+    { out: 'a.png', spec: { views: [] } },
+  ],
+  [
     'a saved session over a default spec',
     { genome: 'hg38', spec: { views: [] } },
     { out: 'a.png', session: { session: { views: [] } } },
@@ -98,5 +108,21 @@ test.each<[string, CaptureOptions, BatchEntry]>([
 ])('%s replaces it', (_name, defaults, entry) => {
   expect(() => {
     assertCoherentOptions(batchCapture(defaults, entry))
+  }).not.toThrow()
+})
+
+test('view settings keep a synteny view the command line opened', () => {
+  const comparative = {
+    type: 'LinearSyntenyView' as const,
+    rows: [],
+    hosted: ['hg38', 'mm39'],
+  }
+  const capture = batchCapture(
+    { comparative },
+    { out: 'a.png', view: { axis: { grid: false } } },
+  )
+  expect(capture.comparative).toBe(comparative)
+  expect(() => {
+    assertCoherentOptions(capture)
   }).not.toThrow()
 })

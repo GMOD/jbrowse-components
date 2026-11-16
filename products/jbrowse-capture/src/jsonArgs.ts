@@ -107,12 +107,8 @@ export function readBatch(value: string): BatchEntry[] {
 // where the config comes from, and what the session opens.
 const RIVALS = [
   [['genome'], ['config'], ['comparative']],
-  [
-    ['spec'],
-    ['session'],
-    ['assembly', 'loc', 'tracks', 'view'],
-    ['comparative'],
-  ],
+  [['spec'], ['session'], ['assembly', 'loc', 'tracks'], ['comparative']],
+  [['spec'], ['session'], ['view']],
 ]
 
 const rivalsOf = (key: string) =>

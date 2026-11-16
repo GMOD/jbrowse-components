@@ -20,7 +20,7 @@ import {
 import { batchRefusedOptions, DEFAULT_WIDTH } from './options.ts'
 import { createProgress } from './progress.ts'
 import { resolveConfigObject } from './resolveHub.ts'
-import { writeRendered } from './util.ts'
+import { STDIN_ARG, writeRendered } from './util.ts'
 import { parseVcfJunctions } from './vcfJunctions.ts'
 
 import type { BatchRecord } from './batch.ts'
@@ -77,6 +77,9 @@ const BATCH_CACHE_BYTES = 256 * 2 ** 20
 
 const ROWS_WORTH_A_WORKER = 8
 const WORKER_BYTES = 2 ** 31
+
+// a worker's own stdout may carry anything a library logs
+export const WORKER_RESULT = 'jb2export-row-result '
 
 /** `2/8`, as a --jobs run writes a worker's slice on its command line */
 export function parseShard(text?: string) {
@@ -146,6 +149,14 @@ export async function runBatch(opts: BatchOpts) {
       `batch renders one view per junction, so ${fixed.map(k => `--${k}`).join(' and ')} cannot be combined with it: ${fixed.length > 1 ? 'they fix' : 'it fixes'} the view, and every row would render the same image`,
     )
   }
+  const fromStdin = (['config', 'trackConfigs'] as const).filter(
+    key => opts[key] === STDIN_ARG,
+  )
+  if (fromStdin.length > 0) {
+    throw new Error(
+      `batch reads ${fromStdin.map(k => `--${k}`).join(' and ')} in every worker, which stdin cannot feed: pass a file instead of -`,
+    )
+  }
   const source = opts.sites
   const { records, skipped, refNames } = readJunctions(opts)
   if (skipped.length > 0 && !opts.shard) {
@@ -199,7 +210,7 @@ export async function runBatch(opts: BatchOpts) {
       planned.filter((_, i) => i % shard.of === shard.index),
       opts,
       result => {
-        process.stdout.write(`${JSON.stringify(result)}\n`)
+        process.stdout.write(`${WORKER_RESULT}${JSON.stringify(result)}\n`)
       },
     )
     return { done: 0, failures: [], skipped }
@@ -301,8 +312,10 @@ function renderInWorkers(
           )
           const reported = new Set<string>()
           readline.createInterface({ input: child.stdout }).on('line', line => {
-            if (line.startsWith('{')) {
-              const result = JSON.parse(line) as RowResult
+            if (line.startsWith(WORKER_RESULT)) {
+              const result = JSON.parse(
+                line.slice(WORKER_RESULT.length),
+              ) as RowResult
               reported.add(result.file)
               report(result)
             }

@@ -70,10 +70,12 @@ async function prepareOpen(options: OpenOptions) {
   const { spec, session, assembly, genome, tracks } = urlOptions
   const opens = spec ?? (session && savedSnapshot(session))
   const sessionAssembly = opens && assemblyFromSession(opens)
-  const expectedAssembly = opens
-    ? sessionAssembly &&
-      (await canonicalSessionAssembly(urlOptions, sessionAssembly))
-    : (assembly ?? genome)
+  const expectedAssembly = !opens
+    ? (assembly ?? genome)
+    : given.comparative
+      ? sessionAssembly
+      : sessionAssembly &&
+        (await canonicalSessionAssembly(urlOptions, sessionAssembly))
   return {
     url,
     viewport: { width, height, deviceScaleFactor: dpr },

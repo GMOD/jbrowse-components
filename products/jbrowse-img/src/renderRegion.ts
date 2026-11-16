@@ -466,13 +466,16 @@ const renderLinear: ModeRenderer = async ctx => {
   return {
     svg,
     spec: loc
-      ? {
-          type: 'LinearGenomeView',
-          assembly: data.assembly.name,
-          loc,
-          tracks: opened.slice(0, flagTracks.length),
-          ...(highlight ? { highlight: [highlight] } : {}),
-        }
+      ? withViewSettings(
+          {
+            type: 'LinearGenomeView',
+            assembly: data.assembly.name,
+            loc,
+            tracks: opened.slice(0, flagTracks.length),
+            ...(highlight ? { highlight: [highlight] } : {}),
+          },
+          opts.view,
+        )
       : undefined,
     links: joined
       ? view.tracks.flatMap(track => {
@@ -648,17 +651,22 @@ const renderBreakpoint: ModeRenderer = async ctx => {
       writeMembers(panel, trackId, memberWrites(displayType, modifiers))
     }
   }
-  const spec: ViewSpec | undefined = specPanels && {
-    type: 'BreakpointSplitView',
-    views: specPanels.map(panel => ({
-      ...panel,
-      tracks: panel.tracks?.map(t =>
-        typeof t !== 'string' && drawnFilters.has(t.trackId)
-          ? { ...t, filter: drawnFilters.get(t.trackId) }
-          : t,
-      ),
-    })),
-  }
+  const spec: ViewSpec | undefined =
+    specPanels &&
+    withViewSettings(
+      {
+        type: 'BreakpointSplitView',
+        views: specPanels.map(panel => ({
+          ...panel,
+          tracks: panel.tracks?.map(t =>
+            typeof t !== 'string' && drawnFilters.has(t.trackId)
+              ? { ...t, filter: drawnFilters.get(t.trackId) }
+              : t,
+          ),
+        })),
+      },
+      opts.view,
+    )
   const svg = await renderBreakpointToSvg(view, {
     ...baseSvgOpts(opts),
     trackLabels: opts.trackLabels,
