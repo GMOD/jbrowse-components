@@ -73,13 +73,14 @@ every time you open this config in this browser.
 JBrowse loads kept plugins before it draws anything, so a plugin that crashes on
 load would crash the app on every visit. To recover:
 
-- The fatal error dialog offers **Reload without permanent plugins**.
-- If a load never finishes, JBrowse turns the stuck plugins off before the next
-  visit. The plugin store then shows a banner naming them, with a switch per
-  plugin and a **Turn back on and reload** button once the culprit is switched
-  off.
-
-Adding `?safeMode` to the URL skips every kept plugin for one load.
+- **A crash:** the fatal error dialog offers **Reload without permanent
+  plugins**.
+- **A load that never finishes:** JBrowse turns the stuck plugins off before the
+  next visit. The plugin store then shows a banner naming them, with a switch
+  per plugin and a **Turn back on and reload** button once the culprit is
+  switched off.
+- **Any time:** adding `?safeMode` to the URL skips every kept plugin for one
+  load.
 
 ## JBrowse Desktop
 
@@ -124,10 +125,10 @@ The **Add custom plugin** form asks for different fields for each build:
 
 The top-level `plugins` array in `config.json` loads a plugin for everyone who
 opens that config. A store plugin goes in by its store name (`storePlugin`) and
-any other by its URL; [](/docs/config_guides/plugins) has the fields. The
-`jbrowse` CLI has no plugin command, so edit the file by hand, or install from
-the plugin store on the [admin server](/docs/quickstart_adminserver), which
-writes the entry for you.
+any other by its URL; [](/docs/config_guides/plugins) has the fields. Edit the
+file by hand (the `jbrowse` CLI has no plugin command), or install from the
+plugin store on the [admin server](/docs/quickstart_adminserver), which writes
+the entry for you.
 
 **How long it lasts:** until someone removes the entry.
 
