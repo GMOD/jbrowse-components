@@ -65,40 +65,54 @@ export function groupChipTop(
     : undefined
 }
 
+// Whether a section shorter than a chip has a section at least a chip tall
+// starting under where its chip would sit, which takes the chip instead.
+function yieldsChip(
+  sections: readonly { top: number; height: number }[],
+  index: number,
+) {
+  const { top, height } = sections[index]!
+  let found = false
+  if (height < GROUP_LABEL_HEIGHT) {
+    for (
+      let j = index + 1;
+      !found &&
+      j < sections.length &&
+      sections[j]!.top < top + GROUP_LABEL_HEIGHT;
+      j++
+    ) {
+      found = sections[j]!.height >= GROUP_LABEL_HEIGHT
+    }
+  }
+  return found
+}
+
 /**
- * Where each section's chip draws (`groupChipTop`), thinned where sections
- * are shorter than a chip: every nth from the topmost on screen, which carries
- * the stack's own controls, so each chip spans the n sections it stands for.
- * A last run too short to hold a chip draws none, its sections falling under
- * the chip above.
+ * Where each section's chip draws (`groupChipTop`), thinned by position so
+ * chips never overlap: walking down from the topmost section on screen, which
+ * carries the stack's own controls, a section gets a chip when its top is a
+ * chip's height below the last chip drawn. A section shorter than a chip
+ * yields to a section at least a chip tall that starts under it, so a short
+ * or empty section never takes a tall one's chip. A chip on a short section
+ * sits at its top and covers the sections it stands for.
  */
 export function groupChipTops(
   sections: readonly { top: number; height: number }[],
   canvasHeight: number,
 ) {
-  const shortest = Math.min(...sections.map(s => s.height))
-  const stride =
-    shortest >= GROUP_LABEL_HEIGHT
-      ? 1
-      : shortest > 0
-        ? Math.ceil(GROUP_LABEL_HEIGHT / shortest)
-        : sections.length
-  const topmost = sections.findIndex(
-    s => groupChipTop(s.top, s.height, canvasHeight) !== undefined,
-  )
+  let lastChipTop = Number.NEGATIVE_INFINITY
   return sections.map((section, i) => {
-    const span = sections
-      .slice(i, i + stride)
-      .reduce((sum, s) => sum + s.height, 0)
-    return topmost >= 0 &&
-      i >= topmost &&
-      (i - topmost) % stride === 0 &&
-      (i === topmost || span >= GROUP_LABEL_HEIGHT)
-      ? groupChipTop(
-          section.top,
-          Math.max(span, GROUP_LABEL_HEIGHT),
-          canvasHeight,
-        )
-      : undefined
+    const chipTop =
+      !yieldsChip(sections, i) &&
+      section.top >= lastChipTop + GROUP_LABEL_HEIGHT &&
+      groupChipTop(section.top, section.height, canvasHeight) !== undefined
+        ? groupChipTop(
+            section.top,
+            Math.max(section.height, GROUP_LABEL_HEIGHT),
+            canvasHeight,
+          )
+        : undefined
+    lastChipTop = chipTop ?? lastChipTop
+    return chipTop
   })
 }
