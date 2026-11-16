@@ -8,8 +8,8 @@ guide_category: General usage
 
 The `&hubURL=` query parameter opens a
 [UCSC track hub](/docs/user_guides/connections#ucsc-track-hub-url-format)
-straight from a link, with no config file to set up first. Whoever opens the
-link gets JBrowse with the hub's assemblies and tracks already available.
+straight from a link, with the hub's assemblies and tracks already available to
+whoever opens it.
 
 ## Basic usage
 
@@ -46,11 +46,10 @@ stanza. Add [`&loc=`](/docs/urlparams#loc) and
 ?config=none&hubURL=https://example.com/hub.txt&assembly=GCF_019202715.1&loc=chr1:1-100000
 ```
 
-`&assembly=` is required here, and it is the hub's genome ID — the same name the
-hub's `genomes.txt` (or its `genome` line, for a one-file hub) uses. `&loc=`
-alone has no assembly to resolve against, so JBrowse loads the hub at the hub's
-default location and shows why. `&tracks=` works the same way, naming track IDs
-the hub defines.
+- **`&assembly=` is required** and takes the hub's genome ID, as in its
+  `genomes.txt` (or its `genome` line, for a one-file hub). Without it, JBrowse
+  opens the hub at its default location and says why.
+- **`&tracks=`** works the same way, naming track IDs the hub defines.
 
 ## Loading several hubs
 
@@ -65,14 +64,13 @@ Each hub appears in the track selector as a separate category.
 ## How a loaded hub behaves
 
 Each hub URL becomes a UCSC track hub
-[connection](/docs/user_guides/connections) in the session, and from there it
-behaves exactly like a connection you added by hand: lazily loaded, in a
-dedicated category in the track selector, and only the tracks you open stored in
-the session.
+[connection](/docs/user_guides/connections) in the session, the same as one
+added by hand. It loads lazily, gets its own track selector category, and the
+session stores only the tracks you open from it.
 
-Hub tracks match to assemblies by genome ID, and the assemblies available are
-whatever the hub has plus whatever a combined `?config=` defines, so a hub
-opened with `config=none` shows only the tracks that the hub's assemblies cover.
+Hub tracks match assemblies by genome ID, against the hub's own assemblies plus
+any a combined `?config=` defines, so a hub opened with `config=none` shows only
+the tracks its own assemblies cover.
 
 ## See also
 
