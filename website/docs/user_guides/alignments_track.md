@@ -31,7 +31,7 @@ up.
 
 The track menu's **Sort by** groups reads the same way against the _center line_
 (a 1bp indicator at the middle of the view), and also sorts by strand, mapping
-quality, or any BAM tag. Four more order the whole layout instead:
+quality, or any BAM tag. These order the whole layout instead:
 
 - **Sort by → Longest reads first** puts the widest reads at the top.
 - **Sort by → Spliced reads first** puts the reads with a reference skip (`N`)
@@ -40,9 +40,7 @@ quality, or any BAM tag. Four more order the whole layout instead:
   ones with an `SA` tag.
 - **Sort by → SV evidence first** puts the split reads on top, then the reads
   with an insertion or deletion of 50 bp or more, then the pairs the aligner did
-  not call concordant: at a breakpoint those are the reads crossing it. A read
-  counts only when both ends are placed: a split read whose other pieces all sit
-  at mapping quality 0, such as the clipped tail of an Alu, stays put.
+  not call concordant: at a breakpoint those are the reads crossing it.[^placed]
 
 ## Color by
 
@@ -62,17 +60,13 @@ The track menu's **Color by** offers several schemes.
 
 ### Read quality and bases
 
-- **Mapping quality** colors each read by its MAPQ bin, the same four bins a
-  MAPQ facet stacks: dark blue at 0, through 1-9 and 10-29, to yellow at 30 and
-  above, so reads in repeats come out dark. A MAPQ of 255, which means the
-  aligner reported none, is grey and passes the **Mapping quality** filter. The
-  [SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf) defines
-  MAPQ as `-10 log10 Pr{mapping position is wrong}`, so a MAPQ 0 read is drawn
-  where it aligned with the aligner putting no better than even odds on it being
-  the right copy, which happens when the best score is tied across positions
-  ([Li, Ruan and Durbin 2008](https://doi.org/10.1101/gr.078212.108)). A
-  **secondary** alignment (FLAG `0x100`) is a competing placement recorded as a
-  separate record; the default
+- **Mapping quality** colors each read by its MAPQ bin, the same four bins
+  **Group by → Mapping quality** stacks: dark blue at 0, through 1-9 and 10-29,
+  to yellow at 30 and above, so reads in repeats come out dark. A MAPQ of 255,
+  which means the aligner reported none, is grey and passes the **Mapping
+  quality** filter. A MAPQ 0 read is one the aligner could not place uniquely,
+  as when its best score ties across positions. A **secondary** alignment (FLAG
+  `0x100`) is a competing placement recorded as a separate record; the default
   [`filter`](/docs/config/baselinearalignmentsdisplay/#slot-filter) drops
   duplicate, QC-failed and unmapped reads, and keeps those. The
   [mappability QC tutorial](/docs/tutorials/mappability_qc) works a locus where
@@ -88,7 +82,10 @@ The track menu's **Color by** offers several schemes.
 
 **Color by → Tag...** asks for a tag name and how to color it: **A color per
 value** for a tag like `HP` (haplotype) or `RG` (read group), or **A gradient
-over numbers** for a numeric tag like `NM` (edit distance).
+over numbers** for a numeric tag like `NM` (edit distance). A tag also sorts,
+filters and [groups](#grouping-reads) reads; for the `HP` haplotype tag of
+phased reads, grouping usually reads more clearly than coloring alone. See the
+[phased trio tutorial](/docs/tutorials/analyze_trio).
 
 ### Modifications and methylation
 
@@ -136,30 +133,25 @@ orientation is colored by its orientation whatever the insert. The
 has the color tables, the expected-insert threshold, and what each pattern means
 at a breakpoint.
 
-### By tag
-
-Any BAM tag can color, sort, or filter. The common case is the `HP` haplotype
-tag for phased reads, where grouping by `HP` (below) usually reads more clearly
-than coloring alone. See the
-[phased trio tutorial](/docs/tutorials/analyze_trio).
-
 ## Grouping reads
 
 The track menu's **Group by** splits the pileup into one coverage+pileup section
-per value of a dimension. It is a radio list, one dimension at a time:
-**Strand**, **First-of-pair strand**, **Pair orientation**, **Pair status**,
-**Split reads** (separating reads crossing a breakpoint from those spanning it
-intact), **Spliced reads**, **SV kind** (one section per kind of SV the read's
-evidence points at, as
-[SV channels](/docs/user_guides/sv_visualization#sv-channels) draws it),
-**Mapping quality**, and **Tag...**, which opens a dialog for the tag name (`HP`
-for haplotype, `RG` for read group, or any other). Groups share one coverage
-scale and reads missing the tag collect in a trailing "none" section. Grouping
-caps at 40 sections; past that the tail merges into one "N merged values"
-section, and the tag dialog refuses a tag that would reach the cap, telling you
-how many distinct values it found in view first. Drag a section's chip onto
-another section to move it there; **Reset section order** in the track menu
-returns them to the sorted order.
+per value of one dimension at a time:
+
+- **Dimensions:** **Strand**, **First-of-pair strand**, **Pair orientation**,
+  **Pair status**, **Split reads** (reads crossing a breakpoint apart from those
+  spanning it intact), **Spliced reads**, **SV kind** (one section per kind of
+  SV the read's evidence points at, as
+  [SV channels](/docs/user_guides/sv_visualization#sv-channels) draws it),
+  **Mapping quality**, and **Tag...**, which opens a dialog for the tag name
+  (`HP` for haplotype, `RG` for read group, or any other).
+- **Shared scale:** sections share one coverage scale, and reads missing the tag
+  collect in a trailing "none" section.
+- **Cap:** 40 sections; past that the tail merges into one "N merged values"
+  section. The tag dialog reports how many distinct values it found in view and
+  refuses a tag that would reach the cap.
+- **Order:** drag a section's chip onto another section to move it there;
+  **Reset section order** in the track menu returns them to the sorted order.
 
 The `facet` setting pre-groups a track, spelled as on the feature tracks: a
 dimension (`"strand"`, `"pairOrientation"`, ...), a tag as `"tags.HP"`, or any
@@ -190,83 +182,76 @@ writes the same object:
 
 Each section has a label chip that controls the section's height:
 
-- The chevron collapses that section to just its coverage band, and expands it
+- **Chevron:** collapses that section to its coverage band, and expands it
   again.
-- **Show all reads** appears when the section's reads were clipped to fit the
+- **Show all reads:** appears when the section's reads were clipped to fit the
   shared height budget; it gives that one section the track's full row cap, and
   turns into **Fit to view** to hand it back.
-- Right-click a chip to hide that section. Its reads leave the shared coverage
-  scale, the legend and the arcs with it, which is how to read the rest of the
-  stack without the section that dominates it. **Show → Show N hidden groups**
-  puts them back.<!-- menu-path-ok -->
-- Dragging the boundary below a section resizes that section alone.
+- **Hide:** right-click a chip to hide that section. Its reads leave the shared
+  coverage scale, the legend and the arcs, so the rest of the stack reads
+  without the section that dominates it. **Show → Show N hidden groups** puts
+  them back.<!-- menu-path-ok -->
+- **Resize:** dragging the boundary below a section resizes that section alone.
+
+These chip choices are not saved to a session or a shared link, and changing the
+grouping dimension clears them.
 
 **Show → Show groups as one row** draws every section as a single row with
 overlap depth as darker shading, the compact reading for a track with many
 groups; expanding one section from its chip opts that one back out to a true
 stack.
 
-The chevron, resize, hide, and collapse choices above apply only within the
-view. They are not saved to a session or a shared link, and changing the
-grouping dimension clears them, since a section name means nothing under a
-different dimension.
-
 <Figure caption="GIAB HG002 nanopore reads grouped and colored by the HP tag, one tinted section per haplotype." src="/img/alignments/haplotype.png" />
 
-Grouping by `HP` is also how to check that a heterozygous variant's supporting
-reads sit on one haplotype; see
-[phasing heterozygous SVs](/docs/user_guides/sv_visualization#phasing-heterozygous-svs).
+Each section's coverage band counts only the reads grouped into that section,
+which makes grouping a check on the reads:
 
-Each section's coverage band is built from only the reads grouped into that
-section. Group by **Strand** and turn off **Show → Show pileup** for a forward
-and a reverse histogram on a shared scale, each colored by the mismatches in
-that strand's reads. On a strand-specific paired-end library group by
-**First-of-pair strand** instead, since there the transcript strand is which
-mate the read is; the
-[RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows that.
-Long-read cDNA is the clearest case, since the reads are oriented to the
-transcript.
+- **Haplotype:** grouping by `HP` shows whether a heterozygous variant's
+  supporting reads sit on one haplotype; see
+  [phasing heterozygous SVs](/docs/user_guides/sv_visualization#phasing-heterozygous-svs).
+- **Strand:** group by **Strand** and turn off **Show → Show pileup** for a
+  forward and a reverse histogram on a shared scale, each colored by the
+  mismatches in that strand's reads. A position colored in one band and not the
+  other comes from one strand alone, the signature of a basecalling error; a
+  position that disagrees in both bands is a real variant.
+- **Transcript strand:** long-read cDNA reads are oriented to the transcript, so
+  **Strand** splits them by transcript strand. On a strand-specific paired-end
+  library group by **First-of-pair strand** instead, since there the transcript
+  strand is which mate the read is; the
+  [RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows that.
 
 <Figure caption="HSV-1 cDNA reads over two neighbouring genes, grouped and colored by strand." src="/img/alignments/strand_split_depth.png" />
 
-Grouping by strand also works as a check on the reads. A position colored in one
-band and not the other comes from one strand alone, the signature of a
-basecalling error; a position that disagrees in both bands is a real variant.
-
 <Figure caption="GIAB HG002 nanopore reads grouped by strand, each band's coverage from that strand's reads alone. The left box disagrees in the reverse band only, the right box in both." src="/img/alignments/strand_split_coverage.png" />
 
-**Track menu → Presets → SV channels** groups reads by the kind of SV evidence
-each read shows, keeps only the evidence reads drawn, drops the sashimi arcs and
-turns the read arcs on together, so each kind becomes a separate coverage band
-with its reads and a separate set of arcs. See
-[SV channels](/docs/user_guides/sv_visualization#sv-channels).
+**Presets → SV channels** in the track menu groups by **SV kind**, draws only
+the evidence reads, and swaps the sashimi arcs for read arcs, so each kind of SV
+evidence gets its own coverage band, reads and arcs.
+[SV channels](/docs/user_guides/sv_visualization#sv-channels) says how to read
+it.
 
 ## Read height and track sizing
 
-The track menu's **Read height** submenu sets how tall each read is drawn. The
-presets are Normal, Compact and Super-compact, plus **Custom...** for an exact
-pixel height.
+The track menu's **Read height** submenu sets how tall each read is drawn:
+Normal, Compact, Super-compact, or **Custom...** for an exact pixel height.
 
 <Figure caption="The same reads at a compact feature height." src="/img/alignments/compact.png" />
 
-A pileup taller than the track scrolls. Two settings change that:
+A pileup taller than the track scrolls, unless one of these is on:
 
 - **Read height → Fit to track height** derives the read height from the track
-  height so the whole pileup fits, shrinking as coverage deepens. Picking a
-  preset drops back to it
+  height so the whole pileup fits, shrinking as coverage deepens and re-fitting
+  as you drag the track taller or shorter. Reads stay between 1px and the Normal
+  preset's height, so a deep enough pileup still overflows. With grouping, the
+  expanded sections share what the coverage rows leave, so collapsing one gives
+  the rest more height. Picking a preset leaves fit mode.
 - **Advanced → Track height → Grow the track** grows the track to hold the
   reads, up to
   [growMaxHeight](/docs/config/linearalignmentsdisplay#slot-growmaxheight), past
   which it scrolls again. Real sequencing depth passes that ceiling quickly, so
-  raise the slot to keep growing
+  raise the slot to keep growing.
 
 <Figure src="/img/alignments/height_mode_fit.png" caption="The Read height submenu with Fit to track height selected." />
-
-In fit mode, dragging the track taller or shorter re-fits the reads. Reads draw
-no taller than the Normal preset and no smaller than 1px, so a deep enough
-pileup still overflows. With grouping, each group's coverage row is reserved
-first and the expanded groups share what is left, so collapsing a group gives
-the rest more height.
 
 ## Insertion and clipping indicators
 
@@ -304,11 +289,6 @@ or **hard-clipped** (dropped). Soft-clipped bases are hidden by default; **Show
 → Show soft clipping** in the track menu reveals them. Clusters of them often
 mark a structural-variant breakpoint.
 
-Clipped bases are drawn only inside the loaded window, half a screen past each
-side of the view. Pan faster than the next fetch and every clipped tail stops at
-that window's edge until the fetch lands. Once a read's aligned part leaves the
-window, the read and its clipped bases are not loaded.
-
 A read with no `SEQ` field (secondary reads among them) has no clipped bases to
 draw. It keeps the blue bar at its clipped end and, zoomed in to the bases, the
 clip's length as `(S30)`.
@@ -341,17 +321,18 @@ any is active.
 ## Sashimi arcs
 
 Sashimi-style arcs draw automatically over spliced alignments (`N` in the
-CIGAR), so RNA-seq and Iso-Seq junctions appear with no setup. The arc strand
-follows the aligner's strand tag: `XS` or `TS` give the transcript strand,
-minimap2's `ts` is relative to the read and combined with the read's strand, and
-a read with none (default STAR output without `--outSAMstrandField`) contributes
-no strand to the arc.
+CIGAR), so RNA-seq and Iso-Seq junctions appear with no setup; the
+[RNA-seq tutorial](/docs/tutorials/rnaseq) works them on real data. Each arc has
+a strand and a splice motif:
 
-JBrowse also reads the two bases at each end of every intron off the reference
-and classifies the splice motif: GT-AG, GC-AG or AT-AC on either strand, or
-non-canonical. The motif shows in the arc's tooltip, and a junction with no
-strand-tagged reads takes the strand its motif implies, so untagged STAR output
-still colors by strand. This needs a sequence adapter on the assembly.
+- **Strand:** from the aligner's strand tag. `XS` or `TS` give the transcript
+  strand, and minimap2's `ts` is relative to the read and combined with the
+  read's strand. A junction with no strand-tagged reads (default STAR output
+  without `--outSAMstrandField`) takes the strand its splice motif implies.
+- **Motif:** JBrowse reads the two bases at each end of every intron off the
+  reference and classifies the splice motif as GT-AG, GC-AG or AT-AC on either
+  strand, or non-canonical, shown in the arc's tooltip. This needs a sequence
+  adapter on the assembly.
 
 **Show → Show sashimi arcs** turns them on and off, and **Show → Show sashimi
 read counts** prints each junction's supporting-read count on its arc. While the
@@ -360,16 +341,14 @@ arcs draw:
 - **Filter by → Non-canonical junctions → Hide non-canonical junctions** drops
   junctions whose motif is none of the three canonical pairs. On deep RNA-seq
   the thin arcs are mostly these, so it is the filter to reach for first. **Only
-  non-canonical junctions** keeps just those, for checking an aligner's output
+  non-canonical junctions** keeps just those, for checking an aligner's output.
 - The Sashimi arcs section of **Filter by → More filters...** shows, hides or
   keeps only the **Split-read junctions** that split alignments (SA tag) imply
   beside the N-gap splices, and **Min reads at a junction** drops the junctions
-  with fewer reads
-- **Advanced → Sashimi placement** splits the arcs above/below the coverage row
-
-See the [RNA-seq tutorial](/docs/tutorials/rnaseq). When one junction peak
-dominates the coverage histogram, **Advanced → Coverage axis... → Scale → Log**
-keeps the shallower junctions visible.
+  with fewer reads.
+- **Advanced → Sashimi placement** splits the arcs above/below the coverage row.
+- **Advanced → Coverage axis... → Scale → Log** keeps the shallower junctions
+  visible when one junction peak dominates the coverage histogram.
 
 <Figure caption="Sashimi arcs over B2M RNA-seq with read-support labels on and coverage on a log scale." src="/img/alignments_track_arcs.png" />
 
@@ -381,40 +360,37 @@ the long-range relationships behind structural variants.
 ### Read arcs
 
 **Read connections → Read arcs** draws a bezier curve between the ends of each
-pair, so long-range and discordant pairs stand out from the short local arcs. A
-partner the view has not loaded draws as a large semicircle reaching toward it.
-A mate on another chromosome draws as an arc when that chromosome is on screen
-and as a vertical line at the breakpoint when it is not. Both can be toggled
-off, and dragging the track taller re-fits the arcs.
-
-An arc whose ends are in different displayed regions spans them, so a second
-region either side of a breakpoint shows the connection as one curve.
-Interchromosomal arcs draw in one color, since insert size and orientation mean
-nothing across chromosomes.
-
+pair, so long-range and discordant pairs stand out from the short local arcs.
 The arcs and the read cloud paint insert size and orientation, in the colors
 **Color by → Insert size and orientation** gives the reads.
+[Read arcs](/docs/user_guides/sv_visualization#read-arcs) on the SV page says
+what each pattern means.
 
-Reads describing the same connection draw as **one arc, thickened by how many
-there are**, on a log scale, so the arcs rank the evidence. A single-read
-connection draws at
-[`readConnections.encoding.strokeWidth`](/docs/config/readconnectionsencoding/#slot-strokewidth).
-Arcs coalesce only on exactly equal endpoints.
+- **Mate not loaded:** a large semicircle reaching toward it.
+- **Mate on another chromosome:** an arc when that chromosome is on screen, and
+  a vertical line at the breakpoint when it is not, in one color. The Read
+  connections section of **Filter by → More filters...** hides either kind.
+- **Across regions:** an arc whose ends are in different displayed regions spans
+  them, so a second region either side of a breakpoint shows the connection as
+  one curve.
+- **Thickness:** reads describing the same connection draw as one arc, thickened
+  on a log scale by how many there are, so the arcs rank the evidence. A
+  single-read connection draws at
+  [`readConnections.encoding.strokeWidth`](/docs/config/readconnectionsencoding/#slot-strokewidth).
+- **Hover:** the location, the distance between the ends, the supporting read
+  count and the color bucket; in read-cloud mode also the insert size. An
+  insertion split arc leaves out the distance, since its ends mark where the
+  read's two pieces overlap or miss on the reference.
 
-Hovering an arc reports its location, the distance between the ends, the
-supporting read count and its color bucket. In read-cloud mode it also gives the
-insert size. An insertion split arc leaves out the distance: its ends mark where
-the read's two pieces overlap or miss on the reference, and that number is not
-the size of the insertion.
+Dragging the track taller re-fits the arcs.
 
 <Figure caption="Choosing Read arcs from the Read connections submenu." src="/img/alignments/select_arc_display.png" />
 
 ### Read cloud
 
 **Read connections → Read cloud** lays pairs out on the Y axis by the **log
-distance between mates**, so the insert-size distribution is visible directly
-and short-insert (insertion-supporting) pairs lift away from the background. Two
-grey lines across the cloud mark the normal insert range, so a bar above the
+distance between mates**, so the insert-size distribution is visible directly.
+Two grey lines across the cloud mark the normal insert range, so a bar above the
 upper line is a long pair and one below the lower line a short pair.
 
 <Figure caption="Read cloud on a synthetic SV dataset, reads stratified by log distance between mates." src="/img/alignments/read_cloud.png" />
@@ -453,7 +429,9 @@ Dragging over the read row extracts that sequence.
 <Figure caption="Linear read vs ref for a PacBio read: the pileup above and the read drawn against the reference below. Each gap in the diagonal is inserted sequence." src="/img/read_vs_ref_insertion.png" />
 
 `Dotplot of read vs ref...` plots the same alignment as a dotplot, clearer when
-a read aligns to one locus several times.
+a read aligns to one locus several times. The
+[COLO829 tutorial](/docs/tutorials/cancer_sv#following-the-chain-across-panels)
+follows a read across a three-chromosome chain this way.
 
 ## See also
 
@@ -469,3 +447,8 @@ a read aligns to one locus several times.
 - [DEEP_COVERAGE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DEEP_COVERAGE.md)
   — what these defaults do at 300x, where the insert-size cut flags a tight
   library's own tail, and why a support floor has to count over a window
+
+[^placed]:
+    A read counts only when both ends are placed at mapping quality above 0: a
+    split read whose other pieces all sit at mapping quality 0, such as the
+    clipped tail of an Alu, stays put.
