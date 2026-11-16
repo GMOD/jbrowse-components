@@ -71,10 +71,10 @@ This package waits on the two **positive** signals instead:
    `data-app-assemblies` and `data-app-tracks`, and the gate reads that one
    element: at least one view, your assembly among them, every trackId you named
    actually open. A trackId or assembly that capture could not check against the
-   config before launching (a session spec's, or a config it could not fetch)
-   fails here if it never opens. A config, session or plugin the app cannot load
-   fails here at once, with the app's own message, which it publishes as
-   `data-app-error`.
+   config before launching (a saved session's, one a spec's connection brings,
+   or any from a config it could not fetch) fails here if it never opens. A
+   config, session or plugin the app cannot load fails here at once, with the
+   app's own message, which it publishes as `data-app-error`.
 2. **`[data-app-phase="ready"]`, held.** The session renders it when no view is
    resolving an assembly and no display is fetching. It has to hold for a beat,
    not merely be true once: a display drops to `ready` in the gap between one

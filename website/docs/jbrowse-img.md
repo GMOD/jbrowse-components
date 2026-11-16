@@ -1379,7 +1379,7 @@ coverage band fills `height:N`, the overall track height, whatever
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa \
-  --bam data/volvox/volvox-sorted.bam pileup.show=false coverage.height=200 height:200 \
+  --bam data/volvox/volvox-sorted.bam pileup.show=false height:200 \
   --loc ctgA:1-20000 --width 1200 --out snpcov.png
 ```
 
@@ -1474,8 +1474,8 @@ Options:
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000, or "all" for the whole genome: the chromosomes where an NCBI sequence report names them, else every sequence), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
-  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
-  --width           Width of output in pixels [default: 1500]
+  --out             Output file path, -o for short (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout
+  --width           Width of the view in pixels. An SVG adds its margins and label gutter to it; a PNG or PDF is the SVG scaled down to this width [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
@@ -1520,8 +1520,8 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
-  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
-  --width           Width of output in pixels [default: 1500]
+  --out             Output file path, -o for short (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout
+  --width           Width of the view in pixels. An SVG adds its margins and label gutter to it; a PNG or PDF is the SVG scaled down to this width [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
@@ -1553,8 +1553,8 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
-  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
-  --width           Width of output in pixels [default: 1500]
+  --out             Output file path, -o for short (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout
+  --width           Width of the view in pixels. An SVG adds its margins and label gutter to it; a PNG or PDF is the SVG scaled down to this width [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
@@ -1590,8 +1590,8 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
-  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
-  --width           Width of output in pixels [default: 1500]
+  --out             Output file path, -o for short (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout
+  --width           Width of the view in pixels. An SVG adds its margins and label gutter to it; a PNG or PDF is the SVG scaled down to this width [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
@@ -1618,8 +1618,8 @@ Options:
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000, or "all" for the whole genome: the chromosomes where an NCBI sequence report names them, else every sequence), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
-  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
-  --width           Width of output in pixels [default: 1500]
+  --out             Output file path, -o for short (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout
+  --width           Width of the view in pixels. An SVG adds its margins and label gutter to it; a PNG or PDF is the SVG scaled down to this width [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
@@ -1678,7 +1678,7 @@ Options:
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
-  --width           Width of output in pixels [default: 1500]
+  --width           Width of the view in pixels. An SVG adds its margins and label gutter to it; a PNG or PDF is the SVG scaled down to this width [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
