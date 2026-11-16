@@ -20,9 +20,14 @@ that check, since the fill then claims nothing about its type.
 
 Every ML probability is `(N + 0.5) / 256`, which float32 holds exactly.
 
-```js
-// type signature
-({ modifications, probabilities, cigarOps, seq, fstrand, flen, window, }: ParsedModData, context?: CytosineContext, isVisible?: (type: string) => boolean) => MethBins
+```ts
+import { getMethBins } from '@jbrowse/modifications-utils'
+
+function getMethBins(
+  opts: ParsedModData,
+  context?: CytosineContext,
+  isVisible?: (type: string) => boolean,
+): MethBins
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getMethBins.ts)
@@ -38,9 +43,16 @@ END of `fseq` on a reverse read: the bases between that end and the window
 are still counted, but only as a tally, and nothing past the far side of the
 window is walked.
 
-```js
-// type signature
-(mm: string, fseq: string, fstrand: number, readStart?: number, readEnd?: number) => ModWithPositions[]
+```ts
+import { getModPositions } from '@jbrowse/modifications-utils'
+
+function getModPositions(
+  mm: string,
+  fseq: string,
+  fstrand: number,
+  readStart?: number,
+  readEnd?: number,
+): ModWithPositions[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModPositions.ts)
@@ -50,9 +62,10 @@ window is walked.
 Reads the ML tag from a feature and returns per-call modification
 probabilities scaled to 0..1.
 
-```js
-// type signature
-(feature: Feature) => number[] | undefined
+```ts
+import { getModProbabilities } from '@jbrowse/modifications-utils'
+
+function getModProbabilities(feature: Feature): number[] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModProbabilities.ts)
@@ -69,9 +82,10 @@ threshold) can work in bytes and divide once, at the end, for the few calls
 that survive. A caller that needs the numbers themselves
 still wants `getModProbabilities`.
 
-```js
-// type signature
-(feature: Feature) => ArrayLike<number> | undefined
+```ts
+import { getModProbabilityBytes } from '@jbrowse/modifications-utils'
+
+function getModProbabilityBytes(feature: Feature): ArrayLike<number> | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModProbabilities.ts)
@@ -83,9 +97,10 @@ length for MM than SEQ's. Per SAMtags, MN catches a hard clip
 or trim that shifted the bases MM's deltas count, so on a mismatch every
 position MM would place is wrong.
 
-```js
-// type signature
-(feature: Feature) => string | undefined
+```ts
+import { getModTag } from '@jbrowse/modifications-utils'
+
+function getModTag(feature: Feature): string | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModTag.ts)
@@ -101,9 +116,10 @@ the file — which types to offer in a menu, whether a track has modifications
 at all — wants this instead, and avoids both the walk and the sequence decode
 that feeds it.
 
-```js
-// type signature
-(mm: string) => ModTypeHeader[]
+```ts
+import { getModTypes } from '@jbrowse/modifications-utils'
+
+function getModTypes(mm: string): ModTypeHeader[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModTypes.ts)
@@ -113,9 +129,10 @@ that feeds it.
 Read a single tag by name, using the feature's targeted tag accessor when it
 has one (BAM) and the full tags object otherwise (CRAM/synteny).
 
-```js
-// type signature
-(feature: Feature, tag: string) => unknown
+```ts
+import { getTag } from '@jbrowse/modifications-utils'
+
+function getTag(feature: Feature, tag: string): unknown
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getTagAlt.ts)
@@ -132,9 +149,10 @@ modifications, and this is called per read on every render. On jb2bench's
 1000x.shortread that pair of walks was 12.9% of the whole BAM query, more
 than the CIGAR/SEQ/MD reads the pileup actually uses.
 
-```js
-// type signature
-(feature: Feature, tag: string, alt: string) => unknown
+```ts
+import { getTagAlt } from '@jbrowse/modifications-utils'
+
+function getTagAlt(feature: Feature, tag: string, alt: string): unknown
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getTagAlt.ts)
@@ -150,9 +168,10 @@ different packages: this walk claims those types, and
 cytosine gets one mark rather than two. A second spelling would either
 double-paint or, as it did, drop every OTHER type the read declares.
 
-```js
-// type signature
-(type: string) => type is "h" | "m"
+```ts
+import { isMethylationFillType } from '@jbrowse/modifications-utils'
+
+function isMethylationFillType(type: string): type is 'h' | 'm'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getMethBins.ts)
@@ -181,9 +200,15 @@ index no pattern base equals and the complement table holds -1 at — so the
 walk runs off the read as a non-match with no separate bounds test.
 `features/modCoverage/readBaseCounts.ts` folds case the same way and notes it.
 
-```js
-// type signature
-(seq: string, pos: number, isReverse: boolean, context: CytosineContext) => boolean
+```ts
+import { matchesCytosineContext } from '@jbrowse/modifications-utils'
+
+function matchesCytosineContext(
+  seq: string,
+  pos: number,
+  isReverse: boolean,
+  context: CytosineContext,
+): boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/cytosineContext.ts)
@@ -197,9 +222,17 @@ descending order) and step into ML by `probStart + mmOrder * probStride`.
 `probStride` is >1 for combined codes (e.g. 'C+mh'), where ML values are
 interleaved per position.
 
-```js
-// type signature
-(probabilities: number[] | undefined, probStart: number, probStride: number, isReverse: boolean, idx: number, posLen: number) => number
+```ts
+import { modProbAt } from '@jbrowse/modifications-utils'
+
+function modProbAt(
+  probabilities: number[] | undefined,
+  probStart: number,
+  probStride: number,
+  isReverse: boolean,
+  idx: number,
+  posLen: number,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModProbabilities.ts)
@@ -209,9 +242,13 @@ interleaved per position.
 Parses one MM-tag modification header (e.g. `C+m`) into its base, strand,
 type string, and modification code.
 
-```js
-// type signature
-(basemod: string, fullmod: string) => { base: string; strand: string; typestr: string; mod: string; }
+```ts
+import { parseModHeader } from '@jbrowse/modifications-utils'
+
+function parseModHeader(
+  basemod: string,
+  fullmod: string,
+): { base: string; strand: string; typestr: string; mod: string }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/consts.ts)

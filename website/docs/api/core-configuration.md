@@ -20,11 +20,13 @@ same here as in `config.json`. A key the config does not declare is reported
 for the caller to route or refuse, and a declared key whose write throws
 costs that key alone.
 
-```js
+```ts
 import { applyConfSettings } from '@jbrowse/core/configuration'
 
-// type signature
-(target: AnyConfigurationModel | { configuration: AnyConfigurationModel; }, settings: Record<string, unknown>) => ConfSettingsReport
+function applyConfSettings(
+  target: AnyConfigurationModel | { configuration: AnyConfigurationModel },
+  settings: Record<string, unknown>,
+): ConfSettingsReport
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -34,11 +36,12 @@ import { applyConfSettings } from '@jbrowse/core/configuration'
 The `ConfigurationSchemaUnion` an array slot's entries answer to, read off
 the slot's MST type, or undefined for any other slot.
 
-```js
+```ts
 import { arraySlotUnion } from '@jbrowse/core/configuration'
 
-// type signature
-(slotType: IAnyType) => ConfigurationSchemaUnionMetadata | undefined
+function arraySlotUnion(
+  slotType: IAnyType,
+): ConfigurationSchemaUnionMetadata | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchemaUnion.ts)
@@ -52,11 +55,13 @@ member by member only in this form; merged raw, a bare `mark: "line"`
 replaces a whole `mark` object where it meant its `type`. The bag itself,
 by identity, when it already spells everything so.
 
-```js
+```ts
 import { canonicalSpelling } from '@jbrowse/core/configuration'
 
-// type signature
-(schema: ConfigurationSchemaMetadata, snapshot: Record<string, unknown>) => Record<string, unknown>
+function canonicalSpelling(
+  schema: ConfigurationSchemaMetadata,
+  snapshot: Record<string, unknown>,
+): Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
@@ -72,11 +77,12 @@ bare `types.union` would load it as its first member. Each member is an
 another member is named on a load and refused on a write rather than
 dropped; one that is not throws here.
 
-```js
+```ts
 import { ConfigurationSchemaUnion } from '@jbrowse/core/configuration'
 
-// type signature
-<const MEMBERS extends Record<string, AnyConfigurationSchemaType>>(name: string, members: MEMBERS) => ConfigurationSchemaUnionType<MEMBERS>
+function ConfigurationSchemaUnion<
+  const MEMBERS extends Record<string, AnyConfigurationSchemaType>,
+>(name: string, members: MEMBERS): ConfigurationSchemaUnionType<MEMBERS>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchemaUnion.ts)
@@ -87,11 +93,13 @@ A snapshot as `type` lifts it, without the keys it does not declare: the
 config half of an entry that also holds its owner's keys, as a
 `MultiWiggleAdapter` subadapter holds its row's `name` and `color`.
 
-```js
+```ts
 import { declaredSnapshot } from '@jbrowse/core/configuration'
 
-// type signature
-(type: IAnyType, snapshot: Record<string, unknown>) => Record<string, unknown>
+function declaredSnapshot(
+  type: IAnyType,
+  snapshot: Record<string, unknown>,
+): Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
@@ -101,11 +109,14 @@ import { declaredSnapshot } from '@jbrowse/core/configuration'
 A config value as `feature` reads it: a `jexl:` callback evaluated against
 the feature, anything else as written.
 
-```js
+```ts
 import { evaluateForFeature } from '@jbrowse/core/configuration'
 
-// type signature
-(value: unknown, feature: Feature, jexl: JexlInstance) => unknown
+function evaluateForFeature(
+  value: unknown,
+  feature: Feature,
+  jexl: JexlInstance,
+): unknown
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
@@ -115,11 +126,12 @@ import { evaluateForFeature } from '@jbrowse/core/configuration'
 Reads a configuration value from a track or display state model: exactly
 `readConfObject(model.configuration, path)`, with the same slot-name check.
 
-```js
+```ts
 import { getConf } from '@jbrowse/core/configuration'
 
-// type signature
-(model: { configuration: AnyConfigurationModel; }) => AnyConfigurationSnapshot
+function getConf(model: {
+  configuration: AnyConfigurationModel
+}): AnyConfigurationSnapshot
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -136,11 +148,13 @@ the config, which has never been validated; callers fall back to the plain
 object. Hydrating one entry twice returns one node. A shown track resolves to
 the session's working copy instead (ADR-032), which has the same content.
 
-```js
+```ts
 import { hydrateTrackConfig } from '@jbrowse/core/configuration'
 
-// type signature
-(pluginManager: PluginManager, config: Record<string, unknown>) => TrackConfigNode | undefined
+function hydrateTrackConfig(
+  pluginManager: PluginManager,
+  config: Record<string, unknown>,
+): TrackConfigNode | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchema.ts)
@@ -152,11 +166,13 @@ the snapshot leaves out a declared default that names values, as the
 multi-row display's `rows.field` is `type` (`keyedInForce`). Any other
 value is returned as given.
 
-```js
+```ts
 import { keyedValueInForce } from '@jbrowse/core/configuration'
 
-// type signature
-(node: AnyConfigurationModel | undefined, value: unknown) => unknown
+function keyedValueInForce(
+  node: AnyConfigurationModel | undefined,
+  value: unknown,
+): unknown
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -166,11 +182,13 @@ import { keyedValueInForce } from '@jbrowse/core/configuration'
 The keyed writes `schema` declares on the object at `path` (ADR-257), as
 `rows` declares its arrangement keyed by `field`; undefined elsewhere.
 
-```js
+```ts
 import { keyedWritesAt } from '@jbrowse/core/configuration'
 
-// type signature
-(schema: unknown, path: readonly string[]) => KeyedWrites | undefined
+function keyedWritesAt(
+  schema: unknown,
+  path: readonly string[],
+): KeyedWrites | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -188,11 +206,14 @@ The node is never attached, so nothing on the display is touched; a display
 reads its typed members off it. The draft is copied first, since MST
 freezes what it creates from.
 
-```js
+```ts
 import { liftPlot } from '@jbrowse/core/configuration'
 
-// type signature
-(conf: AnyConfigurationModel, draft: Plot, options?: PlotWriteOptions) => AnyConfigurationModel
+function liftPlot(
+  conf: AnyConfigurationModel,
+  draft: Plot,
+  options?: PlotWriteOptions,
+): AnyConfigurationModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -210,11 +231,14 @@ they name in a list `under` writes. For combining snapshots
 before any config node exists, as a track's `displayDefaults` folds into
 its `displays`.
 
-```js
+```ts
 import { mergeConfSettings } from '@jbrowse/core/configuration'
 
-// type signature
-(schema: unknown, under: Record<string, unknown>, over: Record<string, unknown>) => { [x: string]: unknown; }
+function mergeConfSettings(
+  schema: unknown,
+  under: Record<string, unknown>,
+  over: Record<string, unknown>,
+): { [x: string]: unknown }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -224,11 +248,10 @@ import { mergeConfSettings } from '@jbrowse/core/configuration'
 Parses the text as a plot and throws on a key the display's plot lacks. The
 schema parses the values after that.
 
-```js
+```ts
 import { parsePlot } from '@jbrowse/core/configuration'
 
-// type signature
-(text: string, keys: readonly string[]) => Plot
+function parsePlot(text: string, keys: readonly string[]): Plot
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -239,12 +262,27 @@ A display's plot settings as written: a key left out is left alone, and
 `null` resets that setting. Untyped, since a value may be a shorthand the
 schema lifts, and the schema is what judges it.
 
+```ts
+import type { Plot } from '@jbrowse/core/configuration'
+
+type Plot = Record<string, unknown>
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
 ## PlotExample
 
 A worked example of a display's plot: the text it fills the editor with,
 and what it does.
+
+```ts
+import type { PlotExample } from '@jbrowse/core/configuration'
+
+interface PlotExample {
+  plot: string
+  description: string
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
@@ -254,11 +292,10 @@ A display's plot settings, what "Edit plot..." edits and an agent reads as
 its `plot`: every slot, sub-schema and list its config declares with
 `plot`, in the order it declares them.
 
-```js
+```ts
 import { plotKeysOf } from '@jbrowse/core/configuration'
 
-// type signature
-(conf: AnyConfigurationModel) => string[]
+function plotKeysOf(conf: AnyConfigurationModel): string[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -268,11 +305,10 @@ import { plotKeysOf } from '@jbrowse/core/configuration'
 Marks a list of sub-schemas as a plot setting, as `plot: true` marks a slot
 or a sub-schema; an MST array type has no options in which to set the flag.
 
-```js
+```ts
 import { plotList } from '@jbrowse/core/configuration'
 
-// type signature
-<T extends IAnyType>(type: T) => T
+function plotList<T extends IAnyType>(type: T): T
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -284,11 +320,10 @@ default it shares with no other display, a default plot's marks, shows its
 entries, and a keyed object its field's declared default, since they are
 what is drawn.
 
-```js
+```ts
 import { plotOf } from '@jbrowse/core/configuration'
 
-// type signature
-(conf: AnyConfigurationModel) => Plot
+function plotOf(conf: AnyConfigurationModel): Plot
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -297,6 +332,14 @@ import { plotOf } from '@jbrowse/core/configuration'
 
 How a draft is written to the plot. By default it patches, as a settings bag
 does; `whole` takes it for the whole plot, as the "Edit plot..." text is.
+
+```ts
+import type { PlotWriteOptions } from '@jbrowse/core/configuration'
+
+interface PlotWriteOptions {
+  whole?: boolean
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
@@ -310,11 +353,14 @@ retired spelling writes the settings it lifts into.
 Under `whole`, a setting the draft leaves out writes its reset.
 Throws a refusal before anything is written.
 
-```js
+```ts
 import { plotWrites } from '@jbrowse/core/configuration'
 
-// type signature
-(conf: AnyConfigurationModel, draft: Plot, options?: PlotWriteOptions) => Record<string, unknown>
+function plotWrites(
+  conf: AnyConfigurationModel,
+  draft: Plot,
+  options?: PlotWriteOptions,
+): Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -326,11 +372,13 @@ applies, so a dialog or a validator rejects what an edit would reject, an
 undeclared key included. Throws what the schema's `preProcessSnapshot`
 throws.
 
-```js
+```ts
 import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
 
-// type signature
-(type: IAnyType, snapshot: unknown) => Record<string, unknown>
+function preProcessConfigSnapshot(
+  type: IAnyType,
+  snapshot: unknown,
+): Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
@@ -347,11 +395,12 @@ default, such as `getConfAssemblyNamesOrNone`. A sub-schema reads as its
 snapshot, so the types refuse a path ending on one, and a read names the
 member, as `['labels', 'name', 'show']` does.
 
-```js
+```ts
 import { readConfObject } from '@jbrowse/core/configuration'
 
-// type signature
-(confObject: AnyConfigurationModel) => AnyConfigurationSnapshot
+function readConfObject(
+  confObject: AnyConfigurationModel,
+): AnyConfigurationSnapshot
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
@@ -362,11 +411,10 @@ What a schema's own `preProcessSnapshot` does with a value it refuses that
 no declared rule can name: a write throws `notice`, and a config loading
 names it once on the console and loads without it.
 
-```js
+```ts
 import { refuseOnWrite } from '@jbrowse/core/configuration'
 
-// type signature
-(notice: string) => void
+function refuseOnWrite(notice: string): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
@@ -379,11 +427,10 @@ key on the console. `setConf`, a settings bag and a plot draft write this
 way, so a typo in an edit is an error and a config written for another
 version still draws.
 
-```js
+```ts
 import { refusingUndeclaredKeys } from '@jbrowse/core/configuration'
 
-// type signature
-<T>(write: () => T) => T
+function refusingUndeclaredKeys<T>(write: () => T): T
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
@@ -395,11 +442,13 @@ meet, as a config file or `getSnapshot` spells it: a slot left off reads as
 its default, so a `when` value that is the default fires for an absent slot,
 which is what the generated JSON Schema's `if` does.
 
-```js
+```ts
 import { requirementProblems } from '@jbrowse/core/configuration'
 
-// type signature
-(type: IAnyType, snapshot: Record<string, unknown>) => RequirementProblem[]
+function requirementProblems(
+  type: IAnyType,
+  snapshot: Record<string, unknown>,
+): RequirementProblem[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/requirements.ts)
@@ -417,11 +466,20 @@ move together. On a concrete schema an unknown slot name is a compile error,
 and `setSlot` refuses one at runtime (ADR-052). A wrong value type throws at
 runtime; `null` or `undefined` resets the slot to its default (ADR-146).
 
-```js
+```ts
 import { setConf } from '@jbrowse/core/configuration'
 
-// type signature
-<CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(target: CONFMODEL | { configuration: CONFMODEL; }, slotPath: SLOT, value: unknown) => void
+function setConf<
+  CONFMODEL extends AnyConfigurationModel,
+  const SLOT extends
+    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> =
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+>(
+  target: CONFMODEL | { configuration: CONFMODEL },
+  slotPath: SLOT,
+  value: unknown,
+): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -432,11 +490,10 @@ Whether `schema` writes the object at `path` whole: a channel, which
 declares `writes: 'whole'`, where a namespace merges member by member.
 False for a path the schema does not declare.
 
-```js
+```ts
 import { writesWholeAt } from '@jbrowse/core/configuration'
 
-// type signature
-(schema: unknown, path: readonly string[]) => boolean
+function writesWholeAt(schema: unknown, path: readonly string[]): boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)

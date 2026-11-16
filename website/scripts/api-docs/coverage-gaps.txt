@@ -1413,13 +1413,12 @@ plugins/wiggle/src/shared/wiggleRowHookViews.ts sharesPanel
 # config slots whose type prints as their source (0)
 # fix: write the slot as { type, ... }, or teach describeValue in slotSource.ts the MST type it holds
 
-# model members and #api exports whose type prints as MST internals or collapses to nothing (6)
+# model members and #api exports whose type prints as MST internals or collapses to nothing (5)
 # fix: tag the model it names #stateModel (#internal keeps it off the site), or write the type it should read as
 BaseDisplay.renderingProps
 BaseInternetAccountModel.getPreAuthorizationInformation
 LinearFeatureBaseDisplay.rpcProps
 LinearFeatureBaseDisplay.zoomFetchArgs
-api:alignments.alignmentTables
 api:synteny-core.carriedSyntenySettings
 
 # #stateModel tags attached to a declaration that builds no model (0)

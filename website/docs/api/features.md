@@ -25,9 +25,28 @@ the keys the region's records use. A key takes a list a record (`number`
 several. The keys JBrowse gives a feature (`start`, `type`, ...) or decodes
 into its glyph (`blockSizes`, ...) stay out.
 
-```js
-// type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, ids, subfeatureIds, }: { adapterConfig: Record<string, unknown>; sequenceAdapter?: Record<string, unknown> | undefined; regions: TablesRegion[]; ids: readonly string[]; subfeatureIds: readonly string[]; }) => Promise<{ attributes: Record<string, unknown[]>; subfeatureAttributes: Record<string, unknown[]>; attributeFields: { key: string[]; type: string[]; number: string[]; description: string[]; }; }>
+```ts
+import { featureAttributeTables } from '@jbrowse/plugin-features/tables'
+
+function featureAttributeTables(
+  pluginManager: PluginManager,
+  opts: {
+    adapterConfig: Record<string, unknown>
+    sequenceAdapter?: Record<string, unknown> | undefined
+    regions: TablesRegion[]
+    ids: readonly string[]
+    subfeatureIds: readonly string[]
+  },
+): Promise<{
+  attributes: Record<string, unknown[]>
+  subfeatureAttributes: Record<string, unknown[]>
+  attributeFields: {
+    key: string[]
+    type: string[]
+    number: string[]
+    description: string[]
+  }
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/tables.ts)
@@ -69,9 +88,128 @@ Ungrouped, there is one section, labelled `''`, from 0 to `height`. Each
 feature names its section's `label`. A section `facet.hidden` lists leaves
 every table.
 
-```js
-// type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, displayedRegions, display, bpPerPx, colorByFrame, aminoAcids, geneticCodeId, byteLimit, }: FeatureTablesArgs) => Promise<{ sections: {…}; legend: {…}; legendTitle: string; ramps: {…}[]; glyph: {…}; bpPerPx: number; config: Record<…>; fetchRegions: {…}[]; height: number; truncated: number; features: {…} & {…}; subfeatures: {…} & {…}; rects: {…} & {…}; lines: {…} & {…}; chevrons: {…} & {…}; arrows: {…} & {…}; aminoAcids: {…} & {…}; labels: {…} & { region: number[]; }; }>
+```ts
+import { featureTables } from '@jbrowse/plugin-features/tables'
+
+function featureTables(
+  pluginManager: PluginManager,
+  opts: FeatureTablesArgs,
+): Promise<{
+  sections: { key: string[]; label: string[]; top: number[]; height: number[] }
+  legend: { label: string[]; color: string[] }
+  legendTitle: string
+  ramps: {
+    offset: number[]
+    color: string[]
+    opacity: number[]
+    minLabel: string
+    maxLabel: string
+    id: string
+    title: string
+  }[]
+  glyph: {
+    fontSize: number
+    arrowLength: number
+    arrowStemHalfHeight: number
+    chevronWidth: number
+    chevronHeight: number
+    aminoAcidHalo: string
+    sectionLabelHeight: number
+  }
+  bpPerPx: number
+  config: Record<string, unknown>
+  fetchRegions: {
+    refName: string
+    start: number
+    end: number
+    originalRefName?: string | undefined
+    assemblyName: string
+  }[]
+  height: number
+  truncated: number
+  features: {
+    id: string[]
+    name: string[]
+    type: string[]
+    start: number[]
+    end: number[]
+    strand: number[]
+    top: number[]
+    bottom: number[]
+    gene: boolean[]
+    section: string[]
+  } & { region: number[] }
+  subfeatures: {
+    id: string[]
+    name: string[]
+    type: string[]
+    start: number[]
+    end: number[]
+    top: number[]
+    bottom: number[]
+    feature: number[]
+  } & { region: number[] }
+  rects: {
+    start: number[]
+    end: number[]
+    top: number[]
+    height: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+  lines: {
+    start: number[]
+    end: number[]
+    y: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+  chevrons: {
+    position: number[]
+    y: number[]
+    halfHeight: number[]
+    direction: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+  arrows: {
+    position: number[]
+    y: number[]
+    direction: number[]
+    headHalfHeight: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+  aminoAcids: {
+    start: number[]
+    end: number[]
+    aminoAcid: string[]
+    proteinIndex: number[]
+    top: number[]
+    height: number[]
+    stopOrNonTriplet: boolean[]
+    translExcept: boolean[]
+    text: string[]
+    fontSize: number[]
+    y: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+  labels: {
+    text: string[]
+    kind: string[]
+    position: number[]
+    y: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/tables.ts)
@@ -81,9 +219,10 @@ every table.
 Whether a track's display is the feature display, for a host that reaches
 it through `view.getTrack(id)?.activeDisplay` to drive its own controls.
 
-```js
-// type signature
-(display: unknown) => display is LinearBasicDisplay
+```ts
+import { isLinearBasicDisplay } from '@jbrowse/plugin-features'
+
+function isLinearBasicDisplay(display: unknown): display is LinearBasicDisplay
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/isLinearBasicDisplay.ts)

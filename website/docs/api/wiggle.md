@@ -20,9 +20,17 @@ its order; `columns`, a pixel each, the regions end to end, with its
 the display plots over the bins covering it, placed where a log or symlog
 axis draws it, NaN where no bin covers it.
 
-```js
-// type signature
-(pluginManager: PluginManager, args: WiggleTablesArgs) => Promise<{ rows: string[]; columns: { region: number[]; start: number[]; name: string[]; }; values: Float32Array<ArrayBuffer>; }>
+```ts
+import { wiggleScoreMatrix } from '@jbrowse/plugin-wiggle/tables'
+
+function wiggleScoreMatrix(
+  pluginManager: PluginManager,
+  args: WiggleTablesArgs,
+): Promise<{
+  rows: string[]
+  columns: { region: number[]; start: number[]; name: string[] }
+  values: Float32Array<ArrayBuffer>
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/tables.ts)
@@ -51,9 +59,65 @@ threshold bands and the row color key, the subtracks of an overlay or a
 R through V8. The adapters must be registered on `pluginManager`
 (`registerWiggleAdapters`).
 
-```js
-// type signature
-(pluginManager: PluginManager, args: WiggleTablesArgs) => Promise<{ scoreScale: {…}; clipStrip: {…}; summaryField: "maxScore" | "minScore" | "score"; mark: "bar" | "line" | "point" | "rect"; interpolate: "linear" | "step"; origin: number; rowLayout: boolean; height: number; config: Record<…>; warnings: string[]; legend: {…}; legendTitle: string; ramps: {…}[]; bins: {…}; marks: {…}; sources: { name: string[]; label: string[]; group: string[]; color: string[]; }; rules: { value: number[]; color: string[]; label: string[]; }; }>
+```ts
+import { wiggleTables } from '@jbrowse/plugin-wiggle/tables'
+
+function wiggleTables(
+  pluginManager: PluginManager,
+  args: WiggleTablesArgs,
+): Promise<{
+  scoreScale: {
+    domain: [number, number]
+    type: 'linear' | 'log' | 'symlog'
+    symlogConstant: number
+  }
+  clipStrip: { color: string; px: number }
+  summaryField: 'maxScore' | 'minScore' | 'score'
+  mark: 'bar' | 'line' | 'point' | 'rect'
+  interpolate: 'linear' | 'step'
+  origin: number
+  rowLayout: boolean
+  height: number
+  config: Record<string, unknown>
+  warnings: string[]
+  legend: { label: string[]; color: string[]; section: string[] }
+  legendTitle: string
+  ramps: {
+    offset: number[]
+    color: string[]
+    opacity: number[]
+    minLabel: string
+    maxLabel: string
+    id: string
+    title: string
+  }[]
+  bins: {
+    region: number[]
+    source: string[]
+    start: number[]
+    end: number[]
+    score: number[]
+    min: number[]
+    max: number[]
+  }
+  marks: {
+    region: number[]
+    source: string[]
+    row: number[]
+    layer: number[]
+    start: number[]
+    end: number[]
+    score: number[]
+    low: number[]
+    band: boolean[]
+    color: string[]
+    opacity: number[]
+    run: number[]
+    clipSide: number[]
+  }
+  sources: { name: string[]; label: string[]; group: string[]; color: string[] }
+  rules: { value: number[]; color: string[]; label: string[] }
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/tables.ts)

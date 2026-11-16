@@ -15,9 +15,10 @@ bgzipped and plain FASTA, 2bit, chrom.sizes) on a plugin manager that wants
 them without the rest of the plugin's tracks and displays, as a headless
 host does.
 
-```js
-// type signature
-(pluginManager: PluginManager) => void
+```ts
+import { registerSequenceAdapters } from '@jbrowse/plugin-sequence/adapters'
+
+function registerSequenceAdapters(pluginManager: PluginManager): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/adapters.ts)

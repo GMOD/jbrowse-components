@@ -15,9 +15,10 @@ and the alias adapters an assembly's `refNameAliases` reads through, on a
 plugin manager that wants them without the configuration editor, as a
 headless host does.
 
-```js
-// type signature
-(pluginManager: PluginManager) => void
+```ts
+import { registerConfigAdapters } from '@jbrowse/plugin-config/adapters'
+
+function registerConfigAdapters(pluginManager: PluginManager): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/adapters.ts)

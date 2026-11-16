@@ -83,11 +83,10 @@ inside the chrome's body, sits in the same flex column.
 - `null` outside a chrome (a standalone mount, a unit test, the SVG export),
   where `BottomRightIndicators` renders and anchors the box itself.
 
-```js
+```ts
 import { BottomRightCornerContext } from '@jbrowse/display-ui'
 
-// type signature
-Context<HTMLElement | null>
+const BottomRightCornerContext: Context<HTMLElement | null>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/bottomRightCorner.ts)
@@ -153,11 +152,14 @@ rendering. To keep them out of the graph, write your own display component over
 See
 [DISPLAYCHROME.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAYCHROME.md).
 
-```js
+```ts
 import { DisplayUIProvider } from '@jbrowse/display-ui'
 
-// type signature
-({ overlays, trackControl, children, }: { overlays?: Partial<DisplayChromeOverlays> | undefined; trackControl?: TrackControlComponent | undefined; children: ReactNode; }) => Element
+function DisplayUIProvider(opts: {
+  overlays?: Partial<DisplayChromeOverlays> | undefined
+  trackControl?: TrackControlComponent | undefined
+  children: ReactNode
+}): Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/DisplayUIProvider.tsx)
@@ -176,11 +178,10 @@ over `DisplayChromeBase` may hand the chrome a plain object, and `isAlive` runs
 the error and continues: a Force load button that looks live and does nothing. A
 plain object is never destroyed, so it is always callable.
 
-```js
+```ts
 import { isLiveModel } from '@jbrowse/display-ui'
 
-// type signature
-(model: unknown) => boolean
+function isLiveModel(model: unknown): boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/isLiveModel.ts)
@@ -200,11 +201,10 @@ The `data-testid` values it renders are a contract four of JBrowse's test
 systems key on, so a replacement set that keeps them can be driven by those
 suites too.
 
-```js
+```ts
 import { plainChromeOverlays } from '@jbrowse/display-ui'
 
-// type signature
-DisplayChromeOverlays
+const plainChromeOverlays: DisplayChromeOverlays
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/plainChromeOverlays.tsx)
@@ -224,9 +224,10 @@ The package exports it as `plainTrackControl`, lower-cased to match
 `plainChromeOverlays` — the two are a pair, and both are things you hand to a
 provider rather than render yourself.
 
-```js
-// type signature
-({ icon, tooltip, label, options, onClick, onMenuClose, onDelete, warning, }: TrackControlProps) => Element
+```ts
+import { plainTrackControl } from '@jbrowse/display-ui'
+
+function plainTrackControl(opts: TrackControlProps): Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/trackControl/plainTrackControl.tsx)
@@ -249,11 +250,13 @@ two consecutive measurements rather than from a threshold; see
 `release` is that advice, for a view where zooming is not what shrinks the
 fetch: the circle fetches every displayed region at any zoom.
 
-```js
+```ts
 import { tooLargeBannerText } from '@jbrowse/display-ui'
 
-// type signature
-(regionTooLargeReason: string, { zoomCanRelease, release }?: { zoomCanRelease?: boolean; release?: string; }) => string
+function tooLargeBannerText(
+  regionTooLargeReason: string,
+  opts?: { zoomCanRelease?: boolean; release?: string },
+): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/tooLargeBannerText.ts)
@@ -289,11 +292,14 @@ built on, uses the same trigger pattern; only the toolkit differs.
 `aria-describedby` and never `aria-label` — see useTooltip, which is this
 without the cloning, for a host writing custom markup.
 
-```js
+```ts
 import { Tooltip } from '@jbrowse/display-ui'
 
-// type signature
-({ title, placement, children, }: { title: ReactNode; placement?: TooltipPlacement | undefined; children: ReactElement<TriggerProps, string | JSXElementConstructor<any>>; }) => Element
+function Tooltip(opts: {
+  title: ReactNode
+  placement?: TooltipPlacement | undefined
+  children: ReactElement<TriggerProps, string | JSXElementConstructor<any>>
+}): Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/tooltip/Tooltip.tsx)
@@ -312,11 +318,13 @@ default), which preserves chrome that is still meaningful unescaped. Pass
 `fallbackInline={false}` for chrome that only makes sense above the masks and
 draws itself some other way elsewhere.
 
-```js
+```ts
 import { TrackOverlayPortal } from '@jbrowse/display-ui'
 
-// type signature
-({ children, fallbackInline, }: { children: ReactNode; fallbackInline?: boolean | undefined; }) => ReactNode
+function TrackOverlayPortal(opts: {
+  children: ReactNode
+  fallbackInline?: boolean | undefined
+}): ReactNode
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/trackOverlay/TrackOverlayPortal.tsx)
@@ -363,11 +371,16 @@ wants them takes them back on its positioned box; that box also has
 `data-gesture-owner`, so anything that does is already exempt from the LGV's
 click-drag pan.
 
-```js
+```ts
 import { TrackOverlaySlot } from '@jbrowse/display-ui'
 
-// type signature
-({ children, zIndex, style, overlayStyle, labelBand, }: { children: ReactNode; zIndex: number; style?: CSSProperties | undefined; overlayStyle?: CSSProperties | undefined; labelBand?: number | undefined; }) => Element
+function TrackOverlaySlot(opts: {
+  children: ReactNode
+  zIndex: number
+  style?: CSSProperties | undefined
+  overlayStyle?: CSSProperties | undefined
+  labelBand?: number | undefined
+}): Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/trackOverlay/TrackOverlaySlot.tsx)
@@ -394,11 +407,13 @@ return (
 collide with it. Any other handler on this list has to compose rather than
 replace — spread first, then call `triggerProps.onFocus` from yours.
 
-```js
+```ts
 import { useTooltip } from '@jbrowse/display-ui'
 
-// type signature
-(title: ReactNode, { placement }?: { placement?: TooltipPlacement | undefined; }) => TooltipTrigger
+function useTooltip(
+  title: ReactNode,
+  opts?: { placement?: TooltipPlacement | undefined },
+): TooltipTrigger
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/tooltip/useTooltip.tsx)
@@ -416,11 +431,12 @@ Render `menuProps` only while `open`, and portal it to `document.body` —
 `createPortal` is the caller's to aim, the maths is here. `menuProps.style`
 holds position only.
 
-```js
+```ts
 import { useTrackControlMenu } from '@jbrowse/display-ui'
 
-// type signature
-(onClose?: (() => void) | undefined) => TrackControlMenu
+function useTrackControlMenu(
+  onClose?: (() => void) | undefined,
+): TrackControlMenu
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/trackControl/useTrackControlMenu.tsx)
@@ -457,6 +473,26 @@ rules, never the axis — not an orientation, a form, a gutter width or a font.
 The chrome reads a member to keep off what the display put in the band, never to
 choose between two drawings of it (ADR-109).
 
+```ts
+import type { ValueScale } from '@jbrowse/display-ui'
+
+interface ValueScale {
+  domain: [number, number] | undefined
+  scaleType: ScaleType
+  height: number
+  offset?: number
+  symlogConstant?: number
+  ticks?: YScaleTicks
+  bandTops?: number[]
+  side?: AxisSide
+  left?: number
+  caption?: string
+  rules?: readonly ValueScaleRule[]
+  grid?: boolean
+  showAxis?: boolean
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/valueScale.ts)
 
 ### ValueScaleRule
@@ -464,6 +500,16 @@ choose between two drawings of it (ADR-109).
 One reference line a value scale declares, at a value in the scale's own units.
 `label` is free text, and the chrome assigns it no meaning: over a coverage plot
 "2 copies" is a claim only the author can make, since no ploidy can be assumed.
+
+```ts
+import type { ValueScaleRule } from '@jbrowse/display-ui'
+
+interface ValueScaleRule {
+  value: number
+  color?: string
+  label?: string
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/valueScale.ts)
 

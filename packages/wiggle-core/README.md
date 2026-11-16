@@ -18,9 +18,15 @@ less the zeros where any is positive, so whiskers open to their spread, a sparse
 window's empty bins lower no top, and a window of nothing above 0 keeps the top
 it has.
 
-```js
-// type signature
-({ stats, quantile, zero, spans, }: { stats: ScoreStats; quantile: number; zero: boolean; spans: ScoreSpan[]; }) => [number, number]
+```ts
+import { autoscaleDomainFromSpans } from '@jbrowse/wiggle-core'
+
+function autoscaleDomainFromSpans(opts: {
+  stats: ScoreStats
+  quantile: number
+  zero: boolean
+  spans: ScoreSpan[]
+}): [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -30,9 +36,17 @@ it has.
 The per-feature array a summary field names: `minScore` and `maxScore` the bins'
 stored extremes, anything else `score`, the bins' mean.
 
-```js
-// type signature
-(data: { featureScores: Float32Array; featureMinScores: Float32Array; featureMaxScores: Float32Array; }, field: "maxScore" | "minScore" | "score") => Float32Array<ArrayBufferLike>
+```ts
+import { getEffectiveScores } from '@jbrowse/wiggle-core'
+
+function getEffectiveScores(
+  data: {
+    featureScores: Float32Array
+    featureMinScores: Float32Array
+    featureMaxScores: Float32Array
+  },
+  field: 'maxScore' | 'minScore' | 'score',
+): Float32Array<ArrayBufferLike>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -50,9 +64,15 @@ The result never descends and never collapses: a bound that would put `min`
 above `max` widens the other end instead, and one value in view widens away from
 itself, so no consumer has to guess what a backwards or a flat domain means.
 
-```js
-// type signature
-({ scaleType, domain, bounds, zero, }: { scaleType: "linear" | "log" | "symlog"; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; zero: boolean; }) => [number, number]
+```ts
+import { getNiceDomain } from '@jbrowse/wiggle-core'
+
+function getNiceDomain(opts: {
+  scaleType: 'linear' | 'log' | 'symlog'
+  domain: readonly [number, number]
+  bounds: readonly [number | undefined, number | undefined]
+  zero: boolean
+}): [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
@@ -62,9 +82,13 @@ itself, so no consumer has to guess what a backwards or a flat domain means.
 Returns a niced `{min, max}` domain for a maximum score value. Uses log base-2
 when `useLogScale` is true (domain is clamped to [1, max]).
 
-```js
-// type signature
-(maxScore: number, useLogScale?: boolean | undefined) => { min: number; max: number; }
+```ts
+import { getNiceScale } from '@jbrowse/wiggle-core'
+
+function getNiceScale(
+  maxScore: number,
+  useLogScale?: boolean | undefined,
+): { min: number; max: number }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
@@ -75,9 +99,10 @@ Builds a d3 scale (linear/log/symlog) from a `ScaleOpts`, nicing the domain
 unless `nice: false` is set because the domain is already the one being drawn
 with.
 
-```js
-// type signature
-({ domain, range, scaleType, symlogConstant, nice, }: ScaleOpts) => Scale
+```ts
+import { getScale } from '@jbrowse/wiggle-core'
+
+function getScale(opts: ScaleOpts): Scale
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
@@ -87,9 +112,10 @@ with.
 Registers the drawer widget the quantitative tracks' "Y axis..." row opens. The
 wiggle plugin calls it once; alignments and the mark display open it by name.
 
-```js
-// type signature
-(pluginManager: PluginManager) => void
+```ts
+import { registerScoreAxisWidget } from '@jbrowse/wiggle-core/scoreAxisWidget'
+
+function registerScoreAxisWidget(pluginManager: PluginManager): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreAxisWidget/index.ts)
@@ -107,9 +133,14 @@ falls in the linear part of the curve. A p-value track configured that way is
 just a linear track wearing a log label, which is the reason this is resolved
 rather than hard-coded.
 
-```js
-// type signature
-(min: number, max: number, configured: number) => number
+```ts
+import { resolveSymlogConstant } from '@jbrowse/wiggle-core'
+
+function resolveSymlogConstant(
+  min: number,
+  max: number,
+  configured: number,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
@@ -136,9 +167,15 @@ differently, and the alignments coverage band does. A box carrying its own
 `valueToY` places the rules by that instead of `normalize`: the read cloud's
 ladder, whose band flips when it hangs down.
 
-```js
-// type signature
-({ rules, domain, box, normalize, }: { rules: readonly ValueScaleRule[]; domain: [number, number] | undefined; box: Pick<YScaleTicks, "valueToY" | "yBottom" | "yTop">; normalize: (score: number) => number; }) => ScoreRuleMark[]
+```ts
+import { scoreRuleMarks } from '@jbrowse/wiggle-core'
+
+function scoreRuleMarks(opts: {
+  rules: readonly ValueScaleRule[]
+  domain: [number, number] | undefined
+  box: Pick<YScaleTicks, 'valueToY' | 'yBottom' | 'yTop'>
+  normalize: (score: number) => number
+}): ScoreRuleMark[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
@@ -151,6 +188,25 @@ layer's separate `x`/`x2` and its one `y` lane. `starts[i * stride]` and
 `ends[i * stride + endOffset]` give instance `i`'s span, and `low` and `high`
 the two ends of its value, one array where the packer ships a single scalar.
 
+```ts
+import type { ScoreSpan } from '@jbrowse/wiggle-core'
+
+interface ScoreSpan {
+  count: number
+  starts: Uint32Array
+  ends: Uint32Array
+  stride: number
+  endOffset: number
+  low: Float32Array
+  high: Float32Array
+  visStart?: number
+  visEnd?: number
+  sortedBins: boolean
+  row?: Uint32Array
+  drawnKeys?: Uint8Array
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
 ### ungroupedAutoscaleViews
@@ -159,9 +215,12 @@ What a static host answers `ScoreAxisMixin` for its group: none, whatever
 `scale.share` names, since it stands in no view and has no peers to union with,
 so its axis autoscales over its own range alone.
 
-```js
-// type signature
-() => { readonly autoscaleGroup: string | undefined; }
+```ts
+import { ungroupedAutoscaleViews } from '@jbrowse/wiggle-core'
+
+function ungroupedAutoscaleViews(): {
+  readonly autoscaleGroup: string | undefined
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscaleGroup.ts)
@@ -173,9 +232,12 @@ both its autoscaled range and the values in view off one getter. `undefined`
 while there is nothing to scale against — no data, a hidden band, or a view that
 has not initialized.
 
-```js
-// type signature
-<Payload, Item, Stats>({ active, view, payloadFor, itemsFor, accumulate, }: VisibleStatsSpec<Payload, Item, Stats>) => VisibleStats<Item, Stats> | undefined
+```ts
+import { visibleStats } from '@jbrowse/wiggle-core'
+
+function visibleStats<Payload, Item, Stats>(
+  opts: VisibleStatsSpec<Payload, Item, Stats>,
+): VisibleStats<Item, Stats> | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/visibleStatsDomain.ts)
@@ -194,9 +256,13 @@ Applied to the raw range, before `getNiceDomain` takes the y scale's domain
 bounds. Those still win: a rule outside an explicitly bounded axis is one the
 config asked not to be shown, and it drops as before.
 
-```js
-// type signature
-(range: [number, number], ruleValues: readonly number[]) => [number, number]
+```ts
+import { widenRangeToRules } from '@jbrowse/wiggle-core'
+
+function widenRangeToRules(
+  range: [number, number],
+  ruleValues: readonly number[],
+): [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)

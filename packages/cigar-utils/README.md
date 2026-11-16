@@ -14,9 +14,13 @@ The read bases a packed CIGAR aligns (M, I, =, X): the stored sequence's
 `seqLength` less its soft clips, or a walk of the CIGAR for a record that stores
 no sequence (`seqLength` 0).
 
-```js
-// type signature
-(cigar: ArrayLike<number>, seqLength: number) => number
+```ts
+import { alignedReadBasesNumeric } from '@jbrowse/cigar-utils'
+
+function alignedReadBasesNumeric(
+  cigar: ArrayLike<number>,
+  seqLength: number,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
@@ -38,9 +42,13 @@ assembly's aliases: a BAM whose header names the sequence `chr1` against a FASTA
 that names it `1` otherwise yields regions no track can be opened on. Optional
 only because a caller may not have the assembly in hand; pass it when you do.
 
-```js
-// type signature
-(feature: ReadVsRefInput, getCanonicalRefName?: ((refName: string) => string | undefined) | undefined) => ReadVsRefFeatures
+```ts
+import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
+
+function buildReadVsRefFeatures(
+  feature: ReadVsRefInput,
+  getCanonicalRefName?: ((refName: string) => string | undefined) | undefined,
+): ReadVsRefFeatures
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/buildReadVsRefFeatures.ts)
@@ -52,9 +60,10 @@ mismatches by reference position: a run keeps only its `own` length, a run with
 no `own` length is the insertion it amounts to, and one with no `mate` length
 the deletion. Kept indels are exact, so they land where the fine tier's would.
 
-```js
-// type signature
-(s: string) => string
+```ts
+import { coarseCigarOwnAxis } from '@jbrowse/cigar-utils'
+
+function coarseCigarOwnAxis(s: string): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/coarseCigar.ts)
@@ -75,9 +84,10 @@ corners is never more than the gap off the path. That is what lets a reader
 interpolate within a run, and it costs a new run only where the two genomes'
 small indels are lopsided.
 
-```js
-// type signature
-(cigar: string, gap: number) => CoarsenedCigar
+```ts
+import { coarsenCigar } from '@jbrowse/cigar-utils'
+
+function coarsenCigar(cigar: string, gap: number): CoarsenedCigar
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/coarseCigar.ts)
@@ -88,9 +98,27 @@ featurizeSA over pre-split entries (see splitSA). Lets a caller filter the
 entries first — e.g. deduplicating the records repeated across a split read's
 segments — without paying to split and rejoin the tag around the filter.
 
-```js
-// type signature
-(entries: string[], id: string, strand: number | undefined, readName: string | undefined, normalize?: boolean | undefined) => { refName: string; start: number; end: number; seqLength: number; clipLengthAtStartOfRead: number; CIGAR: string; mapq: number; strand: 1 | -1; uniqueId: string; mate: { start: number; end: number; refName: string | undefined; }; }[]
+```ts
+import { featurizeSAEntries } from '@jbrowse/cigar-utils'
+
+function featurizeSAEntries(
+  entries: string[],
+  id: string,
+  strand: number | undefined,
+  readName: string | undefined,
+  normalize?: boolean | undefined,
+): {
+  refName: string
+  start: number
+  end: number
+  seqLength: number
+  clipLengthAtStartOfRead: number
+  CIGAR: string
+  mapq: number
+  strand: 1 | -1
+  uniqueId: string
+  mate: { start: number; end: number; refName: string | undefined }
+}[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
@@ -100,9 +128,10 @@ segments — without paying to split and rejoin the tag around the filter.
 The coarse CIGAR seen from the other axis on the minus strand: swapped as
 `swapCoarseCigar` does, and in reverse op order. The twin of `flipCigar`.
 
-```js
-// type signature
-(s: string) => string
+```ts
+import { flipCoarseCigar } from '@jbrowse/cigar-utils'
+
+function flipCoarseCigar(s: string): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/coarseCigar.ts)
@@ -111,9 +140,10 @@ The coarse CIGAR seen from the other axis on the minus strand: swapped as
 
 Length of the read sequence (sum of all ops except D/N).
 
-```js
-// type signature
-(cigar: string) => number
+```ts
+import { getLength } from '@jbrowse/cigar-utils'
+
+function getLength(cigar: string): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
@@ -122,9 +152,10 @@ Length of the read sequence (sum of all ops except D/N).
 
 Length the read spans on the reference (sum of M/=/X/D/N ops).
 
-```js
-// type signature
-(cigar: string) => number
+```ts
+import { getLengthOnRef } from '@jbrowse/cigar-utils'
+
+function getLengthOnRef(cigar: string): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
@@ -134,9 +165,16 @@ Length the read spans on the reference (sum of M/=/X/D/N ops).
 Computes the list of mismatches (SNVs, indels, clips, skips) for a read from its
 CIGAR, optional MD tag, sequence, reference, and quality.
 
-```js
-// type signature
-(cigar?: string | undefined, md?: string | undefined, seq?: string | undefined, ref?: string | undefined, qual?: Uint8Array<ArrayBufferLike> | undefined) => Mismatch[]
+```ts
+import { getMismatches } from '@jbrowse/cigar-utils'
+
+function getMismatches(
+  cigar?: string | undefined,
+  md?: string | undefined,
+  seq?: string | undefined,
+  ref?: string | undefined,
+  qual?: Uint8Array<ArrayBufferLike> | undefined,
+): Mismatch[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
@@ -172,9 +210,15 @@ repeated position emits once per occurrence.
 `from` starts the walk at a `refWindowToRead` cursor instead of the first op,
 for positions that all lie at or past its `readStart`.
 
-```js
-// type signature
-(cigarOps: ArrayLike<number>, positions: number[], callback: (ref: number, idx: number) => void, from?: CigarCursor | undefined) => void
+```ts
+import { getNextRefPos } from '@jbrowse/cigar-utils'
+
+function getNextRefPos(
+  cigarOps: ArrayLike<number>,
+  positions: number[],
+  callback: (ref: number, idx: number) => void,
+  from?: CigarCursor | undefined,
+): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/getNextRefPos.ts)
@@ -183,9 +227,10 @@ for positions that all lie at or past its `readStart`.
 
 Parses a CIGAR string to an alternating `[length, op, ...]` string array.
 
-```js
-// type signature
-(s?: string) => string[]
+```ts
+import { parseCigar } from '@jbrowse/cigar-utils'
+
+function parseCigar(s?: string): string[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
@@ -195,9 +240,10 @@ Parses a CIGAR string to an alternating `[length, op, ...]` string array.
 Parses a CIGAR string to a packed number array where each value is
 `(length << 4) | opIndex`.
 
-```js
-// type signature
-(s?: string) => number[]
+```ts
+import { parseCigar2 } from '@jbrowse/cigar-utils'
+
+function parseCigar2(s?: string): number[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
@@ -208,9 +254,10 @@ Same encoding as `parseCigar2` but writes into a packed `Uint32Array` — matche
 the NUMERIC_CIGAR format that BAM/CRAM adapters emit, so consumers can use a
 single typed-array code path.
 
-```js
-// type signature
-(s?: string) => Uint32Array<ArrayBuffer>
+```ts
+import { parseCigar2Typed } from '@jbrowse/cigar-utils'
+
+function parseCigar2Typed(s?: string): Uint32Array<ArrayBuffer>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
@@ -221,9 +268,10 @@ Parse a coarse CIGAR into the packed `(len << 4) | op` form
 `visitCigarRenderedSegments` walks. A square run packs as one `CIGAR_M` word; an
 unequal run as a `CIGAR_RUN` word pair, own axis first.
 
-```js
-// type signature
-(s: string) => Uint32Array<ArrayBuffer>
+```ts
+import { parseCoarseCigar } from '@jbrowse/cigar-utils'
+
+function parseCoarseCigar(s: string): Uint32Array<ArrayBuffer>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/coarseCigar.ts)
@@ -241,9 +289,14 @@ The op loop adds each op's lengths through the masks above rather than branching
 on the op, because a long read's op sequence is close to random and the branches
 mispredict; only the op that crosses the next edge takes the slow path.
 
-```js
-// type signature
-(cigarOps: ArrayLike<number>, refStart: number, refEnd: number) => ReadWindow
+```ts
+import { refWindowToRead } from '@jbrowse/cigar-utils'
+
+function refWindowToRead(
+  cigarOps: ArrayLike<number>,
+  refStart: number,
+  refEnd: number,
+): ReadWindow
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/refWindowToRead.ts)
@@ -253,9 +306,10 @@ mispredict; only the op that crosses the next edge takes the slow path.
 The `;`-separated alignment records of an SA tag, empties dropped — the input
 `featurizeSAEntries` expects.
 
-```js
-// type signature
-(SA: string) => string[]
+```ts
+import { splitSA } from '@jbrowse/cigar-utils'
+
+function splitSA(SA: string): string[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
@@ -266,9 +320,10 @@ The coarse CIGAR seen from the other axis on the plus strand: the two lengths of
 every run trade places and D<->I swap, op order untouched. The twin of
 `swapIndelCigar`.
 
-```js
-// type signature
-(s: string) => string
+```ts
+import { swapCoarseCigar } from '@jbrowse/cigar-utils'
+
+function swapCoarseCigar(s: string): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/coarseCigar.ts)

@@ -30,11 +30,10 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 Mints the brand where a file's name for an out-of-request location is first
 read.
 
-```js
+```ts
 import { adapterRefName } from '@jbrowse/core/util'
 
-// type signature
-(refName: string) => AdapterRefName
+function adapterRefName(refName: string): AdapterRefName
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/adapterRefName.ts)
@@ -50,6 +49,14 @@ unconverted: comparing it with a string is TS2367, and handing it to a `string`
 parameter, a `Map<string, _>` or a `Record<string, _>` is TS2345 or TS2538.
 `canonicalAdapterRefName` converts it, `adapterRefNameText` spells it.
 
+```ts
+import type { AdapterRefName } from '@jbrowse/core/util'
+
+interface AdapterRefName {
+  readonly __refNameNamespace: 'adapter'
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/adapterRefName.ts)
 
 ### adapterRefNameText
@@ -57,11 +64,10 @@ parameter, a `Map<string, _>` or a `Record<string, _>` is TS2345 or TS2538.
 The file's spelling as text, for display or for handing back to the adapter that
 spelled it. Not for comparing with view state.
 
-```js
+```ts
 import { adapterRefNameText } from '@jbrowse/core/util'
 
-// type signature
-(refName: AdapterRefName) => string
+function adapterRefNameText(refName: AdapterRefName): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/adapterRefName.ts)
@@ -77,6 +83,17 @@ weights, `sum` the sum of value times weight, and `mean` that over the sum of
 the weights. A row whose weight is not a number counts for nothing. A weight
 moves no minimum or maximum, so `min` and `max` read none.
 
+```ts
+import type { AggregateOp } from '@jbrowse/core/util/markEncoding'
+
+interface AggregateOp {
+  op: AggregateOpName
+  field?: FieldRef
+  weight?: FieldRef
+  as?: string
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### AggregateStep
@@ -84,6 +101,16 @@ moves no minimum or maximum, so `min` and `max` read none.
 One feature per distinct `groupby` value set (one for the whole region with
 none), spanning its members' extent, with the group's fields and every `ops`
 entry.
+
+```ts
+import type { AggregateStep } from '@jbrowse/core/util/markEncoding'
+
+interface AggregateStep {
+  type: 'aggregate'
+  groupby?: FieldRef[]
+  ops: AggregateOp[]
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -98,11 +125,13 @@ namespace's over its part, so a shorthand or a legacy key reads the same here as
 in `config.json`. A key the config does not declare is reported for the caller
 to route or refuse, and a declared key whose write throws costs that key alone.
 
-```js
+```ts
 import { applyConfSettings } from '@jbrowse/core/configuration'
 
-// type signature
-(target: AnyConfigurationModel | { configuration: AnyConfigurationModel; }, settings: Record<string, unknown>) => ConfSettingsReport
+function applyConfSettings(
+  target: AnyConfigurationModel | { configuration: AnyConfigurationModel },
+  settings: Record<string, unknown>,
+): ConfSettingsReport
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -112,11 +141,12 @@ import { applyConfSettings } from '@jbrowse/core/configuration'
 The `ConfigurationSchemaUnion` an array slot's entries answer to, read off the
 slot's MST type, or undefined for any other slot.
 
-```js
+```ts
 import { arraySlotUnion } from '@jbrowse/core/configuration'
 
-// type signature
-(slotType: IAnyType) => ConfigurationSchemaUnionMetadata | undefined
+function arraySlotUnion(
+  slotType: IAnyType,
+): ConfigurationSchemaUnionMetadata | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchemaUnion.ts)
@@ -125,11 +155,10 @@ import { arraySlotUnion } from '@jbrowse/core/configuration'
 
 A table over a feature list, or the table itself.
 
-```js
+```ts
 import { asTable } from '@jbrowse/core/util/featureTable'
 
-// type signature
-(input: readonly Feature[] | FeatureTable) => FeatureTable
+function asTable(input: readonly Feature[] | FeatureTable): FeatureTable
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
@@ -143,6 +172,16 @@ right now (the display pre-ANDs its settings half, `showX`, with its data half,
 read pixels through reservedPx or stackBands, never by re-combining the pair, so
 the reserver and the painter use the same pixel values.
 
+```ts
+import type { Band } from '@jbrowse/core/util/bandLayout'
+
+interface Band {
+  active: boolean
+  height: number
+  bounds?: BandBounds
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
 ### bandAt
@@ -151,11 +190,10 @@ The band under content-space `y`, or undefined below the stack or over a band
 that reserves nothing. The pointer's half of the fold: a band's hover reads the
 same tops and heights its painter drew at.
 
-```js
+```ts
 import { bandAt } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(stack: BandStack<K>, y: number) => K | undefined
+function bandAt<K extends string>(stack: BandStack<K>, y: number): K | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -165,11 +203,14 @@ import { bandAt } from '@jbrowse/core/util/bandLayout'
 The legal range for a drag of band `key` in a stack folded from
 boundStackedBands.
 
-```js
+```ts
 import { bandDragBounds } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(stack: BandStack<K>, key: K, plot: BandPlot) => { max: number; }
+function bandDragBounds<K extends string>(
+  stack: BandStack<K>,
+  key: K,
+  plot: BandPlot,
+): { max: number }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -181,6 +222,15 @@ and the px the plot keeps under any stack — `MIN_BAND_HEIGHT` while it draws, 
 its rows stay visible and the lowest band's handle stays on the display, and 0
 while it draws nothing.
 
+```ts
+import type { BandPlot } from '@jbrowse/core/util/bandLayout'
+
+interface BandPlot {
+  height: number
+  floor: number
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
 ### baseDisplayConfig
@@ -189,11 +239,10 @@ The base's entry for this display, hydrated, which a reset returns to and "is
 this the reader's" compares against: the config.json's, or the one a track the
 session owns was added with; empty in a session that keeps no base.
 
-```js
+```ts
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 
-// type signature
-(self: object) => Record<string, unknown>
+function baseDisplayConfig(self: object): Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/baseDisplayConfig.ts)
@@ -212,6 +261,25 @@ of overlap 0 in the bin holding its position, and one whose ends are not numbers
 is none. A piece is its feature with those fields beside it, so its id and hover
 are the feature's, and an `aggregate` over the pieces weighted by `overlap` is a
 mean per base.
+
+```ts
+import type { BinStep } from '@jbrowse/core/util/markEncoding'
+
+type BinStep = {
+  type: 'bin'
+  step: number
+  as?: [string, string]
+} & (
+  | {
+      field?: FieldRef
+      fields?: never
+    }
+  | {
+      fields: [FieldRef, FieldRef]
+      field?: never
+    }
+)
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -232,11 +300,10 @@ band's ceiling depends on the others.
 The bounds differ per band and the rule does not, so this takes the bounds and
 each band does not re-derive the rule.
 
-```js
+```ts
 import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
 
-// type signature
-(n: number, { min, max }?: BandBounds) => number
+function boundBandHeight(n: number, opts?: BandBounds): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
@@ -250,11 +317,14 @@ stack never takes the plot below its floor. An inactive band reserves nothing,
 so it is bound to the whole room and comes back at a legal height. Bind here,
 then fold with stackBands.
 
-```js
+```ts
 import { boundStackedBands } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(order: readonly K[], bands: Record<K, Band>, plot: BandPlot) => Record<K, Band>
+function boundStackedBands<K extends string>(
+  order: readonly K[],
+  bands: Record<K, Band>,
+  plot: BandPlot,
+): Record<K, Band>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -278,11 +348,13 @@ breakpoint (+1).
 A consumer holding an already-parsed `Breakend` can call this instead of
 repeating two adjacent ternaries of opposite polarity.
 
-```js
+```ts
 import { breakendKeepsDirections } from '@jbrowse/core/util/svAlt'
 
-// type signature
-(bnd: Breakend) => { mateDirection: number; joinDirection: number; }
+function breakendKeepsDirections(bnd: Breakend): {
+  mateDirection: number
+  joinDirection: number
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -299,11 +371,12 @@ belongs at a value off the centre of the domain reads it through `rampMidT`, the
 shader's rule and its generated twin, so the middle follows a moving domain
 without a new table.
 
-```js
+```ts
 import { buildColorRampLut } from '@jbrowse/core/util/colorRamp'
 
-// type signature
-(stops: readonly ColorRampStop[]) => Uint8Array<ArrayBuffer>
+function buildColorRampLut(
+  stops: readonly ColorRampStop[],
+): Uint8Array<ArrayBuffer>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -313,11 +386,13 @@ import { buildColorRampLut } from '@jbrowse/core/util/colorRamp'
 The assembly's canonical name for an adapter-spelled refName, through
 `getCanonicalRefName2`; the file's spelling when there is no assembly.
 
-```js
+```ts
 import { canonicalAdapterRefName } from '@jbrowse/core/util'
 
-// type signature
-(assembly: { getCanonicalRefName2: (refName: string) => string; } | undefined, refName: AdapterRefName) => string
+function canonicalAdapterRefName(
+  assembly: { getCanonicalRefName2: (refName: string) => string } | undefined,
+  refName: AdapterRefName,
+): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/adapterRefName.ts)
@@ -349,11 +424,13 @@ Takes a refName, not a spec that might hold one. The resolver calls
 and a caller reading an untyped `frozen` slot must first check that the value is
 a refName.
 
-```js
+```ts
 import { canonicalizeViewRefName } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode, refName: string) => string
+function canonicalizeViewRefName(
+  node: IAnyStateTreeNode,
+  refName: string,
+): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -367,11 +444,13 @@ member only in this form; merged raw, a bare `mark: "line"` replaces a whole
 `mark` object where it meant its `type`. The bag itself, by identity, when it
 already spells everything so.
 
-```js
+```ts
 import { canonicalSpelling } from '@jbrowse/core/configuration'
 
-// type signature
-(schema: ConfigurationSchemaMetadata, snapshot: Record<string, unknown>) => Record<string, unknown>
+function canonicalSpelling(
+  schema: ConfigurationSchemaMetadata,
+  snapshot: Record<string, unknown>,
+): Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
@@ -386,11 +465,20 @@ every such key one color instead, `''` the no-value grey, and `invalid` paints
 the no-value key, `''` or a preset's missing level (strand's `0`), which keeps
 the grey or the level's own color while unset.
 
-```js
+```ts
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 
-// type signature
-(field: string, { domain, range, labels, held, unknown, invalid }?: { domain?: readonly string[]; range?: readonly string[]; labels?: readonly string[]; held?: HeldSlots; unknown?: string; invalid?: string; }) => CategoricalField
+function categoricalField(
+  field: string,
+  opts?: {
+    domain?: readonly string[]
+    range?: readonly string[]
+    labels?: readonly string[]
+    held?: HeldSlots
+    unknown?: string
+    invalid?: string
+  },
+): CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -405,6 +493,27 @@ key's color is a function of the key and the declaration, so every region agrees
 on it. A field that deals its colors (`categoricalField`'s `held`) also skips
 the colors of keys met earlier.
 
+```ts
+import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
+
+interface CategoricalField {
+  field: string
+  domain: readonly string[]
+  closed?: boolean
+  key: (value: unknown) => string
+  compare: (a: string, b: string) => number
+  label: (key: string) => string
+  sectionLabel: (key: string) => string
+  color: (key: string) => string
+  colorAmong?: (key: string, batch: ReadonlySet<string>) => string
+  unknown?: {
+    color: string
+    paints: (key: string) => boolean
+  }
+  invalid?: string
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
 ### CategoricalRef
@@ -417,6 +526,19 @@ of an occasional collision. A `domain` spends the range deliberately: the listed
 values take it in order, and a value the domain leaves out never takes a listed
 value's entry. The domain orders and spends; it never adds a value the data
 lacks.
+
+```ts
+import type { CategoricalRef } from '@jbrowse/core/util/markEncoding'
+
+interface CategoricalRef {
+  field: FieldRef
+  scale: 'ordinal'
+  domain?: (string | number)[]
+  names?: string[]
+  unknown?: string
+  invalid?: string
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -432,6 +554,15 @@ the same field on the feature the row was fanned out of, so a `flatten` over a
 MAF block's `alignments` stands in front. A gap run reaching either end of the
 row is no cell, and a feature with no parent answers none.
 
+```ts
+import type { CellsStep } from '@jbrowse/core/util/markEncoding'
+
+interface CellsStep {
+  type: 'cells'
+  field?: FieldRef
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### ChannelReader
@@ -440,6 +571,12 @@ A channel read per feature: the compiled form of a FieldRef, and what a
 display's worker method passes to the encoder for a channel that no field name
 can express — a join against a second adapter, a lookup table, a rule over two
 fields.
+
+```ts
+import type { ChannelReader } from '@jbrowse/core/util/markEncoding'
+
+type ChannelReader<T = unknown> = (feature: Feature) => T
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
@@ -462,11 +599,14 @@ A drag passes `ResizeHandle` the band's height as `value` and this setter as
 `onChange`: the handle aims at the height at the press plus the pointer's
 travel, so the seam waits at a clamp until the pointer comes back to it.
 
-```js
+```ts
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 
-// type signature
-(current: number, target: number, bounds?: BandBounds) => number
+function clampBandHeight(
+  current: number,
+  target: number,
+  bounds?: BandBounds,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
@@ -476,11 +616,10 @@ import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 The quantile a clip toggle writes: a scale's declared default where that clips,
 below 1, else DEFAULT_CLIP_QUANTILE.
 
-```js
+```ts
 import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
 
-// type signature
-(declaredDefault: unknown) => number
+function clipQuantileOf(declaredDefault: unknown): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
@@ -489,17 +628,36 @@ import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
 
 Codes into a list of labels, one per row.
 
+```ts
+import type { CodeLane } from '@jbrowse/core/util/featureTable'
+
+type CodeLane = Uint8Array | Uint16Array | Uint32Array
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ### COLOR_SCHEME_LABELS
 
 The name a menu row shows for each scheme.
 
-```js
+```ts
 import { COLOR_SCHEME_LABELS } from '@jbrowse/core/util/colorSchemes'
 
-// type signature
-Record<"blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "redyellowblue" | "viridis", string>
+const COLOR_SCHEME_LABELS: Record<
+  | 'blues'
+  | 'cividis'
+  | 'fall'
+  | 'inferno'
+  | 'juicebox'
+  | 'magma'
+  | 'purpleorange'
+  | 'redblue'
+  | 'redgreyblue'
+  | 'reds'
+  | 'redyellowblue'
+  | 'viridis',
+  string
+>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
@@ -518,12 +676,11 @@ white middle would not, as `identity` paints; `redyellowblue` is ColorBrewer's
 RdYlBu through a pale yellow middle, Vega's name and direction; `dnds` turns it
 round so low reads cool and high hot.
 
-```js
+```ts
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 
-// type signature
-readonly[
-  ('viridis',
+const COLOR_SCHEMES: readonly [
+  'viridis',
   'magma',
   'inferno',
   'cividis',
@@ -534,7 +691,7 @@ readonly[
   'redblue',
   'purpleorange',
   'redgreyblue',
-  'redyellowblue')
+  'redyellowblue',
 ]
 ```
 
@@ -545,11 +702,13 @@ readonly[
 The packed color instance `i` of `channels` paints: `color[i]`, or `color`
 itself where the color is a constant and so shipped as one number.
 
-```js
+```ts
 import { colorAt } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-(channels: Pick<EncodedChannels, "color">, i: number) => number | undefined
+function colorAt(
+  channels: Pick<EncodedChannels, 'color'>,
+  i: number,
+): number | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -560,11 +719,10 @@ The CIEDE2000 difference between two CSS colors, in CIELAB as CSS `lab()` reads
 it. About 2 is a just noticeable difference between large patches side by side;
 small marks matched to a key's swatches need far more.
 
-```js
+```ts
 import { colorDifference } from '@jbrowse/core/ui/colors'
 
-// type signature
-(a: string, b: string) => number
+function colorDifference(a: string, b: string): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ui/colors.ts)
@@ -575,6 +733,18 @@ How a mark's `color` channel resolves. A CSS color or a `jexl:` expression
 returning one paints per feature with no scale; the object forms bind a field to
 a scale, which a legend can describe, and share the config's member names.
 
+```ts
+import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
+
+type ColorEncoding =
+  | string
+  | (CategoricalRef & {
+      range?: string[]
+    })
+  | ContinuousRef
+  | ThresholdRef
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### colorEntryReader
@@ -583,11 +753,14 @@ What a categorical color's key lists each row of `table` under, as the encoder
 lists it: an ordinal color's category, an identity color's packed color.
 Undefined for a color whose key lists no categories.
 
-```js
+```ts
 import { colorEntryReader } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-(table: FeatureTable, color: MarkColorEncoding, jexl?: JexlInstance | undefined) => ((i: number) => string | number) | undefined
+function colorEntryReader(
+  table: FeatureTable,
+  color: MarkColorEncoding,
+  jexl?: JexlInstance | undefined,
+): ((i: number) => string | number) | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -597,11 +770,13 @@ import { colorEntryReader } from '@jbrowse/core/util/markEncoding'
 A CSS color or `jexl:` color expression as a per-feature packed ABGR — the
 unscaled arm of ColorEncoding, used by a display that has a plain `color` slot.
 
-```js
+```ts
 import { colorEvaluator } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-(color: string, jexl: JexlInstance | undefined) => (feature: Feature) => number
+function colorEvaluator(
+  color: string,
+  jexl: JexlInstance | undefined,
+): (feature: Feature) => number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -612,11 +787,10 @@ The stops a continuous color scale samples: `range`'s CSS colors where it lists
 any, else the named `scheme`, viridis while that is unset, turned round under
 `reverse`.
 
-```js
+```ts
 import { colorRampStops } from '@jbrowse/core/util/colorRamp'
 
-// type signature
-({ range, scheme, reverse, }: RampDeclaration) => readonly ColorRampStop[]
+function colorRampStops(opts: RampDeclaration): readonly ColorRampStop[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -627,9 +801,68 @@ The scale a color channel was resolved through, as the legend reads it — the
 same table the colors in the payload came from, so the key cannot disagree with
 the painting.
 
+```ts
+import type { ColorScaleTable } from '@jbrowse/core/util/markEncoding'
+
+type ColorScaleTable =
+  | {
+      kind: 'categorical'
+      field: string
+      domain: string[]
+      range?: string[]
+      numericKeys?: boolean
+      entries: {
+        value: string
+        color: number
+        hidden?: boolean
+      }[]
+    }
+  | {
+      kind: 'identity'
+      field: ''
+      domain: string[]
+      entries: {
+        value: string
+        color: number
+        hidden?: boolean
+      }[]
+    }
+  | {
+      kind: 'threshold'
+      field: string
+      domain: number[]
+      range?: string[]
+      missing?: boolean
+      notNumber?: boolean
+    }
+  | {
+      kind: 'ramp'
+      field: string
+      scale: 'linear' | 'log' | 'symlog'
+      domain: [number, number]
+      pinned: [boolean, boolean]
+      domainMid?: number
+      range?: string[]
+      scheme?: ColorSchemeName
+      reverse?: boolean
+      extent: [number, number]
+      quantile?: number
+      extremes?: [number, number]
+      lut: Uint8Array
+      missing?: boolean
+      notNumber?: boolean
+    }
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### ColorSchemeName
+
+```ts
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+
+type ColorSchemeName = (typeof COLOR_SCHEMES)[number]
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
 
@@ -641,6 +874,39 @@ field read off the parser's own features, text or lists an adapter holds typed,
 or a value a step computes per row. `at` is the row each of the table's rows
 reads, where the lane or the features belong to a table this one stands on.
 
+```ts
+import type { Column } from '@jbrowse/core/util/featureTable'
+
+type Column =
+  | {
+      kind: 'number'
+      values: NumberLane
+      at: Uint32Array | undefined
+      nanIsAbsent?: boolean
+    }
+  | {
+      kind: 'category'
+      codes: CodeLane
+      labels: readonly string[]
+      at: Uint32Array | undefined
+    }
+  | {
+      kind: 'feature'
+      features: readonly Feature[]
+      field: string
+      at: Uint32Array | undefined
+    }
+  | TextColumn
+  | ListColumn
+  | {
+      kind: 'value'
+      read: (row: number) => unknown
+    }
+  | {
+      kind: 'none'
+    }
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ### ColumnTable
@@ -649,11 +915,10 @@ A table an adapter answers from the typed arrays it already holds, where
 `getFeaturesArray` would make an object per row: a column per field, and each
 row's id. A row's hover JSON is every field it holds.
 
-```js
+```ts
 import { ColumnTable } from '@jbrowse/core/util/featureTable'
 
-// type signature
-typeof ColumnTable
+const ColumnTable: typeof ColumnTable
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
@@ -669,11 +934,12 @@ its first member. Each member is an `explicitlyTyped`, `closed` schema named by
 its key, so a key belonging to another member is named on a load and refused on
 a write rather than dropped; one that is not throws here.
 
-```js
+```ts
 import { ConfigurationSchemaUnion } from '@jbrowse/core/configuration'
 
-// type signature
-<const MEMBERS extends Record<string, AnyConfigurationSchemaType>>(name: string, members: MEMBERS) => ConfigurationSchemaUnionType<MEMBERS>
+function ConfigurationSchemaUnion<
+  const MEMBERS extends Record<string, AnyConfigurationSchemaType>,
+>(name: string, members: MEMBERS): ConfigurationSchemaUnionType<MEMBERS>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchemaUnion.ts)
@@ -687,11 +953,18 @@ infinity the end on its side, as a threshold places it, and NaN, text that is no
 number, the misconfiguration grey. The encoder and every display painting a ramp
 itself read it, so a value takes one color whoever paints it.
 
-```js
+```ts
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-(encoding: ContinuousRef, extent: readonly [number, number]) => { domain: [number, number]; lut: Uint8Array<ArrayBufferLike>; midNorm: number; colorOf: (value: number) => number; }
+function continuousColorScale(
+  encoding: ContinuousRef,
+  extent: readonly [number, number],
+): {
+  domain: [number, number]
+  lut: Uint8Array<ArrayBufferLike>
+  midNorm: number
+  colorOf: (value: number) => number
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -704,6 +977,22 @@ the region's extreme, so pinning both keeps colors consistent across a whole
 view. The ramp is `range`'s CSS colors, evenly spaced, where it lists any, else
 the named `scheme`; `reverse` turns it round.
 
+```ts
+import type { ContinuousRef } from '@jbrowse/core/util/markEncoding'
+
+interface ContinuousRef {
+  field: FieldRef
+  scale: 'linear' | 'log' | 'symlog'
+  domainMin?: number
+  domainMax?: number
+  domainMid?: number
+  range?: string[]
+  scheme?: ColorSchemeName
+  reverse?: boolean
+  domainQuantile?: number
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### CoverageStep
@@ -714,6 +1003,15 @@ stretches nothing overlaps left out. A read counts across its whole span,
 deletions and introns included; gap-aware depth stays the alignments display's
 (ADR-118).
 
+```ts
+import type { CoverageStep } from '@jbrowse/core/util/markEncoding'
+
+interface CoverageStep {
+  type: 'coverage'
+  as?: string
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### darkAtLowEnd
@@ -722,11 +1020,24 @@ Whether a named ramp is a sequential one running dark at its low end: viridis,
 magma, inferno and cividis. Juicebox, fall, reds and blues run light to dark,
 and a diverging ramp is light in its middle.
 
-```js
+```ts
 import { darkAtLowEnd } from '@jbrowse/core/util/colorRamp'
 
-// type signature
-(scheme: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "redyellowblue" | "viridis") => boolean
+function darkAtLowEnd(
+  scheme:
+    | 'blues'
+    | 'cividis'
+    | 'fall'
+    | 'inferno'
+    | 'juicebox'
+    | 'magma'
+    | 'purpleorange'
+    | 'redblue'
+    | 'redgreyblue'
+    | 'reds'
+    | 'redyellowblue'
+    | 'viridis',
+): boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -738,11 +1049,10 @@ first seen together takes do not depend on the order they arrive in. Each new
 key avoids every color the session has dealt, so regions dealing keys separately
 never repeat a color. A no-op for a field that deals nothing.
 
-```js
+```ts
 import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
 
-// type signature
-(field: CategoricalField, keys: Iterable<string>) => void
+function dealKeyColors(field: CategoricalField, keys: Iterable<string>): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -754,11 +1064,13 @@ avoids only these keys' colors, so the values a session met elsewhere do not use
 up the palette for the ones on screen. Dealing one region of several this way
 can put a value on the color of one in the region beside it.
 
-```js
+```ts
 import { dealShownKeyColors } from '@jbrowse/core/util/categoricalField'
 
-// type signature
-(field: CategoricalField, keys: Iterable<string>) => void
+function dealShownKeyColors(
+  field: CategoricalField,
+  keys: Iterable<string>,
+): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -769,11 +1081,13 @@ A snapshot as `type` lifts it, without the keys it does not declare: the config
 half of an entry that also holds its owner's keys, as a `MultiWiggleAdapter`
 subadapter holds its row's `name` and `color`.
 
-```js
+```ts
 import { declaredSnapshot } from '@jbrowse/core/configuration'
 
-// type signature
-(type: IAnyType, snapshot: Record<string, unknown>) => Record<string, unknown>
+function declaredSnapshot(
+  type: IAnyType,
+  snapshot: Record<string, unknown>,
+): Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
@@ -783,22 +1097,22 @@ import { declaredSnapshot } from '@jbrowse/core/configuration'
 The ramp a continuous scale samples while it names no `range` and no `scheme`,
 so a declaration spelling it out and one leaving it unset resolve alike.
 
-```js
+```ts
 import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
 
-// type signature
-;'blues' |
-  'cividis' |
-  'fall' |
-  'inferno' |
-  'juicebox' |
-  'magma' |
-  'purpleorange' |
-  'redblue' |
-  'redgreyblue' |
-  'reds' |
-  'redyellowblue' |
-  'viridis'
+const DEFAULT_COLOR_SCHEME:
+  | 'blues'
+  | 'cividis'
+  | 'fall'
+  | 'inferno'
+  | 'juicebox'
+  | 'magma'
+  | 'purpleorange'
+  | 'redblue'
+  | 'redgreyblue'
+  | 'reds'
+  | 'redyellowblue'
+  | 'viridis'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
@@ -811,11 +1125,16 @@ its floor stays where it is, whether or not it draws, up to the room the other
 bands leave the plot above its floor. `min` is the band's drag floor,
 `MIN_BAND_HEIGHT` by default.
 
-```js
+```ts
 import { dragBandHeight } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(stack: BandStack<K>, key: K, plot: BandPlot, target: number, min?: number | undefined) => number
+function dragBandHeight<K extends string>(
+  stack: BandStack<K>,
+  key: K,
+  plot: BandPlot,
+  target: number,
+  min?: number | undefined,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -825,11 +1144,10 @@ import { dragBandHeight } from '@jbrowse/core/util/bandLayout'
 The renderer half of `electron`, reached through the Node `require` an Electron
 window runs with. Throws outside Electron.
 
-```js
+```ts
 import { electronRenderer } from '@jbrowse/core/util/electron'
 
-// type signature
-;() => ElectronRenderer
+function electronRenderer(): ElectronRenderer
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/electron.ts)
@@ -840,12 +1158,29 @@ What surrounds an encode: the jexl instance a `jexl:` channel compiles against �
 a caller whose channels are all readers or field names passes none — a progress
 reporter, and the region's fetched features a `root` lane names rows of.
 
+```ts
+import type { EncodeContext } from '@jbrowse/core/util/markEncoding'
+
+interface EncodeContext {
+  jexl?: JexlInstance
+  report?: ProgressReporter
+  root?: FeatureTable
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ### Encoded
 
 EncodedChannels with the lanes in `L` present — what `encodeFeatures` answers a
 caller that named them.
+
+```ts
+import type { Encoded } from '@jbrowse/core/util/markEncoding'
+
+type Encoded<L extends LaneName> = EncodedChannels &
+  Required<Pick<EncodedChannels, Exclude<L, 'index'>>>
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -857,17 +1192,50 @@ index in the input list, and the array is absent where instance `i` is feature
 `i` (featureIndexAt). A lane is present when the caller asked for it (LaneName);
 Encoded is this type with a known lane set required.
 
+```ts
+import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
+
+interface EncodedChannels {
+  count: number
+  skipped: number
+  skippedPosition?: number
+  x: Uint32Array
+  x2: Uint32Array
+  featureIndex?: Uint32Array
+  root?: Uint32Array
+  y?: Float32Array
+  color?: Uint32Array | number
+  colorValue?: Float32Array
+  colorKey?: Uint32Array
+  glyph?: Uint8Array
+  row?: Uint32Array
+  series?: Uint32Array
+  gapBp?: number
+  text?: string[]
+  tooltip?: string[]
+  size?: Float32Array
+  x2Ref?: Uint32Array
+  x2RefNames?: string[]
+  feet?: Uint8Array
+  yMin: number
+  yMax: number
+  flatbushData?: ArrayBuffer
+  scale?: ColorScaleTable
+  shapeScale?: ShapeScaleTable
+  sizeScale?: SizeScaleTable
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### encodedChannelTransferables
 
 The buffers an EncodedChannels owns, for `rpcResult`'s transfer list.
 
-```js
+```ts
 import { encodedChannelTransferables } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-(c: EncodedChannels) => ArrayBufferLike[]
+function encodedChannelTransferables(c: EncodedChannels): ArrayBufferLike[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -877,6 +1245,20 @@ import { encodedChannelTransferables } from '@jbrowse/core/util/markEncoding'
 What `CoreGetEncodedLayers` answers for one region: `layers[i]` is the request's
 `layers[i]` over the region's features, so a display's mark list indexes
 straight into it.
+
+```ts
+import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
+
+interface EncodedLayersResult {
+  layers: EncodedChannels[]
+  facet?: FacetSection[]
+  bytes?: number
+  zoomRange?: ZoomRange
+  notices?: string[]
+  facts?: Record<string, unknown>
+  unreadFilterFields?: string[]
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -896,11 +1278,15 @@ where all three are lanes of whole numbers; every other lane is then filled in a
 separate loop over the admitted rows, a lane straight off a typed column and a
 categorical over a `category` column per label.
 
-```js
+```ts
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-<L extends LaneName>(input: readonly Feature[] | FeatureTable, encoding: MarkEncodingInput, lanes: readonly L[], ctx?: EncodeContext) => Encoded<L>
+function encodeFeatures<L extends LaneName>(
+  input: readonly Feature[] | FeatureTable,
+  encoding: MarkEncodingInput,
+  lanes: readonly L[],
+  ctx?: EncodeContext,
+): Encoded<L>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -910,11 +1296,14 @@ import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 A config value as `feature` reads it: a `jexl:` callback evaluated against the
 feature, anything else as written.
 
-```js
+```ts
 import { evaluateForFeature } from '@jbrowse/core/configuration'
 
-// type signature
-(value: unknown, feature: Feature, jexl: JexlInstance) => unknown
+function evaluateForFeature(
+  value: unknown,
+  feature: Feature,
+  jexl: JexlInstance,
+): unknown
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
@@ -923,6 +1312,15 @@ import { evaluateForFeature } from '@jbrowse/core/configuration'
 
 One layer of a faceted request: its rows in section order, and the stacked row
 of each, index for index.
+
+```ts
+import type { FacetedLayer } from '@jbrowse/core/util/featureTransforms'
+
+interface FacetedLayer {
+  table: FeatureTable
+  rows: Uint32Array
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
 
@@ -941,11 +1339,15 @@ The split is a counting sort into section order rather than a list per section:
 every step runs once over the ordered rows, keeping section order, and one that
 groups rows groups within a section.
 
-```js
+```ts
 import { facetLayers } from '@jbrowse/core/util/featureTransforms'
 
-// type signature
-(input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef; }[], jexl?: JexlInstance | undefined) => { layers: FacetedLayer[]; sections: FacetSection[]; }
+function facetLayers(
+  input: readonly Feature[] | FeatureTable,
+  facet: FacetSpec,
+  layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[],
+  jexl?: JexlInstance | undefined,
+): { layers: FacetedLayer[]; sections: FacetSection[] }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -955,6 +1357,16 @@ import { facetLayers } from '@jbrowse/core/util/featureTransforms'
 One faceted section as the worker stacked it: its key, the row it starts on and
 how many rows it holds.
 
+```ts
+import type { FacetSection } from '@jbrowse/core/util/markEncoding'
+
+interface FacetSection {
+  key: string
+  firstRow: number
+  rowCount: number
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### FacetSpec
@@ -963,6 +1375,15 @@ A row facet: split the features on `field`'s value, run `transform` and then
 every layer's own steps over each section alone, and stack the sections, each
 starting on the row after the one above it ends.
 
+```ts
+import type { FacetSpec } from '@jbrowse/core/util/markEncoding'
+
+interface FacetSpec {
+  field: FieldRef
+  transform?: TransformStep[]
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### featureIndexAt
@@ -970,11 +1391,13 @@ starting on the row after the one above it ends.
 The input feature instance `i` of `channels` was: `featureIndex[i]`, or `i`
 itself where the encoder skipped none and so shipped no index.
 
-```js
+```ts
 import { featureIndexAt } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-(channels: Pick<EncodedChannels, "featureIndex">, i: number) => number
+function featureIndexAt(
+  channels: Pick<EncodedChannels, 'featureIndex'>,
+  i: number,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -984,6 +1407,16 @@ import { featureIndexAt } from '@jbrowse/core/util/markEncoding'
 The rows one step of a mark's declaration hands the next: a column per field and
 a view of one row as a `Feature`, for a `jexl:` expression, a channel reader and
 the hover.
+
+```ts
+import type { FeatureTable } from '@jbrowse/core/util/featureTable'
+
+interface FeatureTable {
+  readonly length: number
+  column(field: string): Column
+  row(i: number): Feature
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
@@ -997,11 +1430,14 @@ and cuts none, and a spike leaves the values under it at least half the axis.
 When the quantiles meet, the span is their magnitude, as a flat domain widens in
 `getNiceDomain`.
 
-```js
+```ts
 import { fenceOutliers } from '@jbrowse/core/util/quantileExtent'
 
-// type signature
-({ extremes, quantiles, zero, }: { extremes: readonly [number, number]; quantiles: readonly [number, number]; zero: boolean; }) => [number, number]
+function fenceOutliers(opts: {
+  extremes: readonly [number, number]
+  quantiles: readonly [number, number]
+  zero: boolean
+}): [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
@@ -1013,11 +1449,14 @@ every field included, where the display paints from a slim copy. Read over the
 feature's first base rather than its span, a zero-length one straddled;
 `undefined` when the adapter holds no record with its id there.
 
-```js
+```ts
 import { fetchAdapterRecord } from '@jbrowse/core/util'
 
-// type signature
-(self: AdapterRecordHost, feature: Feature, opts?: RpcHandles) => Promise<SimpleFeature | undefined>
+function fetchAdapterRecord(
+  self: AdapterRecordHost,
+  feature: Feature,
+  opts?: RpcHandles,
+): Promise<SimpleFeature | undefined>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fetchAdapterRecord.ts)
@@ -1029,11 +1468,15 @@ every field included, picked in the worker; `undefined` when the adapter holds
 no record with that id there. Only the locus crosses to the worker, not whatever
 else a loaded region carries.
 
-```js
+```ts
 import { fetchAdapterRecordById } from '@jbrowse/core/util'
 
-// type signature
-(self: AdapterRecordHost, featureId: string, { assemblyName, refName, start, end }: RegionLike, opts?: RpcHandles) => Promise<SimpleFeature | undefined>
+function fetchAdapterRecordById(
+  self: AdapterRecordHost,
+  featureId: string,
+  args: RegionLike,
+  opts?: RpcHandles,
+): Promise<SimpleFeature | undefined>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fetchAdapterRecord.ts)
@@ -1045,11 +1488,13 @@ structured field where no field has the whole name (`INFO.SVTYPE` on a VCF
 record), or a `jexl:` expression over `feature`. A jexl expression that does not
 compile throws here, once, rather than on every feature.
 
-```js
+```ts
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 
-// type signature
-(ref: string, jexl: JexlInstance | undefined) => (feature: Feature) => unknown
+function fieldReader(
+  ref: string,
+  jexl: JexlInstance | undefined,
+): (feature: Feature) => unknown
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fieldReader.ts)
@@ -1061,6 +1506,12 @@ Where a channel's value comes from: a feature field name, read natively
 escape, measured at 1.5x to 2.0x native per feature (MARK_ENCODING.md "The jexl
 channel, measured").
 
+```ts
+import type { FieldRef } from '@jbrowse/core/util/markEncoding'
+
+type FieldRef = string
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### fillStackedBands
@@ -1070,11 +1521,14 @@ bands: every band reserving px takes a share of `height` in proportion to the px
 it reserves (scaleBandHeights, whole px, from 0), and every other band fills 0.
 Answers each band's filled height by key.
 
-```js
+```ts
 import { fillStackedBands } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(order: readonly K[], bands: Record<K, Band>, height: number) => (key: K) => number
+function fillStackedBands<K extends string>(
+  order: readonly K[],
+  bands: Record<K, Band>,
+  height: number,
+): (key: K) => number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -1085,6 +1539,20 @@ Keep the features a `jexl:` expression over `feature` admits, or the ones that
 pass every field predicate of `predicates` (ADR-238), Vega-Lite's two forms of
 its `filter` transform.
 
+```ts
+import type { FilterStep } from '@jbrowse/core/util/markEncoding'
+
+type FilterStep =
+  | {
+      type: 'filter'
+      expr: string
+    }
+  | {
+      type: 'filter'
+      predicates: FieldPredicate[]
+    }
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### finiteExtremes
@@ -1092,11 +1560,13 @@ its `filter` transform.
 The least and greatest finite values of `values[0, count)`,
 `[Infinity, -Infinity]` where none is finite.
 
-```js
+```ts
 import { finiteExtremes } from '@jbrowse/core/util/quantileExtent'
 
-// type signature
-(values: ArrayLike<number>, count: number) => [number, number]
+function finiteExtremes(
+  values: ArrayLike<number>,
+  count: number,
+): [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
@@ -1112,12 +1582,34 @@ else, so an exon still knows its gene's name and strand and a species row its
 block's reference span. A feature whose field holds no array and no record drops
 out unless `keepEmpty` is true.
 
+```ts
+import type { FlattenStep } from '@jbrowse/core/util/markEncoding'
+
+interface FlattenStep {
+  type: 'flatten'
+  field?: FieldRef
+  index?: string
+  key?: string
+  keepEmpty?: boolean
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### FormulaStep
 
 Write a `jexl:` expression's value over `feature` into the field `as` of every
 feature.
+
+```ts
+import type { FormulaStep } from '@jbrowse/core/util/markEncoding'
+
+interface FormulaStep {
+  type: 'formula'
+  expr: string
+  as: string
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -1132,11 +1624,10 @@ service is wanted, and because that cost is the finding: the assembly manager is
 the one thing on `AbstractSessionModel` a third-party host cannot simply
 implement.
 
-```js
+```ts
 import { getAssemblyHost } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => AssemblyHost
+function getAssemblyHost(node: IAnyStateTreeNode): AssemblyHost
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1150,11 +1641,12 @@ no navigable position. Two ALT forms reach here without one: a single breakend
 allele id where a contig name belongs. Callers that navigate or split-view a
 mate must drop both rather than treat `<DEL>` as a refName.
 
-```js
+```ts
 import { getBreakendMateLocString } from '@jbrowse/core/util/svAlt'
 
-// type signature
-(breakend?: Breakend | undefined) => string | undefined
+function getBreakendMateLocString(
+  breakend?: Breakend | undefined,
+): string | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -1164,11 +1656,12 @@ import { getBreakendMateLocString } from '@jbrowse/core/util/svAlt'
 Reads a configuration value from a track or display state model: exactly
 `readConfObject(model.configuration, path)`, with the same slot-name check.
 
-```js
+```ts
 import { getConf } from '@jbrowse/core/configuration'
 
-// type signature
-(model: { configuration: AnyConfigurationModel; }) => AnyConfigurationSnapshot
+function getConf(model: {
+  configuration: AnyConfigurationModel
+}): AnyConfigurationSnapshot
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -1178,11 +1671,10 @@ import { getConf } from '@jbrowse/core/configuration'
 Returns the display model that contains the given node. Throws if the node has
 no containing display.
 
-```js
+```ts
 import { getContainingDisplay } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => AbstractDisplayModel
+function getContainingDisplay(node: IAnyStateTreeNode): AbstractDisplayModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1192,11 +1684,10 @@ import { getContainingDisplay } from '@jbrowse/core/util'
 Returns the track model that contains the given node. Throws if the node has no
 containing track.
 
-```js
+```ts
 import { getContainingTrack } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => AbstractTrackModel
+function getContainingTrack(node: IAnyStateTreeNode): AbstractTrackModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1206,11 +1697,10 @@ import { getContainingTrack } from '@jbrowse/core/util'
 Returns the view model that contains the given node. Throws if the node has no
 containing view.
 
-```js
+```ts
 import { getContainingView } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => AbstractViewModel
+function getContainingView(node: IAnyStateTreeNode): AbstractViewModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1219,11 +1709,10 @@ import { getContainingView } from '@jbrowse/core/util'
 
 Where a display puts a dialog it cannot mount itself.
 
-```js
+```ts
 import { getDialogHost } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => DialogHost
+function getDialogHost(node: IAnyStateTreeNode): DialogHost
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
@@ -1232,11 +1721,10 @@ import { getDialogHost } from '@jbrowse/core/util'
 
 Returns the MST environment for a node, which holds the `pluginManager`.
 
-```js
+```ts
 import { getEnv } from '@jbrowse/core/util'
 
-// type signature
-(obj: IAnyStateTreeNode) => { pluginManager: PluginManager; }
+function getEnv(obj: IAnyStateTreeNode): { pluginManager: PluginManager }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1246,11 +1734,10 @@ import { getEnv } from '@jbrowse/core/util'
 Where a display puts a message it cannot draw itself. An error is also kept on
 the outermost view holding `node`, as `view.problems`.
 
-```js
+```ts
 import { getNotificationSink } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => NotificationSink
+function getNotificationSink(node: IAnyStateTreeNode): NotificationSink
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
@@ -1259,11 +1746,10 @@ import { getNotificationSink } from '@jbrowse/core/util'
 
 The colors to draw with, and the args that rebuild them in a worker.
 
-```js
+```ts
 import { getPaletteHost } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => PaletteHost
+function getPaletteHost(node: IAnyStateTreeNode): PaletteHost
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
@@ -1273,11 +1759,10 @@ import { getPaletteHost } from '@jbrowse/core/util'
 Everything a display needs of its host in order to draw a region: the
 assemblies, the RPC entry point and the colors.
 
-```js
+```ts
 import { getRenderingServices } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => RenderingServices
+function getRenderingServices(node: IAnyStateTreeNode): RenderingServices
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1286,11 +1771,10 @@ import { getRenderingServices } from '@jbrowse/core/util'
 
 The host's RPC entry point, for a module that issues RPCs and nothing else.
 
-```js
+```ts
 import { getRpcHost } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => RpcHost
+function getRpcHost(node: IAnyStateTreeNode): RpcHost
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
@@ -1300,11 +1784,10 @@ import { getRpcHost } from '@jbrowse/core/util'
 Returns the JBrowse session model for any node in the state tree. Throws if the
 node has no session ancestor.
 
-```js
+```ts
 import { getSession } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => AbstractSessionModel
+function getSession(node: IAnyStateTreeNode): AbstractSessionModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1315,11 +1798,10 @@ The services a session offers that need no application-specific type to name.
 Prefer one of the narrower accessors below, which say which of them the calling
 module actually uses.
 
-```js
+```ts
 import { getSessionServices } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => SessionServices
+function getSessionServices(node: IAnyStateTreeNode): SessionServices
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
@@ -1329,11 +1811,10 @@ import { getSessionServices } from '@jbrowse/core/util'
 The `HeldSlots` `owner` keeps under `key`, made empty on first ask. Lives as
 long as `owner` and is never persisted, so a reload deals afresh.
 
-```js
+```ts
 import { heldSlotsOf } from '@jbrowse/core/util/categoricalField'
 
-// type signature
-(owner: object, key: string) => HeldSlots
+function heldSlotsOf(owner: object, key: string): HeldSlots
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -1343,6 +1824,14 @@ import { heldSlotsOf } from '@jbrowse/core/util/categoricalField'
 An encoded payload as a display stores it: the hit index the worker built with
 hitIndexOf, wrapped once where the payload lands.
 
+```ts
+import type { HitIndexed } from '@jbrowse/core/util/markEncoding'
+
+type HitIndexed<T extends EncodedChannels> = T & {
+  flatbush?: Flatbush
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ### hitIndexOf
@@ -1350,11 +1839,15 @@ hitIndexOf, wrapped once where the payload lands.
 The hit index over `count` instances: each a box from `x` to `x2` at its `y`, or
 at 0 for a mark with no value.
 
-```js
+```ts
 import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-(x: Uint32Array<ArrayBufferLike>, x2: Uint32Array<ArrayBufferLike>, y: Float32Array<ArrayBufferLike> | undefined, count?: number) => Flatbush
+function hitIndexOf(
+  x: Uint32Array<ArrayBufferLike>,
+  x2: Uint32Array<ArrayBufferLike>,
+  y: Float32Array<ArrayBufferLike> | undefined,
+  count?: number,
+): Flatbush
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -1371,11 +1864,13 @@ config, which has never been validated; callers fall back to the plain object.
 Hydrating one entry twice returns one node. A shown track resolves to the
 session's working copy instead (ADR-032), which has the same content.
 
-```js
+```ts
 import { hydrateTrackConfig } from '@jbrowse/core/configuration'
 
-// type signature
-(pluginManager: PluginManager, config: Record<string, unknown>) => TrackConfigNode | undefined
+function hydrateTrackConfig(
+  pluginManager: PluginManager,
+  config: Record<string, unknown>,
+): TrackConfigNode | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchema.ts)
@@ -1387,17 +1882,29 @@ the field holds, as Vega-Lite's identity scale reads its field; with none, the
 BED color column under whichever name the file gives it, keyed by the `r,g,b` it
 parses to. A feature without one is keyed as `''`.
 
+```ts
+import type { IdentityRef } from '@jbrowse/core/util/markEncoding'
+
+interface IdentityRef {
+  scale: 'identity'
+  field?: FieldRef
+  strict?: true
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### invokeElectronMain
 
 Calls an Electron main-process handler, checked against ElectronMainChannels.
 
-```js
+```ts
 import { invokeElectronMain } from '@jbrowse/core/util/electron'
 
-// type signature
-<K extends keyof ElectronMainChannels>(channel: K, ...args: ElectronMainChannels[K]["args"]) => Promise<ElectronMainChannels[K]["return"]>
+function invokeElectronMain<K extends keyof ElectronMainChannels>(
+  channel: K,
+  ...args: ElectronMainChannels[K]['args']
+): Promise<ElectronMainChannels[K]['return']>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/electron.ts)
@@ -1408,11 +1915,10 @@ Breakend notation, without parsing it: bracket forms (`G[chr2:100[`), single
 breakends (`.A` / `G.`), and the symbolic-mate form (`G<DEL>`, an angle bracket
 past position 0; a leading `<` is a plain symbolic allele).
 
-```js
+```ts
 import { isBreakend } from '@jbrowse/core/util/svAlt'
 
-// type signature
-(alt: string) => boolean
+function isBreakend(alt: string): boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -1422,11 +1928,10 @@ import { isBreakend } from '@jbrowse/core/util/svAlt'
 Whether a `jexl:` ref answers the same for every feature: it reads no variable
 and calls no function, as `jexl:'red'` does.
 
-```js
+```ts
 import { isConstantJexl } from '@jbrowse/core/util/fieldReader'
 
-// type signature
-(ref: string) => boolean
+function isConstantJexl(ref: string): boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fieldReader.ts)
@@ -1436,11 +1941,10 @@ import { isConstantJexl } from '@jbrowse/core/util/fieldReader'
 Whether a field has no value: absent, empty, or a VCF's `AF=.`, which arrives as
 `[undefined]`. Text that fails to parse still counts as a value.
 
-```js
+```ts
 import { isMissing } from '@jbrowse/core/util/groupKeys'
 
-// type signature
-(value: unknown) => boolean
+function isMissing(value: unknown): boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/groupKeys.ts)
@@ -1451,11 +1955,10 @@ Whether a field ref is a bare name that `feature.get` reads directly, with no
 path to walk and no expression to evaluate. A loop over a plain name keeps the
 direct call, and only a config that writes a path pays for one.
 
-```js
+```ts
 import { isPlainFieldRef } from '@jbrowse/core/util/fieldReader'
 
-// type signature
-(ref: string) => boolean
+function isPlainFieldRef(ref: string): boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fieldReader.ts)
@@ -1476,11 +1979,14 @@ record states one for each end as BEDPE does, and with neither the two blocks
 face each other. A PAF row's strand is the query's orientation and states none
 for the target, so it names no side.
 
-```js
+```ts
 import { junctionEnds } from '@jbrowse/core/util/svAlt'
 
-// type signature
-(feature: Feature, alt?: string | undefined, alleleIndex?: number | undefined) => { own: JunctionEnd; mate: JunctionEnd; } | undefined
+function junctionEnds(
+  feature: Feature,
+  alt?: string | undefined,
+  alleleIndex?: number | undefined,
+): { own: JunctionEnd; mate: JunctionEnd } | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -1492,11 +1998,13 @@ snapshot leaves out a declared default that names values, as the multi-row
 display's `rows.field` is `type` (`keyedInForce`). Any other value is returned
 as given.
 
-```js
+```ts
 import { keyedValueInForce } from '@jbrowse/core/configuration'
 
-// type signature
-(node: AnyConfigurationModel | undefined, value: unknown) => unknown
+function keyedValueInForce(
+  node: AnyConfigurationModel | undefined,
+  value: unknown,
+): unknown
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -1506,11 +2014,13 @@ import { keyedValueInForce } from '@jbrowse/core/configuration'
 The keyed writes `schema` declares on the object at `path` (ADR-257), as `rows`
 declares its arrangement keyed by `field`; undefined elsewhere.
 
-```js
+```ts
 import { keyedWritesAt } from '@jbrowse/core/configuration'
 
-// type signature
-(schema: unknown, path: readonly string[]) => KeyedWrites | undefined
+function keyedWritesAt(
+  schema: unknown,
+  path: readonly string[],
+): KeyedWrites | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -1522,11 +2032,13 @@ order, and the key itself where an entry is empty or missing. Every key that
 takes `labels` reads them through this, so a config means one thing by them
 everywhere.
 
-```js
+```ts
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 
-// type signature
-(keys: readonly unknown[], labels?: readonly string[]) => ReadonlyMap<string, string>
+function keyNames(
+  keys: readonly unknown[],
+  labels?: readonly string[],
+): ReadonlyMap<string, string>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -1540,6 +2052,25 @@ for a plot that fans features out. A lane not asked for is neither allocated nor
 transferred, and a caller that never hovers declines the index, which is most of
 the encoder's cost after the walk.
 
+```ts
+import type { LaneName } from '@jbrowse/core/util/markEncoding'
+
+type LaneName =
+  | 'y'
+  | 'color'
+  | 'colorValue'
+  | 'colorKey'
+  | 'glyph'
+  | 'row'
+  | 'text'
+  | 'tooltip'
+  | 'size'
+  | 'x2Ref'
+  | 'series'
+  | 'index'
+  | 'root'
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### launchOrReplaceView
@@ -1547,11 +2078,15 @@ the encoder's cost after the walk.
 `addOrReplaceView` for view types whose state model may be lazily loaded; the
 synchronous `addOrReplaceView` requires it loaded already.
 
-```js
+```ts
 import { launchOrReplaceView } from '@jbrowse/core/util'
 
-// type signature
-(args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown>; replacing?: AbstractViewModel; }) => Promise<AbstractViewModel>
+function launchOrReplaceView(args: {
+  session: AbstractViewContainer
+  typeName: string
+  initialState?: Record<string, unknown>
+  replacing?: AbstractViewModel
+}): Promise<AbstractViewModel>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1560,6 +2095,17 @@ import { launchOrReplaceView } from '@jbrowse/core/util'
 
 One layer of a `CoreGetEncodedLayers` request: the encoding to evaluate and the
 lanes the display's mark reads.
+
+```ts
+import type { LayerRequest } from '@jbrowse/core/util/markEncoding'
+
+interface LayerRequest {
+  encoding: MarkEncoding
+  lanes: LaneName[]
+  transform?: TransformStep[]
+  path?: PathSpec
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -1573,11 +2119,22 @@ a depth answers the rows it was made of, as a depth exports the reads it counts
 `inputRow` maps one to the row of `input` it came out of, and under a facet
 `section` names its section's key.
 
-```js
+```ts
 import { layerRootRows } from '@jbrowse/core/util/featureTransforms'
 
-// type signature
-(input: readonly Feature[] | FeatureTable, request: { transform?: readonly TransformStep[]; facet?: FacetSpec; layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef; }[]; }, jexl?: JexlInstance | undefined) => { table: FeatureTable; inputRow: (i: number) => number | undefined; section: ((i: number) => string) | undefined; }[]
+function layerRootRows(
+  input: readonly Feature[] | FeatureTable,
+  request: {
+    transform?: readonly TransformStep[]
+    facet?: FacetSpec
+    layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[]
+  },
+  jexl?: JexlInstance | undefined,
+): {
+  table: FeatureTable
+  inputRow: (i: number) => number | undefined
+  section: ((i: number) => string) | undefined
+}[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -1590,11 +2147,24 @@ field it names, or under a facet each row's stacked row. The split comes as
 early as it can: after the last shared step that must see every row, so the
 steps that follow it read the rows already in section order.
 
-```js
+```ts
 import { layerTables } from '@jbrowse/core/util/featureTransforms'
 
-// type signature
-(input: readonly Feature[] | FeatureTable, request: { transform?: readonly TransformStep[]; facet?: FacetSpec; layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef; }[]; }, jexl?: JexlInstance | undefined) => { layers: { table: FeatureTable; row: string | Uint32Array<ArrayBufferLike> | undefined; }[]; sections: FacetSection[] | undefined; }
+function layerTables(
+  input: readonly Feature[] | FeatureTable,
+  request: {
+    transform?: readonly TransformStep[]
+    facet?: FacetSpec
+    layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[]
+  },
+  jexl?: JexlInstance | undefined,
+): {
+  layers: {
+    table: FeatureTable
+    row: string | Uint32Array<ArrayBufferLike> | undefined
+  }[]
+  sections: FacetSection[] | undefined
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -1611,11 +2181,14 @@ Under `whole` the draft is the plot entire. The node is never attached, so
 nothing on the display is touched; a display reads its typed members off it. The
 draft is copied first, since MST freezes what it creates from.
 
-```js
+```ts
 import { liftPlot } from '@jbrowse/core/configuration'
 
-// type signature
-(conf: AnyConfigurationModel, draft: Plot, options?: PlotWriteOptions) => AnyConfigurationModel
+function liftPlot(
+  conf: AnyConfigurationModel,
+  draft: Plot,
+  options?: PlotWriteOptions,
+): AnyConfigurationModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -1626,6 +2199,18 @@ A list of rows per row: row `i`'s entries are the rows of `entries` from
 `start[i]` up to `start[i + 1]`, and `keys`, where the list is a record keyed by
 name, the name of each entry.
 
+```ts
+import type { ListColumn } from '@jbrowse/core/util/featureTable'
+
+interface ListColumn {
+  kind: 'list'
+  start: Uint32Array
+  entries: ColumnTable
+  keys: Column | undefined
+  at: Uint32Array | undefined
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ### ListedRowSource
@@ -1635,17 +2220,27 @@ One row an adapter lists: `name` is a value of the listing's field, `label` and
 its other fields, such as a samples table's columns or a subtrack's `group`,
 which never include its name, label or color.
 
+```ts
+import type { ListedRowSource } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
+
+interface ListedRowSource {
+  name: string
+  label?: string
+  color?: string
+  attributes?: Record<string, string>
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
 
 ### listsRowSources
 
 Whether an adapter implements RowSourceLister.
 
-```js
+```ts
 import { listsRowSources } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
 
-// type signature
-(adapter: object) => adapter is RowSourceLister
+function listsRowSources(adapter: object): adapter is RowSourceLister
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
@@ -1656,6 +2251,15 @@ A position that may lie on another sequence: the field holding its refName and
 the field holding its 0-based coordinate, as a paired record states its mate
 (`{ refName: 'mate.refName', pos: 'mate.start' }`).
 
+```ts
+import type { LocusRef } from '@jbrowse/core/util/markEncoding'
+
+interface LocusRef {
+  refName: FieldRef
+  pos: FieldRef
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### MadeRows
@@ -1663,11 +2267,27 @@ the field holding its 0-based coordinate, as a paired record states its mate
 A table whose rows a step made, which answers each row's identity, its hover
 JSON and the feature it hangs from.
 
+```ts
+import type { MadeRows } from '@jbrowse/core/util/featureTable'
+
+interface MadeRows extends FeatureTable {
+  id(i: number): string
+  json(i: number): SimpleFeatureSerialized
+  parentOfRow(i: number): Feature | undefined
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ### MarkColorEncoding
 
 What a mark's `color` crosses the wire as.
+
+```ts
+import type { MarkColorEncoding } from '@jbrowse/core/util/markEncoding'
+
+type MarkColorEncoding = ColorEncoding | IdentityRef
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -1680,6 +2300,22 @@ display rather than to the encoding. `shape` is read by the `point` mark alone,
 `row` — an integer field, 0 where missing — by every mark, which stands a
 feature in the band it names.
 
+```ts
+import type { MarkEncoding } from '@jbrowse/core/util/markEncoding'
+
+interface MarkEncoding {
+  x?: FieldRef
+  x2?: FieldRef | LocusRef
+  y?: FieldRef
+  row?: FieldRef
+  color?: MarkColorEncoding
+  shape?: ShapeEncoding
+  text?: FieldRef
+  tooltip?: FieldRef
+  size?: SizeEncoding
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### MarkEncodingInput
@@ -1689,6 +2325,23 @@ ChannelReader in place of its declared form, and `row` the values themselves,
 one per input feature, where the caller computed them — a facet's stacked rows.
 The declared form is what crosses the wire; a reader or a value list is built in
 the worker.
+
+```ts
+import type { MarkEncodingInput } from '@jbrowse/core/util/markEncoding'
+
+interface MarkEncodingInput {
+  x?: FieldRef | ChannelReader
+  x2?: FieldRef | LocusRef | ChannelReader
+  y?: FieldRef | ChannelReader
+  row?: FieldRef | ChannelReader | ArrayLike<number>
+  series?: ArrayLike<number>
+  color?: MarkColorEncoding | ChannelReader<number>
+  shape?: ShapeEncoding | ChannelReader<number>
+  text?: FieldRef | ChannelReader
+  tooltip?: FieldRef
+  size?: SizeEncoding
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
@@ -1701,11 +2354,10 @@ step admits exactly the features this names one for, so a caller deciding
 whether links are the picture a track wants asks here rather than re-reading the
 fields.
 
-```js
+```ts
 import { matedBy } from '@jbrowse/core/util/featureTransforms'
 
-// type signature
-(f: Feature) => "alt" | "mate" | "pair" | undefined
+function matedBy(f: Feature): 'alt' | 'mate' | 'pair' | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -1721,6 +2373,14 @@ symbolic allele's `END` on `CHR2` or on the record's sequence. Each answer has
 naming no other end drops out, and two records or alleles stating one pair of
 ends answer once.
 
+```ts
+import type { MateStep } from '@jbrowse/core/util/markEncoding'
+
+interface MateStep {
+  type: 'mate'
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### mergeConfSettings
@@ -1734,11 +2394,14 @@ namespace members lift against `under` as their base, so they replace only the
 entries they name in a list `under` writes. For combining snapshots before any
 config node exists, as a track's `displayDefaults` folds into its `displays`.
 
-```js
+```ts
 import { mergeConfSettings } from '@jbrowse/core/configuration'
 
-// type signature
-(schema: unknown, under: Record<string, unknown>, over: Record<string, unknown>) => { [x: string]: unknown; }
+function mergeConfSettings(
+  schema: unknown,
+  under: Record<string, unknown>,
+  over: Record<string, unknown>,
+): { [x: string]: unknown }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -1749,11 +2412,10 @@ The misconfiguration grey packed as the encoder paints it: a `jexl:` color that
 answered no string, a ramp value that is no number, text a threshold cannot
 read.
 
-```js
+```ts
 import { MISCONFIGURED_ABGR } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-number
+const MISCONFIGURED_ABGR: number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -1763,11 +2425,10 @@ number
 The no-value grey packed as the encoder paints it: a feature with nothing in the
 field a threshold reads.
 
-```js
+```ts
 import { NO_VALUE_ABGR } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-number
+const NO_VALUE_ABGR: number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -1777,11 +2438,10 @@ number
 The row a feature with no categorical value is placed on, so a key says why a
 mark is grey rather than listing a blank value.
 
-```js
+```ts
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-;('(no value)')
+const NO_VALUE_LABEL: '(no value)'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -1791,11 +2451,10 @@ import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 The key a value holding text that is no number files under on a threshold scale,
 drawn in the misconfiguration grey, so it is not mistaken for a missing value.
 
-```js
+```ts
 import { NOT_A_NUMBER_LABEL } from '@jbrowse/core/util/thresholdScale'
 
-// type signature
-;('(not a number)')
+const NOT_A_NUMBER_LABEL: '(not a number)'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -1804,6 +2463,20 @@ import { NOT_A_NUMBER_LABEL } from '@jbrowse/core/util/thresholdScale'
 
 A typed lane a step wrote, one number per row.
 
+```ts
+import type { NumberLane } from '@jbrowse/core/util/featureTable'
+
+type NumberLane =
+  | Float64Array
+  | Float32Array
+  | Uint32Array
+  | Int32Array
+  | Uint16Array
+  | Int16Array
+  | Uint8Array
+  | Int8Array
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ### numberReaderOf
@@ -1811,11 +2484,10 @@ A typed lane a step wrote, one number per row.
 readerOf as the number a quantitative channel or step reads, `NaN` where a row
 holds none, by `numericValue`'s rules.
 
-```js
+```ts
 import { numberReaderOf } from '@jbrowse/core/util/featureTable'
 
-// type signature
-(column: Column) => (i: number) => number
+function numberReaderOf(column: Column): (i: number) => number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
@@ -1826,11 +2498,10 @@ A domain written as strings — the shared `domain` slot is a `stringArray` — 
 back as the numbers it names. A member that is not a number reads NaN, which
 every comparison against it declines.
 
-```js
+```ts
 import { numericDomain } from '@jbrowse/core/util/thresholdScale'
 
-// type signature
-(domain: readonly (string | number)[]) => number[]
+function numericDomain(domain: readonly (string | number)[]): number[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -1840,11 +2511,10 @@ import { numericDomain } from '@jbrowse/core/util/thresholdScale'
 The key's row for the values a color's `domain` leaves out, which its `unknown`
 paints one color.
 
-```js
+```ts
 import { OTHER_VALUES_LABEL } from '@jbrowse/core/util/categoricalField'
 
-// type signature
-;('Other')
+const OTHER_VALUES_LABEL: 'Other'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -1854,11 +2524,10 @@ import { OTHER_VALUES_LABEL } from '@jbrowse/core/util/categoricalField'
 Parses the text as a plot and throws on a key the display's plot lacks. The
 schema parses the values after that.
 
-```js
+```ts
 import { parsePlot } from '@jbrowse/core/configuration'
 
-// type signature
-(text: string, keys: readonly string[]) => Plot
+function parsePlot(text: string, keys: readonly string[]): Plot
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -1870,11 +2539,21 @@ Returns undefined when no mate coordinate info is found. `alleleIndex` is the
 alt's place in `ALT`, which a record repeating one symbolic allele with several
 lengths needs; it defaults to the first place `alt` appears.
 
-```js
+```ts
 import { parseSvAlt } from '@jbrowse/core/util/svAlt'
 
-// type signature
-(feature: Feature, alt?: string | undefined, alleleIndex?: number) => { mateRefName: string; matePos: number; mateDirection?: number; joinDirection?: number; } | undefined
+function parseSvAlt(
+  feature: Feature,
+  alt?: string | undefined,
+  alleleIndex?: number,
+):
+  | {
+      mateRefName: string
+      matePos: number
+      mateDirection?: number
+      joinDirection?: number
+    }
+  | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -1886,9 +2565,21 @@ row's series beside it and the stretch past which a series breaks. `steps` are
 every step the layer's rows went through, which a `window` among them reads the
 default break from.
 
-```js
-// type signature
-(table: FeatureTable, row: RowEncoding, path: PathSpec, steps: readonly TransformStep[], jexl?: JexlInstance | undefined) => { table: FeatureTable; row: RowEncoding; series: Uint32Array<ArrayBuffer>; gapBp: number | undefined; }
+```ts
+// no entry point of @jbrowse/core exports it
+
+function pathSeries(
+  table: FeatureTable,
+  row: RowEncoding,
+  path: PathSpec,
+  steps: readonly TransformStep[],
+  jexl?: JexlInstance | undefined,
+): {
+  table: FeatureTable
+  row: RowEncoding
+  series: Uint32Array<ArrayBuffer>
+  gapBp: number | undefined
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/pathSeries.ts)
@@ -1901,6 +2592,15 @@ per distinct value of `by`, a categorical color's field, each in start order.
 that; absent, a `window` step among the layer's steps sets it to the bases a
 frame spans at the median row, and with none a series is one run.
 
+```ts
+import type { PathSpec } from '@jbrowse/core/util/markEncoding'
+
+interface PathSpec {
+  by?: FieldRef
+  gapBp?: number
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### persistTrackConfigNow
@@ -1910,11 +2610,10 @@ wait, so an edit is one undo step the moment it lands: every writer of a row
 arrangement, a lane choice or an axis setting calls it (ADR-157). Does nothing
 for a node outside a track.
 
-```js
+```ts
 import { persistTrackConfigNow } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => void
+function persistTrackConfigNow(node: IAnyStateTreeNode): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1928,6 +2627,17 @@ is bp of clearance kept between two features sharing a row. The answer is the
 input in start order, so a `span` encoding `row` stacks it. Under a facet it
 packs each section separately.
 
+```ts
+import type { PileupStep } from '@jbrowse/core/util/markEncoding'
+
+interface PileupStep {
+  type: 'pileup'
+  as?: string
+  fields?: [FieldRef, FieldRef]
+  padding?: number
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### plainFieldName
@@ -1936,11 +2646,10 @@ The field a ref reads by name: a plain ref itself, or the one field a `jexl:`
 ref reads as `feature.score`, `feature['score']` or `get(feature, 'score')` do,
 so such an expression takes a plain name's columnar path.
 
-```js
+```ts
 import { plainFieldName } from '@jbrowse/core/util/fieldReader'
 
-// type signature
-(ref: string) => string | undefined
+function plainFieldName(ref: string): string | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fieldReader.ts)
@@ -1951,12 +2660,27 @@ A display's plot settings as written: a key left out is left alone, and `null`
 resets that setting. Untyped, since a value may be a shorthand the schema lifts,
 and the schema is what judges it.
 
+```ts
+import type { Plot } from '@jbrowse/core/configuration'
+
+type Plot = Record<string, unknown>
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
 ### PlotExample
 
 A worked example of a display's plot: the text it fills the editor with, and
 what it does.
+
+```ts
+import type { PlotExample } from '@jbrowse/core/configuration'
+
+interface PlotExample {
+  plot: string
+  description: string
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
@@ -1966,11 +2690,10 @@ A display's plot settings, what "Edit plot..." edits and an agent reads as its
 `plot`: every slot, sub-schema and list its config declares with `plot`, in the
 order it declares them.
 
-```js
+```ts
 import { plotKeysOf } from '@jbrowse/core/configuration'
 
-// type signature
-(conf: AnyConfigurationModel) => string[]
+function plotKeysOf(conf: AnyConfigurationModel): string[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -1980,11 +2703,10 @@ import { plotKeysOf } from '@jbrowse/core/configuration'
 Marks a list of sub-schemas as a plot setting, as `plot: true` marks a slot or a
 sub-schema; an MST array type has no options in which to set the flag.
 
-```js
+```ts
 import { plotList } from '@jbrowse/core/configuration'
 
-// type signature
-<T extends IAnyType>(type: T) => T
+function plotList<T extends IAnyType>(type: T): T
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -1995,11 +2717,10 @@ A display's plot as declared, defaults left off. A list sitting at a default it
 shares with no other display, a default plot's marks, shows its entries, and a
 keyed object its field's declared default, since they are what is drawn.
 
-```js
+```ts
 import { plotOf } from '@jbrowse/core/configuration'
 
-// type signature
-(conf: AnyConfigurationModel) => Plot
+function plotOf(conf: AnyConfigurationModel): Plot
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -2008,6 +2729,14 @@ import { plotOf } from '@jbrowse/core/configuration'
 
 How a draft is written to the plot. By default it patches, as a settings bag
 does; `whole` takes it for the whole plot, as the "Edit plot..." text is.
+
+```ts
+import type { PlotWriteOptions } from '@jbrowse/core/configuration'
+
+interface PlotWriteOptions {
+  whole?: boolean
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
@@ -2020,11 +2749,14 @@ same setting writes nothing, and a retired spelling writes the settings it lifts
 into. Under `whole`, a setting the draft leaves out writes its reset. Throws a
 refusal before anything is written.
 
-```js
+```ts
 import { plotWrites } from '@jbrowse/core/configuration'
 
-// type signature
-(conf: AnyConfigurationModel, draft: Plot, options?: PlotWriteOptions) => Record<string, unknown>
+function plotWrites(
+  conf: AnyConfigurationModel,
+  draft: Plot,
+  options?: PlotWriteOptions,
+): Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -2035,11 +2767,13 @@ A snapshot as a write to `type` admits it: the lift and checks `setConf`
 applies, so a dialog or a validator rejects what an edit would reject, an
 undeclared key included. Throws what the schema's `preProcessSnapshot` throws.
 
-```js
+```ts
 import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
 
-// type signature
-(type: IAnyType, snapshot: unknown) => Record<string, unknown>
+function preProcessConfigSnapshot(
+  type: IAnyType,
+  snapshot: unknown,
+): Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
@@ -2059,11 +2793,14 @@ copy-number track, a ramp clipped below 1 paints nearly every value one color. A
 value axis fences instead (fenceOutliers); a ramp takes the same fence once a
 color default below 1 meets tied data.
 
-```js
+```ts
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 
-// type signature
-(values: ArrayLike<number>, count: number, quantile?: number) => [number, number]
+function quantileExtent(
+  values: ArrayLike<number>,
+  count: number,
+  quantile?: number,
+): [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
@@ -2074,11 +2811,14 @@ The nearest-rank `quantile` of `a[0, n)`: the smallest value at least that share
 of them sit at or below, so a handful of values clips at their maximum. Permutes
 `a`; 0 where `n` is.
 
-```js
+```ts
 import { quantileOf } from '@jbrowse/core/util/quantileExtent'
 
-// type signature
-(a: Float32Array<ArrayBufferLike>, n: number, quantile: number) => number
+function quantileOf(
+  a: Float32Array<ArrayBufferLike>,
+  n: number,
+  quantile: number,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
@@ -2086,6 +2826,16 @@ import { quantileOf } from '@jbrowse/core/util/quantileExtent'
 ### RampDeclaration
 
 A continuous color scale's ramp as a config declares it.
+
+```ts
+import type { RampDeclaration } from '@jbrowse/core/util/colorRamp'
+
+interface RampDeclaration {
+  range?: readonly string[]
+  scheme?: ColorSchemeName
+  reverse?: boolean
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
@@ -2096,11 +2846,14 @@ the extent's, ascending, since a span has no direction and `reverse` is the
 ramp's. An open end stops at a pinned one rather than crossing it, and an extent
 holding no value (`[Infinity, -Infinity]`) spans [0, 1].
 
-```js
+```ts
 import { rampDomain } from '@jbrowse/core/util/colorRamp'
 
-// type signature
-(min: number | undefined, max: number | undefined, extent: readonly [number, number]) => [number, number]
+function rampDomain(
+  min: number | undefined,
+  max: number | undefined,
+  extent: readonly [number, number],
+): [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -2111,11 +2864,13 @@ The rows a ramp's key lists beside its bar once a feature painted one: the
 not-a-number and no-value rows a threshold's key ends with. Empty while neither
 painted.
 
-```js
+```ts
 import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
 
-// type signature
-(id: string, met: { missing?: boolean; notNumber?: boolean; }) => CategoricalScale[]
+function rampGapScales(
+  id: string,
+  met: { missing?: boolean; notNumber?: boolean },
+): CategoricalScale[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -2126,11 +2881,10 @@ The buildColorRampLut table a ramp declaration asks for, the same `Uint8Array`
 for the same declaration, since a GPU backend re-uploads its ramp texture when
 the identity changes and a render state is rebuilt far more often than its ramp.
 
-```js
+```ts
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 
-// type signature
-(ramp: RampDeclaration) => Uint8Array<ArrayBufferLike>
+function rampLutOf(ramp: RampDeclaration): Uint8Array<ArrayBufferLike>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -2142,11 +2896,13 @@ loaded: each open end of the domain moved to the union's, the pinned ends kept.
 The table stays straight and `domainMid` a value, so the middle stop follows the
 widened domain with no table baked again.
 
-```js
+```ts
 import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-(table: Extract<ColorScaleTable, { kind: 'ramp'; }>, extent: [number, number]) => Extract<ColorScaleTable, { kind: 'ramp'; }>
+function rampOverExtent(
+  table: Extract<ColorScaleTable, { kind: 'ramp' }>,
+  extent: [number, number],
+): Extract<ColorScaleTable, { kind: 'ramp' }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -2163,11 +2919,12 @@ The types reject a snapshot, because a snapshot omits a slot at its default. A
 refuse a path ending on one, and a read names the member, as
 `['labels', 'name', 'show']` does.
 
-```js
+```ts
 import { readConfObject } from '@jbrowse/core/configuration'
 
-// type signature
-(confObject: AnyConfigurationModel) => AnyConfigurationSnapshot
+function readConfObject(
+  confObject: AnyConfigurationModel,
+): AnyConfigurationSnapshot
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
@@ -2177,11 +2934,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 A reader of a column's values by row, its kind resolved here once. A `number`
 lane with no index reads straight off the lane.
 
-```js
+```ts
 import { readerOf } from '@jbrowse/core/util/featureTable'
 
-// type signature
-(column: Column) => (i: number) => unknown
+function readerOf(column: Column): (i: number) => unknown
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
@@ -2197,11 +2953,10 @@ reading the reference of its genome, and an instance never changes reference for
 its life. Every other adapter keys on its config alone: a synteny adapter is
 fetched from each of its assemblies and reads no reference.
 
-```js
+```ts
 import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-// type signature
-;('readsReference')
+const READS_REFERENCE: 'readsReference'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/dataAdapterCache.ts)
@@ -2212,11 +2967,10 @@ What a schema's own `preProcessSnapshot` does with a value it refuses that no
 declared rule can name: a write throws `notice`, and a config loading names it
 once on the console and loads without it.
 
-```js
+```ts
 import { refuseOnWrite } from '@jbrowse/core/configuration'
 
-// type signature
-(notice: string) => void
+function refuseOnWrite(notice: string): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
@@ -2228,11 +2982,10 @@ does not declare, at any depth, where a config loading only names the key on the
 console. `setConf`, a settings bag and a plot draft write this way, so a typo in
 an edit is an error and a config written for another version still draws.
 
-```js
+```ts
 import { refusingUndeclaredKeys } from '@jbrowse/core/configuration'
 
-// type signature
-<T>(write: () => T) => T
+function refusingUndeclaredKeys<T>(write: () => T): T
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
@@ -2257,11 +3010,15 @@ In OKLCH rather than through `lighten`/`darken`, which work in sRGB, where the
 same coefficient moves a yellow and a blue by visibly different amounts: each
 lap must look like one tone across the whole palette.
 
-```js
+```ts
 import { relight } from '@jbrowse/core/util/color'
 
-// type signature
-(color: string, lightnessShift: number, chromaScale?: number, maxLightness?: number) => string
+function relight(
+  color: string,
+  lightnessShift: number,
+  chromaScale?: number,
+  maxLightness?: number,
+): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/color/index.ts)
@@ -2273,11 +3030,13 @@ as a config file or `getSnapshot` spells it: a slot left off reads as its
 default, so a `when` value that is the default fires for an absent slot, which
 is what the generated JSON Schema's `if` does.
 
-```js
+```ts
 import { requirementProblems } from '@jbrowse/core/configuration'
 
-// type signature
-(type: IAnyType, snapshot: Record<string, unknown>) => RequirementProblem[]
+function requirementProblems(
+  type: IAnyType,
+  snapshot: Record<string, unknown>,
+): RequirementProblem[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/requirements.ts)
@@ -2287,11 +3046,10 @@ import { requirementProblems } from '@jbrowse/core/configuration'
 The pixels a band takes from the plot below it: 0 when off, the stated height
 when on. This is the single spelling of "off spends 0 px".
 
-```js
+```ts
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-(band: Band) => number
+function reservedPx(band: Band): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -2301,6 +3059,14 @@ import { reservedPx } from '@jbrowse/core/util/bandLayout'
 An adapter that lists its rows without reading a region: a multi-BigWig its
 files, a MAF its species.
 
+```ts
+import type { RowSourceLister } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
+
+interface RowSourceLister {
+  listRowSources(opts?: BaseOptions): Promise<RowSourceListing>
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
 
 ### RowSourceListing
@@ -2308,6 +3074,17 @@ files, a MAF its species.
 Every row an adapter has, in the adapter's order, whatever the loaded regions
 hold, so a row display gives a row with nothing in view its place, label and
 color.
+
+```ts
+import type { RowSourceListing } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
+
+interface RowSourceListing {
+  field: string
+  sources: ListedRowSource[]
+  tree?: string
+  warnings?: string[]
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
 
@@ -2322,11 +3099,13 @@ user can see it rather than onto the display's own error slot — that slot is
 what `reload()` clears, and nothing would re-run the install behind it. Three
 displays hand-rolled this IIFE and each drew the lines differently.
 
-```js
+```ts
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 
-// type signature
-<Self extends IStateTreeNode>(self: Self, load: () => Promise<(self: Self) => void>) => void
+function runLazyAfterAttach<Self extends IStateTreeNode>(
+  self: Self,
+  load: () => Promise<(self: Self) => void>,
+): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/lazyAfterAttach.ts)
@@ -2337,11 +3116,14 @@ Run the transform steps over a feature list or a table, in order, in the worker.
 Each step reads the table the previous step returns, and the encoder walks the
 last one.
 
-```js
+```ts
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 
-// type signature
-(input: readonly Feature[] | FeatureTable, steps: readonly TransformStep[], jexl?: JexlInstance | undefined) => FeatureTable
+function runTransforms(
+  input: readonly Feature[] | FeatureTable,
+  steps: readonly TransformStep[],
+  jexl?: JexlInstance | undefined,
+): FeatureTable
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -2350,11 +3132,10 @@ import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 
 Deprecated: use `parseBreakend` from `@gmod/vcf`.
 
-```js
+```ts
 import { safeParseBreakend } from '@jbrowse/core/util/svAlt'
 
-// type signature
-(alt: string) => Breakend | undefined
+function safeParseBreakend(alt: string): Breakend | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -2365,11 +3146,13 @@ The color at `t` in `[0, 1]` across a list of EVENLY SPACED stops, linearly
 interpolated per channel. `t` is clamped, so the ends are the end stops rather
 than an extrapolation past them, and a one-stop ramp is that stop everywhere.
 
-```js
+```ts
 import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 
-// type signature
-(stops: readonly ColorRampStop[], t: number) => ColorRampStop
+function sampleColorRamp(
+  stops: readonly ColorRampStop[],
+  t: number,
+): ColorRampStop
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -2383,11 +3166,14 @@ below `floor`, or below its current height if it already sits under it (the
 clampBandHeight rule). Whole pixels, rounded by largest remainder, so the stack
 moves by exactly the rounded distance.
 
-```js
+```ts
 import { scaleBandHeights } from '@jbrowse/core/util/bandHeight'
 
-// type signature
-(heights: number[], distance: number, floor?: number) => number[]
+function scaleBandHeights(
+  heights: number[],
+  distance: number,
+  floor?: number,
+): number[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
@@ -2399,11 +3185,15 @@ linear scale, and on a log scale over the positive ones, since a 0 or a negative
 met there would floor the domain at 1 and fold a domain below 1 flat.
 `[Infinity, -Infinity]` where the scale reads nothing.
 
-```js
+```ts
 import { scaleExtent } from '@jbrowse/core/util/quantileExtent'
 
-// type signature
-(values: ArrayLike<number>, count: number, scale: string, quantile?: number) => [number, number]
+function scaleExtent(
+  values: ArrayLike<number>,
+  count: number,
+  scale: string,
+  quantile?: number,
+): [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
@@ -2413,6 +3203,12 @@ import { scaleExtent } from '@jbrowse/core/util/quantileExtent'
 The table behind a channel a key is drawn from: a color's, whose `kind` names
 the scale it resolved through, or a shape's. A `size` channel's (SizeScaleTable)
 draws no key and stands outside.
+
+```ts
+import type { ScaleTable } from '@jbrowse/core/util/markEncoding'
+
+type ScaleTable = ColorScaleTable | ShapeScaleTable
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -2425,11 +3221,17 @@ and the worker answers the entry of `layer`'s list that the instance's
 `featureIndex` names: the record as the adapter wrote it, or the bin or run the
 steps made. A second click aborts the first request.
 
-```js
+```ts
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
 
-// type signature
-(self: IStateTreeNode<IAnyType>, rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void; }, args: Omit<CoreGetEncodedLayersArgs, "byteLimit"> & { layer: number; featureIndex: number; }) => void
+function selectEncodedFeature(
+  self: IStateTreeNode<IAnyType>,
+  rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void },
+  args: Omit<CoreGetEncodedLayersArgs, 'byteLimit'> & {
+    layer: number
+    featureIndex: number
+  },
+): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/selectEncodedFeature.ts)
@@ -2441,11 +3243,14 @@ histogram collapses skewed contact counts into its bottom bucket, and O(n) where
 a sort of 4.5M counts measured ~1s. The pivot is the median of three because
 Hi-C contacts arrive nearly sorted.
 
-```js
+```ts
 import { selectNth } from '@jbrowse/core/util/quantileExtent'
 
-// type signature
-(a: Float32Array<ArrayBufferLike>, n: number, k: number) => number
+function selectNth(
+  a: Float32Array<ArrayBufferLike>,
+  n: number,
+  k: number,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
@@ -2456,11 +3261,13 @@ The table's rows `rows` names, in that order: over an adapter's features, a
 source table over those features again, so every field still reads straight off
 them; over rows a step made, a table standing on them.
 
-```js
+```ts
 import { selectRows } from '@jbrowse/core/util/featureTable'
 
-// type signature
-(table: FeatureTable, rows: Uint32Array<ArrayBufferLike>) => FeatureTable
+function selectRows(
+  table: FeatureTable,
+  rows: Uint32Array<ArrayBufferLike>,
+): FeatureTable
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
@@ -2490,11 +3297,14 @@ useSessionPalette for the mechanism.
 This component reads the palette from the session, so a host with its own
 palette mounts `PaletteProvider` directly.
 
-```js
+```ts
 import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 
-// type signature
-({ session, mode, children, }: { session: ThemeModeSession; mode?: "dark" | "light" | undefined; children: ReactNode; }) => Element
+function SessionPaletteProvider(opts: {
+  session: ThemeModeSession
+  mode?: 'dark' | 'light' | undefined
+  children: ReactNode
+}): Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ui/PaletteContext.tsx)
@@ -2512,11 +3322,20 @@ together. On a concrete schema an unknown slot name is a compile error, and
 `setSlot` refuses one at runtime (ADR-052). A wrong value type throws at
 runtime; `null` or `undefined` resets the slot to its default (ADR-146).
 
-```js
+```ts
 import { setConf } from '@jbrowse/core/configuration'
 
-// type signature
-<CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(target: CONFMODEL | { configuration: CONFMODEL; }, slotPath: SLOT, value: unknown) => void
+function setConf<
+  CONFMODEL extends AnyConfigurationModel,
+  const SLOT extends
+    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
+    | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> =
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+>(
+  target: CONFMODEL | { configuration: CONFMODEL },
+  slotPath: SLOT,
+  value: unknown,
+): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -2525,11 +3344,13 @@ import { setConf } from '@jbrowse/core/configuration'
 
 The `point` mark's painter code for each shape an encoding can name.
 
-```js
+```ts
 import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
 
-// type signature
-Record<"circle" | "diamond" | "square" | "triangle-down", number>
+const SHAPE_CODES: Record<
+  'circle' | 'diamond' | 'square' | 'triangle-down',
+  number
+>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/shapeNames.ts)
@@ -2540,12 +3361,38 @@ A ShapeName, a `jexl:` expression over `feature` returning one, or a field bound
 to a categorical scale whose `range` lists the shape names handed out —
 `DEFAULT_SHAPE_RANGE` when absent.
 
+```ts
+import type { ShapeEncoding } from '@jbrowse/core/util/markEncoding'
+
+type ShapeEncoding =
+  | ShapeName
+  | `jexl:${string}`
+  | (CategoricalRef & {
+      range?: ShapeName[]
+    })
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### ShapeScaleTable
 
 The scale a shape channel was resolved through: which shape each value of the
 field took.
+
+```ts
+import type { ShapeScaleTable } from '@jbrowse/core/util/markEncoding'
+
+interface ShapeScaleTable {
+  kind: 'shape'
+  field: string
+  domain: string[]
+  range?: ShapeName[]
+  entries: {
+    value: string
+    shape: ShapeName
+  }[]
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -2554,6 +3401,12 @@ field took.
 How a mark's `size` channel resolves: a number is a constant width in CSS px for
 every instance, a field name is `{ field }` with the defaults, and the object
 binds the field to a scale.
+
+```ts
+import type { SizeEncoding } from '@jbrowse/core/util/markEncoding'
+
+type SizeEncoding = number | FieldRef | SizeRef
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -2565,6 +3418,18 @@ A numeric field read through a linear or log scale into a width in CSS px:
 regions' extremes, as a color ramp's does. A feature holding no number takes the
 range's first px.
 
+```ts
+import type { SizeRef } from '@jbrowse/core/util/markEncoding'
+
+interface SizeRef {
+  field: FieldRef
+  scale?: 'linear' | 'log'
+  domainMin?: number
+  domainMax?: number
+  range?: [number, number]
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### SizeScaleTable
@@ -2573,6 +3438,19 @@ The scale a size channel is read through: the `size` lane holds the raw values
 and the shape maps them to px through this, so a display unions `extent` over
 its loaded regions into the open ends of `domain` and every region strokes the
 same value at the same width.
+
+```ts
+import type { SizeScaleTable } from '@jbrowse/core/util/markEncoding'
+
+interface SizeScaleTable {
+  field: string
+  scale: 'linear' | 'log'
+  domain: [number, number]
+  pinned: [boolean, boolean]
+  range: [number, number]
+  extent: [number, number]
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -2587,11 +3465,13 @@ this once per lane, sticky-vs-scrolling is a property of how the result is
 projected to the screen, and a band drawn outside its reservation (an overlay)
 has a separate draw rect beside the stack.
 
-```js
+```ts
 import { stackBands } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(order: readonly K[], bands: Record<K, Band>) => BandStack<K>
+function stackBands<K extends string>(
+  order: readonly K[],
+  bands: Record<K, Band>,
+): BandStack<K>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -2606,22 +3486,24 @@ ramp entry both backends read at `t`, through the ramp's middle stop at
 `midNorm` (`rampMidT`). Alpha rides `opacity` (the juicebox fade), never baked
 into the color string.
 
-```js
+```ts
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 
-// type signature
-(lut: Uint8Array<ArrayBufferLike>, n: number, midNorm?: number) => RampStop[]
+function stopsFromRampLut(
+  lut: Uint8Array<ArrayBufferLike>,
+  n: number,
+  midNorm?: number,
+): RampStop[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
 ### STRAND_FIELD
 
-```js
+```ts
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 
-// type signature
-;('strand')
+const STRAND_FIELD: 'strand'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -2630,11 +3512,10 @@ import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 
 The conventional size floor for calling a sequence indel structural.
 
-```js
+```ts
 import { SV_MIN_LENGTH } from '@jbrowse/core/util/svAlt'
 
-// type signature
-50
+const SV_MIN_LENGTH: 50
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -2644,11 +3525,10 @@ import { SV_MIN_LENGTH } from '@jbrowse/core/util/svAlt'
 The structural-variant class `svClassOf` names. A VCF record and a BEDPE row
 have it, and the mark display's `mate` step writes it per allele.
 
-```js
+```ts
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 
-// type signature
-;('svType')
+const SV_TYPE_FIELD: 'svType'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -2659,11 +3539,10 @@ The structural-variant class of a VCF record as a whole: the one class its
 alleles state, CNV where they are losses and gains of one segment, OTHER where
 they otherwise disagree, and `''` for a record with no structural allele.
 
-```js
+```ts
 import { svClassOf } from '@jbrowse/core/util/svAlt'
 
-// type signature
-(feature: Feature) => string
+function svClassOf(feature: Feature): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -2676,11 +3555,13 @@ structural. The id of a symbolic allele decides first. Otherwise VCF 4.4's
 that says more than BND, and a sequence allele is an insertion or deletion by
 its length against REF, else takes its `SVTYPE`'s class.
 
-```js
+```ts
 import { svClassOfAlt } from '@jbrowse/core/util/svAlt'
 
-// type signature
-(alt: string, { ref, info, alleleIndex }?: { ref?: string; info?: Record<string, unknown>; alleleIndex?: number; }) => string
+function svClassOfAlt(
+  alt: string,
+  opts?: { ref?: string; info?: Record<string, unknown>; alleleIndex?: number },
+): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -2694,11 +3575,10 @@ duplication `INV:DUP`. 1000 Genomes' `CNn` counts one haplotype's copies, so
 none is a deletion and two or more a duplication. `''` for an empty or missing
 token.
 
-```js
+```ts
 import { svClassOfToken } from '@jbrowse/core/util/svAlt'
 
-// type signature
-(raw: string) => string
+function svClassOfToken(raw: string): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -2709,6 +3589,18 @@ Text held as bytes, one per character: row `i`'s is `length[i]` bytes of `bytes`
 from `offset[i]`, so many rows share one buffer, as an adapter's arena holds
 them.
 
+```ts
+import type { TextColumn } from '@jbrowse/core/util/featureTable'
+
+interface TextColumn {
+  kind: 'text'
+  bytes: Uint8Array
+  offset: Uint32Array
+  length: Uint32Array
+  at: Uint32Array | undefined
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ### thresholdCuts
@@ -2718,11 +3610,10 @@ domain names, ascending. Cuts written high to low, as p-value thresholds often
 are, left the middle interval unreachable, the walk stopping at the first cut a
 value is under.
 
-```js
+```ts
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 
-// type signature
-(domain: readonly (string | number)[]) => number[]
+function thresholdCuts(domain: readonly (string | number)[]): number[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -2737,11 +3628,18 @@ each from the lowest, where a config spells them for a reader; a bin's key stays
 its interval. `descending` orders the domain from the highest bin, the no-value
 and not-a-number rows staying last.
 
-```js
+```ts
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 
-// type signature
-(field: string, { domain, range, labels: names, descending }?: { domain?: readonly string[]; range?: readonly string[]; labels?: readonly string[]; descending?: boolean; }) => CategoricalField
+function thresholdField(
+  field: string,
+  opts?: {
+    domain?: readonly string[]
+    range?: readonly string[]
+    labels?: readonly string[]
+    descending?: boolean
+  },
+): CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -2754,11 +3652,10 @@ so a palette with one more entry than the domain paints it as
 bin and answers -1; an infinite one takes the end bin on its side, as d3's
 threshold scale places it, so a `-log10` of a zero p-value falls in the top bin.
 
-```js
+```ts
 import { thresholdIndex } from '@jbrowse/core/util/thresholdScale'
 
-// type signature
-(value: unknown, domain: readonly number[]) => number
+function thresholdIndex(value: unknown, domain: readonly number[]): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -2769,11 +3666,15 @@ A threshold key's rows: every interval, painted or not, since the bins are the
 whole domain, then the not-a-number and no-value rows where a feature took one,
 in the order `thresholdField` sorts them.
 
-```js
+```ts
 import { thresholdKeyEntries } from '@jbrowse/core/util/thresholdScale'
 
-// type signature
-(cuts: readonly number[], range: readonly string[] | undefined, met: { missing?: boolean; notNumber?: boolean; }, names?: readonly string[]) => { value: string; label: string; color: string; missing?: true | undefined; }[]
+function thresholdKeyEntries(
+  cuts: readonly number[],
+  range: readonly string[] | undefined,
+  met: { missing?: boolean; notNumber?: boolean },
+  names?: readonly string[],
+): { value: string; label: string; color: string; missing?: true | undefined }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -2783,11 +3684,10 @@ import { thresholdKeyEntries } from '@jbrowse/core/util/thresholdScale'
 What a threshold scale's bins are called in a key, one label per palette entry:
 `< a` below the first cut, `a – b` between two, `≥ b` past the last.
 
-```js
+```ts
 import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
 
-// type signature
-(domain: readonly number[]) => string[]
+function thresholdLabels(domain: readonly number[]): string[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -2798,11 +3698,10 @@ The color of each interval, in order: the declared palette, and where it runs
 out the interval's evenly spaced sample of the default ramp, since the intervals
 are ordered and a categorical deck would say they are not.
 
-```js
+```ts
 import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 
-// type signature
-(bins: number, palette?: readonly string[]) => string[]
+function thresholdPalette(bins: number, palette?: readonly string[]): string[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -2812,6 +3711,19 @@ import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 A numeric field cut into intervals: `domain` is the ascending cut points and
 `range` holds one color more, so a value paints the entry for the number of cut
 points it is at or past. A value that is not a number belongs to no interval.
+
+```ts
+import type { ThresholdRef } from '@jbrowse/core/util/markEncoding'
+
+interface ThresholdRef {
+  field: FieldRef
+  scale: 'threshold'
+  domain?: (string | number)[]
+  range?: string[]
+  names?: string[]
+  descending?: boolean
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -2824,11 +3736,13 @@ than failing the render. An empty field reads nothing. Resolved once per walk;
 the feature displays and the mark display's `tooltip` lane both read through it,
 so one field reads alike in each.
 
-```js
+```ts
 import { tooltipTextReader } from '@jbrowse/core/util/tooltipText'
 
-// type signature
-(field: string, jexl: JexlInstance | undefined) => (feature: Feature) => string
+function tooltipTextReader(
+  field: string,
+  jexl: JexlInstance | undefined,
+): (feature: Feature) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/tooltipText.ts)
@@ -2837,11 +3751,14 @@ import { tooltipTextReader } from '@jbrowse/core/util/tooltipText'
 
 Every track the session can show, as trackCatalogEntry records.
 
-```js
+```ts
 import { trackCatalog } from '@jbrowse/core/util/tracks'
 
-// type signature
-(session: { tracks: TrackConfigEntry[]; connectionInstances?: { tracks: TrackConfigNode[]; }[] | undefined; assemblies: BaseAssemblyConfig[]; }) => { trackId: string; name: string; category: string[]; description: string; }[]
+function trackCatalog(session: {
+  tracks: TrackConfigEntry[]
+  connectionInstances?: { tracks: TrackConfigNode[] }[] | undefined
+  assemblies: BaseAssemblyConfig[]
+}): { trackId: string; name: string; category: string[]; description: string }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/tracks.ts)
@@ -2852,11 +3769,13 @@ A track config as the record a track selector lists: its id, the name it shows
 (`getTrackName`), the category path it nests under and its description. Raw
 member reads, so a frozen entry answers without hydrating.
 
-```js
+```ts
 import { trackCatalogEntry } from '@jbrowse/core/util/tracks'
 
-// type signature
-(conf: AnyTrackConfig, session: { assemblies: BaseAssemblyConfig[]; }) => { trackId: string; name: string; category: string[]; description: string; }
+function trackCatalogEntry(
+  conf: AnyTrackConfig,
+  session: { assemblies: BaseAssemblyConfig[] },
+): { trackId: string; name: string; category: string[]; description: string }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/tracks.ts)
@@ -2867,17 +3786,32 @@ One step over the features before a layer is encoded, named by `type` the way
 GenomeSpy spells a transform; every step runs in order and the next reads what
 the last answered.
 
+```ts
+import type { TransformStep } from '@jbrowse/core/util/markEncoding'
+
+type TransformStep =
+  | FilterStep
+  | FormulaStep
+  | FlattenStep
+  | CellsStep
+  | BinStep
+  | AggregateStep
+  | WindowStep
+  | CoverageStep
+  | PileupStep
+  | MateStep
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### valueAt
 
 A column's value at a row, whatever its kind: for a loop that reads few rows.
 
-```js
+```ts
 import { valueAt } from '@jbrowse/core/util/featureTable'
 
-// type signature
-(column: Column, i: number) => unknown
+function valueAt(column: Column, i: number): unknown
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
@@ -2887,11 +3821,10 @@ import { valueAt } from '@jbrowse/core/util/featureTable'
 The 256 viridis stops, fully opaque. Feed them to buildColorRampLut for the
 texture/fillStyle form, or to sampleColorRamp for legend stops.
 
-```js
+```ts
 import { VIRIDIS_STOPS } from '@jbrowse/core/util/colorRamp'
 
-// type signature
-readonly ColorRampStop[]
+const VIRIDIS_STOPS: readonly ColorRampStop[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -2907,6 +3840,17 @@ span; `[null, 0]` a running total. A frame cut off at a group's end summarizes
 the rows it has. The rows come out grouped, each group in `start` order, so a
 `line` walks one group at a time.
 
+```ts
+import type { WindowStep } from '@jbrowse/core/util/markEncoding'
+
+interface WindowStep {
+  type: 'window'
+  groupby?: FieldRef[]
+  frame?: [number | null, number | null]
+  ops: AggregateOp[]
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### withAdapterId
@@ -2915,11 +3859,12 @@ the rows it has. The rows come out grouped, each group in `start` order, so a
 than hashing the config on every call. For code that builds a large inline
 config, such as a FromConfigAdapter's `features`.
 
-```js
+```ts
 import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-// type signature
-<T extends Record<string, unknown>>(conf: T) => T & { adapterId: string; }
+function withAdapterId<T extends Record<string, unknown>>(
+  conf: T,
+): T & { adapterId: string }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/dataAdapterCache.ts)
@@ -2929,11 +3874,14 @@ import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 The table's rows with `written` beside them, in the order `rows` names where it
 names one.
 
-```js
+```ts
 import { withColumns } from '@jbrowse/core/util/featureTable'
 
-// type signature
-(table: FeatureTable, written: ReadonlyMap<string, Column>, rows?: Uint32Array<ArrayBufferLike> | undefined) => FeatureTable
+function withColumns(
+  table: FeatureTable,
+  written: ReadonlyMap<string, Column>,
+  rows?: Uint32Array<ArrayBufferLike> | undefined,
+): FeatureTable
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
@@ -2942,11 +3890,10 @@ import { withColumns } from '@jbrowse/core/util/featureTable'
 
 HitIndexed over what the worker shipped.
 
-```js
+```ts
 import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 
-// type signature
-<T extends EncodedChannels>(channels: T) => HitIndexed<T>
+function withHitIndex<T extends EncodedChannels>(channels: T): HitIndexed<T>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -2957,11 +3904,10 @@ Whether `schema` writes the object at `path` whole: a channel, which declares
 `writes: 'whole'`, where a namespace merges member by member. False for a path
 the schema does not declare.
 
-```js
+```ts
 import { writesWholeAt } from '@jbrowse/core/configuration'
 
-// type signature
-(schema: unknown, path: readonly string[]) => boolean
+function writesWholeAt(schema: unknown, path: readonly string[]): boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -2971,6 +3917,15 @@ import { writesWholeAt } from '@jbrowse/core/configuration'
 The bp/px interval, `[minBpPerPx, maxBpPerPx)`, over which an adapter with zoom
 levels answers a fetch from the same level it answered `opts.bpPerPx` from. A
 display holding the answer refetches when the view leaves it.
+
+```ts
+import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+interface ZoomRange {
+  minBpPerPx: number
+  maxBpPerPx: number
+}
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/zoomRange.ts)
 

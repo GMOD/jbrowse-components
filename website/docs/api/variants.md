@@ -16,9 +16,14 @@ Each record's alpha factor where records too short to see share pixels at
 record covers its pixels alone. For a host that draws the cells at its own
 scale.
 
-```js
-// type signature
-({ start, end, bpPerPx, }: { start: readonly number[]; end: readonly number[]; bpPerPx: number; }) => number[]
+```ts
+import { variantDensityAlpha } from '@jbrowse/plugin-variants/tables'
+
+function variantDensityAlpha(opts: {
+  start: readonly number[]
+  end: readonly number[]
+  bpPerPx: number
+}): number[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
@@ -37,9 +42,17 @@ where the haplotype carries any ALT. `values` holds them row-major, NaN for
 a no-call, an unphased call's haplotype, and a sample the record's file
 does not list.
 
-```js
-// type signature
-(pluginManager: PluginManager, variantArgs: VariantTablesArgs) => Promise<{ rows: string[]; columns: { name: string[]; variant: number[]; allele: number[]; }; values: Float32Array<ArrayBuffer>; }>
+```ts
+import { variantGenotypeMatrix } from '@jbrowse/plugin-variants/tables'
+
+function variantGenotypeMatrix(
+  pluginManager: PluginManager,
+  variantArgs: VariantTablesArgs,
+): Promise<{
+  rows: string[]
+  columns: { name: string[]; variant: number[]; allele: number[] }
+  values: Float32Array<ArrayBuffer>
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
@@ -63,9 +76,40 @@ A record `ids` lists more than once, as a feature table lists one crossing
 regions in each, has its `samples` and `annotations` rows once, `feature`
 its first index.
 
-```js
-// type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, ids, }: {…}) => Promise<{ samples: {…}; format: Record<string, unknown[]>; formatFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; annotations: { [x: string]: number[] | string[] | (string | null)[]; key: string[]; }; annotationFields: { key: string[]; field: string[]; }; info: Record<string, unknown[]>; infoFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; records: { ref: string[]; alt: string[]; filter: (string | null)[]; }; }>
+```ts
+import { variantRecordTables } from '@jbrowse/plugin-variants/tables'
+
+function variantRecordTables(
+  pluginManager: PluginManager,
+  opts: {
+    adapterConfig: Record<string, unknown>
+    sequenceAdapter?: Record<string, unknown> | undefined
+    regions: { refName: string; start: number; end: number }[]
+    ids: readonly string[]
+  },
+): Promise<{
+  samples: { feature: number[]; sample: string[] }
+  format: Record<string, unknown[]>
+  formatFields: {
+    key: string[]
+    number: string[]
+    type: string[]
+    description: string[]
+  }
+  annotations: {
+    [x: string]: number[] | string[] | (string | null)[]
+    key: string[]
+  }
+  annotationFields: { key: string[]; field: string[] }
+  info: Record<string, unknown[]>
+  infoFields: {
+    key: string[]
+    number: string[]
+    type: string[]
+    description: string[]
+  }
+  records: { ref: string[]; alt: string[]; filter: (string | null)[] }
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
@@ -107,9 +151,75 @@ indexes the joined `variants`. For a host that draws them itself, such as
 R through V8. The adapters must be registered on `pluginManager`
 (`registerVariantAdapters`).
 
-```js
-// type signature
-(pluginManager: PluginManager, variantArgs: VariantTablesArgs) => Promise<{ rowLegend: {…}; rowLegendTitle: string; bands: {…}; rowBackground: string; height: number; rowHeight: number; config: Record<…>; warnings: never[] | string[]; legend: {…}; legendTitle: string; ramps: {…}[]; cells: {…}; rows: {…}; annotations: {…}; annotationFields: {…}; info: Record<…>; infoFields: {…}; variants: { start: number[]; end: number[]; id: string[]; name: string[]; ref: string[]; alt: string[]; type: string[]; color: string[]; filter: (string | null)[]; region: number[]; key: number[]; }; }>
+```ts
+import { variantTables } from '@jbrowse/plugin-variants/tables'
+
+function variantTables(
+  pluginManager: PluginManager,
+  variantArgs: VariantTablesArgs,
+): Promise<{
+  rowLegend: { label: string[]; color: string[] }
+  rowLegendTitle: string
+  bands: { key: string[]; label: string[] }
+  rowBackground: string
+  height: number
+  rowHeight: number
+  config: Record<string, unknown>
+  warnings: never[] | string[]
+  legend: { label: string[]; color: string[]; section: string[] }
+  legendTitle: string
+  ramps: {
+    offset: number[]
+    color: string[]
+    opacity: number[]
+    minLabel: string
+    maxLabel: string
+    id: string
+    title: string
+  }[]
+  cells: {
+    variant: number[]
+    row: string[]
+    genotype: string[]
+    dosage: (number | null)[]
+    color: string[]
+    region: number[]
+  }
+  rows: {
+    name: string[]
+    label: string[]
+    sample: string[]
+    haplotype: number[]
+    ploidy: number[]
+    band: string[]
+    color: string[]
+  }
+  annotations: {
+    [x: string]: number[] | string[] | (string | null)[]
+    key: string[]
+  }
+  annotationFields: { key: string[]; field: string[] }
+  info: Record<string, unknown[]>
+  infoFields: {
+    key: string[]
+    number: string[]
+    type: string[]
+    description: string[]
+  }
+  variants: {
+    start: number[]
+    end: number[]
+    id: string[]
+    name: string[]
+    ref: string[]
+    alt: string[]
+    type: string[]
+    color: string[]
+    filter: (string | null)[]
+    region: number[]
+    key: number[]
+  }
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)

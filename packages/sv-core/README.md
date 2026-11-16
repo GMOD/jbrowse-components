@@ -24,9 +24,10 @@ still needs an assembly, and the callers here — the overlay's alt matching and
 its breakend bucketing — hold features and no assembly. A producer that has one
 resolves properly instead, through `toCanonicalRefName`.
 
-```js
-// type signature
-(locString: string) => string
+```ts
+import { breakendLocKey } from '@jbrowse/sv-core'
+
+function breakendLocKey(locString: string): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -41,9 +42,15 @@ without answering the question. A reversed displayed region mirrors the axis, so
 a tick that ignores it points at the side the derivative discards rather than
 the side it keeps.
 
-```js
-// type signature
-(x: number, keepsDir: number, reversed: boolean, lengthPx?: number) => number
+```ts
+import { breakendTickPx } from '@jbrowse/sv-core'
+
+function breakendTickPx(
+  x: number,
+  keepsDir: number,
+  reversed: boolean,
+  lengthPx?: number,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -53,9 +60,10 @@ the side it keeps.
 bpPerPx that fits `windowSize` bp on each side of a breakpoint across the view
 width. Falls back to a zoomed-in default when no window is requested.
 
-```js
-// type signature
-(windowSize: number, width: number) => number
+```ts
+import { breakpointBpPerPx } from '@jbrowse/sv-core'
+
+function breakpointBpPerPx(windowSize: number, width: number): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -72,9 +80,10 @@ Spelling the id out inline works only while it matches this string: the dialog
 appends a shape suffix to whatever id it receives, so a launcher that respells
 the prefix opens a second view instead of reusing the first, with no error.
 
-```js
-// type signature
-(ownerId: string, assemblyName: string) => string
+```ts
+import { breakpointSplitViewId } from '@jbrowse/sv-core'
+
+function breakpointSplitViewId(ownerId: string, assemblyName: string): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -85,9 +94,24 @@ Loads the assembly for a breakend feature and resolves the two regions its
 endpoints span. Throws if the assembly, its regions, or either endpoint's region
 cannot be found.
 
-```js
-// type signature
-({ feature, session, assemblyName, }: { feature: Feature; session: AssemblyHost; assemblyName: string; }) => Promise<{ assembly: Assembly; coverage: { pos: number; refName: string; mateRefName: string; matePos: number; }; region: BasicRegion; mateRegion: BasicRegion; }>
+```ts
+import { getBreakendAssemblyRegions } from '@jbrowse/sv-core'
+
+function getBreakendAssemblyRegions(opts: {
+  feature: Feature
+  session: AssemblyHost
+  assemblyName: string
+}): Promise<{
+  assembly: Assembly
+  coverage: {
+    pos: number
+    refName: string
+    mateRefName: string
+    matePos: number
+  }
+  region: BasicRegion
+  mateRegion: BasicRegion
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -97,9 +121,13 @@ cannot be found.
 The two canonical-refName junction positions a breakend/SV feature spans,
 through `junctionEnds`; a record with no other end spans the feature's extent.
 
-```js
-// type signature
-({ feature, assembly, }: { feature: Feature; assembly: Assembly; }) => { pos: number; refName: string; mateRefName: string; matePos: number; }
+```ts
+import { getBreakendCoveringRegions } from '@jbrowse/sv-core'
+
+function getBreakendCoveringRegions(opts: {
+  feature: Feature
+  assembly: Assembly
+}): { pos: number; refName: string; mateRefName: string; matePos: number }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -109,9 +137,12 @@ through `junctionEnds`; a record with no other end spans the feature's extent.
 A feature widget's view when a launch can copy its tracks: a linear genome view,
 never a circle, whose tracks have displays a linear panel cannot draw.
 
-```js
-// type signature
-(view?: { type: string; } | undefined) => LinearGenomeView | undefined
+```ts
+import { linearGenomeViewOf } from '@jbrowse/sv-core'
+
+function linearGenomeViewOf(
+  view?: { type: string } | undefined,
+): LinearGenomeView | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -130,9 +161,17 @@ windows for the row menu. Each spelled the 1-based-to-interbase shift itself
 0-based) and two of them read `ALT` ahead of `mate` while the third read `mate`
 first.
 
-```js
-// type signature
-(feature: Feature, alt?: string | undefined) => { k1: { refName: string; start: number; end: number; mateDirection: number; }; k2: FeatureEnd; paired: boolean; }
+```ts
+import { makeFeaturePair } from '@jbrowse/sv-core'
+
+function makeFeaturePair(
+  feature: Feature,
+  alt?: string | undefined,
+): {
+  k1: { refName: string; start: number; end: number; mateDirection: number }
+  k2: FeatureEnd
+  paired: boolean
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -143,9 +182,14 @@ Navigate a feature widget's view to `locString`. A view that cannot navigate to
 a locus, such as the circular view, opens the locus in a linear genome view of
 its first assembly with the widget's track.
 
-```js
-// type signature
-(locString: string, model: IAnyStateTreeNode, grow?: number | undefined) => void
+```ts
+import { navToLoc } from '@jbrowse/sv-core'
+
+function navToLoc(
+  locString: string,
+  model: IAnyStateTreeNode,
+  grow?: number | undefined,
+): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -158,9 +202,13 @@ its end keeps reads left to right into the join. Two ends of one contig closer
 than a window merge into the single span between them. `undefined` for a record
 with one end.
 
-```js
-// type signature
-(feature: Feature, windowBp: number) => string | undefined
+```ts
+import { pairedEndsLocString } from '@jbrowse/sv-core'
+
+function pairedEndsLocString(
+  feature: Feature,
+  windowBp: number,
+): string | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -171,9 +219,10 @@ Whether the panel showing an end has to be turned for the join to read left to
 right across the seam: an end keeping the sequence to its RIGHT is reversed on
 the left panel, one keeping its LEFT is reversed on the right.
 
-```js
-// type signature
-(keeps: number, side: "left" | "right") => boolean
+```ts
+import { panelIsTurned } from '@jbrowse/sv-core'
+
+function panelIsTurned(keeps: number, side: 'left' | 'right'): boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -183,9 +232,19 @@ the left panel, one keeping its LEFT is reversed on the right.
 Splits a region at `pos` into two halves that both include `pos`, so a breakend
 there stays visible in each.
 
-```js
-// type signature
-<T extends { refName: string; start: number; end: number; }>(region: T, pos: number, assemblyName?: string | undefined) => [T & { assemblyName?: string | undefined; }, T & { assemblyName?: string | undefined; }]
+```ts
+import { splitRegionAtPosition } from '@jbrowse/sv-core'
+
+function splitRegionAtPosition<
+  T extends { refName: string; start: number; end: number },
+>(
+  region: T,
+  pos: number,
+  assemblyName?: string | undefined,
+): [
+  T & { assemblyName?: string | undefined },
+  T & { assemblyName?: string | undefined },
+]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
@@ -198,9 +257,12 @@ Where a record's other end is, in the feature's own refName namespace and
 `undefined` when the record names no other end, which is most of a VCF: a plain
 SNV, or an indel, which is a single span.
 
-```js
-// type signature
-(feature: Feature) => { refName: string; pos: number; } | undefined
+```ts
+import { svMateLocus } from '@jbrowse/sv-core'
+
+function svMateLocus(
+  feature: Feature,
+): { refName: string; pos: number } | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)

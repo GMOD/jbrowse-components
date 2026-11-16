@@ -13,9 +13,10 @@ import these from a plugin.
 Whether a session's view is a synteny view, for a host that finds it in
 `session.views` to draw it with `SyntenyStack`.
 
-```js
-// type signature
-(view: unknown) => view is LinearSyntenyView
+```ts
+import { isLinearSyntenyView } from '@jbrowse/plugin-linear-comparative-view'
+
+function isLinearSyntenyView(view: unknown): view is LinearSyntenyView
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/isLinearSyntenyView.ts)
@@ -44,9 +45,103 @@ the whole stack, each lane's `yTop` and `yBottom` bound its gene boxes,
 and each ribbon's bound its gutter, the height its `thin` flag and fade
 are measured at.
 
-```js
-// type signature
-(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, hidden, display, laneAssemblyOf, }: MultiWayTablesArgs) => Promise<{ height: number; tickInterval: number; rowsVsAnchor: boolean; config: Record<…>; legend: {…}; legendTitle: string; legendAlpha: number; ramps: {…}[]; ribbons: {…}; alignments: {…}; blocks: {…}; lanes: {…}; segments: { lane: number[]; region: number[]; chrom: string[]; start: number[]; end: number[]; x1: number[]; x2: number[]; }; }>
+```ts
+import { multiwayTables } from '@jbrowse/plugin-linear-comparative-view/tables'
+
+function multiwayTables(
+  pluginManager: PluginManager,
+  opts: MultiWayTablesArgs,
+): Promise<{
+  height: number
+  tickInterval: number
+  rowsVsAnchor: boolean
+  config: Record<string, unknown>
+  legend: { label: string[]; color: string[] }
+  legendTitle: string
+  legendAlpha: number
+  ramps: {
+    offset: number[]
+    color: string[]
+    opacity: number[]
+    minLabel: string
+    maxLabel: string
+    id: string
+    title: string
+  }[]
+  ribbons: {
+    alignment: number[]
+    group: string[]
+    kind: string[]
+    gutter: number[]
+    upperLane: number[]
+    lowerLane: number[]
+    upperRegion: number[]
+    upperChrom: string[]
+    upperStart: number[]
+    upperEnd: number[]
+    lowerRegion: number[]
+    lowerChrom: string[]
+    lowerStart: number[]
+    lowerEnd: number[]
+    upperX1: number[]
+    upperX2: number[]
+    lowerX1: number[]
+    lowerX2: number[]
+    yTop: number[]
+    yBottom: number[]
+    color: string[]
+    alpha: number[]
+    thin: boolean[]
+    bridge: boolean[]
+  }
+  alignments: {
+    id: string[]
+    group: string[]
+    name: (string | null)[]
+    assembly: (string | null)[]
+    chrom: string[]
+    start: number[]
+    end: number[]
+    strand: (1 | -1)[]
+    mateAssembly: (string | null)[]
+    mateChrom: (string | null)[]
+    mateStart: (number | null)[]
+    mateEnd: (number | null)[]
+  }
+  blocks: {
+    lane: number[]
+    region: number[]
+    group: string[]
+    name: (string | null)[]
+    chrom: string[]
+    start: number[]
+    end: number[]
+    strand: number[]
+    x1: number[]
+    x2: number[]
+  }
+  lanes: {
+    lane: number[]
+    assembly: string[]
+    label: string[]
+    anchor: boolean[]
+    chrom: (string | null)[]
+    flipped: boolean[]
+    bpPerPx: number[]
+    alsoOn: string[]
+    yTop: number[]
+    yBottom: number[]
+  }
+  segments: {
+    lane: number[]
+    region: number[]
+    chrom: string[]
+    start: number[]
+    end: number[]
+    x1: number[]
+    x2: number[]
+  }
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/multiwayTables.ts)
@@ -57,9 +152,33 @@ What `drawOffscreenMates` paints of `strips` over a band `height` px tall:
 every mark and every label, in px from the band's top left, each named by
 the axis whose edge it hangs off.
 
-```js
-// type signature
-(strips: OffscreenMateLane[], height: number) => { marks: { x: number[]; y: number[]; width: number[]; height: number[]; color: string[]; alpha: number[]; axis: ("query" | "target")[]; }; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }
+```ts
+import { recordedOffscreenStrips } from '@jbrowse/plugin-linear-comparative-view/tables'
+
+function recordedOffscreenStrips(
+  strips: OffscreenMateLane[],
+  height: number,
+): {
+  marks: {
+    x: number[]
+    y: number[]
+    width: number[]
+    height: number[]
+    color: string[]
+    alpha: number[]
+    axis: ('query' | 'target')[]
+  }
+  labels: {
+    label: string[]
+    x: number[]
+    y: number[]
+    color: string[]
+    alpha: number[]
+    halo: string[]
+    axis: ('query' | 'target')[]
+  }
+  fontPx: number
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/tables.ts)
@@ -75,9 +194,13 @@ canvas is absolutely positioned, and a level with no synteny track is legal.
 The overlays come from `linearSyntenyDisplays`, the list the canvas uploads
 geometry for, so a painted ribbon always has an overlay to hover.
 
-```js
-// type signature
-({ level, children, }: { level: LinearSyntenyViewHelper; children?: ReactNode; }) => Element
+```ts
+import { SyntenyLevel } from '@jbrowse/plugin-linear-comparative-view'
+
+function SyntenyLevel(opts: {
+  level: LinearSyntenyViewHelper
+  children?: ReactNode
+}): Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyViewHelper/SyntenyLevel.tsx)
@@ -100,9 +223,14 @@ defaults to a `TrackStack`:
 />
 ```
 
-```js
-// type signature
-({ view, renderRow, style, }: { view: LinearSyntenyView; renderRow?: ((row: LinearGenomeView, index: number) => ReactNode) | undefined; style?: CSSProperties | undefined; }) => Element
+```ts
+import { SyntenyStack } from '@jbrowse/plugin-linear-comparative-view'
+
+function SyntenyStack(opts: {
+  view: LinearSyntenyView
+  renderRow?: ((row: LinearGenomeView, index: number) => ReactNode) | undefined
+  style?: CSSProperties | undefined
+}): Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/SyntenyStack.tsx)
@@ -132,9 +260,117 @@ region named by `queryRegion` and `targetRegion`; a ribbon's
 the row's `width`, the regions end to end with no gap, each foot clamped
 to its region, X1 joining X1 along one edge and X2 joining X2.
 
-```js
-// type signature
-(pluginManager: PluginManager, { adapterConfig, trackName, query, target, view: written }: SyntenyTablesArgs) => Promise<{ config: {…}; alpha: number; assemblyNames: string[]; legend: {…}; legendTitle: string; legendAlpha: number; ramps: {…}[]; alignments: {…}; ribbons: {…}; offscreen: {…}; offscreenContigs: {…}; offscreenStrip: { marks: {…}; labels: { label: string[]; x: number[]; y: number[]; color: string[]; alpha: number[]; halo: string[]; axis: ("query" | "target")[]; }; fontPx: number; }; }>
+```ts
+import { syntenyTables } from '@jbrowse/plugin-linear-comparative-view/tables'
+
+function syntenyTables(
+  pluginManager: PluginManager,
+  opts: SyntenyTablesArgs,
+): Promise<{
+  config: {
+    encoding: {
+      color: Record<string, unknown>
+      opacity: Record<string, unknown>
+    }
+    filter: FieldPredicate[]
+    indels: Record<string, unknown>
+    mark: Record<string, unknown>
+    axis: Record<string, unknown>
+    render: Record<string, unknown>
+    height: number
+  }
+  alpha: number
+  assemblyNames: string[]
+  legend: { label: string[]; color: string[] }
+  legendTitle: string
+  legendAlpha: number
+  ramps: {
+    offset: number[]
+    color: string[]
+    opacity: number[]
+    minLabel: string
+    maxLabel: string
+    id: string
+    title: string
+  }[]
+  alignments: {
+    color: string[]
+    alpha: number[]
+    id: string[]
+    name: string[]
+    queryChrom: string[]
+    queryStart: number[]
+    queryEnd: number[]
+    targetChrom: string[]
+    targetStart: number[]
+    targetEnd: number[]
+    strand: number[]
+    length: number[]
+  }
+  ribbons: {
+    alignment: number[]
+    kind: string[]
+    queryRegion: number[]
+    queryChrom: string[]
+    queryStart: number[]
+    queryEnd: number[]
+    targetRegion: number[]
+    targetChrom: string[]
+    targetStart: number[]
+    targetEnd: number[]
+    queryX1: number[]
+    queryX2: number[]
+    targetX1: number[]
+    targetX2: number[]
+    color: string[]
+    alpha: number[]
+    thin: boolean[]
+  }
+  offscreen: {
+    axis: ('query' | 'target')[]
+    region: number[]
+    chrom: string[]
+    start: number[]
+    end: number[]
+    mateChrom: string[]
+    mateStart: number[]
+    mateEnd: number[]
+    length: number[]
+    color: string[]
+    alpha: number[]
+    drawn: boolean[]
+  }
+  offscreenContigs: {
+    axis: ('query' | 'target')[]
+    mateChrom: string[]
+    count: number[]
+    alignedBp: number[]
+    label: string[]
+    color: string[]
+    alpha: number[]
+  }
+  offscreenStrip: {
+    marks: {
+      x: number[]
+      y: number[]
+      width: number[]
+      height: number[]
+      color: string[]
+      alpha: number[]
+      axis: ('query' | 'target')[]
+    }
+    labels: {
+      label: string[]
+      x: number[]
+      y: number[]
+      color: string[]
+      alpha: number[]
+      halo: string[]
+      axis: ('query' | 'target')[]
+    }
+    fontPx: number
+  }
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/tables.ts)

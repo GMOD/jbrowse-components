@@ -22,9 +22,12 @@ Positional, so colors reshuffle when tracks are added, hidden, or reordered.
 That is intended: this is a within-view distinguishability aid, not a stable
 identity. Anything worth keeping gets pinned.
 
-```js
-// type signature
-(tracks: readonly PalettableTrack[]) => Map<string, string>
+```ts
+import { assignTrackColors } from '@jbrowse/synteny-core'
+
+function assignTrackColors(
+  tracks: readonly PalettableTrack[],
+): Map<string, string>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/trackColors.ts)
@@ -35,14 +38,15 @@ The per-feature attribute a field reads: `mapq` is the comparative
 adapters' `mappingQual`, which they omit for MAPQ 255, so it paints and
 keys as no value; any other field uses its name.
 
-```js
-// type signature
-(field: string) => string
+```ts
+import { attributeOf } from '@jbrowse/synteny-core'
+
+function attributeOf(field: string): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
 
-## BAND_GROUND_COLOR
+## bandGroundColor
 
 The color a comparative band is painted on, for every surface that has to
 agree about it: the two backends' clear, the pre-blended indel wedges, every
@@ -55,9 +59,10 @@ a whole-genome band nearly unreadable. The band is the one sheet in the app
 with a fixed light ground. The dotplot's plot area is the same sheet, since
 it paints the same color schemes, whose default is black.
 
-```js
-// type signature
-"#fff"
+```ts
+import { bandGroundColor } from '@jbrowse/synteny-core'
+
+function bandGroundColor(): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/bandGround.ts)
@@ -68,22 +73,29 @@ The inks a band draws in, from the band's ground rather than the page theme, at
 the light theme's weights: a dark theme's text and dividers are white and
 vanish on the band.
 
-```js
-// type signature
-() => { text: string; divider: string; gridline: string; stripe: string; }
+```ts
+import { bandInk } from '@jbrowse/synteny-core'
+
+function bandInk(): {
+  text: string
+  divider: string
+  gridline: string
+  stripe: string
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/bandGround.ts)
 
 ## bandPalette
 
-The light palette, whose paper is `BAND_GROUND_COLOR`. Chrome on the band
+The light palette, whose paper is `bandGroundColor()`. Chrome on the band
 with a palette token, such as the dotplot's gridlines and region boundaries,
 takes it from this palette and so matches the light theme in either mode.
 
-```js
-// type signature
-JBrowsePalette
+```ts
+import { bandPalette } from '@jbrowse/synteny-core'
+
+const bandPalette: JBrowsePalette
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/bandGround.ts)
@@ -98,9 +110,10 @@ match ribbon shows as salmon over a white band, a blue deletion as pale blue.
 Blend the legend chip the same way, over the ground the renderers cleared to
 rather than an assumed white, so the key matches what is on screen.
 
-```js
-// type signature
-(color: string, a: number, ground: string) => string
+```ts
+import { blendOverGround } from '@jbrowse/synteny-core'
+
+function blendOverGround(color: string, a: number, ground: string): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
@@ -113,9 +126,14 @@ scheme leaves to the new view's default, the pinned track colors and the
 `filter`. `encoding.opacity` keeps each view's default, since a linear
 ribbon, a dotplot point and a circle's ribbon draw at different densities.
 
-```js
-// type signature
-(view: SyntenyColorsModel) => { trackColors: IKeyValueMap<string>; filter: ModelSnapshotType<Record<string, IAnyType>>[]; encoding?: { color: ModelSnapshotType<Record<string, IAnyType>>; } | undefined; }
+```ts
+import { carriedSyntenySettings } from '@jbrowse/synteny-core'
+
+function carriedSyntenySettings(view: SyntenyColorsModel): {
+  trackColors: IKeyValueMap<string>
+  filter: ModelSnapshotType<Record<string, IAnyType>>[]
+  encoding?: { color: ModelSnapshotType<Record<string, IAnyType>> } | undefined
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts)
@@ -127,9 +145,10 @@ and the multi-way synteny track's Color by: the structural modes the
 surface paints, the measurements one hop in, the text-column rows while one
 is painting, and the per-track swatches once more than one track overlays.
 
-```js
-// type signature
-(target: ColorByMenuTarget) => MenuItem[]
+```ts
+import { colorByMenuItems } from '@jbrowse/synteny-core'
+
+function colorByMenuItems(target: ColorByMenuTarget): MenuItem[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuItems.tsx)
@@ -140,9 +159,10 @@ Project a view with `TrackColorsMixin` onto the menu builder's input.
 `track` is offered once two tracks overlay, and `reference` where the view
 has a reference to anchor on.
 
-```js
-// type signature
-(model: TrackColorsModel) => ColorByMenuTarget
+```ts
+import { colorByMenuTargetFor } from '@jbrowse/synteny-core'
+
+function colorByMenuTargetFor(model: TrackColorsModel): ColorByMenuTarget
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuTarget.ts)
@@ -160,9 +180,23 @@ note row saying so. A threshold keys its bins as chips. `title` is
 `legend.title` as written: unset keeps the field's own heading, `''` draws
 none.
 
-```js
-// type signature
-(field: string | undefined, { alpha, title, ...opts }?: { pointBased?: boolean | undefined; cigarOps?: number | undefined; trackChips?: ColorChip[] | undefined; attributeRanges?: Record<string, AttributeRange> | undefined; hideUnlabelled?: boolean | undefined; missingColor?: string | undefined; names?: readonly string[] | undefined; descending?: boolean | undefined; paint?: SyntenyColorPaint | undefined; } & { alpha?: number | undefined; title?: string | undefined; }) => ColorScale[]
+```ts
+import { colorByScales } from '@jbrowse/synteny-core'
+
+function colorByScales(
+  field: string | undefined,
+  opts?: {
+    pointBased?: boolean | undefined
+    cigarOps?: number | undefined
+    trackChips?: ColorChip[] | undefined
+    attributeRanges?: Record<string, AttributeRange> | undefined
+    hideUnlabelled?: boolean | undefined
+    missingColor?: string | undefined
+    names?: readonly string[] | undefined
+    descending?: boolean | undefined
+    paint?: SyntenyColorPaint | undefined
+  } & { alpha?: number | undefined; title?: string | undefined },
+): ColorScale[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
@@ -173,9 +207,10 @@ The palette button both comparative headers render, over the view's
 `TrackColorsMixin`: what the view draws and whether it has a reference to
 anchor on are the view's own hooks, so the button takes nothing else.
 
-```js
-// type signature
-({ model, }: { model: TrackColorsModel; }) => Element
+```ts
+import { ColorBySelector } from '@jbrowse/synteny-core'
+
+function ColorBySelector(opts: { model: TrackColorsModel }): Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/ColorBySelector.tsx)
@@ -186,9 +221,10 @@ Short human-readable title for the floating legend header: a measurement's
 preset title, and a column's own name, which is the point of it — the
 reader named it.
 
-```js
-// type signature
-(field: string | undefined) => string
+```ts
+import { colorByShortLabel } from '@jbrowse/synteny-core'
+
+function colorByShortLabel(field: string | undefined): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
@@ -206,6 +242,17 @@ MODEL, and the call threw at runtime reading
 `configuration.configuration.adapter`. With this interface the compiler checks
 those calls again.
 
+```ts
+import type { ComparativeTrackModel } from '@jbrowse/synteny-core'
+
+interface ComparativeTrackModel {
+  configuration: AnyConfigurationModel & {
+    trackId: string
+    name: string
+  }
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/lodTier.ts)
 
 ## createOpacityFunction
@@ -218,9 +265,15 @@ at the level.
 accumulated one as the color ramp's is, and `fetchRanges` the fetch's own,
 whose label lists a text column's values index.
 
-```js
-// type signature
-({ setting, attributes, viewRanges, fetchRanges }: { setting: SyntenyOpacitySnapshot; attributes: Record<string, Float32Array>; viewRanges: Record<string, AttributeRange>; fetchRanges: Record<string, AttributeRange>; }) => ((index: number) => number) | undefined
+```ts
+import { createOpacityFunction } from '@jbrowse/synteny-core'
+
+function createOpacityFunction(opts: {
+  setting: SyntenyOpacitySnapshot
+  attributes: Record<string, Float32Array>
+  viewRanges: Record<string, AttributeRange>
+  fetchRanges: Record<string, AttributeRange>
+}): ((index: number) => number) | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/opacityChannel.ts)
@@ -232,9 +285,14 @@ display holds on the main thread rather than from a worker's payload. `ends`
 answers a feature's two refNames in the order the color modes read them:
 `query` paints by the first and `target` by the second.
 
-```js
-// type signature
-(features: readonly Feature[], ends: (feature: Feature, i: number) => readonly [string, string], channelNames: readonly string[]) => ColorFunctionInputs
+```ts
+import { featureColorInputs } from '@jbrowse/synteny-core'
+
+function featureColorInputs(
+  features: readonly Feature[],
+  ends: (feature: Feature, i: number) => readonly [string, string],
+  channelNames: readonly string[],
+): ColorFunctionInputs
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/featureColorInputs.ts)
@@ -244,9 +302,13 @@ answers a feature's two refNames in the order the color modes read them:
 The Identity fade toggle of a view with `SyntenyViewMixin`: `opacity`
 read from `identity`, or back to the constant.
 
-```js
-// type signature
-(model: { opacityField: string | undefined; setOpacityField: (field: string | undefined) => void; }) => MenuItem
+```ts
+import { identityFadeMenuItem } from '@jbrowse/synteny-core'
+
+function identityFadeMenuItem(model: {
+  opacityField: string | undefined
+  setOpacityField: (field: string | undefined) => void
+}): MenuItem
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
@@ -256,9 +318,12 @@ read from `identity`, or back to the constant.
 Whether `field` is a preset measurement. An own-property lookup: a field
 spelled `toString` is a column nobody declared, not `Object`'s method.
 
-```js
-// type signature
-(field: string | undefined) => field is "dnds" | "identity" | "mapq" | "syntenicDepth"
+```ts
+import { isMeasureField } from '@jbrowse/synteny-core'
+
+function isMeasureField(
+  field: string | undefined,
+): field is 'dnds' | 'identity' | 'mapq' | 'syntenicDepth'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
@@ -274,9 +339,10 @@ this track, orange is that one" identifies nothing. Below the floor the chip
 gives up exactness for the one job it has. The ribbons themselves still draw
 at the real alpha.
 
-```js
-// type signature
-0.45
+```ts
+import { LEGEND_CHIP_ALPHA_FLOOR } from '@jbrowse/synteny-core'
+
+const LEGEND_CHIP_ALPHA_FLOOR: 0.45
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
@@ -286,9 +352,10 @@ at the real alpha.
 The alpha a legend chip blends at for a view drawing at `alpha`: `alpha`,
 floored at LEGEND_CHIP_ALPHA_FLOOR.
 
-```js
-// type signature
-(alpha: number) => number
+```ts
+import { legendChipAlpha } from '@jbrowse/synteny-core'
+
+function legendChipAlpha(alpha: number): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
@@ -297,9 +364,10 @@ floored at LEGEND_CHIP_ALPHA_FLOOR.
 
 blendOverGround for a legend chip, at legendChipAlpha.
 
-```js
-// type signature
-(color: string, alpha: number, ground: string) => string
+```ts
+import { legendChipColor } from '@jbrowse/synteny-core'
+
+function legendChipColor(color: string, alpha: number, ground: string): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
@@ -309,9 +377,10 @@ blendOverGround for a legend chip, at legendChipAlpha.
 The display keys `liftSyntenyViewSettings` moves onto the view, by display
 type, for a validator reading a v4.3.0 session.
 
-```js
-// type signature
-Record<string, readonly string[]>
+```ts
+import { LIFTED_DISPLAY_KEYS } from '@jbrowse/synteny-core'
+
+const LIFTED_DISPLAY_KEYS: Record<string, readonly string[]>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
@@ -322,9 +391,10 @@ The view keys `liftSyntenyViewSettings` converts, which the linear synteny
 and dotplot views name as their launch keys' `passThrough` so a validator
 accepts them.
 
-```js
-// type signature
-readonly ["colorBy", "alpha", "drawCigar"]
+```ts
+import { LIFTED_VIEW_KEYS } from '@jbrowse/synteny-core'
+
+const LIFTED_VIEW_KEYS: readonly ['colorBy', 'alpha', 'drawCigar']
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
@@ -339,9 +409,10 @@ An older genomes-portal launch link puts the mode string on the view
 itself, which lifts the same way. The dotplot's own `drawCigar` lands as
 the `indels` part.
 
-```js
-// type signature
-(snap: Snap | undefined) => Snap | undefined
+```ts
+import { liftSyntenyViewSettings } from '@jbrowse/synteny-core'
+
+function liftSyntenyViewSettings(snap: Snap | undefined): Snap | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
@@ -352,9 +423,12 @@ The Min identity row of a view with `SyntenyFilterMixin`: the `filter`'s
 lower bound on `identity`. A filter on identity drops an alignment that
 reports none, so the row is disabled while no loaded alignment reports one.
 
-```js
-// type signature
-(model: FilterRowModel & { attributeRanges: Record<string, unknown>; }) => MenuItem
+```ts
+import { minIdentityMenuItem } from '@jbrowse/synteny-core'
+
+function minIdentityMenuItem(
+  model: FilterRowModel & { attributeRanges: Record<string, unknown> },
+): MenuItem
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
@@ -364,9 +438,10 @@ reports none, so the row is disabled while no loaded alignment reports one.
 The Min length row of a view with `SyntenyFilterMixin`: the `filter`'s
 lower bound on `length`.
 
-```js
-// type signature
-(model: FilterRowModel) => MenuItem
+```ts
+import { minLengthMenuItem } from '@jbrowse/synteny-core'
+
+function minLengthMenuItem(model: FilterRowModel): MenuItem
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
@@ -384,9 +459,13 @@ to that contig shows that a ribbon moved rather than vanished. Two palettes
 would color a mark and its ribbons differently, which this module prevents;
 see the header.
 
-```js
-// type signature
-(refName: string, namePosition: RefNamePosition | undefined) => string
+```ts
+import { nameColorCss } from '@jbrowse/synteny-core'
+
+function nameColorCss(
+  refName: string,
+  namePosition: RefNamePosition | undefined,
+): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
@@ -397,9 +476,12 @@ The part of `encoding.opacity` the color pass reads: undefined for the
 constant, else the mapping with `scale.range` as shares of its most opaque entry, so a
 mapping scaled alike at both ends answers the same.
 
-```js
-// type signature
-(setting: SyntenyOpacitySnapshot) => SyntenyOpacitySnapshot | undefined
+```ts
+import { opacityFadeOf } from '@jbrowse/synteny-core'
+
+function opacityFadeOf(
+  setting: SyntenyOpacitySnapshot,
+): SyntenyOpacitySnapshot | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/opacityChannel.ts)
@@ -410,9 +492,14 @@ The opacity every alignment is drawn at before the fade: the constant,
 `defaultValue` while it is unset, or under a field the most opaque value
 its range reaches.
 
-```js
-// type signature
-(setting: SyntenyOpacitySnapshot, defaultValue: number, ranges?: Record<string, AttributeRange> | undefined) => number
+```ts
+import { opacityLevel } from '@jbrowse/synteny-core'
+
+function opacityLevel(
+  setting: SyntenyOpacitySnapshot,
+  defaultValue: number,
+  ranges?: Record<string, AttributeRange> | undefined,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/opacityChannel.ts)
@@ -422,9 +509,15 @@ its range reaches.
 The Opacity row of a view with `SyntenyViewMixin`, reset to that view's
 default. Under a field it moves the field's most opaque end.
 
-```js
-// type signature
-(model: { opacityLevel: number; defaultOpacity: number; setOpacity: (value: number) => void; colorSurface: () => SyntenyColorSurface; }) => MenuItem
+```ts
+import { opacityMenuItem } from '@jbrowse/synteny-core'
+
+function opacityMenuItem(model: {
+  opacityLevel: number
+  defaultOpacity: number
+  setOpacity: (value: number) => void
+  colorSurface: () => SyntenyColorSurface
+}): MenuItem
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
@@ -436,9 +529,14 @@ keeping each entry's share of it. A threshold or a text column with no
 range written draws every bin at the level, so it gets one `value` per bin
 rather than the number column's default fade.
 
-```js
-// type signature
-(setting: SyntenyOpacitySnapshot, value: number, ranges?: Record<string, AttributeRange> | undefined) => string[]
+```ts
+import { opacityRangeAt } from '@jbrowse/synteny-core'
+
+function opacityRangeAt(
+  setting: SyntenyOpacitySnapshot,
+  value: number,
+  ranges?: Record<string, AttributeRange> | undefined,
+): string[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/opacityChannel.ts)
@@ -449,9 +547,10 @@ The field a synteny color channel paints by, or undefined while it names
 none. Read through the one resolver every display's color channel goes
 through.
 
-```js
-// type signature
-({ value, scale, field, }: SyntenyColorSnapshot) => string | undefined
+```ts
+import { paintedField } from '@jbrowse/synteny-core'
+
+function paintedField(opts: SyntenyColorSnapshot): string | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
@@ -462,9 +561,16 @@ The `RefNamePosition` a chromosome-painting field hands its palette out by:
 `query` reads the first of the alignment's two assemblies, `target` the
 second. Undefined for any other field, and while that assembly loads.
 
-```js
-// type signature
-(field: string | undefined, [queryAssembly, targetAssembly]: readonly (string | undefined)[], assemblyManager: { get: (name: string) => { getRefNamePosition: RefNamePosition; } | undefined; }) => RefNamePosition | undefined
+```ts
+import { refNamePositionFor } from '@jbrowse/synteny-core'
+
+function refNamePositionFor(
+  field: string | undefined,
+  [queryAssembly, targetAssembly]: readonly (string | undefined)[],
+  assemblyManager: {
+    get: (name: string) => { getRefNamePosition: RefNamePosition } | undefined
+  },
+): RefNamePosition | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
@@ -474,9 +580,10 @@ second. Undefined for any other field, and while that assembly loads.
 The Re-order chromosomes row every comparative view offers; `open` queues
 that view's own dialog.
 
-```js
-// type signature
-(open: () => void) => MenuItem
+```ts
+import { reorderChromosomesMenuItem } from '@jbrowse/synteny-core'
+
+function reorderChromosomesMenuItem(open: () => void): MenuItem
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
@@ -490,9 +597,14 @@ what the column's range is supposed to be. A written `scale.type` names a ramp
 or a threshold's bins either way. Undefined for the constant, a structural
 field and a text column.
 
-```js
-// type signature
-(field: string | undefined, ranges?: Record<string, AttributeRange>, paint?: SyntenyColorPaint) => NumericMode | undefined
+```ts
+import { resolveNumericMode } from '@jbrowse/synteny-core'
+
+function resolveNumericMode(
+  field: string | undefined,
+  ranges?: Record<string, AttributeRange>,
+  paint?: SyntenyColorPaint,
+): NumericMode | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
@@ -503,9 +615,13 @@ Each strand's color under `paint`, forward then reverse: the universal
 strand preset's, or `range`'s in `domain` order where the channel writes
 them, and the name `names` gives it, if any.
 
-```js
-// type signature
-({ domain, range }: SyntenyColorPaint, names?: readonly string[]) => { value: "-1" | "1"; color: string; label: string | undefined; }[]
+```ts
+import { strandLevels } from '@jbrowse/synteny-core'
+
+function strandLevels(
+  opts: SyntenyColorPaint,
+  names?: readonly string[],
+): { value: '-1' | '1'; color: string; label: string | undefined }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
@@ -516,9 +632,61 @@ The fields every comparative view paints through a preset: core's
 measurements, so `identity` and `mapq` paint here as they do on the MAF and
 alignments displays.
 
-```js
-// type signature
-{ readonly mapq: {…}; readonly identity: {…}; readonly dnds: { readonly scale: {…}; readonly legend: { readonly title: "dN/dS"; }; }; readonly syntenicDepth: { readonly scale: { readonly type: "threshold"; readonly domain: readonly ["2", "3"]; readonly range: readonly ["#bdbdbd", "#fdae6b", "#e6550d"]; readonly names: readonly ["One-to-one", "Shared by 2 genes", "Shared by 3 or more"]; }; readonly legend: { readonly title: "Syntenic depth"; }; }; }
+```ts
+import { SYNTENY_FIELD_PRESETS } from '@jbrowse/synteny-core'
+
+const SYNTENY_FIELD_PRESETS: {
+  readonly mapq: {
+    readonly scale: {
+      readonly type: 'threshold'
+      readonly domain: ('0' | '1' | '10' | '30')[]
+      readonly scheme: 'cividis'
+      readonly names: (
+        | 'MAPQ 0 (multi-mapping)'
+        | 'MAPQ 1-9 (low)'
+        | 'MAPQ 10-29'
+        | 'MAPQ 30+ (high confidence)'
+      )[]
+    }
+    readonly legend: {
+      readonly title: 'Mapping quality'
+      readonly descending: true
+    }
+  }
+  readonly identity: {
+    readonly scale: {
+      readonly type: 'linear'
+      readonly domainMin: 0
+      readonly domainMax: 1
+      readonly scheme: 'redgreyblue'
+    }
+    readonly legend: { readonly title: 'Identity' }
+  }
+  readonly dnds: {
+    readonly scale: {
+      readonly type: 'linear'
+      readonly domainMin: 0
+      readonly domainMax: 2
+      readonly domainMid: 1
+      readonly scheme: 'redyellowblue'
+      readonly reverse: true
+    }
+    readonly legend: { readonly title: 'dN/dS' }
+  }
+  readonly syntenicDepth: {
+    readonly scale: {
+      readonly type: 'threshold'
+      readonly domain: readonly ['2', '3']
+      readonly range: readonly ['#bdbdbd', '#fdae6b', '#e6550d']
+      readonly names: readonly [
+        'One-to-one',
+        'Shared by 2 genes',
+        'Shared by 3 or more',
+      ]
+    }
+    readonly legend: { readonly title: 'Syntenic depth' }
+  }
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
@@ -529,9 +697,13 @@ The color channel that paints by `field`, written over `current`, undefined
 clearing the field: display-kit's `colorForField`, the rule every display's
 Color by pick writes by.
 
-```js
-// type signature
-(field: string | undefined, current: SyntenyColorSnapshot) => ColorSlots
+```ts
+import { syntenyColorFor } from '@jbrowse/synteny-core'
+
+function syntenyColorFor(
+  field: string | undefined,
+  current: SyntenyColorSnapshot,
+): ColorSlots
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
@@ -543,9 +715,13 @@ actions (About track, Settings) beside the track's own items; the menu orders
 them by priority. A linear view attaches this to the track label; a view that draws no label
 puts it in the view's menu. `view` is whatever shows and launches the track.
 
-```js
-// type signature
-(view: TrackActionView & IAnyStateTreeNode, track: MenuTrack) => MenuItem
+```ts
+import { trackSubMenuItem } from '@jbrowse/synteny-core'
+
+function trackSubMenuItem(
+  view: TrackActionView & IAnyStateTreeNode,
+  track: MenuTrack,
+): MenuItem
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/trackSubMenuItem.ts)

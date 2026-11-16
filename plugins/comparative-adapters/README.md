@@ -16,9 +16,16 @@ file states (`null` for a file such as an MCScan anchors file, which lists genes
 and no contigs). A host lays a whole-genome axis out of them, as the dotplot
 import does from an assembly.
 
-```js
-// type signature
-(pluginManager: PluginManager, { adapterConfig }: ContigTablesArgs) => Promise<{ query: { assemblyName: string; refName: string[]; length: (number | null)[]; }; target: { assemblyName: string; refName: string[]; length: (number | null)[]; }; }>
+```ts
+import { contigTables } from '@jbrowse/plugin-comparative-adapters/tables'
+
+function contigTables(
+  pluginManager: PluginManager,
+  opts: ContigTablesArgs,
+): Promise<{
+  query: { assemblyName: string; refName: string[]; length: (number | null)[] }
+  target: { assemblyName: string; refName: string[]; length: (number | null)[] }
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/tables.ts)

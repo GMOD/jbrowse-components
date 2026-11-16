@@ -26,9 +26,70 @@ fetched, each with no mate or on a contig an axis does not show, and those
 contigs, `xChroms` the x axis's and `yChroms` the y axis's. For a host
 that draws them itself, such as R through V8.
 
-```js
-// type signature
-(pluginManager: PluginManager, { adapterConfig, trackName, x, y, view: written }: DotplotTablesArgs) => Promise<{ config: {…}; alpha: number; assemblyNames: string[]; skipped: {…}; legend: {…}; legendTitle: string; legendAlpha: number; ramps: {…}[]; alignments: {…}; segments: { alignment: number[]; op: string[]; xRegion: number[]; xChrom: string[]; xStart: number[]; xEnd: number[]; yRegion: number[]; yChrom: string[]; yStart: number[]; yEnd: number[]; color: string[]; alpha: number[]; }; }>
+```ts
+import { dotplotTables } from '@jbrowse/plugin-dotplot-view/tables'
+
+function dotplotTables(
+  pluginManager: PluginManager,
+  opts: DotplotTablesArgs,
+): Promise<{
+  config: {
+    encoding: {
+      color: Record<string, unknown>
+      opacity: Record<string, unknown>
+    }
+    filter: FieldPredicate[]
+    indels: Record<string, unknown>
+    lineWidth: number
+  }
+  alpha: number
+  assemblyNames: string[]
+  skipped: {
+    count: number
+    total: number
+    xChroms: string[]
+    yChroms: string[]
+  }
+  legend: { label: string[]; color: string[] }
+  legendTitle: string
+  legendAlpha: number
+  ramps: {
+    offset: number[]
+    color: string[]
+    opacity: number[]
+    minLabel: string
+    maxLabel: string
+    id: string
+    title: string
+  }[]
+  alignments: {
+    color: string[]
+    alpha: number[]
+    name: string[]
+    xChrom: string[]
+    xStart: number[]
+    xEnd: number[]
+    yChrom: string[]
+    yStart: number[]
+    yEnd: number[]
+    strand: number[]
+    length: number[]
+  }
+  segments: {
+    alignment: number[]
+    op: string[]
+    xRegion: number[]
+    xChrom: string[]
+    xStart: number[]
+    xEnd: number[]
+    yRegion: number[]
+    yChrom: string[]
+    yStart: number[]
+    yEnd: number[]
+    color: string[]
+    alpha: number[]
+  }
+}>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/tables.ts)

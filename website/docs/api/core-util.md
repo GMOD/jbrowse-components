@@ -13,11 +13,10 @@ import these from a plugin.
 Mints the brand where a file's name for an out-of-request location is first
 read.
 
-```js
+```ts
 import { adapterRefName } from '@jbrowse/core/util'
 
-// type signature
-(refName: string) => AdapterRefName
+function adapterRefName(refName: string): AdapterRefName
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/adapterRefName.ts)
@@ -33,6 +32,14 @@ unconverted: comparing it with a string is TS2367, and handing it to a
 `string` parameter, a `Map<string, _>` or a `Record<string, _>` is TS2345 or
 TS2538. `canonicalAdapterRefName` converts it, `adapterRefNameText` spells it.
 
+```ts
+import type { AdapterRefName } from '@jbrowse/core/util'
+
+interface AdapterRefName {
+  readonly __refNameNamespace: 'adapter'
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/adapterRefName.ts)
 
 ## adapterRefNameText
@@ -40,11 +47,10 @@ TS2538. `canonicalAdapterRefName` converts it, `adapterRefNameText` spells it.
 The file's spelling as text, for display or for handing back to the adapter
 that spelled it. Not for comparing with view state.
 
-```js
+```ts
 import { adapterRefNameText } from '@jbrowse/core/util'
 
-// type signature
-(refName: AdapterRefName) => string
+function adapterRefNameText(refName: AdapterRefName): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/adapterRefName.ts)
@@ -59,6 +65,16 @@ height when it does. Consumers read pixels through reservedPx or
 stackBands, never by re-combining the pair, so the reserver and the
 painter use the same pixel values.
 
+```ts
+import type { Band } from '@jbrowse/core/util/bandLayout'
+
+interface Band {
+  active: boolean
+  height: number
+  bounds?: BandBounds
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
 ## bandAt
@@ -67,11 +83,10 @@ The band under content-space `y`, or undefined below the stack or over a
 band that reserves nothing. The pointer's half of the fold: a band's hover
 reads the same tops and heights its painter drew at.
 
-```js
+```ts
 import { bandAt } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(stack: BandStack<K>, y: number) => K | undefined
+function bandAt<K extends string>(stack: BandStack<K>, y: number): K | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -81,11 +96,14 @@ import { bandAt } from '@jbrowse/core/util/bandLayout'
 The legal range for a drag of band `key` in a stack folded from
 boundStackedBands.
 
-```js
+```ts
 import { bandDragBounds } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(stack: BandStack<K>, key: K, plot: BandPlot) => { max: number; }
+function bandDragBounds<K extends string>(
+  stack: BandStack<K>,
+  key: K,
+  plot: BandPlot,
+): { max: number }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -97,6 +115,15 @@ share, and the px the plot keeps under any stack — `MIN_BAND_HEIGHT`
 while it draws, so its rows stay visible and the lowest band's handle stays
 on the display, and 0 while it draws nothing.
 
+```ts
+import type { BandPlot } from '@jbrowse/core/util/bandLayout'
+
+interface BandPlot {
+  height: number
+  floor: number
+}
+```
+
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
 ## baseDisplayConfig
@@ -106,11 +133,10 @@ The base's entry for this display, hydrated, which a reset returns to and
 track the session owns was added with; empty in a session that keeps no
 base.
 
-```js
+```ts
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 
-// type signature
-(self: object) => Record<string, unknown>
+function baseDisplayConfig(self: object): Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/baseDisplayConfig.ts)
@@ -133,11 +159,10 @@ share a plot take their ceilings from the stack (`boundStackedBands` in
 The bounds differ per band and the rule does not, so this takes the bounds
 and each band does not re-derive the rule.
 
-```js
+```ts
 import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
 
-// type signature
-(n: number, { min, max }?: BandBounds) => number
+function boundBandHeight(n: number, opts?: BandBounds): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
@@ -151,11 +176,14 @@ px up, so the stack never takes the plot below its floor. An inactive band
 reserves nothing, so it is bound to the whole room and comes back at a
 legal height. Bind here, then fold with stackBands.
 
-```js
+```ts
 import { boundStackedBands } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(order: readonly K[], bands: Record<K, Band>, plot: BandPlot) => Record<K, Band>
+function boundStackedBands<K extends string>(
+  order: readonly K[],
+  bands: Record<K, Band>,
+  plot: BandPlot,
+): Record<K, Band>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -165,11 +193,13 @@ import { boundStackedBands } from '@jbrowse/core/util/bandLayout'
 The assembly's canonical name for an adapter-spelled refName, through
 `getCanonicalRefName2`; the file's spelling when there is no assembly.
 
-```js
+```ts
 import { canonicalAdapterRefName } from '@jbrowse/core/util'
 
-// type signature
-(assembly: { getCanonicalRefName2: (refName: string) => string; } | undefined, refName: AdapterRefName) => string
+function canonicalAdapterRefName(
+  assembly: { getCanonicalRefName2: (refName: string) => string } | undefined,
+  refName: AdapterRefName,
+): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/adapterRefName.ts)
@@ -202,11 +232,13 @@ Takes a refName, not a spec that might hold one. The resolver calls
 loaded, and a caller reading an untyped `frozen` slot must first check that
 the value is a refName.
 
-```js
+```ts
 import { canonicalizeViewRefName } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode, refName: string) => string
+function canonicalizeViewRefName(
+  node: IAnyStateTreeNode,
+  refName: string,
+): string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -230,11 +262,14 @@ A drag passes `ResizeHandle` the band's height as `value` and this setter as
 `onChange`: the handle aims at the height at the press plus the pointer's
 travel, so the seam waits at a clamp until the pointer comes back to it.
 
-```js
+```ts
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 
-// type signature
-(current: number, target: number, bounds?: BandBounds) => number
+function clampBandHeight(
+  current: number,
+  target: number,
+  bounds?: BandBounds,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
@@ -247,11 +282,16 @@ declared under its floor stays where it is, whether or not it draws, up to
 the room the other bands leave the plot above its floor. `min` is the
 band's drag floor, `MIN_BAND_HEIGHT` by default.
 
-```js
+```ts
 import { dragBandHeight } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(stack: BandStack<K>, key: K, plot: BandPlot, target: number, min?: number | undefined) => number
+function dragBandHeight<K extends string>(
+  stack: BandStack<K>,
+  key: K,
+  plot: BandPlot,
+  target: number,
+  min?: number | undefined,
+): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -261,11 +301,10 @@ import { dragBandHeight } from '@jbrowse/core/util/bandLayout'
 The renderer half of `electron`, reached through the Node `require` an
 Electron window runs with. Throws outside Electron.
 
-```js
+```ts
 import { electronRenderer } from '@jbrowse/core/util/electron'
 
-// type signature
-() => ElectronRenderer
+function electronRenderer(): ElectronRenderer
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/electron.ts)
@@ -277,11 +316,14 @@ bands: every band reserving px takes a share of `height` in proportion to
 the px it reserves (scaleBandHeights, whole px, from 0), and every
 other band fills 0. Answers each band's filled height by key.
 
-```js
+```ts
 import { fillStackedBands } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(order: readonly K[], bands: Record<K, Band>, height: number) => (key: K) => number
+function fillStackedBands<K extends string>(
+  order: readonly K[],
+  bands: Record<K, Band>,
+  height: number,
+): (key: K) => number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -298,11 +340,10 @@ which service is wanted, and because that cost is the finding: the assembly
 manager is the one thing on `AbstractSessionModel` a third-party host cannot
 simply implement.
 
-```js
+```ts
 import { getAssemblyHost } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => AssemblyHost
+function getAssemblyHost(node: IAnyStateTreeNode): AssemblyHost
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -312,11 +353,10 @@ import { getAssemblyHost } from '@jbrowse/core/util'
 Returns the display model that contains the given node. Throws if the node has
 no containing display.
 
-```js
+```ts
 import { getContainingDisplay } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => AbstractDisplayModel
+function getContainingDisplay(node: IAnyStateTreeNode): AbstractDisplayModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -326,11 +366,10 @@ import { getContainingDisplay } from '@jbrowse/core/util'
 Returns the track model that contains the given node. Throws if the node has
 no containing track.
 
-```js
+```ts
 import { getContainingTrack } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => AbstractTrackModel
+function getContainingTrack(node: IAnyStateTreeNode): AbstractTrackModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -340,11 +379,10 @@ import { getContainingTrack } from '@jbrowse/core/util'
 Returns the view model that contains the given node. Throws if the node has no
 containing view.
 
-```js
+```ts
 import { getContainingView } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => AbstractViewModel
+function getContainingView(node: IAnyStateTreeNode): AbstractViewModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -353,11 +391,10 @@ import { getContainingView } from '@jbrowse/core/util'
 
 Where a display puts a dialog it cannot mount itself.
 
-```js
+```ts
 import { getDialogHost } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => DialogHost
+function getDialogHost(node: IAnyStateTreeNode): DialogHost
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
@@ -366,11 +403,10 @@ import { getDialogHost } from '@jbrowse/core/util'
 
 Returns the MST environment for a node, which holds the `pluginManager`.
 
-```js
+```ts
 import { getEnv } from '@jbrowse/core/util'
 
-// type signature
-(obj: IAnyStateTreeNode) => { pluginManager: PluginManager; }
+function getEnv(obj: IAnyStateTreeNode): { pluginManager: PluginManager }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -380,11 +416,10 @@ import { getEnv } from '@jbrowse/core/util'
 Where a display puts a message it cannot draw itself. An error is also kept
 on the outermost view holding `node`, as `view.problems`.
 
-```js
+```ts
 import { getNotificationSink } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => NotificationSink
+function getNotificationSink(node: IAnyStateTreeNode): NotificationSink
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
@@ -393,11 +428,10 @@ import { getNotificationSink } from '@jbrowse/core/util'
 
 The colors to draw with, and the args that rebuild them in a worker.
 
-```js
+```ts
 import { getPaletteHost } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => PaletteHost
+function getPaletteHost(node: IAnyStateTreeNode): PaletteHost
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
@@ -407,11 +441,10 @@ import { getPaletteHost } from '@jbrowse/core/util'
 Everything a display needs of its host in order to draw a region: the
 assemblies, the RPC entry point and the colors.
 
-```js
+```ts
 import { getRenderingServices } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => RenderingServices
+function getRenderingServices(node: IAnyStateTreeNode): RenderingServices
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -420,11 +453,10 @@ import { getRenderingServices } from '@jbrowse/core/util'
 
 The host's RPC entry point, for a module that issues RPCs and nothing else.
 
-```js
+```ts
 import { getRpcHost } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => RpcHost
+function getRpcHost(node: IAnyStateTreeNode): RpcHost
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
@@ -434,11 +466,10 @@ import { getRpcHost } from '@jbrowse/core/util'
 Returns the JBrowse session model for any node in the state tree. Throws if
 the node has no session ancestor.
 
-```js
+```ts
 import { getSession } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => AbstractSessionModel
+function getSession(node: IAnyStateTreeNode): AbstractSessionModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -449,11 +480,10 @@ The services a session offers that need no application-specific type to name.
 Prefer one of the narrower accessors below, which say which of them the
 calling module actually uses.
 
-```js
+```ts
 import { getSessionServices } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => SessionServices
+function getSessionServices(node: IAnyStateTreeNode): SessionServices
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
@@ -463,11 +493,13 @@ import { getSessionServices } from '@jbrowse/core/util'
 Calls an Electron main-process handler, checked against
 ElectronMainChannels.
 
-```js
+```ts
 import { invokeElectronMain } from '@jbrowse/core/util/electron'
 
-// type signature
-<K extends keyof ElectronMainChannels>(channel: K, ...args: ElectronMainChannels[K]["args"]) => Promise<ElectronMainChannels[K]["return"]>
+function invokeElectronMain<K extends keyof ElectronMainChannels>(
+  channel: K,
+  ...args: ElectronMainChannels[K]['args']
+): Promise<ElectronMainChannels[K]['return']>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/electron.ts)
@@ -477,11 +509,15 @@ import { invokeElectronMain } from '@jbrowse/core/util/electron'
 `addOrReplaceView` for view types whose state model may be lazily loaded;
 the synchronous `addOrReplaceView` requires it loaded already.
 
-```js
+```ts
 import { launchOrReplaceView } from '@jbrowse/core/util'
 
-// type signature
-(args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown>; replacing?: AbstractViewModel; }) => Promise<AbstractViewModel>
+function launchOrReplaceView(args: {
+  session: AbstractViewContainer
+  typeName: string
+  initialState?: Record<string, unknown>
+  replacing?: AbstractViewModel
+}): Promise<AbstractViewModel>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -493,11 +529,10 @@ Write the containing track's config to the session now, not after its
 of a row arrangement, a lane choice or an axis setting calls it (ADR-157).
 Does nothing for a node outside a track.
 
-```js
+```ts
 import { persistTrackConfigNow } from '@jbrowse/core/util'
 
-// type signature
-(node: IAnyStateTreeNode) => void
+function persistTrackConfigNow(node: IAnyStateTreeNode): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -507,11 +542,10 @@ import { persistTrackConfigNow } from '@jbrowse/core/util'
 The pixels a band takes from the plot below it: 0 when off, the stated
 height when on. This is the single spelling of "off spends 0 px".
 
-```js
+```ts
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-(band: Band) => number
+function reservedPx(band: Band): number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
@@ -527,11 +561,13 @@ user can see it rather than onto the display's own error slot — that slot is
 what `reload()` clears, and nothing would re-run the install behind it.
 Three displays hand-rolled this IIFE and each drew the lines differently.
 
-```js
+```ts
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 
-// type signature
-<Self extends IStateTreeNode>(self: Self, load: () => Promise<(self: Self) => void>) => void
+function runLazyAfterAttach<Self extends IStateTreeNode>(
+  self: Self,
+  load: () => Promise<(self: Self) => void>,
+): void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/lazyAfterAttach.ts)
@@ -545,11 +581,14 @@ none goes below `floor`, or below its current height if it already sits under it
 (the clampBandHeight rule). Whole pixels, rounded by largest
 remainder, so the stack moves by exactly the rounded distance.
 
-```js
+```ts
 import { scaleBandHeights } from '@jbrowse/core/util/bandHeight'
 
-// type signature
-(heights: number[], distance: number, floor?: number) => number[]
+function scaleBandHeights(
+  heights: number[],
+  distance: number,
+  floor?: number,
+): number[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
@@ -566,11 +605,13 @@ iteration runs this once per lane, sticky-vs-scrolling is a property of how
 the result is projected to the screen, and a band drawn outside its
 reservation (an overlay) has a separate draw rect beside the stack.
 
-```js
+```ts
 import { stackBands } from '@jbrowse/core/util/bandLayout'
 
-// type signature
-<K extends string>(order: readonly K[], bands: Record<K, Band>) => BandStack<K>
+function stackBands<K extends string>(
+  order: readonly K[],
+  bands: Record<K, Band>,
+): BandStack<K>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
