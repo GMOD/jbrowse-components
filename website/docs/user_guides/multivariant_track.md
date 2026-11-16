@@ -18,121 +18,99 @@ Show genotype rows** in the track menu draws its row.
 
 ## At genomic positions: structural variants at their real span {#regular-best-for-full-sv-detail}
 
-Each variant is drawn at its real genomic position. This layout draws structural
-variants at their real scale, and overlapping calls use slight transparency so
-you can still tell them apart.
-
-If overlaps overwhelm the view, use "Edit filters" in the track menu to hide
-variants by size, name, or any Jexl expression.
+Each variant is drawn at its real position and scale, and overlapping calls are
+slightly transparent so they stay apart. Where overlaps crowd the view, **Filter
+by → Edit filters...** in the track menu hides variants by size, name or any
+jexl expression. The
+[1000 Genomes SV tutorial](/docs/tutorials/sv_multisamples#sorting-the-cohort-by-genotype-at-the-rhd-deletion)
+sorts this layout by genotype at a deletion.
 
 <Figure caption="The 1000 Genomes SV callset across 5 Mb of chr19, one row per sample, sorted by genotype at an inversion." src="/img/multisv.png" />
 
 ## Equal-width columns: SNP and indel patterns {#matrix-best-for-snpindel-patterns}
 
-Each visible variant gets one column and each sample gets one row, regardless of
-how far apart the variants are on the genome. A thin black line connects each
-column to its real genomic position.
-
-Sparse small variants that would be only 1–2px wide at their true positions each
-get a full readable column. Patterns like shared haplotypes, runs of
-homozygosity, and population structure become visible at a glance.
+Each visible variant gets one column and each sample one row, however far apart
+the variants are, and a thin black line ties each column to its genomic
+position. Small variants that would be 1–2px wide at their true positions get a
+full column, so shared haplotypes, runs of homozygosity and population structure
+become visible. The
+[phased trio tutorial](/docs/tutorials/analyze_trio#showing-the-trio-vcf-as-a-genotype-matrix)
+works this layout with per-haplotype rows.
 
 <Figure caption="A phased trio as a matrix, one column per variant and one row per haplotype." src="/img/trio-matrix-phased-clean.png" />
 
 ## Filtering by allele frequency and missingness
 
-Two inline sliders in the track menu thin a dense callset down to the variants
-worth looking at. Both are under **Track menu → Filter by** and re-fetch as you
-release the slider:
+Two sliders under **Filter by** in the track menu thin a dense callset:
 
-- **Minor allele frequency** hides variants whose minor allele frequency falls
-  below the threshold, so singletons and near-monomorphic sites drop out and the
-  common, population-informative variants remain.
-- **Missingness** hides variants whose fraction of uncalled alleles rises above
-  the threshold. With no `missingness` entry in the display's
-  [`filter`](/docs/config/linearvariantdisplay/#slot-filter) it keeps every
-  variant; lowering it drops the poorly-genotyped columns that are mostly
-  missing data.
-
-Missingness is especially useful in equal-width columns, where each variant
-takes a full column no matter how many of its genotypes are no-calls.
+- **Minor allele frequency** hides variants whose minor allele frequency is
+  below the threshold, so singletons and near-monomorphic sites drop out.
+- **Missingness** hides variants whose fraction of uncalled alleles is above the
+  threshold. It starts off, keeping every variant; lowering it drops the columns
+  that are mostly missing data, which matters most in equal-width columns.
 
 <Figure src="/img/variants/potato_missingness.png" caption="One tetraploid VCF twice as a genotype matrix. Top: the default missingness ceiling. Bottom: a 0.1 ceiling." />
 
-The two filters can be preset so the track loads already filtered, with
+To load the track already filtered, add
 `{ "field": "minorAlleleFrequency", "gte": … }` and
-`{ "field": "missingness", "lte": … }` entries in the display's
-[`filter`](/docs/config/fieldpredicate) list. See
+`{ "field": "missingness", "lte": … }` entries to the display's
+[`filter`](/docs/config/linearvariantdisplay/#slot-filter) list, each a
+[field predicate](/docs/config/fieldpredicate). See
 [configuring default display settings](/docs/config_guides/variant_track#configuring-default-display-settings).
 
 ## Rows: per sample or per haplotype
 
-The display's [`rows.field`](/docs/config/variantrows/#slot-field), which the
-track menu's **Rows** item sets, sets what one row stands for and how each
-genotype cell is colored.
+The track menu's **Rows** item sets the display's
+[`rows.field`](/docs/config/variantrows/#slot-field): what one row stands for
+and how each genotype cell is colored.
 
-With **Rows → Per sample** (`rows.field: 'sample'`), one cell is drawn per
-sample and shaded by how many alternate alleles the call has:
+- **Rows → Per sample** (`rows.field: 'sample'`): one cell per sample, shaded by
+  allele dosage. Homozygous reference (`0/0`) is light grey, heterozygous
+  (`0/1`) a medium shade and homozygous alternate (`1/1`) the darkest. Every
+  non-reference allele counts, so `1/2` draws as dark as `1/1`, and an uncalled
+  genotype (`./.`) takes the no-call color.
+- **Rows → Per haplotype** (`rows.field: 'haplotype'`): one row per haplotype,
+  each cell colored reference or alt with no dosage shading, so inherited
+  haplotype blocks line up as the vertical bands in the trio matrix above. The
+  site's most frequent alt takes the blue of a homozygous-alt cell in per-sample
+  rows, and any other alt draws red.
 
-- homozygous reference (`0/0`) → light grey
-- heterozygous (`0/1`) → a medium shade
-- homozygous alternate (`1/1`) → the darkest shade
+Per-haplotype rows draw what the VCF phases:
 
-so the cell color reads directly as allele dosage (0, 1, or 2 alt alleles) and
-runs of homozygous-alt samples stand out as the darkest blocks. The dosage
-counts every non-reference allele, so `1/2` draws as dark as `1/1`, and an
-uncalled genotype (`./.`) takes the no-call color.
-
-With **Rows → Per haplotype** (`rows.field: 'haplotype'`), each sample is split
-into one row per haplotype and every haplotype cell is colored reference vs alt
-individually, with no dosage shading, so inherited haplotype blocks line up as
-the contiguous vertical bands in the trio matrix above. A haplotype with the
-site's most frequent alt takes the same blue as a homozygous-alt cell in
-per-sample rows, and any other alt draws red.
-
-Per-haplotype rows draw only what the VCF phases: `|`-separated genotypes, and
-haploid calls, which have nothing to phase. A genotype written with `/` fills
-every haplotype row of its sample black, homozygous ones included, since the
-file does not assign its alleles to haplotypes. Read-backed phasers such as
-WhatsHap leave homozygous calls unphased, so on their output the black marks
-every call the phaser left alone, homozygous ones among them. The menu item
-stays disabled until the view holds phased or haploid genotypes.
-
-A haplotype row is named `<sample> HP1`, `<sample> HP2`, and so on: JBrowse's
-numbering of the sample's alleles, counting from 1, not the VCF's `HP` tag.
-`haplotype` here is no column of the file, unlike a mark display's
-`rows: 'haplotype'` over a BED. Each haplotype row is matched to its sample's
-name, so the arrangement applies in both row modes: an order, a label, a color,
-a tree or a kept row written against a sample applies to its haplotype rows, a
-sample's label showing on them as `Mother HP1` and `Mother HP2`, and a tree
-clustered per sample forking over each sample's haplotype rows. Settings written
-against a haplotype row are kept but not shown in per-sample rows: each sample
-is placed where its first listed haplotype was, and a tree clustered per
-haplotype is hidden, with the sidebar saying why, until you switch back to **Per
-haplotype**.
+- **Phased and haploid calls:** `|`-separated genotypes and haploid calls draw
+  per haplotype. The menu item stays disabled until the view holds one.
+- **Unphased calls:** a genotype written with `/` fills every haplotype row of
+  its sample black, homozygous ones included. Read-backed phasers such as
+  WhatsHap leave homozygous calls unphased, so on their output black marks those
+  too.
+- **Row names:** `<sample> HP1`, `<sample> HP2`, and so on number the sample's
+  alleles from 1; they are not the VCF's `HP` tag.
+- **Sample settings:** an order, label, color, tree or kept row written against
+  a sample applies to its haplotype rows (`Mother HP1`, `Mother HP2`), and a
+  tree clustered per sample forks over each sample's haplotype rows.
+- **Haplotype settings:** settings written against a haplotype row are kept but
+  hidden in per-sample rows. Each sample sits where its first haplotype was, and
+  a tree clustered per haplotype is hidden, with the sidebar saying why, until
+  you switch back to **Per haplotype**.
 
 ## Coloring by consequence impact (SnpEff/VEP annotations)
 
-If the VCF's `INFO` field has SnpEff `ANN` or VEP `CSQ` annotations, each
-variant's alt-allele cells can be colored by the severity of its most severe
-predicted consequence. From the track menu, open **Color by** and choose
-**Consequence impact** under **Cells**. The entry stays visible where no variant
-in view is annotated, but is greyed out and names why: _(checking for SnpEff/VEP
-annotations...)_ while the variants load, then _(no SnpEff/VEP annotations in
-view)_.
+When the VCF's `INFO` field has SnpEff `ANN` or VEP `CSQ` annotations, **Color
+by → Consequence impact** (under **Cells**) colors each variant's alt-allele
+cells by its most severe predicted consequence. Where no variant in view is
+annotated, the entry is greyed out with the reason beside it.
 
-Every annotation is bucketed into one of four impact tiers and painted with a
-fixed color, so the legend is the same across tracks:
+Each annotation falls in one of four impact tiers with a fixed color, so the
+legend is the same across tracks:
 
-- HIGH (red) - e.g. `stop_gained`, `frameshift_variant`, `exon_loss_variant`
-- MODERATE (orange) - e.g. `missense_variant`, `inframe_deletion`
-- LOW (yellow) - e.g. `synonymous_variant`, `splice_region_variant`
-- MODIFIER (grey) - e.g. `intron_variant`, `intergenic_region`
+- **HIGH (red):** e.g. `stop_gained`, `frameshift_variant`, `exon_loss_variant`
+- **MODERATE (orange):** e.g. `missense_variant`, `inframe_deletion`
+- **LOW (yellow):** e.g. `synonymous_variant`, `splice_region_variant`
+- **MODIFIER (grey):** e.g. `intron_variant`, `intergenic_region`
 
-Consequence coloring works for both SNVs/indels and structural variants.
-SnpEff's SV-specific consequence terms (`exon_loss_variant`,
-`transcript_ablation`, `gene_fusion`, ...) map onto the same four tiers, so a
-deletion that removes an exon reads as HIGH the same way a stop-gained SNV does.
+SnpEff's SV consequence terms (`exon_loss_variant`, `transcript_ablation`,
+`gene_fusion`, ...) map onto the same tiers, so a deletion that removes an exon
+reads as HIGH, as a stop-gained SNV does.
 
 <Figure caption="1000 Genomes genotypes colored by SnpEff consequence impact." src="/img/variants/consequence_impact_1000g.png" />
 
@@ -142,28 +120,24 @@ To have the track load already colored this way, set the display's
 
 ## Coloring by SV type
 
-Structural variants can be colored by their class: each alt-allele cell takes
-the color of its variant's structural-variant type. From the track menu, open
-**Color by** and choose **SV type** under **Cells**. Like the consequence option
-it greys out rather than disappearing, reading _(no structural variants in
-view)_ where the variants in view hold none.
+**Color by → SV type** (under **Cells**) colors each alt-allele cell by its
+variant's structural class, and is greyed out where the view holds no structural
+variants. Each class has one color on every display that paints SV type,
+including the single-variant display, a mark display and the SV inspector's
+chords: deletion (red), duplication (blue), insertion (purple), inversion
+(orange), copy-number variable (dark brown), tandem repeat (pink), breakend
+(cyan), complex (green), and other / mixed (black) for a type token outside
+these classes or a record whose alleles disagree.
 
-Each class has one fixed color, the same on every display that paints SV type,
-so a deletion is the same red here, on the single-variant display, on a mark
-display and on the SV inspector's chords: deletion (red), duplication (blue),
-insertion (purple), inversion (orange), copy-number variable (dark brown),
-tandem repeat (pink), breakend (cyan), complex (green), and other / mixed
-(black) for a type token outside these classes or a record whose alleles
-disagree. A het cell draws its class color paler, as in the default coloring,
-and the legend shows both shades. The legend lists only the classes present in
-the loaded region, and a record with no structural class keeps the default alt
-color.
-
-The class is read from the ALT allele first: `<DEL>`, `<DUP:TANDEM>`, breakend
-notation, and 1000 Genomes' `<CN0>` (a deletion) and `<CN2>` and up (a
-duplication). Otherwise it comes from `INFO/EVENTTYPE` or `INFO/SVTYPE`, or from
-a sequence allele 50 bp or more longer or shorter than REF. JBrowse stores the
-result as each VCF record's `svType` field.
+- **Het cells** draw the class color paler, as in the default coloring, and the
+  legend shows both shades.
+- **The legend** lists only the classes present in the loaded region.
+- **No class:** a record with no structural class keeps the default alt color.
+- **Where the class comes from:** the ALT allele first (`<DEL>`, `<DUP:TANDEM>`,
+  breakend notation, and 1000 Genomes' `<CN0>` as a deletion and `<CN2>` and up
+  as a duplication), then `INFO/EVENTTYPE` or `INFO/SVTYPE`, then a sequence
+  allele 50 bp or more longer or shorter than REF. JBrowse stores the result as
+  each VCF record's `svType` field.
 
 <Figure caption="The SV callset colored by SV type, pale for a het and full for a hom." src="/img/multisv_svtype.png" />
 
@@ -191,23 +165,22 @@ hom, as in every other coloring.
 ## Coloring and grouping by sample metadata
 
 Samples can be grouped and colored by metadata: population, phenotype, sex, or
-any attribute you supply. Two slots configure it:
+any attribute you supply. These slots configure it:
 
 - `samplesTsvLocation` on the adapter takes a samples TSV whose first column is
-  the sample name (matching the VCF header) and whose every remaining column is
-  a metadata attribute.
-- `rows.color` on the display takes the name of one of those columns, and while
-  it is set the per-sample rows are tinted by that attribute, over any color the
-  TSV gives a row. A sample's swatch in the arrangement editor pins a color on
-  that row, `rows.colors`, over both. **Color rows by → None** clears the
-  attribute and restores the TSV's colors, keeping any pinned row's color;
-  **Reset row order** clears the pins.
+  the sample name (matching the VCF header) and whose other columns are metadata
+  attributes.
+- `rows.color` on the display takes one of those column names and tints the
+  per-sample rows by that attribute, over any color the TSV gives a row. A
+  sample's swatch in the arrangement editor pins that row's color
+  (`rows.colors`) over both. **Color rows by → None** clears the attribute and
+  restores the TSV's colors, keeping pinned colors; **Reset row order** clears
+  the pins.
 - `facet` bands the rows so each value of a column is contiguous: the column's
   name, or `{ "field": …, "sort": [...] }` with the band order. Each band's name
-  runs up a strip beside the dendrogram where the band is tall enough to hold
-  it. The bands override whatever order you have arranged, so dragging a sample
-  into another band snaps it back, and clustering under bands clusters each band
-  separately, with a dendrogram per band.
+  runs up a strip beside the dendrogram. The bands override your arranged order,
+  so a sample dragged into another band snaps back, and clustering clusters each
+  band separately, with a dendrogram per band.
 - [`rows.sort`](/docs/config/rowarrangement/#slot-sort) names the samples that
   lead the rows; the rest keep the file's order, and a grouping attribute bands
   within that order.
@@ -216,22 +189,27 @@ The JBrowse demo configures the 1000 Genomes phase 3 chr1 callset (2,504 samples
 across 26 population codes) this way. For the TSV layout and the adapter and
 display slots, see
 [auto-coloring samples by metadata](/docs/config_guides/variant_track#auto-coloring-samples-by-metadata).
+The
+[TCGA mutation cohort tutorial](/docs/tutorials/tcga_cohort_mutations#facet-the-rows-by-clinical-annotation)
+facets a cohort's rows by clinical annotation.
 
 <Figure caption="All 2,504 1000 Genomes samples sorted and colored by population code." src="/img/variants/population_1000genomes.png" />
 
-You can also change the grouping attribute and colors interactively after the
-track is open.
+**Group by** and the **Samples** entries under **Color by** in the track menu
+change the grouping and colors after the track is open.
 
 ## Clustering samples by genotype
 
-Samples can be reordered by genotype similarity, via **Clustering → Cluster rows
-by genotype...** in the track menu. See [](/docs/user_guides/clustering) for the
-modes, the dendrogram, and how to share a result in a session URL.
+**Clustering → Cluster rows by genotype...** in the track menu reorders samples
+by genotype similarity. See [](/docs/user_guides/clustering) for the modes, the
+dendrogram, and how to share a result in a session URL.
 
 <Figure caption="The Cluster rows by genotype dialog (top), and the rows reordered with a dendrogram (bottom)." src="/img/variants/cluster_dialog.png" />
 
 With per-haplotype rows, clustering treats each haplotype as a separate row, so
-the dendrogram shows haplotype-level relationships.
+the dendrogram shows haplotype-level relationships. The
+[LD tutorial](/docs/tutorials/ld_human#clustering-lct-haplotypes-into-the-block-the-triangle-draws)
+clusters haplotypes across the LCT block.
 
 ## See also
 
