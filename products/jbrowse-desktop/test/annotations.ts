@@ -1,5 +1,6 @@
 import {
   ANNOTATION_OVERLAY_ID,
+  assertValidAnnotations,
   drawAnnotationOverlay,
   parseAnnotationLocus,
 } from '@jbrowse/browser-test-utils'
@@ -51,6 +52,7 @@ export async function drawAnnotations(
   driver: WebDriver,
   annotations: Annotation[],
 ): Promise<void> {
+  assertValidAnnotations(annotations)
   await clearAnnotations(driver)
   const items: PayloadAnnotation[] = annotations.map(a => ({
     ...a,

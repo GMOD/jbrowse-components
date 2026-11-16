@@ -2,7 +2,11 @@
  * @jest-environment <rootDir>/config/jest/jsdom.cjs
  */
 import { ANNOTATION_OVERLAY_ID } from './annotationOverlay.ts'
-import { clearAnnotations, drawAnnotations } from './annotations.ts'
+import {
+  clearAnnotations,
+  drawAnnotations,
+  resolveAnchor,
+} from './annotations.ts'
 
 import type { Page } from 'puppeteer'
 
@@ -128,4 +132,13 @@ test('a box on one base of a dotplot axis wraps that base', async () => {
     { type: 'box', anchor: { hLoc: 'chr4:100' }, pad: 0, strokeWidth: 0 },
   ])
   expect(boxes()).toEqual([[208, 20, 2, 400]])
+})
+
+test('a click on a malformed anchor fails as a callout on it would', async () => {
+  await expect(resolveAnchor(fakePage(), { loc: 'chr1:a-b' })).rejects.toThrow(
+    'is not <refName>:<start>',
+  )
+  await expect(resolveAnchor(fakePage(), { row: 'Gaur' })).rejects.toThrow(
+    'needs the trackId',
+  )
 })

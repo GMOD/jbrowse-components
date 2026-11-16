@@ -4,6 +4,7 @@
 export {
   PENDING_DISPLAYS,
   assemblyFromSession,
+  assertValidAnnotations,
   clearAnnotations,
   describeDisplays,
   displayCensusInPage,

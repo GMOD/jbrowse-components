@@ -1,3 +1,4 @@
+export { assertValidAnnotations } from './annotationSpec.ts'
 export { captureBatch, captureJBrowse, openJBrowse } from './capture.ts'
 export {
   clearAnnotations,

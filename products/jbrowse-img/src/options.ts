@@ -97,7 +97,8 @@ const optionDefs: OptionDef[] = [
   },
   {
     name: 'width',
-    description: 'Width of output in pixels',
+    description:
+      'Width of the view in pixels. An SVG adds its margins and label gutter to it; a PNG or PDF is the SVG scaled down to this width',
     default: DEFAULT_WIDTH,
   },
   {

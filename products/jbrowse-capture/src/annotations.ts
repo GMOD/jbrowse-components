@@ -69,9 +69,11 @@ const optionalRegion = (
  * Where a click or hover on `anchor` lands, in viewport CSS px, and the rect it
  * resolved to: the same resolution, alignment and nudge a callout on that
  * anchor draws at, so a figure's click and its arrow cannot part. Undefined
- * when the anchor names nothing on the page.
+ * when the anchor names nothing on the page; throws when it is malformed, as a
+ * callout on it would.
  */
 export async function resolveAnchor(page: Page, anchor: AnnotationAnchor) {
+  assertValidAnnotations([{ type: 'circle', anchor }])
   const probe: PayloadAnnotation = {
     type: 'circle',
     anchor: await withRegion(page, anchor, false, true),
