@@ -352,6 +352,9 @@ export default defineConfig(
       // Off after reading all 28: the two that could meet a `$` in data now take
       // a replacer function. The rest replace with a constant, or mean `$1`.
       'unicorn/no-unsafe-string-replacement': 'off', // 26
+      // A new unicorn rule from the dep bump; turning optional positional
+      // parameters into options objects is churn across public APIs.
+      'unicorn/prefer-options-parameter': 'off',
 
       // === Conflicts with repo conventions (nest / ternaries over early return) ===
       // 33 — one guard per reason, and most carry their own comment saying why;
