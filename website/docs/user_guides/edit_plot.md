@@ -9,18 +9,23 @@ guide_category: General usage
 
 Every track whose display has color, grouping, rows, axis or filter settings has
 **Advanced → Edit plot...** in its track menu. It opens those settings as text,
-in the shape a config file writes them, so anything the menus and dialogs cannot
-express (a ramp, several threshold cuts, a typed section order, a filter
-expression) can be written directly. The Group by, Color by attribute and color
-dialogs also open it from a button, filled in with the choice you have made
-there but not yet applied.
+in the shape a config file writes them, so you can write what the menus and
+dialogs cannot express (a ramp, several threshold cuts, a typed section order, a
+filter expression). The Group by, Color by attribute and color dialogs also open
+it from a button, filled in with the choice you have made there but not yet
+applied.
 
 ## What the box shows
 
-The text holds the current values of this display's settings. A setting at its
-default is left out, as it would be in a config file. Show help links each
-setting to its row in the config reference. Which settings appear depends on the
-display:
+The text holds the current values of this display's settings:
+
+- **Defaults** are left out, as in a config file
+- **Show help** links each setting to its row in the config reference
+- **Config reference** opens the display's page in the
+  [config reference](/docs/config_guide), which spells out each setting's
+  members
+
+Which settings appear depends on the display:
 
 <!-- BEGIN GENERATED PLOT_SETTINGS -->
 
@@ -48,11 +53,7 @@ value, and `rows` draws one row per value, which a tree can order.
 
 The circular view's chord displays have a plot too: `mark`, how deeply each
 chord curves, and on the variant display `encoding.color`. Their Edit plot row
-is under the view menu's Tracks entry, since a track on the circle has no label
-to hang a menu off.
-
-The Config reference link opens the display's page in the
-[config reference](/docs/config_guide), which spells out each setting's members.
+is under the view menu's Tracks entry.
 
 ## Examples
 
@@ -68,19 +69,19 @@ stacks one section per strand and colors each feature by its type.
 
 ## Writing and applying
 
-- The text is the whole plot: a setting or a member you delete returns to its
+- **Whole plot:** a setting or a member you delete from the text returns to its
   default.
-- An example is merged into the plot as it stands and changes only what it
-  names, so an example writing a `filter` list keeps the filter's other tests in
-  the text.
-- A string is a setting's one-value form, such as a facet's field or a color's
-  field.
-
-The line under the text lists which settings applying would set or reset, and
-Apply is disabled while the text is something the track's config would refuse,
-with the reason shown. A setting spelled another way but meaning the same thing
-changes nothing. Apply writes the settings onto the track, so they are kept with
-the session and **Reset track settings** returns them to the track's config.
+- **Examples** merge into the plot as it stands and change only what they name,
+  so an example writing a `filter` list keeps the filter's other tests in the
+  text.
+- **Strings:** a string is a setting's one-value form, such as a facet's field
+  or a color's field.
+- **Preview:** the line under the text lists which settings applying would set
+  or reset. Apply is disabled, with the reason shown, while the text is
+  something the track's config would refuse, and a setting spelled another way
+  but meaning the same thing changes nothing.
+- **Kept:** Apply writes the settings onto the track, so they are kept with the
+  session, and **Reset track settings** returns them to the track's config.
 
 ## From an agent or a script
 
