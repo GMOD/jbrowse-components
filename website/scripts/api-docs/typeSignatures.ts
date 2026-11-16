@@ -1,5 +1,6 @@
 import * as ts from 'typescript'
 
+import { typesMemberName } from './astShapes.ts'
 import {
   getOwnJSDocText,
   parseTaggedComment,
@@ -506,12 +507,9 @@ function withoutCasts(node: ts.Expression): ts.Expression {
 }
 
 function mstCombinator(node: ts.Expression) {
-  return ts.isCallExpression(node) &&
-    ts.isPropertyAccessExpression(node.expression) &&
-    ts.isIdentifier(node.expression.expression) &&
-    node.expression.expression.text === 'types'
-    ? { name: node.expression.name.text, call: node }
-    : undefined
+  const call = ts.isCallExpression(node) ? node : undefined
+  const name = call && typesMemberName(call.expression)
+  return call && name ? { name, call } : undefined
 }
 
 // A primitive written as a property is MST's shorthand for that primitive

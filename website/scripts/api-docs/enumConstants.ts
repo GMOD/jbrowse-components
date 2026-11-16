@@ -30,6 +30,8 @@
 // the wrong list.
 import * as ts from 'typescript'
 
+import { isSchemaCall, schemaCallName } from './astShapes.ts'
+
 // name -> members, or null once a conflicting definition is seen
 const index = new Map<string, string[] | null>()
 
@@ -518,20 +520,6 @@ export function unwrapAssertion(node: ts.Expression): ts.Expression {
   return ts.isAsExpression(node) || ts.isSatisfiesExpression(node)
     ? unwrapAssertion(node.expression)
     : node
-}
-
-export function isSchemaCall(node: ts.Node): node is ts.CallExpression {
-  return (
-    ts.isCallExpression(node) &&
-    ts.isIdentifier(node.expression) &&
-    node.expression.text === 'ConfigurationSchema'
-  )
-}
-
-// The name a `ConfigurationSchema('Name', …)` call gives its schema
-export function schemaCallName(node: ts.Node) {
-  const [name] = isSchemaCall(node) ? node.arguments : []
-  return name && ts.isStringLiteralLike(name) ? name.text : undefined
 }
 
 function returnedSchemaName(fn: ts.FunctionDeclaration) {

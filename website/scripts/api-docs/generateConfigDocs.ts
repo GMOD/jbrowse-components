@@ -2,6 +2,7 @@ import slugify from 'slugify'
 import * as ts from 'typescript'
 
 import { escapeRegExp } from '../check-utils.ts'
+import { isSchemaCall, schemaCallName } from './astShapes.ts'
 import { colorChannelsSection, presetFieldsSection } from './colorChannels.ts'
 import { looseTrackExample, wrapAdapterExample } from './configExamples.ts'
 import {
@@ -12,10 +13,8 @@ import {
 } from './configManifest.ts'
 import { parseNode } from './docProgram.ts'
 import {
-  isSchemaCall,
   isSchemaFactory,
   quoteString,
-  schemaCallName,
   slotSpreadPairs,
   slotSpreadPart,
 } from './enumConstants.ts'

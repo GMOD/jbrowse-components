@@ -2,6 +2,12 @@ import path from 'path'
 
 import * as ts from 'typescript'
 
+import {
+  headIdentifier,
+  isSchemaCall,
+  isTypesCall,
+  schemaCallName,
+} from './astShapes.ts'
 import { slotSpreadPairs, slotSpreadPart } from './enumConstants.ts'
 import {
   TAG_TYPES,
@@ -397,10 +403,10 @@ function slotSections(comment: string) {
 function subSchemaPrefix(slot: ts.Node): string {
   const schema = slot.parent.parent
   const prop = schema.parent
-  return isConfigurationSchemaCall(schema) &&
+  return isSchemaCall(schema) &&
     ts.isPropertyAssignment(prop) &&
     ts.isIdentifier(prop.name) &&
-    isConfigurationSchemaCall(prop.parent.parent)
+    isSchemaCall(prop.parent.parent)
     ? `${subSchemaPrefix(prop)}${prop.name.text}.`
     : ''
 }
@@ -459,33 +465,21 @@ interface ConfigSlotGap {
   slot: string
 }
 
-function isConfigurationSchemaCall(node: ts.Node): node is ts.CallExpression {
-  return (
-    ts.isCallExpression(node) &&
-    ts.isIdentifier(node.expression) &&
-    node.expression.text === 'ConfigurationSchema'
-  )
-}
-
 // Audit one `ConfigurationSchema('Name', { ...slots })` call: every own property
 // of the slots object should carry a #slot tag. A property whose value is itself
 // an inline `ConfigurationSchema(...)` is a grouping sub-schema (its children are
 // the slots, e.g. hierarchical.sort), so it is skipped; spreads (plugin/extra
 // slot injection) are skipped too.
 function collectUntaggedSlots(node: ts.Node, gaps: ConfigSlotGap[]) {
-  if (isConfigurationSchemaCall(node)) {
-    const [name] = node.arguments
-    const schema =
-      name !== undefined && ts.isStringLiteralLike(name)
-        ? name.text
-        : '(anonymous)'
+  if (isSchemaCall(node)) {
+    const schema = schemaCallName(node) ?? '(anonymous)'
     const slots = node.arguments[1]
     if (slots && ts.isObjectLiteralExpression(slots)) {
       for (const prop of slots.properties) {
         if (
           ts.isPropertyAssignment(prop) &&
           ts.isIdentifier(prop.name) &&
-          !isConfigurationSchemaCall(prop.initializer) &&
+          !isSchemaCall(prop.initializer) &&
           !startsWithTag(jsDocText(prop), 'slot')
         ) {
           gaps.push({
@@ -658,16 +652,16 @@ function modelDeclarations(sourceFile: ts.SourceFile) {
       }
     }
     const ownNamed = (expr: ts.Expression) => {
-      const head = composedHead(expr)
+      const head = headIdentifier(
+        expr,
+        name => MODEL_CHAIN_METHODS.has(name) || name === 'named',
+      )
       if (head) {
-        own(topLevel.get(head))
+        own(topLevel.get(head.text))
       }
     }
     const reach = (node: ts.Node) => {
-      if (
-        ts.isCallExpression(node) &&
-        isTypesMember(node.expression, 'compose')
-      ) {
+      if (isTypesCall(node, 'compose')) {
         node.arguments.forEach(ownNamed)
       } else if (
         ts.isCallExpression(node) &&
@@ -690,20 +684,6 @@ function modelDeclarations(sourceFile: ts.SourceFile) {
     modelDeclarationCache.set(sourceFile, found)
   }
   return found
-}
-
-// `Base`, `Mixin()`, `Base!` and `factory(pm).named('X')` all name their head
-// identifier.
-function composedHead(expr: ts.Expression): string | undefined {
-  return ts.isIdentifier(expr)
-    ? expr.text
-    : ts.isCallExpression(expr) || ts.isNonNullExpression(expr)
-      ? composedHead(expr.expression)
-      : ts.isPropertyAccessExpression(expr) &&
-          (MODEL_CHAIN_METHODS.has(expr.name.text) ||
-            expr.name.text === 'named')
-        ? composedHead(expr.expression)
-        : undefined
 }
 
 // True when a `{ foo }` shorthand's target declaration carries no member tag, so
@@ -740,19 +720,15 @@ type MemberBlock = 'property' | 'volatile' | 'views' | 'actions'
 // each contribute their named kind. Detected structurally so members need no
 // per-member JSDoc tag to be documented.
 function memberBlockKind(node: ts.Node): MemberBlock | undefined {
-  if (!ts.isCallExpression(node)) {
-    return undefined
-  }
-  if (isTypesMember(node.expression, 'model')) {
-    return 'property'
-  }
-  if (ts.isPropertyAccessExpression(node.expression)) {
-    const name = node.expression.name.text
-    if (name === 'volatile' || name === 'views' || name === 'actions') {
-      return name
-    }
-  }
-  return undefined
+  const name =
+    ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)
+      ? node.expression.name.text
+      : undefined
+  return isTypesCall(node, 'model')
+    ? 'property'
+    : name === 'volatile' || name === 'views' || name === 'actions'
+      ? name
+      : undefined
 }
 
 // The object literal a member block exposes: the last object-literal argument of
@@ -1169,21 +1145,14 @@ export function symbolDeclId(
 }
 
 // For a `baseConfiguration: <expr>` or sub-schema slot property, the declId of
-// the schema the expr references. Peels call/non-null wrappers to the head
-// identifier (`createBaseTrackConfig(pm)` -> `createBaseTrackConfig`); returns
-// undefined for non-identifier heads like `pluginManager.getDisplayType(...)`
-// and for a slot's object literal.
+// the schema the expr's head identifier references (`createBaseTrackConfig(pm)`
+// -> `createBaseTrackConfig`); undefined for non-identifier heads like
+// `pluginManager.getDisplayType(...)` and for a slot's object literal.
 function referencedDeclId(checker: ts.TypeChecker, node: ts.Node) {
-  if (!ts.isPropertyAssignment(node)) {
-    return undefined
-  }
-  let expr: ts.Expression = node.initializer
-  while (ts.isNonNullExpression(expr) || ts.isCallExpression(expr)) {
-    expr = expr.expression
-  }
-  return ts.isIdentifier(expr)
-    ? symbolDeclId(checker, checker.getSymbolAtLocation(expr))
+  const head = ts.isPropertyAssignment(node)
+    ? headIdentifier(node.initializer)
     : undefined
+  return head && symbolDeclId(checker, checker.getSymbolAtLocation(head))
 }
 
 // Whether a slot's `defaultValue` names a parameter of the factory that
@@ -1264,7 +1233,7 @@ function slotValueReferences(checker: ts.TypeChecker, node: ts.Node) {
       queue.push({ expr: expr.expression, depth, list })
     } else if (ts.isCallExpression(expr)) {
       queue.push({ expr: expr.expression, depth, list })
-      const inArray = list || isTypesMember(expr.expression, 'array')
+      const inArray = list || isTypesCall(expr, 'array')
       for (const arg of expr.arguments) {
         queue.push({ expr: arg, depth: depth + 1, list: inArray })
       }
@@ -1277,7 +1246,9 @@ function slotValueReferences(checker: ts.TypeChecker, node: ts.Node) {
       seen.add(id)
       ids.push(id)
       const decl = symbol && followAlias(checker, symbol).declarations?.[0]
-      const name = decl && configurationSchemaName(decl)
+      const init =
+        decl && ts.isVariableDeclaration(decl) ? decl.initializer : undefined
+      const name = init && schemaCallName(init)
       if (name) {
         schemas.push({ name, list })
       }
@@ -1297,14 +1268,8 @@ function slotValueReferences(checker: ts.TypeChecker, node: ts.Node) {
           queue.push({ expr: param.initializer, depth: depth + 1, list })
         }
       }
-      if (
-        !fn &&
-        decl &&
-        ts.isVariableDeclaration(decl) &&
-        decl.initializer &&
-        !name
-      ) {
-        queue.push({ expr: decl.initializer, depth: depth + 1, list })
+      if (!fn && init && !name) {
+        queue.push({ expr: init, depth: depth + 1, list })
       }
     }
   }
@@ -1313,18 +1278,6 @@ function slotValueReferences(checker: ts.TypeChecker, node: ts.Node) {
     valueSchemas: schemas.length ? schemas : undefined,
     valueReturnedCode: returnedCode,
   }
-}
-
-function configurationSchemaName(decl: ts.Declaration) {
-  const init = ts.isVariableDeclaration(decl) ? decl.initializer : undefined
-  const first =
-    init &&
-    ts.isCallExpression(init) &&
-    ts.isIdentifier(init.expression) &&
-    init.expression.text === 'ConfigurationSchema'
-      ? init.arguments[0]
-      : undefined
-  return first && ts.isStringLiteralLike(first) ? first.text : undefined
 }
 
 // Whether a `#stateModel` tag landed on something that can plausibly BUILD a
@@ -1373,11 +1326,11 @@ function definesStateModel(node: ts.Node) {
       return
     }
     if (
-      ts.isCallExpression(n) &&
-      (isTypesMember(n.expression, 'compose') ||
-        isTypesMember(n.expression, 'model') ||
-        (ts.isPropertyAccessExpression(n.expression) &&
-          MODEL_CHAIN_METHODS.has(n.expression.name.text)))
+      isTypesCall(n, 'compose') ||
+      isTypesCall(n, 'model') ||
+      (ts.isCallExpression(n) &&
+        ts.isPropertyAccessExpression(n.expression) &&
+        MODEL_CHAIN_METHODS.has(n.expression.name.text))
     ) {
       found = true
       return
@@ -1413,9 +1366,10 @@ function resolveComposedModels(checker: ts.TypeChecker, node: ts.Node) {
     }
   }
   const walk = (n: ts.Node) => {
-    if (ts.isCallExpression(n) && isTypesMember(n.expression, 'compose')) {
+    if (isTypesCall(n, 'compose')) {
       for (const arg of n.arguments) {
-        const ref = composedArgRef(checker, arg)
+        const head = headIdentifier(arg)
+        const ref = head && identifierRef(checker, head)
         if (ref) {
           add(ref)
         } else {
@@ -1466,32 +1420,6 @@ function returnedExpression(fn: ts.FunctionLikeDeclaration) {
   return body?.statements.find(ts.isReturnStatement)?.expression
 }
 
-// True for a `types.<name>` property access — the MST namespace import used
-// throughout the codebase (`types.compose`, `types.model`).
-function isTypesMember(expr: ts.Expression, name: string) {
-  return (
-    ts.isPropertyAccessExpression(expr) &&
-    ts.isIdentifier(expr.expression) &&
-    expr.expression.text === 'types' &&
-    expr.name.text === name
-  )
-}
-
-// Resolve one `types.compose` argument: peel call/non-null wrappers to the head
-// expression, then resolve only if it is a bare identifier. `types.model(...)`
-// peels to the `types.model` property access (not an identifier) and so returns
-// undefined.
-function composedArgRef(
-  checker: ts.TypeChecker,
-  arg: ts.Expression,
-): ComposedRef | undefined {
-  let expr: ts.Expression = arg
-  while (ts.isCallExpression(expr) || ts.isNonNullExpression(expr)) {
-    expr = expr.expression
-  }
-  return ts.isIdentifier(expr) ? identifierRef(checker, expr) : undefined
-}
-
 // Resolve an identifier naming a composed/base model to a ComposedRef, returning
 // both declId and alias-followed name so the generator can match on either. When
 // it resolves to a `const X = Factory(...)` — the common "export the factory's
@@ -1509,19 +1437,16 @@ function identifierRef(
   }
   const aliased = followAlias(checker, symbol)
   const decl = aliased.declarations?.[0]
-  if (depth < 3 && decl && ts.isVariableDeclaration(decl) && decl.initializer) {
-    let init: ts.Expression = decl.initializer
-    while (ts.isCallExpression(init) || ts.isNonNullExpression(init)) {
-      init = init.expression
-    }
-    const followed = ts.isIdentifier(init)
-      ? identifierRef(checker, init, depth + 1)
+  const head =
+    depth < 3 && decl && ts.isVariableDeclaration(decl) && decl.initializer
+      ? headIdentifier(decl.initializer)
       : undefined
-    if (followed) {
-      return followed
+  return (
+    (head && identifierRef(checker, head, depth + 1)) ?? {
+      declId: symbolDeclId(checker, aliased),
+      name: aliased.getName(),
     }
-  }
-  return { declId: symbolDeclId(checker, aliased), name: aliased.getName() }
+  )
 }
 
 // First string literal anywhere in an expression (depth-first). Used to recover

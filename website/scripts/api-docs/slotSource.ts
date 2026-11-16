@@ -1,5 +1,6 @@
 import * as ts from 'typescript'
 
+import { schemaCallName, typesMemberName } from './astShapes.ts'
 import {
   enumConstantValues,
   factorySchemaName,
@@ -9,7 +10,6 @@ import {
   referencedExpression,
   referencedObjectLiteral,
   scalarConstantValue,
-  schemaCallName,
   typeSchemaName,
   unwrapAssertion,
 } from './enumConstants.ts'
@@ -321,11 +321,7 @@ function typesCallValue(
   call: ts.CallExpression,
   next: (expr: ts.Expression) => SlotMeta | undefined,
 ) {
-  const member =
-    ts.isPropertyAccessExpression(call.expression) &&
-    call.expression.expression.getText() === 'types'
-      ? call.expression.name.text
-      : undefined
+  const member = typesMemberName(call.expression)
   const [first, second] = call.arguments
   const inner = () => (first ? next(first) : undefined)
   const optional = member === 'optional' ? inner() : undefined
