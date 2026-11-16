@@ -12,7 +12,13 @@ import type { ParityAdapter } from './testUtils.ts'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel'
 
-const COVERAGE_DECISIONS = ['sections', 'domain', 'scaleType', 'ticks'] as const
+const COVERAGE_DECISIONS = [
+  'sections',
+  'heightPx',
+  'domain',
+  'scaleType',
+  'ticks',
+] as const
 
 type CoverageDecision = (typeof COVERAGE_DECISIONS)[number]
 
@@ -21,8 +27,9 @@ const engine = createTablesEngine()
 /**
  * The alignments display's coverage band beside `engine.alignments` over
  * `regions` of a BAM at 5 bp/px, read with no reference on either side: the
- * sections the facet splits the reads into, and the depth axis they share,
- * its domain, scale type and the ticks it labels at the band's height.
+ * sections the facet splits the reads into, the px the band draws at, and the
+ * depth axis they share, its domain, scale type and the ticks it labels at
+ * the band's height.
  */
 function coverageParity(
   adapterConfig: Record<string, unknown>,
@@ -53,12 +60,14 @@ function coverageParity(
       engine.alignments({ adapterConfig, regions, display }),
     modelDecisions: m => ({
       sections: m.renderSections.map(s => s.groupKey),
+      heightPx: m.coverageBandHeight,
       domain: m.coverageDepthDomain,
       scaleType: m.scaleType,
       ticks: m.coverageTicks?.items.map(tick => tick.value),
     }),
     exportDecisions: t => ({
       sections: t.sections.key,
+      heightPx: t.coverageScale.heightPx,
       domain: t.coverageScale.domain,
       scaleType: t.coverageScale.type,
       ticks: t.coverageScale.ticks,
@@ -86,6 +95,14 @@ describe('the coverage band over volvox reads', () => {
         height: 80,
         pileup: { show: false },
       },
+    },
+    {
+      name: 'no pileup fills a tall track',
+      config: { height: 400, pileup: { show: false } },
+    },
+    {
+      name: 'no pileup, each section its slot',
+      config: { facet: 'strand', height: 300, pileup: { show: false } },
     },
     {
       name: 'encoding.y domainMax',

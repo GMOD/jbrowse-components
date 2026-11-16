@@ -103,7 +103,7 @@ test('fit to track height is one more read height radio', () => {
   expect(checkedLabels(rows())).toEqual([COMPACTNESS_PRESETS.compact.label])
 })
 
-test('Track height is fixed or autogrow, a fit ticks Fixed, and the row cap needs rows', () => {
+test('Track height is fixed or autogrow, a fit ticks Fixed, and both need rows', () => {
   const { display } = createDisplay()
   const rows = (gate = {}) => getTrackSizingItems(display, gate)
   const modes = () => menuSubItems(rows(), 'Track height')
@@ -123,9 +123,7 @@ test('Track height is fixed or autogrow, a fit ticks Fixed, and the row cap need
     'Track height',
     'Max layout height...',
   ])
-  expect(
-    rows({ disabled: true, disabledHelpText: 'no pileup' }).map(
-      i => 'label' in i && i.label,
-    ),
-  ).toEqual(['Track height'])
+  const gated = rows({ disabled: true, disabledHelpText: 'no pileup' })
+  expect(gated.map(i => 'label' in i && i.label)).toEqual(['Track height'])
+  expect(gated[0]).toMatchObject({ disabled: true })
 })

@@ -1,6 +1,7 @@
 import {
   boundStackedBands,
   dragBandHeight,
+  fillStackedBands,
   reservedPx,
   stackBands,
 } from '@jbrowse/core/util/bandLayout'
@@ -115,6 +116,13 @@ export interface LaneBandData {
 
 export type BelowCoverageBandsInput = BelowCoverageBandsSettings & LaneBandData
 
+// The px each band of a lane's stack is drawn at.
+export interface LaneBandHeights {
+  coverageHeight: number
+  readConnectionsHeight: number
+  sashimiHeight: number
+}
+
 export interface LaneBands {
   // The fold, tops relative to the lane's coverage top; `bottom` is where the
   // pileup begins.
@@ -153,29 +161,34 @@ function arcsDrawn(s: BelowCoverageBandsSettings, lane: LaneBandData) {
 function bandStackOf(
   s: BelowCoverageBandsSettings,
   lane: LaneBandData,
+  heights: LaneBandHeights = s,
 ): Record<LaneBandKey, Band> {
   return {
-    coverage: { active: s.showCoverage, height: s.coverageHeight },
+    coverage: { active: s.showCoverage, height: heights.coverageHeight },
     readConnections: {
       active: arcsDrawn(s, lane) && !arcsOverlayCoverage(s),
-      height: s.readConnectionsHeight,
+      height: heights.readConnectionsHeight,
     },
     sashimi: {
       active: s.showSashimi && lane.hasSashimiDownArcs,
-      height: s.sashimiHeight,
+      height: heights.sashimiHeight,
     },
   }
 }
 
 /**
- * One lane's stack of bands above its pileup, and where its arcs draw. A strip
- * bound to 0 px reserves nothing, so it reports no band and gets no handle.
+ * One lane's stack of bands above its pileup, and where its arcs draw, at
+ * `heights` (the settings' own unless fitted). Which strips the lane reserves
+ * reads the settings alone, so a fit never moves arcs on or off the coverage.
+ * A strip bound to 0 px reserves nothing, so it reports no band and gets no
+ * handle.
  */
 export function laneBands(
   s: BelowCoverageBandsSettings,
   lane: LaneBandData,
+  heights: LaneBandHeights = s,
 ): LaneBands {
-  const bands = bandStackOf(s, lane)
+  const bands = bandStackOf(s, lane, heights)
   const stack = stackBands(LANE_BAND_ORDER, bands)
   return {
     stack,
@@ -211,15 +224,37 @@ export function boundBelowCoverageHeights(
   }
 }
 
-// The coverage band's height bound against the plot: it leads the stack, so
-// nothing below it moves its bound, and an export with no arcs or sashimi
-// state answers what the display draws.
-export function boundCoverageHeight(coverageHeight: number, plot: BandPlot) {
-  return boundStackedBands(
-    ['coverage'],
-    { coverage: { active: true, height: coverageHeight } },
-    plot,
-  ).coverage.height
+// The height the band stack fills while the pileup is hidden: the track's
+// own, capped at the grow ceiling in grow mode, so no height mode sizes the
+// track from its lanes.
+export function pileupHiddenHeight(s: {
+  autoHeight: boolean
+  fitTargetHeight: number
+  growMaxHeight: number
+}) {
+  return s.autoHeight
+    ? Math.min(s.fitTargetHeight, s.growMaxHeight)
+    : s.fitTargetHeight
+}
+
+// Each lane's whole-px slot of `height` while the pileup is hidden; no lanes
+// draws as one.
+export function laneSlotHeight(height: number, laneCount: number) {
+  return Math.floor(height / Math.max(1, laneCount))
+}
+
+// The pooled band stack fitted to fill a lane's slot: every band the stated
+// stack reserves takes its share in proportion, every other band 0.
+export function fittedBelowCoverageHeights(
+  s: BelowCoverageBandsInput,
+  slot: number,
+): LaneBandHeights {
+  const filled = fillStackedBands(LANE_BAND_ORDER, bandStackOf(s, s), slot)
+  return {
+    coverageHeight: filled('coverage'),
+    readConnectionsHeight: filled('readConnections'),
+    sashimiHeight: filled('sashimi'),
+  }
 }
 
 // One drag of one band over the pooled stack, which every lane's handle for
@@ -261,6 +296,8 @@ export interface SectionStackOpts {
   // its own label chip still leaves room for it. Only the stacking advance is
   // padded; `pileupHeight` stays the drawn row extent.
   minSectionHeight: number
+  // The px each band is drawn at, the settings' own unless fitted.
+  bandHeights?: LaneBandHeights
 }
 
 // Stack sections top-to-bottom, each reserving its own band stack and then its
@@ -273,7 +310,7 @@ export function computeStackedSections<L extends SectionLaneInput>(
 ): SectionsLayout<L> {
   let top = 0
   const sections = lanes.map(lane => {
-    const { stack, arcBand } = laneBands(settings, lane)
+    const { stack, arcBand } = laneBands(settings, lane, opts.bandHeights)
     const coverageTop = top
     const pileupTop = coverageTop + stack.bottom
     const rowsHeight = lane.maxY * opts.rowHeight

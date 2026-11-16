@@ -97,6 +97,7 @@ import {
   readPaletteViews,
 } from './alignmentsColorViews.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
+import { bandStackViews, sashimiDownViews } from './bandStackViews.ts'
 import { buildReadIdsByChainName } from './chainFields.ts'
 import { rgb255 } from './colorUtils.ts'
 import { firstSectionHighlight } from './components/arcHitTest.ts'
@@ -134,7 +135,6 @@ import {
 } from './groupLayout.ts'
 import {
   buildReadIdIndex,
-  buildSashimiDownKeys,
   eachGroup,
   hasNamedGroups,
   orderedGroups,
@@ -181,11 +181,11 @@ import { connectorBandState } from './renderers/connectorMarks.ts'
 import { sashimiBandState, sashimiLabels } from './renderers/sashimiMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
-  boundBelowCoverageHeights,
   buildSectionRenders,
   computeStackedSections,
   dragBelowCoverageBand,
   laneBandOverheads,
+  pileupHiddenHeight,
   sectionDipFloor,
 } from './sectionLayout.ts'
 
@@ -710,6 +710,8 @@ export default function stateModelFactory(
         },
       }))
       .views(self => arcViews(self))
+      .views(self => sashimiDownViews(self))
+      .views(self => bandStackViews(self))
       .views(self => {
         let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
         let fitCap: IComputedValue<RowCap> | undefined
@@ -812,95 +814,16 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Per group, which junctions draw in the strip below coverage (by
-           * `junctionKey`): the one sashimi side decision, read by
-           * `sashimiDownArcLanes` to reserve the strip and `themed`'s sashimi
-           * feeds to place each arc. refNames come from `loadedRegions`, keeping this
-           * a tier-1 (fetch) derivation. A region not yet loaded gets a unique
-           * key, so regions not proven to share a chromosome never pool onto
-           * one bp line.
-           */
-          get sashimiDownKeysByGroup() {
-            return buildSashimiDownKeys(self.rpcDataMap, {
-              filter: self.junctionFilter,
-              placement: self.effectiveSashimiPlacement,
-              refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
-              hidden: self.hiddenGroups,
-            })
-          },
-
-          /**
-           * #getter
-           * Group keys whose junctions draw in the strip below coverage, i.e.
-           * the lanes that strip is reserved for.
-           */
-          get sashimiDownArcLanes() {
-            const out = new Set<string>()
-            for (const [key, down] of this.sashimiDownKeysByGroup) {
-              if (down.size > 0) {
-                out.add(key)
-              }
-            }
-            return out
-          },
-
-          /**
-           * #getter
-           * The below-coverage bands as stated: the height slots, the settings
-           * and whether any lane has arcs or a sashimi junction bound for its
-           * strip.
-           */
-          get statedBelowCoverageBands() {
-            return {
-              showCoverage: self.showCoverage,
-              coverageHeight: self.coverageHeight,
-              drawnReadConnections: self.drawnReadConnections,
-              readConnectionsDown: self.readConnectionsPlacement === 'down',
-              readConnectionsHeight: self.readConnectionsHeight,
-              showSashimi: self.showSashimi,
-              sashimiHeight: self.sashimiHeight,
-              hasArcs: self.arcsResult.inkGroupKeys.size > 0,
-              hasSashimiDownArcs: this.sashimiDownArcLanes.size > 0,
-            }
-          },
-
-          /**
-           * #getter
-           * The three band heights as every consumer draws them: the slots
-           * bound against `bandPlot` top-down (`boundStackedBands`), since a
-           * config or a session snapshot states a height no drag clamped.
-           */
-          get bandHeights() {
-            return boundBelowCoverageHeights(
-              this.statedBelowCoverageBands,
-              self.bandPlot,
-            )
-          },
-
-          /**
-           * #getter
-           * The pooled band stack: the bound heights, the settings, and
-           * whether any lane has arcs or a sashimi junction bound for its
-           * strip. Each lane's stack reads the settings and answers the data
-           * half itself; the drag bounds read the pooled answer, so every
-           * lane's handle for a band resizes it.
-           */
-          get belowCoverageBandsInput() {
-            return { ...this.statedBelowCoverageBands, ...this.bandHeights }
-          },
-
-          /**
-           * #getter
            * Each lane's band stack in px, in stacking order, as
            * `computeStackedSections` reserves it. Fetch-tier inputs only, so
            * the layout reads it without a cycle.
            */
           get laneBandOverheads(): number[] {
             return laneBandOverheads(
-              this.belowCoverageBandsInput,
+              self.belowCoverageBandsInput,
               self.groupOrder.map(g => g.key),
               self.arcsResult.inkGroupKeys,
-              this.sashimiDownArcLanes,
+              self.sashimiDownArcLanes,
             )
           },
 
@@ -1240,7 +1163,9 @@ export default function stateModelFactory(
          * All vertical band geometry, one entry per lane; ungrouped is the
          * one-lane call. Runs over `drawnLanes` so a display with no data still
          * has a section. The sticky-coverage-vs-scroll distinction lives
-         * downstream in `buildSectionRenders`.
+         * downstream in `buildSectionRenders`. With the pileup hidden every
+         * lane advances exactly its `laneSlot`, its bands filling it, so the
+         * stack fits the track and never scrolls.
          */
         get sections() {
           return computeStackedSections(
@@ -1248,7 +1173,10 @@ export default function stateModelFactory(
             self.belowCoverageBandsInput,
             {
               rowHeight: self.rowHeight,
-              minSectionHeight: this.minSectionHeight,
+              minSectionHeight: self.showPileup
+                ? this.minSectionHeight
+                : self.laneSlot,
+              bandHeights: self.bandHeights,
             },
           )
         },
@@ -1457,12 +1385,15 @@ export default function stateModelFactory(
          * `growMaxHeight` and `featureHeight` is the configured value, so the
          * mixin's `height` can return it without a cycle. With no layout (reads
          * not loaded, or the too-large banner shown) the track keeps its
-         * current height.
+         * current height. With the pileup hidden the track fits its slot, as
+         * in fixed and fit: the lanes fill it, and never size it.
          */
         get growTargetHeight() {
-          return self.layoutReady
-            ? this.sections.contentHeight
-            : self.fitTargetHeight
+          return self.showPileup
+            ? self.layoutReady
+              ? this.sections.contentHeight
+              : self.fitTargetHeight
+            : pileupHiddenHeight(self)
         },
 
         /**

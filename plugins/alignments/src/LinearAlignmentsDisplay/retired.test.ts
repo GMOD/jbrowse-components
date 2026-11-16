@@ -29,10 +29,7 @@ test.each([
     'LinearPileupDisplay',
     { coverage: { show: false }, sashimi: { show: false } },
   ],
-  [
-    'LinearSNPCoverageDisplay',
-    { pileup: { show: false }, coverage: { height: 100 }, height: 100 },
-  ],
+  ['LinearSNPCoverageDisplay', { pileup: { show: false }, height: 100 }],
   [
     'LinearReadArcsDisplay',
     {
@@ -76,9 +73,18 @@ test('an explicit author value wins over the band a retired type implies', () =>
   ])
   expect(entry).toMatchObject({
     pileup: { show: true, mark: { height: 3 } },
-    coverage: { height: 100 },
     height: 400,
   })
+})
+
+// The coverage band fills the display while the pileup is hidden, so the
+// migration states no coverage height to match the track's.
+test('a migrated SNPCoverage entry leaves the coverage height its default', () => {
+  const [entry] = alignmentsEntries([
+    { type: 'LinearSNPCoverageDisplay', height: 300 },
+  ])
+  expect(entry).not.toHaveProperty('coverage')
+  expect(entry).toMatchObject({ pileup: { show: false }, height: 300 })
 })
 
 function bases(field: string, rest: Record<string, unknown> = {}) {

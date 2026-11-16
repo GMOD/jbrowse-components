@@ -184,6 +184,9 @@ const SET_BAND_HEIGHT: Record<
 // below N of them and moves N px per px of height, while a lane without one
 // passes the drag straight through. The title says the drag is display-wide,
 // since the bands the user is NOT pointing at move too.
+//
+// None while the pileup is hidden: the bands then fill the track, so the
+// display's bottom edge, the track height's, is the one that sizes them.
 export const LaneBandResizeHandles = observer(function LaneBandResizeHandles({
   model,
 }: {
@@ -191,7 +194,7 @@ export const LaneBandResizeHandles = observer(function LaneBandResizeHandles({
 }) {
   const { height, scrollModel: scroll, isGrouped, renderSections } = model
   const scope = isGrouped ? ' of every group' : ''
-  return (
+  return model.showPileup ? (
     <>
       {renderSections.map((section, i) => (
         <Fragment key={sectionKey(section.groupKey)}>
@@ -213,7 +216,7 @@ export const LaneBandResizeHandles = observer(function LaneBandResizeHandles({
         </Fragment>
       ))}
     </>
-  )
+  ) : null
 })
 
 // Per-group pileup-height drag handles (in-track grouping only). Each sits at a

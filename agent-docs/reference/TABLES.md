@@ -390,7 +390,9 @@ The bundle serves it as `jbrowse.alignmentMarkAlpha`, beside `variantDensityAlph
 over every shown section's visible depths under `coverage.encoding.y` (fence, rules,
 bounds, nice rounding, a log scale floored at one read), its `type`, the
 `symlogConstant` it resolves from that domain, and the `ticks` the display labels
-at `coverage.height`. Every section shares it.
+at `heightPx`, the px it draws the band at: `coverage.height` bound against the
+track, or with the pileup hidden the band's share of a section's slot. Every
+section shares it.
 
 `glyph` gives the px the band draws in: the triangle's width and height,
 `coverageInset` (the label room the band keeps at both ends, inside which the depth

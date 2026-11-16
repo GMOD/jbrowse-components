@@ -53,14 +53,11 @@ export const retiredTypes: RetiredDisplayType[] = [
   },
   {
     type: 'LinearSNPCoverageDisplay',
-    // coverage.height with height, else the band keeps its 45px default under a
-    // 250px display and leaves 200px blank; its `mouseover` named a coverage
-    // bin's hover, not a read's
+    // v4's 100px height; with the pileup hidden the coverage band fills it,
+    // whatever height the entry states. Its `mouseover` named a coverage bin's
+    // hover, not a read's
     migrate: ({ mouseover: _mouseover, ...entry }) =>
-      underEntry(
-        { pileup: { show: false }, coverage: { height: 100 }, height: 100 },
-        entry,
-      ),
+      underEntry({ pileup: { show: false }, height: 100 }, entry),
   },
   {
     type: 'LinearReadArcsDisplay',

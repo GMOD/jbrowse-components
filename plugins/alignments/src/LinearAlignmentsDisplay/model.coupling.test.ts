@@ -434,10 +434,10 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     expect(item?.disabledHelpText).toBeTruthy()
   })
 
-  // Every Read height row needs rows to act on. Autogrow does not — grow sizes
-  // the TRACK, and with the pileup off it collapses the track to its coverage
-  // band — so it stays in "Advanced" while the row cap leaves.
-  test('Read height greys out with the pileup hidden, autogrow stays', () => {
+  // Every Read height row needs rows to act on, and so does the Track height
+  // mode: with the pileup off the bands fill the track's height in every mode,
+  // so the mode greys out and the row cap leaves "Advanced".
+  test('Read height and the Track height mode grey out with the pileup hidden', () => {
     const display = createDisplay()
     display.setShowPileup(true)
     expect(
@@ -449,7 +449,9 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
     expect(item?.disabled).toBe(true)
     expect(item?.disabledHelpText).toBeTruthy()
     const advanced = menuSubItems(display.trackMenuItems(), 'Advanced')
-    expect(hasMenuItem(advanced, 'Track height')).toBe(true)
+    const trackHeight = findMenuItem(advanced, 'Track height')
+    expect(trackHeight?.disabled).toBe(true)
+    expect(trackHeight?.disabledHelpText).toBeTruthy()
     expect(hasMenuItem(advanced, 'Max layout height...')).toBe(false)
   })
 

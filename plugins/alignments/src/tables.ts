@@ -92,6 +92,10 @@ import {
 } from './LinearAlignmentsDisplay/alignmentsColorViews.ts'
 import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import {
+  bandStackViews,
+  sashimiDownViews,
+} from './LinearAlignmentsDisplay/bandStackViews.ts'
+import {
   READ_COLOR_CATEGORY_BY_INDEX,
   readColorFromCategoryIndex,
 } from './LinearAlignmentsDisplay/colorUtils.ts'
@@ -103,10 +107,7 @@ import {
   coverageTicksViews,
 } from './LinearAlignmentsDisplay/coverageScaleViews.ts'
 import { groupMaxY } from './LinearAlignmentsDisplay/groupLayout.ts'
-import {
-  buildSashimiDownKeys,
-  hasNamedGroups,
-} from './LinearAlignmentsDisplay/groupedDataMaps.ts'
+import { hasNamedGroups } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import {
   arcSlotsInWindows,
   connectorKeyInWindows,
@@ -132,8 +133,6 @@ import {
 } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
   arcsOverlayCoverage,
-  boundBelowCoverageHeights,
-  boundCoverageHeight,
   computeStackedSections,
   laneBands,
   sectionDipFloor,
@@ -643,13 +642,8 @@ const AlignmentsTablesHost = types
   .views(self => pileupLayoutViews(self))
   .views(self => connectorViews(self))
   .views(self => bandPlotViews(self))
-  .views(self => ({
-    get bandHeights() {
-      return {
-        coverageHeight: boundCoverageHeight(self.coverageHeight, self.bandPlot),
-      }
-    },
-  }))
+  .views(self => sashimiDownViews(self))
+  .views(self => bandStackViews(self))
   .views(self => coverageStatsViews(self))
   .views(self => coverageAutoscaleViews(self))
   .views(self => coverageDomainViews(self))
@@ -1103,7 +1097,6 @@ function readConnectionTables(
   colors: ReturnType<typeof colorReads>,
   slotColor: string[],
   connectorKey: ReturnType<typeof connectorKeyInWindows>,
-  bands: BelowCoverageBands,
 ) {
   const { arcsResult: result, regionInfos } = host
   const stroke = host.readConnectionsStrokeScale
@@ -1166,7 +1159,7 @@ function readConnectionTables(
     },
     arcLegendTitle: arcLegendTitle(host.drawnReadConnections),
     arcSpanMax: result.maxFlatArcSpanBp,
-    arcScale: arcScaleOf(host, result.maxFlatArcSpanBp, bands),
+    arcScale: arcScaleOf(host, result.maxFlatArcSpanBp),
   }
 }
 
@@ -1177,16 +1170,14 @@ function readConnectionTables(
  * the coverage band's height, above the depth axis' baseline, the
  * connections draw in. Null while the band is off.
  */
-function arcScaleOf(
-  host: AlignmentsTablesHostModel,
-  maxFlatArcSpanBp: number,
-  { stated, bound }: BelowCoverageBands,
-) {
+function arcScaleOf(host: AlignmentsTablesHostModel, maxFlatArcSpanBp: number) {
   const mode = host.drawnReadConnections
-  const { arcBand } = laneBands(bound, stated)
+  const { arcBand } = pooledLaneBands(host)
   return arcBand
     ? {
-        band: arcsOverlayCoverage(bound) ? 'coverage' : 'arcs',
+        band: arcsOverlayCoverage(host.belowCoverageBandsInput)
+          ? 'coverage'
+          : 'arcs',
         heightPx: arcBand.height,
         ...arcBandScale(
           arcBand,
@@ -1252,50 +1243,11 @@ function overlapsInWindow(
 }
 
 /**
- * The band stack each section reserves above its pileup, as the display
- * states and binds it (`belowCoverageBandsInput`), and the sections whose
- * junctions draw in the sashimi strip.
- */
-function belowCoverageBands(host: AlignmentsTablesHostModel) {
-  const sashimiDown = buildSashimiDownKeys(host.rpcDataMap, {
-    filter: host.junctionFilter,
-    placement: host.effectiveSashimiPlacement,
-    refNameFor: i => host.loadedRegions.get(i)?.refName ?? `#${i}`,
-    hidden: host.hiddenGroups,
-  })
-  const sashimiDownLanes = new Set(
-    [...sashimiDown].filter(([, down]) => down.size > 0).map(([key]) => key),
-  )
-  const stated = {
-    showCoverage: host.showCoverage,
-    coverageHeight: host.coverageHeight,
-    drawnReadConnections: host.drawnReadConnections,
-    readConnectionsDown: host.readConnectionsPlacement === 'down',
-    readConnectionsHeight: host.readConnectionsHeight,
-    showSashimi: host.showSashimi,
-    sashimiHeight: host.sashimiHeight,
-    hasArcs: host.arcsResult.inkGroupKeys.size > 0,
-    hasSashimiDownArcs: sashimiDownLanes.size > 0,
-  }
-  return {
-    stated,
-    bound: { ...stated, ...boundBelowCoverageHeights(stated, host.bandPlot) },
-    sashimiDownLanes,
-  }
-}
-
-type BelowCoverageBands = ReturnType<typeof belowCoverageBands>
-
-/**
  * The sections stacked as the display stacks them (`computeStackedSections`),
  * each its band stack over every row the tables lay out, no lane sized by a
- * drag.
+ * drag; with the pileup hidden, each its `laneSlot` filled by its bands.
  */
-function stackedSections(
-  host: AlignmentsTablesHostModel,
-  { bound, sashimiDownLanes }: BelowCoverageBands,
-  readPitch: number,
-) {
+function stackedSections(host: AlignmentsTablesHostModel, readPitch: number) {
   const order = host.groupOrder
   return computeStackedSections(
     order.map(({ key }) => ({
@@ -1304,15 +1256,27 @@ function stackedSections(
         ? groupMaxY(host.laidOutByGroupFramed.get(key) ?? new Map())
         : 0,
       hasArcs: host.arcsResult.inkGroupKeys.has(key),
-      hasSashimiDownArcs: sashimiDownLanes.has(key),
+      hasSashimiDownArcs: host.sashimiDownArcLanes.has(key),
       heightOverridePx: undefined,
     })),
-    bound,
+    host.belowCoverageBandsInput,
     {
       rowHeight: readPitch,
-      minSectionHeight: hasNamedGroups(order) ? GROUP_LABEL_HEIGHT : 0,
+      minSectionHeight: host.showPileup
+        ? hasNamedGroups(order)
+          ? GROUP_LABEL_HEIGHT
+          : 0
+        : host.laneSlot,
+      bandHeights: host.bandHeights,
     },
   )
+}
+
+// The pooled band stack as the display draws it, one lane holding every
+// strip any lane reserves.
+function pooledLaneBands(host: AlignmentsTablesHostModel) {
+  const s = host.belowCoverageBandsInput
+  return laneBands(s, s, host.bandHeights)
 }
 
 /**
@@ -1323,16 +1287,12 @@ function stackedSections(
  * dip or loop is held above the bottom of the sections as the display
  * stacks them, scrolled to their end (`flooredBend`).
  */
-function sectionConnectors(
-  host: AlignmentsTablesHostModel,
-  bands: BelowCoverageBands,
-  readPitch: number,
-) {
+function sectionConnectors(host: AlignmentsTablesHostModel, readPitch: number) {
   const regions = host.frames
   const windows = host.regionInfos
   const { featureHeight } = host
   const arrows = connectorArrowPx(featureHeight) > 0
-  const layout = stackedSections(host, bands, readPitch)
+  const layout = stackedSections(host, readPitch)
   return new Map(
     layout.sections.map(sec => {
       const { key, rowsHeight: pileupHeight } = sec
@@ -1579,6 +1539,8 @@ function rowsAt<T extends Record<string, ArrayLike<unknown>>>(
  * region under `coverage.encoding.y`'s fence, rules and bounds, nice-rounded,
  * with a log scale floored at one read, and the ticks the display labels it
  * with at its height. A band the display does not draw has no ticks.
+ * `heightPx` is the px the display draws the band at, 0 while it is off; with
+ * the pileup hidden it is the band's share of a section's slot.
  */
 function coverageScale(host: AlignmentsTablesHostModel) {
   const type = host.scaleType
@@ -1586,6 +1548,7 @@ function coverageScale(host: AlignmentsTablesHostModel) {
   return {
     domain,
     type,
+    heightPx: pooledLaneBands(host).stack.reserved.coverage,
     symlogConstant: resolveSymlogConstant(
       domain[0],
       domain[1],
@@ -1781,15 +1744,13 @@ function laidOutTables(
     junctions: host.junctionFilter,
   }
   const readPitch = featureHeight + host.featureSpacing
-  const bands = belowCoverageBands(host)
-  const connectorsBySection = sectionConnectors(host, bands, readPitch)
+  const connectorsBySection = sectionConnectors(host, readPitch)
   const slotRgb = buildArcColorPalette(colors.palette)
   const connections = readConnectionTables(
     host,
     colors,
     slotRgb.map(normalizedRgbToHex),
     connectorKeyInWindows(host.connectorsByGroup, host.frames, host.keyWindows),
-    bands,
   )
   const keyOf = numberByFirstAppearance<WorkerPileupData['readKeys'][number]>()
   const plainRead = normalizedRgbToHex(colors.palette.readCategoryColors.plain)

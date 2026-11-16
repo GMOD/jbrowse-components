@@ -1,8 +1,6 @@
 import { makeScroll } from './components/sectionScreen.ts'
 import { sectionRegionKey } from './renderers/rendererTypes.ts'
 import {
-  boundBelowCoverageHeights,
-  boundCoverageHeight,
   buildSectionRenders,
   computeStackedSections,
   laneBands,
@@ -766,26 +764,3 @@ test('minSectionHeight is inert once a section is taller than it', () => {
     stack(tall, opts),
   )
 })
-
-test.each([
-  { height: 250, floor: 20 },
-  { height: 50, floor: 20 },
-  { height: 30, floor: 0 },
-])(
-  'the coverage bound alone is the stack bound whatever sits below it, at $height px',
-  plot => {
-    const stacked = boundBelowCoverageHeights(
-      {
-        ...baseBands,
-        drawnReadConnections: 'link',
-        readConnectionsDown: true,
-        showSashimi: true,
-        hasSashimiDownArcs: true,
-      },
-      plot,
-    )
-    expect(boundCoverageHeight(baseBands.coverageHeight, plot)).toBe(
-      stacked.coverageHeight,
-    )
-  },
-)

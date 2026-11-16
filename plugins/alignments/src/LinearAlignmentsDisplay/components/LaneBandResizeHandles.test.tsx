@@ -13,17 +13,21 @@ const titleOf = (band: string) =>
 
 // Two groups, each folding the same band settings: coverage over a
 // read-connection strip, the sashimi strip off unless a case turns it on.
-function renderHandles(heights: {
-  coverage: number
-  readConnections: number
-  sashimi: number
-}) {
+function renderHandles(
+  heights: {
+    coverage: number
+    readConnections: number
+    sashimi: number
+  },
+  showPileup = true,
+) {
   const bands = stackBands(LANE_BAND_ORDER, {
     coverage: { active: true, height: heights.coverage },
     readConnections: { active: true, height: heights.readConnections },
     sashimi: { active: true, height: heights.sashimi },
   })
   const model = {
+    showPileup,
     height: 400,
     isGrouped: true,
     scrollModel: { isGrouped: true, scrollTop: 0, canvasHeight: 400 },
@@ -53,4 +57,13 @@ test('a band reserving no px gets no handle', () => {
   expect(screen.queryAllByTitle(titleOf('coverage'))).toHaveLength(0)
   expect(screen.queryAllByTitle(titleOf('sashimi'))).toHaveLength(0)
   expect(screen.getAllByTitle(titleOf('read connections'))).toHaveLength(2)
+})
+
+// with the pileup hidden the bands fill the track, which its own bottom edge
+// sizes, so no band offers a drag of its own
+test('no band gets a handle while the pileup is hidden', () => {
+  renderHandles({ coverage: 40, readConnections: 30, sashimi: 20 }, false)
+  for (const band of ['coverage', 'read connections', 'sashimi']) {
+    expect(screen.queryAllByTitle(titleOf(band))).toHaveLength(0)
+  }
 })

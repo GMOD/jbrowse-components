@@ -8,10 +8,9 @@ import { visibleStats } from '@jbrowse/wiggle-core'
 import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { SettledBlocksView } from '@jbrowse/wiggle-core'
 
-/** What {@link bandPlotViews} reads: the fit target and whether the pileup shows. */
+/** What {@link bandPlotViews} reads: the fit target. */
 export interface BandPlotHost {
   fitTargetHeight: number
-  showPileup: boolean
 }
 
 /** The plot the coverage, arc and sashimi bands are taken from. */
@@ -20,14 +19,15 @@ export function bandPlotViews(self: BandPlotHost) {
     /**
      * #getter
      * The plot the three bands are taken from, which the resize handles
-     * drag against and `bandHeights` binds within. Leaves the pileup a
-     * row while it shows. Reads `fitTargetHeight`, not `height`, which
-     * derives from the layout these heights feed in grow mode.
+     * drag against and `statedBandHeights` binds within. Leaves the pileup
+     * a row whether or not it shows, so hiding it rebinds no stated height.
+     * Reads `fitTargetHeight`, not `height`, which derives from the layout
+     * these heights feed in grow mode.
      */
     get bandPlot() {
       return {
         height: self.fitTargetHeight,
-        floor: self.showPileup ? MIN_BAND_HEIGHT : 0,
+        floor: MIN_BAND_HEIGHT,
       }
     },
   }
@@ -78,10 +78,11 @@ export function coverageTicksViews(self: CoverageTicksHost) {
   return {
     /**
      * #getter
-     * The coverage band's own ladder (`computeCoverageTicks`), which
-     * `valueScales` hands the chrome in place of the mixin's. Takes the
-     * raw `coverage.encoding.y.scale.constant`, resolved from the same domain as
-     * `renderState`, so the labels sit on the bars.
+     * The coverage band's own ladder (`computeCoverageTicks`) over the
+     * height it is drawn at (`bandHeights`, fitted while the pileup is
+     * hidden), which `valueScales` hands the chrome in place of the mixin's.
+     * Takes the raw `coverage.encoding.y.scale.constant`, resolved from the
+     * same domain as `renderState`, so the labels sit on the bars.
      */
     get coverageTicks() {
       return self.coverageDepthDomain

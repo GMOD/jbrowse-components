@@ -131,9 +131,8 @@ const TRACK_HEIGHT_OPTIONS: { value: HeightMode; label: string }[] = [
  * The track-sizing rows for "Advanced": fixed or autogrow, and the row cap. A
  * fit keeps the track's height, so it ticks Fixed, which is why it is not
  * display-kit's "Scroll": a fitted track does not scroll.
- * Autogrow is offered without content, since grow still fits the track to a
- * pileup-less stack (`growTargetHeight` collapses to the coverage bands); the
- * row cap only while there are rows.
+ * Both need rows: without them the bands fill the track's height in every
+ * mode (`growTargetHeight`), so the mode greys out and the row cap leaves.
  */
 export function getTrackSizingItems(
   model: FeatureHeightModel & MaxHeightModel,
@@ -144,6 +143,13 @@ export function getTrackSizingItems(
     {
       label: TRACK_HEIGHT_LABEL,
       type: 'subMenu' as const,
+      ...(gate.disabled
+        ? {
+            disabled: true,
+            disabledHelpText:
+              'With the reads hidden the bands fill the track height',
+          }
+        : {}),
       // the ticked row writes nothing: under fit it is Fixed, and writing that
       // would end the fit
       subMenu: radioItems(TRACK_HEIGHT_OPTIONS, current, mode => {
