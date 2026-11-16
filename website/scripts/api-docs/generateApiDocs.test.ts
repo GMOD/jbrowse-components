@@ -6,6 +6,7 @@ import { createDocProgram, extractWithComment } from './docProgram.ts'
 import {
   accumulateApi,
   declarations,
+  formatDeclarations,
   nameBindingPatterns,
 } from './generateApiDocs.ts'
 
@@ -30,6 +31,31 @@ describe('declarations', () => {
     expect(
       declarations('h', '(a: string) => string\n(a: number) => number'),
     ).toBe('function h(a: string): string\nfunction h(a: number): number')
+  })
+})
+
+describe('formatDeclarations', () => {
+  test('wraps a long declaration one parameter per line, keeping a const a const', () => {
+    expect(
+      formatDeclarations([
+        'function f(pluginManager: PluginManager, opts: { adapterConfig: Record<string, unknown>; regions: Region[] }): Promise<string>',
+        'const C: "#fff"',
+      ]),
+    ).toEqual([
+      [
+        'function f(',
+        '  pluginManager: PluginManager,',
+        '  opts: { adapterConfig: Record<string, unknown>; regions: Region[] },',
+        '): Promise<string>',
+      ].join('\n'),
+      "const C: '#fff'",
+    ])
+  })
+
+  test('leaves a declaration that does not parse as printed', () => {
+    expect(formatDeclarations(['function g(): Promise<{…}>'])).toEqual([
+      'function g(): Promise<{…}>',
+    ])
   })
 })
 

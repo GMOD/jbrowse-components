@@ -1,8 +1,11 @@
+import { spawnSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 
 import slugify from 'slugify'
 
+import { oxfmtBin } from '../check-utils.ts'
+import { repoRoot } from '../paths.ts'
 import { symbolDeclId } from './docProgram.ts'
 import { writeDoc, writePage } from './format.ts'
 import { parseTaggedComment } from './jsDocTags.ts'
@@ -79,18 +82,9 @@ export function accumulateApi(
 // `heading` is the markdown prefix for the export's name. Standalone doc pages
 // render exports as top-level `##` sections; the README nests them under its
 // own `## API` heading, so there they render one level deeper as `###`.
-function renderExport(
-  {
-    name,
-    docs,
-    examples,
-    signature,
-    declaresType,
-    importAs,
-    filename,
-  }: ApiExport,
-  heading = '###',
-) {
+function renderExport(exp: ApiExport, heading = '###') {
+  const { name, docs, examples, signature, declaresType, importAs, filename } =
+    exp
   const root = packageRoot(filename)
   return section(
     `${heading} ${name}`,
@@ -101,13 +95,68 @@ function renderExport(
           ? `import ${declaresType ? 'type ' : ''}{ ${importAs.name} } from '${importAs.specifier}'`
           : `// no entry point of ${(root && packageManifest(root).name) ?? 'its package'} exports it`,
         '',
-        declaresType
-          ? signature
-          : declarations(importAs?.name ?? name, signature),
+        formattedDeclaration(declarationSource(exp)),
       ),
     exampleSection(examples, `${heading}# Example usage`),
     `[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${filename})`,
   )
+}
+
+function declarationSource({
+  name,
+  signature,
+  declaresType,
+  importAs,
+}: ApiExport) {
+  return declaresType
+    ? signature
+    : declarations(importAs?.name ?? name, signature)
+}
+
+const BLOCK_SEPARATOR = '// @api-declaration'
+const formatted = new Map<string, string>()
+
+// Each declaration as the repo formatter prints it, so a long signature wraps
+// one parameter or member per line, the same on the page as in the README
+// (whose own formatting pass then leaves it alone). One formatter process takes
+// every declaration a run has not formatted yet; if that batch does not parse,
+// each is formatted alone, and one that still does not parse stays as printed.
+// `const x: T` has no initializer, so it is formatted as `declare const`.
+export function formatDeclarations(sources: string[]) {
+  const pending = [...new Set(sources)].filter(s => !formatted.has(s))
+  const parts = pending.length
+    ? formatTypeScript(
+        pending.map(asStatement).join(`\n${BLOCK_SEPARATOR}\n`),
+      )?.split(`\n${BLOCK_SEPARATOR}\n`)
+    : []
+  for (const [i, source] of pending.entries()) {
+    const part =
+      parts?.length === pending.length
+        ? parts[i]
+        : formatTypeScript(asStatement(source))
+    formatted.set(
+      source,
+      part ? part.trim().replaceAll(/^declare const /gm, 'const ') : source,
+    )
+  }
+  return sources.map(formattedDeclaration)
+}
+
+function formattedDeclaration(source: string) {
+  return formatted.get(source) ?? source
+}
+
+function asStatement(declaration: string) {
+  return declaration.replaceAll(/^const /gm, 'declare const ')
+}
+
+function formatTypeScript(text: string) {
+  const { status, stdout } = spawnSync(
+    oxfmtBin(),
+    ['--stdin-filepath=declaration.ts'],
+    { input: text, encoding: 'utf8', cwd: repoRoot, maxBuffer: 64 << 20 },
+  )
+  return status === 0 ? stdout : undefined
 }
 
 // A value's signature as the statements declaring it, one per overload:
@@ -366,7 +415,14 @@ ${section(...sorted.map(exp => renderExport(exp, '##')))}
 `
 }
 
+function formatGroups(byGroup: Record<string, ApiGroup>) {
+  formatDeclarations(
+    Object.values(byGroup).flatMap(g => g.exports.map(declarationSource)),
+  )
+}
+
 export function writeApiDocs(byGroup: Record<string, ApiGroup>) {
+  formatGroups(byGroup)
   const dir = 'website/docs/api'
   for (const grp of Object.values(byGroup)) {
     writePage(`${dir}/${grp.id}.md`, renderGroup(grp))
@@ -430,6 +486,7 @@ function hasApiBlock(readmePath: string, text: string) {
 // would otherwise leave its README documenting exports that no longer exist,
 // with no diff and no warning to say so.
 export function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
+  formatGroups(byGroup)
   const byPackage: Record<string, ApiExport[]> = {}
   for (const grp of Object.values(byGroup)) {
     for (const exp of grp.exports) {
