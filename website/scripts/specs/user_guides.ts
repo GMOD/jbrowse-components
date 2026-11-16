@@ -21,6 +21,8 @@ const CRISPR_GUIDE = 'CGCTCGATCAAACTCATCAT'
 
 const ROW_FOCUS_HINT = '[data-testid="row_focus_hint"]'
 
+const CONSENSUS_FIELD = '.MuiDialog-paper textarea:not([aria-hidden])'
+
 // Samples from five of ld_human's six populations, each labelled with its own.
 const CLUSTERED_SAMPLES = {
   NA06989: 'CEU NA06989',
@@ -101,6 +103,28 @@ export const userGuideSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Min het fraction' },
       { type: 'waitForAppSettled' },
       { type: 'delay', ms: 800 },
+    ],
+    // The dialog centres in the window, so a crop rather than a shorter
+    // window drops the empty band under it.
+    crop: { x: 0, y: 0, width: 1500, height: 722 },
+    annotations: [
+      {
+        type: 'text',
+        text: 'A/G het site → R',
+        fontSize: 15,
+        leader: true,
+        // A textarea has no element per character: the top of the sequence
+        // line's 30th base, in the monospace field's character width, so the
+        // arrowhead, which stops short of its target, ends under the R.
+        anchor: {
+          selector: CONSENSUS_FIELD,
+          alignX: 'left',
+          alignY: 'top',
+          dx: 251,
+          dy: 19,
+        },
+        dy: 54,
+      },
     ],
   },
 
