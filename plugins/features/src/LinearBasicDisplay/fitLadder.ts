@@ -131,6 +131,26 @@ export function solveLabelRoomFactors(
       : undefined
 }
 
+// Bounds the packs a window of many names pays when no factor keeps one.
+export const MAX_KEPT_NAME_CANDIDATES = 8
+
+// The factor ranks names by the room beside them, not by the height they
+// cost, so it can drop a lone name that costs none along with a piled one
+// that costs a row. Each candidate is kept if the stack still fits with it.
+export function keepNamesThatFit(
+  candidateIds: readonly string[],
+  fits: (keptNameIds: ReadonlySet<string>) => boolean,
+) {
+  let kept = new Set<string>()
+  for (const id of candidateIds.slice(0, MAX_KEPT_NAME_CANDIDATES)) {
+    const next = new Set([...kept, id])
+    if (fits(next)) {
+      kept = next
+    }
+  }
+  return kept
+}
+
 // The pack snaps rows to a pitch of a tenth of the body height, so a finer
 // scale than 1/32 of the range buys no pixel.
 const BODY_SCALE_SOLVE_ITERS = 5

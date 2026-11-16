@@ -231,6 +231,60 @@ function thinnedFloorHeight(display: TestDisplay) {
   })
 }
 
+// A gene stacked over nameless features, so its name costs a row, and a
+// second gene hemmed in by nameless neighbours, whose name costs none but
+// reads less room than the stacked one's.
+function pileAndLoneGeneData(bpPerPx: number) {
+  const features = [
+    { featureId: 'first', startPx: 0, endPx: 50 },
+    { featureId: 'p1', startPx: 100, endPx: 400 },
+    { featureId: 'p2', startPx: 100, endPx: 400 },
+    { featureId: 'piled', startPx: 100, endPx: 400, gene: true },
+    { featureId: 'before', startPx: 700, endPx: 880 },
+    { featureId: 'lone', startPx: 900, endPx: 1000, gene: true },
+    { featureId: 'after', startPx: 1020, endPx: 1100 },
+  ].map(f => ({
+    ...f,
+    startBp: Math.round((f.startPx / 2) * bpPerPx),
+    endBp: Math.round((f.endPx / 2) * bpPerPx),
+  }))
+  const height = 20
+  const floatingLabelsData: FloatingLabelsDataMap = new Map()
+  for (const f of features) {
+    if (f.gene) {
+      floatingLabelsData.set(f.featureId, {
+        featureId: f.featureId,
+        minX: f.startBp,
+        maxX: f.endBp,
+        topY: 0,
+        featureHeight: height,
+        nameLabel: { text: f.featureId, textWidth: 40 },
+      })
+    }
+  }
+  return makeFeatureData({
+    flatbushItems: features.map(f =>
+      makeFlatbushItem({
+        featureId: f.featureId,
+        type: 'feature',
+        startBp: f.startBp,
+        endBp: f.endBp,
+        bottomPx: height,
+        featureHeightPx: height,
+        gene: f.gene,
+      }),
+    ),
+    rectPositions: new Uint32Array(features.flatMap(f => [f.startBp, f.endBp])),
+    rectYs: new Float32Array(features.length),
+    rectHeights: new Float32Array(features.length).fill(height),
+    rectColors: new Uint32Array(features.length),
+    rectStrands: new Float32Array(features.length),
+    rectDensityFade: new Uint32Array(features.length),
+    rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
+    floatingLabelsData,
+  })
+}
+
 function displaySignature(display: TestDisplay) {
   const { level, maxIsoforms, bodyScale } = display.fitStage
   return rowGeometrySignature({
@@ -538,6 +592,30 @@ describe('feature display fit escalation ladder', () => {
     expect(display.renderedShowLabels).toBe(false)
     expect(display.fitScale).toBeLessThan(1)
     expect(display.maxY).toBe(display.height)
+    expect(display.hasOverflow).toBe(false)
+  })
+
+  it('keeps the name that costs no height when the roomier gene name costs a row', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(
+      0,
+      pileAndLoneGeneData(display.layoutInputs.bpPerPx),
+      ctgA,
+    )
+    display.setHeightMode('fit')
+    const namelessAtFloor = packedContentHeight(display.rpcDataMap, {
+      ...display.decimatedBaseInputs,
+      labelRoomFactor: Infinity,
+    })
+    display.setHeight(Math.ceil(namelessAtFloor) + 2)
+    expect(thinnedFloorHeight(display)).toBeGreaterThan(display.fitTargetHeight)
+    expect(display.fitStage.level).toBe('decimated')
+    expect(
+      [...display.fitStage.layout.get(0)!.floatingLabelsData.values()]
+        .filter(l => l.nameLabel)
+        .map(l => l.featureId),
+    ).toEqual(['lone'])
     expect(display.hasOverflow).toBe(false)
   })
 

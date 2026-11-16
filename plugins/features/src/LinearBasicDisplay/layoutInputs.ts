@@ -46,6 +46,9 @@ export interface LayoutInputs {
   labelRoomFactor?: number
   // Gene names' own factor; absent, `labelRoomFactor` decimates them too.
   geneLabelRoomFactor?: number
+  // Names kept whatever the factors say, packed in their usual order, unlike
+  // the pinned.
+  keptNameIds?: ReadonlySet<string>
   // Drops every name but genes' and the pinned, whatever the decimation.
   geneNamesOnly?: boolean
   maxIsoformsPerGene?: number
@@ -106,7 +109,7 @@ export function displayModeMetrics(
 }
 
 export type LabelRoomFactors = Required<Pick<LayoutInputs, 'labelRoomFactor'>> &
-  Pick<LayoutInputs, 'geneLabelRoomFactor'>
+  Pick<LayoutInputs, 'geneLabelRoomFactor' | 'keptNameIds'>
 
 export type LabelRoomFactorFreeInputs = Omit<
   LayoutInputs,

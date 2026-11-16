@@ -28,14 +28,12 @@ export function keepFeatureLabel(
   )
 }
 
-// Which of the decimation's two tiers, gene names and the rest, hold a name
-// among `measureIds`.
-export function namedLabelTiers(
+// Each named feature among `measureIds`, and whether it is a gene.
+export function namedFeatureIsGene(
   regions: Iterable<FeatureDataResult>,
   measureIds?: ReadonlySet<string>,
 ) {
-  let gene = false
-  let other = false
+  const named = new Map<string, boolean>()
   for (const data of regions) {
     const geneIds = new Set<string>()
     for (const item of data.flatbushItems) {
@@ -46,15 +44,21 @@ export function namedLabelTiers(
     for (const labelData of data.floatingLabelsData.values()) {
       const id = labelData.parentFeatureId ?? labelData.featureId
       if (labelData.nameLabel && (!measureIds || measureIds.has(id))) {
-        if (geneIds.has(id)) {
-          gene = true
-        } else {
-          other = true
-        }
+        named.set(id, geneIds.has(id))
       }
     }
   }
-  return { gene, other }
+  return named
+}
+
+// Which of the decimation's two tiers, gene names and the rest, hold a name
+// among `measureIds`.
+export function namedLabelTiers(
+  regions: Iterable<FeatureDataResult>,
+  measureIds?: ReadonlySet<string>,
+) {
+  const isGene = [...namedFeatureIsGene(regions, measureIds).values()]
+  return { gene: isGene.includes(true), other: isGene.includes(false) }
 }
 
 // The padding is a fixed gap, added after the scale rather than scaled with

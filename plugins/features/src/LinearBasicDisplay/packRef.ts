@@ -444,6 +444,7 @@ function decideLabelReservations(
     labelDecimation = 'all',
     labelRoomFactor = 1,
     geneLabelRoomFactor = labelRoomFactor,
+    keptNameIds,
     geneNamesOnly = false,
   } = inputs
   const { labelFontPx, rowPadding } = metrics
@@ -489,7 +490,7 @@ function decideLabelReservations(
         labelDecimation,
         availableRoomPx,
         nameWidthPx,
-        pinnedFeatureIds.has(id),
+        pinnedFeatureIds.has(id) || !!keptNameIds?.has(id),
         geom.gene ? geneLabelRoomFactor : labelRoomFactor,
       )
     if (hasDrawableName && !keepName) {

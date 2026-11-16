@@ -16,6 +16,7 @@ import {
   labeledBodyFloorScale,
   renderedLabelContext,
   resolveFitLadder,
+  keepNamesThatFit,
   solveBodyScale,
   solveIsoformCount,
   solveLabelRoomFactors,
@@ -28,7 +29,7 @@ import {
   labelFitHints,
 } from './fitNotes.ts'
 import { maxIsoformCount } from './isoformTrim.ts'
-import { namedLabelTiers } from './labelReservation.ts'
+import { namedFeatureIsGene, namedLabelTiers } from './labelReservation.ts'
 import {
   createContentHeightProbe,
   createIncrementalLayout,
@@ -444,6 +445,7 @@ export function featureBandViews(self: FeatureBandHost) {
           maxIsoformsPerGene: inputs.maxIsoformsPerGene,
           labelRoomFactor: factors?.labelRoomFactor,
           geneLabelRoomFactor: factors?.geneLabelRoomFactor,
+          keptNameIds: factors?.keptNameIds,
         })
     },
     /**
@@ -511,13 +513,60 @@ export function featureBandViews(self: FeatureBandHost) {
      * #getter
      * The whitespace factors the `decimated` rung commits at: the smallest
      * whose packed stack fits `fitTargetHeight`, so the most names are kept.
+     * When those keep none, the names that fit anyway ride along as
+     * `keptNameIds`.
      */
     get fitDecimatedFactors(): LabelRoomFactors | undefined {
       // Memoized so `rowGeometrySignature` reads the same answer the rung
       // packed at without a second bisection.
-      return self.layoutReady && self.showLabels
-        ? this.solveLabelRoomFactors(self.fitTargetHeight)
-        : undefined
+      const factors =
+        self.layoutReady && self.showLabels
+          ? this.solveLabelRoomFactors(self.fitTargetHeight)
+          : undefined
+      return factors === undefined ||
+        keepsAnyName(this.decimatedLayoutAt(factors), self.fitMeasureFeatureIds)
+        ? factors
+        : { ...factors, keptNameIds: this.namesThatFit(factors) }
+    },
+    /**
+     * #method
+     * The names among the on-screen ones, genes first, whose stack still
+     * fits at the labelled body floor with `factors` dropping the rest.
+     */
+    namesThatFit(factors: LabelRoomFactors) {
+      const { geneNamesOnly } = self.layoutInputs
+      const candidates = [
+        ...namedFeatureIsGene(
+          self.rpcDataMap.values(),
+          self.fitMeasureFeatureIds,
+        ),
+      ]
+        .filter(([, gene]) => gene || !geneNamesOnly)
+        .sort(([, a], [, b]) => Number(b) - Number(a))
+        .map(([id]) => id)
+      return keepNamesThatFit(
+        candidates,
+        keptNameIds =>
+          this.bodyScaleHeightProbe(
+            packHeightsDecimated,
+            this.decimatedBaseInputs,
+            { ...factors, keptNameIds },
+          )(this.fitLabeledBodyFloor) <= self.fitTargetHeight,
+      )
+    },
+    /**
+     * #method
+     * The `decimated` stack at `factors`, its bodies grown back into
+     * whatever height the dropped names freed.
+     */
+    decimatedLayoutAt(factors: LabelRoomFactors) {
+      // Probe and commit must pack identically, hence the unseeded
+      // `incrementalLayoutDecimated`; seeding this rung from the `labels`
+      // stack was tried and moved zero rows.
+      return incrementalLayoutDecimated(self.rpcDataMap, {
+        ...this.decimatedLayoutInputs(factors),
+        bodyScale: this.decimatedBodyScale(factors),
+      })
     },
     /**
      * #getter
@@ -526,37 +575,25 @@ export function featureBandViews(self: FeatureBandHost) {
      * whitespace (plus pinned/highlighted, always).
      */
     get fitDecimatedSolved(): Map<number, FeatureDataResult> {
-      // Probe and commit must pack identically, hence the unseeded
-      // `incrementalLayoutDecimated`; seeding this rung from the `labels`
-      // stack was tried and moved zero rows.
       const factors = this.fitDecimatedFactors
       // Falls back to the `isoforms` stack, not `labels`: this rung is below
       // that one, and falling past its trim packs a stack the ladder already
       // rejected.
-      const bodyScale = this.fitDecimatedBodyScale
-      if (factors === undefined || bodyScale === undefined) {
+      if (factors === undefined) {
         return this.fitIsoformsSolved
       }
-      const layout = incrementalLayoutDecimated(self.rpcDataMap, {
-        ...this.decimatedLayoutInputs(factors),
-        bodyScale,
-      })
+      const layout = this.decimatedLayoutAt(factors)
       // With no name left it is the `bodies` stack under the wrong name.
       return keepsAnyName(layout, self.fitMeasureFeatureIds)
         ? layout
         : this.fitIsoformsSolved
     },
     /**
-     * #getter
-     * The body scale the `decimated` rung commits at: with the names
-     * `fitDecimatedFactors` kept, the bodies grow back into whatever height
-     * the dropped names freed.
+     * #method
+     * The largest body scale, down to the labelled floor, whose stack with
+     * the names `factors` keep fits `fitTargetHeight`.
      */
-    get fitDecimatedBodyScale(): number | undefined {
-      const factors = this.fitDecimatedFactors
-      if (factors === undefined) {
-        return undefined
-      }
+    decimatedBodyScale(factors: LabelRoomFactors) {
       const floor = this.fitLabeledBodyFloor
       return (
         solveBodyScale(
@@ -569,6 +606,16 @@ export function featureBandViews(self: FeatureBandHost) {
           floor,
         ) ?? floor
       )
+    },
+    /**
+     * #getter
+     * The body scale the `decimated` rung commits at.
+     */
+    get fitDecimatedBodyScale(): number | undefined {
+      const factors = this.fitDecimatedFactors
+      return factors === undefined
+        ? undefined
+        : this.decimatedBodyScale(factors)
     },
     get fitBodiesOnlyLayout(): Map<number, FeatureDataResult> {
       const maxIsoformsPerGene = this.fitIsoformCount
@@ -880,6 +927,9 @@ export function hostFeatureBand(host: FeatureBandHost) {
     decimatedLayoutInputs: false,
     solveLabelRoomFactors: false,
     bodyScaleHeightProbe: false,
+    decimatedLayoutAt: false,
+    decimatedBodyScale: false,
+    namesThatFit: false,
     searchFeatureByID: false,
   })
 }

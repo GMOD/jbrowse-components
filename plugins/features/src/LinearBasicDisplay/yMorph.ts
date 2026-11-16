@@ -53,6 +53,7 @@ export function rowGeometrySignature(g: {
     g.fitLevel,
     g.labelRoomFactors?.labelRoomFactor,
     g.labelRoomFactors?.geneLabelRoomFactor,
+    [...(g.labelRoomFactors?.keptNameIds ?? [])].join('\0'),
     g.geneNamesOnly,
     g.maxIsoforms,
   ].join('|')

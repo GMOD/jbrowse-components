@@ -11,12 +11,17 @@ import {
 import { scaleLaidOutData } from './applyLayout.ts'
 import { drawnAxis } from './drawnAxis.ts'
 import { featureGroupSections } from './facet.ts'
-import { solveLabelRoomFactor, solveLabelRoomFactors } from './fitLadder.ts'
+import {
+  keepNamesThatFit,
+  solveLabelRoomFactor,
+  solveLabelRoomFactors,
+} from './fitLadder.ts'
 import { namedLabelTiers } from './labelReservation.ts'
 import {
   computeLaidOutData,
   createContentHeightProbe,
   createIncrementalLayout,
+  createPackHeightProbe,
 } from './layout.ts'
 import { displayModeMetrics } from './layoutInputs.ts'
 import { featureIdsTouchingBlocks, maxBottom } from './layoutQueries.ts'
@@ -1559,6 +1564,57 @@ describe('gene names claim the height first', () => {
         .filter(l => l.nameLabel)
         .map(l => l.featureId),
     ).toEqual(['lone'])
+  })
+
+  it('keeps a lone gene name that costs no height when a roomier piled gene name costs a row', () => {
+    const region = labeledFeatureData([
+      { featureId: 'first', startBp: 0, endBp: 50, height: 20 },
+      { featureId: 'p1', startBp: 100, endBp: 400, height: 20 },
+      { featureId: 'p2', startBp: 100, endBp: 400, height: 20 },
+      {
+        featureId: 'piled',
+        startBp: 100,
+        endBp: 400,
+        height: 20,
+        gene: true,
+      },
+      { featureId: 'before', startBp: 700, endBp: 880, height: 20 },
+      {
+        featureId: 'lone',
+        startBp: 900,
+        endBp: 1000,
+        height: 20,
+        gene: true,
+      },
+      { featureId: 'after', startBp: 1020, endBp: 1100, height: 20 },
+    ])
+    for (const id of ['first', 'p1', 'p2', 'before', 'after']) {
+      region.floatingLabelsData.delete(id)
+    }
+    const data = new Map([[0, region]])
+    const at1 = { ...inputs, bpPerPx: 1 }
+    const heightAt = createContentHeightProbe(data, at1)
+    const bodies = heightAt(Infinity)
+    const factors = solveLabelRoomFactors(
+      heightAt,
+      bodies,
+      namedLabelTiers(data.values()),
+    )!
+    expect(keptNames(data, factors)).toEqual([])
+
+    const packHeight = createPackHeightProbe(data, at1, undefined)
+    const fits = (keptNameIds: ReadonlySet<string>) =>
+      packHeight({
+        bodyScale: undefined,
+        maxIsoformsPerGene: undefined,
+        ...factors,
+        keptNameIds,
+      }) <= bodies
+    expect(fits(new Set(['piled']))).toBe(false)
+    const keptNameIds = keepNamesThatFit(['piled', 'lone'], fits)
+    expect([...keptNameIds]).toEqual(['lone'])
+    const withKept = { ...factors, keptNameIds }
+    expect(keptNames(data, withKept)).toEqual(['lone'])
   })
 
   it('solves names of one tier alone with the one factor every track used before', () => {

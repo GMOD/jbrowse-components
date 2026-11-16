@@ -423,7 +423,7 @@ export function createPackHeightProbe(
   }
   const { packs } = entry
   return (knobs: PackKnobs) => {
-    const key = `${knobs.bodyScale}:${knobs.maxIsoformsPerGene}:${knobs.labelRoomFactor}:${knobs.geneLabelRoomFactor}`
+    const key = `${knobs.bodyScale}:${knobs.maxIsoformsPerGene}:${knobs.labelRoomFactor}:${knobs.geneLabelRoomFactor}:${[...(knobs.keptNameIds ?? [])].join('\0')}`
     let packed = packs.get(key)
     if (packed) {
       packs.delete(key)
@@ -456,6 +456,7 @@ export function createContentHeightProbe(
       maxIsoformsPerGene: inputs.maxIsoformsPerGene,
       labelRoomFactor,
       geneLabelRoomFactor,
+      keptNameIds: undefined,
     })
 }
 
@@ -472,6 +473,7 @@ export function createIsoformCountProbe(
       maxIsoformsPerGene,
       labelRoomFactor: inputs.labelRoomFactor,
       geneLabelRoomFactor: inputs.geneLabelRoomFactor,
+      keptNameIds: inputs.keptNameIds,
     })
 }
 
@@ -521,6 +523,7 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<keyof LayoutInputs, true> = {
   labelDecimation: true,
   labelRoomFactor: true,
   geneLabelRoomFactor: true,
+  keptNameIds: true,
   geneNamesOnly: true,
   maxIsoformsPerGene: true,
   expandedGeneIds: true,
@@ -540,6 +543,7 @@ const PACK_KNOBS: Record<keyof PackKnobs, true> = {
   maxIsoformsPerGene: true,
   labelRoomFactor: true,
   geneLabelRoomFactor: true,
+  keptNameIds: true,
 }
 
 const PROBE_CONFIG_KEYS = LAYOUT_CACHE_KEYS.filter(
