@@ -1,5 +1,13 @@
 import type { ReachedSchema } from './docProgram.ts'
 import type { Example } from './jsDocTags.ts'
+import type * as ts from 'typescript'
+
+// A name the `#config` declaration binds: a const by its initializer, or a
+// parameter by the type it is annotated with
+export type SlotLocal =
+  | { initializer: ts.Expression }
+  | { typeName: string | undefined }
+export type SlotLocals = ReadonlyMap<string, SlotLocal>
 
 export interface Item {
   name: string
@@ -27,6 +35,8 @@ export interface Item {
   parameterisedDefault?: boolean
   // a slot a spread's JSDoc documents: the row the spread gives it undocumented
   spreadSlot?: string
+  // the names the source of the `#config` declaring the slot binds
+  locals?: SlotLocals
 }
 export interface ConfigHeader {
   name: string
@@ -66,6 +76,8 @@ export interface Config {
   // mergeSpreadSlots once accumulation is done (see spreadSlots)
   spreadSlots?: Item[]
   filename: string
+  // the source of the declaration the `#config` sits on
+  source?: string
 }
 export type ConfigWithHeader = Config & { header: ConfigHeader }
 export interface ConfigIndex {

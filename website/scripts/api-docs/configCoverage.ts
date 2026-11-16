@@ -63,7 +63,7 @@ export function slotsMissingDescription(configs: ConfigWithHeader[]) {
   return configs.flatMap(c =>
     c.slots
       .filter(s => {
-        const { meta } = slotMetaFor(s)
+        const meta = slotMetaFor(s)
         return (
           !(s.docs || meta.description) && !isContainerSlot(s, meta, c.slots)
         )

@@ -22,6 +22,7 @@ import {
   outerSchemaName,
   slotRecord,
   slotRow,
+  sourceTypedSlots,
 } from './generateConfigDocs.ts'
 import { pageDescription } from './markdown.ts'
 
@@ -634,8 +635,10 @@ export const recordFixture = ConfigurationSchema('Facet', {
 
   test("an enum's choices and default read the same in both", () => {
     const [, mode] = renderBoth()
-    expect(mode?.row).toContain("(a, b) = <code>'a'</code>")
-    expect(mode?.line).toBe("- `mode: stringEnum (a, b) = 'a'`: How it draws.")
+    expect(mode?.row).toContain("('a', 'b') = <code>'a'</code>")
+    expect(mode?.line).toBe(
+      "- `mode: stringEnum ('a', 'b') = 'a'`: How it draws.",
+    )
   })
 
   // the manifest says Facet's `sort` reads a number as its string
@@ -868,4 +871,271 @@ export const fixtureLane = ConfigurationSchema('FixtureLane', {
       '[list of display configs](/docs/config#display)',
     )
   })
+})
+
+// A slot whose value is an MST type, a reference, or a factory's argument is
+// named by what it holds rather than printed as its source
+describe('slot values read through what they name', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb-slot-values-'))
+  })
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+
+  const FILES = {
+    'assembly.ts': `
+/**
+ * #config AssemblyT5
+ */
+export function assemblySchemaT5() {
+  return ConfigurationSchema('AssemblyT5', {
+    /**
+     * #slot
+     * The name.
+     */
+    name: { type: 'string', defaultValue: '' },
+  })
+}
+export type AssemblyT5Schema = ReturnType<typeof assemblySchemaT5>
+`,
+    'rpc.ts': `
+/**
+ * #config RpcT5
+ */
+const rpcSchemaT5 = ConfigurationSchema('RpcT5', {
+  /**
+   * #slot
+   * The driver.
+   */
+  driver: { type: 'string', defaultValue: '' },
+})
+export class RpcManagerT5 {
+  static configSchema = rpcSchemaT5
+}
+`,
+    'scale.ts': `
+export function colorScaleT5({ name, domain }: { name: string; domain: string }) {
+  return ConfigurationSchema(name, {
+    domain: { type: 'stringArray', defaultValue: [], description: domain },
+  })
+}
+`,
+    'root.ts': `
+import { RpcManagerT5 } from './rpc.ts'
+import type { AssemblyT5Schema } from './assembly.ts'
+/**
+ * #config RootT5
+ */
+export function rootT5({
+  pluginManager,
+  assemblySchema,
+}: {
+  pluginManager: any
+  assemblySchema: AssemblyT5Schema
+}) {
+  const none = types.optional(types.undefined, undefined)
+  const adapter = pluginManager.pluggableConfigSchemaType('text search adapter')
+  const optionalAdapter = types.union(
+    { dispatcher: (s: unknown) => (s === undefined ? none : adapter) },
+    none,
+    adapter,
+  )
+  return types.model('RootT5', {
+    /**
+     * #slot
+     * The adapter.
+     */
+    textSearchAdapter: optionalAdapter,
+    /**
+     * #slot
+     * The plugins.
+     */
+    plugins: types.array(types.frozen<string>()),
+    /**
+     * #slot
+     * The tracks.
+     */
+    tracks: types.frozen([] as string[]),
+    /**
+     * #slot
+     * The session.
+     */
+    defaultSession: types.optional(types.frozen(), { name: 'New Session' }),
+    /**
+     * #slot
+     * The assemblies.
+     */
+    assemblies: types.array(assemblySchema),
+    /**
+     * #slot
+     * The workers.
+     */
+    rpc: RpcManagerT5.configSchema,
+  })
+}
+`,
+    'display.ts': `
+import { colorScaleT5 } from './scale.ts'
+const regionT5 = {
+  fetchSizeLimit: { type: 'number', defaultValue: 1_000_000, description: 'bytes' },
+}
+const RANGE_T5 = [0.1, 1] as const
+/**
+ * #config DisplayT5
+ */
+export function displayT5<Y>(y: Y) {
+  return ConfigurationSchema('DisplayT5', {
+    /**
+     * #slot y
+     * The axis.
+     */
+    y,
+    /**
+     * #slot
+     */
+    fetchSizeLimit: {
+      ...regionT5.fetchSizeLimit,
+      description: 'bytes the display fetches',
+    },
+    /**
+     * #slot
+     * The field.
+     */
+    field: { type: 'string', defaultValue: "jexl:get(feature,'name')" },
+    /**
+     * #slot
+     * The height.
+     */
+    height: { type: 'maybeNumber', defaultValue: undefined },
+    /**
+     * #slot
+     * The range.
+     */
+    range: { type: 'stringArray', defaultValue: RANGE_T5.map(String) },
+    /**
+     * #slot
+     * The scale.
+     */
+    scale: colorScaleT5({
+      name: 'ScaleT5',
+      /**
+       * #slot scale.domain
+       * The values.
+       */
+      domain: 'the values',
+    }),
+  })
+}
+`,
+  }
+
+  function typeCells() {
+    const files = Object.entries(FILES).map(([name, text]) => {
+      const file = path.join(dir, name)
+      fs.writeFileSync(file, text)
+      return file
+    })
+    const program = createDocProgram(files)
+    buildEnumConstantIndex(program.sources)
+    const byFile: Record<string, Config> = {}
+    extractWithComment(
+      program,
+      obj => {
+        accumulateConfig(byFile, obj)
+      },
+      () => {},
+    )
+    const { withHeader } = linkedConfigs(byFile)
+    return {
+      cells: Object.fromEntries(
+        withHeader.flatMap(({ header, slots }) =>
+          slots.map(s => [
+            `${header.name} ${s.name}`,
+            slotRow(s, header.name).split('<br>')[1]?.split(' | ')[0],
+          ]),
+        ),
+      ),
+      sourceTyped: sourceTypedSlots(withHeader),
+    }
+  }
+
+  const FROZEN = '[`frozen`](/docs/config_guides/slot_types#frozen)'
+
+  test('a local names the pluggable element its union holds', () => {
+    expect(typeCells().cells['RootT5 textSearchAdapter']).toBe(
+      '[text search adapter config](/docs/config#adapter)',
+    )
+  })
+
+  test('MST types read as the slot type and default they spell', () => {
+    const { cells } = typeCells()
+    expect(cells['RootT5 plugins']).toBe(`list of ${FROZEN}`)
+    expect(cells['RootT5 tracks']).toBe(`${FROZEN} = <code>[]</code>`)
+    expect(cells['RootT5 defaultSession']).toBe(
+      `${FROZEN} = <code>{ name: 'New Session' }</code>`,
+    )
+  })
+
+  test('a schema reached through a parameter type or a class static links its page', () => {
+    const { cells } = typeCells()
+    expect(cells['RootT5 assemblies']).toBe(
+      '[list of AssemblyT5 entries](../assemblyt5)',
+    )
+    expect(cells['RootT5 rpc']).toBe('[RpcT5](../rpct5)')
+  })
+
+  test('a schema each caller passes says so', () => {
+    expect(typeCells().cells['DisplayT5 y']).toBe('sub-schema, per display')
+  })
+
+  test('a slot spreading a shared slot reads as the merged slot', () => {
+    expect(typeCells().cells['DisplayT5 fetchSizeLimit']).toMatch(
+      /`number`.* = <code>1000000<\/code>$/,
+    )
+  })
+
+  test('a default is valid JS, and `undefined` is none', () => {
+    const { cells } = typeCells()
+    expect(cells['DisplayT5 field']).toMatch(
+      /= <code>"jexl:get\(feature,'name'\)"<\/code>$/,
+    )
+    expect(cells['DisplayT5 height']).not.toContain('=')
+    expect(cells['DisplayT5 range']).toMatch(/= <code>\['0.1', '1'\]<\/code>$/)
+  })
+
+  test("a factory's argument row takes the slot the factory builds with it", () => {
+    expect(typeCells().cells['DisplayT5 scale.domain']).toMatch(
+      /`stringArray`.* = <code>\[\]<\/code>$/,
+    )
+  })
+
+  test('no slot here prints its source', () => {
+    expect(typeCells().sourceTyped).toEqual([])
+  })
+})
+
+test("a #config block's own #example naming a schema does not make it sit on one", () => {
+  const comment = `/**
+ * #config MisplacedT5
+ *
+ * #example
+ * \`ConfigurationSchema('MisplacedT5', {})\` is what this documents
+ */`
+  expect(() => {
+    accumulateConfig(
+      {},
+      {
+        type: 'config',
+        name: 'MisplacedT5',
+        comment,
+        signature: '',
+        node: `${comment}\nfunction normalizeSnapshot(s: unknown) {\n  return s\n}`,
+        filename: 'misplaced.ts',
+      },
+    )
+  }).toThrow(/not a schema/)
 })

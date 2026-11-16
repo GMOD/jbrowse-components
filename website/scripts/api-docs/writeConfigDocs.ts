@@ -15,6 +15,7 @@ import {
   isBaseSchema,
   linkedConfigs,
   renderConfig,
+  sourceTypedSlots,
   stripNameTautology,
 } from './generateConfigDocs.ts'
 import { assertUniquePages, headerGaps } from './util.ts'
@@ -110,5 +111,6 @@ export function writeConfigDocs(
     }),
     unresolvedBase: unresolvedBases(withHeader, index),
     adapterNoTrackType: adaptersMissingTrackType(withHeader),
+    sourceTyped: sourceTypedSlots(withHeader),
   }
 }

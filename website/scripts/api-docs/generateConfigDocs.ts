@@ -11,7 +11,14 @@ import {
   writesLine,
 } from './configManifest.ts'
 import { parseNode } from './docProgram.ts'
-import { slotSpreadPairs, slotSpreadPart } from './enumConstants.ts'
+import {
+  isSchemaCall,
+  isSchemaFactory,
+  quoteString,
+  schemaCallName,
+  slotSpreadPairs,
+  slotSpreadPart,
+} from './enumConstants.ts'
 import { collectSlotTypes } from './generateSlotTypeDocs.ts'
 import {
   codeBlock,
@@ -26,9 +33,9 @@ import {
   section,
 } from './markdown.ts'
 import {
-  inheritedSlotMeta,
-  parseSlotMeta,
-  rawSlotValue,
+  inheritSlotMeta,
+  isProseArgument,
+  scopeLocals,
   slotMetaFor,
   slotSourceCode,
 } from './slotSource.ts'
@@ -82,13 +89,16 @@ function spreadPairs(expr: ts.Expression, sf: ts.SourceFile) {
   return part && slotSpreadPairs(part)
 }
 
-function spreadSlots(configNode: string): Item[] {
-  const sf = ts.createSourceFile(
+function parseConfigNode(configNode: string) {
+  return ts.createSourceFile(
     'config.ts',
     configNode,
     ts.ScriptTarget.Latest,
     true,
   )
+}
+
+function spreadSlots(sf: ts.SourceFile): Item[] {
   const slots: Item[] = []
   const addPairs = (expr: ts.Expression, prefix: string) => {
     for (const [name, value] of spreadPairs(expr, sf) ?? []) {
@@ -107,18 +117,29 @@ function spreadSlots(configNode: string): Item[] {
     // A property whose value is a nested `ConfigurationSchema(...)` opens a
     // level; anything else keeps the prefix it was reached with. A slot table
     // passed whole, `ConfigurationSchema('X', scaleSlots('Y'))`, is a spread of
-    // that table.
-    const schema =
-      ts.isPropertyAssignment(node) &&
-      ts.isIdentifier(node.name) &&
-      ts.isCallExpression(node.initializer) &&
-      ts.isIdentifier(node.initializer.expression) &&
-      node.initializer.expression.text === 'ConfigurationSchema'
-        ? { name: node.name.text, table: node.initializer.arguments[1] }
+    // that table, and so is the table a schema factory's call builds
+    // (`scale: rowColorScaleConfigSchema({ … })`).
+    const property =
+      ts.isPropertyAssignment(node) && ts.isIdentifier(node.name)
+        ? { name: node.name.text, value: node.initializer }
         : undefined
-    const nested = schema ? `${prefix}${schema.name}.` : prefix
-    if (schema?.table && !ts.isObjectLiteralExpression(schema.table)) {
-      addPairs(schema.table, nested)
+    const table =
+      property && isSchemaCall(property.value)
+        ? property.value.arguments[1]
+        : undefined
+    const factory =
+      property &&
+      ts.isCallExpression(property.value) &&
+      ts.isIdentifier(property.value.expression) &&
+      isSchemaFactory(property.value.expression.text)
+        ? property.value
+        : undefined
+    const nested = table || factory ? `${prefix}${property?.name}.` : prefix
+    if (table && !ts.isObjectLiteralExpression(table)) {
+      addPairs(table, nested)
+    }
+    if (factory) {
+      addPairs(factory, nested)
     }
     ts.forEachChild(node, child => {
       visit(child, nested)
@@ -130,36 +151,61 @@ function spreadSlots(configNode: string): Item[] {
   return slots
 }
 
-// The first `ConfigurationSchema('Name', …)` in source order, the outermost
-export function outerSchemaName(configNode: string) {
-  const sf = ts.createSourceFile(
-    'config.ts',
-    configNode,
-    ts.ScriptTarget.Latest,
-    true,
-  )
-  const find = (node: ts.Node): string | undefined => {
-    const [name] = ts.isCallExpression(node) ? node.arguments : []
-    return ts.isCallExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      node.expression.text === 'ConfigurationSchema' &&
-      name &&
-      ts.isStringLiteralLike(name)
-      ? name.text
-      : ts.forEachChild(node, find)
+// What a `#config` declaration builds, off its syntax so an `#example` in the
+// block's own JSDoc naming any of these counts for nothing: the name of its
+// first `ConfigurationSchema('Name', …)` in source order, the outermost;
+// whether it is a `ConfigurationSchemaUnion`, whose rows are each prefixed with
+// the member type they belong to; and whether it builds a schema at all.
+//
+// A `#config` block documents a schema, so it has to SIT on one — the
+// declaration it precedes is what gets extracted with it, and the source of
+// that declaration is what slot recovery reads. A block parked above a
+// neighbouring `normalizeSnapshot` still produced a page, because slots are
+// collected from their own `#slot` tags file-wide; it silently produced an
+// EMPTY node, so anything read off the schema's source found nothing. Nine
+// adapters were in that state and five lost both their `index.*` rows the day
+// a shared slot table arrived. `types.model` counts as well: the root config
+// is a factory returning one, and it is documenting the thing it returns
+// either way. A `normalizeSnapshot` body builds none of the three, which is
+// the whole set of offenders.
+function schemaShape(sf: ts.SourceFile) {
+  const calls: ts.CallExpression[] = []
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node)) {
+      calls.push(node)
+    }
+    ts.forEachChild(node, visit)
   }
-  return find(sf)
+  visit(sf)
+  const calling = (callee: string) =>
+    calls.some(c => c.expression.getText(sf) === callee)
+  const union = calling('ConfigurationSchemaUnion')
+  return {
+    name: calls.map(schemaCallName).find(Boolean),
+    union,
+    buildsSchema: union || calling('types.model') || calls.some(isSchemaCall),
+  }
+}
+
+export function outerSchemaName(configNode: string) {
+  return schemaShape(parseConfigNode(configNode)).name
 }
 
 // Fold each config's spread-in slots into its slot list, after accumulation so a
 // `#slot` the schema declares itself always wins over the shared table's version
-// of the same name. Idempotent, so both writers below can call it.
+// of the same name. A `#slot` on a schema factory's argument documents the slot
+// the factory builds with it, whose source it then takes. Idempotent, so both
+// writers below can call it.
 export function mergeSpreadSlots(byFile: Record<string, Config>) {
   for (const config of Object.values(byFile)) {
+    const spread = new Map(config.spreadSlots?.map(s => [s.name, s]))
     const declared = new Set(config.slots.map(s => s.spreadSlot ?? s.name))
     config.slots = [
-      ...config.slots,
-      ...(config.spreadSlots ?? []).filter(s => !declared.has(s.name)),
+      ...config.slots.map(s => {
+        const built = spread.get(s.name)
+        return built && isProseArgument(s) ? { ...s, code: built.code } : s
+      }),
+      ...[...spread.values()].filter(s => !declared.has(s.name)),
     ]
     config.spreadSlots = undefined
   }
@@ -183,24 +229,9 @@ export function accumulateConfig(
       existing: file.header?.name,
       incoming: item.name,
     })
-    // A `#config` block documents a schema, so it has to SIT on one — the
-    // declaration it precedes is what gets extracted with it, and the source of
-    // that declaration is what slot recovery reads. A block parked above a
-    // neighbouring `normalizeSnapshot` still produced a page, because slots are
-    // collected from their own `#slot` tags file-wide; it silently produced an
-    // EMPTY node, so anything read off the schema's source found nothing. Nine
-    // adapters were in that state and five lost both their `index.*` rows the
-    // day a shared slot table arrived.
-    // `types.model(` as well as `ConfigurationSchema(`: the root config is a
-    // factory returning the former, and it is documenting the thing it returns
-    // either way. `ConfigurationSchemaUnion(` documents its members, whose
-    // `#slot` tags name them. A `normalizeSnapshot` body has none of the three,
-    // which is the whole set of offenders.
-    if (
-      !obj.node.includes('ConfigurationSchema(') &&
-      !obj.node.includes('ConfigurationSchemaUnion(') &&
-      !obj.node.includes('types.model(')
-    ) {
+    const sf = parseConfigNode(obj.node)
+    const shape = schemaShape(sf)
+    if (!shape.buildsSchema) {
       throw new Error(
         `${file.filename}: the \`#config ${item.name}\` block sits on a declaration that is not a schema — move it directly above the schema it documents. Everything read off the schema's own source (spread-in slot tables) is silently empty where it is.`,
       )
@@ -214,10 +245,11 @@ export function accumulateConfig(
       declId: obj.selfDeclId,
       category: item.category,
       trackType: item.trackType,
-      union: obj.node.includes('ConfigurationSchemaUnion('),
-      schemaName: outerSchemaName(obj.node),
+      union: shape.union,
+      schemaName: shape.name,
     }
-    file.spreadSlots = spreadSlots(obj.node)
+    file.source = obj.node
+    file.spreadSlots = spreadSlots(sf)
   } else if (obj.type === 'baseConfiguration') {
     file.derives = item
     file.baseDeclId = obj.baseDeclId
@@ -301,14 +333,7 @@ export function collectBaseConfigs(
 function slotsTable(name: string, ownSlots: Item[], bases: ConfigWithHeader[]) {
   const rows = pageSlotGroups(name, ownSlots, bases).flatMap(
     ({ from, records }) => [
-      ...(from
-        ? [
-            slotGroupRow(
-              `[${from.header.name}](../${from.header.id})`,
-              records.length,
-            ),
-          ]
-        : []),
+      ...(from ? [slotGroupRow(configLink(from), records.length)] : []),
       ...records.map(r => slotRecordRow(r)),
     ],
   )
@@ -338,7 +363,7 @@ export function pageSlotGroups(
     .map(({ slots, from, name }) => ({
       from,
       records: slots
-        .filter(s => !isContainerSlot(s, slotMetaFor(s).meta, all))
+        .filter(s => !isContainerSlot(s, slotMetaFor(s), all))
         .map(s => slotRecord(s, name)),
     }))
     .filter(g => g.records.length)
@@ -370,12 +395,12 @@ export function pageCategory(header: ConfigHeader, links: DisplayLinkContext) {
     : category
 }
 
-// Everything renderConfig/displayTypesSection need to resolve a Track's
+// Everything renderConfig needs to resolve a Track's
 // "Display types" links: which Displays declare `trackType: 'ThisTrack'`
 // (see DisplayTrackLink in docProgram.ts), the config-doc index to turn a Display
 // name into a page, and which Displays also have a documented state model.
 // displayToTrackType/adaptersByTrack additionally link a display or track to the
-// data adapters that feed it (see compatibleAdaptersSection).
+// data adapters that feed it (see relatedConfigsLines).
 export interface DisplayLinkContext {
   displayTypesByTrack: Map<string, string[]>
   displayToTrackType: Map<string, string>
@@ -383,7 +408,7 @@ export interface DisplayLinkContext {
   byName: Map<string, ConfigWithHeader>
   modelNames: Set<string>
   // reverse of each config's `baseConfiguration:` — the concrete configs that
-  // inherit a base's slots (see extendedByLines)
+  // inherit a base's slots (see relatedConfigsLines)
   extendedBy: Map<string, string[]>
 }
 
@@ -428,70 +453,69 @@ function relatedLine(kind: string, label: string) {
   return `- **${kind}:** ${label}`
 }
 
-// The data adapters that feed a track/display, each declared via an adapter's
-// `#trackType` tag. Gives e.g. LinearAlignmentsDisplay -> BamAdapter,
-// CramAdapter, and AlignmentsTrack -> the same — so a reader configuring the
-// display or track sees which data formats it accepts.
-function compatibleAdaptersLines(name: string, links: DisplayLinkContext) {
-  const trackType = relatedTrackType(name, links)
-  return (trackType ? (links.adaptersByTrack.get(trackType) ?? []) : [])
-    .map(adapterName => links.byName.get(adapterName))
-    .filter((a): a is ConfigWithHeader => Boolean(a))
-    .map(a => relatedLine('Adapter', `[${a.header.name}](../${a.header.id})`))
+function configLink({ header }: ConfigWithHeader) {
+  return `[${header.name}](../${header.id})`
 }
 
-// Reverse-links a Track config to the Display types that attach to it.
-// Displays parameterized from a shared factory at runtime (e.g.
-// LDDisplay/LDTrackDisplay) carry no individually-tagged #config and so
-// resolve to nothing here; silently skipped, same as an empty Slots section.
-function displayTypesLines(name: string, links: DisplayLinkContext) {
-  return (links.displayTypesByTrack.get(name) ?? []).flatMap(displayName => {
-    const display = links.byName.get(displayName)
-    if (!display) {
-      return []
-    }
-    const modelLink = links.modelNames.has(displayName)
-      ? ` ([state model](../../models/${display.header.id}))`
-      : ''
-    return [
-      relatedLine(
-        'Display',
-        `[${displayName}](../${display.header.id})${modelLink}`,
-      ),
-    ]
+// A related line for each of `names` that has a config page, in order. A
+// display parameterized from a shared factory at runtime (LDTrackDisplay)
+// carries no `#config` of its own, and is skipped as an empty section is.
+function relatedConfigLines(
+  kind: string,
+  names: string[] | undefined,
+  links: DisplayLinkContext,
+  suffix: (config: ConfigWithHeader) => string = () => '',
+) {
+  return (names ?? []).flatMap(name => {
+    const config = links.byName.get(name)
+    return config
+      ? [relatedLine(kind, `${configLink(config)}${suffix(config)}`)]
+      : []
   })
 }
 
-// An adapter declares the track type its example is wrapped in via #trackType
-// (see wrapAdapterExample). Surface the full chain the adapter's data flows
-// through: the track that consumes it, then the display types that render that
-// track — closing the loop with each display's "Adapter" line.
-function usedInLines(trackType: string | undefined, links: DisplayLinkContext) {
-  const track = trackType && links.byName.get(trackType)
-  if (!trackType || !track) {
-    return []
-  }
-  const displayLines = (links.displayTypesByTrack.get(trackType) ?? [])
-    .map(name => links.byName.get(name))
-    .filter((d): d is ConfigWithHeader => Boolean(d))
-    .map(d => relatedLine('Display', `[${d.header.name}](../${d.header.id})`))
+// Every page a config's own links reach:
+//
+// - a track's display types, each beside its state model when it has one;
+// - the data adapters that feed a track or display, each declared by an
+//   adapter's `#trackType` (LinearAlignmentsDisplay and AlignmentsTrack ->
+//   BamAdapter, CramAdapter), so a reader sees which formats it accepts;
+// - for an adapter, the chain its data flows through: the track its
+//   `#trackType` names, then that track's displays, closing the loop with
+//   each display's Adapter line;
+// - the concrete configs inheriting a base schema's slots. A reader arriving
+//   at `BaseLinearDisplay#slot-fetchsizelimit` has the slot's meaning but no
+//   type to set it on; these are the pages whose own example shows the shape.
+function relatedConfigsLines(
+  { name, trackType }: ConfigHeader,
+  links: DisplayLinkContext,
+) {
+  const fedTrack = relatedTrackType(name, links)
+  const usedIn =
+    trackType && links.byName.has(trackType) ? trackType : undefined
   return [
-    relatedLine('Track', `[${track.header.name}](../${track.header.id})`),
-    ...displayLines,
+    ...relatedConfigLines(
+      'Display',
+      links.displayTypesByTrack.get(name),
+      links,
+      ({ header }) =>
+        links.modelNames.has(header.name)
+          ? ` ([state model](../../models/${header.id}))`
+          : '',
+    ),
+    ...relatedConfigLines(
+      'Adapter',
+      fedTrack && links.adaptersByTrack.get(fedTrack),
+      links,
+    ),
+    ...relatedConfigLines('Track', usedIn && [usedIn], links),
+    ...relatedConfigLines(
+      'Display',
+      usedIn && links.displayTypesByTrack.get(usedIn),
+      links,
+    ),
+    ...relatedConfigLines('Extended by', links.extendedBy.get(name), links),
   ]
-}
-
-// The concrete configs that inherit this one's slots, for a base/shared schema
-// that is never named in a config itself. Without it a reader arriving at
-// `BaseLinearDisplay#slot-fetchsizelimit` has the slot's meaning but no type to
-// set it on; these are the pages whose own example shows the shape.
-function extendedByLines(name: string, links: DisplayLinkContext) {
-  return (links.extendedBy.get(name) ?? [])
-    .map(childName => links.byName.get(childName))
-    .filter((c): c is ConfigWithHeader => Boolean(c))
-    .map(c =>
-      relatedLine('Extended by', `[${c.header.name}](../${c.header.id})`),
-    )
 }
 
 // Whether a config is a base/shared schema — inherited from, never written in a
@@ -579,7 +603,7 @@ function slotNesting(
   return shapes[category] ?? ''
 }
 
-// The inverse of the per-display model link in displayTypesLines: a config
+// The inverse of the per-display model link in relatedConfigsLines: a config
 // (commonly a Display or Track) links to its own state-model page when one with
 // the same name is documented, so the two halves of a pluggable element — config
 // slots and runtime API — reference each other.
@@ -658,20 +682,14 @@ export function renderConfig(
     ? // when the base resolves to a page, the link says it all; only fall back
       // to the raw `baseConfiguration:` code when it couldn't be resolved
       directBase
-      ? relatedLine(
-          'Base config',
-          `[${directBase.header.name}](../${directBase.header.id})`,
-        )
+      ? relatedLine('Base config', configLink(directBase))
       : section(
           `**Base config:** (unresolved) ${derives.docs}`,
           codeBlock(derives.code),
         )
     : ''
   const relatedLines = [
-    ...displayTypesLines(header.name, links),
-    ...compatibleAdaptersLines(header.name, links),
-    ...usedInLines(header.trackType, links),
-    ...extendedByLines(header.name, links),
+    ...relatedConfigsLines(header, links),
     stateModelLine(header.name, header.id, links),
     derivesLine,
   ].filter(Boolean)
@@ -717,7 +735,7 @@ export function renderConfig(
     title: header.name,
     sidebarLabel: `${category} -> ${header.name}`,
     description: pageDescription(
-      stripNameTautology(header.docs, header.name),
+      lead,
       `Configuration slots of ${header.name}.`,
     ),
     notes: `Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts.`,
@@ -794,16 +812,13 @@ function typeLink(type: string) {
 }
 
 /**
- * Fold each overriding slot's meta over the base slot it shadows, matching what
- * `ConfigurationSchema` does at runtime (`mergeSchemaDefinition`): a redeclared
- * slot merges field-by-field over the base's rather than replacing it.
- *
- * Without this the pages describe a slot by its override's source text alone, so
- * an override stating only what differs reads as though it dropped everything it
- * left out — `LinearManhattanDisplay`'s `size` would render as a
- * common slot when it is really `advanced`. The flags and the advanced/common
- * split both read through `slotMetaFor`, so resolving it here fixes each of them
- * at once.
+ * Fold each overriding slot's meta over the base slot it shadows (see
+ * `inheritSlotMeta`). Without this the pages describe a slot by its override's
+ * source text alone, so an override stating only what differs reads as though
+ * it dropped everything it left out — `LinearManhattanDisplay`'s `size` would
+ * render as a common slot when it is really `advanced`. The flags and the
+ * advanced/common split both read through `slotMetaFor`, so resolving it here
+ * fixes each of them at once.
  */
 function resolveInheritedSlotMeta(
   configs: ConfigWithHeader[],
@@ -818,16 +833,7 @@ function resolveInheritedSlotMeta(
         base.slots.filter(s => s.name === slot.name),
       )
       if (inherited.length) {
-        const merged = inherited
-          .reverse()
-          .reduce<SlotMeta>(
-            (acc, base) => ({ ...acc, ...parseSlotMeta(rawSlotValue(base)) }),
-            {},
-          )
-        inheritedSlotMeta.set(slot, {
-          ...merged,
-          ...parseSlotMeta(rawSlotValue(slot)),
-        })
+        inheritSlotMeta(slot, inherited.reverse())
       }
     }
   }
@@ -840,15 +846,12 @@ function slotAnchor(name: string) {
   return `slot-${name.toLowerCase().replace(/\./g, '')}`
 }
 
+// A stringEnum's members, quoted as its default is
 function enumList(values: readonly string[]) {
-  return values.map(v => (v === '' ? '""' : v)).join(', ')
+  return values.map(quoteString).join(', ')
 }
 
-// A slot holding another pluggable element's config, which its source spells
-// `pluginManager.pluggableConfigSchemaType('display')`, maybe inside
-// `types.array(...)`. Named by the config index section listing that kind.
-const PLUGGABLE_SLOT =
-  /^(types\.array\(\s*)?pluginManager\.pluggableConfigSchemaType\('([^']+)'\),?\s*\)?$/
+// The config index section listing each pluggable element kind
 const PLUGGABLE_INDEX_SECTION: Record<string, string> = {
   adapter: 'adapter',
   'text search adapter': 'adapter',
@@ -858,43 +861,22 @@ const PLUGGABLE_INDEX_SECTION: Record<string, string> = {
   'internet account': 'internet-account',
 }
 
-// `types.array(types.union(...pluginManager.getDisplayElements().map(…)))`,
-// a track's list of every registered display's config.
-const DISPLAY_ELEMENTS_SLOT =
-  /^types\.array\(\s*types\.union\(\s*\.\.\.pluginManager\s*\.getDisplayElements\(\)/
-
-function pluggableSlotType(code: string | undefined) {
-  const trimmed = code?.trim() ?? ''
-  const [, array, kind] = DISPLAY_ELEMENTS_SLOT.test(trimmed)
-    ? [trimmed, 'list', 'display']
-    : (PLUGGABLE_SLOT.exec(trimmed) ?? [])
-  return kind
-    ? {
-        name: array ? `list of ${kind} configs` : `${kind} config`,
-        section: PLUGGABLE_INDEX_SECTION[kind],
-      }
-    : undefined
-}
-
-// `pluginManager.getTrackType('ReferenceSequenceTrack').configSchema`: a slot
-// holding one named element's config, which has a page of its own.
-const NAMED_ELEMENT_SLOT =
-  /^pluginManager\s*\.get(?:Track|Display|Adapter|Connection|InternetAccount)Type\(\s*'([^']+)'\s*\)!?\s*\.configSchema$/
-
 // What a slot whose value isn't a `{ type, ... }` object holds, named and
-// linked: a schema with a page of its own, another element's config, or a
-// sub-schema whose slots are rows of this page or another. Undefined leaves
-// the source to stand in.
-function slotKind(item: Item, code: string | undefined) {
-  const pluggable =
-    pluggableSlotType(code) ?? pluggableSlotType(item.returnedCode)
+// linked: a schema with a page of its own, another element's config, a
+// sub-schema whose slots are rows of this page or another, a sub-schema by its
+// own name, or one each display passes. Undefined leaves the source to stand
+// in.
+function slotKind(item: Item, { holds, list }: SlotMeta) {
+  const element = holds && 'element' in holds ? holds.element : undefined
+  const schema = holds && 'schema' in holds ? holds.schema : undefined
   if (item.schemaPage) {
     const { name, id, list } = item.schemaPage
     return { name: list ? `list of ${name} entries` : name, href: `../${id}` }
-  } else if (pluggable) {
+  } else if (element) {
+    const section = PLUGGABLE_INDEX_SECTION[element]
     return {
-      name: pluggable.name,
-      href: pluggable.section && `/docs/config#${pluggable.section}`,
+      name: list ? `list of ${element} configs` : `${element} config`,
+      href: section && `/docs/config#${section}`,
     }
   } else if (item.subSchema) {
     const { name, list, firstSlot, page } = item.subSchema
@@ -904,15 +886,20 @@ function slotKind(item: Item, code: string | undefined) {
         : `${name ?? ''} sub-schema`.trim(),
       href: `${page ? `../${page}` : ''}#${slotAnchor(firstSlot)}`,
     }
+  } else if (schema) {
+    return { name: list ? `list of ${schema} entries` : `${schema} sub-schema` }
+  } else if (holds) {
+    return { name: 'sub-schema, per display' }
   }
   return undefined
 }
 
 // What a slot holds: its declared type, with a stringEnum's choices, else what
-// `slotKind` names, else a sub-schema named by its own name, else the source.
+// `slotKind` names, else the source.
 type SlotType =
   | {
       declared: string
+      list?: boolean
       enumValues?: readonly string[]
       literalValues?: readonly string[]
     }
@@ -937,42 +924,44 @@ export interface SlotRecord {
 const PARAMETERISED_DEFAULT = 'per display'
 
 function slotTypeOf(item: Item, meta: SlotMeta): SlotType {
-  const code = slotSourceCode(meta)
-  const kind = slotKind(item, code)
-  const schemaName =
-    code && /^ConfigurationSchema\(\s*'([^']+)'/.exec(code)?.[1]
+  const kind = slotKind(item, meta)
   return meta.type
     ? {
         declared: meta.type,
+        list: meta.list,
         enumValues: meta.enumValues,
         literalValues: meta.literalValues,
       }
     : kind
       ? { kind: kind.name, href: kind.href }
-      : schemaName
-        ? { kind: `${schemaName} sub-schema` }
-        : { code }
+      : { code: slotSourceCode(meta) }
 }
 
 export function slotRecord(item: Item, schema: string): SlotRecord {
-  const { meta } = slotMetaFor(item)
+  const meta = slotMetaFor(item)
   return {
     name: item.name,
     type: slotTypeOf(item, meta),
     liftsNumbers: !!manifestSlot(schema, item.name)?.liftsNumbers,
     default: item.parameterisedDefault
       ? { perDisplay: true }
-      : {
-          code:
-            meta.defaultValue !== undefined
-              ? meta.defaultValue
-              : meta.defaultCode,
-        },
+      : { code: meta.defaultValue },
     docs: item.docs || (meta.description ?? ''),
     contextVariable: meta.contextVariable ?? [],
     advanced: !!meta.advanced,
     examples: item.examples,
   }
+}
+
+// The own slots of each config whose type still prints as their source, for
+// coverage-gaps.txt
+export function sourceTypedSlots(configs: ConfigWithHeader[]) {
+  return configs.flatMap(({ header, slots }) =>
+    slots
+      .filter(s => !isContainerSlot(s, slotMetaFor(s), slots))
+      .filter(s => 'code' in slotRecord(s, header.name).type)
+      .map(s => `${header.name} ${s.name}`),
+  )
 }
 
 // The record's type and default as text, each renderer supplying how a
@@ -988,7 +977,7 @@ export function slotTypeText(
   const { type } = record
   const text =
     'declared' in type
-      ? `${spell.declared(type.declared)}${type.literalValues ? ` or ${type.literalValues.map(v => spell.code(v)).join(' or ')}` : ''}${type.enumValues ? ` (${enumList(type.enumValues)})` : ''}`
+      ? `${type.list ? 'list of ' : ''}${spell.declared(type.declared)}${type.literalValues ? ` or ${type.literalValues.map(v => spell.code(v)).join(' or ')}` : ''}${type.enumValues ? ` (${enumList(type.enumValues)})` : ''}`
       : 'kind' in type
         ? spell.kind(type.kind, type.href)
         : spell.code(type.code)
@@ -1063,15 +1052,22 @@ export function linkedConfigs(byFile: Record<string, Config>) {
     byDeclId: mapByKey(withHeader, c => c.header.declId),
     byName: mapByKey(withHeader, c => c.header.name),
   }
+  for (const config of withHeader) {
+    const locals = scopeLocals(config.source ?? '')
+    for (const slot of config.slots) {
+      slot.locals = locals
+    }
+  }
   resolveInheritedSlotMeta(withHeader, index)
   linkSlotSchemas(withHeader, index)
   return { withHeader, index }
 }
 
-// Each sub-schema slot's link: the `#config` page its value names, else the
-// rows of its schema on this page, own or inherited, else the page whose own
-// rows document a schema its value reaches, the first by name where several
-// do, since the configs arrive in program order.
+// Each sub-schema slot's link: the `#config` page its value names, by
+// declaration or, where none of its schema's rows are on this page, by the
+// schema's name; else the rows of its schema on this page, own or inherited,
+// else the page whose own rows document a schema its value reaches, the first
+// by name where several do, since the configs arrive in program order.
 function linkSlotSchemas(configs: ConfigWithHeader[], index: ConfigIndex) {
   const documented = new Map<
     string,
@@ -1084,36 +1080,33 @@ function linkSlotSchemas(configs: ConfigWithHeader[], index: ConfigIndex) {
       ...collectBaseConfigs(config, index).flatMap(base => base.slots),
     ]
     for (const slot of slots) {
-      const code = slotSourceCode(slotMetaFor(slot).meta)?.trim() ?? ''
-      const elementName = NAMED_ELEMENT_SLOT.exec(code)?.[1]
+      const { holds, list } = slotMetaFor(slot)
+      const heldSchema = holds && 'schema' in holds ? holds.schema : undefined
+      const declared = manifestSlot(header.name, slot.name)
+      const first = pageSlots.find(
+        s =>
+          s.name.startsWith(`${slot.name}.`) &&
+          !isContainerSlot(s, slotMetaFor(s), pageSlots),
+      )
       const schema =
         slot.schemaDeclIds?.map(id => index.byDeclId.get(id)).find(Boolean) ??
-        (elementName ? index.byName.get(elementName) : undefined)
+        (heldSchema && !first
+          ? schemaPageNamed(heldSchema, configs)
+          : undefined)
       if (schema) {
         slot.schemaPage = {
           name: schema.header.name,
           id: schema.header.id,
-          list: !!manifestSlot(header.name, slot.name)?.type.endsWith('[]'),
+          list: declared ? declared.type.endsWith('[]') : !!list,
         }
       }
-      const first = pageSlots.find(
-        s =>
-          s.name.startsWith(`${slot.name}.`) &&
-          !isContainerSlot(s, slotMetaFor(s).meta, pageSlots),
-      )
       if (first) {
-        const declared = manifestSlot(header.name, slot.name)
         const reached = slot.schemas?.[0]
         slot.subSchema = {
-          name:
-            declared?.schema ??
-            /^(?:types\.array\(\s*)?ConfigurationSchema\(\s*'([^']+)'/.exec(
-              code,
-            )?.[1] ??
-            reached?.name,
+          name: declared?.schema ?? heldSchema ?? reached?.name,
           list: declared
             ? declared.type.endsWith('[]')
-            : code.startsWith('types.array(') || !!reached?.list,
+            : !!list || !!reached?.list,
           firstSlot: first.name,
         }
         const { name } = slot.subSchema
@@ -1146,4 +1139,13 @@ function linkSlotSchemas(configs: ConfigWithHeader[], index: ConfigIndex) {
       }
     }
   }
+}
+
+// The page documenting a schema by its `ConfigurationSchema` name, which is
+// most often the page's own name
+function schemaPageNamed(name: string, configs: ConfigWithHeader[]) {
+  return (
+    configs.find(c => c.header.name === name) ??
+    configs.find(c => c.header.schemaName === name)
+  )
 }

@@ -241,6 +241,11 @@ async function main() {
       names: configGaps.adapterNoTrackType,
     },
     {
+      title: 'config slots whose type prints as their source',
+      fix: 'write the slot as { type, ... }, or teach describeValue in slotSource.ts the MST type it holds',
+      names: configGaps.sourceTyped,
+    },
+    {
       title:
         'model members and #api exports whose type prints as MST internals or collapses to nothing',
       fix: 'tag the model it names #stateModel (#internal keeps it off the site), or write the type it should read as',

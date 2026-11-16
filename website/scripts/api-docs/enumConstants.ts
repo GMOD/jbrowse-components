@@ -125,13 +125,23 @@ interface SlotFieldParam {
   fallback: string | undefined
 }
 
+// `schema`: the factory returns `ConfigurationSchema(name, <table>)` rather
+// than the table, so a slot holding its call nests the table under its name
 interface SlotFieldFactory {
   parts: SlotPart[]
   params: Map<string, SlotFieldParam>
+  schema: boolean
 }
 
 // name -> the factory, or null on a conflict
 const slotFieldFactoryIndex = new Map<string, SlotFieldFactory | null>()
+
+// And the schema a factory returns, by the factory's name, and the factory a
+// schema type names (`type BaseAssemblyConfigSchema = ReturnType<typeof
+// assemblyConfigSchema>`), so a slot holding a parameter of that type, or the
+// factory's call, names the schema and links its page.
+const factorySchemaIndex = new Map<string, string | null>()
+const typeFactoryIndex = new Map<string, string | null>()
 
 // One entry of a slot table's source: a slot of its own, another slot table it
 // spreads in by name, or a slot-table factory it spreads in as a call.
@@ -347,14 +357,14 @@ function slotFieldFactory(
   }
   const [stmt] = fn.body.statements
   const returned =
-    stmt && ts.isReturnStatement(stmt) ? stmt.expression : undefined
+    stmt && ts.isReturnStatement(stmt) && stmt.expression
+      ? unwrapAssertion(stmt.expression)
+      : undefined
   if (!returned) {
     return undefined
   }
-  const parts = slotFieldParts(
-    ts.isAsExpression(returned) ? returned.expression : returned,
-    sf,
-  )
+  const schemaTable = isSchemaCall(returned) ? returned.arguments[1] : undefined
+  const parts = slotFieldParts(schemaTable ?? returned, sf)
   if (!parts) {
     return undefined
   }
@@ -379,7 +389,9 @@ function slotFieldFactory(
       })
     }
   }
-  return params.size ? { parts, params } : undefined
+  return params.size
+    ? { parts, params, schema: schemaTable !== undefined }
+    : undefined
 }
 
 /**
@@ -477,6 +489,12 @@ function referencedSource(
   if (!ts.isPropertyAccessExpression(reference)) {
     return undefined
   }
+  const classStatic = ts.isIdentifier(reference.expression)
+    ? constantSources.get(`${reference.expression.text}.${reference.name.text}`)
+    : undefined
+  if (classStatic) {
+    return classStatic
+  }
   const owner = referencedSource(reference.expression)
   const object = owner && unwrapAssertion(owner.node)
   const member =
@@ -496,10 +514,58 @@ function referencedSource(
     : undefined
 }
 
-function unwrapAssertion(node: ts.Expression): ts.Expression {
+export function unwrapAssertion(node: ts.Expression): ts.Expression {
   return ts.isAsExpression(node) || ts.isSatisfiesExpression(node)
     ? unwrapAssertion(node.expression)
     : node
+}
+
+export function isSchemaCall(node: ts.Node): node is ts.CallExpression {
+  return (
+    ts.isCallExpression(node) &&
+    ts.isIdentifier(node.expression) &&
+    node.expression.text === 'ConfigurationSchema'
+  )
+}
+
+// The name a `ConfigurationSchema('Name', …)` call gives its schema
+export function schemaCallName(node: ts.Node) {
+  const [name] = isSchemaCall(node) ? node.arguments : []
+  return name && ts.isStringLiteralLike(name) ? name.text : undefined
+}
+
+function returnedSchemaName(fn: ts.FunctionDeclaration) {
+  return fn.body?.statements
+    .filter(ts.isReturnStatement)
+    .map(
+      stmt =>
+        stmt.expression && schemaCallName(unwrapAssertion(stmt.expression)),
+    )
+    .find(Boolean)
+}
+
+// `ReturnType<typeof factory>` -> `factory`
+function returnTypeOf(type: ts.TypeNode) {
+  const [arg] =
+    ts.isTypeReferenceNode(type) &&
+    ts.isIdentifier(type.typeName) &&
+    type.typeName.text === 'ReturnType'
+      ? (type.typeArguments ?? [])
+      : []
+  return arg && ts.isTypeQueryNode(arg) && ts.isIdentifier(arg.exprName)
+    ? arg.exprName.text
+    : undefined
+}
+
+// A string in the quote that needs no escape where one does, as a reader
+// would write it in a config
+export function quoteString(text: string) {
+  const quote = text.includes("'") && !text.includes('"') ? '"' : "'"
+  const escaped = text
+    .replaceAll('\\', '\\\\')
+    .replaceAll(quote, `\\${quote}`)
+    .replaceAll('\n', '\\n')
+  return `${quote}${escaped}${quote}`
 }
 
 // A literal's source in the inline-default spelling: strings single-quoted,
@@ -515,7 +581,7 @@ function literalText(
     return undefined
   }
   if (ts.isStringLiteralLike(value)) {
-    return `'${value.text}'`
+    return quoteString(value.text)
   }
   if (
     value.kind === ts.SyntaxKind.TrueKeyword ||
@@ -729,17 +795,46 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
     // top-level `const` at all, so a const-only guard skipped the file and the
     // factory arm below would never have run. A `:` admits a typed const,
     // `const DEFAULT_BIN_AS: readonly [string, string] = ...`.
+    // `class` and `type` are in it for the schema a class's static holds and
+    // the schema type a factory parameter is annotated with.
     if (
-      !/\bconst\s+[A-Za-z_$][\w$]*\s*[:=]/.test(sf.text) &&
-      !/\bfunction\s+[A-Za-z_$][\w$]*\s*\(/.test(sf.text)
+      !/\b(?:const\s+[A-Za-z_$][\w$]*\s*[:=]|function\s+[A-Za-z_$][\w$]*\s*\(|class\s|type\s+[A-Za-z_$][\w$]*\s*=)/.test(
+        sf.text,
+      )
     ) {
       continue
     }
     for (const stmt of sf.statements) {
       if (ts.isFunctionDeclaration(stmt) && stmt.name) {
         const factory = slotFieldFactory(stmt, sf)
+        const schema = returnedSchemaName(stmt)
         if (factory) {
           recordUnique(slotFieldFactoryIndex, stmt.name.text, factory)
+        }
+        if (schema) {
+          recordUnique(factorySchemaIndex, stmt.name.text, schema)
+        }
+      }
+      if (ts.isClassDeclaration(stmt) && stmt.name) {
+        for (const member of stmt.members) {
+          if (
+            ts.isPropertyDeclaration(member) &&
+            ts.isIdentifier(member.name) &&
+            member.initializer &&
+            member.modifiers?.some(m => m.kind === ts.SyntaxKind.StaticKeyword)
+          ) {
+            recordConstantSource(
+              `${stmt.name.text}.${member.name.text}`,
+              unwrapAssertion(member.initializer),
+              sf,
+            )
+          }
+        }
+      }
+      if (ts.isTypeAliasDeclaration(stmt)) {
+        const factory = returnTypeOf(stmt.type)
+        if (factory) {
+          recordUnique(typeFactoryIndex, stmt.name.text, factory)
         }
       }
       if (ts.isVariableStatement(stmt)) {
@@ -927,4 +1022,26 @@ export function slotFieldFactoryPairs(
     slot,
     substituteParams(source, factory.params, args),
   ])
+}
+
+/** The expression a `NAME`, `NAME.member` or `Class.staticMember` reads. */
+export function referencedExpression(reference: ts.Expression) {
+  const source = referencedSource(reference)
+  return source && unwrapAssertion(source.node)
+}
+
+/** The schema a named factory returns, by its `ConfigurationSchema` name. */
+export function factorySchemaName(name: string) {
+  return factorySchemaIndex.get(name) ?? undefined
+}
+
+/** The schema a `ReturnType<typeof factory>` type alias names. */
+export function typeSchemaName(name: string) {
+  const factory = typeFactoryIndex.get(name)
+  return factory ? factorySchemaName(factory) : undefined
+}
+
+/** Whether a named factory returns a `ConfigurationSchema` of a slot table. */
+export function isSchemaFactory(name: string) {
+  return !!slotFieldFactoryIndex.get(name)?.schema
 }
