@@ -4,35 +4,33 @@ description: Sequence extraction for selected features
 guide_category: Sequence tools
 ---
 
-The feature details panel can extract and display the sequence underlying a
-selected feature. For a gene or transcript, choose CDS, protein translation,
-cDNA, or genomic with introns (plus optional flanking bases); for any other
-feature type it shows the literal underlying sequence.
+**Show feature sequence** in the feature details panel displays the sequence
+under a selected feature. For a gene or transcript, choose CDS, protein
+translation, cDNA, or genomic with introns (plus optional flanking bases); for
+any other feature type it shows the literal underlying sequence.
 
 ## Gene features
 
-For gene or transcript features, the feature details panel stitches the
-subfeature sequences together. The available types are:
+For a gene or transcript, the panel stitches the subfeature sequences together.
+The dropdown at the top of the panel picks the type:
 
-- CDS - the stitched-together coding sequences
-- Protein - protein translation of the CDS. The panel uses the standard genetic
-  code (NCBI table 1) by default, but if the CDS has a `transl_table` attribute
-  in the GFF (e.g. `transl_table=2` for vertebrate mitochondria) it applies the
-  matching alternative codon table, including start-codon and `transl_except`
-  handling
-- cDNA - the complementary DNA of the transcript, formed from the exon sequences
-- Genomic w/ full introns - the entire gene region including introns, with UTR
-  and CDS highlighted
-- Genomic w/ full introns +/- Nbp up+down stream - the above plus N bases
+- **CDS:** the stitched-together coding sequences
+- **Protein:** the translation of the CDS, in the standard genetic code (NCBI
+  table 1) unless the CDS has a `transl_table` attribute in the GFF (e.g.
+  `transl_table=2` for vertebrate mitochondria), which selects the matching
+  table, start codons and `transl_except` included
+- **cDNA:** the exon sequences joined
+- **Genomic w/ full introns:** the whole gene region, with UTR and CDS
+  highlighted
+- **Genomic w/ full introns +/- Nbp up+down stream:** the above plus N bases
   upstream and downstream
-- Genomic w/ Nbp intron - the exon sequence plus N intronic bases flanking each
+- **Genomic w/ Nbp intron:** the exons plus N intronic bases flanking each
   splice site
-- Genomic w/ Nbp intron +/- Nbp up+down stream - combines the
-  upstream/downstream extension with the splice-site flanks
+- **Genomic w/ Nbp intron +/- Nbp up+down stream:** the splice-site flanks plus
+  the upstream and downstream extension
 
-Choose the sequence type from the dropdown at the top of the panel. The
-up/downstream extension defaults to 100bp and the intron flank to 10bp; both are
-configurable from the gear icon.
+The gear icon sets the up/downstream extension (100bp by default) and the intron
+flank (10bp).
 
 <Figure caption="The sequence panel for SELENOP, colored by region: flanks red, UTR blue, CDS yellow, introns white." src="/img/feature_detail_sequence.png" />
 
@@ -49,9 +47,8 @@ as `transl_except=(...,aa:Sec)` and translate to selenocysteine (U).
 
 ## Other feature types
 
-For non-gene features, the "Feature sequence" button shows the literal sequence
-underlying the feature, without subfeature stitching. The number of flanking
-bases is configurable from the gear icon.
+For other features, **Show feature sequence** shows the sequence under the
+feature as one span, and the gear icon sets the number of flanking bases.
 
 ## See also
 
