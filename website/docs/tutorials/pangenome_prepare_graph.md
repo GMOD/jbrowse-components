@@ -138,6 +138,11 @@ output prefix and the assembly name your config uses. Its bubbles come from
 gfa-to-tabix build graph.rgfa.gz -o hprc --assembly hg38
 ```
 
+To build your own rGFA, give minigraph PanSN-named FASTA records
+(`sample#haplotype#contig`), since it takes each segment's stable name from the
+input headers. Per-strain files that all call their contig `chr` put every
+segment on an ambiguous `chr`, which no query can tell apart by strain.
+
 A **plain GFA**, from pggb, odgi, vg or base-level Minigraph-Cactus, also needs
 the backbone sample and its bubbles. The bubbles come from a snarl VCF (vg's
 word for a bubble is snarl):
@@ -162,6 +167,16 @@ bcftools annotate --rename-chrs rename_chrs.tsv graph.snarls.vcf \
 ```bash
 gfa-to-tabix build graph.gfa -o ecoli --reference K12 --assembly K12 --snarls graph.snarls.vcf.gz
 ```
+
+On a plain GFA, the command places each segment by walking the paths:
+
+- **`--reference`** takes a sample, an assembly (`HG002#1`) or a path, and makes
+  every contig of the assembly it resolves to the reference, walked first at
+  rank 0. A bare sample (`GRCh38`) is enough for a haploid reference; for a
+  diploid one, name the haplotype, or the command anchors on the sample's first
+  haplotype and prints a note naming it.
+- **A segment a path reaches twice** takes its position from the first visit, so
+  it draws as one node and the repeat shows as depth.
 
 At human-chromosome scale, index the SV-resolution rGFA; a pggb graph's index
 does not finish there.
@@ -190,7 +205,8 @@ of its ends. The graph track folds what it draws the same way at ten of the
 linear view's pixels, so zooming out onto the tier keeps every loop the fine cut
 drew. The threshold is in the file name, 10,000 bp by default for an rGFA;
 `--tier` sets it, and a plain GFA defaults to 50, since most of its variants are
-single bases.
+single bases. Without a tier, the graph track cuts at most 5 Mb of segments and
+asks you to zoom in past that.
 
 ## Configuring the graph track {#the-two-indexes-a-graph-track-reads}
 
@@ -198,7 +214,8 @@ The config's first track is the graph. Its adapter holds:
 
 - `uri`, the prefix, and `"format": 2`, which reads `<prefix>.graph.bed.gz`
 - `coarse`, which names the tier and its threshold, `foldBelowBp`; the track
-  draws the tier past a tenth of that in bp per pixel
+  draws the tier past a tenth of that in bp per pixel, or past `aboveBpPerPx`
+  where `coarse` sets it
 - `assemblyNameToPanSN`, which maps your assembly name to the graph's PanSN
   sample; the command writes it only when the two differ
 
