@@ -1201,8 +1201,8 @@ importers:
   plugins/data-management:
     dependencies:
       '@gmod/ucsc-hub':
-        specifier: ^2.0.13
-        version: 2.0.13
+        specifier: ^2.1.0
+        version: 2.1.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -4611,8 +4611,8 @@ packages:
   '@gmod/twobit@6.0.14':
     resolution: {integrity: sha512-qO2kCWy3QDQqf8EQReb9JDKco7N+Vr7n3viDcmv8Q1D2ht8YnGtLbPqrEWCEQaT3974QjVur2/j4vbxr7drVRw==}
 
-  '@gmod/ucsc-hub@2.0.13':
-    resolution: {integrity: sha512-rqIFTGvDA5j8HYtLDXVX9u3ryJAW3r53Wjpp1YS6bxpEpRD0nTG7tZ1Vz3Mo43rhLq8VufnsZrxog98RODmr5w==}
+  '@gmod/ucsc-hub@2.1.0':
+    resolution: {integrity: sha512-wZun9yEVc/HsxxoYR4+Pa7ZGs9RqMTgoyRxulQfiCh2cI4NhRcsdGE7eo3qCSv0rG0WTVwvOL4Jfz44lGiE1nw==}
 
   '@gmod/vcf@7.4.0':
     resolution: {integrity: sha512-1o3pwzK29WXyrj8MqQb60vRYoaAsMtcXpTlYW70jUU7xIkxDOHTDamz4no7DeGju0VzfvEz70YvmvFFRc3hU6A==}
@@ -6032,9 +6032,6 @@ packages:
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [win32]
-
-  '@tybys/wasm-util@0.10.4':
-    resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
 
   '@tybys/wasm-util@0.10.5':
     resolution: {integrity: sha512-dOGOPxlaNV+G046mZzN+9C0dAcQZeSKcXiVaM0TYy/LM4ttTmgSBDxYfovcYI8Em3+eAbiAYpvWLOv8+ZVRJKA==}
@@ -12678,7 +12675,7 @@ snapshots:
     dependencies:
       generic-filehandle2: 2.5.1
 
-  '@gmod/ucsc-hub@2.0.13': {}
+  '@gmod/ucsc-hub@2.1.0': {}
 
   '@gmod/vcf@7.4.0': {}
 
@@ -13442,14 +13439,14 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
-      '@tybys/wasm-util': 0.10.4
+      '@tybys/wasm-util': 0.10.5
     optional: true
 
   '@napi-rs/wasm-runtime@1.2.7(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
     dependencies:
       '@emnapi/core': 1.11.3
       '@emnapi/runtime': 1.11.3
-      '@tybys/wasm-util': 0.10.4
+      '@tybys/wasm-util': 0.10.5
     optional: true
 
   '@noble/hashes@1.8.0': {}
@@ -13952,11 +13949,6 @@ snapshots:
     optional: true
 
   '@tsrs/win32-x64@0.25.0-ts7.1.0-beta':
-    optional: true
-
-  '@tybys/wasm-util@0.10.4':
-    dependencies:
-      tslib: 2.9.1
     optional: true
 
   '@tybys/wasm-util@0.10.5':
