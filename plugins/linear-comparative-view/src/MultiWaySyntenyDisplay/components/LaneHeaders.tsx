@@ -416,10 +416,12 @@ const LaneHeaders = observer(function LaneHeaders({
             </span>
           ) : null}
           <span
+            title={row.scaleTitle}
             style={{
               marginLeft: row.changes ? undefined : 'auto',
               color: bandPalette.text.secondary,
               flex: '0 0 auto',
+              pointerEvents: row.scaleTitle ? 'all' : undefined,
               ...(row.inline ? inlineChip : {}),
             }}
           >

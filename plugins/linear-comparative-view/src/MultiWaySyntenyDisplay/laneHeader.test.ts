@@ -127,13 +127,25 @@ describe('the scale', () => {
     )
   })
 
-  test('states the multiple once the lane is zoomed out past the anchor', () => {
+  test('states how many times the lane is squeezed once it holds more than the anchor window', () => {
     expect(rowOf(mateLane({ frame: { min: 0, max: 3000 } }), 2000).scale).toBe(
-      '3Kbp  1.5×',
+      '3Kbp, squeezed 1.5×',
     )
     expect(
       rowOf(mateLane({ frame: { min: 0, max: 40_000 } }), 2000).scale,
-    ).toBe('40Kbp  20×')
+    ).toBe('40Kbp, squeezed 20×')
+  })
+
+  test('explains itself in a hover title wherever it prints', () => {
+    expect(
+      rowOf(mateLane({ frame: { min: 0, max: 3000 } }), 2000).scaleTitle,
+    ).toBe(
+      "This lane has 3Kbp across the anchor's 2Kbp window, so it is drawn 1.5× smaller to fit.",
+    )
+    expect(rowOf(anchorLane, 2000).scaleTitle).toMatch(
+      /^The span of the window/,
+    )
+    expect(rowOf(mateLane({}), 2000).scaleTitle).toBeUndefined()
   })
 
   test('is nothing for a lane without a frame', () => {

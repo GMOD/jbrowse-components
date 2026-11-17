@@ -45,6 +45,8 @@ export interface LaneHeaderRow {
   assemblyName: string
   label: string
   scale: string
+  /** what the scale means, as a hover title */
+  scaleTitle?: string
   /** the text baseline, in stack px */
   y: number
   isAnchor: boolean
@@ -153,18 +155,25 @@ export function blockLocString(
   })
 }
 
-function scaleLabelOf(lane: Lane, visibleBpSpan: number) {
-  if (lane.isAnchor) {
-    return visibleBpSpan > 0 ? getBpDisplayStr(visibleBpSpan) : ''
-  }
-  if (lane.frame === undefined) {
-    return ''
-  }
-  const laneSpan = lane.frame.max - lane.frame.min
+function scaleOf(lane: Lane, visibleBpSpan: number) {
+  const windowSpan = getBpDisplayStr(visibleBpSpan)
+  const laneSpan = lane.frame ? lane.frame.max - lane.frame.min : 0
   const multiple = visibleBpSpan > 0 ? laneSpan / visibleBpSpan : 1
-  return multiple > 1.02
-    ? `${getBpDisplayStr(laneSpan)}  ${Number(multiple.toFixed(1))}×`
-    : ''
+  const times = `${Number(multiple.toFixed(1))}×`
+  return lane.isAnchor
+    ? visibleBpSpan > 0
+      ? {
+          text: windowSpan,
+          title:
+            'The span of the window. Other lanes share this scale unless marked squeezed.',
+        }
+      : { text: '' }
+    : multiple > 1.02
+      ? {
+          text: `${getBpDisplayStr(laneSpan)}, squeezed ${times}`,
+          title: `This lane has ${getBpDisplayStr(laneSpan)} across the anchor's ${windowSpan} window, so it is drawn ${times} smaller to fit.`,
+        }
+      : { text: '' }
 }
 
 export function laneHeaderRows(
@@ -204,12 +213,14 @@ export function laneHeaderRows(
     const changes = frame
       ? laneChanges(lane, changesOf(lane.assemblyName, frame.refName))
       : placeless && placelessText(placeless)
+    const scale = scaleOf(lane, visibleBpSpan)
     return {
       assemblyName: lane.assemblyName,
       label: inline
         ? `${lane.label}${lane.frame?.flipped ? ' [rev]' : ''}`
         : [lane.label, where, alsoAt, alsoOn].filter(part => !!part).join('  '),
-      scale: scaleLabelOf(lane, visibleBpSpan),
+      scale: scale.text,
+      scaleTitle: scale.title,
       y: inline
         ? inlineBaseline(lane.glyphTop, inlineGlyphHeight)
         : lane.layerTop - LABEL_BASELINE_OFFSET,

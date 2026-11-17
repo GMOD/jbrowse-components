@@ -383,7 +383,7 @@ function ribbonChannelNames(adapterConfig: Record<string, unknown>) {
 
 // the widest a lane header's scale reads, so the key clears it at any zoom
 const SCALE_COLUMN_PX =
-  Math.ceil(measureText('8.88Mbp  88.8×', LABEL_FONT_SIZE)) + 4
+  Math.ceil(measureText('8.88Mbp, squeezed 88.8×', LABEL_FONT_SIZE)) + 4
 
 /**
  * #stateModel MultiWaySyntenyDisplay
