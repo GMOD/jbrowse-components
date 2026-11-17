@@ -286,3 +286,64 @@ describe('the fit ladder over a pile of named marks', () => {
     expect(names(display.laidOutDataMap.get(0)!)).toHaveLength(32)
   })
 })
+
+describe('a pile no fold takes, on a fit track', () => {
+  const ctgA = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 10_000,
+  }
+  // Gene glyphs: sub-pixel, but not the boxes a fold takes
+  const unfoldable = (size: number) =>
+    Array.from({ length: size }, (_, i) => ({
+      featureId: `sno${String(i).padStart(2, '0')}`,
+      startBp: 1_000,
+      densityFade: false,
+    }))
+  const landmarks = [2_000, 4_000, 6_000, 8_000].map(startBp => ({
+    featureId: `gene${startBp}`,
+    startBp,
+    endBp: startBp + 300,
+    densityFade: false,
+  }))
+
+  function fitDisplay(pileSize: number) {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    view.zoomTo(10)
+    view.scrollTo(0)
+    display.setRpcData(0, marks([...unfoldable(pileSize), ...landmarks]), ctgA)
+    view.settleCoarseBlocks()
+    display.setHeightMode('fit')
+    display.setHeight(100)
+    return display
+  }
+
+  it('keeps landmark names over squeezed bodies when none survives the labelled floor', () => {
+    const display = fitDisplay(16)
+    expect(display.fitDecimatedFloor).toBe(display.fitMinScale)
+    expect(display.fitStage.level).toBe('decimated')
+    expect(names(display.laidOutDataMap.get(0)!)).toEqual(
+      expect.arrayContaining(landmarks.map(m => m.featureId)),
+    )
+    expect(display.fitDecimatedBodyScale).toBeLessThan(
+      display.fitLabeledBodyFloor,
+    )
+    expect(display.fitDecimatedBodyScale).toBeGreaterThanOrEqual(
+      display.fitMinScale,
+    )
+    expect(display.fitStage.contentHeight).toBeLessThanOrEqual(100)
+    expect(display.fitDrops.names).toBe('some')
+  })
+
+  it('keeps the labelled floor while a name survives there', () => {
+    const display = fitDisplay(8)
+    expect(display.fitStage.level).toBe('decimated')
+    expect(display.fitDecimatedFloor).toBe(display.fitLabeledBodyFloor)
+  })
+
+  it('still lands on bodies where even the squeeze floor overflows', () => {
+    expect(fitDisplay(40).fitStage.level).toBe('bodies')
+  })
+})

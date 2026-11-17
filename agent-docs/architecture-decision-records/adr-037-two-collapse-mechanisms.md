@@ -68,6 +68,13 @@ not any display-mode setting. The chain:
   strip is empty) was tried first and declined: it recovered one name per pair
   and broke the rule that a rung renders what it reserved.
 
+  Widening the fold to sub-pixel gene glyphs at a depth set by the fit height
+  was planned for a 16-row column of snoRNA genes (hg19 RefSeq, GAS5, 100 px
+  track) and not built: it would hide 11 genes behind one mark, while letting
+  `decimated` squeeze its bodies to `fitMinScale` when no name survives the
+  labelled floor fits the column unfolded at 95 px and keeps the view's
+  isolated names (`FEATURE_TRACK_DECISION_TREE.md`).
+
   Candidacy once also excluded any mark overlapping a wide or labeled ("solid")
   feature. That guard predates the pile booking, from when a collapsed mark took
   row 0 with nothing reserved and a wide feature could land under it. With the

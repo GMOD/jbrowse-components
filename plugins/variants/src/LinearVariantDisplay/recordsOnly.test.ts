@@ -151,7 +151,8 @@ describe('heightMode with no rows', () => {
     expect(display.heightMode).toBe('fit')
     expect(display.height).toBe(200)
     expect(display.topBands.reserved.records).toBe(200)
-    expect(display.recordsFitStage.scale).toBeLessThan(1)
+    const { scale, bodyScale } = display.recordsFitStage
+    expect(scale * bodyScale).toBeLessThan(1)
   })
 
   test('grow sizes the track to its records, up to growMaxHeight', () => {

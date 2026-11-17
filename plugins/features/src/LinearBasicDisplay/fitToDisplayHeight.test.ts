@@ -606,13 +606,30 @@ describe('feature display fit escalation ladder', () => {
     expect(display.fitStage.level).toBe('decimated')
     expect(display.renderedShowLabels).toBe(true)
 
-    display.setHeight(Math.round(bodiesH / 3))
+    display.setHeight(Math.round(bodiesH / 5))
     expect(display.fitStage.level).toBe('bodies')
     expect(display.renderedShowDescriptions).toBe(false)
     expect(display.renderedShowLabels).toBe(false)
     expect(display.fitScale).toBeLessThan(1)
     expect(display.maxY).toBe(display.height)
     expect(display.hasOverflow).toBe(false)
+  })
+
+  it('never brings names back as the track shrinks past the rung that dropped them all', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
+    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
+    display.setHeightMode('fit')
+
+    const levels = []
+    for (let h = Math.round(bodiesH); h >= bodiesH / 5; h -= 2) {
+      display.setHeight(h)
+      levels.push(display.fitStage.level)
+    }
+    const firstBodies = levels.indexOf('bodies')
+    expect(levels.slice(0, firstBodies)).toContain('decimated')
+    expect(levels.slice(firstBodies).every(l => l === 'bodies')).toBe(true)
   })
 
   for (const [where, layout, solves] of [
@@ -681,7 +698,7 @@ describe('feature display fit escalation ladder', () => {
       ]),
     )
 
-    display.setHeight(Math.round(bodiesH / 3))
+    display.setHeight(Math.round(bodiesH / 5))
     expect(display.fitStage.level).toBe('bodies')
     expect(display.fitNote).toBe(
       `names + descriptions hidden, squeezed to ${Math.round(display.fitScale * 100)}% (taller track shows more)`,
@@ -778,13 +795,18 @@ describe('feature display fit escalation ladder', () => {
 
     // Every feature shares one start, so a decimation keeps only the pile
     // leader's name.
-    const decimatedH = display.decimatedHeightProbe(8)
+    const labeledFloor = display.fitLabeledBodyFloor
+    const decimatedH = display.decimatedHeightProbeAt(labeledFloor)(8)
     expect(decimatedH).toBeLessThan(thinnedH)
+    // Under that, the leader's name over bodies at the squeeze floor
+    const squeezedH = display.decimatedHeightProbeAt(minScale)(8)
+    expect(squeezedH).toBeLessThan(decimatedH)
     const rungs = [
       ['full', fullH],
       ['labels', labelsH],
       ['thinned', thinnedH],
       ['decimated', decimatedH],
+      ['decimated', squeezedH],
     ] as const
     const expectedLevel = (h: number) =>
       rungs.find(([, ch]) => ch <= h)?.[0] ?? 'bodies'
@@ -792,6 +814,12 @@ describe('feature display fit escalation ladder', () => {
     const heights = [
       5, // clamped to MIN_DISPLAY_HEIGHT (20); hits the min-box floor
       20,
+      Math.floor(squeezedH) - 1,
+      Math.ceil(squeezedH),
+      Math.round((squeezedH + decimatedH) / 2),
+      Math.floor(decimatedH) - 1,
+      Math.ceil(decimatedH),
+      Math.round(bodiesH / 3),
       Math.round(bodiesH / 2),
       bodiesH - 1,
       bodiesH,
@@ -818,9 +846,13 @@ describe('feature display fit escalation ladder', () => {
 
       expect(level).toBe(expectedLevel(h))
       expect(display.fitStage.bodyScale).toBeGreaterThanOrEqual(
-        level === 'thinned' || level === 'decimated'
-          ? display.fitLabeledBodyFloor
-          : 1,
+        level === 'thinned'
+          ? labeledFloor
+          : level === 'decimated'
+            ? h < decimatedH
+              ? minScale - 1e-9
+              : labeledFloor
+            : 1,
       )
 
       expect(scale).toBeGreaterThanOrEqual(minScale)
@@ -1103,9 +1135,8 @@ describe('feature display fit escalation ladder', () => {
     expect(at(Math.round(fullH) + 40).sig).toBe(inFull.sig)
     expect(display.fitScale).toBe(1)
 
-    const decimatedH = display.decimatedHeightProbe(8)
-    const squeezedA = at(Math.floor(decimatedH) - 10)
-    const squeezedB = at(Math.floor(decimatedH) - 14)
+    const squeezedA = at(Math.round(bodiesH / 4.5))
+    const squeezedB = at(Math.round(bodiesH / 4.5) - 3)
     expect(squeezedA.level).toBe('bodies')
     expect(display.fitScale).toBeLessThan(1)
     expect(squeezedB.sig).not.toBe(squeezedA.sig)
@@ -1498,11 +1529,11 @@ describe('feature display fit measures the visible window', () => {
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
     display.setHeight(100)
     display.setHeightMode('fit')
-    const before = display.fitStage.contentHeight
+    const before = display.fitStage.bodyScale
 
     view.scrollTo(182_000 / 100)
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
-    expect(display.fitStage.contentHeight).toBeGreaterThan(before)
+    expect(display.fitStage.bodyScale).toBeLessThan(before)
   })
 
   it('floors the squeeze on the visible stack, not the fetch buffer', () => {

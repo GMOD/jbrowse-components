@@ -180,7 +180,8 @@ export function solveBodyScale(
 }
 
 // A labelled body shorter than this share of its label's font reads as an
-// underline to the text, so below it the names go instead.
+// underline to the text, so below it the names go instead, unless every name
+// would go (`fitDecimatedFloor`).
 export const LABELED_BODY_TO_FONT_RATIO = 0.4
 
 export function labeledBodyFloorScale(

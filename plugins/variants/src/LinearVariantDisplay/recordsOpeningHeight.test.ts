@@ -37,7 +37,8 @@ describe('with no rows the first layout sizes the track once', () => {
   test('a dense window opens at the slot height and fits its stack in', () => {
     const { display } = recordsDisplayAt(PILE, 1, {}, NO_ROWS)
     expect(display.height).toBe(200)
-    expect(display.recordsFitStage.scale).toBeLessThan(1)
+    const { scale, bodyScale } = display.recordsFitStage
+    expect(scale * bodyScale).toBeLessThan(1)
   })
 
   test('a pan into a denser window keeps the height', () => {

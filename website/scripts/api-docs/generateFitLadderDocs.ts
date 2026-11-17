@@ -17,7 +17,7 @@ const RUNG_DOES: Record<FitLevel, string> = {
   thinned:
     'every name kept, bodies shortened to the largest scale that fits, down to 0.4x the label font — names before height',
   decimated:
-    'a name only where it is isolated, the factor solved with bodies at that floor; then bodies grow back into the freed room',
+    'a name only where it is isolated, the factor solved with bodies at that floor, or at the squeeze floor where no name survives it; then bodies grow back into the freed room',
   bodies: 'no names or descriptions',
   bare: 'subfeature labels dropped too; a rung only where below label rows are reserved',
 }
