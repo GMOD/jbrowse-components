@@ -427,3 +427,29 @@ test('a URL BAM with no index can still be added', async () => {
   await findByText(/the index is looked for next to the main file/)
   expect(getByTestId('addTrackButton')).toBeEnabled()
 })
+
+test('the index picker opens on File when the main file is local, URL otherwise', async () => {
+  const { model } = getSession()
+  const { findByRole } = render(<AddTrackWidget model={model} />)
+  const indexToggle = async (name: string) =>
+    within(await findByRole('group', { name: 'Index file' })).getByRole(
+      'button',
+      { name },
+    )
+
+  model.setTrackData(localFile('reads.bam'))
+  await waitFor(async () => {
+    expect(await indexToggle('local file')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  model.setTrackData({
+    uri: 'https://x.test/reads.bam',
+    locationType: 'UriLocation',
+  })
+  await waitFor(async () => {
+    expect(await indexToggle('url')).toHaveAttribute('aria-pressed', 'true')
+  })
+})

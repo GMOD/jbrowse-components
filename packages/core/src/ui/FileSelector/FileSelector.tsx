@@ -23,12 +23,18 @@ const FileSelector = observer(function FileSelector({
   location,
   name,
   description,
+  defaultSourceType,
   rootModel,
   setLocation,
 }: {
   location?: FileLocation
   name?: string
   description?: string
+  /**
+   * the toggle an empty slot opens on, when the form knows better than URL —
+   * the index of a main file picked from this computer is on this computer too
+   */
+  defaultSourceType?: string
   inline?: boolean
   /**
    * where the internet accounts come from: required so no caller drops them by
@@ -42,7 +48,9 @@ const FileSelector = observer(function FileSelector({
   const labelId = useId()
   const descriptionId = useId()
   const [sourceType, setSourceType] = useState(() =>
-    getInitialSourceType(location, emptySourceType),
+    !location && defaultSourceType
+      ? defaultSourceType
+      : getInitialSourceType(location, emptySourceType),
   )
   const {
     accountMap,

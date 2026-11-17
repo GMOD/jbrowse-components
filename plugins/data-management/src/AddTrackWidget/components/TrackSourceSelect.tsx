@@ -3,6 +3,7 @@ import {
   getEnv,
   isBlobLocation,
   isFileHandleLocation,
+  isUriLocation,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -37,6 +38,8 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
 }) {
   const { classes } = useStyles()
   const { rootModel } = getEnv(model).pluginManager
+  const { trackData } = model
+  const mainIsLocal = !!trackData && !isUriLocation(trackData)
 
   return (
     <div className={classes.files}>
@@ -52,7 +55,9 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
       </div>
       <div>
         <FileSelector
+          key={mainIsLocal ? 'local' : 'remote'}
           name="Index file"
+          defaultSourceType={mainIsLocal ? 'file' : undefined}
           description={indexDescription(model)}
           location={model.indexTrackData}
           setLocation={loc => {
