@@ -201,10 +201,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
       persistTrackConfigNow(self)
     },
     /** #action */
-    setRibbonColorDomain(domain: string[]) {
-      setConf(self, ['ribbons', 'encoding', 'color', 'scale', 'domain'], domain)
-    },
-    /** #action */
     setHideUnlabelled(flag: boolean) {
       const field = ribbonColorFieldOf(self)
       if (field !== undefined) {
@@ -239,10 +235,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /** #action */
     setShowGeneLabels(flag: boolean) {
       setConf(self, ['labels', 'name', 'show'], flag)
-    },
-    /** #action */
-    setGeneTextField(field: string) {
-      setConf(self, ['labels', 'name', 'field'], field)
     },
     /** #action */
     setResolution(mode: LodMode) {

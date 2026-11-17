@@ -83,18 +83,22 @@ test('the text slot picks what a gene label prints, name-else-ID unset', () => {
     gene_name: 'ABC1',
   })
   expect(display.geneTextOf(gene)).toBe('gene-1')
-  display.setGeneTextField('gene_name')
+  setConf(display, ['labels', 'name', 'field'], 'gene_name')
   expect(display.geneTextOf(gene)).toBe('ABC1')
-  display.setGeneTextField("jexl:get(feature,'gene_name') + '*'")
+  setConf(
+    display,
+    ['labels', 'name', 'field'],
+    "jexl:get(feature,'gene_name') + '*'",
+  )
   expect(display.geneTextOf(gene)).toBe('ABC1*')
-  display.setGeneTextField('product')
+  setConf(display, ['labels', 'name', 'field'], 'product')
   expect(display.geneTextOf(gene)).toBeUndefined()
 })
 
 test('a text expression that does not compile falls back to name-else-ID', () => {
   const display = createDisplay()
   const error = jest.spyOn(console, 'error').mockImplementation(() => {})
-  display.setGeneTextField("jexl:get(feature,'gene_name'")
+  setConf(display, ['labels', 'name', 'field'], "jexl:get(feature,'gene_name'")
   const gene = new SimpleFeature({
     uniqueId: 'u1',
     refName: 'ctgA',
@@ -2669,7 +2673,7 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
   display.setFeatures([row('f1', 'B1'), row('f2', 'A1a'), row('f3', 'C1')])
   expect(labels()).toEqual(['B1', 'A1a', 'C1'])
 
-  display.setRibbonColorDomain(['C1'])
+  setConf(display, ['ribbons', 'encoding', 'color', 'scale', 'domain'], ['C1'])
   expect(labels()).toEqual(['C1', 'A1a', 'B1'])
   const ribbons = display.colorScales.find(scale => scale.id === 'ribbons')
   expect(
@@ -2770,7 +2774,7 @@ test('a picked ribbon mode is written as the ribbon color channel', () => {
     value: 'grey',
   })
   display.setRibbonColorField('group')
-  display.setRibbonColorDomain(['C1'])
+  setConf(display, ['ribbons', 'encoding', 'color', 'scale', 'domain'], ['C1'])
   display.setRibbonColorField('group')
   expect(ribbonColor()).toEqual({
     value: 'grey',
