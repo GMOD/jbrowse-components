@@ -215,12 +215,44 @@ function checkPluggable(
   }
 }
 
+// After every track is read, since an alias may come before the track whose
+// id it is
+function checkTrackAliases(
+  tracks: Record<string, unknown>[],
+  report: Report,
+  ctx: Ctx,
+) {
+  for (const [i, track] of tracks.entries()) {
+    const aliases = Array.isArray(track.aliases) ? track.aliases : []
+    for (const [j, alias] of aliases.entries()) {
+      const where = `tracks[${i}].aliases[${j}]`
+      if (typeof alias === 'string') {
+        if (ctx.seenTrackIds.has(alias) || ctx.sequenceTrackIds.has(alias)) {
+          report.error(
+            where,
+            `"${alias}" is a trackId, which wins over an alias, so this alias never resolves`,
+          )
+        } else if (ctx.trackAliases.has(alias)) {
+          report.error(
+            where,
+            `"${alias}" is an alias of another track too, so it resolves to only one of them`,
+          )
+        } else {
+          ctx.trackAliases.add(alias)
+        }
+      }
+    }
+  }
+}
+
 interface Ctx {
   assemblyNames: Set<string>
   // assemblies, not names: aliases put one assembly under several names, and
   // a loose track's implied assembly is only unambiguous when there is one
   assemblyCount: number
   seenTrackIds: Set<string>
+  // ids tracks list in `aliases`, which a session may name too
+  trackAliases: Set<string>
   // every id a session may legally name: the tracks plus each assembly's
   // ReferenceSequenceTrack, which lives on the assembly rather than in `tracks`
   sequenceTrackIds: Set<string>
@@ -523,6 +555,7 @@ function checkViewReferences(
     if (
       typeof trackId === 'string' &&
       !ctx.seenTrackIds.has(trackId) &&
+      !ctx.trackAliases.has(trackId) &&
       !ctx.sequenceTrackIds.has(trackId)
     ) {
       const message = `trackId "${trackId}" is not defined in this config${didYouMean(trackId, [...ctx.seenTrackIds, ...ctx.sequenceTrackIds])}`
@@ -1402,6 +1435,7 @@ export function validateConfig(
     ),
     assemblyCount: assemblies.length,
     seenTrackIds: new Set(),
+    trackAliases: new Set(),
     declaresPlugins,
     schema,
     // Both the written trackId and the one the `{name, uri}` shorthand derives,
@@ -1429,6 +1463,7 @@ export function validateConfig(
   for (const [i, track] of tracks.entries()) {
     checkTrack(track, i, manifest, report, ctx)
   }
+  checkTrackAliases(tracks, report, ctx)
   checkTableColumns(configuration, tracks, report)
 
   const connections = Array.isArray(config.connections)

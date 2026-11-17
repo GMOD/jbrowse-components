@@ -224,9 +224,9 @@ function retypedTrack(
             array,
             index,
             snapshot: shownTrackSnapshot({
-              trackId: configuration,
+              trackId: liveConf.trackId,
               trackType: liveConf.type,
-              configuration,
+              configuration: liveConf.trackId,
               picked,
               initialSnapshot: rest,
               displayInitialSnapshot: keepsDisplay ? oldDisplay : {},

@@ -15,6 +15,10 @@ export function trackType(track: Track) {
   return typeof track.type === 'string' ? track.type : ''
 }
 
+function trackAliases(track: Track): unknown[] {
+  return Array.isArray(track.aliases) ? track.aliases : []
+}
+
 // Substring match on a track's id or display name, case-insensitively. The one
 // definition of "does this track match what the user typed", shared by the
 // `list <genome> <filter>` search and the near-match suggestions resolveTrackId
@@ -41,21 +45,25 @@ function matchTrackId(tracks: Track[], input: string, assemblyName: string) {
     )
   })
 
+  const aliased = tracks.find(t => trackAliases(t).includes(input))
   const resolved = ids.has(input)
     ? input
     : ids.has(prefixed)
       ? prefixed
-      : looseMatches.length === 1
-        ? looseMatches[0]!.trackId
-        : undefined
+      : aliased
+        ? aliased.trackId
+        : looseMatches.length === 1
+          ? looseMatches[0]!.trackId
+          : undefined
   return { resolved, looseMatches }
 }
 
 // Resolve a user's --track token to a real trackId in the config. Hosted
 // trackIds are all prefixed with the assembly name (e.g. hg19-ncbiRefSeqCurated),
 // which is tedious to type, so this accepts: the exact id, the id with the
-// `<assembly>-` prefix dropped, or a case-insensitive match on the id or the
-// track's display name (when unambiguous). A miss throws with near-matches so the
+// `<assembly>-` prefix dropped, an id a track lists in `aliases`, or a
+// case-insensitive match on the id or the track's display name (when
+// unambiguous). A miss throws with near-matches so the
 // user can correct the token rather than getting a downstream "failed to open".
 export function resolveTrackId(
   tracks: Track[],

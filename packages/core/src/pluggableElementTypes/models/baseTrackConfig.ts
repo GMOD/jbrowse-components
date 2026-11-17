@@ -183,6 +183,20 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Ids this track went by before, e.g. `["genes"]` after renaming the
+       * track `genes` to `genes_v2`. A saved session, share link, URL
+       * `tracks=` entry or text-search index naming an old id opens this
+       * track. An alias must not be another track's trackId, nor be claimed by
+       * two tracks.
+       */
+      aliases: {
+        description: 'ids this track went by before, which still resolve to it',
+        type: 'stringArray',
+        defaultValue: [],
+        advanced: true,
+      },
+      /**
+       * #slot
        */
       assemblyNames: {
         description: 'name of the assembly (or assemblies) track belongs to',

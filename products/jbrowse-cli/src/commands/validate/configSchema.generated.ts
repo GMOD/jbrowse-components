@@ -17643,6 +17643,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": [
@@ -18249,6 +18261,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
@@ -18890,6 +18914,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": [
@@ -19354,6 +19390,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": [
@@ -19651,6 +19699,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
@@ -20014,6 +20074,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": [
@@ -20375,6 +20447,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": [
@@ -20638,6 +20722,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
@@ -20964,6 +21060,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": [
@@ -21188,6 +21296,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
@@ -21713,6 +21833,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
@@ -24488,6 +24620,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {

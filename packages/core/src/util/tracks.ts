@@ -88,7 +88,7 @@ import type {
   FileLocation,
   PreFileLocation,
 } from './types/data.ts'
-import type { AbstractViewContainer } from './types/index.ts'
+import type { AbstractViewContainer, TrackCatalog } from './types/index.ts'
 import type { UnappliedSetting } from './unknownSnapshotKeys.ts'
 import type {
   IAnyStateTreeNode,
@@ -300,6 +300,17 @@ export function getConfAssemblyNamesOrNone(
  */
 export function toTrackConfigEntry(conf: AnyTrackConfig): TrackConfigEntry {
   return isStateTreeNode(conf) ? (getSnapshot(conf) as TrackConfigEntry) : conf
+}
+
+/**
+ * The trackId `id` names in `catalog`, resolving an alias. Compare or key an
+ * id from a session, link, search index or caller by this.
+ */
+export function canonicalTrackId(
+  catalog: Pick<TrackCatalog, 'canonicalTrackId'>,
+  id: string,
+) {
+  return catalog.canonicalTrackId?.(id) ?? id
 }
 
 /**
@@ -1394,7 +1405,7 @@ function resolveTrackDisplayChoice(
 
 export function showTrackGeneric(
   self: GenericView,
-  trackId: string,
+  id: string,
   // `object`, annotated, rather than inferred from the default. A bare `{}`
   // accepts every non-nullish value, numbers included, which is how a synteny
   // level index typechecked its way into a track snapshot — see the dotplot and
@@ -1413,6 +1424,7 @@ export function showTrackGeneric(
 ) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
+  const trackId = inlineConf ? id : canonicalTrackId(session, id)
 
   const found = self.tracks.find(t => t.configuration.trackId === trackId)
   if (found) {
@@ -1524,14 +1536,16 @@ export function stripTrackIds(tracks: TrackSnapshot[]) {
   }))
 }
 
-export function hideTrackGeneric(self: GenericView, trackId: string) {
+export function hideTrackGeneric(self: GenericView, id: string) {
+  const session = getSession(self)
+  const trackId = canonicalTrackId(session, id)
   const t = self.tracks.find(t => t.configuration.trackId === trackId)
   if (t) {
     self.tracks.remove(t)
     // drop the persisted connection-track config if no other view holds it
     // (persisted → guards saved-session size; the volatile working-copy cache
     // in SessionTracks is deliberately not pruned, see editableTrackConfigs)
-    getSession(self).pruneConnectionTrackConfig?.(trackId)
+    session.pruneConnectionTrackConfig?.(trackId)
     return true
   }
   return false
@@ -1662,12 +1676,13 @@ function warmTrackAdapter(
 
 export async function launchTrackGeneric(
   self: GenericView,
-  trackId: string,
+  id: string,
   initialSnapshot: object = {},
   displayInitialSnapshot: DisplayInitialSnapshot = {},
   inlineConf?: Record<string, unknown>,
 ) {
   const { pluginManager } = getEnv(self)
+  const trackId = inlineConf ? id : canonicalTrackId(getSession(self), id)
   const found = self.tracks.find(t => t.configuration.trackId === trackId)
   if (found) {
     let target

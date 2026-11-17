@@ -130,6 +130,38 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             record: Record<string, AnyTrackConfig>
           }
         | undefined
+      function exactTrackById(id: string) {
+        const connection = connectionConfigsById.get()[id]
+        const sequence = sequencesById.get()[id]
+        const base = self.trackBasesById.get(id)
+        return (
+          connection ??
+          (sequence
+            ? self.withSequenceEdits(sequence)
+            : base && self.withTrackEdits(base))
+        )
+      }
+      // Each track's `aliases`, mapped to its trackId
+      const trackIdsByAlias = computed(
+        () => {
+          const byAlias = new Map<string, string>()
+          for (const track of self.trackBasesById.values()) {
+            for (const alias of track.aliases ?? []) {
+              byAlias.set(alias, track.trackId)
+            }
+          }
+          return byAlias
+        },
+        { name: 'trackIdsByAlias' },
+      )
+      // Reads the id indexes only, which no settings edit rebuilds
+      function canonicalTrackId(id: string) {
+        return id in connectionConfigsById.get() ||
+          id in sequencesById.get() ||
+          self.trackBasesById.has(id)
+          ? id
+          : (trackIdsByAlias.get().get(id) ?? id)
+      }
       // Per-id computeds backing getTrackById, so an id's readers wake only
       // when it resolves to another config. Not evicted: bounded by the
       // distinct ids resolved this session.
@@ -141,26 +173,25 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         views: {
           /**
            * #method
+           * The trackId `id` names: itself when a track, assembly sequence or
+           * connection track has it, else the track listing it in `aliases`,
+           * else `id` unchanged. Compare or key an id from a session, link,
+           * search index or caller by this.
+           */
+          canonicalTrackId,
+          /**
+           * #method
            * Config for one trackId — a track, assembly sequence, or connection
            * track — or undefined. Per-id reactive: every display resolves its
            * config through this (via TrackConfigurationReference) and
            * subscribes only to that track's id, so one track's settings edit doesn't
-           * re-render the others.
+           * re-render the others. An alias resolves to its track, which
+           * carries its current trackId.
            */
           getTrackById(id: string): AnyTrackConfig | undefined {
             let c = trackByIdComputeds.get(id)
             if (!c) {
-              c = computed(() => {
-                const connection = connectionConfigsById.get()[id]
-                const sequence = sequencesById.get()[id]
-                const base = self.trackBasesById.get(id)
-                return (
-                  connection ??
-                  (sequence
-                    ? self.withSequenceEdits(sequence)
-                    : base && self.withTrackEdits(base))
-                )
-              })
+              c = computed(() => exactTrackById(canonicalTrackId(id)))
               trackByIdComputeds.set(id, c)
             }
             return c.get()

@@ -457,6 +457,7 @@ export type AnyConfiguration = AnyConfigurationModel | AnyConfigurationSnapshot
 export interface TrackConfigEntry {
   trackId: string
   type: string
+  aliases?: string[]
   [key: string]: unknown
 }
 

@@ -28,6 +28,7 @@ import {
 } from '@jbrowse/core/util/openViews'
 import {
   allSessionTracks,
+  canonicalTrackId,
   getConfAssemblyNamesOrNone,
   getConfRpcSessionId,
   guessTrackConfForLocation,
@@ -1074,8 +1075,9 @@ function shownTrackModel(
   trackId: string,
   viewId?: string,
 ) {
+  const canonical = canonicalTrackId(session, trackId)
   const trackOf = (v: AbstractViewModel) =>
-    viewTracks(v).find(t => t.configuration.trackId === trackId)
+    viewTracks(v).find(t => t.configuration.trackId === canonical)
   const showing = viewScope(session, viewId).filter(v => trackOf(v))
   // undefined here was followed by ".activeDisplay" on the next line of every
   // agent's code, and a TypeError says nothing about which of the two causes
@@ -1833,7 +1835,7 @@ export function createJbApi(
               ),
             ]
           : await visibleRegionsOf(session, fetchArgs.viewId, {
-              preferTrackId: fetchArgs.trackId,
+              preferTrackId: conf.trackId,
               trackAssemblies: getConfAssemblyNamesOrNone(
                 conf,
                 session.assemblyManager,

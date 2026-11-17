@@ -1762,6 +1762,10 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
+          "name": "aliases",
+          "type": "string[]"
+        },
+        {
           "name": "assemblyNames",
           "type": "string[]"
         },
@@ -1879,6 +1883,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "name",
           "type": "string"
+        },
+        {
+          "name": "aliases",
+          "type": "string[]"
         },
         {
           "name": "assemblyNames",
@@ -2066,6 +2074,10 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
+          "name": "aliases",
+          "type": "string[]"
+        },
+        {
           "name": "assemblyNames",
           "type": "string[]"
         },
@@ -2183,6 +2195,10 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
+          "name": "aliases",
+          "type": "string[]"
+        },
+        {
           "name": "assemblyNames",
           "type": "string[]"
         },
@@ -2296,6 +2312,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "name",
           "type": "string"
+        },
+        {
+          "name": "aliases",
+          "type": "string[]"
         },
         {
           "name": "assemblyNames",
@@ -2414,6 +2434,10 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
+          "name": "aliases",
+          "type": "string[]"
+        },
+        {
           "name": "assemblyNames",
           "type": "string[]"
         },
@@ -2530,6 +2554,10 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
+          "name": "aliases",
+          "type": "string[]"
+        },
+        {
           "name": "assemblyNames",
           "type": "string[]"
         },
@@ -2643,6 +2671,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "name",
           "type": "string"
+        },
+        {
+          "name": "aliases",
+          "type": "string[]"
         },
         {
           "name": "assemblyNames",
@@ -2761,6 +2793,10 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
+          "name": "aliases",
+          "type": "string[]"
+        },
+        {
           "name": "assemblyNames",
           "type": "string[]"
         },
@@ -2874,6 +2910,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "name",
           "type": "string"
+        },
+        {
+          "name": "aliases",
+          "type": "string[]"
         },
         {
           "name": "assemblyNames",
@@ -2996,6 +3036,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "name",
           "type": "string"
+        },
+        {
+          "name": "aliases",
+          "type": "string[]"
         },
         {
           "name": "assemblyNames",

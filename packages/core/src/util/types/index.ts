@@ -158,6 +158,8 @@ export interface TrackCatalog {
   assemblies: BaseAssemblyConfigModel[]
   connectionInstances?: { tracks: TrackConfigNode[] }[]
   getTrackById: (id: string) => AnyTrackConfig | undefined
+  // absent in a catalog that knows no aliases, where every id is its own
+  canonicalTrackId?: (id: string) => string
 }
 
 /** minimum interface that all session state models must implement */

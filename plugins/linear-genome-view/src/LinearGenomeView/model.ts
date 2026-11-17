@@ -36,6 +36,7 @@ import calculateStaticBlocks, {
 } from '@jbrowse/core/util/calculateStaticBlocks'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import {
+  canonicalTrackId,
   getTrackName,
   hideTrackGeneric,
   launchToggleTrackGeneric,
@@ -1401,7 +1402,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       getTrack(id: string) {
-        return this.trackMap.get(id)
+        return this.trackMap.get(canonicalTrackId(getSession(self), id))
       },
 
       /**
@@ -1810,7 +1811,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return (
           (
             self.tracks.find(t => t.id === idOrTrackId) ??
-            self.tracks.find(t => t.configuration.trackId === idOrTrackId)
+            self.getTrack(idOrTrackId)
           )?.id ?? idOrTrackId
         )
       },

@@ -1031,6 +1031,7 @@ exports[`every registered schema slot default 1`] = `
     "ixxFilePath": "fileLocation = {"uri":"out.ixx","locationType":"UriLocation"}",
   },
   "track: AlignmentsTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,
@@ -1047,6 +1048,7 @@ exports[`every registered schema slot default 1`] = `
     "textSearching.indexingFeatureTypesToInclude": "stringArray = []",
   },
   "track: FeatureTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,
@@ -1063,6 +1065,7 @@ exports[`every registered schema slot default 1`] = `
     "textSearching.indexingFeatureTypesToInclude": "stringArray = []",
   },
   "track: GCContentTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,
@@ -1079,6 +1082,7 @@ exports[`every registered schema slot default 1`] = `
     "textSearching.indexingFeatureTypesToInclude": "stringArray = []",
   },
   "track: GWASTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,
@@ -1095,6 +1099,7 @@ exports[`every registered schema slot default 1`] = `
     "textSearching.indexingFeatureTypesToInclude": "stringArray = []",
   },
   "track: HicTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,
@@ -1111,6 +1116,7 @@ exports[`every registered schema slot default 1`] = `
     "textSearching.indexingFeatureTypesToInclude": "stringArray = []",
   },
   "track: LDTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,
@@ -1127,6 +1133,7 @@ exports[`every registered schema slot default 1`] = `
     "textSearching.indexingFeatureTypesToInclude": "stringArray = []",
   },
   "track: MafTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,
@@ -1143,6 +1150,7 @@ exports[`every registered schema slot default 1`] = `
     "textSearching.indexingFeatureTypesToInclude": "stringArray = []",
   },
   "track: MultiQuantitativeTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,
@@ -1159,6 +1167,7 @@ exports[`every registered schema slot default 1`] = `
     "textSearching.indexingFeatureTypesToInclude": "stringArray = []",
   },
   "track: QuantitativeTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,
@@ -1183,6 +1192,7 @@ exports[`every registered schema slot default 1`] = `
     "sequenceType": "stringEnum = "dna" of ["dna","pep"]",
   },
   "track: SyntenyTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,
@@ -1199,6 +1209,7 @@ exports[`every registered schema slot default 1`] = `
     "textSearching.indexingFeatureTypesToInclude": "stringArray = []",
   },
   "track: VariantTrack": {
+    "aliases": "stringArray = []",
     "assemblyNames": "stringArray = ["assemblyName"]",
     "category": "stringArray = []",
     "description": "string = """,

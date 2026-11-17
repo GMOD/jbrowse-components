@@ -1,6 +1,10 @@
 import { getEnv } from '@jbrowse/core/util'
 import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
-import { guessTrackConf, isLooseTrackConfig } from '@jbrowse/core/util/tracks'
+import {
+  canonicalTrackId,
+  guessTrackConf,
+  isLooseTrackConfig,
+} from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { resolveLocalFileUris } from './localFiles.ts'
@@ -39,6 +43,7 @@ interface ControllerView {
 export interface ControllerSession extends IStateTreeNode {
   view: ControllerView
   getTrackById: (trackId: string) => unknown
+  canonicalTrackId?: (trackId: string) => string
   addSessionTrackConf: (conf: TrackConf) => unknown
 }
 
@@ -77,7 +82,7 @@ export function resolveTracks(
   const { pluginManager } = getEnv(session)
   return tracks.map(track => {
     if (typeof track === 'string' && session.getTrackById(track)) {
-      return { trackId: track }
+      return { trackId: canonicalTrackId(session, track) }
     }
     const conf = isLooseTrack(track)
       ? guessTrackConf(track, pluginManager, assemblyName)

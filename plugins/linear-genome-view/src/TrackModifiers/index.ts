@@ -10,7 +10,11 @@ import {
   testsSomething,
   withFields,
 } from '@jbrowse/core/util/fieldPredicate'
-import { normalizeTrackInit, trackDisplayType } from '@jbrowse/core/util/tracks'
+import {
+  canonicalTrackId,
+  normalizeTrackInit,
+  trackDisplayType,
+} from '@jbrowse/core/util/tracks'
 import {
   buildDisplaySnapshot,
   displayCategory,
@@ -310,13 +314,14 @@ export async function launchTrackInit(
   view: ModifierView & IAnyStateTreeNode,
   t: TrackInit,
 ) {
-  const { trackId, trackSnapshot, displaySnapshot, modifiers } =
-    normalizeTrackInit(t)
+  const session = getSession(view)
+  const init = normalizeTrackInit(t)
+  const { trackSnapshot, displaySnapshot, modifiers } = init
+  const trackId = canonicalTrackId(session, init.trackId)
   if (modifiers.length === 0) {
     await view.launchTrack(trackId, trackSnapshot, displaySnapshot)
     return
   }
-  const session = getSession(view)
   const { type } = displaySnapshot
   const notes: string[] = []
   try {

@@ -12,6 +12,7 @@ import { isObject } from '../util/objectUtils.ts'
 import {
   allSessionTracks,
   canonicalAssemblyNames,
+  canonicalTrackId,
   getConfAssemblyNamesOrNone,
 } from '../util/tracks.ts'
 
@@ -197,14 +198,17 @@ export default class TextSearchManager {
     assemblyName: string,
   ): Promise<TextSearchReport> {
     const loaded = await this.loadTextSearchAdapters(assemblyName)
+    const session = this.pluginManager.rootModel?.session
     const searched = await settle(
       loaded.values.map(async ({ adapter, trackId }) => {
         const found = await adapter.searchIndex(args)
-        // a per-track index answers for its track, whether or not its records
-        // name it — a UCSC hub's index holds only feature names
-        if (trackId) {
-          for (const result of found) {
-            result.trackId ??= trackId
+        for (const result of found) {
+          // a per-track index answers for its track, whether or not its
+          // records name it — a UCSC hub's index holds only feature names
+          result.trackId ??= trackId
+          // an index built before a track was renamed names its old id
+          if (session && result.trackId !== undefined) {
+            result.trackId = canonicalTrackId(session, result.trackId)
           }
         }
         return found

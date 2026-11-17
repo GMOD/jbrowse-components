@@ -17104,6 +17104,18 @@
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": ["assemblyName"],
@@ -17702,6 +17714,18 @@
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
@@ -18319,6 +18343,18 @@
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": ["assemblyName"],
@@ -18775,6 +18811,18 @@
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": ["assemblyName"],
@@ -19062,6 +19110,18 @@
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
@@ -19414,6 +19474,18 @@
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": ["assemblyName"],
@@ -19764,6 +19836,18 @@
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": ["assemblyName"],
@@ -20017,6 +20101,18 @@
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
@@ -20332,6 +20428,18 @@
             "$ref": "#/$defs/PlainString"
           }
         },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
           "default": ["assemblyName"],
@@ -20546,6 +20654,18 @@
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
@@ -21063,6 +21183,18 @@
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
@@ -23617,6 +23749,18 @@
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "aliases": {
+          "description": "ids this track went by before, which still resolve to it.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {

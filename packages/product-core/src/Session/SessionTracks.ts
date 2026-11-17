@@ -331,10 +331,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * The entry `trackId` edits over, hydrated: the one the session added
          * it with, or its config.json entry. What a display's "is this
          * arranged" and "reset" compare its live config against. Per-id
-         * reactive, like `getTrackById`.
+         * reactive, and resolving an alias, like `getTrackById`.
          */
         baseTrackConfig(trackId: string): TrackConfigEntry | undefined {
-          return baseFor(trackId)
+          return baseFor(self.canonicalTrackId(trackId))
         },
         /**
          * #method
@@ -367,12 +367,15 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               if (!resolved || isStateTreeNode(resolved)) {
                 return resolved
               }
-              const existing = self.editableTrackConfigs.get(id)
+              const existing = self.editableTrackConfigs.get(resolved.trackId)
               if (existing?.source === resolved) {
                 return existing.node
               }
               const node = schemaType.create(resolved, { pluginManager })
-              self.editableTrackConfigs.set(id, { node, source: resolved })
+              self.editableTrackConfigs.set(resolved.trackId, {
+                node,
+                source: resolved,
+              })
               return node
             })
             editableBySchema.set(schemaType, editable)
@@ -447,6 +450,17 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           for (const track of legacy) {
             self.sessionTracks.remove(track)
           }
+        }
+        // An edit saved before its track was renamed is keyed by, and carries,
+        // an id the track now lists in `aliases`
+        const entries = Object.entries(self.trackConfigDeltas)
+        if (entries.some(([id]) => self.canonicalTrackId(id) !== id)) {
+          self.trackConfigDeltas = Object.fromEntries(
+            entries.map(([id, delta]) => {
+              const trackId = self.canonicalTrackId(id)
+              return [trackId, trackId === id ? delta : { ...delta, trackId }]
+            }),
+          )
         }
       },
     }))
@@ -532,9 +546,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         // prior sessionTracks — not just sessionTracks. Re-adding a config
         // already in the catalog would otherwise push a full shadow into
         // sessionTracks, silently demoting a catalog track to a session track
-        // and dropping its trackConfigDeltas override semantics.
+        // and dropping its trackConfigDeltas override semantics. An id another
+        // track lists in `aliases` is free: the new track takes it over.
         const existing = self.getTrackById(trackId)
-        if (existing) {
+        if (existing?.trackId === trackId) {
           const entry = self.sessionTracks.find(t => t.trackId === trackId)
           if (entry) {
             assertNotReaddedDifferently(pluginManager, entry, {

@@ -482,6 +482,31 @@ describe('validateConfig', () => {
     expect(errorsOf(config).map(e => e.where)).toEqual(['tracks[1].trackId'])
   })
 
+  it('accepts a defaultSession naming a track by an alias', () => {
+    const base = baseConfig()
+    const config = {
+      ...base,
+      tracks: [{ ...base.tracks[0]!, aliases: ['old_bam'] }],
+    }
+    config.defaultSession.views[0]!.tracks = ['old_bam']
+    expect(errorsOf(config)).toEqual([])
+  })
+
+  it('reports an alias that is a trackId or that two tracks claim', () => {
+    const base = baseConfig()
+    const config = {
+      ...base,
+      tracks: [
+        { ...base.tracks[0]!, aliases: ['other_bam', 'old_bam'] },
+        { ...base.tracks[0]!, trackId: 'other_bam', aliases: ['old_bam'] },
+      ],
+    }
+    expect(errorsOf(config).map(e => e.where)).toEqual([
+      'tracks[0].aliases[0]',
+      'tracks[1].aliases[0]',
+    ])
+  })
+
   it('reports a defaultSession naming a track that does not exist', () => {
     const config = baseConfig()
     config.defaultSession.views[0]!.tracks = ['sample_bem']

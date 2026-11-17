@@ -29,6 +29,14 @@ test('case-insensitive id and display-name matching', () => {
   )
 })
 
+test('an id a track lists in aliases resolves to that track', () => {
+  const renamed: Track[] = [
+    ...tracks,
+    { trackId: 'hg19-genes', name: 'Genes', aliases: ['hg19-oldGenes'] },
+  ]
+  expect(resolveTrackId(renamed, 'hg19-oldGenes', 'hg19')).toBe('hg19-genes')
+})
+
 test('a miss throws with substring suggestions', () => {
   expect(() => resolveTrackId(tracks, 'clinvar', 'hg19')).toThrow(
     /Did you mean: hg19-clinvarMain/,
