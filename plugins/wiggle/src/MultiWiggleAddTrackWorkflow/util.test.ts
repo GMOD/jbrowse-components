@@ -193,11 +193,17 @@ describe('classifyFile', () => {
 
   it('refuses a dropped file that needs an index it cannot bring', () => {
     expect(
-      classifyFile(new File(['data'], 'peaks.bed.gz'), guessers()),
+      classifyFile(new File(['data'], 'calls.bedmethyl.gz'), guessers()),
     ).toMatchObject({
-      name: 'peaks',
+      name: 'calls',
       reason: expect.stringContaining('index'),
     })
+  })
+
+  it('reads a dropped bed.gz whole rather than refusing it', () => {
+    expect(
+      asMember(classifyFile(new File(['data'], 'peaks.bed.gz'), guessers())),
+    ).toMatchObject({ name: 'peaks', conf: { type: 'BedAdapter' } })
   })
 })
 
