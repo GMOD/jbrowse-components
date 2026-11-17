@@ -1,5 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 
+import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { IconButton, TextField } from '@mui/material'
@@ -123,7 +124,7 @@ export default observer(function ReferenceLines({
           />
           <Suspense fallback={null}>
             <PopoverPicker
-              color={row.color || 'auto'}
+              color={row.color || DEFAULT_RULE_COLOR}
               unset={!row.color}
               onChange={color => {
                 setRow(index, { color })
