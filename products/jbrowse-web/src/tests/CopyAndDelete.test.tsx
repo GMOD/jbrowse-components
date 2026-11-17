@@ -35,10 +35,8 @@ const delay = { timeout: 40000 }
 
 test('copy and delete track in admin mode', () => {
   return mockConsoleWarn(async () => {
-    const { view, findByTestId, queryByText, findByText } = await createView(
-      undefined,
-      true,
-    )
+    const { view, findByTestId, queryByText, findByText, findByLabelText } =
+      await createView(undefined, true)
 
     view.setNewView(0.05, 5000)
     fireEvent.click(
@@ -49,7 +47,7 @@ test('copy and delete track in admin mode', () => {
       ),
     )
     fireEvent.click(await findByText('Copy track'))
-    fireEvent.click(await findByText('volvox filtered vcf (copy)'))
+    fireEvent.click(await findByLabelText('volvox filtered vcf (copy)'))
     expect(queryByText(/Session tracks/)).toBeNull()
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
@@ -119,10 +117,8 @@ test('copy and delete reference sequence track disabled', () => {
 
 test('copy and delete track to session tracks', () => {
   return mockConsoleWarn(async () => {
-    const { view, findByTestId, findByText } = await createView(
-      undefined,
-      false,
-    )
+    const { view, findByTestId, findByText, findByLabelText } =
+      await createView(undefined, false)
 
     view.setNewView(0.05, 5000)
     fireEvent.click(
@@ -133,7 +129,7 @@ test('copy and delete track to session tracks', () => {
       ),
     )
     fireEvent.click(await findByText('Copy track'))
-    fireEvent.click(await findByText('volvox filtered vcf (copy)'))
+    fireEvent.click(await findByLabelText('volvox filtered vcf (copy)'))
     await findByText(/Session tracks/)
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)

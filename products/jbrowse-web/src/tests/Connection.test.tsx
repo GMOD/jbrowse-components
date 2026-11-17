@@ -32,7 +32,7 @@ test('Open up a UCSC trackhub connection', async () => {
     return readBuffer(request)
   })
 
-  const { findByText, findByTestId } = await createView(configSnapshot)
+  const { findByLabelText, findByTestId } = await createView(configSnapshot)
 
   fireEvent.click(await screen.findByText('File'))
   fireEvent.click(await screen.findByText('Open connection...'))
@@ -54,5 +54,5 @@ test('Open up a UCSC trackhub connection', async () => {
   })
   fireEvent.click(elt2)
 
-  await findByText('CRAM - Volvox Sorted', ...opts)
+  await findByLabelText('CRAM - Volvox Sorted', ...opts)
 }, 40000)
