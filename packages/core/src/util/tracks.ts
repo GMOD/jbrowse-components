@@ -1268,10 +1268,6 @@ export function trackDisplayType(
   return trackDisplayChoice(pluginManager, rawConf, viewType, requested)?.type
 }
 
-/**
- * `trackDisplayType` with the track config's own declaration of that display,
- * which `shownTrackSnapshot` takes.
- */
 export function trackDisplayChoice(
   pluginManager: PluginManager,
   rawConf: { type: string },
@@ -1285,10 +1281,6 @@ export function trackDisplayChoice(
   return pickTrackDisplay(pluginManager, conf, viewType, requested).picked
 }
 
-/**
- * The snapshot of an open track showing `trackId` as the display `picked`, as
- * `showTrack` creates one.
- */
 export function shownTrackSnapshot({
   trackId,
   trackType,
