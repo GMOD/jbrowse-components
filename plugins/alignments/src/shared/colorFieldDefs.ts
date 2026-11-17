@@ -64,7 +64,7 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
   normal: {
     kind: 'normal',
     bodyFill: 'normal',
-    menu: { kind: 'radio', label: 'Normal', group: 'basic' },
+    menu: { kind: 'radio', label: 'Default', group: 'basic' },
   },
   strand: {
     kind: 'strand',

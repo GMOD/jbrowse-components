@@ -327,7 +327,7 @@ describe('color by menu curation', () => {
   test('curated colorOptions replace the basic radios', () => {
     expect(
       labelsFor({ colorOptions: colorFieldOptions(undefined, 'mateRefName') }),
-    ).toEqual(['Normal', 'Mate chromosome', 'Solid color...'])
+    ).toEqual(['Default', 'Mate chromosome', 'Solid color...'])
   })
 
   test('a curated entry can relabel one field for its own display', () => {
@@ -338,7 +338,7 @@ describe('color by menu curation', () => {
           label: 'Query name',
         }),
       }),
-    ).toEqual(['Normal', 'Query name', 'Solid color...'])
+    ).toEqual(['Default', 'Query name', 'Solid color...'])
   })
 
   // The per-base layer draws over the read fill, so Color by holds two
