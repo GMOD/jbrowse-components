@@ -29,20 +29,8 @@ const FacetFilters = observer(function FacetFilters({
 }) {
   const { classes } = useStyles()
   const { openFacets, facetCategoryCounts, filters } = faceted
-  const hasActiveFilters = [...filters.values()].some(v => v.length > 0)
   return (
     <div className={classes.root}>
-      {hasActiveFilters ? (
-        <button
-          type="button"
-          className={classes.clearAll}
-          onClick={() => {
-            faceted.clearFilters()
-          }}
-        >
-          Clear all filters
-        </button>
-      ) : null}
       {[...facetCategoryCounts]
         .filter(([, categoryCountMap]) => categoryCountMap.size > 0)
         .map(([field, categoryCountMap]) => (
@@ -54,6 +42,17 @@ const FacetFilters = observer(function FacetFilters({
             defaultExpanded={openFacets.has(field)}
           />
         ))}
+      {filters.size ? (
+        <button
+          type="button"
+          className={classes.clearAll}
+          onClick={() => {
+            faceted.clearFilters()
+          }}
+        >
+          Clear all filters
+        </button>
+      ) : null}
     </div>
   )
 })

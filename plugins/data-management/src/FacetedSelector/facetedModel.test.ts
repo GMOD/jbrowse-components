@@ -323,7 +323,7 @@ describe('columns and facets', () => {
     expect([...faceted.facetCategoryCounts.keys()]).toContain('metadata.flag')
   })
 
-  test('the first three default columns that group tracks, shown columns and active filters start open, listed first', () => {
+  test('the first three default columns that group tracks, shown grouping columns and active filters start open', () => {
     const { session, faceted } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
     faceted.setConfiguredColumns(['description', 'metadata.assay', 'adapter'])
@@ -332,15 +332,28 @@ describe('columns and facets', () => {
       'category',
       'metadata.lab',
     ])
-    faceted.setColumnVisible('kind', true)
+    faceted.setColumnVisible('metadata.url', true)
     faceted.setFilter('metadata.flag', ['true'])
     expect([...faceted.openFacets]).toEqual([
       'metadata.assay',
       'category',
       'metadata.lab',
-      'kind',
       'metadata.flag',
     ])
+  })
+
+  test('a facet keeps its place when it starts or stops filtering, and a non-grouping column gets none', () => {
+    const { session, faceted } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
+    faceted.setConfiguredColumns(['description'])
+    const before = faceted.filterFacets
+    expect(before).not.toContain('description')
+    const last = before.at(-1)!
+    faceted.setFilter(last, ['x'])
+    expect(faceted.filterFacets).toEqual(before)
+    faceted.setFilter(last, [])
+    expect(faceted.filters.size).toBe(0)
+    expect(faceted.filterFacets).toEqual(before)
   })
 
   test('a search lists name matches first when no column is sorted', () => {

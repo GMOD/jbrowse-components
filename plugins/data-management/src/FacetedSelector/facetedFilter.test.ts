@@ -95,9 +95,6 @@ describe('filterRowsByFacets', () => {
   test('empty filter map returns all rows', () => {
     expect(filterRowsByFacets(rows, new Map())).toEqual(rows)
   })
-  test('a facet with an empty value array does not constrain', () => {
-    expect(filterRowsByFacets(rows, new Map([['category', []]]))).toEqual(rows)
-  })
   test('filters by a non-metadata facet', () => {
     expect(
       filterRowsByFacets(rows, new Map([['category', ['Annotation']]])).map(

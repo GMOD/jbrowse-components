@@ -50,7 +50,7 @@ test('each value shows its count, and clearing appears once one is checked', () 
   fireEvent.click(getByLabelText('DNA'))
   fireEvent.click(getByLabelText('Clear assay filter'))
 
-  expect(faceted.filters.get('metadata.assay')).toEqual([])
+  expect(faceted.filters.has('metadata.assay')).toBe(false)
 })
 
 function renderValues(count: number, defaultExpanded?: boolean) {

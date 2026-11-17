@@ -236,7 +236,11 @@ export function facetedStateTreeF() {
        * #action
        */
       setFilter(key: string, value: string[]) {
-        self.filters.set(key, value)
+        if (value.length) {
+          self.filters.set(key, value)
+        } else {
+          self.filters.delete(key)
+        }
       },
       /**
        * #action
@@ -476,39 +480,44 @@ export function facetedStateTreeF() {
       },
       /**
        * #getter
-       * The facet panel's facets: the default columns and grouping fields,
-       * plus any facet still filtering the grid, so an active filter never
-       * hides its own options.
+       * The facet panel's facets, in an order that never changes as filters
+       * are set: the default columns that group tracks, the other grouping
+       * fields, then any field still filtering that no longer groups.
        */
       get filterFacets() {
+        const grouping = new Set(self.groupingFields)
         return [
           ...new Set([
-            ...this.openFacets,
-            ...self.defaultColumns,
+            ...self.defaultColumns.filter(f => grouping.has(f)),
             ...self.groupingFields,
+            ...self.filters.keys(),
           ]),
         ]
       },
       /**
        * #getter
-       * The facets that start open, listed first: the first three default
-       * columns that group tracks, any column the user showed, and any facet
-       * still filtering. The rest
-       * start collapsed to their heading, so a hub with many metadata keys
-       * offers them all without listing every value of each.
+       * The facets offered first: the first three default columns that group
+       * tracks and any grouping column the user showed. The rest start
+       * collapsed, so a hub with many metadata keys offers them all without
+       * listing every value of each.
        */
-      get openFacets() {
-        const active = [...self.filters]
-          .filter(([, values]) => values.length > 0)
-          .map(([field]) => field)
+      get leadingFacets() {
         const grouping = new Set(self.groupingFields)
         return new Set([
           ...self.defaultColumns
             .filter(f => grouping.has(f))
             .slice(0, OPEN_FACETS),
-          ...self.chosenColumns.shown.filter(f => f !== 'name'),
-          ...active,
+          ...self.chosenColumns.shown.filter(f => grouping.has(f)),
         ])
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the facets that start open: the leading ones and any still filtering
+       */
+      get openFacets() {
+        return new Set([...self.leadingFacets, ...self.filters.keys()])
       },
     }))
     .views(self => ({

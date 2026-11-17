@@ -29,12 +29,8 @@ export function rowSearchText(row: {
   ])
 }
 
-// The facets with a non-empty selection, each as a lookup set. Facets with no
-// selection are dropped since they don't constrain anything.
-function activeFilterSets(filters: Map<string, string[]>) {
-  return [...filters.entries()]
-    .filter(([, vals]) => vals.length > 0)
-    .map(([key, vals]) => [key, new Set(vals)] as const)
+function filterSets(filters: Map<string, string[]>) {
+  return [...filters].map(([key, vals]) => [key, new Set(vals)] as const)
 }
 
 /**
@@ -57,7 +53,7 @@ export function filterRowsByFacets<T extends Row>(
   rows: T[],
   filters: Map<string, string[]>,
 ): T[] {
-  const active = activeFilterSets(filters)
+  const active = filterSets(filters)
   return rows.filter(row =>
     active.every(([key, set]) => set.has(getRowStr(key, row))),
   )
@@ -78,7 +74,7 @@ export function computeFacetCategoryCounts<T extends Row>(
   // Honor every active filter (matching filterRowsByFacets), not just those in
   // `facets` — a filter on a column that has dropped out of `facets` (e.g. gone
   // sparse) still constrains the grid, so it must constrain these counts too.
-  const activeFilters = activeFilterSets(filters)
+  const activeFilters = filterSets(filters)
   return new Map(
     facets.map(facet => {
       const categoryCountMap = new Map<string, number>()

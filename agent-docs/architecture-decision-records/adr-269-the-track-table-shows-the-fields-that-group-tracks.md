@@ -67,10 +67,13 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   its ⋮ menu. A name with markup is cut at the end.
 - **Facets are thin, and few start open.** Rows are 20 px with a 16 px
   checkbox and grey counts; the heading collapses its facet; "clear" shows
-  only on a facet with a selection. The panel lists the default columns and
-  the grouping fields. Only the filters for the first three default columns
-  that group tracks (a description column does not use up a slot), any column
-  the user showed, and any facet still filtering start open, listed first; the rest are one collapsed heading each. A facet lists every value
+  only on a facet with a selection. The panel lists the grouping fields, the
+  default columns among them first, plus any field still filtering; a column
+  that does not group tracks, configured or shown, gets no facet. Only the
+  filters for the first three default columns that group tracks, any grouping
+  column the user showed, and any facet still filtering start open; the rest
+  are one collapsed heading each. A facet keeps its place when it starts or
+  stops filtering, so it never moves under the pointer. A facet lists every value
   up to 20, past that its 10 most common plus any checked one, with "Show N
   more".
 - **The filter box needs every word, in any order and field.** `"quotes"`
