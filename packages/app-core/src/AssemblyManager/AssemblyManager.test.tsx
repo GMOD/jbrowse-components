@@ -129,6 +129,20 @@ test('deletes an assembly when delete button clicked', () => {
   )
 })
 
+test('an assembly the user cannot edit says it is built in and has no buttons', () => {
+  const { getByText, queryByTestId } = render(
+    <AssemblyManager
+      // @ts-expect-error
+      session={{ ...mockRootModel.session, canEditAssembly: () => false }}
+      rootModel={mockRootModel}
+      onClose={() => {}}
+    />,
+  )
+  expect(getByText('Built-in')).toBeTruthy()
+  expect(queryByTestId('testAssembly-edit')).toBeNull()
+  expect(queryByTestId('testAssembly-delete')).toBeNull()
+})
+
 test('closes when the Close button is clicked', () => {
   const onClose = jest.fn()
   const { getByText } = render(

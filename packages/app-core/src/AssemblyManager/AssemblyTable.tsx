@@ -3,21 +3,12 @@ import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import AddIcon from '@mui/icons-material/Add'
 import CreateIcon from '@mui/icons-material/Create'
 import DeleteIcon from '@mui/icons-material/Delete'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  IconButton,
-  Tooltip,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent, IconButton } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import type { AssemblyManagerSession } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-const lockedReason =
-  "This assembly comes from the server's configuration, so only the site admin can change it"
 
 const AssemblyTable = observer(function AssemblyTable({
   onEditAssembly,
@@ -50,40 +41,34 @@ const AssemblyTable = observer(function AssemblyTable({
               { field: 'displayName' },
               { field: 'aliases' },
               {
+                field: 'source',
+                renderCell: ({ row }) =>
+                  session.canEditAssembly(row.name) ? null : 'Built-in',
+              },
+              {
                 field: 'actions',
                 renderCell: ({ row }) => {
                   const { assembly, name } = row
-                  const editable = session.canEditAssembly(name)
-                  return (
+                  return session.canEditAssembly(name) ? (
                     <>
-                      <Tooltip title={editable ? '' : lockedReason}>
-                        <span>
-                          <IconButton
-                            data-testid={`${name}-edit`}
-                            disabled={!editable}
-                            onClick={() => {
-                              onEditAssembly(assembly)
-                            }}
-                          >
-                            <CreateIcon />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                      <Tooltip title={editable ? '' : lockedReason}>
-                        <span>
-                          <IconButton
-                            data-testid={`${name}-delete`}
-                            disabled={!editable}
-                            onClick={() => {
-                              session.removeAssembly(name)
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
+                      <IconButton
+                        data-testid={`${name}-edit`}
+                        onClick={() => {
+                          onEditAssembly(assembly)
+                        }}
+                      >
+                        <CreateIcon />
+                      </IconButton>
+                      <IconButton
+                        data-testid={`${name}-delete`}
+                        onClick={() => {
+                          session.removeAssembly(name)
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
                     </>
-                  )
+                  ) : null
                 },
               },
             ]}
