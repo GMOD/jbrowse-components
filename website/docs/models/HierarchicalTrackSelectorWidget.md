@@ -66,6 +66,7 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="getter-listedtrackconfigurations">**listedTrackConfigurations**</span><br><code>AnyTrackConfig[]</code> | the track configs the table lists |
 | <span id="getter-hierarchy">**hierarchy**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ name: string; id: string; type: "category"; … }</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ name: string; id: string; type: "category"; children: TreeNode[]; }</code></pre></dialog></span> | a group is kept even when no track in it survives the filter, so an empty connection still shows in the tree |
 | <span id="getter-flatlist">**flatList**</span><br><code>TreeNode[]</code> | the favorites or recently used tracks as a flat list in the list's own order, newest first for recent, with no category tree or group header: the toggle above already names the list |
+| <span id="getter-matchcounts">**matchCounts**</span><br><code>{ matched: number; total: number; } &#124; undefined</code> | how many of the listed tracks the filter box keeps, of how many; undefined while it holds no terms |
 | <span id="getter-rows">**rows**</span><br><code>TreeRow[]</code> | every rendered row, in order, with its height and scroll offset |
 | <span id="getter-treeheight">**treeHeight**</span><br><code>number</code> |  |
 | <span id="getter-hasanysubcategories">**hasAnySubcategories**</span><br><code>boolean</code> |  |
