@@ -1,0 +1,127 @@
+import { createTestSession } from '@jbrowse/web/testUtils'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { createPortal } from 'react-dom'
+
+import { fileDropHandlers, routeDroppedFiles } from './fileDrop.ts'
+
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+test.each([
+  [['volvox.jbrowse'], 'session'],
+  [['session.json'], 'session'],
+  [['hg19.fa', 'hg19.fa.fai'], 'genome'],
+  [['hg19.2bit', 'reads.bam'], 'genome'],
+  [['x.bed.gz', 'x.bed.gz.tbi'], 'tracks'],
+  [['a.json', 'b.json'], 'tracks'],
+  [['reads.bam', 'reads.bam.bai'], 'tracks'],
+])('%j routes to %s', (names, kind) => {
+  expect(routeDroppedFiles(names.map(name => ({ name }))).kind).toBe(kind)
+})
+
+function renderDropTarget() {
+  const session = createTestSession()
+  session.addAssemblyConf({
+    name: 'volvox',
+    sequence: {
+      trackId: 'ref',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          { refName: 'ctgA', uniqueId: 'a', start: 0, end: 10, seq: 'a' },
+        ],
+      },
+    },
+  })
+  const region = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10 }
+  const first = session.addView('LinearGenomeView', {
+    displayedRegions: [region],
+  })
+  const second = session.addView('LinearGenomeView', {
+    displayedRegions: [region],
+  })
+  const routes = {
+    openSessionFile: jest.fn(async () => {}),
+    openGenomeFiles: jest.fn(),
+  }
+  render(
+    <div {...fileDropHandlers(session, routes)}>
+      <span>beside the views</span>
+      <div data-view-id={second.id}>
+        <span>inside a view</span>
+        <div
+          onDrop={event => {
+            event.preventDefault()
+          }}
+        >
+          inner drop zone
+        </div>
+      </div>
+      {createPortal(<span>in a dialog</span>, document.body)}
+    </div>,
+  )
+  return { session, routes, first, second }
+}
+
+function dropFiles(target: HTMLElement, names: string[], types = ['Files']) {
+  fireEvent.drop(target, {
+    dataTransfer: { types, files: names.map(name => new File([''], name)) },
+  })
+}
+
+test('dropped track files stage in the Add track widget for the view under the drop', async () => {
+  const { session, second } = renderDropTarget()
+  dropFiles(screen.getByText('inside a view'), ['x.bed.gz', 'x.bed.gz.tbi'])
+  await waitFor(() => {
+    expect(session.visibleWidget).toMatchObject({
+      type: 'AddTrackWidget',
+      view: { id: second.id },
+      workflowName: 'Add multiple tracks',
+      workflowForms: {
+        'Add multiple tracks': {
+          mode: 'local',
+          localLocations: [{ name: 'x.bed.gz' }, { name: 'x.bed.gz.tbi' }],
+        },
+      },
+    })
+  })
+})
+
+test('a drop outside every view targets the first view', async () => {
+  const { session, first } = renderDropTarget()
+  dropFiles(screen.getByText('beside the views'), ['reads.bam'])
+  await waitFor(() => {
+    expect(session.visibleWidget).toMatchObject({ view: { id: first.id } })
+  })
+})
+
+test('a genome set goes to the genome route, a lone session file to the session route', async () => {
+  const { session, routes } = renderDropTarget()
+  dropFiles(screen.getByText('inside a view'), ['hg19.fa', 'reads.bam'])
+  dropFiles(screen.getByText('inside a view'), ['saved.jbrowse'])
+  await waitFor(() => {
+    expect(routes.openSessionFile).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'saved.jbrowse' }),
+    )
+  })
+  expect(routes.openGenomeFiles).toHaveBeenCalledWith([
+    expect.objectContaining({ name: 'hg19.fa' }),
+    expect.objectContaining({ name: 'reads.bam' }),
+  ])
+  expect(session.visibleWidget).toBeUndefined()
+})
+
+test('a drop the wrapper does not own is left alone', async () => {
+  const { session, routes } = renderDropTarget()
+  dropFiles(screen.getByText('in a dialog'), ['a.jbrowse'])
+  dropFiles(screen.getByText('inner drop zone'), ['b.jbrowse'])
+  dropFiles(screen.getByText('inside a view'), ['c.jbrowse'], ['text/plain'])
+  dropFiles(screen.getByText('inside a view'), ['d.jbrowse'])
+  await waitFor(() => {
+    expect(routes.openSessionFile).toHaveBeenCalledTimes(1)
+  })
+  expect(routes.openSessionFile).toHaveBeenCalledWith(
+    expect.objectContaining({ name: 'd.jbrowse' }),
+  )
+  expect(session.visibleWidget).toBeUndefined()
+})

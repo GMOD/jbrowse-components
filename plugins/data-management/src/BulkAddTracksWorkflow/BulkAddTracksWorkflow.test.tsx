@@ -286,6 +286,24 @@ test('the collected input survives the workflow unmounting', () => {
   expect(second.getByText('b')).toBeTruthy()
 })
 
+test('files staged by a drop on the session open as one indexed track', () => {
+  const { model } = getSession()
+  model.stageLocations([
+    { name: 'x.bed.gz', blobId: 'b1', locationType: 'BlobLocation' },
+    { name: 'x.bed.gz.tbi', blobId: 'b2', locationType: 'BlobLocation' },
+  ])
+  expect(model.workflowName).toBe('Add multiple tracks')
+  const { getByRole, getByText } = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  expect(getByRole('radio', { name: 'Local files' })).toHaveProperty(
+    'checked',
+    true,
+  )
+  expect(getByRole('button', { name: 'Add 1 track' })).toBeTruthy()
+  expect(getByText('x.bed.gz.tbi')).toBeTruthy()
+})
+
 test('a submit clears the collected input', () => {
   const { model } = getSession()
   const { getByLabelText, getByRole } = render(
