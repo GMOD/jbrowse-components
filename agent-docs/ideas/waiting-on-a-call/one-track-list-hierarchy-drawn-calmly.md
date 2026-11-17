@@ -1,6 +1,6 @@
 ---
 name: one-track-list-hierarchy-drawn-calmly
-description: Why JBrowse's UCSC-derived track lists sprawl (hg38 799 rows against UCSC's ~117 entries), the three answers tried (folders, a set-row prototype, subcategory bars) and why each is a second hierarchy beside the category tree. The open question is whether nested categories should simply draw as track-height rows. Read before adding a grouping concept to the track selector tree or changing how jb2hubs writes `category`.
+description: UCSC-derived track lists sprawl (hg38 799 rows against UCSC's ~117 entries), and folders, subcategory bars and a set-row prototype each added a second hierarchy beside the category tree. Read before adding a grouping concept to the track selector or changing how jb2hubs writes `category`.
 ---
 
 # One track list hierarchy, drawn calmly
