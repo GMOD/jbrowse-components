@@ -1,3 +1,4 @@
+import ControlRow from '@jbrowse/core/ui/ControlRow'
 import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
 import ViewMenuButton from '@jbrowse/core/ui/ViewMenuButton'
 import { getSession } from '@jbrowse/core/util'
@@ -22,8 +23,6 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 const useStyles = makeStyles()({
   headerBar: {
-    display: 'flex',
-    alignItems: 'center',
     gap: 4,
     // a floor, not a height. The constant was written onto this row by #4237 so
     // the sticky offsets summing it would be true, and the row's own content
@@ -62,7 +61,7 @@ const Controls = observer(function Controls({
     touch,
   })
   return (
-    <div className={classes.headerBar} ref={ref}>
+    <ControlRow className={classes.headerBar} ref={ref}>
       {viewMenu ? <ViewMenuButton menuItems={() => model.menuItems()} /> : null}
       <HeaderTrackSelectorButton
         model={model}
@@ -80,7 +79,7 @@ const Controls = observer(function Controls({
       {fit.regionWidth ? <HeaderRegionWidth model={model} /> : null}
       <HeaderZoomControls model={model} showSlider={fit.zoomSlider} />
       <div className={classes.spacer} />
-    </div>
+    </ControlRow>
   )
 })
 

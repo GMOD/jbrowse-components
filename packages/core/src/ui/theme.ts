@@ -250,6 +250,13 @@ const baseThemeOptions: ThemeOptions = {
       // mode+midnight primary
       styleOverrides: darkModeContrastOverride([], p => p.text.primary),
     },
+    // a group hands its own size to its buttons, overriding MuiButton's
+    // default, so it needs the same one
+    MuiButtonGroup: {
+      defaultProps: {
+        size: 'small',
+      },
+    },
     MuiAccordion: {
       defaultProps: {
         disableGutters: true,

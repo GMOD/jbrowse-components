@@ -61,6 +61,7 @@ export interface JBrowseTypography {
   pxToRem: (size: number) => string
   body1: TypeVariant
   body2: TypeVariant
+  caption: TypeVariant
 }
 
 /**
@@ -199,6 +200,7 @@ export function createTypography(input: TypographyInput = {}) {
     pxToRem,
     body1: variant(fontWeightRegular, 16, 1.5, 0.15),
     body2: variant(fontWeightRegular, 14, 1.43, 0.15),
+    caption: variant(fontWeightRegular, 12, 1.66, 0.4),
   }
 }
 

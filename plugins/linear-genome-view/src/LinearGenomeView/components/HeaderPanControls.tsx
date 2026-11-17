@@ -5,7 +5,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { Button, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
+import { SPACING } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -13,7 +13,6 @@ type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
   panButton: {
     background: alpha(theme.palette.background.paper, 0.8),
-    height: WIDGET_HEIGHT,
     margin: SPACING,
   },
   // the arrows are the whole button, so MUI's 64px text-button minimum and the

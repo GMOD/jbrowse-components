@@ -3,6 +3,7 @@ import { useState } from 'react'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
   AssemblySelector,
+  ControlRow,
   ErrorBanner,
   RefNameAutocomplete,
   RefNameAutocompleteEndAdornment,
@@ -13,7 +14,7 @@ import {
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
-import { Button, CircularProgress, Container, Grid } from '@mui/material'
+import { Button, CircularProgress, Container } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -30,8 +31,10 @@ const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(4),
   },
-  button: {
-    margin: theme.spacing(2),
+  row: {
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    rowGap: theme.spacing(4),
   },
 }))
 
@@ -128,11 +131,7 @@ const LinearGenomeViewImportForm = observer(
             }
           }}
         >
-          <Grid
-            container
-            spacing={1}
-            sx={{ justifyContent: 'center', alignItems: 'center' }}
-          >
+          <ControlRow className={classes.row}>
             <AssemblySelector
               onChange={val => {
                 // Only the model's error needs clearing by hand: it lives
@@ -195,7 +194,6 @@ const LinearGenomeViewImportForm = observer(
             <Button
               type="submit"
               disabled={!value}
-              className={classes.button}
               variant="contained"
               color="primary"
             >
@@ -205,9 +203,8 @@ const LinearGenomeViewImportForm = observer(
               model={model}
               assemblyName={selectedAsm}
               disabled={!!assemblyError || !regions}
-              className={classes.button}
             />
-          </Grid>
+          </ControlRow>
         </form>
       </Container>
     )

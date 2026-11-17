@@ -10,6 +10,9 @@
   rows and "Clear all filters" all derive from that list.
 - **Make an extension seam a method, not a getter** — `const { x } = self` on a
   getter freezes the composition-time value for a super-capturing subclass.
+- **Lay a row of controls out as a `ControlRow`**, not a flex `div` or `Grid`
+  with per-control heights or margins: MUI sizes buttons, icon buttons and
+  fields differently, and only the row evens them out.
 - **Override a `makeStyles` class by composing a second rule with `cx`**; an
   `sx` on the same element loses to the tss class regardless of specificity.
 - **Set `backgroundColor` in a `Paper`'s class, not `background`**, which erases

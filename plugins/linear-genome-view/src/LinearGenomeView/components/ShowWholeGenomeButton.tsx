@@ -24,12 +24,10 @@ const ShowWholeGenomeButton = observer(function ShowWholeGenomeButton({
   model,
   assemblyName,
   disabled,
-  className,
 }: {
   model: LinearGenomeViewModel
   assemblyName: string | undefined
   disabled: boolean
-  className: string
 }) {
   const assembly = assemblyName
     ? getSession(model).assemblyManager.get(assemblyName)
@@ -39,12 +37,7 @@ const ShowWholeGenomeButton = observer(function ShowWholeGenomeButton({
     model.showEveryRegionInAssembly(assemblyName)
   })
   return (
-    <ButtonGroup
-      variant="contained"
-      color="secondary"
-      disabled={disabled}
-      className={className}
-    >
+    <ButtonGroup variant="contained" color="secondary" disabled={disabled}>
       <Button
         onClick={() => {
           model.setError(undefined)

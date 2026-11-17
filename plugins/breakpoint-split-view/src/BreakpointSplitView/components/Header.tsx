@@ -1,3 +1,4 @@
+import ControlRow from '@jbrowse/core/ui/ControlRow'
 import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
 import ViewMenuButton from '@jbrowse/core/ui/ViewMenuButton'
 import { getSession } from '@jbrowse/core/util'
@@ -16,9 +17,7 @@ import type { BreakpointViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   header: {
-    display: 'flex',
     flexWrap: 'wrap',
-    alignItems: 'center',
     gap: 4,
     padding: 4,
   },
@@ -40,7 +39,7 @@ const Header = observer(function Header({
   const { views } = model
   const prefs = useSearchBoxPrefs('bsv', views.length)
   return (
-    <div className={classes.header}>
+    <ControlRow className={classes.header}>
       <div className={classes.buttons}>
         {getSession(model).viewTitleBars === false ? (
           <ViewMenuButton menuItems={() => model.menuItems()} />
@@ -65,7 +64,7 @@ const Header = observer(function Header({
         <HeaderSearchBoxRow views={views} sideBySide={prefs.sideBySide} />
       ) : null}
       <ConnectionKey model={model} />
-    </div>
+    </ControlRow>
   )
 })
 export default Header

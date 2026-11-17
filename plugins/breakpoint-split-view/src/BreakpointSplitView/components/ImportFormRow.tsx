@@ -1,4 +1,4 @@
-import { AssemblySelector } from '@jbrowse/core/ui'
+import { AssemblySelector, ControlRow } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -10,9 +10,6 @@ import type { AssemblyHost } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   row: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
     marginBottom: theme.spacing(1),
   },
   loc: {
@@ -43,7 +40,7 @@ const ImportFormRow = observer(function ImportFormRow({
 }) {
   const { classes } = useStyles()
   return (
-    <div className={classes.row}>
+    <ControlRow className={classes.row}>
       <AssemblySelector
         label={`Row ${idx + 1} assembly`}
         helperText=""
@@ -100,7 +97,7 @@ const ImportFormRow = observer(function ImportFormRow({
           </IconButton>
         </span>
       </Tooltip>
-    </div>
+    </ControlRow>
   )
 })
 

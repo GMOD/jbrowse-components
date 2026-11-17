@@ -1,3 +1,4 @@
+import ControlRow from '@jbrowse/core/ui/ControlRow'
 import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import useMeasure from '@jbrowse/core/util/useMeasure'
@@ -18,8 +19,6 @@ import type { LinearSyntenyViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   headerBar: {
-    display: 'flex',
-    alignItems: 'center',
     gap: 4,
     minHeight: 48,
   },
@@ -48,7 +47,7 @@ const Header = observer(function Header({
   })
 
   return (
-    <div className={classes.headerBar} ref={ref}>
+    <ControlRow className={classes.headerBar} ref={ref}>
       <TrackSelectorMenuButton model={model} />
       <ViewOptionsMenuButton model={model} prefs={prefs} />
       <ScrollZoomToggle model={model} iconOnly={!labels} />
@@ -67,7 +66,7 @@ const Header = observer(function Header({
         title="Synteny warnings"
         className={classes.endOfBar}
       />
-    </div>
+    </ControlRow>
   )
 })
 export default Header

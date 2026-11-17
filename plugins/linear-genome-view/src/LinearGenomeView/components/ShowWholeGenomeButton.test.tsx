@@ -18,7 +18,6 @@ async function renderButton({
       model={view}
       assemblyName="hg38"
       disabled={disabled}
-      className=""
     />,
   )
   return { view, ...utils }

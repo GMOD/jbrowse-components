@@ -15,7 +15,7 @@ import {
   navigateToSelectedOption,
   notifySearchFailure,
 } from '../../searchUtils.ts'
-import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
+import { SPACING } from '../consts.ts'
 import { recentLocationOf, recentLocationsMenu } from './recentLocationsMenu.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
@@ -120,7 +120,6 @@ const SearchBox = observer(function SearchBox({
       }
       inputStyle={{
         padding: 0,
-        height: WIDGET_HEIGHT,
         background: alpha(palette.background.paper, 0.8),
       }}
     />

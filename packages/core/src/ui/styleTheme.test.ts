@@ -41,6 +41,7 @@ function flatten(theme: JBrowseStyleTheme | Theme) {
       pxToRem: remSizes.map(size => t.pxToRem(size)),
       body1: { ...t.body1 },
       body2: { ...t.body2 },
+      caption: { ...t.caption },
     },
   }
 }

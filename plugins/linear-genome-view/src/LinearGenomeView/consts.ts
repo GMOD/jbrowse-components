@@ -23,4 +23,3 @@ export const TRACK_TOP_GAP = 2
 export const TRACK_OUTLINE_BORDER = 1
 export const MINIMIZED_TRACK_HEIGHT = 20
 export const SPACING = 7
-export const WIDGET_HEIGHT = 32
