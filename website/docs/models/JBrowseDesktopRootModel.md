@@ -75,6 +75,7 @@ From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcMana
 | <span id="action-updatetrackbase">**updateTrackBase**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConf: { [key: string]: unknown; … }) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; void</code></pre></dialog></span> | Replace a track's base config: its sessionTracks entry when the session owns the track, otherwise its jbrowse.tracks entry. |
 | <span id="action-reloadplugins">**reloadPlugins**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Persist the session, then rebuild the plugin manager from disk so the changed plugin set takes effect. Run by `onPluginsUpdated`, which reports a failure on the session it leaves open |
 | <span id="action-flushsession">**flushSession**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Save now rather than waiting out the autosave's 1s throttle. Every path that tears the session down has to call this first. |
+| <span id="action-opengenomedialog">**openGenomeDialog**</span><br><code>(initialFiles?: FileLocation[]) =&gt; void</code> | Opens the genome dialog, with `initialFiles` already staged in it when given (a drop on the session). |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>17 inherited actions from 4 models</summary>

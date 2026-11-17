@@ -24,6 +24,7 @@ changes and exposes canUndo/canRedo with undo/redo actions.
 | Member | Description |
 | --- | --- |
 | <span id="volatile-history">**history**</span><br><code>unknown[]</code> |  |
+| <span id="volatile-steps">**steps**</span><br><code>(HistoryStep &#124; undefined)[]</code> |  |
 | <span id="volatile-nottrackingundo">**notTrackingUndo**</span><br><code>boolean</code> |  |
 | <span id="volatile-haspendingrecord">**hasPendingRecord**</span><br><code>boolean</code> |  |
 
@@ -44,7 +45,8 @@ changes and exposes canUndo/canRedo with undo/redo actions.
 | <span id="action-flushpendingrecord">**flushPendingRecord**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-stoptrackingundo">**stopTrackingUndo**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-resumetrackingundo">**resumeTrackingUndo**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-addundostate">**addUndoState**</span><br><code>(snapshot: unknown) =&gt; void</code> |  |
+| <span id="action-addundostate">**addUndoState**</span><br><code>(snapshot: unknown, step?: HistoryStep) =&gt; void</code> |  |
+| <span id="action-record">**record**</span><br><code>(step: HistoryStep) =&gt; void</code> | Make `step`'s change now, as one history entry of its own, whose undo and redo replay the step before applying the target's snapshot. |
 | <span id="action-initialize">**initialize**</span><br><code>() =&gt; void</code> | Start recording history for the target store. Runs again whenever the root replaces the session node, so it must be idempotent: it disposes the previous registration and resets the history, because `history` is volatile while `undoIdx` is a persisted prop, and old session snapshots kept would let undo apply them to the new session. |
 | <span id="action-undo">**undo**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-redo">**redo**</span><br><code>() =&gt; void</code> |  |

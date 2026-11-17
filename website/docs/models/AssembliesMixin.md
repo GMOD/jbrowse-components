@@ -33,6 +33,7 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 | Member | Description |
 | --- | --- |
 | <span id="method-findassemblyconf">**findAssemblyConf**</span><br><code>(name: string) =&gt; <a href="../../config/baseassembly">BaseAssemblyConfig</a> &#124; undefined</code> | The assembly config whose name or one of whose aliases is `name`, from any of the three arrays the assemblyManager draws on, or undefined.<br><br>One namespace, because `name` is the assembly config's MST identifier: a second config with a name one of the others already has doesn't fail at the add, it makes every `assembly.configuration` safeReference in the manager ambiguous, and MST then throws on every read of one — inside the manager's own autorun and inside `assemblyNameMap`, which takes the session down. So each add path checks all three, not just the array it pushes to. Aliases count too: a new assembly named `GRCh38` beside an `hg38` aliased `GRCh38` would leave `get('GRCh38')` to array order. |
+| <span id="method-caneditassembly">**canEditAssembly**</span><br><code>(name: string) =&gt; boolean</code> | A session assembly is always the user's to change; one from the config is only an admin's. |
 
 ## Actions
 
@@ -45,3 +46,4 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 | <span id="action-removesessionassembly">**removeSessionAssembly**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
 | <span id="action-addtemporaryassembly">**addTemporaryAssembly**</span><br><code>(conf: AnyConfiguration) =&gt; <a href="../../config/baseassembly">BaseAssemblyConfig</a></code> | used for read vs ref type assemblies. |
 | <span id="action-removetemporaryassembly">**removeTemporaryAssembly**</span><br><code>(name: string) =&gt; void</code> |  |
+| <span id="action-editassembly">**editAssembly**</span><br><code>(name: string) =&gt; void</code> | Opens the assembly manager on that assembly's editor |

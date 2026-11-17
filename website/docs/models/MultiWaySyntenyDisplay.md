@@ -86,7 +86,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-declaredlanes">**declaredLanes**</span><br><code>DeclaredLane[] &#124; undefined</code> |  |
+| <span id="getter-declaredlanes">**declaredLanes**</span><br><code>DeclaredLane[]</code> |  |
 | <span id="getter-staranchor">**starAnchor**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-lgv">**lgv**</span><br><code><a href="../lineargenomeview">LinearGenomeView</a></code> |  |
 | <span id="getter-features">**features**</span><br><code>Feature[] &#124; undefined</code> | undefined while the view's anchor differs from the fetch's |
@@ -95,7 +95,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-hoveredgroupkey">**hoveredGroupKey**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-resolution">**resolution**</span><br><code>LodMode</code> |  |
 | <span id="getter-ribboncolor">**ribbonColor**</span><br><code>string</code> |  |
-| <span id="getter-lanechoice">**laneChoice**</span><br><code>readonly string[] &#124; undefined</code> | `rows.kept` as a choice: undefined while it names no lane |
+| <span id="getter-lanechoice">**laneChoice**</span><br><code>readonly string[]</code> | `rows.kept` as a choice: empty while it names no lane |
 | <span id="getter-ribboncolorfield">**ribbonColorField**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-ribboncolordomain">**ribbonColorDomain**</span><br><code>string[]</code> |  |
 | <span id="getter-ribboncolorrange">**ribbonColorRange**</span><br><code>readonly string[]</code> | The colors a ribbon column's labels take in domain order: `scale.range`, else `scale.scheme` sampled once per domain value |
@@ -151,6 +151,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-anchorlocstring">**anchorLocString**</span><br><code>string</code> |  |
 | <span id="getter-declaredlanelabels">**declaredLaneLabels**</span><br><code>Map&lt;string, string&gt;</code> | keyed by `laneKey` |
 | <span id="getter-rowlabels">**rowLabels**</span><br><code>Map&lt;string, string&gt;</code> | `rows.labels`, keyed by `laneKey` |
+| <span id="getter-declaredlanecolors">**declaredLaneColors**</span><br><code>Map&lt;string, string&gt;</code> | the colors the source declares, the anchor's `anchorColor` among them, keyed by `laneKey` |
+| <span id="getter-rowcolors">**rowColors**</span><br><code>Map&lt;string, string&gt;</code> | `rows.colors`, keyed by `laneKey` |
 | <span id="getter-laneuniverse">**laneUniverse**</span><br><code>LaneChoice[]</code> | the anchor is never a lane |
 | <span id="getter-unalignedchosenlanes">**unalignedChosenLanes**</span><br><code>string[]</code> | the lanes `rows.kept` names that the held fetch answered for and placed nothing in; an unchosen lane placing nothing draws no row |
 | <span id="getter-rowassemblies">**rowAssemblies**</span><br><code>string[]</code> | a paralogy mate on the anchor assembly draws on its axis, not as a row |
@@ -162,7 +164,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-laneassemblyconfs">**laneAssemblyConfs**</span><br><code>Map&lt;string, Record&lt;string, unknown&gt;&gt;</code> |  |
 | <span id="getter-canreanchor">**canReanchor**</span><br><code>boolean</code> |  |
 | <span id="getter-visiblebpspan">**visibleBpSpan**</span><br><code>number</code> | the bp the canvas spans: a lane's bpPerPx is this times its rung over `canvasWidthPx`, so the two read one width or every lane but the anchor is scaled against a box it doesn't fill |
-| <span id="getter-visiblegroupwindows">**visibleGroupWindows**</span><br><code>{ group: MultiWayGroup; start: number; end: number; }[]</code> | each with the hull, in anchor bp, of the settled blocks it meets |
+| <span id="getter-windowgroups">**windowGroups**</span><br><code>{ shown: MultiWayGroup[]; fit: MultiWayGroup[]; }</code> | the groups the settled blocks meet, cut as `windowGroupsOn` cuts them |
 | <span id="getter-visiblegroups">**visibleGroups**</span><br><code>MultiWayGroup[]</code> | uncut at the viewport edge, cut only at a displayed region's end |
 | <span id="getter-fitgroups">**fitGroups**</span><br><code>MultiWayGroup[]</code> | the visible groups cut to the viewport, which each lane's frame fits |
 | <span id="getter-tickintervalbp">**tickIntervalBp**</span><br><code>number</code> |  |
@@ -175,7 +177,6 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-dragoffsetpx">**dragOffsetPx**</span><br><code>number</code> | the px the view has scrolled since the stack was laid out |
 | <span id="getter-anchorreversed">**anchorReversed**</span><br><code>boolean</code> |  |
 | <span id="getter-anchorstage">**anchorStage**</span><br><code>AnchorStage</code> | the live view, laid out against `renderOriginPx`, as the lanes draw against it |
-| <span id="getter-anchorspans">**anchorSpans**</span><br><code>Map&lt;string, Span&gt;</code> | the anchor placements in stack px, relative to `renderOriginPx` |
 | <span id="getter-rowframes">**rowFrames**</span><br><code>Map&lt;string, RowFrame &#124; undefined&gt;</code> |  |
 | <span id="getter-lanesfrozen">**lanesFrozen**</span><br><code>boolean</code> | true only while the view, on the anchor the lanes froze on, still shows part of the window they froze on |
 | <span id="getter-frozendecisions">**frozenDecisions**</span><br><code>ReadonlyMap&lt;string, LaneDecision&gt;</code> | empty unless `lanesFrozen` |
@@ -281,10 +282,10 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-holdsassembly">**holdsAssembly**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
 | <span id="method-holdstemporarily">**holdsTemporarily**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
 | <span id="method-lanelabel">**laneLabel**</span><br><code>(assemblyName: string) =&gt; string</code> |  |
+| <span id="method-lanecolor">**laneColor**</span><br><code>(assemblyName: string) =&gt; string &#124; undefined</code> | the color a lane's label bar draws, undefined for none |
 | <span id="method-placelessof">**placelessOf**</span><br><code>(assemblyName: string) =&gt; Placeless &#124; undefined</code> | why a lane the window shows none of draws a row, or undefined where it draws none |
 | <span id="method-laneselectiontrackid">**laneSelectionTrackId**</span><br><code>(assemblyName: string) =&gt; string</code> | the track a lane gene's selection names: the lane's gene track, or one per lane under this display where a described genome brings the genes |
 | <span id="method-anchorstageat">**anchorStageAt**</span><br><code>(originPx: number, bpPerPx: number) =&gt; AnchorStage</code> | the view at `bpPerPx`, laid out against `originPx`, as the lanes decide against it |
-| <span id="method-anchorabsxat">**anchorAbsXAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(bpPerPx: number) =&gt; Map&lt;string, { coord: AnchorCoord; … }&gt;</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(bpPerPx: number) =&gt; Map&lt;string, { coord: AnchorCoord; x: number; }&gt;</code></pre></dialog></span> | each group's viewport-cut centre, in view px at `bpPerPx` before the scroll offset |
 | <span id="method-laneframeof">**laneFrameOf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; …</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; undefined</code></pre></dialog></span> | undefined once the pivot is off the displayed regions |
 | <span id="method-lanedecisionsat">**laneDecisionsAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ originPx, bpPerPx, previous, frozen, }: {…}) =&gt; Map&lt;…&gt;</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ originPx, bpPerPx, previous, frozen, }: { originPx: number; bpPerPx: number; previous: ReadonlyMap&lt;string, LaneDecision &#124; undefined&gt;; frozen: ReadonlyMap&lt;string, LaneDecision&gt;; }) =&gt; Map&lt;string, LaneDecision &#124; undefined&gt;</code></pre></dialog></span> | for the viewport at `originPx` and `bpPerPx`: which group is the pivot and what the hold test counts are judged in it. A lane in `frozen` keeps its frozen decision |
 | <span id="method-shownchangesof">**shownChangesOf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(lane: Pick&lt;…&gt;) =&gt; LaneChange[]</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(lane: Pick&lt;Lane, "assemblyName" &#124; "canon" &#124; "frame"&gt;) =&gt; LaneChange[]</code></pre></dialog></span> | the changes a lane's header chip names, largest first |
@@ -328,13 +329,11 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setselectedlanes">**setSelectedLanes**</span><br><code>(names: readonly string[] &#124; undefined) =&gt; void</code> | writes `rows.kept`; undefined restores `configuredLanes`, or every lane |
 | <span id="action-setribboncolorfield">**setRibbonColorField**</span><br><code>(field: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setdomain">**setDomain**</span><br><code>(domain: string[]) =&gt; void</code> | takes the whole pinned order, empty meaning densest-first; merge a partial one with `mergeDomain` first |
-| <span id="action-setribboncolordomain">**setRibbonColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> |  |
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setinterpolate">**setInterpolate**</span><br><code>(interpolate: "bump" &#124; "linear") =&gt; void</code> |  |
 | <span id="action-setshowlaneticks">**setShowLaneTicks**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setinlinelanenames">**setInlineLaneNames**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setshowgenelabels">**setShowGeneLabels**</span><br><code>(flag: boolean) =&gt; void</code> |  |
-| <span id="action-setgenetextfield">**setGeneTextField**</span><br><code>(field: string) =&gt; void</code> |  |
 | <span id="action-setresolution">**setResolution**</span><br><code>(mode: LodMode) =&gt; void</code> |  |
 | <span id="action-setopacity">**setOpacity**</span><br><code>(value: number) =&gt; void</code> | the Opacity slider: the constant, or under a field its range scaled so its most opaque end equals `value` |
 | <span id="action-holdlaneorder">**holdLaneOrder**</span><br><code>(regions: FetchRegion[]) =&gt; void</code> | runs when the anchor fetch for `regions` completes. Haplotype lanes read off a graph stack by structure while no order is pinned, worked out again only once a fetch leaves the window it was worked out on or the lane selection changes, so panning never reshuffles the stack |
@@ -342,6 +341,8 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-hidelane">**hideLane**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
 | <span id="action-showlane">**showLane**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
 | <span id="action-showhiddenlanes">**showHiddenLanes**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-setlanecolor">**setLaneColor**</span><br><code>(assemblyName: string, color: string &#124; undefined) =&gt; void</code> | pins `rows.colors` for the lane, replacing an entry under any other spelling of it; undefined drops the pin, so the source's color shows |
+| <span id="action-openlanecolordialog">**openLaneColorDialog**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
 | <span id="action-openlaneselection">**openLaneSelection**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setlanesfrozen">**setLanesFrozen**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-realignlane">**realignLane**</span><br><code>(assemblyName: string) =&gt; void</code> |  |

@@ -105,7 +105,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="getter-t
 | <span id="method-gettrackactions">**getTrackActions**</span><br><code>(config: AnyTrackConfig, view?: TrackActionView) =&gt; MenuItem[]</code> | raw track actions (Settings, Copy, Delete) without submenu wrapper |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>25 inherited methods from 9 models</summary>
+<summary>26 inherited methods from 9 models</summary>
 
 From [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin): <span id="method-gettracklistmenuitems">[`getTrackListMenuItems`](../trackmenuitemssessionmixin#method-gettracklistmenuitems)</span>, <span id="method-gettrackactionmenuitems">[`getTrackActionMenuItems`](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)</span>
 
@@ -113,7 +113,7 @@ From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="method-haspanel"
 
 From [AppSessionMixin](../appsessionmixin): <span id="method-menus">[`menus`](../appsessionmixin#method-menus)</span>
 
-From [AssembliesMixin](../assembliesmixin): <span id="method-findassemblyconf">[`findAssemblyConf`](../assembliesmixin#method-findassemblyconf)</span>
+From [AssembliesMixin](../assembliesmixin): <span id="method-findassemblyconf">[`findAssemblyConf`](../assembliesmixin#method-findassemblyconf)</span>, <span id="method-caneditassembly">[`canEditAssembly`](../assembliesmixin#method-caneditassembly)</span>
 
 From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="method-withtrackedits">[`withTrackEdits`](../sessiontracksmanagersessionmixin#method-withtrackedits)</span>, <span id="method-withsequenceedits">[`withSequenceEdits`](../sessiontracksmanagersessionmixin#method-withsequenceedits)</span>, <span id="method-basetrackconfig">[`baseTrackConfig`](../sessiontracksmanagersessionmixin#method-basetrackconfig)</span>, <span id="method-geteditabletrackconfig">[`getEditableTrackConfig`](../sessiontracksmanagersessionmixin#method-geteditabletrackconfig)</span>, <span id="method-gettrackconfigchanges">[`getTrackConfigChanges`](../sessiontracksmanagersessionmixin#method-gettrackconfigchanges)</span>, <span id="method-istrackoverride">[`isTrackOverride`](../sessiontracksmanagersessionmixin#method-istrackoverride)</span>
 
@@ -139,7 +139,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="method-a
 | <span id="action-setpendingfilehandleids">**setPendingFileHandleIds**</span><br><code>(ids: string[]) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>105 inherited actions from 12 models</summary>
+<summary>108 inherited actions from 12 models</summary>
 
 From [WebSessionConnectionsMixin](../websessionconnectionsmixin): <span id="action-addsessionconnectionconf">[`addSessionConnectionConf`](../websessionconnectionsmixin#action-addsessionconnectionconf)</span>, <span id="action-addconnectionconf">[`addConnectionConf`](../websessionconnectionsmixin#action-addconnectionconf)</span>, <span id="action-deleteconnection">[`deleteConnection`](../websessionconnectionsmixin#action-deleteconnection)</span>
 
@@ -149,9 +149,9 @@ From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="action-setactive
 
 From [AppSessionMixin](../appsessionmixin): <span id="action-renamecurrentsession">[`renameCurrentSession`](../appsessionmixin#action-renamecurrentsession)</span>
 
-From [AssembliesMixin](../assembliesmixin): <span id="action-addsessionassembly">[`addSessionAssembly`](../assembliesmixin#action-addsessionassembly)</span>, <span id="action-addassembly">[`addAssembly`](../assembliesmixin#action-addassembly)</span>, <span id="action-removeassembly">[`removeAssembly`](../assembliesmixin#action-removeassembly)</span>, <span id="action-removesessionassembly">[`removeSessionAssembly`](../assembliesmixin#action-removesessionassembly)</span>, <span id="action-addtemporaryassembly">[`addTemporaryAssembly`](../assembliesmixin#action-addtemporaryassembly)</span>, <span id="action-removetemporaryassembly">[`removeTemporaryAssembly`](../assembliesmixin#action-removetemporaryassembly)</span>
+From [AssembliesMixin](../assembliesmixin): <span id="action-addsessionassembly">[`addSessionAssembly`](../assembliesmixin#action-addsessionassembly)</span>, <span id="action-addassembly">[`addAssembly`](../assembliesmixin#action-addassembly)</span>, <span id="action-removeassembly">[`removeAssembly`](../assembliesmixin#action-removeassembly)</span>, <span id="action-removesessionassembly">[`removeSessionAssembly`](../assembliesmixin#action-removesessionassembly)</span>, <span id="action-addtemporaryassembly">[`addTemporaryAssembly`](../assembliesmixin#action-addtemporaryassembly)</span>, <span id="action-removetemporaryassembly">[`removeTemporaryAssembly`](../assembliesmixin#action-removetemporaryassembly)</span>, <span id="action-editassembly">[`editAssembly`](../assembliesmixin#action-editassembly)</span>
 
-From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="action-addsessiontrackconf">[`addSessionTrackConf`](../sessiontracksmanagersessionmixin#action-addsessiontrackconf)</span>, <span id="action-publishtrackconf">[`publishTrackConf`](../sessiontracksmanagersessionmixin#action-publishtrackconf)</span>, <span id="action-addtrackconf">[`addTrackConf`](../sessiontracksmanagersessionmixin#action-addtrackconf)</span>, <span id="action-updatetrackconfiguration">[`updateTrackConfiguration`](../sessiontracksmanagersessionmixin#action-updatetrackconfiguration)</span>, <span id="action-promotetrackconfigdeltas">[`promoteTrackConfigDeltas`](../sessiontracksmanagersessionmixin#action-promotetrackconfigdeltas)</span>, <span id="action-resettrackconfiguration">[`resetTrackConfiguration`](../sessiontracksmanagersessionmixin#action-resettrackconfiguration)</span>, <span id="action-deletetrackconf">[`deleteTrackConf`](../sessiontracksmanagersessionmixin#action-deletetrackconf)</span>
+From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="action-addsessiontrackconf">[`addSessionTrackConf`](../sessiontracksmanagersessionmixin#action-addsessiontrackconf)</span>, <span id="action-publishtrackconf">[`publishTrackConf`](../sessiontracksmanagersessionmixin#action-publishtrackconf)</span>, <span id="action-addtrackconf">[`addTrackConf`](../sessiontracksmanagersessionmixin#action-addtrackconf)</span>, <span id="action-updatetrackconfiguration">[`updateTrackConfiguration`](../sessiontracksmanagersessionmixin#action-updatetrackconfiguration)</span>, <span id="action-promotetrackconfigdeltas">[`promoteTrackConfigDeltas`](../sessiontracksmanagersessionmixin#action-promotetrackconfigdeltas)</span>, <span id="action-resettrackconfiguration">[`resetTrackConfiguration`](../sessiontracksmanagersessionmixin#action-resettrackconfiguration)</span>, <span id="action-deletetrackconf">[`deleteTrackConf`](../sessiontracksmanagersessionmixin#action-deletetrackconf)</span>, <span id="action-deletetrackconfwithundo">[`deleteTrackConfWithUndo`](../sessiontracksmanagersessionmixin#action-deletetrackconfwithundo)</span>, <span id="action-restoretrackconf">[`restoreTrackConf`](../sessiontracksmanagersessionmixin#action-restoretrackconf)</span>
 
 From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="action-dereferencetrack">[`dereferenceTrack`](../referencemanagementsessionmixin#action-dereferencetrack)</span>
 

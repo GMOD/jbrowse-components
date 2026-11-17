@@ -31,16 +31,17 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="volatile-sorttracknames">**sortTrackNames**</span><br><code>boolean &#124; undefined</code> |  |
 | <span id="volatile-sortcategories">**sortCategories**</span><br><code>boolean &#124; undefined</code> |  |
 | <span id="volatile-categorymode">**categoryMode**</span><br><code>ObservableMap&lt;string, CategoryMode&gt;</code> | per-category rendering mode; absent means expanded. Collapsed and folder are mutually exclusive by construction, so un-foldering a category can't reveal a stale collapse underneath it |
-| <span id="volatile-filtertext">**filterText**</span><br><code>string</code> |  |
 | <span id="volatile-tableviewid">**tableViewId**</span><br><code>string &#124; undefined</code> | the view whose tracks the drawer shows as a table in place of the tree. Keyed by view because every view's selector is this one widget, so table mode opened for one view stays with it |
 | <span id="volatile-tabledrawerwidth">**tableDrawerWidth**</span><br><code>number &#124; undefined</code> | the drawer width the table asks for, read by the session as `preferredDrawerWidth` and never written into its saved width |
 | <span id="volatile-tracklist">**trackList**</span><br><code>TrackList</code> | which tracks the tree and the table list: all of them, or only the favorites or the recently used |
+| <span id="volatile-tracktable">**trackTable**</span><br><code>TrackTableModel</code> | the filter box, facet filters, sort and columns the tree and the table share |
 
 ## Getters
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="getter-filtertext">**filterText**</span><br><code>string</code> | the text in the filter box |
 | <span id="getter-trackcontainer">**trackContainer**</span><br><code>TrackContainer &#124; undefined</code> | The track list this selector shows and writes into: the view itself, or one of its containers when `trackContainerId` names one. |
 | <span id="getter-showtable">**showTable**</span><br><code>boolean</code> | whether the drawer shows this view's tracks as a table |
 | <span id="getter-preferreddrawerwidth">**preferredDrawerWidth**</span><br><code>number &#124; undefined</code> | the drawer width the session draws while the table shows |
@@ -52,11 +53,9 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="getter-activesortcategories">**activeSortCategories**</span><br><code>any</code> |  |
 | <span id="getter-configandsessiontrackconfigurations">**configAndSessionTrackConfigurations**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>((ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;…&gt;)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>((ConfigNodeProps&lt;TrackConfigDefinition&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;TrackConfigSchema&gt;) &#124; TrackConfigEntry)[]</code></pre></dialog></span> | the tracks this view can be offered — its assemblies' sequence tracks, then the session's list filtered to what it can draw |
 | <span id="getter-sessiontrackids">**sessionTrackIds**</span><br><code>Set&lt;any&gt;</code> | a non-admin's added/copied tracks, which the tree groups under a "Session tracks" category. Membership is the session's own list — the source of truth — not a suffix baked into the trackId |
-| <span id="getter-filtermatches">**filterMatches**</span><br><code>((searchText: string) =&gt; boolean) &#124; undefined</code> | whether a track's searchText holds every term in the filter box; undefined when the box holds no terms |
-| <span id="getter-filteractive">**filterActive**</span><br><code>boolean</code> | a query is being searched for, which forces categories open (isFilterForcedOpen) |
 | <span id="getter-maingrouptracks">**mainGroupTracks**</span><br><code>TrackNodeSource[]</code> | the config's own and the session's tracks, resolved and sorted. Its own getter, so a connection loading re-reads none of them |
 | <span id="getter-alltracks">**allTracks**</span><br><code>TrackGroup[]</code> | the main group, then one group per connection config whether or not it is loaded. A dormant connection has no tracks and defaults collapsed; expanding it loads it (see toggleCategory) |
-| <span id="getter-alltrackconfigurations">**allTrackConfigurations**</span><br><code>AnyTrackConfig[]</code> | every track the view can display, in tree order: what the faceted selector, favorites and recently-used resolve against |
+| <span id="getter-alltrackconfigurations">**allTrackConfigurations**</span><br><code>AnyTrackConfig[]</code> | every track the view can display, in tree order: what the table selector, favorites and recently-used resolve against |
 | <span id="getter-alltrackconfigurationmap">**allTrackConfigurationMap**</span><br><code>Map&lt;string, AnyTrackConfig&gt;</code> |  |
 | <span id="getter-selection">**selection**</span><br><code>AnyTrackConfig[]</code> | the selected track configs, resolved from `selectedTrackIds` on read, so a deleted track drops out and an edited one stays selected |
 | <span id="getter-selectionset">**selectionSet**</span><br><code>Set&lt;string&gt;</code> | the selected trackIds that still resolve to a track |
@@ -64,9 +63,12 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="getter-recentlyusedtracks">**recentlyUsedTracks**</span><br><code>(TrackConfigNode &#124; TrackConfigEntry)[]</code> | filters out tracks that are not in the recently used group |
 | <span id="getter-listedtrackids">**listedTrackIds**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | the trackIds the favorites or recent list limits the tree and table to; undefined when listing all |
 | <span id="getter-listedtrackconfigurations">**listedTrackConfigurations**</span><br><code>AnyTrackConfig[]</code> | the track configs the table lists |
+| <span id="getter-textkeptids">**textKeptIds**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | the trackIds whose searchText holds every term in the filter box; undefined when the box holds no terms |
+| <span id="getter-keeptrack">**keepTrack**</span><br><code>((t: TrackNodeSource) =&gt; boolean) &#124; undefined</code> | whether a track holds every term in the filter box and passes the facet filters; undefined while neither narrows the list |
+| <span id="getter-filteractive">**filterActive**</span><br><code>boolean</code> | a query or a facet filter narrows the list, which forces categories open (isFilterForcedOpen) |
 | <span id="getter-hierarchy">**hierarchy**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ name: string; id: string; type: "category"; … }</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ name: string; id: string; type: "category"; children: TreeNode[]; }</code></pre></dialog></span> | a group is kept even when no track in it survives the filter, so an empty connection still shows in the tree |
 | <span id="getter-flatlist">**flatList**</span><br><code>TreeNode[]</code> | the favorites or recently used tracks as a flat list in the list's own order, newest first for recent, with no category tree or group header: the toggle above already names the list |
-| <span id="getter-matchcounts">**matchCounts**</span><br><code>{ matched: number; total: number; } &#124; undefined</code> | how many of the listed tracks the filter box keeps, of how many; undefined while it holds no terms |
+| <span id="getter-matchcounts">**matchCounts**</span><br><code>{ matched: number; total: number; } &#124; undefined</code> | how many of the listed tracks the filter box and the facet filters keep, of how many; undefined while neither narrows the list |
 | <span id="getter-rows">**rows**</span><br><code>TreeRow[]</code> | every rendered row, in order, with its height and scroll offset |
 | <span id="getter-treeheight">**treeHeight**</span><br><code>number</code> |  |
 | <span id="getter-hasanysubcategories">**hasAnySubcategories**</span><br><code>boolean</code> |  |

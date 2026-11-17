@@ -24,7 +24,11 @@ take no tree.
 ```js
 {
   type: 'MultiWaySyntenyDisplay',
-  rows: { sort: ['GCF_000346465.2', 'poplar'], kept: ['GCF_000346465.2', 'poplar', 'citrus'] },
+  rows: {
+    sort: ['GCF_000346465.2', 'poplar'],
+    kept: ['GCF_000346465.2', 'poplar', 'citrus'],
+    colors: { poplar: '#1b9e77' },
+  },
 }
 ```
 
@@ -35,6 +39,7 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-sort">**sort**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The lanes that stack first, by assembly name, in this order; the rest follow densest-first. |
+| <span id="slot-sort">**sort**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The lanes that stack first, by assembly name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes. |
 | <span id="slot-labels">**labels**</span><br>[`stringMap`](/docs/config_guides/slot_types#stringmap) = <code>{}</code> | A label drawn for a lane in place of its assembly name, by assembly name. Where the lane labels draw is `labels.lanes`. |
+| <span id="slot-colors">**colors**</span><br>[`stringMap`](/docs/config_guides/slot_types#stringmap) = <code>{}</code> | A color pinned on a lane, by assembly name, the anchor's included, over the color its source declares for it: ggplot2's `scale_*_manual(values = c(name = ...))`. It draws as a bar beside the lane's label; a lane with neither draws none. A lane menu's Color... writes it. |
 | <span id="slot-kept">**kept**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The lanes drawn, by assembly name: it selects rather than narrows, replacing the track's lanes and able to add a lane the track does not configure. Empty draws the track's lanes, or every lane where it configures none. |

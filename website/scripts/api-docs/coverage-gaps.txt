@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1247)
+# model members with no description (1246)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -87,7 +87,6 @@ AddTrackModel.wrongProtocol
 AppCoreJBrowseModel.addAssemblyConf
 AppCoreJBrowseModel.addInternetAccountConf
 AppCoreJBrowseModel.addPlugin
-AppCoreJBrowseModel.addTrackConf
 AppCoreJBrowseModel.assemblyNames
 AppCoreJBrowseModel.deleteConnectionConf
 AppCoreJBrowseModel.deleteInternetAccountConf
@@ -455,7 +454,6 @@ HierarchicalTrackSelectorWidget.collapseTopLevelCategories
 HierarchicalTrackSelectorWidget.expandAllCategories
 HierarchicalTrackSelectorWidget.favorites
 HierarchicalTrackSelectorWidget.favoritesSet
-HierarchicalTrackSelectorWidget.filterText
 HierarchicalTrackSelectorWidget.hasAnySubcategories
 HierarchicalTrackSelectorWidget.isFavorite
 HierarchicalTrackSelectorWidget.isRecentlyUsed
@@ -1062,6 +1060,7 @@ MultiWaySyntenyDisplay.lgv
 MultiWaySyntenyDisplay.liveLodTier
 MultiWaySyntenyDisplay.namedCells
 MultiWaySyntenyDisplay.openInNewView
+MultiWaySyntenyDisplay.openLaneColorDialog
 MultiWaySyntenyDisplay.openLaneSelection
 MultiWaySyntenyDisplay.outlineCells
 MultiWaySyntenyDisplay.pinnedLabelGroups
@@ -1088,7 +1087,6 @@ MultiWaySyntenyDisplay.selectFeature
 MultiWaySyntenyDisplay.selectHovered
 MultiWaySyntenyDisplay.selectionInk
 MultiWaySyntenyDisplay.setFeatures
-MultiWaySyntenyDisplay.setGeneTextField
 MultiWaySyntenyDisplay.setHideUnlabelled
 MultiWaySyntenyDisplay.setHoverTarget
 MultiWaySyntenyDisplay.setInlineLaneNames
@@ -1100,7 +1098,6 @@ MultiWaySyntenyDisplay.setLaneLinks
 MultiWaySyntenyDisplay.setLanesFrozen
 MultiWaySyntenyDisplay.setPointer
 MultiWaySyntenyDisplay.setResolution
-MultiWaySyntenyDisplay.setRibbonColorDomain
 MultiWaySyntenyDisplay.setRibbonColorField
 MultiWaySyntenyDisplay.setShowGeneLabels
 MultiWaySyntenyDisplay.setShowLaneTicks
@@ -1234,6 +1231,7 @@ TimeTraveller.notTrackingUndo
 TimeTraveller.redo
 TimeTraveller.resumeTrackingUndo
 TimeTraveller.setHasPendingRecord
+TimeTraveller.steps
 TimeTraveller.stopTrackingUndo
 TimeTraveller.targetPath
 TimeTraveller.undo
@@ -1278,6 +1276,7 @@ WebSessionConnectionsMixin.sessionConnections
 WebSessionManagementMixin.activateSession
 WebSessionManagementMixin.deleteSavedSession
 WebSessionManagementMixin.deleteSavedSessions
+WebSessionManagementMixin.openSessionCopy
 WebSessionManagementMixin.renameSavedSession
 WebSessionManagementMixin.savedSessionMetadata
 WebSessionManagementMixin.setSavedSessionFavorite
