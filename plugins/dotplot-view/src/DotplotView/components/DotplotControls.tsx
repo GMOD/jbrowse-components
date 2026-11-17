@@ -93,26 +93,26 @@ const DotplotControls = observer(function DotplotControls({
         data-testid="dotplot_view_menu"
         aria-label="Zoom and layout options"
         menuItems={[
-          {
-            label: 'Square view - same bp per pixel',
-            onClick: () => {
-              model.squareView()
-            },
-            helpText:
-              model.ratio === 1
-                ? 'No effect while the aspect ratio is locked — the lock already keeps both axes at the same bp/px.'
-                : 'Puts both axes on the same bp per pixel, the average of the two.',
-          },
-          {
-            label: 'Rectangular view - same total bp',
-            onClick: () => {
-              model.squareViewProportional()
-            },
-            helpText:
-              model.ratio === 1
-                ? 'Overridden while the aspect ratio is locked — the lock re-equalizes bp/px immediately after.'
-                : 'Zooms both axes to show the same total bp, whatever their widths.',
-          },
+          ...(model.ratio === 1
+            ? []
+            : [
+                {
+                  label: 'Square view - same bp per pixel',
+                  onClick: () => {
+                    model.squareView()
+                  },
+                  helpText:
+                    'Puts both axes on the same bp per pixel, the average of the two.',
+                },
+                {
+                  label: 'Rectangular view - same total bp',
+                  onClick: () => {
+                    model.squareViewProportional()
+                  },
+                  helpText:
+                    'Zooms both axes to show the same total bp, whatever their widths.',
+                },
+              ]),
           {
             label: 'Zoom out fully',
             onClick: () => {

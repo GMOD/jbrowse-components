@@ -100,3 +100,27 @@ test('the aspect lock row reports the model and writes it back', async () => {
   fireEvent.click(row())
   expect(model.ratio).toBe(1)
 })
+
+test('the square and rectangular rows leave the menu while the aspect lock is on', async () => {
+  const { model } = await setup()
+  openViewMenu()
+  expect(
+    screen.getByText('Square view - same bp per pixel'),
+  ).toBeInTheDocument()
+  expect(
+    screen.getByText('Rectangular view - same total bp'),
+  ).toBeInTheDocument()
+  fireEvent.keyDown(document.activeElement!, { key: 'Escape' })
+
+  act(() => {
+    model.setRatio(1)
+  })
+  openViewMenu()
+  expect(
+    screen.queryByText('Square view - same bp per pixel'),
+  ).not.toBeInTheDocument()
+  expect(
+    screen.queryByText('Rectangular view - same total bp'),
+  ).not.toBeInTheDocument()
+  expect(screen.getByText('Zoom out fully')).toBeInTheDocument()
+})
