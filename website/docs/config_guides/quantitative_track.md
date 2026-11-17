@@ -232,7 +232,7 @@ subtrack its own row, `""` draws them all in one plot box, and a field such as
 each in its own color. Here two cell lines each overlay a haplotype pair, blue
 for Hap1 and orange for Hap2:
 
-```json
+```json addtrack
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "fiberseq-hap",
