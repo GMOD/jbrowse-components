@@ -12,7 +12,7 @@ async function loadedDisplay() {
 
   render(<WiggleComponent model={display} />)
   await waitFor(() => {
-    expect(display.numSources).toBe(2)
+    expect(display.drawnRows).toHaveLength(2)
   })
   return display
 }

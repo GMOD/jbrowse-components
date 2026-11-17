@@ -927,7 +927,9 @@ export function rowsContentHeightViews(self: {
      * #getter
      * The px the rows stack to, `drawnRows` × `effectiveRowHeight`, which the
      * dendrogram's leaves spread over: the content the rows scroll through,
-     * never the viewport they scroll inside.
+     * never the viewport they scroll inside. It counts the mixin's rows, not
+     * wiggle's grouped rows: its one reader is the tree, which grouped rows
+     * do not draw.
      */
     get rowsContentHeight(): number {
       return self.drawnRows.length * self.effectiveRowHeight

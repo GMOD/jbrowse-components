@@ -74,6 +74,8 @@ display as an attribute on each source row.
   subtrack (a `rows.color` field), the key lists every subtrack as before. A
   merged entry stands for subtracks in several rows, so that key focuses
   nothing on a click.
+- `rows.annotations` draws no columns under a grouping field, a shared box
+  (`rowAnnotationDeals`), since a row's subtracks may carry several values.
 
 ## Rejected alternatives
 

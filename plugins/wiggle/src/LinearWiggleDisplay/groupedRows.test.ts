@@ -72,7 +72,7 @@ describe('rows: { field: "group" }', () => {
     const { display } = makeDisplay()
     expect(display.isGroupedRows).toBe(true)
     expect(display.numRows).toBe(2)
-    expect(display.numSources).toBe(4)
+    expect(display.drawnRows).toHaveLength(4)
     expect(display.effectiveRowHeight).toBe(display.rowsHeight / 2)
     expect(display.markSources.map(s => [s.name, s.row])).toEqual([
       ['GM12878 Hap1', 0],

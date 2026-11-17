@@ -25,7 +25,7 @@ function scored(name: string, score: number) {
 }
 
 // Driven off a real display, like trackMenuItems.test.ts: the menu's gates read
-// getters (`isRowLayout`, `numSources`, `rowSort`) a stub would have to restate.
+// getters (`isRowLayout`, `numRows`, `rowSort`) a stub would have to restate.
 //
 // The region is registered alongside its data, as a real fetch does: the sort
 // names a coordinate, so it resolves which loaded region covers it.

@@ -65,7 +65,6 @@ export interface WiggleDisplayModel
   isOverlay: boolean
   isDensityMode: boolean
   isGroupedRows: boolean
-  numSources: number
   numRows: number
   effectiveRowHeight: number
   scrollableHeight: number

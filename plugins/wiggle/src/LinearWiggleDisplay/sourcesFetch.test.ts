@@ -72,7 +72,7 @@ describe('MultiLinearWiggleDisplay zero-feature loading', () => {
     // after the zero-feature fetch: an (empty) region entry exists, so the size
     // gate passes and the stub paints; the score domain stays undefined.
     expect(display.rpcDataMap.size).toBeGreaterThan(0)
-    expect(display.numSources).toBe(0)
+    expect(display.drawnRows).toHaveLength(0)
     expect(display.domain).toBeUndefined()
     expect(display.renderState).toBeDefined()
   })
@@ -97,7 +97,7 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
 
     display.setRpcData(1, makeMultiWiggleData(['a', 'b', 'c']), ctgB)
     expect(display.discoveredRows.map(s => s.name)).toEqual(['a', 'b', 'c'])
-    expect(display.numSources).toBe(3)
+    expect(display.drawnRows).toHaveLength(3)
   })
 
   // The list reaches `gpuProps()`, whose identity re-encodes every loaded

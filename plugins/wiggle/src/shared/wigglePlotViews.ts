@@ -43,26 +43,21 @@ export function wiggleDomainViews(self: WiggleDomainHost) {
   }
 }
 
-/** What {@link wiggleRowsBoxViews} reads: the box and the rows drawn in it. */
+/** What {@link wiggleRowsBoxViews} reads: the box and the plot. */
 export interface WiggleRowsBoxHost {
   height: number
   rowsTopOffset: number
   isDensityMode: boolean
   scoreGradientPaints: boolean
-  drawnRows: readonly unknown[]
 }
 
 /**
- * The height a wiggle display's rows, or its one plot, fill, and how many
- * sources share it. The display installs them as a `.views()` layer; a static
- * export installs the same layer.
+ * The height a wiggle display's rows, or its one plot, fill. The display
+ * installs them as a `.views()` layer; a static export installs the same
+ * layer.
  */
 export function wiggleRowsBoxViews(self: WiggleRowsBoxHost) {
   return {
-    get numSources() {
-      return self.drawnRows.length
-    },
-
     /**
      * #getter
      * The height under `rowsTopOffset` the rows, or the one plot, fill.
