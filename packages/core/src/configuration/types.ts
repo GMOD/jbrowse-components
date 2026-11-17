@@ -276,14 +276,13 @@ type SubSchemaSlotPath<SCHEMA, LEAF extends boolean> =
       ? readonly string[]
       : {
           [K in keyof D & string]: D[K] extends AnyConfigurationSchemaType
-            ?
-                | readonly [
-                    K,
-                    LEAF extends true
-                      ? ConfigurationLeafSlotName<D[K]>
-                      : ConfigurationSlotName<D[K]>,
-                  ]
-                | readonly [K, ...SubSchemaSlotPath<D[K], LEAF>]
+            ? | readonly [
+                  K,
+                  LEAF extends true
+                    ? ConfigurationLeafSlotName<D[K]>
+                    : ConfigurationSlotName<D[K]>,
+                ]
+              | readonly [K, ...SubSchemaSlotPath<D[K], LEAF>]
             : D[K] extends
                   | IArrayType<any>
                   | IOptionalIType<IArrayType<any>, any>
