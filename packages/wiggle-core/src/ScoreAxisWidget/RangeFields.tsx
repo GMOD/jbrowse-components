@@ -1,31 +1,21 @@
-import { useRef, useState } from 'react'
-
-import { useFinalUnmount } from '@jbrowse/core/util/hooks'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 import { FormHelperText, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { toP } from '../formatNumber.ts'
+import { useLiveDraft } from './useLiveDraft.ts'
 
 import type { ScoreAxisDisplay } from './types.ts'
 import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
 
-const DEBOUNCE_MS = 300
-
-type End = 'min' | 'max'
+interface Texts {
+  min: string
+  max: string
+}
 
 const ENDS = [
   { end: 'min', label: 'Min', at: 0 },
   { end: 'max', label: 'Max', at: 1 },
 ] as const
-
-// Text typed against the value the end held at the time. A write from
-// anywhere else (undo, Reset, a menu, an agent) leaves the end holding
-// something other than `base`, and the field then shows the end again.
-interface Draft {
-  text: string
-  base: number | undefined
-}
 
 // '' is "follow the data"; anything else that isn't a number is held back
 // rather than read as empty, which would unpin the end.
@@ -51,72 +41,37 @@ function problem(
   return undefined
 }
 
-function pinned(display: ScoreAxisDisplay, end: End) {
-  return end === 'min' ? display.domainMin : display.domainMax
+function textOf(n: number | undefined) {
+  return n === undefined ? '' : `${n}`
 }
 
-function current(drafts: Partial<Record<End, Draft>>, end: End, held?: number) {
-  const draft = drafts[end]
-  return draft && draft.base === held ? draft : undefined
-}
-
-// Typing 190 would otherwise redraw at 1 and 19 on the way; the pair writes
-// once the typing pauses, and at once on blur or when the drawer closes.
 export default observer(function RangeFields({
   display,
 }: {
   display: ScoreAxisDisplay
 }) {
   const { scaleType, autoscaledDomain } = display
-  const [drafts, setDrafts] = useState<Partial<Record<End, Draft>>>({})
-  const latest = useRef(drafts)
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
-
-  const store = (next: Partial<Record<End, Draft>>) => {
-    latest.current = next
-    setDrafts(next)
-  }
-
-  const flush = () => {
-    clearTimeout(timer.current)
-    timer.current = undefined
-    if (isAlive(display)) {
-      const read = (end: End) => {
-        const held = pinned(display, end)
-        const draft = current(latest.current, end, held)
-        return { draft, value: draft ? parse(draft.text) : held }
-      }
-      const min = read('min')
-      const max = read('max')
-      if (problem(min.value, max.value, display.scaleType) === undefined) {
-        if (min.value !== display.domainMin) {
-          display.setDomainMin(min.value)
+  const { draft, edit, flush } = useLiveDraft<Texts>({
+    node: display,
+    held: () => `${display.domainMin}|${display.domainMax}`,
+    write: ({ min, max }) => {
+      const lo = parse(min)
+      const hi = parse(max)
+      if (problem(lo, hi, display.scaleType) === undefined) {
+        if (lo !== display.domainMin) {
+          display.setDomainMin(lo)
         }
-        if (max.value !== display.domainMax) {
-          display.setDomainMax(max.value)
+        if (hi !== display.domainMax) {
+          display.setDomainMax(hi)
         }
-        store({
-          min: min.draft && { ...min.draft, base: min.value },
-          max: max.draft && { ...max.draft, base: max.value },
-        })
       }
-    }
+    },
+  })
+  const texts = draft ?? {
+    min: textOf(display.domainMin),
+    max: textOf(display.domainMax),
   }
-  useFinalUnmount(flush)
-
-  const edit = (end: End, text: string) => {
-    store({ ...latest.current, [end]: { text, base: pinned(display, end) } })
-    clearTimeout(timer.current)
-    timer.current = setTimeout(flush, DEBOUNCE_MS)
-  }
-
-  const shown = (end: End) => {
-    const held = pinned(display, end)
-    return (
-      current(drafts, end, held)?.text ?? (held === undefined ? '' : `${held}`)
-    )
-  }
-  const error = problem(parse(shown('min')), parse(shown('max')), scaleType)
+  const error = problem(parse(texts.min), parse(texts.max), scaleType)
 
   return (
     <>
@@ -130,7 +85,7 @@ export default observer(function RangeFields({
                 ? `auto (${toP(autoscaledDomain[at], 4)})`
                 : 'auto'
             }
-            value={shown(end)}
+            value={texts[end]}
             error={error !== undefined}
             autoComplete="off"
             size="small"
@@ -140,7 +95,7 @@ export default observer(function RangeFields({
               htmlInput: { inputMode: 'decimal' },
             }}
             onChange={event => {
-              edit(end, event.target.value)
+              edit({ ...texts, [end]: event.target.value })
             }}
             onBlur={flush}
           />

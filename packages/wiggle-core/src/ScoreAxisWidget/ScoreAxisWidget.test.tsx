@@ -249,12 +249,32 @@ test('a reference line writes once its value reads', () => {
   const { display } = open()
   fireEvent.click(screen.getByRole('button', { name: 'Add line' }))
   expect(display.scoreRules).toEqual([])
-  fireEvent.change(screen.getByRole('textbox', { name: 'Value' }), {
-    target: { value: '250' },
-  })
+  const value = screen.getByRole('textbox', { name: 'Value' })
+  fireEvent.change(value, { target: { value: '250' } })
+  expect(display.scoreRules).toEqual([])
+  fireEvent.blur(value)
   expect(display.scoreRules).toEqual([{ value: 250 }])
   fireEvent.click(screen.getByRole('button', { name: 'Remove line' }))
   expect(display.scoreRules).toEqual([])
+})
+
+// One undo step per label, not per letter.
+test('typing a line saves once the typing pauses', () => {
+  jest.useFakeTimers()
+  const { display } = open({
+    configuration: { encoding: { y: { rules: [{ value: 5 }] } } },
+  })
+  persists = 0
+  const label = screen.getByRole('textbox', { name: 'Label' })
+  for (const text of ['f', 'fl', 'floor']) {
+    fireEvent.change(label, { target: { value: text } })
+  }
+  expect(display.scoreRules).toEqual([{ value: 5 }])
+  act(() => {
+    jest.advanceTimersByTime(300)
+  })
+  expect(display.scoreRules).toEqual([{ value: 5, label: 'floor' }])
+  expect(persists).toBe(1)
 })
 
 test('a line with no value yet holds back neither the others nor its own red', () => {
@@ -267,9 +287,9 @@ test('a line with no value yet holds back neither the others nor its own red', (
     'false',
     'false',
   ])
-  fireEvent.change(screen.getByDisplayValue('low'), {
-    target: { value: 'floor' },
-  })
+  const label = screen.getByDisplayValue('low')
+  fireEvent.change(label, { target: { value: 'floor' } })
+  fireEvent.blur(label)
   expect(display.scoreRules).toEqual([{ value: 5, label: 'floor' }])
   expect(screen.getAllByRole('textbox', { name: 'Value' })).toHaveLength(2)
 })
@@ -278,9 +298,9 @@ test('the lines follow a write from off the panel', () => {
   const { display } = open({
     configuration: { encoding: { y: { rules: [{ value: 5 }] } } },
   })
-  fireEvent.change(screen.getByRole('textbox', { name: 'Value' }), {
-    target: { value: '6' },
-  })
+  const value = screen.getByRole('textbox', { name: 'Value' })
+  fireEvent.change(value, { target: { value: '6' } })
+  fireEvent.blur(value)
   expect(display.scoreRules).toEqual([{ value: 6 }])
   act(() => {
     display.setScoreRules([{ value: 5 }])

@@ -35,6 +35,7 @@ export default observer(function ShareAxisWith({
       {peers.map(({ display: peer, key, name }) => (
         <LabeledCheckbox
           key={key}
+          size="small"
           label={name}
           checked={inGroup(peer)}
           onChange={checked => {
