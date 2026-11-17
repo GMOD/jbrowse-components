@@ -136,6 +136,34 @@ bigDataUrl child1.bw
   })
 })
 
+test('generateTracks keeps a data track that sets view, as ENCODE integrative hub tracks do', () => {
+  const viewedDb = new TrackDbFile(`track ccres
+compositeTrack on
+shortLabel cCREs
+longLabel cCREs by biosample
+type bigBed 9+
+
+track ccres_k562
+parent ccres off
+view ENCFF246FJL
+shortLabel K562 cCREs
+longLabel cCREs active in K562
+type bigBed 9+
+bigDataUrl k562.bigBed
+`)
+  const tracks = generateTracks({
+    trackDb: viewedDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+  })
+  expect(tracks).toHaveLength(1)
+  expect(tracks[0]).toMatchObject({
+    name: 'K562 cCREs',
+    category: ['cCREs'],
+    adapter: { type: 'BigBedAdapter' },
+  })
+})
+
 test('generateTracks keeps remote locations remote', () => {
   const tracks = generateTracks({
     trackDb,

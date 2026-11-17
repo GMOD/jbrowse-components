@@ -6,13 +6,10 @@ import { htmlLink, hubBaseUrl, makeLoc } from './util.ts'
 import type { HubLocation } from './util.ts'
 import type { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
 
-// stanzas that only group other tracks; never emitted as tracks themselves
-const parentTrackKeys = new Set([
-  'superTrack',
-  'compositeTrack',
-  'container',
-  'view',
-])
+// stanzas that only group other tracks; never emitted as tracks themselves. A
+// `view` stanza groups too, but only by being named as a parent: ENCODE's
+// integrative hub also sets `view` on every data track
+const parentTrackKeys = new Set(['superTrack', 'compositeTrack', 'container'])
 
 // a track's container name, dropping the trailing `on`/`off` visibility flag
 function parentName(stanza: RaStanza | undefined) {
@@ -86,8 +83,13 @@ export function generateTracks({
   // a track's `html` description page, like its `bigDataUrl`, is relative to the
   // trackDb file, so both resolve against the same base
   const trackDbBaseUrl = hubBaseUrl(trackDbLoc)
+  const parents = new Set(
+    Object.values(trackDb.data).map(stanza => parentName(stanza)),
+  )
   const leaves = Object.entries(trackDb.data).filter(
-    ([, track]) => !Object.keys(track.data).some(k => parentTrackKeys.has(k)),
+    ([trackName, track]) =>
+      !parents.has(trackName) &&
+      !Object.keys(track.data).some(k => parentTrackKeys.has(k)),
   )
   const searchedTrack = searchedTrackName(trackDb, leaves)
   return leaves
