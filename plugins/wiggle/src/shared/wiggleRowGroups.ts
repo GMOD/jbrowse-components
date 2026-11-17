@@ -103,7 +103,7 @@ export function sourceRowIndex<S extends LabelledRow>(rows: WiggleRow<S>[]) {
   return index
 }
 
-const SEPARATORS = '[\\s\\p{P}]*'
+const SEPARATORS = String.raw`[\s_.,;:/|()[\]-]*`
 
 function escapeRegExp(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -116,8 +116,8 @@ function escapeRegExp(text: string) {
  */
 export function roleLabel(label: string, value: string) {
   const v = escapeRegExp(value)
-  const leading = new RegExp(`^${v}${SEPARATORS}`, 'u')
-  const trailing = new RegExp(`${SEPARATORS}${v}$`, 'u')
+  const leading = new RegExp(`^${v}${SEPARATORS}`)
+  const trailing = new RegExp(`${SEPARATORS}${v}$`)
   return value === ''
     ? label
     : leading.test(label)
