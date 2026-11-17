@@ -482,7 +482,7 @@ test('the File menu is opt-in, and carries what an embed can honour', () => {
   ).toEqual([])
 })
 
-// The track selector's + button and hamburger menu read these two guards, so a
+// The track selector's + button reads these two guards, so a
 // guard that ignores the flag leaves an Add-connection button in a locked embed
 test('disableAddTracks refuses both the track and the connection guard', () => {
   const open = createViewState({ assembly, tracks }).session

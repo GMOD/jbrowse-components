@@ -98,11 +98,6 @@ Typecheck, `test-related` and `verify` see none of these homes.
 - **A screenshot spec reaching a config through a shared const**
   (`GRASSES_RICE_LANES` in `specs/synteny.ts`): import `specs` from
   `screenshot-specs.ts` and match `decodeURIComponent(JSON.stringify(s))`.
-- **A menu label with two real spellings.** The track selector's
-  `HamburgerMenu.tsx` renders `Add track...` and `HierarchicalFab.tsx` a bare
-  `Add track`. `check-menu-labels.ts` judges only `**A → B**` paths, so grep
-  the bare form across `plugins/ packages/ products/` before "fixing" a lone
-  bold label.
 - **Emitted `.d.ts` for barrel exports.** A type nobody imports can be what tsc
   serializes into another package's declarations, and
   `scripts/check-declaration-leaks.ts` fails when it goes. After `build:esm`,

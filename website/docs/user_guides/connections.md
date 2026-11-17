@@ -32,7 +32,7 @@ JBrowse fetches nothing for a collapsed connection, so adding several is cheap.
 Open the form from either route:
 
 - **File → Open connection...** in the menu bar
-- **Connections → Add connection...** in the track selector's hamburger menu
+- **Add connection...** under the track selector's + button
 
 Paste the hub URL ([format below](#ucsc-track-hub-url-format)), choose the
 connection type, and submit. A newly added connection loads right away.
@@ -46,8 +46,9 @@ expand it again to browse the rest.
 
 ## Removing a connection
 
-**Connections → Delete connections...** in the track selector's hamburger menu
-lists the connections to remove.
+**Remove connection...** in the menu on the connection's own row of the track
+selector removes it. An admin can remove any connection, anyone else only the
+ones they added.
 
 ## UCSC track hub URL format
 

@@ -161,10 +161,10 @@ formatter through `@jbrowse/core/util`.
 **The split held for a while and has since leaked back.** After it, the plugin
 files naming `AbstractSessionModel` were the administration UI, which wants
 `adminMode`, `addAssembly`/`removeAssembly`, `sessionConnections` or
-`sessionPlugins` and is correctly the application. Today
-`ManageConnectionsDialog` is the one admin site left, and displays and menus
-name it again: the Hi-C comparison menu (`compareTrackMenuItems.ts`) and the
-multi-way display's `afterAttach.ts` and `laneHolders.ts` take a whole
+`sessionPlugins` and is correctly the application. The last of those,
+`ManageConnectionsDialog`, went with the track selector's ☰ menu, and displays
+and menus name it again: the Hi-C comparison menu (`compareTrackMenuItems.ts`)
+and the multi-way display's `afterAttach.ts` and `laneHolders.ts` take a whole
 `AbstractSessionModel`, and the LGV's `afterAttach.ts` and `searchUtils.ts`
 `Pick` from it. Each wants a member or two a slice already names, or one no
 slice has yet (`addHighlight`, `textSearchManager`), so the fix is the same

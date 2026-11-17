@@ -1064,7 +1064,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           },
           {
             type: 'click',
-            selector: '[data-testid="hierarchical-add-track-fab"]',
+            selector: '[data-testid="track-selector-add"]',
           },
           { type: 'waitForText', text: 'Add track...' },
         ],
@@ -1072,7 +1072,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           // an arrow here cuts across the "Add track..." box
           {
             type: 'circle',
-            anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
+            anchor: { selector: '[data-testid="track-selector-add"]' },
           },
           { type: 'box', anchor: { text: 'Add track...' } },
         ],
@@ -1366,12 +1366,12 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     readySelector: TRACK_SELECTOR,
     actions: [
-      { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
-      ...menuCascade(['Collapse', 'Collapse top-level categories']),
+      { type: 'click', selector: '[data-testid="htsCategoryMenu-Tracks"]' },
+      ...menuCascade(['Collapse all']),
     ],
     annotations: [
-      { type: 'box', anchor: { text: 'Collapse top-level categories' } },
-      { type: 'box', anchor: { text: 'Collapse subcategories' } },
+      { type: 'box', anchor: { text: 'Collapse all' } },
+      { type: 'box', anchor: { text: 'Expand all' } },
     ],
   },
 
@@ -1597,9 +1597,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     readySelector: TRACK_SELECTOR,
     actions: [
-      { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
-      ...menuCascade(['Collapse', 'Collapse top-level categories']),
-      { type: 'click', text: 'Collapse top-level categories' },
+      { type: 'click', selector: '[data-testid="htsCategoryMenu-Tracks"]' },
+      ...menuCascade(['Collapse all']),
+      { type: 'click', text: 'Collapse all' },
     ],
   },
 

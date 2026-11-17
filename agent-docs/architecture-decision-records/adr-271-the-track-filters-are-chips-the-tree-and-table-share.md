@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The track selector's facet filters are a chip row under its filter box, in tree and table mode alike; one table state per selector holds facets, sort and columns, and the tree shows only the tracks its facets keep. The side panel goes"
+summary: "The track selector's facet filters are a chip row under its filter box, in tree and table mode alike; one table state per selector holds facets, sort and columns, and the tree shows only the tracks its facets keep. The side panel goes. Amended: the ☰ menu goes, each row moving to where it acts"
 ---
 
 # ADR-271: The track filters are chips the tree and the table share
@@ -11,6 +11,14 @@ Accepted (2026-11-17). Colin picked the chip row over a Filters button and
 side panel from captures of both in the drawer (a 293-track ENCODE-style list
 at 1280 and 1920 px), asked for it in the tree too, and asked that the table
 read as a mode of the track selector rather than a separate faceted selector.
+
+Amended 2026-11-17: the ☰ menu was a grab-bag, so it goes and each row moves
+to where it acts (One header, below). The tree's Sort toggles are deleted with
+their state: they kept the choice under bare `sortTrackNames` /
+`sortCategories` localStorage keys that won over `hierarchical.sort.*`, so a
+choice made once overrode every config on the origin, a hub's included. The
+tree's order is now the config's alone, and the table's column headers are the
+interactive sort; the tree does not follow the table's sort.
 
 ## Context
 
@@ -38,9 +46,21 @@ on the way back, and the tree could not filter by metadata at all.
   categories and description, the table also its kind, adapter and metadata,
   so "N of M" is the open mode's count. Facets, sort and add-to-selection mode
   survive a Tree | Table toggle.
-- **One header.** The drawer's table draws the tree's header (☰ menu, cart,
-  filter box, chips); in table mode the ☰ menu's Sort and Collapse rows give
-  way to "Add tracks to selection…" and Manage columns.
+- **One header.** The drawer's table draws the tree's header (+ button, cart,
+  filter box, chips). Amended 2026-11-17, the ☰ menu's rows went to:
+  - Add track... and Add connection...: the + button, which draws nothing
+    when neither applies. The floating add FAB went with it.
+  - Clear favorites / Clear recently used: the + menu, only while that list
+    shows and has tracks; a text button beside the toggles does not fit the
+    384 px drawer without a second line. Clear favorites offers Undo.
+  - Delete connections...: "Remove connection..." on the connection's own
+    group row, through the same confirm.
+  - Collapse: "Collapse all" / "Expand all" on a group row's menu; config
+    `defaultCollapsed.*` still sets the first load.
+  - Sort: deleted (Status).
+  - Add tracks to selection… and Manage columns: the columns button at the
+    end of the table's header row, in the drawer and the folder dialog
+    alike.
 - **A folder dialog keeps a table of its own** (`useTrackTable`), with its
   own filter box and the same chips, since `TrackSelector-folderDialog` is a
   documented extension point.
