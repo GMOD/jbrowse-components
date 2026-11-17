@@ -632,12 +632,12 @@ export async function multiwayTables(
   const shown = inWindow.map(({ group }) => {
     const clipped = clipToDisplayedRegions(stage.layout, group.anchor)
     return clipped
-      ? clipGroupToAnchor(group, clipped.start, clipped.end)
+      ? clipGroupToAnchor(group, clipped.start, clipped.end, fetched.ops)
       : group
   })
   const decisions = decideLanesOn(stage, {
     groups: inWindow.map(({ group, start, end }) =>
-      clipGroupToAnchor(group, start, end),
+      clipGroupToAnchor(group, start, end, fetched.ops),
     ),
     assemblyNames: rows,
     previous: new Map(),

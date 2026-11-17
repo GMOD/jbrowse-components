@@ -1,5 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { getAlignmentOps } from '../syntenyMate.ts'
 import {
   computeRowFrame,
   decideLaneFrames,
@@ -7,7 +8,12 @@ import {
   nudgeDecision,
   pickRung,
 } from './laneDecision.ts'
-import { groupFeatures, laneOpeningsOf, rowFrameX } from './layoutMultiWay.ts'
+import {
+  clipGroupToAnchor,
+  groupFeatures,
+  laneOpeningsOf,
+  rowFrameX,
+} from './layoutMultiWay.ts'
 
 import type { LaneDecision } from './laneDecision.ts'
 import type { LanePin } from './lanePins.ts'
@@ -1194,4 +1200,37 @@ describe('a frozen lane', () => {
       }
     }
   })
+})
+
+// anchor 20 kb, lane 12 kb: 6 kb aligned, 8 kb the lane lacks, 6 kb aligned
+test('a lane aligns on a record cut along its alignment, not in proportion to it', () => {
+  const record = new SimpleFeature({
+    uniqueId: 'indel',
+    refName: 'chr1',
+    start: 100_000,
+    end: 120_000,
+    strand: 1,
+    assemblyName: 'anchor',
+    CIGAR: '6000M8000D6000M',
+    mate: {
+      assemblyName: 'peach',
+      refName: 'Pp1',
+      start: 500_000,
+      end: 512_000,
+    },
+  })
+  const ops = new Map([[record.id(), getAlignmentOps(record)!]])
+  const panBp = 116_000
+  const groups = groupFeatures([record]).map(group =>
+    clipGroupToAnchor(group, panBp, panBp + SPAN_BP, ops),
+  )
+  const decision = decide(groups, { panBp }).get('peach')!
+  const frame = frameFromDecision(
+    decision,
+    px(decision.pivotAnchor.coord - panBp),
+    SPAN_BP,
+    WIDTH,
+  )
+  // the walk maps anchor 116,500 to lane 508,500
+  expect(rowFrameX(frame, 508_500, WIDTH)).toBeCloseTo(px(500), 0)
 })

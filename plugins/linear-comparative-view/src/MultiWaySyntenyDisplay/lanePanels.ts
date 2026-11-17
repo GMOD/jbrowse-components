@@ -1,10 +1,12 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
-import { mateInterval } from '../mateBpAt.ts'
+import { NO_OPS } from './alignmentOps.ts'
+import { placementMateInterval } from './layoutMultiWay.ts'
 
 import type { MateDiscoveryResult } from '../LaunchSyntenyView/pickMatesForRegion.ts'
 import type { ResolvedPanel } from '../LaunchSyntenyView/resolvePanel.ts'
+import type { AlignmentOpsById } from './alignmentOps.ts'
 import type { LaneDecision } from './laneDecision.ts'
 import type { MultiWayGroup } from './layoutMultiWay.ts'
 
@@ -16,6 +18,7 @@ export type LanePlacementDecision = Pick<
 /** One panel per framed lane, in stack order, read off the lanes. */
 export function lanePanelsForRegion({
   groups,
+  ops = NO_OPS,
   rowAssemblies,
   laneDecisions,
   region,
@@ -23,6 +26,7 @@ export function lanePanelsForRegion({
   trackAssemblyNames,
 }: {
   groups: MultiWayGroup[]
+  ops?: AlignmentOpsById
   rowAssemblies: string[]
   laneDecisions: ReadonlyMap<string, LanePlacementDecision | undefined>
   region: { refName: string; start: number; end: number }
@@ -62,10 +66,10 @@ export function lanePanelsForRegion({
             const lo = Math.max(group.anchor.start, region.start)
             const hi = Math.min(group.anchor.end, region.end)
             // unrounded, so the panel's ends round outward once below
-            const mate = mateInterval(
+            const mate = placementMateInterval(
               group.anchor,
               placement,
-              placement.orientation,
+              ops,
               lo,
               hi,
             )

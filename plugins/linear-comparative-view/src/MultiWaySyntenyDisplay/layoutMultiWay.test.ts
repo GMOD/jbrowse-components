@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { resolvePanel } from '../LaunchSyntenyView/resolvePanel.ts'
+import { getAlignmentOps } from '../syntenyMate.ts'
 import {
   computeRowFrame,
   decideLaneFrames,
@@ -1704,5 +1705,49 @@ describe('a lane fitted to one record clipped to the padded fetch region', () =>
   test('a group the window already contains is left alone', () => {
     const [group] = haplotype('hg002', 0)
     expect(clipGroupToAnchor(group!, FETCHED.start, FETCHED.end)).toBe(group)
+  })
+})
+
+// anchor 20 kb, lane 12 kb: 6 kb aligned, 8 kb the lane lacks, 6 kb aligned
+describe('a record with a one-sided deletion crossing the viewport edge', () => {
+  const recordOn = (strand: number) => {
+    const feature = new SimpleFeature({
+      ...pairFeature({
+        uniqueId: `indel${strand}`,
+        start: 100_000,
+        end: 120_000,
+        strand,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 500_000,
+          end: 512_000,
+        },
+      }).toJSON(),
+      CIGAR: '6000M8000D6000M',
+    })
+    return {
+      group: groupFeatures([feature])[0]!,
+      ops: new Map([[feature.id(), getAlignmentOps(feature)!]]),
+    }
+  }
+  const mateCut = (strand: number) => {
+    const { group, ops } = recordOn(strand)
+    const { start, end } = clipGroupToAnchor(
+      group,
+      116_000,
+      117_000,
+      ops,
+    ).mates.get('peach')![0]!
+    return [start, end]
+  }
+
+  // anchor 116,000 is 6000 aligned, 8000 deleted and 2000 aligned in
+  test('the mate is cut where the alignment puts the cut', () => {
+    expect(mateCut(1)).toEqual([508_000, 509_000])
+  })
+
+  test('a reverse-strand mate is cut from its far end', () => {
+    expect(mateCut(-1)).toEqual([503_000, 504_000])
   })
 })

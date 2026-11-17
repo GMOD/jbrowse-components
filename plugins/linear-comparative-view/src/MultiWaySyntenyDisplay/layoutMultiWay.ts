@@ -1,11 +1,13 @@
 import { clamp, doesIntersect2 } from '@jbrowse/core/util'
 
-import { mateSlice } from '../mateBpAt.ts'
+import { cutAlignment } from '../mateBpAt.ts'
 import { voteEvidence } from '../syntenyHysteresis.ts'
 import { getMate, getMates, isNamedRecord } from '../syntenyMate.ts'
+import { NO_OPS } from './alignmentOps.ts'
 import { forEachLaneGap } from './laneGaps.ts'
 
 import type { SyntenyGroupedMate } from '../syntenyMate.ts'
+import type { AlignmentOpsById } from './alignmentOps.ts'
 import type { LanePiece } from './laneGaps.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -632,13 +634,39 @@ export function anchorlessGroupsOf(
 }
 
 /**
- * Cuts each mate by the fractions of its length the anchor's cut takes, from
- * the corresponding end.
+ * The slice of a placement's mate that the anchor interval [`start`, `end`]
+ * takes: along its record's alignment ops where it carries them, as the
+ * ribbon draws it, and in proportion to `anchor` where not
  */
+export function placementMateInterval(
+  anchor: MultiWayPlacement,
+  placement: MatePlacement,
+  ops: AlignmentOpsById,
+  start: number,
+  end: number,
+) {
+  const { feature, orientation } = placement
+  const recordOps = ops.get(feature.id())
+  const mate = getMate(feature)
+  return (
+    recordOps && mate
+      ? cutAlignment(
+          { start: feature.get('start'), end: feature.get('end') },
+          mate,
+          orientation,
+          recordOps,
+          start,
+          end,
+        )
+      : cutAlignment(anchor, placement, orientation, undefined, start, end)
+  ).mate
+}
+
 export function clipGroupToAnchor(
   group: MultiWayGroup,
   start: number,
   end: number,
+  ops: AlignmentOpsById = NO_OPS,
 ): MultiWayGroup {
   const { anchor } = group
   const from = Math.max(anchor.start, start)
@@ -655,10 +683,14 @@ export function clipGroupToAnchor(
         mates: new Map(
           [...group.mates].map(([assemblyName, placements]) => [
             assemblyName,
-            placements.map(p => ({
-              ...p,
-              ...mateSlice(anchor, p, p.orientation, from, to),
-            })),
+            placements.map(p => {
+              const mate = placementMateInterval(anchor, p, ops, from, to)
+              return {
+                ...p,
+                start: Math.round(mate.start),
+                end: Math.round(mate.end),
+              }
+            }),
           ]),
         ),
       }

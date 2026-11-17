@@ -1,5 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { getAlignmentOps } from '../syntenyMate.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
 import { groupFeatures } from './layoutMultiWay.ts'
 
@@ -152,4 +153,26 @@ test("a panel's mate ends round outward, so it opens on every base the lane maps
   })
   // 100.7..201.4
   expect([mates[0]?.mateStart, mates[0]?.mateEnd]).toEqual([100, 202])
+})
+
+test("a panel's mate ends are cut along the record's alignment where it carries one", () => {
+  // anchor 20 kb, lane 12 kb: 6 kb aligned, 8 kb the lane lacks, 6 kb aligned
+  const indel = new SimpleFeature({
+    ...record('i', [100_000, 120_000], {
+      assemblyName: 'mouse',
+      start: 500_000,
+      end: 512_000,
+    }).toJSON(),
+    CIGAR: '6000M8000D6000M',
+  })
+  const { mates } = lanePanelsForRegion({
+    groups: groupFeatures([indel]),
+    ops: new Map([[indel.id(), getAlignmentOps(indel)!]]),
+    rowAssemblies: ['mouse'],
+    laneDecisions: new Map([['mouse', decision('M1', [500_000, 512_000])]]),
+    region: { refName: 'chr1', start: 116_000, end: 130_000 },
+    anchorCanon: refName => refName,
+    trackAssemblyNames,
+  })
+  expect([mates[0]?.mateStart, mates[0]?.mateEnd]).toEqual([508_000, 512_000])
 })

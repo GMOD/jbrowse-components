@@ -1,8 +1,7 @@
 import { blocksOf, pickBlock } from '../alignmentBlocks.ts'
-import { mateBpAt } from '../mateBpAt.ts'
+import { cutAlignment } from '../mateBpAt.ts'
 import { voteEvidence } from '../syntenyHysteresis.ts'
 import { getAlignmentOps, getMate, isNamedRecord } from '../syntenyMate.ts'
-import { findPosInCigar } from './findPosInCigar.ts'
 
 import type { SyntenyMate } from '../syntenyMate.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -40,28 +39,10 @@ export interface ResolvedPanel {
   reversed: boolean
 }
 
-// Given a CIGAR-walked offset `mateX` along the mate axis, place it back on
-// genomic coordinates. The mate's genomic span is mate.start..mate.end. For
-// forward-strand alignments we walk forward from mate.start; for reverse
-// strand we walk backward from mate.end. `strand === undefined` is treated as
-// forward (avoids `* 0` zeroing out the offset).
-function mateOffsetToGenomic(
-  mate: Pick<SyntenyMate, 'start' | 'end'>,
-  mateOffset: number,
-  strand: number | undefined,
-) {
-  return strand === -1 ? mate.end - mateOffset : mate.start + mateOffset
-}
-
 // The two spans one alignment contributes: its slice of the anchor axis and the
 // matching slice of its mate. Without a region of interest the whole block is
 // used; with one, both sides are narrowed to the slice the user asked for — the
 // feature axis directly, the mate axis by walking the CIGAR.
-//
-// Offsets past either end of the CIGAR are capped by findPosInCigar, and a
-// region starting left of the feature yields a negative offset that breaks the
-// walk immediately, so the result is always clipped to the block without needing
-// an explicit intersection.
 //
 // **An alignment with no CIGAR is still clipped**, by interpolating across the
 // block instead of walking it. That is not a lesser approximation of the walk —
@@ -84,43 +65,30 @@ function resolveSpans({
   mate: SyntenyMate
   region: RegionOfInterest | undefined
 }) {
-  const cigar = getAlignmentOps(feature)
-  const strand = feature.get('strand')
-  const featStart = feature.get('start')
-  const featEnd = feature.get('end')
-  if (!region) {
-    return {
-      featStart,
-      featEnd,
-      mateStart: mate.start,
-      mateEnd: mate.end,
-    }
-  }
-  if (cigar) {
-    const [fStartX, mStartX] = findPosInCigar(cigar, region.start - featStart)
-    const [fEndX, mEndX] = findPosInCigar(cigar, region.end - featStart)
-    return {
-      featStart: featStart + fStartX,
-      featEnd: featStart + fEndX,
-      mateStart: mateOffsetToGenomic(mate, mStartX, strand),
-      mateEnd: mateOffsetToGenomic(mate, mEndX, strand),
-    }
-  }
-  // clamped to the block first, so a selection wider than the alignment (or
-  // starting left of it) lands back on the block's own ends rather than
-  // extrapolating off either side of the mate
-  const clamp = (x: number) => Math.min(Math.max(x, featStart), featEnd)
-  const lo = clamp(region.start)
-  const hi = clamp(region.end)
-  const block = { start: featStart, end: featEnd }
-  // a zero-length block maps both ends to the mate's own start, which
-  // paddedLocString widens to one base
-  return {
-    featStart: lo,
-    featEnd: hi,
-    mateStart: mateBpAt(block, mate, strand, lo),
-    mateEnd: mateBpAt(block, mate, strand, hi),
-  }
+  const block = { start: feature.get('start'), end: feature.get('end') }
+  const cut =
+    region &&
+    cutAlignment(
+      block,
+      mate,
+      feature.get('strand'),
+      getAlignmentOps(feature),
+      region.start,
+      region.end,
+    )
+  return cut
+    ? {
+        featStart: cut.anchor.start,
+        featEnd: cut.anchor.end,
+        mateStart: cut.mate.start,
+        mateEnd: cut.mate.end,
+      }
+    : {
+        featStart: block.start,
+        featEnd: block.end,
+        mateStart: mate.start,
+        mateEnd: mate.end,
+      }
 }
 
 // inclusive, so a zero-length hit at a block's edge stays in it
@@ -185,10 +153,9 @@ export function resolvePanel(
     byRefName.set(refName, (byRefName.get(refName) ?? 0) + evidenceOf(entry))
   }
   const refName = [...byRefName].sort((a, b) => b[1] - a[1])[0]?.[0]
-  // a reverse-strand walk counts down, so one block's two ends arrive swapped
   const mateSpan = ({ spans }: (typeof resolved)[number]) => ({
-    start: Math.min(spans.mateStart, spans.mateEnd),
-    end: Math.max(spans.mateStart, spans.mateEnd),
+    start: spans.mateStart,
+    end: spans.mateEnd,
   })
   const onContig = resolved.filter(({ mate }) => mate.refName === refName)
   const kept =

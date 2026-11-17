@@ -1447,7 +1447,7 @@ export function stateModelFactory(
             end,
           })
           return shown
-            ? clipGroupToAnchor(group, shown.start, shown.end)
+            ? clipGroupToAnchor(group, shown.start, shown.end, self.featureOps)
             : group
         })
       },
@@ -1457,7 +1457,7 @@ export function stateModelFactory(
        */
       get fitGroups() {
         return self.visibleGroupWindows.map(({ group, start, end }) =>
-          clipGroupToAnchor(group, start, end),
+          clipGroupToAnchor(group, start, end, self.featureOps),
         )
       },
       /** #getter */
@@ -3343,6 +3343,7 @@ export function stateModelFactory(
             discoverMatesFor: (_trackId, region) => async () =>
               lanePanelsForRegion({
                 groups: self.groups,
+                ops: self.featureOps,
                 rowAssemblies: self.rowAssemblies,
                 laneDecisions: self.laneDecisions,
                 region,

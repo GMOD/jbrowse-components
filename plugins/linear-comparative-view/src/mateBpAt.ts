@@ -1,3 +1,5 @@
+import { findPosInCigar } from './LaunchSyntenyView/findPosInCigar.ts'
+
 interface BpInterval {
   start: number
   end: number
@@ -23,27 +25,38 @@ export function mateBpAt(
     : mate.start + offset
 }
 
-/** The mate interval the anchor interval [`start`, `end`] maps to, ordered. */
-export function mateInterval(
+/**
+ * The slices of `block` and its `mate` that the anchor interval [`start`,
+ * `end`] cuts: along `ops` where the block carries them, which caps an offset
+ * past either end of the block at that end, and in proportion to the block,
+ * clamped to it, where not.
+ */
+export function cutAlignment(
   block: BpInterval,
   mate: BpInterval,
   strand: number | undefined,
+  ops: ArrayLike<number> | undefined,
   start: number,
   end: number,
-): BpInterval {
-  const a = mateBpAt(block, mate, strand, start)
-  const b = mateBpAt(block, mate, strand, end)
-  return { start: Math.min(a, b), end: Math.max(a, b) }
-}
-
-/** {@link mateInterval} rounded to whole bp */
-export function mateSlice(
-  block: BpInterval,
-  mate: BpInterval,
-  strand: number | undefined,
-  start: number,
-  end: number,
-): BpInterval {
-  const slice = mateInterval(block, mate, strand, start, end)
-  return { start: Math.round(slice.start), end: Math.round(slice.end) }
+) {
+  const mateAt = (offset: number) =>
+    strand !== undefined && strand < 0 ? mate.end - offset : mate.start + offset
+  const clamp = (x: number) => Math.min(Math.max(x, block.start), block.end)
+  const walked = (cigar: ArrayLike<number>, x: number) => {
+    const [anchorX, mateX] = findPosInCigar(cigar, x - block.start)
+    return { anchor: block.start + anchorX, mate: mateAt(mateX) }
+  }
+  const interpolated = (x: number) => ({
+    anchor: clamp(x),
+    mate: mateBpAt(block, mate, strand, clamp(x)),
+  })
+  const from = ops ? walked(ops, start) : interpolated(start)
+  const to = ops ? walked(ops, end) : interpolated(end)
+  return {
+    anchor: { start: from.anchor, end: to.anchor },
+    mate: {
+      start: Math.min(from.mate, to.mate),
+      end: Math.max(from.mate, to.mate),
+    },
+  }
 }
