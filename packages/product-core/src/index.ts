@@ -50,6 +50,7 @@ export type {
   BaseSession,
   BaseSessionType,
   ConnectionTrackConfigEntry,
+  DeletedTrack,
   EditableTrackConfig,
   HydratedForms,
   PlainTrackConfig,
