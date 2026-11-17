@@ -274,6 +274,16 @@ describe('switching between a row per subtrack and grouped rows', () => {
   })
 })
 
+describe('setPlot', () => {
+  it('takes the older rowLayout spelling, true a row per subtrack', () => {
+    const { display } = makeDisplay({ field: '' })
+    display.setPlot({ mark: { type: 'line' }, rowLayout: true })
+    expect(display.rowsField).toBe('source')
+    display.setPlot({ mark: { type: 'line' }, rowLayout: false })
+    expect(display.rowsField).toBe('')
+  })
+})
+
 describe('roleLabel', () => {
   it('takes the row value off the start or the end of a name', () => {
     expect(roleLabel('GM12878 Hap1', 'GM12878')).toBe('Hap1')

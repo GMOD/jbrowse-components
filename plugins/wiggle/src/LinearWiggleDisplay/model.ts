@@ -459,17 +459,20 @@ export default function stateModelFactory(
        * #action
        * A Plot type leaf whole: `setMark` then `setRowsField` in one action,
        * so the regions encode once and never as the new plot in the old
-       * layout.
+       * layout. `rowLayout` is the older spelling (v5.0.0 betas): `true` is
+       * `rowsField: 'source'`, `false` is `''`.
        */
       setPlot({
         mark,
         rowsField,
+        rowLayout,
       }: {
         mark: WiggleMarkObject
-        rowsField: string
+        rowsField?: string
+        rowLayout?: boolean
       }) {
         self.setMark(mark.type, mark.interpolate)
-        self.setRowsField(rowsField)
+        self.setRowsField(rowsField ?? (rowLayout ? 'source' : ''))
       },
 
       /**
