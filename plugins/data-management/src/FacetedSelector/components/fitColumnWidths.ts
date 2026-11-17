@@ -1,17 +1,17 @@
 /**
- * Shrinks column widths to fit `available` px. Each column keeps up to
- * `floorWidth` of its natural width, and the room left over is shared in
- * proportion to how much more each column wants, so a long name column keeps
- * more than a medium adapter column instead of both being cut to one width.
- * When even the floors don't fit, the floors are kept and the table scrolls.
+ * Shrinks column widths to fit `available` px. Each column keeps up to its
+ * floor of its natural width, and the room left over is shared in proportion
+ * to how much more each column wants, so a long description column keeps more
+ * than a medium adapter column instead of both being cut to one width. When
+ * even the floors don't fit, the floors are kept and the table scrolls.
  */
 export function fitColumnWidths(
   widths: Record<string, number>,
   available: number,
-  floorWidth: number,
+  floorFor: (id: string) => number,
 ) {
   const entries = Object.entries(widths)
-  const floors = entries.map(([, w]) => Math.min(w, floorWidth))
+  const floors = entries.map(([id, w]) => Math.min(w, floorFor(id)))
   const floorTotal = floors.reduce((a, b) => a + b, 0)
   const wantTotal = entries.reduce((a, [, w], i) => a + w - floors[i]!, 0)
   const share =

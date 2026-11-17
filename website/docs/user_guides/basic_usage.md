@@ -196,6 +196,15 @@ label); basics like "About track" are always available from the track selector.
 
 <Figure caption="Opening the track menu from the track selector and from the track label." src="/img/track_menu.png" />
 
+## Filtering tracks
+
+The filter box at the top of Available tracks keeps the tracks that contain
+every word you type, in any order and in any field shown: name, category and
+description, plus the table's other columns. `thp1` also finds "THP-1".
+
+- **`"quoted words"`** must appear together, as typed.
+- **`-word`** drops the tracks that contain it: `liftover -mm10`.
+
 ## Favorite and recently used tracks
 
 Mark favorites from the Track menu. The All | Favorites | Recent toggle at the
@@ -346,8 +355,10 @@ starts on the right.
 ## Faceted track selector
 
 The Tree | Table toggle at the top of "Available tracks" shows all tracks as a
-filterable table, starting from whatever is typed in the filter box. Tracks with
-`metadata` fields get extra filterable columns:
+filterable table, starting from whatever is typed in the filter box. "Show facet
+filters" in its ⋮ menu lists each column's values with their track counts;
+checking values keeps only the tracks with one of them. Tracks with `metadata`
+fields get extra filterable columns:
 
 ```json
 {

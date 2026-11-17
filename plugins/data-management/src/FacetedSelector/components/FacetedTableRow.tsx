@@ -4,6 +4,7 @@ import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
 
 import { checkboxSx, useFacetedTableStyles } from './facetedTableStyles.ts'
+import { getRowStr } from './util.ts'
 
 import type { FacetedRow } from '../facetedModel.ts'
 import type { FacetedColumn } from './FacetedDataGrid.tsx'
@@ -39,7 +40,11 @@ const FacetedTableRow = observer(function FacetedTableRow({
         />
       </td>
       {columns.map(col => (
-        <td key={col.id} className={classes.bodyCell}>
+        <td
+          key={col.id}
+          className={classes.bodyCell}
+          title={coarseStripHTML(getRowStr(col.id, row))}
+        >
           {col.cell(row)}
         </td>
       ))}

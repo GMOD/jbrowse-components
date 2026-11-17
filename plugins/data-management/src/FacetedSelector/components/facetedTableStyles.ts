@@ -138,7 +138,7 @@ export const useFacetedTableStyles = makeStyles()(theme => {
     },
     emptyCell: {
       padding: 20,
-      textAlign: 'center',
+      textAlign: 'left',
       color: theme.palette.text.secondary,
     },
   }

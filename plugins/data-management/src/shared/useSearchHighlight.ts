@@ -3,7 +3,7 @@ import { useLayoutEffect } from 'react'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 
-import { normalizeSearchQuery } from './searchText.ts'
+import { highlightTerms } from './searchText.ts'
 
 import type { RefObject } from 'react'
 
@@ -35,20 +35,22 @@ function getTextNodes(root: Element): Text[] {
   return nodes
 }
 
-// Pure DOM scan: every non-overlapping, case-insensitive match of queryLower
-// within root becomes a Range. queryLower is assumed already lowercased and
-// non-empty (an empty needle would match at every offset and never advance).
-function collectMatchRanges(root: Element, queryLower: string): Range[] {
+// Pure DOM scan: every non-overlapping, case-insensitive match of each term
+// within root becomes a Range. Terms are lowercased and non-empty (an empty
+// needle would match at every offset and never advance).
+function collectMatchRanges(root: Element, terms: string[]): Range[] {
   const ranges: Range[] = []
   for (const textNode of getTextNodes(root)) {
     const textLower = textNode.textContent.toLowerCase()
-    let idx = textLower.indexOf(queryLower)
-    while (idx !== -1) {
-      const range = new Range()
-      range.setStart(textNode, idx)
-      range.setEnd(textNode, idx + queryLower.length)
-      ranges.push(range)
-      idx = textLower.indexOf(queryLower, idx + queryLower.length)
+    for (const term of terms) {
+      let idx = textLower.indexOf(term)
+      while (idx !== -1) {
+        const range = new Range()
+        range.setStart(textNode, idx)
+        range.setEnd(textNode, idx + term.length)
+        ranges.push(range)
+        idx = textLower.indexOf(term, idx + term.length)
+      }
     }
   }
   return ranges
@@ -73,12 +75,12 @@ export function useSearchHighlight(
     }
     setHighlightStyle(highlightName, color)
     const container = containerRef.current
-    // the same normalization the filter itself applies, so what is highlighted
-    // is what matched
-    const queryLower = normalizeSearchQuery(query)
-    if (container && queryLower) {
+    // the same parse the filter itself applies, so what is highlighted is
+    // what matched
+    const terms = highlightTerms(query)
+    if (container && terms.length) {
       const highlight = new Highlight()
-      for (const range of collectMatchRanges(container, queryLower)) {
+      for (const range of collectMatchRanges(container, terms)) {
         highlight.add(range)
       }
       CSS.highlights.set(highlightName, highlight)

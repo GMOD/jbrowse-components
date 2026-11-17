@@ -19,7 +19,7 @@ import { useVirtualRows } from './useVirtualRows.ts'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
 
-const SCROLLBAR_ALLOWANCE = 16
+const NAME_SHARE = 0.5
 
 export interface FacetedColumn {
   id: string
@@ -60,10 +60,20 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
     sortAscending,
     visible,
     filterText,
+    filters,
     initialWidths,
   } = faceted
 
   const visibleColumns = columns.filter(col => visible[col.id] !== false)
+  const parentRef = useRef<HTMLDivElement>(null)
+  useSearchHighlight(parentRef, filterText, 'jbrowse-faceted-search')
+  const { items, leadingGap, trailingGap, clientWidth } = useVirtualRows(
+    parentRef,
+    sortedRows.length,
+    ROW_HEIGHT,
+    JSON.stringify([filterText, sortField, sortAscending, [...filters]]),
+  )
+  const available = (clientWidth || width) - CHECKBOX_WIDTH
   const { colWidths, onResizeStart } = useColumnResize(
     fitColumnWidths(
       Object.fromEntries(
@@ -72,8 +82,11 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
         ]),
       ),
-      width - CHECKBOX_WIDTH - SCROLLBAR_ALLOWANCE,
-      DEFAULT_COL_WIDTH,
+      available,
+      id =>
+        id === 'name'
+          ? Math.max(DEFAULT_COL_WIDTH, available * NAME_SHARE)
+          : DEFAULT_COL_WIDTH,
     ),
   )
   const { selectedIds, allSelected, someSelected, toggleAll, toggleRow } =
@@ -84,14 +97,6 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
       selectionSet,
       filteredRows: sortedRows,
     })
-
-  const parentRef = useRef<HTMLDivElement>(null)
-  useSearchHighlight(parentRef, filterText, 'jbrowse-faceted-search')
-  const { items, leadingGap, trailingGap } = useVirtualRows(
-    parentRef,
-    sortedRows.length,
-    ROW_HEIGHT,
-  )
 
   return (
     <div ref={parentRef} className={classes.root}>

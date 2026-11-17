@@ -1,4 +1,4 @@
-import { buildSearchText, normalizeSearchQuery } from '../shared/searchText.ts'
+import { buildSearchText, searchMatcher } from '../shared/searchText.ts'
 import { getRowStr } from './components/util.ts'
 import { getRootKeys } from './facetedUtil.ts'
 
@@ -38,15 +38,15 @@ function activeFilterSets(filters: Map<string, string[]>) {
 }
 
 /**
- * Free-text filter against each row's precomputed searchText. Case-insensitive
- * substring match; an empty query returns the same rows array.
+ * Free-text filter against each row's precomputed searchText; an empty query
+ * returns the same rows array.
  */
 export function filterRowsByText<T extends { searchText: string }>(
   rows: T[],
   filterText: string,
 ): T[] {
-  const q = normalizeSearchQuery(filterText)
-  return q ? rows.filter(row => row.searchText.includes(q)) : rows
+  const matches = searchMatcher(filterText)
+  return filterText.trim() ? rows.filter(row => matches(row.searchText)) : rows
 }
 
 /**

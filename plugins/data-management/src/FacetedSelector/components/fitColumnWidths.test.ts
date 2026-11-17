@@ -2,7 +2,7 @@ import { fitColumnWidths } from './fitColumnWidths.ts'
 
 test('widths that already fit are left alone', () => {
   const widths = { name: 200, type: 90, adapter: 110 }
-  expect(fitColumnWidths(widths, 500, 100)).toEqual(widths)
+  expect(fitColumnWidths(widths, 500, () => 100)).toEqual(widths)
 })
 
 test('the room past each floor is shared by how much more a column wants', () => {
@@ -11,7 +11,7 @@ test('the room past each floor is shared by how much more a column wants', () =>
   const fitted = fitColumnWidths(
     { name: 448, category: 100, adapter: 200, type: 95 },
     642,
-    100,
+    () => 100,
   )
   expect(fitted).toEqual({ name: 291, category: 100, adapter: 155, type: 95 })
   expect(Object.values(fitted).reduce((a, b) => a + b, 0)).toBeLessThanOrEqual(
@@ -20,8 +20,16 @@ test('the room past each floor is shared by how much more a column wants', () =>
 })
 
 test('columns no wider than the floor are never shrunk', () => {
-  expect(fitColumnWidths({ a: 300, b: 60 }, 120, 100)).toEqual({
+  expect(fitColumnWidths({ a: 300, b: 60 }, 120, () => 100)).toEqual({
     a: 100,
     b: 60,
   })
+})
+
+test('a column with a higher floor keeps that much before the rest share', () => {
+  expect(
+    fitColumnWidths({ name: 300, kind: 200, category: 200 }, 400, id =>
+      id === 'name' ? 200 : 80,
+    ),
+  ).toEqual({ name: 211, kind: 94, category: 94 })
 })

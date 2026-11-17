@@ -1,6 +1,6 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 
 import { facetedStateTreeF } from '../facetedModel.ts'
 import FacetFilter from './FacetFilter.tsx'
@@ -22,25 +22,33 @@ function renderFilter() {
   return { faceted, ...utils }
 }
 
-test('selecting an option stores the value as a string array', () => {
-  const { faceted, container } = renderFilter()
-  const select = container.querySelector('select')!
+test('checking values stores them as a string array, in click order', () => {
+  const { faceted, getByLabelText } = renderFilter()
 
-  fireEvent.change(select, { target: { value: 'DNA' } })
+  fireEvent.click(getByLabelText('RNA'))
+  fireEvent.click(getByLabelText('DNA'))
 
-  // regression: native multiple select must yield string[], not a string that
-  // would later be spread into a per-character Set
-  expect(faceted.filters.get('metadata.assay')).toEqual(['DNA'])
+  expect(faceted.filters.get('metadata.assay')).toEqual(['RNA', 'DNA'])
 })
 
-test('multiple selected options are all captured', () => {
-  const { faceted, container } = renderFilter()
-  const select = container.querySelector('select')!
-  for (const option of select.options) {
-    option.selected = true
-  }
+test('unchecking a value removes only that value', () => {
+  const { faceted, getByLabelText } = renderFilter()
+  act(() => {
+    faceted.setFilter('metadata.assay', ['DNA', 'RNA'])
+  })
 
-  fireEvent.change(select)
+  fireEvent.click(getByLabelText('DNA'))
 
-  expect(faceted.filters.get('metadata.assay')).toEqual(['DNA', 'RNA'])
+  expect(faceted.filters.get('metadata.assay')).toEqual(['RNA'])
+})
+
+test('each value shows its count, and clearing appears once one is checked', () => {
+  const { faceted, getByLabelText, queryByLabelText } = renderFilter()
+  expect(getByLabelText('DNA').closest('label')!.textContent).toBe('DNA2')
+  expect(queryByLabelText('Clear assay filter')).toBeNull()
+
+  fireEvent.click(getByLabelText('DNA'))
+  fireEvent.click(getByLabelText('Clear assay filter'))
+
+  expect(faceted.filters.get('metadata.assay')).toEqual([])
 })

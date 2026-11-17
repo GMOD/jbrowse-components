@@ -71,6 +71,13 @@ test('the tree filter does not match markup in a track name', () => {
   expect(treeMatches(model, '<i>')).toEqual([])
 })
 
+test('the tree filter needs every word, in any field and any order', () => {
+  const { model } = setup()
+  expect(treeMatches(model, 'marks plain')).toEqual(['plain'])
+  expect(treeMatches(model, 'marks categorized')).toEqual([])
+  expect(treeMatches(model, 'session -assays')).toEqual(['markup', 'plain'])
+})
+
 test('the tree filter still matches a category name', () => {
   const { model } = setup()
   expect(treeMatches(model, 'assays')).toEqual(['categorized'])

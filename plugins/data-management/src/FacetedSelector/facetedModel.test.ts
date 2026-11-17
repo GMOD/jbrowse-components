@@ -225,3 +225,32 @@ describe('panelWidth', () => {
     expect(faceted.panelWidth).toBe(MIN_PANEL_WIDTH)
   })
 })
+
+describe('columns and facets', () => {
+  test('columns lead with what says most about a track and end with the adapter', () => {
+    const { session, faceted } = setup()
+    for (const trackId of ['a1', 'a2']) {
+      session.addSessionTrackConf({
+        trackId,
+        name: trackId,
+        description: `${trackId} signal`,
+        metadata: { assay: 'DNase' },
+        assemblyNames: ['volMyt1'],
+        type: 'FeatureTrack',
+        adapter: { type: 'FromConfigAdapter', features: [] },
+      })
+    }
+    faceted.setShowSparse(true)
+    expect(faceted.fields).toEqual([
+      'name',
+      'description',
+      'category',
+      'kind',
+      'metadata.assay',
+      'adapter',
+    ])
+    // every description is its own and no track has a category, so neither
+    // narrows anything
+    expect(faceted.filterFacets).toEqual(['kind', 'metadata.assay', 'adapter'])
+  })
+})

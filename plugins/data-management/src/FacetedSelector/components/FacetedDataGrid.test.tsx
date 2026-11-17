@@ -14,10 +14,11 @@ import type { FacetedModel } from '../facetedModel.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-// jsdom doesn't implement Element.scrollTo, which useVirtualRows calls on
-// filter/count change
+// jsdom doesn't implement Element.scrollTo, which useVirtualRows calls when the
+// search, filters or sort change
+const scrollTo = jest.fn()
 beforeAll(() => {
-  Element.prototype.scrollTo = () => {}
+  Element.prototype.scrollTo = scrollTo
 })
 
 afterEach(() => {
@@ -61,7 +62,7 @@ function setup() {
     getSession(model),
     model.assemblyNames,
   )
-  return { view, model, faceted }
+  return { session, view, model, faceted }
 }
 
 function renderGrid(
@@ -167,4 +168,29 @@ test('a column hidden via visible is not rendered', () => {
   // the adapter header should be gone, but tracks still render
   expect(queryByText('adapter')).toBeNull()
   expect(queryByText('fooC')).toBeTruthy()
+})
+
+test('the grid scrolls back to the top when the search, filters or sort change, not when a track goes', () => {
+  const { session, model, faceted } = setup()
+  renderGrid(model, faceted)
+  scrollTo.mockClear()
+
+  act(() => {
+    session.deleteTrackConf(
+      session.sessionTracks.find(t => t.trackId === 'fooC')!,
+    )
+  })
+  expect(faceted.allRows.map(r => r.id)).not.toContain('fooC')
+  expect(scrollTo).not.toHaveBeenCalled()
+
+  act(() => {
+    faceted.setFilterText('bar')
+  })
+  act(() => {
+    faceted.setFilter('kind', ['Feature'])
+  })
+  act(() => {
+    faceted.setSort('name', false)
+  })
+  expect(scrollTo).toHaveBeenCalledTimes(3)
 })

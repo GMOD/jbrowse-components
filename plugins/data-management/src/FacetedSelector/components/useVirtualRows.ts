@@ -4,20 +4,23 @@ import { virtualRange } from '@jbrowse/core/util/virtualRange'
 
 /**
  * Minimal fixed-height row virtualization. Tracks the scroll container's
- * scrollTop/clientHeight and hands them to the shared `virtualRange` (which
- * owns the clamping, including the shrunk-list case the reset effect below
- * races), returning the row indices to render plus the spacer heights that
- * offset that window from the top/bottom.
+ * scrollTop and client size and hands them to the shared `virtualRange` (which
+ * owns the clamping, including a list that shrank under its scroll position),
+ * returning the row indices to render, the spacer heights that offset that
+ * window from the top/bottom, and the width inside any vertical scrollbar.
+ * The container scrolls back to the top whenever `resetKey` changes.
  */
 export function useVirtualRows(
   parentRef: React.RefObject<HTMLDivElement | null>,
   count: number,
   rowHeight: number,
+  resetKey: string,
   overscan = 20,
 ) {
   const [scrollState, setScrollState] = useState({
     scrollTop: 0,
     clientHeight: 0,
+    clientWidth: 0,
   })
 
   useEffect(() => {
@@ -27,7 +30,11 @@ export function useVirtualRows(
     }
     const sync = () => {
       // eslint-disable-next-line @eslint-react/set-state-in-effect -- sync() runs once synchronously to initialize from the DOM after mount
-      setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
+      setScrollState({
+        scrollTop: el.scrollTop,
+        clientHeight: el.clientHeight,
+        clientWidth: el.clientWidth,
+      })
     }
     sync()
     el.addEventListener('scroll', sync, { passive: true })
@@ -41,16 +48,11 @@ export function useVirtualRows(
     }
   }, [parentRef])
 
-  // Reset scroll to top when the row count changes (e.g. filter applied) so
-  // that stale scrollTop can't push startIdx past the new count.
   useEffect(() => {
-    const el = parentRef.current
-    if (el) {
-      el.scrollTo(0, 0)
-    }
-  }, [count, parentRef])
+    parentRef.current?.scrollTo(0, 0)
+  }, [resetKey, parentRef])
 
-  const { scrollTop, clientHeight } = scrollState
+  const { scrollTop, clientHeight, clientWidth } = scrollState
   const { start: startIdx, end: endIdx } = virtualRange({
     scroll: scrollTop,
     cellSize: rowHeight,
@@ -68,5 +70,6 @@ export function useVirtualRows(
     items,
     leadingGap: startIdx * rowHeight,
     trailingGap: (count - endIdx) * rowHeight,
+    clientWidth,
   }
 }

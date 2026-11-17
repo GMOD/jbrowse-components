@@ -2,7 +2,6 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { MIN_PANEL_WIDTH } from '../facetedModel.ts'
 import FacetFilters from './FacetFilters.tsx'
 import FacetedDataGrid from './FacetedDataGrid.tsx'
 import FacetedHeader from './FacetedHeader.tsx'
@@ -55,14 +54,9 @@ const FacetedSelector = observer(function FacetedSelector({
   const columns = getFacetedColumns({ faceted, model })
 
   const w = size?.width ?? width * frac
-  // a persisted panel width wider than the current window would leave the data
-  // pane with no room, so the saved value is clamped against the container. The
-  // outer max keeps a window too narrow for both panes from handing the filter
-  // pane a negative width, which would make the data pane wider than `w`
-  const panelWidth = Math.max(
-    0,
-    Math.min(faceted.panelWidth, w - MIN_PANEL_WIDTH),
-  )
+  // the filter pane never takes more than half, so a width saved in a wider
+  // window still leaves the grid room
+  const panelWidth = Math.max(0, Math.min(faceted.panelWidth, w / 2))
 
   return (
     <div

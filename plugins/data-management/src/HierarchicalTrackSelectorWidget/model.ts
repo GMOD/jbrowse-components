@@ -15,7 +15,7 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, compareShallow, computed, observable } from 'mobx'
 
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
-import { normalizeSearchQuery } from '../shared/searchText.ts'
+import { parseSearchQuery, searchMatcher } from '../shared/searchText.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
 import { sortSources } from './sortUtils.ts'
 import {
@@ -594,11 +594,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * the normalized filter box contents; empty when nothing is being
-       * searched for
+       * whether a track's searchText holds every term in the filter box
        */
-      get filterQuery() {
-        return normalizeSearchQuery(self.filterText)
+      get filterMatches() {
+        return searchMatcher(self.filterText)
       },
 
       /**
@@ -607,7 +606,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * (isFilterForcedOpen)
        */
       get filterActive() {
-        return this.filterQuery !== '' || self.trackList !== 'all'
+        return (
+          parseSearchQuery(self.filterText).length > 0 ||
+          self.trackList !== 'all'
+        )
       },
     }))
     .views(self => {
@@ -765,7 +767,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * empty connection still shows in the tree
        */
       get hierarchy() {
-        const { filterQuery, trackList } = self
+        const { filterMatches, trackList } = self
         return {
           name: 'Root',
           id: 'Root',
@@ -780,7 +782,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                   defaultCollapsed: s.defaultCollapsed,
                   loading: s.loading,
                   children: generateHierarchy(
-                    s.tracks.filter(t => t.searchText.includes(filterQuery)),
+                    s.tracks.filter(t => filterMatches(t.searchText)),
                     s.id,
                   ),
                 }))
@@ -794,7 +796,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * the toggle above already names the list
        */
       get flatList(): TreeNode[] {
-        const { filterQuery, trackList } = self
+        const { filterMatches, trackList } = self
         const sources = new Map(
           self.allTracks.flatMap(s => s.tracks.map(t => [t.conf.trackId, t])),
         )
@@ -805,7 +807,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const tracks = order
           .map(id => sources.get(id))
           .filter(notEmpty)
-          .filter(t => t.searchText.includes(filterQuery))
+          .filter(t => filterMatches(t.searchText))
           .map(t => ({ ...t, categories: [] }))
         return generateHierarchy(tracks, trackList)
       },

@@ -8,7 +8,7 @@ import {
   localStorageSetNumber,
   measureGridWidth,
 } from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { trackCatalogEntry } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
@@ -33,10 +33,7 @@ import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-const nonMetadataKeys = ['kind', 'category', 'adapter', 'description'] as const
-
-// smallest useful width for either of the two panes, applied to the filter
-// panel when dragging its handle and to the data pane when laying out
+// the narrowest a drag can make the filter pane
 export const MIN_PANEL_WIDTH = 100
 
 // Hidden columns are config+assembly scoped: the metadata columns differ per
@@ -75,7 +72,7 @@ export function facetedStateTreeF() {
        * #property
        */
       panelWidth: types.optional(types.number, () =>
-        localStorageGetNumber('facet-panelWidth', 400),
+        localStorageGetNumber('facet-panelWidth', 240),
       ),
       /**
        * #property
@@ -226,17 +223,21 @@ export function facetedStateTreeF() {
         return session
           ? self.getTracks().map(track => {
               const metadata = (track.metadata ?? {}) as Record<string, unknown>
+              const { name, category, description } = trackCatalogEntry(
+                track,
+                session,
+              )
               const row = {
                 id: track.trackId,
                 conf: track,
-                name: getTrackName(track, session),
+                name,
                 kind:
                   typeof metadata.kind === 'string' && metadata.kind
                     ? metadata.kind
                     : self.trackTypeName(String(track.type)),
-                category: (track.category as string[] | undefined)?.join(', '),
+                category: category.join(', '),
                 adapter: (track.adapter as { type?: string } | undefined)?.type,
-                description: track.description as string | undefined,
+                description,
                 metadata,
               }
               return { ...row, searchText: rowSearchText(row) } as const
@@ -269,24 +270,44 @@ export function facetedStateTreeF() {
       },
       /**
        * #getter
-       * Facet field ids in column order (non-metadata first, then
-       * `metadata.<key>`); both kinds resolve through getRowStr. Sparse fields
-       * are dropped unless showSparse.
+       * Facet field ids in column order, the ones that say most about a track
+       * first and the adapter last; `metadata.<key>` ids resolve through
+       * getRowStr like the rest. Sparse fields are dropped unless showSparse,
+       * except kind, which every row has, so a short list (favorites) keeps it.
        */
       get facetFields() {
-        // every row has a kind, so a short list (favorites) keeps the column
-        const candidates = [
-          ...nonMetadataKeys.filter(k => k !== 'kind'),
-          ...this.metadataKeys.map(metadataFacet),
-        ]
-        return [
+        const ordered = [
+          'description',
+          'category',
           'kind',
-          ...(self.showSparse
-            ? candidates
-            : findNonSparseKeys(candidates, self.allRows, (r, f) =>
-                getRowStr(f, r),
-              )),
+          ...this.metadataKeys.map(metadataFacet),
+          'adapter',
         ]
+        const kept = new Set(
+          self.showSparse
+            ? ordered
+            : findNonSparseKeys(ordered, self.allRows, (r, f) =>
+                getRowStr(f, r),
+              ),
+        )
+        return ordered.filter(f => f === 'kind' || kept.has(f))
+      },
+      /**
+       * #getter
+       * The facets the filter panel lists: those where at least two tracks
+       * share a value, since picking a value no other track has narrows
+       * nothing the search box can't.
+       */
+      get filterFacets() {
+        return this.facetFields.filter(f => {
+          const seen = new Set<string>()
+          return self.allRows.some(row => {
+            const value = getRowStr(f, row)
+            const repeat = value !== '' && seen.has(value)
+            seen.add(value)
+            return repeat
+          })
+        })
       },
       /**
        * #getter
@@ -328,7 +349,7 @@ export function facetedStateTreeF() {
       get facetCategoryCounts() {
         return computeFacetCategoryCounts(
           self.rows,
-          this.facetFields,
+          this.filterFacets,
           self.filters,
         )
       },
