@@ -114,3 +114,87 @@ test("a non-admin's deleted session track comes back to the session", async () =
   expect(session.jbrowse.tracks).toHaveLength(configCount)
   expect(shownIds(view)).toEqual(['my_gc'])
 })
+
+const configIds = (session: WebSessionModel) =>
+  session.jbrowse.tracks.map(t => t.trackId)
+
+test("Ctrl+Z after an admin deletes a config track does what the snackbar's Undo does", async () => {
+  const { rootModel, session, view } = await getTestSession(undefined, true)
+  const { history } = rootModel
+  await view.launchTrack('volvox_filtered_vcf')
+  await view.launchTrack(TRACK_ID)
+  history.flushPendingRecord()
+  const configsBefore = configIds(session)
+  const shownBefore = shownIds(view)
+
+  deleteFromMenu(session, view, TRACK_ID)
+  history.undo()
+
+  expect(configIds(session)).toEqual(configsBefore)
+  expect(shownIds(view)).toEqual(shownBefore)
+  expect(readConfObject(view.tracks[1]!.configuration, 'trackId')).toBe(
+    TRACK_ID,
+  )
+})
+
+test('Ctrl+Y after that Ctrl+Z deletes the track again, and Ctrl+Z brings it back', async () => {
+  const { rootModel, session, view } = await getTestSession(undefined, true)
+  const { history } = rootModel
+  await view.launchTrack(TRACK_ID)
+  history.flushPendingRecord()
+  const configsBefore = configIds(session)
+
+  deleteFromMenu(session, view, TRACK_ID)
+  history.undo()
+  history.redo()
+
+  expect(configIds(session)).not.toContain(TRACK_ID)
+  expect(shownIds(view)).toEqual([])
+
+  history.undo()
+
+  expect(configIds(session)).toEqual(configsBefore)
+  expect(shownIds(view)).toEqual([TRACK_ID])
+})
+
+test("the snackbar's Undo is a history step too, so Ctrl+Z and Ctrl+Y walk across it", async () => {
+  const { rootModel, session, view } = await getTestSession(undefined, true)
+  const { history } = rootModel
+  await view.launchTrack(TRACK_ID)
+  history.flushPendingRecord()
+  const configsBefore = configIds(session)
+  const name = readConfObject(view.tracks[0]!.configuration, 'name')
+
+  deleteFromMenu(session, view, TRACK_ID)
+  clickUndo(session, `Deleted ${name}`)
+  expect(shownIds(view)).toEqual([TRACK_ID])
+  history.undo()
+
+  expect(configIds(session)).not.toContain(TRACK_ID)
+  expect(shownIds(view)).toEqual([])
+
+  history.undo()
+  expect(configIds(session)).toEqual(configsBefore)
+  expect(shownIds(view)).toEqual([TRACK_ID])
+
+  history.redo()
+  history.redo()
+  expect(configIds(session)).toEqual(configsBefore)
+  expect(shownIds(view)).toEqual([TRACK_ID])
+})
+
+test("the snackbar's Undo after Ctrl+Z already restored the track leaves it as it is", async () => {
+  const { rootModel, session, view } = await getTestSession(undefined, true)
+  const { history } = rootModel
+  await view.launchTrack(TRACK_ID)
+  history.flushPendingRecord()
+  const configsBefore = configIds(session)
+  const name = readConfObject(view.tracks[0]!.configuration, 'name')
+
+  deleteFromMenu(session, view, TRACK_ID)
+  history.undo()
+  clickUndo(session, `Deleted ${name}`)
+
+  expect(configIds(session)).toEqual(configsBefore)
+  expect(shownIds(view)).toEqual([TRACK_ID])
+})

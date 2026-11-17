@@ -5,6 +5,7 @@ import {
   flattenTrackConfigDelta,
   mergeTrackConfig,
 } from '@jbrowse/core/util'
+import { recordStep } from '@jbrowse/core/util/TimeTraveller'
 import {
   expandLooseTrackConfig,
   getConfAssemblyNamesOrNone,
@@ -796,7 +797,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         /**
          * #action
          */
-        deleteTrackConf(trackConf: AnyTrackConfig) {
+        deleteTrackConf(trackConf: { trackId: string }) {
           superDeleteTrackConf(trackConf)
           const { trackId } = trackConf
           // A delta only outlives its base if the base is gone, so drop it here
@@ -813,10 +814,11 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * `deleteTrackConf`, then a snackbar whose Undo puts the track back
-         * (`restoreTrackConf`). The track menu's Delete track calls this: one
-         * click takes an admin's track out of the config.json, and Ctrl+Z
-         * undoes only the session.
+         * `deleteTrackConf` as one undoable step, then a snackbar whose Undo
+         * puts the track back (`restoreTrackConf`). Ctrl+Z restores it the
+         * same way, because the config.json half of the delete is outside the
+         * session the history snapshots. The track menu's Delete track calls
+         * this.
          */
         deleteTrackConfWithUndo(trackConf: AnyTrackConfig) {
           const { trackId } = trackConf
@@ -829,11 +831,19 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             shownIn: viewEntries(self.getReferring(trackId)),
           }
           const name = getTrackName(trackConf, self)
-          this.deleteTrackConf(trackConf)
+          const remove = () => {
+            this.deleteTrackConf({ trackId })
+          }
+          const restore = () => {
+            this.restoreTrackConf(deleted)
+          }
+          recordStep(self.root, { redo: remove, undo: restore })
           self.notify(`Deleted ${name}`, 'info', {
             name: 'Undo',
             onClick: () => {
-              this.restoreTrackConf(deleted)
+              if (!self.trackBasesById.has(trackId)) {
+                recordStep(self.root, { redo: restore, undo: remove })
+              }
             },
           })
         },

@@ -3,12 +3,18 @@ import {
   applySnapshot,
   getEnv,
   getSnapshot,
+  getType,
+  isStateTreeNode,
   onPatch,
   resolvePath,
   types,
 } from '@jbrowse/mobx-state-tree'
 
-import type { IDisposer, IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type {
+  IDisposer,
+  IStateTreeNode,
+  Instance,
+} from '@jbrowse/mobx-state-tree'
 
 const MAX_HISTORY_LENGTH = 20
 
@@ -26,6 +32,16 @@ interface SnapshotTarget extends IStateTreeNode {
 }
 
 /**
+ * A change that also writes outside the target, such as deleting a track from
+ * the config: `redo` makes it, `undo` takes it back, and undo and redo run them
+ * before applying the target's snapshot, which cannot carry that part.
+ */
+export interface HistoryStep {
+  redo: () => void
+  undo: () => void
+}
+
+/**
  * #stateModel TimeTraveller
  * Undo/redo history for a target state-tree node: records snapshots as it
  * changes and exposes canUndo/canRedo with undo/redo actions.
@@ -37,6 +53,7 @@ const TimeTraveller = types
   })
   .volatile(() => ({
     history: [] as unknown[],
+    steps: [] as (HistoryStep | undefined)[],
     notTrackingUndo: false,
     hasPendingRecord: false,
   }))
@@ -100,13 +117,14 @@ const TimeTraveller = types
      *
      * A local function, not an action, so it stays off the model's API.
      */
-    function applyHistoryState(index: number) {
+    function applyHistoryState(index: number, outside?: () => void) {
       if (!targetStore) {
         return
       }
       const snapshot = self.history[index]
       skipNextUndoState = true
       try {
+        outside?.()
         // ADR-069. `applySnapshot` reconciles by identifier, so it DESTROYS
         // every node the target snapshot does not keep — in place, inside this
         // action, with the components still mounted over them and the action's
@@ -147,16 +165,35 @@ const TimeTraveller = types
       resumeTrackingUndo() {
         self.notTrackingUndo = false
       },
-      addUndoState(snapshot: unknown) {
+      addUndoState(snapshot: unknown, step?: HistoryStep) {
         if (self.notTrackingUndo) {
           return
         }
         self.history.splice(self.undoIdx + 1)
+        self.steps.splice(self.undoIdx + 1)
         self.history.push(snapshot)
+        self.steps.push(step)
         if (self.history.length > MAX_HISTORY_LENGTH) {
           self.history.shift()
+          self.steps.shift()
         }
         self.undoIdx = self.history.length - 1
+      },
+      /**
+       * Make `step`'s change now, as one history entry of its own, whose undo
+       * and redo replay the step before applying the target's snapshot.
+       */
+      record(step: HistoryStep) {
+        this.flushPendingRecord()
+        step.redo()
+        if (targetStore) {
+          if (debounceTimer) {
+            clearTimeout(debounceTimer)
+            debounceTimer = undefined
+          }
+          self.hasPendingRecord = false
+          this.addUndoState(getSnapshot(targetStore), step)
+        }
       },
 
       beforeDestroy() {
@@ -192,6 +229,7 @@ const TimeTraveller = types
         }
         skipNextUndoState = false
         self.history = []
+        self.steps = []
         self.undoIdx = -1
         self.hasPendingRecord = false
 
@@ -253,8 +291,9 @@ const TimeTraveller = types
         if (self.undoIdx <= 0) {
           return
         }
+        const step = self.steps[self.undoIdx]
         self.undoIdx--
-        applyHistoryState(self.undoIdx)
+        applyHistoryState(self.undoIdx, step?.undo)
       },
       redo() {
         this.flushPendingRecord()
@@ -262,9 +301,28 @@ const TimeTraveller = types
           return
         }
         self.undoIdx++
-        applyHistoryState(self.undoIdx)
+        applyHistoryState(self.undoIdx, self.steps[self.undoIdx]?.redo)
       },
     }
   })
+
+function isTimeTraveller(
+  thing: unknown,
+): thing is Instance<typeof TimeTraveller> {
+  return isStateTreeNode(thing) && getType(thing) === TimeTraveller
+}
+
+/**
+ * Make `step`'s change, recorded as one undoable entry when `root` keeps a
+ * history; a root without one (the embedded products) just makes it.
+ */
+export function recordStep(root: object, step: HistoryStep) {
+  const history = 'history' in root ? root.history : undefined
+  if (isTimeTraveller(history)) {
+    history.record(step)
+  } else {
+    step.redo()
+  }
+}
 
 export default TimeTraveller

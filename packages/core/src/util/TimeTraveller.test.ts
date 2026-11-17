@@ -252,3 +252,29 @@ test('redo is unavailable while an edit is pending, and redo records that edit i
   expect(target.value).toBe(5)
   expect(undo.history).toHaveLength(2)
 })
+
+test('a recorded step is its own entry, and undo and redo replay it', () => {
+  const { target, undo } = makeStores()
+  const outside: string[] = []
+  target.setValue(1)
+  undo.record({
+    redo: () => {
+      outside.push('redo')
+      target.setValue(2)
+    },
+    undo: () => {
+      outside.push('undo')
+    },
+  })
+  flushDebounce()
+  expect(undo.history).toHaveLength(3)
+
+  undo.undo()
+  expect(target.value).toBe(1)
+  expect(outside).toEqual(['redo', 'undo'])
+
+  undo.redo()
+  expect(target.value).toBe(2)
+  expect(outside).toEqual(['redo', 'undo', 'redo'])
+  expect(undo.canRedo).toBe(false)
+})

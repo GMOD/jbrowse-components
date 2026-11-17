@@ -301,7 +301,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
-      deleteTrackConf(trackConf: AnyTrackConfig) {
+      deleteTrackConf(trackConf: { trackId: string }) {
         const { trackId } = trackConf
         self.dereferenceTrack(trackId, self.getReferring(trackId))
         if (self.adminMode) {
