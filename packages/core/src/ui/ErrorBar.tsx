@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 import ErrorActions from './ErrorActions.tsx'
+import { loadErrorHint } from './loadErrorHint.ts'
 
 import type { ReactNode } from 'react'
 
@@ -28,6 +29,7 @@ const ErrorBar = observer(function ErrorBar({
 }) {
   const { classes } = useStyles()
   const message = `${error}`
+  const hint = loadErrorHint(message)
   return (
     <div
       style={{
@@ -61,7 +63,7 @@ const ErrorBar = observer(function ErrorBar({
         }
       >
         <Tooltip title={message}>
-          <div className={classes.content}>{message}</div>
+          <div className={classes.content}>{hint ?? message}</div>
         </Tooltip>
       </Alert>
     </div>

@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 import { getFileHandle, verifyPermission } from './fileHandleStore.ts'
 import {
+  blobFilesToReopen,
   findFileHandleIds,
   getConfAssemblyNames,
   getConfAssemblyNamesOrNone,
@@ -10,6 +11,7 @@ import {
   getRpcSessionId,
   getTrackName,
   restoreFileHandles,
+  storeBlobLocation,
   stripFileExtension,
   trackCatalog,
 } from './tracks.ts'
@@ -500,4 +502,30 @@ test('trackCatalog lists every track as an id, a name (its id when unnamed) and 
     },
     { trackId: 'reads', name: 'reads', category: [], description: '' },
   ])
+})
+
+test('blobFilesToReopen names each local file this page no longer holds', () => {
+  const held = storeBlobLocation({ blob: new File(['x'], 'volvox.bam.bai') })
+  const adapter = {
+    type: 'BamAdapter',
+    bamLocation: {
+      locationType: 'BlobLocation',
+      name: 'volvox.bam',
+      blobId: 'b-from-an-earlier-session',
+    },
+    index: { location: held },
+    sequenceAdapter: {
+      fastaLocation: {
+        locationType: 'BlobLocation',
+        name: 'volvox.fa',
+        blobId: 'b-also-gone',
+      },
+    },
+  }
+  expect(blobFilesToReopen(adapter)).toEqual(['volvox.bam', 'volvox.fa'])
+  expect(
+    blobFilesToReopen({
+      bamLocation: { uri: 'volvox.bam', locationType: 'UriLocation' },
+    }),
+  ).toEqual([])
 })

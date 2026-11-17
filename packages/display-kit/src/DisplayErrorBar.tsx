@@ -1,4 +1,5 @@
 import ErrorBar from '@jbrowse/core/ui/ErrorBar'
+import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BlockMsg from './BlockMsg.tsx'
@@ -8,9 +9,24 @@ import type { ErrorBarProps } from '@jbrowse/display-ui'
 const DisplayErrorBar = observer(function DisplayErrorBar({
   error,
   onRetry,
+  onEditTrack,
 }: ErrorBarProps) {
   return onRetry ? (
-    <ErrorBar error={error} onRetry={onRetry} />
+    <ErrorBar
+      error={error}
+      onRetry={onRetry}
+      extraAction={
+        onEditTrack ? (
+          <Button
+            data-testid="edit_track_button"
+            color="inherit"
+            onClick={onEditTrack}
+          >
+            Edit track
+          </Button>
+        ) : undefined
+      }
+    />
   ) : (
     <div
       style={{

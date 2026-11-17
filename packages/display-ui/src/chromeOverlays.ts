@@ -25,6 +25,12 @@ export interface TooLargeProps {
 export interface ErrorBarProps {
   error: unknown
   onRetry?: () => void
+  /**
+   * Opens the track's settings, passed only when they hold the fix (a
+   * missing file, an unreachable URL, a wrong index) and the session offers
+   * track settings at all.
+   */
+  onEditTrack?: () => void
 }
 
 /**

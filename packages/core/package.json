@@ -152,6 +152,7 @@
     "./ui/gpuFallback": "./src/ui/gpuFallback.ts",
     "./ui/hoverBoxStyle": "./src/ui/hoverBoxStyle.ts",
     "./ui/legendSpec": "./src/ui/legendSpec.ts",
+    "./ui/loadErrorHint": "./src/ui/loadErrorHint.ts",
     "./ui/measureLegendText": "./src/ui/measureLegendText.ts",
     "./ui/menuItems": "./src/ui/menuItems.ts",
     "./ui/multiTrackMenuItems": "./src/ui/multiTrackMenuItems.ts",

@@ -2,12 +2,16 @@ import { isRegionTooLargeError } from '@jbrowse/core/rpc/byteBudget'
 import { isLiveModel, tooLargeBannerText } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
+import { editTrackAction } from './editTrackAction.ts'
+
 import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 
 /** What the error slot reads: a failed fetch, and the way to run it again. */
 export interface ErrorSource {
   error: unknown
   reload: () => void
+  /** the display whose settings section "Edit track" opens expanded */
+  configuration?: { displayId: string }
 }
 
 /** What the too-large slot reads. */
@@ -53,6 +57,7 @@ export const ErrorBarSlot = observer(function ErrorBarSlot({
               }
             }
       }
+      onEditTrack={editTrackAction(model)}
     />
   ) : null
 })

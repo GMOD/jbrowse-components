@@ -61,6 +61,7 @@ import {
   objectHash,
 } from './mstUtils.ts'
 import { getNotificationSink } from './sessionServices.ts'
+import { isBlobLocation } from './types/data.ts'
 import { isViewModel } from './types/index.ts'
 import {
   displayConfigSchema,
@@ -330,6 +331,28 @@ let blobMap: Record<string, File> = {}
 
 export function getBlob(id: string) {
   return blobMap[id]
+}
+
+/**
+ * The names of the files an adapter config opened from this computer in an
+ * earlier session, whose bytes this page no longer holds. One track can hold
+ * two (a BAM and its BAI); the track's settings mark each "(need to reload)".
+ */
+export function blobFilesToReopen(adapterConfig: unknown) {
+  const names: string[] = []
+  function walk(node: unknown) {
+    if (isBlobLocation(node)) {
+      if (!getBlob(node.blobId)) {
+        names.push(node.name)
+      }
+    } else if (typeof node === 'object' && node !== null) {
+      for (const value of Object.values(node)) {
+        walk(value)
+      }
+    }
+  }
+  walk(adapterConfig)
+  return names
 }
 
 export function getBlobMap() {

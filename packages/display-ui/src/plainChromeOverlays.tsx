@@ -6,6 +6,7 @@ import {
   disableGpuRendering,
   shouldOfferGpuFallback,
 } from '@jbrowse/core/ui/gpuFallback'
+import { loadErrorHint } from '@jbrowse/core/ui/loadErrorHint'
 import { progressLabel } from '@jbrowse/core/util/progress'
 import { observer } from 'mobx-react'
 
@@ -212,11 +213,24 @@ const PlainTooLarge = observer(function PlainTooLarge({
 const PlainErrorBar = observer(function PlainErrorBar({
   error,
   onRetry,
+  onEditTrack,
 }: ErrorBarProps) {
   return (
     <div style={overlayBox} role={onRetry ? 'alert' : 'status'}>
       <div style={chip}>
-        <span style={{ wordBreak: 'break-word' }}>{errorText(error)}</span>
+        <span style={{ wordBreak: 'break-word' }}>
+          {loadErrorHint(errorText(error)) ?? errorText(error)}
+        </span>
+        {onEditTrack ? (
+          <button
+            type="button"
+            style={button}
+            data-testid="edit_track_button"
+            onClick={onEditTrack}
+          >
+            Edit track
+          </button>
+        ) : null}
         {onRetry ? (
           <button
             type="button"
