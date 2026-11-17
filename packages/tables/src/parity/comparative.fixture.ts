@@ -159,6 +159,20 @@ export const ALL_VS_ALL_ZOOMED: MultiwayFixture = {
 }
 
 /**
+ * 4 kb of volvox just past the deletion. The static blocks fetched start
+ * inside it, so the viewport edge cuts volvox_del's record past the tail of
+ * the deletion it carries.
+ */
+export const ALL_VS_ALL_PAST_DELETION: MultiwayFixture = {
+  ...ALL_VS_ALL_LANES,
+  anchor: {
+    assemblyName: 'volvox',
+    regions: [{ refName: 'ctgA', start: 34_000, end: 38_000 }],
+    width: 800,
+  },
+}
+
+/**
  * The all-vs-all PAF with the insertion's first match spelled as `=` and `X`
  * runs: two mismatches, 10 bp and 3 bp, under the zoomed window.
  */

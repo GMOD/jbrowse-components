@@ -9,6 +9,7 @@ import { createTablesEngine } from '../index.ts'
 import {
   ALL_VS_ALL_LANES,
   ALL_VS_ALL_MISMATCHES,
+  ALL_VS_ALL_PAST_DELETION,
   ALL_VS_ALL_UNALIGNED,
   ALL_VS_ALL_ZOOMED,
   GENE_BLOCK_LANES,
@@ -442,6 +443,12 @@ describe('4 kb around the insertion', () => {
         display: { ribbons: { encoding: { opacity: { field: 'identity' } } } },
       },
     },
+  ])
+})
+
+describe('4 kb just past the deletion', () => {
+  parityCases(multiwayParity(ALL_VS_ALL_PAST_DELETION), [
+    { name: 'defaults', config: {} },
   ])
 })
 

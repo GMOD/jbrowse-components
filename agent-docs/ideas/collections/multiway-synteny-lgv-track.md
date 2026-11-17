@@ -240,11 +240,14 @@ tracks; the picker
 above ~10 lanes; anything at 44 or 464 lanes beyond the height assertion.
 
 
-**`multiwayTables` places a mate lane up to ~8 px off the display.** On
-ggjbrowse's TP53 gallery stack (hg38 over panTro6, gorGor6 and ponAbe3), each
-lane jb2export draws starts tens to about two thousand bp from the engine's
-at the same 250 bp/px view. Both run `decideLanesOn`, but the display reads
-its anchor over `staticBlocks`, wider than the view, while the engine reads
-the view alone, so their chain groups may differ. Nobody has confirmed that
-cause yet; the test is to have the engine fetch the static blocks' span and
-compare.
+**Is ggjbrowse's TP53 stack still a mate lane up to ~8 px off the display?**
+On ggjbrowse's TP53 gallery stack (hg38 over panTro6, gorGor6 and ponAbe3),
+each lane jb2export drew started tens to about two thousand bp from the
+engine's at the same 250 bp/px view. Both causes found since are fixed: the
+engine now fetches the view's static blocks as the display does (5ef07e9985),
+and a mate is cut at the viewport edge along its record's alignment ops
+(`placementMateInterval`), not in proportion to the record's length, so a
+record carrying an indel and clipped at a different fetch edge gives the same
+mate span. The parity suite's "4 kb just past the deletion" case agrees within
+its 1 px, but both sides fetch the same blocks there, so it would have agreed
+before either fix. Nobody has re-run the TP53 comparison.
