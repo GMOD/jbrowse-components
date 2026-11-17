@@ -2,7 +2,7 @@ import { isRegionTooLargeError } from '@jbrowse/core/rpc/byteBudget'
 import { isLiveModel, tooLargeBannerText } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
-import { editTrackAction } from './editTrackAction.ts'
+import { fileFixAction } from './fileFixAction.ts'
 
 import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 
@@ -10,7 +10,7 @@ import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 export interface ErrorSource {
   error: unknown
   reload: () => void
-  /** the display whose settings section "Edit track" opens expanded */
+  /** the display whose settings section "All settings..." opens expanded */
   configuration?: { displayId: string }
 }
 
@@ -57,7 +57,7 @@ export const ErrorBarSlot = observer(function ErrorBarSlot({
               }
             }
       }
-      onEditTrack={editTrackAction(model)}
+      fileFix={fileFixAction(model)}
     />
   ) : null
 })

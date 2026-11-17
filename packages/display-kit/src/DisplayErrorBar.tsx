@@ -9,21 +9,23 @@ import type { ErrorBarProps } from '@jbrowse/display-ui'
 const DisplayErrorBar = observer(function DisplayErrorBar({
   error,
   onRetry,
-  onEditTrack,
+  fileFix,
 }: ErrorBarProps) {
   return onRetry ? (
     <ErrorBar
       error={error}
       onRetry={onRetry}
       extraAction={
-        onEditTrack ? (
+        fileFix ? (
           <Button
-            data-testid="edit_track_button"
+            data-testid="file_fix_button"
+            variant="outlined"
             color="inherit"
-            sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
-            onClick={onEditTrack}
+            size="small"
+            sx={{ whiteSpace: 'nowrap', flexShrink: 0, alignSelf: 'center' }}
+            onClick={fileFix.onClick}
           >
-            Edit track
+            {fileFix.label}
           </Button>
         ) : undefined
       }

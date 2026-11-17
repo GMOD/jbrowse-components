@@ -26,11 +26,13 @@ export interface ErrorBarProps {
   error: unknown
   onRetry?: () => void
   /**
-   * Opens the track's settings, passed only when they hold the fix (a
-   * missing file, an unreachable URL, a wrong index) and the session offers
-   * track settings at all.
+   * The button that opens the track's file locations, labelled with the fix
+   * ("Fix file location...", "Choose the file again..."). Passed only when a
+   * location holds the fix (a missing file, an unreachable URL, a wrong
+   * index, a local file to choose again) and the session offers track
+   * settings at all.
    */
-  onEditTrack?: () => void
+  fileFix?: { label: string; onClick: () => void }
 }
 
 /**

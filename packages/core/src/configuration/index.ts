@@ -131,6 +131,7 @@ export {
   slotValueRefusal,
 } from './slotFacade.ts'
 export type { SlotFacade } from './slotFacade.ts'
+export { fileLocationSlots } from './fileLocationSlots.ts'
 export { fullConfSnapshot } from './fullConfSnapshot.ts'
 export {
   keyedValueInForce,

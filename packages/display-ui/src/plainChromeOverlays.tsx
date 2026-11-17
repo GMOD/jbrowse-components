@@ -213,7 +213,7 @@ const PlainTooLarge = observer(function PlainTooLarge({
 const PlainErrorBar = observer(function PlainErrorBar({
   error,
   onRetry,
-  onEditTrack,
+  fileFix,
 }: ErrorBarProps) {
   return (
     <div style={overlayBox} role={onRetry ? 'alert' : 'status'}>
@@ -221,14 +221,14 @@ const PlainErrorBar = observer(function PlainErrorBar({
         <span style={{ wordBreak: 'break-word' }}>
           {loadErrorHint(errorText(error)) ?? errorText(error)}
         </span>
-        {onEditTrack ? (
+        {fileFix ? (
           <button
             type="button"
             style={button}
-            data-testid="edit_track_button"
-            onClick={onEditTrack}
+            data-testid="file_fix_button"
+            onClick={fileFix.onClick}
           >
-            Edit track
+            {fileFix.label}
           </button>
         ) : null}
         {onRetry ? (
