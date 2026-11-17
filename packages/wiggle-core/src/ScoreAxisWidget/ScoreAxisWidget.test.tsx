@@ -294,6 +294,38 @@ test('a line with no value yet holds back neither the others nor its own red', (
   expect(screen.getAllByRole('textbox', { name: 'Value' })).toHaveLength(2)
 })
 
+test('a typed line is not written back over a write from off the panel', () => {
+  jest.useFakeTimers()
+  const { display } = open({
+    configuration: { encoding: { y: { rules: [{ value: 5 }] } } },
+  })
+  const value = screen.getByRole('textbox', { name: 'Value' })
+  fireEvent.change(value, { target: { value: '7' } })
+  act(() => {
+    display.setScoreRules([{ value: 9 }])
+  })
+  fireEvent.blur(value)
+  act(() => {
+    jest.advanceTimersByTime(300)
+  })
+  expect(display.scoreRules).toEqual([{ value: 9 }])
+})
+
+test('a value typed as 1.50 saves once, not again on each blur', () => {
+  const { display } = open({
+    configuration: { encoding: { y: { rules: [{ value: 5 }] } } },
+  })
+  const value = screen.getByRole('textbox', { name: 'Value' })
+  fireEvent.change(value, { target: { value: '1.50' } })
+  fireEvent.blur(value)
+  expect(display.scoreRules).toEqual([{ value: 1.5 }])
+  persists = 0
+  fireEvent.blur(value)
+  fireEvent.blur(screen.getByRole('textbox', { name: 'Label' }))
+  expect(persists).toBe(0)
+  expect(value).toHaveProperty('value', '1.50')
+})
+
 test('the lines follow a write from off the panel', () => {
   const { display } = open({
     configuration: { encoding: { y: { rules: [{ value: 5 }] } } },

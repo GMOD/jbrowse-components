@@ -32,8 +32,11 @@ function valueOk({ value }: Row) {
   return Number.isFinite(Number(value))
 }
 
+// Read back the way the model holds a row, so 1.50 and 1.5 are one value.
 function rowsKey(rows: Row[]) {
-  return JSON.stringify(rows.filter(row => !blank(row)))
+  return JSON.stringify(
+    rows.filter(row => !blank(row)).map(row => rowOf(ruleOf(row))),
+  )
 }
 
 function ruleOf(row: Row): ValueScaleRule {
@@ -46,7 +49,7 @@ function ruleOf(row: Row): ValueScaleRule {
 
 /**
  * `encoding.y.rules`, one row per line: its value on the plot's own scale, its
- * label and its color, an unset color taking the display's. A row with no
+ * label and its color, an unset color drawing the default grey. A row with no
  * value yet is left out; one whose value does not read holds every row back.
  * Removing a line writes at once; typing and dragging a color wait for a pause.
  */

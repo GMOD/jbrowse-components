@@ -33,7 +33,7 @@ export function useLiveDraft<T>({
   const latest = useRef(draft)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
-  const store = (next: Draft<T>) => {
+  const store = (next?: Draft<T>) => {
     latest.current = next
     setDraft(next)
   }
@@ -42,9 +42,13 @@ export function useLiveDraft<T>({
     clearTimeout(timer.current)
     timer.current = undefined
     const pending = latest.current
-    if (pending && isAlive(node) && pending.base === held()) {
-      write(pending.value)
-      store({ value: pending.value, base: held() })
+    if (pending && isAlive(node)) {
+      if (pending.base === held()) {
+        write(pending.value)
+        store({ value: pending.value, base: held() })
+      } else {
+        store(undefined)
+      }
     }
   }
   useFinalUnmount(flush)
