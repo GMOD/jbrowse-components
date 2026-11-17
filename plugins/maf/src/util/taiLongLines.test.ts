@@ -37,13 +37,14 @@ function bgzfBlock(chunk: Buffer) {
 
 function bgzf(data: Buffer) {
   const blocks: Buffer[] = []
+  const compressedStarts = [0]
+  let compressedEnd = 0
   for (let at = 0; at < data.length; at += chunkSize) {
-    blocks.push(bgzfBlock(data.subarray(at, at + chunkSize)))
+    const block = bgzfBlock(data.subarray(at, at + chunkSize))
+    blocks.push(block)
+    compressedEnd += block.length
+    compressedStarts.push(compressedEnd)
   }
-  const compressedStarts = blocks.reduce<number[]>(
-    (starts, block, i) => [...starts, starts[i]! + block.length],
-    [0],
-  )
   return {
     file: Buffer.concat([...blocks, BGZF_EOF]),
     virtualOffsetAt: (offset: number) =>
