@@ -171,7 +171,6 @@
 1 no-unsafe-member-access plugins/comparative-adapters/src/util.ts
 2 no-unsafe-argument plugins/config/src/ConfigurationEditorWidget/components/ConfigurationEditor.tsx
 1 no-unsafe-return plugins/config/src/ConfigurationEditorWidget/components/SettingsJsonDialog.tsx
-2 no-unsafe-assignment plugins/data-management/src/HierarchicalTrackSelectorWidget/components/tree/HamburgerMenu.tsx
 5 no-unsafe-argument plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
 1 no-unsafe-assignment plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
 1 no-unsafe-call plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
