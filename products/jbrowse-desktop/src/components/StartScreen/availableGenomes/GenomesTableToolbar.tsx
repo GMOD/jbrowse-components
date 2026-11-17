@@ -8,6 +8,7 @@ import { observer } from 'mobx-react'
 import CategorySelector from './CategorySelector.tsx'
 import SearchField from './SearchField.tsx'
 import { getTableMenuItems } from './getTableMenuItems.ts'
+import { isSearching } from './useGenomesData.ts'
 
 import type { Category } from './useCategories.ts'
 import type { GenomesTableState } from './useGenomesTableState.ts'
@@ -65,6 +66,7 @@ const GenomesTableToolbar = observer(function GenomesTableToolbar({
         <CategorySelector
           categories={categories}
           typeOption={activeTypeOption}
+          searching={isSearching(searchQuery)}
           onChange={setTypeOption}
         />
       ) : null}

@@ -13,14 +13,17 @@ const useStyles = makeStyles()({
 
 // Rendered only once categories.json has resolved: useFetch clears data while
 // loading and on error, so there is no state where this has a list to show but
-// is also still loading or failed.
+// is also still loading or failed. A search covers every group, so while one
+// runs the selector says so and stands aside.
 const CategorySelector = observer(function CategorySelector({
   categories,
   typeOption,
+  searching,
   onChange,
 }: {
   categories: Category[]
   typeOption: string
+  searching: boolean
   onChange: (value: string) => void
 }) {
   const { classes } = useStyles()
@@ -32,16 +35,21 @@ const CategorySelector = observer(function CategorySelector({
       label="Group"
       variant="outlined"
       className={classes.root}
-      value={typeOption}
+      value={searching ? 'allGroups' : typeOption}
+      disabled={searching}
       onChange={event => {
         onChange(event.target.value)
       }}
     >
-      {categories.map(({ key, title }) => (
-        <MenuItem key={key} value={key}>
-          {title}
-        </MenuItem>
-      ))}
+      {searching ? (
+        <MenuItem value="allGroups">All groups</MenuItem>
+      ) : (
+        categories.map(({ key, title }) => (
+          <MenuItem key={key} value={key}>
+            {title}
+          </MenuItem>
+        ))
+      )}
     </TextField>
   )
 })

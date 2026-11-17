@@ -141,6 +141,7 @@ test('a search covers every group, and the index waits for the first query', asy
   expect(
     screen.getByText('Showing 1–1 of 1 matching (2 across all groups)'),
   ).toBeTruthy()
+  expect(screen.getByText('All groups')).toBeTruthy()
 
   // launchable via a config url rebuilt from the accession alone
   fireEvent.click(screen.getByText('launch'))
