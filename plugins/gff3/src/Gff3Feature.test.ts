@@ -33,10 +33,16 @@ const NCBI_MATCH = [
 ]
 
 describe('Gff3Feature', () => {
-  it('labels a Target-only alignment by its accession, not in its record', () => {
+  it('names a Target-only alignment by its accession, read or serialized', () => {
     const f = lazy(NCBI_MATCH)
     expect(f.get('name')).toBe('NG_023390.1')
-    expect(f.toJSON().name).toBeUndefined()
+    expect(f.toJSON().name).toBe('NG_023390.1')
+  })
+
+  it('differs from the eager parse of a Target-only alignment by its name alone', () => {
+    const { name, ...rest } = lazy(NCBI_MATCH).toJSON()
+    expect(name).toBe('NG_023390.1')
+    expect(rest).toEqual(eager(NCBI_MATCH).toJSON())
   })
 
   it('keeps a Name over the Target', () => {

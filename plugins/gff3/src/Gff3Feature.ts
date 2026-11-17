@@ -27,6 +27,8 @@ import type {
  *
  * `toJSON` still materializes the lot, which is what the details path
  * serializes, so nothing downstream sees a smaller feature than it used to.
+ * It adds one thing the eager parse lacks: an alignment with no Name is named
+ * by its Target's accession, as `get('name')` names it.
  */
 const BED_COLOR_TAG = /itemrgb|reserved|field8/i
 
@@ -193,6 +195,10 @@ export class Gff3Feature implements Feature {
     } as SimpleFeatureSerialized
     if (this.parentFeature) {
       d.parentId = this.parentFeature.id()
+    }
+    const name = this.get('name')
+    if (name !== undefined) {
+      d.name = name
     }
     return d
   }

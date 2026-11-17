@@ -158,6 +158,32 @@ describe('GFF3 export', () => {
     expect(result).toContain('ID=child1;Parent=parent1')
   })
 
+  it("writes no Name for a name its Target's accession derives", () => {
+    const f = createFeature({
+      id: 'aln1',
+      refName: 'chr1',
+      start: 100,
+      end: 200,
+      type: 'match',
+      name: 'NG_1.1',
+      target: 'NG_1.1 1 100 +',
+    })
+    expect(stringifyGFF3({ features: [f] })).not.toContain('Name=')
+  })
+
+  it('writes a Name that differs from the Target accession', () => {
+    const f = createFeature({
+      id: 'aln2',
+      refName: 'chr1',
+      start: 100,
+      end: 200,
+      type: 'match',
+      name: 'aln2',
+      target: 'NG_1.1 1 100 +',
+    })
+    expect(stringifyGFF3({ features: [f] })).toContain('Name=aln2')
+  })
+
   it('returns just header for empty features array', () => {
     const result = stringifyGFF3({ features: [] })
     expect(result).toBe('##gff-version 3')

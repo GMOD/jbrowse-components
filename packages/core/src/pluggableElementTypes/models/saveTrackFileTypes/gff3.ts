@@ -34,6 +34,13 @@ function encodeGFF3Value(str: string): string {
   return str.replaceAll(/[%;=&,\t\n\r]/g, c => gff3Escapes[c]!)
 }
 
+// A GFF3 reader names an alignment with no Name by its Target's accession, so
+// writing that name back would add a Name= the source never had
+function isNameFromTarget(f: Feature) {
+  const target = f.get('target')
+  return typeof target === 'string' && f.get('name') === target.split(' ')[0]
+}
+
 function formatAttributes(
   f: Feature,
   { id, parentId }: { id?: string; parentId?: string },
@@ -47,8 +54,9 @@ function formatAttributes(
     attributes.push(`Parent=${encodeGFF3Value(parentId)}`)
   }
 
+  const nameFromTarget = isNameFromTarget(f)
   const tags = Object.keys(f.toJSON()).filter(
-    tag => !coreFeatureFields.has(tag),
+    tag => !coreFeatureFields.has(tag) && !(tag === 'name' && nameFromTarget),
   )
   const hasDescription = tags.includes('description')
 
