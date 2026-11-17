@@ -4,6 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 export const ROW_HEIGHT = 25
 export const HEADER_HEIGHT = 35
 export const CHECKBOX_WIDTH = 48
+export const MENU_CELL_WIDTH = 32
 export const DEFAULT_COL_WIDTH = 100
 
 export const checkboxSx = {
@@ -135,6 +136,20 @@ export const useTableStyles = makeStyles()(theme => {
       height: '50%',
       alignSelf: 'center',
       background: borderColor,
+    },
+    menuCell: {
+      position: 'sticky',
+      right: 0,
+      padding: 0,
+      textAlign: 'center',
+      verticalAlign: 'middle',
+      lineHeight: 0,
+      borderBottom: border,
+      background: theme.palette.background.paper,
+    },
+    edgeCell: {
+      padding: 0,
+      borderBottom: border,
     },
     emptyCell: {
       padding: 20,

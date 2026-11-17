@@ -1963,6 +1963,48 @@ test('filtering reaches tracks inside a collapsed top-level group', () => {
   expect(trackNames(model)).toEqual([])
 })
 
+// a group row's collapse pair reaches every category under it, so it drops
+// "subcategories"; only a connection's group row offers to remove it
+test('a group row collapses all, and a connection row removes its connection', async () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({
+      adminMode: true,
+      jbrowseConfig: {
+        connections: [
+          {
+            connectionId: 'conn1',
+            type: 'JBrowse1Connection',
+            name: 'Conn',
+            assemblyNames: ['volMyt1'],
+          },
+        ],
+      },
+    }),
+  )
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { findByTestId, findByText, queryByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+
+  fireEvent.click(await findByTestId('htsCategoryMenu-Tracks'))
+  fireEvent.click(await findByText('Collapse all'))
+  expect(model.categoryMode.get('Tracks-Epigenomics')).toBe('collapsed')
+  expect(queryByText('Remove connection...')).toBeNull()
+
+  fireEvent.click(await findByTestId('htsCategoryMenu-Conn'))
+  fireEvent.click(await findByText('Remove connection...'))
+  expect(session.DialogProps).toMatchObject({
+    deleteDialogDetails: { name: 'Conn' },
+  })
+})
+
 // the names of the track rows the tree is currently drawing
 function trackNames(model: HierarchicalTrackSelectorModel) {
   return model.rows.filter(r => r.item.type === 'track').map(r => r.item.name)

@@ -43,7 +43,7 @@ const FolderTable = observer(function FolderTable({
       className={classes.root}
       style={{ width, height: windowSize.height * frac }}
     >
-      <FolderTableHeader model={model} table={table} shown={shown} />
+      <FolderTableHeader model={model} table={table} />
       <FacetChips table={table} />
       <div className={classes.grid}>
         <TrackTableGrid

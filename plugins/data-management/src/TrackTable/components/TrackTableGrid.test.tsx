@@ -192,7 +192,7 @@ test('the name column keeps half the measured width before the others share', ()
   clientWidth.mockRestore()
   expect(
     tableMinWidth - checkbox - rest.reduce((a, b) => a + b, 0),
-  ).toBeGreaterThanOrEqual((448 - checkbox) / 2)
+  ).toBeGreaterThanOrEqual((448 - checkbox - rest.at(-1)!) / 2)
 })
 
 test('the name column takes the room the other columns leave', () => {

@@ -52,6 +52,7 @@ const TrackTableRow = observer(function TrackTableRow({
           {col.cell(row)}
         </td>
       ))}
+      <td className={classes.edgeCell} />
     </tr>
   )
 })

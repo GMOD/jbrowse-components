@@ -1,5 +1,9 @@
 import { columnsThatFit } from './fitColumnWidths.ts'
-import { CHECKBOX_WIDTH, DEFAULT_COL_WIDTH } from './tableStyles.ts'
+import {
+  CHECKBOX_WIDTH,
+  DEFAULT_COL_WIDTH,
+  MENU_CELL_WIDTH,
+} from './tableStyles.ts'
 import { facetLabel } from './util.ts'
 
 import type { TrackTableModel } from '../trackTableModel.ts'
@@ -19,7 +23,7 @@ const DRAWER_GUTTER = 24
 export function shownFields(table: TrackTableModel, width: number) {
   return table.shownColumns(
     columnsThatFit(
-      width - CHECKBOX_WIDTH - GRID_CHROME,
+      width - CHECKBOX_WIDTH - MENU_CELL_WIDTH - GRID_CHROME,
       table.initialWidths.name ?? DEFAULT_COL_WIDTH,
     ),
   )
@@ -32,6 +36,7 @@ export function shownFields(table: TrackTableModel, width: number) {
 export function naturalTableWidth(table: TrackTableModel) {
   return (
     CHECKBOX_WIDTH +
+    MENU_CELL_WIDTH +
     GRID_CHROME +
     DRAWER_GUTTER +
     Object.values(table.initialWidths).reduce((a, b) => a + b, 0)
@@ -39,7 +44,8 @@ export function naturalTableWidth(table: TrackTableModel) {
 }
 
 /**
- * the table's own menu rows: add-to-selection mode and Manage columns
+ * the rows of the table's columns menu: add-to-selection mode and Manage
+ * columns
  */
 export function tableMenuItems(
   table: TrackTableModel,

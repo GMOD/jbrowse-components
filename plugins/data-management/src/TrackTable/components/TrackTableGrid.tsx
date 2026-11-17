@@ -7,9 +7,11 @@ import { getRowSelectionState } from '../tableSelection.ts'
 import TrackTableHead from './TrackTableHead.tsx'
 import TrackTableRow from './TrackTableRow.tsx'
 import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
+import { tableMenuItems } from './tableLayout.ts'
 import {
   CHECKBOX_WIDTH,
   DEFAULT_COL_WIDTH,
+  MENU_CELL_WIDTH,
   ROW_HEIGHT,
   useTableStyles,
 } from './tableStyles.ts'
@@ -40,13 +42,11 @@ const TrackTableGrid = observer(function TrackTableGrid({
   table,
   columns,
   width,
-  endClearance = 0,
 }: {
   model: HierarchicalTrackSelectorModel
   table: TrackTableModel
   columns: TableColumn[]
   width: number
-  endClearance?: number
 }) {
   const { classes } = useTableStyles()
   const {
@@ -67,7 +67,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
     ROW_HEIGHT,
     JSON.stringify([filterText, sortField, sortAscending, [...filters]]),
   )
-  const available = (clientWidth || width) - CHECKBOX_WIDTH
+  const available = (clientWidth || width) - CHECKBOX_WIDTH - MENU_CELL_WIDTH
   const { colWidths, onResizeStart } = useColumnResize(
     fitColumnWidths(
       Object.fromEntries(
@@ -96,6 +96,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
         style={{
           minWidth:
             CHECKBOX_WIDTH +
+            MENU_CELL_WIDTH +
             columns.reduce(
               (sum, col) => sum + (colWidths[col.id] ?? DEFAULT_COL_WIDTH),
               0,
@@ -114,9 +115,16 @@ const TrackTableGrid = observer(function TrackTableGrid({
               }
             />
           ))}
+          <col style={{ width: MENU_CELL_WIDTH }} />
         </colgroup>
         <TrackTableHead
           columns={columns}
+          menuItems={() =>
+            tableMenuItems(
+              table,
+              columns.map(col => col.id),
+            )
+          }
           allSelected={allSelected}
           someSelected={someSelected}
           onSelectAll={useShoppingCart ? toggleAll : undefined}
@@ -147,10 +155,10 @@ const TrackTableGrid = observer(function TrackTableGrid({
               />
             )
           })}
-          <SpacerRow height={trailingGap + endClearance} />
+          <SpacerRow height={trailingGap} />
           {sortedRows.length === 0 ? (
             <tr>
-              <td colSpan={columns.length + 1} className={classes.emptyCell}>
+              <td colSpan={columns.length + 2} className={classes.emptyCell}>
                 {table.allRows.length
                   ? 'No tracks match the current search and filters'
                   : 'No tracks'}

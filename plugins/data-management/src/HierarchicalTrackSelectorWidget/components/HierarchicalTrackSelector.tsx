@@ -3,7 +3,6 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import HierarchicalFab from './HierarchicalFab.tsx'
 import TrackSelectorToggles from './TrackSelectorToggles.tsx'
 import TrackTable from './TrackTable.tsx'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
@@ -76,7 +75,6 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
       ) : (
         <TrackTree model={model} />
       )}
-      <HierarchicalFab model={model} />
     </div>
   )
 })

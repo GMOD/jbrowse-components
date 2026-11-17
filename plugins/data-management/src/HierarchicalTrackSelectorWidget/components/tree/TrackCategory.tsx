@@ -5,7 +5,12 @@ import {
   PluggableComponent,
   SanitizedHTML,
 } from '@jbrowse/core/ui'
-import { getDialogHost, getEnv } from '@jbrowse/core/util'
+import {
+  getDialogHost,
+  getEnv,
+  getSession,
+  isSessionModelWithConnectionEditing,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
@@ -49,6 +54,9 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 const DefaultFolderDialog = lazy(() => import('../DefaultFolderDialog.tsx'))
+const DeleteConnectionDialog = lazy(
+  () => import('../dialogs/DeleteConnectionDialog.tsx'),
+)
 
 // resolves TrackSelector-folderDialog at render time (consistent with all other
 // component extension points) rather than evaluating the point by hand; queued
@@ -120,6 +128,38 @@ function subcategoryCollapseMenuItems(
             for (const id of subcategoryIds) {
               model.setCategoryCollapsed(id, false)
             }
+          },
+        },
+      ]
+    : []
+}
+
+// an admin removes any connection, anyone else only the ones they added
+function removeConnectionMenuItems(
+  model: HierarchicalTrackSelectorModel,
+  item: TreeCategoryNode,
+) {
+  const session = getSession(model)
+  const connectionId = model.allTracks.find(g => g.id === item.id)?.connectionId
+  const connectionConf = session.connections.find(
+    c => c.connectionId === connectionId,
+  )
+  return item.nestingLevel === 0 &&
+    connectionConf &&
+    isSessionModelWithConnectionEditing(session) &&
+    (session.adminMode || session.sessionConnections?.includes(connectionConf))
+    ? [
+        {
+          label: 'Remove connection...',
+          onClick: () => {
+            getDialogHost(model).queueDialog(handleClose => [
+              DeleteConnectionDialog,
+              {
+                deleteDialogDetails: { name: item.name, connectionConf },
+                session,
+                handleClose,
+              },
+            ])
           },
         },
       ]
@@ -304,6 +344,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
             },
             ...categoryTrackMenuItems(model, item),
             ...subcategoryCollapseMenuItems(model, item),
+            ...removeConnectionMenuItems(model, item),
           ]}
           className={classes.contrastColor}
           stopPropagation

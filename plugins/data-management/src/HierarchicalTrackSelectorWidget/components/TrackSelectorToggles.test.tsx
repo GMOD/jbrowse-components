@@ -63,10 +63,10 @@ test('the add track button stays in table mode', async () => {
       <HierarchicalTrackSelector model={model} />
     </ThemeProvider>,
   )
-  await findByTestId('hierarchical-add-track-fab')
+  await findByTestId('track-selector-add')
   fireEvent.click(getByTestId('show-as-table'))
   expect(model.showTable).toBe(true)
-  expect(queryByTestId('hierarchical-add-track-fab')).not.toBeNull()
+  expect(queryByTestId('track-selector-add')).not.toBeNull()
 })
 
 test('the toggle swaps the tree for a table seeded with its query, with select-all hidden, and back', async () => {
@@ -179,4 +179,29 @@ test('the favorites list narrows the tree and the table to favorite tracks, and 
       item.type === 'track' ? [item.trackId] : [],
     ),
   ).toEqual(['genes'])
+})
+
+test('the add menu clears the favorites only while that list shows, and Undo puts them back', async () => {
+  const { session, model } = setup()
+  model.addToFavorites('genes')
+  model.addToFavorites('chromatin')
+  const { getByTestId, findByText, queryByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} />
+    </ThemeProvider>,
+  )
+  fireEvent.click(getByTestId('track-selector-add'))
+  await findByText('Add track...')
+  expect(queryByText('Clear favorites')).toBeNull()
+  fireEvent.keyDown(document.activeElement!, { key: 'Escape' })
+
+  fireEvent.click(getByTestId('list-favorites'))
+  fireEvent.click(getByTestId('track-selector-add'))
+  fireEvent.click(await findByText('Clear favorites'))
+  expect(model.favorites).toEqual([])
+
+  act(() => {
+    session.snackbarMessages.at(-1)?.actions?.[0]?.onClick()
+  })
+  expect(model.favorites).toEqual(['genes', 'chromatin'])
 })

@@ -215,22 +215,19 @@ test('a facet filter narrows the favorites list too', () => {
   expect(treeTrackIds(model)).toEqual(['t0'])
 })
 
-test("in tree mode the ☰ menu offers the tree's Sort and Collapse", async () => {
+test('the table header holds the columns menu, and the tree has none', async () => {
   const { model } = setup()
-  const { getByTestId, findByText, queryByText } = renderSelector(model)
-  fireEvent.click(getByTestId('track-selector-hamburger'))
-  expect(await findByText('Sort')).toBeTruthy()
-  expect(queryByText('Manage columns')).toBeNull()
-})
+  const view = renderSelector(model)
+  expect(view.queryByTestId('track-table-menu')).toBeNull()
+  view.unmount()
 
-test("in table mode the ☰ menu trades Sort and Collapse for the table's rows", async () => {
-  const { model } = setup()
   model.openTable()
-  const { getByTestId, findByText, queryByText } = renderSelector(model)
-  fireEvent.click(getByTestId('track-selector-hamburger'))
+  const { findByTestId, findByText } = renderSelector(model)
+  fireEvent.click(await findByTestId('track-table-menu'))
+  expect(
+    await findByText('Add tracks to selection instead of turning them on/off'),
+  ).toBeTruthy()
   expect(await findByText('Manage columns')).toBeTruthy()
-  expect(queryByText('Sort')).toBeNull()
-  expect(queryByText('Collapse')).toBeNull()
 })
 
 test("destroying the session destroys its selector's table", () => {

@@ -1,11 +1,8 @@
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import MoreVert from '@mui/icons-material/MoreVert'
 import { observer } from 'mobx-react'
 
 import ShoppingCart from '../../HierarchicalTrackSelectorWidget/components/ShoppingCart.tsx'
-import { tableMenuItems } from './tableLayout.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { TrackTableModel } from '../trackTableModel.ts'
@@ -22,17 +19,15 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * a dialog table's own filter box and menu; the drawer's table shares the
- * track selector's header
+ * a dialog table's own filter box; the drawer's table shares the track
+ * selector's header
  */
 const FolderTableHeader = observer(function FolderTableHeader({
   model,
   table,
-  shown,
 }: {
   model: HierarchicalTrackSelectorModel
   table: TrackTableModel
-  shown: string[]
 }) {
   const { classes } = useStyles()
   const { matchCounts } = table
@@ -51,12 +46,6 @@ const FolderTableHeader = observer(function FolderTableHeader({
           table.setFilterText(value)
         }}
       />
-      <CascadingMenuButton
-        tooltip="Table options"
-        menuItems={() => tableMenuItems(table, shown)}
-      >
-        <MoreVert />
-      </CascadingMenuButton>
       <ShoppingCart model={model} />
     </div>
   )
