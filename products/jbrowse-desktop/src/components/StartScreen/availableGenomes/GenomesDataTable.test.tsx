@@ -116,9 +116,10 @@ test('lists the genomes of the selected group', async () => {
   expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
 })
 
-test('clicking a name launches its config and closes the dialog', async () => {
+test('launching passes the config url and closes the dialog', async () => {
   const { launch, onClose } = setup()
-  fireEvent.click(await screen.findByText('hg38'))
+  const launchLinks = await screen.findAllByText('launch')
+  fireEvent.click(launchLinks[0]!)
   expect(launch).toHaveBeenCalledWith([
     'https://jbrowse.org/ucsc/hg38/config.json',
   ])
@@ -142,7 +143,7 @@ test('a search covers every group, and the index waits for the first query', asy
   ).toBeTruthy()
 
   // launchable via a config url rebuilt from the accession alone
-  fireEvent.click(screen.getByText('giant panda'))
+  fireEvent.click(screen.getByText('launch'))
   expect(launch).toHaveBeenCalledWith([
     'https://jbrowse.org/hubs/genark/GCF/000/004/335/GCF_000004335.4/config.json',
   ])

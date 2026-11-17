@@ -74,11 +74,11 @@ give it becomes a new session on that assembly.
 
 **Browse hosted genomes** needs no files. A search by name, scientific name or
 accession covers every group (UCSC, GenArk and so on); with the box empty, the
-**Group** selector picks which one to browse. Click a genome's name to open it,
+**Group** selector picks which one to browse. Click **launch** to open a genome,
 and star it to add it to **Favorite genomes**. To open several in one session
 for comparative work, turn on **Enable multiple selection** in the ⋮ menu.
 
-<Figure src="/img/desktop-available-genomes-steps.png" caption="Browse hosted genomes (1) opens the table, and a genome's name (2) opens a session on it."/>
+<Figure src="/img/desktop-available-genomes-steps.png" caption="Browse hosted genomes (1) opens the table, and launch (2) opens a session on that genome."/>
 
 ## Adding tracks
 
