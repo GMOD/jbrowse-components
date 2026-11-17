@@ -88,6 +88,17 @@ test('an editable assembly offers the editor, which opens on that assembly', () 
   expect(editAssembly).toHaveBeenCalledWith('hg38')
 })
 
+test('the editor button is the quiet secondary one, not a primary action', () => {
+  const { getByTestId, getByText } = subject(mismatch, undefined, {
+    canEditAssembly: () => true,
+    editAssembly: jest.fn(),
+  })
+  fireEvent.click(getByTestId('track-refname-warning-t1'))
+  const { className } = getByText('Edit assembly')
+  expect(className).toContain('MuiButton-outlined')
+  expect(className).toContain('MuiButton-colorSecondary')
+})
+
 test('an assembly the user cannot edit points at the site admin and has no editor button', () => {
   const { getByTestId, getByText, queryByText } = subject(mismatch, undefined, {
     canEditAssembly: () => false,

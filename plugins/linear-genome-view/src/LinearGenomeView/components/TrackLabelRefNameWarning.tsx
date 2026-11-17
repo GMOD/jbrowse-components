@@ -93,7 +93,8 @@ const TrackLabelRefNameWarning = observer(function TrackLabelRefNameWarning({
           actions={
             editableAssembly !== undefined && session.editAssembly ? (
               <Button
-                variant="contained"
+                color="secondary"
+                variant="outlined"
                 onClick={() => {
                   setOpen(false)
                   session.editAssembly?.(editableAssembly)
