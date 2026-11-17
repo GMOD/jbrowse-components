@@ -44,6 +44,12 @@ function makeDisplay(
   return { display, view }
 }
 
+function offersClustering(display: { trackMenuItems: () => MenuItem[] }) {
+  return display
+    .trackMenuItems()
+    .some(item => 'label' in item && /cluster/i.test(String(item.label)))
+}
+
 const labelsOf = (item: MenuItem | undefined) =>
   item && 'subMenu' in item && Array.isArray(item.subMenu)
     ? item.subMenu.map(i => ('label' in i ? i.label : undefined))
@@ -140,10 +146,7 @@ describe('rows: { field: "group" }', () => {
   it('draws no tree and offers no clustering, a tree having no leaf per row', () => {
     const { display } = makeDisplay()
     expect(display.drawsTree).toBe(false)
-    const labels = display
-      .trackMenuItems()
-      .flatMap(item => ('label' in item ? [item.label] : []))
-    expect(labels.some(l => /cluster/i.test(l))).toBe(false)
+    expect(offersClustering(display)).toBe(false)
   })
 
   it('offers the grouping as a layout of its own in the Plot type menu', () => {
@@ -179,6 +182,7 @@ describe('rows: { field: "group" }', () => {
     expect(display.numRows).toBe(4)
     expect(display.sharesPanel).toBe(false)
     expect(display.drawsTree).toBe(true)
+    expect(offersClustering(display)).toBe(true)
     expect(display.markSources.map(s => s.row)).toEqual([0, 1, 2, 3])
   })
 })
