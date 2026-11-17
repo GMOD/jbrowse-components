@@ -10,7 +10,6 @@ import {
 } from '../../TrackTable/components/tableLayout.ts'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
 
-import type { TrackTableModel } from '../../TrackTable/trackTableModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -23,22 +22,18 @@ const useStyles = makeStyles()(theme => ({
 
 const TrackTable = observer(function TrackTable({
   model,
-  table,
 }: {
   model: HierarchicalTrackSelectorModel
-  table: TrackTableModel
 }) {
   const { classes } = useStyles()
+  const table = model.trackTable
   const [ref, { width }] = useMeasure('width')
   const shown = width ? shownFields(table, width) : ['name']
   return (
     <>
       <HierarchicalHeader
         model={model}
-        table={{
-          menuItems: () => tableMenuItems(table, shown),
-          matchCounts: table.matchCounts,
-        }}
+        tableMenuItems={() => tableMenuItems(table, shown)}
       />
       <div ref={ref} className={classes.body}>
         {width ? (

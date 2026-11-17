@@ -36,7 +36,7 @@ export function getRowStr(facet: string, row: RowFields) {
 }
 
 // Display label for a facet, shared by the grid column headers, the filter
-// sidebar and the Manage-columns menu. Strips the metadata prefix,
+// chips and the Manage-columns menu. Strips the metadata prefix,
 // disambiguating a metadata key that collides with a non-metadata column as
 // "x (from metadata)". Markup is stripped rather than rendered: every consumer
 // is a text-only context (a menu item label, a truncating header cell).

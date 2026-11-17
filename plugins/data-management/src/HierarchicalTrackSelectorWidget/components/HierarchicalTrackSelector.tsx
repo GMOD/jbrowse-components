@@ -72,8 +72,8 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
           {emptyListMessage[model.trackList]}
         </Typography>
       ) : null}
-      {model.showTable && model.trackTable ? (
-        <TrackTable model={model} table={model.trackTable} />
+      {model.showTable ? (
+        <TrackTable model={model} />
       ) : (
         <TrackTree model={model} />
       )}

@@ -69,20 +69,13 @@ const FacetChips = observer(function FacetChips({
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState<{ el: HTMLElement; field?: string }>()
-  const {
-    filterFacets,
-    leadingFacets,
-    openFacets,
-    filters,
-    facetCategoryCounts,
-    nonMetadataFieldSet,
-  } = table
-  const hasValues = (field: string) =>
-    (facetCategoryCounts.get(field)?.size ?? 0) > 0
-  const chips = filterFacets.filter(f => openFacets.has(f) && hasValues(f))
-  const more = filterFacets.filter(f => !leadingFacets.has(f) && hasValues(f))
-  const listed = open?.field ? [open.field] : more
-  return chips.length || more.length ? (
+  const { filterFacets, chipFacets, moreFacets, filters, nonMetadataFieldSet } =
+    table
+  const chips = filterFacets.filter(
+    f => chipFacets.includes(f) || f === open?.field,
+  )
+  const listed = open ? (open.field ? [open.field] : moreFacets) : []
+  return chips.length || moreFacets.length ? (
     <div className={classes.row}>
       {chips.map(field => {
         const label = facetLabel(field, nonMetadataFieldSet)
@@ -93,6 +86,8 @@ const FacetChips = observer(function FacetChips({
             size="small"
             variant="outlined"
             className={selected ? classes.active : undefined}
+            aria-haspopup="true"
+            aria-expanded={open?.field === field}
             label={
               selected ? (
                 selectionText(label, selected)
@@ -116,10 +111,12 @@ const FacetChips = observer(function FacetChips({
           />
         )
       })}
-      {more.length ? (
+      {moreFacets.length ? (
         <Chip
           size="small"
           variant="outlined"
+          aria-haspopup="true"
+          aria-expanded={!!open && !open.field}
           label={
             <span className={classes.chipLabel}>
               More filters
@@ -144,7 +141,7 @@ const FacetChips = observer(function FacetChips({
             <FacetFilter
               key={field}
               field={field}
-              vals={[...(facetCategoryCounts.get(field) ?? [])]}
+              vals={[...(table.facetCategoryCounts.get(field) ?? [])]}
               table={table}
               collapsible={!open?.field}
               defaultExpanded={filters.has(field)}

@@ -45,7 +45,7 @@ export function useVirtualRows(
     sync()
     el.addEventListener('scroll', sync, { passive: true })
     // resize keeps clientHeight current when the container grows/shrinks
-    // (e.g. window or filter-panel resize) without needing a scroll to refresh
+    // (e.g. a window or drawer resize) without needing a scroll to refresh
     const observer = new ResizeObserver(sync)
     observer.observe(el)
     return () => {

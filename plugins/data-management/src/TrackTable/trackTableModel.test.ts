@@ -296,7 +296,7 @@ describe('columns and facets', () => {
     expect(table.shownColumns(2)).toEqual(['name', 'kind', 'metadata.url'])
   })
 
-  test('the facet panel keeps a facet that is still filtering', () => {
+  test('the filter chips keep a facet that is still filtering', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
     expect(table.filterFacets).not.toContain('metadata.flag')
@@ -305,18 +305,18 @@ describe('columns and facets', () => {
     expect([...table.facetCategoryCounts.keys()]).toContain('metadata.flag')
   })
 
-  test('the first three default columns that group tracks, shown grouping columns and active filters start open', () => {
+  test('the first three default columns that group tracks, shown grouping columns and active filters get a chip', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
     table.setConfiguredColumns(['description', 'metadata.assay', 'adapter'])
-    expect([...table.openFacets]).toEqual([
+    expect(table.chipFacets).toEqual([
       'metadata.assay',
       'category',
       'metadata.lab',
     ])
     table.setColumnVisible('metadata.url', true)
     table.setFilter('metadata.flag', ['true'])
-    expect([...table.openFacets]).toEqual([
+    expect(table.chipFacets).toEqual([
       'metadata.assay',
       'category',
       'metadata.lab',

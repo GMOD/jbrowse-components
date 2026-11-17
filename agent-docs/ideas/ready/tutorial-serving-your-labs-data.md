@@ -25,6 +25,6 @@ low value: those questions have FAQ entries that rank in search, and someone who
 finds the answer never files.
 
 The genome-portal operator — hundreds or thousands of tracks, categories and
-metadata for the faceted selector, hubs and connections — is the same audience
+metadata for the track table, hubs and connections — is the same audience
 one tier up in scale, and genomes.jbrowse.org and jb2hubs are the existence
 proofs; the docs teach none of it.

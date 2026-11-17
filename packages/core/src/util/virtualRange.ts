@@ -15,7 +15,7 @@
  * container keeps its scroll position (a new region or track arriving under a
  * scrolled grid) otherwise yields `start > end` — an inverted range whose
  * consumers compute a negative canvas height and paint nothing until the next
- * scroll event. The faceted selector had already hit that and clamped for it;
+ * scroll event. The track table had already hit that and clamped for it;
  * the MAF sequence grid had the same math without the clamp, which is what
  * brought the two together here.
  */

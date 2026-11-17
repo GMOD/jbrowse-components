@@ -56,10 +56,10 @@ it. Plugins replace the folder dialog through
 
 The track table shows all tracks as a filterable table, opened from the Tree |
 Table toggle at the top of "Available tracks" or a folder's context menu. Every
-top-level key of a track's `metadata` object can be a column to filter or sort
-on, as in the
-[cookbook's metadata track](/docs/cookbook#instance-wide-settings).
-[](/docs/user_guides/basic_usage#track-table) covers the filter chips.
+top-level key of a track's `metadata` object can be a column to sort on, as in
+the [cookbook's metadata track](/docs/cookbook#instance-wide-settings), and each
+key that groups tracks also gets a filter chip
+([](/docs/user_guides/basic_usage#filtering-tracks)).
 
 Beside the name, the table shows as many columns as fit its width, with no
 sideways scroll. By default those are the fields that sort tracks into groups:

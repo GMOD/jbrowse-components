@@ -15,7 +15,6 @@ import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
 import { autorun, compareShallow, computed, observable, reaction } from 'mobx'
 
 import { trackTableModelFactory } from '../TrackTable/trackTableModel.ts'
-import { configureTrackTable } from '../TrackTable/useTrackTable.ts'
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { searchMatcher } from '../shared/searchText.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
@@ -28,7 +27,6 @@ import {
   trackNodeSourceFor,
 } from './util.ts'
 
-import type { TrackTableModel } from '../TrackTable/trackTableModel.ts'
 import type {
   CategoryMode,
   ResolvedCategoryMode,
@@ -243,10 +241,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       categoryMode: observable.map<string, CategoryMode>(),
       /**
        * #volatile
-       */
-      filterText: '',
-      /**
-       * #volatile
        * the view whose tracks the drawer shows as a table in place of the tree.
        * Keyed by view because every view's selector is this one widget, so
        * table mode opened for one view stays with it
@@ -266,12 +260,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       trackList: 'all' as TrackList,
       /**
        * #volatile
-       * the search, facet filters, sort and columns the tree and the table
-       * share, created on attach
+       * the filter box, facet filters, sort and columns the tree and the
+       * table share
        */
-      trackTable: undefined as TrackTableModel | undefined,
+      trackTable: trackTableModelFactory().create(),
     }))
     .views(self => ({
+      /**
+       * #getter
+       * the text in the filter box
+       */
+      get filterText() {
+        return self.trackTable.filterText
+      },
       /**
        * #getter
        * The track list this selector shows and writes into: the view itself,
@@ -460,13 +461,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       clearFilterText() {
-        self.filterText = ''
+        self.trackTable.setFilterText('')
       },
       /**
        * #action
        */
       setFilterText(newText: string) {
-        self.filterText = newText
+        self.trackTable.setFilterText(newText)
       },
       /**
        * #action
@@ -600,30 +601,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             ? session.sessionTracks.map(t => t.trackId)
             : [],
         )
-      },
-
-      /**
-       * #getter
-       * whether a track's searchText holds every term in the filter box and
-       * passes the facet filters; undefined while neither narrows the list
-       */
-      get keepTrack() {
-        const matches = searchMatcher(self.filterText)
-        const facetKept = self.trackTable?.facetKeptIds
-        return matches || facetKept
-          ? (t: TrackNodeSource) =>
-              (matches?.(t.searchText) ?? true) &&
-              (facetKept?.has(t.conf.trackId) ?? true)
-          : undefined
-      },
-
-      /**
-       * #getter
-       * a query or a facet filter narrows the list, which forces categories
-       * open (isFilterForcedOpen)
-       */
-      get filterActive() {
-        return this.keepTrack !== undefined || self.trackList !== 'all'
       },
     }))
     .views(self => {
@@ -775,6 +752,48 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * the trackIds whose searchText holds every term in the filter box;
+       * undefined when the box holds no terms
+       */
+      get textKeptIds() {
+        const matches = searchMatcher(self.filterText)
+        return matches
+          ? new Set(
+              self.allTracks
+                .flatMap(s => s.tracks)
+                .filter(t => matches(t.searchText))
+                .map(t => t.conf.trackId),
+            )
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * whether a track holds every term in the filter box and passes the
+       * facet filters; undefined while neither narrows the list
+       */
+      get keepTrack() {
+        const { textKeptIds } = self
+        const { facetKeptIds } = self.trackTable
+        return textKeptIds || facetKeptIds
+          ? (t: TrackNodeSource) =>
+              (textKeptIds?.has(t.conf.trackId) ?? true) &&
+              (facetKeptIds?.has(t.conf.trackId) ?? true)
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * a query or a facet filter narrows the list, which forces categories
+       * open (isFilterForcedOpen)
+       */
+      get filterActive() {
+        return self.keepTrack !== undefined || self.trackList !== 'all'
+      },
       /**
        * #getter
        * a group is kept even when no track in it survives the filter, so an
@@ -1027,11 +1046,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       }
 
       return {
+        beforeDestroy() {
+          destroy(self.trackTable)
+        },
         afterAttach() {
-          const trackTable = trackTableModelFactory().create()
-          configureTrackTable(trackTable, self)
-          trackTable.setFilterTextSource(() => self.filterText)
-          self.trackTable = trackTable
+          const { trackTable } = self
+          trackTable.configure(self)
+          trackTable.setTextKeptIdsSource(() =>
+            self.showTable ? undefined : self.textKeptIds,
+          )
           addDisposer(
             self,
             reaction(
@@ -1047,9 +1070,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               { fireImmediately: true, name: 'TrackSelectorTableSource' },
             ),
           )
-          addDisposer(self, () => {
-            destroy(trackTable)
-          })
           addDisposer(
             self,
             autorun(loadFromLocalStorage, { name: 'TrackSelectorInit' }),

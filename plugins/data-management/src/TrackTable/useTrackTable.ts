@@ -1,41 +1,11 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { useCreateOnce, useFinalUnmount } from '@jbrowse/core/util/hooks'
 import { destroy } from '@jbrowse/mobx-state-tree'
 
-import { trackTypeShortName } from './tableUtil.ts'
 import { trackTableModelFactory } from './trackTableModel.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
-import type { TrackTableModel } from './trackTableModel.ts'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-/**
- * Gives a table the config's `hierarchical.table.columns` and the track type
- * names its kind column shows.
- */
-export function configureTrackTable(
-  table: TrackTableModel,
-  node: IAnyStateTreeNode,
-) {
-  const columns: unknown = getConf(getSession(node), [
-    'hierarchical',
-    'table',
-    'columns',
-  ])
-  table.setConfiguredColumns(
-    Array.isArray(columns)
-      ? columns.filter((c): c is string => typeof c === 'string')
-      : [],
-  )
-  const names = new Map(
-    getEnv(node)
-      .pluginManager.getTrackElements()
-      .map(t => [t.name, trackTypeShortName(t.displayName)]),
-  )
-  table.setTrackTypeName(type => names.get(type) ?? type)
-}
 
 /**
  * A table of its own for the lifetime of a dialog, destroyed on unmount. The
@@ -60,7 +30,7 @@ export function useTrackTable(
   const table = useCreateOnce(() => {
     const ret = trackTableModelFactory().create()
     ret.setTrackSource(getTracks, getSession(model), model.assemblyNames)
-    configureTrackTable(ret, model)
+    ret.configure(model)
     return ret
   })
   useFinalUnmount(() => {

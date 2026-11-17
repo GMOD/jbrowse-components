@@ -1,6 +1,6 @@
 ---
 name: the-track-list-config-speaks-the-grammar
-description: The track selector's config (`configuration.hierarchical`) as grammar roles, sort, group, columns and filter as field objects, in place of its booleans and the facet panel's private filter map. Read before adding a slot to `hierarchical` or a starting filter to the track table.
+description: The track selector's config (`configuration.hierarchical`) as grammar roles, sort, group, columns and filter as field objects, in place of its booleans and the filter chips' private filter map. Read before adding a slot to `hierarchical` or a starting filter to the track table.
 ---
 
 # The track list config speaks the grammar
@@ -27,7 +27,7 @@ idea". Parked until he wants it; nothing below is built.
 ```
 
 Two booleans for sort, three for collapse, a folder list keyed by category
-name, and one field list (ADR-269). The table's facet panel keeps its own
+name, and one field list (ADR-269). The filter chips (ADR-271) keep their own
 `Map<field, string[]>` of checked values, which no config or session can
 state.
 
@@ -55,7 +55,7 @@ groups, shows and filters by, each as a `field` object:
 - **`columns`**: `table.columns` as it is (ADR-269); a list of field paths.
 - **`filter`**: `FieldPredicate[]` (`packages/core/src/util/fieldPredicate.ts`,
   ADR-238), the same predicate the displays filter with. A facet selection is
-  `{ field, oneOf }`, so the facet panel's private map becomes this list, a
+  `{ field, oneOf }`, so the filter chips' private map becomes this list, a
   config can state a starting filter, and a session can save one.
 
 ## Open questions

@@ -60,7 +60,7 @@ export function filterRowsByFacets<T extends Row>(
 }
 
 /**
- * Per-facet category counts for the filter sidebar. Each facet is counted over
+ * Per-facet value counts for the filter chips. Each facet is counted over
  * the rows that pass every *other* active facet, but not its own selection, so
  * its options keep showing the counts you'd get by switching to them. This is
  * order-independent: a facet's counts reflect all other active filters

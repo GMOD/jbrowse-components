@@ -41,7 +41,7 @@ on the way back, and the tree could not filter by metadata at all.
 - **One header.** The drawer's table draws the tree's header (☰ menu, cart,
   filter box, chips); in table mode the ☰ menu's Sort and Collapse rows give
   way to "Add tracks to selection…" and Manage columns.
-- **A folder dialog keeps a table of its own** (`useFacetedModel`), with its
+- **A folder dialog keeps a table of its own** (`useTrackTable`), with its
   own filter box and the same chips, since `TrackSelector-folderDialog` is a
   documented extension point.
 

@@ -20,37 +20,30 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface MatchCounts {
-  matched: number
-  total: number
-}
-
 /**
  * The filter box, menu and filter chips the tree and the table share. The
- * table passes its own menu rows and counts, since its text search also
- * covers the columns it shows.
+ * table passes its own menu rows, which depend on the columns that fit.
  */
 const HierarchicalTrackSelectorHeader = observer(
   function HierarchicalTrackSelectorHeader({
     model,
-    table,
+    tableMenuItems,
   }: {
     model: HierarchicalTrackSelectorModel
-    table?: {
-      menuItems: () => MenuItem[]
-      matchCounts?: MatchCounts
-    }
+    tableMenuItems?: () => MenuItem[]
   }) {
     const { classes } = useStyles()
     const { trackTable } = model
-    const matchCounts = table ? table.matchCounts : model.matchCounts
+    const matchCounts = model.showTable
+      ? trackTable.matchCounts
+      : model.matchCounts
     return (
       <>
         <div
           className={classes.toolbar}
           data-testid="hierarchical_track_selector"
         >
-          <HamburgerMenu model={model} viewMenuItems={table?.menuItems} />
+          <HamburgerMenu model={model} viewMenuItems={tableMenuItems} />
           <ShoppingCart model={model} />
           <ClearableSearchField
             className={classes.searchBox}
@@ -66,7 +59,7 @@ const HierarchicalTrackSelectorHeader = observer(
             }}
           />
         </div>
-        {trackTable ? <FacetChips table={trackTable} /> : null}
+        <FacetChips table={trackTable} />
       </>
     )
   },

@@ -1,5 +1,8 @@
+import { getConf } from '@jbrowse/core/configuration'
 import {
   coarseStripHTML,
+  getEnv,
+  getSession,
   localStorageGetJSON,
   localStorageSetJSON,
   measureGridWidth,
@@ -24,14 +27,14 @@ import {
   filterRowsByText,
   rowSearchText,
 } from './facetFilters.ts'
-import { getRootKeys } from './tableUtil.ts'
+import { getRootKeys, trackTypeShortName } from './tableUtil.ts'
 
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
-// how many of the default columns' facets start open
-const OPEN_FACETS = 3
+// how many of the default columns' facets get a chip of their own
+const LEADING_FACETS = 3
 
 /**
  * A column the user showed or hid in Manage columns, overriding whether the
@@ -137,10 +140,11 @@ export function trackTableModelFactory() {
       useShoppingCart: false,
       /**
        * #volatile
-       * where the search text comes from when another model owns it: the
-       * drawer's tree and table share one filter box
+       * the trackIds the tree's text search keeps while the drawer shows the
+       * tree, which matches only what a tree row shows; the facet counts
+       * follow it. Undefined while the table does the search
        */
-      getFilterText: undefined as (() => string) | undefined,
+      getTextKeptIds: undefined as (() => Set<string> | undefined) | undefined,
       /**
        * #volatile
        */
@@ -215,9 +219,24 @@ export function trackTableModelFactory() {
       },
       /**
        * #action
+       * reads the config's `hierarchical.table.columns` and the track type
+       * names the kind column shows
        */
-      setTrackTypeName(trackTypeName: (type: string) => string) {
-        self.trackTypeName = trackTypeName
+      configure(node: IAnyStateTreeNode) {
+        const columns: unknown = getConf(getSession(node), [
+          'hierarchical',
+          'table',
+          'columns',
+        ])
+        self.configuredColumns = Array.isArray(columns)
+          ? columns.filter((c): c is string => typeof c === 'string')
+          : []
+        const names = new Map(
+          getEnv(node)
+            .pluginManager.getTrackElements()
+            .map(t => [t.name, trackTypeShortName(t.displayName)]),
+        )
+        self.trackTypeName = type => names.get(type) ?? type
       },
       /**
        * #action
@@ -251,8 +270,8 @@ export function trackTableModelFactory() {
       /**
        * #action
        */
-      setFilterTextSource(getFilterText: () => string) {
-        self.getFilterText = getFilterText
+      setTextKeptIdsSource(getTextKeptIds: () => Set<string> | undefined) {
+        self.getTextKeptIds = getTextKeptIds
       },
       /**
        * #action
@@ -274,13 +293,6 @@ export function trackTableModelFactory() {
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * the text in the filter box
-       */
-      get query() {
-        return self.getFilterText?.() ?? self.filterText
-      },
       /**
        * #getter
        * Builds row objects from track configs. Cached and only recomputes when
@@ -329,10 +341,13 @@ export function trackTableModelFactory() {
       },
       /**
        * #getter
-       * Text-filtered rows. Cheap string filtering on already-built allRows.
+       * the rows the open mode's text search keeps
        */
       get rows() {
-        return filterRowsByText(self.allRows, self.query)
+        const kept = self.getTextKeptIds?.()
+        return kept
+          ? self.allRows.filter(row => kept.has(row.id))
+          : filterRowsByText(self.allRows, self.filterText)
       },
     }))
     .views(self => ({
@@ -369,7 +384,7 @@ export function trackTableModelFactory() {
        * #getter
        * The fields that sort tracks into groups (see groupsTracks), the ones
        * most tracks have first: what the table shows beside the name when the
-       * config names no columns, and what the facet panel lists.
+       * config names no columns, and what the filter chips offer.
        */
       get groupingFields() {
         const rows = self.columnRows
@@ -455,12 +470,12 @@ export function trackTableModelFactory() {
       /**
        * #getter
        * how many listed tracks the filter box and the facet filters keep, of
-       * how many; undefined while neither narrows the list
+       * how many; undefined while neither is set
        */
       get matchCounts() {
-        const { length } = self.allRows
-        const matched = this.filteredRows.length
-        return matched < length ? { matched, total: length } : undefined
+        return self.filters.size || searchMatcher(self.filterText)
+          ? { matched: this.filteredRows.length, total: self.allRows.length }
+          : undefined
       },
     }))
     .views(self => ({
@@ -480,7 +495,7 @@ export function trackTableModelFactory() {
       },
       /**
        * #getter
-       * The facet panel's facets, in an order that never changes as filters
+       * The filter chips' facets, in an order that never changes as filters
        * are set: the default columns that group tracks, the other grouping
        * fields, then any field still filtering that no longer groups.
        */
@@ -497,16 +512,16 @@ export function trackTableModelFactory() {
       /**
        * #getter
        * The facets offered first: the first three default columns that group
-       * tracks and any grouping column the user showed. The rest start
-       * collapsed, so a hub with many metadata keys offers them all without
-       * listing every value of each.
+       * tracks and any grouping column the user showed, each with a chip of
+       * its own. The rest wait behind "More filters", so a hub with many
+       * metadata keys offers them all without a chip for each.
        */
       get leadingFacets() {
         const grouping = new Set(self.groupingFields)
         return new Set([
           ...self.defaultColumns
             .filter(f => grouping.has(f))
-            .slice(0, OPEN_FACETS),
+            .slice(0, LEADING_FACETS),
           ...self.chosenColumns.shown.filter(f => grouping.has(f)),
         ])
       },
@@ -514,16 +529,48 @@ export function trackTableModelFactory() {
     .views(self => ({
       /**
        * #getter
-       * the facets that start open: the leading ones and any still filtering
+       * the facets some listed track has a value for, or that are filtering,
+       * whatever the filter box holds, so a chip never comes and goes while
+       * typing
        */
-      get openFacets() {
-        return new Set([...self.leadingFacets, ...self.filters.keys()])
+      get presentFacets() {
+        return new Set(
+          self.filterFacets.filter(
+            f =>
+              self.filters.has(f) ||
+              self.allRows.some(row => getRowStr(f, row) !== ''),
+          ),
+        )
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * Per-facet category counts for the filter sidebar. Cached by MobX so it
+       * the facets with a chip of their own: the leading ones and any still
+       * filtering
+       */
+      get chipFacets() {
+        return self.filterFacets.filter(
+          f =>
+            self.presentFacets.has(f) &&
+            (self.leadingFacets.has(f) || self.filters.has(f)),
+        )
+      },
+      /**
+       * #getter
+       * the facets "More filters" lists: every one that is not leading, so a
+       * facet keeps its place there when it starts or stops filtering
+       */
+      get moreFacets() {
+        return self.filterFacets.filter(
+          f => self.presentFacets.has(f) && !self.leadingFacets.has(f),
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Per-facet value counts for the filter chips. Cached by MobX so it
        * recomputes only when rows or filters change, not on every render.
        */
       get facetCategoryCounts() {
@@ -566,9 +613,9 @@ export function trackTableModelFactory() {
        * every word first, each group in natural order.
        */
       get sortedRows() {
-        const { sortAscending, sortField, filteredRows, query } = self
+        const { sortAscending, sortField, filteredRows, filterText } = self
         if (!sortField) {
-          const nameMatches = searchMatcher(query)
+          const nameMatches = searchMatcher(filterText)
           return nameMatches
             ? [
                 ...filteredRows.filter(r => nameMatches(r.nameSearchText)),
@@ -606,6 +653,7 @@ export function trackTableModelFactory() {
       },
     }))
 }
-export type TrackTableStateModel = ReturnType<typeof trackTableModelFactory>
-export type TrackTableModel = Instance<TrackTableStateModel>
+export type TrackTableModel = Instance<
+  ReturnType<typeof trackTableModelFactory>
+>
 export type TrackRow = TrackTableModel['filteredRows'][0]

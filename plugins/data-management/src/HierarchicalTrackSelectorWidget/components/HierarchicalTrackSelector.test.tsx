@@ -1660,14 +1660,6 @@ test('filtering reaches tracks inside a folder or a collapsed category', () => {
   expect(trackNames(model)).not.toContain('H3K4me3')
 })
 
-function trackTableOf(model: HierarchicalTrackSelectorModel) {
-  const { trackTable } = model
-  if (!trackTable) {
-    throw new Error('the track selector has no table')
-  }
-  return trackTable
-}
-
 test('the tree and the table share one filter box and one set of facet filters', () => {
   const session = addTestDataWithDeepCategories(
     createTestSession({ adminMode: true }),
@@ -1679,7 +1671,7 @@ test('the tree and the table share one filter box and one set of facet filters',
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const table = trackTableOf(model)
+  const table = model.trackTable
 
   table.setFilter('category', ['Epigenomics, Histone Marks'])
   expect(trackNames(model).toSorted()).toEqual(['H3K27ac', 'H3K4me3'])

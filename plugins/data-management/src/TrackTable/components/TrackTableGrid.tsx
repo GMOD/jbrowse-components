@@ -52,18 +52,18 @@ const TrackTableGrid = observer(function TrackTableGrid({
     sortedRows,
     sortField,
     sortAscending,
-    query,
+    filterText,
     filters,
     initialWidths,
   } = table
 
   const parentRef = useRef<HTMLDivElement>(null)
-  useSearchHighlight(parentRef, query, 'jbrowse-table-search')
+  useSearchHighlight(parentRef, filterText, 'jbrowse-table-search')
   const { items, leadingGap, trailingGap, clientWidth } = useVirtualRows(
     parentRef,
     sortedRows.length,
     ROW_HEIGHT,
-    JSON.stringify([query, sortField, sortAscending, [...filters]]),
+    JSON.stringify([filterText, sortField, sortAscending, [...filters]]),
   )
   const available = (clientWidth || width) - CHECKBOX_WIDTH
   const { colWidths, onResizeStart } = useColumnResize(

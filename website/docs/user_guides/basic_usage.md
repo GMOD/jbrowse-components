@@ -212,6 +212,11 @@ shows how many tracks are kept, of how many, such as "6 of 800".
 - **`"quoted words"`** must appear together, as typed.
 - **`-word`** drops the tracks that contain it: `liftover -mm10`.
 
+Under the filter box, a chip for each of the first few fields that group tracks
+(and "More filters" for the rest) lists that field's values with their track
+counts. Checking values keeps only the tracks with one of them, in the tree and
+the table alike. An active chip names what it keeps, and its × clears it.
+
 ## Favorite and recently used tracks
 
 Mark favorites from the Track menu. The All | Favorites | Recent toggle at the
@@ -363,12 +368,9 @@ starts on the right.
 
 The Tree | Table toggle at the top of "Available tracks" shows all tracks as a
 filterable table, with the tracks whose name matches the filter box listed
-first. Under the filter box, a chip for each of the first few fields that group
-tracks (and "More filters" for the rest) lists that field's values with their
-track counts; checking values keeps only the tracks with one of them, in the
-tree and the table alike. An active chip names what it keeps, and its × clears
-it. In table mode, the ☰ menu's Manage columns shows or hides any column.
-Tracks with `metadata` fields get extra columns:
+first. The filter chips carry over between the tree and the table. In table
+mode, the ☰ menu's Manage columns shows or hides any column. Tracks with
+`metadata` fields get extra columns:
 
 ```json
 {

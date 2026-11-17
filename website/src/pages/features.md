@@ -146,8 +146,8 @@ For the complete track-to-display mapping, see the
   tracks and rides along in a shared link
 - **Track hubs and connections** - load UCSC track hubs and JBrowse connections
   by URL
-- **Bulk and faceted track management** - add many tracks at once, and filter,
-  sort, and multi-select in the faceted track selector
+- **Bulk track management** - add many tracks at once, filter them by their
+  metadata, and sort and multi-select them in the track selector's table
 - **Determinate download progress** - index, BigWig, and tabix fetches report
   real progress instead of an indeterminate spinner
 - **Pre-loaded genomes** - launch any of a

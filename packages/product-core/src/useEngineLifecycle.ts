@@ -8,7 +8,7 @@ import type { EmbeddedRoot } from './destroyViewState.ts'
 
 // `useCreateOnce` is core's, and is re-exported rather than wrapped: an engine
 // is only the most expensive thing StrictMode's double-invoked state
-// initializer can build twice, not the only one. The faceted track selector's
+// initializer can build twice, not the only one. The track table's
 // MST model hit the same trap in a plugin, which cannot reach this package.
 export { useCreateOnce, useCreateOnceAsync } from '@jbrowse/core/util/hooks'
 
