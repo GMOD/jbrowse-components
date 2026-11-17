@@ -102,7 +102,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
               model.clearRecentlyUsed()
             },
           },
-          ...(viewMenuItems ? viewMenuItems() : treeMenuItems(model)),
+          ...(viewMenuItems?.() ?? []),
         ]}
       >
         <MenuIcon />
@@ -135,58 +135,5 @@ const HamburgerMenu = observer(function HamburgerMenu({
     </>
   )
 })
-
-function treeMenuItems(model: HierarchicalTrackSelectorModel): MenuItem[] {
-  return [
-    {
-      label: 'Sort',
-      subMenu: [
-        {
-          label: 'Sort tracks by name',
-          type: 'checkbox',
-          checked: model.activeSortTrackNames,
-          onClick: () => {
-            model.setSortTrackNames(!model.activeSortTrackNames)
-          },
-        },
-        {
-          label: 'Sort categories by name',
-          type: 'checkbox',
-          checked: model.activeSortCategories,
-          onClick: () => {
-            model.setSortCategories(!model.activeSortCategories)
-          },
-        },
-      ],
-    },
-    {
-      label: 'Collapse',
-      subMenu: [
-        ...(model.hasAnySubcategories
-          ? [
-              {
-                label: 'Collapse subcategories',
-                onClick: () => {
-                  model.collapseSubCategories()
-                },
-              },
-            ]
-          : []),
-        {
-          label: 'Collapse top-level categories',
-          onClick: () => {
-            model.collapseTopLevelCategories()
-          },
-        },
-        {
-          label: 'Expand all categories',
-          onClick: () => {
-            model.expandAllCategories()
-          },
-        },
-      ],
-    },
-  ]
-}
 
 export default HamburgerMenu

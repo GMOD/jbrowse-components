@@ -72,8 +72,9 @@ interface Node {
 // Collects IDs of subcategories that contain tracks, not just more folders.
 // `obj` is the group level (depth 0, e.g. the "Tracks" group), so the user's
 // top-level categories are depth 1 and true subcategories are depth > 1 — those
-// are what "Collapse subcategories" targets, leaving top-level categories
-// (which collapseTopLevelCategories handles) alone even when they hold tracks.
+// are what `defaultCollapsed.subCategories` targets, leaving top-level
+// categories (`defaultCollapsed.topLevelCategories`) alone even when they hold
+// tracks.
 export function findSubCategories(obj: Node[]) {
   const paths: string[] = []
   function collect(nodes: Node[], depth: number) {

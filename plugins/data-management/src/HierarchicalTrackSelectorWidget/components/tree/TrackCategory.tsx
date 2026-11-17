@@ -100,12 +100,14 @@ const useStyles = makeStyles()(theme => ({
 
 function subcategoryCollapseMenuItems(
   model: HierarchicalTrackSelectorModel,
-  subcategoryIds: string[],
+  item: TreeCategoryNode,
 ) {
+  const subcategoryIds = getAllSubcategories(item)
+  const suffix = item.nestingLevel === 0 ? '' : ' subcategories'
   return subcategoryIds.length > 0
     ? [
         {
-          label: 'Collapse all subcategories',
+          label: `Collapse all${suffix}`,
           onClick: () => {
             for (const id of subcategoryIds) {
               model.setCategoryCollapsed(id, true)
@@ -113,7 +115,7 @@ function subcategoryCollapseMenuItems(
           },
         },
         {
-          label: 'Expand all subcategories',
+          label: `Expand all${suffix}`,
           onClick: () => {
             for (const id of subcategoryIds) {
               model.setCategoryCollapsed(id, false)
@@ -301,7 +303,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
               },
             },
             ...categoryTrackMenuItems(model, item),
-            ...subcategoryCollapseMenuItems(model, getAllSubcategories(item)),
+            ...subcategoryCollapseMenuItems(model, item),
           ]}
           className={classes.contrastColor}
           stopPropagation

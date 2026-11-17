@@ -307,25 +307,29 @@ test('configuration preference - sorting track names', async () => {
   ).toMatchSnapshot()
 })
 
-test('localstorage preference - sorting categories', async () => {
-  localStorage.setItem('sortCategories', 'true')
+// the tree's order is the config's alone: a choice an older build stored under
+// these keys once overrode every config on the origin, a hub's included
+test('a stored sort choice does not override the config', async () => {
+  localStorage.setItem('sortTrackNames', 'false')
+  localStorage.setItem('sortCategories', 'false')
   const session = createTestSession({
     jbrowseConfig: {
       tracks: shuffle(conf.tracks),
+      configuration: {
+        hierarchical: {
+          sort: {
+            trackNames: true,
+            categories: true,
+          },
+        },
+      },
     },
   })
-
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
-      {
-        assemblyName: 'volvox',
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-      },
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
     ],
   })
-
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
@@ -335,48 +339,10 @@ test('localstorage preference - sorting categories', async () => {
     </ThemeProvider>,
   )
 
-  expect(
-    (await findAllByTestId(/htsCategory/)).map(e => e.textContent),
-  ).toMatchSnapshot()
-})
-
-test('localstorage preference - sorting track names', async () => {
-  // use localstorage preference
-  localStorage.setItem('sortTrackNames', 'true')
-  const session = createTestSession()
-
-  for (const track of shuffle(conf.tracks)) {
-    session.publishTrackConf(track)
-  }
-
-  const firstView = session.addView('LinearGenomeView', {
-    displayedRegions: [
-      {
-        assemblyName: 'volvox',
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-      },
-    ],
-  })
-
-  const model =
-    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-
-  const { findAllByTestId } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
-    </ThemeProvider>,
+  const categories = (await findAllByTestId(/htsCategory-/)).map(
+    e => e.textContent,
   )
-
-  const list = await findAllByTestId('htsTrackLabel', {
-    exact: false,
-  })
-  const trackNameList = []
-  for (const entry of list) {
-    trackNameList.push(entry.textContent)
-  }
-  expect(trackNameList).toMatchSnapshot()
+  expect(categories).toEqual(['Tracks', ...categories.slice(1).sort()])
 })
 
 test('ctrl+click toggles track selection', async () => {
@@ -822,11 +788,6 @@ test('category collapse and expand', async () => {
   // toggle category
   model.toggleCategory('Tracks')
   expect(model.categoryMode.get('Tracks')).toBeUndefined()
-
-  // expand all categories
-  model.setCategoryCollapsed('Tracks', true)
-  model.expandAllCategories()
-  expect(model.categoryMode.size).toBe(0)
 })
 
 // collapsed and folder are the same slot, so a category that was collapsed
@@ -875,30 +836,6 @@ test('bulk collapse leaves folders alone', () => {
 
   model.toggleCategory(histone)
   expect(model.categoryMode.get(histone)).toBe('folder')
-})
-
-// expanding is about the accordions; a folder is a mode the user chose and
-// isn't something "expand all categories" should silently undo
-test('expandAllCategories leaves folders alone', () => {
-  const session = addTestDataWithDeepCategories(
-    createTestSession({ adminMode: true }),
-  )
-  const firstView = session.addView('LinearGenomeView', {
-    displayedRegions: [
-      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
-    ],
-  })
-  const model =
-    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-
-  model.setFolderCategory('Tracks-Epigenomics,Histone Marks', true)
-  model.setCategoryCollapsed('Tracks-Epigenomics', true)
-  model.expandAllCategories()
-
-  expect(model.categoryMode.get('Tracks-Epigenomics')).toBeUndefined()
-  expect(model.categoryMode.get('Tracks-Epigenomics,Histone Marks')).toBe(
-    'folder',
-  )
 })
 
 // -------------------------- Track table model tests -
@@ -1708,14 +1645,14 @@ test('collapseSubCategories vs collapseTopLevelCategories scope', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
-  model.expandAllCategories()
+  model.clearCategoryModes()
   model.collapseSubCategories()
   expect(model.categoryMode.get('Tracks-Epigenomics,Histone Marks')).toBe(
     'collapsed',
   )
   expect(model.categoryMode.get('Tracks-Epigenomics')).toBeUndefined()
 
-  model.expandAllCategories()
+  model.clearCategoryModes()
   model.collapseTopLevelCategories()
   expect(model.categoryMode.get('Tracks-Epigenomics')).toBe('collapsed')
   expect(

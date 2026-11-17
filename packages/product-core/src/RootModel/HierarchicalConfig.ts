@@ -12,9 +12,9 @@ export function HierarchicalConfigSchemaFactory() {
     sort: ConfigurationSchema('hierarchicalSort', {
       /**
        * #slot configuration.hierarchical.sort.trackNames
-       * start the track selector with tracks sorted alphabetically inside each
-       * category rather than in config order. Only the initial state — the
-       * selector's own "Sort track names" toggle overrides it from then on
+       * sort the track selector's tree alphabetically inside each category
+       * rather than in config order. The track table sorts by its column
+       * headers instead
        */
       trackNames: {
         type: 'boolean',
@@ -22,9 +22,8 @@ export function HierarchicalConfigSchemaFactory() {
       },
       /**
        * #slot configuration.hierarchical.sort.categories
-       * start the track selector with categories sorted alphabetically rather
-       * than in config order. Only the initial state — the selector's own
-       * "Sort categories" toggle overrides it from then on
+       * sort the track selector's tree categories alphabetically rather than
+       * in config order
        */
       categories: {
         type: 'boolean',

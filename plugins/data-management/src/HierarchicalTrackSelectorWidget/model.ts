@@ -47,8 +47,6 @@ const defaultItemHeight = 22
 const categoryItemHeight = 40
 const overscan = 20
 const MAX_RECENTLY_USED = 10
-const sortTrackNamesK = 'sortTrackNames'
-const sortCategoriesK = 'sortCategories'
 
 // the group holding the config's own tracks, as opposed to a connection's
 const mainGroupId = 'Tracks'
@@ -221,20 +219,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       selectedTrackIds: [] as string[],
       /**
        * #volatile
-       */
-      sortTrackNames: localStorageGetJSON<boolean | undefined>(
-        sortTrackNamesK,
-        undefined,
-      ),
-      /**
-       * #volatile
-       */
-      sortCategories: localStorageGetJSON<boolean | undefined>(
-        sortCategoriesK,
-        undefined,
-      ),
-      /**
-       * #volatile
        * per-category rendering mode; absent means expanded. Collapsed and
        * folder are mutually exclusive by construction, so un-foldering a
        * category can't reveal a stale collapse underneath it
@@ -342,18 +326,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       }
     })
     .actions(self => ({
-      /**
-       * #action
-       */
-      setSortTrackNames(val: boolean) {
-        self.sortTrackNames = val
-      },
-      /**
-       * #action
-       */
-      setSortCategories(val: boolean) {
-        self.sortCategories = val
-      },
       /**
        * #action
        */
@@ -530,16 +502,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       */
-      expandAllCategories() {
-        for (const [id, mode] of self.categoryMode) {
-          if (mode === 'collapsed') {
-            self.categoryMode.delete(id)
-          }
-        }
-      },
-      /**
-       * #action
        * shows or hides a track, recording one it showed as recently used
        */
       async toggleTrack(trackId: string) {
@@ -564,25 +526,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
 
     .views(self => ({
-      /**
-       * #getter
-       */
-      get activeSortTrackNames() {
-        return (
-          self.sortTrackNames ??
-          getConf(getSession(self), ['hierarchical', 'sort', 'trackNames'])
-        )
-      },
-      /**
-       * #getter
-       */
-      get activeSortCategories() {
-        return (
-          self.sortCategories ??
-          getConf(getSession(self), ['hierarchical', 'sort', 'categories'])
-        )
-      },
-
       /**
        * #getter
        * the tracks this view can be offered — its assemblies' sequence tracks,
@@ -622,8 +565,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               isSessionTrack: sessionTrackIds.has(t.trackId),
             }),
           ),
-          self.activeSortTrackNames,
-          self.activeSortCategories,
+          getConf(session, ['hierarchical', 'sort', 'trackNames']),
+          getConf(session, ['hierarchical', 'sort', 'categories']),
         )
       }
       return {
@@ -969,16 +912,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         }
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get hasAnySubcategories() {
-        return self.allTracks.some(group =>
-          group.tracks.some(t => t.categories.length > 1),
-        )
-      },
-    }))
     .actions(self => {
       // recentlyUsed and the category modes are scoped to the assemblies and
       // view type, known only once the view resolves. They save only into the
@@ -1096,12 +1029,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           )
           persist(() => {
             localStorageSetJSON(favoritesK(), self.favorites)
-          })
-          persist(() => {
-            localStorageSetJSON(sortTrackNamesK, self.sortTrackNames)
-          })
-          persist(() => {
-            localStorageSetJSON(sortCategoriesK, self.sortCategories)
           })
           persist(() => {
             const { recentlyUsed, assemblyNames } = self
