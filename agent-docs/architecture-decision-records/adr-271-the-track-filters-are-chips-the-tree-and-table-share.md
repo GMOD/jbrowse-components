@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The track selector's facet filters are a row of chips under its filter box, shown in tree and table mode alike; one table state per selector holds the facets, sort and columns and reads the selector's filter box, and the tree shows only the tracks its facets keep. The side facet panel and its toggle go"
+summary: "The track selector's facet filters are a chip row under its filter box, in tree and table mode alike; one table state per selector holds facets, sort and columns, and the tree shows only the tracks its facets keep. The side panel goes"
 ---
 
 # ADR-271: The track filters are chips the tree and the table share

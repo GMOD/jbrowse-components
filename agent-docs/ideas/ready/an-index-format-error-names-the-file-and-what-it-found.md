@@ -1,6 +1,6 @@
 ---
 name: an-index-format-error-names-the-file-and-what-it-found
-description: The gmod libraries throw a bare "Not a BAI file" or "invalid .crai index file" with no file name and no hint of what they read instead, so JBrowse's `loadErrorHint` writes the sentence itself. Rewording the throws upstream lets every caller, JBrowse included, drop that sentence.
+description: The gmod libraries throw a bare "Not a BAI file" or "invalid .crai index file" naming neither the file nor what they read, so JBrowse's `loadErrorHint` writes the sentence itself. Rewording the throws upstream lets every caller drop it.
 ---
 
 # An index format error names the file and what it found

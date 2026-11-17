@@ -1,6 +1,6 @@
 ---
 name: a-chr-prefix-mismatch-could-alias-itself
-description: A hosted hg38 config plus a user's 1/2/3 BAM is the commonest refName mismatch, and a web non-admin cannot add the alias that fixes it. When the two sets differ only by a chr prefix (MT against chrM too), the browser could alias them itself; where the alias lives and whether it is announced are the call.
+description: A hosted hg38 config plus a user's 1/2/3 BAM is the commonest refName mismatch, and a web non-admin cannot add the fixing alias. The browser could alias a chr-prefix-only difference itself; where the alias lives and whether it is announced is the call.
 ---
 
 # A chr-prefix mismatch could alias itself

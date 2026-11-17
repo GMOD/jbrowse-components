@@ -1,6 +1,6 @@
 ---
 name: a-track-nothing-has-read-is-invisible-to-get-referring
-description: The MST fork's `walk` skips children it has not instantiated yet, so `getReferring` misses a view's track entry nothing has read, and deleting that track leaves the entry behind to fail on `Could not resolve trackId`. Fixing it in the fork's walk or in ReferenceManagement both mean instantiating what lazy creation exists to skip; which, and at what cost, is the call.
+description: The MST fork's `walk` skips children not yet instantiated, so `getReferring` misses a track entry nothing has read, and deleting the track leaves it failing on `Could not resolve trackId`. Either fix instantiates what lazy creation skips; the call is which.
 ---
 
 # A track nothing has read is invisible to getReferring

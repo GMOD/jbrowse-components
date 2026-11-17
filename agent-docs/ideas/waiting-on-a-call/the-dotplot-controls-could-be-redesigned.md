@@ -1,6 +1,6 @@
 ---
 name: the-dotplot-controls-could-be-redesigned
-description: The dotplot header is six buttons and a coordinate readout, and its ⋮ "Zoom and layout options" menu holds zoom, aspect and chromosome-order items next to a view menu that repeats the track selector. This inventories both and the questions any redesign has to answer; it proposes no design.
+description: The dotplot header is six buttons and a coordinate readout, and its ⋮ "Zoom and layout options" menu sits beside a view menu repeating the track selector. This inventories both and the questions a redesign must answer; it proposes no design.
 ---
 
 # The dotplot controls could be redesigned
