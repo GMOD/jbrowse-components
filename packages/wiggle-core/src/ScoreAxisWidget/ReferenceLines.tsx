@@ -1,12 +1,16 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 
-import { isCssColor } from '@jbrowse/core/util/colorBits'
+import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { Button, IconButton, TextField, Typography } from '@mui/material'
+import { IconButton, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import Section from './Section.tsx'
 
 import type { ScoreAxisDisplay } from './types.ts'
 import type { ValueScaleRule } from '@jbrowse/display-ui'
+
+const PopoverPicker = lazy(() => import('@jbrowse/core/ui/PopoverPicker'))
 
 interface Row {
   value: string
@@ -14,82 +18,118 @@ interface Row {
   color: string
 }
 
+// Rows typed against the rules as they stood; a write from anywhere else
+// (undo, Reset) changes the rules, and the rows show them again.
+interface Draft {
+  rows: Row[]
+  base: string
+}
+
 function rowOf({ value, label = '', color = '' }: ValueScaleRule): Row {
   return { value: String(value), label, color }
 }
 
-function valueOk({ value }: Row) {
-  return value.trim() !== '' && Number.isFinite(Number(value))
+function blank({ value }: Row) {
+  return value.trim() === ''
 }
 
-function colorOk({ color }: Row) {
-  return color.trim() === '' || isCssColor(color)
+function valueOk({ value }: Row) {
+  return Number.isFinite(Number(value))
 }
 
 function ruleOf(row: Row): ValueScaleRule {
   return {
     value: Number(row.value),
     ...(row.label ? { label: row.label } : {}),
-    ...(row.color.trim() ? { color: row.color.trim() } : {}),
+    ...(row.color ? { color: row.color } : {}),
   }
 }
 
 /**
  * `encoding.y.rules`, one row per line: its value on the plot's own scale, its
- * label and its color, an empty color taking the display's. The lines
- * redraw as soon as every row reads; a half-typed row waits.
+ * label and its color, an unset color taking the display's. A row with no
+ * value yet is left out; one whose value does not read holds every row back.
  */
 export default observer(function ReferenceLines({
   display,
 }: {
   display: ScoreAxisDisplay
 }) {
-  const [rows, setRows] = useState(() => (display.scoreRules ?? []).map(rowOf))
+  const rules = display.scoreRules ?? []
+  const base = JSON.stringify(rules)
+  const [draft, setDraft] = useState<Draft>()
+  const rows = draft?.base === base ? draft.rows : rules.map(rowOf)
+
   const commit = (next: Row[]) => {
-    setRows(next)
-    if (next.every(row => valueOk(row) && colorOk(row))) {
-      display.setScoreRules?.(next.map(ruleOf))
+    if (next.every(row => blank(row) || valueOk(row))) {
+      display.setScoreRules?.(next.filter(row => !blank(row)).map(ruleOf))
     }
+    setDraft({ rows: next, base: JSON.stringify(display.scoreRules ?? []) })
   }
   const setRow = (index: number, patch: Partial<Row>) => {
     commit(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)))
   }
   return (
-    <div>
-      <Typography variant="body2">Reference lines</Typography>
+    <Section
+      title="Reference lines"
+      action={
+        <IconButton
+          aria-label="Add line"
+          size="small"
+          onClick={() => {
+            setDraft({
+              rows: [...rows, { value: '', label: '', color: '' }],
+              base,
+            })
+          }}
+        >
+          <AddIcon fontSize="small" />
+        </IconButton>
+      }
+    >
       {rows.map((row, index) => (
-        // eslint-disable-next-line @eslint-react/no-array-index-key -- rows have no identity but their position
-        <div key={index} style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+        <div
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- rows have no identity but their position
+          key={index}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr auto auto',
+            columnGap: 8,
+            alignItems: 'center',
+          }}
+        >
           <TextField
-            label="Value"
+            placeholder="Value"
             size="small"
             variant="standard"
             value={row.value}
-            error={!valueOk(row)}
-            slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+            error={!blank(row) && !valueOk(row)}
+            slotProps={{
+              htmlInput: { inputMode: 'decimal', 'aria-label': 'Value' },
+            }}
             onChange={event => {
               setRow(index, { value: event.target.value })
             }}
           />
           <TextField
-            label="Label"
+            placeholder="Label"
             size="small"
             variant="standard"
             value={row.label}
+            slotProps={{ htmlInput: { 'aria-label': 'Label' } }}
             onChange={event => {
               setRow(index, { label: event.target.value })
             }}
           />
-          <TextField
-            label="Color"
-            size="small"
-            variant="standard"
-            value={row.color}
-            error={!colorOk(row)}
-            onChange={event => {
-              setRow(index, { color: event.target.value })
-            }}
-          />
+          <Suspense fallback={null}>
+            <PopoverPicker
+              color={row.color || 'auto'}
+              unset={!row.color}
+              onChange={color => {
+                setRow(index, { color })
+              }}
+            />
+          </Suspense>
           <IconButton
             aria-label="Remove line"
             size="small"
@@ -101,14 +141,6 @@ export default observer(function ReferenceLines({
           </IconButton>
         </div>
       ))}
-      <Button
-        size="small"
-        onClick={() => {
-          setRows([...rows, { value: '', label: '', color: '' }])
-        }}
-      >
-        Add line
-      </Button>
-    </div>
+    </Section>
   )
 })

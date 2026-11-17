@@ -310,9 +310,9 @@ We'll load the depth as points, the **Scatter** plot type:
 ```
 
 To compare the depth with the callsets, draw it with **Plot type → Bar plot**
-and a fixed axis from **Y axis... → Range**, so a halving in depth shows as a
-lower level. Open `chr9:21,850,000-23,050,000`, around _CDKN2A_, with the depth
-above the four CNV callsets:
+and a fixed axis from **Y axis... → Min** and **Max**, so a halving in depth
+shows as a lower level. Open `chr9:21,850,000-23,050,000`, around _CDKN2A_, with
+the depth above the four CNV callsets:
 
 <Figure caption="Four published CNV callsets over chr9p21.3, under the HiFiCNV depth." src="/img/sv_cgiab/cnv_callset_comparison.png" />
 
@@ -441,8 +441,9 @@ bigWig:
 ```
 
 **Plot type → Overlapping → Scatter** in its track menu draws the two samples as
-points in one band, with a key naming each sample's color. **Y axis... → Range**
-with 0 and 3 stops indexcov's centromere spikes from flattening every plateau.
+points in one band, with a key naming each sample's color. **Y axis... → Min**
+and **Max** at 0 and 3 stops indexcov's centromere spikes from flattening every
+plateau.
 
 Zoom to a region and open the benchmark CNV BED. Coverage shows where the copy
 number steps and BAF the allelic balance across each step.

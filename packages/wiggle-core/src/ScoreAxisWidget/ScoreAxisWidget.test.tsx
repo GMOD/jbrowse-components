@@ -149,9 +149,10 @@ test('Reset to defaults returns to the base config, not past it', () => {
   mockBase = {}
 })
 
-test('shows the values in view, not the fenced range the axis follows', () => {
-  open()
-  screen.getByText('Values in view: 20 – 285.2')
+test('an empty end shows where the axis resolved it', () => {
+  open({ configuration: { encoding: { y: { scale: { domainMin: 5 } } } } })
+  expect(field('Min').placeholder).toBe('auto (5)')
+  expect(field('Max').placeholder).toBe('auto (300)')
 })
 
 // Typing 190 would redraw at 1 and 19 on the way.
@@ -186,30 +187,62 @@ test('text that is not a number is held back rather than read as auto', () => {
   screen.getByText(/Enter a number/)
 })
 
-test('with both ends set, 0 and clipping grey out and say why', () => {
+const offered = (name: string) =>
+  screen.queryByRole('checkbox', { name }) !== null
+
+test('with both ends set, 0 and clipping leave the panel', () => {
   open({
     configuration: {
       encoding: { y: { scale: { domainMin: 0, domainMax: 10 } } },
     },
   })
-  expect(box('Include 0').disabled).toBe(true)
-  expect(box('Clip extreme outliers').disabled).toBe(true)
-  screen.getByText(/Both ends are set/)
-})
-
-test('signed log says what it keeps that log does not', () => {
-  const { display } = open()
-  const hint = 'Like log, but keeps 0 and negative values'
-  expect(screen.queryByText(hint)).toBeNull()
-  fireEvent.click(screen.getByRole('radio', { name: 'Signed log' }))
-  expect(display.scaleType).toBe('symlog')
-  screen.getByText(hint)
+  expect(offered('Include 0')).toBe(false)
+  expect(offered('Clip extreme outliers')).toBe(false)
+  expect(offered('Grid lines')).toBe(true)
 })
 
 test('a log axis has no 0 to include', () => {
   open({ configuration: { encoding: { y: { scale: { type: 'log' } } } } })
-  expect(box('Include 0').disabled).toBe(true)
-  screen.getByText('A log axis has no 0')
+  expect(offered('Include 0')).toBe(false)
+  expect(offered('Clip extreme outliers')).toBe(true)
+})
+
+test('a write from off the panel shows in the field and survives its blur', () => {
+  jest.useFakeTimers()
+  const { display } = open()
+  fireEvent.change(field('Min'), { target: { value: '190' } })
+  act(() => {
+    jest.advanceTimersByTime(300)
+  })
+  expect(display.domainMin).toBe(190)
+  act(() => {
+    display.setDomainMin(undefined)
+  })
+  expect(field('Min').value).toBe('')
+  fireEvent.blur(field('Min'))
+  expect(display.domainMin).toBeUndefined()
+})
+
+test('a write from off the panel survives the drawer closing', () => {
+  const { display, view } = open()
+  fireEvent.change(field('Max'), { target: { value: '400' } })
+  fireEvent.blur(field('Max'))
+  act(() => {
+    display.setDomainMax(undefined)
+  })
+  view.unmount()
+  return Promise.resolve().then(() => {
+    expect(display.domainMax).toBeUndefined()
+  })
+})
+
+test('Reset empties the typed fields', () => {
+  const { display } = open()
+  fireEvent.change(field('Min'), { target: { value: '7' } })
+  fireEvent.blur(field('Min'))
+  expect(display.domainMin).toBe(7)
+  fireEvent.click(screen.getByRole('button', { name: 'Reset to defaults' }))
+  expect(field('Min').value).toBe('')
 })
 
 test('a reference line writes once its value reads', () => {
@@ -222,6 +255,39 @@ test('a reference line writes once its value reads', () => {
   expect(display.scoreRules).toEqual([{ value: 250 }])
   fireEvent.click(screen.getByRole('button', { name: 'Remove line' }))
   expect(display.scoreRules).toEqual([])
+})
+
+test('a line with no value yet holds back neither the others nor its own red', () => {
+  const { display } = open({
+    configuration: { encoding: { y: { rules: [{ value: 5, label: 'low' }] } } },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Add line' }))
+  const values = screen.getAllByRole('textbox', { name: 'Value' })
+  expect(values.map(v => v.getAttribute('aria-invalid'))).toEqual([
+    'false',
+    'false',
+  ])
+  fireEvent.change(screen.getByDisplayValue('low'), {
+    target: { value: 'floor' },
+  })
+  expect(display.scoreRules).toEqual([{ value: 5, label: 'floor' }])
+  expect(screen.getAllByRole('textbox', { name: 'Value' })).toHaveLength(2)
+})
+
+test('the lines follow a write from off the panel', () => {
+  const { display } = open({
+    configuration: { encoding: { y: { rules: [{ value: 5 }] } } },
+  })
+  fireEvent.change(screen.getByRole('textbox', { name: 'Value' }), {
+    target: { value: '6' },
+  })
+  expect(display.scoreRules).toEqual([{ value: 6 }])
+  act(() => {
+    display.setScoreRules([{ value: 5 }])
+  })
+  expect(
+    screen.getByRole<HTMLInputElement>('textbox', { name: 'Value' }).value,
+  ).toBe('5')
 })
 
 test('names the loss when the track it edited is gone', () => {

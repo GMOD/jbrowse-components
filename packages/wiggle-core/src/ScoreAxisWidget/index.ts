@@ -3,6 +3,7 @@ import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import ScoreAxisHeading from './ScoreAxisHeading.tsx'
+import ScoreAxisHelp from './ScoreAxisHelp.tsx'
 import { SCORE_AXIS_WIDGET } from './constants.ts'
 import { stateModelFactory } from './stateModel.ts'
 
@@ -21,6 +22,7 @@ export function registerScoreAxisWidget(pluginManager: PluginManager) {
         name: SCORE_AXIS_WIDGET,
         discardOnClose: true,
         HeadingComponent: ScoreAxisHeading,
+        helpText: ScoreAxisHelp,
         configSchema: ConfigurationSchema(SCORE_AXIS_WIDGET, {}),
         stateModel: stateModelFactory(pluginManager),
         ReactComponent: lazyWithPreload(() => import('./ScoreAxisWidget.tsx')),

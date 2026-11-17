@@ -39,7 +39,7 @@ density plot **Score range...**.
 - **Scale:** signed log keeps zero and negative scores.
 - **Min** and **Max** pin either end of the axis
   ([`encoding.y.scale.domainMin`](/docs/config/yscale/#slot-domainmin)); an
-  empty field follows the data in view.
+  empty field follows the data in view and shows where that end lands now.
 - **Include 0** ([`encoding.y.scale.zero`](/docs/config/yscale/#slot-zero)),
   ticked by default, extends an empty end to 0, so a bar shows its whole height.
   Unticked, the axis spans the values in view, so a GC track holding 30 to 60%
@@ -55,9 +55,10 @@ density plot **Score range...**.
   ([`encoding.y.scale.share`](/docs/config/yscale/#slot-share)). A coverage
   band, a mark display and a Manhattan plot take the same `share`.
 
-Include 0 and Clip extreme outliers move only an end left empty, so both grey
-out once Min and Max are both set; Include 0 also greys out on a log axis, which
-has no 0. Density mode offers neither Include 0 nor the guides.
+Include 0 and Clip extreme outliers move only an end left empty, so both leave
+the panel once Min and Max are both set; Include 0 also leaves on a log axis,
+which has no 0. Density mode offers neither Include 0 nor reference lines. The
+**?** in the drawer's header sums these up.
 
 ### Bin summary
 

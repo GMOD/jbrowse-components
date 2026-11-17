@@ -91,7 +91,7 @@ and problematic-region tracks for hg38 only:
   mappability - Umap (multi)**, so add it on its own with the config below.
   - **Resolution → Bin summary → Minimum**, with **Show min and max** unchecked,
     draws the worst position in each bin
-  - **Y axis... → Range** pins the axis at 0 to 1
+  - **Y axis... → Min** and **Max** pin the axis at 0 to 1
   - In the 2.5 Mb frame, at about a kilobase per pixel, even **Minimum** sits on
     the floor everywhere, so read this track in the zoomed view
 - **gnomAD v3 Genome Coverage - Mean Coverage**, averaged over tens of thousands

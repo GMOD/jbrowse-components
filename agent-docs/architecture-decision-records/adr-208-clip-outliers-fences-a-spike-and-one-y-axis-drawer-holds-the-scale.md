@@ -9,7 +9,17 @@ summary: "Clip extreme outliers stops an open axis end only at a fence (`fenceOu
 
 Accepted (2026-10-04). Amended 2026-10-23 by
 [ADR-238](adr-238-every-display-speaks-vega-lite.md): the y fence is
-`encoding.y.scale.fenceQuantile`. Colin: "The 'score at 0' uncheck does nothing", "The
+`encoding.y.scale.fenceQuantile`. Amended 2026-11-16, on Colin's "it feels a
+little raw": the drawer stays, and two reviews judged a submenu, a hybrid and the
+Settings form (ADR-252) worse. Range folds into Scale beside Grid lines, and
+Guides gives way to a Reference lines section with its add button in the
+heading. A control that cannot act leaves the panel rather than greying out
+under a reason. An empty Min or Max shows where `autoscaledDomain` put that end
+(`auto (280)`), replacing Values in view. The explanations move to the
+header's help, and a line's color is a swatch. The fields and line rows follow a
+write from off the panel, such as an undo or Reset, where a stale draft used to
+write itself back on blur or close. The menu row's label names no setting,
+which this ADR's decision had it do. Colin: "The 'score at 0' uncheck does nothing", "The
 scores at 0 conflicts with set min/max...fuse them", "The outliers thing shows
 clipping even when there is barely any deviation e.g. in multiwiggle. it should
 only be for extreme outliers", and, over the first fused dialog, "this frankly

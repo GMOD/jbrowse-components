@@ -1,18 +1,10 @@
-import { useState } from 'react'
-
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   VALUE_SCALE_TYPES,
   isScaleType,
 } from '@jbrowse/display-ui/yAxisConstants'
-import {
-  FormControlLabel,
-  FormHelperText,
-  Radio,
-  RadioGroup,
-  Typography,
-} from '@mui/material'
+import { FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import RangeFields from './RangeFields.tsx'
@@ -27,9 +19,12 @@ import type { ScaleType } from '@jbrowse/display-ui/yAxisConstants'
 
 const useStyles = makeStyles()(theme => ({
   root: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(3),
     display: 'grid',
-    gap: theme.spacing(2.5),
+    gap: theme.spacing(4),
+  },
+  checkboxes: {
+    display: 'grid',
   },
 }))
 
@@ -47,20 +42,12 @@ function rulesABand(display: ScoreAxisDisplay) {
 
 const AxisEditor = observer(function AxisEditor({
   display,
-  onReset,
 }: {
   display: ScoreAxisDisplay
-  onReset: () => void
 }) {
   const { classes } = useStyles()
   const { scaleType, domainMin, domainMax, fenceQuantile } = display
   const bothPinned = domainMin !== undefined && domainMax !== undefined
-  const zeroBlocker =
-    scaleType === 'log'
-      ? 'A log axis has no 0'
-      : bothPinned
-        ? 'Both ends are set'
-        : undefined
   return (
     <div className={classes.root}>
       <Section title="Scale">
@@ -83,72 +70,53 @@ const AxisEditor = observer(function AxisEditor({
             />
           ))}
         </RadioGroup>
-        {scaleType === 'symlog' ? (
-          <FormHelperText>
-            Like log, but keeps 0 and negative values
-          </FormHelperText>
-        ) : null}
-      </Section>
-      <Section title="Range">
         <RangeFields display={display} />
-        {rulesABand(display) ? (
+        <div className={classes.checkboxes}>
+          {rulesABand(display) && scaleType !== 'log' && !bothPinned ? (
+            <LabeledCheckbox
+              size="small"
+              label="Include 0"
+              checked={display.scaleZero}
+              onChange={zero => {
+                display.setScaleZero(zero)
+              }}
+            />
+          ) : null}
+          {bothPinned ? null : (
+            <LabeledCheckbox
+              size="small"
+              label="Clip extreme outliers"
+              checked={fenceQuantile < 1}
+              onChange={on => {
+                display.setFenceQuantile(on ? display.clipFenceQuantile : 1)
+              }}
+            />
+          )}
           <LabeledCheckbox
-            label="Include 0"
-            checked={display.scaleZero}
-            disabled={zeroBlocker !== undefined}
-            onChange={zero => {
-              display.setScaleZero(zero)
+            size="small"
+            label="Grid lines"
+            checked={display.grid}
+            onChange={grid => {
+              display.setGrid(grid)
             }}
           />
-        ) : null}
-        <LabeledCheckbox
-          label="Clip extreme outliers"
-          checked={fenceQuantile < 1}
-          disabled={bothPinned}
-          onChange={on => {
-            display.setFenceQuantile(on ? display.clipFenceQuantile : 1)
-          }}
-        />
-        <FormHelperText>
-          {bothPinned
-            ? 'Both ends are set, so nothing here moves the axis'
-            : (zeroBlocker ??
-              `Clipping cuts a value that would leave the others under half the axis, and marks it in red`)}
-        </FormHelperText>
+        </div>
       </Section>
       <ShareAxisWith display={display} />
-      <Section title="Guides">
-        <LabeledCheckbox
-          label="Grid lines"
-          checked={display.grid}
-          onChange={grid => {
-            display.setGrid(grid)
-          }}
-        />
-        {rulesABand(display) ? <ReferenceLines display={display} /> : null}
-      </Section>
-      <ResetAxisButton display={display} onReset={onReset} />
+      {rulesABand(display) ? <ReferenceLines display={display} /> : null}
+      <ResetAxisButton display={display} />
     </div>
   )
 })
 
-// A reset rewrites what the text fields and reference-line rows hold as their
-// own draft, so it remounts them.
 export default observer(function ScoreAxisWidget({
   model,
 }: {
   model: ScoreAxisWidgetModel
 }) {
-  const [generation, setGeneration] = useState(0)
   const display = model.display as ScoreAxisDisplay | undefined
   return display ? (
-    <AxisEditor
-      key={`${display.id}-${generation}`}
-      display={display}
-      onReset={() => {
-        setGeneration(n => n + 1)
-      }}
-    />
+    <AxisEditor key={display.id} display={display} />
   ) : (
     <Typography color="text.secondary" style={{ padding: 16 }}>
       The track this edited is no longer shown.

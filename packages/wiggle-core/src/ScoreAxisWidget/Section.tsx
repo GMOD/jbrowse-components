@@ -7,21 +7,37 @@ import type { ReactNode } from 'react'
 const useStyles = makeStyles()(theme => ({
   section: {
     display: 'grid',
-    gap: theme.spacing(0.5),
+    gap: theme.spacing(1),
+  },
+  heading: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 30,
+  },
+  title: {
+    fontWeight: 500,
   },
 }))
 
 const Section = observer(function Section({
   title,
+  action,
   children,
 }: {
   title: string
-  children: ReactNode
+  action?: ReactNode
+  children?: ReactNode
 }) {
   const { classes } = useStyles()
   return (
     <div className={classes.section}>
-      <Typography variant="subtitle2">{title}</Typography>
+      <div className={classes.heading}>
+        <Typography variant="subtitle1" className={classes.title}>
+          {title}
+        </Typography>
+        {action}
+      </div>
       {children}
     </div>
   )
