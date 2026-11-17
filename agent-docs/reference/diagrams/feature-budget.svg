@@ -320,9 +320,9 @@
 <polygon fill="none" stroke="black" points="875,-473.5 607,-473.5 607,-401.75 875,-401.75 875,-473.5"/>
 <text xml:space="preserve" text-anchor="middle" x="741" y="-460" font-family="monospace" font-size="10.00">decimated: a name only where it is</text>
 <text xml:space="preserve" text-anchor="middle" x="741" y="-447.25" font-family="monospace" font-size="10.00">isolated, the factor solved with bodies at</text>
-<text xml:space="preserve" text-anchor="middle" x="741" y="-434.5" font-family="monospace" font-size="10.00">that floor, or at the squeeze floor where</text>
-<text xml:space="preserve" text-anchor="middle" x="741" y="-421.75" font-family="monospace" font-size="10.00">no name survives it; then bodies grow back</text>
-<text xml:space="preserve" text-anchor="middle" x="741" y="-409" font-family="monospace" font-size="10.00">into the freed room</text>
+<text xml:space="preserve" text-anchor="middle" x="741" y="-434.5" font-family="monospace" font-size="10.00">that floor, gene names at the squeeze</text>
+<text xml:space="preserve" text-anchor="middle" x="741" y="-421.75" font-family="monospace" font-size="10.00">floor; then bodies grow back into the</text>
+<text xml:space="preserve" text-anchor="middle" x="741" y="-409" font-family="monospace" font-size="10.00">freed room</text>
 </g>
 <!-- thinned&#45;&gt;decimated -->
 <g id="edge19" class="edge">
@@ -381,5 +381,5 @@
 <polygon fill="black" stroke="black" points="582.5,-137.2 579,-127.2 575.5,-137.2 582.5,-137.2"/>
 </g>
 </g>
-<!-- diagram-source-sha256 5de951e9ebd14b6d4fc9f0e82e748dd8cd5cac7d6143b0966465e257eeaedd4e -->
+<!-- diagram-source-sha256 dd605b877c96ed3127e908cf89f9b28e458879e40456ac9f794699572ddadc8e -->
 </svg>
