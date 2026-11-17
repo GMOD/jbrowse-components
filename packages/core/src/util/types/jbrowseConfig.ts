@@ -71,7 +71,10 @@ export interface EditableJBrowseConfigModel extends JBrowseConfigModel {
   plugins: PluginDefinition[]
   defaultSession: { name: string; [key: string]: unknown }
   preConfiguredSessions: { name: string; [key: string]: unknown }[]
-  addTrackConf(conf: AnyConfiguration): TrackConfigEntry | undefined
+  addTrackConf(
+    conf: AnyConfiguration,
+    index?: number,
+  ): TrackConfigEntry | undefined
   updateTrackConf(conf: { trackId: string; [key: string]: unknown }): void
   deleteTrackConf(conf: AnyConfigurationModel | { trackId: string }): void
   addAssemblyConf(conf: AnyConfiguration): BaseAssemblyConfigModel

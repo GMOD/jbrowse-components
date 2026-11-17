@@ -8,10 +8,15 @@ import {
 import {
   expandLooseTrackConfig,
   getConfAssemblyNamesOrNone,
+  getTrackName,
 } from '@jbrowse/core/util/tracks'
 import {
   applySnapshot,
+  getParent,
   getSnapshot,
+  getType,
+  isAlive,
+  isArrayType,
   isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
@@ -22,6 +27,7 @@ import { displayForms, hydratedTrackForm } from './hydratedForms.ts'
 import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
+import type { ReferringNode } from './ReferenceManagement.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type {
@@ -34,6 +40,7 @@ import type { DisplayForms } from '@jbrowse/core/util'
 import type {
   IAnyStateTreeNode,
   IAnyType,
+  IMSTArray,
   Instance,
 } from '@jbrowse/mobx-state-tree'
 import type { IComputedValue } from 'mobx'
@@ -100,6 +107,32 @@ function assembliesNotInTheCatalog(
   return getConfAssemblyNamesOrNone(trackConf).filter(
     name => !catalog.has(name),
   )
+}
+
+/**
+ * What a deleted track left behind, for `restoreTrackConf` to put back: its
+ * entry and place in the config's tracks or the session's, its edits, and its
+ * entry and place in each view that showed it.
+ */
+export interface DeletedTrack {
+  configEntry?: { index: number; conf: TrackConfigEntry }
+  sessionEntry?: { index: number; conf: TrackConfigEntry }
+  delta?: PlainTrackConfig
+  shownIn: { tracks: IMSTArray<IAnyType>; index: number; snapshot: unknown }[]
+}
+
+function indexedEntry(list: TrackConfigEntry[], trackId: string) {
+  const index = list.findLastIndex(t => t.trackId === trackId)
+  return index === -1 ? undefined : { index, conf: list[index]! }
+}
+
+function viewEntries(referring: ReferringNode[]) {
+  return referring.flatMap(({ node }) => {
+    const tracks = getParent<IMSTArray<IAnyType>>(node)
+    return isArrayType(getType(tracks))
+      ? [{ tracks, index: tracks.indexOf(node), snapshot: getSnapshot(node) }]
+      : []
+  })
 }
 
 function withoutDelta(
@@ -776,6 +809,64 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             return undefined
           }
           return self.sessionTracks.splice(idx, 1)
+        },
+
+        /**
+         * #action
+         * `deleteTrackConf`, then a snackbar whose Undo puts the track back
+         * (`restoreTrackConf`). The track menu's Delete track calls this: one
+         * click takes an admin's track out of the config.json, and Ctrl+Z
+         * undoes only the session.
+         */
+        deleteTrackConfWithUndo(trackConf: AnyTrackConfig) {
+          const { trackId } = trackConf
+          const deleted: DeletedTrack = {
+            configEntry: self.adminMode
+              ? indexedEntry(self.jbrowse.tracks, trackId)
+              : undefined,
+            sessionEntry: indexedEntry(sessionEntries(self), trackId),
+            delta: self.trackConfigDeltas[trackId],
+            shownIn: viewEntries(self.getReferring(trackId)),
+          }
+          const name = getTrackName(trackConf, self)
+          this.deleteTrackConf(trackConf)
+          self.notify(`Deleted ${name}`, 'info', {
+            name: 'Undo',
+            onClick: () => {
+              this.restoreTrackConf(deleted)
+            },
+          })
+        },
+
+        /**
+         * #action
+         * Put back a track `deleteTrackConfWithUndo` deleted: its config at
+         * its old place, its edits, and its entry in each view still open
+         * that showed it.
+         */
+        restoreTrackConf({
+          configEntry,
+          sessionEntry,
+          delta,
+          shownIn,
+        }: DeletedTrack) {
+          if (configEntry) {
+            editableConfig(self).addTrackConf(
+              configEntry.conf,
+              configEntry.index,
+            )
+          }
+          if (sessionEntry) {
+            self.sessionTracks.splice(sessionEntry.index, 0, sessionEntry.conf)
+          }
+          if (delta) {
+            writeDelta(delta.trackId, delta)
+          }
+          for (const { tracks, index, snapshot } of shownIn) {
+            if (isAlive(tracks)) {
+              tracks.splice(index, 0, snapshot)
+            }
+          }
         },
       }
     })

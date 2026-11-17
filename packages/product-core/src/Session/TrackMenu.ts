@@ -33,7 +33,7 @@ interface TrackActionSession<C> {
     opts?: { expandedDisplayId?: string },
   ) => void
   publishTrackConf: (conf: C) => unknown
-  deleteTrackConf: (conf: AnyTrackConfig) => void
+  deleteTrackConfWithUndo: (conf: AnyTrackConfig) => void
   resetTrackConfiguration?: (trackId: string) => void
   /**
    * Declared here, though only the copy guard below reads it, so a session that
@@ -154,7 +154,7 @@ export function trackActionItems<C extends { trackId: string }>({
                 ? undefined
                 : 'This track is part of the config, which only an admin can edit. A copy of it can be deleted.',
             onClick: () => {
-              session.deleteTrackConf(config)
+              session.deleteTrackConfWithUndo(config)
             },
           },
         ]),
