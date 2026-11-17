@@ -64,6 +64,7 @@ import {
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
+import { sourceRowValue } from '../shared/wiggleRowGroups.ts'
 import {
   wiggleScoreStages,
   wiggleSidebarStages,
@@ -321,6 +322,15 @@ export default function stateModelFactory(
         return [
           ...sourceWarnings(self.rpcDataMap),
           ...self.rowNotices,
+          ...(self.isGroupedRows &&
+          self.discoveredRows.length > 0 &&
+          !self.discoveredRows.some(
+            row => sourceRowValue(row, self.rowsField) !== '',
+          )
+            ? [
+                `rows: no subtrack carries "${self.rowsField}", so every subtrack shares one row`,
+              ]
+            : []),
           ...(self.isDensityMode && self.sharesPanel
             ? [
                 'rows: an overlaid heatmap draws every source on one strip, the last covering the rest; put the sources on rows',
@@ -417,13 +427,23 @@ export default function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * The layout half of a Plot type leaf — `Multi-row` or `Overlapping`,
-       * each holding the five plot names. Writes the field alone, so the
+       * The layout half of a Plot type leaf — `source` (`Multi-row`), a
+       * source attribute (`Rows by group`) or `''` (`Overlapping`), each
+       * holding the five plot names. Writes the field alone, so the
        * arrangement survives a trip through the shared plot and comes back
        * with the rows.
        */
+      setRowsField(field: string) {
+        setConf(self, ['rows', 'field'], field)
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * `setRowsField` as a switch: a row per source, or one shared box.
+       */
       setRowLayout(on: boolean) {
-        setConf(self, ['rows', 'field'], on ? 'source' : '')
+        self.setRowsField(on ? 'source' : '')
       },
     }))
     .actions(self => ({
@@ -437,18 +457,19 @@ export default function stateModelFactory(
 
       /**
        * #action
-       * A Plot type leaf whole: `setMark` then `setRowLayout` in one action, so
-       * the regions encode once and never as the new plot in the old layout.
+       * A Plot type leaf whole: `setMark` then `setRowsField` in one action,
+       * so the regions encode once and never as the new plot in the old
+       * layout.
        */
       setPlot({
         mark,
-        rowLayout,
+        rowsField,
       }: {
         mark: WiggleMarkObject
-        rowLayout: boolean
+        rowsField: string
       }) {
         self.setMark(mark.type, mark.interpolate)
-        self.setRowLayout(rowLayout)
+        self.setRowsField(rowsField)
       },
 
       /**
@@ -582,21 +603,23 @@ export default function stateModelFactory(
                 ])
               },
             },
-            // a row order exists only once the sources are on rows
-            cluster: self.isRowLayout
-              ? {
-                  runItem: {
-                    label: 'Cluster rows by score...',
-                    onClick: () => {
-                      getDialogHost(self).queueDialog(handleClose => [
-                        WiggleClusterDialog,
-                        { model: self, handleClose },
-                      ])
+            // a row order exists only once the sources are on rows of their
+            // own: a tree over the sources has no leaf per grouped row
+            cluster:
+              self.rowsField === 'source'
+                ? {
+                    runItem: {
+                      label: 'Cluster rows by score...',
+                      onClick: () => {
+                        getDialogHost(self).queueDialog(handleClose => [
+                          WiggleClusterDialog,
+                          { model: self, handleClose },
+                        ])
+                      },
                     },
-                  },
-                  rowCount: self.shownRows.length,
-                }
-              : undefined,
+                    rowCount: self.shownRows.length,
+                  }
+                : undefined,
           }),
           ...editPlotMenuItems(self),
         ]

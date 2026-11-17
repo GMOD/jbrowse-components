@@ -114,9 +114,13 @@ export function wiggleMarkColoring({
   }
 }
 
-/** Whether several sources share one plot box, where only color tells them apart. */
-export function wiggleSharesPanel(rowLayout: boolean, sourceCount: number) {
-  return !rowLayout && sourceCount > 1
+/**
+ * Whether several sources share a plot box, where only color tells them
+ * apart: every source in one box, or the sources sharing a value of a
+ * `rows.field` attribute in its row.
+ */
+export function wiggleSharesPanel(rowsField: string, sourceCount: number) {
+  return rowsField !== 'source' && sourceCount > 1
 }
 
 /**

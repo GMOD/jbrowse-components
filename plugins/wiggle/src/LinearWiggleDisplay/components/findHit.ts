@@ -18,6 +18,7 @@ import {
 import { WIGGLE_MIN_PX } from '../../util.ts'
 
 import type { WiggleRendering } from '../../renderingTypes.ts'
+import type { MarkSource } from '../../shared/buildSourceRenderData.ts'
 import type { MouseRegion } from '../../shared/wiggleHitTest.ts'
 import type { WiggleHoveredFeature, WiggleTooltipRow } from '../../util.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
@@ -44,7 +45,7 @@ function shownName({ name, label }: VisibleSource) {
 // collapsed one printed a backwards range and opened a zero-length feature.
 export function findOverlayHit(
   data: WiggleDataResult,
-  visibleSources: VisibleSource[],
+  visibleSources: readonly VisibleSource[],
   bp: number,
   reachBp: number,
   refName: string,
@@ -71,7 +72,9 @@ export function findOverlayHit(
     : { refName, start: bp, end: bp + 1, rows }
 }
 
-// Row mode: cursor Y picks one row → one source. Returns its feature interval.
+// Row mode: cursor Y picks one row. A row of one source returns its feature
+// interval; a row overlaying several, grouped by a `rows.field` attribute,
+// reports each of them at the cursor base, as an overlay does.
 // A non-positive rowHeight (zero-height display) would make the division yield
 // NaN/Infinity, so it's rejected up front rather than leaning on an
 // out-of-bounds index coming back undefined.
@@ -86,7 +89,7 @@ export function findOverlayHit(
 // the pointer is over is the last one painted there rather than its slot's.
 export function findRowHit(
   data: WiggleDataResult,
-  visibleSources: VisibleSource[],
+  rows: readonly (readonly VisibleSource[])[],
   bp: number,
   reachBp: number,
   offsetY: number,
@@ -99,12 +102,23 @@ export function findRowHit(
     return undefined
   }
   const rowIndex = tilesRows
-    ? paintedRowAt(offsetY, rowHeight, visibleSources.length)
+    ? paintedRowAt(offsetY, rowHeight, rows.length)
     : rowIndexAt(offsetY, { rowHeight })
-  const src = visibleSources[rowIndex]
-  return src
-    ? sourceHit(data, src, bp, reachBp, refName, showsMinMax)
-    : undefined
+  const row = rows[rowIndex]
+  return row === undefined
+    ? undefined
+    : row.length === 1
+      ? sourceHit(data, row[0]!, bp, reachBp, refName, showsMinMax)
+      : findOverlayHit(data, row, bp, reachBp, refName, showsMinMax)
+}
+
+// The visible sources gathered into the rows the model placed them in.
+export function sourcesByRow(sources: readonly MarkSource[], numRows: number) {
+  const rows = Array.from({ length: numRows }, (): MarkSource[] => [])
+  for (const source of sources) {
+    rows[source.row]?.push(source)
+  }
+  return rows
 }
 
 // The last row whose painted cell covers `offsetY`, or -1 where none does.
@@ -145,9 +159,10 @@ function sourceHit(
 export interface WiggleHitModel {
   effectiveRowHeight: number
   rowsTopOffset: number
-  // each visible source, the label it is named by and the color its marks
-  // paint in
-  markSources: VisibleSource[]
+  // each visible source, the label it is named by, the color its marks paint
+  // in and the row it is drawn in
+  markSources: MarkSource[]
+  numRows: number
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   tooltipShowsMinMax: boolean
   renderingType: WiggleRendering
@@ -186,6 +201,7 @@ export function findWiggleHit(
     effectiveRowHeight,
     rowsTopOffset,
     markSources: sources,
+    numRows,
     rpcDataMap,
     tooltipShowsMinMax,
     isOverlay,
@@ -206,7 +222,7 @@ export function findWiggleHit(
   return !isOverlay
     ? findRowHit(
         data,
-        sources,
+        sourcesByRow(sources, numRows),
         bp,
         reachBp,
         offsetY - rowsTopOffset,

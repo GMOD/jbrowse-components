@@ -22,11 +22,18 @@ import type {
 // in sync. installUpload's encode step reads `self.gpuProps()`, so
 // a change re-fires every per-region autorun and re-uploads without an RPC
 // roundtrip.
+// A source as the encoder draws it: the color its marks paint in, and the
+// row it is drawn in — its own under `rows: 'source'`, its value's under a
+// grouping field, row 0 in one shared plot.
+export interface MarkSource {
+  name: string
+  label?: string
+  color?: string
+  row: number
+}
+
 export interface WiggleGpuProps {
-  sources: { name: string; color?: string }[]
-  // Whether the display puts its sources on rows, one each (`rows: 'source'`).
-  // Otherwise every source is drawn on row 0 in one shared plot.
-  rowLayout: boolean
+  sources: MarkSource[]
   // The `color` object resolved: the pair each mode partitions by and the
   // value they part at.
   wiggleColor: ResolvedWiggleColor
@@ -58,7 +65,6 @@ export function buildSourceRenderData(
 ): SourceRenderData[] {
   const {
     sources,
-    rowLayout,
     wiggleColor,
     origin,
     summaryField,
@@ -83,21 +89,20 @@ export function buildSourceRenderData(
   const bands: SourceRenderData[] = []
 
   // `sources` is the display's own visible list and the only thing iterated —
-  // never the payload's. rowIndex is the source's position in it, so it lines up
-  // with the model's numSources-based rowHeight and findHit's
-  // visibleSources[rowIdx], even when an earlier source is missing from the RPC
-  // payload. An empty list therefore draws nothing, which is what a subtree
-  // filter matching no present source means; falling back to the payload there
+  // never the payload's. rowIndex is the row the model placed the source in,
+  // so it lines up with the model's numRows-based rowHeight and findHit's row
+  // pick, even when an earlier source is missing from the RPC payload. An
+  // empty list therefore draws nothing, which is what a subtree filter
+  // matching no present source means; falling back to the payload there
   // painted its first source full-height underneath the "no subtracks match"
-  // message. In one shared plot, every source collapses onto row 0.
-  for (let i = 0; i < sources.length; i++) {
-    const orderedSource = sources[i]!
+  // message.
+  for (const orderedSource of sources) {
     const source = sourcesByName.get(orderedSource.name)
     if (source) {
       const posColor = orderedSource.color
         ? cssColorToNormalizedRgb(orderedSource.color)
         : defaultPosColor
-      const row = rowLayout ? i : 0
+      const { row } = orderedSource
       // A source's own color is the subtrack's, so it paints both sides of
       // the cut, where the y position already shows the sign; a source with
       // none paints the plot's pair (ADR-251).

@@ -12,7 +12,7 @@ import {
 } from './wiggleColor.ts'
 
 import type { WiggleRendering } from '../renderingTypes.ts'
-import type { WiggleGpuProps } from './buildSourceRenderData.ts'
+import type { MarkSource, WiggleGpuProps } from './buildSourceRenderData.ts'
 import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type {
@@ -34,7 +34,7 @@ export interface WiggleResolveHost {
   colorSetting: ColorSetting
   summaryField: SummaryField
   renderingType: WiggleRendering
-  isRowLayout: boolean
+  sourceRowIndex: ReadonlyMap<string, number>
   drawnRows: readonly { name: string; label?: string; rowColor?: string }[]
   resolution: number
   yField: string
@@ -126,15 +126,19 @@ export function wiggleResolveViews(self: WiggleResolveHost) {
 
     /**
      * #getter
-     * Each source as it is drawn, its label and the color its marks paint in
-     * (`wiggleMarkSources`), which the encoder and the tooltip read.
+     * Each source as it is drawn, its label, the color its marks paint in
+     * (`wiggleMarkSources`) and the row it is drawn in, which the encoder
+     * and the tooltip read.
      */
-    get markSources(): { name: string; label?: string; color?: string }[] {
+    get markSources(): MarkSource[] {
       return wiggleMarkSources(self.drawnRows, {
         rowColorPaintsMarks: this.rowColorPaintsMarks,
         paletteDeals: self.rowPaletteDeals,
         anyRowColored: self.resolvedRowColors.size > 0,
-      })
+      }).map(source => ({
+        ...source,
+        row: self.sourceRowIndex.get(source.name) ?? 0,
+      }))
     },
 
     /**
@@ -191,7 +195,6 @@ export function wiggleResolveViews(self: WiggleResolveHost) {
         effectiveExtent: this.effectiveExtent,
         renderingType: self.renderingType,
         sources: this.markSources,
-        rowLayout: self.isRowLayout,
       }
     },
   }

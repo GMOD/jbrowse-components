@@ -54,6 +54,7 @@ export {
 export { getLeafNames, treeDescribesRows } from './tree/hierarchy.ts'
 export { keptRows } from './rows/narrowRows.ts'
 export { narrowRows } from './rows/narrowRows.ts'
+export { rowFieldValue } from './rows/rowFields.ts'
 export type { RowNarrowing } from './rows/narrowRows.ts'
 export { ROW_COLOR_SCALE_ID } from './color/rowColorKey.ts'
 export type { RowColorKeyInputs } from './color/rowColorKey.ts'

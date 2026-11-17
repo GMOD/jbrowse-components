@@ -430,8 +430,7 @@ function multiFixture(): SourceColumns[] {
 function runEncodeScenario(fixture: SourceColumns[]) {
   const total = fixture.reduce((sum, s) => sum + s.table.length, 0)
   const gpuProps: WiggleGpuProps = {
-    sources: fixture.map(s => ({ name: s.name })),
-    rowLayout: true,
+    sources: fixture.map((s, row) => ({ name: s.name, row })),
     origin: 0,
     wiggleColor: {
       posColor: WIGGLE_POS_COLOR_DEFAULT,

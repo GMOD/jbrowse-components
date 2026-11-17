@@ -94,7 +94,11 @@ const PLOTS = [
 
 // minimal stand-in for the display: the two axes a leaf writes, and the raw
 // adapter rows that decide whether there is a layout axis at all
-function makePlotSelf(sourceCount: number, isRowLayout: boolean) {
+function makePlotSelf(
+  sourceCount: number,
+  rowsField: string,
+  group?: (i: number) => string,
+) {
   const writes: unknown[] = []
   return {
     writes,
@@ -102,11 +106,15 @@ function makePlotSelf(sourceCount: number, isRowLayout: boolean) {
     setMark: (mark: string, interpolate?: string) => {
       writes.push({ mark, interpolate })
     },
-    isRowLayout,
-    setPlot: (plot: { mark: { type: string }; rowLayout: boolean }) => {
+    isRowLayout: rowsField !== '',
+    rowsField,
+    setPlot: (plot: { mark: { type: string }; rowsField: string }) => {
       writes.push(plot)
     },
-    discoveredRows: Array.from({ length: sourceCount }, (_, i) => i),
+    discoveredRows: Array.from({ length: sourceCount }, (_, i) => ({
+      name: `s${i}`,
+      ...(group ? { group: group(i) } : {}),
+    })),
   }
 }
 
@@ -119,8 +127,12 @@ const checkedIn = (item: MenuItem | undefined) =>
     .filter(i => 'checked' in i && i.checked)
     .map(i => ('label' in i ? i.label : undefined))
 
-function plotMenu(sourceCount: number, isRowLayout = false) {
-  const self = makePlotSelf(sourceCount, isRowLayout)
+function plotMenu(
+  sourceCount: number,
+  rowsField = '',
+  group?: (i: number) => string,
+) {
+  const self = makePlotSelf(sourceCount, rowsField, group)
   return { self, item: makeRenderingTypeSubMenu(self, PLOTS) }
 }
 
@@ -139,7 +151,36 @@ test('one source meets the plots flat, with no layout to drill through', () => {
 })
 
 test('a faceted display keeps the groups when its sources drop to one', () => {
-  expect(labelsOf(plotMenu(1, true).item)).toEqual(['Multi-row', 'Overlapping'])
+  expect(labelsOf(plotMenu(1, 'source').item)).toEqual([
+    'Multi-row',
+    'Overlapping',
+  ])
+})
+
+// A grouping field is a layout of its own beside the other two, so picking a
+// plot under `Multi-row` is a visible choice and never drops the grouping.
+test('a grouping field is offered, checked and written as its own layout', () => {
+  const { self, item } = plotMenu(4, 'cell', i => (i < 2 ? 'a' : 'b'))
+  expect(labelsOf(item)).toEqual(['Multi-row', 'Rows by cell', 'Overlapping'])
+  const [multirow, grouped] = rowsOf(item)
+  expect(checkedIn(multirow)).toEqual([])
+  expect(checkedIn(grouped)).toEqual(['Bar plot'])
+  const heatmap = rowsOf(grouped).find(
+    i => 'label' in i && i.label === 'Heatmap',
+  )
+  if (!heatmap || !('onClick' in heatmap)) {
+    throw new Error('no Heatmap row under Rows by cell')
+  }
+  heatmap.onClick()
+  expect(self.writes).toEqual([{ mark: { type: 'rect' }, rowsField: 'cell' }])
+})
+
+test('subtracks carrying a group offer rows by group from any layout', () => {
+  expect(labelsOf(plotMenu(4, 'source', i => `g${i % 2}`).item)).toEqual([
+    'Multi-row',
+    'Rows by group',
+    'Overlapping',
+  ])
 })
 
 test('the checked leaf is the pair, not the plot alone', () => {
@@ -160,7 +201,7 @@ test('one leaf writes both axes in one action', () => {
     throw new Error('no Density row under Multi-row')
   }
   density.onClick()
-  expect(self.writes).toEqual([{ mark: { type: 'rect' }, rowLayout: true }])
+  expect(self.writes).toEqual([{ mark: { type: 'rect' }, rowsField: 'source' }])
 })
 
 test('a flat leaf writes its mark and leaves the layout alone', () => {

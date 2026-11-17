@@ -9,7 +9,7 @@ import type { HintModel } from './WiggleHint.tsx'
 // figure is worse than no hint.
 function makeModel(overrides: Partial<HintModel> = {}): HintModel {
   return {
-    numSources: 2,
+    numRows: 2,
     isOverlay: false,
     isDensityMode: false,
     effectiveRowHeight: 50,
@@ -24,13 +24,13 @@ describe('rows packed below a pixel', () => {
     const { getByText } = render(
       <WiggleHint
         model={makeModel({
-          numSources: 400,
+          numRows: 400,
           effectiveRowHeight: 0.25,
           height: 100,
         })}
       />,
     )
-    getByText('400 subtracks in 100px leaves rows below 1px.')
+    getByText('400 rows in 100px leaves each below 1px.')
   })
 
   it('offers the heatmap, the plot that reads at that height', () => {
@@ -38,7 +38,7 @@ describe('rows packed below a pixel', () => {
     const { getByText } = render(
       <WiggleHint
         model={makeModel({
-          numSources: 400,
+          numRows: 400,
           effectiveRowHeight: 0.25,
           setPlot,
         })}
@@ -47,7 +47,7 @@ describe('rows packed below a pixel', () => {
     fireEvent.click(getByText('Draw as heatmap'))
     expect(setPlot).toHaveBeenCalledWith({
       mark: { type: 'rect' },
-      rowLayout: true,
+      rowsField: 'source',
     })
   })
 
@@ -58,7 +58,7 @@ describe('rows packed below a pixel', () => {
     const { container } = render(
       <WiggleHint
         model={makeModel({
-          numSources: 400,
+          numRows: 400,
           effectiveRowHeight: 0.25,
           isDensityMode: true,
         })}
@@ -73,7 +73,7 @@ describe('rows packed below a pixel', () => {
     const { container } = render(
       <WiggleHint
         model={makeModel({
-          numSources: 400,
+          numRows: 400,
           effectiveRowHeight: 100,
           isOverlay: true,
         })}

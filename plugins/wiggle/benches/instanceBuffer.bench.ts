@@ -151,7 +151,7 @@ const first = fetched[0]!
 const viewBp = first.end - start
 const pivot = 0
 
-const sourceList = raws.map((_, i) => ({ name: `s${i}` }))
+const sourceList = raws.map((_, i) => ({ name: `s${i}`, row: i }))
 function payload(summary: boolean): WiggleDataResult {
   return {
     sources: raws.map((raw, i) => ({
@@ -168,7 +168,6 @@ const dataAvg = payload(false)
 function props(renderingType: WiggleRendering, extent: Extent): WiggleGpuProps {
   return {
     sources: sourceList,
-    rowLayout: true,
     origin: 0,
     wiggleColor: {
       posColor: WIGGLE_POS_COLOR_DEFAULT,

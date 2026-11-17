@@ -14,6 +14,7 @@ import {
   wiggleStatsViews,
 } from './wigglePlotViews.ts'
 import { wiggleResolveViews } from './wiggleResolveViews.ts'
+import { wiggleRowGroupViews } from './wiggleRowGroups.ts'
 import { wiggleRowHookViews } from './wiggleRowHookViews.ts'
 
 import type {
@@ -35,10 +36,12 @@ import type {
   WiggleStatsHost,
 } from './wigglePlotViews.ts'
 import type { WiggleResolveHost } from './wiggleResolveViews.ts'
+import type { WiggleRowGroupHost } from './wiggleRowGroups.ts'
 import type { WiggleRowHookHost } from './wiggleRowHookViews.ts'
 import type { IModelType, ModelProperties } from '@jbrowse/mobx-state-tree'
 
 type ScoreStageOutputs = ReturnType<typeof wiggleRowHookViews> &
+  ReturnType<typeof wiggleRowGroupViews> &
   ReturnType<typeof wiggleDomainViews> &
   ReturnType<typeof wiggleResolveViews> &
   ReturnType<typeof wiggleStatsViews> &
@@ -52,6 +55,7 @@ type ScoreStageOutputs = ReturnType<typeof wiggleRowHookViews> &
 /** What the score stages read that they do not state themselves. */
 export type WiggleScoreStageInputs = Omit<
   WiggleRowHookHost &
+    WiggleRowGroupHost &
     WiggleDomainHost &
     WiggleResolveHost &
     WiggleStatsHost &
@@ -91,6 +95,7 @@ export function wiggleScoreStages<
 >(model: IModelType<P, O, C, S>) {
   return model
     .views(self => wiggleRowHookViews(self))
+    .views(self => wiggleRowGroupViews(self))
     .views(self => wiggleDomainViews(self))
     .views(self => wiggleResolveViews(self))
     .views(self => wiggleStatsViews(self))

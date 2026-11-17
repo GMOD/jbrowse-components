@@ -8,12 +8,12 @@ import type { WiggleMarkObject } from '../../renderingTypes.ts'
 // What the hint reads, spelled out like its sibling overlays (see
 // WiggleRowSeparators, WiggleRowLabels) rather than taking the whole display.
 export interface HintModel {
-  numSources: number
+  numRows: number
   isOverlay: boolean
   isDensityMode: boolean
   effectiveRowHeight: number
   height: number
-  setPlot: (plot: { mark: WiggleMarkObject; rowLayout: boolean }) => void
+  setPlot: (plot: { mark: WiggleMarkObject; rowsField: string }) => void
 }
 
 // Rows packed so tight they are sub-pixel draw as an unreadable smear rather
@@ -21,17 +21,14 @@ export interface HintModel {
 // escape the button offers IS the mode the user is in, and sub-pixel rows are
 // the intended cohort view: a thousand-sample heatmap is read as a stack.
 function hint({
-  numSources,
+  numRows,
   isOverlay,
   isDensityMode,
   effectiveRowHeight,
   height,
 }: HintModel) {
-  return !isOverlay &&
-    !isDensityMode &&
-    numSources > 0 &&
-    effectiveRowHeight < 1
-    ? `${numSources} subtracks in ${Math.round(height)}px leaves rows below 1px.`
+  return !isOverlay && !isDensityMode && numRows > 0 && effectiveRowHeight < 1
+    ? `${numRows} rows in ${Math.round(height)}px leaves each below 1px.`
     : undefined
 }
 
@@ -59,7 +56,7 @@ const WiggleHint = observer(function WiggleHint({
             <Button
               size="small"
               onClick={() => {
-                model.setPlot({ mark: { type: 'rect' }, rowLayout: true })
+                model.setPlot({ mark: { type: 'rect' }, rowsField: 'source' })
               }}
             >
               Draw as heatmap

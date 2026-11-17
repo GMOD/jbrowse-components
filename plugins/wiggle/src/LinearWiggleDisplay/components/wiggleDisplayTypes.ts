@@ -1,9 +1,10 @@
 import type { WiggleMarkObject, WiggleRendering } from '../../renderingTypes.ts'
+import type { MarkSource } from '../../shared/buildSourceRenderData.ts'
 import type { WigglePlotGeometry } from '../../shared/wiggleDisplayViews.ts'
 import type { WiggleHoveredFeature } from '../../util.ts'
 import type { WiggleContextInfo } from './findHit.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
-import type { TreeSidebarMixinModel } from '@jbrowse/tree-sidebar'
+import type { LabelledRow, TreeSidebarMixinModel } from '@jbrowse/tree-sidebar'
 import type {
   ScaleType,
   WiggleDataResult,
@@ -48,7 +49,9 @@ export interface WiggleDisplayModel
   configuration: { displayId: string }
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   notices: readonly string[]
-  markSources: { name: string; label?: string; color?: string }[]
+  markSources: MarkSource[]
+  labelledRows: LabelledRow[]
+  rowsField: string
   domain: [number, number] | undefined
   scaleType: ScaleType
   // where the plot canvas sits inside the display's height — the same value
@@ -73,7 +76,7 @@ export interface WiggleDisplayModel
   setHoveredFeature: (feat?: WiggleHoveredFeature) => void
   clearHoveredFeature: () => void
   selectFeature: (feat: WiggleHoveredFeature) => void
-  setPlot: (plot: { mark: WiggleMarkObject; rowLayout: boolean }) => void
+  setPlot: (plot: { mark: WiggleMarkObject; rowsField: string }) => void
   contextMenuInfo?: ContextMenuAnchor & { hit: WiggleContextInfo }
   openContextMenu: (
     info: ContextMenuAnchor & { hit: WiggleContextInfo },

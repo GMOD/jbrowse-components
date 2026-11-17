@@ -163,10 +163,10 @@ test('the single-source values survive two round trips', () => {
 })
 
 test.each(['QuantitativeTrack', 'MultiQuantitativeTrack'])(
-  'a %s with rows on another field fails to load for the quantitative display',
+  'a %s with rows on a subtrack attribute groups the quantitative display by it',
   type => {
-    expect(() =>
-      loadTrack({ type, displayDefaults: { rows: 'group' } }),
-    ).toThrow(/QuantitativeRowsField/)
+    const display = loadTrack({ type, displayDefaults: { rows: 'group' } })
+      .displays[0]!
+    expect(readConfObject(display, ['rows', 'field'])).toBe('group')
   },
 )

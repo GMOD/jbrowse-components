@@ -86,7 +86,7 @@ export function wiggleRowsBoxViews(self: WiggleRowsBoxHost) {
 export interface WiggleRowHeightHost {
   isOverlay: boolean
   rowsHeight: number
-  numSources: number
+  wiggleRows: readonly unknown[]
 }
 
 /** How a wiggle display divides its rows' height among them. */
@@ -103,18 +103,18 @@ export function wiggleRowHeightViews(self: WiggleRowHeightHost) {
     get effectiveRowHeight() {
       return self.isOverlay
         ? self.rowsHeight
-        : getRowHeight(self.rowsHeight, self.numSources)
+        : getRowHeight(self.rowsHeight, self.wiggleRows.length)
     },
 
     /**
      * #getter
      * Rows actually drawn: overlay collapses every source onto one shared
-     * plot. Read by the render state and by everything that repeats itself
-     * per row (scalebars, cross hatches), so they can't disagree about how
-     * many rows exist.
+     * plot, and a grouping field draws a row per value. Read by the render
+     * state and by everything that repeats itself per row (scalebars, cross
+     * hatches), so they can't disagree about how many rows exist.
      */
     get numRows() {
-      return self.isOverlay ? 1 : self.numSources
+      return self.isOverlay ? 1 : self.wiggleRows.length
     },
   }
 }

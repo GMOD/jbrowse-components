@@ -156,8 +156,10 @@ function makeModel(
       rampLut: null,
     },
     gpuProps: () => ({
-      sources: [{ name: 'a' }, { name: 'b' }],
-      rowLayout: true,
+      sources: [
+        { name: 'a', row: 0 },
+        { name: 'b', row: 1 },
+      ],
       origin: 0,
       wiggleColor: {
         posColor: '#0068d1',

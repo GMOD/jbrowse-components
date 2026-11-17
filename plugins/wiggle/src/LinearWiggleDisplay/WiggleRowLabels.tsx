@@ -1,14 +1,10 @@
 import { SvgRowColumnLabels, SvgRowLabels } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import type { RowAnnotationColumn } from '@jbrowse/tree-sidebar'
+import type { LabelledRow, RowAnnotationColumn } from '@jbrowse/tree-sidebar'
 
 interface LabelModel {
-  drawnRows: {
-    name: string
-    label?: string
-    rowColor?: string
-  }[]
+  labelledRows: LabelledRow[]
   effectiveRowHeight: number
   drawsRowLabels: boolean
   rowAnnotationColors: readonly RowAnnotationColumn[]
@@ -24,12 +20,16 @@ export default observer(function WiggleRowLabels({
   model: LabelModel
   labelOffset: number
 }) {
-  const { drawnRows, effectiveRowHeight, drawsRowLabels, rowAnnotationColors } =
-    model
+  const {
+    labelledRows,
+    effectiveRowHeight,
+    drawsRowLabels,
+    rowAnnotationColors,
+  } = model
   return drawsRowLabels ? (
     <>
       <SvgRowLabels
-        rows={drawnRows}
+        rows={labelledRows}
         rowHeight={effectiveRowHeight}
         labelOffset={labelOffset}
         backdrop="wash"
@@ -37,7 +37,7 @@ export default observer(function WiggleRowLabels({
       />
       <SvgRowColumnLabels
         labels={model.rowColumnLabels}
-        rows={drawnRows}
+        rows={labelledRows}
         rowHeight={effectiveRowHeight}
         labelOffset={labelOffset}
         annotations={rowAnnotationColors}

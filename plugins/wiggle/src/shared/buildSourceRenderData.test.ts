@@ -47,8 +47,7 @@ const baseColor: ResolvedWiggleColor = {
 }
 
 const baseGpuProps: WiggleGpuProps = {
-  sources: [{ name: 'default' }],
-  rowLayout: true,
+  sources: [{ name: 'default', row: 0 }],
   wiggleColor: baseColor,
   origin: 0,
   summaryField: 'score',
@@ -123,8 +122,10 @@ describe('buildSourceRenderData summaryField (bicolor, no solid color)', () => {
       },
       {
         ...baseGpuProps,
-        sources: [{ name: 'default' }, { name: 'b' }],
-        rowLayout: false,
+        sources: [
+          { name: 'default', row: 0 },
+          { name: 'b', row: 0 },
+        ],
         summaryField: 'score',
         effectiveExtent: 'min-max',
         renderingType: 'linecenter',
@@ -147,10 +148,9 @@ describe('buildSourceRenderData summaryField (bicolor, no solid color)', () => {
       {
         ...baseGpuProps,
         sources: [
-          { name: 'default', color: '#00ff00' },
-          { name: 'b', color: '#ff00ff' },
+          { name: 'default', color: '#00ff00', row: 0 },
+          { name: 'b', color: '#ff00ff', row: 0 },
         ],
-        rowLayout: false,
         summaryField: 'score',
         effectiveExtent: 'min-max',
         renderingType: 'linecenter',
@@ -269,10 +269,9 @@ describe('buildSourceRenderData pos/neg coloring', () => {
         summaryField: 'score',
         effectiveExtent: 'none',
         sources: [
-          { name: 'default', color: '#00ff00' },
-          { name: 'b', color: '#ff00ff' },
+          { name: 'default', color: '#00ff00', row: 0 },
+          { name: 'b', color: '#ff00ff', row: 0 },
         ],
-        rowLayout: false,
       },
     )
     expect(layers.map(l => l.rowIndex)).toEqual([0, 0])
@@ -291,7 +290,10 @@ describe('buildSourceRenderData pos/neg coloring', () => {
       },
       {
         ...baseGpuProps,
-        sources: [{ name: 'default', color: '#00ff00' }, { name: 'b' }],
+        sources: [
+          { name: 'default', color: '#00ff00', row: 0 },
+          { name: 'b', row: 1 },
+        ],
       },
     )
     expect(colored!.colorsAbgr).toBeUndefined()
@@ -306,7 +308,6 @@ describe('buildSourceRenderData pos/neg coloring', () => {
       ...baseGpuProps,
       summaryField: 'score',
       effectiveExtent: 'none',
-      rowLayout: false,
     })
     const [above, below] = layer!.colorsAbgr!
     expect(above).not.toBe(below)
@@ -334,9 +335,36 @@ describe('buildSourceRenderData source list', () => {
       ...baseGpuProps,
       summaryField: 'score',
       effectiveExtent: 'none',
-      sources: [{ name: 'absent' }, { name: 'default' }],
+      sources: [
+        { name: 'absent', row: 0 },
+        { name: 'default', row: 1 },
+      ],
     })
     expect(out.map(s => s.rowIndex)).toEqual([1])
+  })
+
+  // Under a grouping `rows.field` the sources sharing a value share its row,
+  // each in its own color.
+  test('sources grouped into one row draw in that row, each its color', () => {
+    const out = buildSourceRenderData(
+      {
+        sources: [
+          ...makeData().sources,
+          { ...makeData().sources[0]!, name: 'b' },
+          { ...makeData().sources[0]!, name: 'c' },
+        ],
+      },
+      {
+        ...baseGpuProps,
+        sources: [
+          { name: 'default', color: '#00ff00', row: 0 },
+          { name: 'b', color: '#ff00ff', row: 0 },
+          { name: 'c', color: '#00ff00', row: 1 },
+        ],
+      },
+    )
+    expect(out.map(s => s.rowIndex)).toEqual([0, 0, 1])
+    expect(out[0]!.color).not.toEqual(out[1]!.color)
   })
 })
 

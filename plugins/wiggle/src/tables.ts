@@ -146,7 +146,9 @@ async function fetchedWiggleHost(
  * `band`), each mark in the color it paints and reaching down to `low`, the
  * band's min or the origin bars grow from, and on a bar `clipSide`, 1 where
  * its score passes the domain's top and -1 its bottom, where the display
- * paints `clipStrip` (its `color`, `px` tall) across the row's edge, else 0;
+ * paints `clipStrip` (its `color`, `px` tall) across the row's edge, else 0,
+ * and its `row`, a source's own, its value's under a grouping `rows.field`,
+ * or 0 in one shared box;
  * `scoreScale`, the score axis the
  * display autoscales to under `encoding.y`, its `domain`, `type` and
  * `symlogConstant`; `rules`, the reference lines it draws, none where it
@@ -190,7 +192,10 @@ export async function wiggleTables(
       wiggleColor: model.wiggleColor,
       scoreRamp:
         model.scoreGradientPaints && rampLut ? { rampLut, rampMid } : undefined,
-      gpuProps: { ...model.gpuProps(), rowLayout: true },
+      gpuProps: {
+        ...model.gpuProps(),
+        sources: model.markSources.map((source, row) => ({ ...source, row })),
+      },
       domain: resolveRenderState(model.domain, d => d),
       scaleType: model.scaleType,
       rawConstant: model.symlogConstant,
@@ -219,7 +224,7 @@ export async function wiggleTables(
     buildSourceRenderData(result, gpuProps).map(layer => ({
       layer,
       source: sources[layer.rowIndex]!.name,
-      row: rowLayout ? layer.rowIndex : 0,
+      row: markSources[layer.rowIndex]!.row,
     })),
   )
   const rampFill =

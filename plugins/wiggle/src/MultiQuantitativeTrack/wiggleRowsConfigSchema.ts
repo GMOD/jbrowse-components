@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
 
@@ -20,16 +19,17 @@ export const wiggleRowsConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot field
-     * `source` for one row per subtrack, or empty for one plot every source
-     * shares. Empty stays a value rather than unset, since under this default
-     * unset could not say "one plot every source shares".
+     * `source` for one row per subtrack, a subtrack attribute such as
+     * `group` for one row per value with its subtracks overlaid, or empty for
+     * one plot every source shares. Empty stays a value rather than unset,
+     * since under this default unset could not say "one plot every source
+     * shares".
      */
     field: {
-      type: 'stringEnum',
-      model: types.enumeration('QuantitativeRowsField', ['', 'source']),
+      type: 'string',
       defaultValue: 'source',
       description:
-        'source for one row per subtrack, or empty for one plot every source shares',
+        'source for one row per subtrack, a subtrack attribute such as group for one row per value with its subtracks overlaid, or empty for one plot every source shares',
     },
   },
   {

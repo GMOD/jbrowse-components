@@ -61,7 +61,7 @@ describe('a relabelled source', () => {
 
   test('names its tooltip row by the label on its own row', () => {
     expect(
-      findRowHit(data, sources, 50, 0, 5, 10, 'chr1', false)?.rows.map(
+      findRowHit(data, ownRows(sources), 50, 0, 5, 10, 'chr1', false)?.rows.map(
         r => r.source,
       ),
     ).toEqual(['Tumor'])
@@ -188,8 +188,12 @@ describe('findOverlayHit', () => {
   })
 })
 
+function ownRows<T>(sources: T[]) {
+  return sources.map(source => [source])
+}
+
 describe('findRowHit', () => {
-  const sources = [{ name: 's1' }, { name: 's2' }, { name: 's3' }]
+  const sources = ownRows([{ name: 's1' }, { name: 's2' }, { name: 's3' }])
 
   test('cursor Y picks the row → that source', () => {
     const data = {
@@ -220,7 +224,7 @@ describe('findRowHit', () => {
         makeSource(s.name, [{ start: 0, end: 100, score: i }]),
       ),
     }
-    const result = findRowHit(data, many, 50, 0, 2, 0.4, 'chr1', false)
+    const result = findRowHit(data, ownRows(many), 50, 0, 2, 0.4, 'chr1', false)
     expect(result?.rows).toEqual([{ source: 's6', score: 6 }])
   })
 
@@ -234,8 +238,8 @@ describe('findRowHit', () => {
       ),
     }
     const at = (y: number) =>
-      findRowHit(data, many, 50, 0, y, 0.3, 'chr1', false, true)?.rows[0]
-        ?.source
+      findRowHit(data, ownRows(many), 50, 0, y, 0.3, 'chr1', false, true)
+        ?.rows[0]?.source
     expect(at(2)).toBe('s9')
     // the last row's 1px cell overhangs its slot past the end of the stack
     expect(at(3)).toBe('s11')
@@ -267,7 +271,7 @@ describe('findRowHit', () => {
     }
     const result = findRowHit(
       data,
-      [{ name: 's1' }],
+      [[{ name: 's1' }]],
       50,
       0,
       5,
@@ -285,7 +289,7 @@ describe('findRowHit', () => {
     // bp 250 falls inside the [100, 500] feature
     const result = findRowHit(
       data,
-      [{ name: 's1' }],
+      [[{ name: 's1' }]],
       250,
       0,
       5,
@@ -297,6 +301,26 @@ describe('findRowHit', () => {
     expect(result?.end).toBe(500)
   })
 
+  // A row grouping several sources by a `rows.field` value reports each of
+  // them at the cursor base, as an overlay does.
+  test('a grouped row reports every source overlaid in it', () => {
+    const data = {
+      sources: [
+        makeSource('a1', [{ start: 0, end: 100, score: 1 }]),
+        makeSource('a2', [{ start: 0, end: 100, score: 2 }]),
+        makeSource('b1', [{ start: 0, end: 100, score: 3 }]),
+      ],
+    }
+    const rows = [[{ name: 'a1' }, { name: 'a2' }], [{ name: 'b1' }]]
+    expect(findRowHit(data, rows, 50, 0, 5, 20, 'chr1', false)?.rows).toEqual([
+      { source: 'a1', score: 1 },
+      { source: 'a2', score: 2 },
+    ])
+    expect(findRowHit(data, rows, 50, 0, 25, 20, 'chr1', false)?.rows).toEqual([
+      { source: 'b1', score: 3 },
+    ])
+  })
+
   test('attaches summary fields where the display shows min/max', () => {
     const data = {
       sources: [
@@ -305,7 +329,7 @@ describe('findRowHit', () => {
     }
     const result = findRowHit(
       data,
-      [{ name: 's1' }],
+      [[{ name: 's1' }]],
       50,
       0,
       5,
@@ -337,7 +361,8 @@ describe('findWiggleHit', () => {
     return {
       effectiveRowHeight: 20,
       rowsTopOffset: 0,
-      markSources: [{ name: 's1' }],
+      markSources: [{ name: 's1', row: 0 }],
+      numRows: 1,
       rpcDataMap: new Map([
         [
           0,
@@ -366,14 +391,17 @@ describe('findWiggleHit', () => {
   })
 
   test('returns undefined with no sources', () => {
-    const model = makeModel({ markSources: [] })
+    const model = makeModel({ markSources: [], numRows: 0 })
     expect(findWiggleHit(model, regions, 50, 5)).toBeUndefined()
   })
 
   test('overlay mode collects a row per source at the cursor bp', () => {
     const model = makeModel({
       isOverlay: true,
-      markSources: [{ name: 's1' }, { name: 's2' }],
+      markSources: [
+        { name: 's1', row: 0 },
+        { name: 's2', row: 0 },
+      ],
       rpcDataMap: new Map([
         [
           0,
@@ -397,6 +425,36 @@ describe('findWiggleHit', () => {
       end: 100,
       rows: [{ source: 's1', score: 5 }],
     })
+  })
+
+  test('grouped rows: the row under the cursor reports its sources', () => {
+    const model = makeModel({
+      numRows: 2,
+      markSources: [
+        { name: 's1', row: 0 },
+        { name: 's2', row: 1 },
+        { name: 's3', row: 1 },
+      ],
+      rpcDataMap: new Map([
+        [
+          0,
+          {
+            sources: [
+              makeSource('s1', [{ start: 0, end: 100, score: 5 }]),
+              makeSource('s2', [{ start: 0, end: 100, score: 9 }]),
+              makeSource('s3', [{ start: 0, end: 100, score: 7 }]),
+            ],
+          },
+        ],
+      ]),
+    })
+    expect(findWiggleHit(model, regions, 50, 5)?.rows).toEqual([
+      { source: 's1', score: 5 },
+    ])
+    expect(findWiggleHit(model, regions, 50, 25)?.rows).toEqual([
+      { source: 's2', score: 9 },
+      { source: 's3', score: 7 },
+    ])
   })
 
   test('row mode past the last row is a miss, not the last source', () => {
@@ -466,7 +524,10 @@ describe('findWiggleHit', () => {
     test('overlaid sources each report the mark in reach', () => {
       const model = sparse([1000], {
         isOverlay: true,
-        markSources: [{ name: 's1' }, { name: 's2' }],
+        markSources: [
+          { name: 's1', row: 0 },
+          { name: 's2', row: 0 },
+        ],
       })
       expect(findWiggleHit(model, zoomedOut, 21, 5)?.rows).toMatchObject([
         { source: 's1', score: 1000 },

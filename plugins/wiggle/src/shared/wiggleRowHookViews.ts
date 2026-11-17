@@ -9,7 +9,7 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 /** What {@link wiggleRowHookViews} reads: the fetched scores and the layout. */
 export interface WiggleRowHookHost {
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
-  isRowLayout: boolean
+  rowsField: string
   discoveredRows: Source[]
 }
 
@@ -37,13 +37,13 @@ export function wiggleRowHookViews(self: WiggleRowHookHost) {
     },
     /**
      * #getter
-     * `TreeSidebarMixin`'s hook: whether several plots share one box, where
-     * only color tells the sources apart. A lone plot has nothing to be
-     * told apart from and is the pos/neg picture a quantitative track has
-     * always drawn.
+     * `TreeSidebarMixin`'s hook: whether several plots share a box, one box
+     * or a row per value of a source attribute, where only color tells the
+     * sources apart. A lone plot has nothing to be told apart from and is
+     * the pos/neg picture a quantitative track has always drawn.
      */
     get sharesPanel(): boolean {
-      return wiggleSharesPanel(self.isRowLayout, self.discoveredRows.length)
+      return wiggleSharesPanel(self.rowsField, self.discoveredRows.length)
     },
     /**
      * #getter
@@ -55,14 +55,15 @@ export function wiggleRowHookViews(self: WiggleRowHookHost) {
     },
     /**
      * #getter
-     * `TreeSidebarMixin`'s hook: off in overlay, which collapses every
-     * source onto one row, so a tree spreading its leaves over the full
-     * height would align to nothing. A subtree filter
+     * `TreeSidebarMixin`'s hook: on only with a row per source. An overlay
+     * collapses every source onto one row and grouped rows hold several, so
+     * a tree spreading its leaves over the full height would align to
+     * nothing. A subtree filter
      * set in a row mode still applies and is still clearable from the track
      * menu and WiggleHint.
      */
     get drawsTree(): boolean {
-      return self.isRowLayout
+      return self.rowsField === 'source'
     },
   }
 }

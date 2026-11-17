@@ -97,7 +97,7 @@ export function wiggleScoreKeyViews(self: WiggleScoreKeyHost) {
 export interface WiggleColorScaleHost {
   scoreColorScale: RampScale | undefined
   thresholdColorScale: ColorScale | undefined
-  isRowLayout: boolean
+  rowsField: string
   rowColorPaintsMarks: boolean
   rowColorScales: CategoricalScale[]
 }
@@ -119,7 +119,7 @@ export function wiggleColorScaleViews(self: WiggleColorScaleHost) {
       if (self.thresholdColorScale) {
         scales.push(self.thresholdColorScale)
       }
-      if (self.isRowLayout || self.rowColorPaintsMarks) {
+      if (self.rowsField === 'source' || self.rowColorPaintsMarks) {
         scales.push(...self.rowColorScales)
       }
       return scales

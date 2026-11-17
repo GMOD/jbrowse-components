@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { radioItem, radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { rowFieldValue } from '@jbrowse/tree-sidebar'
 import {
   makeMarkSizeSubMenu,
   makeResolutionSubMenuItem,
@@ -14,6 +15,7 @@ import {
   RESOLUTION_STEP,
 } from './resolution.ts'
 import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
+import { groupsSources } from './wiggleRowGroups.ts'
 
 import type {
   LineInterpolation,
@@ -27,10 +29,23 @@ import type { RadioOption } from '@jbrowse/core/ui/menuItems'
 import type { Extent } from '@jbrowse/wiggle-core'
 import type { SummaryField } from '@jbrowse/wiggle-core/summaryFields'
 
-const LAYOUTS = [
-  [true, 'Multi-row'],
-  [false, 'Overlapping'],
-] as const
+// The layouts a Plot type leaf picks, as the `rows.field` each writes: a row
+// per source, a row per value of the grouping field where there is one (the
+// field the config names, else a subadapter `group` the sources carry), one
+// shared box. Offering the grouping field beside the other two means a click
+// on `Multi-row` is a choice the reader sees, never a silent loss of it.
+function plotLayouts(rowsField: string, rows: readonly object[]) {
+  const grouping = groupsSources(rowsField)
+    ? rowsField
+    : rows.some(row => rowFieldValue(row, 'group') !== '')
+      ? 'group'
+      : undefined
+  return [
+    ['source', 'Multi-row'],
+    ...(grouping ? [[grouping, `Rows by ${grouping}`] as const] : []),
+    ['', 'Overlapping'],
+  ] as const
+}
 
 // The plot and the layout, picked in one click: a group per layout, the same
 // five plots inside each. Flat five plots plus a "One row per source" checkbox
@@ -45,8 +60,9 @@ export function makeRenderingTypeSubMenu(
     renderingType: WiggleRendering
     setMark: (mark: WiggleMark, interpolate?: LineInterpolation) => void
     isRowLayout: boolean
-    setPlot: (plot: { mark: WiggleMarkObject; rowLayout: boolean }) => void
-    discoveredRows: readonly unknown[]
+    rowsField: string
+    setPlot: (plot: { mark: WiggleMarkObject; rowsField: string }) => void
+    discoveredRows: readonly object[]
   },
   plots: readonly (readonly [WiggleRendering, WiggleMarkObject, string])[],
 ): MenuItem {
@@ -69,18 +85,20 @@ export function makeRenderingTypeSubMenu(
   return {
     label: 'Plot type',
     icon: ShowChartIcon,
-    subMenu: LAYOUTS.map(([rowLayout, layoutLabel]) => ({
-      label: layoutLabel,
-      subMenu: plots.map(([rendering, mark, label]) =>
-        radioItem(
-          label,
-          self.isRowLayout === rowLayout && self.renderingType === rendering,
-          () => {
-            self.setPlot({ mark, rowLayout })
-          },
+    subMenu: plotLayouts(self.rowsField, self.discoveredRows).map(
+      ([rowsField, layoutLabel]) => ({
+        label: layoutLabel,
+        subMenu: plots.map(([rendering, mark, label]) =>
+          radioItem(
+            label,
+            self.rowsField === rowsField && self.renderingType === rendering,
+            () => {
+              self.setPlot({ mark, rowsField })
+            },
+          ),
         ),
-      ),
-    })),
+      }),
+    ),
   }
 }
 

@@ -88,12 +88,20 @@ export function wiggleConfigViews(self: WiggleConfigHost) {
 
     /**
      * #getter
-     * Whether each source is drawn in a separate row, which is all that
-     * `rows.field` decides here: the tree sidebar, the row labels, the separators,
-     * the clustering menu and the row-order sort all hang off it.
+     * `rows.field`: `source` for a row per source, a source attribute for a
+     * row per value with its sources overlaid, `''` for one shared box.
+     */
+    get rowsField(): string {
+      return getConf(self, ['rows', 'field'])
+    },
+
+    /**
+     * #getter
+     * Whether the sources are drawn in rows rather than one shared box: the
+     * row labels, the separators and the row-order sort hang off it.
      */
     get isRowLayout() {
-      return getConf(self, ['rows', 'field']) !== ''
+      return this.rowsField !== ''
     },
 
     get showRowSeparators(): boolean {

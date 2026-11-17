@@ -4,12 +4,12 @@ import { sidebarPanelWidth } from '@jbrowse/tree-sidebar'
 import { getRowTop } from './wiggleComponentUtils.ts'
 
 import type { WigglePlotGeometry } from './wiggleDisplayViews.ts'
-import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
+import type { LabelledRow, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type { ScaleType, ValueScale, YAxis } from '@jbrowse/wiggle-core'
 
 /** What {@link wiggleRowLabelViews} reads: the rows and the sidebar toggle. */
 export interface WiggleRowLabelHost {
-  numSources: number
+  numRows: number
   isRowLayout: boolean
   showRowLabels: boolean
 }
@@ -22,7 +22,7 @@ export function wiggleRowLabelViews(self: WiggleRowLabelHost) {
      * Overlay draws every source on one row, so it names none.
      */
     get drawsRowLabels() {
-      return self.numSources > 1 && self.isRowLayout && self.showRowLabels
+      return self.numRows > 1 && self.isRowLayout && self.showRowLabels
     },
     /**
      * #getter
@@ -38,6 +38,7 @@ export function wiggleRowLabelViews(self: WiggleRowLabelHost) {
 /** What {@link wiggleSidebarViews} reads: the mixin's sidebar and whether the rows are named. */
 export interface WiggleSidebarHost {
   rowSidebarProps: SvgSidebarProps
+  labelledRows: LabelledRow[]
   drawsRowLabels: boolean
 }
 
@@ -47,10 +48,16 @@ export function wiggleSidebarViews(self: WiggleSidebarHost) {
     /**
      * #getter
      * The dendrogram and row labels at the display's left, which the axis
-     * sits past on screen and the export parks left of the figure.
+     * sits past on screen and the export parks left of the figure. The
+     * labels name the rows drawn, a value each where a field groups the
+     * sources.
      */
     get sidebarPanel(): SvgSidebarProps {
-      return { ...self.rowSidebarProps, showLabels: self.drawsRowLabels }
+      return {
+        ...self.rowSidebarProps,
+        rows: self.labelledRows,
+        showLabels: self.drawsRowLabels,
+      }
     },
   }
 }

@@ -91,11 +91,14 @@ test('a mark display faceted by strand on a MultiQuantitativeTrack carries no ro
   ).toEqual([])
 })
 
-test('displayDefaults.rows on another field fails the load for the quantitative display', () => {
-  expect(() =>
-    loadedDisplays({
+test('displayDefaults.rows on a subtrack attribute reaches the quantitative display alone', () => {
+  expect(
+    rowsFields({
       type: 'QuantitativeTrack',
       displayDefaults: { rows: 'group' },
     }),
-  ).toThrow(/QuantitativeRowsField/)
+  ).toEqual([
+    ['LinearWiggleDisplay', 'group'],
+    ['LinearMarkDisplay', ''],
+  ])
 })
