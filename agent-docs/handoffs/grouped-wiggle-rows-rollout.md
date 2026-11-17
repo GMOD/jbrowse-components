@@ -1,6 +1,6 @@
 ---
 name: grouped-wiggle-rows-rollout
-description: "Getting the Fiber-seq Compendium onto jbrowse.org as six multi-row tracks: grouped wiggle rows (ADR-270) waiting on a release, the jb2hubs branch that collapses hg38 and lifts UCSC subgroups, and ggjbrowse reading grouped rows. Read before releasing, before uploading hg38, or before touching grouped rows in ggjbrowse."
+description: "Getting the Fiber-seq Compendium onto jbrowse.org as six multi-row tracks: grouped wiggle rows (ADR-270) awaiting a release, the jb2hubs branch collapsing hg38 and lifting UCSC subgroups, and ggjbrowse reading grouped rows. Read before releasing or uploading hg38."
 ---
 
 # Grouped wiggle rows rollout
