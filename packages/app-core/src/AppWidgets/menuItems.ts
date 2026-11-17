@@ -105,13 +105,34 @@ export function pluginStoreMenuItem(): MenuItem {
   }
 }
 
-export function assemblyManagerMenuItem(): MenuItem {
+/**
+ * `queueAddAssembly` replaces the manager's own add form: the manager closes,
+ * the queued dialog shows, and the manager comes back after it with the table
+ * showing what was added.
+ */
+export function assemblyManagerMenuItem(
+  queueAddAssembly?: () => void,
+): MenuItem {
+  function open(session: AssemblyManagerSession) {
+    session.queueDialog(onClose => [
+      AssemblyManager,
+      {
+        session,
+        onClose,
+        onAddAssembly: queueAddAssembly
+          ? () => {
+              queueAddAssembly()
+              open(session)
+              onClose()
+            }
+          : undefined,
+      },
+    ])
+  }
   return {
     label: 'Assembly manager',
     icon: DNA,
-    onClick: (session: AssemblyManagerSession) => {
-      session.queueDialog(onClose => [AssemblyManager, { session, onClose }])
-    },
+    onClick: open,
   }
 }
 

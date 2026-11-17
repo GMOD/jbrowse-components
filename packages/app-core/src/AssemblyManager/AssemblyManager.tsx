@@ -17,11 +17,13 @@ const AssemblyManager = observer(function AssemblyManager({
   onClose,
   initialFiles,
   editAssemblyName,
+  onAddAssembly,
 }: {
   session: AssemblyManagerSession
   onClose: () => void
   initialFiles?: FileLocation[]
   editAssemblyName?: string
+  onAddAssembly?: () => void
 }) {
   const [isFormOpen, setIsFormOpen] = useState(!!initialFiles)
   const [editingAssembly, setEditingAssembly] = useState<
@@ -68,9 +70,12 @@ const AssemblyManager = observer(function AssemblyManager({
           onClose={() => {
             onClose()
           }}
-          onAddAssembly={() => {
-            setIsFormOpen(true)
-          }}
+          onAddAssembly={
+            onAddAssembly ??
+            (() => {
+              setIsFormOpen(true)
+            })
+          }
           onEditAssembly={arg => {
             setEditingAssembly(arg)
           }}

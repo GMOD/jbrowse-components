@@ -282,6 +282,47 @@ test('Open genome refuses a name a session assembly already has', async () => {
   expect(root.jbrowse.assemblies.length).toBe(0)
 })
 
+// the shared add form writes an UnindexedFastaAdapter for a plain FASTA,
+// holding the whole file in memory; Open genome indexes it
+test("the Assembly manager's Add new assembly opens Open genome, then the manager again", async () => {
+  const root = createRootModel()
+  const item = root
+    .menus()
+    .find(m => m.label === 'Tools')!
+    .menuItems()
+    .find(m => 'label' in m && m.label === 'Assembly manager')
+  if (!item || !('onClick' in item)) {
+    throw new Error('no clickable Assembly manager item')
+  }
+  item.onClick(root.session)
+  const session = root.session!
+  const manager = session.DialogComponent
+  const { onAddAssembly } = session.DialogProps as {
+    onAddAssembly?: () => void
+  }
+  onAddAssembly!()
+
+  const { existingAssemblyNames, onClose } = session.DialogProps as {
+    existingAssemblyNames: string[]
+    onClose: (confs?: Record<string, unknown>[]) => Promise<void>
+  }
+  expect(existingAssemblyNames).toEqual([])
+  await onClose([
+    {
+      name: 'volvox',
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: 'volvox_refseq',
+        adapter: { type: 'FromConfigSequenceAdapter', features: [] },
+      },
+    },
+  ])
+
+  expect(root.jbrowse.assemblies.map(a => a.name)).toEqual(['volvox'])
+  expect(session.DialogComponent).toBe(manager)
+  expect(session.queueOfDialogs).toHaveLength(1)
+})
+
 test('a plugin reload that fails is reported on the session it left open', async () => {
   const root = createRootModel()
   root.setOpenNewSessionCallback(async () => {

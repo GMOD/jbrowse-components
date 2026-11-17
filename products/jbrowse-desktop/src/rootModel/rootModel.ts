@@ -502,7 +502,9 @@ export default function rootModelFactory({
                   redoMenuItem(self.history),
                   { type: 'divider' },
                   pluginStoreMenuItem(),
-                  assemblyManagerMenuItem(),
+                  assemblyManagerMenuItem(() => {
+                    self.openGenomeDialog()
+                  }),
                   preferencesMenuItem(pluginManager),
                   {
                     label: 'Jobs list',
