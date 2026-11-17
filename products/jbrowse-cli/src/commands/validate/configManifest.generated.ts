@@ -7885,7 +7885,8 @@ export const configManifest: ConfigManifest = {
               "colors",
               "tree",
               "kept"
-            ]
+            ],
+            "valuesChange": false
           },
           "shorthand": {
             "string": "field"

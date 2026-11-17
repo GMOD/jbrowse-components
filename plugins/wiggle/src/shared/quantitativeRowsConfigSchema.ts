@@ -1,5 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
+import {
+  ROWS_WRITES,
+  rowsConfigSchema,
+} from '@jbrowse/display-kit/rowsConfigSchema'
 
 /**
  * #config QuantitativeRows
@@ -8,7 +11,8 @@ import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
  * its own, and any other field one row per value of that subtrack attribute
  * (a subadapter's `group`, a samples table column), the subtracks sharing a
  * value overlaid in their row. The arrangement members are the shared `Rows`
- * object's.
+ * object's, and they name subtracks under every field, so a write changing
+ * `field` keeps them.
  *
  * #example
  * ```js
@@ -45,5 +49,6 @@ export const quantitativeRowsConfigSchema = ConfigurationSchema(
      * #baseConfiguration
      */
     baseConfiguration: rowsConfigSchema,
+    writes: { ...ROWS_WRITES, valuesChange: false },
   },
 )

@@ -77,6 +77,13 @@ const arrangement = {
 
 const arranged = { rows: { field: 'source', ...arrangement } }
 
+const subtrackArrangement = {
+  sort: ['K562 Hap1', 'GM12878 Hap2'],
+  labels: { 'K562 Hap1': 'K562 maternal' },
+  colors: { 'K562 Hap1': '#f00' },
+  kept: ['K562 Hap1', 'GM12878 Hap2'],
+}
+
 const hosted = {
   sort: ['NA12878 HP1', 'NA12891'],
   labels: { NA12878: 'Child' },
@@ -250,6 +257,20 @@ const cases: {
     base: { rows: { sort: ['Deletion'], labels: { Deletion: 'Del' } } },
     write: { rows: 'type' },
     rows: { sort: ['Deletion'], labels: { Deletion: 'Del' } },
+  },
+  {
+    name: "a wiggle display's new field keeps the arrangement, which names subtracks under every field",
+    display: 'LinearWiggleDisplay',
+    base: { rows: { field: 'source', ...subtrackArrangement } },
+    write: { rows: 'group' },
+    rows: { field: 'group', ...subtrackArrangement },
+  },
+  {
+    name: "a wiggle display's grouped rows back on a row per subtrack keep the arrangement",
+    display: 'LinearWiggleDisplay',
+    base: { rows: { field: 'group', ...subtrackArrangement } },
+    write: { rows: 'source' },
+    rows: { field: 'source', ...subtrackArrangement },
   },
 ]
 

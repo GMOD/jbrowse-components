@@ -14,6 +14,13 @@ export interface KeyedWrites {
    */
   emptyChanges?: boolean
   /**
+   * Whether a write from one value of `keyedBy` to another changes it, true
+   * by default. A quantitative display's keyed members name its subtracks
+   * under every field, a row per subtrack or a row per value the subtracks
+   * carry (ADR-270), so its `rows` declares false.
+   */
+  valuesChange?: boolean
+  /**
    * The values of `keyedBy` that refine another, finer to coarser, as
    * `{ haplotype: 'sample' }`: a finer row names the coarser row it refines,
    * so the keyed members carry across a write between the two, in either
@@ -75,7 +82,8 @@ export function keyedInForce(writes: KeyedWrites, value: unknown) {
  * overlay toggle turns them, and a write between a value and the one it
  * refines (`refines`) changes nothing either. Under `emptyChanges` any write
  * `next` states of another value changes it, empty (`''`, `null`, unset)
- * included.
+ * included. Under `valuesChange: false` a write between two values changes
+ * nothing.
  */
 export function changesKeyedField(
   writes: KeyedWrites,
@@ -86,12 +94,15 @@ export function changesKeyedField(
   const to = Object.hasOwn(next, writes.keyedBy)
     ? keyedFieldInForce(writes, next)
     : undefined
+  const betweenValues = emptied(from) !== '' && emptied(to) !== ''
   return writes.emptyChanges
-    ? Object.hasOwn(next, writes.keyedBy) && emptied(from) !== emptied(to)
-    : typeof to === 'string' &&
+    ? Object.hasOwn(next, writes.keyedBy) &&
+        emptied(from) !== emptied(to) &&
+        (writes.valuesChange !== false || !betweenValues)
+    : writes.valuesChange !== false &&
+        typeof to === 'string' &&
         typeof from === 'string' &&
-        from !== '' &&
-        to !== '' &&
+        betweenValues &&
         from !== to &&
         !refinesEither(writes, from, to)
 }

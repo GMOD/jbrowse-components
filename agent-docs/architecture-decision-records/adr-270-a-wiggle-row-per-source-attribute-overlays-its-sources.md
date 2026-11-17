@@ -32,6 +32,12 @@ display as an attribute on each source row.
   names rows reads it (`numRows`, `effectiveRowHeight`, `labelledRows`, each
   `markSources` entry's `row`). The arrangement, palette, focus, dialog and
   color key keep working on sources unchanged.
+- **A field change keeps the arrangement.** Under every field the keyed
+  members name subtracks, or values their subtracks carry, so the quantitative
+  `rows` declares `valuesChange: false` on ADR-257's keyed writes: switching
+  Multi-row, Rows by group and back keeps `sort`, `labels`, `colors`, `tree`
+  and `kept`, through a model write, a settings bag, a share-link delta and
+  the CLI. Other row displays still drop them.
 - **Row order follows `rows.sort` by value or by member.** A grouped row
   ranks at its earliest `rows.sort` entry, its value or a member's name, then
   by arrival, so the dialog's source reorder and "Sort rows by score here"

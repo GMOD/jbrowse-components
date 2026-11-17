@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { ROW_COLOR_SCALE_ID } from '@jbrowse/tree-sidebar'
 
 import { encodeWiggleRegions } from '../shared/buildSourceRenderData.ts'
@@ -242,6 +243,34 @@ describe('rows: { field: "group" }', () => {
     expect(display.drawsTree).toBe(true)
     expect(offersClustering(display)).toBe(true)
     expect(display.markSources.map(s => s.row)).toEqual([0, 1, 2, 3])
+  })
+})
+
+describe('switching between a row per subtrack and grouped rows', () => {
+  const arrangement = {
+    sort: ['K562 Hap1', 'GM12878 Hap2'],
+    labels: { 'K562 Hap1': 'K562 maternal' },
+    colors: { 'K562 Hap1': '#f00' },
+    kept: ['K562 Hap1', 'GM12878 Hap2'],
+  }
+  const arrangementOf = ({
+    configuration,
+  }: ReturnType<typeof makeDisplay>['display']) => ({
+    sort: readConfObject(configuration, ['rows', 'sort']),
+    labels: readConfObject(configuration, ['rows', 'labels']),
+    colors: readConfObject(configuration, ['rows', 'colors']),
+    kept: readConfObject(configuration, ['rows', 'kept']),
+  })
+
+  it('keeps the arrangement through the Plot type layouts and back', () => {
+    const { display } = makeDisplay({ field: 'source', ...arrangement })
+    display.setPlot({ mark: { type: 'line' }, rowsField: 'group' })
+    expect(arrangementOf(display)).toEqual(arrangement)
+    display.setRowsField('source')
+    expect(readConfObject(display.configuration, ['rows', 'field'])).toBe(
+      'source',
+    )
+    expect(arrangementOf(display)).toEqual(arrangement)
   })
 })
 
