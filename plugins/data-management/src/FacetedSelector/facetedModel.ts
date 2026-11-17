@@ -100,6 +100,25 @@ function groupsTracks(values: string[]) {
   return shared >= 2 && counts.size <= present / 2
 }
 
+// Two fields mirror each other when each value of one always comes with the
+// same value of the other, both ways (a file format that always says what the
+// track kind says): the second column repeats the first.
+function mirrors(a: string[], b: string[]) {
+  const forward = new Map<string, string>()
+  const backward = new Map<string, string>()
+  return a.every((value, i) => {
+    const other = b[i]!
+    const seenForward = forward.get(value)
+    const seenBackward = backward.get(other)
+    forward.set(value, other)
+    backward.set(other, value)
+    return (
+      (seenForward === undefined || seenForward === other) &&
+      (seenBackward === undefined || seenBackward === value)
+    )
+  })
+}
+
 /**
  * #stateModel FacetedModel
  * #internal faceted-selector UI state owned by the hierarchical track selector
@@ -372,31 +391,45 @@ export function facetedStateTreeF() {
        */
       get groupingFields() {
         const rows = self.columnRows
-        return ['category', 'kind', ...self.metadataKeys.map(metadataFacet)]
+        const ranked = [
+          'category',
+          'kind',
+          ...self.metadataKeys.map(metadataFacet),
+        ]
           .map(field => ({
             field,
             values: rows.map(row => getRowStr(field, row)),
           }))
           .filter(({ values }) => groupsTracks(values))
-          .map(({ field, values }) => ({
-            field,
-            coverage: values.filter(v => v !== '').length,
+          .map(entry => ({
+            ...entry,
+            coverage: entry.values.filter(v => v !== '').length,
           }))
           .sort((a, b) => b.coverage - a.coverage)
-          .map(({ field }) => field)
+        const kept: typeof ranked = []
+        for (const entry of ranked) {
+          if (!kept.some(k => mirrors(entry.values, k.values))) {
+            kept.push(entry)
+          }
+        }
+        return kept.map(({ field }) => field)
       },
     }))
     .views(self => ({
       /**
        * #getter
        * the columns shown beside the name, most important first, as far as the
-       * width allows: the config's `hierarchical.table.columns`, or else the
-       * grouping fields
+       * width allows: the config's `hierarchical.table.columns`, then the
+       * grouping fields it leaves out
        */
       get defaultColumns() {
         const known = new Set(self.fields)
-        const configured = self.configuredColumns.filter(f => known.has(f))
-        return configured.length ? configured : self.groupingFields
+        return [
+          ...new Set([
+            ...self.configuredColumns.filter(f => f !== 'name' && known.has(f)),
+            ...self.groupingFields,
+          ]),
+        ]
       },
       /**
        * #getter
@@ -458,8 +491,9 @@ export function facetedStateTreeF() {
       },
       /**
        * #getter
-       * The facets that start open, listed first: the leading default columns,
-       * any column the user showed, and any facet still filtering. The rest
+       * The facets that start open, listed first: the first three default
+       * columns that group tracks, any column the user showed, and any facet
+       * still filtering. The rest
        * start collapsed to their heading, so a hub with many metadata keys
        * offers them all without listing every value of each.
        */
@@ -467,8 +501,11 @@ export function facetedStateTreeF() {
         const active = [...self.filters]
           .filter(([, values]) => values.length > 0)
           .map(([field]) => field)
+        const grouping = new Set(self.groupingFields)
         return new Set([
-          ...self.defaultColumns.slice(0, OPEN_FACETS),
+          ...self.defaultColumns
+            .filter(f => grouping.has(f))
+            .slice(0, OPEN_FACETS),
           ...self.chosenColumns.shown.filter(f => f !== 'name'),
           ...active,
         ])

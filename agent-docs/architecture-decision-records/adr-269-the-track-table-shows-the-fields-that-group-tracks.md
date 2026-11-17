@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The drawer's track table shows, beside the name, as many columns as fit: the config's `hierarchical.table.columns`, or else the fields that group tracks. Manage columns wins either way. Names shrink from the middle; facets are thin, most start collapsed; the filter box needs every word"
+summary: "The drawer's track table shows, beside the name, as many columns as fit: the config's `hierarchical.table.columns` first, then the fields that group tracks. Manage columns wins either way. Names shrink from the middle; facets are thin, most start collapsed; the filter box needs every word"
 ---
 
 # ADR-269: The track table shows the fields that group tracks
@@ -12,6 +12,9 @@ product review and a scale review at 5,000 and 20,000 tracks, judged on the
 jb2hubs human configs (hg38 799 tracks, hs1 627, hg19 528). Colin asked that
 the narrow drawer show "a subset of the total metadata columns" and that
 facets stay "very thin", and called faceting every metadata key "a bit silly".
+A cold Fable review of the config slot (same day) kept its name, place and
+string-list shape and changed what a short list means, the open-filter rule
+and the docs text.
 
 ## Context
 
@@ -34,17 +37,23 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   has no more values than half the tracks that have one. Candidates are
   category, kind and each top-level metadata key; the most widely set come
   first. A per-track URL or description, a constant flag, or a flag with one
-  exception (2,100 "Homo sapiens", one "Human") is never a default column.
+  exception (2,100 "Homo sapiens", one "Human") is never a default column,
+  nor is a field whose values map one-to-one onto a column already chosen (a
+  file format that always says what the kind says).
   The rule runs over every track the drawer can list, so Favorites and Recent
   keep the same columns.
 - **The width decides how many show.** The name keeps up to half the table,
   every other column at least 100 px, and the table shows as many default
   columns as fit beside the name, with no sideways scroll. On hg38 that is
   name, kind, category.
-- **`configuration.hierarchical.table.columns` names the columns** for a hub
-  whose metadata has many keys of which a few matter. It is a string list of
-  field paths (`metadata.assay`, `category`), most important first, the same
-  fit applying. A per-track key, not a predicate; empty derives.
+- **`configuration.hierarchical.table.columns` ranks columns first** for a
+  hub whose metadata has many keys of which a few matter. It is a string list
+  of field paths (`category`, `kind`, `description`, `adapter`,
+  `metadata.<key>`), most important first; the grouping fields fill whatever
+  room it leaves, so an admin writes the three keys that matter and an entry
+  no track has falls back to deriving. `name` is always first and is not an
+  entry. `jbrowse validate` warns about an entry no track in the file
+  carries, rather than the app warning at runtime.
 - **Manage columns wins either way.** It lists every field and records
   `[{ field, show }]` per config and assembly in localStorage. A shown column
   shows however narrow the table, and may scroll it; a hidden one never
@@ -59,9 +68,9 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
 - **Facets are thin, and few start open.** Rows are 20 px with a 16 px
   checkbox and grey counts; the heading collapses its facet; "clear" shows
   only on a facet with a selection. The panel lists the default columns and
-  the grouping fields. Only the first three default columns' facets, any
-  column the user showed, and any facet still filtering start open, listed
-  first; the rest are one collapsed heading each. A facet lists every value
+  the grouping fields. Only the filters for the first three default columns
+  that group tracks (a description column does not use up a slot), any column
+  the user showed, and any facet still filtering start open, listed first; the rest are one collapsed heading each. A facet lists every value
   up to 20, past that its 10 most common plus any checked one, with "Show N
   more".
 - **The filter box needs every word, in any order and field.** `"quotes"`
@@ -90,6 +99,10 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
 | A hidden whole-name text node beside the two halves, for `getByText` | Doubles every label's `textContent`. Tests find a track by its checkbox's label instead |
 | Splitting only names over a length threshold | Couples layout to a guessed width; a narrow column cuts a short name too |
 | Stripping `-`, `_` and `.` from the typed term as well | `1.5` matched "dbSNP(155)" and `a.b` 125 hg38 tracks |
+| A second config list for which filters start open | Columns and open filters would disagree, and it doubles the surface; the filters follow the first three columns |
+| Object entries in `table.columns` (label, width, open-as-filter) | A label belongs to the field everywhere it shows, a width is the layout's, and open-as-filter is the second list again |
+| Bare metadata keys in `table.columns` | Collide with a metadata key named `category`, `kind` or `name`; the prefix is how a track config spells the path |
+| A configured list that is the whole column set | A two-entry list left the rest of the width empty and dropped category unless repeated |
 | Per-row precomputed facet strings | Facet counts cost about 30 ms per keystroke at 20,000 tracks once the panel draws few checkboxes; not worth the second copy of each row |
 
 ## Consequences

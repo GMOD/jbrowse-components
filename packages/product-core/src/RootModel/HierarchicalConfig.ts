@@ -42,11 +42,16 @@ export function HierarchicalConfigSchemaFactory() {
     table: ConfigurationSchema('hierarchicalTable', {
       /**
        * #slot configuration.hierarchical.table.columns
-       * the columns the track table shows beside the name, most important
-       * first, as far as its width allows, e.g. `['metadata.assay',
-       * 'metadata.biosample', 'category']`. Empty picks the fields that group
-       * tracks (category, kind, and metadata keys with few values), the most
-       * widely set first. A user's own choice in Manage columns wins
+       * the columns the track table shows beside the track name, most
+       * important first, e.g. `['metadata.assay', 'metadata.biosample',
+       * 'metadata.target']`. An entry is `category`, `kind`, `description`,
+       * `adapter`, or `metadata.<key>` for a top-level metadata key (the rest
+       * of the path is the key, dots included). The table shows as many
+       * columns as fit its width, in this order, then fills any remaining
+       * room with the fields JBrowse would pick on its own (category, kind,
+       * and metadata keys that group tracks). The filters for the first three
+       * columns start open. Entries that no track has are skipped. A user's
+       * choice in Manage columns overrides this list
        */
       columns: {
         type: 'stringArray',

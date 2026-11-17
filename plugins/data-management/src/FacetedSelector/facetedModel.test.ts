@@ -243,7 +243,13 @@ describe('columns and facets', () => {
         name: `a${i}`,
         description: `a${i} signal`,
         category: [i % 2 ? 'Signal' : 'Peaks'],
-        metadata: { assay, url: `https://example.com/a${i}`, flag: true },
+        metadata: {
+          assay,
+          url: `https://example.com/a${i}`,
+          flag: true,
+          format: assay === 'DNase' ? 'bigWig' : 'bigBed',
+          lab: i === 0 || i === 3 ? 'X' : 'Y',
+        },
         assemblyNames: ['volMyt1'],
         type: 'FeatureTrack',
         adapter: { type: 'FromConfigAdapter', features: [] },
@@ -262,18 +268,38 @@ describe('columns and facets', () => {
       'metadata.assay',
       'metadata.url',
       'metadata.flag',
+      'metadata.format',
+      'metadata.lab',
       'adapter',
     ])
     // every track but the reference sequence is a Feature, so kind groups
     // nothing; nor does a unique url, a constant flag or a per-track
-    // description
-    expect(faceted.groupingFields).toEqual(['category', 'metadata.assay'])
+    // description; format says what assay says
+    expect(faceted.groupingFields).toEqual([
+      'category',
+      'metadata.assay',
+      'metadata.lab',
+    ])
     expect(faceted.shownColumns(1)).toEqual(['name', 'category'])
     expect(faceted.shownColumns(9)).toEqual([
       'name',
       'category',
       'metadata.assay',
+      'metadata.lab',
     ])
+  })
+
+  test('the configured columns come first, and the grouping fields fill the room after them', () => {
+    const { session, faceted } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
+    faceted.setConfiguredColumns(['name', 'metadata.lab'])
+    expect(faceted.defaultColumns).toEqual([
+      'metadata.lab',
+      'category',
+      'metadata.assay',
+    ])
+    faceted.setConfiguredColumns(['metadata.nope'])
+    expect(faceted.defaultColumns).toEqual(faceted.groupingFields)
   })
 
   test('the config names the columns, and the user’s choices win over both', () => {
@@ -297,30 +323,24 @@ describe('columns and facets', () => {
     expect([...faceted.facetCategoryCounts.keys()]).toContain('metadata.flag')
   })
 
-  test('the leading three default columns, shown columns and active filters start open, listed first', () => {
+  test('the first three default columns that group tracks, shown columns and active filters start open, listed first', () => {
     const { session, faceted } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    faceted.setConfiguredColumns([
-      'metadata.assay',
-      'category',
-      'kind',
-      'adapter',
-    ])
+    faceted.setConfiguredColumns(['description', 'metadata.assay', 'adapter'])
     expect([...faceted.openFacets]).toEqual([
       'metadata.assay',
       'category',
-      'kind',
+      'metadata.lab',
     ])
-    faceted.setColumnVisible('description', true)
+    faceted.setColumnVisible('kind', true)
     faceted.setFilter('metadata.flag', ['true'])
     expect([...faceted.openFacets]).toEqual([
       'metadata.assay',
       'category',
+      'metadata.lab',
       'kind',
-      'description',
       'metadata.flag',
     ])
-    expect(faceted.filterFacets.at(-1)).toBe('adapter')
   })
 
   test('a search lists name matches first when no column is sorted', () => {

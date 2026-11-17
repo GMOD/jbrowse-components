@@ -56,6 +56,43 @@ describe('validateConfig', () => {
     expect(validateConfig(baseConfig()).problems).toEqual([])
   })
 
+  it('warns about a track table column no track carries, and passes one that a track does', () => {
+    const base = baseConfig()
+    const config = {
+      ...base,
+      tracks: [{ ...base.tracks[0]!, metadata: { assay: 'ChIP' } }],
+      configuration: {
+        hierarchical: {
+          table: {
+            columns: [
+              'metadata.assay',
+              'metadata.asay',
+              'categry',
+              'name',
+              'kind',
+            ],
+          },
+        },
+      },
+    }
+    expect(
+      warningsOf(config).map(p => [p.where, p.message.split(';')[0]]),
+    ).toEqual([
+      [
+        'configuration.hierarchical.table.columns[1]',
+        'no track in this config has metadata "asay" — did you mean "assay"?, so the table skips this column unless a connection\'s tracks carry it',
+      ],
+      [
+        'configuration.hierarchical.table.columns[2]',
+        '"categry" is not a track table field — did you mean "category"?',
+      ],
+      [
+        'configuration.hierarchical.table.columns[3]',
+        '"name" is always the first column',
+      ],
+    ])
+  })
+
   // The other half. Where the slot IS declared the config works, so this is a
   // warning rather than an error — but writing one by hand is still backwards,
   // and three configs here were copying their own assembly's FASTA urls into a

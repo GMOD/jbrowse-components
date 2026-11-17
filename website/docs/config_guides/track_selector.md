@@ -63,28 +63,35 @@ sort on, as in the
 panel.
 
 Beside the name, the table shows as many columns as fit its width, with no
-sideways scroll. By default those are the fields that sort tracks into groups,
-the most widely set first: category, kind, and each metadata key with at least
-two values that are each shared by two or more tracks, and no more values than
-half the tracks that have one. A per-track URL or description, or a flag every
-track but one shares, is left out. The user's Manage columns choices override
-this either way. The facet panel opens the first three of these columns' filters
-and lists the other grouping fields collapsed below them.
+sideways scroll. By default those are the fields that sort tracks into groups:
+category, kind, and each metadata key with at least two values that are each
+shared by two or more tracks, and no more values than half the tracks that have
+one. A per-track URL or description, a flag every track but one shares, or a key
+that only repeats another column (a file format that always matches the kind) is
+left out. The user's Manage columns choices override this either way. The filter
+panel opens the filters for the first three of these columns and lists the other
+grouping fields collapsed below them.
 
 Where a hub's metadata has many keys of which a few matter, name them, most
-important first, with `hierarchical.table.columns`:
+important first, with `hierarchical.table.columns`. The table shows these first,
+then fills any remaining room with the fields it would pick on its own, and
+opens the filters for the first three:
 
 ```json
 {
   "configuration": {
     "hierarchical": {
       "table": {
-        "columns": ["metadata.assay", "metadata.biosample", "category"]
+        "columns": ["metadata.assay", "metadata.biosample", "metadata.target"]
       }
     }
   }
 }
 ```
+
+An entry is `category`, `kind`, `description`, `adapter`, or `metadata.<key>`
+for a top-level metadata key. `jbrowse validate` warns about an entry no track
+in the config carries.
 
 The kind column groups tracks by what they hold: the track type ("Alignments",
 "Variant", "Quantitative") unless the track's `metadata.kind` says otherwise.

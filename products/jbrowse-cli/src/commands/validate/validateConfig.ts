@@ -1269,6 +1269,53 @@ function checkMarkDisplays(
   }
 }
 
+const tableFields = ['category', 'kind', 'description', 'adapter']
+
+// An entry of hierarchical.table.columns names a field the track table can
+// show. The table skips one no track has, so a typo there only shows as a
+// column that never appears; connection tracks are not in the file, so a
+// metadata key only they carry is a warning, not an error.
+function checkTableColumns(
+  configuration: unknown,
+  tracks: Record<string, unknown>[],
+  report: Report,
+) {
+  const table =
+    isRecord(configuration) && isRecord(configuration.hierarchical)
+      ? configuration.hierarchical.table
+      : undefined
+  const columns =
+    isRecord(table) && Array.isArray(table.columns) ? table.columns : []
+  const metadataKeys = [
+    ...new Set(
+      tracks.flatMap(t =>
+        isRecord(t.metadata) ? Object.keys(t.metadata) : [],
+      ),
+    ),
+  ]
+  for (const [i, entry] of columns.entries()) {
+    const where = `configuration.hierarchical.table.columns[${i}]`
+    if (typeof entry === 'string') {
+      if (entry === 'name') {
+        report.warn(where, '"name" is always the first column; leave it out')
+      } else if (entry.startsWith('metadata.')) {
+        const key = entry.slice('metadata.'.length)
+        if (!metadataKeys.includes(key)) {
+          report.warn(
+            where,
+            `no track in this config has metadata "${key}"${didYouMean(key, metadataKeys)}, so the table skips this column unless a connection's tracks carry it`,
+          )
+        }
+      } else if (!tableFields.includes(entry)) {
+        report.warn(
+          where,
+          `"${entry}" is not a track table field${didYouMean(entry, [...tableFields, ...metadataKeys.map(k => `metadata.${k}`)])}; use ${tableFields.join(', ')} or metadata.<key>`,
+        )
+      }
+    }
+  }
+}
+
 export function validateConfig(
   config: unknown,
   manifest: ConfigManifest = configManifest,
@@ -1382,6 +1429,7 @@ export function validateConfig(
   for (const [i, track] of tracks.entries()) {
     checkTrack(track, i, manifest, report, ctx)
   }
+  checkTableColumns(configuration, tracks, report)
 
   const connections = Array.isArray(config.connections)
     ? config.connections
