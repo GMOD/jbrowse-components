@@ -38,11 +38,12 @@ function parseDescription(value: string, inline: boolean) {
  * A track's prose description in its `metadata`, as UCSC trackDb supplies it:
  * a link to a page to fetch, or the page itself.
  *
- * Four spellings: `UCSCTrackHubConnection` spreads the trackDb stanza across
- * `metadata`, the bulk converter behind genomes.jbrowse.org nests it under
- * `metadata.ucsc` (~50,700 configs at permanent URLs), and the stanza key is
- * `html` for a track and `htmlPath` for an assembly. Both producers write an
- * escaped anchor for a hub's page, so the href comes back through a parse. The
+ * Four spellings: `UCSCTrackHubConnection` and the bulk converter behind
+ * genomes.jbrowse.org (~50,700 configs at permanent URLs) nest the trackDb
+ * stanza under `metadata.ucsc`, configs written by hand or by older builds of
+ * the connection spread it across `metadata`, and the stanza key is `html` for
+ * a track and `htmlPath` for an assembly. Both producers write an escaped
+ * anchor for a hub's page, so the href comes back through a parse. The
  * converter writes golden-path assemblies' pages inline, and only under `ucsc`
  * is markup read as a page, so a track's own `html` column stays a column.
  *

@@ -65,6 +65,10 @@ JBrowse matches hub tracks to assemblies by genome ID, so a track appears only
 when its assembly is configured in your JBrowse instance. The connection form
 can filter by assembly name.
 
+A composite track's subgroups, such as cell line, antibody or view, become
+columns and filters in the track table, named as the hub titles them. The rest
+of each track's trackDb settings are under `ucsc` in its About dialog.
+
 ## JBrowse 1 connection URL format
 
 For the legacy JBrowse 1 connection type, point the URL at the JBrowse 1 data

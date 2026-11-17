@@ -36,6 +36,44 @@ function ancestorStanzas(trackDb: TrackDbFile, trackName: string) {
   return ancestors.reverse()
 }
 
+function spaced(text: string) {
+  return text.replaceAll('_', ' ')
+}
+
+/**
+ * A track's subgroups as metadata: its `subGroups view=Signal cell=K562`
+ * against the composite's `subGroupN cell Cell_Line K562=K562 …` definitions,
+ * as `{ 'Cell Line': 'K562' }`, with UCSC's underscores read as spaces.
+ */
+export function subGroupMetadata(settings: Record<string, string>) {
+  const definitions = new Map(
+    Object.entries(settings)
+      .filter(([key]) => /^subGroup\d+$/.test(key))
+      .map(([, value]) => {
+        const [name = '', title = name, ...tags] = value.trim().split(/\s+/)
+        const labels = new Map(
+          tags.map(tag => {
+            const [id = '', label = id] = tag.split('=')
+            return [id, spaced(label)]
+          }),
+        )
+        return [name, { title: spaced(title), labels }] as const
+      }),
+  )
+  return Object.fromEntries(
+    (settings.subGroups ?? '')
+      .trim()
+      .split(/\s+/)
+      .flatMap(pair => {
+        const [name = '', id = ''] = pair.split('=')
+        const definition = definitions.get(name)
+        return definition && id
+          ? [[definition.title, definition.labels.get(id) ?? spaced(id)]]
+          : []
+      }),
+  )
+}
+
 export function generateTracks({
   trackDb,
   trackDbLoc,
@@ -60,6 +98,7 @@ export function generateTracks({
           ? { html: htmlLink(track.data.html, trackDbBaseUrl) }
           : {}),
       },
+      subGroups: subGroupMetadata(trackDb.settings(trackName)),
       // folder path: the leaf's UCSC track `group` (broadest), then each
       // ancestor container's shortLabel root-first. Most hubs express structure
       // through superTrack/compositeTrack nesting and set no `group` on leaves,
@@ -80,13 +119,20 @@ export function generateTracks({
         searched: trackName === searchedTrack,
       }),
     }))
-    .map(r => {
+    .map(({ metadata, subGroups, ...r }) => {
+      // hashed with the stanza spread across metadata, as earlier builds
+      // stored it, so a hub track keeps the id saved sessions know it by
       const { textSearching: _, ...unsearched } = {
         textSearching: undefined,
+        metadata,
         ...r,
       }
       return {
         ...r,
+        // the stanza nests under `ucsc`, as genomes.jbrowse.org's configs
+        // carry it, and its subgroups (cell line, antibody, view) are the
+        // keys the track table groups and filters by
+        metadata: { ...subGroups, ucsc: metadata },
         trackId: `ucsc-trackhub-${objectHash(unsearched)}`,
         assemblyNames: [assemblyName],
       }

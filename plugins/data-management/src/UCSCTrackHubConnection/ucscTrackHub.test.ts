@@ -1,7 +1,7 @@
 import { GenomesFile, TrackDbFile } from '@gmod/ucsc-hub'
 
 import { generateAssembly } from './generateAssembly.ts'
-import { generateTracks } from './ucscTrackHub.ts'
+import { generateTracks, subGroupMetadata } from './ucscTrackHub.ts'
 import { hubBaseUrl } from './util.ts'
 
 import type { HubLocation } from './util.ts'
@@ -362,9 +362,79 @@ html doc/volvoxBam.html
     trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
     assemblyName: 'volvox',
   })
-  expect(tracks[0]!.metadata.html).toContain(
+  expect(tracks[0]!.metadata.ucsc.html).toContain(
     'https://x.org/volvox/doc/volvoxBam.html',
   )
+})
+
+const subGroupDb = new TrackDbFile(`track encTfbs
+compositeTrack on
+type bigWig
+shortLabel TFBS
+longLabel ENCODE TFBS
+subGroup1 view Views Signal=Signal Peaks=Peaks
+subGroup2 cell Cell_Line K562=K562 GM12878=GM12878
+html encTfbs.html
+
+track encTfbsK562Ctcf
+parent encTfbs on
+subGroups view=Signal cell=K562
+shortLabel K562 CTCF
+longLabel K562 CTCF signal
+bigDataUrl k562ctcf.bw
+
+track volvoxBam
+type bam
+shortLabel BAM
+longLabel BAM alignments
+bigDataUrl tiny.bam
+html doc/volvoxBam.html
+`)
+
+function subGroupTracks() {
+  return generateTracks({
+    trackDb: subGroupDb,
+    trackDbLoc: uri('https://x.org/hub/hg38/trackDb.txt'),
+    assemblyName: 'hg38',
+  })
+}
+
+test('generateTracks nests the stanza under ucsc and lifts its subgroups to metadata', () => {
+  const [ctcf, bam] = subGroupTracks()
+  expect(ctcf!.metadata).toEqual({
+    Views: 'Signal',
+    'Cell Line': 'K562',
+    ucsc: {
+      track: 'encTfbsK562Ctcf',
+      parent: 'encTfbs on',
+      subGroups: 'view=Signal cell=K562',
+      shortLabel: 'K562 CTCF',
+      longLabel: 'K562 CTCF signal',
+      bigDataUrl: 'k562ctcf.bw',
+    },
+  })
+  expect(Object.keys(bam!.metadata)).toEqual(['ucsc'])
+})
+
+// the ids earlier builds gave these tracks, when the stanza was spread across
+// metadata: a saved session names a hub track by its id
+test('generateTracks keeps the track ids saved sessions know', () => {
+  expect(subGroupTracks().map(t => t.trackId)).toEqual([
+    'ucsc-trackhub--478194101',
+    'ucsc-trackhub-77087854',
+  ])
+})
+
+test('subGroupMetadata labels a subgroup by its definition, or as written', () => {
+  expect(
+    subGroupMetadata({
+      subGroup1: 'cell Cell_Line HeLa_S3=HeLa_S3',
+      subGroup2: 'factor Factor',
+      subGroups: 'cell=HeLa_S3 factor=CTCF unknown=x',
+    }),
+  ).toEqual({ 'Cell Line': 'HeLa S3', Factor: 'CTCF' })
+  expect(subGroupMetadata({ subGroups: 'cell=K562' })).toEqual({})
+  expect(subGroupMetadata({})).toEqual({})
 })
 
 const genome = new GenomesFile(`genome volvox
