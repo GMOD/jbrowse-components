@@ -1194,24 +1194,34 @@ export function stateModelFactory(
             ? { kind: 'unaligned' }
             : undefined
       },
-      /**
-       * #getter
-       * a paralogy mate on the anchor assembly draws on its axis, not as a row
-       */
-      get rowAssemblies() {
-        return laneRowsOf({
-          groups: self.groups,
-          placeless: [
-            ...self.windowDeletions.map(d => d.assemblyName),
-            ...this.unalignedChosenLanes,
-          ],
-          anchor: self.anchorAssemblyName,
-          preferred: [...self.domain, ...(self.heldLaneOrder?.lanes ?? [])],
-          selection: self.laneSelection,
-          hidden: self.hiddenLanes,
-          keyOf: self.laneKey,
-        })
-      },
+    }))
+    .views(self => {
+      const sameRows = sameAsLast<string[]>()
+      return {
+        /**
+         * #getter
+         * a paralogy mate on the anchor assembly draws on its axis, not as a
+         * row
+         */
+        get rowAssemblies() {
+          return sameRows(
+            laneRowsOf({
+              groups: self.groups,
+              placeless: [
+                ...self.windowDeletions.map(d => d.assemblyName),
+                ...self.unalignedChosenLanes,
+              ],
+              anchor: self.anchorAssemblyName,
+              preferred: [...self.domain, ...(self.heldLaneOrder?.lanes ?? [])],
+              selection: self.laneSelection,
+              hidden: self.hiddenLanes,
+              keyOf: self.laneKey,
+            }),
+          )
+        },
+      }
+    })
+    .views(self => ({
       /**
        * #getter
        * the pins that hold under the anchor, each naming its lane as
@@ -1220,7 +1230,7 @@ export function stateModelFactory(
       get pinsInForce(): LanePin[] {
         return pinsInForceOf(
           pinListOf(self.lanePins),
-          this.rowAssemblies,
+          self.rowAssemblies,
           self.anchorAssemblyName,
           self.laneKey,
         )
@@ -1253,14 +1263,14 @@ export function stateModelFactory(
        * the records' spelling of a lane
        */
       get rowOfLane(): ReadonlyMap<string, string> {
-        return new Map(this.rowAssemblies.map(r => [self.laneKey(r), r]))
+        return new Map(self.rowAssemblies.map(r => [self.laneKey(r), r]))
       },
       /** #getter */
       get lanesToDescribe(): string[] {
-        return this.rowAssemblies.filter(
+        return self.rowAssemblies.filter(
           name =>
             !self.describedLanes.has(name) &&
-            (!this.holdsAssembly(name) || this.holdsTemporarily(name)),
+            (!self.holdsAssembly(name) || self.holdsTemporarily(name)),
         )
       },
       /** #getter */

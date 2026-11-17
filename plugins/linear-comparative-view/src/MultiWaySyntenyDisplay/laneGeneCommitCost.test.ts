@@ -83,6 +83,28 @@ function changedKeys(
   return [...after.keys()].filter(key => after.get(key) !== before.get(key))
 }
 
+function anchorFeatures() {
+  return laneNames.flatMap((lane, li) =>
+    [100, 250, 400, 550, 700].map(
+      (s, gi) =>
+        new SimpleFeature({
+          uniqueId: `${lane}-${gi}`,
+          name: `sym${gi}`,
+          refName: 'ctgA',
+          start: s,
+          end: s + 60,
+          strand: 1,
+          mate: {
+            assemblyName: lane,
+            refName: 'ctgB',
+            start: 20_000 + s + li,
+            end: 20_060 + s + li,
+          },
+        }),
+    ),
+  )
+}
+
 async function stackWithGenes({ star = false } = {}) {
   const { display } = createDisplayWithSession({
     trackAssemblyNames: ['volvox', ...laneNames],
@@ -103,27 +125,7 @@ async function stackWithGenes({ star = false } = {}) {
     ['utrs', 'encoding', 'color', 'value'],
     "jexl:feature.strand > 0 ? '#357089' : '#893570'",
   )
-  display.setFeatures(
-    laneNames.flatMap((lane, li) =>
-      [100, 250, 400, 550, 700].map(
-        (s, gi) =>
-          new SimpleFeature({
-            uniqueId: `${lane}-${gi}`,
-            name: `sym${gi}`,
-            refName: 'ctgA',
-            start: s,
-            end: s + 60,
-            strand: 1,
-            mate: {
-              assemblyName: lane,
-              refName: 'ctgB',
-              start: 20_000 + s + li,
-              end: 20_060 + s + li,
-            },
-          }),
-      ),
-    ),
-  )
+  display.setFeatures(anchorFeatures())
   await until(() => display.laneDecisions.size === LANES)
   let cells: ReadonlyMap<string, unknown> = new Map()
   const stop = autorun(() => {
@@ -238,6 +240,25 @@ test('a scroll or a lane drag keeps the placed gene labels', async () => {
     display.anchorAssemblyName,
   )
   expect(placements.at(-1)!.placed).not.toBe(placed)
+  watch()
+  stop()
+})
+
+test('a refetch landing the same lanes keeps the rows and their gene tracks', async () => {
+  const { display, stop } = await stackWithGenes()
+  const reads: { rows: string[]; entries: unknown }[] = []
+  const watch = autorun(() => {
+    reads.push({
+      rows: display.rowAssemblies,
+      entries: display.laneGeneTrackEntries,
+    })
+  })
+  const groups = display.groups
+
+  display.setFeatures(anchorFeatures())
+  expect(display.groups).not.toBe(groups)
+  expect(reads.length).toBe(1)
+  expect(display.rowAssemblies).toBe(reads[0]!.rows)
   watch()
   stop()
 })
