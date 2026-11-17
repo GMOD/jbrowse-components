@@ -245,12 +245,16 @@ export default function f(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * Opens the bulk workflow with these local files already in it, replacing
-       * any staged before. A file dropped on the session lands here.
+       * Opens the bulk workflow with these local files added to any already
+       * staged. A file dropped on the session lands here.
        */
       stageLocations(locations: FileLocation[]) {
         self.setWorkflowName(BULK_WORKFLOW)
-        bulkInput(self).update({ mode: 'local', localLocations: locations })
+        const input = bulkInput(self)
+        input.update({
+          mode: 'local',
+          localLocations: [...input.form.localLocations, ...locations],
+        })
       },
     }))
     .actions(self => {

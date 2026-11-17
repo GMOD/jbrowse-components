@@ -114,7 +114,7 @@ const JBrowse = observer(function JBrowse({
           key={id}
           session={session}
           HeaderButtons={<ShareButton session={session} />}
-          fileDrop={webFileDropRoutes(session)}
+          fileDrop={webFileDropRoutes(session, () => session.flushSession())}
         />
       </StyleThemeProvider>
     </ThemeProvider>

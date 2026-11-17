@@ -312,7 +312,7 @@ test('a plugin-set change reloads once, after both halves of an update', async (
   expect(pluginsAtReload).toEqual([['Some', 'Other']])
 })
 
-test('the genome dialog opens with dropped files staged, and empty from the menu', () => {
+test('the genome dialog opens with dropped files staged, and with none otherwise', () => {
   const root = createRootModel()
   const initialFiles: FileLocation[] = [
     { localPath: '/data/hg38.2bit', locationType: 'LocalPathLocation' },

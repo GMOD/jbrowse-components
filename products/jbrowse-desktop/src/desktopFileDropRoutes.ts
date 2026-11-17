@@ -16,6 +16,8 @@ export function desktopFileDropRoutes(
       const path = electronRenderer().webUtils.getPathForFile(file)
       if (path) {
         await rootModel.openNewSessionCallback(path)
+      } else {
+        throw new Error(`${file.name} is not on disk, so it cannot be opened`)
       }
     },
     openGenomeFiles: initialFiles => {

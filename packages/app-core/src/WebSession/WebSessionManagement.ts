@@ -56,6 +56,12 @@ export function WebSessionManagementMixin(_pluginManager: PluginManager) {
         activateSession(id: string) {
           return root().activateSession(id)
         },
+        /**
+         * #action
+         */
+        flushSession() {
+          return root().flushSession()
+        },
       }
     })
 }

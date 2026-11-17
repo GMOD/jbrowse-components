@@ -91,4 +91,5 @@ export interface AbstractWebSessionDbRootModel {
   setSavedSessionFavorite(id: string, favorite: boolean): Promise<void>
   renameSavedSession(id: string, name: string): Promise<void>
   activateSession(id: string): Promise<void>
+  flushSession(): Promise<void>
 }

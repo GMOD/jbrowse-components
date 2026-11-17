@@ -299,6 +299,25 @@ export default function RootModel({
         },
         /**
          * #action
+         * Writes the open session's last edits, which the throttled autosave may
+         * not have landed yet, ahead of something replacing the session.
+         */
+        async flushSession() {
+          await withSessionDB(self, async sessionDB => {
+            const flushed =
+              self.session &&
+              (await saveSessionSnapshot(
+                sessionDB,
+                self.session,
+                self.configPath,
+              ))
+            if (flushed) {
+              self.upsertSessionMetadata(flushed)
+            }
+          })
+        },
+        /**
+         * #action
          */
         async activateSession(id: string) {
           // reloading the open session from IDB can only lose work — the row is

@@ -97,6 +97,35 @@ test('dropped track files stage in the Add track widget for the view under the d
   })
 })
 
+test('a drop off the views stages into the open Add track form, keeping its view', async () => {
+  const { session, second } = renderDropTarget()
+  session.openWidget('AddTrackWidget', 'addTrackWidget', { view: second.id })
+  dropFiles(screen.getByText('beside the views'), ['reads.bam'])
+  await waitFor(() => {
+    expect(session.visibleWidget).toMatchObject({
+      view: { id: second.id },
+      workflowForms: {
+        'Add multiple tracks': { localLocations: [{ name: 'reads.bam' }] },
+      },
+    })
+  })
+})
+
+test('a second drop adds to the files staged by the first', async () => {
+  const { session } = renderDropTarget()
+  dropFiles(screen.getByText('inside a view'), ['reads.bam'])
+  dropFiles(screen.getByText('inside a view'), ['reads.bam.bai'])
+  await waitFor(() => {
+    expect(session.visibleWidget).toMatchObject({
+      workflowForms: {
+        'Add multiple tracks': {
+          localLocations: [{ name: 'reads.bam' }, { name: 'reads.bam.bai' }],
+        },
+      },
+    })
+  })
+})
+
 test('a drop outside every view targets the first view', async () => {
   const { session, first } = renderDropTarget()
   dropFiles(screen.getByText('beside the views'), ['reads.bam'])

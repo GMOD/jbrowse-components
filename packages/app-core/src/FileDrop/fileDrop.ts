@@ -64,19 +64,30 @@ export function droppedOnViewId(target: EventTarget) {
 export function openDroppedTracks(
   session: SessionWithWidgets,
   locations: FileLocation[],
-  viewId?: string | null,
+  viewId?: string,
 ) {
-  const view = session.views.find(v => v.id === viewId) ?? session.views[0]
-  if (view) {
-    const widget = session.openWidget('AddTrackWidget', 'addTrackWidget', {
-      view: view.id,
-    })
-    if (isFileStagingWidget(widget)) {
-      widget.stageLocations(locations)
-    }
+  const droppedOn = session.views.find(v => v.id === viewId)
+  const openForm = session.widgets.get('addTrackWidget')
+  if (!droppedOn && openForm && isFileStagingWidget(openForm)) {
+    session.showWidget(openForm)
+    openForm.stageLocations(locations)
   } else {
-    session.notify('Open a view to add the dropped tracks to first')
+    const view = droppedOn ?? session.views[0]
+    if (view) {
+      const widget = session.openWidget('AddTrackWidget', 'addTrackWidget', {
+        view: view.id,
+      })
+      if (isFileStagingWidget(widget)) {
+        widget.stageLocations(locations)
+      }
+    } else {
+      session.notify('Open a view to add the dropped tracks to first')
+    }
   }
+}
+
+function isOnDisk(location: FileLocation) {
+  return !('localPath' in location) || Boolean(location.localPath)
 }
 
 export async function openDroppedFiles({
@@ -88,16 +99,23 @@ export async function openDroppedFiles({
   session: SessionWithWidgets
   routes: FileDropRoutes
   files: File[]
-  viewId?: string | null
+  viewId?: string
 }) {
   const route = routeDroppedFiles(files, routes.sessionFileExtensions)
   try {
     if (route.kind === 'session') {
       await routes.openSessionFile(route.file)
-    } else if (route.kind === 'genome') {
-      routes.openGenomeFiles(route.files.map(fileToLocation))
-    } else if (route.files.length > 0) {
-      openDroppedTracks(session, route.files.map(fileToLocation), viewId)
+    } else {
+      const locations = route.files.map(fileToLocation).filter(isOnDisk)
+      if (locations.length === 0) {
+        session.notify(
+          'The dropped files are not on disk, so they cannot be opened',
+        )
+      } else if (route.kind === 'genome') {
+        routes.openGenomeFiles(locations)
+      } else {
+        openDroppedTracks(session, locations, viewId)
+      }
     }
   } catch (e) {
     console.error(e)
