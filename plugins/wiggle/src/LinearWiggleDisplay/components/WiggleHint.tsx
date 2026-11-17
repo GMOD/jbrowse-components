@@ -11,6 +11,7 @@ export interface HintModel {
   numRows: number
   isOverlay: boolean
   isDensityMode: boolean
+  isGroupedRows: boolean
   effectiveRowHeight: number
   height: number
   setPlot: (plot: { mark: WiggleMarkObject; rowsField: string }) => void
@@ -20,6 +21,8 @@ export interface HintModel {
 // than a blank, so the escape is offered inline. Not in density, where the
 // escape the button offers IS the mode the user is in, and sub-pixel rows are
 // the intended cohort view: a thousand-sample heatmap is read as a stack.
+// Grouped rows get no button: a heatmap overlays a row's sources, the last
+// covering the rest, and a row per source is more rows still.
 function hint({
   numRows,
   isOverlay,
@@ -53,14 +56,16 @@ const WiggleHint = observer(function WiggleHint({
           severity="warning"
           message={message}
           action={
-            <Button
-              size="small"
-              onClick={() => {
-                model.setPlot({ mark: { type: 'rect' }, rowsField: 'source' })
-              }}
-            >
-              Draw as heatmap
-            </Button>
+            model.isGroupedRows ? undefined : (
+              <Button
+                size="small"
+                onClick={() => {
+                  model.setPlot({ mark: { type: 'rect' }, rowsField: 'source' })
+                }}
+              >
+                Draw as heatmap
+              </Button>
+            )
           }
         />
       </div>

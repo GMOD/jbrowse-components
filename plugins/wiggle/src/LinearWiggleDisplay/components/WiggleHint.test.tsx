@@ -12,6 +12,7 @@ function makeModel(overrides: Partial<HintModel> = {}): HintModel {
     numRows: 2,
     isOverlay: false,
     isDensityMode: false,
+    isGroupedRows: false,
     effectiveRowHeight: 50,
     height: 100,
     setPlot: () => {},
@@ -49,6 +50,23 @@ describe('rows packed below a pixel', () => {
       mark: { type: 'rect' },
       rowsField: 'source',
     })
+  })
+
+  // A heatmap overlays a grouped row's sources, and a row per source is
+  // more rows still, so nothing is offered.
+  it('names the smear under grouped rows and offers no heatmap', () => {
+    const { getByText, queryByText } = render(
+      <WiggleHint
+        model={makeModel({
+          numRows: 400,
+          effectiveRowHeight: 0.25,
+          height: 100,
+          isGroupedRows: true,
+        })}
+      />,
+    )
+    getByText('400 rows in 100px leaves each below 1px.')
+    expect(queryByText('Draw as heatmap')).toBeNull()
   })
 
   // In density the escape the message names IS the mode the user picked, and

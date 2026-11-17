@@ -236,6 +236,30 @@ describe('rows: { field: "group" }', () => {
     ])
   })
 
+  it('asks a grouped heatmap for a row per source, not for rows', () => {
+    const { display } = makeDisplay()
+    display.setMark('rect')
+    expect(display.liveNotices).toEqual([
+      'rows: a heatmap row on "group" draws its sources on one strip, the last covering the rest; put each source on a row of its own',
+    ])
+  })
+
+  it('offers a grouping field back from Multi-row after leaving it', () => {
+    const { display } = makeDisplay(
+      { field: 'tissue' },
+      HAPS.map(h => ({ ...h, tissue: h.group === 'K562' ? 'blood' : 'lymph' })),
+    )
+    display.setRowsField('source')
+    const plotType = display
+      .trackMenuItems()
+      .find(item => 'label' in item && item.label === 'Plot type')
+    expect(labelsOf(plotType)).toEqual([
+      'Multi-row',
+      'Rows by tissue',
+      'Overlapping',
+    ])
+  })
+
   it('names a field no subtrack carries', () => {
     const { display } = makeDisplay({ field: 'grup' })
     expect(display.numRows).toBe(1)

@@ -31,15 +31,21 @@ import type { SummaryField } from '@jbrowse/wiggle-core/summaryFields'
 
 // The layouts a Plot type leaf picks, as the `rows.field` each writes: a row
 // per source, a row per value of the grouping field where there is one (the
-// field the config names, else a subadapter `group` the sources carry), one
-// shared box. Offering the grouping field beside the other two means a click
+// field in force, else the one last drawn, else a subadapter `group` the
+// sources carry), one shared box. Offering the grouping field beside the other two means a click
 // on `Multi-row` is a choice the reader sees, never a silent loss of it.
-function plotLayouts(rowsField: string, rows: readonly object[]) {
+function plotLayouts(
+  rowsField: string,
+  lastGroupingField: string,
+  rows: readonly object[],
+) {
   const grouping = groupsSources(rowsField)
     ? rowsField
-    : rows.some(row => rowFieldValue(row, 'group') !== '')
-      ? 'group'
-      : undefined
+    : lastGroupingField !== ''
+      ? lastGroupingField
+      : rows.some(row => rowFieldValue(row, 'group') !== '')
+        ? 'group'
+        : undefined
   return [
     ['source', 'Multi-row'],
     ...(grouping ? [[grouping, `Rows by ${grouping}`] as const] : []),
@@ -61,6 +67,7 @@ export function makeRenderingTypeSubMenu(
     setMark: (mark: WiggleMark, interpolate?: LineInterpolation) => void
     isRowLayout: boolean
     rowsField: string
+    lastGroupingField: string
     setPlot: (plot: { mark: WiggleMarkObject; rowsField: string }) => void
     discoveredRows: readonly object[]
   },
@@ -85,20 +92,22 @@ export function makeRenderingTypeSubMenu(
   return {
     label: 'Plot type',
     icon: ShowChartIcon,
-    subMenu: plotLayouts(self.rowsField, self.discoveredRows).map(
-      ([rowsField, layoutLabel]) => ({
-        label: layoutLabel,
-        subMenu: plots.map(([rendering, mark, label]) =>
-          radioItem(
-            label,
-            self.rowsField === rowsField && self.renderingType === rendering,
-            () => {
-              self.setPlot({ mark, rowsField })
-            },
-          ),
+    subMenu: plotLayouts(
+      self.rowsField,
+      self.lastGroupingField,
+      self.discoveredRows,
+    ).map(([rowsField, layoutLabel]) => ({
+      label: layoutLabel,
+      subMenu: plots.map(([rendering, mark, label]) =>
+        radioItem(
+          label,
+          self.rowsField === rowsField && self.renderingType === rendering,
+          () => {
+            self.setPlot({ mark, rowsField })
+          },
         ),
-      }),
-    ),
+      ),
+    })),
   }
 }
 

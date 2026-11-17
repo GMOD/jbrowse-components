@@ -64,7 +64,7 @@ import {
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
-import { sourceRowValue } from '../shared/wiggleRowGroups.ts'
+import { groupsSources, sourceRowValue } from '../shared/wiggleRowGroups.ts'
 import {
   wiggleScoreStages,
   wiggleSidebarStages,
@@ -331,9 +331,13 @@ export default function stateModelFactory(
                 `rows: no subtrack carries "${self.rowsField}", so every subtrack shares one row`,
               ]
             : []),
-          ...(self.isDensityMode && self.sharesPanel
+          ...(self.isDensityMode &&
+          self.sharesPanel &&
+          self.wiggleRows.some(row => row.sources.length > 1)
             ? [
-                'rows: an overlaid heatmap draws every source on one strip, the last covering the rest; put the sources on rows',
+                self.isGroupedRows
+                  ? `rows: a heatmap row on "${self.rowsField}" draws its sources on one strip, the last covering the rest; put each source on a row of its own`
+                  : 'rows: an overlaid heatmap draws every source on one strip, the last covering the rest; put the sources on rows',
               ]
             : []),
         ]
@@ -424,6 +428,9 @@ export default function stateModelFactory(
         },
       }
     })
+    .volatile(() => ({
+      lastGroupingField: '',
+    }))
     .actions(self => ({
       /**
        * #action
@@ -431,9 +438,13 @@ export default function stateModelFactory(
        * source attribute (`Rows by group`) or `''` (`Overlapping`), each
        * holding the five plot names. Writes the field alone, so the
        * arrangement survives a trip through the shared plot and comes back
-       * with the rows.
+       * with the rows. A grouping field left behind is kept as
+       * `lastGroupingField`, which the Plot type menu offers to return to.
        */
       setRowsField(field: string) {
+        if (groupsSources(self.rowsField)) {
+          self.lastGroupingField = self.rowsField
+        }
         setConf(self, ['rows', 'field'], field)
       },
     }))

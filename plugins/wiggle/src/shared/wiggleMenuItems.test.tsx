@@ -108,6 +108,7 @@ function makePlotSelf(
     },
     isRowLayout: rowsField !== '',
     rowsField,
+    lastGroupingField: '',
     setPlot: (plot: { mark: { type: string }; rowsField: string }) => {
       writes.push(plot)
     },
