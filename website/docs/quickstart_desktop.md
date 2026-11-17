@@ -72,12 +72,13 @@ give it becomes a new session on that assembly.
 
 ### Using a pre-loaded genome
 
-**Browse hosted genomes** needs no files. The table is searchable by name,
-scientific name or accession, grouped by source (UCSC, GenArk and so on). Star a
-genome to add it to **Favorite genomes**, and check several and click **Go** to
-open them in one session for comparative work.
+**Browse hosted genomes** needs no files. A search by name, scientific name or
+accession covers every group (UCSC, GenArk and so on); with the box empty, the
+**Group** selector picks which one to browse. Click a genome's name to open it,
+and star it to add it to **Favorite genomes**. To open several in one session
+for comparative work, turn on **Enable multiple selection** in the ⋮ menu.
 
-<Figure src="/img/desktop-available-genomes-steps.png" caption="Browse hosted genomes (1) opens the table, and launch (2) opens a session on that genome."/>
+<Figure src="/img/desktop-available-genomes-steps.png" caption="Browse hosted genomes (1) opens the table, and a genome's name (2) opens a session on it."/>
 
 ## Adding tracks
 

@@ -22,7 +22,7 @@ const useStyles = makeStyles()({
 })
 
 // The filter/action row above the table: multi-select launch, search, the group
-// selector, the settings menu, and the more-info button. All of it reads and
+// selector, the settings menu, and the about link. All of it reads and
 // mutates the shared table state; the table body below only displays the
 // resulting rows.
 const GenomesTableToolbar = observer(function GenomesTableToolbar({
@@ -30,13 +30,11 @@ const GenomesTableToolbar = observer(function GenomesTableToolbar({
   activeTypeOption,
   categories,
   onLaunchSelected,
-  onMoreInfo,
 }: {
   state: GenomesTableState
   activeTypeOption: string
   categories?: Category[]
   onLaunchSelected: () => void
-  onMoreInfo: () => void
 }) {
   const { classes } = useStyles()
   const {
@@ -84,9 +82,9 @@ const GenomesTableToolbar = observer(function GenomesTableToolbar({
 
       <IconButton
         size="small"
-        title="More information"
+        title="About these genomes"
         onClick={() => {
-          onMoreInfo()
+          window.open('https://genomes.jbrowse.org/about', '_blank')
         }}
       >
         <Help />

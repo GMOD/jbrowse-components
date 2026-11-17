@@ -159,16 +159,12 @@ export function getColumnDefinitions({
     value,
     cell: row => (
       <GenomeNameCell
-        displayName={value(row)}
+        displayName={value(row) || row.accession}
         jbrowseConfig={row.jbrowseConfig}
         jbrowseMinimalConfig={row.jbrowseMinimalConfig}
         websiteUrl={websiteUrl(row.accession, isUcsc(row))}
-        isFavorite={favs.has(row.accession)}
         launch={launch}
         onClose={onClose}
-        toggleFavorite={() => {
-          toggleFavorite(row)
-        }}
       >
         {badges ? <NcbiBadges row={row} /> : null}
       </GenomeNameCell>

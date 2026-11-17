@@ -200,14 +200,12 @@ export const PROCEDURES: Record<string, Procedure> = {
         // carry a second one; a reader who wants hg38 out of a table of
         // hundreds does not need to be told that the box above it searches.
         title: 'available-genomes table',
-        // A `text` anchor takes the smallest-area match and ties keep the first,
-        // so this is the top row's link -- the same one the flow then clicks, so
-        // the callout cannot point at a row other than the one frame 3 shows.
-        // The badge goes right: on the left it lands on the genome's name, which
-        // is what tells the reader which row this is.
+        // A selector anchor takes the first match, so this is the top row's
+        // name -- the same link the flow then clicks, so the callout cannot
+        // point at a row other than the one frame 3 shows.
         annotations: step({
           n: 2,
-          anchor: { text: 'launch' },
+          anchor: { selector: 'table a[title="Open in a new session"]' },
           label: 'Opens the genome in a new session',
           badgeSide: 'right',
           labelDx: 100,

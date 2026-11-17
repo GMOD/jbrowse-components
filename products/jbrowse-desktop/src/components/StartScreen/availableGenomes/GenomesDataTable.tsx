@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -6,7 +6,6 @@ import { observer } from 'mobx-react'
 import NetworkErrorMessage from '../NetworkErrorMessage.tsx'
 import GenomesTable from './GenomesTable.tsx'
 import GenomesTableToolbar from './GenomesTableToolbar.tsx'
-import MoreInfoDialog from './MoreInfoDialog.tsx'
 import SkeletonLoader from './SkeletonLoader.tsx'
 import TablePagination from './TablePagination.tsx'
 import { getColumnDefinitions } from './getColumnDefinitions.tsx'
@@ -51,7 +50,6 @@ const GenomesDataTable = observer(function GenomesDataTable({
   launch: LaunchCallback
 }) {
   const { classes } = useStyles()
-  const [dialog, setDialog] = useState<'moreInfo'>()
   const state = useGenomesTableState()
   const {
     typeOption,
@@ -146,9 +144,6 @@ const GenomesDataTable = observer(function GenomesDataTable({
           )
           onClose()
         }}
-        onMoreInfo={() => {
-          setDialog('moreInfo')
-        }}
       />
 
       {loadError ? <NetworkErrorMessage error={loadError} /> : null}
@@ -165,7 +160,6 @@ const GenomesDataTable = observer(function GenomesDataTable({
             setSelected={setSelected}
             sorting={sorting}
             toggleSort={toggleSort}
-            emptyMessage="No genomes match the current search and filters"
           />
 
           <TablePagination
@@ -179,13 +173,6 @@ const GenomesDataTable = observer(function GenomesDataTable({
           />
         </div>
       )}
-      {dialog === 'moreInfo' ? (
-        <MoreInfoDialog
-          onClose={() => {
-            setDialog(undefined)
-          }}
-        />
-      ) : null}
     </div>
   )
 })

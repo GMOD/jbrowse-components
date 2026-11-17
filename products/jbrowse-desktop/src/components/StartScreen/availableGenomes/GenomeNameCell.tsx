@@ -5,66 +5,41 @@ import { observer } from 'mobx-react'
 import type { LaunchCallback } from '../types.ts'
 
 /**
- * Shared cell renderer for the name column in both UCSC and non-UCSC genome tables.
- * Renders launch links, a context menu, and optional badge children (e.g. reference/suppressed indicators).
+ * The name column's cell in every genome table: the name launches the genome,
+ * and the menu holds the less common actions.
  */
 const GenomeNameCell = observer(function GenomeNameCell({
   displayName,
   jbrowseConfig,
   jbrowseMinimalConfig,
   websiteUrl,
-  isFavorite,
   launch,
   onClose,
-  toggleFavorite,
   children,
 }: {
-  displayName?: string
+  displayName: string
   jbrowseConfig: string
   jbrowseMinimalConfig?: string
   websiteUrl: string
-  isFavorite: boolean
   launch: LaunchCallback
   onClose: () => void
-  toggleFavorite: () => void
   children?: React.ReactNode
 }) {
-  const handleLaunch = () => {
-    launch([jbrowseConfig])
+  const launchConfig = (config: string) => {
+    launch([config])
     onClose()
   }
 
-  const handleMinimalLaunch = jbrowseMinimalConfig
-    ? () => {
-        launch([jbrowseMinimalConfig])
-        onClose()
-      }
-    : undefined
-
   return (
     <div>
-      {displayName} (
       <ActionLink
+        title="Open in a new session"
         onClick={() => {
-          handleLaunch()
+          launchConfig(jbrowseConfig)
         }}
       >
-        launch
-      </ActionLink>
-      ){' '}
-      {handleMinimalLaunch ? (
-        <>
-          (
-          <ActionLink
-            onClick={() => {
-              handleMinimalLaunch()
-            }}
-          >
-            minimal
-          </ActionLink>
-          ){' '}
-        </>
-      ) : null}
+        {displayName}
+      </ActionLink>{' '}
       {children}
       <CascadingMenuButton
         menuItems={[
@@ -75,28 +50,16 @@ const GenomeNameCell = observer(function GenomeNameCell({
               window.open(websiteUrl, '_blank')
             },
           },
-          {
-            label: 'Launch',
-            onClick: () => {
-              handleLaunch()
-            },
-          },
-          ...(handleMinimalLaunch
+          ...(jbrowseMinimalConfig
             ? [
                 {
                   label: 'Launch (minimal config)',
                   onClick: () => {
-                    handleMinimalLaunch()
+                    launchConfig(jbrowseMinimalConfig)
                   },
                 },
               ]
             : []),
-          {
-            label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-            onClick: () => {
-              toggleFavorite()
-            },
-          },
         ]}
       >
         <MoreHoriz />

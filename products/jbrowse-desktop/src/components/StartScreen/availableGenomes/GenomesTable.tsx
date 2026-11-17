@@ -89,7 +89,6 @@ const GenomesTable = observer(function GenomesTable({
   setSelected,
   sorting,
   toggleSort,
-  emptyMessage,
 }: {
   columns: GenomeColumn[]
   rows: Entry[]
@@ -98,7 +97,6 @@ const GenomesTable = observer(function GenomesTable({
   setSelected: (arg: Set<string>) => void
   sorting?: Sorting
   toggleSort: (colId: string) => void
-  emptyMessage: React.ReactNode
 }) {
   const { classes } = useStyles()
   const allSelected =
@@ -191,7 +189,7 @@ const GenomesTable = observer(function GenomesTable({
               className={classes.empty}
               colSpan={columns.length + (multipleSelection ? 1 : 0)}
             >
-              {emptyMessage}
+              No genomes match the current search and filters
             </td>
           </tr>
         )}
