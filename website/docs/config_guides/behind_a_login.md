@@ -3,7 +3,7 @@ title: Putting JBrowse Web behind a login
 description:
   Recipes for password-protecting JBrowse Web and its data with HTTP Basic auth,
   institutional single sign-on, AWS Cognito, Google IAP and Firebase
-  Authentication
+  Authentication, or the login of a web app that embeds JBrowse
 guide_category: Deployment
 ---
 
@@ -431,6 +431,37 @@ back instead of the file's bytes. JBrowse reports that as an error on the track,
 often `HTTP 200 ... (should be 206 for range requests)` or a parse error. A
 reload sends the user through the sign-in again, and a longer session lifetime
 makes it rarer.
+
+## Signing in through your own web app
+
+A web app that already has users (a Next.js or Astro site with Firebase
+Authentication, Auth0, Clerk or Cognito through Amplify) can show JBrowse as an
+[embedded component](/docs/embedded_components) on a page it renders only after
+sign-in. The app's own login then covers JBrowse in one of two ways:
+
+- **Serve the data from the app's own site**, behind the same session check as
+  its other routes. The component's requests carry the app's session cookie like
+  any other request from the page. A route that streams a data file has to pass
+  the `Range` header through and answer `206 Partial Content`.
+- **Hand the component signed URLs.** After sign-in, the app asks its backend
+  for presigned URLs and builds the track config from them, as
+  [Private files in S3](/docs/config_guides/authentication#private-files-in-s3)
+  describes. Mint them on each page load, never into a saved session.
+
+Since the app builds the config, it can also give each user only the tracks they
+may open, with the data host still enforcing the same rule.
+
+## A sign-in button inside JBrowse Web
+
+A plugin can add a **Sign in** item to a menu with
+[`appendToMenu`](/docs/developer_guides/menus) and run a sign-in SDK such as
+Firebase Authentication's. The sign-in itself protects nothing, since the files
+it should guard are still served to anyone who asks. For data, the plugin also
+needs an internet account that attaches the user's token to each request, and
+the data host has to check it, as in
+[An internet account that signs at fetch time](/docs/config_guides/authentication#an-internet-account-that-signs-at-fetch-time).
+The recipes above are less code for that. A plugin sign-in fits per-user
+features over public data, such as saving sessions to the user's account.
 
 ## When the data lives somewhere else
 

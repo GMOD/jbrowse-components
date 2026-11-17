@@ -7,6 +7,23 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config OAuthInternetAccount
  * Signs requests to a resource that uses OAuth 2.0, fetching and refreshing
  * the access token through the provider's authorization flow.
+ *
+ * #example
+ * Any OAuth 2.0 provider, with its endpoints supplied. Register the JBrowse
+ * page's URL as a redirect URI with the provider, and use `needsPKCE`, since a
+ * static app has nowhere to keep a client secret.
+ * ```js
+ * {
+ *   type: 'OAuthInternetAccount',
+ *   internetAccountId: 'myOAuth',
+ *   name: 'Institutional login',
+ *   domains: ['data.myinstitution.org'],
+ *   clientId: 'your-client-id',
+ *   authEndpoint: 'https://auth.myinstitution.org/oauth/authorize',
+ *   tokenEndpoint: 'https://auth.myinstitution.org/oauth/token',
+ *   needsPKCE: true,
+ * }
+ * ```
  */
 
 const OAuthConfigSchema = ConfigurationSchema(

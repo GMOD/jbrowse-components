@@ -10,6 +10,25 @@ Auto-generated from the config schema in the source. See the [config guide](/doc
 Signs requests to a resource that uses OAuth 2.0, fetching and refreshing
 the access token through the provider's authorization flow.
 
+## Example usage
+
+Any OAuth 2.0 provider, with its endpoints supplied. Register the JBrowse
+page's URL as a redirect URI with the provider, and use `needsPKCE`, since a
+static app has nowhere to keep a client secret.
+
+```js
+{
+  type: 'OAuthInternetAccount',
+  internetAccountId: 'myOAuth',
+  name: 'Institutional login',
+  domains: ['data.myinstitution.org'],
+  clientId: 'your-client-id',
+  authEndpoint: 'https://auth.myinstitution.org/oauth/authorize',
+  tokenEndpoint: 'https://auth.myinstitution.org/oauth/token',
+  needsPKCE: true,
+}
+```
+
 ## Related links
 
 - **Extended by:** [DropboxOAuthInternetAccount](../dropboxoauthinternetaccount)
@@ -19,7 +38,7 @@ the access token through the provider's authorization flow.
 
 ## Config slots
 
-`OAuthInternetAccount` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in an example. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Account slots are top-level fields of the account's entry in `internetAccounts`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

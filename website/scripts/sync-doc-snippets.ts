@@ -77,11 +77,13 @@ function resolve(spec: string) {
 // - a migration guide's before/after pair, whose "before" the tree no longer
 //   contains;
 // - an embedded-view controller example, whose test wraps the same calls in a
-//   jsdom harness.
+//   jsdom harness;
+// - a login recipe for another service (a Lambda@Edge handler, a Cloud Run
+//   session service), which runs outside JBrowse and has no repo copy to test.
 //
 // Raise the baseline only for one of these, and say which in the commit. A
 // tested `jb` example fixture would let the agent pages include most of theirs.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '42')
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '44')
 export function writeDocSnippets() {
   let unIncluded = 0
   const byPage: [string, number][] = []
