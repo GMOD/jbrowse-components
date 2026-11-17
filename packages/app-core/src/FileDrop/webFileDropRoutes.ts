@@ -11,12 +11,14 @@ interface WebDropSession extends AssemblyManagerSession {
 }
 
 /**
- * A browser has no path to reopen a file by, so a dropped session is read and
- * imported the way File > Import session does, and a genome opens the assembly
- * manager's add form.
+ * A browser has no path to reopen a file by, so a dropped session export is
+ * read and imported the way File > Import session does, and a genome opens the
+ * assembly manager's add form. A desktop .jbrowse holds a whole config rather
+ * than a session export, so it is not taken for one.
  */
 export function webFileDropRoutes(session: WebDropSession): FileDropRoutes {
   return {
+    sessionFileExtensions: ['.json'],
     openSessionFile: async file => {
       const snapshot = parseSessionFile(await file.text())
       await getEnv(session).pluginManager.preloadSessionTypes(snapshot)

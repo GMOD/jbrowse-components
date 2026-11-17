@@ -6,16 +6,25 @@ import { fileDropHandlers, routeDroppedFiles } from './fileDrop.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+const desktopExtensions = ['.jbrowse', '.json']
+
 test.each([
-  [['volvox.jbrowse'], 'session'],
-  [['session.json'], 'session'],
-  [['hg19.fa', 'hg19.fa.fai'], 'genome'],
-  [['hg19.2bit', 'reads.bam'], 'genome'],
-  [['x.bed.gz', 'x.bed.gz.tbi'], 'tracks'],
-  [['a.json', 'b.json'], 'tracks'],
-  [['reads.bam', 'reads.bam.bai'], 'tracks'],
-])('%j routes to %s', (names, kind) => {
-  expect(routeDroppedFiles(names.map(name => ({ name }))).kind).toBe(kind)
+  [['volvox.jbrowse'], desktopExtensions, 'session'],
+  [['Session.JSON'], desktopExtensions, 'session'],
+  [['session.json'], ['.json'], 'session'],
+  [['volvox.jbrowse'], ['.json'], 'tracks'],
+  [['hg19.fa', 'hg19.fa.fai'], desktopExtensions, 'genome'],
+  [['hg19.2bit', 'reads.bam'], desktopExtensions, 'genome'],
+  [['x.bed.gz', 'x.bed.gz.tbi'], desktopExtensions, 'tracks'],
+  [['a.json', 'b.json'], desktopExtensions, 'tracks'],
+  [['reads.bam', 'reads.bam.bai'], desktopExtensions, 'tracks'],
+])('%j with session extensions %j routes to %s', (names, extensions, kind) => {
+  expect(
+    routeDroppedFiles(
+      names.map(name => ({ name })),
+      extensions,
+    ).kind,
+  ).toBe(kind)
 })
 
 function renderDropTarget() {
@@ -41,6 +50,7 @@ function renderDropTarget() {
     displayedRegions: [region],
   })
   const routes = {
+    sessionFileExtensions: desktopExtensions,
     openSessionFile: jest.fn(async () => {}),
     openGenomeFiles: jest.fn(),
   }

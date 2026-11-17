@@ -11,6 +11,8 @@ import { invokeIpc } from '../ipc.ts'
 import sessionModelFactory from '../sessionModel/sessionModel.ts'
 import rootModelFactory from './rootModel.ts'
 
+import type { FileLocation } from '@jbrowse/core/util/types'
+
 jest.mock('../makeWorkerInstance.ts', () => ({
   __esModule: true,
   default: () => {},
@@ -308,4 +310,16 @@ test('a plugin-set change reloads once, after both halves of an update', async (
   await jest.runAllTimersAsync()
 
   expect(pluginsAtReload).toEqual([['Some', 'Other']])
+})
+
+test('the genome dialog opens with dropped files staged, and empty from the menu', () => {
+  const root = createRootModel()
+  const initialFiles: FileLocation[] = [
+    { localPath: '/data/hg38.2bit', locationType: 'LocalPathLocation' },
+  ]
+  root.openGenomeDialog(initialFiles)
+  expect(root.session!.DialogProps).toMatchObject({ initialFiles })
+  root.session!.removeActiveDialog()
+  root.openGenomeDialog()
+  expect(root.session!.DialogProps).toMatchObject({ initialFiles: undefined })
 })

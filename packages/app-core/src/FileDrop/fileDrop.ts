@@ -13,6 +13,7 @@ import type { DragEvent } from 'react'
  * need nothing product-specific, so they are handled here.
  */
 export interface FileDropRoutes {
+  sessionFileExtensions: string[]
   openSessionFile: (file: File) => Promise<void>
   openGenomeFiles: (locations: FileLocation[]) => void
 }
@@ -25,11 +26,14 @@ function isFileStagingWidget(widget: Widget): widget is FileStagingWidget {
   return 'stageLocations' in widget
 }
 
-const sessionFilePattern = /\.(jbrowse|json)$/i
-
-export function routeDroppedFiles<T extends { name: string }>(files: T[]) {
+export function routeDroppedFiles<T extends { name: string }>(
+  files: T[],
+  sessionFileExtensions: string[],
+) {
   const [first] = files
-  return files.length === 1 && first && sessionFilePattern.test(first.name)
+  return files.length === 1 &&
+    first &&
+    sessionFileExtensions.some(ext => first.name.toLowerCase().endsWith(ext))
     ? { kind: 'session' as const, file: first }
     : files.some(file => isSequenceRole(classifyFilename(file.name)))
       ? { kind: 'genome' as const, files }
@@ -86,7 +90,7 @@ export async function openDroppedFiles({
   files: File[]
   viewId?: string | null
 }) {
-  const route = routeDroppedFiles(files)
+  const route = routeDroppedFiles(files, routes.sessionFileExtensions)
   try {
     if (route.kind === 'session') {
       await routes.openSessionFile(route.file)

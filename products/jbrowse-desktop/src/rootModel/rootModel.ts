@@ -330,9 +330,9 @@ export default function rootModelFactory({
           },
         }
       })
-      .views(self => ({
+      .actions(self => ({
         /**
-         * #method
+         * #action
          * Opens the genome dialog, with `initialFiles` already staged in it
          * when given (a drop on the session).
          */

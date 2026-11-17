@@ -45,7 +45,11 @@ const AssemblyManager = observer(function AssemblyManager({
           session={session}
           initialFiles={initialFiles}
           onClose={() => {
-            setIsFormOpen(false)
+            if (initialFiles) {
+              onClose()
+            } else {
+              setIsFormOpen(false)
+            }
           }}
         />
       ) : (

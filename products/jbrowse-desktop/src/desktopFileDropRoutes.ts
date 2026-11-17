@@ -11,6 +11,7 @@ export function desktopFileDropRoutes(
   rootModel: DesktopRootModel,
 ): FileDropRoutes {
   return {
+    sessionFileExtensions: ['.jbrowse', '.json'],
     openSessionFile: async file => {
       const path = electronRenderer().webUtils.getPathForFile(file)
       if (path) {

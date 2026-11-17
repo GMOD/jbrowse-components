@@ -158,3 +158,24 @@ test('edits an assembly in the registered configuration editor', async () => {
   fireEvent.click(getByText('Back'))
   expect(await findByText('Add new assembly')).toBeTruthy()
 })
+
+test.each(['Submit', 'Cancel'])(
+  'opened with files staged, %s closes the dialog rather than returning to the table',
+  async button => {
+    const onClose = jest.fn()
+    const { getByText } = render(
+      <AssemblyManager
+        // @ts-expect-error
+        session={mockRootModel.session}
+        onClose={onClose}
+        initialFiles={[
+          { uri: 'https://example.com/hg38.2bit', locationType: 'UriLocation' },
+        ]}
+      />,
+    )
+    fireEvent.click(getByText(button))
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalledTimes(1)
+    })
+  },
+)
