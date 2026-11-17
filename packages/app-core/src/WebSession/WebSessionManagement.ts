@@ -59,8 +59,8 @@ export function WebSessionManagementMixin(_pluginManager: PluginManager) {
         /**
          * #action
          */
-        flushSession() {
-          return root().flushSession()
+        openSessionCopy(snapshot: Record<string, unknown>) {
+          return root().openSessionCopy(snapshot)
         },
       }
     })

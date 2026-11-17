@@ -285,215 +285,211 @@ export default function RootModel({
           },
         }
       })
-      .actions(self => ({
-        /**
-         * #action
-         */
-        setReloadPluginManagerCallback(
-          callback: (
-            configSnapshot: Record<string, unknown>,
-            sessionSnapshot: Record<string, unknown>,
-          ) => void,
-        ) {
-          self.reloadPluginManagerCallback = callback
-        },
-        /**
-         * #action
-         * Writes the open session's last edits, which the throttled autosave may
-         * not have landed yet, ahead of something replacing the session.
-         */
-        async flushSession() {
-          await withSessionDB(self, async sessionDB => {
-            const flushed =
-              self.session &&
-              (await saveSessionSnapshot(
-                sessionDB,
-                self.session,
-                self.configPath,
-              ))
-            if (flushed) {
-              self.upsertSessionMetadata(flushed)
-            }
-          })
-        },
-        /**
-         * #action
-         */
-        async activateSession(id: string) {
-          // reloading the open session from IDB can only lose work — the row is
-          // up to one autosave tick behind the live model
-          if (isOpenSession(self, id)) {
-            return
+      .actions(self => {
+        // The autosave autorun is throttled, so the outgoing session's last
+        // edits may not have landed yet — and once setSession swaps it out, the
+        // pending tick reads the *new* session and they are lost for good. A
+        // throw here is meant to stop the swap.
+        const flushOutgoingSession = async (sessionDB: SessionDBHandle) => {
+          const flushed =
+            self.session &&
+            (await saveSessionSnapshot(
+              sessionDB,
+              self.session,
+              self.configPath,
+            ))
+          if (flushed) {
+            self.upsertSessionMetadata(flushed)
           }
-          const activation = {}
-          latestActivation.set(self, activation)
-          await withSessionDB(self, async sessionDB => {
-            // ahead of the flush below, so an edit made during the export is
-            // flushed too. The export blocks the main thread while the switch
-            // repaints the app anyway.
-            await this.captureSessionThumbnail()
-            const ret = await sessionDB.get('sessions', id)
-            if (!ret) {
-              self.session?.notifyError('Session not found')
+        }
+        return {
+          /**
+           * #action
+           */
+          setReloadPluginManagerCallback(
+            callback: (
+              configSnapshot: Record<string, unknown>,
+              sessionSnapshot: Record<string, unknown>,
+            ) => void,
+          ) {
+            self.reloadPluginManagerCallback = callback
+          },
+          /**
+           * #action
+           */
+          async activateSession(id: string) {
+            // reloading the open session from IDB can only lose work — the row is
+            // up to one autosave tick behind the live model
+            if (isOpenSession(self, id)) {
               return
             }
-            // The autosave autorun is throttled, so the outgoing session's last
-            // edits may not have landed yet — and once setSession swaps it out,
-            // the pending tick reads the *new* session and they are lost for
-            // good. Flush it here so switching sessions never costs the last
-            // thing you did to the one you are leaving.
-            const flushed =
-              self.session &&
-              (await saveSessionSnapshot(
-                sessionDB,
-                self.session,
-                self.configPath,
-              ))
-            if (flushed) {
-              self.upsertSessionMetadata(flushed)
-            }
-            await self.pluginManager.preloadSessionTypes(ret)
-            if (latestActivation.get(self) !== activation) {
-              return
-            }
-            // another tab is autosaving this id, and sharing it would have the
-            // two overwrite one row (sessionLock.ts)
-            if ((await claimSessionId(id)) === 'held-elsewhere') {
-              const { id: _id, ...copy } = ret
-              self.setSession({ ...copy, name: `${ret.name} (copy)` })
-              self.session?.notify(
-                'That session is open in another tab, so a copy was opened here',
-                'info',
-              )
-            } else {
-              self.setSession(ret)
-            }
-          })
-        },
-        /**
-         * #action
-         * Opens a session snapshot under a fresh id, so it autosaves beside the
-         * session it came from rather than over it.
-         */
-        async openSessionCopy(snap: Record<string, unknown>) {
-          const { id: _id, ...rest } = snap
-          await withErrorNotify(self, async () => {
-            await self.pluginManager.preloadSessionTypes(rest)
-            self.setSession(rest)
-          })
-        },
-        /**
-         * #action
-         */
-        async setSavedSessionFavorite(id: string, favorite: boolean) {
-          await withSessionDB(self, async sessionDB => {
-            await patchSessionMetadataRow(sessionDB, id, { favorite })
-            await self.fetchSessionMetadata()
-          })
-        },
-        /**
-         * #action
-         * Pictures the open session for the session manager. Silent on failure,
-         * since the usual ones are normal states (a view still on its import
-         * form, another export still running, a session swapped out
-         * mid-export), and the row keeps its previous picture.
-         */
-        async captureSessionThumbnail() {
-          const { session, sessionDB } = self
-          // an export of a session still loading waits on its fetch
-          if (!session || !sessionDB || sessionLoading(session)) {
-            return
-          }
-          const snap = getSnapshot(session)
-          if (thumbnailSnapshots.get(session) === snap) {
-            return
-          }
-          try {
-            const { id } = session
-            const thumbnail = await renderSessionThumbnail(session.views)
-            thumbnailSnapshots.set(session, snap)
-            const meta =
-              thumbnail &&
-              (await patchSessionMetadataRow(sessionDB, id, { thumbnail }))
-            if (meta && isAlive(self)) {
-              self.upsertSessionMetadata(meta)
-            }
-          } catch {
-            // see above
-          }
-        },
-        /**
-         * #action
-         */
-        async deleteSavedSession(id: string) {
-          // aimed at one row, so say why that row is not going anywhere rather
-          // than silently doing nothing (see isOpenSession)
-          if (isOpenSession(self, id) && self.session) {
-            // not wrapped in withErrorNotify: the only thing it does on failure
-            // is push a snackbar, which is the call being made here
-            self.session.notify(
-              'Cannot delete the session that is currently open',
-              'info',
-            )
-            return
-          }
-          if ((await sessionIdsHeldElsewhere([id])).size) {
-            self.session?.notify(OPEN_ELSEWHERE, 'info')
-            return
-          }
-          await this.deleteSavedSessions([id])
-        },
-        /**
-         * #action
-         * Deletes a batch of saved sessions in ONE transaction, and re-reads the
-         * metadata once at the end. Looping `deleteSavedSession` instead is both
-         * N transactions and N full `getAll('metadata')` scans, and — because
-         * those interleave — leaves `savedSessionMetadata` holding whichever scan
-         * happened to resolve last, so already-deleted rows stay on screen until
-         * something else refreshes the list.
-         *
-         * The open session is skipped rather than reported on, since a bulk
-         * delete is not aimed at any one row (see deleteSavedSession). Resolves
-         * to the number deleted: 0 when the transaction failed, which has
-         * already been reported.
-         */
-        async deleteSavedSessions(ids: string[]) {
-          const elsewhere = await sessionIdsHeldElsewhere(ids)
-          const toDelete = ids.filter(
-            id => !isOpenSession(self, id) && !elsewhere.has(id),
-          )
-          let deleted = 0
-          if (toDelete.length) {
+            const activation = {}
+            latestActivation.set(self, activation)
             await withSessionDB(self, async sessionDB => {
-              await deleteSessionRows(sessionDB, toDelete)
-              deleted = toDelete.length
+              // ahead of the flush below, so an edit made during the export is
+              // flushed too. The export blocks the main thread while the switch
+              // repaints the app anyway.
+              await this.captureSessionThumbnail()
+              const ret = await sessionDB.get('sessions', id)
+              if (!ret) {
+                self.session?.notifyError('Session not found')
+                return
+              }
+              await flushOutgoingSession(sessionDB)
+              await self.pluginManager.preloadSessionTypes(ret)
+              if (latestActivation.get(self) !== activation) {
+                return
+              }
+              // another tab is autosaving this id, and sharing it would have the
+              // two overwrite one row (sessionLock.ts)
+              const claim = await claimSessionId(id)
+              if (latestActivation.get(self) === activation) {
+                if (claim === 'held-elsewhere') {
+                  const { id: _id, ...copy } = ret
+                  self.setSession({ ...copy, name: `${ret.name} (copy)` })
+                  self.session?.notify(
+                    'That session is open in another tab, so a copy was opened here',
+                    'info',
+                  )
+                } else {
+                  self.setSession(ret)
+                }
+              }
+            })
+          },
+          /**
+           * #action
+           * Opens a session snapshot under a fresh id, so it autosaves beside the
+           * session it came from rather than over it. The session it replaces is
+           * saved first, and a failed save keeps it open.
+           */
+          async openSessionCopy(snap: Record<string, unknown>) {
+            const { id: _id, ...rest } = snap
+            const activation = {}
+            latestActivation.set(self, activation)
+            await withErrorNotify(self, async () => {
+              if (self.sessionDB) {
+                await flushOutgoingSession(self.sessionDB)
+              }
+              await self.pluginManager.preloadSessionTypes(rest)
+              if (latestActivation.get(self) === activation) {
+                self.setSession(rest)
+              }
+            })
+          },
+          /**
+           * #action
+           */
+          async setSavedSessionFavorite(id: string, favorite: boolean) {
+            await withSessionDB(self, async sessionDB => {
+              await patchSessionMetadataRow(sessionDB, id, { favorite })
               await self.fetchSessionMetadata()
             })
-          }
-          return deleted
-        },
-        /**
-         * #action
-         */
-        async renameSavedSession(id: string, name: string) {
-          // renaming the active session goes through the live model so the
-          // autosave autorun rewrites both stores; otherwise edit IDB directly
-          if (isOpenSession(self, id)) {
-            await withErrorNotify(self, () => {
-              self.renameCurrentSession(name)
+          },
+          /**
+           * #action
+           * Pictures the open session for the session manager. Silent on failure,
+           * since the usual ones are normal states (a view still on its import
+           * form, another export still running, a session swapped out
+           * mid-export), and the row keeps its previous picture.
+           */
+          async captureSessionThumbnail() {
+            const { session, sessionDB } = self
+            // an export of a session still loading waits on its fetch
+            if (!session || !sessionDB || sessionLoading(session)) {
+              return
+            }
+            const snap = getSnapshot(session)
+            if (thumbnailSnapshots.get(session) === snap) {
+              return
+            }
+            try {
+              const { id } = session
+              const thumbnail = await renderSessionThumbnail(session.views)
+              thumbnailSnapshots.set(session, snap)
+              const meta =
+                thumbnail &&
+                (await patchSessionMetadataRow(sessionDB, id, { thumbnail }))
+              if (meta && isAlive(self)) {
+                self.upsertSessionMetadata(meta)
+              }
+            } catch {
+              // see above
+            }
+          },
+          /**
+           * #action
+           */
+          async deleteSavedSession(id: string) {
+            // aimed at one row, so say why that row is not going anywhere rather
+            // than silently doing nothing (see isOpenSession)
+            if (isOpenSession(self, id) && self.session) {
+              // not wrapped in withErrorNotify: the only thing it does on failure
+              // is push a snackbar, which is the call being made here
+              self.session.notify(
+                'Cannot delete the session that is currently open',
+                'info',
+              )
+              return
+            }
+            if ((await sessionIdsHeldElsewhere([id])).size) {
+              self.session?.notify(OPEN_ELSEWHERE, 'info')
+              return
+            }
+            await this.deleteSavedSessions([id])
+          },
+          /**
+           * #action
+           * Deletes a batch of saved sessions in ONE transaction, and re-reads the
+           * metadata once at the end. Looping `deleteSavedSession` instead is both
+           * N transactions and N full `getAll('metadata')` scans, and — because
+           * those interleave — leaves `savedSessionMetadata` holding whichever scan
+           * happened to resolve last, so already-deleted rows stay on screen until
+           * something else refreshes the list.
+           *
+           * The open session is skipped rather than reported on, since a bulk
+           * delete is not aimed at any one row (see deleteSavedSession). Resolves
+           * to the number deleted: 0 when the transaction failed, which has
+           * already been reported.
+           */
+          async deleteSavedSessions(ids: string[]) {
+            const elsewhere = await sessionIdsHeldElsewhere(ids)
+            const toDelete = ids.filter(
+              id => !isOpenSession(self, id) && !elsewhere.has(id),
+            )
+            let deleted = 0
+            if (toDelete.length) {
+              await withSessionDB(self, async sessionDB => {
+                await deleteSessionRows(sessionDB, toDelete)
+                deleted = toDelete.length
+                await self.fetchSessionMetadata()
+              })
+            }
+            return deleted
+          },
+          /**
+           * #action
+           */
+          async renameSavedSession(id: string, name: string) {
+            // renaming the active session goes through the live model so the
+            // autosave autorun rewrites both stores; otherwise edit IDB directly
+            if (isOpenSession(self, id)) {
+              await withErrorNotify(self, () => {
+                self.renameCurrentSession(name)
+              })
+              return
+            }
+            if ((await sessionIdsHeldElsewhere([id])).size) {
+              self.session?.notify(OPEN_ELSEWHERE, 'info')
+              return
+            }
+            await withSessionDB(self, async sessionDB => {
+              await renameSessionRows(sessionDB, id, name)
+              await self.fetchSessionMetadata()
             })
-            return
-          }
-          if ((await sessionIdsHeldElsewhere([id])).size) {
-            self.session?.notify(OPEN_ELSEWHERE, 'info')
-            return
-          }
-          await withSessionDB(self, async sessionDB => {
-            await renameSessionRows(sessionDB, id, name)
-            await self.fetchSessionMetadata()
-          })
-        },
-      }))
+          },
+        }
+      })
       .views(self => ({
         /**
          * #method

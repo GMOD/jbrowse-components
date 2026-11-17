@@ -8,10 +8,6 @@ import type { SessionWithWidgets, Widget } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'
 import type { DragEvent } from 'react'
 
-/**
- * What a product does with a dropped session file and a dropped genome. Tracks
- * need nothing product-specific, so they are handled here.
- */
 export interface FileDropRoutes {
   sessionFileExtensions: string[]
   openSessionFile: (file: File) => Promise<void>
@@ -19,6 +15,7 @@ export interface FileDropRoutes {
 }
 
 interface FileStagingWidget extends Widget {
+  view?: { id: string }
   stageLocations: (locations: FileLocation[]) => void
 }
 
@@ -67,8 +64,13 @@ export function openDroppedTracks(
   viewId?: string,
 ) {
   const droppedOn = session.views.find(v => v.id === viewId)
-  const openForm = session.widgets.get('addTrackWidget')
-  if (!droppedOn && openForm && isFileStagingWidget(openForm)) {
+  const openForm = session.activeWidgets.get('addTrackWidget')
+  if (
+    !droppedOn &&
+    openForm &&
+    isFileStagingWidget(openForm) &&
+    openForm.view
+  ) {
     session.showWidget(openForm)
     openForm.stageLocations(locations)
   } else {
@@ -107,14 +109,18 @@ export async function openDroppedFiles({
       await routes.openSessionFile(route.file)
     } else {
       const locations = route.files.map(fileToLocation).filter(isOnDisk)
-      if (locations.length === 0) {
+      const skipped = route.files.length - locations.length
+      if (skipped > 0) {
         session.notify(
-          'The dropped files are not on disk, so they cannot be opened',
+          `${skipped} of the dropped files ${skipped === 1 ? 'is' : 'are'} not on disk, so ${skipped === 1 ? 'it was' : 'they were'} left out`,
         )
-      } else if (route.kind === 'genome') {
-        routes.openGenomeFiles(locations)
-      } else {
-        openDroppedTracks(session, locations, viewId)
+      }
+      if (locations.length > 0) {
+        if (route.kind === 'genome') {
+          routes.openGenomeFiles(locations)
+        } else {
+          openDroppedTracks(session, locations, viewId)
+        }
       }
     }
   } catch (e) {

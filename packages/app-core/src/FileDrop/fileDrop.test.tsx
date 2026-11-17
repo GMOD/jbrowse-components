@@ -111,6 +111,27 @@ test('a drop off the views stages into the open Add track form, keeping its view
   })
 })
 
+test('a closed Add track form is not reused by a drop off the views', async () => {
+  const { session, first, second } = renderDropTarget()
+  dropFiles(screen.getByText('inside a view'), ['reads.bam'])
+  await waitFor(() => {
+    expect(session.visibleWidget).toMatchObject({ view: { id: second.id } })
+  })
+  const form = session.widgets.get('addTrackWidget')
+  if (form) {
+    session.hideWidget(form)
+  }
+  dropFiles(screen.getByText('beside the views'), ['x.bed'])
+  await waitFor(() => {
+    expect(session.visibleWidget).toMatchObject({
+      view: { id: first.id },
+      workflowForms: {
+        'Add multiple tracks': { localLocations: [{ name: 'x.bed' }] },
+      },
+    })
+  })
+})
+
 test('a second drop adds to the files staged by the first', async () => {
   const { session } = renderDropTarget()
   dropFiles(screen.getByText('inside a view'), ['reads.bam'])

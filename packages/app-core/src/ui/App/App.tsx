@@ -57,7 +57,6 @@ const useStyles = makeStyles()(theme => ({
 interface Props {
   HeaderButtons?: React.ReactElement
   session: AppSession
-  /** files dropped on the app open by these; without them a drop does nothing */
   fileDrop?: FileDropRoutes
 }
 

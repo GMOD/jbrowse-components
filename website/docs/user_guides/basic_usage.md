@@ -140,6 +140,9 @@ per line, or a set of local files dropped on it.
   data file it indexes, in any order.
 - **Preview table:** rename or remove a row here.
 - **Assembly:** one assembly serves the batch.
+- **Drop on the session:** files dropped anywhere on an open session open this
+  form with them already added, aimed at the view they land on. Genome files
+  open the add-genome form instead.
 
 <Video src="/media/ui/bulk_add_tracks.mp4" caption="Four URLs pasted in one box, and the table pairing each index with its data file." />
 
@@ -175,6 +178,9 @@ always use the Share button.
 
 JBrowse Desktop has no Share button, since its sessions are files. It opens a
 shared link via **File → Session → Open JBrowse Web link...**.
+
+On JBrowse Web, a session file from **File → Export session** dropped onto the
+app opens as a copy, after the open session is saved.
 
 <Figure caption="The session share dialog." src="/img/share_button.png" />
 

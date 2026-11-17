@@ -246,7 +246,7 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #action
        * Opens the bulk workflow with these local files added to any already
-       * staged. A file dropped on the session lands here.
+       * staged.
        */
       stageLocations(locations: FileLocation[]) {
         self.setWorkflowName(BULK_WORKFLOW)
