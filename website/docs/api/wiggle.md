@@ -47,7 +47,12 @@ min-max extent the tinted max and min bands, or a line's min-to-max
 `band`), each mark in the color it paints and reaching down to `low`, the
 band's min or the origin bars grow from, and on a bar `clipSide`, 1 where
 its score passes the domain's top and -1 its bottom, where the display
-paints `clipStrip` (its `color`, `px` tall) across the row's edge, else 0;
+paints `clipStrip` (its `color`, `px` tall) across the row's edge, else 0,
+and its `row`, a source's own, its value's under a grouping `rows.field`,
+or 0 in one shared box; `rows`, the rows drawn, top to bottom, each
+`index` as `marks.row` names it, its `name` (a source's, a value of the
+grouping field, or empty for the one shared box) and the `label` the
+display draws beside it; `rowsField`, the `rows.field` laying them out;
 `scoreScale`, the score axis the
 display autoscales to under `encoding.y`, its `domain`, `type` and
 `symlogConstant`; `rules`, the reference lines it draws, none where it
@@ -77,6 +82,8 @@ function wiggleTables(
   interpolate: 'linear' | 'step'
   origin: number
   rowLayout: boolean
+  rowsField: string
+  rows: { index: number[]; name: string[]; label: string[] }
   height: number
   config: Record<string, unknown>
   warnings: string[]

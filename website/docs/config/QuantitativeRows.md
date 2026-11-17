@@ -1,16 +1,18 @@
 ---
 id: quantitativerows
 title: QuantitativeRows
-description: "A quantitative display's rows: source is the one field a quantitative row can be, since a wiggle has a score per base and a subtrack name, and nothing else to put on rows."
+description: "A quantitative display's rows: source puts each subtrack on a row of its own, and any other field one row per value of that subtrack attribute (a subadapter's group, a samples table column), the…"
 sidebar_label: Display setting -> QuantitativeRows
 ---
 
 Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/quantitativeRowsConfigSchema.ts).
 
-A quantitative display's `rows`: `source` is the one field a quantitative row
-can be, since a wiggle has a score per base and a subtrack name, and
-nothing else to put on rows. The arrangement members are the shared `Rows`
-object's.
+A quantitative display's `rows`: `source` puts each subtrack on a row of
+its own, and any other field one row per value of that subtrack attribute
+(a subadapter's `group`, a samples table column), the subtracks sharing a
+value overlaid in their row. The arrangement members are the shared `Rows`
+object's, and they name subtracks under every field, so a write changing
+`field` keeps them.
 
 ## Example usage
 
@@ -25,6 +27,10 @@ object's.
 }
 ```
 
+```js
+{ type: 'LinearWiggleDisplay', rows: { field: 'group' } }
+```
+
 ## Related links
 
 - **Extended by:** [WiggleRows](../wigglerows)
@@ -37,7 +43,7 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('', 'source') = <code>''</code> | `source` for one row per subtrack, or empty for one plot every source shares. Writing `rows: "source"` lands here. |
+| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | `source` for one row per subtrack, a subtrack attribute such as `group` for one row per value with its subtracks overlaid, or empty for one plot every source shares. Writing `rows: "source"` lands here. |
 | <span class="slot-group">Inherited from [Rows](../rows)</span> | <span class="slot-group-count">3 slots</span> |
 | <span id="slot-filter">**filter**</span><br>[RowPredicate](../rowpredicate) | The rows shown by attribute: a list of [RowPredicate](../rowpredicate) entries over a row attribute, each one a row must pass: a samplesTsv column on the variant display (`[{ field: 'population', oneOf: ['EUR', 'AFR'] }]`), a subtrack's field such as `group` on wiggle, and `group`, which `rows.groups` derives, on the mark displays. A row missing the attribute fails every test but `valid: false`. It narrows the rows before `kept`, and a write changing `field` keeps it, since it names no row by its value; a row's name goes in `kept`. |
 | <span id="slot-annotations">**annotations**</span><br>[RowAnnotation](../rowannotation) | Extra color columns beside the row labels, one per row attribute, as ggtree's `gheatmap` and ComplexHeatmap's row annotation draw them: a list of [RowAnnotation](../rowannotation) entries, each a field or `{ field, scale: { domain, range, unknown }, legend: { title } }`, drawn in the order listed after the row's own color. Categorical only: each value of the field takes a color the way `rows.color` deals one, a row with no value leaves a gap, a field no row carries draws nothing, and each column gets a key titled `legend.title`, else the field. An entry with no field, or on `name`, is refused, and one on the `rows.color` field draws no column of its own, since the row color is that column. Where the row color paints no mark and shows only beside the label (the variant display, and wiggle while a score gradient paints), it is the first column, the one whose key focuses rows and whose colors `rows.colors` pins. It reorders no row, so under one tree several attributes read against the same clusters. Like `filter` it names no row: "Reset row order" and a write changing `field` keep it. |

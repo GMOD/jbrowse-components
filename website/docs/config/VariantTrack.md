@@ -75,8 +75,9 @@ Track slots are top-level fields of the track config, alongside `trackId` and `n
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span class="slot-group">Inherited from [BaseTrack](../basetrack)</span> | <span class="slot-group-count">13 slots</span> |
+| <span class="slot-group">Inherited from [BaseTrack](../basetrack)</span> | <span class="slot-group-count">14 slots</span> |
 | <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | descriptive name of the track, falls back to the trackId when unset |
+| <span id="slot-aliases">**aliases**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | Ids this track went by before, e.g. `["genes"]` after renaming the track `genes` to `genes_v2`. A saved session, share link, URL `tracks=` entry or text-search index naming an old id opens this track. An alias must not be another track's trackId, nor be claimed by two tracks.<br>_advanced_ |
 | <span id="slot-assemblynames">**assemblyNames**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>['assemblyName']</code> | name of the assembly (or assemblies) track belongs to |
 | <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the track |
 | <span id="slot-category">**category**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the category and sub-categories of a track |

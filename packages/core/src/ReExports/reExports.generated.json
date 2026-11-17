@@ -4072,6 +4072,7 @@
         "allSessionTracks",
         "annotationTrackIds",
         "canonicalAssemblyNames",
+        "canonicalTrackId",
         "clearFileFromCache",
         "ensureFileHandleReady",
         "expandLooseTrackConfig",

@@ -105,7 +105,7 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="getter-t
 | <span id="method-gettrackactions">**getTrackActions**</span><br><code>(config: AnyTrackConfig, view?: TrackActionView) =&gt; MenuItem[]</code> | raw track actions (Settings, Copy, Delete) without submenu wrapper |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>24 inherited methods from 9 models</summary>
+<summary>25 inherited methods from 9 models</summary>
 
 From [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin): <span id="method-gettracklistmenuitems">[`getTrackListMenuItems`](../trackmenuitemssessionmixin#method-gettracklistmenuitems)</span>, <span id="method-gettrackactionmenuitems">[`getTrackActionMenuItems`](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)</span>
 
@@ -117,7 +117,7 @@ From [AssembliesMixin](../assembliesmixin): <span id="method-findassemblyconf">[
 
 From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="method-withtrackedits">[`withTrackEdits`](../sessiontracksmanagersessionmixin#method-withtrackedits)</span>, <span id="method-withsequenceedits">[`withSequenceEdits`](../sessiontracksmanagersessionmixin#method-withsequenceedits)</span>, <span id="method-basetrackconfig">[`baseTrackConfig`](../sessiontracksmanagersessionmixin#method-basetrackconfig)</span>, <span id="method-geteditabletrackconfig">[`getEditableTrackConfig`](../sessiontracksmanagersessionmixin#method-geteditabletrackconfig)</span>, <span id="method-gettrackconfigchanges">[`getTrackConfigChanges`](../sessiontracksmanagersessionmixin#method-gettrackconfigchanges)</span>, <span id="method-istrackoverride">[`isTrackOverride`](../sessiontracksmanagersessionmixin#method-istrackoverride)</span>
 
-From [TracksManagerSessionMixin](../tracksmanagersessionmixin): <span id="method-gettrackbyid">[`getTrackById`](../tracksmanagersessionmixin#method-gettrackbyid)</span>, <span id="method-assemblysequencebyid">[`assemblySequenceById`](../tracksmanagersessionmixin#method-assemblysequencebyid)</span>, <span id="method-gettracksbyid">[`getTracksById`](../tracksmanagersessionmixin#method-gettracksbyid)</span>
+From [TracksManagerSessionMixin](../tracksmanagersessionmixin): <span id="method-canonicaltrackid">[`canonicalTrackId`](../tracksmanagersessionmixin#method-canonicaltrackid)</span>, <span id="method-gettrackbyid">[`getTrackById`](../tracksmanagersessionmixin#method-gettrackbyid)</span>, <span id="method-assemblysequencebyid">[`assemblySequenceById`](../tracksmanagersessionmixin#method-assemblysequencebyid)</span>, <span id="method-gettracksbyid">[`getTracksById`](../tracksmanagersessionmixin#method-gettracksbyid)</span>
 
 From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="method-getreferringmultiple">[`getReferringMultiple`](../referencemanagementsessionmixin#method-getreferringmultiple)</span>, <span id="method-getreferring">[`getReferring`](../referencemanagementsessionmixin#method-getreferring)</span>
 

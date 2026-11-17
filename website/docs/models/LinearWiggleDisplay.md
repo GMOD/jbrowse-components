@@ -93,7 +93,12 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 
 ## Volatiles
 
-<details class="inherited-members" data-pagefind-ignore open>
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-lastgroupingfield">**lastGroupingField**</span><br><code>string</code> |  |
+
+<details class="inherited-members" data-pagefind-ignore>
 <summary>28 inherited volatiles from 10 models</summary>
 
 From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo">[`contextMenuInfo`](../contextmenumixin#volatile-contextmenuinfo)</span>
@@ -131,7 +136,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-extent">**extent**</span><br><code>"min-max" &#124; "none"</code> |  |
 | <span id="getter-renderingtype">**renderingType**</span><br><code>"density" &#124; "line" &#124; "linecenter" &#124; "scatter" &#124; "xyplot"</code> |  |
 | <span id="getter-colorsetting">**colorSetting**</span><br><code>ColorSetting</code> | The `encoding.color` channel as written, `value` undefined while nothing names a color and the layout decides (`effectiveColor`). |
-| <span id="getter-isrowlayout">**isRowLayout**</span><br><code>boolean</code> | Whether each source is drawn in a separate row, which is all that `rows.field` decides here: the tree sidebar, the row labels, the separators, the clustering menu and the row-order sort all hang off it. |
+| <span id="getter-rowsfield">**rowsField**</span><br><code>string</code> | `rows.field`: `source` for a row per source, a source attribute for a row per value with its sources overlaid, `''` for one shared box. |
+| <span id="getter-isrowlayout">**isRowLayout**</span><br><code>boolean</code> | Whether the sources are drawn in rows rather than one shared box: the row labels, the separators and the row-order sort hang off it. |
 | <span id="getter-showrowseparators">**showRowSeparators**</span><br><code>boolean</code> |  |
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> |  |
 | <span id="getter-colorkeytitle">**colorKeyTitle**</span><br><code>string</code> | The heading both color keys carry: `encoding.color.legend.title` as written (`''` draws none), else the y axis title the key replaces, else `Score`. |
@@ -218,10 +224,11 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setextent">**setExtent**</span><br><code>(val: "min-max" &#124; "none") =&gt; void</code> |  |
 | <span id="action-setpointsize">**setPointSize**</span><br><code>(val?: number) =&gt; void</code> |  |
 | <span id="action-setstrokewidth">**setStrokeWidth**</span><br><code>(val?: number) =&gt; void</code> |  |
-| <span id="action-setrowlayout">**setRowLayout**</span><br><code>(on: boolean) =&gt; void</code> | The layout half of a Plot type leaf — `Multi-row` or `Overlapping`, each holding the five plot names. Writes the field alone, so the arrangement survives a trip through the shared plot and comes back with the rows. |
+| <span id="action-setrowsfield">**setRowsField**</span><br><code>(field: string) =&gt; void</code> | The layout half of a Plot type leaf — `source` (`Multi-row`), a source attribute (`Rows by group`) or `''` (`Overlapping`), each holding the five plot names. Writes the field alone, so the arrangement survives a trip through the shared plot and comes back with the rows. A grouping field left behind is kept as `lastGroupingField`, which the Plot type menu offers to return to. |
+| <span id="action-setrowlayout">**setRowLayout**</span><br><code>(on: boolean) =&gt; void</code> | `setRowsField` as a switch: a row per source, or one shared box. |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: WiggleRenderingBackend) =&gt; void</code> |  |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setplot">**setPlot**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ mark, rowLayout, }: { mark: WiggleMarkObject; … }) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ mark, rowLayout, }: { mark: WiggleMarkObject; rowLayout: boolean; }) =&gt; void</code></pre></dialog></span> | A Plot type leaf whole: `setMark` then `setRowLayout` in one action, so the regions encode once and never as the new plot in the old layout. |
+| <span id="action-setplot">**setPlot**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ mark, rowsField, rowLayout }: {…}) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ mark, rowsField, rowLayout }: { mark: WiggleMarkObject; rowsField?: string; rowLayout?: boolean; }) =&gt; void</code></pre></dialog></span> | A Plot type leaf whole: `setMark` then `setRowsField` in one action, so the regions encode once and never as the new plot in the old layout. `rowLayout` is the older spelling (v5.0.0 betas): `true` is `rowsField: 'source'`, `false` is `''`. |
 | <span id="action-openplotdialog">**openPlotDialog**</span><br><code>(seed?: Plot) =&gt; void</code> | The arrangement dialog's "Edit plot..." button: the color object and the rows beside it as text, the escape for a ramp, several cut points or a typed row order, none of which the dialog's own controls offer. |
 | <span id="action-sortrowsbyscoreat">**sortRowsByScoreAt**</span><br><code>(refName: string, pos: number) =&gt; boolean</code> | Rank the rows by each source's score at one genomic base. Reads the region data already in hand — no refetch, no RPC — and writes the order through `rows.sort`, the same channel clustering and the arrangement dialog write, so "Reset row order" undoes all three.<br><br>Named by coordinate rather than by loaded-region index because both entry points are: the right-click hit resolves to one, and a session's `sortRowsBy` holds one across a reload. Resolving that region and refusing the two cases where a sort would only cost a `rows.sort` write are `sortRowsAtColumn`'s, shared with the multi-row feature display's twin, and so is the returned "did it sort" the declarative entry point reads to decide whether to keep its trigger for a later fetch. |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; Promise&lt;void&gt;</code> |  |
