@@ -15,6 +15,7 @@ import {
   isMapType,
   isModelType,
   isReferenceType,
+  isStateTreeNode,
   isValidReference,
 } from '@jbrowse/mobx-state-tree'
 
@@ -158,7 +159,10 @@ function reinsert(retyped: RetypedTrack[]) {
         try {
           applyPatch(r.array, { op: 'add', path: `/${at}`, value: r.snapshot })
           added = true
-          void r.array[at].configuration
+          const node: unknown = r.array[at]
+          if (isStateTreeNode(node) && 'configuration' in node) {
+            void node.configuration
+          }
           insertedPerArray.set(r.array, inserted + 1)
           open = true
         } catch (e) {
