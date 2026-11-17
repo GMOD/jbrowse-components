@@ -10,6 +10,7 @@ import { openSpecLink } from './util.tsx'
 
 import type { StartScreenDialog } from './startScreenLaunch.ts'
 import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 // Between them most of what the start screen could pull in: the
 // available-genomes table is ~2400 lines of grid, search index and category
@@ -22,9 +23,11 @@ const AvailableGenomesDialog = lazy(
 
 const StartScreenDialogs = observer(function StartScreenDialogs({
   dialog,
+  genomeFiles,
   onClose,
 }: {
   dialog: StartScreenDialog | undefined
+  genomeFiles?: FileLocation[]
   onClose: () => void
 }) {
   const { launch } = useStartScreenLaunch()
@@ -37,6 +40,7 @@ const StartScreenDialogs = observer(function StartScreenDialogs({
     <Suspense fallback={null}>
       {dialog === 'openGenome' ? (
         <OpenSequenceDialog
+          initialFiles={genomeFiles}
           onClose={async (conf?: AssemblyConf[]) => {
             if (conf) {
               void launchConfigs(async () => [

@@ -234,3 +234,59 @@ test('stages alongside a genome that has sequence', async () => {
     ),
   ).toEqual(['ChromSizesAdapter', 'TwoBitAdapter'])
 })
+
+test('a file added after the handed-in ones joins them rather than replacing them', async () => {
+  const user = userEvent.setup()
+  const onClose = jest.fn(async () => {})
+  render(
+    <OpenSequenceDialog
+      onClose={onClose}
+      initialFiles={[
+        { uri: 'https://example.com/hg19.fa', locationType: 'UriLocation' },
+      ]}
+    />,
+  )
+  await enterUrls(user, 'https://example.com/hg19.fa.fai')
+  await user.click(submit())
+
+  expect(onClose).toHaveBeenCalledWith([
+    expect.objectContaining({
+      name: 'hg19',
+      sequence: expect.objectContaining({
+        adapter: expect.objectContaining({
+          type: 'IndexedFastaAdapter',
+          fastaLocation: expect.objectContaining({
+            uri: 'https://example.com/hg19.fa',
+          }),
+          faiLocation: expect.objectContaining({
+            uri: 'https://example.com/hg19.fa.fai',
+          }),
+        }),
+      }),
+    }),
+  ])
+  expect(mockInvokeIpc).not.toHaveBeenCalled()
+})
+
+test('files handed to the dialog arrive staged, ready to open', async () => {
+  const user = userEvent.setup()
+  const onClose = jest.fn(async () => {})
+  render(
+    <OpenSequenceDialog
+      onClose={onClose}
+      initialFiles={[
+        { localPath: '/data/hg38.2bit', locationType: 'LocalPathLocation' },
+      ]}
+    />,
+  )
+  await user.click(submit())
+
+  expect(onClose).toHaveBeenCalledWith([
+    expect.objectContaining({
+      name: 'hg38',
+      sequence: expect.objectContaining({
+        adapter: expect.objectContaining({ type: 'TwoBitAdapter' }),
+      }),
+    }),
+  ])
+})

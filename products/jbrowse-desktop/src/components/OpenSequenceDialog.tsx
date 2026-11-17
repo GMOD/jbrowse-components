@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import AddGenomePane from '@jbrowse/core/ui/AddGenomePane'
 import {
+  applyClassifiedFiles,
   buildAssemblyConf,
   clearFormFields,
   getAssemblyName,
@@ -18,6 +19,7 @@ import StagedAssemblies from './StagedAssemblies.tsx'
 import { useFastaIndexer } from './useFastaIndexer.ts'
 
 import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles()(theme => ({
   message: {
@@ -30,12 +32,18 @@ const useStyles = makeStyles()(theme => ({
 const OpenSequenceDialog = observer(function OpenSequenceDialog({
   onClose,
   existingAssemblyNames = [],
+  initialFiles,
 }: {
   onClose: (conf?: AssemblyConf[]) => Promise<void>
   existingAssemblyNames?: string[]
+  initialFiles?: FileLocation[]
 }) {
   const { classes } = useStyles()
-  const [form, setForm] = useState(initialFormState)
+  const [form, setForm] = useState(() =>
+    initialFiles
+      ? applyClassifiedFiles(initialFormState(), initialFiles, new Set())
+      : initialFormState(),
+  )
   const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const {
@@ -157,6 +165,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
             setForm(update)
           }}
           onStageAnother={addAnotherAssembly}
+          initialFiles={initialFiles}
         />
 
         {loading ? (

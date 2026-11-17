@@ -36,6 +36,13 @@ chmod a+x jbrowse-desktop-*-linux.AppImage   # once
   genomes you have starred or saved.
 - **Recently opened sessions**, on the right, holds saved sessions and
   autosaves. Click one to reopen it.
+- Drop a `.jbrowse` or `config.json` file anywhere on the start screen to open
+  it. Dropped genome files open the "Open genome(s)" dialog with them already
+  added.
+- **Tools → Factory reset...** deletes your autosaves, the recent sessions list,
+  your global plugins and the indexes JBrowse built. Session files you saved
+  stay on disk, but one that opened a FASTA without its own `.fai` no longer
+  loads that genome.
 
 ## Opening a genome
 

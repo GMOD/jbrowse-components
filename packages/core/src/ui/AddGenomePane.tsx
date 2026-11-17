@@ -495,17 +495,20 @@ const AddGenomePane = observer(function AddGenomePane({
   rootModel,
   loading = false,
   onStageAnother,
+  initialFiles = [],
 }: {
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
   rootModel: AbstractRootModel | undefined
   loading?: boolean
   onStageAnother?: () => Promise<boolean>
+  // files already applied to `form`, listed here so the pane shows them
+  initialFiles?: FileLocation[]
 }) {
   const { classes } = useStyles()
   const [source, setSource] = useState<Source>('files')
   const [manual, setManual] = useState(false)
-  const [dropped, setDropped] = useState<FileLocation[]>([])
+  const [dropped, setDropped] = useState(initialFiles)
   const [urls, setUrls] = useState('')
   const [showMore, setShowMore] = useState(false)
   // fields the user filled in themselves, which the file set does not overwrite

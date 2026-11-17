@@ -8,10 +8,20 @@ import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import { PluggableComponent } from '@jbrowse/core/ui'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
+import { DNA } from '@jbrowse/core/ui/Icons'
+import { electronRenderer } from '@jbrowse/core/util/electron'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import BugReportIcon from '@mui/icons-material/BugReport'
+import ExtensionIcon from '@mui/icons-material/Extension'
+import ExtensionOffIcon from '@mui/icons-material/ExtensionOff'
+import OpenIcon from '@mui/icons-material/FolderOpen'
+import LinkIcon from '@mui/icons-material/Link'
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore'
+import TravelExploreIcon from '@mui/icons-material/TravelExplore'
 import {
   Alert,
   AppBar,
@@ -30,6 +40,7 @@ import { useUpdateStatus } from '../useUpdateStatus.ts'
 import GlobalPluginsDialog from './GlobalPluginsDialog.tsx'
 import Logo from './Logo.tsx'
 import StartScreenDialogs from './StartScreenDialogs.tsx'
+import FactoryResetDialog from './dialogs/FactoryResetDialog.tsx'
 import {
   globalPluginReadErrorMessage,
   globalPluginSafeMode,
@@ -47,6 +58,8 @@ import type { StartScreenPanelProps } from './startScreenExtensionPoints.ts'
 import type { StartScreenDialog } from './startScreenLaunch.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { FileLocation } from '@jbrowse/core/util/types'
+import type { DragEvent } from 'react'
 
 // Below this width the 450px floor is what scrolls the page sideways, and the
 // full-width basis is what makes the row wrap at all — clearing the floor alone
@@ -114,7 +127,18 @@ const useStyles = makeStyles()({
   banner: {
     margin: 16,
   },
+
+  dropTarget: {
+    minHeight: '100vh',
+    display: 'flow-root',
+  },
 })
+
+const configFilePattern = /\.(jbrowse|json)$/i
+
+function localLocation(localPath: string): FileLocation {
+  return { localPath, locationType: 'LocalPathLocation' }
+}
 
 /**
  * One of the start screen's panels, as the extension point named by `name` left
@@ -196,6 +220,8 @@ const StartScreen = observer(function StartScreen({
   const { classes } = useStyles()
   const [showGlobalPlugins, setShowGlobalPlugins] = useState(false)
   const [dialog, setDialog] = useState<StartScreenDialog>()
+  const [genomeFiles, setGenomeFiles] = useState<FileLocation[]>()
+  const [confirmReset, setConfirmReset] = useState(false)
   const { status, updateStatus } = useUpdateStatus()
   const notifyError = useNotifyError()
   const safeMode = globalPluginSafeMode()
@@ -246,180 +272,248 @@ const StartScreen = observer(function StartScreen({
     })
   const loading = Boolean(status)
 
+  const openConfigFile = async (
+    pickPath: () => Promise<string | undefined>,
+  ) => {
+    try {
+      const path = await pickPath()
+      if (path) {
+        await launch(() => loadPluginManager(path))
+      }
+    } catch (e) {
+      console.error(e)
+      notifyError(e)
+    }
+  }
+
+  // a drop on a dialog bubbles here through its portal, so only one landing on
+  // the screen itself counts, and not one a drop zone inside already took
+  const acceptsDrop = (event: DragEvent<HTMLDivElement>) =>
+    !loading &&
+    !event.defaultPrevented &&
+    event.dataTransfer.types.includes('Files') &&
+    event.target instanceof Node &&
+    event.currentTarget.contains(event.target)
+
+  const openDroppedFiles = (files: File[]) => {
+    const paths = files
+      .map(file => electronRenderer().webUtils.getPathForFile(file))
+      .filter(Boolean)
+    const [first] = paths
+    if (first && paths.every(path => configFilePattern.test(path))) {
+      void openConfigFile(async () => first)
+    } else if (first) {
+      setGenomeFiles(paths.map(localLocation))
+      setDialog('openGenome')
+    }
+  }
+
   return (
     <StartScreenLaunchContext value={{ launch, openDialog: setDialog }}>
-      <AppBar position="static" data-testid="start-screen-menu">
-        <Toolbar>
-          <DropDownMenu
-            menuTitle="File"
-            menuItems={[
-              {
-                label: 'Open your own genome...',
-                disabled: loading,
-                onClick: () => {
-                  setDialog('openGenome')
-                },
-              },
-              {
-                label: 'Browse hosted genomes...',
-                disabled: loading,
-                onClick: () => {
-                  setDialog('hostedGenomes')
-                },
-              },
-              {
-                label: 'Open config.json or .jbrowse file...',
-                disabled: loading,
-                onClick: async () => {
-                  try {
-                    const path = await invokeIpc('promptOpenFile')
-                    if (path) {
-                      await launch(() => loadPluginManager(path))
-                    }
-                  } catch (e) {
-                    console.error(e)
-                    notifyError(e)
-                  }
-                },
-              },
-              {
-                label: 'Open JBrowse Web link...',
-                disabled: loading,
-                onClick: () => {
-                  setDialog('openLink')
-                },
-              },
-              {
-                label: 'Exit',
-                onClick: () => {
-                  invokeIpc('quit').catch(notifyError)
-                },
-              },
-            ]}
-          />
-          <DropDownMenu
-            menuTitle="Tools"
-            menuItems={() => [
-              {
-                label: 'Global plugins...',
-                onClick: () => {
-                  setShowGlobalPlugins(true)
-                },
-              },
-              safeMode
-                ? {
-                    label: 'Reload with global plugins',
-                    onClick: () => {
-                      reloadWithGlobalPlugins()
-                    },
-                  }
-                : {
-                    label: 'Reload without global plugins',
-                    onClick: () => {
-                      reloadInSafeMode()
-                    },
-                  },
-              ...pluginMenuItems(startScreenPluginManager, panelProps),
-            ]}
-          />
-          <DropDownMenu
-            menuTitle="Help"
-            menuItems={[
-              {
-                label: 'Documentation',
-                icon: MenuBookIcon,
-                onClick: () => {
-                  window.open('https://jbrowse.org/jb2/docs/', '_blank')
-                },
-              },
-              {
-                label: 'Report an issue',
-                icon: BugReportIcon,
-                onClick: () => {
-                  window.open(
-                    'https://github.com/GMOD/jbrowse-components/issues/new/choose',
-                    '_blank',
-                  )
-                },
-              },
-              ...desktopHelpMenuItems(notifyError),
-            ]}
-          />
-        </Toolbar>
-      </AppBar>
-      <div className={classes.header}>
-        <Logo />
-      </div>
-      {safeMode ? (
-        <Alert
-          severity="info"
-          className={classes.banner}
-          action={
-            <>
-              <Button
-                onClick={() => {
-                  setShowGlobalPlugins(true)
-                }}
-              >
-                Manage
-              </Button>
-              <Button
-                onClick={() => {
-                  reloadWithGlobalPlugins()
-                }}
-              >
-                Re-enable
-              </Button>
-            </>
+      <div
+        className={classes.dropTarget}
+        onDragOver={event => {
+          if (acceptsDrop(event)) {
+            event.preventDefault()
+            event.dataTransfer.dropEffect = 'copy'
           }
-        >
-          {safeMode === 'requested'
-            ? 'Global plugins are disabled for this launch.'
-            : 'Global plugins were disabled because the last launch did not finish loading them.'}
-          {/* Named because a name is what the user can act on: switch that one
+        }}
+        onDrop={event => {
+          if (acceptsDrop(event)) {
+            event.preventDefault()
+            openDroppedFiles([...event.dataTransfer.files])
+          }
+        }}
+      >
+        <AppBar position="static" data-testid="start-screen-menu">
+          <Toolbar>
+            <DropDownMenu
+              menuTitle="File"
+              menuItems={[
+                {
+                  label: 'Open your own genome...',
+                  icon: DNA,
+                  disabled: loading,
+                  onClick: () => {
+                    setDialog('openGenome')
+                  },
+                },
+                {
+                  label: 'Browse hosted genomes...',
+                  icon: TravelExploreIcon,
+                  disabled: loading,
+                  onClick: () => {
+                    setDialog('hostedGenomes')
+                  },
+                },
+                {
+                  label: 'Open config.json or .jbrowse file...',
+                  icon: OpenIcon,
+                  disabled: loading,
+                  onClick: () =>
+                    openConfigFile(() => invokeIpc('promptOpenFile')),
+                },
+                {
+                  label: 'Open JBrowse Web link...',
+                  icon: LinkIcon,
+                  disabled: loading,
+                  onClick: () => {
+                    setDialog('openLink')
+                  },
+                },
+                {
+                  label: 'Exit',
+                  icon: MeetingRoomIcon,
+                  onClick: () => {
+                    invokeIpc('quit').catch(notifyError)
+                  },
+                },
+              ]}
+            />
+            <DropDownMenu
+              menuTitle="Tools"
+              menuItems={() => [
+                {
+                  label: 'Global plugins...',
+                  icon: ExtensionIcon,
+                  onClick: () => {
+                    setShowGlobalPlugins(true)
+                  },
+                },
+                safeMode
+                  ? {
+                      label: 'Reload with global plugins',
+                      icon: RefreshIcon,
+                      onClick: () => {
+                        reloadWithGlobalPlugins()
+                      },
+                    }
+                  : {
+                      label: 'Reload without global plugins',
+                      icon: ExtensionOffIcon,
+                      onClick: () => {
+                        reloadInSafeMode()
+                      },
+                    },
+                ...pluginMenuItems(startScreenPluginManager, panelProps),
+                {
+                  label: 'Factory reset...',
+                  icon: SettingsBackupRestoreIcon,
+                  disabled: loading,
+                  onClick: () => {
+                    setConfirmReset(true)
+                  },
+                },
+              ]}
+            />
+            <DropDownMenu
+              menuTitle="Help"
+              menuItems={[
+                {
+                  label: 'Documentation',
+                  icon: MenuBookIcon,
+                  onClick: () => {
+                    window.open('https://jbrowse.org/jb2/docs/', '_blank')
+                  },
+                },
+                {
+                  label: 'Report an issue',
+                  icon: BugReportIcon,
+                  onClick: () => {
+                    window.open(
+                      'https://github.com/GMOD/jbrowse-components/issues/new/choose',
+                      '_blank',
+                    )
+                  },
+                },
+                ...desktopHelpMenuItems(notifyError),
+              ]}
+            />
+          </Toolbar>
+        </AppBar>
+        <div className={classes.header}>
+          <Logo />
+        </div>
+        {safeMode ? (
+          <Alert
+            severity="info"
+            className={classes.banner}
+            action={
+              <>
+                <Button
+                  onClick={() => {
+                    setShowGlobalPlugins(true)
+                  }}
+                >
+                  Manage
+                </Button>
+                <Button
+                  onClick={() => {
+                    reloadWithGlobalPlugins()
+                  }}
+                >
+                  Re-enable
+                </Button>
+              </>
+            }
+          >
+            {safeMode === 'requested'
+              ? 'Global plugins are disabled for this launch.'
+              : 'Global plugins were disabled because the last launch did not finish loading them.'}
+            {/* Named because a name is what the user can act on: switch that one
           off in the dialog and leave the rest loading. With more than one there
           is no telling which of them it was, but a list of three to bisect is
           still a great deal better than "something went wrong". */}
-          {suspects.length > 0 ? (
-            <>
-              {suspects.length === 1
-                ? ' It was loading: '
-                : ' It was loading these, one of which is likely responsible: '}
-              {suspects.join(', ')}
-            </>
-          ) : null}
-        </Alert>
-      ) : null}
-      {status ? (
-        <SessionLoadingScreen message={status} />
-      ) : (
-        <div className={classes.root}>
-          <Paper elevation={3} className={classes.panel}>
-            <Typography variant="h5">Launch new session</Typography>
-            <StartScreenPanel
-              pluginManager={startScreenPluginManager}
-              name="Desktop-StartScreenLaunchPanel"
-              component={LeftSidePanel}
-              props={panelProps}
-            />
-          </Paper>
-          <Paper elevation={3} className={classes.recentPanel}>
-            <Typography variant="h5">Recently opened sessions</Typography>
-            <StartScreenPanel
-              pluginManager={startScreenPluginManager}
-              name="Desktop-StartScreenRecentSessionsPanel"
-              component={RecentSessionPanel}
-              props={panelProps}
-            />
-          </Paper>
-        </div>
-      )}
+            {suspects.length > 0 ? (
+              <>
+                {suspects.length === 1
+                  ? ' It was loading: '
+                  : ' It was loading these, one of which is likely responsible: '}
+                {suspects.join(', ')}
+              </>
+            ) : null}
+          </Alert>
+        ) : null}
+        {status ? (
+          <SessionLoadingScreen message={status} />
+        ) : (
+          <div className={classes.root}>
+            <Paper elevation={3} className={classes.panel}>
+              <Typography variant="h5">Launch new session</Typography>
+              <StartScreenPanel
+                pluginManager={startScreenPluginManager}
+                name="Desktop-StartScreenLaunchPanel"
+                component={LeftSidePanel}
+                props={panelProps}
+              />
+            </Paper>
+            <Paper elevation={3} className={classes.recentPanel}>
+              <Typography variant="h5">Recently opened sessions</Typography>
+              <StartScreenPanel
+                pluginManager={startScreenPluginManager}
+                name="Desktop-StartScreenRecentSessionsPanel"
+                component={RecentSessionPanel}
+                props={panelProps}
+              />
+            </Paper>
+          </div>
+        )}
+      </div>
       <StartScreenDialogs
         dialog={dialog}
+        genomeFiles={genomeFiles}
         onClose={() => {
           setDialog(undefined)
+          setGenomeFiles(undefined)
         }}
       />
+      {confirmReset ? (
+        <FactoryResetDialog
+          onClose={() => {
+            setConfirmReset(false)
+          }}
+        />
+      ) : null}
       {showGlobalPlugins ? (
         <GlobalPluginsDialog
           onClose={() => {
