@@ -35,7 +35,7 @@ export function buildSearchText(fields: unknown[]) {
  * in any field and any order; `"double quotes"` keep a phrase together, and a
  * leading `-` turns a term into one the track must not contain. A lone `-`,
  * on the way to typing an excluded word, is no term yet. Lowercased to match
- * {@link buildSearchText}.
+ * {@link buildSearchText}. Exact per term, with no typo tolerance (ADR-269).
  */
 export function parseSearchQuery(filterText: string) {
   return [

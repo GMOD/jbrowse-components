@@ -1,0 +1,107 @@
+---
+status: Accepted
+summary: "The drawer's track table shows, beside the name, as many columns as fit: the config's `hierarchical.table.columns`, or else the fields that group tracks. Manage columns wins either way. Names shrink from the middle; facets are thin, most start collapsed; the filter box needs every word"
+---
+
+# ADR-269: The track table shows the fields that group tracks
+
+## Status
+
+Accepted (2026-11-16). Built over five commits after a code review, a
+product review and a scale review at 5,000 and 20,000 tracks, judged on the
+jb2hubs human configs (hg38 799 tracks, hs1 627, hg19 528). Colin asked that
+the narrow drawer show "a subset of the total metadata columns" and that
+facets stay "very thin", and called faceting every metadata key "a bit silly".
+
+## Context
+
+The track selector's Tree | Table toggle draws the faceted table inside the
+drawer, about 570 px wide in a 1280 px window. It used to show every
+non-sparse field (name, kind, category, adapter, description, then each
+top-level metadata key in first-seen order), so on hg38 the name column was
+cut to "Basewise Co…", the table scrolled sideways, and jb2hubs' constant
+`multiWigContainer: true` took a column. An ENCODE-style hub ran 4.6 screens
+wide with the useful keys (assay, biosample, target) past the edge. The facet
+panel listed every value of every field as an MUI checkbox, about 16,700 at
+20,000 tracks, which took 2.5 s to open and up to 1.4 s per keystroke. The
+filter box matched its whole contents as one substring, so `fiber thp-1`
+found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
+
+## Decision
+
+- **Columns are the fields that group tracks.** A field groups tracks when
+  at least two of its values are each shared by two or more tracks, and it
+  has no more values than half the tracks that have one. Candidates are
+  category, kind and each top-level metadata key; the most widely set come
+  first. A per-track URL or description, a constant flag, or a flag with one
+  exception (2,100 "Homo sapiens", one "Human") is never a default column.
+  The rule runs over every track the drawer can list, so Favorites and Recent
+  keep the same columns.
+- **The width decides how many show.** The name keeps up to half the table,
+  every other column at least 100 px, and the table shows as many default
+  columns as fit beside the name, with no sideways scroll. On hg38 that is
+  name, kind, category.
+- **`configuration.hierarchical.table.columns` names the columns** for a hub
+  whose metadata has many keys of which a few matter. It is a string list of
+  field paths (`metadata.assay`, `category`), most important first, the same
+  fit applying. A per-track key, not a predicate; empty derives.
+- **Manage columns wins either way.** It lists every field and records
+  `[{ field, show }]` per config and assembly in localStorage. A shown column
+  shows however narrow the table, and may scroll it; a hidden one never
+  shows, and hiding the sorted column drops the sort.
+- **Description is hover text, not a column.** The name cell's title is the
+  name and the description, as the tree's tooltip is.
+- **A name shrinks from the middle.** It keeps its end, the longest run of
+  whole words within half the name, and cuts the start first, down to three
+  letters, then the end. Tracks from one hub share long prefixes and differ
+  at the end. The table's name cell is a flex row, so a long name never hides
+  its ⋮ menu. A name with markup is cut at the end.
+- **Facets are thin, and few start open.** Rows are 20 px with a 16 px
+  checkbox and grey counts; the heading collapses its facet; "clear" shows
+  only on a facet with a selection. The panel lists the default columns and
+  the grouping fields. Only the first three default columns' facets, any
+  column the user showed, and any facet still filtering start open, listed
+  first; the rest are one collapsed heading each. A facet lists every value
+  up to 20, past that its 10 most common plus any checked one, with "Show N
+  more".
+- **The filter box needs every word, in any order and field.** `"quotes"`
+  keep a phrase, `-word` excludes, and the track text also matches without
+  its `-` and `_`, so `thp1` finds "THP-1" (the typed term is not stripped:
+  `1.5` must not match "155"). With no sort, the table lists name matches
+  first. The box shows "6 of 800" while a query or facet narrows the list,
+  and both views highlight the matched words. The syntax is documented once,
+  in the user guide.
+- **The UCSC hub connection lifts a composite's subgroups into metadata** and
+  nests the trackDb stanza under `ucsc`, as jb2hubs' configs do, so a hub's
+  cell line, antibody and view are the fields that group its tracks. Its
+  track ids still hash the stanza as earlier builds spread it.
+
+## Rejected alternatives
+
+| Alternative | Why |
+| --- | --- |
+| uFuzzy or another typo-tolerant search | Hub names differ by one character on purpose (H3K27ac/H3K27me3, mm10/mm39, sample ids); a fuzzy match brings in the neighbours and the filter stops being predictable. Every-word matching covers what fuzzy search is mostly wanted for |
+| A hint or popover for the query syntax | The common path needs no syntax; a placeholder vanishes when typing starts, and a hint line is sub-label clutter |
+| Description as a default column | It is per-track prose that duplicates the name on UCSC hubs (`longLabel`), and it took the width the name needs |
+| A pinned (sticky) name column | The default no longer scrolls sideways; only a user's own shown columns can |
+| The "Show sparse metadata columns" toggle | The grouping rule replaces the 5-track threshold, and Manage columns lists every field |
+| A hide-list (`hiddenColumns`) for user choices | Cannot say "show a column the default left out" |
+| Showing every grouping field's facet open | An ENCODE-style hub lists fifteen facets of values nobody asked for |
+| A hidden whole-name text node beside the two halves, for `getByText` | Doubles every label's `textContent`. Tests find a track by its checkbox's label instead |
+| Splitting only names over a length threshold | Couples layout to a guessed width; a narrow column cuts a short name too |
+| Stripping `-`, `_` and `.` from the typed term as well | `1.5` matched "dbSNP(155)" and `a.b` 125 hg38 tracks |
+| Per-row precomputed facet strings | Facet counts cost about 30 ms per keystroke at 20,000 tracks once the panel draws few checkboxes; not worth the second copy of each row |
+
+## Consequences
+
+- A test or plugin that finds a long track name with an exact `getByText`
+  no longer matches it, since the name is two spans; `getByLabelText` on the
+  track's checkbox does.
+- Re-timed on ada with a production build at 20,000 tracks: facet panel
+  open 68 ms (was 2,463), slowest keystroke with it open 53 ms (was 1,389),
+  table keystroke 52 ms (was 150).
+- jb2hubs' hosted configs still carry `ucsc.subGroups` unlifted, so their
+  tables group less than a connected hub's until the converter lifts them.
+  Grouping stays in metadata: a composite does not become a folder in the
+  tree, whose categories stay flat (Colin: more hierarchy makes the track list
+  look messy).
