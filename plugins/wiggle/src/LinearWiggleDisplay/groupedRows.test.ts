@@ -261,10 +261,10 @@ describe('rows: { field: "group" }', () => {
   })
 
   it('names a field no subtrack carries', () => {
-    const { display } = makeDisplay({ field: 'grup' })
+    const { display } = makeDisplay({ field: 'cohort' })
     expect(display.numRows).toBe(1)
     expect(display.liveNotices).toContain(
-      'rows: no subtrack carries "grup", so every subtrack shares one row',
+      'rows: no subtrack carries "cohort", so every subtrack shares one row',
     )
   })
 
