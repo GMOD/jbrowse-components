@@ -210,6 +210,7 @@ export default [
   '@jbrowse/core/ui/colorScale',
   '@jbrowse/core/ui/ConfirmDialog',
   '@jbrowse/core/ui/ContextMenu',
+  '@jbrowse/core/ui/ControlRow',
   '@jbrowse/core/ui/Crosshairs',
   '@jbrowse/core/ui/DataGridFlexContainer',
   '@jbrowse/core/ui/Dialog',

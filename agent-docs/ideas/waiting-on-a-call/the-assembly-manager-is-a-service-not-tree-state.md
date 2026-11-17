@@ -1,6 +1,6 @@
 ---
 name: the-assembly-manager-is-a-service-not-tree-state
-description: AssemblyManager is an MST model whose one property an autorun rebuilds from config, so it pays the tree's lifecycle without using snapshots, undo or patches. A plain MobX class with the same members would not break the plugins found reading it; the call is whether the saving is worth it now.
+description: AssemblyManager is an MST model whose one property an autorun rebuilds from config, so it pays the tree lifecycle without using snapshots, undo or patches. A plain MobX class with its members would not break plugins reading it; is the saving worth it now?
 ---
 
 # The assembly manager is a service, not tree state

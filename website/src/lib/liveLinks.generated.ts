@@ -3182,7 +3182,7 @@ export const figureCallouts: Record<string, object[]> = {
   "track_menu": [{"type":"circle","pad":1,"anchor":{"selector":"[data-testid=\"track_menu_icon\"]"}},{"type":"circle","anchor":{"selector":"[data-testid=\"htsTrackEntryMenu-Tracks,volvox_sv_test\"]"}}],
   "tracklabels": [{"type":"circle","anchor":{"selector":"[data-testid=\"view_menu_icon\"]"}},{"type":"box","anchor":{"selector":"[data-testid=\"cascading-submenu-track_labels\"]"}},{"type":"box","anchor":{"selector":"[data-testid=\"cascading-menuitem-overlapping\"], [data-testid=\"cascading-submenu-overlapping\"]"}}],
   "highlight_list_edit_label": [{"type":"text","text":"Single-click the label to edit it","anchor":{"text":"Location"},"dx":-190,"dy":170,"maxWidth":230},{"type":"arrow","fromAnchor":{"selector":".MuiDataGrid-cell[data-field=\"label\"]","dx":-162,"dy":125},"anchor":{"selector":".MuiDataGrid-cell[data-field=\"label\"]"},"dx":-7,"dy":18}],
-  "hierarchical/hierarchical_user_menu-fs8": [{"type":"box","anchor":{"text":"Collapse top-level categories"}},{"type":"box","anchor":{"text":"Collapse subcategories"}}],
+  "hierarchical/hierarchical_user_menu-fs8": [{"type":"box","anchor":{"text":"Collapse all categories"}},{"type":"box","anchor":{"text":"Expand all categories"}}],
   "recent_tracks": [{"type":"circle","anchor":{"selector":"[data-testid=\"list-recent\"]"}}],
   "plugin_store": [{"type":"circle","anchor":{"text":"Tools"},"radius":24,"dy":8},{"type":"box","anchor":{"text":"Plugin store"}},{"type":"box","anchor":{"text":"Installed plugins"}}],
   "plugin_store_install": [{"type":"box","anchor":{"selector":"[data-testid=\"installPlugin-MsaView\"]"}}],

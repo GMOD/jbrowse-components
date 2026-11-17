@@ -28,8 +28,6 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="volatile-favorites">**favorites**</span><br><code>string[]</code> |  |
 | <span id="volatile-recentlyused">**recentlyUsed**</span><br><code>string[]</code> |  |
 | <span id="volatile-selectedtrackids">**selectedTrackIds**</span><br><code>string[]</code> | the shopping cart, by trackId; `selection` resolves the configs |
-| <span id="volatile-sorttracknames">**sortTrackNames**</span><br><code>boolean &#124; undefined</code> |  |
-| <span id="volatile-sortcategories">**sortCategories**</span><br><code>boolean &#124; undefined</code> |  |
 | <span id="volatile-categorymode">**categoryMode**</span><br><code>ObservableMap&lt;string, CategoryMode&gt;</code> | per-category rendering mode; absent means expanded. Collapsed and folder are mutually exclusive by construction, so un-foldering a category can't reveal a stale collapse underneath it |
 | <span id="volatile-tableviewid">**tableViewId**</span><br><code>string &#124; undefined</code> | the view whose tracks the drawer shows as a table in place of the tree. Keyed by view because every view's selector is this one widget, so table mode opened for one view stays with it |
 | <span id="volatile-tabledrawerwidth">**tableDrawerWidth**</span><br><code>number &#124; undefined</code> | the drawer width the table asks for, read by the session as `preferredDrawerWidth` and never written into its saved width |
@@ -49,8 +47,6 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="getter-favoritesset">**favoritesSet**</span><br><code>Set&lt;string&gt;</code> |  |
 | <span id="getter-recentlyusedset">**recentlyUsedSet**</span><br><code>Set&lt;string&gt;</code> |  |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
-| <span id="getter-activesorttracknames">**activeSortTrackNames**</span><br><code>any</code> |  |
-| <span id="getter-activesortcategories">**activeSortCategories**</span><br><code>any</code> |  |
 | <span id="getter-configandsessiontrackconfigurations">**configAndSessionTrackConfigurations**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>((ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;…&gt;)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>((ConfigNodeProps&lt;TrackConfigDefinition&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;TrackConfigSchema&gt;) &#124; TrackConfigEntry)[]</code></pre></dialog></span> | the tracks this view can be offered — its assemblies' sequence tracks, then the session's list filtered to what it can draw |
 | <span id="getter-sessiontrackids">**sessionTrackIds**</span><br><code>Set&lt;any&gt;</code> | a non-admin's added/copied tracks, which the tree groups under a "Session tracks" category. Membership is the session's own list — the source of truth — not a suffix baked into the trackId |
 | <span id="getter-maingrouptracks">**mainGroupTracks**</span><br><code>TrackNodeSource[]</code> | the config's own and the session's tracks, resolved and sorted. Its own getter, so a connection loading re-reads none of them |
@@ -71,7 +67,6 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="getter-matchcounts">**matchCounts**</span><br><code>{ matched: number; total: number; } &#124; undefined</code> | how many of the listed tracks the filter box and the facet filters keep, of how many; undefined while neither narrows the list |
 | <span id="getter-rows">**rows**</span><br><code>TreeRow[]</code> | every rendered row, in order, with its height and scroll offset |
 | <span id="getter-treeheight">**treeHeight**</span><br><code>number</code> |  |
-| <span id="getter-hasanysubcategories">**hasAnySubcategories**</span><br><code>boolean</code> |  |
 
 ## Methods
 
@@ -88,8 +83,6 @@ favorites and recently used tracks, and a group for each connection.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setsorttracknames">**setSortTrackNames**</span><br><code>(val: boolean) =&gt; void</code> |  |
-| <span id="action-setsortcategories">**setSortCategories**</span><br><code>(val: boolean) =&gt; void</code> |  |
 | <span id="action-setselection">**setSelection**</span><br><code>(trackIds: string[]) =&gt; void</code> |  |
 | <span id="action-addtoselection">**addToSelection**</span><br><code>(trackIds: string[]) =&gt; void</code> |  |
 | <span id="action-removefromselection">**removeFromSelection**</span><br><code>(trackIds: string[]) =&gt; void</code> |  |
@@ -107,12 +100,11 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="action-clearcategorymodes">**clearCategoryModes**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-clearfiltertext">**clearFilterText**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setfiltertext">**setFilterText**</span><br><code>(newText: string) =&gt; void</code> |  |
-| <span id="action-opentable">**openTable**</span><br><code>(drawer?: { width: number; availableWidth: number; }) =&gt; void</code> | shows this view's tracks as a table in the drawer, which widens to the larger of its current width and 45% of the room it shares with the views |
+| <span id="action-opentable">**openTable**</span><br><code>(drawer?: { width: number; availableWidth: number; }) =&gt; void</code> | shows this view's tracks as a table in the drawer, which widens to the table's natural width, up to 45% of the room it shares with the views, and never narrows |
 | <span id="action-closetable">**closeTable**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setpreferreddrawerwidth">**setPreferredDrawerWidth**</span><br><code>(width: number) =&gt; void</code> | a drag of the drawer edge while the table is open resizes the table's width, so closing it returns to the user's own |
 | <span id="action-setcategorycollapsed">**setCategoryCollapsed**</span><br><code>(id: string, collapsed: boolean) =&gt; void</code> | the single gate on accordion state: a folder is a mode the user picked, not an accordion that happens to be shut, so every collapse/expand — one row, a bulk menu item, or "expand all" — passes it by |
 | <span id="action-setfoldercategory">**setFolderCategory**</span><br><code>(id: string, isFolder: boolean) =&gt; void</code> | folder and collapsed are the same slot, so leaving folder mode always yields an expanded category |
-| <span id="action-expandallcategories">**expandAllCategories**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-toggletrack">**toggleTrack**</span><br><code>(trackId: string) =&gt; Promise&lt;void&gt;</code> | shows or hides a track, recording one it showed as recently used |
 | <span id="action-collapsesubcategories">**collapseSubCategories**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-collapsetoplevelcategories">**collapseTopLevelCategories**</span><br><code>() =&gt; void</code> |  |

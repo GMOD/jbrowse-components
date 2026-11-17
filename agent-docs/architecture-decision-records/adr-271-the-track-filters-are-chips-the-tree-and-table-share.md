@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The track selector's facet filters are a chip row under its filter box, in tree and table mode alike; one table state per selector holds facets, sort and columns, and the tree shows only the tracks its facets keep. The side panel goes. Amended: the ☰ menu keeps only the panel's actions and the table's rows; sort, collapse and delete connection move to where they act"
+summary: "Facet filters are a chip row under the track selector's filter box in both modes, replacing the panel; one table state per selector holds facets, sort and columns, and the tree shows only the tracks they keep. Amended: other ☰ rows move where they act"
 ---
 
 # ADR-271: The track filters are chips the tree and the table share

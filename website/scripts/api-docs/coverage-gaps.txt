@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1246)
+# model members with no description (1238)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -436,8 +436,6 @@ GridBookmarkWidgetModel.removeSelectedHighlights
 GridBookmarkWidgetModel.selectedHighlights
 GridBookmarkWidgetModel.setSelectedIds
 HiddenGroupsMixin.showAllGroups
-HierarchicalTrackSelectorWidget.activeSortCategories
-HierarchicalTrackSelectorWidget.activeSortTrackNames
 HierarchicalTrackSelectorWidget.addToFavorites
 HierarchicalTrackSelectorWidget.addToRecentlyUsed
 HierarchicalTrackSelectorWidget.addToSelection
@@ -451,10 +449,8 @@ HierarchicalTrackSelectorWidget.clearSelection
 HierarchicalTrackSelectorWidget.closeTable
 HierarchicalTrackSelectorWidget.collapseSubCategories
 HierarchicalTrackSelectorWidget.collapseTopLevelCategories
-HierarchicalTrackSelectorWidget.expandAllCategories
 HierarchicalTrackSelectorWidget.favorites
 HierarchicalTrackSelectorWidget.favoritesSet
-HierarchicalTrackSelectorWidget.hasAnySubcategories
 HierarchicalTrackSelectorWidget.isFavorite
 HierarchicalTrackSelectorWidget.isRecentlyUsed
 HierarchicalTrackSelectorWidget.isSelected
@@ -466,14 +462,10 @@ HierarchicalTrackSelectorWidget.setCategoryMode
 HierarchicalTrackSelectorWidget.setFilterText
 HierarchicalTrackSelectorWidget.setRecentlyUsed
 HierarchicalTrackSelectorWidget.setSelection
-HierarchicalTrackSelectorWidget.setSortCategories
-HierarchicalTrackSelectorWidget.setSortTrackNames
 HierarchicalTrackSelectorWidget.setTrackContainerId
 HierarchicalTrackSelectorWidget.setTrackList
 HierarchicalTrackSelectorWidget.setView
 HierarchicalTrackSelectorWidget.shownTrackIds
-HierarchicalTrackSelectorWidget.sortCategories
-HierarchicalTrackSelectorWidget.sortTrackNames
 HierarchicalTrackSelectorWidget.treeHeight
 HierarchicalTrackSelectorWidget.view
 HierarchicalTrackSelectorWidget.visibleRange

@@ -1473,6 +1473,7 @@
         "CascadingMenuButton",
         "ConfirmDialog",
         "ContextMenu",
+        "ControlRow",
         "CopyToClipboardButton",
         "Crosshairs",
         "Dialog",
@@ -1729,6 +1730,16 @@
       ]
     },
     "@jbrowse/core/ui/ContextMenu": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/ControlRow": {
       "package": "@jbrowse/core",
       "names": [
         "default"
