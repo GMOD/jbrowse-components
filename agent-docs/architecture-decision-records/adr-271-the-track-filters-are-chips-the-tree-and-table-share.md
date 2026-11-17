@@ -53,14 +53,16 @@ on the way back, and the tree could not filter by metadata at all.
   - Clear favorites / Clear recently used: the + menu, only while that list
     shows and has tracks; a text button beside the toggles does not fit the
     384 px drawer without a second line. Clear favorites offers Undo.
-  - Delete connections...: "Remove connection..." on the connection's own
+  - Delete connections...: "Delete connection..." on the connection's own
     group row, through the same confirm.
   - Collapse: "Collapse all" / "Expand all" on a group row's menu; config
     `defaultCollapsed.*` still sets the first load.
   - Sort: deleted (Status).
-  - Add tracks to selection… and Manage columns: the columns button at the
-    end of the table's header row, in the drawer and the folder dialog
-    alike.
+  - Add tracks to selection… and Manage columns: a columns button beside
+    the filter box, drawn only in table mode, and where the folder dialog's ⋮
+    was. A 32 px menu column at the end of the table's header row was tried
+    and dropped: it cost every row a blank cell and the columns width in a
+    narrow drawer.
 - **A folder dialog keeps a table of its own** (`useTrackTable`), with its
   own filter box and the same chips, since `TrackSelector-folderDialog` is a
   documented extension point.

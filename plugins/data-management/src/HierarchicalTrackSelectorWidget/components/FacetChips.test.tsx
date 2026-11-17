@@ -215,7 +215,7 @@ test('a facet filter narrows the favorites list too', () => {
   expect(treeTrackIds(model)).toEqual(['t0'])
 })
 
-test('the table header holds the columns menu, and the tree has none', async () => {
+test('the toolbar holds the table menu in table mode only', async () => {
   const { model } = setup()
   const view = renderSelector(model)
   expect(view.queryByTestId('track-table-menu')).toBeNull()

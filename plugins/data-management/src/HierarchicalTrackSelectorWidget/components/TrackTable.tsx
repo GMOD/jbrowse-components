@@ -4,7 +4,10 @@ import { observer } from 'mobx-react'
 
 import TrackTableGrid from '../../TrackTable/components/TrackTableGrid.tsx'
 import { getTableColumns } from '../../TrackTable/components/getTableColumns.tsx'
-import { shownFields } from '../../TrackTable/components/tableLayout.ts'
+import {
+  shownFields,
+  tableMenuItems,
+} from '../../TrackTable/components/tableLayout.ts'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
@@ -28,7 +31,10 @@ const TrackTable = observer(function TrackTable({
   const shown = width ? shownFields(table, width) : ['name']
   return (
     <>
-      <HierarchicalHeader model={model} />
+      <HierarchicalHeader
+        model={model}
+        tableMenuItems={() => tableMenuItems(table, shown)}
+      />
       <div ref={ref} className={classes.body}>
         {width ? (
           <TrackTableGrid

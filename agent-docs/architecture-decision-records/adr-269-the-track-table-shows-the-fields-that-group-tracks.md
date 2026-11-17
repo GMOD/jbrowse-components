@@ -9,7 +9,7 @@ summary: "The drawer's track table shows, beside the name, as many columns as fi
 
 Accepted (2026-11-16); ADR-271 turns its facet panel into filter chips that the
 tree shares; amended 2026-11-17 by ADR-271, which moves Manage columns to the
-columns button at the end of the table's header row. Built over five commits
+columns button beside the filter box. Built over five commits
 after a code review, a product review and a scale review at 5,000 and 20,000
 tracks, judged on the jb2hubs human configs (hg38 799 tracks, hs1 627, hg19
 528). Colin asked that the narrow drawer show "a subset of the total metadata
@@ -66,8 +66,8 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   no track has falls back to deriving. `name` is always first and is not an
   entry. `jbrowse validate` warns about an entry no track in the file
   carries, rather than the app warning at runtime.
-- **Manage columns wins either way.** It sits in the columns button at the end
-  of the table's header row (ADR-271, amended), lists every field and records
+- **Manage columns wins either way.** It sits in the columns button beside the
+  filter box (ADR-271, amended), lists every field and records
   `[{ field, show }]` per config and assembly in localStorage. A shown column
   shows however narrow the table, and may scroll it; a hidden one never shows,
   and hiding the sorted column drops the sort.

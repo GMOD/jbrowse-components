@@ -3,6 +3,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import ShoppingCart from '../../HierarchicalTrackSelectorWidget/components/ShoppingCart.tsx'
+import TableMenuButton from './TableMenuButton.tsx'
+import { tableMenuItems } from './tableLayout.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { TrackTableModel } from '../trackTableModel.ts'
@@ -19,15 +21,17 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * a dialog table's own filter box; the drawer's table shares the track
- * selector's header
+ * a dialog table's own filter box and table menu; the drawer's table shares
+ * the track selector's header
  */
 const FolderTableHeader = observer(function FolderTableHeader({
   model,
   table,
+  shown,
 }: {
   model: HierarchicalTrackSelectorModel
   table: TrackTableModel
+  shown: string[]
 }) {
   const { classes } = useStyles()
   const { matchCounts } = table
@@ -46,6 +50,7 @@ const FolderTableHeader = observer(function FolderTableHeader({
           table.setFilterText(value)
         }}
       />
+      <TableMenuButton menuItems={() => tableMenuItems(table, shown)} />
       <ShoppingCart model={model} />
     </div>
   )

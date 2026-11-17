@@ -369,10 +369,10 @@ starts on the right.
 The Tree | Table toggle at the top of "Available tracks" shows all tracks as a
 filterable table, with the tracks whose name matches the filter box listed
 first. The filter chips carry over between the tree and the table. In table
-mode, the columns button at the end of the table's header row shows or hides any
-column through Manage columns, and switches the checkboxes to adding tracks to
-the selection instead of turning them on or off. Tracks with `metadata` fields
-get extra columns:
+mode, the columns button beside the filter box shows or hides any column through
+Manage columns, and switches the checkboxes to adding tracks to the selection
+instead of turning them on or off. Tracks with `metadata` fields get extra
+columns:
 
 ```json
 {

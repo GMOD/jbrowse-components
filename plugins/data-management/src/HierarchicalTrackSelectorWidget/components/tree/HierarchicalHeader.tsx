@@ -3,10 +3,12 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import FacetChips from '../../../TrackTable/components/FacetChips.tsx'
+import TableMenuButton from '../../../TrackTable/components/TableMenuButton.tsx'
 import ShoppingCart from '../ShoppingCart.tsx'
 import AddMenu from './AddMenu.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()(theme => ({
   toolbar: {
@@ -21,13 +23,15 @@ const useStyles = makeStyles()(theme => ({
 
 /**
  * The add button, cart, filter box and filter chips the tree and the table
- * share
+ * share. The table adds its menu, whose rows depend on the columns that fit
  */
 const HierarchicalTrackSelectorHeader = observer(
   function HierarchicalTrackSelectorHeader({
     model,
+    tableMenuItems,
   }: {
     model: HierarchicalTrackSelectorModel
+    tableMenuItems?: () => MenuItem[]
   }) {
     const { classes } = useStyles()
     const { trackTable } = model
@@ -41,6 +45,9 @@ const HierarchicalTrackSelectorHeader = observer(
           data-testid="hierarchical_track_selector"
         >
           <AddMenu model={model} />
+          {tableMenuItems ? (
+            <TableMenuButton menuItems={tableMenuItems} />
+          ) : null}
           <ShoppingCart model={model} />
           <ClearableSearchField
             className={classes.searchBox}
