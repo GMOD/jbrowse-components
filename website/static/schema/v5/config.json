@@ -3837,7 +3837,7 @@
           }
         },
         "lanes": {
-          "description": "per mate assembly, the label and group the multiway lane picker offers it under. Any JSON value: the slot is `frozen`, so its shape is not checked here.",
+          "description": "per mate assembly, the label and group the multiway lane picker offers it under, and the color its lane label bar draws. Any JSON value: the slot is `frozen`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
@@ -8945,7 +8945,7 @@
               }
             },
             "field": {
-              "description": "a feature field, or a jexl expression over feature, whose values each take one range color, with a key; cluster paints a gene, or a placement box, by its ortholog group.",
+              "description": "a feature field, or a jexl expression over feature, whose values each take one range color, with a key; cluster paints a gene, or a placement box, by the group placing it: its ortholog group, or on an alignment source its alignment record.",
               "default": "",
               "if": {
                 "type": "null"
@@ -9014,7 +9014,7 @@
       "x-closed": true,
       "properties": {
         "sort": {
-          "description": "the lanes that stack first, by assembly name, in this order; the rest follow densest-first.",
+          "description": "the lanes that stack first, by assembly name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes.",
           "if": {
             "type": "null"
           },
@@ -9041,6 +9041,18 @@
         },
         "labels": {
           "description": "a label drawn for a lane in place of its assembly name, by assembly name; labels.lanes says where lane labels draw.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "colors": {
+          "description": "a color pinned on a lane, by assembly name, the anchor's included, over the color its source declares; drawn as a bar beside the lane's label.",
           "if": {
             "type": "null"
           },

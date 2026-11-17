@@ -910,6 +910,7 @@
         "evaluateJexl",
         "expandTabixShorthand",
         "expandUriShorthand",
+        "fileLocationSlots",
         "fillIndexType",
         "fillLocations",
         "fullConfSnapshot",
@@ -1954,6 +1955,13 @@
       "package": "@jbrowse/core",
       "names": [
         "LegendSwatchGlyph"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/loadErrorHint": {
+      "package": "@jbrowse/core",
+      "names": [
+        "loadErrorHint"
       ],
       "worker": "real"
     },
@@ -4048,7 +4056,8 @@
     "@jbrowse/core/util/TimeTraveller": {
       "package": "@jbrowse/core",
       "names": [
-        "default"
+        "default",
+        "recordStep"
       ],
       "worker": "real"
     },
@@ -4071,6 +4080,7 @@
         "addTrackTypeGuesser",
         "allSessionTracks",
         "annotationTrackIds",
+        "blobFilesToReopen",
         "canonicalAssemblyNames",
         "canonicalTrackId",
         "clearFileFromCache",
@@ -4102,6 +4112,7 @@
         "isSameAssemblyName",
         "launchToggleTrackGeneric",
         "launchTrackGeneric",
+        "localIndexNeed",
         "makeIndex",
         "makeIndexType",
         "normalizeTrackInit",

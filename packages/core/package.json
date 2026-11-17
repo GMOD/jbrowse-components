@@ -500,6 +500,7 @@
       "./ui/gpuFallback": "./esm/ui/gpuFallback.js",
       "./ui/hoverBoxStyle": "./esm/ui/hoverBoxStyle.js",
       "./ui/legendSpec": "./esm/ui/legendSpec.js",
+      "./ui/loadErrorHint": "./esm/ui/loadErrorHint.js",
       "./ui/measureLegendText": "./esm/ui/measureLegendText.js",
       "./ui/menuItems": "./esm/ui/menuItems.js",
       "./ui/multiTrackMenuItems": "./esm/ui/multiTrackMenuItems.js",

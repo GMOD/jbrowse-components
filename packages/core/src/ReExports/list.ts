@@ -232,6 +232,7 @@ export default [
   '@jbrowse/core/ui/LabeledCheckbox',
   '@jbrowse/core/ui/legendSpec',
   '@jbrowse/core/ui/LegendSwatchGlyph',
+  '@jbrowse/core/ui/loadErrorHint',
   '@jbrowse/core/ui/LoadingEllipses',
   '@jbrowse/core/ui/LoadingOverlay',
   '@jbrowse/core/ui/Logo',

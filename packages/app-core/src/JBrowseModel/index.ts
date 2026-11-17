@@ -140,10 +140,7 @@ export function JBrowseModelF({
        * Appends, or inserts at `index`, which is how an undone delete puts a
        * track back where it was.
        */
-      addTrackConf(
-        loose: { trackId: string; type?: string },
-        index?: number,
-      ) {
+      addTrackConf(loose: { trackId: string; type?: string }, index?: number) {
         const trackConf = expandLooseTrackConfig(loose, pluginManager)
         const { type } = trackConf
         if (!type) {

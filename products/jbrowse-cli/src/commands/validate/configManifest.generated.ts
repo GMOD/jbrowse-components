@@ -5856,6 +5856,10 @@ export const configManifest: ConfigManifest = {
               "type": "Map<string, string>"
             },
             {
+              "name": "colors",
+              "type": "Map<string, string>"
+            },
+            {
               "name": "kept",
               "type": "string[]",
               "liftsString": true,
