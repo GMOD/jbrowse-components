@@ -128,7 +128,8 @@ export function configSchemaFactory() {
       },
       /**
        * #slot legend
-       * The color key: the anchor lane's drawn gene colors, and what
+       * The color key: every lane's drawn gene colors, or the anchor lane's
+       * alone where every lane's are too many to list, and what
        * `ribbons.encoding.color` paints — the strand colors, the identity
        * ramp, or a column's labels. Derived from what is on screen, so an
        * `encoding.color` resolving to one color and a ribbon scale painting

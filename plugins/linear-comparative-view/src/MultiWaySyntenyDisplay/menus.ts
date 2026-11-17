@@ -355,7 +355,7 @@ const GENE_COLOR_FIELDS: RadioOption<string>[] = [
     value: CLUSTER_FIELD,
     label: 'Cluster',
     helpText:
-      'Each gene by the ortholog group it carries, so a group is one color down the stack. A gene no group claims is grey.',
+      'Each gene by the group placing it, its ortholog group or on an alignment source its alignment record, so a group is one color down the stack. A gene no group claims is grey.',
   },
   {
     value: FEATURE_NAME_FIELD,

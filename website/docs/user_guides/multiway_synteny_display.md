@@ -78,7 +78,8 @@ The **Lanes** submenu in the track menu holds the stack's controls:
 
 Drag a lane label to move that lane. To fix the order across a pan, the display
 config's `rows.sort` pins the lanes it names to the top, in that order, and the
-rest follow densest-first
+rest follow densest-first, or each beside the lane most alike where the source
+joins neighbouring lanes
 ([grouping and ordering](/docs/config_guides/grouping_and_ordering#multiway-synteny)).
 
 ## Where a lane draws

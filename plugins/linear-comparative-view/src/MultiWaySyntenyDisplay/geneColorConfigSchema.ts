@@ -52,7 +52,7 @@ export const geneColorConfigSchema = ConfigurationSchema(
     ...colorFieldSlot({
       fieldType: 'featureField',
       field:
-        'a feature field, or a jexl expression over feature, whose values each take one range color, with a key; cluster paints a gene, or a placement box, by its ortholog group',
+        'a feature field, or a jexl expression over feature, whose values each take one range color, with a key; cluster paints a gene, or a placement box, by the group placing it: its ortholog group, or on an alignment source its alignment record',
     }),
     /**
      * #slot scale

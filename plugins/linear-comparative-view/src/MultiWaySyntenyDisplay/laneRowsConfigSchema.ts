@@ -30,13 +30,14 @@ export const laneRowsConfigSchema = ConfigurationSchema(
     /**
      * #slot sort
      * The lanes that stack first, by assembly name, in this order; the rest
-     * follow densest-first.
+     * follow densest-first, or each beside the lane most alike where the
+     * source joins neighbouring lanes.
      */
     sort: {
       type: 'stringArray',
       defaultValue: [],
       description:
-        'the lanes that stack first, by assembly name, in this order; the rest follow densest-first',
+        'the lanes that stack first, by assembly name, in this order; the rest follow densest-first, or each beside the lane most alike where the source joins neighbouring lanes',
     },
     /**
      * #slot labels

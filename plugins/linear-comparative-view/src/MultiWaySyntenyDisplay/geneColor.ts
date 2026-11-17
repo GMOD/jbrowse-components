@@ -22,7 +22,7 @@ import type {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import type { ValueRamp } from '@jbrowse/display-kit/valueRamp'
 
-/** paints each gene and box by its ortholog group, one color down the stack */
+/** paints each gene and box by the group placing it, one color down the stack */
 export const CLUSTER_FIELD = 'cluster'
 
 export interface PaintedFill {
