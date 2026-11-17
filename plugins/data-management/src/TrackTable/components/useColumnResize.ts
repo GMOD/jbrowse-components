@@ -15,10 +15,12 @@ export function useColumnResize(initialWidths: Record<string, number>) {
   const endDragRef = useRef<() => void>(undefined)
   useEffect(() => () => endDragRef.current?.(), [])
 
-  function onResizeStart(colId: string, e: React.MouseEvent) {
+  function onResizeStart(colId: string, e: React.MouseEvent<HTMLElement>) {
     e.preventDefault()
     const startX = e.clientX
-    const startWidth = colWidths[colId] ?? DEFAULT_COL_WIDTH
+    const startWidth =
+      e.currentTarget.parentElement?.offsetWidth ||
+      (colWidths[colId] ?? DEFAULT_COL_WIDTH)
 
     function onMouseMove(ev: MouseEvent) {
       const newWidth = Math.max(MIN_COL_WIDTH, startWidth + ev.clientX - startX)

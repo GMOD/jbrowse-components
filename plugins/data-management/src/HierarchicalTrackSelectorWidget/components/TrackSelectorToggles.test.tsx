@@ -3,6 +3,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render } from '@testing-library/react'
 
+import { naturalTableWidth } from '../../TrackTable/components/tableLayout.ts'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
@@ -93,20 +94,30 @@ test('the toggle swaps the tree for a table seeded with its query, with select-a
   expect(model.filterText).toBe('genes')
 })
 
-test('the table widens the drawer without touching the saved width, a drag resizes the table width, and closing returns to the saved one', () => {
+test('the table widens the drawer to its natural width without touching the saved width, a drag resizes the table width, and closing returns to the saved one', () => {
   const { session, model } = setup()
-  session.updateDrawerWidth(400, 2000)
+  session.updateDrawerWidth(200, 2000)
+  const natural = naturalTableWidth(model.trackTable)
+  expect(natural).toBeGreaterThan(200)
 
-  model.openTable({ width: 400, availableWidth: 2000 })
-  expect(session.effectiveDrawerWidth).toBe(900)
-  expect(session.drawerWidth).toBe(400)
+  model.openTable({ width: 200, availableWidth: 2000 })
+  expect(session.effectiveDrawerWidth).toBe(natural)
+  expect(session.drawerWidth).toBe(200)
 
   session.updateDrawerWidth(1000, 2000)
   expect(session.effectiveDrawerWidth).toBe(1000)
-  expect(session.drawerWidth).toBe(400)
+  expect(session.drawerWidth).toBe(200)
 
   model.closeTable()
-  expect(session.effectiveDrawerWidth).toBe(400)
+  expect(session.effectiveDrawerWidth).toBe(200)
+})
+
+test('the table widens the drawer no further than 45% of the room, and never narrows it', () => {
+  const { model } = setup()
+  model.openTable({ width: 100, availableWidth: 300 })
+  expect(model.preferredDrawerWidth).toBe(135)
+  model.openTable({ width: 1000, availableWidth: 2000 })
+  expect(model.preferredDrawerWidth).toBe(1000)
 })
 
 test('a table opened with no drawer to measure asks for no width', () => {

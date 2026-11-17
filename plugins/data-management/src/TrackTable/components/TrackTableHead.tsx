@@ -21,7 +21,7 @@ const TrackTableHead = observer(function TrackTableHead({
   allSelected: boolean
   someSelected: boolean
   onSelectAll?: () => void
-  onResizeStart: (colId: string, e: React.MouseEvent) => void
+  onResizeStart: (colId: string, e: React.MouseEvent<HTMLElement>) => void
   sortField: string
   sortAscending: boolean
   onSort: (colId: string) => void
@@ -87,7 +87,6 @@ const TrackTableHead = observer(function TrackTableHead({
             </th>
           )
         })}
-        <th className={classes.fillerCell} />
       </tr>
     </thead>
   )

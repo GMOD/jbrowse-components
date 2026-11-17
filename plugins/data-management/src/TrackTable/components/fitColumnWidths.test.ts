@@ -1,9 +1,8 @@
 import { fitColumnWidths } from './fitColumnWidths.ts'
 
-test('room left once every column fits goes to the first column', () => {
-  expect(
-    fitColumnWidths({ name: 200, type: 90, adapter: 110 }, 500, () => 100),
-  ).toEqual({ name: 300, type: 90, adapter: 110 })
+test('widths that already fit are left alone', () => {
+  const widths = { name: 200, type: 90, adapter: 110 }
+  expect(fitColumnWidths(widths, 500, () => 100)).toEqual(widths)
 })
 
 test('the room past each floor is shared by how much more a column wants', () => {

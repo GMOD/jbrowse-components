@@ -32,8 +32,7 @@ export function columnsThatFit(available: number, nameWidth: number) {
  * floor of its natural width, and the room left over is shared in proportion
  * to how much more each column wants, so a long column keeps more than a
  * medium one instead of both being cut to one width. When even the floors
- * don't fit, the floors are kept and the table scrolls. Room left once every
- * column has its natural width goes to the first column, the name.
+ * don't fit, the floors are kept and the table scrolls.
  */
 export function fitColumnWidths(
   widths: Record<string, number>,
@@ -48,12 +47,10 @@ export function fitColumnWidths(
     wantTotal > 0
       ? Math.min(1, Math.max(0, (available - floorTotal) / wantTotal))
       : 1
-  const fitted = entries.map(([, w], i) =>
-    Math.floor(floors[i]! + (w - floors[i]!) * share),
-  )
-  const slack =
-    share === 1 ? Math.max(0, available - fitted.reduce((a, b) => a + b, 0)) : 0
   return Object.fromEntries(
-    entries.map(([id], i) => [id, fitted[i]! + (i === 0 ? slack : 0)]),
+    entries.map(([id, w], i) => [
+      id,
+      Math.floor(floors[i]! + (w - floors[i]!) * share),
+    ]),
   )
 }

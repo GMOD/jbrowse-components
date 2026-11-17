@@ -94,7 +94,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
       <table
         className={classes.table}
         style={{
-          width:
+          minWidth:
             CHECKBOX_WIDTH +
             columns.reduce(
               (sum, col) => sum + (colWidths[col.id] ?? DEFAULT_COL_WIDTH),
@@ -107,10 +107,13 @@ const TrackTableGrid = observer(function TrackTableGrid({
           {columns.map(col => (
             <col
               key={col.id}
-              style={{ width: colWidths[col.id] ?? DEFAULT_COL_WIDTH }}
+              style={
+                col.id === 'name'
+                  ? undefined
+                  : { width: colWidths[col.id] ?? DEFAULT_COL_WIDTH }
+              }
             />
           ))}
-          <col />
         </colgroup>
         <TrackTableHead
           columns={columns}
@@ -147,7 +150,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
           <SpacerRow height={trailingGap + endClearance} />
           {sortedRows.length === 0 ? (
             <tr>
-              <td colSpan={columns.length + 2} className={classes.emptyCell}>
+              <td colSpan={columns.length + 1} className={classes.emptyCell}>
                 {table.allRows.length
                   ? 'No tracks match the current search and filters'
                   : 'No tracks'}

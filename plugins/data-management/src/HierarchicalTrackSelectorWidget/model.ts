@@ -14,6 +14,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
 import { autorun, compareShallow, computed, observable, reaction } from 'mobx'
 
+import { naturalTableWidth } from '../TrackTable/components/tableLayout.ts'
 import { trackTableModelFactory } from '../TrackTable/trackTableModel.ts'
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { searchMatcher } from '../shared/searchText.ts'
@@ -472,8 +473,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        * shows this view's tracks as a table in the drawer, which widens to
-       * the larger of its current width and 45% of the room it shares with
-       * the views
+       * the table's natural width, up to 45% of the room it shares with the
+       * views, and never narrows
        * @param drawer - the drawer's current width and the width it shares
        * with the views, measured by the caller; absent when there is no drawer
        * column (popped out, or a phone host), and the table then asks for no
@@ -484,7 +485,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         self.tableDrawerWidth = drawer
           ? Math.max(
               drawer.width,
-              Math.round(drawer.availableWidth * tableDrawerFraction),
+              Math.min(
+                naturalTableWidth(self.trackTable),
+                Math.round(drawer.availableWidth * tableDrawerFraction),
+              ),
             )
           : undefined
       },

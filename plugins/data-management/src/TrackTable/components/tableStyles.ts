@@ -28,7 +28,7 @@ export const useTableStyles = makeStyles()(theme => {
       color: theme.palette.text.primary,
     },
     table: {
-      minWidth: '100%',
+      width: '100%',
       borderCollapse: 'collapse',
       tableLayout: 'fixed',
     },
@@ -135,10 +135,6 @@ export const useTableStyles = makeStyles()(theme => {
       height: '50%',
       alignSelf: 'center',
       background: borderColor,
-    },
-    fillerCell: {
-      borderBottom: border,
-      padding: 0,
     },
     emptyCell: {
       padding: 20,

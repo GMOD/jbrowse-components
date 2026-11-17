@@ -183,12 +183,25 @@ test('the name column keeps half the measured width before the others share', ()
     .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
     .mockReturnValue(448)
   const { container } = renderGrid(model, table)
-  const widths = [...container.querySelectorAll('col')].map(col =>
-    Number.parseFloat(col.style.width),
+  const [checkbox = 0, , ...rest] = [...container.querySelectorAll('col')].map(
+    col => Number.parseFloat(col.style.width) || 0,
+  )
+  const tableMinWidth = Number.parseFloat(
+    container.querySelector('table')!.style.minWidth,
   )
   clientWidth.mockRestore()
-  // the checkbox column, then name, then the rest
-  expect(widths[1]).toBeGreaterThanOrEqual((448 - widths[0]!) / 2)
+  expect(
+    tableMinWidth - checkbox - rest.reduce((a, b) => a + b, 0),
+  ).toBeGreaterThanOrEqual((448 - checkbox) / 2)
+})
+
+test('the name column takes the room the other columns leave', () => {
+  const { model, table } = setup()
+  const { container } = renderGrid(model, table)
+  const cols = [...container.querySelectorAll('col')]
+  expect(cols[1]!.style.width).toBe('')
+  expect(cols.slice(2).every(col => col.style.width !== '')).toBe(true)
+  expect(container.querySelector('table')!.style.minWidth).not.toBe('')
 })
 
 test('the grid scrolls back to the top when the search, filters or sort change, not when a track goes', () => {
