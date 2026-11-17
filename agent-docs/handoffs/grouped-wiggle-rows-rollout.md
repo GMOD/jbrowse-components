@@ -37,7 +37,7 @@ tree folders.
 - A JBrowse release that reads `rows: { field: 'group' }`: v5.0.0-beta.21
   refuses the three grouped tracks ("invalid configuration"); v4.3.0 opens
   them as one overlaid plot.
-- In jb2hubs: move `HOST_VERSIONS` (`scripts/checkConfigCompat.mjs`) to that
+- In jb2hubs: move `HOST_VERSIONS` (its config-compat check script) to that
   release, rebase the branch, rerun its tests and a scratch build, merge, and
   ship with `./run.sh --configs-only`. GenArk configs gain subgroup metadata
   on their next run.
