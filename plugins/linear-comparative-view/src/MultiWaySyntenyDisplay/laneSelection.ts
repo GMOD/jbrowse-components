@@ -99,6 +99,26 @@ export function laneLabelOf(
 }
 
 /**
+ * A lane's color, the anchor's included: its `rows.colors` entry, else the
+ * color its source declares, else none
+ */
+export function laneColorOf(
+  name: string,
+  {
+    pinned,
+    declared,
+    keyOf,
+  }: {
+    pinned: ReadonlyMap<string, string>
+    declared: ReadonlyMap<string, string>
+    keyOf: KeyOf
+  },
+) {
+  const key = keyOf(name)
+  return pinned.get(key) ?? declared.get(key)
+}
+
+/**
  * The mate lanes the stack draws, in order: `preferred` first, then by their
  * heaviest contig's group weight, then each lane `placeless` names that no
  * group places

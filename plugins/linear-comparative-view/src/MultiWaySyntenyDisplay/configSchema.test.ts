@@ -32,3 +32,12 @@ test('the lanes take no rows.tree: a config loads without it, naming it, and a w
     applyConfSettings(make(), { rows: { tree: '(b,a);' } }).failed,
   ).toEqual([expect.objectContaining({ key: 'rows' })])
 })
+
+test('the lanes take rows.colors, a color by assembly name', () => {
+  const config = make({ rows: { colors: { volvox: 'red' } } })
+  expect(readConfObject(config, ['rows', 'colors'])).toEqual({ volvox: 'red' })
+  expect(
+    applyConfSettings(make(), { rows: { colors: { volvox_random: '#00f' } } })
+      .failed,
+  ).toEqual([])
+})

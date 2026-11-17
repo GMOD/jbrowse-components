@@ -71,6 +71,10 @@ export interface LaneHeaderModel {
   lanesFrozen: boolean
   realignLane: (assemblyName: string) => void
   laneGeneAdapters: ReadonlyMap<string, unknown>
+  rowColors: ReadonlyMap<string, string>
+  laneKey: (assemblyName: string) => string
+  openLaneColorDialog: (assemblyName: string) => void
+  setLaneColor: (assemblyName: string, color: string | undefined) => void
 }
 
 export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
@@ -122,6 +126,7 @@ export function laneHeaderMenuItems(
           model.openInNewView(name, model.anchorLocString)
         },
       },
+      ...laneColorMenuItems(model, name),
     ]
   }
   const region = laneRegion(lane)
@@ -145,6 +150,7 @@ export function laneHeaderMenuItems(
     ...laneChangeMenuItems(model, lane),
     ...laneContigMenuItems(model, lane),
     ...laneFlipMenuItems(model, lane),
+    ...laneColorMenuItems(model, name),
     ...(model.lanesFrozen
       ? [
           {
@@ -166,6 +172,33 @@ export function laneHeaderMenuItems(
             onClick: () => {},
           },
         ]),
+  ]
+}
+
+/** Color... pins the lane's `rows.colors` entry, and a pin can be cleared */
+function laneColorMenuItems(
+  model: LaneHeaderModel,
+  assemblyName: string,
+): MenuItem[] {
+  return [
+    {
+      label: 'Color...',
+      onClick: () => {
+        model.openLaneColorDialog(assemblyName)
+      },
+    },
+    ...(model.rowColors.has(model.laneKey(assemblyName))
+      ? [
+          {
+            label: 'Clear lane color',
+            helpText:
+              "Drop the color picked for this lane, so it shows its source's color, or none.",
+            onClick: () => {
+              model.setLaneColor(assemblyName, undefined)
+            },
+          },
+        ]
+      : []),
   ]
 }
 

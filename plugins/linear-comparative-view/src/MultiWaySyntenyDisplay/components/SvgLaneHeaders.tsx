@@ -6,6 +6,8 @@ import {
   INLINE_CHIP_OPACITY,
   INLINE_CHIP_PAD_PX,
   LABEL_FONT_SIZE,
+  LANE_COLOR_BAR_GAP_PX,
+  LANE_COLOR_BAR_PX,
   changesChipWidth,
   labelBoxTop,
 } from '../laneHeader.ts'
@@ -102,7 +104,10 @@ export function SvgLaneHeaders({
         const badgeWidth = badge
           ? measureText(badge, LABEL_FONT_SIZE) + 2 * BADGE_PAD_PX
           : 0
-        const labelX = badge ? 2.5 + badgeWidth + 4 : 2
+        const barX = badge ? 2.5 + badgeWidth + 4 : 2
+        const labelX = row.color
+          ? barX + LANE_COLOR_BAR_PX + LANE_COLOR_BAR_GAP_PX
+          : barX
         return (
           <g key={`header-${row.assemblyName}`}>
             {badge ? (
@@ -126,6 +131,16 @@ export function SvgLaneHeaders({
                   {badge}
                 </text>
               </>
+            ) : null}
+            {row.color ? (
+              <rect
+                data-testid="multiway-lane-color"
+                x={barX}
+                y={labelBoxTop(row.y)}
+                width={LANE_COLOR_BAR_PX}
+                height={LABEL_FONT_SIZE}
+                fill={row.color}
+              />
             ) : null}
             {row.inline ? (
               <SvgInlineChip

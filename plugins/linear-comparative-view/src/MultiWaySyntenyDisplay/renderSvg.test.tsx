@@ -287,3 +287,36 @@ test('the export draws lane headers and names in band ink over a band-ground hal
     ])
   }
 })
+
+test('the export draws each lane color as a bar before its label, in both placements', async () => {
+  const display = createDisplay()
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'g1',
+      name: 'g1',
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 200,
+      },
+    }),
+  ])
+  display.setLaneColor('volvox', 'black')
+  display.setLaneColor('volvox_random', 'red')
+  await when(() => display.svgReady, { timeout: 5000 })
+  for (const overlay of [false, true]) {
+    display.setInlineLaneNames(overlay)
+    const { container } = render(<svg>{await display.renderSvg()}</svg>)
+    const bars = [
+      ...container.querySelectorAll('[data-testid="multiway-lane-color"]'),
+    ]
+    expect(bars.map(bar => bar.getAttribute('fill'))).toEqual(['black', 'red'])
+    expect(bars.map(bar => bar.getAttribute('width'))).toEqual(['4', '4'])
+  }
+})

@@ -1,5 +1,5 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
-import { setConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { DEAL_COLOR_DIFFERENCE, colorDifference } from '@jbrowse/core/ui/colors'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature, getContainingTrack } from '@jbrowse/core/util'
@@ -2601,6 +2601,40 @@ test('declaredLanesOf reads a header that names lanes and nothing else', () => {
   expect(
     declaredLanesOf({ lanes: [{ name: 'HG1#1', label: 3, group: 'HG1' }] }),
   ).toEqual([{ name: 'HG1#1', label: undefined, group: 'HG1' }])
+})
+
+test("each lane's color is its rows.colors pin, else its source's, else none, the anchor's from anchorColor", async () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+    rpc: async name =>
+      name === 'CoreGetInfo'
+        ? {
+            hasCoarseTier: false,
+            anchorAssemblyName: 'volvox',
+            anchorColor: 'black',
+            lanes: [
+              { name: 'HG1#1', color: 'red' },
+              { name: 'HG1#2', color: 'blue' },
+              { name: 'HG2#1' },
+            ],
+          }
+        : [],
+  })
+  await when(() => display.adapterHeader !== undefined, { timeout: 5000 })
+  const colors = () =>
+    ['volvox', 'HG1#1', 'HG1#2', 'HG2#1'].map(name => display.laneColor(name))
+  expect(colors()).toEqual(['black', 'red', 'blue', undefined])
+  display.setLaneColor('volvox', 'gold')
+  display.setLaneColor('HG1#1', 'green')
+  display.setLaneColor('HG2#1', 'purple')
+  expect(colors()).toEqual(['gold', 'green', 'blue', 'purple'])
+  expect(getConf(display, ['rows', 'colors'])).toEqual({
+    volvox: 'gold',
+    'HG1#1': 'green',
+    'HG2#1': 'purple',
+  })
+  display.setLaneColor('HG1#1', undefined)
+  expect(colors()).toEqual(['gold', 'red', 'blue', 'purple'])
 })
 
 test('the ribbon label table accumulates across fetches and re-keys on a mode pick', () => {

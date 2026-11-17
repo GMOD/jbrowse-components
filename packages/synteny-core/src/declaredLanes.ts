@@ -1,13 +1,15 @@
 /**
  * One lane a multi-genome source declares: the assembly name its features'
- * mates carry, and optionally the source's own label for it and a heading
- * that gathers lanes belonging together (a diploid sample's two haplotypes,
- * a clade).
+ * mates carry, and optionally the source's own label for it, a heading that
+ * gathers lanes belonging together (a diploid sample's two haplotypes, a
+ * clade) and the CSS color the source draws it in elsewhere, such as a
+ * haplotype's thread through a graph.
  */
 export interface DeclaredLane {
   name: string
   label?: string
   group?: string
+  color?: string
 }
 
 function optionalString(value: unknown) {
@@ -28,6 +30,7 @@ export function declaredLanes(value: unknown): DeclaredLane[] {
         name: lane.name,
         label: 'label' in lane ? optionalString(lane.label) : undefined,
         group: 'group' in lane ? optionalString(lane.group) : undefined,
+        color: 'color' in lane ? optionalString(lane.color) : undefined,
       })
     }
   }
@@ -46,4 +49,16 @@ export function declaredLanesOf(header: unknown) {
       ? header.lanes
       : undefined,
   )
+}
+
+/**
+ * The anchor lane's color a `CoreGetInfo` header declares as `anchorColor`,
+ * since the anchor is never among its `lanes`
+ */
+export function declaredAnchorColorOf(header: unknown) {
+  return typeof header === 'object' &&
+    header !== null &&
+    'anchorColor' in header
+    ? optionalString(header.anchorColor)
+    : undefined
 }

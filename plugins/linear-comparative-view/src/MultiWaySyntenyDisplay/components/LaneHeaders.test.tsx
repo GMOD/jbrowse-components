@@ -116,3 +116,30 @@ test('a lane pair whose fetch failed says so in its gutter', () => {
     screen.queryByTestId('multiway-gutter-loading'),
   ).not.toBeInTheDocument()
 })
+
+test('a lane color draws as a bar beside the label, the anchor included, above the lane and on the gene row', () => {
+  const display = twoLaneDisplay(['volvox_random', 'volvox_ins'])
+  display.setLaneColor('volvox', 'black')
+  display.setLaneColor('volvox_random', 'rgb(255, 0, 0)')
+  const bars = () =>
+    ['volvox', 'volvox_random', 'volvox_ins'].map(name =>
+      screen.queryByTestId(`multiway-lane-color-${name}`),
+    )
+  for (const overlay of [false, true]) {
+    display.setInlineLaneNames(overlay)
+    const { unmount } = render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <LaneHeaders model={display} />
+      </ThemeProvider>,
+    )
+    const [anchor, mate, bare] = bars()
+    expect(anchor!.style.backgroundColor).toBe('black')
+    expect(anchor!.style.width).toBe('4px')
+    expect(mate!.style.backgroundColor).toBe('rgb(255, 0, 0)')
+    expect(bare).toBeNull()
+    expect(mate!.nextElementSibling).toBe(
+      screen.getByTestId('multiway-lane-label-volvox_random'),
+    )
+    unmount()
+  }
+})

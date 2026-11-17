@@ -66,6 +66,7 @@ function headerModel({
   canReanchor = true,
   lanesFrozen = false,
   changes = [],
+  colorPins = {},
 }: {
   held?: boolean
   pinned?: string
@@ -73,6 +74,7 @@ function headerModel({
   canReanchor?: boolean
   lanesFrozen?: boolean
   changes?: LaneChange[]
+  colorPins?: Record<string, string>
 } = {}) {
   const calls: string[] = []
   const model = {
@@ -122,6 +124,14 @@ function headerModel({
       ['peach', {}],
       ['cacao', {}],
     ]),
+    rowColors: new Map(Object.entries(colorPins)),
+    laneKey: (name: string) => name,
+    openLaneColorDialog: (name: string) => {
+      calls.push(`color ${name}`)
+    },
+    setLaneColor: (name: string, color: string | undefined) => {
+      calls.push(`set color ${name} ${color}`)
+    },
   }
   return { model, calls }
 }
@@ -446,6 +456,7 @@ test('a lane names its other contigs and offers each, and a pin offers its relea
     'Show Pp5 in this lane',
     'Show Pp7 in this lane',
     'Flip lane',
+    'Color...',
   ])
   click(items[5])
   expect(calls).toEqual(['pin peach pp5'])
@@ -459,6 +470,7 @@ test('a lane names its other contigs and offers each, and a pin offers its relea
     'Show Pp1 in this lane',
     'Let the lane choose where it draws (pinned to Pp5)',
     'Flip lane',
+    'Color...',
   ])
   click(pinnedItems[6])
   expect(pinnedModel.calls).toEqual(['pin peach undefined'])
@@ -496,6 +508,7 @@ test('a mate lane header opens its assembly elsewhere or re-anchors the track on
     'Open peach at the matching region',
     'Re-anchor on peach',
     'Flip lane',
+    'Color...',
   ])
   click(items[3])
   click(items[4])
@@ -534,6 +547,7 @@ test('a source aligned to one anchor offers no re-anchor', () => {
     'Hide lane',
     'Open peach at the matching region',
     'Flip lane',
+    'Color...',
   ])
 })
 
@@ -550,6 +564,7 @@ test('a lane flips from its menu, and a flip pin offers its release', () => {
   expect(labelsOf(items).slice(5)).toEqual([
     'Flip lane',
     'Let the lane choose its orientation (pinned on Pp1)',
+    'Color...',
   ])
   click(items[6])
   expect(pinned.calls).toEqual(['unflip peach'])
@@ -584,10 +599,10 @@ test('a lane with no gene track says so once, as a dead menu line', () => {
   )
 })
 
-test('the anchor lane header only opens the view region elsewhere', () => {
+test('the anchor lane header opens the view region elsewhere and picks its color', () => {
   const { model, calls } = headerModel()
   const items = laneHeaderMenuItems(model, grape)
-  expect(labelsOf(items)).toEqual(['Open grape in a new view'])
+  expect(labelsOf(items)).toEqual(['Open grape in a new view', 'Color...'])
   click(items[0])
   expect(calls).toEqual(['open grape chr1:1-1,000'])
 })
@@ -666,5 +681,22 @@ test('a lane menu goes to each change its chip names, largest first', () => {
   expect(calls).toEqual([
     'zoom chr1:1532501..3402500',
     'zoom chr1:4985001..5015000',
+  ])
+})
+
+test("a lane menu, the anchor's included, picks the lane's color, and clears a pin", () => {
+  const { model, calls } = headerModel({ colorPins: { peach: 'red' } })
+  const itemOf = (lane: HeaderLane, label: string) =>
+    laneHeaderMenuItems(model, lane).find(
+      item => 'label' in item && item.label === label,
+    )
+  click(itemOf(grape, 'Color...'))
+  expect(itemOf(grape, 'Clear lane color')).toBeUndefined()
+  click(itemOf(peach, 'Color...'))
+  click(itemOf(peach, 'Clear lane color'))
+  expect(calls).toEqual([
+    'color grape',
+    'color peach',
+    'set color peach undefined',
   ])
 })

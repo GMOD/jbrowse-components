@@ -71,6 +71,7 @@ import {
   bandInk,
   bandPalette,
   colorableColumns,
+  declaredAnchorColorOf,
   declaredAttributes,
   declaredLanesOf,
   featureAttributeRanges,
@@ -157,6 +158,7 @@ import {
 } from './lanePins.ts'
 import {
   answeredLaneTest,
+  laneColorOf,
   laneLabelOf,
   laneRowsOf,
   laneUniverseOf,
@@ -1137,6 +1139,48 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * the colors the source declares, the anchor's `anchorColor` among
+       * them, keyed by `laneKey`
+       */
+      get declaredLaneColors() {
+        const out = new Map<string, string>()
+        for (const { name, color } of self.declaredLanes) {
+          if (color !== undefined) {
+            out.set(self.laneKey(name), color)
+          }
+        }
+        const anchorColor = declaredAnchorColorOf(self.adapterHeader)
+        if (anchorColor !== undefined) {
+          out.set(self.laneKey(self.anchorAssemblyName), anchorColor)
+        }
+        return out
+      },
+      /**
+       * #getter
+       * `rows.colors`, keyed by `laneKey`
+       */
+      get rowColors() {
+        const colors = getConf(self, ['rows', 'colors'])
+        return new Map(
+          Object.entries(colors).map(([name, color]) => [
+            self.laneKey(name),
+            color,
+          ]),
+        )
+      },
+      /**
+       * #method
+       * the color a lane's label bar draws, undefined for none
+       */
+      laneColor(assemblyName: string) {
+        return laneColorOf(assemblyName, {
+          pinned: this.rowColors,
+          declared: this.declaredLaneColors,
+          keyOf: self.laneKey,
+        })
+      },
+      /**
+       * #getter
        * the anchor is never a lane
        */
       get laneUniverse(): LaneChoice[] {
@@ -1383,6 +1427,45 @@ export function stateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * pins `rows.colors` for the lane, replacing an entry under any other
+       * spelling of it; undefined drops the pin, so the source's color shows
+       */
+      setLaneColor(assemblyName: string, color: string | undefined) {
+        const key = self.laneKey(assemblyName)
+        const kept = Object.entries(getConf(self, ['rows', 'colors'])).filter(
+          ([name]) => self.laneKey(name) !== key,
+        )
+        setConf(
+          self,
+          ['rows', 'colors'],
+          Object.fromEntries(
+            color === undefined ? kept : [...kept, [assemblyName, color]],
+          ),
+        )
+        persistTrackConfigNow(self)
+      },
+    }))
+    .actions(self => ({
+      /** #action */
+      openLaneColorDialog(assemblyName: string) {
+        getSession(self).queueDialog(handleClose => [
+          SolidColorDialog,
+          {
+            label: `${self.laneLabel(assemblyName)} lane color`,
+            color: self.laneColor(assemblyName) ?? bandInk().text,
+            written: self.rowColors.get(self.laneKey(assemblyName)),
+            onChange: (color: string) => {
+              self.setLaneColor(assemblyName, color)
+            },
+            onReset: () => {
+              self.setLaneColor(assemblyName, undefined)
+            },
+            handleClose,
+          },
+        ])
+      },
       /** #action */
       openLaneSelection() {
         getSession(self).queueDialog(handleClose => [
@@ -2108,6 +2191,7 @@ export function stateModelFactory(
           self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
           self.laneChanges,
           assemblyName => self.placelessOf(assemblyName),
+          assemblyName => self.laneColor(assemblyName),
         )
       },
       /**

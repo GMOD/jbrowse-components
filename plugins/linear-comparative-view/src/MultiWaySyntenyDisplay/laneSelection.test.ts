@@ -1,4 +1,5 @@
 import {
+  laneColorOf,
   laneUniverseOf,
   lanesInForce,
   pickedLanes,
@@ -180,4 +181,21 @@ describe('laneUniverseOf', () => {
     const [kept] = universe({ declared: [{ name: 'a', label: 'Declared' }] })
     expect(kept!.label).toBe('Declared')
   })
+})
+
+test("a lane's color is its pin, else its source's, else none, through any spelling", () => {
+  const colorOf = (name: string) =>
+    laneColorOf(name, {
+      pinned: new Map([['hg002#1', 'red']]),
+      declared: new Map([
+        ['hg002#1', 'blue'],
+        ['hg002#2', 'green'],
+        ['chm13', 'black'],
+      ]),
+      keyOf,
+    })
+  expect(colorOf('HG002#1')).toBe('red')
+  expect(colorOf('HG002#2')).toBe('green')
+  expect(colorOf('CHM13')).toBe('black')
+  expect(colorOf('HG003#1')).toBeUndefined()
 })

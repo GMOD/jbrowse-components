@@ -13,6 +13,7 @@ import {
   INLINE_CHIP_OPACITY,
   INLINE_CHIP_PAD_PX,
   LABEL_FONT_SIZE,
+  LANE_COLOR_BAR_PX,
   labelBoxTop,
 } from '../laneHeader.ts'
 import { laneHeaderMenuItems } from '../menus.ts'
@@ -304,6 +305,17 @@ const LaneHeaders = observer(function LaneHeaders({
             >
               vs {row.against}
             </span>
+          ) : null}
+          {row.color ? (
+            <span
+              data-testid={`multiway-lane-color-${row.assemblyName}`}
+              style={{
+                width: LANE_COLOR_BAR_PX,
+                height: LABEL_FONT_SIZE,
+                backgroundColor: row.color,
+                flex: '0 0 auto',
+              }}
+            />
           ) : null}
           <span
             data-testid={`multiway-lane-label-${row.assemblyName}`}

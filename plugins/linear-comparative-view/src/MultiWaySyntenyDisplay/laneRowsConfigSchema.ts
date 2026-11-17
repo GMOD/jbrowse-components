@@ -20,7 +20,11 @@ import { stringList } from '@jbrowse/display-kit/rowArrangementConfigSchema'
  * ```js
  * {
  *   type: 'MultiWaySyntenyDisplay',
- *   rows: { sort: ['GCF_000346465.2', 'poplar'], kept: ['GCF_000346465.2', 'poplar', 'citrus'] },
+ *   rows: {
+ *     sort: ['GCF_000346465.2', 'poplar'],
+ *     kept: ['GCF_000346465.2', 'poplar', 'citrus'],
+ *     colors: { poplar: '#1b9e77' },
+ *   },
  * }
  * ```
  */
@@ -49,6 +53,20 @@ export const laneRowsConfigSchema = ConfigurationSchema(
       defaultValue: {},
       description:
         'a label drawn for a lane in place of its assembly name, by assembly name; labels.lanes says where lane labels draw',
+    },
+    /**
+     * #slot colors
+     * A color pinned on a lane, by assembly name, the anchor's included, over
+     * the color its source declares for it: ggplot2's
+     * `scale_*_manual(values = c(name = ...))`. It draws as a bar beside the
+     * lane's label; a lane with neither draws none. A lane menu's Color...
+     * writes it.
+     */
+    colors: {
+      type: 'stringMap',
+      defaultValue: {},
+      description:
+        "a color pinned on a lane, by assembly name, the anchor's included, over the color its source declares; drawn as a bar beside the lane's label",
     },
     /**
      * #slot kept
