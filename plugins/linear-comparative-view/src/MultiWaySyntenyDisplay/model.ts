@@ -168,7 +168,6 @@ import {
 } from './laneSelection.ts'
 import { gutterNearViewport, laneGeometry, stackReach } from './laneStack.ts'
 import {
-  anchorCentresOn,
   decideLanesOn,
   laneFrameOn,
   laneStackOn,
@@ -1565,17 +1564,6 @@ export function stateModelFactory(
           anchorReversed: self.anchorReversed,
           canon: self.anchorCanon,
         }
-      },
-      /**
-       * #method
-       * each group's viewport-cut centre, in view px at `bpPerPx` before the
-       * scroll offset
-       */
-      anchorAbsXAt(bpPerPx: number) {
-        return anchorCentresOn(
-          this.anchorStageAt(self.lgv.offsetPx, bpPerPx),
-          self.fitGroups,
-        )
       },
       /**
        * #method

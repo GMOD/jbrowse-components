@@ -5,7 +5,10 @@ import { LocalFile } from 'generic-filehandle2'
 import { renderToString } from 'react-dom/server'
 
 import LaneHeaders from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/LaneHeaders.tsx'
-import { anchorSpansOn } from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneStage.ts'
+import {
+  anchorCentresOn,
+  anchorSpansOn,
+} from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneStage.ts'
 import { getMates } from '../../../../plugins/linear-comparative-view/src/syntenyMate.ts'
 import configSnapshot from '../../test_data/multiway_blocks/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
@@ -222,7 +225,10 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
     ).toEqual(x1 < x2 ? [x1, x2] : [x2, x1])
     // ...and the seed is its center, which is what every lane lines up on.
     expect(
-      display.anchorAbsXAt(view.bpPerPx).get(group.key)!.x - origin,
+      anchorCentresOn(
+        display.anchorStageAt(view.offsetPx, view.bpPerPx),
+        display.fitGroups,
+      ).get(group.key)!.x - origin,
     ).toBeCloseTo((x1 + x2) / 2, 9)
   }
 
@@ -233,7 +239,10 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
     ((bp - widest.start) / (widest.end - widest.start)) * view.width
   const first = display.visibleGroups[0]!
   expect(
-    display.anchorAbsXAt(view.bpPerPx).get(first.key)!.x - view.offsetPx,
+    anchorCentresOn(
+      display.anchorStageAt(view.offsetPx, view.bpPerPx),
+      display.fitGroups,
+    ).get(first.key)!.x - view.offsetPx,
   ).not.toBeCloseTo(framed((first.anchor.start + first.anchor.end) / 2), 0)
 }, 40000)
 

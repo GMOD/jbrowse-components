@@ -32,7 +32,7 @@ import {
 } from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
-import { anchorSpansOn } from './laneStage.ts'
+import { anchorCentresOn, anchorSpansOn } from './laneStage.ts'
 import { laneHeaderMenuItems, lanesMenuItem } from './menus.ts'
 import { boxesKey, glyphsKey } from './multiwayGeometry.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
@@ -2898,7 +2898,10 @@ test('a record running off the viewport aligns its lane on the part it shows', (
     }),
   ])
   const { lgv } = display
-  const anchorAbsX = display.anchorAbsXAt(lgv.bpPerPx)
+  const anchorAbsX = anchorCentresOn(
+    display.anchorStageAt(lgv.offsetPx, lgv.bpPerPx),
+    display.fitGroups,
+  )
   expect(anchorAbsX.get('r1')?.x).toBe(400)
   const decision = decideLaneFrames({
     groups: display.fitGroups,
