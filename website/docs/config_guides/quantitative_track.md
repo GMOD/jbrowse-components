@@ -224,6 +224,70 @@ const track = {
 [](/docs/config_guides/deploying) generates a whole `config.json` this way in a
 CI/CD pipeline.
 
+### A row per group, its subtracks overlaid
+
+`rows.field` names any attribute a subtrack carries. `source` gives each
+subtrack its own row, `""` draws them all in one plot box, and a field such as
+`group` draws one row per value, the subtracks sharing it overlaid in that row,
+each in its own color. Here two cell lines each overlay a haplotype pair, blue
+for Hap1 and orange for Hap2:
+
+```json
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "fiberseq-hap",
+  "name": "Fiber-seq Compendium - Hap1/2",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "uri": "a.bw",
+        "name": "GM12878 Hap1",
+        "color": "rgb(0,114,178)",
+        "group": "GM12878"
+      },
+      {
+        "type": "BigWigAdapter",
+        "uri": "b.bw",
+        "name": "GM12878 Hap2",
+        "color": "rgb(213,94,0)",
+        "group": "GM12878"
+      },
+      {
+        "type": "BigWigAdapter",
+        "uri": "c.bw",
+        "name": "K562 Hap1",
+        "color": "rgb(0,114,178)",
+        "group": "K562"
+      },
+      {
+        "type": "BigWigAdapter",
+        "uri": "d.bw",
+        "name": "K562 Hap2",
+        "color": "rgb(213,94,0)",
+        "group": "K562"
+      }
+    ]
+  },
+  "displays": [
+    {
+      "type": "LinearWiggleDisplay",
+      "displayId": "fiberseq-hap-LinearWiggleDisplay",
+      "rows": { "field": "group" }
+    }
+  ]
+}
+```
+
+Each row is labelled by its value; `rows.labels` relabels one by value
+(`{ "K562": "K-562 (CML)" }`) and `rows.sort` lists values to order the rows.
+The color key names the subtracks, and a tooltip lists every subtrack in the row
+under the pointer. A column of a `samplesTsvLocation` table works as the field
+too. Clustering needs a row per subtrack, so the track menu offers it only under
+`rows: "source"`.
+
 ### Loading bedMethyl as a multi-quantitative track
 
 A [bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) from

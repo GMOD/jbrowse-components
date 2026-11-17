@@ -121,8 +121,9 @@ arrangement.** display-kit's `RowArrangement` is the five arrangement members
 (`sort`, `labels`, `colors`, `tree`, `kept`) with `color` and `axis`, MAF's
 `rows` whole. `Rows` extends it with `field`, `filter`, `annotations` and the
 axis `grid`: a
-feature field where the rows are a field's values, `source` alone on the
-quantitative display (`QuantitativeRows`), and `sample` or `haplotype` on the
+feature field where the rows are a field's values, `source` or a source
+attribute on the quantitative display (`QuantitativeRows`, whose grouped rows
+are drawn over the mixin's source rows, ADR-270), and `sample` or `haplotype` on the
 variant display (`VariantRows`). The host is typed on `RowArrangement`, so the
 mixin reads `field`, `filter` and `annotations` only through the schema's
 declared keyed writes and `Reflect`, where a display has them.
@@ -211,7 +212,8 @@ hook's name throws at `create`:
   `expandedRows`; MAF overrides it to read copy names no block here aligns.
 - `finerTreeHint`: what the stale-tree chip says where the tree's leaves are
   `finerRows` (`treeOnFinerRows`), a per-haplotype tree in sample mode.
-- `sharesPanel`: false by default; a wiggle overlay of several subtracks.
+- `sharesPanel`: false by default; a wiggle overlay of several subtracks, or
+  wiggle rows on a grouping `rows.field`.
 - `rowColorPaintsMarks`: true by default; false where something else colors the
   marks (wiggle's gradient or declared `encoding.color`, variants' genotypes).
   On the mark displays a mark naming no color under a display naming none

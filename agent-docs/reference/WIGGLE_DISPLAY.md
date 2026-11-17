@@ -64,15 +64,33 @@ its own — an empty pack is how a pass releases its buffer.
 
 ## `rows` is the layout, and `plotGeometry` is where it lands
 
-`rows: 'source'` is one row per source — the tree sidebar, row labels,
-separators, clustering and the row-order sort all hang off `isRowLayout`.
-`rows: ''` puts every source in one plot box. The five `renderingType` names say
-what a source is drawn as and nothing about the layout, which is why there is
-one table and not nine names. `rows.field` is an enum of `source` alone
-(`quantitativeRowsConfigSchema`), so the JSON schema says so too. The same
-object holds the reader's arrangement, which `TreeSidebarMixin` owns
-([TREE_SIDEBAR.md](TREE_SIDEBAR.md), ADR-157); `setRowLayout` writes the field
-alone, so the arrangement survives a trip through the shared plot.
+`rows: 'source'` is one row per source — row labels, separators and the
+row-order sort hang off `isRowLayout`, and the tree and clustering off
+`rows.field === 'source'`. `rows: ''` puts every source in one plot box. Any
+other `rows.field` names a source attribute (a subadapter's `group`, a samples
+table column) and draws one row per value, the sources sharing it overlaid in
+their own colors (ADR-270). The five `renderingType` names say what a source is
+drawn as and nothing about the layout, which is why there is one table and not
+nine names. The same object holds the reader's arrangement, which
+`TreeSidebarMixin` owns ([TREE_SIDEBAR.md](TREE_SIDEBAR.md), ADR-157);
+`setRowsField` writes the field alone, so the arrangement survives a trip
+through the shared plot.
+
+**The mixin's rows stay the sources; `wiggleRows` groups them.** Every stage
+from `discoveredRows` to `drawnRows`, the palette, the focus, the dialog and
+the color key, works on sources under every field. `wiggleRows`
+(`shared/wiggleRowGroups.ts`) gathers `drawnRows` into the rows drawn, and
+everything that counts or names rows reads it: `numRows`,
+`effectiveRowHeight`, `labelledRows` (the row labels and the export sidebar)
+and each `markSources` entry's `row`, which the encoder writes as `rowIndex`
+and the hit test groups by. A grouped row comes in the order of its earliest
+`rows.sort` entry, its value or a source's name, then by arrival, so a
+dialog reorder or "Sort rows by score here" moves rows by their sources and a
+`rows.sort` of values orders them directly; `rows.labels` relabels a row by
+value. `sharesPanel` holds under a grouping field, so the palette deals by
+name and the key lists the sources. The Plot type menu offers the grouping
+field as a layout of its own (`Rows by <field>`), and a subtrack `group` offers
+`Rows by group` from the other two.
 
 **One plot box takes the `YSCALEBAR_LABEL_OFFSET` inset** so its end labels
 aren't clipped; a stack of rows gives it up, because the axis is drawn per row
@@ -186,7 +204,7 @@ score above the min draws at the top, anything else on the baseline.
 `wiggleCommon` keeps `scoreToY`, the plot-box wrapper, and `js-skip`s it — the
 Canvas2D side composes the normalizer with its own box.
 
-## One fetch, and `rowIndex` is the position in the display's own `drawnRows`
+## One fetch, and `rowIndex` is the row the display's own `wiggleRows` gives
 
 `RenderMultiWiggleData` serves every quantitative adapter. An adapter handing
 back typed arrays (BigWig, GCContent) carries one signal and no source column,
@@ -197,10 +215,13 @@ source column) falls back to grouping.
 
 `rowIndex` is never the payload's — a source missing from the payload leaves its
 row empty instead of shifting everything below it. With `rows` unset, every
-source collapses onto row 0.
+source collapses onto row 0; under a grouping field each source takes its
+value's row.
 
-`findRowHit` picks `visibleSources[floor(offsetY / rowHeight)]`, so
-`effectiveRowHeight` must equal the renderer's `getRowHeight(...)`. `numRows` is
+`findRowHit` picks the sources of row `floor(offsetY / rowHeight)`, one
+source's bin or, in a grouped row, every source at the cursor base as an
+overlay does, so `effectiveRowHeight` must equal the renderer's
+`getRowHeight(...)`. `numRows` is
 floored at 1 or the shader seeds the row transform with Infinity.
 
 ## Two gap rules
@@ -329,7 +350,7 @@ written whole, because a channel replaces its setting. Three rules it turns on:
   ramp, several cut points, hand-written stops, a typed row order. ADR-204.
 
 **The palette deals by name only over a shared box.** `sharesPanel` is an
-overlay of several subtracks, and `rowColorPaintsMarks` holds while no gradient
+overlay of several subtracks or rows on a grouping field, and `rowColorPaintsMarks` holds while no gradient
 and no declared `encoding.color` paints the plot, so a lone BigWig keeps the red
 below its baseline and a row per subtrack draws each in the plot color unless
 `rows.colors`, `rows.color` or the file gives it one. A `group` has no config

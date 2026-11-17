@@ -102,7 +102,11 @@ A `MultiQuantitativeTrack` combines several quantitative signals (typically
 BigWig files) into one track on a shared Y axis, and opens with one row per
 signal. **Plot type** lists the plot styles under **Multi-row** and again under
 **Overlapping**, so one click picks how a signal is drawn and whether it gets
-its own row.
+its own row. Where the subtracks carry a `group`, or the config sets
+[`rows.field`](/docs/config/quantitativerows/#slot-field) to another subtrack
+attribute, a third layout, **Rows by group**, draws one row per value with that
+row's subtracks overlaid in their own colors
+([config](/docs/config_guides/quantitative_track/#a-row-per-group-its-subtracks-overlaid)).
 
 <Figure caption="The track menu lists the available plot types." src="/img/multiwig/multi_renderer_types.png" />
 
