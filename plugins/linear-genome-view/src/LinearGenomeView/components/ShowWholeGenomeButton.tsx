@@ -10,11 +10,6 @@ import {
 } from '../showWholeGenome.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { ButtonProps } from '@mui/material'
-
-const DropDownHalf = observer(function DropDownHalf(props: ButtonProps) {
-  return <Button {...props} size="small" />
-})
 
 /**
  * The import form's way into the whole genome. Where the assembly's whole
@@ -49,7 +44,7 @@ const ShowWholeGenomeButton = observer(function ShowWholeGenomeButton({
       {everyRegion.length ? (
         <CascadingMenuButton
           menuItems={everyRegion}
-          ButtonComponent={DropDownHalf}
+          ButtonComponent={Button}
           disabled={disabled}
           aria-label="More ways to show the whole genome"
           data-testid="show-whole-genome-more"

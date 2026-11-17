@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import {
   AssemblySelector,
+  ControlRow,
   ErrorBanner,
   useAssemblySelection,
 } from '@jbrowse/core/ui'
@@ -43,10 +44,7 @@ const useStyles = makeStyles()(theme => ({
     margin: '0 auto',
   },
   row: {
-    display: 'flex',
     flexWrap: 'wrap',
-    gap: theme.spacing(1),
-    alignItems: 'center',
   },
   rows: {
     display: 'flex',
@@ -204,7 +202,7 @@ const CircularImportForm = observer(function CircularImportForm({
         />
         <div className={classes.rows}>
           {rows.map((assemblyName, idx) => (
-            <div className={classes.row} key={ROW_LABELS[idx]}>
+            <ControlRow className={classes.row} key={ROW_LABELS[idx]}>
               <AssemblySelector
                 label={ROW_LABELS[idx]}
                 helperText=""
@@ -241,7 +239,7 @@ const CircularImportForm = observer(function CircularImportForm({
                   <CloseIcon />
                 </IconButton>
               ) : null}
-            </div>
+            </ControlRow>
           ))}
           {paired ? (
             rows[0] === rows[1] ? null : (

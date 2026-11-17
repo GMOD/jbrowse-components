@@ -23,11 +23,10 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 const useStyles = makeStyles()({
   headerBar: {
-    gap: 4,
     // a floor, not a height. The constant was written onto this row by #4237 so
-    // the sticky offsets summing it would be true, and the row's own content
-    // reaches it at a 28px root font — the search box measures 48.13 there —
-    // after which a fixed height holds the row smaller than what is in it
+    // the sticky offsets summing it would be true, and the row's 2rem controls
+    // reach it at a 24px root font, after which a fixed height would hold the
+    // row smaller than what is in it
     minHeight: HEADER_BAR_HEIGHT,
   },
   spacer: {

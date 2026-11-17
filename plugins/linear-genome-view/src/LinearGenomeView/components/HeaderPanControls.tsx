@@ -13,13 +13,13 @@ type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
   panButton: {
     background: alpha(theme.palette.background.paper, 0.8),
-    margin: SPACING,
+    marginInline: SPACING,
   },
   // the arrows are the whole button, so MUI's 64px text-button minimum and the
   // gap either side of it are pure air — the pair gives up 80px of it when the
   // header can't hold everything
   compact: {
-    margin: 1,
+    marginInline: 1,
     minWidth: 0,
     padding: theme.spacing(0, 0.5),
   },

@@ -34,7 +34,6 @@ const useStyles = makeStyles()(theme => ({
   row: {
     justifyContent: 'center',
     flexWrap: 'wrap',
-    rowGap: theme.spacing(4),
   },
 }))
 

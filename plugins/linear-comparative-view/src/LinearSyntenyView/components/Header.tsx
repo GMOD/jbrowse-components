@@ -19,7 +19,6 @@ import type { LinearSyntenyViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
   headerBar: {
-    gap: 4,
     minHeight: 48,
   },
   endOfBar: {

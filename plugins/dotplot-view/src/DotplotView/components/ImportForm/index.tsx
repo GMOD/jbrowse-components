@@ -1,4 +1,4 @@
-import { AssemblySelector, ErrorBanner } from '@jbrowse/core/ui'
+import { AssemblySelector, ControlRow, ErrorBanner } from '@jbrowse/core/ui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -44,10 +44,7 @@ const useStyles = makeStyles()(theme => ({
   // flowed together they wrapped wherever the window width put them, and on a
   // wide window read as four unrelated fields.
   axis: {
-    display: 'flex',
     flexWrap: 'wrap',
-    gap: theme.spacing(1),
-    alignItems: 'center',
   },
   axes: {
     display: 'flex',
@@ -205,7 +202,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
         />
         <div className={classes.axes}>
           {rows.map((assemblyName, idx) => (
-            <div className={classes.axis} key={AXIS_LABELS[idx]}>
+            <ControlRow className={classes.axis} key={AXIS_LABELS[idx]}>
               <AssemblySelector
                 label={`${AXIS_LABELS[idx]} assembly`}
                 helperText=""
@@ -228,7 +225,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
                   }}
                 />
               ) : null}
-            </div>
+            </ControlRow>
           ))}
           {/* Manual's counterpart to Quick start's Swap. Doing it through the
           two Selects passes through a same-assembly pair, and the track

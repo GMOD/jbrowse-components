@@ -1,10 +1,10 @@
 // Widths measured against a built jbrowse-web at the default theme and root
 // font size — `products/jbrowse-web/browser-tests/probe-lgv-header-fit.ts`
-// prints the row piece by piece. It spends 596px on everything that is not the
-// search box (47 track selector, 119 scroll-zoom checkbox, 156 pan buttons, 50 bp
-// readout, 192 zoom controls, 32 of flex gap). What the box itself asks for is
+// prints the row piece by piece. It spends 601px on everything that is not the
+// search box (48 track selector, 119 scroll-zoom checkbox, 156 pan buttons, 50 bp
+// readout, 196 zoom controls, 32 of flex gap). What the box itself asks for is
 // the caller's, because it follows the locstring rather than being a constant.
-const ROW_WITHOUT_SEARCH_PX = 596
+const ROW_WITHOUT_SEARCH_PX = 601
 
 // The one piece of the row that comes and goes on its own. A text search that
 // lands on a feature raises it — the same flow that was just using the search
@@ -13,8 +13,8 @@ const ROW_WITHOUT_SEARCH_PX = 596
 const CLEAR_HIGHLIGHT_PX = 35
 
 // An embedded view has no title bar, so its menu button leads this row: a
-// 40px icon button and its flex gap.
-const VIEW_MENU_PX = 44
+// 32px icon button and its flex gap.
+const VIEW_MENU_PX = 36
 
 // A touch device drops the scroll-zoom toggle, which has no wheel to
 // govern, and the pan buttons, which a swipe replaces: 119 + 156, and the flex
@@ -51,7 +51,7 @@ export type HeaderFit = Record<(typeof SHEDDABLE)[number][0], boolean>
  * flexbox squeezing the box this whole table exists to protect: against the
  * floor the probe read 184px of an asked 210 at an 800px window and 186 at 600.
  *
- * The fully shed row costs 238px, so under `238 + searchBoxPx` the row overflows
+ * The fully shed row costs 243px, so under `243 + searchBoxPx` the row overflows
  * whatever it gives up and the box shrinks like any flex item. That is a floor,
  * not a cliff: it shrinks from what it asked for rather than from the 101px the
  * unshed row used to leave it.

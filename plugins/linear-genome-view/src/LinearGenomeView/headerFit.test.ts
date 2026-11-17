@@ -32,7 +32,7 @@ test('an unmeasured header keeps everything', () => {
 
 test('a header wide enough for the whole row sheds nothing', () => {
   expect(shed(1388)).toEqual([])
-  expect(shed(790)).toEqual([])
+  expect(shed(795)).toEqual([])
 })
 
 // The bug the ask replaced a constant to fix: a row sized against the box's
@@ -45,36 +45,36 @@ test('a longer locstring sheds the row earlier', () => {
     'trackSelectorIndent',
     'panButtonSpacing',
   ])
-  // the empty box, whose ask is its floor, back at the 785px the constant drew
+  // the empty box, whose ask is its floor, back at the 790px the constant drew
   // every threshold from
-  expect(shed(785, { searchBoxPx: 189 })).toEqual([])
-  expect(shed(784, { searchBoxPx: 189 })).toEqual(['trackSelectorIndent'])
+  expect(shed(790, { searchBoxPx: 189 })).toEqual([])
+  expect(shed(789, { searchBoxPx: 189 })).toEqual(['trackSelectorIndent'])
 })
 
 test('each piece goes at the width where the row stops holding it', () => {
-  expect(shed(789)).toEqual(['trackSelectorIndent'])
-  // the header of a 700px window
-  expect(shed(688)).toEqual(['trackSelectorIndent', 'panButtonSpacing'])
-  expect(shed(588)).toEqual([
+  expect(shed(794)).toEqual(['trackSelectorIndent'])
+  // the header of a 705px window
+  expect(shed(693)).toEqual(['trackSelectorIndent', 'panButtonSpacing'])
+  expect(shed(593)).toEqual([
     'trackSelectorIndent',
     'panButtonSpacing',
     'scrollZoomLabel',
   ])
-  expect(shed(488)).toEqual([
+  expect(shed(493)).toEqual([
     'trackSelectorIndent',
     'panButtonSpacing',
     'scrollZoomLabel',
     'zoomSlider',
   ])
-  expect(shed(408)).toEqual([...ORDER])
+  expect(shed(413)).toEqual([...ORDER])
 })
 
 // A text search that lands on a feature puts the clear-highlights button in the
 // row, and it is the search box that would otherwise pay for it — so every
 // threshold moves out by the button's width while it is there.
 test('the clear-highlights button sheds the row 35px earlier', () => {
-  expect(shed(824)).toEqual([])
-  expect(shed(824, { clearHighlight: true })).toEqual(['trackSelectorIndent'])
+  expect(shed(829)).toEqual([])
+  expect(shed(829, { clearHighlight: true })).toEqual(['trackSelectorIndent'])
   expect(shed(600)).toEqual([
     'trackSelectorIndent',
     'panButtonSpacing',
@@ -113,18 +113,18 @@ test('shedding only ever grows as the header narrows', () => {
   }
 })
 
-test("an embedded view's menu button sheds the row 44px earlier", () => {
-  expect(shed(790)).toEqual([])
-  expect(shed(833, { viewMenu: true })).toEqual(['trackSelectorIndent'])
-  expect(shed(834, { viewMenu: true })).toEqual([])
+test("an embedded view's menu button sheds the row 36px earlier", () => {
+  expect(shed(795)).toEqual([])
+  expect(shed(830, { viewMenu: true })).toEqual(['trackSelectorIndent'])
+  expect(shed(831, { viewMenu: true })).toEqual([])
 })
 
 // A phone's header has no pan buttons or scroll-zoom toggle, so the room they
 // took goes to the search box: the 376px row of a 390px phone keeps the box at
 // its full ask for `ctgA:1,006..6,006` and sheds only what a phone would.
 test('a touch header sheds only the pieces it still has', () => {
-  expect(shed(503, { touch: true })).toEqual([])
-  expect(shed(502, { touch: true })).toEqual(['trackSelectorIndent'])
+  expect(shed(508, { touch: true })).toEqual([])
+  expect(shed(507, { touch: true })).toEqual(['trackSelectorIndent'])
   expect(shed(376, { touch: true, searchBoxPx: 224 })).toEqual([
     'trackSelectorIndent',
     'zoomSlider',

@@ -22,7 +22,7 @@ import type { LinearGenomeViewModel } from '../model.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type React from 'react'
 
-const defaultStyle = { margin: SPACING }
+const defaultStyle = { marginInline: SPACING }
 
 // The header box's floor and ceiling. A stacked view's row passes its own, and
 // `searchBoxWidth` answers for these.

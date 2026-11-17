@@ -1,4 +1,4 @@
-import { AssemblySelector } from '@jbrowse/core/ui'
+import { AssemblySelector, ControlRow } from '@jbrowse/core/ui'
 import { darken } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
@@ -57,8 +57,8 @@ const useStyles = makeStyles()(theme => ({
   },
   row: {
     position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
+  },
+  controls: {
     gap: theme.spacing(0.5),
   },
   marker: {
@@ -142,52 +142,54 @@ const AssemblyRows = observer(function AssemblyRows({
     return (
       // eslint-disable-next-line @eslint-react/no-array-index-key -- row position is the identity here; assembly names can repeat across rows
       <div key={`${assemblyName}-${idx}`} className={classes.row}>
-        <AssemblySelector
-          label={`Row ${idx + 1} assembly`}
-          helperText=""
-          selected={assemblyName}
-          onChange={newAssembly => {
-            // through applyRows like every other row edit: the pairs this row
-            // is part of are now different pairs, and whatever was configured
-            // for the old ones has to go with them
-            applyRows(
-              selectedAssemblyNames.map((asm, idx2) =>
-                idx2 === idx ? newAssembly : asm,
-              ),
-              selectedRow,
-            )
-          }}
-          session={session}
-        />
-        {chromosomes.shown ? (
-          <ChromosomeFilter
-            label={`Row ${idx + 1} chromosomes`}
-            testId={`chromosome-filter-row-${idx}`}
-            value={chromosomes.get(idx)}
-            onChange={value => {
-              chromosomes.set(idx, value)
+        <ControlRow className={classes.controls}>
+          <AssemblySelector
+            label={`Row ${idx + 1} assembly`}
+            helperText=""
+            selected={assemblyName}
+            onChange={newAssembly => {
+              // through applyRows like every other row edit: the pairs this row
+              // is part of are now different pairs, and whatever was configured
+              // for the old ones has to go with them
+              applyRows(
+                selectedAssemblyNames.map((asm, idx2) =>
+                  idx2 === idx ? newAssembly : asm,
+                ),
+                selectedRow,
+              )
             }}
+            session={session}
           />
-        ) : null}
-        <Tooltip
-          title={
-            selectedAssemblyNames.length <= 2
-              ? 'Synteny view requires at least 2 rows'
-              : 'Remove this row'
-          }
-        >
-          <span>
-            <IconButton
-              aria-label={`Remove row ${idx + 1}`}
-              disabled={selectedAssemblyNames.length <= 2}
-              onClick={() => {
-                removeRow(idx)
+          {chromosomes.shown ? (
+            <ChromosomeFilter
+              label={`Row ${idx + 1} chromosomes`}
+              testId={`chromosome-filter-row-${idx}`}
+              value={chromosomes.get(idx)}
+              onChange={value => {
+                chromosomes.set(idx, value)
               }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </span>
-        </Tooltip>
+            />
+          ) : null}
+          <Tooltip
+            title={
+              selectedAssemblyNames.length <= 2
+                ? 'Synteny view requires at least 2 rows'
+                : 'Remove this row'
+            }
+          >
+            <span>
+              <IconButton
+                aria-label={`Remove row ${idx + 1}`}
+                disabled={selectedAssemblyNames.length <= 2}
+                onClick={() => {
+                  removeRow(idx)
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </ControlRow>
         {isPairRow ? (
           <Tooltip title={title} placement="left">
             <IconButton
