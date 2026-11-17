@@ -70,13 +70,14 @@ Beside the name, the table shows as many columns as fit its width, with no
 sideways scroll. By default those are the fields that sort tracks into groups:
 category, kind, and each metadata key with at least two values that are each
 shared by two or more tracks, and no more values than half the tracks that have
-one. A field of links (where tracks came from, shared or not), a per-track description, a flag every track but one shares, or a key
-that only repeats another column (a file format that always matches the kind) is
-left out. When no field groups them, kind and category still show after those if
-at least two tracks differ from the rest, so a small track list says what each
-track is. The user's Manage columns choices override this either way. The first
-three of these columns get a filter chip under the filter box, and the other
-grouping fields sit behind "More filters".
+one. A field of links (where tracks came from, shared or not), a per-track
+description, a flag every track but one shares, or a key that only repeats
+another column (a file format that always matches the kind) is left out. When no
+field groups them, kind and category still show after those if at least two
+tracks differ from the rest, so a small track list says what each track is. The
+user's Manage columns choices override this either way. The first three of these
+columns get a filter chip under the filter box, and the other grouping fields
+sit behind "More filters".
 
 Where a hub's metadata has many keys of which a few matter, name them, most
 important first, with `hierarchical.table.columns`. The table shows these first,
