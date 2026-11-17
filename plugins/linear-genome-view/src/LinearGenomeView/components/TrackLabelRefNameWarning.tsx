@@ -71,6 +71,7 @@ const TrackLabelRefNameWarning = observer(function TrackLabelRefNameWarning({
     return null
   }
   const { title, message, editableAssembly } = warning
+  const canOpenEditor = editableAssembly !== undefined && !!session.editAssembly
   return (
     <>
       <IconButton
@@ -91,7 +92,7 @@ const TrackLabelRefNameWarning = observer(function TrackLabelRefNameWarning({
             setOpen(false)
           }}
           actions={
-            editableAssembly !== undefined && session.editAssembly ? (
+            canOpenEditor ? (
               <Button
                 color="secondary"
                 variant="outlined"
@@ -110,6 +111,12 @@ const TrackLabelRefNameWarning = observer(function TrackLabelRefNameWarning({
             The track menu&apos;s &quot;About track&quot; shows every reference
             name the file uses, with the lengths it states.
           </Typography>
+          {canOpenEditor ? (
+            <Typography variant="body2" style={{ marginTop: 8 }}>
+              An alias added in the editor takes effect after the page is
+              reloaded.
+            </Typography>
+          ) : null}
         </InfoDialog>
       ) : null}
     </>
