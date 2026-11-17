@@ -67,7 +67,7 @@ describe('validateConfig', () => {
             columns: [
               'metadata.assay',
               'metadata.asay',
-              'categry',
+              'kinds',
               'name',
               'kind',
             ],
@@ -84,7 +84,7 @@ describe('validateConfig', () => {
       ],
       [
         'configuration.hierarchical.table.columns[2]',
-        '"categry" is not a track table field — did you mean "category"?',
+        '"kinds" is not a track table field — did you mean "kind"?',
       ],
       [
         'configuration.hierarchical.table.columns[3]',
