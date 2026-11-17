@@ -30777,6 +30777,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "hierarchicalTable": {
+      "title": "hierarchicalTable",
+      "type": "object",
+      "properties": {
+        "columns": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "defaultCollapsed": {
       "title": "defaultCollapsed",
       "type": "object",
@@ -30838,6 +30859,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "type": "string"
             }
+          }
+        },
+        "table": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/hierarchicalTable"
           }
         },
         "defaultCollapsed": {
