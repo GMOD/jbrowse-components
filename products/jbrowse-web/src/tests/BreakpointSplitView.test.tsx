@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 
-import { waitFor } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 
 import breakpointConfig from '../../test_data/breakpoint/config.json' with { type: 'json' }
 import { createView, doBeforeEach, mockConsoleWarn, setup } from './util.tsx'
@@ -33,3 +33,14 @@ test('breakpoint split view', () => {
     }, delay)
   })
 }, 40000)
+
+test('the Add menu opens an empty breakpoint split view', async () => {
+  const { session, findByText } = await createView(breakpointConfig)
+
+  fireEvent.click(await findByText('File'))
+  fireEvent.click(await findByText('Add'))
+  fireEvent.click(await findByText('Breakpoint split view'))
+  await waitFor(() => {
+    expect(session.views.at(-1)?.type).toBe('BreakpointSplitView')
+  }, delay)
+})
