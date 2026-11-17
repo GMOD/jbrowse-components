@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The drawer's track table shows, beside the name, as many columns as fit: the config's `hierarchical.table.columns` first, then the fields that group tracks. Manage columns wins either way. Names shrink from the middle; facets are thin, most start collapsed; the filter box needs every word"
+summary: "The drawer's track table shows, beside the name, as many columns as fit: the config's `hierarchical.table.columns` first, then the fields that group tracks, then kind and category if they vary. Manage columns wins either way. Names shrink from the middle; facets are thin, most start collapsed; the filter box needs every word"
 ---
 
 # ADR-269: The track table shows the fields that group tracks
@@ -43,10 +43,20 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   file format that always says what the kind says).
   The rule runs over every track the drawer can list, so Favorites and Recent
   keep the same columns.
+- **Kind and category fill in after them** when they group nothing but at
+  least two tracks differ from the field's most common value (no category
+  counting as a value), and they don't repeat a column already chosen. Most
+  small lists group nothing, so this keeps the table from being a bare list of
+  names; the reference sequence alone among tracks of one kind is still the
+  one exception, and gets no column. They get no filter chip. (2026-11-17,
+  after a review over the repo's test configs and the hosted hubs, where the
+  hubs were unchanged and 61 of 97 name-only lists gained a column.)
 - **The width decides how many show.** The name keeps up to half the table,
   every other column at least 100 px, and the table shows as many default
   columns as fit beside the name, with no sideways scroll. On hg38 that is
-  name, kind, category.
+  name, kind, category. The name takes whatever room the others leave, and
+  opening the table widens the drawer only to the table's natural width, up to
+  45% of the room.
 - **`configuration.hierarchical.table.columns` ranks columns first** for a
   hub whose metadata has many keys of which a few matter. It is a string list
   of field paths (`category`, `kind`, `description`, `adapter`,
@@ -107,6 +117,8 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
 | Object entries in `table.columns` (label, width, open-as-filter) | A label belongs to the field everywhere it shows, a width is the layout's, and open-as-filter is the second list again |
 | Bare metadata keys in `table.columns` | Collide with a metadata key named `category`, `kind` or `name`; the prefix is how a track config spells the path |
 | A configured list that is the whole column set | A two-entry list left the rest of the width empty and dropped category unless repeated |
+| A minimum share of tracks before a field groups them | `metadata.source` on 4 of config_demo hg19's 145 tracks earns a chip, but a lifted hg38 hub's `class` subgroup covers fewer (4 of 799) in the same 2×2 shape; any floor that drops one drops the other, and it is a list-size threshold |
+| Kind and category whenever they have two values | The reference sequence gives every linear-view list a second kind, so every list would show "Feature" beside every name |
 | Per-row precomputed facet strings | Facet counts cost about 30 ms per keystroke at 20,000 tracks once the panel draws few checkboxes; not worth the second copy of each row |
 
 ## Consequences

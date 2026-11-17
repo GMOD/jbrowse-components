@@ -115,6 +115,17 @@ function mirrors(a: string[], b: string[]) {
   })
 }
 
+// A field varies when at least two tracks differ from its most common value:
+// not a constant, nor a constant with one exception such as the reference
+// sequence among tracks of one kind.
+function varies(values: string[]) {
+  const counts = new Map<string, number>()
+  for (const value of values) {
+    counts.set(value, (counts.get(value) ?? 0) + 1)
+  }
+  return values.length - Math.max(0, ...counts.values()) >= 2
+}
+
 /**
  * #stateModel TrackTableModel
  * #internal table-selector UI state owned by the hierarchical track selector
@@ -415,9 +426,35 @@ export function trackTableModelFactory() {
     .views(self => ({
       /**
        * #getter
+       * kind and category when no field groups them but they still vary, so a
+       * small track list says what each track is and where the tree files it;
+       * one that repeats a column already chosen is left out
+       */
+      get fallbackColumns() {
+        const valuesOf = (field: string) =>
+          self.columnRows.map(row => getRowStr(field, row))
+        const chosen = self.groupingFields.map(valuesOf)
+        const fallback: string[] = []
+        for (const field of ['kind', 'category']) {
+          const values = valuesOf(field)
+          if (
+            !self.groupingFields.includes(field) &&
+            varies(values) &&
+            !chosen.some(c => mirrors(values, c))
+          ) {
+            fallback.push(field)
+            chosen.push(values)
+          }
+        }
+        return fallback
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * the columns shown beside the name, most important first, as far as the
        * width allows: the config's `hierarchical.table.columns`, then the
-       * grouping fields it leaves out
+       * grouping fields it leaves out, then the fallback columns
        */
       get defaultColumns() {
         const known = new Set(self.fields)
@@ -425,6 +462,7 @@ export function trackTableModelFactory() {
           ...new Set([
             ...self.configuredColumns.filter(f => f !== 'name' && known.has(f)),
             ...self.groupingFields,
+            ...self.fallbackColumns,
           ]),
         ]
       },

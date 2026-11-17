@@ -67,7 +67,9 @@ category, kind, and each metadata key with at least two values that are each
 shared by two or more tracks, and no more values than half the tracks that have
 one. A per-track URL or description, a flag every track but one shares, or a key
 that only repeats another column (a file format that always matches the kind) is
-left out. The user's Manage columns choices override this either way. The first
+left out. When no field groups them, kind and category still show after those
+if at least two tracks differ from the rest, so a small track list says what
+each track is. The user's Manage columns choices override this either way. The first
 three of these columns get a filter chip under the filter box, and the other
 grouping fields sit behind "More filters".
 

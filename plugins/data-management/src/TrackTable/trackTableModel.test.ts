@@ -271,6 +271,30 @@ describe('columns and facets', () => {
     ])
   })
 
+  test('kind and category fill in as columns when two tracks differ from the rest, the reference sequence counting as one', () => {
+    const { session, table } = setup()
+    expect(table.defaultColumns).toEqual([])
+
+    function addTrack(trackId: string, kind: string, category?: string[]) {
+      session.addSessionTrackConf({
+        trackId,
+        name: trackId,
+        category,
+        metadata: { kind },
+        assemblyNames: ['volMyt1'],
+        type: 'FeatureTrack',
+        adapter: { type: 'FromConfigAdapter', features: [] },
+      })
+    }
+    addTrack('variants', 'Variant', ['Clinical'])
+    expect(table.groupingFields).toEqual([])
+    expect(table.defaultColumns).toEqual(['kind'])
+
+    addTrack('reads', 'Alignments', ['Clinical'])
+    expect(table.groupingFields).toEqual([])
+    expect(table.defaultColumns).toEqual(['kind', 'category'])
+  })
+
   test('the configured columns come first, and the grouping fields fill the room after them', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
