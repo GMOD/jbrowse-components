@@ -142,14 +142,14 @@ export function JBrowseModelF({
        */
       addTrackConf(
         loose: { trackId: string; type?: string },
-        index = self.tracks.length,
+        index?: number,
       ) {
         const trackConf = expandLooseTrackConfig(loose, pluginManager)
         const { type } = trackConf
         if (!type) {
           throw new Error(`track type not specified for "${trackConf.trackId}"`)
         }
-        const at = Math.min(index, self.tracks.length)
+        const at = Math.min(index ?? self.tracks.length, self.tracks.length)
         self.tracks = self.tracks.toSpliced(at, 0, { ...trackConf, type })
         return self.tracks[at]
       },
