@@ -37,7 +37,7 @@ digraph feature_budget {
   labels    [label="labels: descriptions dropped"]
   isoforms  [label="isoforms: each gene trimmed to the largest\ntranscripts-per-gene whose NAMED pack\nfits, found by bisection — names before\nisoforms; skipped under geneGlyphMode all"]
   thinned   [label="thinned: every name kept, bodies shortened\nto the largest scale that fits, down to\n0.4x the label font — names before height"]
-  decimated [label="decimated: a name only where it is\nisolated, the factor solved with bodies at\nthat floor, or at the squeeze floor where\nno name survives it; then bodies grow back\ninto the freed room"]
+  decimated [label="decimated: a name only where it is\nisolated, the factor solved with bodies at\nthat floor, gene names at the squeeze\nfloor; then bodies grow back into the\nfreed room"]
   bodies    [label="bodies: no names or descriptions"]
   bare      [label="bare: subfeature labels dropped too; a\nrung only where below label rows are\nreserved"]
   full -> scale  labels -> scale  isoforms -> scale  thinned -> scale  decimated -> scale  bodies -> scale  bare -> scale
