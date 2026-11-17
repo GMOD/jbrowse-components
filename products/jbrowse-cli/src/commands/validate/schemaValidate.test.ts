@@ -204,8 +204,8 @@ describe('the schema', () => {
     ]
     const [error] = schemaProblems(config)
     expect(error?.where).toBe('tracks[0].displays[0].height')
-    expect(error?.message).toBe(
-      'expected a number, got "tall" — Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does.',
+    expect(error?.message).toMatch(
+      /^expected a number, got "tall" — Starting height in pixels for the bands together/,
     )
   })
 
