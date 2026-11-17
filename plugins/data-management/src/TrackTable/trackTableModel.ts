@@ -82,8 +82,10 @@ function trackFields(
 
 // A field groups tracks when at least two of its values are each shared by
 // two or more tracks, and it has no more values than half the tracks that have
-// one: a constant flag, a lone exception to one, or a per-track URL or
-// description gives a column or a facet nothing to group by.
+// one: a constant flag, a lone exception to one, or a per-track description
+// gives a column or a facet nothing to group by. A field whose every value
+// holds a link says where tracks came from, so it never groups them, even when
+// tracks share a source.
 function groupsTracks(values: string[]) {
   const counts = new Map<string, number>()
   for (const value of values) {
@@ -93,7 +95,11 @@ function groupsTracks(values: string[]) {
   }
   const present = values.filter(v => v !== '').length
   const shared = [...counts.values()].filter(n => n >= 2).length
-  return shared >= 2 && counts.size <= present / 2
+  return (
+    shared >= 2 &&
+    counts.size <= present / 2 &&
+    ![...counts.keys()].every(value => value.includes('://'))
+  )
 }
 
 // Two fields mirror each other when each value of one always comes with the

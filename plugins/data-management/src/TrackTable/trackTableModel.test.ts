@@ -295,6 +295,27 @@ describe('columns and facets', () => {
     expect(table.defaultColumns).toEqual(['kind', 'category'])
   })
 
+  test('a field of links groups nothing, even when tracks share one', () => {
+    const { session, table } = setup()
+    const sources = [
+      'https://www.ncbi.nlm.nih.gov/genome/guide/human/',
+      'https://www.ncbi.nlm.nih.gov/genome/guide/human/',
+      'From sample files listed at https://rseqc.sourceforge.net/',
+      'From sample files listed at https://rseqc.sourceforge.net/',
+    ]
+    for (const [i, source] of sources.entries()) {
+      session.addSessionTrackConf({
+        trackId: `s${i}`,
+        name: `s${i}`,
+        metadata: { source, lab: i < 2 ? 'X' : 'Y' },
+        assemblyNames: ['volMyt1'],
+        type: 'FeatureTrack',
+        adapter: { type: 'FromConfigAdapter', features: [] },
+      })
+    }
+    expect(table.groupingFields).toEqual(['metadata.lab'])
+  })
+
   test('the configured columns come first, and the grouping fields fill the room after them', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])

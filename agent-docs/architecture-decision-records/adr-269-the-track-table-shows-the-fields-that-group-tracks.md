@@ -39,7 +39,7 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   at least two of its values are each shared by two or more tracks, and it
   has no more values than half the tracks that have one. Candidates are
   category, kind and each top-level metadata key; the most widely set come
-  first. A per-track URL or description, a constant flag, or a flag with one
+  first. A field of links (where tracks came from, shared or not), a per-track description, a constant flag, or a flag with one
   exception (2,100 "Homo sapiens", one "Human") is never a default column,
   nor is a field whose values map one-to-one onto a column already chosen (a
   file format that always says what the kind says).
