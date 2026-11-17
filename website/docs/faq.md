@@ -92,7 +92,17 @@ files, and answer CORS if the data is on another host.
 
 JBrowse has no server and no accounts, so whatever serves the files decides who
 may read them — leaving a track out of config.json protects nothing, and a
-password in config.json is public. [](/docs/config_guides/authentication)
+password in config.json is public. Put the app and its data on one site behind a
+login: HTTP Basic auth, single sign-on, AWS Cognito or Google Cloud.
+[](/docs/config_guides/behind_a_login)
+
+### Can I give logins to particular people, with Duo or two-factor
+
+Yes. OAuth2 Proxy in front of nginx sends sign-in through Duo or your
+institution's login and lets in only the email addresses on a list you keep:
+[](/docs/config_guides/login_single_sign_on). An AWS Cognito pool where only you
+create accounts does the same without a server:
+[](/docs/config_guides/login_aws_cognito).
 
 ### How do I add an assembly, or load a track
 

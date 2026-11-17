@@ -28,6 +28,19 @@ same rule, such as
 [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/applications/)
 or the password protection Netlify and Vercel offer.
 
+## Logins for particular people, with Duo
+
+A common request is to hand out logins to named people and require Duo or
+another second factor. Two of the methods do that:
+
+- **[Single sign-on](/docs/config_guides/login_single_sign_on)** sends sign-in
+  through Duo, or through your institution's login when it already prompts for
+  Duo, and lets in only the email addresses on a list you keep. Adding or
+  removing a line takes effect at once.
+- **[AWS Cognito](/docs/config_guides/login_aws_cognito)** with a pool where
+  only you create accounts: each person gets an emailed temporary password, and
+  the pool can send sign-in on to Duo or your institution's login.
+
 ## Rules that apply to every method
 
 - **Protect the data folder too.** The browser downloads `config.json`, so every
