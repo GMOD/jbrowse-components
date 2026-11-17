@@ -31,8 +31,15 @@ import { moduleReach, valueImports } from './importGraph.node.ts'
 // `tooltip/eagerBoundary.test.ts`, which walks the static edges only.
 const isMui = (spec: string) => spec.startsWith('@mui/')
 
+// The error bar's "Fix file location" dialog is Material by design and reached
+// only through `lazy()` on a click, so a trail through it is a separate chunk
+// and not weight the chrome carries.
+const lazyMaterialDialog = 'display-kit/src/TrackFilesDialog.tsx'
+
 function muiReach(entry: string) {
-  return moduleReach(entry, { offends: isMui, followDynamic: true })
+  return moduleReach(entry, { offends: isMui, followDynamic: true }).filter(
+    trail => !trail.includes(lazyMaterialDialog),
+  )
 }
 
 test('nothing in the package reaches Material UI', () => {
@@ -89,13 +96,14 @@ test.each(Object.entries(weightPath))(
 // exists to keep out, is checked over `display-kit` as a directory rather than
 // per remembered file, so a leaf added there is guarded by default.
 //
-// The four left are Material by design, and each names a barrel export with no
+// The five left are Material by design, and each names a barrel export with no
 // deep subpath published: core's `exports` map is generated from in-repo import
 // sites, so deep-importing them is a change to that map and belongs with one.
 const barrelUsers = new Set([
   'DisplayContextMenu.tsx',
   'LegendMixin.ts',
   'PlotDialog.tsx',
+  'TrackFilesDialog.tsx',
   'trackControl/MuiTrackControl.tsx',
 ])
 

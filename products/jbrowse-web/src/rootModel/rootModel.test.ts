@@ -548,7 +548,8 @@ describe('deleteSavedSessions', () => {
 // session, under a message telling them to ask for a Share link they had
 // already been sent.
 test('keeps a session whose drawer holds a widget this build has no plugin for', () => {
-  const root = getRootModel().create(mainThreadConfig)
+  const { pluginManager, model } = getRootModelWithPlugins()
+  const root = model.create(mainThreadConfig, { pluginManager })
   root.setSession({
     name: 'from desktop',
     widgets: {

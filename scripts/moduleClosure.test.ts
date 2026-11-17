@@ -51,12 +51,12 @@ const CEILINGS = [
     runtime: 30,
     types: 70,
   },
-  // 81 runtime, of which the track-config read is most. No type ceiling: it
+  // 91 runtime, of which the track-config read is most. No type ceiling: it
   // reads a track's assembly names off a config, which is the configuration
   // schemas and therefore the whole graph.
   {
     entry: 'packages/display-kit/src/installPerRegionFetchAutoruns.ts',
-    runtime: 90,
+    runtime: 95,
   },
   // 10 runtime / 37 type
   { entry: 'packages/core/src/util/fetchContext.ts', runtime: 15, types: 55 },

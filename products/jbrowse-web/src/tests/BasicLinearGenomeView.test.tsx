@@ -114,7 +114,7 @@ test('click and drag to reorder tracks', async () => {
   fireEvent.mouseDown(dragHandle0, { clientX: 10, clientY: 100 })
   fireEvent(dragHandle0, dragStartEvent)
   fireEvent.mouseMove(dragHandle0, { clientX: 10, clientY: 220 })
-  fireEvent.dragOver(container1, { clientY: 220 })
+  fireEvent.dragOver(container1, { clientY: 220, dataTransfer: { types: [] } })
   fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
   fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
   await waitFor(() => {
