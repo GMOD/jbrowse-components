@@ -23,6 +23,7 @@ const FileSelector = observer(function FileSelector({
   location,
   name,
   description,
+  descriptionIsError,
   defaultSourceType,
   rootModel,
   setLocation,
@@ -30,6 +31,8 @@ const FileSelector = observer(function FileSelector({
   location?: FileLocation
   name?: string
   description?: string
+  /** draws the description as an error, for a file the form cannot go without */
+  descriptionIsError?: boolean
   /**
    * the toggle an empty slot opens on, when the form knows better than URL —
    * the index of a main file picked from this computer is on this computer too
@@ -156,7 +159,9 @@ const FileSelector = observer(function FileSelector({
           setLocation={handleLocationChange}
         />
       </Box>
-      <FormHelperText id={descriptionId}>{description}</FormHelperText>
+      <FormHelperText id={descriptionId} error={descriptionIsError}>
+        {description}
+      </FormHelperText>
     </>
   )
 })

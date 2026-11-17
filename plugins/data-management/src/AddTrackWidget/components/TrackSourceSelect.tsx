@@ -59,6 +59,7 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
           name="Index file"
           defaultSourceType={mainIsLocal ? 'file' : undefined}
           description={indexDescription(model)}
+          descriptionIsError={model.localIndexNeed?.kind === 'required'}
           location={model.indexTrackData}
           setLocation={loc => {
             model.setIndexTrackData(loc)
