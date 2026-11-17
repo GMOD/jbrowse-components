@@ -139,22 +139,16 @@ test('leads with the assembly UCSC prefers, then the newest', () => {
   ])
 })
 
-test('unranked hits fall back to newest first', () => {
-  expect(search('Chromosome').map(r => r.accession)).toEqual([
-    'GCA_009914755.4', // 2022
-    'GCF_000004335.4', // 2009
-  ])
-})
-
 test('a UCSC db is findable by the NCBI accession naming the same assembly', () => {
   expect(search('GCA_000001405').map(r => r.accession)).toEqual(['hg38'])
 })
 
 test('every token has to match, in any field', () => {
-  // 'human' is in the common name, 'T2T' only in the assembly name
+  // 'T2T' starts a word of the GenArk row's common name but only hs1's
+  // assembly name, and a name match outweighs an assembly match
   expect(search('human t2t').map(r => r.accession)).toEqual([
-    'hs1',
     'GCA_009914755.4',
+    'hs1',
   ])
   // tokens are ANDed, so an unmatched one rules the row out
   expect(search('human zebrafish')).toEqual([])
@@ -186,4 +180,85 @@ test('empty index fields become undefined rather than blank strings', () => {
   // UCSC rows carry no assembly status in the index
   expect(ucsc?.assemblyStatus).toBeUndefined()
   expect(ucsc?.ncbiAssemblyName).toBe('GRCh38')
+})
+
+const row = (
+  accession: string,
+  commonName: string,
+  scientificName: string,
+  source: string,
+  year: number,
+  aliases?: string[],
+) => [
+  accession,
+  commonName,
+  scientificName,
+  '',
+  '',
+  source,
+  0,
+  0,
+  year,
+  0,
+  '',
+  ...(aliases ? [aliases] : []),
+]
+
+test('a host outranks the viruses named after it', () => {
+  const hits = searchAllGroups(
+    [
+      row(
+        'GCF_029886345.1',
+        'red panda amdoparvovirus',
+        'red panda amdoparvovirus',
+        'viral',
+        2023,
+      ),
+      row(
+        'GCF_002007445.2',
+        'giant panda (Jingjing v3 2020)',
+        'Ailuropoda melanoleuca',
+        'mammals',
+        2020,
+      ),
+    ] as any,
+    'panda',
+  )
+  expect(hits.map(r => r.accession)).toEqual([
+    'GCF_002007445.2',
+    'GCF_029886345.1',
+  ])
+})
+
+test('a borrowed name finds a UCSC db whose organism is abbreviated', () => {
+  const dm6 = row(
+    'dm6',
+    'D. melanogaster',
+    'Drosophila melanogaster',
+    'ucsc',
+    2014,
+    ['fly D.melanogaster'],
+  )
+  expect(searchAllGroups([dm6] as any, 'fly').map(r => r.accession)).toEqual([
+    'dm6',
+  ])
+})
+
+test('GCA and GCF forms of an accession find each other', () => {
+  expect(search('GCF_009914755.4').map(r => r.accession)).toEqual([
+    'GCA_009914755.4',
+  ])
+  // a bare prefix would otherwise match every row
+  expect(search('gcf_')).toEqual([])
+})
+
+test('between otherwise equal hits, the newer assembly leads', () => {
+  const hits = searchAllGroups(
+    [
+      row('mm7', 'Mouse', 'Mus musculus', 'ucsc', 2005),
+      row('mm39', 'Mouse', 'Mus musculus', 'ucsc', 2020),
+    ] as any,
+    'mouse',
+  )
+  expect(hits.map(r => r.accession)).toEqual(['mm39', 'mm7'])
 })

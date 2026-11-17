@@ -1,10 +1,7 @@
 import { notEmpty } from '@jbrowse/core/util'
 
-import {
-  countWordStartMatches,
-  matchesAllTokens,
-  searchTokens,
-} from './searchTokens.ts'
+import { rankRows } from './searchScoring.ts'
+import { searchTokens } from './searchTokens.ts'
 
 import type { Entry } from './getColumnDefinitions.tsx'
 
@@ -15,7 +12,7 @@ export const SEARCH_INDEX_URL = 'https://genomes.jbrowse.org/searchIndex.json'
  * It is an array of arrays rather than objects to avoid repeating key names
  * 50k times — the whole index is ~7.5MB for every assembly in every group.
  */
-type IndexRow = [
+export type IndexRow = [
   accession: string,
   commonName: string,
   scientificName: string,
@@ -31,6 +28,9 @@ type IndexRow = [
   rank: number,
   // for a UCSC db, the GC[AF] accession naming the same assembly at NCBI
   altAccession: string,
+  // for a UCSC db whose organism is an abbreviated binomial, the common names
+  // GenArk gives the same taxon ("fly" for dm6), matched but not shown
+  aliases?: string[],
 ]
 
 // jb2hubs' accessionChunks: GCF_000951035.1 -> GCF/000/951/035
@@ -94,34 +94,6 @@ function toEntry(row: IndexRow): Entry | undefined {
     : undefined
 }
 
-// Accession, common and scientific name, assembly name, assembly status, and
-// the alias accession. The group itself is not searched: its column shows a
-// title the index does not carry.
-function haystack(row: IndexRow) {
-  return `${row[0]} ${row[1]} ${row[2]} ${row[3]} ${row[4]} ${row[10]}`
-}
-
-// Most word-start matches first (so "e coli" leads with E. coli rather than
-// Mycolicibacterium), then the dbs UCSC ranks — which puts hs1, hg38, hg19
-// ahead of an arbitrary GenArk human assembly — then newest, since assemblies
-// are overwhelmingly disambiguated by year.
-function rank(row: IndexRow) {
-  return row[9] === 0 ? Infinity : row[9]
-}
-
-interface ScoredRow {
-  row: IndexRow
-  score: number
-}
-
-function byRelevance(a: ScoredRow, b: ScoredRow) {
-  return a.score !== b.score
-    ? b.score - a.score
-    : rank(a.row) === rank(b.row)
-      ? b.row[8] - a.row[8]
-      : rank(a.row) - rank(b.row)
-}
-
 /**
  * The entries for a set of accessions, from anywhere in the index. A selection
  * is keyed by accession and outlives the query that surfaced each row, so
@@ -137,25 +109,12 @@ export function entriesForAccessions(
     .filter(notEmpty)
 }
 
-/**
- * Hits for `searchQuery` across every group, most relevant first. Filters the
- * raw tuples and only scores and builds objects for what matched, so a
- * keystroke does not walk 50k rows more than once.
- */
+/** Hits for `searchQuery` across every group, most relevant first */
 export function searchAllGroups(
   data: IndexRow[] | undefined,
   searchQuery: string,
 ): Entry[] {
-  const tokens = searchTokens(searchQuery)
-  return tokens.length
-    ? (data ?? [])
-        .filter(row => matchesAllTokens(haystack(row), tokens))
-        .map(row => ({
-          row,
-          score: countWordStartMatches(haystack(row), tokens),
-        }))
-        .toSorted(byRelevance)
-        .map(({ row }) => toEntry(row))
-        .filter(notEmpty)
-    : []
+  return rankRows(data ?? [], searchTokens(searchQuery))
+    .map(row => toEntry(row))
+    .filter(notEmpty)
 }
