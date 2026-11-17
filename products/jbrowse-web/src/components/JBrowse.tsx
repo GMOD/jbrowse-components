@@ -5,6 +5,7 @@ import {
   createJbApi,
   readQueryParams,
   setQueryParams,
+  webFileDropRoutes,
 } from '@jbrowse/app-core'
 import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import { onSnapshot } from '@jbrowse/mobx-state-tree'
@@ -113,6 +114,7 @@ const JBrowse = observer(function JBrowse({
           key={id}
           session={session}
           HeaderButtons={<ShareButton session={session} />}
+          fileDrop={webFileDropRoutes(session)}
         />
       </StyleThemeProvider>
     </ThemeProvider>

@@ -4,6 +4,7 @@ import './startScreenExtensionPoints.ts'
 
 import { useState } from 'react'
 
+import { acceptsFileDrop } from '@jbrowse/app-core'
 import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import { PluggableComponent } from '@jbrowse/core/ui'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
@@ -286,14 +287,8 @@ const StartScreen = observer(function StartScreen({
     }
   }
 
-  // a drop on a dialog bubbles here through its portal, so only one landing on
-  // the screen itself counts, and not one a drop zone inside already took
   const acceptsDrop = (event: DragEvent<HTMLDivElement>) =>
-    !loading &&
-    !event.defaultPrevented &&
-    event.dataTransfer.types.includes('Files') &&
-    event.target instanceof Node &&
-    event.currentTarget.contains(event.target)
+    !loading && acceptsFileDrop(event)
 
   const openDroppedFiles = (files: File[]) => {
     const paths = files

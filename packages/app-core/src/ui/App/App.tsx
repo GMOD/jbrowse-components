@@ -10,12 +10,14 @@ import {
 import { AppBar, useMediaQuery, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { fileDropHandlers } from '../../FileDrop/fileDrop.ts'
 import AppFab from './AppFab.tsx'
 import AppToolbar from './AppToolbar.tsx'
 import DialogQueue from './DialogQueue.tsx'
 import ViewsContainer from './ViewsContainer.tsx'
 import { DrawerWidget } from './lazyParts.ts'
 
+import type { FileDropRoutes } from '../../FileDrop/fileDrop.ts'
 import type { AppSession } from './types.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -55,10 +57,12 @@ const useStyles = makeStyles()(theme => ({
 interface Props {
   HeaderButtons?: React.ReactElement
   session: AppSession
+  /** files dropped on the app open by these; without them a drop does nothing */
+  fileDrop?: FileDropRoutes
 }
 
 const App = observer(function App(props: Props) {
-  const { session } = props
+  const { session, fileDrop } = props
   const { classes } = useStyles()
   const {
     drawerVisible,
@@ -80,7 +84,11 @@ const App = observer(function App(props: Props) {
   })
 
   return (
-    <div className={classes.root} style={{ gridTemplateColumns }}>
+    <div
+      className={classes.root}
+      style={{ gridTemplateColumns }}
+      {...fileDropHandlers(session, fileDrop)}
+    >
       {modalWidgetVisible ? (
         <ModalWidget
           session={session}

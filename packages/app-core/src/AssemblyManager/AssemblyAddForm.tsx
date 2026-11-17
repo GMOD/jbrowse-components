@@ -3,6 +3,7 @@ import { useState } from 'react'
 import AddGenomePane from '@jbrowse/core/ui/AddGenomePane'
 import { getEnv } from '@jbrowse/core/util'
 import {
+  applyClassifiedFiles,
   buildAssemblyConf,
   initialFormState,
   isFormReady,
@@ -16,11 +17,17 @@ import type { FileLocation } from '@jbrowse/core/util/types'
 const AssemblyAddForm = observer(function AssemblyAddForm({
   session,
   onClose,
+  initialFiles,
 }: {
   session: AssemblyManagerSession
   onClose: () => void
+  initialFiles?: FileLocation[]
 }) {
-  const [form, setForm] = useState(initialFormState)
+  const [form, setForm] = useState(() =>
+    initialFiles
+      ? applyClassifiedFiles(initialFormState(), initialFiles, new Set())
+      : initialFormState(),
+  )
   const ready = isFormReady(form)
 
   async function onSubmit() {
@@ -48,6 +55,7 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
         <AddGenomePane
           form={form}
           setForm={setForm}
+          initialFiles={initialFiles}
           rootModel={getEnv(session).pluginManager.rootModel}
         />
       </DialogContent>

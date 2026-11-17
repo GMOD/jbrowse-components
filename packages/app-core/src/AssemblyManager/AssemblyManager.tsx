@@ -9,15 +9,18 @@ import AssemblyTable from './AssemblyTable.tsx'
 
 import type { AssemblyManagerSession } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 const AssemblyManager = observer(function AssemblyManager({
   session,
   onClose,
+  initialFiles,
 }: {
   session: AssemblyManagerSession
   onClose: () => void
+  initialFiles?: FileLocation[]
 }) {
-  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isFormOpen, setIsFormOpen] = useState(!!initialFiles)
   const [editingAssembly, setEditingAssembly] =
     useState<AnyConfigurationModel>()
 
@@ -40,6 +43,7 @@ const AssemblyManager = observer(function AssemblyManager({
       ) : isFormOpen ? (
         <AssemblyAddForm
           session={session}
+          initialFiles={initialFiles}
           onClose={() => {
             setIsFormOpen(false)
           }}

@@ -1,0 +1,24 @@
+import { electronRenderer } from '@jbrowse/core/util/electron'
+
+import type { DesktopRootModel } from './rootModel/rootModel.ts'
+import type { FileDropRoutes } from '@jbrowse/app-core'
+
+/**
+ * Desktop reopens a dropped session file from disk the way File > Session >
+ * Open config.json or .jbrowse file does, and opens a genome in its own dialog.
+ */
+export function desktopFileDropRoutes(
+  rootModel: DesktopRootModel,
+): FileDropRoutes {
+  return {
+    openSessionFile: async file => {
+      const path = electronRenderer().webUtils.getPathForFile(file)
+      if (path) {
+        await rootModel.openNewSessionCallback(path)
+      }
+    },
+    openGenomeFiles: initialFiles => {
+      rootModel.openGenomeDialog(initialFiles)
+    },
+  }
+}

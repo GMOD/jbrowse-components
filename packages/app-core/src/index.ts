@@ -4,6 +4,8 @@ export {
   preloadAppFrame,
   preloadAppShell,
 } from './ui/index.ts'
+export { acceptsFileDrop, webFileDropRoutes } from './FileDrop/index.ts'
+export type { FileDropRoutes } from './FileDrop/index.ts'
 export { HistoryManagementMixin } from './HistoryManagement/index.ts'
 export {
   DEFAULT_SHARE_URL,

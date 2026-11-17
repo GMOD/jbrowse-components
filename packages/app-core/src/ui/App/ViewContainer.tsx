@@ -190,6 +190,7 @@ const ViewContainer = observer(function ViewContainer({
       role="region"
       aria-label={viewTitle(view, r => assemblyManager.getDisplayName(r))}
       data-testid={`view-container-${view.id}`}
+      data-view-id={view.id}
       // the view-level counterpart of DisplayChrome's data-display-phase: while
       // this reads `loading` the view has no displays mounted, so every
       // display-level readiness signal is silent and a capture taken now lands on

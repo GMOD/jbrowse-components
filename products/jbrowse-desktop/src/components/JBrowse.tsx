@@ -6,6 +6,8 @@ import { CssBaseline } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
+import { desktopFileDropRoutes } from '../desktopFileDropRoutes.ts'
+
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -36,7 +38,11 @@ const JBrowseNonNullRoot = observer(function JBrowseNonNullRoot({
         <CssBaseline />
         {/* key forces React to remount App when session changes (e.g.
           duplicate session) preventing stale references to old session views */}
-        <App key={session.id} session={session} />
+        <App
+          key={session.id}
+          session={session}
+          fileDrop={desktopFileDropRoutes(rootModel)}
+        />
       </StyleThemeProvider>
     </ThemeProvider>
   ) : null

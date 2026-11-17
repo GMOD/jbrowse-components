@@ -18,12 +18,13 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { bulkInput } from '../BulkAddTracksWorkflow/bulkInput.ts'
 import {
   isBlockedHttpUrl,
   isFtpUrl,
   isRelativeUrl as isRelativeUrlString,
 } from './urlWarnings.ts'
-import { DEFAULT_WORKFLOW } from './workflowNames.ts'
+import { BULK_WORKFLOW, DEFAULT_WORKFLOW } from './workflowNames.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TrackContainer } from '@jbrowse/core/util'
@@ -239,6 +240,17 @@ export default function f(pluginManager: PluginManager) {
        */
       clearData() {
         Object.assign(self, createVolatileState())
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Opens the bulk workflow with these local files already in it, replacing
+       * any staged before. A file dropped on the session lands here.
+       */
+      stageLocations(locations: FileLocation[]) {
+        self.setWorkflowName(BULK_WORKFLOW)
+        bulkInput(self).update({ mode: 'local', localLocations: locations })
       },
     }))
     .actions(self => {

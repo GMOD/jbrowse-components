@@ -55,6 +55,7 @@ import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
 import type {
   AbstractSessionModel,
   DialogComponentType,
+  FileLocation,
 } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -332,6 +333,35 @@ export default function rootModelFactory({
       .views(self => ({
         /**
          * #method
+         * Opens the genome dialog, with `initialFiles` already staged in it
+         * when given (a drop on the session).
+         */
+        openGenomeDialog(initialFiles?: FileLocation[]) {
+          const session = self.session
+          queueSessionDialog(session, (_session, done) => [
+            OpenSequenceDialog,
+            {
+              // every name and alias addAssemblyConfs refuses, so the dialog
+              // says so before it indexes the FASTA
+              existingAssemblyNames: session?.takenAssemblyNames ?? [],
+              initialFiles,
+              // deliberately unguarded: a throw here leaves the dialog open
+              // showing the reason, with the staged genomes still in it.
+              // Catching would report the failure to a snackbar and close over
+              // work that has nowhere left to go.
+              onClose: async (confs?: AssemblyConf[]) => {
+                if (confs && session) {
+                  addAssemblyConfs(session, self.jbrowse, confs)
+                }
+                done()
+              },
+            },
+          ])
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
          */
         menus() {
           return processMutableMenuActions(
@@ -343,27 +373,7 @@ export default function rootModelFactory({
                     label: 'Open genome...',
                     icon: DNA,
                     onClick: () => {
-                      const session = self.session
-                      queueSessionDialog(session, (_session, done) => [
-                        OpenSequenceDialog,
-                        {
-                          // every name and alias addAssemblyConfs refuses, so
-                          // the dialog says so before it indexes the FASTA
-                          existingAssemblyNames:
-                            session?.takenAssemblyNames ?? [],
-                          // deliberately unguarded: a throw here leaves the
-                          // dialog open showing the reason, with the staged
-                          // genomes still in it. Catching would report the
-                          // failure to a snackbar and close over work that has
-                          // nowhere left to go.
-                          onClose: async (confs?: AssemblyConf[]) => {
-                            if (confs && session) {
-                              addAssemblyConfs(session, self.jbrowse, confs)
-                            }
-                            done()
-                          },
-                        },
-                      ])
+                      self.openGenomeDialog()
                     },
                   },
                   openTrackMenuItem(),

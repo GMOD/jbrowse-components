@@ -2,7 +2,7 @@ import { workflowForm } from '@jbrowse/core/util'
 
 import { BULK_WORKFLOW } from '../AddTrackWidget/workflowNames.ts'
 
-import type { AddTrackWorkflowModel } from '@jbrowse/core/util'
+import type { WorkflowFormHost } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export type InputMode = 'remote' | 'local'
@@ -29,6 +29,6 @@ const initialBulkInput: BulkInputState = {
  * the form edits several fields together: removing a row rewrites the input
  * *and* forgets that row's rename.
  */
-export function bulkInput(model: AddTrackWorkflowModel) {
+export function bulkInput(model: WorkflowFormHost) {
   return workflowForm(model, BULK_WORKFLOW, initialBulkInput)
 }
