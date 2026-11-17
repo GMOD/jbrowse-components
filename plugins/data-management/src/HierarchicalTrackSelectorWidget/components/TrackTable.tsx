@@ -1,12 +1,16 @@
-import { useEffect } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { observer } from 'mobx-react'
 
-import FacetedSelector from '../../FacetedSelector/components/FacetedSelector.tsx'
-import { useFacetedModel } from '../../FacetedSelector/useFacetedModel.ts'
+import FacetedDataGrid from '../../FacetedSelector/components/FacetedDataGrid.tsx'
+import { getFacetedColumns } from '../../FacetedSelector/components/getFacetedColumns.tsx'
+import {
+  shownFields,
+  tableMenuItems,
+} from '../../FacetedSelector/components/tableLayout.ts'
+import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
 
+import type { FacetedModel } from '../../FacetedSelector/facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -19,39 +23,38 @@ const useStyles = makeStyles()(theme => ({
 
 const TrackTable = observer(function TrackTable({
   model,
+  table,
 }: {
   model: HierarchicalTrackSelectorModel
+  table: FacetedModel
 }) {
   const { classes } = useStyles()
-  const faceted = useFacetedModel(
-    model,
-    () => model.listedTrackConfigurations,
-    () => ({
-      filterText: model.filterText,
-      showFilters: false,
-      getColumnTracks: () => model.allTrackConfigurations,
-    }),
-  )
-  const [ref, { width, height }] = useMeasure()
-  const measured = Boolean(width && height)
-  useEffect(() => {
-    if (measured) {
-      ref.current?.querySelector('input')?.focus()
-    }
-  }, [measured, ref])
+  const [ref, { width }] = useMeasure('width')
+  const shown = width ? shownFields(table, width) : ['name']
   return (
-    <div ref={ref} className={classes.body}>
-      {width && height ? (
-        <FacetedSelector
-          model={model}
-          faceted={faceted}
-          size={{ width, height }}
-          onFilterTextChange={value => {
-            model.setFilterText(value)
-          }}
-        />
-      ) : null}
-    </div>
+    <>
+      <HierarchicalHeader
+        model={model}
+        table={{
+          menuItems: () => tableMenuItems(table, shown),
+          matchCounts: table.matchCounts,
+        }}
+      />
+      <div ref={ref} className={classes.body}>
+        {width ? (
+          <FacetedDataGrid
+            model={model}
+            faceted={table}
+            columns={getFacetedColumns({
+              faceted: table,
+              model,
+              fields: shown,
+            })}
+            width={width}
+          />
+        ) : null}
+      </div>
+    </>
   )
 })
 

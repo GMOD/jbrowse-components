@@ -2,7 +2,7 @@ import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { autorun } from 'mobx'
 
-import { MIN_PANEL_WIDTH, facetedStateTreeF } from './facetedModel.ts'
+import { facetedStateTreeF } from './facetedModel.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 
@@ -211,24 +211,6 @@ describe('column choices', () => {
     const { faceted } = setup()
     expect(faceted.columnChoices).toEqual([{ field: 'adapter', show: true }])
     expect(faceted.shownColumns(0)).toEqual(['name', 'adapter'])
-  })
-})
-
-describe('clearFilters', () => {
-  test('removes all active facet selections', () => {
-    const { faceted } = setup()
-    faceted.setFilter('name', ['alpha'])
-    expect(faceted.filteredRows.map(r => r.name)).toEqual(['alpha'])
-    faceted.clearFilters()
-    expect(faceted.filteredRows).toHaveLength(4)
-  })
-})
-
-describe('panelWidth', () => {
-  test('a drag past the left edge cannot invert the filter pane', () => {
-    const { faceted } = setup()
-    faceted.setPanelWidth(-50)
-    expect(faceted.panelWidth).toBe(MIN_PANEL_WIDTH)
   })
 })
 

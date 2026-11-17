@@ -1,11 +1,7 @@
 import {
   coarseStripHTML,
-  localStorageGetBoolean,
   localStorageGetJSON,
-  localStorageGetNumber,
-  localStorageSetBoolean,
   localStorageSetJSON,
-  localStorageSetNumber,
   measureGridWidth,
 } from '@jbrowse/core/util'
 import { trackCatalogEntry } from '@jbrowse/core/util/tracks'
@@ -33,9 +29,6 @@ import { getRootKeys } from './facetedUtil.ts'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-
-// the narrowest a drag can make the filter pane
-export const MIN_PANEL_WIDTH = 100
 
 // how many of the default columns' facets start open
 const OPEN_FACETS = 3
@@ -132,18 +125,6 @@ export function facetedStateTreeF() {
        * #property
        */
       filterText: types.optional(types.string, ''),
-      /**
-       * #property
-       */
-      showFilters: types.optional(types.boolean, () =>
-        localStorageGetBoolean('facet-showFilters', true),
-      ),
-      /**
-       * #property
-       */
-      panelWidth: types.optional(types.number, () =>
-        localStorageGetNumber('facet-panelWidth', 200),
-      ),
     })
     .volatile(() => ({
       /**
@@ -154,6 +135,12 @@ export function facetedStateTreeF() {
        * #volatile
        */
       useShoppingCart: false,
+      /**
+       * #volatile
+       * where the search text comes from when another model owns it: the
+       * drawer's tree and table share one filter box
+       */
+      getFilterText: undefined as (() => string) | undefined,
       /**
        * #volatile
        */
@@ -245,24 +232,9 @@ export function facetedStateTreeF() {
       /**
        * #action
        */
-      clearFilters() {
-        self.filters.clear()
-      },
-      /**
-       * #action
-       */
       setSort(field: string, ascending: boolean) {
         self.sortField = field
         self.sortAscending = ascending
-      },
-      /**
-       * #action
-       */
-      setPanelWidth(width: number) {
-        // a drag past the left edge would otherwise give the filter pane a
-        // negative width and make the data pane wider than its container
-        self.panelWidth = Math.max(MIN_PANEL_WIDTH, width)
-        localStorageSetNumber('facet-panelWidth', self.panelWidth)
       },
       /**
        * #action
@@ -279,9 +251,8 @@ export function facetedStateTreeF() {
       /**
        * #action
        */
-      setShowFilters(f: boolean) {
-        self.showFilters = f
-        localStorageSetBoolean('facet-showFilters', f)
+      setFilterTextSource(getFilterText: () => string) {
+        self.getFilterText = getFilterText
       },
       /**
        * #action
@@ -303,6 +274,13 @@ export function facetedStateTreeF() {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * the text in the filter box
+       */
+      get query() {
+        return self.getFilterText?.() ?? self.filterText
+      },
       /**
        * #getter
        * Builds row objects from track configs. Cached and only recomputes when
@@ -354,7 +332,7 @@ export function facetedStateTreeF() {
        * Text-filtered rows. Cheap string filtering on already-built allRows.
        */
       get rows() {
-        return filterRowsByText(self.allRows, self.filterText)
+        return filterRowsByText(self.allRows, self.query)
       },
     }))
     .views(self => ({
@@ -462,6 +440,28 @@ export function facetedStateTreeF() {
       get filteredRows() {
         return filterRowsByFacets(self.rows, self.filters)
       },
+      /**
+       * #getter
+       * the listed trackIds the facet filters keep, which the tree shows
+       * too; undefined while none is set
+       */
+      get facetKeptIds() {
+        return self.filters.size
+          ? new Set(
+              filterRowsByFacets(self.allRows, self.filters).map(r => r.id),
+            )
+          : undefined
+      },
+      /**
+       * #getter
+       * how many listed tracks the filter box and the facet filters keep, of
+       * how many; undefined while neither narrows the list
+       */
+      get matchCounts() {
+        const { length } = self.allRows
+        const matched = this.filteredRows.length
+        return matched < length ? { matched, total: length } : undefined
+      },
     }))
     .views(self => ({
       /**
@@ -566,9 +566,9 @@ export function facetedStateTreeF() {
        * every word first, each group in natural order.
        */
       get sortedRows() {
-        const { sortAscending, sortField, filteredRows, filterText } = self
+        const { sortAscending, sortField, filteredRows, query } = self
         if (!sortField) {
-          const nameMatches = searchMatcher(filterText)
+          const nameMatches = searchMatcher(query)
           return nameMatches
             ? [
                 ...filteredRows.filter(r => nameMatches(r.nameSearchText)),

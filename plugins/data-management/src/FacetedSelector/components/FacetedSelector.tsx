@@ -1,121 +1,57 @@
-import { ResizeHandle } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import FacetFilters from './FacetFilters.tsx'
+import FacetChips from './FacetChips.tsx'
 import FacetedDataGrid from './FacetedDataGrid.tsx'
 import FacetedHeader from './FacetedHeader.tsx'
-import { CHECKBOX_WIDTH, DEFAULT_COL_WIDTH } from './facetedTableStyles.ts'
-import { columnsThatFit } from './fitColumnWidths.ts'
 import { getFacetedColumns } from './getFacetedColumns.tsx'
+import { shownFields } from './tableLayout.ts'
 import { useWindowSize } from './useWindowSize.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel } from '../facetedModel.ts'
 
 const useStyles = makeStyles()({
-  resizeHandle: {
-    marginLeft: 5,
-    width: 5,
-  },
   root: {
     display: 'flex',
     flexDirection: 'column',
   },
-  container: {
-    display: 'flex',
-    overflow: 'hidden',
-  },
-  dataPane: {
-    height: '100%',
-    overflow: 'hidden',
-  },
-  filterPane: {
-    overflow: 'auto',
+  grid: {
+    flex: 1,
+    minHeight: 0,
   },
 })
 
 const frac = 0.75
 
-// a vertical scrollbar and the grid's border, which the column count has to
-// leave room for before the grid can measure them
-const GRID_CHROME = 18
-
+/**
+ * a table with its own filter box, for a dialog sized to the window
+ */
 const FacetedSelector = observer(function FacetedSelector({
   model,
   faceted,
-  size,
-  onFilterTextChange,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
-  size?: { width: number; height: number }
-  onFilterTextChange?: (value: string) => void
 }) {
   const { classes } = useStyles()
-  const { width, height } = useWindowSize()
-  const { selectionSet, shownTrackIds } = model
-  const { showFilters } = faceted
-
-  const w = size?.width ?? width * frac
-  // the filter pane never takes more than half, so a width saved in a wider
-  // window still leaves the grid room
-  const panelWidth = Math.max(0, Math.min(faceted.panelWidth, w / 2))
-  const gridWidth = w - (showFilters ? panelWidth : 0)
-  const shown = faceted.shownColumns(
-    columnsThatFit(
-      gridWidth - CHECKBOX_WIDTH - GRID_CHROME,
-      faceted.initialWidths.name ?? DEFAULT_COL_WIDTH,
-    ),
-  )
-  const columns = getFacetedColumns({ faceted, model, fields: shown })
-
+  const windowSize = useWindowSize()
+  const width = windowSize.width * frac
+  const shown = shownFields(faceted, width)
   return (
     <div
       className={classes.root}
-      style={size ? { width: w, height: size.height } : undefined}
+      style={{ width, height: windowSize.height * frac }}
     >
-      <FacetedHeader
-        model={model}
-        faceted={faceted}
-        shown={shown}
-        onFilterTextChange={onFilterTextChange}
-      />
-      <div
-        className={classes.container}
-        style={
-          size
-            ? { width: w, flex: 1, minHeight: 0 }
-            : { width: w, height: height * frac }
-        }
-      >
-        <div className={classes.dataPane} style={{ width: gridWidth }}>
-          <FacetedDataGrid
-            model={model}
-            faceted={faceted}
-            columns={columns}
-            shownTrackIds={shownTrackIds}
-            selectionSet={selectionSet}
-            width={gridWidth}
-          />
-        </div>
-
-        {showFilters ? (
-          <>
-            <ResizeHandle
-              vertical
-              value={panelWidth}
-              reverse
-              onChange={width => {
-                faceted.setPanelWidth(Math.min(width, w / 2))
-              }}
-              className={classes.resizeHandle}
-            />
-            <div className={classes.filterPane} style={{ width: panelWidth }}>
-              <FacetFilters faceted={faceted} />
-            </div>
-          </>
-        ) : null}
+      <FacetedHeader model={model} faceted={faceted} shown={shown} />
+      <FacetChips faceted={faceted} />
+      <div className={classes.grid}>
+        <FacetedDataGrid
+          model={model}
+          faceted={faceted}
+          columns={getFacetedColumns({ faceted, model, fields: shown })}
+          width={width}
+        />
       </div>
     </div>
   )

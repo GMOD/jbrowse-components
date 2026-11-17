@@ -7,17 +7,42 @@ import { facetedStateTreeF } from './facetedModel.ts'
 import { trackTypeShortName } from './facetedUtil.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
+import type { FacetedModel } from './facetedModel.ts'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * Faceted-selector UI state for the lifetime of a dialog, destroyed on unmount.
+ * Gives a table the config's `hierarchical.table.columns` and the track type
+ * names its kind column shows.
+ */
+export function configureTrackTable(
+  table: FacetedModel,
+  node: IAnyStateTreeNode,
+) {
+  const columns: unknown = getConf(getSession(node), [
+    'hierarchical',
+    'table',
+    'columns',
+  ])
+  table.setConfiguredColumns(
+    Array.isArray(columns)
+      ? columns.filter((c): c is string => typeof c === 'string')
+      : [],
+  )
+  const names = new Map(
+    getEnv(node)
+      .pluginManager.getTrackElements()
+      .map(t => [t.name, trackTypeShortName(t.displayName)]),
+  )
+  table.setTrackTypeName(type => names.get(type) ?? type)
+}
+
+/**
+ * A table of its own for the lifetime of a dialog, destroyed on unmount. The
+ * drawer's table is the track selector's `trackTable`.
  *
- * `initial` is called once, when the model is created, so the starting values
- * it reads (the tree's query) are not observed by the caller's render.
- *
- * getTracks (and getColumnTracks, the wider list columns are chosen from) is
- * stored once and called from inside MobX computeds, so it must read the live
- * config tree (e.g. a model getter) rather than close over an
+ * getTracks is stored once and called from inside MobX computeds, so it must
+ * read the live config tree (e.g. a model getter) rather than close over an
  * already-materialized array — otherwise the grid keeps rows for tracks that
  * have since been deleted.
  *
@@ -31,33 +56,11 @@ import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 export function useFacetedModel(
   model: HierarchicalTrackSelectorModel,
   getTracks: () => AnyTrackConfig[],
-  initial?: () => {
-    filterText?: string
-    showFilters?: boolean
-    getColumnTracks?: () => AnyTrackConfig[]
-  },
 ) {
   const faceted = useCreateOnce(() => {
-    const { getColumnTracks, ...snapshot } = initial?.() ?? {}
-    const session = getSession(model)
-    const ret = facetedStateTreeF().create(snapshot)
-    ret.setTrackSource(getTracks, session, model.assemblyNames, getColumnTracks)
-    const columns: unknown = getConf(session, [
-      'hierarchical',
-      'table',
-      'columns',
-    ])
-    ret.setConfiguredColumns(
-      Array.isArray(columns)
-        ? columns.filter((c): c is string => typeof c === 'string')
-        : [],
-    )
-    const names = new Map(
-      getEnv(model)
-        .pluginManager.getTrackElements()
-        .map(t => [t.name, trackTypeShortName(t.displayName)]),
-    )
-    ret.setTrackTypeName(type => names.get(type) ?? type)
+    const ret = facetedStateTreeF().create()
+    ret.setTrackSource(getTracks, getSession(model), model.assemblyNames)
+    configureTrackTable(ret, model)
     return ret
   })
   useFinalUnmount(() => {

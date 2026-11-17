@@ -163,9 +163,9 @@ your own when an expression gets unwieldy.
 
 ### How do I get (more) categories to filter on in the faceted track selector
 
-The faceted track selector facets on kind (the track type, or `metadata.kind`),
-adapter type, category, and every `metadata` key on a track.
-[](/docs/config_guides/track_selector)
+The track selector's filter chips cover kind (the track type, or
+`metadata.kind`), category, and every top-level `metadata` key whose values
+group tracks. [](/docs/config_guides/track_selector)
 
 ### How do I open JBrowse at a particular location with certain tracks turned on
 

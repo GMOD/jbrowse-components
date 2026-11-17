@@ -18,6 +18,7 @@ import {
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 // lazy components
 const DeleteConnectionDialog = lazy(
@@ -34,8 +35,10 @@ interface DialogDetails {
 
 const HamburgerMenu = observer(function HamburgerMenu({
   model,
+  viewMenuItems,
 }: {
   model: HierarchicalTrackSelectorModel
+  viewMenuItems?: () => MenuItem[]
 }) {
   const session = getSession(model)
   const [deleteDialogDetails, setDeleteDialogDetails] =
@@ -99,54 +102,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
               model.clearRecentlyUsed()
             },
           },
-          {
-            label: 'Sort',
-            subMenu: [
-              {
-                label: 'Sort tracks by name',
-                type: 'checkbox',
-                checked: model.activeSortTrackNames,
-                onClick: () => {
-                  model.setSortTrackNames(!model.activeSortTrackNames)
-                },
-              },
-              {
-                label: 'Sort categories by name',
-                type: 'checkbox',
-                checked: model.activeSortCategories,
-                onClick: () => {
-                  model.setSortCategories(!model.activeSortCategories)
-                },
-              },
-            ],
-          },
-          {
-            label: 'Collapse',
-            subMenu: [
-              ...(model.hasAnySubcategories
-                ? [
-                    {
-                      label: 'Collapse subcategories',
-                      onClick: () => {
-                        model.collapseSubCategories()
-                      },
-                    },
-                  ]
-                : []),
-              {
-                label: 'Collapse top-level categories',
-                onClick: () => {
-                  model.collapseTopLevelCategories()
-                },
-              },
-              {
-                label: 'Expand all categories',
-                onClick: () => {
-                  model.expandAllCategories()
-                },
-              },
-            ],
-          },
+          ...(viewMenuItems ? viewMenuItems() : treeMenuItems(model)),
         ]}
       >
         <MenuIcon />
@@ -179,5 +135,58 @@ const HamburgerMenu = observer(function HamburgerMenu({
     </>
   )
 })
+
+function treeMenuItems(model: HierarchicalTrackSelectorModel): MenuItem[] {
+  return [
+    {
+      label: 'Sort',
+      subMenu: [
+        {
+          label: 'Sort tracks by name',
+          type: 'checkbox',
+          checked: model.activeSortTrackNames,
+          onClick: () => {
+            model.setSortTrackNames(!model.activeSortTrackNames)
+          },
+        },
+        {
+          label: 'Sort categories by name',
+          type: 'checkbox',
+          checked: model.activeSortCategories,
+          onClick: () => {
+            model.setSortCategories(!model.activeSortCategories)
+          },
+        },
+      ],
+    },
+    {
+      label: 'Collapse',
+      subMenu: [
+        ...(model.hasAnySubcategories
+          ? [
+              {
+                label: 'Collapse subcategories',
+                onClick: () => {
+                  model.collapseSubCategories()
+                },
+              },
+            ]
+          : []),
+        {
+          label: 'Collapse top-level categories',
+          onClick: () => {
+            model.collapseTopLevelCategories()
+          },
+        },
+        {
+          label: 'Expand all categories',
+          onClick: () => {
+            model.expandAllCategories()
+          },
+        },
+      ],
+    },
+  ]
+}
 
 export default HamburgerMenu

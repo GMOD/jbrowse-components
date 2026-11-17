@@ -106,14 +106,17 @@ const FacetFilter = observer(function FacetFilter({
   vals,
   faceted,
   defaultExpanded = true,
+  collapsible = true,
 }: {
   field: string
   vals: [string, number][]
   faceted: FacetedModel
   defaultExpanded?: boolean
+  collapsible?: boolean
 }) {
   const { classes } = useStyles()
-  const [expanded, setExpanded] = useState(defaultExpanded)
+  const [open, setOpen] = useState(defaultExpanded)
+  const expanded = !collapsible || open
   const [showAll, setShowAll] = useState(false)
   const { filters, nonMetadataFieldSet } = faceted
   const selected = filters.get(field) ?? []
@@ -131,32 +134,34 @@ const FacetFilter = observer(function FacetFilter({
   const ToggleIcon = expanded ? ArrowDropDownIcon : ArrowRightIcon
   return (
     <div className={classes.facet} role="group" aria-label={label}>
-      <div className={classes.heading}>
-        <button
-          type="button"
-          className={classes.toggle}
-          aria-expanded={expanded}
-          title={label}
-          onClick={() => {
-            setExpanded(!expanded)
-          }}
-        >
-          <ToggleIcon className={classes.toggleIcon} />
-          <span className={classes.label}>{label}</span>
-        </button>
-        {selected.length ? (
+      {collapsible ? (
+        <div className={classes.heading}>
           <button
             type="button"
-            className={classes.link}
-            aria-label={`Clear ${label} filter`}
+            className={classes.toggle}
+            aria-expanded={expanded}
+            title={label}
             onClick={() => {
-              faceted.setFilter(field, [])
+              setOpen(!open)
             }}
           >
-            clear
+            <ToggleIcon className={classes.toggleIcon} />
+            <span className={classes.label}>{label}</span>
           </button>
-        ) : null}
-      </div>
+          {selected.length ? (
+            <button
+              type="button"
+              className={classes.link}
+              aria-label={`Clear ${label} filter`}
+              onClick={() => {
+                faceted.setFilter(field, [])
+              }}
+            >
+              clear
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       {expanded ? (
         <>
           <ul className={classes.values}>

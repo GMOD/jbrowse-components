@@ -39,15 +39,11 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   model,
   faceted,
   columns,
-  shownTrackIds,
-  selectionSet,
   width,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
   columns: FacetedColumn[]
-  shownTrackIds: Set<string>
-  selectionSet: Set<string>
   width: number
 }) {
   const { classes } = useFacetedTableStyles()
@@ -56,18 +52,18 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
     sortedRows,
     sortField,
     sortAscending,
-    filterText,
+    query,
     filters,
     initialWidths,
   } = faceted
 
   const parentRef = useRef<HTMLDivElement>(null)
-  useSearchHighlight(parentRef, filterText, 'jbrowse-faceted-search')
+  useSearchHighlight(parentRef, query, 'jbrowse-faceted-search')
   const { items, leadingGap, trailingGap, clientWidth } = useVirtualRows(
     parentRef,
     sortedRows.length,
     ROW_HEIGHT,
-    JSON.stringify([filterText, sortField, sortAscending, [...filters]]),
+    JSON.stringify([query, sortField, sortAscending, [...filters]]),
   )
   const available = (clientWidth || width) - CHECKBOX_WIDTH
   const { colWidths, onResizeStart } = useColumnResize(
@@ -86,8 +82,8 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
     getRowSelectionState({
       model,
       useShoppingCart,
-      shownTrackIds,
-      selectionSet,
+      shownTrackIds: model.shownTrackIds,
+      selectionSet: model.selectionSet,
       filteredRows: sortedRows,
     })
 

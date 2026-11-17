@@ -1002,11 +1002,6 @@ test('faceted model toggle options', () => {
     model.assemblyNames,
   )
 
-  // test showFilters toggle
-  const initialShowFilters = faceted.showFilters
-  faceted.setShowFilters(!initialShowFilters)
-  expect(faceted.showFilters).toBe(!initialShowFilters)
-
   // test useShoppingCart toggle
   expect(faceted.useShoppingCart).toBe(false)
   faceted.setUseShoppingCart(true)
@@ -1090,35 +1085,6 @@ test('setTracksSelected updates the selection in shopping-cart mode', () => {
 
   // view is untouched in shopping-cart mode
   expect(model.shownTrackIds.size).toBe(0)
-})
-
-test('faceted model panel width', () => {
-  const session = addTestData(createTestSession())
-  const firstView = session.addView('LinearGenomeView', {
-    displayedRegions: [
-      {
-        assemblyName: 'volMyt1',
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-      },
-    ],
-  })
-  const model =
-    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
-    () => model.allTrackConfigurations,
-    getSession(model),
-    model.assemblyNames,
-  )
-
-  // set panel width
-  faceted.setPanelWidth(500)
-  expect(faceted.panelWidth).toBe(500)
-
-  faceted.setPanelWidth(300)
-  expect(faceted.panelWidth).toBe(300)
 })
 
 test('faceted model rows contain expected data', () => {
@@ -1692,6 +1658,45 @@ test('filtering reaches tracks inside a folder or a collapsed category', () => {
   model.clearFilterText()
   expect(model.categoryMode.get(histone)).toBe('collapsed')
   expect(trackNames(model)).not.toContain('H3K4me3')
+})
+
+function trackTableOf(model: HierarchicalTrackSelectorModel) {
+  const { trackTable } = model
+  if (!trackTable) {
+    throw new Error('the track selector has no table')
+  }
+  return trackTable
+}
+
+test('the tree and the table share one filter box and one set of facet filters', () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const table = trackTableOf(model)
+
+  table.setFilter('category', ['Epigenomics, Histone Marks'])
+  expect(trackNames(model).toSorted()).toEqual(['H3K27ac', 'H3K4me3'])
+  expect(table.sortedRows.map(r => r.name).toSorted()).toEqual([
+    'H3K27ac',
+    'H3K4me3',
+  ])
+  expect(model.matchCounts?.matched).toBe(2)
+
+  model.setFilterText('27ac')
+  expect(trackNames(model)).toEqual(['H3K27ac'])
+  expect(table.sortedRows.map(r => r.name)).toEqual(['H3K27ac'])
+
+  table.setFilter('category', [])
+  model.clearFilterText()
+  expect(model.matchCounts).toBeUndefined()
+  expect(trackNames(model)).toContain('Regular Track')
 })
 
 // Epigenomics is a top-level category that also holds a direct track (Regular

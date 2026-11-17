@@ -55,15 +55,14 @@ function setup() {
   return { session, model, addView }
 }
 
-test('the toggle swaps the tree for a table seeded with its query, with facets and select-all hidden, and back', async () => {
+test('the toggle swaps the tree for a table seeded with its query, with select-all hidden, and back', async () => {
   const { model } = setup()
   model.setFilterText(' chrom ')
-  const { getByTestId, findByLabelText, queryByText, queryByLabelText } =
-    render(
-      <ThemeProvider theme={createJBrowseTheme()}>
-        <HierarchicalTrackSelector model={model} />
-      </ThemeProvider>,
-    )
+  const { getByTestId, findByLabelText, queryByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} />
+    </ThemeProvider>,
+  )
   const tree = getByTestId('show-as-tree')
   const table = getByTestId('show-as-table')
   expect(tree.getAttribute('aria-pressed')).toBe('true')
@@ -72,7 +71,6 @@ test('the toggle swaps the tree for a table seeded with its query, with facets a
   const search = await findByLabelText('Filter tracks')
   expect((search as HTMLInputElement).value).toBe(' chrom ')
   expect(table.getAttribute('aria-pressed')).toBe('true')
-  expect(queryByText('Clear all filters')).toBeNull()
   expect(queryByLabelText('Select all tracks')).toBeNull()
 
   fireEvent.change(search, { target: { value: 'genes' } })

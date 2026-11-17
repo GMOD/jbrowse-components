@@ -7,7 +7,8 @@ summary: "The drawer's track table shows, beside the name, as many columns as fi
 
 ## Status
 
-Accepted (2026-11-16). Built over five commits after a code review, a
+Accepted (2026-11-16); ADR-271 turns its facet panel into filter chips that
+the tree shares. Built over five commits after a code review, a
 product review and a scale review at 5,000 and 20,000 tracks, judged on the
 jb2hubs human configs (hg38 799 tracks, hs1 627, hg19 528). Colin asked that
 the narrow drawer show "a subset of the total metadata columns" and that

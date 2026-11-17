@@ -69,8 +69,6 @@ function renderGrid(
   model: HierarchicalTrackSelectorModel,
   faceted: FacetedModel,
 ) {
-  // observer wrapper mirrors FacetedSelector: re-reads shownTrackIds/selection
-  // from the live model so the grid sees updates after a toggle
   const Wrapper = observer(function Wrapper() {
     return (
       <FacetedDataGrid
@@ -81,8 +79,6 @@ function renderGrid(
           model,
           fields: faceted.shownColumns(9),
         })}
-        shownTrackIds={model.shownTrackIds}
-        selectionSet={model.selectionSet}
         width={1200}
       />
     )

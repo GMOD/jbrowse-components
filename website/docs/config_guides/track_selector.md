@@ -45,9 +45,9 @@ Tracks appear in config.json order unless the `hierarchical` settings change it.
 ## Folder categories (supertracks)
 
 A folder category replaces the whole category with one row showing how many of
-its tracks are on; clicking it opens a faceted selector scoped to that category.
-Users switch any category between folder and list from its context menu ("Show
-as folder" / "Show as list"). Top-level group rows (the config's own tracks, and
+its tracks are on; clicking it opens a table of that category's tracks. Users
+switch any category between folder and list from its context menu ("Show as
+folder" / "Show as list"). Top-level group rows (the config's own tracks, and
 each connection) cannot become folders, since clicking a connection's row loads
 it. Plugins replace the folder dialog through
 [`TrackSelector-folderDialog`](/docs/developer_guides/extension_points#trackselector-folderdialog).
@@ -60,7 +60,7 @@ Every top-level key of a track's `metadata` object can be a column to filter or
 sort on, as in the
 [cookbook's metadata track](/docs/cookbook#instance-wide-settings).
 [](/docs/user_guides/basic_usage#faceted-track-selector) covers the filter
-panel.
+chips.
 
 Beside the name, the table shows as many columns as fit its width, with no
 sideways scroll. By default those are the fields that sort tracks into groups:
@@ -68,14 +68,14 @@ category, kind, and each metadata key with at least two values that are each
 shared by two or more tracks, and no more values than half the tracks that have
 one. A per-track URL or description, a flag every track but one shares, or a key
 that only repeats another column (a file format that always matches the kind) is
-left out. The user's Manage columns choices override this either way. The filter
-panel opens the filters for the first three of these columns and lists the other
-grouping fields collapsed below them.
+left out. The user's Manage columns choices override this either way. The first
+three of these columns get a filter chip under the filter box, and the other
+grouping fields sit behind "More filters".
 
 Where a hub's metadata has many keys of which a few matter, name them, most
 important first, with `hierarchical.table.columns`. The table shows these first,
 then fills any remaining room with the fields it would pick on its own, and
-opens the filters for the first three:
+gives the first three a filter chip:
 
 ```json
 {

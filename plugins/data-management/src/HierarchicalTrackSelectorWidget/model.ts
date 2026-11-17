@@ -11,9 +11,11 @@ import {
 } from '@jbrowse/core/util'
 import { filterTracks, offeredTracks } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { autorun, compareShallow, computed, observable } from 'mobx'
+import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
+import { autorun, compareShallow, computed, observable, reaction } from 'mobx'
 
+import { facetedStateTreeF } from '../FacetedSelector/facetedModel.ts'
+import { configureTrackTable } from '../FacetedSelector/useFacetedModel.ts'
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { searchMatcher } from '../shared/searchText.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
@@ -26,10 +28,12 @@ import {
   trackNodeSourceFor,
 } from './util.ts'
 
+import type { FacetedModel } from '../FacetedSelector/facetedModel.ts'
 import type {
   CategoryMode,
   ResolvedCategoryMode,
   TrackGroup,
+  TrackNodeSource,
   TreeNode,
   TreeRow,
   TreeTrackNode,
@@ -260,6 +264,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * favorites or the recently used
        */
       trackList: 'all' as TrackList,
+      /**
+       * #volatile
+       * the search, facet filters, sort and columns the tree and the table
+       * share, created on attach
+       */
+      trackTable: undefined as FacetedModel | undefined,
     }))
     .views(self => ({
       /**
@@ -594,20 +604,26 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * whether a track's searchText holds every term in the filter box;
-       * undefined when the box holds no terms
+       * whether a track's searchText holds every term in the filter box and
+       * passes the facet filters; undefined while neither narrows the list
        */
-      get filterMatches() {
-        return searchMatcher(self.filterText)
+      get keepTrack() {
+        const matches = searchMatcher(self.filterText)
+        const facetKept = self.trackTable?.facetKeptIds
+        return matches || facetKept
+          ? (t: TrackNodeSource) =>
+              (matches?.(t.searchText) ?? true) &&
+              (facetKept?.has(t.conf.trackId) ?? true)
+          : undefined
       },
 
       /**
        * #getter
-       * a query is being searched for, which forces categories open
-       * (isFilterForcedOpen)
+       * a query or a facet filter narrows the list, which forces categories
+       * open (isFilterForcedOpen)
        */
       get filterActive() {
-        return this.filterMatches !== undefined || self.trackList !== 'all'
+        return this.keepTrack !== undefined || self.trackList !== 'all'
       },
     }))
     .views(self => {
@@ -765,7 +781,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * empty connection still shows in the tree
        */
       get hierarchy() {
-        const { filterMatches, trackList } = self
+        const { keepTrack, trackList } = self
         return {
           name: 'Root',
           id: 'Root',
@@ -780,7 +796,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                   defaultCollapsed: s.defaultCollapsed,
                   loading: s.loading,
                   children: generateHierarchy(
-                    s.tracks.filter(t => filterMatches?.(t.searchText) ?? true),
+                    s.tracks.filter(t => keepTrack?.(t) ?? true),
                     s.id,
                   ),
                 }))
@@ -794,7 +810,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * the toggle above already names the list
        */
       get flatList(): TreeNode[] {
-        const { filterMatches, trackList } = self
+        const { keepTrack, trackList } = self
         const sources = new Map(
           self.allTracks.flatMap(s => s.tracks.map(t => [t.conf.trackId, t])),
         )
@@ -805,28 +821,26 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const tracks = order
           .map(id => sources.get(id))
           .filter(notEmpty)
-          .filter(t => filterMatches?.(t.searchText) ?? true)
+          .filter(t => keepTrack?.(t) ?? true)
           .map(t => ({ ...t, categories: [] }))
         return generateHierarchy(tracks, trackList)
       },
       /**
        * #getter
-       * how many of the listed tracks the filter box keeps, of how many;
-       * undefined while it holds no terms
+       * how many of the listed tracks the filter box and the facet filters
+       * keep, of how many; undefined while neither narrows the list
        */
       get matchCounts() {
-        const { filterMatches, listedTrackIds } = self
+        const { keepTrack, listedTrackIds } = self
         const tracks = new Map(
           self.allTracks
             .flatMap(s => s.tracks)
             .filter(t => listedTrackIds?.has(t.conf.trackId) ?? true)
             .map(t => [t.conf.trackId, t]),
         )
-        return filterMatches
+        return keepTrack
           ? {
-              matched: [...tracks.values()].filter(t =>
-                filterMatches(t.searchText),
-              ).length,
+              matched: [...tracks.values()].filter(t => keepTrack(t)).length,
               total: tracks.size,
             }
           : undefined
@@ -1014,6 +1028,28 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       return {
         afterAttach() {
+          const trackTable = facetedStateTreeF().create()
+          configureTrackTable(trackTable, self)
+          trackTable.setFilterTextSource(() => self.filterText)
+          self.trackTable = trackTable
+          addDisposer(
+            self,
+            reaction(
+              () => self.assemblyNames,
+              assemblyNames => {
+                trackTable.setTrackSource(
+                  () => self.listedTrackConfigurations,
+                  getSession(self),
+                  assemblyNames,
+                  () => self.allTrackConfigurations,
+                )
+              },
+              { fireImmediately: true, name: 'TrackSelectorTableSource' },
+            ),
+          )
+          addDisposer(self, () => {
+            destroy(trackTable)
+          })
           addDisposer(
             self,
             autorun(loadFromLocalStorage, { name: 'TrackSelectorInit' }),
