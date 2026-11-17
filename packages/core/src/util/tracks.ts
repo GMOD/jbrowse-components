@@ -1265,11 +1265,59 @@ export function trackDisplayType(
   viewType: string,
   requested?: string,
 ) {
+  return trackDisplayChoice(pluginManager, rawConf, viewType, requested)?.type
+}
+
+/**
+ * `trackDisplayType` with the track config's own declaration of that display,
+ * which `shownTrackSnapshot` takes.
+ */
+export function trackDisplayChoice(
+  pluginManager: PluginManager,
+  rawConf: { type: string },
+  viewType: string,
+  requested?: string,
+) {
   const conf = pluginManager.evaluateExtensionPoint(
     'Core-preProcessTrackConfig',
     structuredClone(rawConf),
   ) as Parameters<typeof pickTrackDisplay>[1]
-  return pickTrackDisplay(pluginManager, conf, viewType, requested).picked?.type
+  return pickTrackDisplay(pluginManager, conf, viewType, requested).picked
+}
+
+/**
+ * The snapshot of an open track showing `trackId` as the display `picked`, as
+ * `showTrack` creates one.
+ */
+export function shownTrackSnapshot({
+  trackId,
+  trackType,
+  configuration,
+  picked,
+  initialSnapshot = {},
+  displayInitialSnapshot = {},
+}: {
+  trackId: string
+  trackType: string
+  configuration: unknown
+  picked: { type: string; conf?: DisplayConfSnapshot }
+  initialSnapshot?: object
+  displayInitialSnapshot?: DisplayInitialSnapshot
+}) {
+  const { type, conf } = picked
+  return {
+    ...initialSnapshot,
+    type: trackType,
+    configuration,
+    displays: [
+      {
+        ...conf,
+        configuration: conf?.displayId ?? `${trackId}-${type}`,
+        ...displayInitialSnapshot,
+        type,
+      },
+    ],
+  }
 }
 
 function resolveTrackDisplayChoice(
@@ -1390,8 +1438,7 @@ export function showTrackGeneric(
       inlineConf,
     )
 
-    const { type: displayType, conf: displayConf } = picked
-    const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
+    const displayType = picked.type
 
     // a registered display whose model is not loaded yet: the load re-enters
     // through the view's own showTrack action, so a synchronous caller gets the
@@ -1408,26 +1455,23 @@ export function showTrackGeneric(
       return undefined
     }
 
-    const track: SettingsShownTrack = trackType.stateModel.create({
-      ...initialSnapshot,
-      type: conf.type,
-      // `rawConf`, not the caller's `inlineConf`: the loose `{ trackId, uri }`
-      // form has no `type` for the config schema to dispatch on, and the
-      // concrete schema this lands on carries no loose preprocessor — that one
-      // is on `pluggableConfigSchemaType('track')`, which a track model's
-      // `ConfigurationReference` is not. Not `conf` either: that has already
-      // run Core-preProcessTrackConfig, which the schema's own
-      // preProcessSnapshot runs again.
-      configuration: inlineConf ? rawConf : trackId,
-      displays: [
-        {
-          ...displayConf,
-          configuration: displayId,
-          ...displayInitialSnapshot,
-          type: displayType,
-        },
-      ],
-    })
+    const track: SettingsShownTrack = trackType.stateModel.create(
+      shownTrackSnapshot({
+        trackId,
+        trackType: conf.type,
+        picked,
+        initialSnapshot,
+        displayInitialSnapshot,
+        // `rawConf`, not the caller's `inlineConf`: the loose `{ trackId, uri }`
+        // form has no `type` for the config schema to dispatch on, and the
+        // concrete schema this lands on carries no loose preprocessor — that
+        // one is on `pluggableConfigSchemaType('track')`, which a track model's
+        // `ConfigurationReference` is not. Not `conf` either: that has already
+        // run Core-preProcessTrackConfig, which the schema's own
+        // preProcessSnapshot runs again.
+        configuration: inlineConf ? rawConf : trackId,
+      }),
+    )
     self.tracks.push(track)
 
     // Display settings (height, color, …) are config slots now, not display

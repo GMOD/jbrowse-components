@@ -1,8 +1,16 @@
+import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
 import {
+  shownTrackSnapshot,
+  toTrackConfigEntry,
+  trackDisplayChoice,
+} from '@jbrowse/core/util/tracks'
+import {
+  applyPatch,
   getChildType,
   getPropertyMembers,
   getSnapshot,
   getType,
+  isAlive,
   isArrayType,
   isMapType,
   isModelType,
@@ -22,32 +30,156 @@ type MSTMap = Instance<ReturnType<typeof types.map>>
 
 // A node dropped from a freshly-loaded session, identified for a user-facing
 // message. `configuration` is the (unresolved) trackId; `type` the track type.
+// `reopenedAs` is the track type it was put back as, when its config changed
+// type under it.
 export interface DroppedSessionNode {
   type?: string
   configuration?: string
+  reopenedAs?: string
+  displayReset?: boolean
 }
+
+type ReopenTrack = (
+  array: MSTArray,
+  index: number,
+  snapshot: unknown,
+) => Pick<DroppedSessionNode, 'reopenedAs' | 'displayReset'> | undefined
 
 /**
  * `filterSessionInPlace` over a whole session, telling the user which tracks
  * it dropped: one config with a refused value costs its own track, never the
- * session.
+ * session. A track whose config changed type since the session was saved is
+ * reopened as the new type instead.
  */
 export function dropUnloadableTracks(
   session: IAnyStateTreeNode & {
     notify?: (message: string, level: 'warning') => void
   },
 ) {
-  const dropped = filterSessionInPlace(session, getType(session))
-  if (dropped.length > 0) {
-    const names = dropped
-      .map(d => d.configuration ?? d.type ?? 'unknown')
-      .join(', ')
-    const plural = dropped.length > 1
-    session.notify?.(
-      `Removed ${dropped.length} track${plural ? 's' : ''} that could not be loaded: ${names}`,
-      'warning',
-    )
+  const dropped = filterSessionInPlace(
+    session,
+    getType(session),
+    [],
+    reopenRetypedTrack,
+  )
+  const message = [
+    describeRemoved(dropped.filter(d => d.reopenedAs === undefined)),
+    describeReopened(dropped.filter(d => d.reopenedAs !== undefined)),
+  ]
+    .filter(line => line !== undefined)
+    .join('. ')
+  if (message) {
+    session.notify?.(message, 'warning')
   }
+}
+
+function describeRemoved(removed: DroppedSessionNode[]) {
+  return removed.length > 0
+    ? `Removed ${removed.length} track${removed.length > 1 ? 's' : ''} that could not be loaded: ${removed
+        .map(d => d.configuration ?? d.type ?? 'unknown')
+        .join(', ')}`
+    : undefined
+}
+
+function describeReopened(reopened: DroppedSessionNode[]) {
+  const reset = reopened.filter(d => d.displayReset)
+  const plural = reopened.length > 1
+  const resetNote =
+    reset.length === 0
+      ? ''
+      : plural
+        ? `; display settings were reset for ${reset.map(d => d.configuration).join(', ')}`
+        : '; its display settings were reset'
+  return reopened.length > 0
+    ? `Reopened ${reopened.length} track${plural ? 's' : ''} whose type changed: ${reopened
+        .map(d => `${d.configuration} (${d.type} → ${d.reopenedAs})`)
+        .join(', ')}${resetNote}`
+    : undefined
+}
+
+interface OpenTrackSnapshot {
+  id?: string
+  type: string
+  configuration: string
+  minimized?: boolean
+  pinned?: boolean
+  displays?: { type: string; [key: string]: unknown }[]
+}
+
+function isOpenTrackSnapshot(snapshot: unknown): snapshot is OpenTrackSnapshot {
+  return (
+    !!snapshot &&
+    typeof snapshot === 'object' &&
+    'type' in snapshot &&
+    typeof snapshot.type === 'string' &&
+    'configuration' in snapshot &&
+    typeof snapshot.configuration === 'string'
+  )
+}
+
+// Puts back, at the index it was dropped from, an open track whose config now
+// names another registered track type, so a config edit that retypes a track
+// does not silently close it in every saved session. The old display is kept
+// whole when the new type still feeds it in this view; otherwise the track
+// opens with the display `showTrack` would pick, and the old display's
+// settings, which belong to another display type, are not carried over.
+const reopenRetypedTrack: ReopenTrack = (array, index, snapshot) => {
+  const { pluginManager } = getEnv(array)
+  const liveConf = isOpenTrackSnapshot(snapshot)
+    ? getSession(array).getTrackById(snapshot.configuration)
+    : undefined
+  if (
+    isOpenTrackSnapshot(snapshot) &&
+    liveConf &&
+    liveConf.type !== snapshot.type &&
+    pluginManager.trackTypes.has(liveConf.type)
+  ) {
+    const conf = toTrackConfigEntry(liveConf)
+    const viewType = getContainingView(array).type
+    const oldDisplay = snapshot.displays?.[0]
+    const kept = oldDisplay
+      ? trackDisplayChoice(pluginManager, conf, viewType, oldDisplay.type)
+      : undefined
+    const keepsDisplay = kept !== undefined && kept.type === oldDisplay?.type
+    const picked = keepsDisplay
+      ? kept
+      : trackDisplayChoice(pluginManager, conf, viewType)
+    if (picked) {
+      const value = shownTrackSnapshot({
+        trackId: snapshot.configuration,
+        trackType: liveConf.type,
+        configuration: snapshot.configuration,
+        picked,
+        initialSnapshot: {
+          id: snapshot.id,
+          minimized: snapshot.minimized,
+          pinned: snapshot.pinned,
+        },
+        displayInitialSnapshot: keepsDisplay ? oldDisplay : {},
+      })
+      const record = pluginManager.resolveDisplayTypeRecord(picked.type)
+      if (!record || record.isStateModelLoaded) {
+        array.splice(index, 0, value)
+      } else {
+        record
+          .loadStateModel()
+          .then(() => {
+            if (isAlive(array)) {
+              applyPatch(array, {
+                op: 'add',
+                path: `/${Math.min(index, array.length)}`,
+                value,
+              })
+            }
+          })
+          .catch((e: unknown) => {
+            console.error(e)
+          })
+      }
+      return { reopenedAs: liveConf.type, displayReset: !keepsDisplay }
+    }
+  }
+  return undefined
 }
 
 // Cleans a freshly-loaded session in place by dropping any array/map element
@@ -57,7 +189,8 @@ export function dropUnloadableTracks(
 // tracks (matching the open/add paths, which refuse invalid configs), so
 // downstream code never has to defend against a track whose config access
 // throws. Returns the dropped nodes so the caller can tell the user which
-// tracks went missing.
+// tracks went missing. `reopen` may put a dropped array element back in a form
+// that loads.
 //
 // Dangling references in collections are NOT this function's job: every session
 // reference is a `types.safeReference`, whose onInvalidated removes the entry
@@ -67,6 +200,7 @@ export function filterSessionInPlace(
   node: IAnyStateTreeNode,
   type: IAnyType,
   dropped: DroppedSessionNode[] = [],
+  reopen?: ReopenTrack,
 ): DroppedSessionNode[] {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (node !== undefined) {
@@ -75,18 +209,32 @@ export function filterSessionInPlace(
       const childType = getChildType(node)
       const isRef = isReferenceType(childType)
       for (let i = 0; i < array.length;) {
+        const droppedBefore = dropped.length
         if (
-          !walkChildOrDrop(
+          walkChildOrDrop(
             () => array[i],
             () => (getSnapshot(array) as unknown[])[i],
             childType,
             isRef,
             dropped,
+            reopen,
           )
         ) {
-          array.splice(i, 1)
-        } else {
           i += 1
+        } else {
+          const snapshot = (getSnapshot(array) as unknown[])[i]
+          array.splice(i, 1)
+          const entry = dropped[droppedBefore]
+          if (entry && reopen) {
+            try {
+              dropped[droppedBefore] = {
+                ...entry,
+                ...reopen(array, i, snapshot),
+              }
+            } catch (e) {
+              console.error(e)
+            }
+          }
         }
       }
     } else if (isMapType(type)) {
@@ -101,6 +249,7 @@ export function filterSessionInPlace(
             childType,
             isRef,
             dropped,
+            reopen,
           )
         ) {
           map.delete(key)
@@ -123,7 +272,7 @@ export function filterSessionInPlace(
         void node.configuration
       } else {
         for (const [pname, ptype] of Object.entries(properties)) {
-          filterSessionInPlace(node[pname], ptype, dropped)
+          filterSessionInPlace(node[pname], ptype, dropped, reopen)
         }
       }
     }
@@ -141,6 +290,7 @@ function walkChildOrDrop(
   childType: IAnyType,
   isRef: boolean,
   dropped: DroppedSessionNode[],
+  reopen: ReopenTrack | undefined,
 ) {
   if (isRef) {
     return isValidReference(get)
@@ -148,7 +298,7 @@ function walkChildOrDrop(
   let child: IAnyStateTreeNode | undefined
   try {
     child = get()
-    filterSessionInPlace(child, childType, dropped)
+    filterSessionInPlace(child, childType, dropped, reopen)
     return true
   } catch (e) {
     console.error(e)
