@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom'
+
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { fireEvent, render, waitFor, within } from '@testing-library/react'
 
@@ -383,4 +385,45 @@ test('a multi-genome PIF is offered alongside the pairwise guess', () => {
   expect(
     getByText(/can also be read as.*Multi-genome indexed PAF adapter/),
   ).toBeTruthy()
+})
+
+const localFile = (name: string) => ({
+  locationType: 'BlobLocation' as const,
+  name,
+  blobId: `b-${name}`,
+})
+
+// with the index empty, the adapter's index pointed at the BAM itself and the
+// track failed with "Not a BAI file"
+test('a local BAM with no index asks for one and cannot be added', async () => {
+  const { model } = getSession()
+  const { getByTestId, findByText } = render(<AddTrackWidget model={model} />)
+  model.setTrackData(localFile('reads.bam'))
+  await findByText(/Required: choose the \.bai index/)
+  expect(getByTestId('addTrackButton')).toBeDisabled()
+
+  model.setIndexTrackData(localFile('reads.bam.bai'))
+  await waitFor(() => {
+    expect(getByTestId('addTrackButton')).toBeEnabled()
+  })
+})
+
+test('a local vcf.gz with no index is read whole, and can be added', async () => {
+  const { model } = getSession()
+  const { getByTestId, findByText } = render(<AddTrackWidget model={model} />)
+  model.setTrackData(localFile('calls.vcf.gz'))
+  await findByText(/the whole file is read at once/)
+  expect(model.trackAdapter?.type).toBe('VcfAdapter')
+  expect(getByTestId('addTrackButton')).toBeEnabled()
+})
+
+test('a URL BAM with no index can still be added', async () => {
+  const { model } = getSession()
+  const { getByTestId, findByText } = render(<AddTrackWidget model={model} />)
+  model.setTrackData({
+    uri: 'https://x.test/reads.bam',
+    locationType: 'UriLocation',
+  })
+  await findByText(/the index is looked for next to the main file/)
+  expect(getByTestId('addTrackButton')).toBeEnabled()
 })

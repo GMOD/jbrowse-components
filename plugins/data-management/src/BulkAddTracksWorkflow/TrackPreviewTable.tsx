@@ -34,7 +34,9 @@ function detectedTypeLabel(row: TrackConfRow) {
   }
   return row.status === 'needsSetup'
     ? `${row.trackType} (needs setup)`
-    : row.trackType
+    : row.status === 'needsIndex'
+      ? `${row.trackType} (needs index)`
+      : row.trackType
 }
 
 // error for a row nothing could read, warning for one that was read fine but

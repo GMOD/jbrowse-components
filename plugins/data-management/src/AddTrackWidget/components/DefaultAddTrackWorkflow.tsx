@@ -32,7 +32,8 @@ function isSubmittable(model: AddTrackModel) {
     adapterType &&
     adapterType !== UNKNOWN &&
     model.assembly &&
-    !model.mixinMissing
+    !model.mixinMissing &&
+    model.localIndexNeed?.kind !== 'required'
   )
 }
 

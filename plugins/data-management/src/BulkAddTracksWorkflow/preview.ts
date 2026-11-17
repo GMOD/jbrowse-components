@@ -12,6 +12,8 @@ export interface BulkPreview {
   skippedCount: number
   /** rows that need the single-track workflow to be configured at all */
   needsSetupCount: number
+  /** local files whose format cannot be read without an index */
+  needsIndexCount: number
   orphanIndexCount: number
   warnings: string[]
 }
@@ -41,6 +43,7 @@ export function summarizeBulkInput({
     rows,
     skippedCount: rows.filter(row => row.status === 'unknown').length,
     needsSetupCount: rows.filter(row => row.status === 'needsSetup').length,
+    needsIndexCount: rows.filter(row => row.status === 'needsIndex').length,
     orphanIndexCount: orphanIndexes.length,
     warnings: locationWarnings(locations),
   }

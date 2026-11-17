@@ -13,6 +13,7 @@ import {
   getFileName,
   guessAdapter,
   guessTrackType,
+  localIndexNeed,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
@@ -452,6 +453,20 @@ export default function f(pluginManager: PluginManager) {
        */
       get trackAdapterType() {
         return this.trackAdapter?.type
+      },
+      /**
+       * #getter
+       * What a file picked from this computer, with the index field empty, is
+       * missing: its index (`required`, and the track cannot be added), or
+       * nothing, because it is read whole (`wholeFile`). Only when the format
+       * table's adapter is the one guessed, so a plugin's own guess is left be.
+       */
+      get localIndexNeed() {
+        const { trackData, indexTrackData, adapterHint } = self
+        const need = trackData
+          ? localIndexNeed(trackData, indexTrackData, adapterHint)
+          : undefined
+        return need?.adapterType === this.trackAdapterType ? need : undefined
       },
       /**
        * #getter

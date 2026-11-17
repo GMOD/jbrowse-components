@@ -49,6 +49,11 @@ export interface FormatEntry {
    * `BedTabixAdapter` but drawn differently.
    */
   trackType?: string
+  /**
+   * The adapter that reads the whole file, for a browser-local pick with no
+   * index chosen: a Blob or FileHandle has no folder to find `<file>.tbi` in.
+   */
+  unindexed?: { adapterType: string; locField: string }
 }
 
 /**
@@ -102,6 +107,7 @@ export const formats: FormatEntry[] = [
       suffix: '.tbi',
       indexType: 'TBI',
     },
+    unindexed: { adapterType: 'Gff3Adapter', locField: 'gffLocation' },
   },
   {
     regex: /\.gff3?$/i,
@@ -120,6 +126,7 @@ export const formats: FormatEntry[] = [
       suffix: '.tbi',
       indexType: 'TBI',
     },
+    unindexed: { adapterType: 'GtfAdapter', locField: 'gtfLocation' },
   },
   {
     regex: /\.gtf$/i,
@@ -138,6 +145,7 @@ export const formats: FormatEntry[] = [
       suffix: '.tbi',
       indexType: 'TBI',
     },
+    unindexed: { adapterType: 'VcfAdapter', locField: 'vcfLocation' },
   },
   { regex: /\.vcf\.idx$/i, spec: { kind: 'unsupported' } },
   {
@@ -157,6 +165,7 @@ export const formats: FormatEntry[] = [
       suffix: '.tbi',
       indexType: 'TBI',
     },
+    unindexed: { adapterType: 'PlinkLDAdapter', locField: 'ldLocation' },
   },
   {
     regex: /\.(ld|vcor)$/i,
@@ -204,6 +213,7 @@ export const formats: FormatEntry[] = [
       suffix: '.tbi',
       indexType: 'TBI',
     },
+    unindexed: { adapterType: 'BedAdapter', locField: 'bedLocation' },
   },
   {
     // `.bedGraph` is UCSC's own spelling and what bedGraphToBigWig is pointed
@@ -216,6 +226,7 @@ export const formats: FormatEntry[] = [
       suffix: '.tbi',
       indexType: 'TBI',
     },
+    unindexed: { adapterType: 'BedGraphAdapter', locField: 'bedGraphLocation' },
   },
   {
     regex: /\.bedgraph$/i,
@@ -234,6 +245,7 @@ export const formats: FormatEntry[] = [
       suffix: '.tbi',
       indexType: 'TBI',
     },
+    unindexed: { adapterType: 'BedGraphAdapter', locField: 'bedGraphLocation' },
   },
   {
     regex: /\.bg$/i,

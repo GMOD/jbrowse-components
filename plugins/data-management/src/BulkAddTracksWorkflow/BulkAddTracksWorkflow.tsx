@@ -46,8 +46,14 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const bulk = bulkInput(model)
   const { stripExtensions } = bulk.form
 
-  const { rows, skippedCount, needsSetupCount, orphanIndexCount, warnings } =
-    summarizeBulkInput({ locations, model, assembly })
+  const {
+    rows,
+    skippedCount,
+    needsSetupCount,
+    needsIndexCount,
+    orphanIndexCount,
+    warnings,
+  } = summarizeBulkInput({ locations, model, assembly })
 
   // Resolved once over every row, then filtered: collisions must be counted
   // across the whole list or the preview and the added names could disagree.
@@ -121,6 +127,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
         warnings={warnings}
         skippedCount={skippedCount}
         needsSetupCount={needsSetupCount}
+        needsIndexCount={needsIndexCount}
       />
 
       <SubmitTracksButton model={model} okNamed={okNamed} assembly={assembly} />

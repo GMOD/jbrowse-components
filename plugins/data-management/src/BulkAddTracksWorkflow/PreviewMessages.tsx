@@ -7,11 +7,13 @@ const PreviewMessages = observer(function PreviewMessages({
   warnings,
   skippedCount,
   needsSetupCount,
+  needsIndexCount,
 }: {
   orphanIndexCount: number
   warnings: string[]
   skippedCount: number
   needsSetupCount: number
+  needsIndexCount: number
 }) {
   return (
     <>
@@ -39,6 +41,13 @@ const PreviewMessages = observer(function PreviewMessages({
           {pluralize(needsSetupCount, 'needs', 'need')} more than one assembly
           (a synteny file) and will not be added. Add{' '}
           {pluralize(needsSetupCount, 'it', 'them')} with the single-track form
+        </Typography>
+      ) : null}
+      {needsIndexCount > 0 ? (
+        <Typography variant="body2" color="warning">
+          {needsIndexCount} {pluralize(needsIndexCount, 'row')}{' '}
+          {pluralize(needsIndexCount, 'needs its', 'need their')} index file and
+          will not be added. Drop the index in alongside its data file
         </Typography>
       ) : null}
     </>

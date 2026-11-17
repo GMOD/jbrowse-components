@@ -4,6 +4,7 @@ import {
   getFileName,
   guessAdapter,
   guessTrackType,
+  localIndexNeed,
 } from '@jbrowse/core/util/tracks'
 
 import { locationId } from './pairLocations.ts'
@@ -17,9 +18,10 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * cannot: a synteny file needs its assembly pair, and a config built without one
  * is added to the session and then never offered in the view it was made for.
  * Guessing gets no closer, so the row is shown and excluded rather than added
- * broken.
+ * broken. `needsIndex` is a file picked from this computer whose format cannot
+ * be read without the index it was not paired with.
  */
-export type TrackStatus = 'ok' | 'unknown' | 'needsSetup'
+export type TrackStatus = 'ok' | 'unknown' | 'needsSetup' | 'needsIndex'
 
 export interface TrackConfRow {
   id: string
@@ -45,14 +47,18 @@ export interface TrackConfRow {
 
 function statusOf(
   adapterType: string,
+  pair: LocationPair,
   pluginManager: PluginManager,
 ): TrackStatus {
   if (adapterType === UNKNOWN) {
     return 'unknown'
   }
+  const need = localIndexNeed(pair.file, pair.index)
   return adapterNeedsAddTrackComponent(pluginManager, adapterType)
     ? 'needsSetup'
-    : 'ok'
+    : need?.kind === 'required' && need.adapterType === adapterType
+      ? 'needsIndex'
+      : 'ok'
 }
 
 /**
@@ -88,7 +94,7 @@ export function buildTrackConfigs({
       adapterType,
       indexName: pair.index ? getFileName(pair.index) : undefined,
       indexId: pair.index ? locationId(pair.index) : undefined,
-      status: statusOf(adapterType, pluginManager),
+      status: statusOf(adapterType, pair, pluginManager),
     }
   })
 }

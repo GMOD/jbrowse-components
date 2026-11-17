@@ -9,7 +9,7 @@ export { getFileName } from './getFileName.ts'
 // it. `fetchContext.ts` takes it from mstUtils instead, which is what keeps the
 // configuration schemas this file pulls in out of the fetch harness's graph.
 export { getRpcSessionId } from './parentWalk.ts'
-export { makeIndex } from './formatGuessers.ts'
+export { localIndexNeed, makeIndex } from './formatGuessers.ts'
 export { pickDisplayForView } from './displayChoice.ts'
 export {
   adapterAssemblyNames,

@@ -38,3 +38,17 @@ test('flags an unrecognized extension as unknown', () => {
   const rows = build([uri('/mystery.qqq')])
   expect(rows[0]!.status).toBe('unknown')
 })
+
+function localFile(name: string): FileLocation {
+  return { name, blobId: `b-${name}`, locationType: 'BlobLocation' }
+}
+
+test('a local bam dropped without its index is held back, a local vcf.gz is read whole', () => {
+  const [bam, vcf] = build([localFile('a.bam'), localFile('v.vcf.gz')])
+  expect(bam!.status).toBe('needsIndex')
+  expect(vcf!.adapterType).toBe('VcfAdapter')
+  expect(vcf!.status).toBe('ok')
+  expect(build([localFile('a.bam'), localFile('a.bam.bai')])[0]!.status).toBe(
+    'ok',
+  )
+})

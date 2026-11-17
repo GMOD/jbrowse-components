@@ -1,5 +1,9 @@
 import { FileSelector } from '@jbrowse/core/ui'
-import { getEnv } from '@jbrowse/core/util'
+import {
+  getEnv,
+  isBlobLocation,
+  isFileHandleLocation,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -12,6 +16,19 @@ const useStyles = makeStyles()(theme => ({
     gap: theme.spacing(2),
   },
 }))
+
+function indexDescription(model: AddTrackModel) {
+  const { detectedIndexName, localIndexNeed, trackData } = model
+  return detectedIndexName
+    ? `Found "${detectedIndexName}" next to the main file and filled it in. Replace it to use a different index.`
+    : localIndexNeed?.kind === 'required'
+      ? `Required: choose the ${localIndexNeed.suffix} index for this file. JBrowse cannot look next to a file picked from this computer.`
+      : localIndexNeed?.kind === 'wholeFile'
+        ? 'Optional. Without one, the whole file is read at once, which suits a small file.'
+        : isBlobLocation(trackData) || isFileHandleLocation(trackData)
+          ? 'Optional.'
+          : 'Optional. Left empty, the index is looked for next to the main file.'
+}
 
 const TrackSourceSelect = observer(function TrackSourceSelect({
   model,
@@ -36,11 +53,7 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
       <div>
         <FileSelector
           name="Index file"
-          description={
-            model.detectedIndexName
-              ? `Found "${model.detectedIndexName}" next to the main file and filled it in. Replace it to use a different index.`
-              : 'Optional. Left empty, the index is looked for next to the main file.'
-          }
+          description={indexDescription(model)}
           location={model.indexTrackData}
           setLocation={loc => {
             model.setIndexTrackData(loc)
