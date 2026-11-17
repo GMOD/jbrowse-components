@@ -49,12 +49,14 @@ container has 3 tracks.
 
 ## Candidate answers
 
-- **One hierarchy, drawn calmly.** Top-level groups stay bars; every category
-  below draws like a track row (▸, name, count); a category's checkbox turns on
-  its default members, or all when none is marked. A UCSC composite is then
-  just a category, jb2hubs nests instead of prefixing, and folders, set rows
-  and subcategory bars become one thing. Changes the look of every nested
-  category in every config.
+- **One hierarchy, drawn calmly** (prototyped, rejected by Colin 2026-11-17).
+  Categories below the top level drew as 22 px rows (▸, name, count, no
+  checkbox), names dropped a repeated set prefix in the tree, and jb2hubs
+  nested each UCSC set as a category, closed except NCBI RefSeq. hg38 Genes
+  went 63 → 28 rows, Regulation 276 → 20, the whole of hg38 799 → 122. Colin,
+  after seeing it on hg38 Genes and volvox's BigWig category: "no i do not
+  like this". A variant with no bars at any depth was calmest on hg38 but lost
+  its headings on fully expanded configs.
 - **No hierarchy below groups.** Every composite that is one measurement over
   samples becomes a multi-row track (Fiber-seq: ADR-270, hg38 799 → 558; SGDP
   Copy Number and T2T Encode on hs1 next). Mixed sets such as NCBI RefSeq's
