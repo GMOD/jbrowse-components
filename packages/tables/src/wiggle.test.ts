@@ -281,6 +281,41 @@ test('a multi-wiggle stacks its sources in the order rows.sort gives', async () 
   })
   expect(new Set(shared.marks.row)).toEqual(new Set([0]))
   expect(new Set(shared.marks.source).size).toBe(3)
+  expect(t.rowsField).toBe('source')
+  expect(t.rows).toEqual({ index: [0, 1, 2], name: domain, label: domain })
+  expect(shared.rowsField).toBe('')
+  expect(shared.rows).toEqual({ index: [0], name: [''], label: [''] })
+})
+
+// Grouped rows: each drawn row is a value of the subtracks' group, its
+// subtracks overlaid in it, so marks.row is the value's row, not the
+// subtrack's index, and rows names what each index draws.
+test('a multi-wiggle on a grouping field names its rows, each mark in its value’s row', async () => {
+  const tsv = path.join(mkdtempSync(path.join(tmpdir(), 'samples-')), 's.tsv')
+  writeFileSync(
+    tsv,
+    'name\tgroup\nposneg_rw1\ta\nposneg_rw2\tb\nposneg_rw3\ta\n',
+  )
+  const t = await engine.wiggle({
+    ...MULTI_BIGWIG,
+    adapterConfig: {
+      ...MULTI_BIGWIG.adapterConfig,
+      samplesTsvLocation: { uri: pathToFileURL(tsv).href },
+    },
+    display: { rows: { field: 'group', labels: { b: 'Group B' } } },
+  })
+  expect(t.rowLayout).toBe(true)
+  expect(t.rowsField).toBe('group')
+  expect(t.rows).toEqual({
+    index: [0, 1],
+    name: ['a', 'b'],
+    label: ['a', 'Group B'],
+  })
+  const rowsOf = (name: string) =>
+    new Set(t.marks.row.filter((_, i) => t.marks.source[i] === name))
+  expect(rowsOf('posneg_rw1')).toEqual(new Set([0]))
+  expect(rowsOf('posneg_rw2')).toEqual(new Set([1]))
+  expect(rowsOf('posneg_rw3')).toEqual(new Set([0]))
 })
 
 test('a multi-wiggle stacks its sources in the order a supplied rows.tree lists', async () => {

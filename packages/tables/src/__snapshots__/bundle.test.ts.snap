@@ -1157,6 +1157,12 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "refName": "array",
     },
     "rowLayout": "boolean",
+    "rows": {
+      "index": "array",
+      "label": "array",
+      "name": "array",
+    },
+    "rowsField": "string",
     "rules": {
       "color": "array",
       "label": "array",

@@ -64,7 +64,9 @@ display as an attribute on each source row.
   quantitative display's `rows.field`; a field no subtrack carries draws every
   subtrack in one row, and the display's notices name it.
 - The tables export's `marks.row` is the row a mark is drawn in, a value's row
-  under a grouping field.
+  under a grouping field; `rows` (`index`, `name`, `label`) names each drawn
+  row and `rowsField` the field laying them out, so a host such as ggjbrowse
+  counts and labels rows from `rows` rather than `sources`.
 - The color key names each subtrack role once (`roleKeyScale`): a subtrack's
   label with its row's value taken off its start or end, the subtracks sharing
   a role and a color merged, so a 41-cell-line haplotype set keys Hap1 and

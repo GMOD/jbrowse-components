@@ -148,7 +148,10 @@ async function fetchedWiggleHost(
  * its score passes the domain's top and -1 its bottom, where the display
  * paints `clipStrip` (its `color`, `px` tall) across the row's edge, else 0,
  * and its `row`, a source's own, its value's under a grouping `rows.field`,
- * or 0 in one shared box;
+ * or 0 in one shared box; `rows`, the rows drawn, top to bottom, each
+ * `index` as `marks.row` names it, its `name` (a source's, a value of the
+ * grouping field, or empty for the one shared box) and the `label` the
+ * display draws beside it; `rowsField`, the `rows.field` laying them out;
  * `scoreScale`, the score axis the
  * display autoscales to under `encoding.y`, its `domain`, `type` and
  * `symlogConstant`; `rules`, the reference lines it draws, none where it
@@ -183,6 +186,8 @@ export async function wiggleTables(
     origin,
     summaryField,
     rowLayout,
+    rowsField,
+    drawnRows,
     height,
   } = runInAction(() => {
     const { rampLut, rampMid } = model.wiggleColor
@@ -210,6 +215,8 @@ export async function wiggleTables(
       origin: model.origin,
       summaryField: model.summaryField,
       rowLayout: model.isRowLayout,
+      rowsField: model.rowsField,
+      drawnRows: model.wiggleRows.map(({ row }) => row),
       height: model.height,
     }
   })
@@ -374,6 +381,12 @@ export async function wiggleTables(
     interpolate,
     origin,
     rowLayout,
+    rowsField,
+    rows: {
+      index: drawnRows.map((_, i) => i),
+      name: drawnRows.map(row => row.name),
+      label: drawnRows.map(row => row.label ?? row.name),
+    },
     height,
     config: fullConfSnapshot(conf),
     warnings: data.warnings ?? [],
