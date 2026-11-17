@@ -20,8 +20,9 @@ test('no rows is the default, and every source shares one plot', () => {
   expect(readConfObject(configSchema.create(base), ['rows', 'field'])).toBe('')
 })
 
-test('rows on any other field are refused by the slot itself', () => {
-  expect(() => configSchema.create({ ...base, rows: 'group' })).toThrow(/group/)
+test('rows on a subtrack attribute reads as a row per value', () => {
+  const config = configSchema.create({ ...base, rows: { field: 'group' } })
+  expect(readConfObject(config, ['rows', 'field'])).toBe('group')
 })
 
 test('the arrangement rides on rows, and there is no top-level `sort` slot', () => {

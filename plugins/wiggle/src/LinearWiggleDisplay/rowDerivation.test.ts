@@ -333,7 +333,11 @@ test('overlay, density: a dialog edit is kept and paints no strip', async () => 
     color: { field: 'name' },
     colors: { Grain1: '#00f' },
   })
-  expect(display.markSources[0]).toEqual({ name: 'Grain1', color: undefined })
+  expect(display.markSources[0]).toEqual({
+    name: 'Grain1',
+    color: undefined,
+    row: 0,
+  })
   expect(pairedColorsOf(display.rowColorSetting.scale).get('Grain1')).toBe(
     '#00f',
   )
@@ -373,7 +377,7 @@ test('rows: the plot box writes the members it names', async () => {
   expect(display.rowTree).toBe('((Grain1,Grain2),(Grain3,Grain4));')
   expect(display.hierarchy).toBeDefined()
 
-  expect(() => display.plotProblems({ rows: { field: 'group' } })).toThrow()
+  expect(() => display.plotProblems({ rows: { field: 'group' } })).not.toThrow()
 
   display.applyPlot({ rows: null })
   expect(display.isOverlay).toBe(true)
