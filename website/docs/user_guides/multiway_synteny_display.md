@@ -108,6 +108,9 @@ same items.
 - **Open ⟨genome⟩ at the matching region** opens that genome in a separate
   linear genome view, with its gene track.
 - **Re-anchor on ⟨genome⟩** turns the track around so that genome is the anchor.
+- **Color...** picks a color for the lane, drawn as a bar beside its name, over
+  any color the data source gives it; **Clear lane color** returns to the
+  source's. The display config's `rows.colors` sets these by assembly name.
 
 <Figure caption="The lane header menu." src="/img/multiway_synteny/lane_header_menu.png" />
 

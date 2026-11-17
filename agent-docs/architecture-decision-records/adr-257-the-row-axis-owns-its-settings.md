@@ -144,7 +144,7 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   it is. "Reset row order" returns the pins with the arrangement.
 - `colors` is a member of `RowArrangement`, beside `color`, so the four row
   displays declare it and the multi-way lanes, whose `rows` is `LaneRows`,
-  do not.
+  do not. Amended 2026-11-17: `LaneRows` declares `colors` too (below).
 
 ### The write rule
 
@@ -223,6 +223,32 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
 | Resetting the whole `filter` and `groups` on a field change | an attribute predicate is valid on the new rows, and a reset `groups` left `facet: 'group'` and `rows.color: 'group'` reading nothing |
 | Stamping the picked field beside a keyed member write | the display stores the field it picks (`applyDefaultPlot`), so no state needed it, and it wiped a launch's sort when the scan picked the field |
 | Deprecated lifts for the beta-only keys | beta configs and share links may break (Colin, 2026-11-02); the v4 lifts (`showTree`, `showSidebarLabels`, `colorBy`, `renderingMode`, `liftRetiredRowState`) are retargeted |
+
+## Amended 2026-11-17: a lane takes a color as a row does
+
+A pangenome graph source knows each haplotype's color from its samples sheet
+and draws the haplotypes' threads through a graph in it; the lanes beside the
+graph carried no color, so a reader could not match a lane to its thread.
+
+- `LaneRows` declares `colors`, the same `stringMap` as `RowArrangement`'s, by
+  lane assembly name, the anchor's included. It stays closed, and takes no
+  `color`: lanes carry no attribute to map.
+- A source declares a lane's own color in its header: `color` on a `lanes`
+  entry (`DeclaredLane`), and `anchorColor` for the anchor, which `lanes`
+  leaves out. `MultiPairwiseSyntenyAdapter`'s `lanes` config passes `color`
+  through with `label` and `group`.
+- A lane takes `rows.colors[lane]`, else its source's color, else none, the
+  row displays' rule without the palette (`laneColorOf`): position and label
+  already name a lane, as they name a stacked row.
+- The color draws as ADR-207's 4 px bar beside the lane's label, in both
+  `labels.lanes.placement`s and the SVG export, and nowhere else: the ribbons
+  and genes keep their own color channels.
+- Each lane menu, the anchor's included, has Color..., which writes the pin
+  through the display's `SolidColorDialog`, and Clear lane color while a pin
+  exists. A pin of `''` draws no bar over a source's color.
+- No "Lane colors" switch to hide a source's colors: the row displays' None
+  keeps a file's own colors too, so a switch would need a member the row
+  grammar lacks.
 
 ## Parked
 

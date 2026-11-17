@@ -161,6 +161,11 @@ cost is linear in lanes.
 - **Lane names**: `rows.labels` names a lane by any spelling of its assembly
   (`rowLabels`); a lane it leaves out shows its assembly's display name, or the
   label a source's header declares (`laneLabel`).
+- **Lane colors**: a lane's 4 px bar beside its label takes `rows.colors`
+  by any spelling of its assembly, else the color its source's header
+  declares (`lanes[].color`, `anchorColor` for the anchor), else draws none
+  (`laneColorOf`, ADR-257's 2026-11-17 amendment). It draws in both label
+  placements and the SVG export; a lane menu's Color... writes the pin.
 - **The color key** floats in the gutter under the anchor lane (`legendTop`),
   since at the top corner it hid the anchor's genes. Where that gutter is shorter
   than the key it covers the second lane's changes chip instead; its close button
