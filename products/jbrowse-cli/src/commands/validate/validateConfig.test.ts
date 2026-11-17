@@ -56,6 +56,48 @@ describe('validateConfig', () => {
     expect(validateConfig(baseConfig()).problems).toEqual([])
   })
 
+  // A row per subadapter `group`, its haplotypes overlaid, as jb2hubs writes
+  // the Fiber-seq Compendium.
+  it('accepts a quantitative display with rows on a subtrack attribute', () => {
+    const base = baseConfig()
+    const bigWig = (uri: string, name: string, group: string) => ({
+      type: 'BigWigAdapter',
+      uri,
+      name,
+      group,
+    })
+    const config = {
+      ...base,
+      tracks: [
+        {
+          type: 'MultiQuantitativeTrack',
+          trackId: 'fiberseq-hap',
+          name: 'Fiber-seq Compendium - Hap1/2',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'MultiWiggleAdapter',
+            subadapters: [
+              bigWig('a.bw', 'GM12878 Hap1', 'GM12878'),
+              bigWig('b.bw', 'GM12878 Hap2', 'GM12878'),
+            ],
+          },
+          displays: [
+            {
+              type: 'LinearWiggleDisplay',
+              displayId: 'fiberseq-hap-LinearWiggleDisplay',
+              rows: { field: 'group' },
+            },
+          ],
+        },
+      ],
+      defaultSession: {
+        ...base.defaultSession,
+        views: [{ ...base.defaultSession.views[0], tracks: ['fiberseq-hap'] }],
+      },
+    }
+    expect(validateConfig(config).problems).toEqual([])
+  })
+
   it('warns about a track table column no track carries, and passes one that a track does', () => {
     const base = baseConfig()
     const config = {

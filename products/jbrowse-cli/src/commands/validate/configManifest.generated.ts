@@ -7779,7 +7779,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "QuantitativeRowsField"
+              "type": "string"
             },
             {
               "name": "filter",

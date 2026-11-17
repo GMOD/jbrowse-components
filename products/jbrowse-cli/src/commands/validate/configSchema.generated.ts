@@ -14085,10 +14085,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "",
-          "enum": [
-            "",
-            "source"
-          ],
+          "$ref": "#/$defs/PlainString",
           "type": "string"
         },
         {
@@ -14197,16 +14194,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "source for one row per subtrack, or empty for one plot every source shares.",
+              "description": "source for one row per subtrack, a subtrack attribute such as group for one row per value with its subtracks overlaid, or empty for one plot every source shares.",
               "default": "",
               "if": {
                 "type": "null"
               },
               "else": {
-                "enum": [
-                  "",
-                  "source"
-                ]
+                "$ref": "#/$defs/PlainString"
               }
             },
             "filter": {
