@@ -94,10 +94,8 @@ function toEntry(row: IndexRow): Entry | undefined {
     : undefined
 }
 
-// The same fields the group-scoped search covers, so a query does not quietly
-// mean something different in the two modes: accession, common and scientific
-// name, assembly name, assembly status, and the alias accession. The group
-// itself is deliberately not searched — it is a filter, and its column shows a
+// Accession, common and scientific name, assembly name, assembly status, and
+// the alias accession. The group itself is not searched: its column shows a
 // title the index does not carry.
 function haystack(row: IndexRow) {
   return `${row[0]} ${row[1]} ${row[2]} ${row[3]} ${row[4]} ${row[10]}`

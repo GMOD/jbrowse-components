@@ -30,14 +30,12 @@ const GenomesTableToolbar = observer(function GenomesTableToolbar({
   activeTypeOption,
   categories,
   onLaunchSelected,
-  onResetFavorites,
   onMoreInfo,
 }: {
   state: GenomesTableState
   activeTypeOption: string
   categories?: Category[]
   onLaunchSelected: () => void
-  onResetFavorites: () => void
   onMoreInfo: () => void
 }) {
   const { classes } = useStyles()
@@ -78,7 +76,6 @@ const GenomesTableToolbar = observer(function GenomesTableToolbar({
           getTableMenuItems({
             state,
             typeOption: activeTypeOption,
-            onResetFavorites,
           })
         }
       >

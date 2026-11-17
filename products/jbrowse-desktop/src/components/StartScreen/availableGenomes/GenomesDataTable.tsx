@@ -1,13 +1,9 @@
 import { useRef, useState } from 'react'
 
-import { ActionLink } from '@jbrowse/core/ui'
-import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { DialogContentText } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import NetworkErrorMessage from '../NetworkErrorMessage.tsx'
-import defaultFavs from '../defaultFavs.ts'
 import GenomesTable from './GenomesTable.tsx'
 import GenomesTableToolbar from './GenomesTableToolbar.tsx'
 import MoreInfoDialog from './MoreInfoDialog.tsx'
@@ -55,12 +51,12 @@ const GenomesDataTable = observer(function GenomesDataTable({
   launch: LaunchCallback
 }) {
   const { classes } = useStyles()
-  const [dialog, setDialog] = useState<'moreInfo' | 'resetFavorites'>()
+  const [dialog, setDialog] = useState<'moreInfo'>()
   const state = useGenomesTableState()
   const {
     typeOption,
     searchQuery,
-    showOnlyFavs,
+    hasSearched,
     filterOption,
     sorting,
     toggleSort,
@@ -72,8 +68,6 @@ const GenomesDataTable = observer(function GenomesDataTable({
     setPageIndex,
     pageSize,
     setPageSize,
-    allGroups,
-    setAllGroups,
   } = state
 
   const tableRef = useRef<HTMLDivElement>(null)
@@ -105,14 +99,12 @@ const GenomesDataTable = observer(function GenomesDataTable({
     url,
     categoriesLoading,
     searchQuery,
+    hasSearched,
     // The remembered choice is only applied where its fields exist, so a filter
     // whose menu item is not on screen cannot be silently emptying the table.
-    filterOption: ncbiFilterApplies(activeTypeOption, allGroups, searchQuery)
+    filterOption: ncbiFilterApplies(activeTypeOption, searchQuery)
       ? filterOption
       : 'all',
-    showOnlyFavs,
-    favoriteIds: favs,
-    allGroups,
   })
 
   // categoriesError leaves url undefined, which would otherwise hang on an
@@ -154,9 +146,6 @@ const GenomesDataTable = observer(function GenomesDataTable({
           )
           onClose()
         }}
-        onResetFavorites={() => {
-          setDialog('resetFavorites')
-        }}
         onMoreInfo={() => {
           setDialog('moreInfo')
         }}
@@ -176,24 +165,7 @@ const GenomesDataTable = observer(function GenomesDataTable({
             setSelected={setSelected}
             sorting={sorting}
             toggleSort={toggleSort}
-            emptyMessage={
-              // offer the wider search exactly where it runs out, since the
-              // selected group is 1 of 19 and nothing else says so
-              searchQuery.trim() && !results.isGlobal ? (
-                <>
-                  No matches in {activeCategory?.title ?? 'this group'} —{' '}
-                  <ActionLink
-                    onClick={() => {
-                      setAllGroups(true)
-                    }}
-                  >
-                    search all groups
-                  </ActionLink>
-                </>
-              ) : (
-                'No genomes match the current search and filters'
-              )
-            }
+            emptyMessage="No genomes match the current search and filters"
           />
 
           <TablePagination
@@ -213,24 +185,6 @@ const GenomesDataTable = observer(function GenomesDataTable({
             setDialog(undefined)
           }}
         />
-      ) : null}
-      {dialog === 'resetFavorites' ? (
-        <ConfirmDialog
-          open
-          title="Reset favorites list to defaults?"
-          onSubmit={() => {
-            setFavorites(defaultFavs)
-            setDialog(undefined)
-          }}
-          onCancel={() => {
-            setDialog(undefined)
-          }}
-        >
-          <DialogContentText>
-            Replaces your list of {favorites.length} with the three JBrowse
-            defaults (human hs1, hg38 and hg19). This cannot be undone.
-          </DialogContentText>
-        </ConfirmDialog>
       ) : null}
     </div>
   )

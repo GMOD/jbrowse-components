@@ -3,13 +3,6 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { useGenomesData } from './useGenomesData.ts'
 import { useGlobalSearch } from './useGlobalSearch.ts'
 
-const params = {
-  searchQuery: '',
-  filterOption: 'all' as const,
-  showOnlyFavs: false,
-  favoriteIds: new Set<string>(),
-}
-
 function stubFetch() {
   const signals: (AbortSignal | undefined | null)[] = []
   jest.spyOn(globalThis, 'fetch').mockImplementation((_url, init) => {
@@ -26,7 +19,7 @@ afterEach(() => {
 test('useGenomesData aborts its request on unmount', async () => {
   const signals = stubFetch()
   const { unmount } = renderHook(() =>
-    useGenomesData({ ...params, url: 'https://example.com/a.json' }),
+    useGenomesData({ filterOption: 'all', url: 'https://example.com/a.json' }),
   )
   await waitFor(() => {
     expect(signals[0]).toBeInstanceOf(AbortSignal)

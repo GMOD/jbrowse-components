@@ -126,36 +126,13 @@ test('launching passes the config url and closes the dialog', async () => {
   expect(onClose).toHaveBeenCalled()
 })
 
-test('a search that matches nothing says so instead of showing a blank table', async () => {
-  setup()
-  const search = await screen.findByPlaceholderText('Search genomes...')
-
-  fireEvent.change(search, { target: { value: 'mouse' } })
-  await waitFor(() => {
-    expect(screen.queryByText('Dec. 2013 (GRCh38/hg38)')).toBeNull()
-  })
-  expect(screen.getByText('Jun. 2020 (GRCm39/mm39)')).toBeTruthy()
-  expect(
-    screen.getByText('Showing 1–1 of 1 matching (2 in this group)'),
-  ).toBeTruthy()
-
-  fireEvent.change(search, { target: { value: 'no such genome' } })
-  expect(
-    await screen.findByText(/No matches in UCSC Main Genomes/),
-  ).toBeTruthy()
-  expect(screen.getByText('Showing 0 matching (2 in this group)')).toBeTruthy()
-})
-
-test('running out of matches in a group offers the search across all of them', async () => {
+test('a search covers every group, and the index waits for the first query', async () => {
   const { launch } = setup()
   const search = await screen.findByPlaceholderText('Search genomes...')
-  fireEvent.change(search, { target: { value: 'panda' } })
-
-  // the 7.5MB index is not fetched until the user asks for the wider search
-  await screen.findByText(/No matches in UCSC Main Genomes/)
+  // the 7.5MB index is not fetched for browsing
   expect(fetched).not.toContain(SEARCH_INDEX_URL)
 
-  fireEvent.click(screen.getByText('search all groups'))
+  fireEvent.change(search, { target: { value: 'panda' } })
 
   // a hit from a group other than the selected one, labelled with its group
   expect(await screen.findByText('Ailuropoda melanoleuca')).toBeTruthy()
@@ -172,11 +149,22 @@ test('running out of matches in a group offers the search across all of them', a
   ])
 })
 
+test('a search that matches nothing says so instead of showing a blank table', async () => {
+  setup()
+  const search = await screen.findByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'no such genome' } })
+  expect(
+    await screen.findByText('No genomes match the current search and filters'),
+  ).toBeTruthy()
+  expect(
+    screen.getByText('Showing 0 matching (2 across all groups)'),
+  ).toBeTruthy()
+})
+
 test('clearing the query returns to browsing the selected group', async () => {
   setup()
   const search = await screen.findByPlaceholderText('Search genomes...')
   fireEvent.change(search, { target: { value: 'panda' } })
-  fireEvent.click(await screen.findByText('search all groups'))
   expect(await screen.findByText('Ailuropoda melanoleuca')).toBeTruthy()
 
   fireEvent.change(search, { target: { value: '' } })
@@ -184,50 +172,14 @@ test('clearing the query returns to browsing the selected group', async () => {
   expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
 })
 
-// searchAllGroups only searches, so the menu's filters have to be applied to
-// its hits separately — they used to be offered but silently ignored here
-test('the favorites filter applies to cross-group hits, not just the group', async () => {
-  setup([
-    {
-      id: 'GCF_000004335.4',
-      shortName: 'panda',
-      commonName: 'giant panda',
-      description: 'giant panda',
-      jbrowseConfig: 'https://example.com/panda/config.json',
-    },
-  ])
-  const search = await screen.findByPlaceholderText('Search genomes...')
-  fireEvent.change(search, { target: { value: 'a' } })
-
-  // the menu stays open across a settings row (it's a checkbox), so both
-  // toggles are clicked from the one opening
-  const settings = await screen.findByRole('button', { name: 'Table settings' })
-  fireEvent.click(settings)
-  fireEvent.click(await screen.findByText('Search all groups'))
-
-  // both index rows match 'a', and only one of them is a favorite
-  expect(await screen.findByText('Ailuropoda melanoleuca')).toBeTruthy()
-  expect(screen.getByText('Homo sapiens')).toBeTruthy()
-
-  fireEvent.click(await screen.findByText('Show favorites only'))
-
-  await waitFor(() => {
-    expect(screen.queryByText('Homo sapiens')).toBeNull()
-  })
-  expect(screen.getByText('Ailuropoda melanoleuca')).toBeTruthy()
-})
-
 // a selection is keyed by accession and deliberately outlives the query that
 // surfaced each row, so launching has to resolve it against more than the hits
 // currently on screen
-test('a cross-group selection built across two searches launches both', async () => {
+test('a selection built across two searches launches both', async () => {
   const { launch } = setup()
   const settings = await screen.findByRole('button', { name: 'Table settings' })
-
-  // both toggles clear the selection, so they have to come before it
   fireEvent.click(settings)
   fireEvent.click(await screen.findByText('Enable multiple selection'))
-  fireEvent.click(await screen.findByText('Search all groups'))
   // a settings row leaves the menu up, and the menu is a modal — everything
   // behind it is aria-hidden — so dismiss it before querying the table
   fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
@@ -240,7 +192,6 @@ test('a cross-group selection built across two searches launches both', async ()
 
   fireEvent.change(search, { target: { value: 'homo' } })
   await screen.findByText('Homo sapiens')
-  // [0] is the header select-all; [1] is the single hit's own checkbox
   fireEvent.click(screen.getAllByRole('checkbox')[1]!)
 
   fireEvent.click(screen.getByText('Open 2 selected'))
@@ -250,12 +201,11 @@ test('a cross-group selection built across two searches launches both', async ()
   ])
 })
 
-test('a cross-group pick still launches after the query is cleared', async () => {
+test('a pick from another group still launches after the query is cleared', async () => {
   const { launch } = setup()
   const settings = await screen.findByRole('button', { name: 'Table settings' })
   fireEvent.click(settings)
   fireEvent.click(await screen.findByText('Enable multiple selection'))
-  fireEvent.click(await screen.findByText('Search all groups'))
   fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
 
   const search = screen.getByPlaceholderText('Search genomes...')
@@ -277,9 +227,6 @@ test('select-all adds the rows on screen without dropping the rest', async () =>
   const settings = await screen.findByRole('button', { name: 'Table settings' })
   fireEvent.click(settings)
   fireEvent.click(await screen.findByText('Enable multiple selection'))
-  fireEvent.click(await screen.findByText('Search all groups'))
-  // a settings row leaves the menu up, and the menu is a modal — everything
-  // behind it is aria-hidden — so dismiss it before querying the table
   fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
 
   const search = screen.getByPlaceholderText('Search genomes...')
@@ -299,33 +246,32 @@ test('select-all adds the rows on screen without dropping the rest', async () =>
   expect(screen.getByText('Open 1 selected')).toBeTruthy()
 })
 
-// the index is only what a cross-group *search* reads, so failing to load it
-// must not take down the group the user is browsing
+// the index is only what a search reads, so failing to load it must not take
+// down the group the user is browsing
 test('a failed search index does not block browsing the selected group', async () => {
   failing.add(SEARCH_INDEX_URL)
   setup()
-  const settings = await screen.findByRole('button', { name: 'Table settings' })
-  fireEvent.click(settings)
-  fireEvent.click(await screen.findByText('Search all groups'))
-
+  const search = await screen.findByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'panda' } })
   await waitFor(() => {
     expect(fetched).toContain(SEARCH_INDEX_URL)
   })
-  expect(screen.getByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
+
+  fireEvent.change(search, { target: { value: '' } })
+  expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
   expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
 })
 
-// The NCBI status filter is only offered where its fields exist, and it used to
-// go on being applied where it isn't offered: with "Search all groups" on and
-// the query cleared, or the toggle turned off, `refseq` tested UCSC db names for
-// the `GCF_` prefix they never carry and the table stuck empty.
-test('an NCBI filter left over from a cross-group search is not applied where it cannot match', async () => {
+// The NCBI status filter is only offered where its fields exist, and must not
+// go on being applied where it isn't offered: once the query is cleared,
+// `refseq` would test UCSC db names for the `GCF_` prefix they never carry and
+// the table would stick empty.
+test('an NCBI filter left over from a search is not applied where it cannot match', async () => {
   setup()
   const search = await screen.findByPlaceholderText('Search genomes...')
   fireEvent.change(search, { target: { value: 'panda' } })
   const settings = await screen.findByRole('button', { name: 'Table settings' })
   fireEvent.click(settings)
-  fireEvent.click(await screen.findByText('Search all groups'))
   fireEvent.click(await screen.findByText('Filter by NCBI status'))
   fireEvent.click(await screen.findByText('RefSeq only'))
   expect(await screen.findByText('Ailuropoda melanoleuca')).toBeTruthy()
@@ -333,11 +279,6 @@ test('an NCBI filter left over from a cross-group search is not applied where it
   fireEvent.change(search, { target: { value: '' } })
   expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
   expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
-
-  fireEvent.click(screen.getByText('Search all groups'))
-  fireEvent.keyDown(screen.getAllByRole('menu')[0]!, { key: 'Escape' })
-  expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
-  expect(screen.getByText('Jun. 2020 (GRCm39/mm39)')).toBeTruthy()
 })
 
 test('sort headers are buttons and expose their direction', async () => {

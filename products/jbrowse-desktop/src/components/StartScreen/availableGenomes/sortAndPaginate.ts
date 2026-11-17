@@ -33,7 +33,7 @@ export function sortAndPaginate({
     : data
 
   // Clamp the page index during derivation so shrinking the result set (e.g.
-  // removing favorites, resetting the favorites list) can never strand us on an
+  // the NCBI status filter) can never strand us on an
   // empty page, independent of whether a handler remembered to reset it.
   const pageCount = Math.max(1, Math.ceil(sortedData.length / pageSize))
   const currentPage = Math.min(pageIndex, pageCount - 1)

@@ -14,51 +14,27 @@ const NCBI_FILTERS: { label: string; value: FilterOption }[] = [
 export function getTableMenuItems({
   state,
   typeOption,
-  onResetFavorites,
 }: {
   state: GenomesTableState
   typeOption: string
-  onResetFavorites: () => void
 }): MenuItem[] {
   const {
     multipleSelection,
     setMultipleSelection,
-    showOnlyFavs,
-    setShowOnlyFavs,
     showAllColumns,
     setShowAllColumns,
     filterOption,
     setFilterOption,
-    allGroups,
-    setAllGroups,
     searchQuery,
   } = state
 
   return [
-    {
-      label: 'Search all groups',
-      helpText:
-        'Search every group at once instead of only the selected one, using a prebuilt index of all ~50k assemblies',
-      checked: allGroups,
-      type: 'checkbox',
-      onClick: () => {
-        setAllGroups(!allGroups)
-      },
-    },
     {
       label: 'Enable multiple selection',
       checked: multipleSelection,
       type: 'checkbox',
       onClick: () => {
         setMultipleSelection(!multipleSelection)
-      },
-    },
-    {
-      label: 'Show favorites only',
-      checked: showOnlyFavs,
-      type: 'checkbox',
-      onClick: () => {
-        setShowOnlyFavs(!showOnlyFavs)
       },
     },
     {
@@ -71,7 +47,7 @@ export function getTableMenuItems({
     },
     // offered exactly where it applies, which is also exactly where it is
     // applied — see ncbiFilterApplies
-    ...(ncbiFilterApplies(typeOption, allGroups, searchQuery)
+    ...(ncbiFilterApplies(typeOption, searchQuery)
       ? ([
           {
             label: 'Filter by NCBI status',
@@ -87,11 +63,5 @@ export function getTableMenuItems({
           },
         ] satisfies MenuItem[])
       : []),
-    {
-      label: 'Reset favorites list to defaults',
-      onClick: () => {
-        onResetFavorites()
-      },
-    },
   ]
 }

@@ -17,11 +17,15 @@ export type GenomesTableState = ReturnType<typeof useGenomesTableState>
 // call sites. The render already clamps the page index, so the resets are
 // purely so you land on the top of the new result set.
 //
-// Switching group additionally resets the NCBI filter (its fields exist only on
-// GenArk rows), clears the sort (the column may not exist in the new group's
-// columns) and drops the selection, whose accessions belong to the previous
-// group's dataset and would launch nothing. Leaving multiple-selection mode
-// drops the selection too, since nothing would show it or act on it.
+// A query searches every group, so the group selector only chooses what to
+// browse: picking one clears the query, resets the NCBI filter (its fields
+// exist only on GenArk rows), the sort (the column may not exist in the new
+// group's columns) and the selection. Leaving multiple-selection mode drops the
+// selection too, since nothing would show it or act on it.
+//
+// hasSearched latches on the first query, so the cross-group index is fetched
+// only once someone searches, and stays loaded to resolve a selection after the
+// query is cleared.
 export function useGenomesTableState() {
   const [selected, setSelected] = useState(() => new Set<string>())
   const [sorting, setSorting] = useState<Sorting>()
@@ -30,8 +34,7 @@ export function useGenomesTableState() {
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize, setPageSize] = useState(50)
   const [searchQuery, setSearchQuery] = useState('')
-  const [showOnlyFavs, setShowOnlyFavs] = useState(false)
-  const [allGroups, setAllGroups] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
   const [filterOption, setFilterOption] = useState<FilterOption>('all')
   const [typeOption, setTypeOption] = useLocalStorage(
     'startScreen-genArkChoice',
@@ -49,23 +52,10 @@ export function useGenomesTableState() {
     setPageIndex,
     pageSize,
     searchQuery,
-    showOnlyFavs,
+    hasSearched,
     filterOption,
     typeOption,
-    allGroups,
 
-    // cross-group results have their own columns, so a sort naming a
-    // group-only column has to go. A selection survives turning the search on,
-    // since the index resolves every group, but not turning it off, which
-    // would leave other groups' picks counted and never launched.
-    setAllGroups: (v: boolean) => {
-      setAllGroups(v)
-      setSorting(undefined)
-      if (!v) {
-        setSelected(new Set())
-      }
-      setPageIndex(0)
-    },
     setMultipleSelection: (v: boolean) => {
       setMultipleSelection(v)
       setSelected(new Set())
@@ -76,10 +66,9 @@ export function useGenomesTableState() {
     },
     setSearchQuery: (q: string) => {
       setSearchQuery(q)
-      setPageIndex(0)
-    },
-    setShowOnlyFavs: (v: boolean) => {
-      setShowOnlyFavs(v)
+      if (q.trim()) {
+        setHasSearched(true)
+      }
       setPageIndex(0)
     },
     setFilterOption: (f: FilterOption) => {
@@ -88,6 +77,7 @@ export function useGenomesTableState() {
     },
     setTypeOption: (t: string) => {
       setTypeOption(t)
+      setSearchQuery('')
       setFilterOption('all')
       setSorting(undefined)
       setSelected(new Set())

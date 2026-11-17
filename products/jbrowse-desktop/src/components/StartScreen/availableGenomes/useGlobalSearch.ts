@@ -9,8 +9,8 @@ import {
 
 /**
  * Searches every group at once, via the prebuilt index of all ~50k assemblies.
- * The index is ~7.5MB, so it is fetched only once the user asks for a
- * cross-group search — a null key means useFetch does not fetch at all.
+ * The index is ~7.5MB, so it is fetched only once the user first searches — a
+ * null key means useFetch does not fetch at all.
  */
 export function useGlobalSearch({
   enabled,

@@ -24,8 +24,8 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Spells out what the counts are scoped to, since a search that comes up empty
-// in one group can still have hits in the other eighteen.
+// Spells out what the counts are scoped to: the selected group while browsing,
+// every group while searching.
 function summarize(
   pageIndex: number,
   pageSize: number,
