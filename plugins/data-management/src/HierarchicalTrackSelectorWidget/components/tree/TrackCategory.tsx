@@ -150,7 +150,7 @@ function removeConnectionMenuItems(
     (session.adminMode || session.sessionConnections?.includes(connectionConf))
     ? [
         {
-          label: 'Remove connection...',
+          label: 'Delete connection...',
           onClick: () => {
             getDialogHost(model).queueDialog(handleClose => [
               DeleteConnectionDialog,

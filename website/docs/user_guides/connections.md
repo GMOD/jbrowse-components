@@ -46,7 +46,7 @@ expand it again to browse the rest.
 
 ## Removing a connection
 
-**Remove connection...** in the menu on the connection's own row of the track
+**Delete connection...** in the menu on the connection's own row of the track
 selector removes it. An admin can remove any connection, anyone else only the
 ones they added.
 
