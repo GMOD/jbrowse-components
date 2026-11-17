@@ -78,7 +78,7 @@ test('an unregistered track type drops its own row, not the selector', async () 
   ).toEqual(['volMyt1-seq', 'ordinary'])
 })
 
-// the same call reached from the faceted selector's source list and from
+// the same call reached from the track table's source list and from
 // favorites, so the guard has to sit under all of them
 test('the unopenable track is absent from every list the selector builds', async () => {
   const { model } = await setup()

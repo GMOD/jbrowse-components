@@ -7,10 +7,10 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
 import conf from '../../../../../test_data/test_order/config.json' with { type: 'json' }
-import { getRowStr } from '../../FacetedSelector/components/util.ts'
-import { facetedStateTreeF } from '../../FacetedSelector/facetedModel.ts'
-import { setTracksSelected } from '../../FacetedSelector/facetedSelection.ts'
-import { getRootKeys } from '../../FacetedSelector/facetedUtil.ts'
+import { getRowStr } from '../../TrackTable/components/util.ts'
+import { setTracksSelected } from '../../TrackTable/tableSelection.ts'
+import { getRootKeys } from '../../TrackTable/tableUtil.ts'
+import { trackTableModelFactory } from '../../TrackTable/trackTableModel.ts'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
@@ -901,9 +901,9 @@ test('expandAllCategories leaves folders alone', () => {
   )
 })
 
-// -------------------------- Faceted model tests -
+// -------------------------- Track table model tests -
 
-test('faceted model filter text', () => {
+test('table model filter text', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -917,26 +917,26 @@ test('faceted model filter text', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
   // initially empty filter
-  expect(faceted.filterText).toBe('')
+  expect(table.filterText).toBe('')
 
   // set filter text
-  faceted.setFilterText('foo')
-  expect(faceted.filterText).toBe('foo')
+  table.setFilterText('foo')
+  expect(table.filterText).toBe('foo')
 
   // rows should be filtered
-  const filteredRows = faceted.rows.filter(r => r.name.includes('foo'))
-  expect(faceted.rows.length).toBe(filteredRows.length)
+  const filteredRows = table.rows.filter(r => r.name.includes('foo'))
+  expect(table.rows.length).toBe(filteredRows.length)
 })
 
-test('faceted model column filters', () => {
+test('table model column filters', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -950,38 +950,38 @@ test('faceted model column filters', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
   // initially no filters
-  expect(faceted.filters.size).toBe(0)
+  expect(table.filters.size).toBe(0)
 
   // the reference sequence track joins allTrackConfigurations only once
   // assemblyManager.get has resolved the assembly, so warm it before counting
   void model.allTrackConfigurations.length
 
   // all rows visible initially
-  const initialRowCount = faceted.filteredRows.length
+  const initialRowCount = table.filteredRows.length
 
   // set a filter
-  faceted.setFilter('adapter', ['FromConfigAdapter'])
-  expect(faceted.filters.get('adapter')).toEqual(['FromConfigAdapter'])
+  table.setFilter('adapter', ['FromConfigAdapter'])
+  expect(table.filters.get('adapter')).toEqual(['FromConfigAdapter'])
 
   // filteredRows should only include matching rows
-  expect(
-    faceted.filteredRows.every(r => r.adapter === 'FromConfigAdapter'),
-  ).toBe(true)
+  expect(table.filteredRows.every(r => r.adapter === 'FromConfigAdapter')).toBe(
+    true,
+  )
 
   // clear filter by setting empty array
-  faceted.setFilter('adapter', [])
-  expect(faceted.filteredRows.length).toBe(initialRowCount)
+  table.setFilter('adapter', [])
+  expect(table.filteredRows.length).toBe(initialRowCount)
 })
 
-test('faceted model toggle options', () => {
+test('table model toggle options', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -995,22 +995,22 @@ test('faceted model toggle options', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
   // test useShoppingCart toggle
-  expect(faceted.useShoppingCart).toBe(false)
-  faceted.setUseShoppingCart(true)
-  expect(faceted.useShoppingCart).toBe(true)
+  expect(table.useShoppingCart).toBe(false)
+  table.setUseShoppingCart(true)
+  expect(table.useShoppingCart).toBe(true)
 })
 
-// the faceted model is created per-dialog and destroyed on close; verify
+// the table model is created per-dialog and destroyed on close; verify
 // destroy tears it down without cascading into the shared session track configs
-test('faceted model destroy is safe', () => {
+test('table model destroy is safe', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1019,22 +1019,22 @@ test('faceted model destroy is safe', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
   // exercise the afterAttach autorun so there's a disposer to clean up
-  expect(faceted.fields.length).toBeGreaterThan(0)
+  expect(table.fields.length).toBeGreaterThan(0)
   const sharedConf = model.allTrackConfigurations[0]!
   expect(isAlive(sharedConf)).toBe(true)
 
-  destroy(faceted)
+  destroy(table)
 
-  expect(isAlive(faceted)).toBe(false)
-  // destroying the faceted model must not destroy the session-owned configs it
+  expect(isAlive(table)).toBe(false)
+  // destroying the table model must not destroy the session-owned configs it
   // merely referenced
   expect(isAlive(sharedConf)).toBe(true)
   expect(model.allTrackConfigurations.length).toBeGreaterThan(0)
@@ -1087,7 +1087,7 @@ test('setTracksSelected updates the selection in shopping-cart mode', () => {
   expect(model.shownTrackIds.size).toBe(0)
 })
 
-test('faceted model rows contain expected data', () => {
+test('table model rows contain expected data', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1101,24 +1101,24 @@ test('faceted model rows contain expected data', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
   // rows should have expected structure
-  expect(faceted.rows.length).toBeGreaterThan(0)
+  expect(table.rows.length).toBeGreaterThan(0)
 
-  const row = faceted.rows.find(r => r.id === 'fooC')
+  const row = table.rows.find(r => r.id === 'fooC')
   expect(row).toBeDefined()
   expect(row!.name).toBe('fooC')
   expect(row!.adapter).toBe('FromConfigAdapter')
   expect(row!.conf).toBeDefined()
 })
 
-test('faceted model fields includes expected columns', () => {
+test('table model fields includes expected columns', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1132,18 +1132,18 @@ test('faceted model fields includes expected columns', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
-  expect(faceted.fields).toContain('name')
-  expect(faceted.fields).toContain('adapter')
+  expect(table.fields).toContain('name')
+  expect(table.fields).toContain('adapter')
 })
 
-test('faceted model multiple column filters', () => {
+test('table model multiple column filters', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1157,34 +1157,34 @@ test('faceted model multiple column filters', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
-  const initialCount = faceted.filteredRows.length
+  const initialCount = table.filteredRows.length
 
   // apply filter to adapter column
-  faceted.setFilter('adapter', ['FromConfigAdapter'])
-  const afterFirstFilter = faceted.filteredRows.length
+  table.setFilter('adapter', ['FromConfigAdapter'])
+  const afterFirstFilter = table.filteredRows.length
 
   // apply second filter - results should be intersection
-  faceted.setFilter('name', ['fooC'])
-  const afterSecondFilter = faceted.filteredRows.length
+  table.setFilter('name', ['fooC'])
+  const afterSecondFilter = table.filteredRows.length
 
   expect(afterSecondFilter).toBeLessThanOrEqual(afterFirstFilter)
   expect(afterFirstFilter).toBeLessThanOrEqual(initialCount)
 
   // verify the remaining row matches both filters
   if (afterSecondFilter > 0) {
-    expect(faceted.filteredRows[0]!.adapter).toBe('FromConfigAdapter')
-    expect(faceted.filteredRows[0]!.name).toBe('fooC')
+    expect(table.filteredRows[0]!.adapter).toBe('FromConfigAdapter')
+    expect(table.filteredRows[0]!.name).toBe('fooC')
   }
 })
 
-test('faceted model filter with multiple values', () => {
+test('table model filter with multiple values', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1198,23 +1198,23 @@ test('faceted model filter with multiple values', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
   // filter with multiple allowed values (OR logic within column)
-  faceted.setFilter('name', ['fooC', 'barC'])
+  table.setFilter('name', ['fooC', 'barC'])
 
   // should include rows matching either value
-  const names = faceted.filteredRows.map(r => r.name)
+  const names = table.filteredRows.map(r => r.name)
   expect(names).toContain('fooC')
   expect(names).toContain('barC')
 })
 
-test('faceted model column visibility', () => {
+test('table model column visibility', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1228,22 +1228,22 @@ test('faceted model column visibility', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
   // the adapter is never a default column, but the user can show it
-  expect(faceted.shownColumns(9)).not.toContain('adapter')
-  faceted.setColumnVisible('adapter', true)
-  expect(faceted.shownColumns(9)).toContain('adapter')
-  faceted.setColumnVisible('adapter', false)
-  expect(faceted.shownColumns(9)).not.toContain('adapter')
+  expect(table.shownColumns(9)).not.toContain('adapter')
+  table.setColumnVisible('adapter', true)
+  expect(table.shownColumns(9)).toContain('adapter')
+  table.setColumnVisible('adapter', false)
+  expect(table.shownColumns(9)).not.toContain('adapter')
 })
 
-test('faceted and hierarchical filter text are independent', () => {
+test('table and hierarchical filter text are independent', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1257,8 +1257,8 @@ test('faceted and hierarchical filter text are independent', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
@@ -1267,20 +1267,20 @@ test('faceted and hierarchical filter text are independent', () => {
   // set hierarchical filter
   model.setFilterText('foo')
   expect(model.filterText).toBe('foo')
-  expect(faceted.filterText).toBe('')
+  expect(table.filterText).toBe('')
 
-  // set faceted filter
-  faceted.setFilterText('bar')
+  // set table filter
+  table.setFilterText('bar')
   expect(model.filterText).toBe('foo')
-  expect(faceted.filterText).toBe('bar')
+  expect(table.filterText).toBe('bar')
 
   // clear hierarchical filter
   model.clearFilterText()
   expect(model.filterText).toBe('')
-  expect(faceted.filterText).toBe('bar')
+  expect(table.filterText).toBe('bar')
 })
 
-test('faceted filter drilling down behavior', () => {
+test('table filter drilling down behavior', () => {
   const session = addTestDataWithCategories(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1294,21 +1294,21 @@ test('faceted filter drilling down behavior', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
   // get initial state
-  const allRows = faceted.filteredRows
+  const allRows = table.filteredRows
   const initialCount = allRows.length
   expect(initialCount).toBeGreaterThanOrEqual(3)
 
   // simulate selecting a category facet value
-  faceted.setFilter('category', ['Genes'])
-  const afterCategoryFilter = faceted.filteredRows
+  table.setFilter('category', ['Genes'])
+  const afterCategoryFilter = table.filteredRows
 
   // should have fewer rows after filtering
   expect(afterCategoryFilter.length).toBeLessThan(initialCount)
@@ -1317,8 +1317,8 @@ test('faceted filter drilling down behavior', () => {
   expect(afterCategoryFilter.every(r => r.category === 'Genes')).toBe(true)
 
   // add another filter - simulate drilling down
-  faceted.setFilter('adapter', ['FromConfigAdapter'])
-  const afterDrillDown = faceted.filteredRows
+  table.setFilter('adapter', ['FromConfigAdapter'])
+  const afterDrillDown = table.filteredRows
 
   // should have equal or fewer rows
   expect(afterDrillDown.length).toBeLessThanOrEqual(afterCategoryFilter.length)
@@ -1330,13 +1330,13 @@ test('faceted filter drilling down behavior', () => {
   }
 
   // clearing one filter should show more rows again
-  faceted.setFilter('category', [])
-  expect(faceted.filteredRows.length).toBeGreaterThanOrEqual(
+  table.setFilter('category', [])
+  expect(table.filteredRows.length).toBeGreaterThanOrEqual(
     afterDrillDown.length,
   )
 })
 
-test('faceted filter tracks unique values per column', () => {
+test('table filter tracks unique values per column', () => {
   const session = addTestDataWithCategories(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1350,8 +1350,8 @@ test('faceted filter tracks unique values per column', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
@@ -1359,7 +1359,7 @@ test('faceted filter tracks unique values per column', () => {
 
   // get unique categories from rows
   const categories = [
-    ...new Set(faceted.rows.map(r => r.category).filter(Boolean)),
+    ...new Set(table.rows.map(r => r.category).filter(Boolean)),
   ]
 
   // should have multiple categories from test data
@@ -1412,9 +1412,9 @@ test('getRowStr returns empty string for missing fields', () => {
   expect(getRowStr('metadata.missing', row)).toBe('')
 })
 
-// -------------------------- metadata faceted model tests -
+// -------------------------- metadata table model tests -
 
-test('faceted model exposes metadata keys from tracks', () => {
+test('table model exposes metadata keys from tracks', () => {
   const session = addTestDataWithMetadata(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1428,18 +1428,18 @@ test('faceted model exposes metadata keys from tracks', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
-  expect(faceted.metadataKeys).toContain('tissue')
-  expect(faceted.metadataKeys).toContain('species')
+  expect(table.metadataKeys).toContain('tissue')
+  expect(table.metadataKeys).toContain('species')
 })
 
-test('faceted model search matches non-string metadata', () => {
+test('table model search matches non-string metadata', () => {
   const session = addTestDataWithMetadata(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1453,24 +1453,24 @@ test('faceted model search matches non-string metadata', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
   // search for numeric metadata value
-  faceted.setFilterText('2020')
-  expect(faceted.rows.length).toBeGreaterThan(0)
-  expect(faceted.rows.some(r => r.metadata.year === 2020)).toBe(true)
+  table.setFilterText('2020')
+  expect(table.rows.length).toBeGreaterThan(0)
+  expect(table.rows.some(r => r.metadata.year === 2020)).toBe(true)
 
   // search for boolean metadata value
-  faceted.setFilterText('true')
-  expect(faceted.rows.length).toBeGreaterThan(0)
+  table.setFilterText('true')
+  expect(table.rows.length).toBeGreaterThan(0)
 })
 
-test('faceted model filters on metadata columns', () => {
+test('table model filters on metadata columns', () => {
   const session = addTestDataWithMetadata(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1484,24 +1484,24 @@ test('faceted model filters on metadata columns', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
-  const initialCount = faceted.filteredRows.length
+  const initialCount = table.filteredRows.length
 
   // filter on metadata.tissue
-  faceted.setFilter('metadata.tissue', ['brain'])
-  expect(faceted.filteredRows.length).toBeLessThan(initialCount)
-  expect(faceted.filteredRows.every(r => r.metadata.tissue === 'brain')).toBe(
+  table.setFilter('metadata.tissue', ['brain'])
+  expect(table.filteredRows.length).toBeLessThan(initialCount)
+  expect(table.filteredRows.every(r => r.metadata.tissue === 'brain')).toBe(
     true,
   )
 })
 
-test('faceted model fields include metadata columns with prefix', () => {
+test('table model fields include metadata columns with prefix', () => {
   const session = addTestDataWithMetadata(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1515,14 +1515,14 @@ test('faceted model fields include metadata columns with prefix', () => {
   })
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
 
-  const metadataFields = faceted.fields.filter(f => f.startsWith('metadata.'))
+  const metadataFields = table.fields.filter(f => f.startsWith('metadata.'))
   expect(metadataFields).toContain('metadata.tissue')
   expect(metadataFields).toContain('metadata.species')
 })

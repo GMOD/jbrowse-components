@@ -29,8 +29,8 @@ const sessionTracksCategory = ' Session tracks'
 // model.allTracks instead of on every filterText keystroke. searchText covers
 // what a tree row shows — its name, the categories it nests under, and the
 // description it carries as a tooltip — and is normalized by buildSearchText,
-// which the faceted selector's rows go through too. Adapter and metadata are
-// left out here because, unlike in the faceted grid, the tree renders neither.
+// which the track table's rows go through too. Adapter and metadata are
+// left out here because, unlike in the table grid, the tree renders neither.
 // Each is a raw member read, so a frozen entry answers without hydrating, and
 // supplies the slot's default itself since a frozen entry omits it. sortName is the raw name slot rather than getTrackName, so the unnamed
 // reference sequence track still sorts to the top.

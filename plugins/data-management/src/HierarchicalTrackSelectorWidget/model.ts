@@ -14,8 +14,8 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
 import { autorun, compareShallow, computed, observable, reaction } from 'mobx'
 
-import { facetedStateTreeF } from '../FacetedSelector/facetedModel.ts'
-import { configureTrackTable } from '../FacetedSelector/useFacetedModel.ts'
+import { trackTableModelFactory } from '../TrackTable/trackTableModel.ts'
+import { configureTrackTable } from '../TrackTable/useTrackTable.ts'
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { searchMatcher } from '../shared/searchText.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
@@ -28,7 +28,7 @@ import {
   trackNodeSourceFor,
 } from './util.ts'
 
-import type { FacetedModel } from '../FacetedSelector/facetedModel.ts'
+import type { TrackTableModel } from '../TrackTable/trackTableModel.ts'
 import type {
   CategoryMode,
   ResolvedCategoryMode,
@@ -269,7 +269,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * the search, facet filters, sort and columns the tree and the table
        * share, created on attach
        */
-      trackTable: undefined as FacetedModel | undefined,
+      trackTable: undefined as TrackTableModel | undefined,
     }))
     .views(self => ({
       /**
@@ -694,7 +694,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * every track the view can display, in tree order: what the faceted
+         * every track the view can display, in tree order: what the table
          * selector, favorites and recently-used resolve against
          */
         get allTrackConfigurations() {
@@ -1028,7 +1028,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       return {
         afterAttach() {
-          const trackTable = facetedStateTreeF().create()
+          const trackTable = trackTableModelFactory().create()
           configureTrackTable(trackTable, self)
           trackTable.setFilterTextSource(() => self.filterText)
           self.trackTable = trackTable

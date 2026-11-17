@@ -5,12 +5,12 @@ import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, waitFor, within } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
-import { facetedStateTreeF } from '../facetedModel.ts'
-import FacetedDataGrid from './FacetedDataGrid.tsx'
-import { getFacetedColumns } from './getFacetedColumns.tsx'
+import { trackTableModelFactory } from '../trackTableModel.ts'
+import TrackTableGrid from './TrackTableGrid.tsx'
+import { getTableColumns } from './getTableColumns.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
-import type { FacetedModel } from '../facetedModel.ts'
+import type { TrackTableModel } from '../trackTableModel.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -56,28 +56,28 @@ function setup() {
     ],
   })
   const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
   )
-  return { session, view, model, faceted }
+  return { session, view, model, table }
 }
 
 function renderGrid(
   model: HierarchicalTrackSelectorModel,
-  faceted: FacetedModel,
+  table: TrackTableModel,
 ) {
   const Wrapper = observer(function Wrapper() {
     return (
-      <FacetedDataGrid
+      <TrackTableGrid
         model={model}
-        faceted={faceted}
-        columns={getFacetedColumns({
-          faceted,
+        table={table}
+        columns={getTableColumns({
+          table,
           model,
-          fields: faceted.shownColumns(9),
+          fields: table.shownColumns(9),
         })}
         width={1200}
       />
@@ -91,15 +91,15 @@ function renderGrid(
 }
 
 test('renders a row per track', () => {
-  const { model, faceted } = setup()
-  const { getByText } = renderGrid(model, faceted)
+  const { model, table } = setup()
+  const { getByText } = renderGrid(model, table)
   expect(getByText('fooC')).toBeTruthy()
   expect(getByText('barC')).toBeTruthy()
 })
 
 test('clicking a row checkbox shows then hides the track on the view', async () => {
-  const { view, model, faceted } = setup()
-  const { getByText } = renderGrid(model, faceted)
+  const { view, model, table } = setup()
+  const { getByText } = renderGrid(model, table)
 
   const row = getByText('fooC').closest('tr')!
   const checkbox = within(row).getByRole('checkbox')
@@ -117,22 +117,22 @@ test('clicking a row checkbox shows then hides the track on the view', async () 
 })
 
 test('select-all adds every filtered track to the selection, and only in add-to-selection mode', () => {
-  const { view, model, faceted } = setup()
-  const { queryByLabelText, getByLabelText } = renderGrid(model, faceted)
+  const { view, model, table } = setup()
+  const { queryByLabelText, getByLabelText } = renderGrid(model, table)
   expect(queryByLabelText('Select all tracks')).toBeNull()
 
   act(() => {
-    faceted.setUseShoppingCart(true)
+    table.setUseShoppingCart(true)
   })
   fireEvent.click(getByLabelText('Select all tracks'))
-  expect(model.selection.length).toBe(faceted.filteredRows.length)
+  expect(model.selection.length).toBe(table.filteredRows.length)
   expect(view.tracks.length).toBe(0)
 })
 
 test('shows an empty message when nothing matches the filter', () => {
-  const { model, faceted } = setup()
-  faceted.setFilterText('no-such-track-zzz')
-  const { getByText, queryByText } = renderGrid(model, faceted)
+  const { model, table } = setup()
+  table.setFilterText('no-such-track-zzz')
+  const { getByText, queryByText } = renderGrid(model, table)
   expect(
     getByText('No tracks match the current search and filters'),
   ).toBeTruthy()
@@ -140,8 +140,8 @@ test('shows an empty message when nothing matches the filter', () => {
 })
 
 test('a header names its column in full on hover, and a click cycles ascending, descending, unsorted', () => {
-  const { model, faceted } = setup()
-  const { getByRole } = renderGrid(model, faceted)
+  const { model, table } = setup()
+  const { getByRole } = renderGrid(model, table)
   const header = () => getByRole('columnheader', { name: 'name' })
   expect(header().getAttribute('title')).toBe('name')
   expect(header().getAttribute('aria-sort')).toBeNull()
@@ -155,20 +155,20 @@ test('a header names its column in full on hover, and a click cycles ascending, 
   expect(header().getAttribute('aria-sort')).toBe('descending')
   click()
   expect(header().getAttribute('aria-sort')).toBeNull()
-  expect(faceted.sortField).toBe('')
+  expect(table.sortField).toBe('')
 })
 
 test('a column the user hid is not rendered, and one they showed is', () => {
-  const { model, faceted } = setup()
-  faceted.setColumnVisible('kind', false)
-  faceted.setColumnVisible('adapter', true)
-  const { queryByRole } = renderGrid(model, faceted)
+  const { model, table } = setup()
+  table.setColumnVisible('kind', false)
+  table.setColumnVisible('adapter', true)
+  const { queryByRole } = renderGrid(model, table)
   expect(queryByRole('columnheader', { name: 'kind' })).toBeNull()
   expect(queryByRole('columnheader', { name: 'adapter' })).toBeTruthy()
 })
 
 test('the name column keeps half the measured width before the others share', () => {
-  const { session, model, faceted } = setup()
+  const { session, model, table } = setup()
   session.addSessionTrackConf({
     trackId: 'long',
     name: 'A track name long enough to want far more than half of the grid',
@@ -177,12 +177,12 @@ test('the name column keeps half the measured width before the others share', ()
     type: 'FeatureTrack',
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
-  faceted.setColumnVisible('description', true)
-  faceted.setColumnVisible('adapter', true)
+  table.setColumnVisible('description', true)
+  table.setColumnVisible('adapter', true)
   const clientWidth = jest
     .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
     .mockReturnValue(448)
-  const { container } = renderGrid(model, faceted)
+  const { container } = renderGrid(model, table)
   const widths = [...container.querySelectorAll('col')].map(col =>
     Number.parseFloat(col.style.width),
   )
@@ -192,8 +192,8 @@ test('the name column keeps half the measured width before the others share', ()
 })
 
 test('the grid scrolls back to the top when the search, filters or sort change, not when a track goes', () => {
-  const { session, model, faceted } = setup()
-  const { container } = renderGrid(model, faceted)
+  const { session, model, table } = setup()
+  const { container } = renderGrid(model, table)
   const scroller = container.querySelector('table')!.parentElement!
   function scrollDown() {
     scroller.scrollTop = 100
@@ -207,29 +207,29 @@ test('the grid scrolls back to the top when the search, filters or sort change, 
       session.sessionTracks.find(t => t.trackId === 'fooC')!,
     )
   })
-  expect(faceted.allRows.map(r => r.id)).not.toContain('fooC')
+  expect(table.allRows.map(r => r.id)).not.toContain('fooC')
   expect(scrollTo).not.toHaveBeenCalled()
 
   act(() => {
-    faceted.setFilterText('bar')
+    table.setFilterText('bar')
   })
   scrollDown()
   act(() => {
-    faceted.setFilter('kind', ['Feature'])
+    table.setFilter('kind', ['Feature'])
   })
   scrollDown()
   act(() => {
-    faceted.setSort('name', false)
+    table.setSort('name', false)
   })
   expect(scrollTo).toHaveBeenCalledTimes(3)
 })
 
 test('a change while the grid is already at the top scrolls nothing', () => {
-  const { model, faceted } = setup()
-  renderGrid(model, faceted)
+  const { model, table } = setup()
+  renderGrid(model, table)
   scrollTo.mockClear()
   act(() => {
-    faceted.setFilterText('bar')
+    table.setFilterText('bar')
   })
   expect(scrollTo).not.toHaveBeenCalled()
 })

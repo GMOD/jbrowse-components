@@ -240,7 +240,7 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
       <CascadingMenuButton
         className={classes.menuButton}
         data-testid={`htsCategoryMenu-${name}`}
-        // no "Open as faceted selector..." — that is what clicking the row
+        // no "Open as table..." — that is what clicking the row
         // does — and no subcategory items, since a folder draws none of them
         menuItems={() => [
           ...folderModeMenuItems(model, item),
@@ -295,7 +295,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
           menuItems={() => [
             ...folderModeMenuItems(model, item),
             {
-              label: 'Open as faceted selector...',
+              label: 'Open as table...',
               onClick: () => {
                 openFolderDialog(model, item)
               },

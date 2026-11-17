@@ -10,7 +10,7 @@ import { observer } from 'mobx-react'
 import FacetFilter from './FacetFilter.tsx'
 import { facetLabel } from './util.ts'
 
-import type { FacetedModel } from '../facetedModel.ts'
+import type { TrackTableModel } from '../trackTableModel.ts'
 
 const useStyles = makeStyles()(theme => {
   const accent =
@@ -63,9 +63,9 @@ function selectionText(label: string, selected: string[]) {
  * facet's values; an active chip names its selection and clears with its ×.
  */
 const FacetChips = observer(function FacetChips({
-  faceted,
+  table,
 }: {
-  faceted: FacetedModel
+  table: TrackTableModel
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState<{ el: HTMLElement; field?: string }>()
@@ -76,7 +76,7 @@ const FacetChips = observer(function FacetChips({
     filters,
     facetCategoryCounts,
     nonMetadataFieldSet,
-  } = faceted
+  } = table
   const hasValues = (field: string) =>
     (facetCategoryCounts.get(field)?.size ?? 0) > 0
   const chips = filterFacets.filter(f => openFacets.has(f) && hasValues(f))
@@ -109,7 +109,7 @@ const FacetChips = observer(function FacetChips({
             onDelete={
               selected
                 ? () => {
-                    faceted.setFilter(field, [])
+                    table.setFilter(field, [])
                   }
                 : undefined
             }
@@ -145,7 +145,7 @@ const FacetChips = observer(function FacetChips({
               key={field}
               field={field}
               vals={[...(facetCategoryCounts.get(field) ?? [])]}
-              faceted={faceted}
+              table={table}
               collapsible={!open?.field}
               defaultExpanded={filters.has(field)}
             />

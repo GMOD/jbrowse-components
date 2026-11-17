@@ -4,21 +4,21 @@ import { observer } from 'mobx-react'
 import OverrideBadge from '../../HierarchicalTrackSelectorWidget/components/tree/OverrideBadge.tsx'
 import TrackNameText from '../../HierarchicalTrackSelectorWidget/components/tree/TrackNameText.tsx'
 import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
-import { useFacetedTableStyles } from './facetedTableStyles.ts'
+import { useTableStyles } from './tableStyles.ts'
 import { facetLabel, getRowStr } from './util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
-import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
-import type { FacetedColumn } from './FacetedDataGrid.tsx'
+import type { TrackTableModel, TrackRow } from '../trackTableModel.ts'
+import type { TableColumn } from './TrackTableGrid.tsx'
 
 const NameCell = observer(function NameCell({
   row,
   model,
 }: {
-  row: FacetedRow
+  row: TrackRow
   model: HierarchicalTrackSelectorModel
 }) {
-  const { classes } = useFacetedTableStyles()
+  const { classes } = useTableStyles()
   return (
     <div className={classes.nameCell}>
       <TrackNameText name={row.name} />
@@ -32,16 +32,16 @@ const NameCell = observer(function NameCell({
 // the facet columns in field order. A metadata column whose bare key collides
 // with a non-metadata column name is disambiguated as "x (from metadata)". All
 // non-name cells share getRowStr for value extraction.
-export function getFacetedColumns({
-  faceted,
+export function getTableColumns({
+  table,
   model,
   fields,
 }: {
-  faceted: FacetedModel
+  table: TrackTableModel
   model: HierarchicalTrackSelectorModel
   fields: string[]
-}): FacetedColumn[] {
-  const { nonMetadataFieldSet } = faceted
+}): TableColumn[] {
+  const { nonMetadataFieldSet } = table
   return [
     {
       id: 'name',
@@ -58,7 +58,7 @@ export function getFacetedColumns({
             // any metadata value (or category/description) can carry markup, and
             // SanitizedHTML short-circuits to a plain span when it doesn't
             cell: row => <SanitizedHTML html={getRowStr(id, row)} />,
-          }) satisfies FacetedColumn,
+          }) satisfies TableColumn,
       ),
   ]
 }

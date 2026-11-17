@@ -1,4 +1,4 @@
-import { getRootKeys } from './facetedUtil.ts'
+import { getRootKeys } from './tableUtil.ts'
 
 describe('getRootKeys', () => {
   test('keeps scalar keys, drops null/undefined/object values', () => {

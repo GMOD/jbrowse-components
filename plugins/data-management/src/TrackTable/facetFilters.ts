@@ -1,6 +1,6 @@
 import { buildSearchText, searchMatcher } from '../shared/searchText.ts'
 import { getRowStr } from './components/util.ts'
-import { getRootKeys } from './facetedUtil.ts'
+import { getRootKeys } from './tableUtil.ts'
 
 import type { Row } from './components/util.ts'
 

@@ -2,15 +2,15 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { observer } from 'mobx-react'
 
-import FacetedDataGrid from '../../FacetedSelector/components/FacetedDataGrid.tsx'
-import { getFacetedColumns } from '../../FacetedSelector/components/getFacetedColumns.tsx'
+import TrackTableGrid from '../../TrackTable/components/TrackTableGrid.tsx'
+import { getTableColumns } from '../../TrackTable/components/getTableColumns.tsx'
 import {
   shownFields,
   tableMenuItems,
-} from '../../FacetedSelector/components/tableLayout.ts'
+} from '../../TrackTable/components/tableLayout.ts'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
 
-import type { FacetedModel } from '../../FacetedSelector/facetedModel.ts'
+import type { TrackTableModel } from '../../TrackTable/trackTableModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -26,7 +26,7 @@ const TrackTable = observer(function TrackTable({
   table,
 }: {
   model: HierarchicalTrackSelectorModel
-  table: FacetedModel
+  table: TrackTableModel
 }) {
   const { classes } = useStyles()
   const [ref, { width }] = useMeasure('width')
@@ -42,11 +42,11 @@ const TrackTable = observer(function TrackTable({
       />
       <div ref={ref} className={classes.body}>
         {width ? (
-          <FacetedDataGrid
+          <TrackTableGrid
             model={model}
-            faceted={table}
-            columns={getFacetedColumns({
-              faceted: table,
+            table={table}
+            columns={getTableColumns({
+              table,
               model,
               fields: shown,
             })}

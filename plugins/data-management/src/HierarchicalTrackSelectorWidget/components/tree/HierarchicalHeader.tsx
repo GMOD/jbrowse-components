@@ -2,7 +2,7 @@ import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import FacetChips from '../../../FacetedSelector/components/FacetChips.tsx'
+import FacetChips from '../../../TrackTable/components/FacetChips.tsx'
 import ShoppingCart from '../ShoppingCart.tsx'
 import HamburgerMenu from './HamburgerMenu.tsx'
 
@@ -66,7 +66,7 @@ const HierarchicalTrackSelectorHeader = observer(
             }}
           />
         </div>
-        {trackTable ? <FacetChips faceted={trackTable} /> : null}
+        {trackTable ? <FacetChips table={trackTable} /> : null}
       </>
     )
   },

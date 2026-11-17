@@ -106,7 +106,7 @@ test('a track configured against an assembly alias still matches', async () => {
   ])
 })
 
-// the faceted selector reads allTrackConfigurations; connection tracks used to
+// the track table reads allTrackConfigurations; connection tracks used to
 // reach it without going through filterTracks, so a connection's tracks for
 // another assembly were listed (and turnable on) beside the config's filtered
 // ones

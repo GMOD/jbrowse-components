@@ -31,7 +31,7 @@ export type TreeNode = TreeTrackNode | TreeCategoryNode
 
 // a category the user has taken out of the default expanded state. Collapsed
 // hides the children under an accordion header; folder replaces the whole
-// subtree with a single row that opens a faceted selector
+// subtree with a single row that opens a track table
 export type CategoryMode = 'collapsed' | 'folder'
 
 export type ResolvedCategoryMode = CategoryMode | 'expanded'

@@ -8,7 +8,7 @@ import ShoppingCart from '../../HierarchicalTrackSelectorWidget/components/Shopp
 import { tableMenuItems } from './tableLayout.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
-import type { FacetedModel } from '../facetedModel.ts'
+import type { TrackTableModel } from '../trackTableModel.ts'
 
 const useStyles = makeStyles()(theme => ({
   toolbar: {
@@ -25,35 +25,35 @@ const useStyles = makeStyles()(theme => ({
  * a dialog table's own filter box and menu; the drawer's table shares the
  * track selector's header
  */
-const FacetedHeader = observer(function FacetedHeader({
+const FolderTableHeader = observer(function FolderTableHeader({
   model,
-  faceted,
+  table,
   shown,
 }: {
   model: HierarchicalTrackSelectorModel
-  faceted: FacetedModel
+  table: TrackTableModel
   shown: string[]
 }) {
   const { classes } = useStyles()
-  const { matchCounts } = faceted
+  const { matchCounts } = table
   return (
     <div className={classes.toolbar}>
       <ClearableSearchField
         className={classes.searchBox}
         label="Filter tracks"
-        value={faceted.filterText}
+        value={table.filterText}
         status={
           matchCounts
             ? `${matchCounts.matched} of ${matchCounts.total}`
             : undefined
         }
         onChange={value => {
-          faceted.setFilterText(value)
+          table.setFilterText(value)
         }}
       />
       <CascadingMenuButton
         tooltip="Table options"
-        menuItems={() => tableMenuItems(faceted, shown)}
+        menuItems={() => tableMenuItems(table, shown)}
       >
         <MoreVert />
       </CascadingMenuButton>
@@ -62,4 +62,4 @@ const FacetedHeader = observer(function FacetedHeader({
   )
 })
 
-export default FacetedHeader
+export default FolderTableHeader

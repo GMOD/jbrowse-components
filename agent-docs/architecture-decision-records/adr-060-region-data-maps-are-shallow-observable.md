@@ -103,7 +103,7 @@ describes, and makes divergence greppable: a display that writes
 
 Maps whose values are primitives (`groupMaxHeightOverrides`,
 `detectedModifications`, `categoryMode`) — the enhancer is a no-op there and the
-helper's `number` key does not fit. `FacetedSelector`'s `filters` holds arrays
+helper's `number` key does not fit. `FolderTable`'s `filters` holds arrays
 that are read as observables, and `fileHandleCache` holds `File` instances; both
 keep the default deliberately.
 

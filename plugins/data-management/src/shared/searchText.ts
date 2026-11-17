@@ -8,7 +8,7 @@ const joiners = /[-_]/g
  * The text one of the track selectors' filter boxes matches a track against.
  *
  * *Which* fields a selector puts in is its own call — the rule is that it
- * searches what it shows, so the faceted grid includes every column it renders
+ * searches what it shows, so the table grid includes every column it renders
  * (adapter, metadata) and the tree does not. How they are normalized is shared
  * and must not drift, or the same query behaves differently in the two:
  *

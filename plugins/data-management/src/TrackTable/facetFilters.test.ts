@@ -3,7 +3,7 @@ import {
   filterRowsByFacets,
   filterRowsByText,
   rowSearchText,
-} from './facetedFilter.ts'
+} from './facetFilters.ts'
 
 import type { Row } from './components/util.ts'
 

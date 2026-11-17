@@ -3,24 +3,24 @@ import { cx } from '@jbrowse/core/util/tss-react'
 import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
 
-import { checkboxSx, useFacetedTableStyles } from './facetedTableStyles.ts'
+import { checkboxSx, useTableStyles } from './tableStyles.ts'
 import { getRowStr } from './util.ts'
 
-import type { FacetedRow } from '../facetedModel.ts'
-import type { FacetedColumn } from './FacetedDataGrid.tsx'
+import type { TrackRow } from '../trackTableModel.ts'
+import type { TableColumn } from './TrackTableGrid.tsx'
 
-const FacetedTableRow = observer(function FacetedTableRow({
+const TrackTableRow = observer(function TrackTableRow({
   row,
   columns,
   selected,
   onToggle,
 }: {
-  row: FacetedRow
-  columns: FacetedColumn[]
+  row: TrackRow
+  columns: TableColumn[]
   selected: boolean
   onToggle: (rowId: string) => void
 }) {
-  const { classes } = useFacetedTableStyles()
+  const { classes } = useTableStyles()
   return (
     <tr className={cx(classes.bodyRow, selected && classes.selectedRow)}>
       <td className={classes.checkboxCell}>
@@ -57,4 +57,4 @@ const FacetedTableRow = observer(function FacetedTableRow({
   )
 })
 
-export default FacetedTableRow
+export default TrackTableRow

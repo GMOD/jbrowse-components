@@ -1,8 +1,8 @@
-import { CHECKBOX_WIDTH, DEFAULT_COL_WIDTH } from './facetedTableStyles.ts'
 import { columnsThatFit } from './fitColumnWidths.ts'
+import { CHECKBOX_WIDTH, DEFAULT_COL_WIDTH } from './tableStyles.ts'
 import { facetLabel } from './util.ts'
 
-import type { FacetedModel } from '../facetedModel.ts'
+import type { TrackTableModel } from '../trackTableModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // a vertical scrollbar and the grid's border, which the column count has to
@@ -12,7 +12,7 @@ const GRID_CHROME = 18
 /**
  * the fields a table `width` px wide shows, name first
  */
-export function shownFields(table: FacetedModel, width: number) {
+export function shownFields(table: TrackTableModel, width: number) {
   return table.shownColumns(
     columnsThatFit(
       width - CHECKBOX_WIDTH - GRID_CHROME,
@@ -25,7 +25,7 @@ export function shownFields(table: FacetedModel, width: number) {
  * the table's own menu rows: add-to-selection mode and Manage columns
  */
 export function tableMenuItems(
-  table: FacetedModel,
+  table: TrackTableModel,
   shown: string[],
 ): MenuItem[] {
   const { useShoppingCart, fields, nonMetadataFieldSet } = table

@@ -1,7 +1,7 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { render } from '@testing-library/react'
 
-import { useFacetedModel } from './useFacetedModel.ts'
+import { useTrackTable } from './useTrackTable.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 
@@ -51,18 +51,18 @@ function setup() {
 
 test('the kind column reads metadata.kind, else the track type without "track", and metadata.kind gets no column of its own', () => {
   const model = setup()
-  let faceted: ReturnType<typeof useFacetedModel> | undefined
+  let table: ReturnType<typeof useTrackTable> | undefined
   function Probe() {
-    faceted = useFacetedModel(model, () => model.allTrackConfigurations)
+    table = useTrackTable(model, () => model.allTrackConfigurations)
     return null
   }
   render(<Probe />)
 
-  const kinds = Object.fromEntries(faceted!.allRows.map(r => [r.id, r.kind]))
+  const kinds = Object.fromEntries(table!.allRows.map(r => [r.id, r.kind]))
   expect(kinds).toMatchObject({
     genes: 'Feature',
     clinvar: 'Variants',
     signal: 'Quantitative',
   })
-  expect(faceted!.metadataKeys).not.toContain('kind')
+  expect(table!.metadataKeys).not.toContain('kind')
 })

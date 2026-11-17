@@ -2,7 +2,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { render } from '@testing-library/react'
 
-import { useFacetedModel } from './useFacetedModel.ts'
+import { useTrackTable } from './useTrackTable.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 
@@ -41,16 +41,16 @@ function setup() {
   return view.activateTrackSelector() as HierarchicalTrackSelectorModel
 }
 
-test('the faceted model survives StrictMode mount -> cleanup -> mount', () => {
+test('the table model survives StrictMode mount -> cleanup -> mount', () => {
   const model = setup()
   const built: unknown[] = []
-  let held: ReturnType<typeof useFacetedModel> | undefined
+  let held: ReturnType<typeof useTrackTable> | undefined
   function Probe() {
-    const faceted = useFacetedModel(model, () => model.allTrackConfigurations)
-    if (!built.includes(faceted)) {
-      built.push(faceted)
+    const table = useTrackTable(model, () => model.allTrackConfigurations)
+    if (!built.includes(table)) {
+      built.push(table)
     }
-    held = faceted
+    held = table
     return null
   }
   render(<Probe />, strict)
@@ -65,9 +65,9 @@ test('the faceted model survives StrictMode mount -> cleanup -> mount', () => {
 
 test('a real unmount destroys the model', async () => {
   const model = setup()
-  let held: ReturnType<typeof useFacetedModel> | undefined
+  let held: ReturnType<typeof useTrackTable> | undefined
   function Probe() {
-    held = useFacetedModel(model, () => model.allTrackConfigurations)
+    held = useTrackTable(model, () => model.allTrackConfigurations)
     return null
   }
   const { unmount } = render(<Probe />, strict)

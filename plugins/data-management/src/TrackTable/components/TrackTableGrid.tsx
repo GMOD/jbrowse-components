@@ -3,26 +3,26 @@ import { useRef } from 'react'
 import { observer } from 'mobx-react'
 
 import { useSearchHighlight } from '../../shared/useSearchHighlight.ts'
-import { getRowSelectionState } from '../facetedSelection.ts'
-import FacetedTableHead from './FacetedTableHead.tsx'
-import FacetedTableRow from './FacetedTableRow.tsx'
+import { getRowSelectionState } from '../tableSelection.ts'
+import TrackTableHead from './TrackTableHead.tsx'
+import TrackTableRow from './TrackTableRow.tsx'
+import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
 import {
   CHECKBOX_WIDTH,
   DEFAULT_COL_WIDTH,
   ROW_HEIGHT,
-  useFacetedTableStyles,
-} from './facetedTableStyles.ts'
-import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
+  useTableStyles,
+} from './tableStyles.ts'
 import { useColumnResize } from './useColumnResize.ts'
 import { useVirtualRows } from './useVirtualRows.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
-import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
+import type { TrackTableModel, TrackRow } from '../trackTableModel.ts'
 
-export interface FacetedColumn {
+export interface TableColumn {
   id: string
   header: string
-  cell: (row: FacetedRow) => React.ReactNode
+  cell: (row: TrackRow) => React.ReactNode
 }
 
 // Empty <tr> used to offset the virtualized window from the top/bottom of the
@@ -35,18 +35,18 @@ const SpacerRow = observer(function SpacerRow({ height }: { height: number }) {
   ) : null
 })
 
-const FacetedDataGrid = observer(function FacetedDataGrid({
+const TrackTableGrid = observer(function TrackTableGrid({
   model,
-  faceted,
+  table,
   columns,
   width,
 }: {
   model: HierarchicalTrackSelectorModel
-  faceted: FacetedModel
-  columns: FacetedColumn[]
+  table: TrackTableModel
+  columns: TableColumn[]
   width: number
 }) {
-  const { classes } = useFacetedTableStyles()
+  const { classes } = useTableStyles()
   const {
     useShoppingCart,
     sortedRows,
@@ -55,10 +55,10 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
     query,
     filters,
     initialWidths,
-  } = faceted
+  } = table
 
   const parentRef = useRef<HTMLDivElement>(null)
-  useSearchHighlight(parentRef, query, 'jbrowse-faceted-search')
+  useSearchHighlight(parentRef, query, 'jbrowse-table-search')
   const { items, leadingGap, trailingGap, clientWidth } = useVirtualRows(
     parentRef,
     sortedRows.length,
@@ -110,7 +110,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           ))}
           <col />
         </colgroup>
-        <FacetedTableHead
+        <TrackTableHead
           columns={columns}
           allSelected={allSelected}
           someSelected={someSelected}
@@ -120,11 +120,11 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           sortAscending={sortAscending}
           onSort={field => {
             if (sortField !== field) {
-              faceted.setSort(field, true)
+              table.setSort(field, true)
             } else if (sortAscending) {
-              faceted.setSort(field, false)
+              table.setSort(field, false)
             } else {
-              faceted.setSort('', true)
+              table.setSort('', true)
             }
           }}
         />
@@ -133,7 +133,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           {items.map(virtualRow => {
             const row = sortedRows[virtualRow.index]!
             return (
-              <FacetedTableRow
+              <TrackTableRow
                 key={row.id}
                 row={row}
                 columns={columns}
@@ -146,7 +146,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           {sortedRows.length === 0 ? (
             <tr>
               <td colSpan={columns.length + 2} className={classes.emptyCell}>
-                {faceted.allRows.length
+                {table.allRows.length
                   ? 'No tracks match the current search and filters'
                   : 'No tracks'}
               </td>
@@ -158,4 +158,4 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   )
 })
 
-export default FacetedDataGrid
+export default TrackTableGrid

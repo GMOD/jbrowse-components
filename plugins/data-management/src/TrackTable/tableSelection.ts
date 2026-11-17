@@ -45,7 +45,7 @@ export function setTracksSelected(
 }
 
 /**
- * Derives the current selection state for the faceted grid and returns the
+ * Derives the current selection state for the table grid and returns the
  * toggle handlers for the select-all and per-row checkboxes. In shopping-cart
  * mode "selected" means present in the selection set; otherwise it means the
  * track is shown on the view.

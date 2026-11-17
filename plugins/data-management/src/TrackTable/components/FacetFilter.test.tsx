@@ -2,11 +2,11 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render } from '@testing-library/react'
 
-import { facetedStateTreeF } from '../facetedModel.ts'
+import { trackTableModelFactory } from '../trackTableModel.ts'
 import FacetFilter from './FacetFilter.tsx'
 
 function renderFilter() {
-  const faceted = facetedStateTreeF().create({})
+  const table = trackTableModelFactory().create({})
   const utils = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <FacetFilter
@@ -15,58 +15,58 @@ function renderFilter() {
           ['DNA', 2],
           ['RNA', 1],
         ]}
-        faceted={faceted}
+        table={table}
       />
     </ThemeProvider>,
   )
-  return { faceted, ...utils }
+  return { table, ...utils }
 }
 
 test('checking values stores them as a string array, in click order', () => {
-  const { faceted, getByLabelText } = renderFilter()
+  const { table, getByLabelText } = renderFilter()
 
   fireEvent.click(getByLabelText('RNA'))
   fireEvent.click(getByLabelText('DNA'))
 
-  expect(faceted.filters.get('metadata.assay')).toEqual(['RNA', 'DNA'])
+  expect(table.filters.get('metadata.assay')).toEqual(['RNA', 'DNA'])
 })
 
 test('unchecking a value removes only that value', () => {
-  const { faceted, getByLabelText } = renderFilter()
+  const { table, getByLabelText } = renderFilter()
   act(() => {
-    faceted.setFilter('metadata.assay', ['DNA', 'RNA'])
+    table.setFilter('metadata.assay', ['DNA', 'RNA'])
   })
 
   fireEvent.click(getByLabelText('DNA'))
 
-  expect(faceted.filters.get('metadata.assay')).toEqual(['RNA'])
+  expect(table.filters.get('metadata.assay')).toEqual(['RNA'])
 })
 
 test('each value shows its count, and clearing appears once one is checked', () => {
-  const { faceted, getByLabelText, queryByLabelText } = renderFilter()
+  const { table, getByLabelText, queryByLabelText } = renderFilter()
   expect(getByLabelText('DNA').closest('label')!.textContent).toBe('DNA2')
   expect(queryByLabelText('Clear assay filter')).toBeNull()
 
   fireEvent.click(getByLabelText('DNA'))
   fireEvent.click(getByLabelText('Clear assay filter'))
 
-  expect(faceted.filters.has('metadata.assay')).toBe(false)
+  expect(table.filters.has('metadata.assay')).toBe(false)
 })
 
 function renderValues(count: number, defaultExpanded?: boolean) {
-  const faceted = facetedStateTreeF().create({})
+  const table = trackTableModelFactory().create({})
   const vals = Array.from(
     { length: count },
     (_, i) => [`c${i}`, 100 - i] satisfies [string, number],
   )
   return {
-    faceted,
+    table,
     ...render(
       <ThemeProvider theme={createJBrowseTheme()}>
         <FacetFilter
           field="metadata.cell"
           vals={vals}
-          faceted={faceted}
+          table={table}
           defaultExpanded={defaultExpanded}
         />
       </ThemeProvider>,
@@ -81,13 +81,13 @@ test('a facet of up to 20 values lists them all', () => {
 })
 
 test('a longer facet lists its 10 most common values, any checked one, and a way to the rest', () => {
-  const { faceted, getByText, queryByLabelText, getByLabelText } =
+  const { table, getByText, queryByLabelText, getByLabelText } =
     renderValues(25)
   expect(getByLabelText('c9')).toBeTruthy()
   expect(queryByLabelText('c10')).toBeNull()
 
   act(() => {
-    faceted.setFilter('metadata.cell', ['c20'])
+    table.setFilter('metadata.cell', ['c20'])
   })
   expect(getByLabelText('c20')).toBeTruthy()
   fireEvent.click(getByText('Show 14 more'))

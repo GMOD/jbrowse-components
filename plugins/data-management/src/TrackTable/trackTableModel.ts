@@ -23,8 +23,8 @@ import {
   filterRowsByFacets,
   filterRowsByText,
   rowSearchText,
-} from './facetedFilter.ts'
-import { getRootKeys } from './facetedUtil.ts'
+} from './facetFilters.ts'
+import { getRootKeys } from './tableUtil.ts'
 
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
@@ -113,14 +113,14 @@ function mirrors(a: string[], b: string[]) {
 }
 
 /**
- * #stateModel FacetedModel
- * #internal faceted-selector UI state owned by the hierarchical track selector
+ * #stateModel TrackTableModel
+ * #internal table-selector UI state owned by the hierarchical track selector
  * widget — kept out of the website docs
  * #category widget
  */
-export function facetedStateTreeF() {
+export function trackTableModelFactory() {
   return types
-    .model('FacetedModel', {
+    .model('TrackTableModel', {
       /**
        * #property
        */
@@ -561,7 +561,7 @@ export function facetedStateTreeF() {
       },
       /**
        * #getter
-       * Faceted rows in display order: filteredRows sorted by the active sort
+       * Table rows in display order: filteredRows sorted by the active sort
        * field. With no sort field, a search lists the tracks whose name holds
        * every word first, each group in natural order.
        */
@@ -606,6 +606,6 @@ export function facetedStateTreeF() {
       },
     }))
 }
-export type FacetedStateModel = ReturnType<typeof facetedStateTreeF>
-export type FacetedModel = Instance<FacetedStateModel>
-export type FacetedRow = FacetedModel['filteredRows'][0]
+export type TrackTableStateModel = ReturnType<typeof trackTableModelFactory>
+export type TrackTableModel = Instance<TrackTableStateModel>
+export type TrackRow = TrackTableModel['filteredRows'][0]

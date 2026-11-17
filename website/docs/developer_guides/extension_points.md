@@ -1139,9 +1139,8 @@ A plugin whose item does not apply returns `undefined`.
 type: synchronous
 
 Replaces the dialog that opens when a user clicks a folder category (supertrack)
-in the hierarchical track selector. The default shows a faceted track selector
-scoped to that category; use this point to provide custom UI for a specific
-category.
+in the hierarchical track selector. The default shows a track table scoped to
+that category; use this point to provide custom UI for a specific category.
 
 - `args` - a React component (the default `DefaultFolderDialog`)
 - `props` - `FolderDialogProps`

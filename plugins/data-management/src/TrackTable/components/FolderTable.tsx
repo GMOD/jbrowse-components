@@ -2,14 +2,14 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import FacetChips from './FacetChips.tsx'
-import FacetedDataGrid from './FacetedDataGrid.tsx'
-import FacetedHeader from './FacetedHeader.tsx'
-import { getFacetedColumns } from './getFacetedColumns.tsx'
+import FolderTableHeader from './FolderTableHeader.tsx'
+import TrackTableGrid from './TrackTableGrid.tsx'
+import { getTableColumns } from './getTableColumns.tsx'
 import { shownFields } from './tableLayout.ts'
 import { useWindowSize } from './useWindowSize.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
-import type { FacetedModel } from '../facetedModel.ts'
+import type { TrackTableModel } from '../trackTableModel.ts'
 
 const useStyles = makeStyles()({
   root: {
@@ -27,29 +27,29 @@ const frac = 0.75
 /**
  * a table with its own filter box, for a dialog sized to the window
  */
-const FacetedSelector = observer(function FacetedSelector({
+const FolderTable = observer(function FolderTable({
   model,
-  faceted,
+  table,
 }: {
   model: HierarchicalTrackSelectorModel
-  faceted: FacetedModel
+  table: TrackTableModel
 }) {
   const { classes } = useStyles()
   const windowSize = useWindowSize()
   const width = windowSize.width * frac
-  const shown = shownFields(faceted, width)
+  const shown = shownFields(table, width)
   return (
     <div
       className={classes.root}
       style={{ width, height: windowSize.height * frac }}
     >
-      <FacetedHeader model={model} faceted={faceted} shown={shown} />
-      <FacetChips faceted={faceted} />
+      <FolderTableHeader model={model} table={table} shown={shown} />
+      <FacetChips table={table} />
       <div className={classes.grid}>
-        <FacetedDataGrid
+        <TrackTableGrid
           model={model}
-          faceted={faceted}
-          columns={getFacetedColumns({ faceted, model, fields: shown })}
+          table={table}
+          columns={getTableColumns({ table, model, fields: shown })}
           width={width}
         />
       </div>
@@ -57,4 +57,4 @@ const FacetedSelector = observer(function FacetedSelector({
   )
 })
 
-export default FacetedSelector
+export default FolderTable

@@ -3,11 +3,11 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
 
-import { checkboxSx, useFacetedTableStyles } from './facetedTableStyles.ts'
+import { checkboxSx, useTableStyles } from './tableStyles.ts'
 
-import type { FacetedColumn } from './FacetedDataGrid.tsx'
+import type { TableColumn } from './TrackTableGrid.tsx'
 
-const FacetedTableHead = observer(function FacetedTableHead({
+const TrackTableHead = observer(function TrackTableHead({
   columns,
   allSelected,
   someSelected,
@@ -17,7 +17,7 @@ const FacetedTableHead = observer(function FacetedTableHead({
   sortAscending,
   onSort,
 }: {
-  columns: FacetedColumn[]
+  columns: TableColumn[]
   allSelected: boolean
   someSelected: boolean
   onSelectAll?: () => void
@@ -26,7 +26,7 @@ const FacetedTableHead = observer(function FacetedTableHead({
   sortAscending: boolean
   onSort: (colId: string) => void
 }) {
-  const { classes } = useFacetedTableStyles()
+  const { classes } = useTableStyles()
   return (
     <thead className={classes.thead}>
       <tr>
@@ -93,4 +93,4 @@ const FacetedTableHead = observer(function FacetedTableHead({
   )
 })
 
-export default FacetedTableHead
+export default TrackTableHead

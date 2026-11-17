@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { DEFAULT_COL_WIDTH } from './facetedTableStyles.ts'
+import { DEFAULT_COL_WIDTH } from './tableStyles.ts'
 
 const MIN_COL_WIDTH = 50
 

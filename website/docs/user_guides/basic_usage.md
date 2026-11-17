@@ -353,7 +353,7 @@ starts on the right.
 
 <Figure caption="Toggling the drawer widget to the left side of the screen." src="/img/drawer_widget_toggle.png" />
 
-## Faceted track selector
+## Track table
 
 The Tree | Table toggle at the top of "Available tracks" shows all tracks as a
 filterable table, with the tracks whose name matches the filter box listed

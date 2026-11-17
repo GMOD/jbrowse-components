@@ -6,7 +6,7 @@ guide_category: Appearance
 
 Control track grouping, sorting, and collapse with `hierarchical` settings under
 `configuration`. Add a `metadata` object to any track to gain filterable columns
-in the faceted selector.
+in the track table.
 
 Tracks appear in config.json order unless the `hierarchical` settings change it.
 [](/docs/config/hierarchicalconfigschema) lists every slot; the ones people set:
@@ -52,15 +52,14 @@ each connection) cannot become folders, since clicking a connection's row loads
 it. Plugins replace the folder dialog through
 [`TrackSelector-folderDialog`](/docs/developer_guides/extension_points#trackselector-folderdialog).
 
-## Faceted track selector
+## Track table
 
-The faceted selector shows all tracks as a filterable table, opened from the
-Tree | Table toggle at the top of "Available tracks" or a folder's context menu.
-Every top-level key of a track's `metadata` object can be a column to filter or
-sort on, as in the
+The track table shows all tracks as a filterable table, opened from the Tree |
+Table toggle at the top of "Available tracks" or a folder's context menu. Every
+top-level key of a track's `metadata` object can be a column to filter or sort
+on, as in the
 [cookbook's metadata track](/docs/cookbook#instance-wide-settings).
-[](/docs/user_guides/basic_usage#faceted-track-selector) covers the filter
-chips.
+[](/docs/user_guides/basic_usage#track-table) covers the filter chips.
 
 Beside the name, the table shows as many columns as fit its width, with no
 sideways scroll. By default those are the fields that sort tracks into groups:

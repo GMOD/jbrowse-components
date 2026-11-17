@@ -11,7 +11,7 @@ export const checkboxSx = {
   '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
 }
 
-export const useFacetedTableStyles = makeStyles()(theme => {
+export const useTableStyles = makeStyles()(theme => {
   const borderColor = theme.palette.tableBorder
   const border = `1px solid ${borderColor}`
   return {

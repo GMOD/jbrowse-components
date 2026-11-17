@@ -631,7 +631,7 @@ export interface StringColors {
    * because it paints over track data on both sides and has to mask it
    */
   regionSeparator: string
-  /** Cell and header rules in JBrowse's own tables, e.g. the faceted track selector */
+  /** Cell and header rules in JBrowse's own tables, e.g. the track table */
   tableBorder: string
   /** Hover shading over a single feature */
   featureHover: string

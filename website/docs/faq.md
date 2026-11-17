@@ -161,7 +161,7 @@ see [](/docs/config_guides/jexl), and
 [](/docs/config_guides/customizing_feature_colors/) for adding a function of
 your own when an expression gets unwieldy.
 
-### How do I get (more) categories to filter on in the faceted track selector
+### How do I get (more) fields to filter tracks on
 
 The track selector's filter chips cover kind (the track type, or
 `metadata.kind`), category, and every top-level `metadata` key whose values

@@ -1,4 +1,4 @@
-import { getRowSelectionState } from './facetedSelection.ts'
+import { getRowSelectionState } from './tableSelection.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 

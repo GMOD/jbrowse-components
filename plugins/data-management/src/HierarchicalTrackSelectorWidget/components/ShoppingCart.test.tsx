@@ -5,7 +5,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { setTracksSelected } from '../../FacetedSelector/facetedSelection.ts'
+import { setTracksSelected } from '../../TrackTable/tableSelection.ts'
 import ShoppingCart from './ShoppingCart.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'

@@ -3,11 +3,11 @@ import { getEnv, getSession } from '@jbrowse/core/util'
 import { useCreateOnce, useFinalUnmount } from '@jbrowse/core/util/hooks'
 import { destroy } from '@jbrowse/mobx-state-tree'
 
-import { facetedStateTreeF } from './facetedModel.ts'
-import { trackTypeShortName } from './facetedUtil.ts'
+import { trackTypeShortName } from './tableUtil.ts'
+import { trackTableModelFactory } from './trackTableModel.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
-import type { FacetedModel } from './facetedModel.ts'
+import type { TrackTableModel } from './trackTableModel.ts'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -16,7 +16,7 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * names its kind column shows.
  */
 export function configureTrackTable(
-  table: FacetedModel,
+  table: TrackTableModel,
   node: IAnyStateTreeNode,
 ) {
   const columns: unknown = getConf(getSession(node), [
@@ -53,18 +53,18 @@ export function configureTrackTable(
  * the grid threw `[mobx-state-tree] … [dead]`. Same pair, same reasons, as the
  * embedded products' `useCreateViewState`.
  */
-export function useFacetedModel(
+export function useTrackTable(
   model: HierarchicalTrackSelectorModel,
   getTracks: () => AnyTrackConfig[],
 ) {
-  const faceted = useCreateOnce(() => {
-    const ret = facetedStateTreeF().create()
+  const table = useCreateOnce(() => {
+    const ret = trackTableModelFactory().create()
     ret.setTrackSource(getTracks, getSession(model), model.assemblyNames)
     configureTrackTable(ret, model)
     return ret
   })
   useFinalUnmount(() => {
-    destroy(faceted)
+    destroy(table)
   })
-  return faceted
+  return table
 }

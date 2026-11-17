@@ -1,7 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 
-import { facetedStateTreeF } from '../FacetedSelector/facetedModel.ts'
+import { trackTableModelFactory } from '../TrackTable/trackTableModel.ts'
 
 import type { HierarchicalTrackSelectorModel } from './model.ts'
 
@@ -113,11 +113,11 @@ test('a query cannot span two fields', () => {
 
 // The two selectors search different field sets on purpose — each searches what
 // it shows — but they must normalize the same way. This is the case that drifted
-// before: the tree matched raw markup while the faceted grid stripped it.
+// before: the tree matched raw markup while the table grid stripped it.
 test('both selectors agree on markup and case normalization', () => {
   const { session, model } = setup()
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
@@ -125,8 +125,8 @@ test('both selectors agree on markup and case normalization', () => {
   expect(session).toBeTruthy()
 
   for (const query of ['<i>', 'ITALIC', 'chromatin']) {
-    faceted.setFilterText(query)
-    const facetedIds = faceted.rows.map(r => r.id).toSorted()
-    expect(treeMatches(model, query)).toEqual(facetedIds)
+    table.setFilterText(query)
+    const tableIds = table.rows.map(r => r.id).toSorted()
+    expect(treeMatches(model, query)).toEqual(tableIds)
   }
 })

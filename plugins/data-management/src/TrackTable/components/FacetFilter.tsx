@@ -10,7 +10,7 @@ import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/
 import { trackNameCollator } from '../../shared/collator.ts'
 import { facetLabel } from './util.ts'
 
-import type { FacetedModel } from '../facetedModel.ts'
+import type { TrackTableModel } from '../trackTableModel.ts'
 
 // a facet with more values than this lists only its most common ones until
 // asked for the rest
@@ -104,13 +104,13 @@ const useStyles = makeStyles()(theme => {
 const FacetFilter = observer(function FacetFilter({
   field,
   vals,
-  faceted,
+  table,
   defaultExpanded = true,
   collapsible = true,
 }: {
   field: string
   vals: [string, number][]
-  faceted: FacetedModel
+  table: TrackTableModel
   defaultExpanded?: boolean
   collapsible?: boolean
 }) {
@@ -118,7 +118,7 @@ const FacetFilter = observer(function FacetFilter({
   const [open, setOpen] = useState(defaultExpanded)
   const expanded = !collapsible || open
   const [showAll, setShowAll] = useState(false)
-  const { filters, nonMetadataFieldSet } = faceted
+  const { filters, nonMetadataFieldSet } = table
   const selected = filters.get(field) ?? []
   const label = facetLabel(field, nonMetadataFieldSet)
   const sorted = vals.toSorted(
@@ -154,7 +154,7 @@ const FacetFilter = observer(function FacetFilter({
               className={classes.link}
               aria-label={`Clear ${label} filter`}
               onClick={() => {
-                faceted.setFilter(field, [])
+                table.setFilter(field, [])
               }}
             >
               clear
@@ -175,7 +175,7 @@ const FacetFilter = observer(function FacetFilter({
                       label={text}
                       checked={selected.includes(value)}
                       onChange={event => {
-                        faceted.setFilter(
+                        table.setFilter(
                           field,
                           event.target.checked
                             ? [...selected, value]

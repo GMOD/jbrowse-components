@@ -1,4 +1,4 @@
-import { DEFAULT_COL_WIDTH } from './facetedTableStyles.ts'
+import { DEFAULT_COL_WIDTH } from './tableStyles.ts'
 
 const NAME_SHARE = 0.5
 

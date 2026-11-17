@@ -2,7 +2,7 @@ import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { autorun } from 'mobx'
 
-import { facetedStateTreeF } from './facetedModel.ts'
+import { trackTableModelFactory } from './trackTableModel.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 
@@ -45,8 +45,8 @@ function setup() {
     ],
   })
   const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const faceted = facetedStateTreeF().create({})
-  faceted.setTrackSource(
+  const table = trackTableModelFactory().create({})
+  table.setTrackSource(
     () => model.allTrackConfigurations,
     getSession(model),
     model.assemblyNames,
@@ -55,13 +55,13 @@ function setup() {
   // assemblyManager.get has resolved the assembly, so warm it here to keep row
   // counts the same no matter how many times a test reads them
   void model.allTrackConfigurations.length
-  return { session, model, faceted }
+  return { session, model, table }
 }
 
 describe('sorting', () => {
   test('sortedRows preserves natural order with no sort field', () => {
-    const { faceted } = setup()
-    expect(faceted.sortedRows.map(r => r.name)).toEqual([
+    const { table } = setup()
+    expect(table.sortedRows.map(r => r.name)).toEqual([
       REFSEQ,
       'charlie',
       'alpha',
@@ -70,9 +70,9 @@ describe('sorting', () => {
   })
 
   test('ascending name sort', () => {
-    const { faceted } = setup()
-    faceted.setSort('name', true)
-    expect(faceted.sortedRows.map(r => r.name)).toEqual([
+    const { table } = setup()
+    table.setSort('name', true)
+    expect(table.sortedRows.map(r => r.name)).toEqual([
       'alpha',
       'bravo',
       'charlie',
@@ -81,9 +81,9 @@ describe('sorting', () => {
   })
 
   test('descending name sort', () => {
-    const { faceted } = setup()
-    faceted.setSort('name', false)
-    expect(faceted.sortedRows.map(r => r.name)).toEqual([
+    const { table } = setup()
+    table.setSort('name', false)
+    expect(table.sortedRows.map(r => r.name)).toEqual([
       REFSEQ,
       'charlie',
       'bravo',
@@ -92,9 +92,9 @@ describe('sorting', () => {
   })
 
   test('sorting does not mutate filteredRows order', () => {
-    const { faceted } = setup()
-    faceted.setSort('name', true)
-    expect(faceted.filteredRows.map(r => r.name)).toEqual([
+    const { table } = setup()
+    table.setSort('name', true)
+    expect(table.filteredRows.map(r => r.name)).toEqual([
       REFSEQ,
       'charlie',
       'alpha',
@@ -103,11 +103,11 @@ describe('sorting', () => {
   })
 
   test('hiding the sorted column drops the sort', () => {
-    const { faceted } = setup()
-    faceted.setSort('kind', true)
-    faceted.setColumnVisible('kind', false)
-    expect(faceted.sortField).toBe('')
-    expect(faceted.sortedRows.map(r => r.name)).toEqual([
+    const { table } = setup()
+    table.setSort('kind', true)
+    table.setColumnVisible('kind', false)
+    expect(table.sortField).toBe('')
+    expect(table.sortedRows.map(r => r.name)).toEqual([
       REFSEQ,
       'charlie',
       'alpha',
@@ -120,7 +120,7 @@ describe('html-valued metadata', () => {
   // metadata cells render through SanitizedHTML, so searching and sorting have
   // to work on the displayed text rather than the raw slot
   function setupWithMarkup() {
-    const { session, faceted } = setup()
+    const { session, table } = setup()
     for (const [trackId, note] of [
       ['charlie', '<i>zebra</i>'],
       ['alpha', '<b>aardvark</b>'],
@@ -129,46 +129,46 @@ describe('html-valued metadata', () => {
         .find(t => t.trackId === trackId)!
         .setSlot('metadata', { note })
     }
-    return faceted
+    return table
   }
 
   test('a query matches the text, not the markup around it', () => {
-    const faceted = setupWithMarkup()
-    faceted.setFilterText('zebra')
-    expect(faceted.rows.map(r => r.name)).toEqual(['charlie'])
+    const table = setupWithMarkup()
+    table.setFilterText('zebra')
+    expect(table.rows.map(r => r.name)).toEqual(['charlie'])
     // 'i' would match the <i> tag if the raw slot were searched
-    faceted.setFilterText('<i>')
-    expect(faceted.rows).toHaveLength(0)
+    table.setFilterText('<i>')
+    expect(table.rows).toHaveLength(0)
   })
 
   test('sorting orders by the text, not by the leading angle bracket', () => {
-    const faceted = setupWithMarkup()
-    faceted.setSort('metadata.note', true)
+    const table = setupWithMarkup()
+    table.setSort('metadata.note', true)
     expect(
-      faceted.sortedRows.filter(r => r.metadata.note).map(r => r.name),
+      table.sortedRows.filter(r => r.metadata.note).map(r => r.name),
     ).toEqual(['alpha', 'charlie'])
   })
 })
 
 describe('live track source', () => {
   test('a track deleted while the selector is open drops out of the rows', () => {
-    const { session, faceted } = setup()
+    const { session, table } = setup()
     // observed, as in the app: an unobserved computed recomputes on every read
-    const dispose = autorun(() => faceted.rows.length)
-    expect(faceted.rows.map(r => r.name)).toContain('alpha')
+    const dispose = autorun(() => table.rows.length)
+    expect(table.rows.map(r => r.name)).toContain('alpha')
 
     session.deleteTrackConf(
       session.sessionTracks.find(t => t.trackId === 'alpha')!,
     )
 
-    expect(faceted.rows.map(r => r.name)).not.toContain('alpha')
+    expect(table.rows.map(r => r.name)).not.toContain('alpha')
     dispose()
   })
 
   test('a track added while the selector is open appears in the rows', () => {
-    const { session, faceted } = setup()
-    const dispose = autorun(() => faceted.rows.length)
-    const before = faceted.rows.length
+    const { session, table } = setup()
+    const dispose = autorun(() => table.rows.length)
+    const before = table.rows.length
 
     session.addSessionTrackConf({
       trackId: 'delta',
@@ -178,17 +178,17 @@ describe('live track source', () => {
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
 
-    expect(faceted.rows.map(r => r.name)).toContain('delta')
-    expect(faceted.rows.length).toBe(before + 1)
+    expect(table.rows.map(r => r.name)).toContain('delta')
+    expect(table.rows.length).toBe(before + 1)
     dispose()
   })
 })
 
 describe('column choices', () => {
   test('persist under a config+assembly scoped key', () => {
-    const { faceted } = setup()
-    faceted.setColumnVisible('adapter', true)
-    faceted.setColumnVisible('kind', false)
+    const { table } = setup()
+    table.setColumnVisible('adapter', true)
+    table.setColumnVisible('kind', false)
     const scopedKey = Object.keys(localStorage).find(k =>
       k.startsWith('facet-columnChoices'),
     )
@@ -200,7 +200,7 @@ describe('column choices', () => {
   })
 
   test('restore from the scoped key on load, skipping malformed entries', () => {
-    setup().faceted.setColumnVisible('adapter', true)
+    setup().table.setColumnVisible('adapter', true)
     const scopedKey = Object.keys(localStorage).find(k =>
       k.startsWith('facet-columnChoices'),
     )!
@@ -208,9 +208,9 @@ describe('column choices', () => {
       scopedKey,
       JSON.stringify([{ field: 'adapter', show: true }, 'kind', { field: 1 }]),
     )
-    const { faceted } = setup()
-    expect(faceted.columnChoices).toEqual([{ field: 'adapter', show: true }])
-    expect(faceted.shownColumns(0)).toEqual(['name', 'adapter'])
+    const { table } = setup()
+    expect(table.columnChoices).toEqual([{ field: 'adapter', show: true }])
+    expect(table.shownColumns(0)).toEqual(['name', 'adapter'])
   })
 })
 
@@ -240,9 +240,9 @@ describe('columns and facets', () => {
   }
 
   test('the default columns are the fields that group tracks, most widely set first', () => {
-    const { session, faceted } = setup()
+    const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP', 'ChIP', 'ChIP'])
-    expect(faceted.fields).toEqual([
+    expect(table.fields).toEqual([
       'name',
       'description',
       'category',
@@ -257,13 +257,13 @@ describe('columns and facets', () => {
     // every track but the reference sequence is a Feature, so kind groups
     // nothing; nor does a unique url, a constant flag or a per-track
     // description; format says what assay says
-    expect(faceted.groupingFields).toEqual([
+    expect(table.groupingFields).toEqual([
       'category',
       'metadata.assay',
       'metadata.lab',
     ])
-    expect(faceted.shownColumns(1)).toEqual(['name', 'category'])
-    expect(faceted.shownColumns(9)).toEqual([
+    expect(table.shownColumns(1)).toEqual(['name', 'category'])
+    expect(table.shownColumns(9)).toEqual([
       'name',
       'category',
       'metadata.assay',
@@ -272,51 +272,51 @@ describe('columns and facets', () => {
   })
 
   test('the configured columns come first, and the grouping fields fill the room after them', () => {
-    const { session, faceted } = setup()
+    const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    faceted.setConfiguredColumns(['name', 'metadata.lab'])
-    expect(faceted.defaultColumns).toEqual([
+    table.setConfiguredColumns(['name', 'metadata.lab'])
+    expect(table.defaultColumns).toEqual([
       'metadata.lab',
       'category',
       'metadata.assay',
     ])
-    faceted.setConfiguredColumns(['metadata.nope'])
-    expect(faceted.defaultColumns).toEqual(faceted.groupingFields)
+    table.setConfiguredColumns(['metadata.nope'])
+    expect(table.defaultColumns).toEqual(table.groupingFields)
   })
 
   test('the config names the columns, and the user’s choices win over both', () => {
-    const { session, faceted } = setup()
+    const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    faceted.setConfiguredColumns(['metadata.assay', 'metadata.nope', 'kind'])
-    expect(faceted.shownColumns(1)).toEqual(['name', 'metadata.assay'])
+    table.setConfiguredColumns(['metadata.assay', 'metadata.nope', 'kind'])
+    expect(table.shownColumns(1)).toEqual(['name', 'metadata.assay'])
 
-    faceted.setColumnVisible('metadata.assay', false)
-    faceted.setColumnVisible('metadata.url', true)
-    expect(faceted.shownColumns(1)).toEqual(['name', 'metadata.url'])
-    expect(faceted.shownColumns(2)).toEqual(['name', 'kind', 'metadata.url'])
+    table.setColumnVisible('metadata.assay', false)
+    table.setColumnVisible('metadata.url', true)
+    expect(table.shownColumns(1)).toEqual(['name', 'metadata.url'])
+    expect(table.shownColumns(2)).toEqual(['name', 'kind', 'metadata.url'])
   })
 
   test('the facet panel keeps a facet that is still filtering', () => {
-    const { session, faceted } = setup()
+    const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    expect(faceted.filterFacets).not.toContain('metadata.flag')
-    faceted.setFilter('metadata.flag', ['true'])
-    expect(faceted.filterFacets).toContain('metadata.flag')
-    expect([...faceted.facetCategoryCounts.keys()]).toContain('metadata.flag')
+    expect(table.filterFacets).not.toContain('metadata.flag')
+    table.setFilter('metadata.flag', ['true'])
+    expect(table.filterFacets).toContain('metadata.flag')
+    expect([...table.facetCategoryCounts.keys()]).toContain('metadata.flag')
   })
 
   test('the first three default columns that group tracks, shown grouping columns and active filters start open', () => {
-    const { session, faceted } = setup()
+    const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    faceted.setConfiguredColumns(['description', 'metadata.assay', 'adapter'])
-    expect([...faceted.openFacets]).toEqual([
+    table.setConfiguredColumns(['description', 'metadata.assay', 'adapter'])
+    expect([...table.openFacets]).toEqual([
       'metadata.assay',
       'category',
       'metadata.lab',
     ])
-    faceted.setColumnVisible('metadata.url', true)
-    faceted.setFilter('metadata.flag', ['true'])
-    expect([...faceted.openFacets]).toEqual([
+    table.setColumnVisible('metadata.url', true)
+    table.setFilter('metadata.flag', ['true'])
+    expect([...table.openFacets]).toEqual([
       'metadata.assay',
       'category',
       'metadata.lab',
@@ -325,21 +325,21 @@ describe('columns and facets', () => {
   })
 
   test('a facet keeps its place when it starts or stops filtering, and a non-grouping column gets none', () => {
-    const { session, faceted } = setup()
+    const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    faceted.setConfiguredColumns(['description'])
-    const before = faceted.filterFacets
+    table.setConfiguredColumns(['description'])
+    const before = table.filterFacets
     expect(before).not.toContain('description')
     const last = before.at(-1)!
-    faceted.setFilter(last, ['x'])
-    expect(faceted.filterFacets).toEqual(before)
-    faceted.setFilter(last, [])
-    expect(faceted.filters.size).toBe(0)
-    expect(faceted.filterFacets).toEqual(before)
+    table.setFilter(last, ['x'])
+    expect(table.filterFacets).toEqual(before)
+    table.setFilter(last, [])
+    expect(table.filters.size).toBe(0)
+    expect(table.filterFacets).toEqual(before)
   })
 
   test('a search lists name matches first when no column is sorted', () => {
-    const { session, faceted } = setup()
+    const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase'])
     session.addSessionTrackConf({
       trackId: 'named',
@@ -348,15 +348,9 @@ describe('columns and facets', () => {
       type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
-    faceted.setFilterText('peaks')
-    expect(faceted.sortedRows.map(r => r.name)).toEqual([
-      'Peaks a1 rerun',
-      'a0',
-    ])
-    faceted.setSort('name', true)
-    expect(faceted.sortedRows.map(r => r.name)).toEqual([
-      'a0',
-      'Peaks a1 rerun',
-    ])
+    table.setFilterText('peaks')
+    expect(table.sortedRows.map(r => r.name)).toEqual(['Peaks a1 rerun', 'a0'])
+    table.setSort('name', true)
+    expect(table.sortedRows.map(r => r.name)).toEqual(['a0', 'Peaks a1 rerun'])
   })
 })
