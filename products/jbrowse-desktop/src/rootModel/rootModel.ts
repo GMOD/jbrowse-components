@@ -37,11 +37,10 @@ import LinkIcon from '@mui/icons-material/Link'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import PublicIcon from '@mui/icons-material/Public'
 import SaveAsIcon from '@mui/icons-material/SaveAs'
-import SmartToyIcon from '@mui/icons-material/SmartToy'
-import UpdateIcon from '@mui/icons-material/Update'
 import { autorun } from 'mobx'
 
 import packageJSON from '../../package.json' with { type: 'json' }
+import { desktopHelpMenuItems } from '../desktopHelpMenuItems.ts'
 import jobsModelFactory from '../indexJobsModel.ts'
 import { invokeIpc } from '../ipc.ts'
 import JBrowseDesktop from '../jbrowseModel.ts'
@@ -506,34 +505,14 @@ export default function rootModelFactory({
                   },
                 ],
               },
-              // The native menu bar exists on macOS alone (electron/window.ts
-              // sets it to null elsewhere), so on Windows and Linux these are
-              // the only route to the update check and the MCP setup text.
               {
                 label: 'Help',
                 menuItems: () => [
                   aboutMenuItem(),
                   helpMenuItem(),
-                  {
-                    label: 'Check for updates...',
-                    icon: UpdateIcon,
-                    onClick: () => {
-                      // every outcome is a native dialog raised by the main
-                      // process, so there is nothing to await or to report
-                      invokeIpc('checkForUpdates').catch((e: unknown) => {
-                        reportError(self.session, e)
-                      })
-                    },
-                  },
-                  {
-                    label: 'Connect an AI agent...',
-                    icon: SmartToyIcon,
-                    onClick: () => {
-                      invokeIpc('showConnectAgent').catch((e: unknown) => {
-                        reportError(self.session, e)
-                      })
-                    },
-                  },
+                  ...desktopHelpMenuItems(e => {
+                    reportError(self.session, e)
+                  }),
                 ],
               },
             ],

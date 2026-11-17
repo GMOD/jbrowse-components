@@ -122,8 +122,8 @@ JBrowse desktop autosaves continuously, and autosaves show up in "Recently
 opened sessions". The **File → Session** menu handles named sessions:
 
 - **Save session as...** writes a `.jbrowse` file you can reopen or share.
-- **Open config.json or .jbrowse file...** reopens one, as does the start
-  screen's **File → Open session (.jbrowse) file...**.
+- **Open config.json or .jbrowse file...** reopens one. The start screen's
+  **File** menu has it too.
 - **Export session to web...** produces a shareable URL for someone running
   JBrowse Web.
 

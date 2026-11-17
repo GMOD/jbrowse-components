@@ -10,6 +10,8 @@ import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
+import BugReportIcon from '@mui/icons-material/BugReport'
+import MenuBookIcon from '@mui/icons-material/MenuBook'
 import {
   Alert,
   AppBar,
@@ -20,6 +22,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { desktopHelpMenuItems } from '../../desktopHelpMenuItems.ts'
 import { invokeIpc } from '../../ipc.ts'
 import { useNotifyError } from '../NotifyContext.ts'
 import SessionLoadingScreen from '../SessionLoadingScreen.tsx'
@@ -265,7 +268,7 @@ const StartScreen = observer(function StartScreen({
                 },
               },
               {
-                label: 'Open session (.jbrowse) file...',
+                label: 'Open config.json or .jbrowse file...',
                 disabled: loading,
                 onClick: async () => {
                   try {
@@ -284,6 +287,12 @@ const StartScreen = observer(function StartScreen({
                 disabled: loading,
                 onClick: () => {
                   setDialog('openLink')
+                },
+              },
+              {
+                label: 'Exit',
+                onClick: () => {
+                  invokeIpc('quit').catch(notifyError)
                 },
               },
             ]}
@@ -311,6 +320,29 @@ const StartScreen = observer(function StartScreen({
                     },
                   },
               ...pluginMenuItems(startScreenPluginManager, panelProps),
+            ]}
+          />
+          <DropDownMenu
+            menuTitle="Help"
+            menuItems={[
+              {
+                label: 'Documentation',
+                icon: MenuBookIcon,
+                onClick: () => {
+                  window.open('https://jbrowse.org/jb2/docs/', '_blank')
+                },
+              },
+              {
+                label: 'Report an issue',
+                icon: BugReportIcon,
+                onClick: () => {
+                  window.open(
+                    'https://github.com/GMOD/jbrowse-components/issues/new/choose',
+                    '_blank',
+                  )
+                },
+              },
+              ...desktopHelpMenuItems(notifyError),
             ]}
           />
         </Toolbar>

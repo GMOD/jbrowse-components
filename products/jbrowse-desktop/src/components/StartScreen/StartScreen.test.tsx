@@ -77,7 +77,7 @@ test('a launch from one panel leaves nothing in either panel to start a second',
   openFileMenu()
   expect(
     screen
-      .getByRole('menuitem', { name: 'Open session (.jbrowse) file...' })
+      .getByRole('menuitem', { name: 'Open config.json or .jbrowse file...' })
       .getAttribute('aria-disabled'),
   ).toBe('true')
 
@@ -112,14 +112,56 @@ test.each([
   },
 )
 
-test('File > Open session (.jbrowse) file... loads the picked file', async () => {
+test('File > Open config.json or .jbrowse file... loads the picked file', async () => {
   jest.mocked(loadPluginManager).mockResolvedValue({} as PluginManager)
   renderStartScreen()
   openFileMenu()
   fireEvent.click(
-    screen.getByRole('menuitem', { name: 'Open session (.jbrowse) file...' }),
+    screen.getByRole('menuitem', {
+      name: 'Open config.json or .jbrowse file...',
+    }),
   )
   await waitFor(() => {
     expect(loadPluginManager).toHaveBeenCalledWith('/home/u/picked.jbrowse')
   })
+})
+
+test('File > Exit quits the app', async () => {
+  renderStartScreen()
+  openFileMenu()
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Exit' }))
+  await waitFor(() => {
+    expect(invokeIpc).toHaveBeenCalledWith('quit')
+  })
+})
+
+function openHelpMenu() {
+  fireEvent.click(screen.getByRole('button', { name: /Help/ }))
+}
+
+test.each([
+  ['Check for updates...', 'checkForUpdates'],
+  ['Connect an AI agent...', 'showConnectAgent'],
+])('Help > %s asks the main process', async (label, channel) => {
+  renderStartScreen()
+  openHelpMenu()
+  fireEvent.click(screen.getByRole('menuitem', { name: label }))
+  await waitFor(() => {
+    expect(invokeIpc).toHaveBeenCalledWith(channel)
+  })
+})
+
+test.each([
+  ['Documentation', 'https://jbrowse.org/jb2/docs/'],
+  [
+    'Report an issue',
+    'https://github.com/GMOD/jbrowse-components/issues/new/choose',
+  ],
+])('Help > %s opens the page externally', (label, url) => {
+  const open = jest.spyOn(window, 'open').mockReturnValue(null)
+  renderStartScreen()
+  openHelpMenu()
+  fireEvent.click(screen.getByRole('menuitem', { name: label }))
+  expect(open).toHaveBeenCalledWith(url, '_blank')
+  open.mockRestore()
 })
