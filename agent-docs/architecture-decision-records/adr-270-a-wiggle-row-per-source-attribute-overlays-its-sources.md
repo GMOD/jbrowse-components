@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A quantitative display's `rows.field` names any source attribute: `source` is a row per subtrack, `''` one box, and another field such as `group` a row per value with its subtracks overlaid in their own colors. The tree-sidebar rows stay the subtracks and the wiggle groups them; clustering needs a row per subtrack"
+summary: "A quantitative display's `rows.field` names any subtrack attribute: `source` is a row per subtrack, `''` one box, and a field such as `group` a row per value, its subtracks overlaid in their own colors. Clustering needs a row per subtrack"
 ---
 
 # ADR-270: A wiggle row per source attribute overlays its sources
