@@ -2,9 +2,16 @@ import { loadErrorHint } from './loadErrorHint.ts'
 
 const BAM = 'https://example.org/data/volvox.bam'
 
+const cors =
+  'could not be reached: the server is down, or it does not send the CORS headers (Access-Control-Allow-Origin, Access-Control-Expose-Headers: Content-Range) that let this site read it.'
+
 test.each([
   {
     text: `Error: HTTP 404 fetching ${BAM}`,
+    hint: `${BAM} was not found (HTTP 404): check the track's file location for a typo or a file that moved.`,
+  },
+  {
+    text: `Error: HTTP 404 fetching ${BAM} bytes 0-65535 (no such file; check the URL, and that the index file sits where the reader expects it alongside the data file)`,
     hint: `${BAM} was not found (HTTP 404): check the track's file location for a typo or a file that moved.`,
   },
   {
@@ -16,19 +23,39 @@ test.each([
     hint: "The index https://example.org/v.vcf.gz.tbi?token=abc was not found (HTTP 404): set the track's index location, or put the index beside the data file.",
   },
   {
+    text: `Error: Network error fetching ${BAM}.bai (no response at all, so there is no status to report — most often CORS: the server must send Access-Control-Allow-Origin)`,
+    hint: `${BAM}.bai ${cors}`,
+  },
+  {
+    text: `Network error fetching ${BAM} bytes 0-65535 (no response at all)`,
+    hint: `${BAM} ${cors}`,
+  },
+  {
+    text: `Network error fetching http://example.org/a.bam (a page served over https may not load a file served over http, and the browser blocked this before it left; the file has to be served over https too)`,
+    hint: undefined,
+  },
+  {
+    text: `Network error fetching ${BAM} (the browser reports no network connection)`,
+    hint: undefined,
+  },
+  {
     text: `TypeError: Failed to fetch fetching ${BAM}`,
-    hint: `${BAM} could not be reached: the server is down, or it does not send the CORS headers that let this site read it.`,
+    hint: `${BAM} ${cors}`,
   },
   {
     text: `NetworkError when attempting to fetch resource fetching ${BAM}`,
-    hint: `${BAM} could not be reached: the server is down, or it does not send the CORS headers that let this site read it.`,
+    hint: `${BAM} ${cors}`,
   },
   {
     text: `Load failed fetching ${BAM}`,
-    hint: `${BAM} could not be reached: the server is down, or it does not send the CORS headers that let this site read it.`,
+    hint: `${BAM} ${cors}`,
   },
   {
     text: `${BAM} fetch returned status 200, expected 206`,
+    hint: `${BAM} sent the whole file instead of the requested bytes: the server must support HTTP Range requests.`,
+  },
+  {
+    text: `HTTP 200 fetching ${BAM} bytes 65536-131071 (the server ignored the Range header and returned the whole file; byte-range support is required for BAM/CRAM/tabix/bigwig files)`,
     hint: `${BAM} sent the whole file instead of the requested bytes: the server must support HTTP Range requests.`,
   },
   {
