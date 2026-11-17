@@ -7,7 +7,6 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { dedupe } from '@jbrowse/core/util'
-import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import calculateStaticBlocks, {
   MINIMUM_BLOCK_WIDTH,
 } from '@jbrowse/core/util/calculateStaticBlocks'
@@ -38,6 +37,7 @@ import {
   liftAlignmentOps,
   multiWayFeaturesOf,
 } from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
+import { displayedRegionSpans } from './MultiWaySyntenyDisplay/anchorAxis.ts'
 import { configSchemaFactory } from './MultiWaySyntenyDisplay/configSchema.ts'
 import {
   laneGroupsFetchSpecsOf,
@@ -58,14 +58,13 @@ import {
   laneGeometry,
 } from './MultiWaySyntenyDisplay/laneStack.ts'
 import {
-  anchorSpansOn,
   decideLanesOn,
   laneFrameOn,
   laneStackOn,
+  windowGroupsOn,
 } from './MultiWaySyntenyDisplay/laneStage.ts'
 import {
   anchorlessGroupsOf,
-  clipGroupToAnchor,
   frameOpenings,
   frameSegments,
   groupFeatures,
@@ -98,7 +97,6 @@ import type { Lane, LaneStack } from './MultiWaySyntenyDisplay/laneStack.ts'
 import type { AnchorStage } from './MultiWaySyntenyDisplay/laneStage.ts'
 import type {
   FetchRegion,
-  MultiWayGroup,
   RowFrame,
   Span,
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
@@ -178,36 +176,6 @@ const wholeBp = (bp: number) => Math.round(bp) || 0
 
 const KIND_NAMES: Record<number, string> = {
   [KIND_BASE_TILE]: 'mismatch',
-}
-
-function anchorRegionSpans(axis: ComparativeAxis): Span[] {
-  return axis.regions.map((r, k) => {
-    const left = axis.before[k]! / axis.bpPerPx
-    const right = (axis.before[k]! + r.end - r.start) / axis.bpPerPx
-    return r.reversed ? [right, left] : [left, right]
-  })
-}
-
-/**
- * The groups the window shows, each with the hull of the window's regions it
- * meets, as the display reads its settled blocks (`visibleGroupWindows`).
- */
-function windowGroups(groups: MultiWayGroup[], window: ComparativeAxis) {
-  return groups.flatMap(group => {
-    const { refName, start, end } = group.anchor
-    const met = window.regions.filter(
-      r => r.refName === refName && start < r.end && end > r.start,
-    )
-    return met.length
-      ? [
-          {
-            group,
-            start: Math.min(...met.map(r => r.start)),
-            end: Math.max(...met.map(r => r.end)),
-          },
-        ]
-      : []
-  })
 }
 
 /**
@@ -364,7 +332,15 @@ function laneTables(
     lane.yTop.push(l.glyphTop)
     lane.yBottom.push(l.glyphTop + glyphHeight)
     if (l.isAnchor) {
-      anchorRegionSpans(axis).forEach((span, k) => {
+      displayedRegionSpans(
+        {
+          displayedRegions: axis.regions,
+          bpPerPx: axis.bpPerPx,
+          offsetPx: 0,
+          wholePx: false,
+        },
+        0,
+      ).forEach((span, k) => {
         const r = axis.regions[k]!
         segment(
           i,
@@ -628,17 +604,14 @@ export async function multiwayTables(
     keyOf,
   })
 
-  const inWindow = windowGroups(groups, axis)
-  const shown = inWindow.map(({ group }) => {
-    const clipped = clipToDisplayedRegions(stage.layout, group.anchor)
-    return clipped
-      ? clipGroupToAnchor(group, clipped.start, clipped.end, fetched.ops)
-      : group
-  })
+  const { shown, fit } = windowGroupsOn(
+    stage,
+    groups,
+    axis.regions,
+    fetched.ops,
+  )
   const decisions = decideLanesOn(stage, {
-    groups: inWindow.map(({ group, start, end }) =>
-      clipGroupToAnchor(group, start, end, fetched.ops),
-    ),
+    groups: fit,
     assemblyNames: rows,
     previous: new Map(),
     pins: pinsInForceOf(pins, rows, anchor, keyOf),
@@ -719,7 +692,6 @@ export async function multiwayTables(
   const stack = laneStackOn(stage, {
     assemblyNames: [anchor, ...rows],
     groups: [...shown, ...anchorless],
-    anchorSpans: anchorSpansOn(stage, shown),
     rowFrames,
     contigOf: (name, refName) =>
       laneAssemblyOf(name)?.regions.find(r => r.refName === refName),

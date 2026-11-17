@@ -6,6 +6,7 @@ import {
   axisTickXs,
   displayedRegionSpans,
 } from './anchorAxis.ts'
+import { anchorSpansOn } from './laneStage.ts'
 import { createDisplay } from './testEnv.ts'
 
 // The harness displays ctgA:0..1000 and nothing else.
@@ -51,7 +52,9 @@ test('a group straddling the region edge keeps its anchor span and its seed', ()
   display.setFeatures([pairFeature(100, 200), pairFeature(700, 1500)])
 
   expect(display.groups.map(g => g.key)).toEqual(['g-100', 'g-700'])
-  expect([...display.anchorSpans.keys()]).toEqual(['g-100', 'g-700'])
+  expect([
+    ...anchorSpansOn(display.anchorStage, display.visibleGroups).keys(),
+  ]).toEqual(['g-100', 'g-700'])
   expect([...display.anchorAbsXAt(display.lgv.bpPerPx).keys()]).toEqual([
     'g-100',
     'g-700',

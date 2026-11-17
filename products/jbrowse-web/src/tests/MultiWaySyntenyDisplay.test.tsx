@@ -5,6 +5,7 @@ import { LocalFile } from 'generic-filehandle2'
 import { renderToString } from 'react-dom/server'
 
 import LaneHeaders from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/LaneHeaders.tsx'
+import { anchorSpansOn } from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneStage.ts'
 import { getMates } from '../../../../plugins/linear-comparative-view/src/syntenyMate.ts'
 import configSnapshot from '../../test_data/multiway_blocks/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
@@ -189,7 +190,9 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
   view.zoomTo(view.bpPerPx * 1.6)
   await waitFor(
     () => {
-      expect(display.anchorSpans.size).toBeGreaterThan(0)
+      expect(
+        anchorSpansOn(display.anchorStage, display.visibleGroups).size,
+      ).toBeGreaterThan(0)
     },
     { timeout: 30000 },
   )
@@ -214,9 +217,9 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
     const x1 = a.offsetPx - origin
     const x2 = b.offsetPx - origin
     // The span the anchor lane's own ribbons are drawn at.
-    expect(display.anchorSpans.get(group.key)).toEqual(
-      x1 < x2 ? [x1, x2] : [x2, x1],
-    )
+    expect(
+      anchorSpansOn(display.anchorStage, display.visibleGroups).get(group.key),
+    ).toEqual(x1 < x2 ? [x1, x2] : [x2, x1])
     // ...and the seed is its center, which is what every lane lines up on.
     expect(
       display.anchorAbsXAt(view.bpPerPx).get(group.key)!.x - origin,
@@ -358,10 +361,11 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
   expect(svg).not.toContain('cursor')
   expect(svg).not.toContain('multiway-lane-menu')
 
-  const geneHit = display.hitTest(
-    (display.anchorSpans.get('g1')![0] + display.anchorSpans.get('g1')![1]) / 2,
-    lane.glyphTop + 1,
-  )
+  const [g1Start, g1End] = anchorSpansOn(
+    display.anchorStage,
+    display.visibleGroups,
+  ).get('g1')!
+  const geneHit = display.hitTest((g1Start + g1End) / 2, lane.glyphTop + 1)
   expect(geneHit?.groupKey).toBe('g1')
   display.setHoverTarget(geneHit)
   expect(display.hoverInk).toHaveLength(3)

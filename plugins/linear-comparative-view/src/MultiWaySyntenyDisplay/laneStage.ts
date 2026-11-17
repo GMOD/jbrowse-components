@@ -1,3 +1,6 @@
+import { doesIntersect2 } from '@jbrowse/core/util'
+import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
+
 import {
   anchorPx,
   axisPlacement,
@@ -7,7 +10,9 @@ import {
 } from './anchorAxis.ts'
 import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
 import { buildLanes } from './laneStack.ts'
+import { clipGroupToAnchor } from './layoutMultiWay.ts'
 
+import type { AlignmentOpsById } from './alignmentOps.ts'
 import type { AnchorLayout } from './anchorAxis.ts'
 import type {
   AnchorCoord,
@@ -41,6 +46,45 @@ export interface AnchorStage {
 function stagePx({ layout, originPx }: AnchorStage, coord: AnchorCoord) {
   const px = anchorPx(layout, coord.refName, coord.coord)
   return px === undefined ? undefined : px - originPx
+}
+
+/**
+ * The groups the window's regions meet: `shown` cut only at a displayed
+ * region's end, and `fit` cut to the hull of the window regions each meets,
+ * which each lane's frame fits
+ */
+export function windowGroupsOn(
+  { layout, canon }: Pick<AnchorStage, 'layout' | 'canon'>,
+  groups: readonly MultiWayGroup[],
+  windowRegions: readonly { refName: string; start: number; end: number }[],
+  ops: AlignmentOpsById,
+) {
+  const shown: MultiWayGroup[] = []
+  const fit: MultiWayGroup[] = []
+  for (const group of groups) {
+    const { start, end } = group.anchor
+    const refName = canon(group.anchor.refName)
+    const met = windowRegions.filter(
+      r => r.refName === refName && doesIntersect2(r.start, r.end, start, end),
+    )
+    if (met.length) {
+      const displayed = clipToDisplayedRegions(layout, { refName, start, end })
+      shown.push(
+        displayed
+          ? clipGroupToAnchor(group, displayed.start, displayed.end, ops)
+          : group,
+      )
+      fit.push(
+        clipGroupToAnchor(
+          group,
+          Math.min(...met.map(r => r.start)),
+          Math.max(...met.map(r => r.end)),
+          ops,
+        ),
+      )
+    }
+  }
+  return { shown, fit }
 }
 
 /** Each anchored group's span in px relative to the stage's origin. */
@@ -131,6 +175,7 @@ export function laneStackOn(
   stage: AnchorStage,
   opts: Omit<
     BuildLanesOpts,
+    | 'anchorSpans'
     | 'axisSpanOf'
     | 'axisSpansOf'
     | 'anchorRegionSpans'
@@ -141,6 +186,7 @@ export function laneStackOn(
   const { layout, originPx, width } = stage
   return buildLanes({
     ...opts,
+    anchorSpans: anchorSpansOn(stage, opts.groups),
     axisSpanOf: (refName, start, end) =>
       axisSpan(layout, refName, start, end, originPx),
     axisSpansOf: (refName, start, end) =>

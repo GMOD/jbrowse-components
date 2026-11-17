@@ -32,6 +32,7 @@ import {
 } from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
+import { anchorSpansOn } from './laneStage.ts'
 import { laneHeaderMenuItems, lanesMenuItem } from './menus.ts'
 import { boxesKey, glyphsKey } from './multiwayGeometry.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
@@ -910,7 +911,9 @@ describe('the anchor lane pair stays ordered', () => {
     const px = (coord: number) =>
       view.bpToPx({ refName, coord })!.offsetPx - view.offsetPx
     return {
-      span: display.anchorSpans.get(group.key)!,
+      span: anchorSpansOn(display.anchorStage, display.visibleGroups).get(
+        group.key,
+      )!,
       atStart: px(start),
       atEnd: px(end),
     }

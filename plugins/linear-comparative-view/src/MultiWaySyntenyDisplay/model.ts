@@ -16,7 +16,6 @@ import { colorScaleIsEmpty, summarizePast } from '@jbrowse/core/ui/colorScale'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import {
   animationAllowed,
-  doesIntersect2,
   getEnv,
   getPaletteHost,
   getSession,
@@ -26,7 +25,6 @@ import {
   persistTrackConfigNow,
   selectedFeatureIdFor,
 } from '@jbrowse/core/util'
-import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -171,15 +169,14 @@ import {
 import { gutterNearViewport, laneGeometry, stackReach } from './laneStack.ts'
 import {
   anchorCentresOn,
-  anchorSpansOn,
   decideLanesOn,
   laneFrameOn,
   laneStackOn,
+  windowGroupsOn,
 } from './laneStage.ts'
 import { laneTrackIds } from './laneTrackPattern.ts'
 import {
   anchorlessGroupsOf,
-  clipGroupToAnchor,
   frameBpPerPx,
   groupFeatures,
   laneFetchRegion,
@@ -1398,37 +1395,18 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * each with the hull, in anchor bp, of the settled blocks it meets
+       * the groups the settled blocks meet, cut as `windowGroupsOn` cuts them
        */
-      get visibleGroupWindows() {
+      get windowGroups() {
         const view = self.lgv
-        const assembly = self.anchorAssembly
-        return view.initialized && assembly
-          ? self.groups.flatMap(group => {
-              const refName = assembly.getCanonicalRefName2(
-                group.anchor.refName,
-              )
-              const blocks = view.settledDynamicBlocks.filter(
-                block =>
-                  block.refName === refName &&
-                  doesIntersect2(
-                    block.start,
-                    block.end,
-                    group.anchor.start,
-                    group.anchor.end,
-                  ),
-              )
-              return blocks.length
-                ? [
-                    {
-                      group,
-                      start: Math.min(...blocks.map(block => block.start)),
-                      end: Math.max(...blocks.map(block => block.end)),
-                    },
-                  ]
-                : []
-            })
-          : []
+        return view.initialized && self.anchorAssembly
+          ? windowGroupsOn(
+              { layout: view, canon: self.anchorCanon },
+              self.groups,
+              view.settledDynamicBlocks,
+              self.featureOps,
+            )
+          : { shown: [], fit: [] }
       },
     }))
     .views(self => ({
@@ -1437,28 +1415,14 @@ export function stateModelFactory(
        * uncut at the viewport edge, cut only at a displayed region's end
        */
       get visibleGroups() {
-        const view = self.lgv
-        const canon = self.anchorCanon
-        return self.visibleGroupWindows.map(({ group }) => {
-          const { refName, start, end } = group.anchor
-          const shown = clipToDisplayedRegions(view, {
-            refName: canon(refName),
-            start,
-            end,
-          })
-          return shown
-            ? clipGroupToAnchor(group, shown.start, shown.end, self.featureOps)
-            : group
-        })
+        return self.windowGroups.shown
       },
       /**
        * #getter
        * the visible groups cut to the viewport, which each lane's frame fits
        */
       get fitGroups() {
-        return self.visibleGroupWindows.map(({ group, start, end }) =>
-          clipGroupToAnchor(group, start, end, self.featureOps),
-        )
+        return self.windowGroups.fit
       },
       /** #getter */
       get tickIntervalBp() {
@@ -1601,13 +1565,6 @@ export function stateModelFactory(
           anchorReversed: self.anchorReversed,
           canon: self.anchorCanon,
         }
-      },
-      /**
-       * #getter
-       * the anchor placements in stack px, relative to `renderOriginPx`
-       */
-      get anchorSpans(): Map<string, Span> {
-        return anchorSpansOn(this.anchorStage, self.visibleGroups)
       },
       /**
        * #method
@@ -2094,7 +2051,6 @@ export function stateModelFactory(
         return laneStackOn(self.anchorStage, {
           assemblyNames: [self.anchorAssemblyName, ...self.rowAssemblies],
           groups: [...self.visibleGroups, ...self.anchorlessGroups],
-          anchorSpans: self.anchorSpans,
           rowFrames: self.rowFrames,
           contigOf: (assemblyName, refName) => {
             const assembly = heldAssembly(assemblyName)
