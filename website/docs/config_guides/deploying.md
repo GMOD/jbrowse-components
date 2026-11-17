@@ -14,7 +14,8 @@ rebuilds.
 Any static file host (Nginx, Apache, S3, GitHub Pages, a Docker image behind an
 ingress) serves the folder, and the data files are read from wherever they live
 over HTTP range requests, so the only server-side requirement is on the data
-host ([](/docs/config_guides/serving_data)).
+host ([](/docs/config_guides/serving_data)). To keep a deployment private, put
+the whole site behind a login: [](/docs/config_guides/behind_a_login).
 
 ## The minimal deployment
 
@@ -205,5 +206,6 @@ fetched before it can configure anything, so the setting has to be in
 - [Intro to the config.json format](/docs/config_guides/intro)
 - [Configuring tracks](/docs/config_guides/tracks)
 - [](/docs/config_guides/avoiding_stale_config)
+- [](/docs/config_guides/behind_a_login)
 - [`@jbrowse/cli` command reference](/docs/cli)
 - [URL query param API](/docs/urlparams)

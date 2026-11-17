@@ -17,48 +17,13 @@ holding the data, read the next section before configuring any of this.
 
 JBrowse has no server and no user accounts. It is static files running in a
 browser, reading your data files over HTTP, so whatever serves the files decides
-who sees a track. Two consequences:
-
-- **Leaving a track out of config.json protects nothing.** The browser downloads
-  config.json, so every URL in it is visible to anyone who can open the app.
-- **Never put a password, token, or API key in config.json**, for the same
-  reason.
-
-The simpler setup puts JBrowse and its data files on the same server, in the
-same site, behind the login the site already has (a session cookie, an SSO
-proxy, nginx `auth_request`). The browser then sends the cookie with every data
-request by itself, so the config needs no `internetAccounts` entry and holds no
-credentials, and neither does a shared session.
-
-### What counts as the same origin
-
-Browsers only send cookies to the origin that set them, so the app and the data
-have to share `https://host` and port:
-
-| App at                        | Data at                    | Cookie sent          |
-| ----------------------------- | -------------------------- | -------------------- |
-| `https://mysite.org/jbrowse/` | `https://mysite.org/data/` | yes                  |
-| `https://mysite.org/jbrowse/` | `https://data.mysite.org/` | no, different origin |
-| `https://mysite.org/jbrowse/` | an S3 or other bucket URL  | no, different origin |
-
-Protect the data folder too: a login page in front of JBrowse while the data
-folder stays world-readable protects nothing, since the file URLs are in
-config.json.
-
-### The login-page failure mode
-
-A data request arriving without a valid login usually gets the HTML of a login
-page back. JBrowse asked for bytes of a BAM file, so what it reports is a parse
-error, often `HTTP 200 ... (should be 206 for range requests)`. Check a file
-directly:
-
-```bash
-curl -s -o /dev/null -D - -H 'Range: bytes=0-100' https://mysite.org/data/file.bam
-```
-
-A logged-in request returns `206 Partial Content`; a `200` with
-`content-type: text/html`, or a redirect, is the login page. A session expiring
-while a view is open produces the same errors mid-use, which a reload resolves.
+who sees a track. When you control that server, the simpler setup puts JBrowse
+and its data files on one site behind the login the site already has. The
+browser then sends the login with every data request by itself, so the config
+needs no `internetAccounts` entry and holds no credentials.
+[](/docs/config_guides/behind_a_login) has recipes for HTTP Basic auth,
+institutional single sign-on, AWS Cognito, Google IAP and Firebase
+Authentication.
 
 ### Alternatives to a shared login
 
