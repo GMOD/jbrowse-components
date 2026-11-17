@@ -20,6 +20,7 @@ interface Mark {
   named?: boolean
   described?: boolean
   densityFade?: boolean
+  gene?: boolean
 }
 
 function marks(features: Mark[]): LayoutRegionData {
@@ -63,6 +64,7 @@ function marks(features: Mark[]): LayoutRegionData {
           bottomPx: 10,
           featureHeightPx: 10,
           densityFade: f.densityFade,
+          gene: f.gene,
         }),
       ),
       rectPositions: new Uint32Array(spans.flatMap(f => [f.startBp, f.endBp])),
@@ -287,45 +289,51 @@ describe('the fit ladder over a pile of named marks', () => {
   })
 })
 
-describe('a pile no fold takes, on a fit track', () => {
+describe('gene names over a column no fold takes, on a fit track', () => {
   const ctgA = {
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 10_000,
   }
-  // Gene glyphs: sub-pixel, but not the boxes a fold takes
-  const unfoldable = (size: number) =>
+  // The GAS5 shape: sub-pixel genes drawn as gene glyphs, which no fold takes,
+  // stacked in one column beside isolated genes
+  const column = (size: number, gene = true) =>
     Array.from({ length: size }, (_, i) => ({
       featureId: `sno${String(i).padStart(2, '0')}`,
       startBp: 1_000,
       densityFade: false,
+      gene,
     }))
-  const landmarks = [2_000, 4_000, 6_000, 8_000].map(startBp => ({
-    featureId: `gene${startBp}`,
-    startBp,
-    endBp: startBp + 300,
-    densityFade: false,
-  }))
+  const isolated = (gene = true) =>
+    [2_000, 4_000, 6_000, 8_000].map(startBp => ({
+      featureId: `gene${startBp}`,
+      startBp,
+      endBp: startBp + 300,
+      densityFade: false,
+      gene,
+    }))
 
-  function fitDisplay(pileSize: number) {
+  function fitDisplay(features: Mark[], height = 100) {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
     view.zoomTo(10)
     view.scrollTo(0)
-    display.setRpcData(0, marks([...unfoldable(pileSize), ...landmarks]), ctgA)
+    display.setRpcData(0, marks(features), ctgA)
     view.settleCoarseBlocks()
     display.setHeightMode('fit')
-    display.setHeight(100)
+    display.setHeight(height)
     return display
   }
 
-  it('keeps landmark names over squeezed bodies when none survives the labelled floor', () => {
-    const display = fitDisplay(16)
-    expect(display.fitDecimatedFloor).toBe(display.fitMinScale)
+  const drawnNames = (display: ReturnType<typeof fitDisplay>) =>
+    display.renderedShowLabels ? names(display.laidOutDataMap.get(0)!) : []
+
+  it('keeps the isolated gene names over bodies squeezed below the labelled floor', () => {
+    const display = fitDisplay([...column(16), ...isolated()])
     expect(display.fitStage.level).toBe('decimated')
-    expect(names(display.laidOutDataMap.get(0)!)).toEqual(
-      expect.arrayContaining(landmarks.map(m => m.featureId)),
+    expect(drawnNames(display)).toEqual(
+      expect.arrayContaining(isolated().map(m => m.featureId)),
     )
     expect(display.fitDecimatedBodyScale).toBeLessThan(
       display.fitLabeledBodyFloor,
@@ -334,16 +342,62 @@ describe('a pile no fold takes, on a fit track', () => {
       display.fitMinScale,
     )
     expect(display.fitStage.contentHeight).toBeLessThanOrEqual(100)
-    expect(display.fitDrops.names).toBe('some')
   })
 
-  it('keeps the labelled floor while a name survives there', () => {
-    const display = fitDisplay(8)
-    expect(display.fitStage.level).toBe('decimated')
-    expect(display.fitDecimatedFloor).toBe(display.fitLabeledBodyFloor)
+  it('leaves names that are not genes at the labelled floor, as on a variant track', () => {
+    const display = fitDisplay([...column(16, false), ...isolated(false)])
+    expect(display.fitStage.level).toBe('bodies')
+    expect(drawnNames(display)).toEqual([])
+  })
+
+  it('draws no other name over bodies below the labelled floor', () => {
+    const display = fitDisplay([
+      ...column(16),
+      ...isolated(),
+      { featureId: 'peak', startBp: 3_000, endBp: 3_050, densityFade: false },
+    ])
+    expect(display.fitDecimatedBodyScale).toBeLessThan(
+      display.fitLabeledBodyFloor,
+    )
+    expect(display.fitNameTiers).toEqual({ gene: true, other: true })
+    expect(drawnNames(display)).not.toContain('peak')
   })
 
   it('still lands on bodies where even the squeeze floor overflows', () => {
-    expect(fitDisplay(40).fitStage.level).toBe('bodies')
+    expect(fitDisplay([...column(40), ...isolated()]).fitStage.level).toBe(
+      'bodies',
+    )
+  })
+
+  it('never drops a gene name as the track grows', () => {
+    const display = fitDisplay([
+      ...column(16),
+      ...isolated(),
+      {
+        featureId: 'hostGene',
+        startBp: 900,
+        endBp: 1_400,
+        densityFade: false,
+        gene: true,
+      },
+      { featureId: 'peak1', startBp: 3_000, endBp: 3_050, densityFade: false },
+      { featureId: 'peak2', startBp: 5_000, endBp: 5_050, densityFade: false },
+    ])
+    let previous = new Set<string>()
+    let sawDecimatedSqueezed = false
+    for (let h = 40; h <= 260; h++) {
+      display.setHeight(h)
+      const genes = new Set(
+        drawnNames(display).filter(
+          n => n.startsWith('gene') || n.startsWith('sno') || n === 'hostGene',
+        ),
+      )
+      expect([...previous].filter(n => !genes.has(n))).toEqual([])
+      previous = genes
+      sawDecimatedSqueezed ||=
+        display.fitStage.level === 'decimated' &&
+        display.fitStage.bodyScale < display.fitLabeledBodyFloor
+    }
+    expect(sawDecimatedSqueezed).toBe(true)
   })
 })

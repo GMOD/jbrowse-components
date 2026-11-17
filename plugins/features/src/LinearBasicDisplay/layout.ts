@@ -551,8 +551,8 @@ const PROBE_CONFIG_KEYS = LAYOUT_CACHE_KEYS.filter(
 )
 
 // Two settles of the largest solve: two tiers of label-room factors at ~11
-// packs each, then ~7 body scales, at both `decimated` floors.
-const PROBE_PACK_LIMIT = 128
+// packs each, then ~7 body scales.
+const PROBE_PACK_LIMIT = 64
 
 export interface PackHeightCacheEntry {
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>

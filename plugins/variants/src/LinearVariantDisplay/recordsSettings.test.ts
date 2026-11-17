@@ -265,7 +265,7 @@ describe('the record menus', () => {
       const { display } = recordsDisplayAt(pile, 1, {}, false)
       expect(display.recordsFitStage.showDescriptions).toBe(false)
       expect(showItems(display)).toEqual([
-        'Show names — some hidden to fit',
+        'Show names — hidden to fit',
         'Show descriptions — hidden to fit',
       ])
     })

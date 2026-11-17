@@ -107,19 +107,23 @@ export function solveLabelRoomFactor(
 }
 
 // Gene names claim the height first and the rest fill what they leave: the
-// genes' factor is solved with every other name gone, then the others' beside
-// the gene names that stayed. Names all of one tier solve a single factor.
+// genes' factor is solved with every other name gone, on `geneHeightAt`, then
+// the others' beside the gene names that stayed. Names all of one tier solve
+// a single factor, on that tier's probe.
 export function solveLabelRoomFactors(
   heightAt: (labelRoomFactor: number, geneLabelRoomFactor?: number) => number,
   trackHeight: number,
   tiers: { gene: boolean; other: boolean },
+  geneHeightAt = heightAt,
 ): LabelRoomFactors | undefined {
   if (!tiers.gene || !tiers.other) {
-    const labelRoomFactor = solveLabelRoomFactor(f => heightAt(f), trackHeight)
+    const probe = tiers.gene ? geneHeightAt : heightAt
+    const labelRoomFactor = solveLabelRoomFactor(f => probe(f), trackHeight)
     return labelRoomFactor === undefined ? undefined : { labelRoomFactor }
   }
   const geneLabelRoomFactor =
-    solveLabelRoomFactor(g => heightAt(Infinity, g), trackHeight) ?? Infinity
+    solveLabelRoomFactor(g => geneHeightAt(Infinity, g), trackHeight) ??
+    Infinity
   const labelRoomFactor = solveLabelRoomFactor(
     f => heightAt(f, geneLabelRoomFactor),
     trackHeight,
@@ -180,8 +184,8 @@ export function solveBodyScale(
 }
 
 // A labelled body shorter than this share of its label's font reads as an
-// underline to the text, so below it the names go instead, unless every name
-// would go (`fitDecimatedFloor`).
+// underline to the text, so below it the names go instead, except gene names,
+// which are landmarks enough to go lower (`fitGeneNameFloor`).
 export const LABELED_BODY_TO_FONT_RATIO = 0.4
 
 export function labeledBodyFloorScale(

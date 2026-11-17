@@ -174,11 +174,6 @@ export function featureBandViews(self: FeatureBandHost) {
   const incrementalLayoutDecimated = createIncrementalLayout({
     seedPriorRows: false,
   })
-  // The `decimated` rung at the squeeze floor, kept apart so the labelled
-  // floor's stack, which decides between the two, stays memoized.
-  const incrementalLayoutDecimatedSqueezed = createIncrementalLayout({
-    seedPriorRows: false,
-  })
   const incrementalLayoutIsoforms = createIncrementalLayout({
     seedPriorRows: false,
   })
@@ -214,7 +209,6 @@ export function featureBandViews(self: FeatureBandHost) {
     if (!self.fitHeightToDisplay) {
       incrementalLayoutLabelsOnly.clear()
       incrementalLayoutDecimated.clear()
-      incrementalLayoutDecimatedSqueezed.clear()
       incrementalLayoutThinned.clear()
       incrementalLayoutBodiesOnly.clear()
       incrementalLayoutBare.clear()
@@ -230,7 +224,6 @@ export function featureBandViews(self: FeatureBandHost) {
       incrementalLayoutLabelsOnly,
       incrementalLayoutBodiesOnly,
       incrementalLayoutDecimated,
-      incrementalLayoutDecimatedSqueezed,
       incrementalLayoutIsoforms,
       incrementalLayoutThinned,
       incrementalLayoutBare,
@@ -310,48 +303,48 @@ export function featureBandViews(self: FeatureBandHost) {
     },
     /**
      * #getter
-     * The `decimated` rung's layout inputs minus the whitespace factor.
+     * Which of the decimation's two name tiers hold an on-screen name.
      */
-    get decimatedBaseInputs(): LabelRoomFactorFreeInputs {
-      return this.decimatedInputsAt(this.fitDecimatedFloor)
+    get fitNameTiers() {
+      const tiers = namedLabelTiers(
+        self.rpcDataMap.values(),
+        self.fitMeasureFeatureIds,
+      )
+      return self.layoutInputs.geneNamesOnly
+        ? { ...tiers, other: false }
+        : tiers
     },
     /**
      * #getter
-     * The `decimated` rung's factors with the bodies at the labelled floor.
+     * The floor gene names are solved at: the squeeze floor `bodies` would
+     * draw down to, since a gene name is a landmark worth a shorter body,
+     * except on a host that hides overflow and never squeezes.
      */
-    get fitLabeledDecimatedFactors(): LabelRoomFactors | undefined {
-      return this.decimatedFactorsAt(this.fitLabeledBodyFloor)
+    get fitGeneNameFloor() {
+      return self.hidesOverflow
+        ? this.fitLabeledBodyFloor
+        : Math.min(this.fitMinScale, this.fitLabeledBodyFloor)
     },
     /**
-     * #getter
-     * The body scale the `decimated` rung solves its names at: the labelled
-     * floor while a name survives there, else the squeeze floor the `bodies`
-     * rung would draw down to, so a few names stay as landmarks. A host that
-     * hides overflow never squeezes `bodies`, so it keeps the labelled floor.
+     * #method
+     * The floor the `decimated` stack at `factors` packs down to: the
+     * labelled floor while any name other than a gene's is kept, else the
+     * gene names' floor.
      */
-    get fitDecimatedFloor(): number {
-      const labeled = this.fitLabeledBodyFloor
-      const factors = this.fitLabeledDecimatedFactors
-      return self.hidesOverflow ||
-        (factors !== undefined &&
-          keepsAnyName(
-            this.decimatedLayoutAt(factors, labeled),
-            self.fitMeasureFeatureIds,
-          ))
-        ? labeled
-        : this.fitMinScale
+    decimatedFloor(factors: LabelRoomFactors) {
+      const { gene, other } = this.fitNameTiers
+      return gene && !(other && factors.labelRoomFactor < Infinity)
+        ? this.fitGeneNameFloor
+        : this.fitLabeledBodyFloor
     },
     /**
      * #method
      * Layout inputs for the `decimated` rung at one pair of whitespace
      * factors.
      */
-    decimatedLayoutInputs(
-      factors: LabelRoomFactors,
-      floor?: number,
-    ): LayoutInputs {
+    decimatedLayoutInputs(factors: LabelRoomFactors): LayoutInputs {
       return {
-        ...this.decimatedInputsAt(floor ?? this.fitDecimatedFloor),
+        ...this.decimatedInputsAt(this.decimatedFloor(factors)),
         ...factors,
       }
     },
@@ -371,31 +364,19 @@ export function featureBandViews(self: FeatureBandHost) {
       )
     },
     /**
-     * #getter
-     * `decimatedHeightProbeAt` the rung's floor.
-     */
-    get decimatedHeightProbe(): (
-      labelRoomFactor: number,
-      geneLabelRoomFactor?: number,
-    ) => number {
-      return this.decimatedHeightProbeAt(this.fitDecimatedFloor)
-    },
-    /**
      * #method
      * The whitespace factors the `decimated` rung commits at: gene names
-     * first, then the rest, each the smallest whose packed stack fits
+     * first, over bodies at their own floor, then the rest beside them over
+     * bodies at the labelled floor, each the smallest whose packed stack fits
      * `trackHeight` (smallest = most names kept), or undefined when even the
      * most aggressive decimation overflows.
      */
-    solveLabelRoomFactors(trackHeight: number, floor?: number) {
-      const tiers = namedLabelTiers(
-        self.rpcDataMap.values(),
-        self.fitMeasureFeatureIds,
-      )
+    solveLabelRoomFactors(trackHeight: number) {
       return solveLabelRoomFactors(
-        this.decimatedHeightProbeAt(floor ?? this.fitDecimatedFloor),
+        this.decimatedHeightProbeAt(this.fitLabeledBodyFloor),
         trackHeight,
-        self.layoutInputs.geneNamesOnly ? { ...tiers, other: false } : tiers,
+        this.fitNameTiers,
+        this.decimatedHeightProbeAt(this.fitGeneNameFloor),
       )
     },
     /**
@@ -565,54 +546,47 @@ export function featureBandViews(self: FeatureBandHost) {
         : this.baseLaidOutDataMap
     },
     /**
-     * #method
-     * The whitespace factors the `decimated` rung commits at with the bodies
-     * at `floor`: the smallest whose packed stack fits `fitTargetHeight`, so
-     * the most names are kept. When those keep no name, or no factor fits,
-     * the names that fit anyway ride along as `keptNameIds`.
+     * #getter
+     * The whitespace factors the `decimated` rung commits at: the smallest
+     * whose packed stack fits `fitTargetHeight`, so the most names are kept.
+     * When those keep no name, or no factor fits, the names that fit anyway
+     * ride along as `keptNameIds`.
      */
-    decimatedFactorsAt(floor: number): LabelRoomFactors | undefined {
+    get fitDecimatedFactors(): LabelRoomFactors | undefined {
+      // Memoized so `rowGeometrySignature` reads the same answer the rung
+      // packed at without a second bisection.
       const ready = self.layoutReady && self.showLabels
       const solved = ready
-        ? this.solveLabelRoomFactors(self.fitTargetHeight, floor)
+        ? this.solveLabelRoomFactors(self.fitTargetHeight)
         : undefined
       const unnamed = solved ?? { labelRoomFactor: Infinity }
       const keepsNoName =
         ready &&
         (solved === undefined
-          ? this.decimatedHeightProbeAt(floor)(Infinity, Infinity) <=
-            self.fitTargetHeight
+          ? this.decimatedHeightProbeAt(this.decimatedFloor(unnamed))(
+              Infinity,
+              Infinity,
+            ) <= self.fitTargetHeight
           : !keepsAnyName(
-              this.decimatedLayoutAt(solved, floor),
+              this.decimatedLayoutAt(solved),
               self.fitMeasureFeatureIds,
             ))
-      const keptNameIds = keepsNoName
-        ? this.namesThatFit(unnamed, floor)
-        : undefined
+      const keptNameIds = keepsNoName ? this.namesThatFit(unnamed) : undefined
       // An empty set would repack the stack the ladder is about to reject.
       return keptNameIds?.size ? { ...unnamed, keptNameIds } : solved
     },
     /**
-     * #getter
-     * `decimatedFactorsAt` the rung's floor, memoized so
-     * `rowGeometrySignature` reads the same answer the rung packed at
-     * without a second bisection.
-     */
-    get fitDecimatedFactors(): LabelRoomFactors | undefined {
-      const floor = this.fitDecimatedFloor
-      return floor === this.fitLabeledBodyFloor
-        ? this.fitLabeledDecimatedFactors
-        : this.decimatedFactorsAt(floor)
-    },
-    /**
      * #method
      * The names among the on-screen ones, genes first, whose stack still
-     * fits at `floor` with `factors` dropping the rest; none past
+     * fits at the floor `factors` pack down to, with `factors` dropping the
+     * rest, and only gene names below the labelled floor; none past
      * `MAX_KEPT_NAME_CANDIDATES` on screen, where the pick would be arbitrary
      * and change with every pan.
      */
-    namesThatFit(factors: LabelRoomFactors, floor: number) {
-      const { geneNamesOnly } = self.layoutInputs
+    namesThatFit(factors: LabelRoomFactors) {
+      const floor = this.decimatedFloor(factors)
+      const geneNamesOnly =
+        self.layoutInputs.geneNamesOnly || floor < this.fitLabeledBodyFloor
       const candidates = [
         ...namedFeatureIsGene(
           self.rpcDataMap.values(),
@@ -636,24 +610,16 @@ export function featureBandViews(self: FeatureBandHost) {
     },
     /**
      * #method
-     * The `decimated` stack at `factors`, its bodies grown back from `floor`
-     * into whatever height the dropped names freed.
+     * The `decimated` stack at `factors`, its bodies grown back into
+     * whatever height the dropped names freed.
      */
-    decimatedLayoutAt(
-      factors: LabelRoomFactors,
-      floor?: number,
-    ): Map<number, FeatureDataResult> {
-      const at = floor ?? this.fitDecimatedFloor
+    decimatedLayoutAt(factors: LabelRoomFactors) {
       // Probe and commit must pack identically, hence the unseeded
       // `incrementalLayoutDecimated`; seeding this rung from the `labels`
       // stack was tried and moved zero rows.
-      const memo =
-        at === this.fitLabeledBodyFloor
-          ? incrementalLayoutDecimated
-          : incrementalLayoutDecimatedSqueezed
-      return memo(self.rpcDataMap, {
-        ...this.decimatedLayoutInputs(factors, at),
-        bodyScale: this.decimatedBodyScale(factors, at),
+      return incrementalLayoutDecimated(self.rpcDataMap, {
+        ...this.decimatedLayoutInputs(factors),
+        bodyScale: this.decimatedBodyScale(factors),
       })
     },
     /**
@@ -678,21 +644,21 @@ export function featureBandViews(self: FeatureBandHost) {
     },
     /**
      * #method
-     * The largest body scale, down to `floor`, whose stack with the names
-     * `factors` keep fits `fitTargetHeight`.
+     * The largest body scale, down to the floor `factors` pack down to,
+     * whose stack with the names `factors` keep fits `fitTargetHeight`.
      */
-    decimatedBodyScale(factors: LabelRoomFactors, floor?: number) {
-      const at = floor ?? this.fitDecimatedFloor
+    decimatedBodyScale(factors: LabelRoomFactors) {
+      const floor = this.decimatedFloor(factors)
       return (
         solveBodyScale(
           this.bodyScaleHeightProbe(
             packHeightsDecimated,
-            this.decimatedInputsAt(at),
+            this.decimatedInputsAt(floor),
             factors,
           ),
           self.fitTargetHeight,
-          at,
-        ) ?? at
+          floor,
+        ) ?? floor
       )
     },
     /**
@@ -1014,7 +980,7 @@ export function hostFeatureBand(host: FeatureBandHost) {
     fitLayoutAt: false,
     decimatedInputsAt: false,
     decimatedHeightProbeAt: false,
-    decimatedFactorsAt: false,
+    decimatedFloor: false,
     decimatedLayoutInputs: false,
     solveLabelRoomFactors: false,
     bodyScaleHeightProbe: false,

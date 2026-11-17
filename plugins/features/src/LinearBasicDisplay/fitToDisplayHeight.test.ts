@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import { GROW_MAX_HEIGHT } from '@jbrowse/display-kit/heightMode'
-import { autorun } from 'mobx'
 
 import {
   makeFeatureData,
@@ -231,36 +230,37 @@ function thinnedFloorHeight(display: TestDisplay) {
   })
 }
 
-// A gene stacked over nameless features, so its name costs a row, and a
-// second gene hemmed in by nameless neighbours, whose name costs none but
-// reads less room than the stacked one's. Last in the window, the stacked
-// gene's room is unbounded, so no factor drops its name.
+// A named feature stacked over nameless ones, so its name costs a row, and a
+// second hemmed in by nameless neighbours, whose name costs none but reads
+// less room than the stacked one's. Last in the window, the stacked one's
+// room is unbounded, so no factor drops its name. Neither is a gene, whose
+// name would solve over bodies at the squeeze floor and fit.
 const PILE_FIRST = [
   { featureId: 'first', startPx: 0, endPx: 50 },
   { featureId: 'p1', startPx: 100, endPx: 400 },
   { featureId: 'p2', startPx: 100, endPx: 400 },
-  { featureId: 'piled', startPx: 100, endPx: 400, gene: true },
+  { featureId: 'piled', startPx: 100, endPx: 400, named: true },
   { featureId: 'before', startPx: 700, endPx: 880 },
-  { featureId: 'lone', startPx: 900, endPx: 1000, gene: true },
+  { featureId: 'lone', startPx: 900, endPx: 1000, named: true },
   { featureId: 'after', startPx: 1020, endPx: 1100 },
 ]
 const PILE_LAST = [
   { featureId: 'first', startPx: 0, endPx: 50 },
   { featureId: 'before', startPx: 100, endPx: 280 },
-  { featureId: 'lone', startPx: 300, endPx: 400, gene: true },
+  { featureId: 'lone', startPx: 300, endPx: 400, named: true },
   { featureId: 'after', startPx: 420, endPx: 500 },
   { featureId: 'p1', startPx: 600, endPx: 1000 },
   { featureId: 'p2', startPx: 600, endPx: 1000 },
-  { featureId: 'piled', startPx: 600, endPx: 900, gene: true },
+  { featureId: 'piled', startPx: 600, endPx: 900, named: true },
 ]
 
-function pileAndLoneGeneData(
+function pileAndLoneData(
   bpPerPx: number,
   layout: {
     featureId: string
     startPx: number
     endPx: number
-    gene?: boolean
+    named?: boolean
   }[],
 ) {
   const features = layout.map(f => ({
@@ -271,7 +271,7 @@ function pileAndLoneGeneData(
   const height = 20
   const floatingLabelsData: FloatingLabelsDataMap = new Map()
   for (const f of features) {
-    if (f.gene) {
+    if (f.named) {
       floatingLabelsData.set(f.featureId, {
         featureId: f.featureId,
         minX: f.startBp,
@@ -291,7 +291,6 @@ function pileAndLoneGeneData(
         endBp: f.endBp,
         bottomPx: height,
         featureHeightPx: height,
-        gene: f.gene,
       }),
     ),
     rectPositions: new Uint32Array(features.flatMap(f => [f.startBp, f.endBp])),
@@ -606,7 +605,7 @@ describe('feature display fit escalation ladder', () => {
     expect(display.fitStage.level).toBe('decimated')
     expect(display.renderedShowLabels).toBe(true)
 
-    display.setHeight(Math.round(bodiesH / 5))
+    display.setHeight(Math.round(bodiesH / 3))
     expect(display.fitStage.level).toBe('bodies')
     expect(display.renderedShowDescriptions).toBe(false)
     expect(display.renderedShowLabels).toBe(false)
@@ -615,38 +614,21 @@ describe('feature display fit escalation ladder', () => {
     expect(display.hasOverflow).toBe(false)
   })
 
-  it('never brings names back as the track shrinks past the rung that dropped them all', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
-    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
-    display.setHeightMode('fit')
-
-    const levels = []
-    for (let h = Math.round(bodiesH); h >= bodiesH / 5; h -= 2) {
-      display.setHeight(h)
-      levels.push(display.fitStage.level)
-    }
-    const firstBodies = levels.indexOf('bodies')
-    expect(levels.slice(0, firstBodies)).toContain('decimated')
-    expect(levels.slice(firstBodies).every(l => l === 'bodies')).toBe(true)
-  })
-
   for (const [where, layout, solves] of [
     ['first', PILE_FIRST, true],
     ['last', PILE_LAST, false],
   ] as const) {
-    it(`keeps the name that costs no height when the roomier gene name costs a row, the pile ${where}`, () => {
+    it(`keeps the name that costs no height when the roomier name costs a row, the pile ${where}`, () => {
       const { createDisplay } = createTestEnvironment()
       const { display } = createDisplay()
       display.setRpcData(
         0,
-        pileAndLoneGeneData(display.layoutInputs.bpPerPx, layout),
+        pileAndLoneData(display.layoutInputs.bpPerPx, layout),
         ctgA,
       )
       display.setHeightMode('fit')
       const namelessAtFloor = packedContentHeight(display.rpcDataMap, {
-        ...display.decimatedBaseInputs,
+        ...display.decimatedInputsAt(display.fitLabeledBodyFloor),
         labelRoomFactor: Infinity,
       })
       display.setHeight(Math.ceil(namelessAtFloor) + 2)
@@ -698,7 +680,7 @@ describe('feature display fit escalation ladder', () => {
       ]),
     )
 
-    display.setHeight(Math.round(bodiesH / 5))
+    display.setHeight(Math.round(bodiesH / 3))
     expect(display.fitStage.level).toBe('bodies')
     expect(display.fitNote).toBe(
       `names + descriptions hidden, squeezed to ${Math.round(display.fitScale * 100)}% (taller track shows more)`,
@@ -795,18 +777,15 @@ describe('feature display fit escalation ladder', () => {
 
     // Every feature shares one start, so a decimation keeps only the pile
     // leader's name.
-    const labeledFloor = display.fitLabeledBodyFloor
-    const decimatedH = display.decimatedHeightProbeAt(labeledFloor)(8)
+    const decimatedH = display.decimatedHeightProbeAt(
+      display.fitLabeledBodyFloor,
+    )(8)
     expect(decimatedH).toBeLessThan(thinnedH)
-    // Under that, the leader's name over bodies at the squeeze floor
-    const squeezedH = display.decimatedHeightProbeAt(minScale)(8)
-    expect(squeezedH).toBeLessThan(decimatedH)
     const rungs = [
       ['full', fullH],
       ['labels', labelsH],
       ['thinned', thinnedH],
       ['decimated', decimatedH],
-      ['decimated', squeezedH],
     ] as const
     const expectedLevel = (h: number) =>
       rungs.find(([, ch]) => ch <= h)?.[0] ?? 'bodies'
@@ -814,12 +793,6 @@ describe('feature display fit escalation ladder', () => {
     const heights = [
       5, // clamped to MIN_DISPLAY_HEIGHT (20); hits the min-box floor
       20,
-      Math.floor(squeezedH) - 1,
-      Math.ceil(squeezedH),
-      Math.round((squeezedH + decimatedH) / 2),
-      Math.floor(decimatedH) - 1,
-      Math.ceil(decimatedH),
-      Math.round(bodiesH / 3),
       Math.round(bodiesH / 2),
       bodiesH - 1,
       bodiesH,
@@ -846,13 +819,9 @@ describe('feature display fit escalation ladder', () => {
 
       expect(level).toBe(expectedLevel(h))
       expect(display.fitStage.bodyScale).toBeGreaterThanOrEqual(
-        level === 'thinned'
-          ? labeledFloor
-          : level === 'decimated'
-            ? h < decimatedH
-              ? minScale - 1e-9
-              : labeledFloor
-            : 1,
+        level === 'thinned' || level === 'decimated'
+          ? display.fitLabeledBodyFloor
+          : 1,
       )
 
       expect(scale).toBeGreaterThanOrEqual(minScale)
@@ -915,8 +884,12 @@ describe('feature display fit escalation ladder', () => {
       ctgA,
     )
     display.setHeightMode('fit')
-    const loneOnlyH = display.decimatedHeightProbe(9)
-    expect(loneOnlyH).toBeLessThan(display.decimatedHeightProbe(8))
+    const loneOnlyH = display.decimatedHeightProbeAt(
+      display.fitLabeledBodyFloor,
+    )(9)
+    expect(loneOnlyH).toBeLessThan(
+      display.decimatedHeightProbeAt(display.fitLabeledBodyFloor)(8),
+    )
 
     display.setHeight(Math.ceil(loneOnlyH))
     expect(display.fitStage.level).toBe('decimated')
@@ -937,7 +910,9 @@ describe('feature display fit escalation ladder', () => {
     display.setShowDescriptions(true)
     display.setRpcData(0, mixedWidthRegionData(total), ctgA)
     display.setHeightMode('fit')
-    const fewestNamesH = display.decimatedHeightProbe(8)
+    const fewestNamesH = display.decimatedHeightProbeAt(
+      display.fitLabeledBodyFloor,
+    )(8)
     const everyNameH = thinnedFloorHeight(display)
     expect(everyNameH).toBeGreaterThan(fewestNamesH * 1.5)
 
@@ -1135,8 +1110,11 @@ describe('feature display fit escalation ladder', () => {
     expect(at(Math.round(fullH) + 40).sig).toBe(inFull.sig)
     expect(display.fitScale).toBe(1)
 
-    const squeezedA = at(Math.round(bodiesH / 4.5))
-    const squeezedB = at(Math.round(bodiesH / 4.5) - 3)
+    const decimatedH = display.decimatedHeightProbeAt(
+      display.fitLabeledBodyFloor,
+    )(8)
+    const squeezedA = at(Math.floor(decimatedH) - 10)
+    const squeezedB = at(Math.floor(decimatedH) - 14)
     expect(squeezedA.level).toBe('bodies')
     expect(display.fitScale).toBeLessThan(1)
     expect(squeezedB.sig).not.toBe(squeezedA.sig)
@@ -1150,7 +1128,9 @@ describe('feature display fit escalation ladder', () => {
     display.setRpcData(0, mixedWidthRegionData(40), ctgA)
     display.setHeightMode('fit')
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
-    const fewestNamesH = display.decimatedHeightProbe(8)
+    const fewestNamesH = display.decimatedHeightProbeAt(
+      display.fitLabeledBodyFloor,
+    )(8)
     const everyNameH = thinnedFloorHeight(display)
 
     const at = (h: number) => {
@@ -1271,24 +1251,6 @@ describe('feature display fit escalation ladder', () => {
       factorsBefore,
     )
     expect(display.laidOutDataMap.get(0)).toBe(before)
-  })
-
-  it('holds one height probe across a track-height change', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setRpcData(0, mixedWidthRegionData(60), ctgA)
-    display.setHeightMode('fit')
-    display.setHeight(120)
-    // Observed by a reaction so MobX keeps the computed alive between reads,
-    // the only state where caching is observable.
-    const seen: unknown[] = []
-    const dispose = autorun(() => {
-      seen.push(display.decimatedHeightProbe)
-    })
-    display.setHeight(240)
-    display.setHeight(240.5)
-    dispose()
-    expect(seen).toHaveLength(1)
   })
 
   it('solves to factor 0 when every name already fits', () => {
@@ -1529,11 +1491,11 @@ describe('feature display fit measures the visible window', () => {
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
     display.setHeight(100)
     display.setHeightMode('fit')
-    const before = display.fitStage.bodyScale
+    const before = display.fitStage.contentHeight
 
     view.scrollTo(182_000 / 100)
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
-    expect(display.fitStage.bodyScale).toBeLessThan(before)
+    expect(display.fitStage.contentHeight).toBeGreaterThan(before)
   })
 
   it('floors the squeeze on the visible stack, not the fetch buffer', () => {

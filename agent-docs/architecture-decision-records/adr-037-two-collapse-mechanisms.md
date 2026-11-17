@@ -70,10 +70,9 @@ not any display-mode setting. The chain:
 
   Widening the fold to sub-pixel gene glyphs at a depth set by the fit height
   was planned for a 16-row column of snoRNA genes (hg19 RefSeq, GAS5, 100 px
-  track) and not built: it would hide 11 genes behind one mark, while letting
-  `decimated` squeeze its bodies to `fitMinScale` when no name survives the
-  labelled floor fits the column unfolded at 95 px and keeps the view's
-  isolated names (`FEATURE_TRACK_DECISION_TREE.md`).
+  track) and not built: it would hide 11 genes behind one mark, while solving
+  gene names over bodies at `fitMinScale` fits the column unfolded at 95 px and
+  keeps the view's isolated gene names (`FEATURE_TRACK_DECISION_TREE.md`).
 
   Candidacy once also excluded any mark overlapping a wide or labeled ("solid")
   feature. That guard predates the pile booking, from when a collapsed mark took
