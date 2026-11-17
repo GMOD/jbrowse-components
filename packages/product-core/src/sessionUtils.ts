@@ -18,6 +18,7 @@ import {
   isStateTreeNode,
   isValidReference,
 } from '@jbrowse/mobx-state-tree'
+import { runInAction } from 'mobx'
 
 import type {
   IAnyStateTreeNode,
@@ -85,7 +86,9 @@ function reportReopened(
   dropped: DroppedSessionNode[],
   retyped: RetypedTrack[],
 ) {
-  const reopened = reinsert(retyped)
+  // one batch, so no reaction sees a reopened track that fails to load before
+  // it is taken back out
+  const reopened = runInAction(() => reinsert(retyped))
   notifyDropped(
     session,
     [

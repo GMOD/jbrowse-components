@@ -14,10 +14,13 @@ interface OpenTrack {
 async function loadSavedSession(
   tracks: Record<string, unknown>[],
   trackIds = ['volvox_filtered_vcf'],
+  editTrack = (track: Record<string, unknown>) => track,
 ) {
-  const { pluginManager, rootModel } = await getPluginManager(
-    volvoxConfigWithTracks(trackIds),
-  )
+  const config = volvoxConfigWithTracks(trackIds)
+  const { pluginManager, rootModel } = await getPluginManager({
+    ...config,
+    tracks: config.tracks.map(editTrack),
+  })
   const snapshot = {
     name: 'saved before the retype',
     views: [
@@ -159,6 +162,21 @@ test('retyped tracks reopen in their saved order around a removed one', async ()
     'gff3tabix_genes',
   ])
   expect(errorSpy).toHaveBeenCalledTimes(1)
+  errorSpy.mockRestore()
+})
+
+test('a retyped track whose new config still cannot load is reported once, as removed', async () => {
+  const { session, view, errorSpy } = await loadSavedSession(
+    [savedFeatureTrack('volvox_filtered_vcf')],
+    ['volvox_filtered_vcf'],
+    track => ({ ...track, description: 42 }),
+  )
+  await waitFor(() => {
+    expect(messages(session)).toEqual([
+      'Removed 1 track that could not be loaded: volvox_filtered_vcf',
+    ])
+  })
+  expect(view.tracks).toHaveLength(0)
   errorSpy.mockRestore()
 })
 
