@@ -20,6 +20,7 @@ const DisplayErrorBar = observer(function DisplayErrorBar({
           <Button
             data-testid="edit_track_button"
             color="inherit"
+            sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
             onClick={onEditTrack}
           >
             Edit track
