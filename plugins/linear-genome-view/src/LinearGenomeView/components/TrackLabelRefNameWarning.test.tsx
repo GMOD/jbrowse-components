@@ -7,13 +7,16 @@ import type {
   RefNameMismatch,
 } from '@jbrowse/core/assemblyManager/assembly'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 function subject(
   refNameMismatch?: RefNameMismatch,
   contigLengthMismatch?: ContigLengthMismatch,
+  session: Partial<AbstractSessionModel> = {},
 ) {
   return render(
     <TrackLabelRefNameWarning
+      session={session as AbstractSessionModel}
       track={
         {
           trackId: 't1',
@@ -72,4 +75,25 @@ test('the name warning wins over the length warning', () => {
   })
   fireEvent.click(getByTestId('track-refname-warning-t1'))
   expect(getByText('Reference names do not match the assembly')).toBeTruthy()
+})
+
+test('an editable assembly offers the editor, which opens on that assembly', () => {
+  const editAssembly = jest.fn()
+  const { getByTestId, getByText } = subject(mismatch, undefined, {
+    canEditAssembly: () => true,
+    editAssembly,
+  })
+  fireEvent.click(getByTestId('track-refname-warning-t1'))
+  fireEvent.click(getByText('Edit assembly'))
+  expect(editAssembly).toHaveBeenCalledWith('hg38')
+})
+
+test('an assembly the user cannot edit points at the site admin and has no editor button', () => {
+  const { getByTestId, getByText, queryByText } = subject(mismatch, undefined, {
+    canEditAssembly: () => false,
+    editAssembly: jest.fn(),
+  })
+  fireEvent.click(getByTestId('track-refname-warning-t1'))
+  expect(queryByText('Edit assembly')).toBeNull()
+  expect(getByText(/hg38/).textContent).toContain('site admin')
 })

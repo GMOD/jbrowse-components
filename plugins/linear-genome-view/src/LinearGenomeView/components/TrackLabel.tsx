@@ -63,7 +63,7 @@ const TrackLabel = observer(function TrackLabel({
       >
         <SanitizedHTML html={trackName} />
       </Typography>
-      <TrackLabelRefNameWarning track={track} />
+      <TrackLabelRefNameWarning track={track} session={getSession(track)} />
       <TrackLabelMenu track={track} />
     </Paper>
   )

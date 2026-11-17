@@ -5,4 +5,5 @@ export interface AssemblyManagerSession extends AbstractSessionModel {
   sessionAssemblies: BaseAssemblyConfigModel[]
   addAssembly(conf: Record<string, unknown>): void
   removeAssembly(name: string): void
+  canEditAssembly(name: string): boolean
 }

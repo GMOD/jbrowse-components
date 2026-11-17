@@ -55,3 +55,11 @@ test('a non-admin cannot delete a config assembly', () => {
   session.removeAssembly('volvox')
   expect(removeAssemblyConf).not.toHaveBeenCalled()
 })
+
+test.each([
+  [true, 'volvox', true],
+  [false, 'volvox', false],
+  [false, 'fromSpec', true],
+])('canEditAssembly (adminMode %s, %s) is %s', (adminMode, name, expected) => {
+  expect(makeSession(adminMode).session.canEditAssembly(name)).toBe(expected)
+})

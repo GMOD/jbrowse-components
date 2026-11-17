@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { readConfObject } from '@jbrowse/core/configuration'
 import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
@@ -15,14 +16,23 @@ const AssemblyManager = observer(function AssemblyManager({
   session,
   onClose,
   initialFiles,
+  editAssemblyName,
 }: {
   session: AssemblyManagerSession
   onClose: () => void
   initialFiles?: FileLocation[]
+  editAssemblyName?: string
 }) {
   const [isFormOpen, setIsFormOpen] = useState(!!initialFiles)
-  const [editingAssembly, setEditingAssembly] =
-    useState<AnyConfigurationModel>()
+  const [editingAssembly, setEditingAssembly] = useState<
+    AnyConfigurationModel | undefined
+  >(
+    editAssemblyName
+      ? session.assemblies.find(
+          a => readConfObject(a, 'name') === editAssemblyName,
+        )
+      : undefined,
+  )
 
   return (
     <Dialog

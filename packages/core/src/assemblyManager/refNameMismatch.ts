@@ -90,15 +90,17 @@ function list({ names, total }: RefNameSample) {
  * What to tell the user, in the voice the CORS and Range hints use: what is
  * wrong, the evidence, and the two things that fix it.
  */
-export function refNameMismatchMessage({
-  assemblyName,
-  adapter,
-  assembly,
-}: RefNameMismatch) {
-  return (
+export function refNameMismatchMessage(
+  { assemblyName, adapter, assembly }: RefNameMismatch,
+  editable = true,
+) {
+  const evidence =
     `None of this track's reference sequence names match assembly "${assemblyName}", ` +
-    `so no features can be drawn: the file uses ${list(adapter)}, the assembly uses ${list(assembly)}. ` +
-    'Add a refNameAliases entry to the assembly configuration mapping the two ' +
-    "naming schemes to each other, or rebuild the file with the assembly's names."
-  )
+    `so no features can be drawn: the file uses ${list(adapter)}, the assembly uses ${list(assembly)}. `
+  const fix = editable
+    ? 'Add a refNameAliases entry to the assembly configuration mapping the two ' +
+      "naming schemes to each other, or rebuild the file with the assembly's names."
+    : "This assembly comes from the server's configuration, so the site admin can add a refNameAliases entry " +
+      "mapping the two naming schemes to each other, or you can rebuild the file with the assembly's names."
+  return `${evidence}${fix}`
 }

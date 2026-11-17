@@ -7,10 +7,11 @@ import {
 import { InfoDialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import WarningIcon from '@mui/icons-material/Warning'
-import { IconButton, Typography } from '@mui/material'
+import { Button, IconButton, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   iconButton: {
@@ -19,17 +20,23 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function warningFor(track: BaseTrackModel) {
+function warningFor(track: BaseTrackModel, session: AbstractSessionModel) {
   const { refNameMismatch, contigLengthMismatch } = track
+  const editable =
+    refNameMismatch && session.canEditAssembly
+      ? session.canEditAssembly(refNameMismatch.assemblyName)
+      : true
   return refNameMismatch
     ? {
         title: 'Reference names do not match the assembly',
-        message: refNameMismatchMessage(refNameMismatch),
+        message: refNameMismatchMessage(refNameMismatch, editable),
+        editableAssembly: editable ? refNameMismatch.assemblyName : undefined,
       }
     : contigLengthMismatch
       ? {
           title: 'Reference sequence lengths do not match the assembly',
           message: contigLengthMismatchMessage(contigLengthMismatch),
+          editableAssembly: undefined,
         }
       : undefined
 }
@@ -52,16 +59,18 @@ function warningFor(track: BaseTrackModel) {
  */
 const TrackLabelRefNameWarning = observer(function TrackLabelRefNameWarning({
   track,
+  session,
 }: {
   track: BaseTrackModel
+  session: AbstractSessionModel
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState(false)
-  const warning = warningFor(track)
+  const warning = warningFor(track, session)
   if (!warning) {
     return null
   }
-  const { title, message } = warning
+  const { title, message, editableAssembly } = warning
   return (
     <>
       <IconButton
@@ -81,6 +90,19 @@ const TrackLabelRefNameWarning = observer(function TrackLabelRefNameWarning({
           onClose={() => {
             setOpen(false)
           }}
+          actions={
+            editableAssembly !== undefined && session.editAssembly ? (
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setOpen(false)
+                  session.editAssembly?.(editableAssembly)
+                }}
+              >
+                Edit assembly
+              </Button>
+            ) : null
+          }
         >
           <Typography>{message}</Typography>
           <Typography variant="body2" style={{ marginTop: 8 }}>

@@ -108,3 +108,16 @@ test('the message names the assembly, both schemes and both remedies', () => {
   expect(message).toContain('refNameAliases')
   expect(message).toContain('rebuild the file')
 })
+
+test('an assembly the user cannot edit gets the site admin instead of a config edit', () => {
+  const message = refNameMismatchMessage(
+    detectRefNameMismatch({
+      ...bareAssembly(CHR),
+      adapterRefNames: ['1', '2'],
+    })!,
+    false,
+  )
+  expect(message).toContain('site admin')
+  expect(message).toContain('refNameAliases')
+  expect(message).not.toContain('Add a refNameAliases entry to the assembly')
+})

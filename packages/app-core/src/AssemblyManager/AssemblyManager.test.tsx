@@ -43,6 +43,7 @@ const mockRootModel = {
   },
   session: {
     adminMode: true,
+    canEditAssembly: () => true,
     sessionAssemblies: [],
     assemblies,
     notify: jest.fn(),

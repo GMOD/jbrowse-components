@@ -3,11 +3,20 @@ import { editableConfig } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { asSession } from '@jbrowse/product-core'
 
+import { AssemblyManager } from '../AssemblyManager/index.ts'
+
+import type { AssemblyManagerSession } from '../AssemblyManager/types.ts'
 import type {
   BaseAssemblyConfigModel,
   BaseAssemblyConfigSchema,
 } from '@jbrowse/core/assemblyManager'
 import type { AnyConfiguration } from '@jbrowse/core/configuration'
+
+// the session this mixin is composed onto is the whole app session the manager
+// is declared over; the mixin's own `self` is only the slice composed so far
+function asAssemblyManagerSession(self: unknown) {
+  return self as AssemblyManagerSession
+}
 
 /**
  * #stateModel AssembliesMixin
@@ -73,6 +82,16 @@ export function AssembliesMixin(
           return (
             confs.find(f => f.name === name) ??
             confs.find(f => f.aliases.includes(name))
+          )
+        },
+        /**
+         * #method
+         * A session assembly is always the user's to change; one from the
+         * config is only an admin's.
+         */
+        canEditAssembly(name: string) {
+          return (
+            self.adminMode || self.sessionAssemblies.some(a => a.name === name)
           )
         },
       }
@@ -181,4 +200,23 @@ export function AssembliesMixin(
         return self.assemblies.map(a => readConfObject(a, 'name'))
       },
     }))
+    .actions(s => {
+      const self = asSession(s)
+      return {
+        /**
+         * #action
+         * Opens the assembly manager on that assembly's editor
+         */
+        editAssembly(name: string) {
+          self.queueDialog(onClose => [
+            AssemblyManager,
+            {
+              session: asAssemblyManagerSession(self),
+              onClose,
+              editAssemblyName: name,
+            },
+          ])
+        },
+      }
+    })
 }

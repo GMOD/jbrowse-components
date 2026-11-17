@@ -242,6 +242,8 @@ export interface AbstractSessionModel
   addSessionAssembly?: (conf: Record<string, unknown>) => void
   sessionAssemblies?: BaseAssemblyConfigModel[]
   removeAssembly?: (name: string) => void
+  canEditAssembly?: (name: string) => boolean
+  editAssembly?: (name: string) => void
   textSearchManager?: TextSearchManager
   connections: BaseConnectionConfigModel[]
   deleteConnection?: (arg: BaseConnectionConfigModel) => void
