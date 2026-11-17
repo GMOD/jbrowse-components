@@ -37,6 +37,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // the narrowest a drag can make the filter pane
 export const MIN_PANEL_WIDTH = 100
 
+// how many of the default columns' facets start open
+const OPEN_FACETS = 3
+
 /**
  * A column the user showed or hid in Manage columns, overriding whether the
  * table would have shown it.
@@ -81,13 +84,20 @@ function trackFields(
   }
 }
 
-// A field groups tracks when at least two distinct values cover them and there
-// are no more values than half the tracks that have one: a constant flag, or a
-// per-track URL or description, gives a column or a facet nothing to group by.
+// A field groups tracks when at least two of its values are each shared by
+// two or more tracks, and it has no more values than half the tracks that have
+// one: a constant flag, a lone exception to one, or a per-track URL or
+// description gives a column or a facet nothing to group by.
 function groupsTracks(values: string[]) {
-  const present = values.filter(v => v !== '')
-  const distinct = new Set(present).size
-  return distinct >= 2 && distinct <= present.length / 2
+  const counts = new Map<string, number>()
+  for (const value of values) {
+    if (value !== '') {
+      counts.set(value, (counts.get(value) ?? 0) + 1)
+    }
+  }
+  const present = values.filter(v => v !== '').length
+  const shared = [...counts.values()].filter(n => n >= 2).length
+  return shared >= 2 && counts.size <= present / 2
 }
 
 /**
@@ -113,7 +123,7 @@ export function facetedStateTreeF() {
        * #property
        */
       panelWidth: types.optional(types.number, () =>
-        localStorageGetNumber('facet-panelWidth', 240),
+        localStorageGetNumber('facet-panelWidth', 200),
       ),
     })
     .volatile(() => ({
@@ -438,16 +448,30 @@ export function facetedStateTreeF() {
        * hides its own options.
        */
       get filterFacets() {
+        return [
+          ...new Set([
+            ...this.openFacets,
+            ...self.defaultColumns,
+            ...self.groupingFields,
+          ]),
+        ]
+      },
+      /**
+       * #getter
+       * The facets that start open, listed first: the leading default columns,
+       * any column the user showed, and any facet still filtering. The rest
+       * start collapsed to their heading, so a hub with many metadata keys
+       * offers them all without listing every value of each.
+       */
+      get openFacets() {
         const active = [...self.filters]
           .filter(([, values]) => values.length > 0)
           .map(([field]) => field)
-        return [
-          ...new Set([
-            ...self.defaultColumns,
-            ...self.groupingFields,
-            ...active,
-          ]),
-        ]
+        return new Set([
+          ...self.defaultColumns.slice(0, OPEN_FACETS),
+          ...self.chosenColumns.shown.filter(f => f !== 'name'),
+          ...active,
+        ])
       },
     }))
     .views(self => ({

@@ -64,10 +64,12 @@ panel.
 
 Beside the name, the table shows as many columns as fit its width, with no
 sideways scroll. By default those are the fields that sort tracks into groups,
-the most widely set first: category, kind, and each metadata key whose values
-repeat (at least two values, and no more values than half the tracks that have
-one). A per-track URL or description, or a flag every track shares, is left out.
-The user's Manage columns choices override this either way.
+the most widely set first: category, kind, and each metadata key with at least
+two values that are each shared by two or more tracks, and no more values than
+half the tracks that have one. A per-track URL or description, or a flag every
+track but one shares, is left out. The user's Manage columns choices override
+this either way. The facet panel opens the first three of these columns' filters
+and lists the other grouping fields collapsed below them.
 
 Where a hub's metadata has many keys of which a few matter, name them, most
 important first, with `hierarchical.table.columns`:

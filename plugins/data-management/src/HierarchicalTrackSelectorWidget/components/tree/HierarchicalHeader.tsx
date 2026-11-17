@@ -25,6 +25,7 @@ const HierarchicalTrackSelectorHeader = observer(
     model: HierarchicalTrackSelectorModel
   }) {
     const { classes } = useStyles()
+    const { matchCounts } = model
     return (
       <div
         className={classes.toolbar}
@@ -36,6 +37,11 @@ const HierarchicalTrackSelectorHeader = observer(
           className={classes.searchBox}
           label="Filter tracks"
           value={model.filterText}
+          status={
+            matchCounts
+              ? `${matchCounts.matched} of ${matchCounts.total}`
+              : undefined
+          }
           onChange={v => {
             model.setFilterText(v)
           }}

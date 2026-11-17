@@ -1,7 +1,12 @@
 import { useState, useTransition } from 'react'
 
 import ClearIcon from '@mui/icons-material/Clear'
-import { IconButton, InputAdornment, TextField } from '@mui/material'
+import {
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 const ClearableSearchField = observer(function ClearableSearchField({
@@ -10,12 +15,15 @@ const ClearableSearchField = observer(function ClearableSearchField({
   label,
   className,
   fullWidth,
+  status,
 }: {
   value: string
   onChange: (value: string) => void
   label: string
   className?: string
   fullWidth?: boolean
+  /** a few words drawn before the clear button, such as a match count */
+  status?: string
 }) {
   const [localValue, setLocalValue] = useState(value)
   const [, startTransition] = useTransition()
@@ -44,6 +52,16 @@ const ClearableSearchField = observer(function ClearableSearchField({
         input: {
           endAdornment: (
             <InputAdornment position="end">
+              {status ? (
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  noWrap
+                  role="status"
+                >
+                  {status}
+                </Typography>
+              ) : null}
               <IconButton
                 aria-label={`Clear ${label.toLowerCase()}`}
                 onClick={() => {

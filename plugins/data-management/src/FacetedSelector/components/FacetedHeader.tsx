@@ -48,6 +48,11 @@ const FacetedHeader = observer(function FacetedHeader({
           className={classes.searchBox}
           label="Filter tracks"
           value={filterText}
+          status={
+            faceted.sortedRows.length < faceted.allRows.length
+              ? `${faceted.sortedRows.length} of ${faceted.allRows.length}`
+              : undefined
+          }
           onChange={value => {
             faceted.setFilterText(value)
             onFilterTextChange?.(value)

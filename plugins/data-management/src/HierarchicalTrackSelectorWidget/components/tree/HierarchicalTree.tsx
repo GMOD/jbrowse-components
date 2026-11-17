@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 
 import { observer } from 'mobx-react'
 
+import { useSearchHighlight } from '../../../shared/useSearchHighlight.ts'
 import { fabClearance } from '../HierarchicalFab.tsx'
 import SharedTooltip from './SharedTooltip.tsx'
 import TreeItem from './TreeItem.tsx'
@@ -16,6 +17,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
   model: HierarchicalTrackSelectorModel
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
+  useSearchHighlight(containerRef, model.filterText, 'jbrowse-tree-search')
   const [scrollTop, setScrollTop] = useState(0)
   const { rows } = model
   const contentHeight = model.treeHeight + fabClearance

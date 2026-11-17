@@ -200,7 +200,8 @@ label); basics like "About track" are always available from the track selector.
 
 The filter box at the top of Available tracks keeps the tracks that contain
 every word you type, in any order and in any field shown: name, category and
-description, plus the table's other columns. `thp1` also finds "THP-1".
+description, plus the table's other columns. `thp1` also finds "THP-1". The box
+shows how many tracks are kept, of how many, such as "6 of 800".
 
 - **`"quoted words"`** must appear together, as typed.
 - **`-word`** drops the tracks that contain it: `liftover -mm10`.
@@ -357,9 +358,10 @@ starts on the right.
 The Tree | Table toggle at the top of "Available tracks" shows all tracks as a
 filterable table, starting from whatever is typed in the filter box, with the
 tracks whose name matches listed first. "Show facet filters" in its ⋮ menu lists
-the values of each column that groups tracks, with their track counts; checking
-values keeps only the tracks with one of them. Manage columns in the same menu
-shows or hides any column. Tracks with `metadata` fields get extra columns:
+the values of each column that groups tracks, with their track counts, the first
+few open and the rest collapsed to their names; checking values keeps only the
+tracks with one of them. Manage columns in the same menu shows or hides any
+column. Tracks with `metadata` fields get extra columns:
 
 ```json
 {

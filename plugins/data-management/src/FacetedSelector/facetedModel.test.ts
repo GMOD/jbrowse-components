@@ -264,17 +264,13 @@ describe('columns and facets', () => {
       'metadata.flag',
       'adapter',
     ])
-    // kind holds Reference sequence and Feature over all 10 tracks; a unique
-    // url and a constant flag group nothing, nor does a per-track description
-    expect(faceted.groupingFields).toEqual([
-      'kind',
-      'category',
-      'metadata.assay',
-    ])
-    expect(faceted.shownColumns(2)).toEqual(['name', 'kind', 'category'])
+    // every track but the reference sequence is a Feature, so kind groups
+    // nothing; nor does a unique url, a constant flag or a per-track
+    // description
+    expect(faceted.groupingFields).toEqual(['category', 'metadata.assay'])
+    expect(faceted.shownColumns(1)).toEqual(['name', 'category'])
     expect(faceted.shownColumns(9)).toEqual([
       'name',
-      'kind',
       'category',
       'metadata.assay',
     ])
@@ -299,6 +295,32 @@ describe('columns and facets', () => {
     faceted.setFilter('metadata.flag', ['true'])
     expect(faceted.filterFacets).toContain('metadata.flag')
     expect([...faceted.facetCategoryCounts.keys()]).toContain('metadata.flag')
+  })
+
+  test('the leading three default columns, shown columns and active filters start open, listed first', () => {
+    const { session, faceted } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
+    faceted.setConfiguredColumns([
+      'metadata.assay',
+      'category',
+      'kind',
+      'adapter',
+    ])
+    expect([...faceted.openFacets]).toEqual([
+      'metadata.assay',
+      'category',
+      'kind',
+    ])
+    faceted.setColumnVisible('description', true)
+    faceted.setFilter('metadata.flag', ['true'])
+    expect([...faceted.openFacets]).toEqual([
+      'metadata.assay',
+      'category',
+      'kind',
+      'description',
+      'metadata.flag',
+    ])
+    expect(faceted.filterFacets.at(-1)).toBe('adapter')
   })
 
   test('a search lists name matches first when no column is sorted', () => {

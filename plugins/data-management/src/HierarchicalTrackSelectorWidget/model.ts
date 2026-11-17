@@ -809,6 +809,28 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           .map(t => ({ ...t, categories: [] }))
         return generateHierarchy(tracks, trackList)
       },
+      /**
+       * #getter
+       * how many of the listed tracks the filter box keeps, of how many;
+       * undefined while it holds no terms
+       */
+      get matchCounts() {
+        const { filterMatches, listedTrackIds } = self
+        const tracks = new Map(
+          self.allTracks
+            .flatMap(s => s.tracks)
+            .filter(t => listedTrackIds?.has(t.conf.trackId) ?? true)
+            .map(t => [t.conf.trackId, t]),
+        )
+        return filterMatches
+          ? {
+              matched: [...tracks.values()].filter(t =>
+                filterMatches(t.searchText),
+              ).length,
+              total: tracks.size,
+            }
+          : undefined
+      },
     }))
     .views(self => ({
       /**

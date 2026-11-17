@@ -2,10 +2,8 @@ import { useState } from 'react'
 
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import AddIcon from '@mui/icons-material/Add'
-import ClearIcon from '@mui/icons-material/Clear'
-import MinimizeIcon from '@mui/icons-material/Minimize'
-import { Button, IconButton, Tooltip, Typography } from '@mui/material'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import { observer } from 'mobx-react'
 
 import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
@@ -14,69 +12,108 @@ import { facetLabel } from './util.ts'
 
 import type { FacetedModel } from '../facetedModel.ts'
 
-// a facet lists its most common values first, this many until asked for more
-const SHOWN_VALUES = 8
+// a facet with more values than this lists only its most common ones until
+// asked for the rest
+const LONG_LIST = 20
+const SHOWN_VALUES = 10
 
-const useStyles = makeStyles()(theme => ({
-  facet: {
-    margin: theme.spacing(0, 0, 1.5, 2),
-  },
-  heading: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  label: {
-    flexGrow: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontWeight: theme.typography.fontWeightMedium,
-  },
-  values: {
-    margin: 0,
+const ROW_HEIGHT = 20
+
+const useStyles = makeStyles()(theme => {
+  const link = {
     padding: 0,
-    listStyle: 'none',
-  },
-  value: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-    cursor: 'pointer',
-    fontSize: theme.typography.body2.fontSize,
-    lineHeight: '24px',
-  },
-  checkbox: {
-    transform: 'scale(0.8)',
-  },
-  valueName: {
-    flexGrow: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  count: {
+    border: 0,
+    background: 'none',
+    font: 'inherit',
+    fontSize: '0.9em',
     color: theme.palette.text.secondary,
-    paddingRight: theme.spacing(1),
-  },
-  more: {
-    padding: theme.spacing(0, 0.5),
-    minWidth: 0,
-  },
-}))
+    cursor: 'pointer',
+    '&:hover': { color: theme.palette.text.primary },
+  }
+  return {
+    facet: {
+      marginBottom: theme.spacing(1),
+      fontSize: theme.typography.body2.fontSize,
+    },
+    heading: {
+      display: 'flex',
+      alignItems: 'center',
+      height: ROW_HEIGHT,
+    },
+    toggle: {
+      ...link,
+      display: 'flex',
+      alignItems: 'center',
+      flexGrow: 1,
+      minWidth: 0,
+      fontSize: 'inherit',
+      fontWeight: theme.typography.fontWeightMedium,
+      color: theme.palette.text.primary,
+    },
+    toggleIcon: {
+      fontSize: 16,
+      flexShrink: 0,
+    },
+    label: {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
+    link: {
+      ...link,
+      flexShrink: 0,
+      paddingRight: theme.spacing(1),
+    },
+    values: {
+      margin: 0,
+      padding: 0,
+      paddingLeft: 4,
+      listStyle: 'none',
+    },
+    value: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 4,
+      height: ROW_HEIGHT,
+      cursor: 'pointer',
+    },
+    checkbox: {
+      flexShrink: 0,
+      '& svg': { width: 16, height: 16 },
+    },
+    valueName: {
+      flexGrow: 1,
+      minWidth: 0,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
+    count: {
+      color: theme.palette.text.secondary,
+      fontSize: '0.9em',
+      paddingRight: theme.spacing(1),
+    },
+    more: {
+      ...link,
+      height: ROW_HEIGHT,
+      paddingLeft: 24,
+    },
+  }
+})
 
 const FacetFilter = observer(function FacetFilter({
   field,
   vals,
   faceted,
+  defaultExpanded = true,
 }: {
   field: string
   vals: [string, number][]
   faceted: FacetedModel
+  defaultExpanded?: boolean
 }) {
   const { classes } = useStyles()
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(defaultExpanded)
   const [showAll, setShowAll] = useState(false)
   const { filters, nonMetadataFieldSet } = faceted
   const selected = filters.get(field) ?? []
@@ -84,44 +121,41 @@ const FacetFilter = observer(function FacetFilter({
   const sorted = vals.toSorted(
     (a, b) => b[1] - a[1] || trackNameCollator.compare(a[0], b[0]),
   )
-  const listed = showAll
-    ? sorted
-    : sorted.filter(
-        ([value], i) => i < SHOWN_VALUES || selected.includes(value),
-      )
+  const listed =
+    showAll || sorted.length <= LONG_LIST
+      ? sorted
+      : sorted.filter(
+          ([value], i) => i < SHOWN_VALUES || selected.includes(value),
+        )
   const hiddenCount = sorted.length - listed.length
+  const ToggleIcon = expanded ? ArrowDropDownIcon : ArrowRightIcon
   return (
     <div className={classes.facet} role="group" aria-label={label}>
       <div className={classes.heading}>
-        <Typography variant="body2" className={classes.label} title={label}>
-          {label}
-        </Typography>
-        {selected.length ? (
-          <Tooltip title="Clear this filter">
-            <IconButton
-              size="small"
-              aria-label={`Clear ${label} filter`}
-              onClick={() => {
-                faceted.setFilter(field, [])
-              }}
-            >
-              <ClearIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        ) : null}
-        <IconButton
-          size="small"
-          aria-label={expanded ? `Collapse ${label}` : `Expand ${label}`}
+        <button
+          type="button"
+          className={classes.toggle}
+          aria-expanded={expanded}
+          title={label}
           onClick={() => {
             setExpanded(!expanded)
           }}
         >
-          {expanded ? (
-            <MinimizeIcon fontSize="small" />
-          ) : (
-            <AddIcon fontSize="small" />
-          )}
-        </IconButton>
+          <ToggleIcon className={classes.toggleIcon} />
+          <span className={classes.label}>{label}</span>
+        </button>
+        {selected.length ? (
+          <button
+            type="button"
+            className={classes.link}
+            aria-label={`Clear ${label} filter`}
+            onClick={() => {
+              faceted.setFilter(field, [])
+            }}
+          >
+            clear
+          </button>
+        ) : null}
       </div>
       {expanded ? (
         <>
@@ -152,15 +186,15 @@ const FacetFilter = observer(function FacetFilter({
             })}
           </ul>
           {hiddenCount > 0 || showAll ? (
-            <Button
-              size="small"
+            <button
+              type="button"
               className={classes.more}
               onClick={() => {
                 setShowAll(!showAll)
               }}
             >
               {showAll ? 'Show fewer' : `Show ${hiddenCount} more`}
-            </Button>
+            </button>
           ) : null}
         </>
       ) : null}
