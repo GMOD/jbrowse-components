@@ -32,7 +32,7 @@ function scored(name: string, score: number): WiggleSourceData {
 
 function makeDisplay(
   rows: Record<string, unknown> = { field: 'group' },
-  sources = HAPS,
+  sources: readonly { name: string; group?: string; color?: string }[] = HAPS,
 ) {
   const { createDisplay } = createTestEnvironment({ displayConfig: { rows } })
   const { display, view } = createDisplay()
@@ -123,6 +123,22 @@ describe('rows: { field: "group" }', () => {
     )
     const [key] = display.rowColorScales
     expect(key?.entries.map(e => e.label)).toEqual(HAPS.map(h => h.name))
+  })
+
+  it('draws a row label bar only where rows.color names a field', () => {
+    const uncolored = [
+      { name: 'A1', group: 'A' },
+      { name: 'B1', group: 'B' },
+      { name: 'B2', group: 'B' },
+    ]
+    const bars = (rows: Record<string, unknown>) =>
+      makeDisplay(rows, uncolored).display.labelledRows.map(r => r.rowColor)
+    expect(bars({ field: 'group' })).toEqual([undefined, undefined])
+    expect(
+      bars({ field: 'group', color: { field: 'group' } }).every(
+        color => typeof color === 'string' && color !== '',
+      ),
+    ).toBe(true)
   })
 
   // The Fiber-seq sets repeat one role per cell line, so the key names each

@@ -30,7 +30,7 @@ export function sourceRowValue(source: { name: string }, field: string) {
  * the order their first source arrives, so a reorder of the subtracks moves
  * their rows and a `rows.sort` of values orders the rows directly. A row's
  * label is `labels[value]`, else the value; its color bar is its sources'
- * one row color, where they share one.
+ * one row color where `colorBar` holds and they share one.
  */
 export function wiggleRows<S extends LabelledRow>(
   sources: readonly S[],
@@ -38,9 +38,11 @@ export function wiggleRows<S extends LabelledRow>(
   {
     sort,
     labels,
+    colorBar,
   }: {
     sort: readonly string[]
     labels: Readonly<Record<string, string>>
+    colorBar: boolean
   },
 ): WiggleRow<S>[] {
   if (field === '') {
@@ -84,7 +86,7 @@ export function wiggleRows<S extends LabelledRow>(
           row: {
             name: value,
             label: labels[value] ?? (value === '' ? `(no ${field})` : value),
-            rowColor: colors.size === 1 ? rowColor : undefined,
+            rowColor: colorBar && colors.size === 1 ? rowColor : undefined,
           },
           sources: members,
         }
@@ -174,6 +176,7 @@ export interface WiggleRowGroupHost {
   drawnRows: LabelledRow[]
   rowSort: string[]
   rowLabels: Readonly<Record<string, string>>
+  rowColorChannel: { field: string }
 }
 
 /**
@@ -192,12 +195,16 @@ export function wiggleRowGroupViews(self: WiggleRowGroupHost) {
     },
     /**
      * #getter
-     * The rows drawn, each with the sources it overlays (`wiggleRows`).
+     * The rows drawn, each with the sources it overlays (`wiggleRows`). A
+     * grouped row's label bar shows only where `rows.color` names a field,
+     * whose key says what the bar means; a palette dealt by name colors the
+     * sources, not the row.
      */
     get wiggleRows() {
       return wiggleRows(self.drawnRows, self.rowsField, {
         sort: self.rowSort,
         labels: self.rowLabels,
+        colorBar: self.rowColorChannel.field !== 'name',
       })
     },
     /**

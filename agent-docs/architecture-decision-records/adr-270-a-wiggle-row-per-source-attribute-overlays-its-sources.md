@@ -46,8 +46,10 @@ display as an attribute on each source row.
 - **A grouped row is a shared box.** `sharesPanel` holds, so each source keeps
   its own color (dealt by name where it has none) and the key names the
   sources, one entry per role. The hit test reports every source in the row under the pointer,
-  as an overlay does. A row's label bar takes its sources' row color only
-  where they share one.
+  as an overlay does. A row's label bar shows only where `rows.color` names
+  a field, whose key says what it means, and takes its sources' row color
+  where they share one; a palette dealt by name colors the sources, not the
+  row.
 - **Clustering and the tree need a row per source.** A dendrogram's leaves are
   sources, and grouped rows have no leaf each, so `drawsTree` and the
   Clustering menu hold only under `source`.
