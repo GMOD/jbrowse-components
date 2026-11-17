@@ -172,7 +172,7 @@ test('the favorites list narrows the tree and the table to favorite tracks, and 
   act(() => {
     model.addToFavorites('genes')
   })
-  expect(getByTestId('list-favorites').textContent).toBe('Favorites 1')
+  expect(getByTestId('list-favorites').textContent).toBe('Favorites')
   expect(model.listedTrackConfigurations.map(t => t.trackId)).toEqual(['genes'])
   expect(
     model.rows.flatMap(({ item }) =>

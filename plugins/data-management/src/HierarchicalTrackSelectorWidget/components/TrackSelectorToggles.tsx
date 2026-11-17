@@ -38,10 +38,6 @@ function isTrackList(value: unknown): value is TrackList {
   return value === 'all' || value === 'favorites' || value === 'recent'
 }
 
-function withCount(label: string, count: number) {
-  return count ? `${label} ${count}` : label
-}
-
 const TrackSelectorToggles = observer(function TrackSelectorToggles({
   model,
 }: {
@@ -69,14 +65,14 @@ const TrackSelectorToggles = observer(function TrackSelectorToggles({
           className={classes.button}
           data-testid="list-favorites"
         >
-          {withCount('Favorites', model.favoriteTracks.length)}
+          Favorites
         </ToggleButton>
         <ToggleButton
           value="recent"
           className={classes.button}
           data-testid="list-recent"
         >
-          {withCount('Recent', model.recentlyUsedTracks.length)}
+          Recent
         </ToggleButton>
       </ToggleButtonGroup>
       <ToggleButtonGroup
