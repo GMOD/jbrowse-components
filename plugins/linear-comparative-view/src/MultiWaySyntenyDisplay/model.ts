@@ -638,9 +638,8 @@ export function stateModelFactory(
     .actions(configSlotActions)
     .views(self => ({
       /** #getter */
-      get declaredLanes(): DeclaredLane[] | undefined {
-        const header = self.adapterHeader
-        return header === undefined ? undefined : declaredLanesOf(header)
+      get declaredLanes(): DeclaredLane[] {
+        return declaredLanesOf(self.adapterHeader)
       },
       /** #getter */
       get starAnchor(): string | undefined {
@@ -1047,7 +1046,7 @@ export function stateModelFactory(
        * undefined means every lane, and a hidden lane stays in force
        */
       get laneSelection(): readonly string[] | undefined {
-        return lanesInForce(self.laneChoice ?? [], self.configuredLanes)
+        return lanesInForce(self.laneChoice, self.configuredLanes)
       },
       /** #getter */
       get hiddenLanes(): readonly string[] {
@@ -1108,7 +1107,7 @@ export function stateModelFactory(
        */
       get declaredLaneLabels() {
         const out = new Map<string, string>()
-        for (const { name, label } of self.declaredLanes ?? []) {
+        for (const { name, label } of self.declaredLanes) {
           if (label !== undefined) {
             out.set(self.laneKey(name), label)
           }
@@ -1151,7 +1150,7 @@ export function stateModelFactory(
             ...self.groups.flatMap(group => [...group.mates.keys()]),
             ...self.windowDeletions.map(d => d.assemblyName),
           ],
-          declared: self.declaredLanes ?? [],
+          declared: self.declaredLanes,
           trackAssemblies: getTrackAssemblyNames(self.parentTrack),
           keyOf: self.laneKey,
           labelOf: name => this.laneLabel(name),
@@ -1168,7 +1167,7 @@ export function stateModelFactory(
        */
       get unalignedChosenLanes(): string[] {
         return unalignedChosenLanesOf(
-          self.laneChoice ?? [],
+          self.laneChoice,
           self.groups,
           answeredLaneTest(
             self.features !== undefined,
@@ -1286,7 +1285,7 @@ export function stateModelFactory(
       /** #getter */
       get canReanchor() {
         const anchor = self.laneKey(self.anchorAssemblyName)
-        const declared = self.declaredLanes ?? []
+        const declared = self.declaredLanes
         return (
           self.starAnchor === undefined &&
           (declared.length === 0 ||
@@ -1366,7 +1365,7 @@ export function stateModelFactory(
       },
       /** #action */
       showLane(assemblyName: string) {
-        const choice = self.laneChoice ?? []
+        const choice = self.laneChoice
         const { kept, hidden } = withLaneShown(
           {
             kept: choice,

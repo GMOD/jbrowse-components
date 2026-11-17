@@ -47,11 +47,10 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * `rows.kept` as a choice: undefined while it names no lane
+     * `rows.kept` as a choice: empty while it names no lane
      */
-    get laneChoice(): readonly string[] | undefined {
-      const kept = getConf(self, ['rows', 'kept'])
-      return kept.length ? kept : undefined
+    get laneChoice(): readonly string[] {
+      return getConf(self, ['rows', 'kept'])
     },
     /** #getter */
     get ribbonColorField(): string | undefined {

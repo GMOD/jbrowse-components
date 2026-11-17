@@ -128,7 +128,7 @@ function headerModel({
 
 function trackModel({
   universe = 3,
-  laneChoice,
+  laneChoice = [],
   hiddenLanes = [],
   configuredLanes = [],
   domain = [],

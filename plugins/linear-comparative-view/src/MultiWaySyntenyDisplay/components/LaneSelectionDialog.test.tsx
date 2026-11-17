@@ -30,7 +30,7 @@ function renderDialog(drawn?: string[], configuredLanes: string[] = []) {
             ...lane,
             drawn: drawn?.includes(lane.name) ?? true,
           })),
-          laneChoice: drawn,
+          laneChoice: drawn ?? [],
           configuredLanes,
           chooseLanes: names => {
             chosen.push(names)

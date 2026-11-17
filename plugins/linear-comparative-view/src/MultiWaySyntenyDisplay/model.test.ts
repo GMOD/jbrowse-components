@@ -983,7 +983,7 @@ test('with every lane drawn, re-anchoring writes no selection', async () => {
     await new Promise(resolve => setTimeout(resolve, 10))
   }
   expect(session.notifications).toHaveLength(1)
-  expect(display.laneChoice).toBeUndefined()
+  expect(display.laneChoice).toEqual([])
 })
 
 test('re-anchoring unhides the outgoing anchor', async () => {
@@ -2237,7 +2237,7 @@ test('an adapter declaring its lanes has its header read once, and the universe 
         : []
     },
   })
-  await when(() => display.declaredLanes !== undefined, { timeout: 5000 })
+  await when(() => display.adapterHeader !== undefined, { timeout: 5000 })
   expect(calls.filter(c => c.name === 'CoreGetInfo')).toHaveLength(1)
   expect(display.starAnchor).toBe('volvox')
   expect(display.laneUniverse.map(({ placed: _, ...lane }) => lane)).toEqual([
@@ -2280,7 +2280,7 @@ test('an adapter that neither tiers nor declares lanes is never asked for a head
   })
   await when(() => display.features !== undefined, { timeout: 5000 })
   expect(calls).not.toContain('CoreGetInfo')
-  expect(display.declaredLanes).toBeUndefined()
+  expect(display.declaredLanes).toEqual([])
   expect(display.laneUniverse).toEqual([
     { name: 'volvox_random', placed: false, drawn: true },
   ])
@@ -2305,7 +2305,7 @@ test('hiding a lane leaves every other lane drawn, including ones placed later',
   ])
   expect(display.rowAssemblies).toEqual(['sample#1#b', 'sample#1#c'])
   display.showLane('sample#1#a')
-  expect(display.laneChoice).toBeUndefined()
+  expect(display.laneChoice).toEqual([])
   expect(display.hiddenLanes).toEqual([])
 })
 
@@ -2361,7 +2361,7 @@ describe('the picker submit', () => {
     display.setFeatures(lanes())
     display.hideLane('sample#1#a')
     display.chooseLanes(['volvox_random', 'sample#1#a'])
-    expect(display.laneChoice).toBeUndefined()
+    expect(display.laneChoice).toEqual([])
     display.chooseLanes(['sample#1#a'])
     expect(display.laneChoice).toEqual(['sample#1#a'])
   })
@@ -2378,7 +2378,7 @@ describe('the picker submit', () => {
     display.chooseLanes(['HG00097.1', 'HG00099.1'])
     expect(display.laneChoice).toEqual(['HG00097.1', 'HG00099.1'])
     display.chooseLanes(['HG00097.1'])
-    expect(display.laneChoice).toBeUndefined()
+    expect(display.laneChoice).toEqual([])
   })
 
   test('a chosen lane this window does not place survives', () => {
@@ -2503,7 +2503,7 @@ test('a lane selection narrows the stack and survives a refetch', () => {
 
   display.setSelectedLanes(undefined)
   expect(display.laneSelection).toBeUndefined()
-  expect(display.laneChoice).toBeUndefined()
+  expect(display.laneChoice).toEqual([])
 })
 
 test('a graph track opens on its own assemblies beside the anchor', () => {

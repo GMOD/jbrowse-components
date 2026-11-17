@@ -14,8 +14,8 @@ export interface LaneChoice {
 
 export interface LaneSelectionModel {
   laneUniverse: LaneChoice[]
-  /** `rows.kept` as a choice: undefined while it names no lane */
-  laneChoice: readonly string[] | undefined
+  /** `rows.kept` as a choice: empty while it names no lane */
+  laneChoice: readonly string[]
   configuredLanes: readonly string[]
   chooseLanes: (names: string[]) => void
   setSelectedLanes: (names: readonly string[] | undefined) => void

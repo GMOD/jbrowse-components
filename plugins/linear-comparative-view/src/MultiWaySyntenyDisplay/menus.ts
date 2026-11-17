@@ -416,7 +416,7 @@ export function ribbonColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
 
 function laneSelectionMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return [
-    ...(model.laneUniverse.length > 1 || model.laneChoice
+    ...(model.laneUniverse.length > 1 || model.laneChoice.length > 0
       ? [
           {
             label: 'Choose lanes...',
@@ -426,7 +426,7 @@ function laneSelectionMenuItems(model: MultiWayMenuModel): MenuItem[] {
           },
         ]
       : []),
-    ...(model.laneChoice
+    ...(model.laneChoice.length > 0
       ? [
           {
             label: laneResetLabel(model),
