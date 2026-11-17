@@ -1064,7 +1064,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           },
           {
             type: 'click',
-            selector: '[data-testid="track-selector-add"]',
+            selector: '[data-testid="track-selector-hamburger"]',
           },
           { type: 'waitForText', text: 'Add track...' },
         ],
@@ -1072,7 +1072,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           // an arrow here cuts across the "Add track..." box
           {
             type: 'circle',
-            anchor: { selector: '[data-testid="track-selector-add"]' },
+            anchor: { selector: '[data-testid="track-selector-hamburger"]' },
           },
           { type: 'box', anchor: { text: 'Add track...' } },
         ],

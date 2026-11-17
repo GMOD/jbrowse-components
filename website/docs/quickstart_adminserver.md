@@ -87,9 +87,9 @@ Open the Add track form from the menu bar:
 
 <Figure caption="The File menu's Add track form." src="/img/add_track_form.png"/>
 
-The circular "+" button in the track selector opens the same form:
+Add track... in the track selector's ☰ menu opens the same form:
 
-<Figure caption="The Add track form launched from the + button." src="/img/add_track_tracklist.png"/>
+<Figure caption="The Add track form launched from the track selector's ☰ menu." src="/img/add_track_tracklist.png"/>
 
 Provide a URL or select a local file. Supported formats and index types:
 [](/docs/config_guides/file_types). Plugins add further formats; see the
