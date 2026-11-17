@@ -20,7 +20,7 @@ import type { HierarchicalTrackSelectorModel } from '../model.ts'
 const fabInset = 24
 const fabSize = 56
 
-// the tree pads its end by this much, so every row can scroll out from under
+// the tree and the table pad their end by this much, so every row can scroll out from under
 // the button
 export const fabClearance = fabInset + fabSize + 8
 

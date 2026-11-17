@@ -43,7 +43,6 @@ const TrackTree = observer(function TrackTree({
       <div ref={ref} className={classes.treeContainer}>
         {height ? <HierarchicalTree height={height} model={model} /> : null}
       </div>
-      <HierarchicalFab model={model} />
     </>
   )
 })
@@ -77,6 +76,7 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
       ) : (
         <TrackTree model={model} />
       )}
+      <HierarchicalFab model={model} />
     </div>
   )
 })

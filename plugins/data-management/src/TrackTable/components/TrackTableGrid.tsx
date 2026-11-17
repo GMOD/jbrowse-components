@@ -40,11 +40,13 @@ const TrackTableGrid = observer(function TrackTableGrid({
   table,
   columns,
   width,
+  endClearance = 0,
 }: {
   model: HierarchicalTrackSelectorModel
   table: TrackTableModel
   columns: TableColumn[]
   width: number
+  endClearance?: number
 }) {
   const { classes } = useTableStyles()
   const {
@@ -142,7 +144,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
               />
             )
           })}
-          <SpacerRow height={trailingGap} />
+          <SpacerRow height={trailingGap + endClearance} />
           {sortedRows.length === 0 ? (
             <tr>
               <td colSpan={columns.length + 2} className={classes.emptyCell}>

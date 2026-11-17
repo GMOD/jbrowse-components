@@ -20,8 +20,8 @@ afterEach(() => {
   sessionStorage.clear()
 })
 
-function setup() {
-  const session = createTestSession()
+function setup(adminMode = false) {
+  const session = createTestSession({ adminMode })
   session.addAssemblyConf({
     name: 'volMyt1',
     sequence: {
@@ -54,6 +54,19 @@ function setup() {
   const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
   return { session, model, addView }
 }
+
+test('the add track button stays in table mode', async () => {
+  const { model } = setup(true)
+  const { getByTestId, findByTestId, queryByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} />
+    </ThemeProvider>,
+  )
+  await findByTestId('hierarchical-add-track-fab')
+  fireEvent.click(getByTestId('show-as-table'))
+  expect(model.showTable).toBe(true)
+  expect(queryByTestId('hierarchical-add-track-fab')).not.toBeNull()
+})
 
 test('the toggle swaps the tree for a table seeded with its query, with select-all hidden, and back', async () => {
   const { model } = setup()

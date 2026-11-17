@@ -8,6 +8,7 @@ import {
   shownFields,
   tableMenuItems,
 } from '../../TrackTable/components/tableLayout.ts'
+import { fabClearance } from './HierarchicalFab.tsx'
 import HierarchicalHeader from './tree/HierarchicalHeader.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
@@ -46,6 +47,7 @@ const TrackTable = observer(function TrackTable({
               fields: shown,
             })}
             width={width}
+            endClearance={fabClearance}
           />
         ) : null}
       </div>
