@@ -215,15 +215,18 @@ test('a facet filter narrows the favorites list too', () => {
   expect(treeTrackIds(model)).toEqual(['t0'])
 })
 
-test('the toolbar holds the table menu in table mode only', async () => {
+test("the ☰ menu holds the table's rows in table mode only", async () => {
   const { model } = setup()
   const view = renderSelector(model)
-  expect(view.queryByTestId('track-table-menu')).toBeNull()
+  fireEvent.click(await view.findByTestId('track-selector-hamburger'))
+  await view.findByText('Add track...')
+  expect(view.queryByText('Manage columns')).toBeNull()
   view.unmount()
 
   model.openTable()
-  const { findByTestId, findByText } = renderSelector(model)
-  fireEvent.click(await findByTestId('track-table-menu'))
+  const { findByTestId, findByText, queryByTestId } = renderSelector(model)
+  expect(queryByTestId('track-table-menu')).toBeNull()
+  fireEvent.click(await findByTestId('track-selector-hamburger'))
   expect(
     await findByText('Add tracks to selection instead of turning them on/off'),
   ).toBeTruthy()

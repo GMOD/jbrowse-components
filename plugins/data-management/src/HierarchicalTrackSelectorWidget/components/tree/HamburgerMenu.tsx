@@ -4,7 +4,7 @@ import {
   isSessionModelWithConnectionEditing,
   isSessionWithPublishTrackConf,
 } from '@jbrowse/core/util'
-import AddIcon from '@mui/icons-material/Add'
+import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
 
 import {
@@ -13,6 +13,7 @@ import {
 } from '../../showAddWidget.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 function clearListMenuItems(model: HierarchicalTrackSelectorModel) {
   const session = getSession(model)
@@ -46,10 +47,12 @@ function clearListMenuItems(model: HierarchicalTrackSelectorModel) {
       : []
 }
 
-const AddMenu = observer(function AddMenu({
+const HamburgerMenu = observer(function HamburgerMenu({
   model,
+  tableMenuItems,
 }: {
   model: HierarchicalTrackSelectorModel
+  tableMenuItems?: () => MenuItem[]
 }) {
   const session = getSession(model)
   const menuItems = [
@@ -78,16 +81,17 @@ const AddMenu = observer(function AddMenu({
         ]
       : []),
     ...clearListMenuItems(model),
+    ...(tableMenuItems?.() ?? []),
   ]
   return menuItems.length > 0 ? (
     <CascadingMenuButton
-      data-testid="track-selector-add"
-      tooltip="Add"
+      data-testid="track-selector-hamburger"
+      tooltip="Track selector menu"
       menuItems={menuItems}
     >
-      <AddIcon />
+      <MenuIcon />
     </CascadingMenuButton>
   ) : null
 })
 
-export default AddMenu
+export default HamburgerMenu
