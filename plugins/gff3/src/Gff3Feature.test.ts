@@ -28,7 +28,22 @@ function lazy(lines: string[]): Feature {
   return new Gff3Feature(f!, 'test-0')
 }
 
+const NCBI_MATCH = [
+  'NC_000001.10\tRefSeq\tmatch\t176427306\t176813972\t387000\t+\t.\tID=8e5caf27-1e97-4d81-b35a-69c731674f7a;Target=NG_023390.1 1 386666 +;gap_count=0',
+]
+
 describe('Gff3Feature', () => {
+  it('labels a Target-only alignment by its accession, not in its record', () => {
+    const f = lazy(NCBI_MATCH)
+    expect(f.get('name')).toBe('NG_023390.1')
+    expect(f.toJSON().name).toBeUndefined()
+  })
+
+  it('keeps a Name over the Target', () => {
+    const f = lazy([`${NCBI_MATCH[0]};Name=aln1`])
+    expect(f.get('name')).toBe('aln1')
+  })
+
   it('serializes identically to the eager SimpleFeature path', () => {
     expect(lazy(GENE).toJSON()).toEqual(eager(GENE).toJSON())
   })

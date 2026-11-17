@@ -94,6 +94,9 @@ export class Gff3Feature implements Feature {
       case 'parent': {
         return this.parentFeature
       }
+      case 'name': {
+        return this.attribute('name') ?? this.targetName()
+      }
       default: {
         return this.attribute(name)
       }
@@ -109,6 +112,15 @@ export class Gff3Feature implements Feature {
     const value = getAttribute(this.data, name)
     this.attributes.set(name, value)
     return value
+  }
+
+  // NCBI's alignments carry no Name and a UUID ID, so the label reads the
+  // accession that begins `Target=NG_023390.1 1 386666 +`
+  private targetName() {
+    const target = this.attribute('target')
+    return typeof target === 'string'
+      ? target.split(' ')[0] || undefined
+      : undefined
   }
 
   public id() {
