@@ -13,7 +13,8 @@ import {
   INLINE_CHIP_OPACITY,
   INLINE_CHIP_PAD_PX,
   LABEL_FONT_SIZE,
-  LANE_COLOR_BAR_PX,
+  LANE_COLOR_SWATCH_PX,
+  LANE_COLOR_TINT,
   labelBoxTop,
 } from '../laneHeader.ts'
 import { laneHeaderMenuItems } from '../menus.ts'
@@ -196,6 +197,13 @@ const LaneHeaders = observer(function LaneHeaders({
     borderRadius: 2,
   }
 
+  const colorChip = (color: string) => ({
+    background: `color-mix(in srgb, ${color} ${LANE_COLOR_TINT * 100}%, ${bandGroundColor()})`,
+    padding: `0 ${INLINE_CHIP_PAD_PX}px`,
+    borderRadius: 2,
+    textShadow: 'none',
+  })
+
   const startDrag = (assemblyName: string, event: React.MouseEvent) => {
     event.stopPropagation()
     event.preventDefault()
@@ -310,7 +318,7 @@ const LaneHeaders = observer(function LaneHeaders({
             <span
               data-testid={`multiway-lane-color-${row.assemblyName}`}
               style={{
-                width: LANE_COLOR_BAR_PX,
+                width: LANE_COLOR_SWATCH_PX,
                 height: LABEL_FONT_SIZE,
                 backgroundColor: row.color,
                 flex: '0 0 auto',
@@ -327,6 +335,7 @@ const LaneHeaders = observer(function LaneHeaders({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               ...(row.inline ? inlineChip : {}),
+              ...(row.color ? colorChip(row.color) : {}),
             }}
             onMouseDown={
               row.isAnchor

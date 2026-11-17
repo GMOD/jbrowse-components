@@ -117,7 +117,7 @@ test('a lane pair whose fetch failed says so in its gutter', () => {
   ).not.toBeInTheDocument()
 })
 
-test('a lane color draws as a bar beside the label, the anchor included, above the lane and on the gene row', () => {
+test('a lane color draws as a swatch beside the label and tints it, the anchor included, above the lane and on the gene row', () => {
   const display = twoLaneDisplay(['volvox_random', 'volvox_ins'])
   display.setLaneColor('volvox', 'black')
   display.setLaneColor('volvox_random', 'rgb(255, 0, 0)')
@@ -134,7 +134,10 @@ test('a lane color draws as a bar beside the label, the anchor included, above t
     )
     const [anchor, mate, bare] = bars()
     expect(anchor!.style.backgroundColor).toBe('black')
-    expect(anchor!.style.width).toBe('4px')
+    expect(anchor!.style.width).toBe('10px')
+    expect(
+      screen.getByTestId('multiway-lane-label-volvox_random').style.background,
+    ).toMatch(/^color-mix\(in srgb, rgb\(255,? 0,? 0\) 30%/)
     expect(mate!.style.backgroundColor).toBe('rgb(255, 0, 0)')
     expect(bare).toBeNull()
     expect(mate!.nextElementSibling).toBe(

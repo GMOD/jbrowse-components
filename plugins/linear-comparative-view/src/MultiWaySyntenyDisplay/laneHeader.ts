@@ -10,8 +10,9 @@ export const LABEL_FONT_SIZE = 10
 export const LABEL_BASELINE_OFFSET = 3
 export const INLINE_CHIP_OPACITY = 0.85
 export const INLINE_CHIP_PAD_PX = 3
-export const LANE_COLOR_BAR_PX = 4
-export const LANE_COLOR_BAR_GAP_PX = 4
+export const LANE_COLOR_SWATCH_PX = LABEL_FONT_SIZE
+export const LANE_COLOR_SWATCH_GAP_PX = 3
+export const LANE_COLOR_TINT = 0.3
 
 // `row.y` is a baseline; a `line-height: 1` box's baseline sits 0.84 em down
 export const LABEL_BASELINE_RATIO = 0.84
@@ -52,7 +53,7 @@ export interface LaneHeaderRow {
   against?: string
   /** the deletions, insertions and inversions against the anchor the shown frame meets */
   changes?: { text: string; anchor: string }
-  /** the bar beside the label: the lane's `rows.colors` entry, else its source's color */
+  /** the swatch beside the label and its tint: the lane's `rows.colors` entry, else its source's color */
   color?: string
 }
 

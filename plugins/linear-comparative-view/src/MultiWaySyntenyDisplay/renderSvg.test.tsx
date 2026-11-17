@@ -317,6 +317,15 @@ test('the export draws each lane color as a bar before its label, in both placem
       ...container.querySelectorAll('[data-testid="multiway-lane-color"]'),
     ]
     expect(bars.map(bar => bar.getAttribute('fill'))).toEqual(['black', 'red'])
-    expect(bars.map(bar => bar.getAttribute('width'))).toEqual(['4', '4'])
+    expect(bars.map(bar => bar.getAttribute('width'))).toEqual(['10', '10'])
+    const tints = [
+      ...container.querySelectorAll(
+        '[data-testid="multiway-lane-color-chip"] rect:last-child',
+      ),
+    ]
+    expect(tints.map(tint => tint.getAttribute('fill'))).toEqual([
+      'black',
+      'red',
+    ])
   }
 })

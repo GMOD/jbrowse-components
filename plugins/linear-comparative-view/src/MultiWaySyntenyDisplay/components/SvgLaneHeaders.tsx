@@ -6,8 +6,9 @@ import {
   INLINE_CHIP_OPACITY,
   INLINE_CHIP_PAD_PX,
   LABEL_FONT_SIZE,
-  LANE_COLOR_BAR_GAP_PX,
-  LANE_COLOR_BAR_PX,
+  LANE_COLOR_SWATCH_GAP_PX,
+  LANE_COLOR_SWATCH_PX,
+  LANE_COLOR_TINT,
   changesChipWidth,
   labelBoxTop,
 } from '../laneHeader.ts'
@@ -42,6 +43,32 @@ function SvgInlineChip({
       fill={bandGroundColor()}
       fillOpacity={INLINE_CHIP_OPACITY}
     />
+  )
+}
+
+function SvgColorChip({
+  text,
+  y,
+  x,
+  color,
+}: {
+  text: string
+  y: number
+  x: number
+  color: string
+}) {
+  const box = {
+    x: x - INLINE_CHIP_PAD_PX,
+    y: labelBoxTop(y),
+    width: measureText(text, LABEL_FONT_SIZE) + 2 * INLINE_CHIP_PAD_PX,
+    height: LABEL_FONT_SIZE,
+    rx: 2,
+  }
+  return (
+    <g data-testid="multiway-lane-color-chip">
+      <rect {...box} fill={bandGroundColor()} />
+      <rect {...box} fill={color} fillOpacity={LANE_COLOR_TINT} />
+    </g>
   )
 }
 
@@ -106,7 +133,10 @@ export function SvgLaneHeaders({
           : 0
         const barX = badge ? 2.5 + badgeWidth + 4 : 2
         const labelX = row.color
-          ? barX + LANE_COLOR_BAR_PX + LANE_COLOR_BAR_GAP_PX
+          ? barX +
+            LANE_COLOR_SWATCH_PX +
+            LANE_COLOR_SWATCH_GAP_PX +
+            INLINE_CHIP_PAD_PX
           : barX
         return (
           <g key={`header-${row.assemblyName}`}>
@@ -137,12 +167,19 @@ export function SvgLaneHeaders({
                 data-testid="multiway-lane-color"
                 x={barX}
                 y={labelBoxTop(row.y)}
-                width={LANE_COLOR_BAR_PX}
+                width={LANE_COLOR_SWATCH_PX}
                 height={LABEL_FONT_SIZE}
                 fill={row.color}
               />
             ) : null}
-            {row.inline ? (
+            {row.color ? (
+              <SvgColorChip
+                text={row.label}
+                x={labelX}
+                y={row.y}
+                color={row.color}
+              />
+            ) : row.inline ? (
               <SvgInlineChip
                 text={row.label}
                 x={labelX}
@@ -150,7 +187,13 @@ export function SvgLaneHeaders({
                 anchor="start"
               />
             ) : null}
-            <SvgHaloText {...text} x={labelX} y={row.y} fill={bandInk().text}>
+            <SvgHaloText
+              {...text}
+              haloWidth={row.color ? 0 : text.haloWidth}
+              x={labelX}
+              y={row.y}
+              fill={bandInk().text}
+            >
               {row.label}
             </SvgHaloText>
             {row.changes ? (
