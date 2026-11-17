@@ -1,8 +1,12 @@
+import { ROW_COLOR_SCALE_ID } from '@jbrowse/tree-sidebar'
+
 import { encodeWiggleRegions } from '../shared/buildSourceRenderData.ts'
+import { roleLabel } from '../shared/wiggleRowGroups.ts'
 import { findWiggleHit } from './components/findHit.ts'
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { WiggleSourceData } from '@jbrowse/wiggle-core'
 
 // The Fiber-seq shape: two cell lines, a haplotype pair each, the pair
@@ -48,6 +52,13 @@ function offersClustering(display: { trackMenuItems: () => MenuItem[] }) {
   return display
     .trackMenuItems()
     .some(item => 'label' in item && /cluster/i.test(String(item.label)))
+}
+
+function rowKeyOf(scales: ColorScale[]) {
+  return scales.find(
+    (scale): scale is CategoricalScale =>
+      scale.kind === 'categorical' && scale.id === ROW_COLOR_SCALE_ID,
+  )
 }
 
 const labelsOf = (item: MenuItem | undefined) =>
@@ -111,6 +122,53 @@ describe('rows: { field: "group" }', () => {
     )
     const [key] = display.rowColorScales
     expect(key?.entries.map(e => e.label)).toEqual(HAPS.map(h => h.name))
+  })
+
+  // The Fiber-seq sets repeat one role per cell line, so the key names each
+  // role once rather than every subtrack.
+  it('keys each subtrack role once, its row value taken off the name', () => {
+    const { display } = makeDisplay()
+    const key = rowKeyOf(display.colorScales)
+    expect(key?.entries.map(e => [e.label, e.color, e.values])).toEqual([
+      ['Hap1', HAPS[0]!.color, ['GM12878 Hap1', 'K562 Hap1']],
+      ['Hap2', HAPS[1]!.color, ['GM12878 Hap2', 'K562 Hap2']],
+    ])
+  })
+
+  it('keys thresholds once each, punctuation inside a role kept', () => {
+    const cuts = ['All', 'p < 0.01', 'p < 0.001', 'p < 0.0001']
+    const grey = ['#999', '#fbb', '#f66', '#f00']
+    const { display } = makeDisplay(
+      { field: 'group' },
+      ['GM12878', 'K562'].flatMap(group =>
+        cuts.map((cut, i) => ({
+          name: `${group} ${cut}`,
+          group,
+          color: grey[i]!,
+        })),
+      ),
+    )
+    expect(rowKeyOf(display.colorScales)?.entries.map(e => e.label)).toEqual(
+      cuts,
+    )
+  })
+
+  it('keys every subtrack where one role would take two colors', () => {
+    const { display } = makeDisplay(
+      { field: 'group' },
+      HAPS.map((h, i) => (i === 3 ? { ...h, color: '#0f0' } : h)),
+    )
+    expect(rowKeyOf(display.colorScales)?.entries.map(e => e.label)).toEqual(
+      HAPS.map(h => h.name),
+    )
+  })
+
+  it('keys every subtrack where a name is only its row value', () => {
+    const { display } = makeDisplay(
+      { field: 'group' },
+      HAPS.map((h, i) => (i === 0 ? { ...h, name: 'GM12878' } : h)),
+    )
+    expect(rowKeyOf(display.colorScales)?.entries).toHaveLength(4)
   })
 
   it('encodes each source into its row', () => {
@@ -184,5 +242,14 @@ describe('rows: { field: "group" }', () => {
     expect(display.drawsTree).toBe(true)
     expect(offersClustering(display)).toBe(true)
     expect(display.markSources.map(s => s.row)).toEqual([0, 1, 2, 3])
+  })
+})
+
+describe('roleLabel', () => {
+  it('takes the row value off the start or the end of a name', () => {
+    expect(roleLabel('GM12878 Hap1', 'GM12878')).toBe('Hap1')
+    expect(roleLabel('GM12878 p < 0.001', 'GM12878')).toBe('p < 0.001')
+    expect(roleLabel('Hap1_GM12878', 'GM12878')).toBe('Hap1')
+    expect(roleLabel('Hap1', 'GM12878')).toBe('Hap1')
   })
 })

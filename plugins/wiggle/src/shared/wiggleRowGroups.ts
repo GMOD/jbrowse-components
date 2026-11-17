@@ -1,5 +1,6 @@
 import { rowFieldValue } from '@jbrowse/tree-sidebar'
 
+import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
 import type { LabelledRow } from '@jbrowse/tree-sidebar'
 
 /**
@@ -100,6 +101,71 @@ export function sourceRowIndex<S extends LabelledRow>(rows: WiggleRow<S>[]) {
     }
   })
   return index
+}
+
+const SEPARATORS = '[\\s\\p{P}]*'
+
+function escapeRegExp(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * `label` with its row's `value` taken off its start or end, with the
+ * whitespace or punctuation between: `GM12878 Hap1` in row `GM12878` is
+ * `Hap1`.
+ */
+export function roleLabel(label: string, value: string) {
+  const v = escapeRegExp(value)
+  const leading = new RegExp(`^${v}${SEPARATORS}`, 'u')
+  const trailing = new RegExp(`${SEPARATORS}${v}$`, 'u')
+  return value === ''
+    ? label
+    : leading.test(label)
+      ? label.replace(leading, '')
+      : label.replace(trailing, '')
+}
+
+/**
+ * The row color key over grouped rows: an entry per subtrack role rather
+ * than per subtrack, each subtrack named with its row's value taken off
+ * (`roleLabel`), and the subtracks sharing a role and a color merged into
+ * one entry. The key as given wherever an entry names no subtrack, a role
+ * comes out empty, or one role takes two colors.
+ */
+export function roleKeyScale(
+  scale: CategoricalScale,
+  rows: readonly WiggleRow<LabelledRow>[],
+): CategoricalScale {
+  const valueOf = new Map(
+    rows.flatMap(row => row.sources.map(s => [s.name, row.row.name] as const)),
+  )
+  const roles = new Map<string, { color?: string; values: string[] }>()
+  let merges = true
+  for (const entry of scale.entries) {
+    const value = valueOf.get(entry.value)
+    const label =
+      value === undefined ? '' : roleLabel(entry.label, value).trim()
+    const role = roles.get(label)
+    if (label === '' || (role && role.color !== entry.color)) {
+      merges = false
+    } else if (role) {
+      role.values.push(entry.value)
+    } else {
+      roles.set(label, { color: entry.color, values: [entry.value] })
+    }
+  }
+  return merges
+    ? {
+        ...scale,
+        focusesRows: false,
+        entries: [...roles].map(([label, { color, values }]) => ({
+          value: values[0]!,
+          values,
+          label,
+          color,
+        })),
+      }
+    : scale
 }
 
 /** What {@link wiggleRowGroupViews} reads: the field and the rows drawn. */

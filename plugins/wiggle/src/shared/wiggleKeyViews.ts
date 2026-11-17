@@ -3,14 +3,17 @@ import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
 
 import { scoreRampScale } from './scoreRampScale.ts'
 import { declaredCuts } from './wiggleColor.ts'
+import { roleKeyScale } from './wiggleRowGroups.ts'
 
 import type { ResolvedWiggleColor, wiggleColorEncoding } from './wiggleColor.ts'
+import type { WiggleRow } from './wiggleRowGroups.ts'
 import type {
   CategoricalScale,
   ColorScale,
   RampScale,
 } from '@jbrowse/core/ui/colorScale'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { LabelledRow } from '@jbrowse/tree-sidebar'
 import type { ScaleType } from '@jbrowse/wiggle-core'
 
 /** What {@link wiggleScoreKeyViews} reads: the score scale and its colors. */
@@ -100,6 +103,8 @@ export interface WiggleColorScaleHost {
   rowsField: string
   rowColorPaintsMarks: boolean
   rowColorScales: CategoricalScale[]
+  isGroupedRows: boolean
+  wiggleRows: WiggleRow<LabelledRow>[]
 }
 
 /** A wiggle display's key, which the display and a static export install alike. */
@@ -120,7 +125,13 @@ export function wiggleColorScaleViews(self: WiggleColorScaleHost) {
         scales.push(self.thresholdColorScale)
       }
       if (self.rowsField === 'source' || self.rowColorPaintsMarks) {
-        scales.push(...self.rowColorScales)
+        scales.push(
+          ...(self.isGroupedRows
+            ? self.rowColorScales.map(scale =>
+                roleKeyScale(scale, self.wiggleRows),
+              )
+            : self.rowColorScales),
+        )
       }
       return scales
     },

@@ -283,10 +283,12 @@ for Hap1 and orange for Hap2:
 
 Each row is labelled by its value; `rows.labels` relabels one by value
 (`{ "K562": "K-562 (CML)" }`) and `rows.sort` lists values to order the rows.
-The color key names the subtracks, and a tooltip lists every subtrack in the row
-under the pointer. A column of a `samplesTsvLocation` table works as the field
-too. Clustering needs a row per subtrack, so the track menu offers it only under
-`rows: "source"`.
+The color key names each subtrack with its row's value taken off, once per name
+and color, so this track keys Hap1 and Hap2; where that leaves a name empty or
+one name in two colors, it lists every subtrack. A tooltip lists every subtrack
+in the row under the pointer. A column of a `samplesTsvLocation` table works as
+the field too. Clustering needs a row per subtrack, so the track menu offers it
+only under `rows: "source"`.
 
 ### Loading bedMethyl as a multi-quantitative track
 

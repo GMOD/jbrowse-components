@@ -88,7 +88,11 @@ and the hit test groups by. A grouped row comes in the order of its earliest
 dialog reorder or "Sort rows by score here" moves rows by their sources and a
 `rows.sort` of values orders them directly; `rows.labels` relabels a row by
 value. `sharesPanel` holds under a grouping field, so the palette deals by
-name and the key lists the sources. The Plot type menu offers the grouping
+name and the key lists the sources, one entry per role: `roleKeyScale` takes
+the row's value off each subtrack's label (`GM12878 Hap1` is `Hap1`) and
+merges the subtracks sharing a label and color, falling back to an entry per
+subtrack where a label comes out empty or one label takes two colors. A
+merged key focuses nothing on a click, since an entry spans rows. The Plot type menu offers the grouping
 field as a layout of its own (`Rows by <field>`), and a subtrack `group` offers
 `Rows by group` from the other two.
 

@@ -39,7 +39,7 @@ display as an attribute on each source row.
   rows directly. `rows.labels` relabels a row by value.
 - **A grouped row is a shared box.** `sharesPanel` holds, so each source keeps
   its own color (dealt by name where it has none) and the key names the
-  sources. The hit test reports every source in the row under the pointer,
+  sources, one entry per role. The hit test reports every source in the row under the pointer,
   as an overlay does. A row's label bar takes its sources' row color only
   where they share one.
 - **Clustering and the tree need a row per source.** A dendrogram's leaves are
@@ -57,8 +57,13 @@ display as an attribute on each source row.
   subtrack in one row, and the display's notices name it.
 - The tables export's `marks.row` is the row a mark is drawn in, a value's row
   under a grouping field.
-- The color key lists every subtrack, so a 41-cell-line pair set keys 82
-  entries, two colors repeated; the key's "Show N more" toggle shortens it.
+- The color key names each subtrack role once (`roleKeyScale`): a subtrack's
+  label with its row's value taken off its start or end, the subtracks sharing
+  a role and a color merged, so a 41-cell-line haplotype set keys Hap1 and
+  Hap2. Where a role comes out empty or takes two colors, or an entry names no
+  subtrack (a `rows.color` field), the key lists every subtrack as before. A
+  merged entry stands for subtracks in several rows, so that key focuses
+  nothing on a click.
 
 ## Rejected alternatives
 
