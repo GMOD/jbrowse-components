@@ -55,14 +55,19 @@ on the way back, and the tree could not filter by metadata at all.
     384 px drawer without a second line. Clear favorites offers Undo.
   - Delete connections...: "Delete connection..." on the connection's own
     group row, through the same confirm.
-  - Collapse: "Collapse all" / "Expand all" on a group row's menu; config
-    `defaultCollapsed.*` still sets the first load.
+  - Collapse: "Collapse all categories" / "Expand all categories" on a group
+    row's menu, which drops "Open as table..." for the Tree | Table toggle;
+    config `defaultCollapsed.*` still sets the first load.
   - Sort: deleted (Status).
   - Add tracks to selection… and Manage columns: a columns button beside
     the filter box, drawn only in table mode, and where the folder dialog's ⋮
     was. A 32 px menu column at the end of the table's header row was tried
     and dropped: it cost every row a blank cell and the columns width in a
     narrow drawer.
+  - The toolbar reads cart, filter box, columns button (table mode), +. A +
+    at the head of "Filter tracks" read as "add a filter", and a columns
+    button there moved the filter box's left edge on each Tree | Table
+    toggle.
 - **A folder dialog keeps a table of its own** (`useTrackTable`), with its
   own filter box and the same chips, since `TrackSelector-folderDialog` is a
   documented extension point.

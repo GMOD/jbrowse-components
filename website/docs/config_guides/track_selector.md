@@ -40,12 +40,12 @@ Tracks appear in config.json order unless the `hierarchical` settings change it.
 
 The tree's order comes from `sort` alone; to sort tracks by any field, switch to
 the table and click a column header. Users collapse or expand everything with
-"Collapse all" / "Expand all" on the menu of the Tracks row, or of a
-connection's row.
+"Collapse all categories" / "Expand all categories" on the menu of the Tracks
+row, or of a connection's row.
 
 <Figure caption="Every category collapsed from the Tracks row's menu." src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
 
-<Figure caption="Collapse all and Expand all on the Tracks row's menu." src="/img/hierarchical/hierarchical_user_menu-fs8.png"/>
+<Figure caption="Collapse all categories and Expand all categories on the Tracks row's menu." src="/img/hierarchical/hierarchical_user_menu-fs8.png"/>
 
 ## Folder categories (supertracks)
 

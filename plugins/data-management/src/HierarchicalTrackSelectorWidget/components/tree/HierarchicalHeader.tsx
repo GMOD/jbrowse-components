@@ -22,7 +22,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * The add button, cart, filter box and filter chips the tree and the table
+ * The cart, filter box, add button and filter chips the tree and the table
  * share. The table adds its menu, whose rows depend on the columns that fit
  */
 const HierarchicalTrackSelectorHeader = observer(
@@ -44,10 +44,6 @@ const HierarchicalTrackSelectorHeader = observer(
           className={classes.toolbar}
           data-testid="hierarchical_track_selector"
         >
-          <AddMenu model={model} />
-          {tableMenuItems ? (
-            <TableMenuButton menuItems={tableMenuItems} />
-          ) : null}
           <ShoppingCart model={model} />
           <ClearableSearchField
             className={classes.searchBox}
@@ -62,6 +58,10 @@ const HierarchicalTrackSelectorHeader = observer(
               model.setFilterText(v)
             }}
           />
+          {tableMenuItems ? (
+            <TableMenuButton menuItems={tableMenuItems} />
+          ) : null}
+          <AddMenu model={model} />
         </div>
         <FacetChips table={trackTable} />
       </>

@@ -111,7 +111,7 @@ function subcategoryCollapseMenuItems(
   item: TreeCategoryNode,
 ) {
   const subcategoryIds = getAllSubcategories(item)
-  const suffix = item.nestingLevel === 0 ? '' : ' subcategories'
+  const suffix = item.nestingLevel === 0 ? ' categories' : ' subcategories'
   return subcategoryIds.length > 0
     ? [
         {
@@ -230,6 +230,23 @@ function categoryTrackMenuItems(
   ]
 }
 
+// a group row has the Tree | Table toggle for that
+function openAsTableMenuItems(
+  model: HierarchicalTrackSelectorModel,
+  item: TreeCategoryNode,
+) {
+  return item.nestingLevel > 0
+    ? [
+        {
+          label: 'Open as table...',
+          onClick: () => {
+            openFolderDialog(model, item)
+          },
+        },
+      ]
+    : []
+}
+
 function openFolderDialog(
   model: HierarchicalTrackSelectorModel,
   item: TreeCategoryNode,
@@ -336,12 +353,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
           data-testid={`htsCategoryMenu-${name}`}
           menuItems={() => [
             ...folderModeMenuItems(model, item),
-            {
-              label: 'Open as table...',
-              onClick: () => {
-                openFolderDialog(model, item)
-              },
-            },
+            ...openAsTableMenuItems(model, item),
             ...categoryTrackMenuItems(model, item),
             ...subcategoryCollapseMenuItems(model, item),
             ...removeConnectionMenuItems(model, item),

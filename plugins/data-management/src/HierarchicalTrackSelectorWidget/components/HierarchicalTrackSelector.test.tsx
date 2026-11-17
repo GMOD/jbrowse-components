@@ -1963,8 +1963,9 @@ test('filtering reaches tracks inside a collapsed top-level group', () => {
   expect(trackNames(model)).toEqual([])
 })
 
-// a group row's collapse pair reaches every category under it, so it drops
-// "subcategories"; only a connection's group row offers to remove it
+// a group row's collapse pair reaches every category under it, and the
+// Tree | Table toggle is its table; only a connection's group row offers to
+// delete it
 test('a group row collapses all, and a connection row deletes its connection', async () => {
   const session = addTestDataWithDeepCategories(
     createTestSession({
@@ -1994,7 +1995,8 @@ test('a group row collapses all, and a connection row deletes its connection', a
   )
 
   fireEvent.click(await findByTestId('htsCategoryMenu-Tracks'))
-  fireEvent.click(await findByText('Collapse all'))
+  expect(queryByText('Open as table...')).toBeNull()
+  fireEvent.click(await findByText('Collapse all categories'))
   expect(model.categoryMode.get('Tracks-Epigenomics')).toBe('collapsed')
   expect(queryByText('Delete connection...')).toBeNull()
 

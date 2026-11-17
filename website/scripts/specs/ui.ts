@@ -1367,11 +1367,11 @@ export const uiSpecs: ScreenshotSpec[] = [
     readySelector: TRACK_SELECTOR,
     actions: [
       { type: 'click', selector: '[data-testid="htsCategoryMenu-Tracks"]' },
-      ...menuCascade(['Collapse all']),
+      ...menuCascade(['Collapse all categories']),
     ],
     annotations: [
-      { type: 'box', anchor: { text: 'Collapse all' } },
-      { type: 'box', anchor: { text: 'Expand all' } },
+      { type: 'box', anchor: { text: 'Collapse all categories' } },
+      { type: 'box', anchor: { text: 'Expand all categories' } },
     ],
   },
 
@@ -1598,8 +1598,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     readySelector: TRACK_SELECTOR,
     actions: [
       { type: 'click', selector: '[data-testid="htsCategoryMenu-Tracks"]' },
-      ...menuCascade(['Collapse all']),
-      { type: 'click', text: 'Collapse all' },
+      ...menuCascade(['Collapse all categories']),
+      { type: 'click', text: 'Collapse all categories' },
     ],
   },
 
