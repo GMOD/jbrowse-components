@@ -22,14 +22,16 @@ const FacetFilters = observer(function FacetFilters({
       >
         Clear all filters
       </Button>
-      {[...faceted.facetCategoryCounts].map(([field, categoryCountMap]) => (
-        <FacetFilter
-          key={field}
-          vals={[...categoryCountMap]}
-          field={field}
-          faceted={faceted}
-        />
-      ))}
+      {[...faceted.facetCategoryCounts]
+        .filter(([, categoryCountMap]) => categoryCountMap.size > 0)
+        .map(([field, categoryCountMap]) => (
+          <FacetFilter
+            key={field}
+            vals={[...categoryCountMap]}
+            field={field}
+            faceted={faceted}
+          />
+        ))}
     </div>
   )
 })

@@ -8,10 +8,10 @@ import { Grid, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ShoppingCart from '../../HierarchicalTrackSelectorWidget/components/ShoppingCart.tsx'
+import { facetLabel } from './util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel } from '../facetedModel.ts'
-import type { FacetedColumn } from './FacetedDataGrid.tsx'
 
 const useStyles = makeStyles()(theme => ({
   searchBox: {
@@ -23,17 +23,22 @@ const useStyles = makeStyles()(theme => ({
 const FacetedHeader = observer(function FacetedHeader({
   model,
   faceted,
-  columns,
+  shown,
   onFilterTextChange,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
-  columns: FacetedColumn[]
+  shown: string[]
   onFilterTextChange?: (value: string) => void
 }) {
   const { classes } = useStyles()
-  const { filterText, showFilters, showSparse, useShoppingCart, visible } =
-    faceted
+  const {
+    filterText,
+    showFilters,
+    useShoppingCart,
+    fields,
+    nonMetadataFieldSet,
+  } = faceted
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
   return (
@@ -78,14 +83,6 @@ const FacetedHeader = observer(function FacetedHeader({
             checked: useShoppingCart,
           },
           {
-            label: 'Show sparse metadata columns',
-            onClick: () => {
-              faceted.setShowSparse(!showSparse)
-            },
-            checked: showSparse,
-            type: 'checkbox',
-          },
-          {
             label: 'Show facet filters',
             onClick: () => {
               faceted.setShowFilters(!showFilters)
@@ -96,16 +93,16 @@ const FacetedHeader = observer(function FacetedHeader({
           {
             label: 'Manage columns',
             type: 'subMenu',
-            subMenu: columns
-              .filter(col => col.id !== 'name')
-              .map(col => {
-                const checked = visible[col.id] !== false
+            subMenu: fields
+              .filter(field => field !== 'name')
+              .map(field => {
+                const checked = shown.includes(field)
                 return {
-                  label: col.header,
+                  label: facetLabel(field, nonMetadataFieldSet),
                   type: 'checkbox' as const,
                   checked,
                   onClick: () => {
-                    faceted.setColumnVisible(col.id, !checked)
+                    faceted.setColumnVisible(field, !checked)
                   },
                 }
               }),

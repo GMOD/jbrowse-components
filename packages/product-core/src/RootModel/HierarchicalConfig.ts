@@ -39,6 +39,20 @@ export function HierarchicalConfigSchemaFactory() {
       description: 'list of category names to display as folders by default',
       defaultValue: [],
     },
+    table: ConfigurationSchema('hierarchicalTable', {
+      /**
+       * #slot configuration.hierarchical.table.columns
+       * the columns the track table shows beside the name, most important
+       * first, as far as its width allows, e.g. `['metadata.assay',
+       * 'metadata.biosample', 'category']`. Empty picks the fields that group
+       * tracks (category, kind, and metadata keys with few values), the most
+       * widely set first. A user's own choice in Manage columns wins
+       */
+      columns: {
+        type: 'stringArray',
+        defaultValue: [],
+      },
+    }),
     defaultCollapsed: ConfigurationSchema('defaultCollapsed', {
       /**
        * #slot configuration.hierarchical.defaultCollapsed.categoryNames

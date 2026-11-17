@@ -69,7 +69,6 @@ function renderGrid(
   model: HierarchicalTrackSelectorModel,
   faceted: FacetedModel,
 ) {
-  const columns = getFacetedColumns({ faceted, model })
   // observer wrapper mirrors FacetedSelector: re-reads shownTrackIds/selection
   // from the live model so the grid sees updates after a toggle
   const Wrapper = observer(function Wrapper() {
@@ -77,7 +76,11 @@ function renderGrid(
       <FacetedDataGrid
         model={model}
         faceted={faceted}
-        columns={columns}
+        columns={getFacetedColumns({
+          faceted,
+          model,
+          fields: faceted.shownColumns(9),
+        })}
         shownTrackIds={model.shownTrackIds}
         selectionSet={model.selectionSet}
         width={1200}
@@ -159,22 +162,50 @@ test('a header names its column in full on hover, and a click cycles ascending, 
   expect(faceted.sortField).toBe('')
 })
 
-test('a column hidden via visible is not rendered', () => {
+test('a column the user hid is not rendered, and one they showed is', () => {
   const { model, faceted } = setup()
-  faceted.setShowSparse(true)
-  // surface the adapter column, then hide it
-  faceted.setColumnVisible('adapter', false)
-  const { queryByText } = renderGrid(model, faceted)
-  // the adapter header should be gone, but tracks still render
-  expect(queryByText('adapter')).toBeNull()
-  expect(queryByText('fooC')).toBeTruthy()
+  faceted.setColumnVisible('kind', false)
+  faceted.setColumnVisible('adapter', true)
+  const { queryByRole } = renderGrid(model, faceted)
+  expect(queryByRole('columnheader', { name: 'kind' })).toBeNull()
+  expect(queryByRole('columnheader', { name: 'adapter' })).toBeTruthy()
+})
+
+test('the name column keeps half the measured width before the others share', () => {
+  const { session, model, faceted } = setup()
+  session.addSessionTrackConf({
+    trackId: 'long',
+    name: 'A track name long enough to want far more than half of the grid',
+    description: 'A description long enough to want the whole grid to itself',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  faceted.setColumnVisible('description', true)
+  faceted.setColumnVisible('adapter', true)
+  const clientWidth = jest
+    .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+    .mockReturnValue(448)
+  const { container } = renderGrid(model, faceted)
+  const widths = [...container.querySelectorAll('col')].map(col =>
+    Number.parseFloat(col.style.width),
+  )
+  clientWidth.mockRestore()
+  // the checkbox column, then name, then the rest
+  expect(widths[1]).toBeGreaterThanOrEqual((448 - widths[0]!) / 2)
 })
 
 test('the grid scrolls back to the top when the search, filters or sort change, not when a track goes', () => {
   const { session, model, faceted } = setup()
-  renderGrid(model, faceted)
+  const { container } = renderGrid(model, faceted)
+  const scroller = container.querySelector('table')!.parentElement!
+  function scrollDown() {
+    scroller.scrollTop = 100
+    fireEvent.scroll(scroller)
+  }
   scrollTo.mockClear()
 
+  scrollDown()
   act(() => {
     session.deleteTrackConf(
       session.sessionTracks.find(t => t.trackId === 'fooC')!,
@@ -186,11 +217,23 @@ test('the grid scrolls back to the top when the search, filters or sort change, 
   act(() => {
     faceted.setFilterText('bar')
   })
+  scrollDown()
   act(() => {
     faceted.setFilter('kind', ['Feature'])
   })
+  scrollDown()
   act(() => {
     faceted.setSort('name', false)
   })
   expect(scrollTo).toHaveBeenCalledTimes(3)
+})
+
+test('a change while the grid is already at the top scrolls nothing', () => {
+  const { model, faceted } = setup()
+  renderGrid(model, faceted)
+  scrollTo.mockClear()
+  act(() => {
+    faceted.setFilterText('bar')
+  })
+  expect(scrollTo).not.toHaveBeenCalled()
 })

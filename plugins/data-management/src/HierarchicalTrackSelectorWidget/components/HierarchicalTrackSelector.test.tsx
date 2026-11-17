@@ -10,10 +10,7 @@ import conf from '../../../../../test_data/test_order/config.json' with { type: 
 import { getRowStr } from '../../FacetedSelector/components/util.ts'
 import { facetedStateTreeF } from '../../FacetedSelector/facetedModel.ts'
 import { setTracksSelected } from '../../FacetedSelector/facetedSelection.ts'
-import {
-  findNonSparseKeys,
-  getRootKeys,
-} from '../../FacetedSelector/facetedUtil.ts'
+import { getRootKeys } from '../../FacetedSelector/facetedUtil.ts'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
@@ -1005,11 +1002,6 @@ test('faceted model toggle options', () => {
     model.assemblyNames,
   )
 
-  // test showSparse toggle
-  const initialShowSparse = faceted.showSparse
-  faceted.setShowSparse(!initialShowSparse)
-  expect(faceted.showSparse).toBe(!initialShowSparse)
-
   // test showFilters toggle
   const initialShowFilters = faceted.showFilters
   faceted.setShowFilters(!initialShowFilters)
@@ -1181,12 +1173,7 @@ test('faceted model fields includes expected columns', () => {
     model.assemblyNames,
   )
 
-  // fields should always include 'name'
   expect(faceted.fields).toContain('name')
-
-  // with showSparse=false, sparse columns are hidden
-  // enable showSparse to see all columns
-  faceted.setShowSparse(true)
   expect(faceted.fields).toContain('adapter')
 })
 
@@ -1282,18 +1269,12 @@ test('faceted model column visibility', () => {
     model.assemblyNames,
   )
 
-  // surface the sparse non-metadata columns so they appear as fields
-  faceted.setShowSparse(true)
-
-  // columns default to visible
-  expect(faceted.visible.name).toBe(true)
-  expect(faceted.visible.adapter).toBe(true)
-
-  // setColumnVisible hides/shows a single column
-  faceted.setColumnVisible('adapter', false)
-  expect(faceted.visible.adapter).toBe(false)
+  // the adapter is never a default column, but the user can show it
+  expect(faceted.shownColumns(9)).not.toContain('adapter')
   faceted.setColumnVisible('adapter', true)
-  expect(faceted.visible.adapter).toBe(true)
+  expect(faceted.shownColumns(9)).toContain('adapter')
+  faceted.setColumnVisible('adapter', false)
+  expect(faceted.shownColumns(9)).not.toContain('adapter')
 })
 
 test('faceted and hierarchical filter text are independent', () => {
@@ -1447,31 +1428,6 @@ test('getRootKeys handles empty object', () => {
   expect(getRootKeys({})).toEqual([])
 })
 
-test('findNonSparseKeys filters keys below threshold', () => {
-  const rows = Array.from({ length: 10 }, (_, i) => ({
-    a: `val${i}`,
-    b: i < 3 ? `val${i}` : '',
-  }))
-  const result = findNonSparseKeys(
-    ['a', 'b'],
-    rows,
-    (r, f) => r[f as keyof typeof r],
-  )
-  expect(result).toContain('a')
-  expect(result).not.toContain('b')
-})
-
-test('findNonSparseKeys short-circuits at threshold', () => {
-  let callCount = 0
-  const rows = Array.from({ length: 100 }, () => ({ a: 'val' }))
-  findNonSparseKeys(['a'], rows, (r, f) => {
-    callCount++
-    return r[f as keyof typeof r]
-  })
-  // should stop after threshold+1 (6) hits, not iterate all 100
-  expect(callCount).toBeLessThan(100)
-})
-
 test('getRowStr extracts regular fields', () => {
   const row = { id: '1', name: 'track1', category: 'Genes' }
   expect(getRowStr('name', row)).toBe('track1')
@@ -1600,7 +1556,6 @@ test('faceted model fields include metadata columns with prefix', () => {
     model.assemblyNames,
   )
 
-  faceted.setShowSparse(true)
   const metadataFields = faceted.fields.filter(f => f.startsWith('metadata.'))
   expect(metadataFields).toContain('metadata.tissue')
   expect(metadataFields).toContain('metadata.species')

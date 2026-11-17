@@ -1,8 +1,8 @@
 import { coarseStripHTML } from '@jbrowse/core/util'
 
 // "THP-1", "Fiber-seq" and "hg38_to_mm10" are spelled with and without these
-// in track names, so a term matches either way
-const joiners = /[-_.]/g
+// in track names, so a term typed without them still matches
+const joiners = /[-_]/g
 
 /**
  * The text one of the track selectors' filter boxes matches a track against.
@@ -16,7 +16,7 @@ const joiners = /[-_.]/g
  * - markup stripped, so a term can't match a tag name that never appears on
  *   screen — searching `i` should not hit a track named `<i>foo</i>`
  * - lowercased, matched case-insensitively against lowercased terms
- * - followed by the same lines with `-`, `_` and `.` removed, so `thp1` finds
+ * - followed by the same lines with `-` and `_` removed, so `thp1` finds
  *   "THP-1" and `fiberseq` finds "Fiber-seq"
  *
  * Built once per track where the sources are assembled, not per keystroke.
@@ -33,42 +33,47 @@ export function buildSearchText(fields: unknown[]) {
  * The other half of the same contract: what a filter box's raw contents mean
  * as a query. Whitespace separates terms and a track must contain every one,
  * in any field and any order; `"double quotes"` keep a phrase together, and a
- * leading `-` turns a term into one the track must not contain. Lowercased to
- * match {@link buildSearchText}.
+ * leading `-` turns a term into one the track must not contain. A lone `-`,
+ * on the way to typing an excluded word, is no term yet. Lowercased to match
+ * {@link buildSearchText}.
  */
 export function parseSearchQuery(filterText: string) {
   return [
     ...filterText.toLowerCase().matchAll(/(-?)(?:"([^"]*)"?|(\S+))/g),
   ].flatMap(([, minus, phrase, word]) => {
     const text = phrase ?? word ?? ''
-    return text ? [{ text, exclude: minus === '-' }] : []
+    return text && text !== '-' ? [{ text, exclude: minus === '-' }] : []
   })
 }
 
 /**
  * A predicate over {@link buildSearchText} output for one filter box's
- * contents; an empty box matches every track.
+ * contents, or undefined when the box holds no terms and every track matches.
  */
 export function searchMatcher(filterText: string) {
-  const terms = parseSearchQuery(filterText).map(({ text, exclude }) => ({
-    text,
-    compact: text.replaceAll(joiners, ''),
-    exclude,
-  }))
-  return (searchText: string) =>
-    terms.every(
-      ({ text, compact, exclude }) =>
-        (searchText.includes(text) ||
-          (!!compact && searchText.includes(compact))) !== exclude,
-    )
+  const terms = parseSearchQuery(filterText)
+  return terms.length
+    ? (searchText: string) =>
+        terms.every(
+          ({ text, exclude }) => searchText.includes(text) !== exclude,
+        )
+    : undefined
+}
+
+function escapeRegExp(text: string) {
+  return text.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 /**
- * The terms a filter box highlights in the rows it kept: the ones a track has
- * to contain, as typed.
+ * What a filter box highlights in the rows it kept: each term a track has to
+ * contain, as a pattern that also spans the `-` and `_` the match skipped, so
+ * `thp1` marks "THP-1".
  */
-export function highlightTerms(filterText: string) {
+export function highlightPatterns(filterText: string) {
   return parseSearchQuery(filterText)
     .filter(term => !term.exclude)
-    .map(term => term.text)
+    .map(
+      term =>
+        new RegExp(Array.from(term.text, escapeRegExp).join('[-_]*'), 'giu'),
+    )
 }

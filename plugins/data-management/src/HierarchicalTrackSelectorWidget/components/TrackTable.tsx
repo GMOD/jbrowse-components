@@ -26,10 +26,11 @@ const TrackTable = observer(function TrackTable({
   const faceted = useFacetedModel(
     model,
     () => model.listedTrackConfigurations,
-    {
+    () => ({
       filterText: model.filterText,
       showFilters: false,
-    },
+      getColumnTracks: () => model.allTrackConfigurations,
+    }),
   )
   const [ref, { width, height }] = useMeasure()
   const measured = Boolean(width && height)

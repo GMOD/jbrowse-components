@@ -46,7 +46,7 @@ export function filterRowsByText<T extends { searchText: string }>(
   filterText: string,
 ): T[] {
   const matches = searchMatcher(filterText)
-  return filterText.trim() ? rows.filter(row => matches(row.searchText)) : rows
+  return matches ? rows.filter(row => matches(row.searchText)) : rows
 }
 
 /**

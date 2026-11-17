@@ -21,6 +21,7 @@ exports[`renders with the available plugins 1`] = `
           aria-invalid="false"
           class="MuiInputBase-input MuiInput-input css-HASH-MuiInputBase-input-MuiInput-input"
           id="_r_2_"
+          spellcheck="false"
           type="text"
           value=""
         />

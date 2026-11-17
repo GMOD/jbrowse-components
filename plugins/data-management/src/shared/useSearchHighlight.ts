@@ -3,7 +3,7 @@ import { useLayoutEffect } from 'react'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 
-import { highlightTerms } from './searchText.ts'
+import { highlightPatterns } from './searchText.ts'
 
 import type { RefObject } from 'react'
 
@@ -35,21 +35,17 @@ function getTextNodes(root: Element): Text[] {
   return nodes
 }
 
-// Pure DOM scan: every non-overlapping, case-insensitive match of each term
-// within root becomes a Range. Terms are lowercased and non-empty (an empty
-// needle would match at every offset and never advance).
-function collectMatchRanges(root: Element, terms: string[]): Range[] {
+// Pure DOM scan: every match of each pattern within root becomes a Range.
+// Patterns are global and never match the empty string.
+function collectMatchRanges(root: Element, patterns: RegExp[]): Range[] {
   const ranges: Range[] = []
   for (const textNode of getTextNodes(root)) {
-    const textLower = textNode.textContent.toLowerCase()
-    for (const term of terms) {
-      let idx = textLower.indexOf(term)
-      while (idx !== -1) {
+    for (const pattern of patterns) {
+      for (const match of textNode.textContent.matchAll(pattern)) {
         const range = new Range()
-        range.setStart(textNode, idx)
-        range.setEnd(textNode, idx + term.length)
+        range.setStart(textNode, match.index)
+        range.setEnd(textNode, match.index + match[0].length)
         ranges.push(range)
-        idx = textLower.indexOf(term, idx + term.length)
       }
     }
   }
@@ -77,10 +73,10 @@ export function useSearchHighlight(
     const container = containerRef.current
     // the same parse the filter itself applies, so what is highlighted is
     // what matched
-    const terms = highlightTerms(query)
-    if (container && terms.length) {
+    const patterns = highlightPatterns(query)
+    if (container && patterns.length) {
       const highlight = new Highlight()
-      for (const range of collectMatchRanges(container, terms)) {
+      for (const range of collectMatchRanges(container, patterns)) {
         highlight.add(range)
       }
       CSS.highlights.set(highlightName, highlight)

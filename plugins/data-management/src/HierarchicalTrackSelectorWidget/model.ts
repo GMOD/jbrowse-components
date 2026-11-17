@@ -15,7 +15,7 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, compareShallow, computed, observable } from 'mobx'
 
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
-import { parseSearchQuery, searchMatcher } from '../shared/searchText.ts'
+import { searchMatcher } from '../shared/searchText.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
 import { sortSources } from './sortUtils.ts'
 import {
@@ -594,7 +594,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * whether a track's searchText holds every term in the filter box
+       * whether a track's searchText holds every term in the filter box;
+       * undefined when the box holds no terms
        */
       get filterMatches() {
         return searchMatcher(self.filterText)
@@ -606,10 +607,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * (isFilterForcedOpen)
        */
       get filterActive() {
-        return (
-          parseSearchQuery(self.filterText).length > 0 ||
-          self.trackList !== 'all'
-        )
+        return this.filterMatches !== undefined || self.trackList !== 'all'
       },
     }))
     .views(self => {
@@ -782,7 +780,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                   defaultCollapsed: s.defaultCollapsed,
                   loading: s.loading,
                   children: generateHierarchy(
-                    s.tracks.filter(t => filterMatches(t.searchText)),
+                    s.tracks.filter(t => filterMatches?.(t.searchText) ?? true),
                     s.id,
                   ),
                 }))
@@ -807,7 +805,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const tracks = order
           .map(id => sources.get(id))
           .filter(notEmpty)
-          .filter(t => filterMatches(t.searchText))
+          .filter(t => filterMatches?.(t.searchText) ?? true)
           .map(t => ({ ...t, categories: [] }))
         return generateHierarchy(tracks, trackList)
       },

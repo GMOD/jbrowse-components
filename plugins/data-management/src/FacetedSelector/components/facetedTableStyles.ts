@@ -88,9 +88,13 @@ export const useFacetedTableStyles = makeStyles()(theme => {
       boxSizing: 'border-box',
     },
     nameCell: {
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 2,
+      minWidth: 0,
+      '& > :not(:first-child)': {
+        flexShrink: 0,
+      },
     },
     sortButton: {
       display: 'flex',

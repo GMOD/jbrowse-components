@@ -56,12 +56,33 @@ it. Plugins replace the folder dialog through
 
 The faceted selector shows all tracks as a filterable table, opened from the
 Tree | Table toggle at the top of "Available tracks" or a folder's context menu.
-Every top-level key of a track's `metadata` object becomes a column to filter or
+Every top-level key of a track's `metadata` object can be a column to filter or
 sort on, as in the
-[cookbook's metadata track](/docs/cookbook#instance-wide-settings), and columns
-empty for every track are hidden.
+[cookbook's metadata track](/docs/cookbook#instance-wide-settings).
 [](/docs/user_guides/basic_usage#faceted-track-selector) covers the filter
 panel.
+
+Beside the name, the table shows as many columns as fit its width, with no
+sideways scroll. By default those are the fields that sort tracks into groups,
+the most widely set first: category, kind, and each metadata key whose values
+repeat (at least two values, and no more values than half the tracks that have
+one). A per-track URL or description, or a flag every track shares, is left out.
+The user's Manage columns choices override this either way.
+
+Where a hub's metadata has many keys of which a few matter, name them, most
+important first, with `hierarchical.table.columns`:
+
+```json
+{
+  "configuration": {
+    "hierarchical": {
+      "table": {
+        "columns": ["metadata.assay", "metadata.biosample", "category"]
+      }
+    }
+  }
+}
+```
 
 The kind column groups tracks by what they hold: the track type ("Alignments",
 "Variant", "Quantitative") unless the track's `metadata.kind` says otherwise.

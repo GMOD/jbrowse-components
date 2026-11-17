@@ -2,6 +2,7 @@ import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { observer } from 'mobx-react'
 
 import OverrideBadge from '../../HierarchicalTrackSelectorWidget/components/tree/OverrideBadge.tsx'
+import TrackNameText from '../../HierarchicalTrackSelectorWidget/components/tree/TrackNameText.tsx'
 import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
 import { useFacetedTableStyles } from './facetedTableStyles.ts'
 import { facetLabel, getRowStr } from './util.ts'
@@ -20,7 +21,7 @@ const NameCell = observer(function NameCell({
   const { classes } = useFacetedTableStyles()
   return (
     <div className={classes.nameCell}>
-      <SanitizedHTML html={row.name} />
+      <TrackNameText name={row.name} />
       <OverrideBadge model={model} trackId={row.id} name={row.name} />
       <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
     </div>
@@ -34,26 +35,30 @@ const NameCell = observer(function NameCell({
 export function getFacetedColumns({
   faceted,
   model,
+  fields,
 }: {
   faceted: FacetedModel
   model: HierarchicalTrackSelectorModel
+  fields: string[]
 }): FacetedColumn[] {
-  const { facetFields, nonMetadataFieldSet } = faceted
+  const { nonMetadataFieldSet } = faceted
   return [
     {
       id: 'name',
       header: 'name',
       cell: row => <NameCell row={row} model={model} />,
     },
-    ...facetFields.map(
-      id =>
-        ({
-          id,
-          header: facetLabel(id, nonMetadataFieldSet),
-          // any metadata value (or category/description) can carry markup, and
-          // SanitizedHTML short-circuits to a plain span when it doesn't
-          cell: row => <SanitizedHTML html={getRowStr(id, row)} />,
-        }) satisfies FacetedColumn,
-    ),
+    ...fields
+      .filter(id => id !== 'name')
+      .map(
+        id =>
+          ({
+            id,
+            header: facetLabel(id, nonMetadataFieldSet),
+            // any metadata value (or category/description) can carry markup, and
+            // SanitizedHTML short-circuits to a plain span when it doesn't
+            cell: row => <SanitizedHTML html={getRowStr(id, row)} />,
+          }) satisfies FacetedColumn,
+      ),
   ]
 }

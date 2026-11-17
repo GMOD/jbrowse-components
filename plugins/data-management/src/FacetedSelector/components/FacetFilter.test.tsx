@@ -52,3 +52,26 @@ test('each value shows its count, and clearing appears once one is checked', () 
 
   expect(faceted.filters.get('metadata.assay')).toEqual([])
 })
+
+test('a long facet lists its most common values, any checked one, and a way to the rest', () => {
+  const faceted = facetedStateTreeF().create({})
+  faceted.setFilter('metadata.cell', ['c9'])
+  const vals = Array.from(
+    { length: 12 },
+    (_, i) => [`c${i}`, 20 - i] satisfies [string, number],
+  )
+  const { getByText, queryByLabelText, getByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <FacetFilter field="metadata.cell" vals={vals} faceted={faceted} />
+    </ThemeProvider>,
+  )
+  expect(getByLabelText('c0')).toBeTruthy()
+  expect(getByLabelText('c7')).toBeTruthy()
+  expect(queryByLabelText('c8')).toBeNull()
+  expect(getByLabelText('c9')).toBeTruthy()
+
+  fireEvent.click(getByText('Show 3 more'))
+  expect(getByLabelText('c11')).toBeTruthy()
+  fireEvent.click(getByText('Show fewer'))
+  expect(queryByLabelText('c11')).toBeNull()
+})

@@ -1,8 +1,8 @@
 import {
   coarseStripHTML,
   localStorageGetBoolean,
+  localStorageGetJSON,
   localStorageGetNumber,
-  localStorageGetStringArray,
   localStorageSetBoolean,
   localStorageSetJSON,
   localStorageSetNumber,
@@ -14,6 +14,7 @@ import { observable } from 'mobx'
 
 import { trackNameCollator } from '../shared/collator.ts'
 import { configScopedKey } from '../shared/configScopedKey.ts'
+import { buildSearchText, searchMatcher } from '../shared/searchText.ts'
 import { measureNameColumnWidth } from '../shared/trackGridUtils.ts'
 import {
   facetLabel,
@@ -27,7 +28,7 @@ import {
   filterRowsByText,
   rowSearchText,
 } from './facetedFilter.ts'
-import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
+import { getRootKeys } from './facetedUtil.ts'
 
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
@@ -36,10 +37,57 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // the narrowest a drag can make the filter pane
 export const MIN_PANEL_WIDTH = 100
 
-// Hidden columns are config+assembly scoped: the metadata columns differ per
-// dataset, so hiding one shouldn't carry over to an unrelated config.
-function hiddenColumnsKey(assemblyNames: string[]) {
-  return configScopedKey('facet-hiddenColumns', assemblyNames)
+/**
+ * A column the user showed or hid in Manage columns, overriding whether the
+ * table would have shown it.
+ */
+export interface ColumnChoice {
+  field: string
+  show: boolean
+}
+
+// Column choices are config+assembly scoped: the metadata columns differ per
+// dataset, so a choice shouldn't carry over to an unrelated config.
+function columnChoicesKey(assemblyNames: string[]) {
+  return configScopedKey('facet-columnChoices', assemblyNames)
+}
+
+function readColumnChoices(assemblyNames: string[]): ColumnChoice[] {
+  const stored = localStorageGetJSON<unknown>(
+    columnChoicesKey(assemblyNames),
+    [],
+  )
+  return Array.isArray(stored)
+    ? stored.flatMap((c: Partial<ColumnChoice> | null) =>
+        typeof c?.field === 'string' && typeof c.show === 'boolean'
+          ? [{ field: c.field, show: c.show }]
+          : [],
+      )
+    : []
+}
+
+function trackFields(
+  track: AnyTrackConfig,
+  trackTypeName: (type: string) => string,
+) {
+  const metadata = (track.metadata ?? {}) as Record<string, unknown>
+  return {
+    kind:
+      typeof metadata.kind === 'string' && metadata.kind
+        ? metadata.kind
+        : trackTypeName(String(track.type)),
+    adapter: (track.adapter as { type?: string } | undefined)?.type,
+    metadata,
+  }
+}
+
+// A field groups tracks when at least two distinct values cover them and there
+// are no more values than half the tracks that have one: a constant flag, or a
+// per-track URL or description, gives a column or a facet nothing to group by.
+function groupsTracks(values: string[]) {
+  const present = values.filter(v => v !== '')
+  const distinct = new Set(present).size
+  return distinct >= 2 && distinct <= present.length / 2
 }
 
 /**
@@ -58,28 +106,15 @@ export function facetedStateTreeF() {
       /**
        * #property
        */
-      showSparse: types.optional(types.boolean, () =>
-        localStorageGetBoolean('facet-showSparse', false),
-      ),
-      /**
-       * #property
-       */
       showFilters: types.optional(types.boolean, () =>
         localStorageGetBoolean('facet-showFilters', true),
       ),
-
       /**
        * #property
        */
       panelWidth: types.optional(types.number, () =>
         localStorageGetNumber('facet-panelWidth', 240),
       ),
-      /**
-       * #property
-       * Column names the user has hidden. Loaded from a config+assembly scoped
-       * localStorage entry in setTrackSource (once assemblies are known).
-       */
-      hiddenColumns: types.optional(types.array(types.string), []),
     })
     .volatile(() => ({
       /**
@@ -113,6 +148,24 @@ export function facetedStateTreeF() {
       getTracks: (() => []) as () => AnyTrackConfig[],
       /**
        * #volatile
+       * Supplier for the tracks the columns and facets are chosen from, when
+       * that is more than the grid shows: the drawer passes every track, so
+       * switching to Favorites or Recent keeps the same columns.
+       */
+      getColumnTracks: undefined as (() => AnyTrackConfig[]) | undefined,
+      /**
+       * #volatile
+       * the config's `hierarchical.table.columns`
+       */
+      configuredColumns: [] as string[],
+      /**
+       * #volatile
+       * what the user showed or hid in Manage columns, loaded from a
+       * config+assembly scoped localStorage entry in setTrackSource
+       */
+      columnChoices: [] as ColumnChoice[],
+      /**
+       * #volatile
        */
       session: undefined as TrackCatalog | undefined,
       /**
@@ -130,16 +183,19 @@ export function facetedStateTreeF() {
         getTracks: () => AnyTrackConfig[],
         session: TrackCatalog,
         assemblyNames: string[],
+        getColumnTracks?: () => AnyTrackConfig[],
       ) {
         self.getTracks = getTracks
+        self.getColumnTracks = getColumnTracks
         self.session = session
         self.assemblyNames = assemblyNames
-        // a string list, not a raw JSON read: an entry of the wrong element
-        // type parses fine and then hides nothing while looking like it hid
-        // something
-        self.hiddenColumns.replace(
-          localStorageGetStringArray(hiddenColumnsKey(assemblyNames)),
-        )
+        self.columnChoices = readColumnChoices(assemblyNames)
+      },
+      /**
+       * #action
+       */
+      setConfiguredColumns(columns: string[]) {
+        self.configuredColumns = columns
       },
       /**
        * #action
@@ -190,26 +246,27 @@ export function facetedStateTreeF() {
       /**
        * #action
        */
-      setShowSparse(f: boolean) {
-        self.showSparse = f
-        localStorageSetBoolean('facet-showSparse', f)
-      },
-      /**
-       * #action
-       */
       setShowFilters(f: boolean) {
         self.showFilters = f
         localStorageSetBoolean('facet-showFilters', f)
       },
       /**
        * #action
+       * records the user's Manage columns choice, which beats the default
+       * either way; hiding the sorted column drops the sort
        */
-      setColumnVisible(field: string, visible: boolean) {
-        const next = visible
-          ? self.hiddenColumns.filter(c => c !== field)
-          : [...new Set([...self.hiddenColumns, field])]
-        self.hiddenColumns.replace(next)
-        localStorageSetJSON(hiddenColumnsKey(self.assemblyNames), next)
+      setColumnVisible(field: string, show: boolean) {
+        self.columnChoices = [
+          ...self.columnChoices.filter(c => c.field !== field),
+          { field, show },
+        ]
+        localStorageSetJSON(
+          columnChoicesKey(self.assemblyNames),
+          self.columnChoices,
+        )
+        if (!show && self.sortField === field) {
+          self.sortField = ''
+        }
       },
     }))
     .views(self => ({
@@ -222,7 +279,6 @@ export function facetedStateTreeF() {
         const session = self.session
         return session
           ? self.getTracks().map(track => {
-              const metadata = (track.metadata ?? {}) as Record<string, unknown>
               const { name, category, description } = trackCatalogEntry(
                 track,
                 session,
@@ -231,21 +287,35 @@ export function facetedStateTreeF() {
                 id: track.trackId,
                 conf: track,
                 name,
-                kind:
-                  typeof metadata.kind === 'string' && metadata.kind
-                    ? metadata.kind
-                    : self.trackTypeName(String(track.type)),
                 category: category.join(', '),
-                adapter: (track.adapter as { type?: string } | undefined)?.type,
                 description,
-                metadata,
+                ...trackFields(track, self.trackTypeName),
               }
-              return { ...row, searchText: rowSearchText(row) } as const
+              return {
+                ...row,
+                searchText: rowSearchText(row),
+                nameSearchText: buildSearchText([name]),
+              } as const
             })
           : []
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * the rows the columns and facets are chosen from
+       */
+      get columnRows() {
+        const { getColumnTracks } = self
+        return getColumnTracks
+          ? getColumnTracks().map(track => ({
+              category: ((track.category as string[] | undefined) ?? []).join(
+                ', ',
+              ),
+              ...trackFields(track, self.trackTypeName),
+            }))
+          : self.allRows
+      },
       /**
        * #getter
        * Text-filtered rows. Cheap string filtering on already-built allRows.
@@ -254,7 +324,6 @@ export function facetedStateTreeF() {
         return filterRowsByText(self.allRows, self.filterText)
       },
     }))
-
     .views(self => ({
       /**
        * #getter
@@ -262,58 +331,75 @@ export function facetedStateTreeF() {
       get metadataKeys() {
         return [
           ...new Set(
-            self.allRows.flatMap(row =>
+            self.columnRows.flatMap(row =>
               getRootKeys(row.metadata).filter(key => key !== 'kind'),
             ),
           ),
         ]
       },
+    }))
+    .views(self => ({
       /**
        * #getter
-       * Facet field ids in column order, the ones that say most about a track
-       * first and the adapter last; `metadata.<key>` ids resolve through
-       * getRowStr like the rest. Sparse fields are dropped unless showSparse,
-       * except kind, which every row has, so a short list (favorites) keeps it.
+       * Every field a column can show, in column order: the ones that say most
+       * about a track first, `metadata.<key>` ids next, the adapter last.
        */
-      get facetFields() {
-        const ordered = [
+      get fields() {
+        return [
+          'name',
           'description',
           'category',
           'kind',
-          ...this.metadataKeys.map(metadataFacet),
+          ...self.metadataKeys.map(metadataFacet),
           'adapter',
         ]
-        const kept = new Set(
-          self.showSparse
-            ? ordered
-            : findNonSparseKeys(ordered, self.allRows, (r, f) =>
-                getRowStr(f, r),
-              ),
-        )
-        return ordered.filter(f => f === 'kind' || kept.has(f))
       },
       /**
        * #getter
-       * The facets the filter panel lists: those where at least two tracks
-       * share a value, since picking a value no other track has narrows
-       * nothing the search box can't.
+       * The fields that sort tracks into groups (see groupsTracks), the ones
+       * most tracks have first: what the table shows beside the name when the
+       * config names no columns, and what the facet panel lists.
        */
-      get filterFacets() {
-        return this.facetFields.filter(f => {
-          const seen = new Set<string>()
-          return self.allRows.some(row => {
-            const value = getRowStr(f, row)
-            const repeat = value !== '' && seen.has(value)
-            seen.add(value)
-            return repeat
-          })
-        })
+      get groupingFields() {
+        const rows = self.columnRows
+        return ['category', 'kind', ...self.metadataKeys.map(metadataFacet)]
+          .map(field => ({
+            field,
+            values: rows.map(row => getRowStr(field, row)),
+          }))
+          .filter(({ values }) => groupsTracks(values))
+          .map(({ field, values }) => ({
+            field,
+            coverage: values.filter(v => v !== '').length,
+          }))
+          .sort((a, b) => b.coverage - a.coverage)
+          .map(({ field }) => field)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the columns shown beside the name, most important first, as far as the
+       * width allows: the config's `hierarchical.table.columns`, or else the
+       * grouping fields
+       */
+      get defaultColumns() {
+        const known = new Set(self.fields)
+        const configured = self.configuredColumns.filter(f => known.has(f))
+        return configured.length ? configured : self.groupingFields
       },
       /**
        * #getter
+       * The columns the user showed in Manage columns, which show however
+       * narrow the table, and those they hid, which never do.
        */
-      get fields() {
-        return ['name', ...this.facetFields]
+      get chosenColumns() {
+        const known = new Set(self.fields)
+        const choices = self.columnChoices.filter(c => known.has(c.field))
+        return {
+          shown: choices.filter(c => c.show).map(c => c.field),
+          hidden: new Set(choices.filter(c => !c.show).map(c => c.field)),
+        }
       },
       /**
        * #getter
@@ -321,19 +407,7 @@ export function facetedStateTreeF() {
        * collides with one (so the header can show "x (from metadata)").
        */
       get nonMetadataFieldSet() {
-        return new Set([
-          'name',
-          ...this.facetFields.filter(f => !isMetadataFacet(f)),
-        ])
-      },
-      /**
-       * #getter
-       * Per-field visibility derived from the persisted hiddenColumns list. A
-       * field absent from the list (e.g. newly introduced) defaults to visible.
-       */
-      get visible(): Record<string, boolean> {
-        const hidden = new Set(self.hiddenColumns)
-        return Object.fromEntries(this.fields.map(f => [f, !hidden.has(f)]))
+        return new Set(self.fields.filter(f => !isMetadataFacet(f)))
       },
       /**
        * #getter
@@ -341,6 +415,42 @@ export function facetedStateTreeF() {
       get filteredRows() {
         return filterRowsByFacets(self.rows, self.filters)
       },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * every column that can show at some width, name first
+       */
+      get candidateColumns() {
+        const { shown, hidden } = self.chosenColumns
+        return [
+          ...new Set([
+            'name',
+            ...self.defaultColumns.filter(f => !hidden.has(f)),
+            ...shown,
+          ]),
+        ]
+      },
+      /**
+       * #getter
+       * The facet panel's facets: the default columns and grouping fields,
+       * plus any facet still filtering the grid, so an active filter never
+       * hides its own options.
+       */
+      get filterFacets() {
+        const active = [...self.filters]
+          .filter(([, values]) => values.length > 0)
+          .map(([field]) => field)
+        return [
+          ...new Set([
+            ...self.defaultColumns,
+            ...self.groupingFields,
+            ...active,
+          ]),
+        ]
+      },
+    }))
+    .views(self => ({
       /**
        * #getter
        * Per-facet category counts for the filter sidebar. Cached by MobX so it
@@ -349,18 +459,19 @@ export function facetedStateTreeF() {
       get facetCategoryCounts() {
         return computeFacetCategoryCounts(
           self.rows,
-          this.filterFacets,
+          self.filterFacets,
           self.filters,
         )
       },
       /**
        * #getter
-       * Measured pixel widths for every column. Measured over allRows so widths
-       * stay stable and don't recompute on every filterText keystroke.
+       * Measured pixel widths for every column that can show. Measured over
+       * allRows so widths stay stable and don't recompute on every filterText
+       * keystroke.
        */
       get initialWidths(): Record<string, number> {
         return Object.fromEntries(
-          this.fields.map(f => [
+          self.candidateColumns.map(f => [
             f,
             f === 'name'
               ? measureNameColumnWidth(self.allRows)
@@ -369,7 +480,7 @@ export function facetedStateTreeF() {
                     self.allRows.map(r => getRowStr(f, r)),
                     { maxWidth: 400, stripHTML: true },
                   ),
-                  measureGridWidth([facetLabel(f, this.nonMetadataFieldSet)], {
+                  measureGridWidth([facetLabel(f, self.nonMetadataFieldSet)], {
                     fontSize: 14,
                     padding: 46,
                     maxWidth: 400,
@@ -378,21 +489,22 @@ export function facetedStateTreeF() {
           ]),
         )
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        * Faceted rows in display order: filteredRows sorted by the active sort
-       * field (natural order when no field is selected).
+       * field. With no sort field, a search lists the tracks whose name holds
+       * every word first, each group in natural order.
        */
       get sortedRows() {
-        const { sortAscending, filteredRows } = self
-        // a sort on a column that is no longer shown (hidden via Manage
-        // columns, or dropped out of the fields when showSparse turned off) has
-        // no header indicator, so fall back to natural order
-        const sortField = self.visible[self.sortField] ? self.sortField : ''
+        const { sortAscending, sortField, filteredRows, filterText } = self
         if (!sortField) {
-          return filteredRows
+          const nameMatches = searchMatcher(filterText)
+          return nameMatches
+            ? [
+                ...filteredRows.filter(r => nameMatches(r.nameSearchText)),
+                ...filteredRows.filter(r => !nameMatches(r.nameSearchText)),
+              ]
+            : filteredRows
         }
         const dir = sortAscending ? 1 : -1
         // sort on what the cell displays, not the raw slot: a value wrapped in
@@ -405,6 +517,22 @@ export function facetedStateTreeF() {
           }))
           .sort((a, b) => dir * trackNameCollator.compare(a.key, b.key))
           .map(({ row }) => row)
+      },
+      /**
+       * #method
+       * The columns to draw when `count` fit beside the name: the leading
+       * default columns that fit, plus every column the user showed.
+       */
+      shownColumns(count: number) {
+        const { shown, hidden } = self.chosenColumns
+        const auto = self.defaultColumns
+          .filter(f => !hidden.has(f) && !shown.includes(f))
+          .slice(0, Math.max(0, count - shown.length))
+        const keep = new Set([...auto, ...shown])
+        return [
+          'name',
+          ...self.candidateColumns.filter(f => f !== 'name' && keep.has(f)),
+        ]
       },
     }))
 }

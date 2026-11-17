@@ -355,10 +355,11 @@ starts on the right.
 ## Faceted track selector
 
 The Tree | Table toggle at the top of "Available tracks" shows all tracks as a
-filterable table, starting from whatever is typed in the filter box. "Show facet
-filters" in its ⋮ menu lists each column's values with their track counts;
-checking values keeps only the tracks with one of them. Tracks with `metadata`
-fields get extra filterable columns:
+filterable table, starting from whatever is typed in the filter box, with the
+tracks whose name matches listed first. "Show facet filters" in its ⋮ menu lists
+the values of each column that groups tracks, with their track counts; checking
+values keeps only the tracks with one of them. Manage columns in the same menu
+shows or hides any column. Tracks with `metadata` fields get extra columns:
 
 ```json
 {

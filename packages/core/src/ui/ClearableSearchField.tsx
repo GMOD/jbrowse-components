@@ -40,6 +40,7 @@ const ClearableSearchField = observer(function ClearableSearchField({
         })
       }}
       slotProps={{
+        htmlInput: { spellCheck: false },
         input: {
           endAdornment: (
             <InputAdornment position="end">

@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { useCreateOnce, useFinalUnmount } from '@jbrowse/core/util/hooks'
 import { destroy } from '@jbrowse/mobx-state-tree'
@@ -11,8 +12,12 @@ import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 /**
  * Faceted-selector UI state for the lifetime of a dialog, destroyed on unmount.
  *
- * getTracks is stored once and called from inside MobX computeds, so it must
- * read the live config tree (e.g. a model getter) rather than close over an
+ * `initial` is called once, when the model is created, so the starting values
+ * it reads (the tree's query) are not observed by the caller's render.
+ *
+ * getTracks (and getColumnTracks, the wider list columns are chosen from) is
+ * stored once and called from inside MobX computeds, so it must read the live
+ * config tree (e.g. a model getter) rather than close over an
  * already-materialized array — otherwise the grid keeps rows for tracks that
  * have since been deleted.
  *
@@ -26,11 +31,27 @@ import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 export function useFacetedModel(
   model: HierarchicalTrackSelectorModel,
   getTracks: () => AnyTrackConfig[],
-  initial?: { filterText?: string; showFilters?: boolean },
+  initial?: () => {
+    filterText?: string
+    showFilters?: boolean
+    getColumnTracks?: () => AnyTrackConfig[]
+  },
 ) {
   const faceted = useCreateOnce(() => {
-    const ret = facetedStateTreeF().create(initial)
-    ret.setTrackSource(getTracks, getSession(model), model.assemblyNames)
+    const { getColumnTracks, ...snapshot } = initial?.() ?? {}
+    const session = getSession(model)
+    const ret = facetedStateTreeF().create(snapshot)
+    ret.setTrackSource(getTracks, session, model.assemblyNames, getColumnTracks)
+    const columns: unknown = getConf(session, [
+      'hierarchical',
+      'table',
+      'columns',
+    ])
+    ret.setConfiguredColumns(
+      Array.isArray(columns)
+        ? columns.filter((c): c is string => typeof c === 'string')
+        : [],
+    )
     const names = new Map(
       getEnv(model)
         .pluginManager.getTrackElements()

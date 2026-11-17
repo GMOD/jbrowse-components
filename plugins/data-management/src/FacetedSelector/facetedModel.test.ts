@@ -102,10 +102,11 @@ describe('sorting', () => {
     ])
   })
 
-  test('a sort on a hidden column falls back to natural order', () => {
+  test('hiding the sorted column drops the sort', () => {
     const { faceted } = setup()
-    faceted.setSort('name', true)
-    faceted.setColumnVisible('name', false)
+    faceted.setSort('kind', true)
+    faceted.setColumnVisible('kind', false)
+    expect(faceted.sortField).toBe('')
     expect(faceted.sortedRows.map(r => r.name)).toEqual([
       REFSEQ,
       'charlie',
@@ -128,7 +129,6 @@ describe('html-valued metadata', () => {
         .find(t => t.trackId === trackId)!
         .setSlot('metadata', { note })
     }
-    faceted.setShowSparse(true)
     return faceted
   }
 
@@ -184,27 +184,33 @@ describe('live track source', () => {
   })
 })
 
-describe('hidden columns', () => {
-  test('persists under a config+assembly scoped key', () => {
+describe('column choices', () => {
+  test('persist under a config+assembly scoped key', () => {
     const { faceted } = setup()
-    faceted.setShowSparse(true)
-    faceted.setColumnVisible('adapter', false)
+    faceted.setColumnVisible('adapter', true)
+    faceted.setColumnVisible('kind', false)
     const scopedKey = Object.keys(localStorage).find(k =>
-      k.startsWith('facet-hiddenColumns'),
+      k.startsWith('facet-columnChoices'),
     )
-    expect(scopedKey).toBeDefined()
     expect(scopedKey).toContain('volMyt1')
-    expect(JSON.parse(localStorage.getItem(scopedKey!)!)).toEqual(['adapter'])
+    expect(JSON.parse(localStorage.getItem(scopedKey!)!)).toEqual([
+      { field: 'adapter', show: true },
+      { field: 'kind', show: false },
+    ])
   })
 
-  test('restores from the scoped key on load', () => {
-    const probe = setup()
-    probe.faceted.setShowSparse(true)
-    probe.faceted.setColumnVisible('adapter', false)
-    // a freshly created model for the same assemblies sees the hidden column
+  test('restore from the scoped key on load, skipping malformed entries', () => {
+    setup().faceted.setColumnVisible('adapter', true)
+    const scopedKey = Object.keys(localStorage).find(k =>
+      k.startsWith('facet-columnChoices'),
+    )!
+    localStorage.setItem(
+      scopedKey,
+      JSON.stringify([{ field: 'adapter', show: true }, 'kind', { field: 1 }]),
+    )
     const { faceted } = setup()
-    faceted.setShowSparse(true)
-    expect(faceted.visible.adapter).toBe(false)
+    expect(faceted.columnChoices).toEqual([{ field: 'adapter', show: true }])
+    expect(faceted.shownColumns(0)).toEqual(['name', 'adapter'])
   })
 })
 
@@ -227,30 +233,93 @@ describe('panelWidth', () => {
 })
 
 describe('columns and facets', () => {
-  test('columns lead with what says most about a track and end with the adapter', () => {
-    const { session, faceted } = setup()
-    for (const trackId of ['a1', 'a2']) {
+  function addAssayTracks(
+    session: ReturnType<typeof setup>['session'],
+    assays: string[],
+  ) {
+    for (const [i, assay] of assays.entries()) {
       session.addSessionTrackConf({
-        trackId,
-        name: trackId,
-        description: `${trackId} signal`,
-        metadata: { assay: 'DNase' },
+        trackId: `a${i}`,
+        name: `a${i}`,
+        description: `a${i} signal`,
+        category: [i % 2 ? 'Signal' : 'Peaks'],
+        metadata: { assay, url: `https://example.com/a${i}`, flag: true },
         assemblyNames: ['volMyt1'],
         type: 'FeatureTrack',
         adapter: { type: 'FromConfigAdapter', features: [] },
       })
     }
-    faceted.setShowSparse(true)
+  }
+
+  test('the default columns are the fields that group tracks, most widely set first', () => {
+    const { session, faceted } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP', 'ChIP', 'ChIP'])
     expect(faceted.fields).toEqual([
       'name',
       'description',
       'category',
       'kind',
       'metadata.assay',
+      'metadata.url',
+      'metadata.flag',
       'adapter',
     ])
-    // every description is its own and no track has a category, so neither
-    // narrows anything
-    expect(faceted.filterFacets).toEqual(['kind', 'metadata.assay', 'adapter'])
+    // kind holds Reference sequence and Feature over all 10 tracks; a unique
+    // url and a constant flag group nothing, nor does a per-track description
+    expect(faceted.groupingFields).toEqual([
+      'kind',
+      'category',
+      'metadata.assay',
+    ])
+    expect(faceted.shownColumns(2)).toEqual(['name', 'kind', 'category'])
+    expect(faceted.shownColumns(9)).toEqual([
+      'name',
+      'kind',
+      'category',
+      'metadata.assay',
+    ])
+  })
+
+  test('the config names the columns, and the user’s choices win over both', () => {
+    const { session, faceted } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
+    faceted.setConfiguredColumns(['metadata.assay', 'metadata.nope', 'kind'])
+    expect(faceted.shownColumns(1)).toEqual(['name', 'metadata.assay'])
+
+    faceted.setColumnVisible('metadata.assay', false)
+    faceted.setColumnVisible('metadata.url', true)
+    expect(faceted.shownColumns(1)).toEqual(['name', 'metadata.url'])
+    expect(faceted.shownColumns(2)).toEqual(['name', 'kind', 'metadata.url'])
+  })
+
+  test('the facet panel keeps a facet that is still filtering', () => {
+    const { session, faceted } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
+    expect(faceted.filterFacets).not.toContain('metadata.flag')
+    faceted.setFilter('metadata.flag', ['true'])
+    expect(faceted.filterFacets).toContain('metadata.flag')
+    expect([...faceted.facetCategoryCounts.keys()]).toContain('metadata.flag')
+  })
+
+  test('a search lists name matches first when no column is sorted', () => {
+    const { session, faceted } = setup()
+    addAssayTracks(session, ['DNase', 'DNase'])
+    session.addSessionTrackConf({
+      trackId: 'named',
+      name: 'Peaks a1 rerun',
+      assemblyNames: ['volMyt1'],
+      type: 'FeatureTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
+    faceted.setFilterText('peaks')
+    expect(faceted.sortedRows.map(r => r.name)).toEqual([
+      'Peaks a1 rerun',
+      'a0',
+    ])
+    faceted.setSort('name', true)
+    expect(faceted.sortedRows.map(r => r.name)).toEqual([
+      'a0',
+      'Peaks a1 rerun',
+    ])
   })
 })

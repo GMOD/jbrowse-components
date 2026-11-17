@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { virtualRange } from '@jbrowse/core/util/virtualRange'
 
@@ -17,18 +17,24 @@ export function useVirtualRows(
   resetKey: string,
   overscan = 20,
 ) {
+  // read by the reset below, which skips scrollTo (and the layout it forces)
+  // when the list is already at the top, as it is for most keystrokes
+  const scrollTopRef = useRef(0)
   const [scrollState, setScrollState] = useState({
     scrollTop: 0,
     clientHeight: 0,
     clientWidth: 0,
   })
 
-  useEffect(() => {
+  // a layout effect, so the first paint already has the measured width rather
+  // than one that still counts the scrollbar
+  useLayoutEffect(() => {
     const el = parentRef.current
     if (!el) {
       return
     }
     const sync = () => {
+      scrollTopRef.current = el.scrollTop
       // eslint-disable-next-line @eslint-react/set-state-in-effect -- sync() runs once synchronously to initialize from the DOM after mount
       setScrollState({
         scrollTop: el.scrollTop,
@@ -49,7 +55,9 @@ export function useVirtualRows(
   }, [parentRef])
 
   useEffect(() => {
-    parentRef.current?.scrollTo(0, 0)
+    if (scrollTopRef.current > 0) {
+      parentRef.current?.scrollTo(0, 0)
+    }
   }, [resetKey, parentRef])
 
   const { scrollTop, clientHeight, clientWidth } = scrollState

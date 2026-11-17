@@ -52,11 +52,13 @@ const CheckboxLite = observer(function CheckboxLite({
   onChange,
   disabled,
   className,
+  label,
 }: {
   checked: boolean
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   disabled?: boolean
   className?: string
+  label?: string
 }) {
   const { classes, cx } = useStyles()
   return (
@@ -74,6 +76,7 @@ const CheckboxLite = observer(function CheckboxLite({
         checked={checked}
         onChange={onChange}
         disabled={disabled}
+        aria-label={label}
       />
       <svg className={classes.svg} viewBox="0 0 24 24" aria-hidden>
         <path d={checked ? checkedPath : blankPath} />

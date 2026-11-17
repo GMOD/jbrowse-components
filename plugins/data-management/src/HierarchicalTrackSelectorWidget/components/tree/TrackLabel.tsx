@@ -1,4 +1,3 @@
-import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -7,6 +6,7 @@ import { observer } from 'mobx-react'
 import { isUnsupported } from '../../util.ts'
 import CheckboxLite from './CheckboxLite.tsx'
 import OverrideBadge from './OverrideBadge.tsx'
+import TrackNameText from './TrackNameText.tsx'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
@@ -52,16 +52,6 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     alignItems: 'center',
     gap: 2,
-    minWidth: 0,
-  },
-  // The name is what yields when the drawer is narrow: it shrinks and
-  // truncates with an ellipsis. Needs the whole flex chain above it to allow
-  // shrinking — rowContent, the label, and this — since each one's automatic
-  // minimum size would otherwise be its own content.
-  name: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
     minWidth: 0,
   },
 }))
@@ -111,9 +101,7 @@ const TrackLabelText = observer(function TrackLabelText({
       data-testid={`htsTrackLabel-${id}`}
       className={`${classes.label} ${selected ? selectedClass : ''}`}
     >
-      <span className={classes.name}>
-        <SanitizedHTML html={name} />
-      </span>
+      <TrackNameText name={name} />
       <OverrideBadge model={model} trackId={trackId} name={name} />
     </div>
   )

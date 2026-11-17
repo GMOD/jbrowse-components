@@ -5,6 +5,8 @@ import { observer } from 'mobx-react'
 import FacetFilters from './FacetFilters.tsx'
 import FacetedDataGrid from './FacetedDataGrid.tsx'
 import FacetedHeader from './FacetedHeader.tsx'
+import { CHECKBOX_WIDTH, DEFAULT_COL_WIDTH } from './facetedTableStyles.ts'
+import { columnsThatFit } from './fitColumnWidths.ts'
 import { getFacetedColumns } from './getFacetedColumns.tsx'
 import { useWindowSize } from './useWindowSize.ts'
 
@@ -35,6 +37,10 @@ const useStyles = makeStyles()({
 
 const frac = 0.75
 
+// a vertical scrollbar and the grid's border, which the column count has to
+// leave room for before the grid can measure them
+const GRID_CHROME = 18
+
 const FacetedSelector = observer(function FacetedSelector({
   model,
   faceted,
@@ -51,12 +57,18 @@ const FacetedSelector = observer(function FacetedSelector({
   const { selectionSet, shownTrackIds } = model
   const { showFilters } = faceted
 
-  const columns = getFacetedColumns({ faceted, model })
-
   const w = size?.width ?? width * frac
   // the filter pane never takes more than half, so a width saved in a wider
   // window still leaves the grid room
   const panelWidth = Math.max(0, Math.min(faceted.panelWidth, w / 2))
+  const gridWidth = w - (showFilters ? panelWidth : 0)
+  const shown = faceted.shownColumns(
+    columnsThatFit(
+      gridWidth - CHECKBOX_WIDTH - GRID_CHROME,
+      faceted.initialWidths.name ?? DEFAULT_COL_WIDTH,
+    ),
+  )
+  const columns = getFacetedColumns({ faceted, model, fields: shown })
 
   return (
     <div
@@ -66,7 +78,7 @@ const FacetedSelector = observer(function FacetedSelector({
       <FacetedHeader
         model={model}
         faceted={faceted}
-        columns={columns}
+        shown={shown}
         onFilterTextChange={onFilterTextChange}
       />
       <div
@@ -77,17 +89,14 @@ const FacetedSelector = observer(function FacetedSelector({
             : { width: w, height: height * frac }
         }
       >
-        <div
-          className={classes.dataPane}
-          style={{ width: w - (showFilters ? panelWidth : 0) }}
-        >
+        <div className={classes.dataPane} style={{ width: gridWidth }}>
           <FacetedDataGrid
             model={model}
             faceted={faceted}
             columns={columns}
             shownTrackIds={shownTrackIds}
             selectionSet={selectionSet}
-            width={w - (showFilters ? panelWidth : 0)}
+            width={gridWidth}
           />
         </div>
 
@@ -98,7 +107,7 @@ const FacetedSelector = observer(function FacetedSelector({
               value={panelWidth}
               reverse
               onChange={width => {
-                faceted.setPanelWidth(width)
+                faceted.setPanelWidth(Math.min(width, w / 2))
               }}
               className={classes.resizeHandle}
             />

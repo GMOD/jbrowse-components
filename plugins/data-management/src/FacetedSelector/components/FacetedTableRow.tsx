@@ -43,7 +43,11 @@ const FacetedTableRow = observer(function FacetedTableRow({
         <td
           key={col.id}
           className={classes.bodyCell}
-          title={coarseStripHTML(getRowStr(col.id, row))}
+          title={coarseStripHTML(
+            col.id === 'name' && row.description
+              ? `${row.name}\n${row.description}`
+              : getRowStr(col.id, row),
+          )}
         >
           {col.cell(row)}
         </td>

@@ -1,4 +1,8 @@
-import { buildSearchText, highlightTerms, searchMatcher } from './searchText.ts'
+import {
+  buildSearchText,
+  highlightPatterns,
+  searchMatcher,
+} from './searchText.ts'
 
 const fiber = buildSearchText([
   'Fiber-seq Compendium - THP-1 CpG Hap1/2',
@@ -11,7 +15,7 @@ const liftOver = buildSearchText([
 
 function matches(query: string) {
   const match = searchMatcher(query)
-  return [fiber, liftOver].map(text => match(text))
+  return [fiber, liftOver].map(text => match?.(text) ?? true)
 }
 
 test('an empty or blank query matches every track', () => {
@@ -43,19 +47,42 @@ test('a leading minus excludes tracks containing the word', () => {
   expect(matches('-"pairwise alignments"')).toEqual([true, false])
 })
 
-test('a hyphen inside a word is part of it', () => {
+test('a typed hyphen must match, but the track text may also drop one', () => {
   expect(matches('hap1/2')).toEqual([true, false])
-  expect(matches('-')).toEqual([true, false])
-  expect(matches('--')).toEqual([false, true])
+  expect(matches('thp_1')).toEqual([false, false])
+  const decimals = searchMatcher('1.5')!
+  expect(decimals(buildSearchText(['dbSNP(155)']))).toBe(false)
+  expect(decimals(buildSearchText(['v1.5']))).toBe(true)
+})
+
+test('a lone minus, on the way to an excluded word, is no term yet', () => {
+  expect(searchMatcher('-')).toBeUndefined()
+  expect(matches('fiber -')).toEqual([true, false])
 })
 
 test('a term cannot span two fields', () => {
   expect(matches('"hap1/2 regulation"')).toEqual([false, false])
 })
 
-test('only the terms a track must contain are highlighted', () => {
-  expect(highlightTerms('Fiber "THP-1 cpg" -liftover')).toEqual([
-    'fiber',
-    'thp-1 cpg',
+function highlighted(query: string, text: string) {
+  return highlightPatterns(query).flatMap(pattern =>
+    [...text.matchAll(pattern)].map(m => m[0]),
+  )
+}
+
+test('only the terms a track must contain are highlighted, as they appear', () => {
+  expect(
+    highlighted(
+      'Fiber "THP-1 cpg" -liftover',
+      'Fiber-seq - THP-1 CpG liftover',
+    ),
+  ).toEqual(['Fiber', 'THP-1 CpG'])
+})
+
+test('a term matched past a hyphen is highlighted across it', () => {
+  expect(highlighted('thp1 fiberseq', 'Fiber-seq - THP-1 CpG')).toEqual([
+    'THP-1',
+    'Fiber-seq',
   ])
+  expect(highlighted('a.b (c', 'a.b (c axb')).toEqual(['a.b', '(c'])
 })

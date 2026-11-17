@@ -1,9 +1,12 @@
 import { coarseStripHTML } from '@jbrowse/core/util'
 
-export interface Row {
-  id: string
+export interface RowFields {
   metadata?: Record<string, unknown>
   [key: string]: unknown
+}
+
+export interface Row extends RowFields {
+  id: string
 }
 
 const METADATA_PREFIX = 'metadata.'
@@ -25,7 +28,7 @@ export function metadataFacet(key: string) {
   return `${METADATA_PREFIX}${key}`
 }
 
-export function getRowStr(facet: string, row: Row) {
+export function getRowStr(facet: string, row: RowFields) {
   return `${
     (isMetadataFacet(facet) ? row.metadata?.[bareFacet(facet)] : row[facet]) ??
     ''

@@ -12,14 +12,12 @@ import {
   ROW_HEIGHT,
   useFacetedTableStyles,
 } from './facetedTableStyles.ts'
-import { fitColumnWidths } from './fitColumnWidths.ts'
+import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
 import { useColumnResize } from './useColumnResize.ts'
 import { useVirtualRows } from './useVirtualRows.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
-
-const NAME_SHARE = 0.5
 
 export interface FacetedColumn {
   id: string
@@ -58,13 +56,11 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
     sortedRows,
     sortField,
     sortAscending,
-    visible,
     filterText,
     filters,
     initialWidths,
   } = faceted
 
-  const visibleColumns = columns.filter(col => visible[col.id] !== false)
   const parentRef = useRef<HTMLDivElement>(null)
   useSearchHighlight(parentRef, filterText, 'jbrowse-faceted-search')
   const { items, leadingGap, trailingGap, clientWidth } = useVirtualRows(
@@ -77,16 +73,13 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   const { colWidths, onResizeStart } = useColumnResize(
     fitColumnWidths(
       Object.fromEntries(
-        visibleColumns.map(col => [
+        columns.map(col => [
           col.id,
           initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
         ]),
       ),
       available,
-      id =>
-        id === 'name'
-          ? Math.max(DEFAULT_COL_WIDTH, available * NAME_SHARE)
-          : DEFAULT_COL_WIDTH,
+      id => columnFloor(id, available),
     ),
   )
   const { selectedIds, allSelected, someSelected, toggleAll, toggleRow } =
@@ -105,7 +98,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
         style={{
           width:
             CHECKBOX_WIDTH +
-            visibleColumns.reduce(
+            columns.reduce(
               (sum, col) => sum + (colWidths[col.id] ?? DEFAULT_COL_WIDTH),
               0,
             ),
@@ -113,7 +106,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
       >
         <colgroup>
           <col style={{ width: CHECKBOX_WIDTH }} />
-          {visibleColumns.map(col => (
+          {columns.map(col => (
             <col
               key={col.id}
               style={{ width: colWidths[col.id] ?? DEFAULT_COL_WIDTH }}
@@ -122,7 +115,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           <col />
         </colgroup>
         <FacetedTableHead
-          columns={visibleColumns}
+          columns={columns}
           allSelected={allSelected}
           someSelected={someSelected}
           onSelectAll={useShoppingCart ? toggleAll : undefined}
@@ -147,7 +140,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
               <FacetedTableRow
                 key={row.id}
                 row={row}
-                columns={visibleColumns}
+                columns={columns}
                 selected={selectedIds.has(row.id)}
                 onToggle={toggleRow}
               />
@@ -156,10 +149,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           <SpacerRow height={trailingGap} />
           {sortedRows.length === 0 ? (
             <tr>
-              <td
-                colSpan={visibleColumns.length + 2}
-                className={classes.emptyCell}
-              >
+              <td colSpan={columns.length + 2} className={classes.emptyCell}>
                 {faceted.allRows.length
                   ? 'No tracks match the current search and filters'
                   : 'No tracks'}
