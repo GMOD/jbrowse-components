@@ -62,8 +62,14 @@ whose `subadapters` come from the same rows.
 A restored session looks each track up by `trackId`, so a pipeline that
 regenerates `config.json` with a different id each build (a timestamp, a random
 suffix) breaks every link shared before. Derive each `trackId` from stable
-inputs, as the script above does from the assembly and sample name. A saved
-session fails to load entirely when an id it references is changed or deleted.
+inputs, as the script above does from the assembly and sample name. JBrowse
+opens a saved session without a track whose id the config no longer has, and
+says which tracks it removed.
+
+To rename a track, list its old id in the track's `aliases`
+(`"trackId": "genes_v2", "aliases": ["genes"]`). Saved sessions, share links,
+`tracks=` URL parameters and text-search indexes that name the old id open the
+renamed track, along with any edits a session saved to it.
 
 ## Server settings that make JBrowse load faster
 

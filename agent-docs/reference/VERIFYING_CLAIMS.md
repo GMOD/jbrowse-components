@@ -49,7 +49,8 @@ in [TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md); plugin-facing names are in
 - **`session.getTrackById` resolves from several stores**: the track list,
   `sessionTracks`, each assembly's and temporary assembly's `sequence`, a
   connection's `tracks` and persisted connection-track configs, plus inline
-  display configs (ADR-084). A change to config reads or writes gets a probe
+  display configs (ADR-084). An id none of them has resolves to the track
+  listing it in `aliases` (`canonicalTrackId`). A change to config reads or writes gets a probe
   writing through each, asserting the read-back and where it was saved. A
   display snapshot without `configuration: '<trackId>-<DisplayType>'` gets an
   inline config, so the probe passes on both arms.

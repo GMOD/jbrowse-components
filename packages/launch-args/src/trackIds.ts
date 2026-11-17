@@ -45,7 +45,9 @@ function matchTrackId(tracks: Track[], input: string, assemblyName: string) {
     )
   })
 
-  const aliased = tracks.find(t => trackAliases(t).includes(input))
+  const aliased = tracks.find(t =>
+    trackAliases(t).some(alias => alias === input || alias === prefixed),
+  )
   const resolved = ids.has(input)
     ? input
     : ids.has(prefixed)

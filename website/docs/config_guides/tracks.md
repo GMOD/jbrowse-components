@@ -38,8 +38,9 @@ track sits:
 }
 ```
 
-- `trackId` is the unique id every session and link names the track by;
-  `assemblyNames` ties it to the assembly above; `category` nests it in the
+- `trackId` is the unique id every session and link names the track by, and a
+  renamed track lists its old ids in `aliases`; `assemblyNames` ties it to the
+  assembly above; `category` nests it in the
   [track selector](/docs/config_guides/track_selector). Every slot common to all
   track types is on the [BaseTrack config docs](/docs/config/basetrack).
 - The adapter uses the

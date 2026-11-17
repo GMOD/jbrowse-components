@@ -429,21 +429,27 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         // a full-config sessionTracks entry shadowing the same-id admin track.
         // Convert those to deltas so the whole app uses one override mechanism.
         // Genuinely-added session tracks (no matching base) are left in place.
-        const configById = new Map(baseTracks(self).map(t => [t.trackId, t]))
+        // A shadow saved before its admin track was renamed matches an alias.
+        const configById = new Map<string, TrackConfigEntry>(
+          baseTracks(self).flatMap(t =>
+            [...(t.aliases ?? []), t.trackId].map(id => [id, t]),
+          ),
+        )
         const legacy = self.sessionTracks.filter(t => configById.has(t.trackId))
         if (legacy.length > 0) {
           const deltas = { ...self.trackConfigDeltas }
           for (const track of legacy) {
-            const plainBase = toPlainConfig(configById.get(track.trackId)!)
+            const base = configById.get(track.trackId)!
+            const plainBase = toPlainConfig(base)
             const delta = diffTrackConfig(
               plainBase,
-              getSnapshot(track),
+              { ...getSnapshot(track), trackId: base.trackId },
               forms,
             ) as PlainTrackConfig
             // a legacy override identical to its base contributes no changed
             // slots: drop it rather than migrate a content-free delta
             if (deltaHasChanges(plainBase, delta, forms)) {
-              deltas[track.trackId] = delta
+              deltas[base.trackId] = delta
             }
           }
           self.trackConfigDeltas = deltas
@@ -452,13 +458,19 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           }
         }
         // An edit saved before its track was renamed is keyed by, and carries,
-        // an id the track now lists in `aliases`
+        // an id the track now lists in `aliases`. One the track also has under
+        // its current id is the later edit, and wins.
         const entries = Object.entries(self.trackConfigDeltas)
         if (entries.some(([id]) => self.canonicalTrackId(id) !== id)) {
+          const ids = new Set(entries.map(([id]) => id))
           self.trackConfigDeltas = Object.fromEntries(
-            entries.map(([id, delta]) => {
+            entries.flatMap(([id, delta]) => {
               const trackId = self.canonicalTrackId(id)
-              return [trackId, trackId === id ? delta : { ...delta, trackId }]
+              return trackId === id
+                ? [[id, delta]]
+                : ids.has(trackId)
+                  ? []
+                  : [[trackId, { ...delta, trackId }]]
             }),
           )
         }
@@ -546,10 +558,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         // prior sessionTracks — not just sessionTracks. Re-adding a config
         // already in the catalog would otherwise push a full shadow into
         // sessionTracks, silently demoting a catalog track to a session track
-        // and dropping its trackConfigDeltas override semantics. An id another
-        // track lists in `aliases` is free: the new track takes it over.
+        // and dropping its trackConfigDeltas override semantics. An id a track
+        // lists in `aliases` is that track's too.
         const existing = self.getTrackById(trackId)
-        if (existing?.trackId === trackId) {
+        if (existing) {
           const entry = self.sessionTracks.find(t => t.trackId === trackId)
           if (entry) {
             assertNotReaddedDifferently(pluginManager, entry, {

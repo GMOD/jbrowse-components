@@ -44,7 +44,8 @@ policy for which action to call lives in the repo `CLAUDE.md`.
 ## Routing rules that fail silently
 
 - `addToSession` resolves an existing entry (session, catalog, assembly sequence
-  or connection) through `getTrackById` and returns it unchanged. A missing
+  or connection, or the track listing the id in `aliases`) through
+  `getTrackById` and returns it unchanged. A missing
   `type` throws uncaught; an invalid config is caught into an error snackbar.
 - `publishTrackConf` for a non-admin routes to `addToSession`. An admin whose
   config names an assembly the catalog lacks also routes there, with an info

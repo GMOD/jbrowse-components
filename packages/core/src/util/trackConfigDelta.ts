@@ -241,7 +241,6 @@ function diffValue(base: Json, edited: Json, at: At): Json | typeof UNCHANGED {
   if (isDisplayArray(edited) && isDisplayArray(base)) {
     const out: JsonObject[] = []
     for (const editedDisplay of edited) {
-      const id = editedDisplay.displayId as string
       const baseDisplay = baseDisplayFor(base, editedDisplay)
       if (baseDisplay) {
         const d = diffValue(
@@ -250,7 +249,7 @@ function diffValue(base: Json, edited: Json, at: At): Json | typeof UNCHANGED {
           displayAt(at, editedDisplay, baseDisplay),
         )
         if (d !== UNCHANGED) {
-          out.push({ ...(d as JsonObject), displayId: id })
+          out.push({ ...(d as JsonObject), displayId: baseDisplay.displayId })
         }
       } else {
         out.push(editedDisplay)

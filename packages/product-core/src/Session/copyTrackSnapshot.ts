@@ -28,6 +28,8 @@ export function copyTrackSnapshot(
   ) as TrackCopySnapshot
   snap.name = `${snap.name || snap.trackId} (copy)`
   snap.trackId += `-${Date.now()}-${copyCounter++}`
+  // the old ids stay with the track they were renamed from
+  snap.aliases = undefined
   if (opts.clearCategory) {
     snap.category = undefined
   }

@@ -25,7 +25,8 @@ Two levels are reported:
            unknown slot, a key a defaultSession view or display does not
            declare, a track naming an assembly the config never defines, a
            defaultSession naming a trackId that does not exist, a duplicate
-           trackId. Exits 1.
+           trackId, a track alias that is a trackId or that two tracks list.
+           Exits 1.
 
   warning  JBrowse will complain by itself on load, or handles it — a type name
            the core plugins do not register (expected if one of your plugins

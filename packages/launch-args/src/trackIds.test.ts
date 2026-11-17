@@ -35,6 +35,7 @@ test('an id a track lists in aliases resolves to that track', () => {
     { trackId: 'hg19-genes', name: 'Genes', aliases: ['hg19-oldGenes'] },
   ]
   expect(resolveTrackId(renamed, 'hg19-oldGenes', 'hg19')).toBe('hg19-genes')
+  expect(resolveTrackId(renamed, 'oldGenes', 'hg19')).toBe('hg19-genes')
 })
 
 test('a miss throws with substring suggestions', () => {

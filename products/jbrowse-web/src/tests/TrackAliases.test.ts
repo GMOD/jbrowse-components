@@ -10,6 +10,7 @@ interface AliasSession {
   views: unknown[]
   snackbarMessages: { message: string }[]
   trackConfigDeltas: Record<string, { trackId: string; name?: string }>
+  sessionTracks: { trackId: string }[]
   getTrackById: (id: string) => { trackId: string; name?: unknown } | undefined
   addSessionTrackConf: (conf: Record<string, unknown>) => unknown
 }
@@ -97,8 +98,40 @@ test('an edit saved under the old id moves to the track', async () => {
   expect(session.getTrackById('gff3tabix_genes')?.trackId).toBe('genes_v2')
 })
 
-test('a track added under another track’s alias takes the id over', async () => {
-  const { session } = await loadSavedSession({ views: [] })
+test('an edit under the current id wins over one saved under the old id', async () => {
+  const { session } = await loadSavedSession({
+    trackConfigDeltas: {
+      genes_v2: { trackId: 'genes_v2', name: 'Newer edit' },
+      gff3tabix_genes: { trackId: 'gff3tabix_genes', name: 'Stale edit' },
+    },
+  })
+  expect(session.trackConfigDeltas).toEqual({
+    genes_v2: { trackId: 'genes_v2', name: 'Newer edit' },
+  })
+})
+
+test('a legacy full-copy edit saved under the old id becomes the track’s edit', async () => {
+  const [genes] = renamedConfig().tracks
+  const { session } = await loadSavedSession({
+    sessionTracks: [
+      {
+        ...genes,
+        trackId: 'gff3tabix_genes',
+        aliases: undefined,
+        name: 'Legacy edit',
+      },
+    ],
+  })
+  expect(session.sessionTracks).toHaveLength(0)
+  expect(session.getTrackById('gff3tabix_genes')?.trackId).toBe('genes_v2')
+  expect(session.getTrackById('genes_v2')?.name).toBe('Legacy edit')
+})
+
+test('adding a track under an alias leaves the open track in place', async () => {
+  const { session, view } = await loadSavedSession()
+  await waitFor(() => {
+    expect(view.tracks).toHaveLength(1)
+  })
   session.addSessionTrackConf({
     type: 'FeatureTrack',
     trackId: 'gff3tabix_genes',
@@ -106,6 +139,6 @@ test('a track added under another track’s alias takes the id over', async () =
     assemblyNames: ['volvox'],
     adapter: { type: 'Gff3Adapter', uri: 'volvox.sort.gff3' },
   })
-  expect(session.getTrackById('gff3tabix_genes')?.name).toBe('New track')
-  expect(session.getTrackById('genes_v2')?.trackId).toBe('genes_v2')
+  expect(session.sessionTracks).toHaveLength(0)
+  expect(view.tracks.map(t => t.configuration.trackId)).toEqual(['genes_v2'])
 })

@@ -17,6 +17,12 @@ test('an unnamed track copies under its trackId, the name it was shown by', () =
   expect(copy({ trackId: 'genes', name: '' }).name).toBe('genes (copy)')
 })
 
+test('a copy leaves the old ids with the track they were renamed from', () => {
+  expect(copy({ trackId: 'genes', aliases: ['old_genes'] }).aliases).toBe(
+    undefined,
+  )
+})
+
 test('two copies of a track made in the same millisecond get distinct ids', () => {
   const now = jest.spyOn(Date, 'now').mockReturnValue(1700000000000)
   const displays = [{ type: 'LinearBasicDisplay', displayId: 'x' }]
