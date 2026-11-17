@@ -5,6 +5,7 @@ import { autorun } from 'mobx'
 import { LaneGene } from './geneGlyph.ts'
 import { createDisplayWithSession, heldSpecs } from './testEnv.ts'
 
+import type { PlacedLaneLabel } from './laneLabels.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 
 const evaluations = { color: 0, utrColor: 0 }
@@ -210,5 +211,33 @@ test("the anchor's rule ticks every interval across the displayed region", async
   expect(display.lgv.bpPerPx).toBe(1)
   expect(display.tickIntervalBp).toBe(200)
   expect(display.anchorTickXs).toEqual([0, 200, 400, 600, 800])
+  stop()
+})
+
+test('a scroll or a lane drag keeps the placed gene labels', async () => {
+  const { display, stop, specs } = await stackWithGenes()
+  const placements: { placed: PlacedLaneLabel[]; frame: number }[] = []
+  const watch = autorun(() => {
+    placements.push({
+      placed: display.laneGeneLabels(undefined, display.pinnedLabelGroups),
+      frame: display.scrollTop + display.laneMaps.size,
+    })
+  })
+  const { placed } = placements.at(-1)!
+  expect(placed.length).toBeGreaterThan(0)
+
+  display.setScrollTop(10)
+  display.setLaneDragPx(laneNames[3]!, 12)
+  expect(placements.map(p => p.frame)).toEqual([0, 10, 11])
+  expect(placements.every(p => p.placed === placed)).toBe(true)
+
+  const lane = laneNames[3]!
+  display.setLaneGenes(
+    new Map([[lane, { key: 'k1', genes: laneGenes(lane, 'x') }]]),
+    specs,
+    display.anchorAssemblyName,
+  )
+  expect(placements.at(-1)!.placed).not.toBe(placed)
+  watch()
   stop()
 })

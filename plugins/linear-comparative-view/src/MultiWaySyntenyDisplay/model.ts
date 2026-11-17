@@ -2484,6 +2484,11 @@ export function stateModelFactory(
         genes: undefined as unknown,
         labels: new Map<Feature, GeneLabel | null>(),
       }
+      let lastPlacement: {
+        inputs: readonly unknown[]
+        pinnedGroups: ReadonlySet<string>
+        placed: PlacedLaneLabel[]
+      } = { inputs: [], pinnedGroups: new Set(), placed: [] }
       return {
         /**
          * #method
@@ -2509,31 +2514,59 @@ export function stateModelFactory(
           const { labels } = memo
           const { lanes, glyphHeight } = self.laneStack
           const boxNames = self.laneBoxNames
-          return placeLaneLabels({
-            lanes,
-            genesOf: assemblyName => genes.get(assemblyName)?.genes ?? [],
-            boxesOf: assemblyName => boxNames.get(assemblyName) ?? [],
-            labelOf: feature => {
-              let label = labels.get(feature)
-              if (label === undefined) {
-                const name = text(feature)
-                label = name
-                  ? {
-                      name,
-                      width: measureText(name, GENE_LABEL_FONT_PX, fontFamily),
-                    }
-                  : null
-                labels.set(feature, label)
-              }
-              return label ?? undefined
-            },
-            groupsOf: assemblyName => self.laneGeneGroups.get(assemblyName),
-            pinnedGroups,
-            glyphHeight,
-            width,
-            height: self.scrollContentHeight,
+          const groups = self.laneGeneGroups
+          const height = self.scrollContentHeight
+          const inputs = [
+            text,
             fontFamily,
-          })
+            genes,
+            lanes,
+            glyphHeight,
+            boxNames,
+            groups,
+            width,
+            height,
+          ]
+          const unchanged =
+            inputs.every((input, i) => input === lastPlacement.inputs[i]) &&
+            pinnedGroups.size === lastPlacement.pinnedGroups.size &&
+            [...pinnedGroups].every(key => lastPlacement.pinnedGroups.has(key))
+          if (!unchanged) {
+            lastPlacement = {
+              inputs,
+              pinnedGroups,
+              placed: placeLaneLabels({
+                lanes,
+                genesOf: assemblyName => genes.get(assemblyName)?.genes ?? [],
+                boxesOf: assemblyName => boxNames.get(assemblyName) ?? [],
+                labelOf: feature => {
+                  let label = labels.get(feature)
+                  if (label === undefined) {
+                    const name = text(feature)
+                    label = name
+                      ? {
+                          name,
+                          width: measureText(
+                            name,
+                            GENE_LABEL_FONT_PX,
+                            fontFamily,
+                          ),
+                        }
+                      : null
+                    labels.set(feature, label)
+                  }
+                  return label ?? undefined
+                },
+                groupsOf: assemblyName => groups.get(assemblyName),
+                pinnedGroups,
+                glyphHeight,
+                width,
+                height,
+                fontFamily,
+              }),
+            }
+          }
+          return lastPlacement.placed
         },
       }
     })
