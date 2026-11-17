@@ -75,8 +75,9 @@ test('a missing index offers Fix file location, whose Save writes the index loca
     fireEvent.click(button)
 
     const dialog = within(await findByTestId('track_files_dialog', {}, delay))
-    dialog.getByText('vcfGzLocation')
-    dialog.getByText('index location')
+    dialog.getByText('VCF file')
+    dialog.getByText('Index file')
+    expect(dialog.queryByText(/location of the index/)).toBeNull()
     const [, indexInput] = dialog.getAllByTestId('urlInput')
     fireEvent.change(indexInput!, {
       target: { value: 'volvox.filtered.vcf.gz.tbi' },

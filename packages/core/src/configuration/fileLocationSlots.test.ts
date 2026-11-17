@@ -30,7 +30,10 @@ test('lists the main and index locations by path, and writes through them', () =
     { pluginManager },
   )
   const slots = fileLocationSlots(adapter)
-  expect(slots.map(s => s.label)).toEqual(['bamLocation', 'index location'])
+  expect(slots.map(s => s.path)).toEqual([
+    ['bamLocation'],
+    ['index', 'location'],
+  ])
   expect(slots.map(s => s.slot.value)).toEqual([
     { uri: 'reads.bam', locationType: 'UriLocation' },
     { uri: 'reads.bam.bai', locationType: 'UriLocation' },
