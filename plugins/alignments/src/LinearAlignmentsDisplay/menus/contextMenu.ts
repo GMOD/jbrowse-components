@@ -596,7 +596,7 @@ export function getContextMenuItems(
       })
     }
     items.push({
-      label: 'Copy',
+      label: 'Copy to clipboard',
       icon: ContentCopyIcon,
       type: 'subMenu',
       subMenu: getCopySubMenu(self, feat),

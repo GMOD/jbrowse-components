@@ -454,7 +454,7 @@ test('sort: false drops the read "Sort by" but keeps the rest', () => {
   )
   expect(labels).not.toContain('Sort by')
   expect(labels).toContain('Open feature details')
-  expect(labels).toContain('Copy')
+  expect(labels).toContain('Copy to clipboard')
 })
 
 // The menu opens on the id and grows the rest when the fetch lands. Everything
@@ -482,7 +482,7 @@ describe('what the menu offers before the feature fetch lands', () => {
       'Open feature details',
       'Sort by',
       'Filter',
-      'Copy',
+      'Copy to clipboard',
     ])
   })
 
@@ -615,7 +615,7 @@ test('copy submenu offers name, sequence, and info when both are present', () =>
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC', seq: 'ACGTACGT' }),
   })
-  const copy = findSubMenu(run(model), 'Copy')
+  const copy = findSubMenu(run(model), 'Copy to clipboard')
   expect(copy.map(i => i.label)).toEqual([
     'Copy read name',
     'Copy read sequence',
@@ -627,7 +627,7 @@ test('copy submenu omits read sequence when the feature has no seq', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
   })
-  const copy = findSubMenu(run(model), 'Copy')
+  const copy = findSubMenu(run(model), 'Copy to clipboard')
   expect(copy.map(i => i.label)).toEqual([
     'Copy read name',
     'Copy feature info as JSON',
@@ -643,7 +643,7 @@ test('copy submenu includes 1-based location when the feature has a refName', ()
       end: 200,
     }),
   })
-  const copy = findSubMenu(run(model), 'Copy')
+  const copy = findSubMenu(run(model), 'Copy to clipboard')
   expect(copy.map(i => i.label)).toEqual([
     'Copy read name',
     'Copy location',
