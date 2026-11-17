@@ -96,13 +96,9 @@ displays or a display's parts, with the ruling on each.
      `fetchSizeLimit` and `forceLoad`) owe ggjbrowse nothing: it draws static
      images, where neither a hover nor a fetch gate acts, and no R code or
      tutorial writes them. The canary passed on 4e00334d6b, which holds them.
-   - **The canary is red from dab8cab450 (2026-11-14) on**, last green on
-     de63d215d8. Not a config slot: c5268aebcd..c142403597 (2026-11-13)
-     respelled the grey split-read connector's key row to "Split read (skips
-     parts aligned outside this view)" and gave it the shape any connector
-     with its ends takes, and ggjbrowse's `tests/testthat/test-connections.R`
-     still pins "Split read (segment not in view)" and a `bow` over a hidden
-     segment (7 failures). Next: respell those tests, re-pin the engine.
+   - The canary is green from e60d06dab3 (2026-11-16) on, once ggjbrowse
+     (ad884fb) took the split-read key row "Split read (skips parts aligned
+     outside this view)" that c5268aebcd..c142403597 respelled.
    - jb2hubs checks its configs against v4.3.0, v5.0.0-beta.20 and `main`
      (`HOST_VERSIONS`, `jb2hubs/scripts/checkConfigCompat.mjs`). Its Trix
      adapters keep writing `textSearchAdapterId`, which v4.3.0 needs to boot
