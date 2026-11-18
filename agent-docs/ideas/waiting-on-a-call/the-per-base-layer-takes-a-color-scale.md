@@ -1,6 +1,6 @@
 ---
 name: the-per-base-layer-takes-a-color-scale
-description: "`pileup.bases.encoding.color` holds a `field` alone, so no config recolors a modification type or moves the end of the base-quality ramp. A scale there waits on a request or on the dark-theme palette call. Two reviews corrected the mechanism, which is recorded here so it is not re-derived."
+description: "`pileup.bases.encoding.color` holds a `field` alone, so no config recolors a modification type or moves the end of the base-quality ramp. A scale there waits on a request or on the dark-theme palette call. Two reviews corrected the mechanism, recorded here so it is not re-derived."
 ---
 
 # The per-base layer takes a color scale

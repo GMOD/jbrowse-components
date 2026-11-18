@@ -43,7 +43,7 @@ export interface ColumnChoice {
   show: boolean
 }
 
-interface ColumnChoicesOwner {
+export interface ColumnChoicesOwner {
   columnChoices: ColumnChoice[]
   setColumnChoices: (choices: ColumnChoice[]) => void
 }
