@@ -156,7 +156,9 @@ test('Edit a highlight label with a single click in the list', async () => {
   await waitFor(() => {
     expect(session.highlights[0]!.label).toBe('new label')
   })
-  expect(await findByText('new label')).toBeTruthy()
+  expect(
+    within(await screen.findByTestId('highlight-table')).getByText('new label'),
+  ).toBeTruthy()
 }, 60000)
 
 test('Toggle highlight visibility across all views', async () => {
