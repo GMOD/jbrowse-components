@@ -76,10 +76,10 @@ and a URL compiled into a shipped plugin bundle can never be moved, which is
 also why `BasePath` carries a version (`ucsc/v1`): a `v2` can be mounted
 alongside while `v1` keeps answering older builds.
 
-The `BlatProxyApiUrl` stack output is the URL to configure in the plugin (or set
-as `DEFAULT_BLAT_URL` in jbrowse-plugin-blat's `src/blatQuery.ts` once it's
-stable). To find it for an existing deployment, without publishing it here where
-it would invite traffic against the shared key's budget:
+The plugin's `DEFAULT_BLAT_URL` and `DEFAULT_ISPCR_URL` name production's
+domain. Any other deployment's URL is the `BlatProxyApiUrl` stack output, which
+goes in the dialog's server field. To find it without publishing it here, where
+it would invite traffic against that key's budget:
 
 ```bash
 aws cloudformation describe-stacks --stack-name jbrowse-blat-proxy \
@@ -141,8 +141,9 @@ and a DynamoDB read — a flood is cheaper to shed at the API.
 **With `BLAT_LIMIT_TABLE` unset the proxy is unmetered** (fine locally, not for
 a deployment). `template.yaml` wires it, so a SAM deploy is metered by default.
 
-The desktop "own apiKey" path (in the plugin dialog) is the pressure valve that
-avoids the shared budget entirely.
+A site that needs more than one network's share deploys this stack with its
+own apiKey and points the dialog's server field at it, which avoids the shared
+budget entirely.
 
 A request carrying `Cache-Control: no-cache` skips the cache read (the answer is
 still cached, and still metered). The daily canary in GMOD/jbrowse-plugin-blat
