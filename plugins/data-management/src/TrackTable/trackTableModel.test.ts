@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { autorun } from 'mobx'
@@ -56,6 +57,17 @@ function setup() {
   // counts the same no matter how many times a test reads them
   void model.allTrackConfigurations.length
   return { session, model, table }
+}
+
+function setColumns(
+  session: ReturnType<typeof setup>['session'],
+  columns: string[],
+) {
+  setConf(
+    session.jbrowse.configuration,
+    ['hierarchical', 'table', 'columns'],
+    columns,
+  )
 }
 
 describe('sorting', () => {
@@ -319,20 +331,32 @@ describe('columns and facets', () => {
   test('the configured columns come first, and the grouping fields fill the room after them', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    table.setConfiguredColumns(['name', 'metadata.lab'])
+    setColumns(session, ['name', 'metadata.lab'])
     expect(table.defaultColumns).toEqual([
       'metadata.lab',
       'category',
       'metadata.assay',
     ])
-    table.setConfiguredColumns(['metadata.nope'])
+    setColumns(session, ['metadata.nope'])
     expect(table.defaultColumns).toEqual(table.groupingFields)
+  })
+
+  test('the drawer’s table follows a config edit to its columns', () => {
+    const { session, model } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
+    const leading: (string | undefined)[] = []
+    const dispose = autorun(() => {
+      leading.push(model.trackTable.defaultColumns[0])
+    })
+    setColumns(session, ['metadata.lab'])
+    dispose()
+    expect(leading).toEqual(['category', 'metadata.lab'])
   })
 
   test('the config names the columns, and the user’s choices win over both', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    table.setConfiguredColumns(['metadata.assay', 'metadata.nope', 'kind'])
+    setColumns(session, ['metadata.assay', 'metadata.nope', 'kind'])
     expect(table.shownColumns(1)).toEqual(['name', 'metadata.assay'])
 
     table.setColumnVisible('metadata.assay', false)
@@ -365,7 +389,7 @@ describe('columns and facets', () => {
   test('the first three default columns that group tracks, shown grouping columns and active filters get a chip', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    table.setConfiguredColumns(['description', 'metadata.assay', 'adapter'])
+    setColumns(session, ['description', 'metadata.assay', 'adapter'])
     expect(table.chipFacets).toEqual([
       'metadata.assay',
       'category',
@@ -384,7 +408,7 @@ describe('columns and facets', () => {
   test('a facet keeps its place when it starts or stops filtering, and a non-grouping column gets none', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
-    table.setConfiguredColumns(['description'])
+    setColumns(session, ['description'])
     const before = table.filterFacets
     expect(before).not.toContain('description')
     const last = before.at(-1)!

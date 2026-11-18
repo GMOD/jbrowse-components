@@ -2,7 +2,6 @@ import { getConf } from '@jbrowse/core/configuration'
 import {
   coarseStripHTML,
   getEnv,
-  getSession,
   localStorageGetJSON,
   localStorageSetJSON,
   measureGridWidth,
@@ -30,8 +29,8 @@ import {
 import { getRootKeys, trackTypeShortName } from './tableUtil.ts'
 
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
-import type { TrackCatalog } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // how many of the default columns' facets get a chip of their own
 const LEADING_FACETS = 3
@@ -67,14 +66,15 @@ function readColumnChoices(assemblyNames: string[]): ColumnChoice[] {
 
 function trackFields(
   track: AnyTrackConfig,
-  trackTypeName: (type: string) => string,
+  trackTypeNames: Map<string, string>,
 ) {
+  const type = String(track.type)
   const metadata = (track.metadata ?? {}) as Record<string, unknown>
   return {
     kind:
       typeof metadata.kind === 'string' && metadata.kind
         ? metadata.kind
-        : trackTypeName(String(track.type)),
+        : (trackTypeNames.get(type) ?? type),
     adapter: (track.adapter as { type?: string } | undefined)?.type,
     metadata,
   }
@@ -192,11 +192,6 @@ export function trackTableModelFactory() {
       getColumnTracks: undefined as (() => AnyTrackConfig[]) | undefined,
       /**
        * #volatile
-       * the config's `hierarchical.table.columns`
-       */
-      configuredColumns: [] as string[],
-      /**
-       * #volatile
        * what the user showed or hid in Manage columns, loaded from a
        * config+assembly scoped localStorage entry in setTrackSource
        */
@@ -204,13 +199,7 @@ export function trackTableModelFactory() {
       /**
        * #volatile
        */
-      session: undefined as TrackCatalog | undefined,
-      /**
-       * #volatile
-       * a track type's name for the kind column, when its config sets no
-       * `metadata.kind`
-       */
-      trackTypeName: (type: string) => type,
+      session: undefined as AbstractSessionModel | undefined,
     }))
     .actions(self => ({
       /**
@@ -218,7 +207,7 @@ export function trackTableModelFactory() {
        */
       setTrackSource(
         getTracks: () => AnyTrackConfig[],
-        session: TrackCatalog,
+        session: AbstractSessionModel,
         assemblyNames: string[],
         getColumnTracks?: () => AnyTrackConfig[],
       ) {
@@ -227,33 +216,6 @@ export function trackTableModelFactory() {
         self.session = session
         self.assemblyNames = assemblyNames
         self.columnChoices = readColumnChoices(assemblyNames)
-      },
-      /**
-       * #action
-       */
-      setConfiguredColumns(columns: string[]) {
-        self.configuredColumns = columns
-      },
-      /**
-       * #action
-       * reads the config's `hierarchical.table.columns` and the track type
-       * names the kind column shows
-       */
-      configure(node: IAnyStateTreeNode) {
-        const columns: unknown = getConf(getSession(node), [
-          'hierarchical',
-          'table',
-          'columns',
-        ])
-        self.configuredColumns = Array.isArray(columns)
-          ? columns.filter((c): c is string => typeof c === 'string')
-          : []
-        const names = new Map(
-          getEnv(node)
-            .pluginManager.getTrackElements()
-            .map(t => [t.name, trackTypeShortName(t.displayName)]),
-        )
-        self.trackTypeName = type => names.get(type) ?? type
       },
       /**
        * #action
@@ -312,6 +274,36 @@ export function trackTableModelFactory() {
     .views(self => ({
       /**
        * #getter
+       * the config's `hierarchical.table.columns`
+       */
+      get configuredColumns() {
+        const { session } = self
+        const columns: unknown = session
+          ? getConf(session, ['hierarchical', 'table', 'columns'])
+          : []
+        return Array.isArray(columns)
+          ? columns.filter((c): c is string => typeof c === 'string')
+          : []
+      },
+      /**
+       * #getter
+       * each track type's name for the kind column, when a track's config
+       * sets no `metadata.kind`
+       */
+      get trackTypeNames() {
+        const { session } = self
+        return new Map(
+          session
+            ? getEnv(session)
+                .pluginManager.getTrackElements()
+                .map(t => [t.name, trackTypeShortName(t.displayName)])
+            : [],
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Builds row objects from track configs. Cached and only recomputes when
        * the track list changes, not on every filterText keystroke.
        */
@@ -329,7 +321,7 @@ export function trackTableModelFactory() {
                 name,
                 category: category.join(', '),
                 description,
-                ...trackFields(track, self.trackTypeName),
+                ...trackFields(track, self.trackTypeNames),
               }
               return {
                 ...row,
@@ -352,7 +344,7 @@ export function trackTableModelFactory() {
               category: ((track.category as string[] | undefined) ?? []).join(
                 ', ',
               ),
-              ...trackFields(track, self.trackTypeName),
+              ...trackFields(track, self.trackTypeNames),
             }))
           : self.allRows
       },

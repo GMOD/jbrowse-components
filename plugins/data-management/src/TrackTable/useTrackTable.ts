@@ -30,7 +30,6 @@ export function useTrackTable(
   const table = useCreateOnce(() => {
     const ret = trackTableModelFactory().create()
     ret.setTrackSource(getTracks, getSession(model), model.assemblyNames)
-    ret.configure(model)
     return ret
   })
   useFinalUnmount(() => {

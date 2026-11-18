@@ -957,7 +957,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         },
         afterAttach() {
           const { trackTable } = self
-          trackTable.configure(self)
           trackTable.setTextKeptIdsSource(() =>
             self.showTable ? undefined : self.textKeptIds,
           )
