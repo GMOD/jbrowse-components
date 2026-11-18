@@ -16,7 +16,7 @@
 //! topology: triangle-strip
 //! coverage: analytic
 //! export-consts: CONNECTOR_CURVE_SEGMENTS, CONNECTOR_BOW, CONNECTOR_MAX_REACH_PX, CONNECTOR_APEX_RATIO, CONNECTOR_MAX_HANDLE_PX, CONNECTOR_MINUS_1, CONNECTOR_MINUS_2, CONNECTOR_LEADING_2, CONNECTOR_STRAIGHT, CONNECTOR_ARROW
-//! js-export: connectorBudgetPx, connectorHandlePx, connectorLiftPx, connectorTangent, connectorStrokePx, connectorArrowFits
+//! js-export: connectorBudgetPx, connectorHandlePx, connectorLiftPx, connectorTangent, connectorArrowFits
 
 import antialias;
 import colorPack;
@@ -132,11 +132,6 @@ public float connectorArrowFits(float dx, float arrowPx) {
   return abs(dx) >= 2.0 * arrowPx ? 1.0 : 0.0;
 }
 
-// Floored at 1.5 device px, so the single antialiasing ramp has room.
-public float connectorStrokePx(float width, float dpr) {
-  return max(width, 1.5 / dpr);
-}
-
 struct Cubic {
   float2 p0;
   float2 p1;
@@ -228,7 +223,7 @@ VsOut vs_main(ConnectorInstance inst, uint vid : SV_VertexID) {
   bool placed = inst.x2Region < u.regionCount;
   float4 entry2 = u.regionTable[min(inst.x2Region, VIEW_REGION_MAX - 1u)];
   Cubic c = placeCubic(inst, entry2);
-  float halfWidth = 0.5 * connectorStrokePx(inst.width, u.devicePixelRatio);
+  float halfWidth = 0.5 * flooredStrokeWidthPx(inst.width, u.devicePixelRatio);
   float hw = halfWidth + aaHalfPx(u.devicePixelRatio);
   bool arrow = (inst.bits & CONNECTOR_ARROW) != 0u
     && connectorArrowFits(c.p3.x - c.p0.x, u.arrowPx) != 0.0;

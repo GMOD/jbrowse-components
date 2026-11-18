@@ -1,5 +1,6 @@
 import { getDpr } from '../canvas2dUtils.ts'
 import { SCALE_TYPE_LOG } from '../scoreScale.ts'
+import { flooredStrokeWidthPx } from '../shaders/antialias.js.generated.ts'
 import {
   distToWideCirclePx,
   farDomeParam,
@@ -246,11 +247,13 @@ function linkFrame(
     strokePx: 0,
     footPx: params.footPx ?? LINK_FOOT_PX,
     xPadPx:
-      Math.max(
-        params.sizePx,
-        sizeScale?.range[0] ?? 0,
-        sizeScale?.range[1] ?? 0,
-        1.5 / getDpr(),
+      flooredStrokeWidthPx(
+        Math.max(
+          params.sizePx,
+          sizeScale?.range[0] ?? 0,
+          sizeScale?.range[1] ?? 0,
+        ),
+        getDpr(),
       ) /
         2 +
       LINK_LINE_MIN_PX / 2,

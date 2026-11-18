@@ -1,3 +1,4 @@
+import { flooredStrokeWidthPx } from '../shaders/antialias.js.generated.ts'
 import {
   CONNECTOR_ARROW,
   CONNECTOR_LEADING_2,
@@ -11,7 +12,6 @@ import {
   connectorBudgetPx,
   connectorHandlePx,
   connectorLiftPx,
-  connectorStrokePx,
   connectorTangent,
 } from '../shaders/connectorMark.js.generated.ts'
 import { linkedRegion, regionPx } from './linkRegion.ts'
@@ -74,7 +74,7 @@ export function placeConnector(
   p.y0 = params.rowOffsetPx + c.row[i]! * params.rowPitchPx
   p.x3 = regionPx(regions, far, c.x2[i]!)
   p.y3 = params.rowOffsetPx + c.row2[i]! * params.rowPitchPx
-  p.strokePx = connectorStrokePx(c.width[i]!, dpr)
+  p.strokePx = flooredStrokeWidthPx(c.width[i]!, dpr)
   const reversed2 = farRegion.signedPxPerBp < 0
   const strand2 = strandOf(bits, CONNECTOR_MINUS_2)
   p.arrow =

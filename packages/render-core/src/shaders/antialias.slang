@@ -51,7 +51,7 @@
 // edge AA — but because the alternative is every pad test re-spelling `0.5/dpr`
 // and then agreeing with its own copy, which is what dotplotCapsulePad.test.ts
 // and syntenyFillPad.test.ts each did.
-//! js-export: aaPx, aaHalfPx, aaRamp, edgeCoverage, strokeCoverage, slabVertexYPx, slabCoverage
+//! js-export: aaPx, aaHalfPx, aaRamp, edgeCoverage, strokeCoverage, flooredStrokeWidthPx, slabVertexYPx, slabCoverage
 //! oracle-skip: slabVertexYPx — the probe's qy runs to 1024, which multiplies float32's rounding of the two padded cuts a thousandfold; a vertex takes qy 0 or 1, and barCutCoverage.test.ts referees the quad's edges there
 //! js-skip: dashCoverageAt — one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage, so what they must agree on is each mark's dash and gap lengths
 //! js-skip: dashCoverage — the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly
@@ -111,6 +111,12 @@ public float edgeCoverage(float signedInkCssPx, float dpr) {
 public float strokeCoverage(float halfWidthPx, float distPx, float dpr) {
   return edgeCoverage(halfWidthPx - distPx, dpr)
        - edgeCoverage(-halfWidthPx - distPx, dpr);
+}
+
+// A stroke width floored at one and a half output pixels, so a stroke drawn
+// with a single edge ramp always has room for it.
+public float flooredStrokeWidthPx(float widthPx, float dpr) {
+  return max(widthPx, 1.5 * aaPx(dpr));
 }
 
 // A slab between two horizontal cuts, `topPx` and `botPx`, whose fragment

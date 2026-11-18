@@ -150,7 +150,7 @@ grows a track to its whole content.
 - **A shader that rebuilds device px from the dpr breaks this.** The variant
   matrix did, and painted 0.2% of its columns on a shrunk buffer. The `dpr`
   uniforms that remain size antialias ramps and minimum stroke widths
-  (`connectorStrokePx`, `linkMark`), so a hairline can break into dashes once
+  (`flooredStrokeWidthPx`), so a hairline can break into dashes once
   the reported scale falls well below the dpr.
 - **`MockHal.reportedScale`** is how a backend test sees a capped scale; the
   default reports `getDpr()`.

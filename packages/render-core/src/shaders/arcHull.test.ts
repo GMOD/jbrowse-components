@@ -6,7 +6,11 @@
 // them. The vertices come from `curveDistance.slang`'s
 // own emitted twins.
 import { ellipseNearest } from '../marks/ellipseDistance.ts'
-import { aaHalfPx, edgeCoverage } from './antialias.js.generated.ts'
+import {
+  aaHalfPx,
+  edgeCoverage,
+  flooredStrokeWidthPx,
+} from './antialias.js.generated.ts'
 import {
   distToWideCirclePx,
   ellipseHullPoint,
@@ -26,9 +30,8 @@ type Tri = readonly [Pt, Pt, Pt]
 // vertices 1e-15 px off the baseline, and no pixel centre sits that low.
 const EXACT = 1e-9
 
-// `arcStrokeHalfPx` / `linkStrokeWidthPx`: no arc is thinner than 1.5 device px.
 const strokeHalfPx = (dpr: number, lineWidthPx: number) =>
-  Math.max(lineWidthPx, 1.5 / dpr) / 2
+  flooredStrokeWidthPx(lineWidthPx, dpr) / 2
 
 function inTri(p: Pt, [a, b, c]: Tri) {
   const d1 = (p[0] - b[0]) * (a[1] - b[1]) - (a[0] - b[0]) * (p[1] - b[1])

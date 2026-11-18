@@ -230,8 +230,8 @@ public float2 linkRadiiPx(float halfWidthPx, float apexPx, float screenWidthPx, 
 }
 
 // An instance's stroke width: the constant, or its raw `size` value through
-// the size scale into the px range, floored at 1.5 device px so the single
-// antialiasing ramp always has room (arc-antialiasing-without-msaa.md).
+// the size scale into the px range, floored so the single antialiasing ramp
+// always has room (arc-antialiasing-without-msaa.md).
 public float linkStrokeWidthPx(float raw, int sizeMode, float constantPx, float domainMin, float domainMax, int scaleType, float rangeMin, float rangeMax, float dpr) {
   float w = constantPx;
   if (sizeMode == LINK_SIZE_SCALED) {
@@ -239,7 +239,7 @@ public float linkStrokeWidthPx(float raw, int sizeMode, float constantPx, float 
       ? rangeMin + normalizeScore(raw, domainMin, domainMax, scaleType, 1.0) * (rangeMax - rangeMin)
       : rangeMin;
   }
-  return max(w, 1.5 / dpr);
+  return flooredStrokeWidthPx(w, dpr);
 }
 
 // A foot's genomic direction off the `feet` lane: two bits per foot, 1 for
