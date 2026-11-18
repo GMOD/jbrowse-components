@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "jbrowse-web reads each UMD plugin bundle's text before running it and publishes only the `JBrowseExports` keys the bundles read, each from its own `import()`; any bundle the scan cannot read (ESM, a computed key, `jbrequire`, no CORS) gets the whole registry. Supersedes ADR-128's lazy-registry rejection for that case"
+summary: "jbrowse-web scans each UMD plugin bundle's text and publishes only the `JBrowseExports` keys it reads, each from its own `import()`; a bundle the scan cannot read (ESM, a computed key, `jbrequire`, no CORS) gets the whole registry. Supersedes ADR-128's lazy-registry rejection"
 ---
 
 # ADR-274: A plugin page publishes only the keys its bundles read
