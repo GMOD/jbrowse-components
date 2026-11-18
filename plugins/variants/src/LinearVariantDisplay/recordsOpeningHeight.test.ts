@@ -6,6 +6,7 @@ import { MIN_GROW_HEIGHT } from '@jbrowse/plugin-features/band'
 
 import { recordsCellData, recordsDisplayAt } from './recordsBand.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
+import { DEFAULT_RECORDS_HEIGHT } from './variantTopBands.ts'
 
 import type { BandRecord } from './recordsBand.fixture.ts'
 
@@ -132,6 +133,15 @@ const DENSE_OVER_PILE: BandRecord[] = [
 ]
 
 describe('over rows the band settles at a stack it packed', () => {
+  test('the stack itself, up to the default', () => {
+    const sparse = recordsDisplayAt(SPARSE, 10).display
+    expect(sparse.recordsStackHeight).toBeLessThan(DEFAULT_RECORDS_HEIGHT)
+    expect(sparse.openingRecordsHeight).toBe(sparse.recordsStackHeight)
+    const pile = recordsDisplayAt(PILE, 1).display
+    expect(pile.recordsStackHeight).toBeGreaterThan(DEFAULT_RECORDS_HEIGHT)
+    expect(pile.openingRecordsHeight).toBe(DEFAULT_RECORDS_HEIGHT)
+  })
+
   test('not while the records collapse past the density budget', () => {
     const { display } = recordsDisplayAt(DENSE_OVER_PILE, 10)
     expect(display.recordsPackMode).toBe('collapsed')

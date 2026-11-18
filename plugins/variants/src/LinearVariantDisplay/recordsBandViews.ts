@@ -1087,14 +1087,17 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
      * #action
      * Hold the band's height over rows from its first layout of a fetched
      * record at `records.displayMode`, not one collapsed past the density
-     * budget: what it draws then, its stack up to the default. From
-     * then on a pan fits the records inside the band rather than resizing
-     * it, and a region with no record before that spends nothing. Held on
-     * this display alone, never written, so viewing a track edits no
-     * session; a written `records.height` wins over it.
+     * budget: its stack up to the default, whatever the track leaves it
+     * then. From then on a pan fits the records inside the band rather than
+     * resizing it, and a region with no record before that spends nothing.
+     * Held on this display alone, never written, so viewing a track edits
+     * no session; a written `records.height` wins over it.
      */
     settleRecordsBandHeight() {
-      self.openingRecordsHeight = self.topBands.reserved.records
+      self.openingRecordsHeight = Math.min(
+        self.recordsStackHeight,
+        DEFAULT_RECORDS_HEIGHT,
+      )
     },
   }
 }
