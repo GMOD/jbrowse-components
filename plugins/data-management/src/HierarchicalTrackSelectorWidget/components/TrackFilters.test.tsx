@@ -35,7 +35,9 @@ function trackConf(i: number) {
   }
 }
 
-async function setup({ connectionTracks = [] as number[] } = {}) {
+async function setup({
+  connectionTracks = [],
+}: { connectionTracks?: number[] } = {}) {
   const session = createTestSession({
     adminMode: true,
     jbrowseConfig: {
@@ -89,6 +91,7 @@ async function setup({ connectionTracks = [] as number[] } = {}) {
   )
   return {
     model,
+    session,
     status: () => queryByRole('status')?.textContent,
     filter: (text: string, facets: Record<string, string[]> = {}) => {
       act(() => {
@@ -178,4 +181,16 @@ test('a track in two groups is drawn in both, listed once in the table, and coun
     't4',
   ])
   expect(status()).toBe('2 of 9')
+})
+
+test('a track in two groups resolves to the connection’s copy, as the session does', async () => {
+  const { model, session } = await setup({ connectionTracks: [0] })
+  expect(model.allTrackConfigurationMap.get('t0')).toBe(
+    session.getTrackById('t0'),
+  )
+  expect(
+    model.allTrackConfigurations
+      .map(t => t.trackId)
+      .filter(id => /^t\d$/.test(id)),
+  ).toEqual(['t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7'])
 })

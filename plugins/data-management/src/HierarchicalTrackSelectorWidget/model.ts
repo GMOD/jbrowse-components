@@ -617,23 +617,24 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
+         * every track the view can display by trackId; a track in both the
+         * config and a connection resolves to the connection's copy, as the
+         * session's getTrackById does
+         */
+        get allTrackConfigurationMap() {
+          return new Map(
+            this.allTracks.flatMap(g =>
+              g.tracks.map(s => [s.conf.trackId, s.conf]),
+            ),
+          )
+        },
+        /**
+         * #getter
          * every track the view can display, once each, in tree order: what
          * the table selector, favorites and recently-used resolve against
          */
         get allTrackConfigurations() {
-          const byId = new Map<string, AnyTrackConfig>()
-          for (const { conf } of this.allTracks.flatMap(g => g.tracks)) {
-            if (!byId.has(conf.trackId)) {
-              byId.set(conf.trackId, conf)
-            }
-          }
-          return [...byId.values()]
-        },
-        /**
-         * #getter
-         */
-        get allTrackConfigurationMap() {
-          return new Map(this.allTrackConfigurations.map(t => [t.trackId, t]))
+          return [...this.allTrackConfigurationMap.values()]
         },
       }
     })
