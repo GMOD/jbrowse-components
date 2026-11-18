@@ -495,6 +495,21 @@ export default function MultiRegionDisplayMixin() {
         clearSettingsBakedData() {},
       }))
       .actions(self => {
+        const superLapseHeldFetch = self.lapseHeldFetch
+        return {
+          /**
+           * #action
+           * `FetchMixin`'s lapse, clearing the error with the cancel: the
+           * fetch plan skips on either, so the fetch autorun then asks for
+           * only what never landed.
+           */
+          lapseHeldFetch() {
+            superLapseHeldFetch()
+            self.setError(undefined)
+          },
+        }
+      })
+      .actions(self => {
         const superReload = self.reload
         return {
           /**

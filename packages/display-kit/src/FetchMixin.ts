@@ -382,13 +382,12 @@ export default function FetchMixin() {
     .actions(self => ({
       /**
        * #action
-       * The viewport-change lapse of `fetchHeld`: clear a user cancel and an
-       * error and bump `fetchGeneration`, leaving held data and the drawn
-       * canvas alone, so the fetch autorun asks for only what is missing.
+       * The viewport-change lapse of `fetchHeld`: clear a user cancel and bump
+       * `fetchGeneration`, leaving held data and the drawn canvas alone. The
+       * per-region family chains it to clear its error too.
        */
       lapseHeldFetch() {
         self.cancelFetch()
-        self.setError(undefined)
       },
     }))
     .actions(self => ({

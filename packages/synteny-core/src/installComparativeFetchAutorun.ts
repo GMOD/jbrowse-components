@@ -76,8 +76,8 @@ interface ComparativeIssue<TArgs> {
  * fetch-lifecycle reads, the display's `gate`, `currentFetchKey` and the
  * adapter config. The display's `prepare` runs `untracked`: it captures what
  * the worker consumes, and the key is the decision. `reloadCounter` and
- * `fetchCanceled` are safe for the same reason: only a user gesture moves
- * either one. Nothing fetch-DERIVED may join them, `gate` included, since it
+ * `fetchCanceled` are safe to track because only a user gesture moves either
+ * one. Nothing fetch-DERIVED may join them, `gate` included, since it
  * runs inside this derivation. **`error` is the one that will be reached for**: the skeleton
  * clears it at the start of every fetch and sets it on failure, so a tracked
  * read of it turns a single failure into an unbounded retry loop — fetch, fail,
@@ -88,9 +88,9 @@ interface ComparativeIssue<TArgs> {
  *
  * **The freshness key is `currentFetchKey`, read here and stamped here.** The
  * display's `viewSignature` plus the settings and adapter axes, read tracked
+ * (so an adapter edited in the config editor refetches the way a zoom does)
  * once `gate` is open, since both displays' `viewSignature` reads view
- * geometry that throws before the view is initialized (so an adapter edited in
- * the config editor refetches the way a zoom does), stamped onto `loadedFetchKey`
+ * geometry that throws before the view is initialized, stamped onto `loadedFetchKey`
  * by `commitFetchResult` in the same transaction as the display's own store,
  * and compared by `dataCurrent` — one key, one stamp, so the fetch gate and the
  * export gate cannot disagree on which axes a fetch has. A display's `prepare`

@@ -21,8 +21,8 @@ settings change does not move `bpPerPx`, so the test below does not apply to
 it; what a display may still drop there is a payload whose *shape* the setting
 decides, through the `clearSettingsBakedData` hook (the variant matrix's cell
 payload, MAF's two tiers under one stamp). The preserve-vs-clear test keeps
-governing `clearDisplaySpecificData`, which runs on a displayed-regions change,
-on a viewport move past an error or a cancel, and on `reload()`.
+governing `clearDisplaySpecificData`, which runs on a displayed-regions change
+and on `reload()`.
 
 **Naming reconciled to current source.** The decision holds and is live in
 `plugins/features/src/LinearBasicDisplay/baseModel.ts`, but the symbols in the

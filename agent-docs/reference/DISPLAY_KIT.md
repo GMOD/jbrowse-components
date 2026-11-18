@@ -78,8 +78,8 @@ empty is the decline, and reaching `FetchMixin.runFetch` is the fetch. Every
 awaits first gets a false report, not silence. `runFetch` also answers the retry
 by itself, so a fetch counts for the click before it whichever caller issued
 it. Every per-region `reload()` reaches its fetch through the autorun: a click
-on a display idle for the 600 ms debounce fetches on the leading edge, one
-microtask later.
+fetches on the leading edge, one microtask later, once the 600 ms debounce the
+last fetch's end armed has run out, and at that debounce's end before then.
 
 **`reloadCounter` is the whole arming mechanism, and MST replaces an action
 outright.** A `reload()` override that neither bumps it nor chains to a captured

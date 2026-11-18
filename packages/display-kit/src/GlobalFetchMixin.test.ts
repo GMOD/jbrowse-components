@@ -120,6 +120,17 @@ test('displayPhase is canceled after a user cancel, and Retry clears it', () => 
   expect(model.displayPhase).toBe('ready')
 })
 
+test('the viewport lapse clears a user cancel and leaves an error up', () => {
+  const model = testModel()
+  model.cancelFetchByUser()
+  model.setError(new Error('boom'))
+  expect(model.fetchHeld).toBe(true)
+  model.lapseHeldFetch()
+  expect(model.fetchCanceled).toBe(false)
+  expect(model.fetchHeld).toBe(false)
+  expect(model.error).toBeInstanceOf(Error)
+})
+
 test('displayPhase is not loading pre-paint when rendersCanvas is false', () => {
   const Display = types
     .compose(
