@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { virtualRange } from '../../util/virtualRange.ts'
 import { HEADER_HEIGHT } from './tableStyles.ts'
 
-const OVERSCAN = 20
+const OVERSCAN = 8
 
 /**
  * Minimal fixed-height row virtualization. Tracks the scroll container's
