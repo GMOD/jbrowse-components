@@ -302,9 +302,9 @@ VsOut vs_main(RibbonInstance inst, uint vid : SV_VertexID) {
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
   float dpr = u.devicePixelRatio;
-  float band = edgeCoverage(v.across, dpr) - edgeCoverage(v.across - v.bandPx, dpr);
+  float band = slabCoverage(v.across, v.across - v.bandPx, dpr);
   float rim = edgeCoverage(u.radiusPx - length(v.fromCenter), dpr);
-  float a = v.color.a * u.alpha * v.fade * clamp(band, 0.0, 1.0) * rim;
+  float a = v.color.a * u.alpha * v.fade * band * rim;
   if (a <= 0.0) discard;
   return float4(v.color.rgb * a, a);
 }
