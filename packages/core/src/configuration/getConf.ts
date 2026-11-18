@@ -12,6 +12,7 @@ import {
   isStateTreeNode,
   isType,
 } from '@jbrowse/mobx-state-tree'
+import { transaction } from 'mobx'
 
 import { isPlainObject } from '../util/objectUtils.ts'
 import { readConfObject } from './readConfObject.ts'
@@ -120,20 +121,20 @@ export function setConf<
 
 // A write of a keyed object's field that changes it resets the members naming
 // the old field's values (ADR-257).
-function unsetStaleKeyedMembers(
+function staleKeyedMembersOf(
   node: AnyConfigurationModel,
   leaf: string,
   value: unknown,
 ) {
   const writes = getConfigurationSchemaMetadata(node)?.options.writes
-  if (isKeyedWrites(writes) && writes.keyedBy === leaf) {
-    const prior = getSnapshot<Record<string, unknown>>(node)
-    for (const member of staleKeyedMembers(writes, prior, { [leaf]: value })) {
-      if (Object.hasOwn(prior, member)) {
-        writeConfPath(node, [member], null)
-      }
-    }
-  }
+  const keyed =
+    isKeyedWrites(writes) && writes.keyedBy === leaf ? writes : undefined
+  const prior = keyed ? getSnapshot<Record<string, unknown>>(node) : {}
+  return keyed
+    ? staleKeyedMembers(keyed, prior, { [leaf]: value }).filter(member =>
+        Object.hasOwn(prior, member),
+      )
+    : []
 }
 
 function withValueAt(
@@ -192,16 +193,21 @@ function writeConfPath(
   }
   const leaf = path.at(-1)!
   refuseRefusedMemberWrite(node, [leaf], value)
-  unsetStaleKeyedMembers(node, leaf, value)
+  const stale = staleKeyedMembersOf(node, leaf, value)
   // off the declaration: a stringArray slot holds an array node too
   const declared = getConfigurationSchemaDefinition(node)?.[leaf]
-  if (isConfigurationSchemaType(declared)) {
-    // eslint-disable-next-line no-restricted-syntax -- this is setConf
-    node.setSubschema(leaf, value)
-  } else {
-    // eslint-disable-next-line no-restricted-syntax -- this is setConf
-    node.setSlot(leaf, value)
-  }
+  transaction(() => {
+    if (isConfigurationSchemaType(declared)) {
+      // eslint-disable-next-line no-restricted-syntax -- this is setConf
+      node.setSubschema(leaf, value)
+    } else {
+      // eslint-disable-next-line no-restricted-syntax -- this is setConf
+      node.setSlot(leaf, value)
+    }
+    for (const member of stale) {
+      writeConfPath(node, [member], null)
+    }
+  })
 }
 
 export interface ConfSettingsReport {

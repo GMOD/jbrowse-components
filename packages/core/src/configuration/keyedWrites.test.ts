@@ -1,4 +1,5 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { ConfigurationSchema } from './configurationSchema.ts'
 import { applyConfSettings, mergeConfSettings, setConf } from './getConf.ts'
@@ -90,6 +91,25 @@ test('setConf on the field unsets the keyed members', () => {
   const conf = Display.create(arranged)
   setConf(conf, ['rows', 'field'], 'tissue')
   expect(rowsOf(conf)).toEqual({ field: 'tissue', step: 8 })
+})
+
+test('a reaction never sees the new field beside the old arrangement', () => {
+  const conf = Display.create(arranged)
+  const seen: string[] = []
+  const dispose = autorun(() => {
+    seen.push(`${conf.rows.field} ${conf.rows.sort.join(',')}`)
+  })
+  setConf(conf, ['rows', 'field'], 'tissue')
+  dispose()
+  expect(seen).toEqual(['source b,a', 'tissue '])
+})
+
+test('setConf on the field with a value it refuses keeps the arrangement', () => {
+  const conf = Display.create(arranged)
+  expect(() => {
+    setConf(conf, ['rows', 'field'], 'jexl:x')
+  }).toThrow(/field/)
+  expect(rowsOf(conf)).toEqual(arranged.rows)
 })
 
 test('setConf restating the field keeps the arrangement', () => {
