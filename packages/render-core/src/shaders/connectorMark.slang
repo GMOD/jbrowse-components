@@ -219,7 +219,7 @@ StripVertex armCorner(Cubic c, uint a, uint corner, float hw, float strand2, boo
 }
 
 VsOut placedVertex(ConnectorInstance inst, uint vid) {
-  float4 entry2 = u.regionTable[min(inst.x2Region, VIEW_REGION_MAX - 1u)];
+  float4 entry2 = u.regionTable[inst.x2Region];
   Cubic c = placeCubic(inst, entry2);
   float halfWidth = 0.5 * flooredStrokeWidthPx(inst.width, u.devicePixelRatio);
   float hw = halfWidth + aaHalfPx(u.devicePixelRatio);
