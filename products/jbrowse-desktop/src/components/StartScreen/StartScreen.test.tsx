@@ -96,13 +96,13 @@ test('a launch from one panel leaves nothing in either panel to start a second',
   )
   const setPluginManager = jest.fn()
   renderStartScreen(setPluginManager)
-  expect(await screen.findByText(/^hg38 - /)).toBeTruthy()
+  expect(await screen.findByText('Human hg38 (GRCh38)')).toBeTruthy()
 
   fireEvent.click(await screen.findByText('Volvox'))
 
   expect(await screen.findByText(/Loading session/)).toBeTruthy()
   expect(screen.queryByText('Volvox')).toBeNull()
-  expect(screen.queryByText(/^hg38 - /)).toBeNull()
+  expect(screen.queryByText('Human hg38 (GRCh38)')).toBeNull()
   expect(screen.queryByText('Open your own genome')).toBeNull()
   openFileMenu()
   expect(

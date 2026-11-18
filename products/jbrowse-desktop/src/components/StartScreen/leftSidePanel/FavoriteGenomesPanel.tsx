@@ -1,6 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import defaultFavs from '../defaultFavs.ts'
 import CollapsibleSection from './CollapsibleSection.tsx'
 import LinkMenuRow from './LinkMenuRow.tsx'
 
@@ -12,12 +13,24 @@ const useStyles = makeStyles()({
   },
 })
 
-function favDisplayName(
-  fav: Pick<Fav, 'shortName' | 'description' | 'commonName'>,
-) {
-  return [fav.shortName, fav.description, fav.commonName]
-    .filter(Boolean)
-    .join(' - ')
+const defaultFavIds = defaultFavs.map(fav => fav.id)
+
+function favDisplayName({
+  shortName,
+  description,
+  commonName,
+}: Pick<Fav, 'shortName' | 'description' | 'commonName'>) {
+  const assembly = (/\(([^)]*)\)/.exec(description)?.[1] ?? '')
+    .split('/')
+    .filter(part => part && part !== shortName)
+    .join('/')
+  const name = [commonName, shortName].filter(Boolean).join(' ')
+  return assembly ? `${name} (${assembly})` : name
+}
+
+function defaultRank(id: string) {
+  const rank = defaultFavIds.indexOf(id)
+  return rank === -1 ? defaultFavIds.length : rank
 }
 
 const FavoriteGenomesPanel = observer(function FavoriteGenomesPanel({
@@ -31,9 +44,9 @@ const FavoriteGenomesPanel = observer(function FavoriteGenomesPanel({
 }) {
   const { classes } = useStyles()
 
-  const sorted = [...favorites]
+  const sorted = favorites
     .map(fav => ({ ...fav, name: favDisplayName(fav) }))
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .toSorted((a, b) => defaultRank(a.id) - defaultRank(b.id))
 
   return (
     <CollapsibleSection
