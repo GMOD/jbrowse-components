@@ -11,6 +11,7 @@ import { observer } from 'mobx-react'
 
 import { LANE_BAND_ORDER, laneBandHandle } from '../sectionLayout.ts'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
+import BandChipsOverlay from './BandChipsOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import PileupTruncationRule from './PileupTruncationRule.tsx'
 import SashimiLabelsOverlay from './SashimiLabelsOverlay.tsx'
@@ -77,6 +78,7 @@ const PileupBody = observer(function PileupBody({
       />
 
       <GroupLabelsOverlay model={model} />
+      <BandChipsOverlay model={model} />
       <PileupTruncationRule model={model} />
 
       <SashimiLabelsOverlay model={model} />

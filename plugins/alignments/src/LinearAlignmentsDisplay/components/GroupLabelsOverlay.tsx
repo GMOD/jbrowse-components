@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 
 import { laneDrawsReads, laneExpandable } from '../lanes.ts'
 import { sectionOrderOf } from '../menus/groupByMenu.ts'
+import { BandRowChips } from './BandChipsOverlay.tsx'
 import { bandScreenTop } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
@@ -74,9 +75,15 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   // Hiding the last drawn lane leaves no chip to carry the restore button.
   const canHideLane = renderSections.length > 1
   const order = sectionOrderOf(model)
+  const coverageChips = model.bandChipRows.find(row => row.band === 'coverage')
   return (
     <GroupLabelChips
       canvasHeight={scroll.canvasHeight}
+      leading={
+        coverageChips ? (
+          <BandRowChips model={model} row={coverageChips} />
+        ) : null
+      }
       hiddenCount={model.hiddenGroups.size}
       onShowHidden={() => {
         model.showAllGroups()

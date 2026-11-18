@@ -1,0 +1,74 @@
+import { BandChip, BandChipRow } from '@jbrowse/display-kit/BandChips'
+import {
+  GROUP_LABEL_HEIGHT,
+  GROUP_LABEL_INSET_X,
+} from '@jbrowse/display-kit/groupLabelStyle'
+import { leftAxisGutterWidth } from '@jbrowse/display-ui'
+import { observer } from 'mobx-react'
+
+import { bandChipLabel } from '../bandChips.ts'
+import { bandScreenTop } from './sectionScreen.ts'
+
+import type { BandChipKey, BandChipRow as Row } from '../bandChips.ts'
+import type { LinearAlignmentsDisplayModel } from '../model.ts'
+
+function hideBand(model: LinearAlignmentsDisplayModel, key: BandChipKey) {
+  if (key === 'coverage') {
+    model.setShowCoverage(false)
+  } else if (key === 'sashimi') {
+    model.setShowSashimi(false)
+  } else if (key === 'readConnections') {
+    model.setDrawnReadConnections('off')
+  } else {
+    model.setShowPileup(false)
+  }
+}
+
+export const BandRowChips = observer(function BandRowChips({
+  model,
+  row,
+}: {
+  model: LinearAlignmentsDisplayModel
+  row: Row
+}) {
+  return row.chips.map(key => (
+    <BandChip
+      key={key}
+      label={bandChipLabel(key, model.readConnectionsMark)}
+      onHide={() => {
+        hideBand(model, key)
+      }}
+    />
+  ))
+})
+
+/**
+ * Each band's chip at its top-left, past a left-side axis's gutter. While
+ * section chips draw, the coverage's chips ride ahead of the topmost one
+ * (`GroupLabelsOverlay`) instead.
+ */
+const BandChipsOverlay = observer(function BandChipsOverlay({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  const { bandChipRows, scrollModel: scroll, showsGroupLabels } = model
+  const left = leftAxisGutterWidth(model.axes) + GROUP_LABEL_INSET_X
+  return bandChipRows.map(row => {
+    const top = bandScreenTop(row.top, scroll) + 1
+    return (showsGroupLabels && row.band === 'coverage') ||
+      top < 0 ||
+      top + GROUP_LABEL_HEIGHT > scroll.canvasHeight ? null : (
+      <BandChipRow
+        key={row.band}
+        top={top}
+        left={left}
+        testid={`band_chips_${row.band}`}
+      >
+        <BandRowChips model={model} row={row} />
+      </BandChipRow>
+    )
+  })
+})
+
+export default BandChipsOverlay

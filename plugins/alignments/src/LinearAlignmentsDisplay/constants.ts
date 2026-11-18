@@ -38,6 +38,13 @@ export type AlignmentsUnit = (typeof ALIGNMENTS_UNITS)[number]
 export const READ_CONNECTIONS_MARKS = ['link', 'rule'] as const
 export type ReadConnectionsMark = (typeof READ_CONNECTIONS_MARKS)[number]
 
+// Each mark's name in the menu's radios and on the band's chip.
+export const READ_CONNECTIONS_MARK_LABELS: Record<ReadConnectionsMark, string> =
+  {
+    link: 'Read arcs',
+    rule: 'Read cloud',
+  }
+
 // What the band draws, as the model's `drawnReadConnections` answers it: its
 // mark, or 'off' while `readConnections.show` is.
 export type ReadConnectionsMode = 'off' | ReadConnectionsMark

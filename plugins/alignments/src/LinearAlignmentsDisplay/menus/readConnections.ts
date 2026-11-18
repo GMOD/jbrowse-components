@@ -7,6 +7,8 @@ import {
 } from '@jbrowse/core/ui/menuItems'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
+import { READ_CONNECTIONS_MARK_LABELS } from '../constants.ts'
+
 import type {
   AlignmentsUnit,
   ReadConnectionsMode,
@@ -47,8 +49,8 @@ const PLACEMENT_OPTIONS: { value: ReadConnectionsPlacement; label: string }[] =
 const CONNECTION_BAND_OPTIONS: { value: ReadConnectionsMode; label: string }[] =
   [
     { value: 'off', label: 'None' },
-    { value: 'link', label: 'Read arcs' },
-    { value: 'rule', label: 'Read cloud' },
+    { value: 'link', label: READ_CONNECTIONS_MARK_LABELS.link },
+    { value: 'rule', label: READ_CONNECTIONS_MARK_LABELS.rule },
   ]
 
 export const CONNECTION_BAND_LABEL = 'Connection band'

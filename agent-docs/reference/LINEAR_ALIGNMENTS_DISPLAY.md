@@ -329,6 +329,17 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   (`laneBandOverheads`) and the binders all read the same band description. The
   fit budget reads fetch-tier inputs only, since re-deriving it from `sections`
   routes the fit volatile back through the layout it feeds.
+- **Each band that draws is named once by a chip at its top-left**
+  (`bandChipRows`, `BandChipsOverlay`), over its own marks, reserving no px:
+  `Coverage`, with `Sashimi arcs` and the read connections beside it while
+  they draw over the histogram, then each strip and `Pileup` on the first
+  lane drawing it. The read connections chip is the mark's menu name (`Read
+  arcs`, `Read cloud`). The × writes the slot the Show menu writes. A lone
+  band gets no chip, so a × never empties the track. The chips start past a
+  left-side axis's gutter (`leftAxisGutterWidth`); under a facet the
+  coverage's chips ride ahead of the topmost section chip (`leading`), as
+  the variant display's records chips do. The export draws none: they are
+  controls.
 - **A display-wide render state carries no section offsets.** The model builds a
   `DisplayRenderState`; `sectionRenderState` adds a section's `pileupTopOffset`
   and `coverageTopOffset`, and marks draw and hit-test by that `RenderState`
