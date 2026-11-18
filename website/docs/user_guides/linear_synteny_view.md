@@ -209,7 +209,9 @@ beside it zooms and arranges the rows.
   ([below](#off-screen-mates))
 - **CIGAR indels** sets how insertions and deletions inside an alignment are
   shown:
-  - **Colored indels** paints them
+  - **Colored indels** paints them. A deletion that meets an insertion is a
+    stretch of each genome that aligns to nothing in the other, so it is left as
+    a gap
   - **Transparent indels** leaves them as see-through gaps in the ribbon
   - **Off - don't draw CIGAR indels** draws each alignment as one solid block.
     Its warning icon flags that overlapping blocks run together, and a gap

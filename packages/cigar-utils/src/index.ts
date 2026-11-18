@@ -10,6 +10,7 @@ export {
   CIGAR_P,
   CIGAR_RUN,
   CIGAR_S,
+  CIGAR_UNALIGNED,
   CIGAR_X,
 } from './cigarConstants.ts'
 export {
@@ -46,6 +47,7 @@ export {
 } from './mismatchCallback.ts'
 export type { MismatchCallback, MismatchWindow } from './mismatchCallback.ts'
 export { visitCigarRenderedSegments } from './cigarRenderedSegments.ts'
+export { visitCigarPairedIndelSegments } from './cigarPairedIndelSegments.ts'
 export {
   cigarWalkBp1,
   cigarWalkBp2,

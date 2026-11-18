@@ -20,3 +20,7 @@ export const CIGAR_INDEL_MASK = 0b00001110 // (1<<1)|(1<<2)|(1<<3) = 14
 // consecutive words, `(ownLen << 4) | CIGAR_RUN` then `(mateLen << 4) |
 // CIGAR_RUN`. Only parseCoarseCigar writes it.
 export const CIGAR_RUN = 9
+
+// Not a BAM op: a rendered deletion meeting a rendered insertion, which
+// `visitCigarPairedIndelSegments` reports as one segment spanning both.
+export const CIGAR_UNALIGNED = 10

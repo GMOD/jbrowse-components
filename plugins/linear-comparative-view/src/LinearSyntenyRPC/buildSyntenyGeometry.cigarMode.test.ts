@@ -1,10 +1,11 @@
-import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
+import { CIGAR_D, CIGAR_I, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
 import {
   KIND_BASE,
   KIND_BASE_TILE,
   KIND_CIGAR_D,
+  KIND_CIGAR_I,
   KIND_MARKER,
 } from './syntenyKinds.ts'
 import { viewportWindow } from './testUtils.ts'
@@ -13,18 +14,22 @@ import { viewportWindow } from './testUtils.ts'
 // (query) axis but not the bottom (target) axis, so on the top axis it occupies
 // the bp interval [50, 100). Both match runs (50px) and the deletion (50px) are
 // well above MIN_CIGAR_PX_WIDTH / MIN_INDEL_PX, so all render.
-function build(matchesOnly: boolean) {
-  const packed = (len: number, op: number) => (len << 4) | op
+const packed = (len: number, op: number) => (len << 4) | op
+
+function build(
+  matchesOnly: boolean,
+  cigar = [packed(50, CIGAR_M), packed(50, CIGAR_D), packed(50, CIGAR_M)],
+  end1 = 150,
+  end2 = 100,
+) {
   return buildSyntenyGeometry({
     p11_cumBp: new Float64Array([0]),
-    p12_cumBp: new Float64Array([150]),
+    p12_cumBp: new Float64Array([end1]),
     p21_cumBp: new Float64Array([0]),
-    p22_cumBp: new Float64Array([100]),
+    p22_cumBp: new Float64Array([end2]),
     queryGridAnchors: new Float64Array([0]),
     strands: new Int8Array([1]),
-    parsedCigars: [
-      [packed(50, CIGAR_M), packed(50, CIGAR_D), packed(50, CIGAR_M)],
-    ],
+    parsedCigars: [cigar],
     cigarMode: matchesOnly ? 'matches' : 'full',
     bpPerPx0: 1,
     bpPerPx1: 1,
@@ -89,4 +94,47 @@ test('transparent indels: match segments only, deletion region left unpainted', 
   expect(ribbonCoversBp(75)).toBe(false)
   expect(ribbonCoversBp(25)).toBe(true)
   expect(ribbonCoversBp(125)).toBe(true)
+})
+
+const INDEL_PAIR = [
+  packed(50, CIGAR_M),
+  packed(60, CIGAR_D),
+  packed(50, CIGAR_I),
+  packed(50, CIGAR_M),
+]
+
+test('colored indels: a deletion meeting an insertion is left see-through', () => {
+  const g = build(false, INDEL_PAIR, 160, 150)
+  const ribbons = ribbonKinds(g)
+
+  expect(ribbons.some(e => e.k === KIND_CIGAR_D || e.k === KIND_CIGAR_I)).toBe(
+    false,
+  )
+  expect(ribbons.some(e => e.k === KIND_BASE)).toBe(false)
+  expect(ribbons.some(e => covers(topSpan(g, e.i), 80))).toBe(false)
+  expect(ribbons.some(e => covers(topSpan(g, e.i), 25))).toBe(true)
+  expect(ribbons.some(e => covers(topSpan(g, e.i), 135))).toBe(true)
+})
+
+test('colored indels: a lone deletion still rides a full-span base', () => {
+  const g = build(false)
+  expect(ribbonKinds(g).some(e => e.k === KIND_BASE)).toBe(true)
+})
+
+test('transparent indels: a deletion meeting an insertion stays see-through', () => {
+  const g = build(true, INDEL_PAIR, 160, 150)
+  const ribbons = ribbonKinds(g)
+
+  expect(ribbons.some(e => covers(topSpan(g, e.i), 80))).toBe(false)
+})
+
+test('no location marker lands inside a deletion meeting an insertion', () => {
+  const g = build(false, INDEL_PAIR, 160, 150)
+  const markerTops = [...g.kinds]
+    .map((k, i) => ({ k, i }))
+    .filter(e => e.k === KIND_MARKER)
+    .map(e => g.bp1[e.i]! + g.base0)
+
+  expect(markerTops.length).toBeGreaterThan(0)
+  expect(markerTops.some(bp => bp > 50 && bp < 110)).toBe(false)
 })

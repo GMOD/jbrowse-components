@@ -3,11 +3,12 @@ import {
   CIGAR_I,
   CIGAR_INDEL_MASK,
   CIGAR_N,
+  CIGAR_UNALIGNED,
   cigarWalkBp1,
   cigarWalkBp2,
   cigarWalkRev1,
   cigarWalkRev2,
-  visitCigarRenderedSegments,
+  visitCigarPairedIndelSegments,
 } from '@jbrowse/cigar-utils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 
@@ -348,7 +349,7 @@ export function buildSyntenyGeometry({
   // Per-feature: did we decide to draw CIGAR detail? When true, the emit loop
   // runs the visitor over the feature's CIGAR — laying its indel quads over a
   // full-span KIND_BASE ribbon in colored mode, or replacing that ribbon with
-  // KIND_BASE_TILE match tiles in transparent mode (`isTiled`).
+  // KIND_BASE_TILE match tiles where the feature is tiled (`cigarSegmentKind`).
   const willDrawCigarArr = new Uint8Array(featureCount)
   // Per-feature: is this feature wide enough to carry a marker ladder? Decided
   // once here from the whole feature's width so the budget below and the two
@@ -371,6 +372,7 @@ export function buildSyntenyGeometry({
   // below for why markers have to be last.
   let ribbonCapacity = 0
   let markerCapacity = 0
+  let maxCigarBudget = 0
   for (let i = 0; i < featureCount; i++) {
     const cigar = parsedCigars[i]!
     const widthPx0 = Math.abs(p12_cumBp[i]! - p11_cumBp[i]!) * bpPerPxInv0
@@ -383,6 +385,7 @@ export function buildSyntenyGeometry({
     ) {
       willDrawCigarArr[i] = 1
       cigarBudget = Math.min(cigar.length, Math.ceil(widthPx0 + widthPx1) + 4)
+      maxCigarBudget = Math.max(maxCigarBudget, cigarBudget)
     }
     // Gated on the same whole-feature width the markers emit at, so a
     // whole-genome view of sub-pixel blocks doesn't reserve unused slots per
@@ -573,17 +576,13 @@ export function buildSyntenyGeometry({
     }
   }
 
-  // A CIGAR feature is "tiled": the CIGAR walk paints it one quad per match
-  // segment instead of a single full-span base. Only transparent-indels mode
-  // tiles — see cigarSegmentKind.
-  function isTiled(i: number) {
-    return matchesOnly && !!willDrawCigarArr[i]
-  }
-
   // The instance kind a rendered CIGAR segment contributes, or undefined to
-  // skip it. The two display modes are exact complements:
+  // skip it. A feature is "tiled" when the walk paints it one quad per match
+  // segment instead of a single full-span base: always in transparent-indels
+  // mode, and in colored mode when its walk has an unaligned segment, which
+  // must stay see-through (ADR-275).
   //   colored indels             -> paint indels colored; matches ride the
-  //                                  feature's own full-span base
+  //                                  full-span base, or are tiled
   //   transparent (matchesOnly)  -> paint matches as base color; indels left
   //                                  unpainted (see-through)
   // No seam results from tiling matches: KIND_BASE_HIDDEN was dropped because
@@ -596,13 +595,24 @@ export function buildSyntenyGeometry({
   // apart, so the renderers' 1px minimum footprint makes them overlap unless
   // each carries its own width in its alpha. thinWidthFade is where that is
   // spelled out.
-  function cigarSegmentKind(op: number) {
+  function cigarSegmentKind(op: number, tiled: boolean) {
     const isIndel = ((1 << op) & CIGAR_INDEL_MASK) !== 0
-    // transparent: base color on matches only (indels stay see-through).
-    // colored: indelKind per indel (undefined on matches -> the base covers).
-    const transparentKind = isIndel ? undefined : KIND_BASE_TILE
-    return matchesOnly ? transparentKind : indelKind(op)
+    return op === CIGAR_UNALIGNED
+      ? undefined
+      : isIndel
+        ? matchesOnly
+          ? undefined
+          : indelKind(op)
+        : tiled
+          ? KIND_BASE_TILE
+          : undefined
   }
+
+  const segOps = new Uint8Array(maxCigarBudget)
+  const segBp1Start = new Float64Array(maxCigarBudget)
+  const segBp1End = new Float64Array(maxCigarBudget)
+  const segBp2Start = new Float64Array(maxCigarBudget)
+  const segBp2End = new Float64Array(maxCigarBudget)
 
   // A rendered segment is off-screen when either edge lies outside its own
   // row's window: `isRibbonCulled` drops a ribbon per edge at draw time, and a
@@ -634,19 +644,15 @@ export function buildSyntenyGeometry({
     const x12 = p12_cumBp[i]!
     const x21 = p21_cumBp[i]!
     const x22 = p22_cumBp[i]!
-    // One full-span KIND_BASE trapezoid for gapless match-color coverage. Tiled
-    // features skip it — their base is laid down per match segment below so the
-    // intervening indels stay see-through.
-    if (!isTiled(i)) {
-      addRibbon(x11, x12, x22, x21, KIND_BASE, i)
-    }
     const wantMarkers = !!wantMarkersArr[i]
     if (willDrawCigarArr[i]) {
       // The walk's start corner and per-axis direction, shared with the
       // dotplot's `buildLineSegments` off the same p11..p22 lanes — a
       // reverse-strand CIGAR does not begin at the (x11, x21) corner.
       const strand = strands[i]!
-      visitCigarRenderedSegments(
+      let segmentCount = 0
+      let hasUnaligned = false
+      visitCigarPairedIndelSegments(
         parsedCigars[i]!,
         cigarWalkBp1(x11, x12, strand),
         cigarWalkBp2(x21, x22, strand),
@@ -654,29 +660,52 @@ export function buildSyntenyGeometry({
         bpPerPx1,
         cigarWalkRev1(x11, x12, strand),
         cigarWalkRev2(x21, x22, strand),
-        (resolvedOp, segBp1Start, segBp1End, segBp2Start, segBp2End) => {
-          if (
-            !segmentOffScreen(segBp1Start, segBp1End, segBp2Start, segBp2End)
-          ) {
-            // cigarSegmentKind decides which segments draw and as what (colored
-            // indels vs. base-tiled matches).
-            const kind = cigarSegmentKind(resolvedOp)
-            if (kind !== undefined) {
-              addRibbon(segBp1Start, segBp1End, segBp2End, segBp2Start, kind, i)
-            }
+        (op, bp1Start, bp1End, bp2Start, bp2End) => {
+          if (segmentCount < maxCigarBudget) {
+            segOps[segmentCount] = op
+            segBp1Start[segmentCount] = bp1Start
+            segBp1End[segmentCount] = bp1End
+            segBp2Start[segmentCount] = bp2Start
+            segBp2End[segmentCount] = bp2End
+            segmentCount++
           }
-          // Outside the cull: a marker is culled by its own hull, not by the
-          // segment's — on a crossed ribbon a tick can leave the frame where its
-          // segment stays, and vice versa.
-          if (wantMarkers) {
-            emitGridMarkers(i, segBp1Start, segBp1End, segBp2Start, segBp2End)
-          }
+          hasUnaligned ||= op === CIGAR_UNALIGNED
         },
       )
-    } else if (wantMarkers) {
-      // No CIGAR, so the ladder goes over the whole feature; the branch above
-      // ladders along the rendered segments, where the alignment is known.
-      emitGridMarkers(i, x11, x12, x21, x22)
+      // The base goes first, so a feature's indels land over its own base.
+      // A tiled feature has none: its match tiles below leave the indels and
+      // the unaligned stretches see-through.
+      const tiled = matchesOnly || hasUnaligned
+      if (!tiled) {
+        addRibbon(x11, x12, x22, x21, KIND_BASE, i)
+      }
+      for (let s = 0; s < segmentCount; s++) {
+        const op = segOps[s]!
+        const b1s = segBp1Start[s]!
+        const b1e = segBp1End[s]!
+        const b2s = segBp2Start[s]!
+        const b2e = segBp2End[s]!
+        if (!segmentOffScreen(b1s, b1e, b2s, b2e)) {
+          const kind = cigarSegmentKind(op, tiled)
+          if (kind !== undefined) {
+            addRibbon(b1s, b1e, b2e, b2s, kind, i)
+          }
+        }
+        // Outside the cull: a marker is culled by its own hull, not by the
+        // segment's — on a crossed ribbon a tick can leave the frame where its
+        // segment stays, and vice versa. An unaligned stretch has no
+        // correspondence for a tick to show.
+        if (wantMarkers && op !== CIGAR_UNALIGNED) {
+          emitGridMarkers(i, b1s, b1e, b2s, b2e)
+        }
+      }
+    } else {
+      addRibbon(x11, x12, x22, x21, KIND_BASE, i)
+      if (wantMarkers) {
+        // No CIGAR, so the ladder goes over the whole feature; the branch above
+        // ladders along the rendered segments, where the alignment is known.
+        emitGridMarkers(i, x11, x12, x21, x22)
+      }
     }
   }
 
