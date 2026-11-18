@@ -836,9 +836,11 @@ export interface ReplaceWidgetProps {
 
 Return value: the new React component.
 
-No plugin in this repo registers on it: a display that wants a dedicated feature
-details widget names one with a `featureWidgetType` getter instead. Use this
-point to replace a widget you do **not** own.
+No plugin in this repo registers on it: a track type that wants a dedicated
+feature details widget names one with `featureWidget` on its `TrackType`
+instead, and a display whose features differ from its track's overrides its
+`featureWidgetType` getter. Use this point to replace a widget you do **not**
+own.
 
 `Core-replaceWidget` fires whenever **any** widget opens, so a callback that
 does not scope itself takes over the drawer, the modal, and every feature

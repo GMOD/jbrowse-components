@@ -116,7 +116,6 @@ track entry work across view types; a track may own several, one per view type
 it supports. A display also decides:
 
 - What the track draws, and on which rendering path (see below)
-- Which widget opens on a feature click, via a `featureWidgetType` getter
 - Which regions to fetch — the view's `staticBlocks` (stable while scrolling) or
   `dynamicBlocks` (recomputed as the view moves)
 
@@ -168,8 +167,10 @@ Plugins can extend widgets. For example, `@jbrowse/plugin-alignments` extends
 - `AlignmentsFeatureWidget` - customizes the basic feature detail widget for
   alignments features
 
-A display names the one it opens with a `featureWidgetType` getter; to replace a
-widget you do _not_ own, use
+A track type names the widget a feature click opens, with `featureWidget` on its
+`TrackType`, so every display on that track opens the same one; a display
+overrides its `featureWidgetType` getter only when its features differ from its
+track's. To replace a widget you do _not_ own, use
 [`Core-replaceWidget`](/docs/developer_guides/extension_points#core-replacewidget).
 
 ## RPC methods

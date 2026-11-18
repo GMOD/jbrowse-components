@@ -91,8 +91,3 @@ has both feet in displayed regions, drawing one link per mated breakend pair
 and nothing for DEL/DUP/INV/INS or a mate off view, colored by the records'
 SV-type preset with mated records that carry no `svType` taking the breakend
 class.
-
-Separately owed: check that the link-mark track's feature details reach the
-breakend split view (`breakendSplitViewMenuItem` is wired only into the
-variant display's menus), or the arcs picture dead-ends where the records
-picture continues.
