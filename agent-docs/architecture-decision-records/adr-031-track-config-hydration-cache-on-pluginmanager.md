@@ -134,3 +134,14 @@ assumption.
   the invariant `TrackConfigWorkingCopy.test.ts` pins
   (`first.configuration === second.configuration`). A cache keyed by the frozen
   object is the shape the invariant actually asks for, and that is this one.
+
+  **A memo for read cost alone was measured on 2026-11-18 and declined.** A
+  `track.configuration` read costs about 0.9 µs and a `display.configuration`
+  read 2 to 3 µs, against 0.13 µs for a slot read off the resolved node; the
+  display resolver's `find` over the track config's `displays` is the largest
+  part. A pan frame makes 4 track resolutions per track and no display
+  resolutions, the same at 1, 5 and 10 tracks, because most `getConf` calls
+  sit in computed getters a pan does not invalidate. That is about 0.1 ms a
+  frame at 30 tracks. A pan into a new block makes about 12 track and 3
+  display resolutions per track, once. Counted in jsdom, so a read only a real
+  draw pass makes is not in it.
