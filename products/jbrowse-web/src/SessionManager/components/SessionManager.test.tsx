@@ -128,6 +128,19 @@ test('the search narrows the list by name and says how many are left', () => {
   expect(screen.getByRole('status').textContent).toBe('2 of 3')
 })
 
+test('the search reads the summary line under the name', () => {
+  setup([
+    { ...meta('work'), summary: { assemblies: ['hg38'], views: 2, tracks: 0 } },
+    { ...meta('home'), summary: { assemblies: ['mm39'], views: 1, tracks: 0 } },
+  ])
+  fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
+    target: { value: 'hg38' },
+  })
+  expect(screen.getByText('work')).toBeTruthy()
+  expect(screen.queryByText('home')).toBeNull()
+  expect(screen.getByRole('status').textContent).toBe('1 of 2')
+})
+
 test('the search reads the name, not the "(current)" the label adds', () => {
   setup([meta('open'), meta('other')])
   fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {

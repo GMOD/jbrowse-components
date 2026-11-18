@@ -82,7 +82,7 @@ const SessionManager = observer(function SessionManager({
   const rows = buildRows(session)
   const matches = searchMatcher(searchText)
   const searched = matches
-    ? rows?.filter(row => matches(buildSearchText([row.name])))
+    ? rows?.filter(row => matches(buildSearchText([row.name, row.summary])))
     : rows
   const { sortedRows, sortProps, sortResetKey } = useTableSort(
     searched ?? [],
