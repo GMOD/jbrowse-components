@@ -25,7 +25,7 @@ function cellsReading(reads: Partial<RecordFieldReads>) {
       new VcfFeature({ parser, variant: parser.parseLine(line), id: `f${i}` }),
   )
   return computeVariantCells({
-    ...analyzeVariants({ features, keepSampleLessSites: true }),
+    ...analyzeVariants({ features, keepUncalledSites: true }),
     sources: [],
     rowsField: 'sample',
     showReference: false,

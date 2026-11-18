@@ -358,9 +358,11 @@ a `recordsOnly` choice in the model belongs there.
   third amendment), and the band draws every record the filter admits, over rows
   as without (its fifth). `VariantFeatureInfo.svType` is the record's
   `svClassOf` class, set in the worker: it colors and keys the record, and an SV
-  paints after the small records so it lies over them. The worker keeps a
-  sample-less VCF's sites at genomic positions only (`keepSampleLessSites`),
-  since a site test reads called alleles.
+  paints after the small records so it lies over them. At genomic positions
+  only, the worker keeps a site no sample calls (`keepUncalledSites`), since a
+  site test reads called alleles: every such site of a sample-less VCF, and of
+  a sampled one (no GT in FORMAT, as Strelka2 and Manta somatic write, or
+  every GT `./.`) while the filter tests no site field.
 - **Hiding either band is a chip** (`BandChips`, a strip of its own under the
   band, `BAND_CHIPS_HEIGHT`, since the rows' tree, facet strip and labels draw
   over the rows' left edge): `Records ×` and `Genotypes ×` while both draw,

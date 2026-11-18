@@ -138,7 +138,9 @@ export function isSiteField(field: string) {
 /**
  * The site test the `filter` list's site fields compile to, once per fetch. A
  * site with no called allele anywhere has no cell to draw, so it fails
- * whatever they say; a monomorphic site is a real row of the file and stays.
+ * whatever they say (`analyzeVariants` keeps it for the records band where
+ * `keepUncalledSites` allows); a monomorphic site is a real row of the file
+ * and stays.
  */
 export function compileSiteFilter(
   siteFilter: readonly FieldPredicate[] | undefined,

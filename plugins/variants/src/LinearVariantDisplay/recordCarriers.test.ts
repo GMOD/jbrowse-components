@@ -110,6 +110,15 @@ test('the share is of every shown sample, no-calls included', () => {
   )
 })
 
+// a VCF whose samples carry no GT, as Strelka2 writes, or only `./.`
+test('a record no shown sample calls has no share', () => {
+  const uncalled = { carriers: 0, nonCarriers: 0, noCall: 2 }
+  expect(carrierPercent(uncalled)).toBe('')
+  expect(carrierSummary(uncalled)).toBe(
+    '0 of 2 samples; 0 non-carriers, 2 no-call',
+  )
+})
+
 // The count walks every sample, so a record whose label draws no text, past
 // the label density or with both kinds hidden, is never counted.
 test.each([

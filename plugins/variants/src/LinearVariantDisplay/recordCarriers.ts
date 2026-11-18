@@ -104,12 +104,13 @@ function sampleCount({ carriers, nonCarriers, noCall }: RecordCarriers) {
 
 /**
  * "17%" of every shown sample; "<1%" for a carrier that rounds to none, and
- * ">99%" short of every sample where it rounds to all.
+ * ">99%" short of every sample where it rounds to all. Empty while no shown
+ * sample has a call, which says nothing of who carries.
  */
 export function carrierPercent(c: RecordCarriers) {
   const samples = sampleCount(c)
   const percent = Math.round((100 * c.carriers) / samples)
-  return samples === 0
+  return c.carriers + c.nonCarriers === 0
     ? ''
     : c.carriers > 0 && percent === 0
       ? '<1%'
@@ -123,5 +124,7 @@ export function carrierSummary(c: RecordCarriers) {
   const count = (n: number) => n.toLocaleString('en-US')
   const nonCarriers = `${count(c.nonCarriers)} non-carrier${c.nonCarriers === 1 ? '' : 's'}`
   const noCall = c.noCall > 0 ? `, ${count(c.noCall)} no-call` : ''
-  return `${count(c.carriers)} of ${count(sampleCount(c))} samples (${carrierPercent(c)}); ${nonCarriers}${noCall}`
+  const percent = carrierPercent(c)
+  const share = percent ? ` (${percent})` : ''
+  return `${count(c.carriers)} of ${count(sampleCount(c))} samples${share}; ${nonCarriers}${noCall}`
 }

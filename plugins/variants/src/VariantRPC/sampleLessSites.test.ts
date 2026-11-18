@@ -2,6 +2,8 @@ import VcfParser from '@gmod/vcf'
 
 import { computeVariantCells } from '../LinearVariantDisplay/components/computeVariantCells.ts'
 import VcfFeature from '../VcfFeature/index.ts'
+import { NO_CALL_COLOR } from '../shared/constants.ts'
+import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import { analyzeVariants } from './analyzeVariants.ts'
 
 // A sites-only VCF, as ClinVar ships: no FORMAT and no sample columns.
@@ -35,7 +37,7 @@ function sitesOnly() {
 test('a sample-less VCF keeps its sites, with no cells', () => {
   const analyzed = analyzeVariants({
     features: sitesOnly(),
-    keepSampleLessSites: true,
+    keepUncalledSites: true,
   })
   const cells = computeVariantCells({
     ...analyzed,
@@ -57,18 +59,80 @@ test('columns, which draw no records band, keep dropping them', () => {
   )
 })
 
+const SAMPLE_ROWS = ['S1', 'S2'].map(name => ({
+  name,
+  sampleName: name,
+  HP: 0,
+}))
+
+function cellsOf(analyzed: ReturnType<typeof analyzeVariants>) {
+  return computeVariantCells({
+    ...analyzed,
+    sources: SAMPLE_ROWS,
+    rowsField: 'sample',
+    showReference: false,
+  })
+}
+
+// Strelka2 and Manta somatic write NORMAL and TUMOR with no GT in FORMAT
+test('a sampled VCF with no GT keeps its records, with no cells', () => {
+  const analyzed = analyzeVariants({
+    features: twoSamples([
+      'ctgA\t100\tsnv1\tA\tG\t.\tPASS\tSOMATIC\tDP:FDP\t30:0\t40:1',
+      'ctgA\t200\tsv1\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=900\tPR\t10,0\t8,6',
+    ]),
+    keepUncalledSites: true,
+  })
+  const cells = cellsOf(analyzed)
+  expect(cells.featureInfo.map(i => i.name)).toEqual(['snv1', 'sv1'])
+  expect(cells.numCells).toBe(0)
+})
+
+// LUMPY without svtyper writes `./.` for every sample
+test('a site every sample no-calls keeps its record and its no-call cells', () => {
+  const analyzed = analyzeVariants({
+    features: twoSamples([
+      'ctgA\t200\tsv1\tN\t<DEL>\t.\t.\tSVTYPE=DEL;END=900\tGT:SU\t./.:3\t./.:0',
+    ]),
+    keepUncalledSites: true,
+  })
+  const cells = cellsOf(analyzed)
+  expect(cells.featureInfo.map(i => i.name)).toEqual(['sv1'])
+  expect([...cells.cellColors]).toEqual([
+    getCachedABGR(NO_CALL_COLOR),
+    getCachedABGR(NO_CALL_COLOR),
+  ])
+})
+
+test('columns keep dropping a sampled site no sample calls', () => {
+  const analyzed = analyzeVariants({
+    features: twoSamples([
+      'ctgA\t100\trs1\tA\tG\t.\t.\t.\tGT\t0/1\t0/0',
+      'ctgA\t200\trs2\tC\tT\t.\t.\t.\tGT\t./.\t./.',
+      'ctgA\t300\trs3\tC\tT\t.\t.\t.\tDP\t5\t6',
+    ]),
+  })
+  expect(analyzed.filteredVariants.map(v => v.feature.get('name'))).toEqual([
+    'rs1',
+  ])
+})
+
 // `genotypes.show` off asks for no sample: the worker reads the file as one
 // with no samples, so a site no sample calls stays, as on a sites-only VCF.
-test('reading no genotypes keeps a sampled VCF site no sample calls', () => {
+test('a sampled VCF site no sample calls stays, read or not', () => {
   const features = twoSamples([
     'ctgA\t100\trs1\tA\tG\t.\t.\t.\tGT\t0/1\t0/0',
     'ctgA\t200\trs2\tC\tT\t.\t.\t.\tGT\t./.\t./.',
   ])
-  const read = analyzeVariants({ features, keepSampleLessSites: true })
-  expect(read.filteredVariants.map(v => v.feature.get('name'))).toEqual(['rs1'])
+  const read = analyzeVariants({ features, keepUncalledSites: true })
+  expect(read.filteredVariants.map(v => v.feature.get('name'))).toEqual([
+    'rs1',
+    'rs2',
+  ])
+  expect(read.sampleNames).toEqual(['S1', 'S2'])
   const unread = analyzeVariants({
     features,
-    keepSampleLessSites: true,
+    keepUncalledSites: true,
     readGenotypes: false,
   })
   expect(unread.filteredVariants.map(v => v.feature.get('name'))).toEqual([
@@ -86,7 +150,7 @@ test('a site filter keeps a sample-less VCF site', () => {
   const analyzed = analyzeVariants({
     features: sitesOnly(),
     siteFilter: MAF_FLOOR,
-    keepSampleLessSites: true,
+    keepUncalledSites: true,
   })
   expect(analyzed.filteredVariants.map(v => v.feature.get('name'))).toEqual([
     'rs1',
@@ -103,7 +167,7 @@ test('reading no genotypes tests no site filter', () => {
     analyzeVariants({
       features,
       siteFilter: MAF_FLOOR,
-      keepSampleLessSites: true,
+      keepUncalledSites: true,
       readGenotypes,
     }).filteredVariants.map(v => v.feature.get('name'))
   expect(names(true)).toEqual(['rs1'])
@@ -119,7 +183,7 @@ test('a site filter drops a sampled VCF site no sample calls', () => {
       'ctgA\t200\trs2\tC\tT\t.\t.\t.\tGT\t./.\t./.',
     ]),
     siteFilter: MAF_FLOOR,
-    keepSampleLessSites: true,
+    keepUncalledSites: true,
   })
   expect(analyzed.filteredVariants.map(v => v.feature.get('name'))).toEqual([
     'rs1',

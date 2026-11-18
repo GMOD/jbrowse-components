@@ -170,8 +170,10 @@ export default function configSchemaFactory() {
        * `minorAlleleFrequency`, the share of its called alleles the second
        * most frequent one makes up, and `missingness`, the share of its
        * alleles uncalled. `[{ field: "minorAlleleFrequency", gte: 0.05 }]`
-       * drops the rare variants; a site with no called allele draws nothing
-       * whatever the list says.
+       * drops the rare variants. A site no sample calls draws its record, and
+       * a no-call cell where a sample writes `./.`; a `minorAlleleFrequency`
+       * or `missingness` entry drops it from a VCF with samples, and the
+       * columns layout always does.
        */
       filter: fieldPredicateList(),
       /**

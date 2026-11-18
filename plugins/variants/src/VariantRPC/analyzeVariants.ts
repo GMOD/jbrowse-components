@@ -12,6 +12,7 @@ import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import {
   compileSiteFilter,
   filterVariant,
+  isSiteField,
   summarizeAlleleCounts,
 } from '../shared/minorAlleleFrequencyUtils.ts'
 import { featureHasConsequence } from '../shared/variantConsequence.ts'
@@ -194,18 +195,20 @@ export function analyzeVariants({
   features,
   siteFilter,
   filterChain,
-  keepSampleLessSites = false,
+  keepUncalledSites = false,
   readGenotypes = true,
   report,
 }: {
   features: Feature[]
   siteFilter?: readonly FieldPredicate[]
   filterChain?: SerializableFilterChain
-  // Keep a site of a VCF with no samples, which calls no allele and so fails
-  // every site test: at genomic positions the records band draws it.
-  keepSampleLessSites?: boolean
+  // Keep a site no sample calls, which fails every site test, so at genomic
+  // positions the records band draws it: a VCF with no samples keeps every
+  // such site, a sampled one (no GT in FORMAT, or every GT `./.`) only while
+  // no site field is tested.
+  keepUncalledSites?: boolean
   // False reads every site as a VCF with no samples reads it: no genotype is
-  // parsed and, with `keepSampleLessSites`, every site the filters admit
+  // parsed and, with `keepUncalledSites`, every site the filters admit
   // stays. Off when no sample is asked for, so `genotypes.show` off draws
   // what a sites-only VCF draws.
   readGenotypes?: boolean
@@ -219,11 +222,14 @@ export function analyzeVariants({
 
   const testedSiteFilter = readGenotypes ? siteFilter : undefined
   const passesSite = compileSiteFilter(testedSiteFilter)
+  const testsSiteField =
+    testedSiteFilter !== undefined &&
+    testedSiteFilter.some(p => isSiteField(p.field))
   // a site no sample calls goes on to the walk, which tells a sites-only VCF's
   // record from a sampled one's no-call
   const passesFirstCount = (summary: AlleleSummary) =>
     passesSite(summary) ||
-    (keepSampleLessSites && summary.calledAlleleCount === 0)
+    (keepUncalledSites && summary.calledAlleleCount === 0)
   const passing =
     testedSiteFilter && testedSiteFilter.length > 0
       ? features.filter(
@@ -408,12 +414,14 @@ export function analyzeVariants({
 
     const summary = summarizeAlleleCounts(alleleCounts)
     const { mostFrequentAlt } = summary
-    const sampleLess =
-      keepSampleLessSites &&
-      numSamples === 0 &&
-      record !== undefined &&
-      Object.keys(record).length === 0
-    if (sampleLess || passesSite(summary)) {
+    const keptUncalled =
+      keepUncalledSites &&
+      summary.calledAlleleCount === 0 &&
+      (!testsSiteField ||
+        (numSamples === 0 &&
+          record !== undefined &&
+          Object.keys(record).length === 0))
+    if (keptUncalled || passesSite(summary)) {
       const featureId = feature.id()
       filteredVariants.push({ feature, mostFrequentAlt })
       if (codes) {
