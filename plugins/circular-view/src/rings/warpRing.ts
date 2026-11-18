@@ -1,3 +1,5 @@
+import { slabCoverage } from '@jbrowse/render-core/shaders/antialias'
+
 const TWO_PI = 2 * Math.PI
 
 /**
@@ -72,7 +74,7 @@ export function warpRing(out: Pixels, strip: Pixels, ring: Annulus) {
       }
       const dx = x + 0.5 - cx
       const r = Math.sqrt(dx * dx + dy2)
-      const coverage = rimCoverage(outer - r) - rimCoverage(inner - r)
+      const coverage = slabCoverage(outer - r, inner - r, 1)
       if (coverage <= 0) {
         continue
       }
@@ -120,14 +122,6 @@ export function warpRing(out: Pixels, strip: Pixels, ring: Annulus) {
       }
     }
   }
-}
-
-/**
- * Coverage of a disc for a pixel whose centre is `signedInkPx` inside its rim,
- * over the one-pixel ramp the shader's `edgeCoverage` takes.
- */
-function rimCoverage(signedInkPx: number) {
-  return Math.min(1, Math.max(0, signedInkPx + 0.5))
 }
 
 /** An axis-aligned run of a `Pixels`, in its px. */

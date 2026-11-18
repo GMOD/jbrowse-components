@@ -235,8 +235,7 @@ test('a thin ring on a wide canvas puts a sliver of its bounding square', () => 
   expect(area / 4000 ** 2).toBeLessThan(0.12)
 })
 
-// A half-pixel band straddling a pixel centre covers half that pixel. The
-// product of the two rims' ramps put 0.75 * 0.75 = 0.5625 of it there.
+// A half-pixel band straddling a pixel centre covers half that pixel.
 test('a ring under a pixel wide inks its own width', () => {
   const strip = {
     data: new Uint8ClampedArray(64 * 8 * 4).fill(255),

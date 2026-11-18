@@ -143,7 +143,6 @@ is no longer shared with anything.
 | `pinchedParam` | tests only — `ribbonBand.test.ts` |
 | `polarPoint` | tests only — `ribbonBand.test.ts` |
 | `rampScaleType` | tests only — `markRamp.test.ts` |
-| `slabCoverage` | tests only — `barCutCoverage.test.ts` |
 | `slabVertexYPx` | tests only — `barCutCoverage.test.ts` |
 | `strokeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `strokeCoverage.test.ts` |
 | `wideCircleHullPoint` | tests only — `arcHull.test.ts` |
