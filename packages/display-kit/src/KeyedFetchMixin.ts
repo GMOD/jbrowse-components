@@ -45,8 +45,9 @@ export default function KeyedFetchMixin() {
       /**
        * #volatile
        * `currentFetchKey` as it stood when the held data was committed.
-       * Written only by `commitFetchResult` and cleared by `reload`; the data
-       * itself is the display's and stays on screen under the overlay.
+       * Written only by `commitFetchResult` and cleared by `reload`, where
+       * the data itself is the display's and stays on screen under the
+       * overlay, and by `GlobalFetchMixin.clearForDisplayedRegions`.
        */
       loadedFetchKey: undefined as FetchKey | undefined,
     }))

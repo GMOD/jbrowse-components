@@ -491,6 +491,15 @@ export function stateModelFactory(
           self.fetchedFeatures = { anchor, features, ops, lanes, deletions }
           observeRibbonFeatures(features)
         },
+        /**
+         * #action
+         * `GlobalFetchMixin`'s hook: the ortholog records were fetched for
+         * the old displayed regions. The lane fetches stay, each held under
+         * the key its own window stamps.
+         */
+        clearDisplaySpecificData() {
+          self.fetchedFeatures = undefined
+        },
         /** #action */
         beginDescribingLanes(names: string[]) {
           self.describedLanes = new Set([...self.describedLanes, ...names])

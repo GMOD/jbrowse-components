@@ -61,6 +61,14 @@ change (`ClearBlockingStateOnViewportChange` per-region,
 comparative family has the gate and not the lapse, on purpose; the reason is in
 `installComparativeFetchAutorun`'s docstring.
 
+**A displayed-regions change drops a global display's payload.** A triangle
+matrix is placed from its `originBp`, a position along the displayed regions,
+so held past the change it draws on the wrong sequence. `installGlobalFetchAutorun`
+runs `GlobalFetchMixin.clearForDisplayedRegions` on that change: it supersedes
+the in-flight fetch, clears `loadedFetchKey` and the first paint, and calls the
+`clearDisplaySpecificData` hook, which `TriangleMatrixMixin` and multi-way
+synteny fill. A pan or zoom within the same regions keeps the last frame up.
+
 This family has no `prepare()` to ask, so the retry classification is: `needed`
 empty is the decline, and reaching `FetchMixin.runFetch` is the fetch. Every
 `fetchNeeded` override gets there in its synchronous prefix; an override that

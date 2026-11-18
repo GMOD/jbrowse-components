@@ -54,10 +54,16 @@ const TestView = types
     // above deliberately: the durability rule is "a viewport change", not "any
     // trigger"
     visibleRegions: [{ key: 'chr1:0-100' }],
+    displayedRegions: [{ refName: 'chr1' }],
   }))
   .actions(self => ({
     setWidth(n: number) {
       self.width = n
+    },
+    showRegion(refName: string) {
+      self.displayedRegions = [{ refName }]
+      self.dynamicBlocks = { contentBlocks: [{ key: `${refName}:0-100` }] }
+      self.visibleRegions = [{ key: `${refName}:0-100` }]
     },
     setInitialized(flag: boolean) {
       self.initialized = flag
@@ -108,6 +114,8 @@ const TestDisplay = types
     // `GlobalFetchMixin`'s: what `commitFetchResult` stamps and `dataCurrent`
     // compares against
     loadedFetchKey: undefined as FetchKey | undefined,
+    // the payload a display holds, which `clearForDisplayedRegions` drops
+    held: undefined as unknown,
   }))
   .volatile(self => ({
     // `FetchMixin`'s rotation, lent to the skeleton — which is also what a test
@@ -160,6 +168,15 @@ const TestDisplay = types
   .actions(self => ({
     // `BaseDisplay`'s no-op default, which the installer's hover clear calls
     clearHoveredFeature() {},
+    // `GlobalFetchMixin`'s, minus the canvas-drawn flag this fixture lacks
+    clearForDisplayedRegions() {
+      self.fetchRotation.cancel()
+      self.loadedFetchKey = undefined
+      self.held = undefined
+    },
+    hold(result: unknown) {
+      self.held = result
+    },
     // `FetchMixin`'s begin/end/error bookkeeping, cut down to what the skeleton
     // calls of it. Cancellation and loading-flag mechanics are that mixin's own
     // tests' business, not this file's.
@@ -335,6 +352,80 @@ describe('the phases', () => {
     release('data')
     await settle()
     expect(committed).toEqual([])
+  })
+})
+
+// A held payload is placed along the displayed regions, so a change to them
+// drops it at once rather than drawing it on the new sequence through the
+// debounce, and a fetch issued for the old regions lands nothing.
+describe('a displayed-regions change', () => {
+  async function setupHeld() {
+    const view = TestView.create({ display: {} })
+    const { display } = view
+    const releases: ((value: string) => void)[] = []
+    installGlobalFetchAutorun(display, {
+      prepare: () => ({ refName: view.displayedRegions[0]!.refName }),
+      run: () =>
+        new Promise<string>(resolve => {
+          releases.push(resolve)
+        }),
+      commit: result => {
+        display.hold(result)
+      },
+      delay: DELAY,
+      name: 'TestHeldFetch',
+    })
+    await Promise.resolve()
+    return { view, display, releases }
+  }
+
+  it('drops the held payload before the next fetch resolves', async () => {
+    const { view, display, releases } = await setupHeld()
+    releases.shift()!('chr1 data')
+    await settle()
+    expect(display.held).toBe('chr1 data')
+    expect(display.dataCurrent).toBe(true)
+
+    view.showRegion('chr2')
+    expect(display.held).toBeUndefined()
+    expect(display.loadedFetchKey).toBeUndefined()
+
+    await settle()
+    expect(releases).toHaveLength(1)
+    expect(display.held).toBeUndefined()
+    releases.shift()!('chr2 data')
+    await settle()
+    expect(display.held).toBe('chr2 data')
+    expect(display.dataCurrent).toBe(true)
+  })
+
+  it('lands nothing from a fetch issued for the old regions', async () => {
+    const { view, display, releases } = await setupHeld()
+    expect(releases).toHaveLength(1)
+
+    view.showRegion('chr2')
+    releases.shift()!('chr1 data')
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(display.held).toBeUndefined()
+    expect(display.loadedFetchKey).toBeUndefined()
+    expect(display.committedBytes).toEqual([])
+
+    await settle()
+    releases.shift()!('chr2 data')
+    await settle()
+    expect(display.held).toBe('chr2 data')
+    expect(display.committedBytes).toHaveLength(1)
+  })
+
+  it('keeps the held payload through a viewport move on the same regions', async () => {
+    const { view, display, releases } = await setupHeld()
+    releases.shift()!('chr1 data')
+    await settle()
+
+    view.setBlocks(['chr1:100-200'])
+    await settle()
+    expect(display.held).toBe('chr1 data')
   })
 })
 

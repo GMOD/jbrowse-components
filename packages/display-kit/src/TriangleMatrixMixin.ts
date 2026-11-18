@@ -203,6 +203,14 @@ export default function TriangleMatrixMixin<D extends TrianglePayload>() {
       },
       /**
        * #action
+       * `GlobalFetchMixin`'s hook: the matrix is placed from its `originBp`,
+       * a position along the displayed regions, so it goes when they change.
+       */
+      clearDisplaySpecificData() {
+        self.rpcData = null
+      },
+      /**
+       * #action
        */
       setHeightMode(mode: TriangleHeightMode) {
         setConf(hostOf(self), 'heightMode', mode)

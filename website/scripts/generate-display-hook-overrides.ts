@@ -163,9 +163,12 @@ const HOOKS: Hook[] = [
   },
   {
     name: 'clearDisplaySpecificData',
-    owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
+    owner: [
+      'packages/display-kit/src/MultiRegionDisplayMixin.ts',
+      'packages/display-kit/src/GlobalFetchMixin.ts',
+    ],
     ifNotOverridden:
-      'a no-op, so `clearAllRpcData` drops `loadedRegions` and nothing else — the payload store keeps its entries and the refetch overwrites them region by region, which is what a display that wants stale data drawn under the refetch (ADR-006) is choosing, and what a display holding a second store has silently not cleared',
+      'a no-op, so `clearAllRpcData` drops `loadedRegions` and nothing else — the payload store keeps its entries and the refetch overwrites them region by region, which is what a display that wants stale data drawn under the refetch (ADR-006) is choosing, and what a display holding a second store has silently not cleared. On the global family `clearForDisplayedRegions` drops only the key and the first paint, so the held payload goes on drawing against the new displayed regions until their fetch lands',
   },
   {
     name: 'clearSettingsBakedData',

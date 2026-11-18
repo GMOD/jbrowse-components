@@ -135,7 +135,8 @@ export default function GlobalFetchMixin() {
        * The display's visual state, mapped by `foundationDisplayPhase`. This
        * family's staleness argument is the constant `true`: the last frame is
        * genomic and draws correctly under the live view, so a pan or zoom shows
-       * no scrim beyond the `isLoading` window.
+       * no scrim beyond the `isLoading` window. A displayed-regions change
+       * drops the frame instead (`clearForDisplayedRegions`).
        */
       get displayPhase(): DisplayPhase {
         return foundationDisplayPhase(
@@ -143,6 +144,32 @@ export default function GlobalFetchMixin() {
           () => true,
           () => self.host.effectiveBodyMounted,
         )
+      },
+    }))
+    .actions(() => ({
+      /**
+       * #action
+       * Overridable hook (no-op base): drop the payload this display holds
+       * for its displayed regions. Called by `clearForDisplayedRegions`.
+       */
+      clearDisplaySpecificData() {},
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * `installGlobalFetchAutorun`'s reset on a displayed-regions change:
+       * supersede the in-flight fetch, so its landing commits nothing, and
+       * drop the held payload, its key and the canvas-drawn flag, so the
+       * display reads loading until the new regions' fetch lands. A payload
+       * is placed along the displayed regions, so held past the change it
+       * would draw on the wrong sequence. A standing user cancel is left to
+       * the viewport-change lapse.
+       */
+      clearForDisplayedRegions() {
+        self.stopActiveFetch()
+        self.loadedFetchKey = undefined
+        self.clearDisplaySpecificData()
+        self.resetCanvasDrawn()
       },
     }))
 }

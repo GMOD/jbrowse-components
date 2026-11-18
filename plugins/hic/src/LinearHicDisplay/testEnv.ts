@@ -5,6 +5,7 @@ import configSchemaF from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
+import type { Region } from '@jbrowse/core/util'
 import type { TestAdapterSpec } from '@jbrowse/display-test-utils'
 
 // The shared display harness wired for the Hi-C display. HiC's whole fetch chain
@@ -13,9 +14,11 @@ import type { TestAdapterSpec } from '@jbrowse/display-test-utils'
 // `afterAttach` and reaches no containing view.
 export function createTestEnvironment({
   adapter,
-}: { adapter?: TestAdapterSpec } = {}) {
+  assemblyRegions,
+}: { adapter?: TestAdapterSpec; assemblyRegions?: Region[] } = {}) {
   return createDisplayTestEnvironment<LinearHicDisplayModel>({
     adapter,
+    assemblyRegions,
     trackType: 'HicTrack',
     displayName: 'LinearHicDisplay',
     configSchema: () => configSchemaF(),

@@ -1,5 +1,4 @@
 import { SimpleFeature } from '@jbrowse/core/util'
-import { when } from 'mobx'
 
 import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
 import { createDisplayWithSession } from './testEnv.ts'
@@ -189,7 +188,7 @@ test('Flip lane holds on its anchor, lapses on another, and is back on return', 
   expect(flippedOf(display, C)).toBe(true)
 })
 
-test('a fetch landing after the navigation is labelled with the anchor it asked on', async () => {
+test('a fetch landing after the navigation commits nothing', async () => {
   const landings: ((features: SimpleFeature[]) => void)[] = []
   const { display } = createDisplayWithSession({
     trackAssemblyNames: [A, B, C],
@@ -208,7 +207,8 @@ test('a fetch landing after the navigation is labelled with the anchor it asked 
       record(`aC${i}`, `g${i}`, on(A, s), onC(s)),
     ),
   )
-  await when(() => display.fetchedFeatures !== undefined, { timeout: 5000 })
+  await new Promise(r => setTimeout(r, 50))
+  expect(display.fetchedFeatures).toBeUndefined()
   expect(display.features).toBeUndefined()
   expect(display.laneDecisions.size).toBe(0)
 })

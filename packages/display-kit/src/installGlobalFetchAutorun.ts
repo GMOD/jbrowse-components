@@ -49,6 +49,7 @@ export interface GlobalFetchAutorunHost
   host: { initialized: boolean }
   scrollTop?: number
   clearHoveredFeature: () => void
+  clearForDisplayedRegions: () => void
 }
 
 /** what one issued fetch was judged against, captured in `prepare` */
@@ -115,6 +116,10 @@ function globalFetchPlan<TArgs, TResult>(
  * - **heldAnswers**: `currentFetchKey` against the committed stamp, under
  *   `heldDataAnswers`, the same rule the per-region plan applies.
  *
+ * A displayed-regions change runs `clearForDisplayedRegions`: the held
+ * payload is placed along the displayed regions, so it cannot stand in for
+ * the new ones the way it does through a pan or zoom.
+ *
  * `rpcProps()` must return only user-controlled settings, never fetched data:
  * here a fetch-derived value thrashes on the fetch cadence rather than
  * freezing, so no loop guard catches it (FETCH_KEYS.md, "rpcProps() loop
@@ -143,6 +148,22 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
     ...globalFetchPlan(self, opts),
     ...fetchMixinLifecycle(self),
   })
+
+  // Synchronous, so it always runs before the debounced fetch re-runs and
+  // supersedes only a fetch issued for the old regions. The first ready run
+  // only records the regions: nothing held yet was fetched for others.
+  let shownRegions: unknown
+  autorunOnReadyView(
+    self,
+    view => {
+      const regions = view.displayedRegions
+      if (shownRegions !== undefined && shownRegions !== regions) {
+        self.clearForDisplayedRegions()
+      }
+      shownRegions = regions
+    },
+    { name: 'ClearHeldDataOnDisplayedRegionsChange' },
+  )
 
   // A user cancel lapses when the view moves. The flag is read untracked, or
   // setting it would fire this and wipe it.
