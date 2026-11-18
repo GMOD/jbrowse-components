@@ -265,6 +265,7 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
           </Typography>
         }
         exportName="samples"
+        testId="variant-samples-table"
         rows={filteredRows}
         columns={shownColumns}
       />

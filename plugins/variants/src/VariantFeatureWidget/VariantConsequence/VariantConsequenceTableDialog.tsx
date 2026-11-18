@@ -43,6 +43,7 @@ const VariantConsequenceTableDialog = observer(
         <DialogContent>
           <DetailTable
             exportName={title}
+            testId="variant-consequence-table"
             rows={rows}
             columns={columns}
             maxHeight={600}

@@ -22,6 +22,7 @@ const VariantAlleleFrequencyTable = observer(
       <DetailTable
         title={title}
         exportName="allele-frequencies"
+        testId="variant-allele-table"
         rows={frequencies}
         columns={columns}
       />

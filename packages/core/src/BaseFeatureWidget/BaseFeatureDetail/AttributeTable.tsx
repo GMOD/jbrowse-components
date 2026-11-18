@@ -39,6 +39,7 @@ const AttributeTable = observer(function AttributeTable({
     <DetailTable
       title={<FieldName prefix={prefix} name={name} />}
       exportName={[...(prefix ?? []), name].join('.')}
+      testId="attribute-table"
       rows={rows}
       columns={columns}
     />

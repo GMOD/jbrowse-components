@@ -98,6 +98,7 @@ const VariantGenotypeFrequencyTable = observer(
       <DetailTable
         title={title}
         exportName="genotype-frequencies"
+        testId="variant-genotype-table"
         rows={genotypeRows}
         columns={columns}
         isRowSelected={row => selectedGenotypes !== null && isSelected(row)}
