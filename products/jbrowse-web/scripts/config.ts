@@ -27,10 +27,10 @@ export default function webpackConfig(config: Configuration) {
   genBuildInfo()
   return {
     ...config,
-    optimization: {
-      ...config.optimization,
-      splitChunks: { chunks: 'all' },
-    },
+    optimization:
+      config.mode === 'production'
+        ? { ...config.optimization, splitChunks: { chunks: 'all' } }
+        : config.optimization,
     plugins: [
       ...(config.plugins ?? []),
       new BootChunksPlugin(bootChunkOrigins, {
