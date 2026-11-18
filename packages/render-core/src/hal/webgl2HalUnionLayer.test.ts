@@ -128,7 +128,7 @@ function twoBlocks(hal: WebGL2Hal) {
   hal.endFrame()
 }
 
-test('a union pass draws into its layer and composites it under each block', async () => {
+test('a union pass clears its layer at its first draw of a frame, draws into it and composites it under each block', async () => {
   const { hal, log } = await halWith({ op: 'union' })
   twoBlocks(hal)
   log.length = 0
@@ -136,8 +136,6 @@ test('a union pass draws into its layer and composites it under each block', asy
 
   expect(log).toEqual([
     'disable SCISSOR_TEST',
-    'bind layer1',
-    'clear',
     'bind canvas',
     'viewport 0,0,160,40',
     'clear',
@@ -145,6 +143,10 @@ test('a union pass draws into its layer and composites it under each block', asy
     'scissor 0,0,101,40',
     'viewport 0,0,101,40',
     'bind layer1',
+    'disable SCISSOR_TEST',
+    'clear',
+    'enable SCISSOR_TEST',
+    'scissor 0,0,101,40',
     'blend MAX',
     'draw pass',
     'bind canvas',
@@ -173,6 +175,37 @@ test('a union pass draws into its layer and composites it under each block', asy
     'viewport 100,0,60,40',
     'disable SCISSOR_TEST',
     'viewport 0,0,160,40',
+  ])
+})
+
+test('a new layer is cleared before its first draw', async () => {
+  const { hal, log } = await halWith({ op: 'union' })
+  twoBlocks(hal)
+
+  expect(
+    log.slice(log.indexOf('bind layer1'), log.indexOf('draw pass')),
+  ).toEqual([
+    'bind layer1',
+    'bind canvas',
+    'bind layer1',
+    'disable SCISSOR_TEST',
+    'clear',
+    'enable SCISSOR_TEST',
+    'scissor 0,0,101,40',
+    'blend MAX',
+  ])
+})
+
+test('a frame the union pass does not draw in clears no layer', async () => {
+  const { hal, log } = await halWith({ op: 'union' })
+  twoBlocks(hal)
+  log.length = 0
+  hal.beginFrame(0, 0, 0, 0)
+  hal.endFrame()
+
+  expect(log.filter(l => l.startsWith('bind') || l === 'clear')).toEqual([
+    'bind canvas',
+    'clear',
   ])
 })
 

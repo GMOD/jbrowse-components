@@ -572,14 +572,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.disable(gl.SCISSOR_TEST)
     this.scissorRect = null
     this.viewportRect = null
-    if (this.layers.size > 0) {
-      gl.clearColor(0, 0, 0, 0)
-      for (const layer of this.layers.values()) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, layer.fbo)
-        gl.clear(gl.COLOR_BUFFER_BIT)
-      }
-      this.composited.clear()
-    }
+    this.composited.clear()
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
     gl.clearColor(clearR, clearG, clearB, clearA)
@@ -650,9 +643,10 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     if (isUnion(pass.descriptor)) {
       const layer = this.layerOf(passId)
       gl.bindFramebuffer(gl.FRAMEBUFFER, layer.fbo)
+      const done = this.composited.get(passId) ?? this.clearLayer(passId)
       this.draw(passId, pass, regionBuf.vbo, vertices, regionBuf.count)
       gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-      this.composite(passId, layer)
+      this.composite(passId, layer, done)
     } else {
       this.draw(passId, pass, regionBuf.vbo, vertices, regionBuf.count)
     }
@@ -694,14 +688,23 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.bindVertexArray(null)
   }
 
+  private clearLayer(passId: string) {
+    const gl = this.gl
+    const done: PxRect[] = []
+    this.composited.set(passId, done)
+    gl.disable(gl.SCISSOR_TEST)
+    gl.clearColor(0, 0, 0, 0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    this.applyScissor(this.scissorRect)
+    return done
+  }
+
   // The layer under the caller's scissor, less what an earlier draw of the
   // pass composited, then the caller's clip back. The layer's texture leaves
   // its unit after, so no later draw into the layer samples its own target.
-  private composite(passId: string, layer: GlLayer) {
+  private composite(passId: string, layer: GlLayer, done: PxRect[]) {
     const gl = this.gl
     const overId = layerOverId(passId)
-    const done = this.composited.get(passId) ?? []
-    this.composited.set(passId, done)
     const over = uncomposited(
       this.scissorRect ?? { x: 0, y: 0, w: layer.width, h: layer.height },
       done,
