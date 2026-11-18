@@ -6,9 +6,11 @@ export const HEADER_HEIGHT = 35
 export const CHECKBOX_WIDTH = 48
 export const DEFAULT_COL_WIDTH = 100
 
+const CHECKBOX_ICON_SIZE = '1.15rem'
+
 export const checkboxSx = {
   padding: 0,
-  '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
+  '& .MuiSvgIcon-root': { fontSize: CHECKBOX_ICON_SIZE },
 }
 
 export const useTableStyles = makeStyles()(theme => {
@@ -45,6 +47,9 @@ export const useTableStyles = makeStyles()(theme => {
       lineHeight: 0,
       borderBottom: border,
       boxSizing: 'border-box',
+    },
+    rowCheckbox: {
+      '& svg': { width: CHECKBOX_ICON_SIZE, height: CHECKBOX_ICON_SIZE },
     },
     headerCell: {
       height: HEADER_HEIGHT,

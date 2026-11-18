@@ -1,5 +1,7 @@
 import { transaction } from 'mobx'
 
+import { isUnsupported } from '../HierarchicalTrackSelectorWidget/util.ts'
+
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 
 /**
@@ -45,10 +47,10 @@ export function setTracksSelected(
 }
 
 /**
- * Derives the current selection state for the table grid and returns the
- * toggle handlers for the select-all and per-row checkboxes. In shopping-cart
- * mode "selected" means present in the selection set; otherwise it means the
- * track is shown on the view.
+ * Derives the select-all checkbox's state and toggle. In shopping-cart mode
+ * "selected" means present in the selection set; otherwise it means the track
+ * is shown on the view. A placeholder track that cannot be shown is never
+ * selected.
  */
 export function getRowSelectionState({
   model,
@@ -61,34 +63,24 @@ export function getRowSelectionState({
   useShoppingCart: boolean
   shownTrackIds: Set<string>
   selectionSet: Set<string>
-  filteredRows: { id: string }[]
+  filteredRows: { id: string; name: string }[]
 }) {
   const selectedIds = useShoppingCart ? selectionSet : shownTrackIds
+  const rows = filteredRows.filter(row => !isUnsupported(row.name))
   const allSelected =
-    filteredRows.length > 0 &&
-    filteredRows.every(row => selectedIds.has(row.id))
-  const someSelected =
-    !allSelected && filteredRows.some(row => selectedIds.has(row.id))
+    rows.length > 0 && rows.every(row => selectedIds.has(row.id))
+  const someSelected = !allSelected && rows.some(row => selectedIds.has(row.id))
 
   return {
-    selectedIds,
     allSelected,
     someSelected,
     toggleAll: () => {
-      // allSelected implies every filtered row is selected, so deselect all;
-      // otherwise select the rows that aren't yet selected
-      const ids = allSelected
-        ? filteredRows.map(row => row.id)
-        : filteredRows
-            .filter(row => !selectedIds.has(row.id))
-            .map(row => row.id)
-      setTracksSelected(model, ids, !allSelected, useShoppingCart)
-    },
-    toggleRow: (rowId: string) => {
       setTracksSelected(
         model,
-        [rowId],
-        !selectedIds.has(rowId),
+        rows
+          .filter(row => allSelected || !selectedIds.has(row.id))
+          .map(row => row.id),
+        !allSelected,
         useShoppingCart,
       )
     },

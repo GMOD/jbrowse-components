@@ -80,14 +80,13 @@ const TrackTableGrid = observer(function TrackTableGrid({
       id => columnFloor(id, available),
     ),
   )
-  const { selectedIds, allSelected, someSelected, toggleAll, toggleRow } =
-    getRowSelectionState({
-      model,
-      useShoppingCart,
-      shownTrackIds: model.shownTrackIds,
-      selectionSet: model.selectionSet,
-      filteredRows: sortedRows,
-    })
+  const { allSelected, someSelected, toggleAll } = getRowSelectionState({
+    model,
+    useShoppingCart,
+    shownTrackIds: model.shownTrackIds,
+    selectionSet: model.selectionSet,
+    filteredRows: sortedRows,
+  })
 
   return (
     <div ref={parentRef} className={classes.root}>
@@ -140,10 +139,10 @@ const TrackTableGrid = observer(function TrackTableGrid({
             return (
               <TrackTableRow
                 key={row.id}
+                model={model}
+                table={table}
                 row={row}
                 columns={columns}
-                selected={selectedIds.has(row.id)}
-                onToggle={toggleRow}
               />
             )
           })}

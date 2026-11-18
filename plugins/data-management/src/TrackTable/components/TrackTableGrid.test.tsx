@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
@@ -9,10 +11,36 @@ import { trackTableModelFactory } from '../trackTableModel.ts'
 import TrackTableGrid from './TrackTableGrid.tsx'
 import { getTableColumns } from './getTableColumns.tsx'
 
+import type * as CheckboxLiteModule from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { TrackTableModel } from '../trackTableModel.ts'
+import type { createElement } from 'react'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+const mockCheckboxRender = jest.fn<undefined, [string | undefined]>()
+jest.mock(
+  '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx',
+  () => {
+    const { createElement: create } = jest.requireActual<{
+      createElement: typeof createElement
+    }>('react')
+    const { default: CheckboxLite } = jest.requireActual<
+      typeof CheckboxLiteModule
+    >('../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx')
+    return {
+      __esModule: true,
+      default: (props: React.ComponentProps<typeof CheckboxLite>) => {
+        mockCheckboxRender(props.label)
+        return create(CheckboxLite, props)
+      },
+    }
+  },
+)
+
+function checkboxRenders(label: string) {
+  return mockCheckboxRender.mock.calls.filter(([l]) => l === label).length
+}
 
 // jsdom doesn't implement Element.scrollTo, which useVirtualRows calls when the
 // search, filters or sort change
@@ -22,6 +50,7 @@ beforeAll(() => {
 })
 
 afterEach(() => {
+  mockCheckboxRender.mockClear()
   localStorage.clear()
   sessionStorage.clear()
 })
@@ -245,4 +274,50 @@ test('a change while the grid is already at the top scrolls nothing', () => {
     table.setFilterText('bar')
   })
   expect(scrollTo).not.toHaveBeenCalled()
+})
+
+test('a placeholder track cannot be turned on, and select-all leaves it out', () => {
+  const { session, view, model, table } = setup()
+  session.addSessionTrackConf({
+    trackId: 'placeholder',
+    name: '<i>legacy</i> track (Unsupported)',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  const { getByLabelText } = renderGrid(model, table)
+  const placeholder = getByLabelText('Select legacy track (Unsupported)')
+  expect(placeholder).toBeDisabled()
+  expect(getByLabelText('Select fooC')).toBeEnabled()
+  fireEvent.click(placeholder)
+  expect(view.tracks.length).toBe(0)
+
+  act(() => {
+    table.setUseShoppingCart(true)
+  })
+  fireEvent.click(getByLabelText('Select all tracks'))
+  expect(model.selectionSet.has('fooC')).toBe(true)
+  expect(model.selectionSet.has('placeholder')).toBe(false)
+  expect(getByLabelText('Select all tracks')).toBeChecked()
+})
+
+test('a scroll re-renders no row checkbox, and a toggle re-renders its own', async () => {
+  const { model, table } = setup()
+  const { container, getByLabelText } = renderGrid(model, table)
+  const labels = ['Select fooC', 'Select barC']
+  const mounted = labels.map(checkboxRenders)
+  expect(mounted.every(n => n > 0)).toBe(true)
+
+  const scroller = container.querySelector('table')!.parentElement!
+  for (const top of [10, 20, 30]) {
+    scroller.scrollTop = top
+    fireEvent.scroll(scroller)
+  }
+  expect(labels.map(checkboxRenders)).toEqual(mounted)
+
+  fireEvent.click(getByLabelText('Select fooC'))
+  await waitFor(() => {
+    expect(getByLabelText('Select fooC')).toBeChecked()
+  })
+  expect(checkboxRenders('Select fooC')).toBeGreaterThan(mounted[0]!)
 })

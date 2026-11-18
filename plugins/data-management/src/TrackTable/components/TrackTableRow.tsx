@@ -1,44 +1,65 @@
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { cx } from '@jbrowse/core/util/tss-react'
-import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
 
-import { checkboxSx, useTableStyles } from './tableStyles.ts'
+import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
+import { isUnsupported } from '../../HierarchicalTrackSelectorWidget/util.ts'
+import { setTracksSelected } from '../tableSelection.ts'
+import { useTableStyles } from './tableStyles.ts'
 import { getRowStr } from './util.ts'
 
-import type { TrackRow } from '../trackTableModel.ts'
+import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
+import type { TrackRow, TrackTableModel } from '../trackTableModel.ts'
 import type { TableColumn } from './TrackTableGrid.tsx'
 
-const TrackTableRow = observer(function TrackTableRow({
+const SelectableRow = observer(function SelectableRow({
+  model,
+  table,
   row,
-  columns,
-  selected,
-  onToggle,
+  children,
 }: {
+  model: HierarchicalTrackSelectorModel
+  table: TrackTableModel
   row: TrackRow
-  columns: TableColumn[]
-  selected: boolean
-  onToggle: (rowId: string) => void
+  children: React.ReactNode
 }) {
   const { classes } = useTableStyles()
+  const { useShoppingCart } = table
+  const selected = (
+    useShoppingCart ? model.selectionSet : model.shownTrackIds
+  ).has(row.id)
   return (
     <tr className={cx(classes.bodyRow, selected && classes.selectedRow)}>
       <td className={classes.checkboxCell}>
-        <Checkbox
-          size="small"
+        <CheckboxLite
+          className={classes.rowCheckbox}
           checked={selected}
+          disabled={isUnsupported(row.name)}
+          label={`Select ${coarseStripHTML(row.name)}`}
           onChange={() => {
-            onToggle(row.id)
+            setTracksSelected(model, [row.id], !selected, useShoppingCart)
           }}
-          slotProps={{
-            input: {
-              // a name can carry markup; a screen reader shouldn't read tags
-              'aria-label': `Select ${coarseStripHTML(row.name)}`,
-            },
-          }}
-          sx={checkboxSx}
         />
       </td>
+      {children}
+    </tr>
+  )
+})
+
+const TrackTableRow = observer(function TrackTableRow({
+  model,
+  table,
+  row,
+  columns,
+}: {
+  model: HierarchicalTrackSelectorModel
+  table: TrackTableModel
+  row: TrackRow
+  columns: TableColumn[]
+}) {
+  const { classes } = useTableStyles()
+  return (
+    <SelectableRow model={model} table={table} row={row}>
       {columns.map(col => (
         <td
           key={col.id}
@@ -52,7 +73,7 @@ const TrackTableRow = observer(function TrackTableRow({
           {col.cell(row)}
         </td>
       ))}
-    </tr>
+    </SelectableRow>
   )
 })
 
