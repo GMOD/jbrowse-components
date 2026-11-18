@@ -25,7 +25,6 @@ export interface SashimiModel {
 
 interface SashimiPlacementModel {
   showSashimi: boolean
-  showCoverage: boolean
   sashimiPlacement: SashimiPlacement
   setSashimiPlacement: (placement: SashimiPlacement) => void
 }
@@ -84,13 +83,14 @@ export function sashimiShowItems(model: SashimiModel): MenuItem[] {
 }
 
 /**
- * The placement row, for "Advanced". Without the coverage band the arcs draw
- * in a strip of their own, so there is nothing to place.
+ * The placement row, for "Advanced", while the arcs draw. It stays without the
+ * coverage band, where the choice is still between the strip above, arcs
+ * rising, and the strip below.
  */
 export function getSashimiPlacementItems(
   model: SashimiPlacementModel,
 ): MenuItem[] {
-  return model.showSashimi && model.showCoverage
+  return model.showSashimi
     ? [
         {
           label: 'Sashimi placement',

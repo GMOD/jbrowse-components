@@ -18,7 +18,6 @@ import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 function makeModel() {
   return {
-    showCoverage: true,
     showSashimi: false,
     setShowSashimi(v: boolean) {
       this.showSashimi = v
@@ -75,16 +74,25 @@ describe('sashimi rows in Show', () => {
 })
 
 describe('sashimi placement row', () => {
-  test('appears only while the arcs draw over the coverage band', () => {
+  test('appears while the arcs draw', () => {
     const model = makeModel()
     expect(getSashimiPlacementItems(model)).toEqual([])
     model.showSashimi = true
-    model.showCoverage = false
-    expect(getSashimiPlacementItems(model)).toEqual([])
-    model.showCoverage = true
     expect(labelsOf(getSashimiPlacementItems(model))).toEqual([
       'Sashimi placement',
     ])
+  })
+
+  // The model the row reads has no coverage member, so a strip above coverage
+  // can be left from the menu with the band hidden.
+  test('leaves the strip above coverage on click', () => {
+    const model = { ...makeModel(), showSashimi: true }
+    model.sashimiPlacement = 'above'
+    click(
+      subMenuByLabel(getSashimiPlacementItems(model), 'Sashimi placement'),
+      'Over coverage',
+    )
+    expect(model.sashimiPlacement).toBe('overlay')
   })
 
   test('switches the mode on click', () => {

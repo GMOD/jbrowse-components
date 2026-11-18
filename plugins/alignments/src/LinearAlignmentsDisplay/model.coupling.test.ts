@@ -2227,6 +2227,18 @@ describe('rows the layer menus hand to other menus', () => {
       true,
     )
   })
+
+  // With coverage hidden the choice is still between the strip above, arcs
+  // rising, and the strip below, so the row stays.
+  test('the sashimi placement row stays with coverage hidden', () => {
+    const display = createDisplay()
+    display.setShowSashimi(true)
+    display.setSashimiPlacement('above')
+    display.setShowCoverage(false)
+    expect(hasMenuItem(display.trackMenuItems(), 'Sashimi placement')).toBe(
+      true,
+    )
+  })
 })
 
 describe('setHoverState', () => {
