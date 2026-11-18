@@ -1,6 +1,9 @@
+import Plugin from '@jbrowse/core/Plugin'
+
 import { createPluginManager } from './createPluginManager.ts'
 
 import type { SessionSource } from './types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 jest.mock('./loadHubSpec', () => ({
@@ -85,6 +88,42 @@ test('a hub that fails to set up falls back to a session that says so', async ()
     'Error: hub broke',
   ])
   expect(error).toHaveBeenCalledWith(new Error('hub broke'))
+  error.mockRestore()
+})
+
+test('a runtime plugin whose install() throws is reported on the session', async () => {
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+  class V4Plugin extends Plugin {
+    name = 'V4Plugin'
+    install(pluginManager: PluginManager) {
+      pluginManager.addRendererType(() => ({}))
+    }
+  }
+  const pluginManager = await createPluginManager(
+    {
+      configSnapshot: {
+        configuration: {
+          rpc: { defaultDriver: 'MainThreadRpcDriver' },
+          disableAnalytics: true,
+        },
+      },
+      runtimePlugins: [
+        {
+          plugin: V4Plugin,
+          definition: { name: 'V4', url: 'https://example.com/v4.js' },
+        },
+      ],
+      initialTimestamp: 0,
+    },
+    () => {},
+  )
+  const session = pluginManager.rootModel!.session as unknown as {
+    snackbarMessages: { message: string }[]
+  }
+  expect(session.snackbarMessages.map(m => m.message)).toEqual([
+    expect.stringMatching(/Failed to load plugin V4/),
+  ])
+  expect(pluginManager.hasPlugin('V4Plugin')).toBe(false)
   error.mockRestore()
 })
 

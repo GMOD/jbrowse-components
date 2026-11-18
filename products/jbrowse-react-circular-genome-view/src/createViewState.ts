@@ -3,6 +3,7 @@ import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import {
   destroyViewState,
+  notifyPluginLoadFailures,
   registerLocalFiles,
   resolveAssemblies,
   resolveLocalConfig,
@@ -269,5 +270,6 @@ export default async function createViewState(
   if ((ownSession && displayedRegionNames !== undefined) || !positioned) {
     view.setLaunch({ assembly: assemblyNames, displayedRegionNames })
   }
+  notifyPluginLoadFailures(stateTree.session, pluginManager.installFailures)
   return stateTree
 }

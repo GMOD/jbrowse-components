@@ -3,6 +3,7 @@ import { assembleLocString, expandLooseTrackConfig } from '@jbrowse/core/util'
 import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import {
   destroyViewState,
+  notifyPluginLoadFailures,
   registerLocalFiles,
   resolveAssemblies,
   resolveLocalConfig,
@@ -334,5 +335,6 @@ function finishCreateViewState(
       highlight,
     })
   }
+  notifyPluginLoadFailures(stateTree.session, pluginManager.installFailures)
   return stateTree
 }

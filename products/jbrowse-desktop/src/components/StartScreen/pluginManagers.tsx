@@ -119,7 +119,10 @@ async function buildPluginManager(
   )
   const pluginManager = new PluginManager(pluginRecords(records, isGlobal))
   pluginManager.createPluggableElements()
-  return { pluginManager, failures: [...unresolved, ...failures] }
+  return {
+    pluginManager,
+    failures: [...unresolved, ...failures, ...pluginManager.installFailures],
+  }
 }
 
 // A manager built from the global plugins alone, so the start screen — which

@@ -52,7 +52,10 @@ import type { TrackConfigNode } from './pluggableElementTypes/models/baseTrackCo
 // and re-enabled after it, so the rule still covers the rest of the file.
 /* eslint-disable unicorn/require-module-specifiers */
 import type {} from './pluggableElementTypes/models/migrateTrackConfig.ts'
-import type { PluginDefinition } from './pluginDefinitions.ts'
+import type {
+  PluginDefinition,
+  PluginLoadFailure,
+} from './pluginDefinitions.ts'
 import type {} from './rpc/WebWorkerRpcDriver.ts'
 import type {} from './ui/buildExtraTrackMenuItems.ts'
 import type {} from './ui/multiTrackMenuItems.ts'
@@ -250,6 +253,21 @@ function nextAccumulator(name: string, accumulator: unknown, result: unknown) {
     next = accumulator
   }
   return next
+}
+
+function listLengths<K, V>(lists: Map<K, V[]>) {
+  return new Map([...lists].map(([key, list]) => [key, list.length]))
+}
+
+function truncateLists<K, V>(lists: Map<K, V[]>, lengths: Map<K, number>) {
+  for (const [key, list] of lists) {
+    const length = lengths.get(key)
+    if (length === undefined) {
+      lists.delete(key)
+    } else {
+      list.length = length
+    }
+  }
 }
 
 // a bare stack from minified plugin code names nothing, so say which point
@@ -683,6 +701,9 @@ export default class PluginManager {
 
   runtimePluginDefinitions: PluginDefinition[] = []
 
+  /** runtime plugins whose install() threw, left out of this manager */
+  installFailures: PluginLoadFailure[] = []
+
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
     ...pluggableElementTypeGroups,
   )
@@ -884,11 +905,29 @@ export default class PluginManager {
 
     this.pluginMetadata[plugin.name] = metadata
     if ('definition' in load) {
-      this.runtimePluginDefinitions.push(load.definition)
+      this.installRuntimePlugin(plugin, load.definition)
+    } else {
+      plugin.install(this)
+      this.plugins.push(plugin)
     }
-    plugin.install(this)
-    this.plugins.push(plugin)
     return this
+  }
+
+  // a throw undoes what the plugin registered, so the worker never hears of it
+  private installRuntimePlugin(plugin: Plugin, definition: PluginDefinition) {
+    const scheduled = listLengths(this.elementCreationSchedule.phaseCallbacks)
+    const extended = listLengths(this.extensionPoints)
+    this.runtimePluginDefinitions.push(definition)
+    try {
+      plugin.install(this)
+      this.plugins.push(plugin)
+    } catch (error) {
+      truncateLists(this.elementCreationSchedule.phaseCallbacks, scheduled)
+      truncateLists(this.extensionPoints, extended)
+      this.runtimePluginDefinitions.pop()
+      delete this.pluginMetadata[plugin.name]
+      this.installFailures.push({ definition, error })
+    }
   }
 
   getPlugin(name: string) {

@@ -111,7 +111,10 @@ export async function createPluginManager(
     preloadAppShell(rootModel.session)
   }
   // after initSession: there is no session to notify on before it
-  notifyPluginLoadFailures(rootModel.session, model.pluginLoadFailures ?? [])
+  notifyPluginLoadFailures(rootModel.session, [
+    ...(model.pluginLoadFailures ?? []),
+    ...pluginManager.installFailures,
+  ])
   notifyPermanentPluginSafeMode(rootModel)
   // Here rather than beside the PluginManager above, so the window the crash
   // marker covers includes `configure()` — where a plugin registers its menu

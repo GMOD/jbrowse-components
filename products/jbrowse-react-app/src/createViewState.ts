@@ -7,7 +7,11 @@ import {
 } from '@jbrowse/core/pluginDefinitions'
 import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
-import { registerLocalFiles, resolveLocalConfig } from '@jbrowse/product-core'
+import {
+  notifyPluginLoadFailures,
+  registerLocalFiles,
+  resolveLocalConfig,
+} from '@jbrowse/product-core'
 
 import createModel, { hasSession } from './createModel.ts'
 import { destroyViewState } from './destroyViewState.ts'
@@ -96,9 +100,12 @@ function finishCreateViewState(
   const { defaultSession = { name: 'New Session' } } = config
   const onlyAssembly =
     config.assemblies.length === 1 ? config.assemblies[0]!.name : undefined
-  // what the plugin manager actually installed at runtime, i.e. the subset of
-  // `plugins` that carried a definition (a bare plugin class carries none)
-  const loaded = pluginManager.runtimePluginDefinitions
+  // the `plugins` that carried a definition (a bare plugin class carries none),
+  // including one whose install() threw, which its own notice reports
+  const loaded = [
+    ...pluginManager.runtimePluginDefinitions,
+    ...pluginManager.installFailures.map(f => f.definition),
+  ]
   const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
   const stateTree = model.create(
     {
@@ -184,5 +191,6 @@ function finishCreateViewState(
     )
   }
 
+  notifyPluginLoadFailures(stateTree.session, pluginManager.installFailures)
   return stateTree
 }

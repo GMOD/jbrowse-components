@@ -424,3 +424,87 @@ test('a v4 plugin registering a renderer is told renderers are gone', () => {
     /addRendererType was removed in JBrowse 5/,
   )
 })
+
+describe('a runtime plugin whose install() throws', () => {
+  function viewType(name: string) {
+    return new ViewType({
+      name,
+      stateModel: types.model(name, {
+        id: types.optional(types.identifier, name),
+        type: types.literal(name),
+      }),
+      ReactComponent: () => null,
+    })
+  }
+  class EarlierPlugin extends Plugin {
+    name = 'EarlierPlugin'
+    install(pluginManager: PluginManager) {
+      pluginManager.addViewType(() => viewType('EarlierView'))
+      pluginManager.addToExtensionPoint('Test-point', (value: string[]) => [
+        ...value,
+        'earlier',
+      ])
+    }
+  }
+  class HalfInstalledPlugin extends Plugin {
+    name = 'HalfInstalledPlugin'
+    install(pluginManager: PluginManager) {
+      pluginManager.addViewType(() => viewType('HalfView'))
+      pluginManager.addToExtensionPoint('Test-point', (value: string[]) => [
+        ...value,
+        'half',
+      ])
+      pluginManager.addToExtensionPoint('Test-fresh', (value: string) => value)
+      pluginManager.addRendererType(() => ({}))
+    }
+  }
+  class LaterPlugin extends Plugin {
+    name = 'LaterPlugin'
+    install(pluginManager: PluginManager) {
+      pluginManager.addViewType(() => viewType('LaterView'))
+      pluginManager.addToExtensionPoint('Test-point', (value: string[]) => [
+        ...value,
+        'later',
+      ])
+    }
+  }
+  const earlier = { name: 'Earlier', url: 'https://example.com/earlier.js' }
+  const halfInstalled = { name: 'Half', url: 'https://example.com/half.js' }
+  const later = { name: 'Later', url: 'https://example.com/later.js' }
+
+  it('costs only that plugin, and leaves nothing it registered', () => {
+    const pm = new PluginManager([
+      { plugin: new EarlierPlugin(), definition: earlier },
+      { plugin: new HalfInstalledPlugin(), definition: halfInstalled },
+      { plugin: new LaterPlugin(), definition: later },
+    ])
+      .createPluggableElements()
+      .configure()
+
+    expect(pm.installFailures).toEqual([
+      {
+        definition: halfInstalled,
+        error: expect.objectContaining({
+          message: expect.stringMatching(/addRendererType was removed/),
+        }),
+      },
+    ])
+    expect(pm.hasPlugin('HalfInstalledPlugin')).toBe(false)
+    expect(pm.pluginMetadata.HalfInstalledPlugin).toBeUndefined()
+    expect(pm.runtimePluginDefinitions).toEqual([earlier, later])
+    const views = pm.getViewElements().map(v => v.name)
+    expect(views).toEqual(expect.arrayContaining(['EarlierView', 'LaterView']))
+    expect(views).not.toContain('HalfView')
+    expect(pm.evaluateExtensionPoint('Test-point', [])).toEqual([
+      'earlier',
+      'later',
+    ])
+    expect(pm.extensionPoints.has('Test-fresh')).toBe(false)
+  })
+
+  it('still throws for a plugin the build bundles', () => {
+    expect(() => new PluginManager([new HalfInstalledPlugin()])).toThrow(
+      /addRendererType was removed in JBrowse 5/,
+    )
+  })
+})

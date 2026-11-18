@@ -5,6 +5,7 @@ import PluginLoader, {
 import PluginManager, {
   runtimePluginRecords,
 } from '@jbrowse/core/PluginManager'
+import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import { setNumberGrouping, throttleStatusEmits } from '@jbrowse/core/util'
 import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
@@ -112,12 +113,17 @@ async function getPluginManager(
   // The definitions ride along: a plugin that resolves a sibling asset from
   // its own bundle url here, as GraphGenomeView's Bandage layout engine does,
   // reads its definition off `runtimePluginDefinitions`.
-  return new PluginManager([
+  const pluginManager = new PluginManager([
     ...corePlugins.map(P => ({ plugin: new P() })),
     ...runtimePluginRecords(runtimePlugins),
   ])
-    .createPluggableElements()
-    .configure()
+  for (const { definition, error } of pluginManager.installFailures) {
+    console.error(
+      `plugin ${pluginLabel(definition)} failed to install in the worker`,
+      error,
+    )
+  }
+  return pluginManager.createPluggableElements().configure()
 }
 
 interface WrappedFuncArgs {
