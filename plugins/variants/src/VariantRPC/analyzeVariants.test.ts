@@ -293,6 +293,47 @@ describe('buildHeaderRemap', () => {
   })
 })
 
+function vcfFeatures(samples: string[], lines: string[]) {
+  const parser = new VcfParser({
+    header: [
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT',
+      ...samples,
+    ].join('\t'),
+  })
+  return lines.map(
+    (line, i) =>
+      new VcfFeature({ parser, variant: parser.parseLine(line), id: `f${i}` }),
+  )
+}
+
+// haplotype rows from the ploidy the analysis reports, as the worker builds them
+function phasedCells(samples: string[], lines: string[]) {
+  const analyzed = analyzeVariants({ features: vcfFeatures(samples, lines) })
+  const sources = buildCanonicalRows({
+    samplePloidy: analyzed.samplePloidy,
+    sampleFilter: undefined,
+    rowsField: 'haplotype',
+  })
+  const cells = computeVariantCells({
+    ...analyzed,
+    sources,
+    rowsField: 'haplotype',
+    showReference: false,
+  })
+  const colorAt = (featureIndex: number, row: number) => {
+    for (let i = 0; i < cells.numCells; i++) {
+      if (
+        cells.cellFeatureIndices[i] === featureIndex &&
+        cells.cellRowIndices[i] === row
+      ) {
+        return cells.cellColors[i]
+      }
+    }
+    return undefined
+  }
+  return { rowNames: sources.map(s => s.name), colorAt }
+}
+
 // A no-call's separators are formatting: `./.` is how many callers spell a
 // haploid sample's missing call too, so it sets the ploidy only of a sample
 // with nothing called in the window.
@@ -320,45 +361,45 @@ describe('analyzeVariants ploidy', () => {
   })
 
   it('gives a haploid sample its one row, and a no-call there', () => {
-    const parser = new VcfParser({
-      header:
-        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tMALE\tFEMALE',
-    })
-    const features = [
-      'ctgX\t100\trs1\tA\tG\t.\t.\t.\tGT\t1\t0|1',
-      'ctgX\t200\trs2\tC\tT\t.\t.\t.\tGT\t./.\t1|1',
-    ].map(
-      (line, i) =>
-        new VcfFeature({
-          parser,
-          variant: parser.parseLine(line),
-          id: `f${i}`,
-        }),
+    const { rowNames, colorAt } = phasedCells(
+      ['MALE', 'FEMALE'],
+      [
+        'ctgX\t100\trs1\tA\tG\t.\t.\t.\tGT\t1\t0|1',
+        'ctgX\t200\trs2\tC\tT\t.\t.\t.\tGT\t./.\t1|1',
+      ],
     )
-    const analyzed = analyzeVariants({ features })
-    const sources = buildCanonicalRows({
-      samplePloidy: analyzed.samplePloidy,
-      sampleFilter: undefined,
-      rowsField: 'haplotype',
+    expect(rowNames).toEqual(['MALE HP1', 'FEMALE HP1', 'FEMALE HP2'])
+    expect(colorAt(1, 0)).toBe(getCachedABGR(NO_CALL_COLOR))
+  })
+})
+
+// `*` marks a haplotype an overlapping deletion removed: GATK counts it in AC,
+// so it stays in the frequencies, but it is never the site's own variant
+describe('the spanning deletion allele', () => {
+  const lines = [
+    'ctgX\t100\tv1\tA\tG,*\t.\t.\t.\tGT\t0|2\t0|2\t2|2\t0|1\t1',
+    'ctgX\t100\tv2\tC\tT\t.\t.\t.\tGT\t0|0\t0|0\t0|0\t0|1\t1',
+  ]
+  const samples = ['S1', 'S2', 'S3', 'S4', 'MALE']
+
+  it('is never the most frequent alt', () => {
+    const features = vcfFeatures(samples, lines)
+    const [v1] = analyzeVariants({ features }).filteredVariants
+    expect(v1!.mostFrequentAlt).toBe('1')
+    expect(features[0]!.alleleSummary()).toMatchObject({
+      mostFrequentAlt: '1',
+      // three `0` of nine called alleles, four of them `*`
+      minorAlleleFrequency: 3 / 9,
     })
-    expect(sources.map(s => s.name)).toEqual([
-      'MALE HP1',
-      'FEMALE HP1',
-      'FEMALE HP2',
-    ])
-    const cells = computeVariantCells({
-      ...analyzed,
-      sources,
-      rowsField: 'haplotype',
-      showReference: false,
-    })
-    const maleNoCalls = [...cells.cellColors].filter(
-      (color, i) =>
-        cells.cellFeatureIndices[i] === 1 &&
-        cells.cellRowIndices[i] === 0 &&
-        color === getCachedABGR(NO_CALL_COLOR),
-    )
-    expect(maleNoCalls).toHaveLength(1)
+  })
+
+  it('leaves the real alt its primary color', () => {
+    const { rowNames, colorAt } = phasedCells(samples, lines)
+    const s4Alt = rowNames.indexOf('S4 HP2')
+    const maleAlt = rowNames.indexOf('MALE HP1')
+    expect(colorAt(0, s4Alt)).toBe(colorAt(1, s4Alt))
+    expect(colorAt(0, maleAlt)).toBe(colorAt(1, maleAlt))
+    expect(colorAt(0, rowNames.indexOf('S1 HP2'))).not.toBe(colorAt(1, s4Alt))
   })
 })
 

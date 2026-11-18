@@ -539,7 +539,8 @@ a `recordsOnly` choice in the model belongs there.
   (`paintFeatureColors`). It crosses over as a per-feature jexl rather than the
   BED `itemRgb` path, which drops alpha.
 - **One label line over rows**: ID, description, then the share of the shown
-  samples carrying it (`recordCarriers.ts`; the denominator is
+  samples carrying it, a sample holding only `*` carrying none
+  (`recordCarriers.ts`; the denominator is
   `recordCarrierSamples`, one line to make it every sample in the payload), as
   `recordLabel`. A record is counted when a label with text or a hover first
   asks (`recordCarriersOf`), never every fetched record up front. The label pipeline places a description under its name, so an

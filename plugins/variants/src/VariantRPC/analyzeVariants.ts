@@ -423,7 +423,11 @@ export function analyzeVariants({
       alleleCounts = calculateAlleleCounts(record)
     }
 
-    const summary = summarizeAlleleCounts(alleleCounts)
+    const alt = feature.get('ALT')
+    const summary = summarizeAlleleCounts(
+      alleleCounts,
+      Array.isArray(alt) ? alt : undefined,
+    )
     const { mostFrequentAlt } = summary
     const keptUncalled =
       keepUncalledSites &&

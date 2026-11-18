@@ -60,7 +60,8 @@ type CountedRecord = Pick<
  * record: a walk of every sample, which only a drawn label or a hover reads.
  * A sample calling any ALT carries a small variant; an SV only one calling a
  * structural ALT, so a small allele beside it at an un-decomposed site does
- * not. One with no called allele is a no-call, which still counts toward the
+ * not. Neither counts `*`, which carries an overlapping deletion, not this
+ * record. One with no called allele is a no-call, which still counts toward the
  * samples.
  */
 export function recordCarrierCounter(
@@ -88,7 +89,11 @@ export function recordCarrierCounter(
         info.genotypeCodes,
         walk.columns,
         walk.altIndices,
-        info.svType === '' ? info.alt.map(() => true) : info.svAlleles,
+        info.alt.map(
+          (allele, i) =>
+            allele !== '*' &&
+            (info.svType === '' || info.svAlleles[i] === true),
+        ),
       )
       counted.set(info.featureId, carriers)
     }

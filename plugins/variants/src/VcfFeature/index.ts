@@ -94,6 +94,7 @@ export default class VCFFeature implements Feature {
   alleleSummary() {
     this._alleleSummary ??= summarizeAlleleCounts(
       calculateAlleleCountsFast(this),
+      this.variant.ALT,
     )
     return this._alleleSummary
   }

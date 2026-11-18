@@ -91,6 +91,14 @@ test('any called ALT carries a record with no SV class', () => {
   expect(counted).toEqual({ carriers: 2, nonCarriers: 1, noCall: 1 })
 })
 
+// S0 calls only `*`, an overlapping deletion's allele, not this record's
+test('a sample holding only the spanning deletion does not carry', () => {
+  const counted = countOf(
+    cellData([5, 2, 3, 4], '', ['T', '*'], [false, false]),
+  )
+  expect(counted).toEqual({ carriers: 1, nonCarriers: 2, noCall: 1 })
+})
+
 // HGSV_1823 at RHD: 538 carriers, 1 non-carrier and 2,663 no-calls of 3,202
 const HGSV_1823 = { carriers: 538, nonCarriers: 1, noCall: 2663 }
 

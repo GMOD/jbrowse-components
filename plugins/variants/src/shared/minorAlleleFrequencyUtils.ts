@@ -21,9 +21,10 @@ export interface AlleleSummary {
   // Fraction of all alleles that are no-call ('.'); high on sparse multi-sample
   // panels where many samples lack a genotype at a site.
   missingness: number
-  // Most common non-ref allele index. It only ever selects "primary alt" vs
-  // "other alt" coloring (getAlleleColor / getPhasedColor), so a site carrying
-  // no alt allele reports '1': no cell there holds an alt to compare against.
+  // Most common ALT index, never that of `*`, the spanning deletion, which
+  // marks an overlapping deletion's carrier rather than this site's variant.
+  // It only ever selects "primary alt" vs "other alt" coloring (getAlleleColor
+  // / getPhasedColor), so a site carrying no other alt reports '1'.
   mostFrequentAlt: string
   // Called (non-'.') alleles across every sample. 0 means the site has no
   // genotype data at all — every sample no-call, or a sites-only VCF.
@@ -35,7 +36,9 @@ export interface AlleleSummary {
 // missingness denominators have to stay in lockstep about '.'.
 export function summarizeAlleleCounts(
   alleleCounts: Record<string, number>,
+  alt?: readonly unknown[],
 ): AlleleSummary {
+  const spanningDeletion = String((alt?.indexOf('*') ?? -1) + 1)
   let firstMax = 0
   let secondMax = 0
   let altMax = 0
@@ -54,7 +57,7 @@ export function summarizeAlleleCounts(
       } else if (count > secondMax) {
         secondMax = count
       }
-      if (key !== '0' && count > altMax) {
+      if (key !== '0' && key !== spanningDeletion && count > altMax) {
         altMax = count
         mostFrequentAlt = key
       }
