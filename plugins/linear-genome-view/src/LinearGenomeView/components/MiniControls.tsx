@@ -1,12 +1,9 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import AddIcon from '@mui/icons-material/Add'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import RemoveIcon from '@mui/icons-material/Remove'
-import { IconButton, Paper, Tooltip } from '@mui/material'
+import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ZoomButton from './ZoomButton.tsx'
@@ -50,36 +47,12 @@ const MiniControls = observer(function MiniControls({
       <Paper
         className={focusedViewId === id ? classes.focusedBackground : undefined}
       >
-        <Tooltip title="Open track selector">
-          <IconButton
-            size="small"
-            onClick={() => {
-              model.activateTrackSelector()
-            }}
-          >
-            <TrackSelectorIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
         <CascadingMenuButton
           tooltip="View menu"
           menuItems={() => model.menuItems()}
         >
           <MoreVertIcon fontSize="small" />
         </CascadingMenuButton>
-        <Tooltip title={scalebarOnly ? 'Show tracks' : 'Show ruler only'}>
-          <IconButton
-            size="small"
-            onClick={() => {
-              model.setScalebarOnly(!scalebarOnly)
-            }}
-          >
-            {scalebarOnly ? (
-              <AddIcon fontSize="small" />
-            ) : (
-              <RemoveIcon fontSize="small" />
-            )}
-          </IconButton>
-        </Tooltip>
         {/* the header's own zoom controls are gone whenever this renders (its
         only mount is the `hideHeader` branch of LinearGenomeViewContainer), so
         these are unconditional rather than re-testing hideHeader */}

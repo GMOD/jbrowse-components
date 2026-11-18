@@ -22,12 +22,12 @@ const useStyles = makeStyles()({
   wrapper: {
     position: 'relative',
   },
-  // beside the row's floating zoom controls (LGV `MiniControls`, five small
+  // beside the row's floating zoom controls (LGV `MiniControls`, three small
   // icon buttons at the row's top right), not over them
   anchorBadge: {
     position: 'absolute',
     top: 4,
-    right: 150,
+    right: 100,
     zIndex: 100,
   },
 })
@@ -136,7 +136,7 @@ const LevelSection = observer(function LevelSection({
         and Alt sizes this one alone, which is the only way back to a stack
         whose bands differ on purpose. */}
       <ResizeHandle
-        bar
+        grip="hover"
         onPointerDown={event => {
           // the press that starts the drag, not a right-click or a second
           // finger during it, which would re-snapshot and jump the bands

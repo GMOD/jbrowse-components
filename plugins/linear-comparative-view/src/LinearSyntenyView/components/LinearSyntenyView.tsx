@@ -23,6 +23,8 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
   },
 
+  // the cross-row cursor's strip; inking it only under the pointer was
+  // declined (2026-11-18), the fill marks where it is
   rubberbandDiv: {
     width: '100%',
     background: theme.palette.action.disabledBackground,
