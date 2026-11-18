@@ -46,12 +46,11 @@ export interface ShaderModule {
  * Every remaining field is an override of something the module already carries,
  * for a shader drawn by two passes that disagree:
  *
- * - `blendState` / `topology` — no pass in the tree overrides these. Wiggle's
- *   step line and center line did while they shared one module and blended
- *   differently (src-over against max); each record now has its own module,
- *   and the center line's states `//! blend: max` itself. A shader whose passes
- *   disagree declares neither and says which at each pass; one stated nowhere
- *   blends straight alpha.
+ * - `blendState` / `topology` — one pass in the tree overrides either: the
+ *   mark display's linear line over earlier marks (`lineCenterOverMark`) draws
+ *   `lineCenterMark`, which states `//! blend: max`, as `union`. A shader whose
+ *   passes disagree may instead declare neither and say which at each pass; one
+ *   stated nowhere blends straight alpha.
  *
  * There is deliberately no `verticesPerInstance` override. A shape whose count
  * moves per frame (the canvas chevrons, one slot per chevron the canvas can
