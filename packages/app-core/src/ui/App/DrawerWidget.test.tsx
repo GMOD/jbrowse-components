@@ -1,7 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { act, cleanup, fireEvent, render } from '@testing-library/react'
 
 import DrawerWidget from './DrawerWidget.tsx'
 
@@ -40,4 +40,17 @@ test('a click in the drawer focuses the view its widget belongs to', () => {
   fireEvent.mouseDown(getByTestId('widget-drawer-selects'))
 
   expect(session.focusedViewId).toBe(widgetView.id)
+})
+
+test('the drawer header is tinted until the view its widget belongs to has focus', () => {
+  const { container, session, widgetView } = setup()
+  const header = container.querySelector('header')
+  const unfocused = header?.className
+
+  act(() => {
+    session.setFocusedViewId(widgetView.id)
+  })
+
+  expect(unfocused).toBeTruthy()
+  expect(header?.className).not.toBe(unfocused)
 })
