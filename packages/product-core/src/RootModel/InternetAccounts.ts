@@ -177,7 +177,8 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
             if (
               selectedAccount.handlesLocation(location) ||
               resolvesToAppOrigin(location) ||
-              namesOwnOrigin(selectedId, location)
+              (parseEphemeralId(selectedId).type === selectedAccount.type &&
+                namesOwnOrigin(selectedId, location))
             ) {
               return selectedAccount
             }
@@ -194,7 +195,8 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         }
 
         // if still no account, recreate the origin account a saved session
-        // names — only for the location's own origin, and only for an id whose
+        // names — only when no account holds that id, only for the location's
+        // own origin, and only for an id whose
         // leading segment names an account type this session actually has.
         // Anything else is a location pointing at an account that is simply
         // gone (a track from a shared session whose config defined one, a
@@ -205,6 +207,9 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         // 401 it gets, which is the failure the user can act on.
         if (
           selectedId &&
+          !self.internetAccounts.some(
+            a => a.internetAccountId === selectedId,
+          ) &&
           namesOwnOrigin(selectedId, location) &&
           pluginManager
             .getElementTypesInGroup('internet account')

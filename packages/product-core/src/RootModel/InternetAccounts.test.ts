@@ -233,9 +233,9 @@ test('a mismatched name falls through to the domains walk', () => {
   expect(found?.internetAccountId).toBe('cdnToken')
 })
 
-// RpcManager's 401 retry mints `<TypeName>-<origin>` ids and relies on this
-// branch; the ephemeral account it builds is scoped to that origin, so the
-// stricter check above is satisfied by construction.
+// A location carries a `<TypeName>-<origin>` id when the file selector's
+// account picker chose an origin account, or a saved session held one; the
+// account is recreated, scoped to that origin.
 test('an ephemeral id for a registered type still mints an account', () => {
   const root = makeRoot()
   const found = root.findAppropriateInternetAccount({
@@ -327,7 +327,66 @@ test('an id naming no registered type is ignored', () => {
     root.findAppropriateInternetAccount({
       locationType: 'UriLocation',
       uri: 'https://data.mylab.org/reads.bam',
-      internetAccountId: 'SomeRemovedPluginAccount-x',
+      internetAccountId: 'SomeRemovedPluginAccount-https://data.mylab.org',
     }),
   ).toBe(null)
+  expect(root.internetAccounts.length).toBe(0)
+})
+
+describe.each([
+  ['a host the origin is a prefix of', 'https://data.mylab.org.evil.com/x.bam'],
+  ['another port', 'https://data.mylab.org:8443/x.bam'],
+  ['plain http', 'http://data.mylab.org/x.bam'],
+])('an origin account and %s', (_, uri) => {
+  const location: UriLocation = {
+    locationType: 'UriLocation',
+    uri,
+    internetAccountId: labOrigin,
+  }
+
+  test('is not answered by the existing account', () => {
+    const root = makeRoot()
+    root.createEphemeralInternetAccount(
+      labOrigin,
+      {},
+      'https://data.mylab.org/dir/reads.bam',
+    )
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const found = root.findAppropriateInternetAccount(location)
+    warn.mockRestore()
+    expect(found).toBe(null)
+    expect(root.internetAccounts.length).toBe(1)
+  })
+
+  test('does not create one', () => {
+    const root = makeRoot()
+    expect(root.findAppropriateInternetAccount(location)).toBe(null)
+    expect(root.internetAccounts.length).toBe(0)
+  })
+})
+
+// An id is only an origin account's when its leading segment is the account's
+// own type; a configured account whose id merely reads like one keeps to its
+// domains.
+describe.each([
+  'Other-https://data.mylab.org',
+  'HTTPBasicInternetAccount-https://data.mylab.org',
+])('a configured account with id %s', internetAccountId => {
+  test('is not used outside its domains on that origin', () => {
+    const root = makeRoot({
+      type: 'TestInternetAccount',
+      internetAccountId,
+      name: 'Public data',
+      domains: ['https://data.mylab.org/public/'],
+    })
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const found = root.findAppropriateInternetAccount({
+      locationType: 'UriLocation',
+      uri: 'https://data.mylab.org/private/x.bam',
+      internetAccountId,
+    })
+    warn.mockRestore()
+    expect(found).toBe(null)
+    expect(root.internetAccounts.length).toBe(1)
+  })
 })
