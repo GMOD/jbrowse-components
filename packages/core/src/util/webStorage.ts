@@ -70,7 +70,7 @@ function guardedStorage(read: () => Storage, label: string): GuardedStorage {
   // One warning per page per store, not one per failed write: the autoruns that
   // persist settings re-run on every change, so a persistent failure (quota,
   // private browsing) would otherwise fill the console with the same line. Same
-  // doctrine as the `savingFailed` latch in jbrowse-web's session autosave.
+  // doctrine as app-core's `createAutosaveReporter`.
   let warnedOnWrite = false
 
   return {
