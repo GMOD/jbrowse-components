@@ -2,10 +2,8 @@ import { defineMark } from '@jbrowse/render-core/marks'
 
 import { matrixCellMark } from './matrixCellMark.ts'
 
-import type {
-  MatrixRenderState,
-  VariantMatrixUploadData,
-} from './variantMatrixRenderingBackendTypes.ts'
+import type { VariantRenderState } from '../components/variantRenderingBackendTypes.ts'
+import type { VariantMatrixUploadData } from './variantMatrixRenderingBackendTypes.ts'
 
 export const VARIANT_MATRIX_MARKS = [
   defineMark({
@@ -16,7 +14,7 @@ export const VARIANT_MATRIX_MARKS = [
       color: d.cellColors,
       count: d.numCells,
     }),
-    params: (s: MatrixRenderState, d: VariantMatrixUploadData) => ({
+    params: (s: VariantRenderState, d: VariantMatrixUploadData) => ({
       numFeatures: d.featureInfo.length,
       rowHeight: s.rowHeight,
       scrollTop: s.scrollTop,

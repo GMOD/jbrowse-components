@@ -8,9 +8,9 @@ import { matrixCellMark } from './matrixCellMark.ts'
 import * as shader from './shaders/variantMatrix.iface.generated.ts'
 import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
 
+import type { VariantRenderState } from '../components/variantRenderingBackendTypes.ts'
 import type { MatrixCellChannels } from './matrixCellMark.ts'
 import type {
-  MatrixRenderState,
   VariantMatrixRenderBlock,
   VariantMatrixUploadData,
 } from './variantMatrixRenderingBackendTypes.ts'
@@ -24,7 +24,7 @@ Object.defineProperty(globalThis, 'devicePixelRatio', {
 
 const MARK = VARIANT_MATRIX_MARKS[0]!
 
-const STATE: MatrixRenderState = {
+const STATE: VariantRenderState = {
   canvasWidth: 400,
   canvasHeight: 300,
   rowHeight: 10,
@@ -52,7 +52,7 @@ function makeData(
 // carries the clip, and the payload's column count carries the pitch.
 function block(
   data: VariantMatrixUploadData,
-  state: MatrixRenderState,
+  state: VariantRenderState,
 ): VariantMatrixRenderBlock {
   return {
     displayedRegionIndex: 0,

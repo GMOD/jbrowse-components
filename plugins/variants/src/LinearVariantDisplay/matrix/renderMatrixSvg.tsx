@@ -8,9 +8,9 @@ import SvgVariantOverlay from '../components/SvgVariantOverlay.tsx'
 import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
 
 import type { ConnectorLinesModel } from '../../shared/ConnectorLines.tsx'
+import type { VariantRenderState } from '../components/variantRenderingBackendTypes.ts'
 import type { RenderSvgBaseModel } from '../renderSvgUtils.ts'
 import type {
-  MatrixRenderState,
   VariantMatrixRenderBlock,
   VariantMatrixUploadData,
 } from './variantMatrixRenderingBackendTypes.ts'
@@ -21,7 +21,7 @@ interface MatrixRenderSvgModel
   extends
     RenderSvgBaseModel,
     Pick<ConnectorLinesModel, 'connectorLineCoords' | 'connectorsHeight'> {
-  renderState: MatrixRenderState
+  renderState: VariantRenderState
   paintedRegionRows: ReadonlyMap<number, VariantMatrixUploadData>
   matrixBlocks: VariantMatrixRenderBlock[]
   // only `left` is read here — the column origin the matrix is shifted to when

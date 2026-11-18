@@ -1,20 +1,8 @@
 import type { VariantFeatureInfo } from '../../shared/types.ts'
+import type { VariantRenderState } from '../components/variantRenderingBackendTypes.ts'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 export type { RenderBlock as VariantMatrixRenderBlock } from '@jbrowse/render-core/renderBlock'
-
-export interface MatrixRenderState {
-  canvasWidth: number
-  canvasHeight: number
-  rowHeight: number
-  scrollTop: number
-  /**
-   * The grid rows and cells snap to, in device px per CSS px; the canvas's
-   * `backingScale` when unset. The SVG export snaps to 1, so a raster of it at
-   * any whole scale lands every row on a pixel.
-   */
-  snapScale?: number
-}
 
 // A data column index IS its on-screen column index. The worker hands the
 // features back in screen order (`orderByScreenPosition`), reflecting each
@@ -34,5 +22,5 @@ export interface VariantMatrixUploadData {
 
 export type VariantMatrixRenderingBackend = PerRegionRenderingBackend<
   VariantMatrixUploadData,
-  MatrixRenderState
+  VariantRenderState
 >
