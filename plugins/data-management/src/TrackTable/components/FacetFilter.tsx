@@ -1,13 +1,13 @@
 import { useState } from 'react'
 
 import { coarseStripHTML } from '@jbrowse/core/util'
+import { naturalOrder } from '@jbrowse/core/util/tableText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import { observer } from 'mobx-react'
 
 import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
-import { trackNameCollator } from '../../shared/collator.ts'
 import { facetLabel } from './util.ts'
 
 import type { TrackTableModel } from '../trackTableModel.ts'
@@ -120,7 +120,7 @@ const FacetFilter = observer(function FacetFilter({
   const selected = filters.get(field) ?? []
   const label = facetLabel(field, nonMetadataFieldSet)
   const sorted = [...(expanded ? table.facetCounts(field) : [])].toSorted(
-    (a, b) => b[1] - a[1] || trackNameCollator.compare(a[0], b[0]),
+    (a, b) => b[1] - a[1] || naturalOrder(a[0], b[0]),
   )
   const listed =
     showAll || sorted.length <= LONG_LIST

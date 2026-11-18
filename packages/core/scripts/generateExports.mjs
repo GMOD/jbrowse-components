@@ -15,6 +15,9 @@ const srcDir = join(packageRoot, 'src')
 // table in website/scripts/generate-abi-removals.ts catches that only for a
 // subpath 4.3.0 published. Entries here were each added after something broke.
 const preservedExports = [
+  // Published, and no in-repo table uses it now that none draws a MUI grid;
+  // a plugin's grid still sits in it
+  '@jbrowse/core/ui/DataGridFlexContainer',
   '@jbrowse/core/util/nanoid',
   '@jbrowse/core/ReExports/list',
   '@jbrowse/core/ReExports/names',

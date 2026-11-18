@@ -55,6 +55,15 @@ test('a typed hyphen must match, but the track text may also drop one', () => {
   expect(decimals(buildSearchText(['v1.5']))).toBe(true)
 })
 
+test('a minus before a plain number searches for the negative value', () => {
+  const foldChange = searchMatcher('-2.3')!
+  expect(foldChange(buildSearchText(['log2FC -2.3']))).toBe(true)
+  expect(foldChange(buildSearchText(['log2FC 2.3']))).toBe(false)
+  const excluded = searchMatcher('-10x')!
+  expect(excluded(buildSearchText(['10x Genomics']))).toBe(false)
+  expect(excluded(buildSearchText(['Nanopore']))).toBe(true)
+})
+
 test('a lone minus, on the way to an excluded word, is no term yet', () => {
   expect(searchMatcher('-')).toBeUndefined()
   expect(matches('fiber -')).toEqual([true, false])

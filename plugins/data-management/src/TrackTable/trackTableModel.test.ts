@@ -103,6 +103,29 @@ describe('sorting', () => {
     ])
   })
 
+  test('a sparse metadata column sorts decimals by value, blanks last both ways', () => {
+    const { session, table } = setup()
+    for (const [trackId, score] of [
+      ['charlie', '0.5'],
+      ['alpha', '0.25'],
+    ] as const) {
+      session.sessionTracks
+        .find(t => t.trackId === trackId)!
+        .setSlot('metadata', { score })
+    }
+    table.setColumnVisible('metadata.score', true)
+    table.setSort('metadata.score', true)
+    expect(table.sortedRows.map(r => r.name).slice(0, 2)).toEqual([
+      'alpha',
+      'charlie',
+    ])
+    table.setSort('metadata.score', false)
+    expect(table.sortedRows.map(r => r.name).slice(0, 2)).toEqual([
+      'charlie',
+      'alpha',
+    ])
+  })
+
   test('sorting does not mutate filteredRows order', () => {
     const { table } = setup()
     table.setSort('name', true)

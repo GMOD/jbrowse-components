@@ -100,7 +100,10 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   `1.5` must not match "155"). With no sort, the table lists name matches
   first. The box shows "6 of 800" while a query or facet narrows the list,
   and both views highlight the matched words. The syntax is documented once,
-  in the user guide.
+  in the user guide. Every other table's search box (feature details, the
+  spreadsheet, the session manager) reads the same language from
+  `@jbrowse/core/util/searchText`; a minus before a plain number is part of
+  the number, so `-2.3` in a sheet finds a fold change.
 - **The UCSC hub connection lifts a composite's subgroups into metadata** and
   nests the trackDb stanza under `ucsc`, as jb2hubs' configs do, so a hub's
   cell line, antibody and view are the fields that group its tracks. Its

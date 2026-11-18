@@ -210,7 +210,8 @@ description, plus the table's other columns. `thp1` also finds "THP-1". The box
 shows how many tracks are kept, of how many, such as "6 of 800".
 
 - **`"quoted words"`** must appear together, as typed.
-- **`-word`** drops the tracks that contain it: `liftover -mm10`.
+- **`-word`** drops the tracks that contain it: `liftover -mm10`. A minus before
+  a plain number is part of it: `-2.3` finds that negative value.
 
 Under the filter box, a chip for each of the first few fields that group tracks
 (and "More filters" for the rest) lists that field's values with their track

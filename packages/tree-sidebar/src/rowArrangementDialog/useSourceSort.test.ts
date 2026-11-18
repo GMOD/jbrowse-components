@@ -56,6 +56,14 @@ describe('sortRows', () => {
     expect(result.map(r => r.name)).toEqual(['c', 'a', 'b'])
   })
 
+  test('digit runs compare as numbers, so sample2 precedes sample10', () => {
+    const samples = [{ name: 'sample10' }, { name: 'sample2' }]
+    expect(sortRows(samples, 'name', 'asc').map(r => r.name)).toEqual([
+      'sample2',
+      'sample10',
+    ])
+  })
+
   test('does not mutate the input array', () => {
     const before = rows.map(r => r.name)
     sortRows(rows, 'name', 'asc')

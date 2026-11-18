@@ -87,14 +87,18 @@ const DetailTable = observer(function DetailTable<
       ),
     [rows, columns],
   )
+  const matches = useMemo(() => searchMatcher(searchText), [searchText])
+  const searching = matches !== undefined
   const searchTexts = useMemo(() => {
     const texts = columns.map(columnText)
-    return rows.map(row => buildSearchText(texts.map(text => text(row))))
-  }, [rows, columns])
-  const searchedRows = useMemo(() => {
-    const matches = searchMatcher(searchText)
-    return matches ? rows.filter((_, i) => matches(searchTexts[i]!)) : rows
-  }, [rows, searchTexts, searchText])
+    return searching
+      ? rows.map(row => buildSearchText(texts.map(text => text(row))))
+      : []
+  }, [rows, columns, searching])
+  const searchedRows = useMemo(
+    () => (matches ? rows.filter((_, i) => matches(searchTexts[i]!)) : rows),
+    [rows, searchTexts, matches],
+  )
   const {
     sortedRows: shownRows,
     sortProps,

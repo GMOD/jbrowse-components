@@ -1,4 +1,4 @@
-import { trackNameCollator as collator } from '../shared/collator.ts'
+import { naturalOrder } from '@jbrowse/core/util/tableText'
 
 import type { TrackNodeSource } from './types.ts'
 
@@ -14,14 +14,14 @@ export function sortSources(
   }
   const sorted = [...sources]
   if (sortNames) {
-    sorted.sort((a, b) => collator.compare(a.sortName, b.sortName))
+    sorted.sort((a, b) => naturalOrder(a.sortName, b.sortName))
   }
   if (sortCategories) {
     // stable, so the name sort above survives within a category
     sorted.sort((a, b) => {
       const depth = Math.max(a.categories.length, b.categories.length)
       for (let i = 0; i < depth; i++) {
-        const d = collator.compare(a.categories[i] ?? '', b.categories[i] ?? '')
+        const d = naturalOrder(a.categories[i] ?? '', b.categories[i] ?? '')
         if (d !== 0) {
           return d
         }

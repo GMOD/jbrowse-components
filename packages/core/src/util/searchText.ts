@@ -2,6 +2,8 @@
 // so a term typed without them still matches
 const joiners = /[-_]/g
 
+const unsignedNumber = /^(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?$/
+
 /**
  * The text a search box matches one row against, from the fields the row
  * shows as plain text; a caller whose fields draw as markup strips it first,
@@ -27,7 +29,8 @@ export function buildSearchText(fields: unknown[]) {
  * What a search box's raw contents mean as a query. Whitespace separates
  * terms and a row must contain every one, in any field and any order;
  * `"double quotes"` keep a phrase together, and a leading `-` turns a term
- * into one the row must not contain. A lone `-`, on the way to typing an
+ * into one the row must not contain, except before a plain number: `-2.3`
+ * searches for a negative value. A lone `-`, on the way to typing an
  * excluded word, is no term yet. Lowercased to match {@link buildSearchText}.
  * Exact per term, with no typo tolerance (ADR-269).
  */
@@ -36,7 +39,11 @@ export function parseSearchQuery(filterText: string) {
     ...filterText.toLowerCase().matchAll(/(-?)(?:"([^"]*)"?|(\S+))/g),
   ].flatMap(([, minus, phrase, word]) => {
     const text = phrase ?? word ?? ''
-    return text && text !== '-' ? [{ text, exclude: minus === '-' }] : []
+    return !text || text === '-'
+      ? []
+      : minus === '-' && word !== undefined && unsignedNumber.test(word)
+        ? [{ text: `-${text}`, exclude: false }]
+        : [{ text, exclude: minus === '-' }]
   })
 }
 
