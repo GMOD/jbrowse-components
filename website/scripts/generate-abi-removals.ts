@@ -175,7 +175,7 @@ const NAME_GROUPS: NameGroup[] = [
   },
   {
     label:
-      'the color pickers, one default export per subpath: `@jbrowse/core/ui/PopoverPicker` is the popover, and the default of `@jbrowse/core/ui/ColorPicker`, the popover in 4.3.0, is now the inline panel',
+      'the color pickers, one default export per subpath: `@jbrowse/core/ui/PopoverPicker` is the popover, which besides `{ color, onChange }` now takes a required `label` naming what the swatch colors (a screen reader announces it), and the default of `@jbrowse/core/ui/ColorPicker`, the popover in 4.3.0, is now the inline panel',
     names: ['PopoverPicker', 'ColorPicker'],
   },
   {
