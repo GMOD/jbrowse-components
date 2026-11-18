@@ -84,7 +84,7 @@ describe('computeFrequenciesAndThresholds (interbase depth)', () => {
   })
 })
 
-// Only the deletion branch of gap.slang / drawGaps reads gapFrequencies, so a
+// Only the deletion branch of gap.slang / its mark reads gapFrequencies, so a
 // skip must neither carry one nor contribute to the count at a deletion that
 // starts where it does — a splice donor doubling as a deletion site.
 describe('computeFrequenciesAndThresholds (gap frequencies)', () => {

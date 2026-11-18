@@ -11,9 +11,10 @@ import hpmath;
 public static const uint VERTS_PER_INSTANCE = 6u;
 
 // What `gapTypes[i]` means. The worker writes it, the branches below read it,
-// and so do drawGaps, the hit test, the base-pair sort, the label walk and the
-// tooltip — seven sites that each hand-spelled the literal. `export-consts` is
-// the move insertion.slang already made for its own thresholds.
+// and so do the gap marks, the hit test, the base-pair sort, the label walk
+// and the tooltip — seven sites that each hand-spelled the literal.
+// `export-consts` is the move insertion.slang already made for its own
+// thresholds.
 static const uint GAP_DELETION = 0u;
 static const uint GAP_SKIP     = 1u;
 
@@ -74,10 +75,11 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   }
   if (alpha <= 0.0) { return discardVertex(); }
 
-  // Widen to a minimum of 1 CSS px, as drawGaps' `Math.max(1, widthPx)` does:
-  // a few-bp deletion is sub-pixel at ordinary zoom, and without this it
-  // rasterized to partial coverage (or nothing) on the GPU while Canvas2D and
-  // SVG export drew a full 1px mark. The alpha fade above is what's meant to
+  // Widen to a minimum of 1 CSS px, as Canvas2D's span rect does
+  // (`spanRectWidthPx`, the width `fillSpanRect` fills): a few-bp deletion is
+  // sub-pixel at ordinary zoom, and without this it rasterized to partial
+  // coverage (or nothing) on the GPU while Canvas2D and SVG export drew a full
+  // 1px mark. The alpha fade above is what's meant to
   // thin these out, not the geometry.
   float2 xx = expandMinWidthX(
     bpToClipX(inst.startOff, u), bpToClipX(inst.endOff, u), u.canvasW);

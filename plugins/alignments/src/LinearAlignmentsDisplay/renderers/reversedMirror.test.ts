@@ -153,7 +153,7 @@ function pileupData(): PileupDataResult {
     segmentEdgeFlags: new Uint8Array([0b11, 0b11]),
     numSegments: 2,
 
-    // deletion gap inside read 0 — drawGaps resolves two edges
+    // deletion gap inside read 0 — the gap mark resolves two edges
     gapPositions: new Uint32Array([1012, 1015]),
     gapYs: new Uint16Array([0]),
     gapTypes: new Uint8Array([0]),

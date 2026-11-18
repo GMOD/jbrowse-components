@@ -299,7 +299,7 @@ function deletionDepths(
  * packers index this by gap index.
  *
  * Only a deletion has a frequency to draw: `gapFrequencies` is read in the
- * deletion branch of gap.slang and of drawGaps, and nowhere else. Anchoring a
+ * deletion branch of gap.slang and its gap mark, and nowhere else. Anchoring a
  * skip's start in the same per-bp buckets therefore bought nothing and cost
  * correctness twice over — a deletion beginning at a splice donor had every
  * spliced read's skip added to its own count, so it read as more frequent than

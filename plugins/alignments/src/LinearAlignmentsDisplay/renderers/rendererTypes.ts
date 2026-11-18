@@ -213,7 +213,7 @@ export function shouldOutlineReads(state: RenderState) {
 // mismatch at the same zoom), and `widthPx²` for the multi-bp gap deletion — its
 // OWN on-screen span squared, NOT `pxPerBp²`, so a wide deletion stays opaque
 // when zoomed out instead of fading like a single base. Both the GPU
-// (gap.slang) and Canvas2D (drawGaps) pass `widthPx²`; keep them together.
+// (gap.slang) and Canvas2D (the gap mark) pass `widthPx²`; keep them together.
 // Squaring only changes the fade *rate*: a feature is sub-pixel exactly when
 // base < 1, i.e. when the underlying width (`pxPerBp` for marks/insertions,
 // `widthPx` for deletions) is < 1, so the gate fires on the same features.
