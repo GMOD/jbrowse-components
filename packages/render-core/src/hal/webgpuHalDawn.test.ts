@@ -324,6 +324,21 @@ test('a max line allocates nothing and submits one command buffer', async () => 
   expect(submits).toEqual([1, 1])
 })
 
+test('a union pass draws into a layer of the new size after a resize', async () => {
+  const { layers, submits } = await deviceCallsOf(async () => {
+    const { hal, frame } = await barAndLine(4)
+    frame()
+    hal.resize(100, 60)
+    frame(60)
+    hal.dispose()
+  })
+  expect(layers).toEqual([
+    { size: [100, 40], destroyed: true },
+    { size: [100, 60], destroyed: true },
+  ])
+  expect(submits).toEqual([2, 2])
+})
+
 // A frame that throws between beginFrame and endFrame never submits; the
 // next frame begins a layer pass of its own on the resized layer.
 test('a frame left open leaves no layer pass to the next frame', async () => {
@@ -342,4 +357,47 @@ test('a frame left open leaves no layer pass to the next frame', async () => {
   } finally {
     error.mockRestore()
   }
+})
+
+// Blocks meeting mid-pixel share column 50, which the first block composites.
+test('the second block composites only the columns the first left', async () => {
+  const scissors: number[][][] = []
+  const createEncoder = device.createCommandEncoder.bind(device)
+  const encoderSpy = jest
+    .spyOn(device, 'createCommandEncoder')
+    .mockImplementation(desc => {
+      const encoder = createEncoder(desc)
+      const begin = encoder.beginRenderPass.bind(encoder)
+      jest.spyOn(encoder, 'beginRenderPass').mockImplementation(passDesc => {
+        const pass = begin(passDesc)
+        const rects: number[][] = []
+        scissors.push(rects)
+        const setScissorRect = pass.setScissorRect.bind(pass)
+        jest.spyOn(pass, 'setScissorRect').mockImplementation((x, y, w, h) => {
+          rects.push([x, y, w, h])
+          setScissorRect(x, y, w, h)
+        })
+        return pass
+      })
+      return encoder
+    })
+  try {
+    await validationErrorsOf(async () => {
+      const { hal, frame } = await barAndLine(4)
+      frame()
+      hal.dispose()
+    })
+  } finally {
+    encoderSpy.mockRestore()
+  }
+  const [frameScissors, layerScissors] = scissors
+  expect(frameScissors).toEqual([
+    [0, 0, 51, 40],
+    [50, 0, 50, 40],
+    [51, 0, 49, 40],
+  ])
+  expect(layerScissors).toEqual([
+    [0, 0, 51, 40],
+    [50, 0, 50, 40],
+  ])
 })

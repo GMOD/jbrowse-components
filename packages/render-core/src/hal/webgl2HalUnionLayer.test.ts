@@ -4,8 +4,9 @@ import { WebGL2Hal } from './webgl2Hal.ts'
 import type { BlendState } from './types.ts'
 
 // A WebGL2 context that links anything and logs the calls that decide where a
-// union pass's fragments land: the bound framebuffer, the blend equation, the
-// clip and each draw, by which program drew it.
+// union pass's fragments land: the bound framebuffer and texture, the blend
+// equation, the clip and each draw, by which program drew it. The drawing
+// buffer's size is the test's to change.
 function fakeContext() {
   const log: string[] = []
   const created = { framebuffers: 0, deleted: 0 }
@@ -55,6 +56,17 @@ function fakeContext() {
     deleteFramebuffer: () => {
       created.deleted++
     },
+    framebufferTexture2D: (
+      _target: unknown,
+      _attachment: unknown,
+      _textarget: unknown,
+      texture: unknown,
+    ) => {
+      names.set(texture, 'layer')
+    },
+    bindTexture: (_target: unknown, texture: unknown) => {
+      log.push(`texture ${texture ? (names.get(texture) ?? 'pass') : 'none'}`)
+    },
     bindFramebuffer: (_target: unknown, fbo: unknown) => {
       log.push(`bind ${fbo ? names.get(fbo) : 'canvas'}`)
     },
@@ -97,7 +109,7 @@ function fakeContext() {
     height: 40,
     getContext: (kind: string) => (kind === 'webgl2' ? context : null),
   })
-  return { canvas, log, created }
+  return { canvas, gl, log, created }
 }
 
 async function halWith(blendState: BlendState) {
@@ -131,7 +143,7 @@ test('a union pass clears its layer at its first draw of a frame, draws into it 
   log.length = 0
   twoBlocks(hal)
 
-  expect(log).toEqual([
+  expect(log.filter(l => !l.startsWith('texture'))).toEqual([
     'disable SCISSOR_TEST',
     'bind canvas',
     'viewport 0,0,160,40',
@@ -180,7 +192,9 @@ test('a new layer is cleared before its first draw', async () => {
   twoBlocks(hal)
 
   expect(
-    log.slice(log.indexOf('bind layer1'), log.indexOf('draw pass')),
+    log
+      .slice(log.indexOf('bind layer1'), log.indexOf('draw pass'))
+      .filter(l => !l.startsWith('texture')),
   ).toEqual([
     'bind layer1',
     'bind canvas',
@@ -230,4 +244,38 @@ test('the layer goes with the render targets and comes back at the next draw', a
   expect(created).toEqual({ framebuffers: 2, deleted: 1 })
   hal.dispose()
   expect(created).toEqual({ framebuffers: 2, deleted: 2 })
+})
+
+test("the layer's texture leaves its unit after each composite", async () => {
+  const { hal, log } = await halWith({ op: 'union' })
+  twoBlocks(hal)
+  log.length = 0
+  twoBlocks(hal)
+
+  expect(
+    log.filter(l => l.startsWith('texture') || l.startsWith('draw')),
+  ).toEqual([
+    'texture pass',
+    'texture pass',
+    'draw pass',
+    'texture layer',
+    'draw layerOver',
+    'texture none',
+    'texture pass',
+    'texture pass',
+    'draw pass',
+    'texture layer',
+    'draw layerOver',
+    'texture none',
+  ])
+})
+
+test('a new drawing buffer size re-creates the layer at its next draw', async () => {
+  const { hal, gl, created } = await halWith({ op: 'union' })
+  twoBlocks(hal)
+  twoBlocks(hal)
+  expect(created).toEqual({ framebuffers: 1, deleted: 0 })
+  gl.drawingBufferWidth = 200
+  twoBlocks(hal)
+  expect(created).toEqual({ framebuffers: 2, deleted: 1 })
 })
