@@ -50,6 +50,7 @@ export const normalInsertSizeConfigSchema = ConfigurationSchema(
         "the longest insert in bp a pair counts as normal; longer is long. Pins the band with min; unset, each region's band is sampled from the pairs in that region",
     },
   },
+  { closed: true },
 )
 
 type NormalInsertSizeConfig = Instance<typeof normalInsertSizeConfigSchema>

@@ -1,8 +1,13 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { isCallbackValue, readConfObject } from '@jbrowse/core/configuration'
+import {
+  applyConfSettings,
+  isCallbackValue,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
+import baseConfigSchemaFactory from './baseConfigSchema.ts'
 import configSchemaFactory from './configSchema.ts'
 
 function createPluginManager() {
@@ -413,4 +418,30 @@ test('mouseover lifts to tooltip.field on the feature display, and away on the s
     { pluginManager: pm },
   )
   expect(getSnapshot(base)).not.toHaveProperty('mouseover')
+})
+
+describe('a misspelt label part refuses the labels bag before any part is written', () => {
+  const pm = createPluginManager()
+  test.each([
+    [
+      'the feature display',
+      configSchemaFactory(pm),
+      'FeatureLabels takes name, description and subfeatures, not descripton',
+    ],
+    [
+      'its base',
+      baseConfigSchemaFactory(pm),
+      'CanvasFeatureLabels takes name and description, not descripton',
+    ],
+  ])('on %s', (_, schema, message) => {
+    const config = schema.create({ displayId: 'typo' }, { pluginManager: pm })
+    const report = applyConfSettings(config, {
+      labels: { name: { show: false }, descripton: { show: false } },
+    })
+    expect(report.applied).toEqual([])
+    expect(report.failed).toEqual([
+      { key: 'labels', error: expect.stringContaining(message) },
+    ])
+    expect(getSnapshot(config)).not.toHaveProperty('labels')
+  })
 })

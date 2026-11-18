@@ -1,4 +1,10 @@
 import {
+  ConfigurationSchema,
+  applyConfSettings,
+} from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
+import {
   normalInsertSizeConfigSchema,
   normalInsertSizeProblems,
   pinnedInsertSizeBandOf,
@@ -27,4 +33,23 @@ test('one end, or ends out of order, pin nothing and are named', () => {
       expect.stringMatching(/^normalInsertSize: /),
     ])
   }
+})
+
+test('a misspelt end refuses the bag before the other end is written', () => {
+  const holder = ConfigurationSchema('InsertSizeHolder', {
+    normalInsertSize: normalInsertSizeConfigSchema,
+  }).create()
+  const report = applyConfSettings(holder, {
+    normalInsertSize: { min: 150, mxa: 600 },
+  })
+  expect(report.applied).toEqual([])
+  expect(report.failed).toEqual([
+    {
+      key: 'normalInsertSize',
+      error: expect.stringContaining(
+        'NormalInsertSize takes min and max, not mxa',
+      ),
+    },
+  ])
+  expect(getSnapshot(holder)).toEqual({})
 })

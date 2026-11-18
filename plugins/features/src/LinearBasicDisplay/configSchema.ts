@@ -100,7 +100,7 @@ export default function configSchemaFactory(pluginManager?: PluginManager) {
            */
           subfeatures: featureSubfeatureLabelsConfigSchema,
         },
-        { plot: true },
+        { plot: true, closed: true },
       ),
       /**
        * #slot chevrons

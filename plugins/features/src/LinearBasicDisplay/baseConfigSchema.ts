@@ -115,7 +115,7 @@ export default function baseConfigSchemaFactory(
            */
           description: featureDescriptionLabelConfigSchema,
         },
-        { plot: true },
+        { plot: true, closed: true },
       ),
     },
     {
