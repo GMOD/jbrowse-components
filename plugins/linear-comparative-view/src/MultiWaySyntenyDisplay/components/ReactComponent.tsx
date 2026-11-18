@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from 'react'
 
-import { ScrollChrome } from '@jbrowse/core/ui'
+import { VerticalScrollbar } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
@@ -59,7 +59,7 @@ const MultiWayBody = observer(function MultiWayBody({
         <LaneLayerTitles model={model} />
         <LaneHeaders model={model} />
       </div>
-      <ScrollChrome model={model} controlsId={canvasId} />
+      <VerticalScrollbar model={model} controlsId={canvasId} />
       <PointerLayer mouseTracker={mouseTracker}>
         {mouse =>
           mouse && hoverTarget ? (

@@ -1,6 +1,6 @@
 import { Fragment, useId, useState } from 'react'
 
-import { ScrollChrome } from '@jbrowse/core/ui'
+import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import {
   BAND_SEAM_HIT_PX,
@@ -91,8 +91,8 @@ const PileupBody = observer(function PileupBody({
       <GroupResizeHandles model={model} />
 
       {/* the pileup's own viewport, so in ungrouped mode it starts below the
-          pinned coverage band rather than fading the band itself */}
-      <ScrollChrome
+          pinned coverage band rather than beside the band itself */}
+      <VerticalScrollbar
         model={model}
         controlsId={canvasId}
         top={stickyBandHeight}

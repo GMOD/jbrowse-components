@@ -150,7 +150,7 @@ Fix the stubs first.
 ## Height and scroll are hooks
 
 A display that scrolls its own canvas overrides `scrollContentHeight` and
-`scrollViewportHeight`, and hands itself to `ScrollChrome` and the wheel hook;
+`scrollViewportHeight`, and hands itself to `VerticalScrollbar` and the wheel hook;
 one that grows to content overrides `growTargetHeight`. **`growTargetHeight` may
 not read the reactive `height` getter**: in grow mode it _is_ `grownHeight`, a
 computed cycle. Read `fitTargetHeight` / `growMaxHeight`.

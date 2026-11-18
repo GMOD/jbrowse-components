@@ -1,6 +1,6 @@
 import React, { useCallback, useId, useState } from 'react'
 
-import { ScrollChrome } from '@jbrowse/core/ui'
+import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { capitalizeFirst } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
@@ -315,7 +315,7 @@ const FeatureBody = observer(function FeatureBody({
         <GroupLabelsLayer model={model} />
       </div>
 
-      <ScrollChrome model={model} controlsId={canvasId} />
+      <VerticalScrollbar model={model} controlsId={canvasId} />
 
       <BottomRightIndicators scrollableHeight={model.scrollableHeight}>
         <SoloSelectionChip

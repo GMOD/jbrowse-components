@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 
-import { ScrollChrome } from '@jbrowse/core/ui'
+import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import { BandSeamHandle } from '@jbrowse/display-kit/BandSeamHandle'
@@ -238,7 +238,7 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
       {/* with no rows the band is the display, scrolled and resized by the
           track's own chrome; with the rows hidden the track's edge resizes it */}
       {model.recordsOnly ? (
-        <ScrollChrome model={model} controlsId={id} />
+        <VerticalScrollbar model={model} controlsId={id} />
       ) : model.rowsHidden ? null : (
         <BandSeamHandle
           data-testid="records_band_resize_handle"

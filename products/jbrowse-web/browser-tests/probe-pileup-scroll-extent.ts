@@ -5,8 +5,8 @@
 //
 // `e122978eaf` fixed this for the feature display: the fetch buffers half
 // a screen either side (`bufferedVisibleRegions`) and the pack places every
-// buffered feature, so the scrollbar and the edge shadow — two readouts of one
-// number — reported hidden content on a track showing all of it, and offered a
+// buffered feature, so the scrollbar reported hidden content on a track
+// showing all of it, and offered a
 // scroll onto blank canvas. The pileup lays out over `loadedRegions` the same
 // way and has no equivalent narrowing, and its `heightMode` defaults to `fixed`,
 // which scrolls. So the mechanism is present on the default configuration; this

@@ -334,7 +334,7 @@ filling it and the pointer dispatching on it read that one fold**
 **The container the rows are offset into is 0x0**, everything in it being
 absolutely positioned. So it is the right parent for a child placed by
 `left`/`top` (the canvas, the hover box, the glyph overlay) and the wrong one for
-a child placed by `right`: `ScrollChrome` mounted there put the thumb a track
+a child placed by `right`: `VerticalScrollbar` mounted there put the thumb a track
 width off the display's LEFT edge, where `contain: strict` clipped it. Anything
 anchored to the right edge, or that applies `rowsTopOffset` itself, goes on the
 display's own box, where `RowsPanel` mounts the scrollbar and the row labels.

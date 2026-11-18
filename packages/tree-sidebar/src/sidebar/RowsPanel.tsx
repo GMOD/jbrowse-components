@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 
-import { ScrollChrome } from '@jbrowse/core/ui'
+import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { useRowVirtualScroll } from '@jbrowse/core/util/useRowVirtualScroll'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
@@ -84,7 +84,7 @@ export const RowsPanel = observer(function RowsPanel({
         annotations={model.rowAnnotationColors}
         columnLabels={model.rowColumnLabels}
       />
-      <ScrollChrome model={model} controlsId={id} top={top} />
+      <VerticalScrollbar model={model} controlsId={id} top={top} />
     </>
   )
 })
