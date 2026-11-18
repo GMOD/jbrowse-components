@@ -56,8 +56,11 @@ not its autorun. `ChordVariantDisplay` and the breakpoint split view declare
 **A user cancel is durable, and the skeleton owns how durable.** No fetch
 trigger un-cancels it: every installer reads `fetchCanceled` tracked, under
 `reloadCounter` and above every gate. Both LGV families lapse it on a viewport
-change (`ClearBlockingStateOnViewportChange` per-region,
-`ClearCancelOnViewportChange` global); Retry lapses it everywhere. The
+change through `lapseHeldFetchOnViewportChange`, which runs `lapseHeldFetch`
+while `fetchHeld` and leaves held data loaded and drawn. The per-region
+`fetchHeld` adds an error, which its plan skips on; the global one is the
+cancel alone, since an error does not hold that fetch and a move that changes
+its key refetches anyway. Retry lapses it everywhere. The
 comparative family has the gate and not the lapse, on purpose; the reason is in
 `installComparativeFetchAutorun`'s docstring.
 

@@ -164,6 +164,10 @@ const TestDisplay = types
     get gateSkipsMeasuredViewport() {
       return self.regionTooLarge && !self.gateMeasurementStale
     },
+    // `FetchMixin`'s default, which this family keeps
+    get fetchHeld() {
+      return self.fetchCanceled
+    },
   }))
   .actions(self => ({
     // `BaseDisplay`'s no-op default, which the installer's hover clear calls
@@ -255,6 +259,13 @@ const TestDisplay = types
     cancelFetchByUser() {
       self.fetchRotation.cancel()
       self.fetchCanceled = true
+    },
+  }))
+  .actions(self => ({
+    // `FetchMixin`'s viewport-change lapse, over the pair above
+    lapseHeldFetch() {
+      self.cancelFetch()
+      self.setError(undefined)
     },
   }))
 

@@ -38,11 +38,12 @@ import { parseSourceFileSyntactic } from './sourceCorpus.ts'
 
 const SOURCE = 'packages/display-kit/src/installPerRegionFetchAutoruns.ts'
 
-// The two installers `installPerRegionFetchAutoruns` builds on. Each names the
-// argument its autorun name comes from: an options object for the general one,
-// a positional string for the displayed-regions helper.
+// The installers `installPerRegionFetchAutoruns` builds on. Each names the
+// argument its autorun name comes from: an options object for the general one
+// and the viewport lapse, a positional string for the displayed-regions helper.
 const INSTALLERS: Record<string, 'options' | 'thirdArg'> = {
   autorunOnReadyView: 'options',
+  lapseHeldFetchOnViewportChange: 'options',
   onDisplayedRegionsChange: 'thirdArg',
 }
 

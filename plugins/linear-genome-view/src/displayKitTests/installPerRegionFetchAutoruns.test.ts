@@ -398,6 +398,79 @@ describe('blocking states', () => {
   })
 })
 
+// ClearBlockingStateOnViewportChange lapses the flag and nothing else: the
+// regions that did land stay loaded and drawn, and the plan asks for the one
+// that did not.
+describe('a viewport move lapses a cancel or an error and keeps what landed', () => {
+  async function threeRegions() {
+    const env = setup()
+    const { display, view } = env
+    view.setDisplayedRegions(
+      [0, 1, 2].map(i => ({
+        assemblyName: 'volvox',
+        refName: 'ctgA',
+        start: i * 1000,
+        end: (i + 1) * 1000,
+      })),
+    )
+    view.showAllRegions()
+    await quiet(display)
+    display.markCanvasDrawn()
+    return env
+  }
+
+  function lastFetched(display: PerRegionTestDisplay) {
+    return display.fetchLog.at(-1)!.map(n => n.displayedRegionIndex)
+  }
+
+  // a small zoom, since every region is on screen and a pan would clamp
+  async function moveAndRefetch(
+    display: PerRegionTestDisplay,
+    view: LinearGenomeViewModel,
+  ) {
+    expect(display.loadedRegions.size).toBe(2)
+    view.zoomTo(view.bpPerPx * 0.9)
+    await quiet(display)
+    expect(lastFetched(display)).toEqual([0])
+    expect(display.canvasDrawn).toBe(true)
+    expect(display.loadedData.get(0)).toBe('refetched')
+    expect(display.loadedData.get(1)).toBe('data')
+    expect(display.loadedData.get(2)).toBe('data')
+  }
+
+  it('after an error', async () => {
+    const { display, view, control } = await threeRegions()
+    const assertLogged = expectFetchErrorLogged()
+    display.dropLoadedRegion(0)
+    control.failNextFetch = true
+    await quiet(display)
+    expect(display.error).toBeInstanceOf(Error)
+    expect(lastFetched(display)).toEqual([0])
+    assertLogged()
+
+    control.payloadTag = 'refetched'
+    await moveAndRefetch(display, view)
+    expect(display.error).toBeUndefined()
+  })
+
+  it('after a user cancel', async () => {
+    const { display, view, control } = await threeRegions()
+    control.fetchDelayMs = 2000
+    display.dropLoadedRegion(0)
+    await waitFor(() => {
+      expect(display.isLoading).toBe(true)
+    })
+    display.cancelFetchByUser()
+    control.fetchDelayMs = 0
+    await quiet(display)
+    expect(display.fetchCanceled).toBe(true)
+
+    control.payloadTag = 'refetched'
+    await moveAndRefetch(display, view)
+    expect(display.fetchCanceled).toBe(false)
+  })
+})
+
 describe('DisplayedRegionsChange', () => {
   // The estimate's own clear is `RegionTooLargeMixin`'s autorun, guarded on the
   // opt-in — so the gate is on here, as it is on every display that can hold

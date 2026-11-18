@@ -230,6 +230,14 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
+         * A user cancel or an error, both of which the fetch plan skips on.
+         */
+        get fetchHeld() {
+          return self.fetchCanceled || !!self.error
+        },
+
+        /**
+         * #getter
          * The blocks the canvas draws; one displayed region may make several,
          * sharing a GPU buffer under different scissor clips. Override to
          * return [] to suppress drawing, which clears the canvas.
@@ -474,7 +482,7 @@ export default function MultiRegionDisplayMixin() {
          * #action
          * Overridable hook (no-op base): drop what this display holds beside
          * the store. Called by `clearAllRpcData`: on a displayed-regions
-         * change, a viewport move past an error or cancel, and `reload()`.
+         * change and `reload()`.
          */
         clearDisplaySpecificData() {},
         /**

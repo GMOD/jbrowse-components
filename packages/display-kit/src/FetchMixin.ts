@@ -231,6 +231,18 @@ export default function FetchMixin() {
       get awaitingDependentData(): boolean {
         return false
       },
+
+      /**
+       * #getter
+       * Overridable hook (default `fetchCanceled`), read by the viewport-change
+       * lapse both LGV families install: a state that holds the fetch off until
+       * the view moves. The per-region family adds an error, which its plan
+       * skips on; the global skeleton is not held by an error, since a move
+       * that changes its key refetches anyway.
+       */
+      get fetchHeld(): boolean {
+        return self.fetchCanceled
+      },
     }))
     .views(self => {
       const settings = makeSettingsFetchInputs(self)
@@ -365,6 +377,18 @@ export default function FetchMixin() {
           self.fetchGeneration++
           debugStatus(self.fetchGeneration, 'fetch-end')
         }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * The viewport-change lapse of `fetchHeld`: clear a user cancel and an
+       * error and bump `fetchGeneration`, leaving held data and the drawn
+       * canvas alone, so the fetch autorun asks for only what is missing.
+       */
+      lapseHeldFetch() {
+        self.cancelFetch()
+        self.setError(undefined)
       },
     }))
     .actions(self => ({

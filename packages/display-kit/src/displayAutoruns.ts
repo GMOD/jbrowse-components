@@ -2,6 +2,7 @@ import { morphClockMs } from '@jbrowse/core/util/animationAllowed'
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
+import { untracked } from 'mobx'
 
 import { containingHost } from './foundationView.ts'
 
@@ -87,6 +88,33 @@ export function onDisplayedRegionsChange(
     view => {
       void view.displayedRegions
       clear()
+    },
+    { name },
+  )
+}
+
+/**
+ * Lapse a held fetch when the viewport moves: `lapseHeldFetch()` whenever
+ * `fetchHeld`, which each family's foundation defines. Held data stays loaded
+ * and drawn, so the fetch autorun asks for only what never landed. Both LGV
+ * families install it; the comparative family does not, for the reason in
+ * `installComparativeFetchAutorun`'s docstring.
+ */
+export function lapseHeldFetchOnViewportChange(
+  self: IAnyStateTreeNode & {
+    fetchHeld: boolean
+    lapseHeldFetch: () => void
+  },
+  { name }: { name: string },
+) {
+  autorunOnReadyView(
+    self,
+    view => {
+      void view.visibleRegions
+      // eslint-disable-next-line no-restricted-syntax -- self-write: lapseHeldFetch clears what fetchHeld reads
+      if (untracked(() => self.fetchHeld)) {
+        self.lapseHeldFetch()
+      }
     },
     { name },
   )

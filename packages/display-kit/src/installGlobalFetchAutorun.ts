@@ -2,10 +2,12 @@ import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
-import { untracked } from 'mobx'
 
 import { fetchMixinLifecycle } from './FetchMixin.ts'
-import { autorunOnReadyView } from './displayAutoruns.ts'
+import {
+  autorunOnReadyView,
+  lapseHeldFetchOnViewportChange,
+} from './displayAutoruns.ts'
 import { measurementOf, openGateCommit } from './gateCommit.ts'
 import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
 import { heldDataAnswers } from './regionTooLargeUtils.ts'
@@ -37,9 +39,8 @@ export interface GlobalFetchHost extends KeyedFetchHost, GateCommitHost {}
 
 export interface GlobalFetchAutorunHost
   extends GlobalFetchHost, FetchSkeletonHost {
-  // read by the viewport-change clear of a user cancel
-  fetchCanceled: boolean
-  cancelFetch: () => void
+  fetchHeld: boolean
+  lapseHeldFetch: () => void
   awaitingPrerequisite: boolean
   isMinimized: boolean
   gateSkipsMeasuredViewport: boolean
@@ -165,19 +166,9 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
     { name: 'ClearHeldDataOnDisplayedRegionsChange' },
   )
 
-  // A user cancel lapses when the view moves. The flag is read untracked, or
-  // setting it would fire this and wipe it.
-  autorunOnReadyView(
-    self,
-    view => {
-      void view.visibleRegions
-      // eslint-disable-next-line no-restricted-syntax -- self-write: cancelFetch clears the flag this reads
-      if (untracked(() => self.fetchCanceled)) {
-        self.cancelFetch()
-      }
-    },
-    { name: 'ClearCancelOnViewportChange' },
-  )
+  // A user cancel lapses when the view moves. An error does not: this fetch is
+  // not held by one, and a move that changes the key refetches on its own.
+  lapseHeldFetchOnViewportChange(self, { name: 'ClearCancelOnViewportChange' })
 
   // Drop a stored hover when the content it names moves.
   addDisposer(self, installClearHoverOnViewportChange(self))

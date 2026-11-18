@@ -6,10 +6,10 @@ import {
 import { getContainingTrack } from '@jbrowse/core/util/mstUtils'
 import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
-import { untracked } from 'mobx'
 
 import {
   autorunOnReadyView,
+  lapseHeldFetchOnViewportChange,
   makeSettingsLoopGuard,
   onDisplayedRegionsChange,
 } from './displayAutoruns.ts'
@@ -52,6 +52,8 @@ export interface PerRegionFetchHost extends FetchSkeletonHost {
   fetchNeeded: (needed: IndexedRegion[]) => void
   setError: (error?: unknown) => void
   clearAllRpcData: () => void
+  fetchHeld: boolean
+  lapseHeldFetch: () => void
   invalidateSettings: () => void
   clearHoveredFeature: () => void
 }
@@ -147,20 +149,10 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
     { name: 'SettingsInvalidate' },
   )
 
-  // The flags are read untracked, or setting one would fire this and wipe it.
-  //
-  // #autorun `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself
-  autorunOnReadyView(
-    self,
-    view => {
-      void view.visibleRegions
-      // eslint-disable-next-line no-restricted-syntax -- self-write: clearAllRpcData clears the flags this reads
-      if (untracked(() => self.fetchCanceled || self.error)) {
-        self.clearAllRpcData()
-      }
-    },
-    { name: 'ClearBlockingStateOnViewportChange' },
-  )
+  // #autorun `view.visibleRegions` | `lapseHeldFetch()` when `error` or `fetchCanceled` is set: clear both and bump `fetchGeneration`, keeping `loadedRegions` and the drawn canvas, so the fetch autorun asks for only the regions that never landed. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself
+  lapseHeldFetchOnViewportChange(self, {
+    name: 'ClearBlockingStateOnViewportChange',
+  })
 
   // Install order does not matter: `leadingEdgeAutorun`'s first run is a
   // microtask, after every autorun above has made its first pass.
