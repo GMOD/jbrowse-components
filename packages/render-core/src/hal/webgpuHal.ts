@@ -134,17 +134,14 @@ interface PassTextureState {
 
 type Rect = PxRect
 
-// A union pass's layer: a one-sample canvas-sized target, and the composite's
-// one instance, which carries the layer's size.
 interface UnionLayer {
   texture: GPUTexture
   view: GPUTextureView
   instance: GPUBuffer
 }
 
-// A union pass's layer within the open frame: its own render pass, begun at
-// the pass's first draw and submitted ahead of the frame's, and the rects
-// composited from it so far.
+// Submitted ahead of the frame's encoder, so a composite reads every draw of
+// the pass in the frame.
 interface LayerFrame {
   encoder: GPUCommandEncoder
   pass: GPURenderPassEncoder
@@ -209,8 +206,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private currentEncoder: GPUCommandEncoder | null = null
   private currentPass: GPURenderPassEncoder | null = null
 
-  // By union pass id. Allocated at the pass's first draw, so a display with no
-  // union pass holds none.
   private layers = new Map<string, UnionLayer>()
   private layerFrames = new Map<string, LayerFrame>()
 
@@ -877,13 +872,6 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
   }
 
-  /**
-   * Draw a union pass into its layer under the frame's clip, then composite
-   * the layer into the frame under the scissor, less what an earlier draw of
-   * the pass composited. The layer's own pass runs ahead of the frame's, so
-   * the composite reads every draw of the pass, which is why its draws must
-   * scissor apart.
-   */
   private drawUnion(
     passId: string,
     main: GPURenderPassEncoder,
@@ -922,7 +910,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
   }
 
-  private wholeCanvas(): Rect {
+  private wholeCanvas() {
     return { x: 0, y: 0, w: this.canvas.width, h: this.canvas.height }
   }
 

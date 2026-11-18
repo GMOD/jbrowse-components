@@ -824,9 +824,7 @@ export const lineCenterMark: MarkShape<LineChannels, LineParams> = {
   ink: centerInk,
 }
 
-// The linear variant over earlier marks: its capsules union in a layer of
-// their own, which the HAL composites over what is already drawn, where a max
-// blend into the frame keeps the brighter of line and ground.
+// Max into the frame would keep the brighter of the line and the marks under it.
 const lineCenterOverMark: MarkShape<LineChannels, LineParams> = {
   ...lineCenterMark,
   pass: {
@@ -839,10 +837,7 @@ const lineCenterOverMark: MarkShape<LineChannels, LineParams> = {
   },
 }
 
-/**
- * The shape a line's `interpolate` draws with, `overMarks` where another
- * shape draws before it into the same frame.
- */
+/** `overMarks` where another shape draws before the line into its block. */
 export function lineMarkOf(interpolate: LineInterpolate, overMarks: boolean) {
   return interpolate === 'linear'
     ? overMarks

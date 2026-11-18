@@ -151,8 +151,6 @@ interface RegionPassBuffer {
   count: number
 }
 
-// A union pass's layer at the drawing buffer's size, and the composite's one
-// instance, which carries that size.
 interface GlLayer {
   fbo: WebGLFramebuffer
   texture: WebGLTexture
@@ -212,13 +210,10 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   // when isContextLost() already answers false.
   private contextWasLost = false
 
-  // By union pass id, allocated at the pass's first draw, so a display with no
-  // union pass holds none; and the rects composited from each this frame.
   private layers = new Map<string, GlLayer>()
   private composited = new Map<string, PxRect[]>()
 
-  // The caller's clip in device px, top-left origin: a composite draws under
-  // its own and puts this back.
+  // Device px from the top left.
   private scissor: Clip = { on: false, x: 0, y: 0, w: 0, h: 0 }
   private viewport: Clip = { on: false, x: 0, y: 0, w: 0, h: 0 }
 
@@ -715,9 +710,8 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     return done
   }
 
-  // The layer under the caller's scissor, less what an earlier draw of the
-  // pass composited, then the caller's clip back. The layer's texture leaves
-  // its unit after, so no later draw into the layer samples its own target.
+  // The layer's texture leaves its unit after, so no later draw into the layer
+  // samples its own target.
   private composite(passId: string, layer: GlLayer, done: PxRect[]) {
     const gl = this.gl
     const overId = layerOverId(passId)

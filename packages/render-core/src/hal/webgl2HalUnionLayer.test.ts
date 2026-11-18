@@ -92,14 +92,11 @@ function fakeContext() {
           ? target[name]
           : noop,
   })
-  const canvas = {
+  const canvas = Object.assign(document.createElement('canvas'), {
     width: 160,
     height: 40,
-    style: {},
-    addEventListener: noop,
-    removeEventListener: noop,
     getContext: (kind: string) => (kind === 'webgl2' ? context : null),
-  } as unknown as HTMLCanvasElement
+  })
   return { canvas, log, created }
 }
 

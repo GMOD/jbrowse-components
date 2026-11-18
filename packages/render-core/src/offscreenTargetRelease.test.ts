@@ -4,6 +4,7 @@ import { observable, runInAction } from 'mobx'
 import { RenderLifecycleMixin } from './RenderLifecycleMixin.ts'
 import { MockHal } from './hal/mockHal.ts'
 import { installUpload } from './installUpload.ts'
+import { spanMark } from './marks/spanMark.ts'
 import { GpuPerRegionRenderingBackend } from './perRegionRenderingBackend.ts'
 
 import type { PipelineDescriptor } from './hal/types.ts'
@@ -186,10 +187,16 @@ test('a display that has never painted paints once off screen, then releases', (
 })
 
 test("going off screen drops a union pass's layer, and coming back draws a new one", () => {
-  const hal = new MockHal([
-    { id: 'line', blendState: { op: 'union' } } as PipelineDescriptor,
-  ])
+  const line: PipelineDescriptor = {
+    ...spanMark.pass,
+    id: 'line',
+    blendState: { op: 'union' },
+  }
+  const hal = new MockHal([line])
   hal.uploadBuffer(0, 'line', new Float32Array([1]), 1)
+  for (const { name } of line.textures ?? []) {
+    hal.uploadTexture('line', new Uint8Array(4), 1, 1, name)
+  }
   const model = TestModel.create()
   const cells = observable.map<number, Data>(undefined, { deep: false })
   installUpload(model, new UnionBackend(hal), {
