@@ -1,9 +1,30 @@
 import { TrackOverlaySlot } from '@jbrowse/display-ui'
-import { render } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
+import { observable, runInAction } from 'mobx'
 
 import ChromeLegend from './ChromeLegend.tsx'
 
 import type { LegendHost } from './legendHost.ts'
+import type { FloatingLegend, YAxis } from '@jbrowse/display-ui'
+import type { ComponentProps } from 'react'
+
+const mockLegendRenders = { count: 0 }
+
+jest.mock('@jbrowse/display-ui', () => {
+  const actual = jest.requireActual<{ FloatingLegend: typeof FloatingLegend }>(
+    '@jbrowse/display-ui',
+  )
+  const Actual = actual.FloatingLegend
+  return {
+    ...actual,
+    FloatingLegend: function CountedFloatingLegend(
+      props: ComponentProps<typeof Actual>,
+    ) {
+      mockLegendRenders.count += 1
+      return <Actual {...props} />
+    },
+  }
+})
 
 function host(clearance: Pick<LegendHost, 'legendRight' | 'legendTop'>) {
   return {
@@ -64,4 +85,48 @@ test('a hidden legend never derives its key', () => {
   } as unknown as LegendHost
   const { queryByTestId } = render(<ChromeLegend model={model} />)
   expect(queryByTestId('floating-legend')).toBeNull()
+})
+
+// A mark display with rows rebuilds `axes` from its scroll offset, so a fresh
+// array arrives on every vertical-scroll frame with the same captions in it.
+test('a fresh axes array with the same captions does not re-render the key', () => {
+  const captioned = (offset: number): YAxis => ({
+    domain: [0, 1],
+    scaleType: 'linear',
+    height: 10,
+    bandTops: [offset],
+    ticks: { items: [], yTop: 0, yBottom: 10 },
+  })
+  const model = observable({
+    id: 'display1',
+    showLegend: true,
+    legendSpec: {
+      sections: [{ id: 'a', items: [{ label: 'a', color: 'red' }] }],
+    },
+    axes: [captioned(0)],
+    height: 100,
+    canvasWidthPx: 800,
+    setShowLegend() {},
+    dismissLegendSection() {},
+  })
+  const { getByTestId } = render(<ChromeLegend model={model} />)
+  expect(getByTestId('floating-legend').style.top).toBe('26px')
+  const before = mockLegendRenders.count
+
+  for (let scrollTop = 1; scrollTop <= 5; scrollTop++) {
+    act(() => {
+      runInAction(() => {
+        model.axes = [captioned(-scrollTop)]
+      })
+    })
+  }
+  expect(mockLegendRenders.count).toBe(before)
+  expect(getByTestId('floating-legend').style.top).toBe('26px')
+
+  act(() => {
+    runInAction(() => {
+      model.axes = [captioned(0), captioned(20)]
+    })
+  })
+  expect(getByTestId('floating-legend').style.top).toBe('42px')
 })
