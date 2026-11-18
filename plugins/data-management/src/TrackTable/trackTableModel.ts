@@ -23,7 +23,6 @@ import {
 import {
   countFacetValues,
   filterRowsByFacets,
-  filterRowsByText,
   rowSearchText,
 } from './facetFilters.ts'
 import { getRootKeys, trackTypeShortName } from './tableUtil.ts'
@@ -315,7 +314,7 @@ export function trackTableModelFactory() {
                 track,
                 session,
               )
-              const row = {
+              return {
                 id: track.trackId,
                 conf: track,
                 name,
@@ -323,13 +322,23 @@ export function trackTableModelFactory() {
                 description,
                 ...trackFields(track, self.trackTypeNames),
               }
-              return {
-                ...row,
-                searchText: rowSearchText(row),
-                nameSearchText: buildSearchText([name]),
-              } as const
             })
           : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * each row's text for the table's own search, and its name's for
+       * listing name matches first; the tree searches through getTextKeptIds,
+       * so it never builds these
+       */
+      get searchTexts() {
+        return self.allRows.map(row => ({
+          row,
+          text: rowSearchText(row),
+          name: buildSearchText([row.name]),
+        }))
       },
     }))
     .views(self => ({
@@ -354,9 +363,14 @@ export function trackTableModelFactory() {
        */
       get rows() {
         const kept = self.getTextKeptIds?.()
+        const matches = searchMatcher(self.filterText)
         return kept
           ? self.allRows.filter(row => kept.has(row.id))
-          : filterRowsByText(self.allRows, self.filterText)
+          : matches
+            ? self.searchTexts.flatMap(({ row, text }) =>
+                matches(text) ? [row] : [],
+              )
+            : self.allRows
       },
     }))
     .views(self => ({
@@ -668,10 +682,17 @@ export function trackTableModelFactory() {
         const sortField = self.activeSortField
         if (!sortField) {
           const nameMatches = searchMatcher(filterText)
-          return nameMatches
+          const named = nameMatches
+            ? new Set(
+                self.searchTexts.flatMap(({ row, name }) =>
+                  nameMatches(name) ? [row] : [],
+                ),
+              )
+            : undefined
+          return named
             ? [
-                ...filteredRows.filter(r => nameMatches(r.nameSearchText)),
-                ...filteredRows.filter(r => !nameMatches(r.nameSearchText)),
+                ...filteredRows.filter(r => named.has(r)),
+                ...filteredRows.filter(r => !named.has(r)),
               ]
             : filteredRows
         }

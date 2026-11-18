@@ -1,7 +1,7 @@
+import { searchMatcher } from '../shared/searchText.ts'
 import {
   countFacetValues,
   filterRowsByFacets,
-  filterRowsByText,
   rowSearchText,
 } from './facetFilters.ts'
 
@@ -16,7 +16,7 @@ interface TestRow extends Row {
   searchText: string
 }
 
-// searchText comes from rowSearchText here exactly as it does in allRows
+// searchText comes from rowSearchText here exactly as it does in searchTexts
 const rows: TestRow[] = [
   {
     id: 't1',
@@ -65,29 +65,28 @@ describe('rowSearchText', () => {
   })
 })
 
-describe('filterRowsByText', () => {
-  test('empty query returns the same rows reference', () => {
-    expect(filterRowsByText(rows, '')).toBe(rows)
-  })
+describe('a query against rowSearchText', () => {
+  const matchingIds = (query: string) => {
+    const matches = searchMatcher(query)
+    return rows.filter(r => matches?.(r.searchText)).map(r => r.id)
+  }
   test('matches name case-insensitively', () => {
-    expect(filterRowsByText(rows, 'GEN').map(r => r.id)).toEqual(['t1'])
+    expect(matchingIds('GEN')).toEqual(['t1'])
   })
   test('matches category', () => {
-    expect(filterRowsByText(rows, 'quantitative').map(r => r.id)).toEqual([
-      't3',
-    ])
+    expect(matchingIds('quantitative')).toEqual(['t3'])
   })
   test('matches adapter type', () => {
-    expect(filterRowsByText(rows, 'gff3tabix').map(r => r.id)).toEqual(['t1'])
+    expect(matchingIds('gff3tabix')).toEqual(['t1'])
   })
   test('matches description', () => {
-    expect(filterRowsByText(rows, 'calls').map(r => r.id)).toEqual(['t2'])
+    expect(matchingIds('calls')).toEqual(['t2'])
   })
   test('matches a metadata value', () => {
-    expect(filterRowsByText(rows, 'normal').map(r => r.id)).toEqual(['t2'])
+    expect(matchingIds('normal')).toEqual(['t2'])
   })
   test('no match returns empty', () => {
-    expect(filterRowsByText(rows, 'zzz')).toEqual([])
+    expect(matchingIds('zzz')).toEqual([])
   })
 })
 
