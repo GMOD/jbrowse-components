@@ -10,7 +10,6 @@ import {
   snappedCellLeftPx,
   snappedCellWidthPx,
 } from './shaders/variant.js.generated.ts'
-import { snapVariantCellX } from './snapVariantCellX.ts'
 
 import type { CellChannels } from './cellMark.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -118,11 +117,18 @@ describe.each([false, true])(
   },
 )
 
-describe('snapVariantCellX', () => {
+// A cell's extent from its raw px edges in record order, as the Canvas2D and
+// SVG painters place it
+function cellX(x1: number, x2: number, dpr: number) {
+  const width = snappedCellWidthPx(x1, x2, dpr)
+  return { x: snappedCellLeftPx(x1, x2, width, dpr), width }
+}
+
+describe('snappedCellLeftPx and snappedCellWidthPx', () => {
   test('a cell edge is a whole device pixel at a fractional dpr', () => {
     for (const dpr of [1.25, 1.5, 1.75]) {
       for (let i = 0; i < 50; i++) {
-        const { x, width } = snapVariantCellX(i * 7.3 + 0.2, i * 7.3 + 3.9, dpr)
+        const { x, width } = cellX(i * 7.3 + 0.2, i * 7.3 + 3.9, dpr)
         expect(x * dpr).toBeCloseTo(Math.round(x * dpr), 6)
         expect(width * dpr).toBeCloseTo(Math.round(width * dpr), 6)
       }
@@ -132,18 +138,18 @@ describe('snapVariantCellX', () => {
   test('a wide span is the same cell whichever way the block runs', () => {
     // The floor does nothing here, so the anchor is moot: both spellings land on
     // the leftmost snapped edge.
-    expect(snapVariantCellX(100, 40, 1)).toEqual(snapVariantCellX(40, 100, 1))
+    expect(cellX(100, 40, 1)).toEqual(cellX(40, 100, 1))
   })
 
   test('a sub-pixel cell keeps the 2px visibility floor', () => {
-    expect(snapVariantCellX(10.2, 10.3, 1).width).toBe(2)
-    expect(snapVariantCellX(10.2, 10.3, 1.5).width).toBe(2)
+    expect(cellX(10.2, 10.3, 1).width).toBe(2)
+    expect(cellX(10.2, 10.3, 1.5).width).toBe(2)
     // 2.5 device px rounds up to 3, so the floor stays on the grid
-    expect(snapVariantCellX(10.2, 10.3, 1.25).width).toBeCloseTo(2.4)
+    expect(cellX(10.2, 10.3, 1.25).width).toBeCloseTo(2.4)
   })
 
   test('a wide cell is not padded to the floor', () => {
-    const { x, width } = snapVariantCellX(10.4, 50.6, 1)
+    const { x, width } = cellX(10.4, 50.6, 1)
     expect(x).toBe(10)
     expect(width).toBe(41)
   })
@@ -157,13 +163,13 @@ describe('snapVariantCellX', () => {
   describe('the 2px floor grows away from the record start', () => {
     test('forward: the cell hangs to the right of the start', () => {
       // start snaps to 10, end is under a pixel past it
-      expect(snapVariantCellX(10.2, 10.3, 1)).toEqual({ x: 10, width: 2 })
+      expect(cellX(10.2, 10.3, 1)).toEqual({ x: 10, width: 2 })
     })
 
     test('reversed: the cell hangs to the left of the start', () => {
       // same record on a flipped block — start is now the RIGHT edge at 10, so
       // the cell is [8, 10). Anchoring min() would put it at [9, 11).
-      expect(snapVariantCellX(10.3, 10.2, 1)).toEqual({ x: 8, width: 2 })
+      expect(cellX(10.3, 10.2, 1)).toEqual({ x: 8, width: 2 })
     })
 
     test('the start edge bounds the cell in both orientations', () => {
@@ -173,7 +179,7 @@ describe('snapVariantCellX', () => {
           [10.3, 10.2],
           [500.6, 500.1],
         ] as const) {
-          const { x, width } = snapVariantCellX(x1, x2, dpr)
+          const { x, width } = cellX(x1, x2, dpr)
           const start = Math.round(x1 * dpr) / dpr
           expect(x).toBeLessThanOrEqual(start)
           expect(x + width).toBeGreaterThanOrEqual(start)

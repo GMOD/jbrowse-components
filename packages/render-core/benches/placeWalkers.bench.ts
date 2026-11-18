@@ -80,8 +80,11 @@ import {
   rectSpanPx,
 } from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/rect.js.generated.ts'
 import { cellMark } from '../../../plugins/variants/src/LinearVariantDisplay/components/cellMark.ts'
-import { drawnCellHeightPx } from '../../../plugins/variants/src/LinearVariantDisplay/components/shaders/variant.js.generated.ts'
-import { snapVariantCellX } from '../../../plugins/variants/src/LinearVariantDisplay/components/snapVariantCellX.ts'
+import {
+  drawnCellHeightPx,
+  snappedCellLeftPx,
+  snappedCellWidthPx,
+} from '../../../plugins/variants/src/LinearVariantDisplay/components/shaders/variant.js.generated.ts'
 import {
   SHAPE_RECT,
   SHAPE_TRI_LEFT,
@@ -366,11 +369,10 @@ const retiredCell: Pick<MarkShape<CellChannels, CellParams>, 'paintBlock'> = {
     for (let i = 0; i < count; i++) {
       const y = row[i]! * rowHeight - scrollTop
       if (y + h >= 0 && y <= canvasHeight) {
-        const { x, width } = snapVariantCellX(
-          toX(startEnd[i * 2]!),
-          toX(startEnd[i * 2 + 1]!),
-          1,
-        )
+        const x1 = toX(startEnd[i * 2]!)
+        const x2 = toX(startEnd[i * 2 + 1]!)
+        const width = snappedCellWidthPx(x1, x2, 1)
+        const x = snappedCellLeftPx(x1, x2, width, 1)
         setFill(color[i]!)
         drawVariantShape(ctx, shapeType[i]!, x, y, width, h)
       }
@@ -389,11 +391,10 @@ const controlCell: Pick<MarkShape<CellChannels, CellParams>, 'paintBlock'> = {
     for (let i = 0; i < count; i++) {
       const y = row[i]! * rowHeight - scrollTop
       if (y + h >= 0 && y <= canvasHeight) {
-        const { x, width } = snapVariantCellX(
-          toX(startEnd[i * 2]!),
-          toX(startEnd[i * 2 + 1]!),
-          1,
-        )
+        const x1 = toX(startEnd[i * 2]!)
+        const x2 = toX(startEnd[i * 2 + 1]!)
+        const width = snappedCellWidthPx(x1, x2, 1)
+        const x = snappedCellLeftPx(x1, x2, width, 1)
         setFill(color[i]!)
         drawVariantShape(ctx, shapeType[i]!, x, y, width, h)
       }
