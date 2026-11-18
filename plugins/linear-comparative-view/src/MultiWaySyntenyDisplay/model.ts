@@ -537,8 +537,8 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * `specs` holds every lane the run was asked for, and `anchor` the
-         * anchor the specs were built under
+         * `specs` are the lanes current as the run lands, and `anchor` the
+         * one the run was issued under
          */
         setLaneGenes(
           fetched: ReadonlyMap<string, HeldLaneGenes>,

@@ -18,7 +18,11 @@ import { autorun, reaction, untracked } from 'mobx'
 import { getMate } from '../syntenyMate.ts'
 import { lanePairKey } from './alignmentOps.ts'
 import { laneGeneFeatures } from './geneGlyph.ts'
-import { laneFetchAsked, staleLaneSpecs } from './laneFetch.ts'
+import {
+  inFlightAnswers,
+  laneFetchInFlight,
+  staleLaneSpecs,
+} from './laneFetch.ts'
 import { holdLaneAssembly, releaseLaneAssemblies } from './laneHolders.ts'
 import { laneMotionEnd } from './laneMotion.ts'
 
@@ -26,6 +30,7 @@ import type { MultiWayFeatures } from './MultiWayGetFeatures.ts'
 import type {
   HeldLane,
   HeldLaneLinks,
+  LaneFetchInFlight,
   LaneFetchSpec,
   LaneFetchState,
   LaneLinksFetchSpec,
@@ -234,7 +239,7 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
     commit: (byLane: Map<string, Result>, specs: Spec[], anchor: string) => void
   },
 ) {
-  let inFlight: string | undefined
+  let inFlight: LaneFetchInFlight | undefined
   installFetch(self, {
     name,
     delay: DEPENDENT_FETCH_DELAY,
@@ -246,21 +251,22 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
       const stale = staleLaneSpecs(specs, current)
       const anchor = self.anchorAssemblyName
       return specs.length > 0 || current.held.size > 0
-        ? { specs, stale, anchor, asked: laneFetchAsked(specs, stale, anchor) }
+        ? { specs, stale, anchor }
         : undefined
     },
-    heldAnswers: ({ specs, stale, asked }) =>
-      asked === inFlight || (specs.length > 0 && stale.length === 0),
-    run: ({ specs, stale, asked }, ctx) => {
-      inFlight = asked
+    heldAnswers: ({ specs, stale, anchor }) =>
+      inFlightAnswers(inFlight, stale, anchor) ||
+      (specs.length > 0 && stale.length === 0),
+    run: ({ specs, stale, anchor }, ctx) => {
       const wanted = stale.length > 0 ? stale : specs
+      inFlight = laneFetchInFlight(wanted, anchor)
       return (
         fetchMany?.(wanted, ctx) ??
         fetchEachLane(name, wanted, ctx, fetchOne, empty)
       )
     },
-    commit: (byLane, { specs, anchor }) => {
-      commit(byLane, specs, anchor)
+    commit: (byLane, { anchor }) => {
+      commit(byLane, fetchSpecs(), anchor)
     },
     onEnd: current => {
       if (current) {

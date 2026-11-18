@@ -105,26 +105,37 @@ export function staleLaneSpecs<Spec extends LaneFetchSpec>(
   return specs.filter(spec => state.held.get(spec.lane)?.key !== spec.key)
 }
 
-/**
- * What a run is asked for: the lanes it lands for and the stale ones it
- * fetches. A run in flight under the same answer is not worth restarting, even
- * though the specs it came from were rebuilt.
- */
-export function laneFetchAsked(
-  specs: LaneFetchSpec[],
-  stale: LaneFetchSpec[],
-  anchor: string,
-) {
-  return JSON.stringify([
-    anchor,
-    specs.map(spec => spec.lane),
-    stale.map(spec => [spec.lane, spec.key]),
-  ])
+export interface LaneFetchInFlight {
+  anchor: string
+  asked: ReadonlySet<string>
+}
+
+function askedKey(spec: LaneFetchSpec) {
+  return `${spec.lane}|${spec.key}`
+}
+
+export function laneFetchInFlight(specs: LaneFetchSpec[], anchor: string) {
+  return { anchor, asked: new Set(specs.map(askedKey)) }
 }
 
 /**
- * Drops a lane no spec names; with `keepCurrentKeys`, one held under a key a
- * spec still carries stays, as a scrolled-out pair does
+ * A run in flight answers every stale spec it was asked for, so a lane leaving
+ * the list, or coming back, restarts nothing; only something newly stale does.
+ */
+export function inFlightAnswers(
+  inFlight: LaneFetchInFlight | undefined,
+  stale: LaneFetchSpec[],
+  anchor: string,
+) {
+  return (
+    inFlight?.anchor === anchor &&
+    stale.every(spec => inFlight.asked.has(askedKey(spec)))
+  )
+}
+
+/**
+ * Drops a lane no spec names, held or fetched; with `keepCurrentKeys`, one
+ * under a key a spec still carries stays, as a scrolled-out pair does
  */
 export function landLaneFetch<Held extends HeldLane>(
   state: LaneFetchState<Held>,
@@ -135,14 +146,12 @@ export function landLaneFetch<Held extends HeldLane>(
 ): LaneFetchState<Held> {
   const current = new Set(specs.map(spec => spec.lane))
   const keys = new Set(keepCurrentKeys ? specs.map(spec => spec.key) : [])
-  const held = new Map(
-    [...state.held].filter(
-      ([lane, result]) => current.has(lane) || keys.has(result.key),
-    ),
-  )
-  for (const [lane, result] of fetched) {
-    held.set(lane, result)
-  }
+  const named = ([lane, result]: [string, Held]) =>
+    current.has(lane) || keys.has(result.key)
+  const held = new Map([
+    ...[...state.held].filter(named),
+    ...[...fetched].filter(named),
+  ])
   return {
     held,
     landed: true,

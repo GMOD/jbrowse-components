@@ -28,19 +28,21 @@ const orthologs = [0, 1, 2, 3].map(
     }),
 )
 
+function gcLayer(name: string) {
+  return {
+    name,
+    adapter: { type: 'TestSequenceScoreAdapter' },
+    tracks: [],
+    marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+  }
+}
+
 async function templateDisplay(rpc: RpcCall) {
   const { display } = createDisplayWithSession({
     trackAssemblyNames: ['volvox', MATE],
     rpc,
   })
-  setConf(display, 'laneLayers', [
-    {
-      name: 'GC',
-      adapter: { type: 'TestSequenceScoreAdapter' },
-      tracks: [],
-      marks: [{ mark: 'bar', encoding: { y: 'score' } }],
-    },
-  ])
+  setConf(display, 'laneLayers', [gcLayer('GC')])
   await when(() => display.features !== undefined, { timeout: 5000 })
   display.setFeatures(orthologs)
   await when(() => display.rowFrames.get(MATE) !== undefined, {
@@ -112,6 +114,36 @@ test('a lane fetch in flight is superseded once a lane asks for something else',
   const keys = display.laneLayersFetchSpecs.map(spec => spec.key)
   display.lgv.zoomTo(display.lgv.bpPerPx / 4)
   expect(display.laneLayersFetchSpecs.map(spec => spec.key)).not.toEqual(keys)
+  await until(() => signals.length > issued)
+  expect(live.every(signal => signal.aborted)).toBe(true)
+})
+
+test('a lane fetch in flight survives a lane leaving the list, and lands without it', async () => {
+  const { display, signals, live, pending } = await stalledDisplay()
+  const issued = signals.length
+  const asked = display.laneLayersFetchSpecs.length
+  display.hideLane(MATE)
+  const kept = display.laneLayersFetchSpecs.map(spec => spec.lane)
+  expect(kept.length).toBeGreaterThan(0)
+  expect(kept.length).toBeLessThan(asked)
+  await pastDebounce()
+  expect(signals).toHaveLength(issued)
+  expect(live.some(signal => signal.aborted)).toBe(false)
+  for (const resolve of pending) {
+    resolve()
+  }
+  await when(() => display.laneLayerData.landed, { timeout: 5000 })
+  expect([...display.laneLayerData.held.keys()].sort()).toEqual(kept.sort())
+})
+
+test('a lane fetch in flight is superseded once a new lane is stale', async () => {
+  const { display, signals, live } = await stalledDisplay()
+  const issued = signals.length
+  const keys = display.laneLayersFetchSpecs.map(spec => spec.key)
+  setConf(display, 'laneLayers', [gcLayer('GC'), gcLayer('GC2')])
+  const specs = display.laneLayersFetchSpecs
+  expect(specs.length).toBeGreaterThan(keys.length)
+  expect(keys.every(key => specs.some(spec => spec.key === key))).toBe(true)
   await until(() => signals.length > issued)
   expect(live.every(signal => signal.aborted)).toBe(true)
 })
