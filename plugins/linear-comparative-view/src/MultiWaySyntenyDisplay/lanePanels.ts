@@ -24,6 +24,7 @@ export function lanePanelsForRegion({
   region,
   anchorCanon,
   trackAssemblyNames,
+  laneKey = assemblyName => assemblyName,
 }: {
   groups: MultiWayGroup[]
   ops?: AlignmentOpsById
@@ -32,7 +33,10 @@ export function lanePanelsForRegion({
   region: { refName: string; start: number; end: number }
   anchorCanon: (refName: string) => string
   trackAssemblyNames: string[]
+  /** the canonical name, so a lane matches the track under any spelling */
+  laneKey?: (assemblyName: string) => string
 }): MateDiscoveryResult {
+  const launchable = trackAssemblyNames.map(laneKey)
   const mates: ResolvedPanel[] = []
   const unconfigured: string[] = []
   for (const assemblyName of rowAssemblies) {
@@ -81,7 +85,7 @@ export function lanePanelsForRegion({
         }
       }
       if (anchorHi > anchorLo) {
-        if (canLaunchSyntenyForMate(trackAssemblyNames, assemblyName)) {
+        if (canLaunchSyntenyForMate(launchable, laneKey(assemblyName))) {
           mates.push({
             assemblyName,
             refName: decision.refName,

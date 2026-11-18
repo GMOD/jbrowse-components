@@ -3379,6 +3379,7 @@ export function stateModelFactory(
                 region,
                 anchorCanon: self.anchorCanon,
                 trackAssemblyNames: getTrackAssemblyNames(self.parentTrack),
+                laneKey: self.laneKey,
               }),
             starAnchor: self.starAnchor,
           })) {

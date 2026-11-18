@@ -140,6 +140,28 @@ test('a lane the settle has not framed, or that places nothing of the region, ha
   expect(unconfigured).toEqual([])
 })
 
+test.each([
+  ['Prunus_persica', 'peach'],
+  ['peach', 'Prunus_persica'],
+])(
+  'a lane the records spell %s opens a panel on a track naming %s',
+  (lane, tracked) => {
+    const { mates, unconfigured } = lanePanelsForRegion({
+      groups: groupFeatures([
+        record('p', [1000, 2000], { assemblyName: lane, start: 0, end: 1000 }),
+      ]),
+      rowAssemblies: [lane],
+      laneDecisions: new Map([[lane, decision('M1', [0, 1000])]]),
+      region: { refName: 'chr1', start: 0, end: 10_000 },
+      anchorCanon: refName => refName,
+      trackAssemblyNames: ['anchor', tracked],
+      laneKey: name => (name === 'Prunus_persica' ? 'peach' : name),
+    })
+    expect(mates.map(m => m.assemblyName)).toEqual([lane])
+    expect(unconfigured).toEqual([])
+  },
+)
+
 test("a panel's mate ends round outward, so it opens on every base the lane maps", () => {
   const { mates } = lanePanelsForRegion({
     groups: groupFeatures([
