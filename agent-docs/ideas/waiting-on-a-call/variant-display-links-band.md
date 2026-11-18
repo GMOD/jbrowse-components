@@ -1,6 +1,6 @@
 ---
 name: variant-display-links-band
-description: The merged variant display could get a `links` band drawing SVs as arcs through the shared `link` mark. Captured on 2026-11-09, arcs earned their place only on breakends with both ends in view; the call is whether to build it after v5.
+description: The merged variant display could get a `links` band drawing SVs as arcs through the shared `link` mark. Judged on 2026-11-18 as not worth a band; it reopens only if a breakend-only callset shows arcs carrying spans the records band cannot.
 ---
 
 # A links band on the variant display
@@ -55,3 +55,44 @@ the records band, arcs colored by `svType` (the records band's preset).
 
 If it is built, the shape the captures support is an additional band, on by
 default only when the file has breakends.
+
+## The 2026-11-18 verdict: no band
+
+A dedicated review weighed the captures against the band rules and found no
+case that earns a band:
+
+- **The winning case already has a route.** Both ends of BCR-ABL1 in view is a
+  layout the reader assembles by hand; the record's "open breakpoint split
+  view" row reaches the same join in one click, with reads as evidence.
+- **No default is honest.** "On when the file has breakends" is known only from
+  the records in view, so the band either appears and vanishes on pan or holds
+  an empty strip taken from the genotype rows. Off by default is a toggle
+  nobody finds.
+- **The display's own users gain nothing.** Population callsets are
+  DEL/DUP/INV/INS, where arcs repeat the bars (RHD). Cancer breakend files have
+  one or two samples, so a second track costs no rows, and marks' default plot
+  already draws `link` + `mate` for any mated file.
+
+A hover-only arc (drawn to an in-view mate while its record is hovered) was
+also declined: a view has to make sense as drawn.
+
+What would reopen it:
+
+- **A breakend-only callset** (GRIDSS, SvABA, Manta's intrachromosomal BNDs),
+  which writes even a deletion as two points, captured with a link-mark
+  stand-in in a single-chromosome window. If arcs there carry spans the
+  records band's dots cannot, on a file with genotype rows worth keeping
+  beside them (tumor/normal, a trio), the band has its case.
+- **A request for arcs beside genotype rows** specifically.
+
+If it is built, the smallest shape is `links: { show, height }` (ADR-231's
+band object, the name ADR-232 reserved), resolving on only while a junction
+has both feet in displayed regions, drawing one link per mated breakend pair
+and nothing for DEL/DUP/INV/INS or a mate off view, colored by the records'
+SV-type preset with mated records that carry no `svType` taking the breakend
+class.
+
+Separately owed: check that the link-mark track's feature details reach the
+breakend split view (`breakendSplitViewMenuItem` is wired only into the
+variant display's menus), or the arcs picture dead-ends where the records
+picture continues.
