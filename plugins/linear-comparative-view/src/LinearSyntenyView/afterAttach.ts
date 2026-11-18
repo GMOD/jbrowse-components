@@ -95,47 +95,51 @@ async function buildViews(
       return asm
     }),
   )
-  self.setViews(
-    assemblies.map((asm, idx) => {
-      // `assemblies` IS init.views mapped, so the pairing is total and the
-      // three optional chains this used to carry described a case that cannot
-      // arise
-      const v = init.views[idx]!
-      return {
-        type: 'LinearGenomeView' as const,
-        hideHeader: true,
-        // A row init gives no tracks opens collapsed to its ruler when asked
-        // for (the launch dialog's checkbox), never by default: an authored
-        // session means what it wrote. Only the row's own emptiness is decided
-        // here — the policy is the caller's.
-        scalebarOnly: !!init.collapseEmptyRows && !v.tracks?.length,
-        // The row's own subset, or the whole genome. A name list that resolves
-        // to nothing falls back rather than blanking the row: an empty LGV
-        // renders as a broken panel, the same choice the circular view makes.
-        displayedRegions: rowRegions(
-          asm,
-          v.assembly,
-          v.displayedRegionNames,
-          message => {
-            session.notify(message, 'warning')
-          },
-        ),
-        // The row's LGV props (trackLabels, showAminoAcids, colorByFrame, …) go
-        // onto its snapshot, minus the launch keys this file applies itself.
-        // The LGV's own partition then takes every property it declares and
-        // reports a typo, with no list here to keep in step.
-        ...snapshotSettings(v, rowLaunchKeys),
-      }
-    }),
-  )
-  // a row only initializes once it has been laid out, so this parks
-  // indefinitely if the view is never given a width — which would hold the
-  // drain open and strand the newer init that replaced this one. A row that
-  // errors settles it for the same reason: `initialized` folds in the row's
-  // assemblies and so never goes true on that path, and parking here is worse
-  // than proceeding with the rows that did come up, which the per-row placement
-  // below already reports one at a time.
-  await whenViewsSettled(self.views, superseded)
+  // a launch withdrawn while the assemblies loaded (Return to import form)
+  // builds no rows
+  if (!superseded()) {
+    self.setViews(
+      assemblies.map((asm, idx) => {
+        // `assemblies` IS init.views mapped, so the pairing is total and the
+        // three optional chains this used to carry described a case that cannot
+        // arise
+        const v = init.views[idx]!
+        return {
+          type: 'LinearGenomeView' as const,
+          hideHeader: true,
+          // A row init gives no tracks opens collapsed to its ruler when asked
+          // for (the launch dialog's checkbox), never by default: an authored
+          // session means what it wrote. Only the row's own emptiness is decided
+          // here — the policy is the caller's.
+          scalebarOnly: !!init.collapseEmptyRows && !v.tracks?.length,
+          // The row's own subset, or the whole genome. A name list that resolves
+          // to nothing falls back rather than blanking the row: an empty LGV
+          // renders as a broken panel, the same choice the circular view makes.
+          displayedRegions: rowRegions(
+            asm,
+            v.assembly,
+            v.displayedRegionNames,
+            message => {
+              session.notify(message, 'warning')
+            },
+          ),
+          // The row's LGV props (trackLabels, showAminoAcids, colorByFrame, …) go
+          // onto its snapshot, minus the launch keys this file applies itself.
+          // The LGV's own partition then takes every property it declares and
+          // reports a typo, with no list here to keep in step.
+          ...snapshotSettings(v, rowLaunchKeys),
+        }
+      }),
+    )
+    // a row only initializes once it has been laid out, so this parks
+    // indefinitely if the view is never given a width — which would hold the
+    // drain open and strand the newer init that replaced this one. A row that
+    // errors settles it for the same reason: `initialized` folds in the row's
+    // assemblies and so never goes true on that path, and parking here is worse
+    // than proceeding with the rows that did come up, which the per-row placement
+    // below already reports one at a time.
+    await whenViewsSettled(self.views, superseded)
+  }
 }
 
 // Where one row opens: its `loc`, or a fit to the regions it displays, or the

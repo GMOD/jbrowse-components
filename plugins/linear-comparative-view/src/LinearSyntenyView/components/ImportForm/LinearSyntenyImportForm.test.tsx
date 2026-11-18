@@ -231,7 +231,7 @@ test('Swap reverses the rows the track implies', async () => {
   expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('mm39, hg38')
 })
 
-test('Quick start launch builds one row per assembly and shows the track', async () => {
+test('Quick start launch names one row per assembly and the track', async () => {
   const { model } = await setup({
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
   })
