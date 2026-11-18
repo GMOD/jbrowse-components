@@ -128,8 +128,7 @@ public float thinWidthFade(float perpW, float kind, bool fadeThinAlignments) {
   if (isTileKind(kind) || isCigarKind(kind)) {
     return min(perpW, 1.0);
   }
-  bool applies = !isCigarKind(kind) && !isMarkerKind(kind)
-              && fadeThinAlignments;
+  bool applies = !isMarkerKind(kind) && fadeThinAlignments;
   return applies ? clamp(perpW, WIDTH_FADE_FLOOR, 1.0) : 1.0;
 }
 
