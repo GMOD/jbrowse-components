@@ -15,7 +15,7 @@ edit:
 
 - a LinearGenomeView launch (`loc=`, a session spec) whose assembly takes longer
   than 400ms, which clears `launch` and sets `displayedRegions`
-- `loadHubSpec` and `loadSessionSpec` with connections, which set an empty
+- `loadLinkSpec` and `loadSessionSpec` with connections, which set an empty
   session first and add views (and, for hubs, rename it) after fetches
 
 The untouched session then shows in Recent sessions. The browser test
@@ -44,7 +44,7 @@ The two errors are not symmetric. A false "edited" is a row of clutter; a false
 towards edited. Candidates:
 
 - the loader marks the session as arriving until `loadSessionSpec` /
-  `loadHubSpec` resolve, and each view reports "my launch is applying" only
+  `loadLinkSpec` resolve, and each view reports "my launch is applying" only
   once it is measured and applying
 - a write is not an edit when the only views whose snapshot changed are ones
   whose `launch` was cleared in it

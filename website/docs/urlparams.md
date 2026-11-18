@@ -168,7 +168,8 @@ whose value pretty-printed is:
 ### &sessionName=
 
 `&sessionName=My%20Custom%20Session` names the session in the header bar, for
-any launch type. Without it the name is generated with a timestamp.
+any launch type. Without it the name is generated with a timestamp, except for a
+[`&hubURL=`](#huburl) link, which is named after its first hub.
 
 ### &hubURL=
 

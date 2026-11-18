@@ -23,8 +23,8 @@ The ordering is deliberate and the conflict is real: `extendSession` names the
 assemblies and tracks. Both cannot be the base. What is not defensible is doing
 it silently. Three ways out, and picking one is the work:
 
-- **Connect the hub and layer the shorthand onto it.** `decodeHubSpec` already
-  applies `viewInit` on top of the hub session, so `extendSession` becomes
+- **Connect the hub and layer the shorthand onto it.** `hubLinkSpec` already
+  turns the shorthand into the hub spec's view, so `extendSession` becomes
   redundant rather than contradictory on this route.
 - **Keep the current precedence and say so** — `session.notify` naming the
   dropped param, and leave `hubURL` in the address bar.
