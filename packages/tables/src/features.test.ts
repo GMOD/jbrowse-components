@@ -682,7 +682,7 @@ test('features the rows cannot hold are counted and warned of, and none is warne
       return `ctgA\t${start}\t${start + 2000 + ((i * 37) % 7000)}\tf${i}\n`
     }).join(''),
   )
-  const dense = await engine.features({
+  const denseRead = {
     adapterConfig: {
       type: 'BedAdapter',
       bedLocation: { uri: pathToFileURL(bed).href },
@@ -690,11 +690,21 @@ test('features the rows cannot hold are counted and warned of, and none is warne
     region: { refName: 'ctgA', start: 0, end: 100_000 },
     bpPerPx: 100_000 / 1500,
     display: GROW,
-  })
+  }
+  const dense = await engine.features(denseRead)
   expect(dense.truncated).toBeGreaterThan(0)
   expect(dense.features.id.length + dense.truncated).toBe(20_000)
   expect(dense.warnings).toEqual([
     expect.stringContaining(`${dense.truncated} features in view`),
   ])
+  const { region, ...denseArgs } = denseRead
+  const halves = await engine.features({
+    ...denseArgs,
+    regions: [
+      { ...region, end: 50_000 },
+      { ...region, start: 50_000 },
+    ],
+  })
+  expect(new Set(halves.features.id).size + halves.truncated).toBe(20_000)
   expect((await engine.features(GFF3)).warnings).toEqual([])
 })

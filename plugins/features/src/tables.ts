@@ -42,6 +42,7 @@ import {
   INSET_HEIGHT_FRACTION,
   RECT_FLAG_INSET,
 } from './LinearBasicDisplay/passes/shaders/rectInstance.generated.ts'
+import { countTruncatedFeatures } from './LinearBasicDisplay/layoutQueries.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 import { centerShrink } from './RenderFeatureDataRPC/collect/emitPrimitives.ts'
 import { ROOT_CHILD_ORDINAL } from './RenderFeatureDataRPC/rpcTypes.ts'
@@ -114,28 +115,22 @@ export interface FeatureTablesArgs {
 // table row a million px up is no row: those features and their primitives
 // leave every table, as do the ones `isShown` leaves in the fetch's margin.
 // `row` maps a lane's feature index to its row in the `features` table, -1
-// for one left out. A feature of a hidden section is unplaced by choice, so
-// `truncated` leaves it out.
+// for one left out.
 function placedFeatures(
   d: FeatureDataResult,
-  isHidden: (item: FlatbushItem) => boolean,
   isShown: (item: FlatbushItem) => boolean,
 ) {
   const items: FlatbushItem[] = []
   const row: number[] = []
-  let truncated = 0
   for (const item of d.flatbushItems) {
     const placed = isPlacedRow(item.topPx) && isShown(item)
     row.push(placed ? items.length : -1)
     if (placed) {
       items.push(item)
-    } else if (isShown(item) && !isHidden(item)) {
-      truncated++
     }
   }
   return {
     items,
-    truncated,
     featureIndex: new Map(items.map((item, i) => [item.featureId, i])),
     keep: (featureIndices: Uint32Array) => {
       const keep: number[] = []
@@ -445,7 +440,6 @@ export async function featureTables(
         hideChevrons: !showChevrons,
         labels: regionLabels[i]!,
         sectionOf,
-        isHidden,
       }),
     ),
   )
@@ -459,6 +453,11 @@ export async function featureTables(
   }
   return {
     ...joined,
+    /**
+     * Features in view the packer could not place, which no table lists, each
+     * once however many regions it crosses.
+     */
+    truncated: countTruncatedFeatures(laid, onScreen, hiddenGroupFeatureIds),
     sections: {
       key: sections.map(s => s.key),
       label: sections.map(s => s.label),
@@ -510,6 +509,7 @@ interface TableLabel {
   kind: string
   position: number
   y: number
+  fontSize: number
   color: string
 }
 
@@ -546,6 +546,7 @@ export function displayLabels(
           kind: p.kind === 'desc' ? 'description' : p.kind,
           position: vr.start + (p.labelX - vr.screenStartPx) * bpPerPx,
           y: p.labelY,
+          fontSize: p.fontSize,
           color: cssColorToHex(p.color),
         })
       }
@@ -570,7 +571,6 @@ export function laidOutTables(
     hideChevrons,
     labels: placed,
     sectionOf,
-    isHidden = () => false,
     isShown = () => true,
   }: {
     region: { start: number; end: number }
@@ -579,11 +579,10 @@ export function laidOutTables(
     hideChevrons: boolean
     labels: readonly TableLabel[]
     sectionOf?: (item: FlatbushItem) => { label: string }
-    isHidden?: (item: FlatbushItem) => boolean
     isShown?: (item: FlatbushItem) => boolean
   },
 ) {
-  const rows = placedFeatures(d, isHidden, isShown)
+  const rows = placedFeatures(d, isShown)
   const { items, featureIndex } = rows
   const subfeatures = d.subfeatureInfos.filter(s =>
     featureIndex.has(s.parentFeatureId),
@@ -595,6 +594,7 @@ export function laidOutTables(
     kind: placed.map(p => p.kind),
     position: placed.map(p => p.position),
     y: placed.map(p => p.y),
+    fontSize: placed.map(p => p.fontSize),
     color: placed.map(p => p.color),
     feature: placed.map(p => {
       const sub = subfeatureIndex.get(p.featureId)
@@ -667,8 +667,6 @@ export function laidOutTables(
     aminoAcids: aminoAcidTable(d, rows, subfeatureOf, region, widthPx, bpPerPx),
     labels,
     height: items.reduce((max, item) => Math.max(max, item.bottomPx), 0),
-    /** Features the packer could not place, which no table lists. */
-    truncated: rows.truncated,
   }
 }
 
@@ -682,14 +680,13 @@ type RegionTables = ReturnType<typeof laidOutTables>
 function joinRegionTables(parts: RegionTables[]) {
   return {
     ...joinTables(
-      parts.map(({ height, truncated, ...tables }, region) => ({
+      parts.map(({ height, ...tables }, region) => ({
         columns: { region },
         tables,
       })),
       { feature: 'features', subfeature: 'subfeatures' },
     ),
     height: Math.max(0, ...parts.map(part => part.height)),
-    truncated: parts.reduce((sum, part) => sum + part.truncated, 0),
   }
 }
 

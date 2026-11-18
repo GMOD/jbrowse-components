@@ -24,7 +24,7 @@ const LABELS = {
 
 // The packer left the first feature past its row ceiling; the second is on
 // row 0 behind it, so every index into `features` has to move down by one.
-test('a feature the packer could not place leaves every table and is counted', () => {
+test('a feature the packer could not place leaves every table', () => {
   const span = { startBp: 0, endBp: 100 }
   const d = makeFeatureData({
     ...packFixtureRects([span, span]),
@@ -60,7 +60,6 @@ test('a feature the packer could not place leaves every table and is counted', (
     hideChevrons: false,
     labels: displayLabels([region], new Map([[0, d]]), LABELS, 1)[0]!,
   })
-  expect(t.truncated).toBe(1)
   expect(t.features.id).toEqual(['kept'])
   expect(t.subfeatures.id).toEqual(['kept.1'])
   expect(t.subfeatures.feature).toEqual([0])
@@ -68,4 +67,30 @@ test('a feature the packer could not place leaves every table and is counted', (
   expect(t.labels.text).toEqual(['KEPT'])
   expect(t.labels.feature).toEqual([0])
   expect(t.height).toBe(10)
+})
+
+test("a label carries the size the display writes it at, an overlay label its body's", () => {
+  const d = makeFeatureData({
+    floatingLabelsData: labelsMap({
+      gene: {
+        featureId: 'gene',
+        minX: 0,
+        maxX: 100,
+        topY: 0,
+        featureHeight: 6,
+        nameLabel: { text: 'GENE', textWidth: 30 },
+        subfeatureLabel: { text: 'nsp1', textWidth: 20, isOverlay: true },
+      },
+    }),
+  })
+  const [labels] = displayLabels(
+    [{ start: 0, end: 1000 }],
+    new Map([[0, d]]),
+    { ...LABELS, showSubfeatureLabels: true },
+    1,
+  )
+  expect(labels!.map(l => [l.kind, l.fontSize])).toEqual([
+    ['name', 11],
+    ['sub', 7],
+  ])
 })
