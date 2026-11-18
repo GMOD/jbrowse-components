@@ -19,7 +19,7 @@ describe('findSectionAtY', () => {
     expect(findSectionAtY(sections, 250, opts)).toEqual({
       section: sections[0],
       index: 0,
-      coverageTopOffset: 0,
+      sectionTopOffset: 0,
     })
   })
 
@@ -29,7 +29,7 @@ describe('findSectionAtY', () => {
     expect(findSectionAtY(sections, 120, grouped)).toEqual({
       section: sections[1],
       index: 1,
-      coverageTopOffset: 100,
+      sectionTopOffset: 100,
     })
   })
 
@@ -37,7 +37,7 @@ describe('findSectionAtY', () => {
     expect(findSectionAtY(sections, 250, grouped)).toEqual({
       section: sections[2],
       index: 2,
-      coverageTopOffset: 200,
+      sectionTopOffset: 200,
     })
   })
 
@@ -47,7 +47,7 @@ describe('findSectionAtY', () => {
     expect(findSectionAtY(sections, 30, opts)).toEqual({
       section: sections[1],
       index: 1,
-      coverageTopOffset: 20,
+      sectionTopOffset: 20,
     })
   })
 

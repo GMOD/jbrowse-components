@@ -1,5 +1,5 @@
 // Map a screen-Y to the stacked group section it falls in, returning the
-// section and the screen-px top of its coverage band. Grouped mode stacks one
+// section and its screen-px top. Grouped mode stacks one
 // section per group; ungrouped is the single-section case that spans the whole
 // canvas, so this returns the only section for every Y and the hit test reduces
 // to the pre-grouping single-offset path.
@@ -13,19 +13,19 @@ export function findSectionAtY<
   sections: T[],
   canvasY: number,
   opts: { isGrouped: boolean; scrollTop: number },
-): { section: T; index: number; coverageTopOffset: number } | undefined {
+): { section: T; index: number; sectionTopOffset: number } | undefined {
   const first = sections[0]
   if (!first) {
     return undefined
   }
   if (!opts.isGrouped) {
-    return { section: first, index: 0, coverageTopOffset: 0 }
+    return { section: first, index: 0, sectionTopOffset: 0 }
   }
   const { scrollTop } = opts
   for (const [index, section] of sections.entries()) {
     const top = section.sectionTop - scrollTop
     if (canvasY >= top && canvasY < top + section.height) {
-      return { section, index, coverageTopOffset: top }
+      return { section, index, sectionTopOffset: top }
     }
   }
   return undefined

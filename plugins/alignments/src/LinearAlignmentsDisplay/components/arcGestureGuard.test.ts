@@ -10,6 +10,7 @@ import {
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ReadConnectionsPlacement } from '../constants.ts'
 
 // The three gestures this file is about, and the whole rule between them: a
 // mark that resolves as an arc for the HOVER has to resolve as an arc for the
@@ -70,7 +71,7 @@ function coverageUnder(data: WorkerPileupData): WorkerPileupData {
   }
 }
 
-function setup({ down }: { down: boolean }) {
+function setup({ placement }: { placement: ReadConnectionsPlacement }) {
   // The hover is coalesced onto an animation frame, so hold the callback and
   // run it by hand — `cb(0)` inline instead would leave `hoverRafRef` holding
   // the id assigned AFTER the callback returned, and every later move would see
@@ -85,7 +86,7 @@ function setup({ down }: { down: boolean }) {
     createTestAlignmentsDisplay()
   applyView(view, 10, 0)
   display.setDrawnReadConnections('link')
-  display.setReadConnectionsPlacement(down ? 'below' : 'overlay')
+  display.setReadConnectionsPlacement(placement)
   display.setRpcData(
     0,
     {
@@ -171,7 +172,7 @@ function arcPixelOver(
 }
 
 test('an arc over an interbase bar: the hover names the arc, and so do the other two gestures', () => {
-  const t = setup({ down: false })
+  const t = setup({ placement: 'overlay' })
   const pixel = arcPixelOver(t, 'indicator')
   // Not a formality: every case below is vacuous without it, and the two ways
   // it goes missing — the arc band moving off the coverage band, or the arc
@@ -212,7 +213,7 @@ test('clicking an arc with nothing under it keeps the selection', () => {
   // branch that CLEARS THE SELECTION — so an unguarded click on an arc threw
   // away the read the user had selected, and this is the half that hides,
   // because nothing opens and nothing looks wrong.
-  const t = setup({ down: true })
+  const t = setup({ placement: 'below' })
   const pixel = arcPixelOver(t, undefined)
   expect(pixel).toBeDefined()
   const [x, y] = pixel!
@@ -232,4 +233,22 @@ test('clicking an arc with nothing under it keeps the selection', () => {
   t.display.setDrawnReadConnections('link')
   t.click(x, y)
   expect(t.session.selection).toBe(feature)
+})
+
+// A strip above pushes the coverage band down by its own height, and the hit
+// test and the hover bar both follow the band to where it draws.
+test('under a strip above coverage, the coverage band answers where it draws', () => {
+  const t = setup({ placement: 'above' })
+  const strip = t.display.readConnectionsHeight
+  const coverage = t.display.coverageBandHeight
+  expect(t.display.renderState.sections[0]!.coverageTopOffset).toBe(strip)
+
+  expect(t.hover(250, strip + coverage - 10)).toBe('coverage')
+  expect(t.display.hoverCoverageBand).toEqual({
+    topOffset: strip,
+    coverageHeight: coverage,
+  })
+  // the top of the track, which is coverage under any other placement, is the
+  // strip here
+  expect(t.hover(250, strip / 2)).toBeUndefined()
 })
