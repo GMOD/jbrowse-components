@@ -131,7 +131,7 @@ is no longer shared with anything.
 | `bitField` | tests only — `mapqRampParity.test.ts`, `packReadSegments.test.ts` |
 | `chevronCornerPx` | tests only — `chevronStroke.test.ts` |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
-| `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts`, `strokeCoverage.test.ts` |
+| `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts` |
 | `ellipseHullPoint` | tests only — `arcHull.test.ts` |
 | `farDomeDistancePx` | tests only — `arcHull.test.ts`, `farDome.test.ts` |
 | `farDomeHullPoint` | tests only — `arcHull.test.ts` |
