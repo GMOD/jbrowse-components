@@ -21,16 +21,16 @@ instanced draw. WebGPU's render pass is the `beginFrame`/`endFrame` bracket, one
 per frame, plus one per `union` pass drawn in it.
 
 **A `union` pass draws into a layer of its own** (ADR-272). Its fragments
-max-blend into a one-sample canvas-sized target, cleared once a frame, and each
-of its draws composites that layer source-over under its scissor through
-`layerOver.slang`. On WebGPU the layer's render pass is encoded beside the
-frame's and submitted ahead of it, so it holds every draw of the pass before
-any composite reads it: the pass's draws must scissor apart, and where a later
-scissor overlaps an earlier one's end column across its height (blocks meeting
-mid-pixel) only the uncomposited columns go (`uncomposited`). WebGL2 binds a
-framebuffer per layer and draws in order, so its shared column shows the first
-block's ink alone. `MockHal.draws()` carries each union
-draw's `composite` rect.
+max-blend into a one-sample canvas-sized target, cleared at the pass's first
+draw of a frame, and each of its draws composites that layer source-over under
+its scissor through `layerOver.slang`. On WebGPU the layer's render pass is
+encoded beside the frame's and submitted ahead of it, so it holds every draw of
+the pass before any composite reads it: the pass's draws must scissor apart, and
+where a later scissor overlaps an earlier one's end column across its height
+(blocks meeting mid-pixel) only the uncomposited columns go (`uncomposited`).
+WebGL2 binds a framebuffer per layer and draws in order, so its shared column
+shows the first block's ink alone. `MockHal.draws()` carries each union draw's
+`composite` rect.
 
 **`?renderer=webgpu` pins that rung and does not fall past it.** `createGpuHal`
 raises a `renderError` naming the pin rather than substituting another backend.

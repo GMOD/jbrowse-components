@@ -1,8 +1,8 @@
 // Draws a pass's generated WGSL on a real GPU at 4 samples and at 1, and scores
 // both against the fixture's ideal scene.
 //
-//   node --experimental-transform-types --no-warnings scripts/gpu-pixels/run.ts
-//     [fixture…] [--adapter=llvmpipe]
+//   node --experimental-transform-types --disable-warning=ExperimentalWarning
+//     scripts/gpu-pixels/run.ts [fixture…] [--adapter=llvmpipe]
 //     [--dpr=1,1.5] [--base=<git ref>] [--png=<dir>] [--supersample=32]
 //
 // The reference is an NxN supersample, 8 by default. Every pixel along a long

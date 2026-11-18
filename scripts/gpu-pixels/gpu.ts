@@ -300,7 +300,7 @@ async function renderAlone(
 ) {
   const w = Math.round(f.width * dpr)
   const h = Math.round(f.height * dpr)
-  const draws = [await passDraw(device, f, wgsl, dpr, samples)]
+  const draw = await passDraw(device, f, wgsl, dpr, samples)
 
   const target = device.createTexture({
     size: [w, h],
@@ -328,12 +328,10 @@ async function renderAlone(
       },
     ],
   })
-  for (const d of draws) {
-    d.encode(pass)
-  }
+  draw.encode(pass)
   pass.end()
   const px = await readRows(device, target, w, h, encoder)
-  for (const r of [target, msaa, ...draws.flatMap(d => d.buffers)]) {
+  for (const r of [target, msaa, ...draw.buffers]) {
     r?.destroy()
   }
   return { px, w, h }

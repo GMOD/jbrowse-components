@@ -35,9 +35,8 @@ const suite: TestSuite = {
       config,
       displayTestId,
     }),
-    // A dark linear line declared after light bars: its capsules union in a
-    // layer of their own, composited over the bars as Canvas2D strokes it,
-    // where a max blend into the frame kept the bars and lost the line.
+    // A dark linear line declared after light bars draws over them, as
+    // Canvas2D strokes it.
     lgvSnapshotTest({
       name: 'a dark linear line over light bars',
       snapshot: 'mark-bars-linear-line',

@@ -449,8 +449,9 @@ jobs:
       # joints reached a release that way).
       - name: Score shader pixels on lavapipe
         run:
-          node --experimental-transform-types --no-warnings
-          scripts/gpu-pixels/run.ts --adapter=llvmpipe
+          node --experimental-transform-types
+          --disable-warning=ExperimentalWarning scripts/gpu-pixels/run.ts
+          --adapter=llvmpipe
 
   # Each Lambda is a standalone project with its own lockfile, outside the root
   # workspace: the newsletter on npm, blat-proxy on pnpm (its pnpm-workspace.yaml
