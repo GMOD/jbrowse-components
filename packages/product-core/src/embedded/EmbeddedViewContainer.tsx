@@ -1,5 +1,3 @@
-import { Suspense } from 'react'
-
 import { getSession } from '@jbrowse/core/util'
 import {
   VIEW_HEADER_HEIGHT_VAR,
@@ -7,6 +5,9 @@ import {
 } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
+
+import { isBaseSession } from '../Session/BaseSession.ts'
+import DialogQueue from '../ui/DialogQueue.tsx'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
@@ -37,11 +38,7 @@ const ViewContainer = observer(function ViewContainer({
 
   return (
     <div ref={ref} className={classes.viewContainer}>
-      {session.DialogComponent ? (
-        <Suspense fallback={null}>
-          <session.DialogComponent {...session.DialogProps} />
-        </Suspense>
-      ) : null}
+      {isBaseSession(session) ? <DialogQueue session={session} /> : null}
       {children}
     </div>
   )

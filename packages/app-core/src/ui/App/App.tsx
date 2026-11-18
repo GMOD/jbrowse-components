@@ -4,6 +4,7 @@ import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   AppReadyMarker,
+  DialogQueue,
   ModalWidget,
   drawerGridTemplateColumns,
 } from '@jbrowse/product-core'
@@ -13,7 +14,6 @@ import { observer } from 'mobx-react'
 import { fileDropHandlers } from '../../FileDrop/fileDrop.ts'
 import AppFab from './AppFab.tsx'
 import AppToolbar from './AppToolbar.tsx'
-import DialogQueue from './DialogQueue.tsx'
 import ViewsContainer from './ViewsContainer.tsx'
 import { DrawerWidget } from './lazyParts.ts'
 

@@ -1,3 +1,3 @@
 export { App } from './App.tsx'
-export { default as DialogQueue } from './DialogQueue.tsx'
+export { DialogQueue } from '@jbrowse/product-core'
 export { preloadAppFrame, preloadAppShell } from './preloadAppShell.ts'

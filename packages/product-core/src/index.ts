@@ -76,6 +76,7 @@ export type {
 export {
   AboutDialog,
   AppReadyMarker,
+  DialogQueue,
   Drawer,
   DrawerControls,
   DrawerHeader,
