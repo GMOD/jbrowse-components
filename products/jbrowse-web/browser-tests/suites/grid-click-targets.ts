@@ -29,9 +29,16 @@ import type { Page } from 'puppeteer'
  * and inputs, and ask the page what `elementFromPoint` returns at the centre of
  * each. Anything but the control itself is a dead control.
  */
-async function expectNoCoveredControls(page: Page, label: string) {
+const MUI_GRID = { root: '.MuiDataGrid-root', row: '.MuiDataGrid-row' }
+
+async function expectNoCoveredControls(
+  page: Page,
+  label: string,
+  { root: rootSelector, row: rowSelector } = MUI_GRID,
+) {
   const grids = await page.evaluate(
-    () => document.querySelectorAll('.MuiDataGrid-root').length,
+    (selector: string) => document.querySelectorAll(selector).length,
+    rootSelector,
   )
   if (!grids) {
     throw new Error(`${label}: expected at least one DataGrid on the page`)
@@ -40,48 +47,57 @@ async function expectNoCoveredControls(page: Page, label: string) {
   for (let i = 0; i < grids; i++) {
     // scroll the grid into the middle of the viewport first: elementFromPoint
     // answers null outside it, and a null answer is not evidence of covering
-    await page.evaluate((n: number) => {
-      document
-        .querySelectorAll('.MuiDataGrid-root')
-        [n]?.scrollIntoView({ block: 'center' })
-    }, i)
+    await page.evaluate(
+      (n: number, selector: string) => {
+        document
+          .querySelectorAll(selector)
+          [n]?.scrollIntoView({ block: 'center' })
+      },
+      i,
+      rootSelector,
+    )
     await delay(250)
-    const covered = await page.evaluate((n: number) => {
-      const root = document.querySelectorAll('.MuiDataGrid-root')[n]
-      const out: string[] = []
-      for (const row of root?.querySelectorAll('.MuiDataGrid-row') ?? []) {
-        for (const el of row.querySelectorAll(
-          'a, button:not([disabled]), input',
-        )) {
-          const r = el.getBoundingClientRect()
-          const cx = r.left + r.width / 2
-          const cy = r.top + r.height / 2
-          if (
-            r.width === 0 ||
-            r.height === 0 ||
-            cx < 0 ||
-            cy < 0 ||
-            cx > innerWidth ||
-            cy > innerHeight
-          ) {
-            continue
-          }
-          const hit = document.elementFromPoint(cx, cy)
-          if (hit !== el && !el.contains(hit)) {
-            // `||`, not `??`: an icon-only button's textContent is the empty
-            // string rather than null, and "" names nothing
-            const name =
-              el.getAttribute('aria-label') ||
-              el.textContent.trim() ||
-              el.tagName
-            out.push(
-              `${name} is covered by ${hit ? `${hit.tagName}.${String((hit as HTMLElement).className).slice(0, 60)}` : 'nothing (null)'}`,
-            )
+    const covered = await page.evaluate(
+      (n: number, selector: string, rowSel: string) => {
+        const root = document.querySelectorAll(selector)[n]
+        const out: string[] = []
+        for (const row of root?.querySelectorAll(rowSel) ?? []) {
+          for (const el of row.querySelectorAll(
+            'a, button:not([disabled]), input',
+          )) {
+            const r = el.getBoundingClientRect()
+            const cx = r.left + r.width / 2
+            const cy = r.top + r.height / 2
+            if (
+              r.width === 0 ||
+              r.height === 0 ||
+              cx < 0 ||
+              cy < 0 ||
+              cx > innerWidth ||
+              cy > innerHeight
+            ) {
+              continue
+            }
+            const hit = document.elementFromPoint(cx, cy)
+            if (hit !== el && !el.contains(hit)) {
+              // `||`, not `??`: an icon-only button's textContent is the empty
+              // string rather than null, and "" names nothing
+              const name =
+                el.getAttribute('aria-label') ||
+                el.textContent.trim() ||
+                el.tagName
+              out.push(
+                `${name} is covered by ${hit ? `${hit.tagName}.${String((hit as HTMLElement).className).slice(0, 60)}` : 'nothing (null)'}`,
+              )
+            }
           }
         }
-      }
-      return out
-    }, i)
+        return out
+      },
+      i,
+      rootSelector,
+      rowSelector,
+    )
     failures.push(...covered.map(c => `  [grid ${i}] ${c}`))
   }
   if (failures.length) {
@@ -154,7 +170,10 @@ const suite: TestSuite = {
         await (await findByText(page, 'Assembly manager')).click()
         await delay(1500)
 
-        await expectNoCoveredControls(page, 'AssemblyTable')
+        await expectNoCoveredControls(page, 'AssemblyTable', {
+          root: '[data-testid="assembly-table"]',
+          row: 'tbody tr',
+        })
       },
     },
   ],
