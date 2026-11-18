@@ -48,6 +48,7 @@ test("a saved session's picture shows beside it, and one without gets a blank bo
   ])
   const images = getByTestId('session-manager-table').querySelectorAll('img')
   expect([...images].map(img => img.getAttribute('src'))).toEqual([picture])
+  expect(screen.getByRole('columnheader', { name: 'Thumbnail' })).toBeTruthy()
 })
 
 // undefined means the saved-session database is still opening. It used to read

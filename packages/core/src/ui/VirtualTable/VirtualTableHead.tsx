@@ -37,7 +37,9 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
     <thead className={classes.thead}>
       <tr>
         {hasLeading ? (
-          <th className={classes.leadingCell}>{leadingHeader}</th>
+          <th scope="col" className={classes.leadingCell}>
+            {leadingHeader}
+          </th>
         ) : null}
         {columns.map(col => {
           const sorted = sortField === col.id

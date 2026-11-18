@@ -101,7 +101,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
           <IconButton
             size="small"
             className={classes.button}
-            aria-label="Remove track"
+            aria-label={`Remove ${row.name}`}
             onClick={() => {
               onRemove(row.id)
             }}

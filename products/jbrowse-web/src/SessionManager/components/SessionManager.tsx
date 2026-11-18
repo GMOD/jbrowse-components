@@ -38,6 +38,17 @@ const useStyles = makeStyles()(theme => ({
   search: {
     width: 160,
   },
+  visuallyHidden: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    margin: -1,
+    padding: 0,
+    border: 0,
+    overflow: 'hidden',
+    clip: 'rect(0 0 0 0)',
+    whiteSpace: 'nowrap',
+  },
   mb: {
     margin: theme.spacing(1),
     marginBottom: theme.spacing(4),
@@ -134,7 +145,9 @@ const SessionManager = observer(function SessionManager({
             rowHeight={ROW_HEIGHT}
             leading={{
               width: THUMBNAIL_WIDTH + 16,
-              header: () => null,
+              header: () => (
+                <span className={classes.visuallyHidden}>Thumbnail</span>
+              ),
               cell: row => <ThumbnailCell row={row} session={session} />,
             }}
             {...sortProps}

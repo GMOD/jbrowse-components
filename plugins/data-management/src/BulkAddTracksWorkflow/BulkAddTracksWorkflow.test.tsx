@@ -83,13 +83,13 @@ test('an orphan index with no data file is reported once, not double-counted', (
 
 test('removing a row drops it from the addable set', () => {
   const { model } = getSession()
-  const { getByLabelText, getByRole, getAllByLabelText } = render(
+  const { getByLabelText, getByRole } = render(
     <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
   )
   pasteUrls(getByLabelText, 'https://x.com/a.bam\nhttps://x.com/b.bam')
   expect(getByRole('button', { name: 'Add 2 tracks' })).toBeTruthy()
 
-  fireEvent.click(getAllByLabelText('Remove track')[0]!)
+  fireEvent.click(getByRole('button', { name: 'Remove a.bam' }))
   expect(getByRole('button', { name: 'Add 1 track' })).toBeTruthy()
 })
 
@@ -242,7 +242,6 @@ test('opening a name cell without typing does not opt the row out of stripping',
 test('a removed row does not resurrect its edited name when re-added', async () => {
   const { model } = getSession()
   const {
-    getAllByLabelText,
     getByDisplayValue,
     getByLabelText,
     getByRole,
@@ -259,7 +258,7 @@ test('a removed row does not resurrect its edited name when re-added', async () 
   })
   expect(getByText('renamed')).toBeTruthy()
 
-  fireEvent.click(getAllByLabelText('Remove track')[0]!)
+  fireEvent.click(getByRole('button', { name: 'Remove renamed' }))
   pasteUrls(getByLabelText, 'https://x.com/a.bam')
 
   expect(getByText('a.bam')).toBeTruthy()
