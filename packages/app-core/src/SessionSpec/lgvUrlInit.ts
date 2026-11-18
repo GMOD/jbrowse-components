@@ -174,7 +174,7 @@ export function hubConnectionSpec(url: string) {
     type: 'UCSCTrackHubConnection',
     connectionId: url,
     name: shortHubLabel(url),
-    hubTxtLocation: { uri: url, locationType: 'UriLocation' },
+    hubTxtLocation: { uri: url, locationType: 'UriLocation' as const },
   }
 }
 

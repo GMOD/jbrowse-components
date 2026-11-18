@@ -41,6 +41,8 @@ export interface ParsedSessionSpec {
   // what the link asked for that the spec cannot carry, for the caller to show
   // on the session it opens
   notice?: string
+  // the first `&hubURL=`, which names the session
+  hubUrl?: string
 }
 
 // A `jbrowse://open?url=<web link>` wrapper carries a JBrowse Web url for
@@ -107,7 +109,7 @@ function resolveConfig(params: URLSearchParams, url: URL) {
  */
 function shorthandSpec(
   params: URLSearchParams,
-): Pick<ParsedSessionSpec, 'spec' | 'notice'> {
+): Pick<ParsedSessionSpec, 'spec' | 'notice' | 'hubUrl'> {
   const init = buildLgvInitFromParams(params)
   // what makes a link a jb1-style one, the same test as jbrowse-web's
   // isJb1StyleSession. The rest of the shorthand only modifies a view; none of
@@ -167,6 +169,7 @@ const URL_PARAM_FOR_INIT_KEY: Record<string, string | undefined> = {
  * `views` is what makes loadSessionSpec register the connection non-silently,
  * so the hub opens at its own defaultPos — the best guess available without a
  * name — and the notice says why the link's params were not applied.
+ * loadLinkSpec names the session after `hubUrl`, the link's first hub.
  */
 export function hubLinkSpec(
   hubURL: string[],
@@ -186,6 +189,7 @@ export function hubLinkSpec(
       !init.assembly && carried.length
         ? `${carried.join(', ')} alongside &hubURL= also needs &assembly=, naming one of the hub genomes; the hub was opened at its own default location.`
         : undefined,
+    hubUrl: hubURL[0],
   }
 }
 

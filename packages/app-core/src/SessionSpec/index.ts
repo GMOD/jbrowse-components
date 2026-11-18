@@ -15,6 +15,7 @@ export {
   loadSessionSpec,
   viewTypeProblem,
 } from './loadSessionSpec.ts'
+export { loadLinkSpec } from './loadLinkSpec.ts'
 export {
   hubLinkSpec,
   parseConfigUrl,
@@ -25,6 +26,7 @@ export {
 } from './parseSessionSpecUrl.ts'
 
 export type { LgvUrlInit } from './lgvUrlInit.ts'
+export type { LinkSpec } from './loadLinkSpec.ts'
 export type { SessionSpec } from './loadSessionSpec.ts'
 export type {
   ParsedSessionSnapshotUrl,

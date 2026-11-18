@@ -42,6 +42,7 @@ interface Resolved {
   sessionConnections: unknown[]
   sessionName: string | undefined
   notice: string | undefined
+  hubUrl: string | undefined
 }
 
 function setUrl(url: string) {
@@ -62,11 +63,12 @@ function resolveConfigUrl(config: string | undefined) {
 }
 
 function fromAppCore(url: string): Resolved {
-  const { configUrl, spec, sessionName, notice }: ParsedSessionSpec =
+  const { configUrl, spec, sessionName, notice, hubUrl }: ParsedSessionSpec =
     parseSessionSpecUrl(url)
   return {
     configUrl,
     notice,
+    hubUrl,
     views: spec.views,
     sessionTracks: spec.sessionTracks ?? [],
     sessionConnections: spec.sessionConnections ?? [],
@@ -86,10 +88,11 @@ async function fromJbrowseWeb(): Promise<Resolved> {
     sessionName: loader.sessionName,
   }
   if (source?.type === 'spec') {
-    const { spec, notice } = source
+    const { spec, notice, hubUrl } = source
     return {
       ...common,
       notice,
+      hubUrl,
       views: spec.views,
       sessionTracks: spec.sessionTracks ?? [],
       sessionConnections: spec.sessionConnections ?? [],

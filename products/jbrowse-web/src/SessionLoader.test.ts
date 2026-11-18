@@ -461,6 +461,7 @@ describe('SessionLoader', () => {
       expect(loader.sessionSource).toEqual({
         type: 'spec',
         spec: { sessionConnections: [hub], sessionTracks: [], views: [] },
+        hubUrl: 'https://example.com/hub.txt',
       })
     })
 

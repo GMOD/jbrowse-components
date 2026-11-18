@@ -1,6 +1,6 @@
 import {
   addSessionTracks,
-  loadSessionSpec,
+  loadLinkSpec,
   preloadAppFrame,
   preloadAppShell,
 } from '@jbrowse/app-core'
@@ -237,15 +237,7 @@ function initSession(
     } else if (sessionSource?.type === 'snapshot') {
       rootModel.setSession(sessionSource.snapshot)
     } else if (sessionSource?.type === 'spec') {
-      void loadSessionSpec(
-        sessionName
-          ? { ...sessionSource.spec, sessionName }
-          : sessionSource.spec,
-        pluginManager,
-      )
-      if (sessionSource.notice) {
-        rootModel.session?.notify(sessionSource.notice, 'warning')
-      }
+      void loadLinkSpec({ ...sessionSource, sessionName }, pluginManager)
     } else {
       const defaultSessionTracks = model.defaultSessionTracks ?? []
       rootModel.startNewSession()

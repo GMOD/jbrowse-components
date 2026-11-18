@@ -1,4 +1,5 @@
 import {
+  loadLinkSpec,
   loadSessionSpec,
   parseConfigUrl,
   parseSessionSnapshotUrl,
@@ -24,7 +25,7 @@ import type { HostedConfig } from '@jbrowse/launch-args/hostedGenomes'
 
 // Turns a JBrowse Web link into a Desktop session. Web resolves these out of its
 // address bar; Desktop gets the same result by parsing the link, loading the
-// config it names, and running the identical loadSessionSpec — the
+// config it names, and running the identical loadLinkSpec — the
 // LaunchView-<type> extension points it dispatches to are registered by the same
 // plugins Desktop already loads.
 //
@@ -126,14 +127,7 @@ export async function launchFromLink(
     ? await fetchConfig(parsed.configUrl)
     : undefined
   const pluginManager = await createPluginManager(config)
-  const { spec, sessionName, notice } = parsed
-  await loadSessionSpec(
-    sessionName ? { ...spec, sessionName } : spec,
-    pluginManager,
-  )
-  if (notice) {
-    pluginManager.rootModel?.session?.notify(notice, 'warning')
-  }
+  await loadLinkSpec(parsed, pluginManager)
   return pluginManager
 }
 

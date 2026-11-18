@@ -730,12 +730,14 @@ const SessionLoader = types
       // opens the same session here as in Desktop. The hubURL copy is
       // detached: sessionSource is a types.frozen prop, and self.hubURL a live
       // node of this loader's own tree
-      const { spec, notice } = hubLinkSpec(
-        [...(self.hubURL ?? [])],
-        self.urlViewInit,
-        self.sessionTracksParsed,
-      )
-      self.setSessionSource({ type: 'spec', spec, notice })
+      self.setSessionSource({
+        type: 'spec',
+        ...hubLinkSpec(
+          [...(self.hubURL ?? [])],
+          self.urlViewInit,
+          self.sessionTracksParsed,
+        ),
+      })
     },
   }))
   .actions(self => ({

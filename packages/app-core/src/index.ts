@@ -41,6 +41,7 @@ export {
   buildLgvInit,
   hubConnectionSpec,
   hubLinkSpec,
+  loadLinkSpec,
   loadSessionSpec,
   parseConfigUrl,
   parseSessionSnapshotUrl,
@@ -53,6 +54,7 @@ export {
 } from './SessionSpec/index.ts'
 export type {
   LayoutNode,
+  LinkSpec,
   ParsedSessionSnapshotUrl,
   ParsedSessionSpec,
   SessionSpec,

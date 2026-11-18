@@ -1,5 +1,7 @@
 import { hubLinkSpec } from '@jbrowse/app-core'
 import Plugin from '@jbrowse/core/Plugin'
+import { isSessionModelWithConnections } from '@jbrowse/core/util'
+import { when } from 'mobx'
 
 import { createPluginManager } from './createPluginManager.ts'
 
@@ -80,10 +82,16 @@ test('a hub link whose hub.txt cannot be read opens a session that says so', asy
     },
     () => {},
   )
-  expect(pluginManager.rootModel?.session).toMatchObject({
-    snackbarMessages: expect.arrayContaining([
-      expect.objectContaining({ message: 'Error: hub broke' }),
-    ]),
+  const session = pluginManager.rootModel?.session
+  await when(
+    () =>
+      isSessionModelWithConnections(session) &&
+      session.connectionInstances.length === 0,
+  )
+  expect(session).toMatchObject({
+    snackbarMessages: [
+      expect.objectContaining({ message: 'hub.txt: "Error: hub broke"' }),
+    ],
   })
   expect(error).toHaveBeenCalledWith(new Error('hub broke'))
   jest.restoreAllMocks()

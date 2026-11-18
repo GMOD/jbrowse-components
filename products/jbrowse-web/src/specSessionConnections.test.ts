@@ -5,7 +5,6 @@
 // ordering rules are unit-tested against stubs in @jbrowse/app-core.
 import { hubConnectionSpec, loadSessionSpec } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { when } from 'mobx'
 
 import corePlugins from './corePlugins.ts'
 import rootModelFactory from './rootModel/rootModel.ts'
@@ -52,12 +51,6 @@ function setup({ adminMode = false } = {}) {
 
 beforeEach(() => {
   mockReadFile.mockReturnValue(new Promise(() => {}))
-  // the hub.txt read that names an unnamed session after its hub
-  jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
-})
-
-afterEach(() => {
-  jest.restoreAllMocks()
 })
 
 test('a spec registers its connections as real session connections', async () => {
@@ -128,39 +121,31 @@ test('a spec holds its views until the connection settles', async () => {
   expect(rootModel.session!.views).toHaveLength(0)
 })
 
-// the hub's shortLabel names the connection's track-selector category, but
-// only over the placeholder hubConnectionSpec wrote: a name the spec chose stays
-describe('a hub.txt shortLabel', () => {
-  beforeEach(() => {
-    jest
-      .spyOn(global, 'fetch')
-      .mockResolvedValue(new Response('hub myHub\nshortLabel My Cool Hub'))
-  })
+// naming after a hub is what a hub link asks for, through loadLinkSpec; a
+// written spec keeps the names it wrote, and the dated one where it wrote none
+test('a written spec attaching a hub is not renamed after it', async () => {
+  const { pluginManager, rootModel } = setup()
+  const hubTxt =
+    'hub myHub\nshortLabel My Cool Hub\nlongLabel x\ngenomesFile genomes.txt\nemail hub@example.com'
+  mockReadFile.mockResolvedValueOnce(hubTxt)
+  const fetch = jest
+    .spyOn(global, 'fetch')
+    .mockResolvedValue(new Response(hubTxt))
 
-  test('renames a hub connection still carrying its placeholder name', async () => {
-    const { pluginManager, rootModel } = setup()
-    const conf = hubConnectionSpec('https://example.com/hubs/my-hub/hub.txt')
+  await loadSessionSpec(
+    {
+      sessionConnections: [
+        hubConnectionSpec('https://example.com/hubs/my-hub/hub.txt'),
+      ],
+      views: [],
+    },
+    pluginManager,
+  )
+  await new Promise(resolve => setTimeout(resolve, 0))
+  await new Promise(resolve => setTimeout(resolve, 0))
 
-    await loadSessionSpec(
-      { sessionConnections: [conf], views: [] },
-      pluginManager,
-    )
-
-    const session = rootModel.session!
-    await when(() => session.name === 'My Cool Hub')
-    expect(session.sessionConnections[0]!.name).toBe('My Cool Hub')
-  })
-
-  test('keeps a connection name the spec wrote', async () => {
-    const { pluginManager, rootModel } = setup()
-
-    await loadSessionSpec(
-      { sessionConnections: [HUB], views: [] },
-      pluginManager,
-    )
-
-    const session = rootModel.session!
-    await when(() => session.name === 'My Cool Hub')
-    expect(session.sessionConnections[0]!.name).toBe('my-hub')
-  })
+  const session = rootModel.session!
+  expect(session.name).toMatch(/^New session /)
+  expect(session.sessionConnections[0]!.name).toBe('my-hub')
+  fetch.mockRestore()
 })

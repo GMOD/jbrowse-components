@@ -10,14 +10,17 @@ import { launchFromLink, launchFromPlan } from './launchFromLink.ts'
 import type { JBrowseConfig } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// loadSessionSpec drives real plugin extension points against a live root model;
-// this exercises the link->config->spec wiring around it, so it stands in.
-// (jest only allows a `mock`-prefixed binding inside a hoisted module factory.)
+// loadLinkSpec and loadSessionSpec drive real plugin extension points against a
+// live root model; this exercises the link->config->spec wiring around them, so
+// they stand in. (jest only allows a `mock`-prefixed binding inside a hoisted
+// module factory.)
 const mockLoadSessionSpec = jest.fn()
+const mockLoadLinkSpec = jest.fn()
 jest.mock('@jbrowse/app-core', () => ({
   ...jest.requireActual<object>('@jbrowse/app-core'),
   // called lazily: the factory is hoisted above the binding it closes over
   loadSessionSpec: (...args: unknown[]) => mockLoadSessionSpec(...args),
+  loadLinkSpec: (...args: unknown[]) => mockLoadLinkSpec(...args),
 }))
 
 const spec = {
@@ -39,6 +42,7 @@ const resolvedConfigUrl =
 
 beforeEach(() => {
   mockLoadSessionSpec.mockReset()
+  mockLoadLinkSpec.mockReset()
   trustPlugins.mockReset()
 })
 
@@ -55,8 +59,8 @@ test('fetches the config the link names, then builds the spec session on it', as
   // the link's config is relative to the instance it points at
   expect(fetchConfig).toHaveBeenCalledWith(resolvedConfigUrl)
   expect(createPluginManager).toHaveBeenCalledWith(config)
-  expect(mockLoadSessionSpec).toHaveBeenCalledWith(
-    { ...spec, sessionName: 'Figure' },
+  expect(mockLoadLinkSpec).toHaveBeenCalledWith(
+    expect.objectContaining({ spec, sessionName: 'Figure' }),
     pluginManager,
   )
   expect(result).toBe(pluginManager)
@@ -74,7 +78,7 @@ test('a config rejected by its plugin gate never builds a plugin manager', async
   ).rejects.toThrow('not trusted')
 
   expect(createPluginManager).not.toHaveBeenCalled()
-  expect(mockLoadSessionSpec).not.toHaveBeenCalled()
+  expect(mockLoadLinkSpec).not.toHaveBeenCalled()
 })
 
 test('a spec carrying its own assemblies needs no config fetch', async () => {
@@ -92,29 +96,30 @@ test('a spec carrying its own assemblies needs no config fetch', async () => {
 
   expect(fetchConfig).not.toHaveBeenCalled()
   expect(createPluginManager).toHaveBeenCalledWith(undefined)
-  expect(mockLoadSessionSpec).toHaveBeenCalledWith(selfContained, pluginManager)
+  expect(mockLoadLinkSpec).toHaveBeenCalledWith(
+    expect.objectContaining({ spec: selfContained }),
+    pluginManager,
+  )
 })
 
-// the hub still opens, at its own default location, and the session says why
-// the link's &loc= was not applied rather than dropping it in silence
-test('a hub link with a loc and no assembly opens the hub and says why it did not navigate', async () => {
-  const notify = jest.fn()
-  const createPluginManager = jest
-    .fn()
-    .mockResolvedValue({ rootModel: { session: { notify } } })
+// the hub still opens, at its own default location; the notice says why the
+// link's &loc= was not applied, and the hub names the session
+test('a hub link with a loc and no assembly hands its notice and hub on', async () => {
+  const createPluginManager = jest.fn().mockResolvedValue(pluginManager)
 
   await launchFromLink(
     'https://jbrowse.org/code/jb2/main/?config=none&hubURL=https://example.com/hub.txt&loc=chr1:1-100',
     { fetchConfig: jest.fn(), createPluginManager, trustPlugins },
   )
 
-  expect(mockLoadSessionSpec).toHaveBeenCalledWith(
-    expect.objectContaining({ views: [] }),
-    expect.anything(),
-  )
-  expect(notify).toHaveBeenCalledWith(
-    '&loc= alongside &hubURL= also needs &assembly=, naming one of the hub genomes; the hub was opened at its own default location.',
-    'warning',
+  expect(mockLoadLinkSpec).toHaveBeenCalledWith(
+    expect.objectContaining({
+      spec: expect.objectContaining({ views: [] }),
+      notice:
+        '&loc= alongside &hubURL= also needs &assembly=, naming one of the hub genomes; the hub was opened at its own default location.',
+      hubUrl: 'https://example.com/hub.txt',
+    }),
+    pluginManager,
   )
 })
 
@@ -132,7 +137,7 @@ test('a link only the browser that made it can open fails before anything is bui
 
   expect(fetchConfig).not.toHaveBeenCalled()
   expect(createPluginManager).not.toHaveBeenCalled()
-  expect(mockLoadSessionSpec).not.toHaveBeenCalled()
+  expect(mockLoadLinkSpec).not.toHaveBeenCalled()
 })
 
 test('a url that is itself a config opens it, with no spec to run', async () => {
@@ -148,7 +153,7 @@ test('a url that is itself a config opens it, with no spec to run', async () => 
     'https://jbrowse.org/ucsc/hg38/config.json',
   )
   expect(createPluginManager).toHaveBeenCalledWith(config)
-  expect(mockLoadSessionSpec).not.toHaveBeenCalled()
+  expect(mockLoadLinkSpec).not.toHaveBeenCalled()
   expect(result).toBe(pluginManager)
 })
 
@@ -165,7 +170,7 @@ test('a web link naming only a config opens its default session', async () => {
     'https://jbrowse.org/code/jb2/main/test_data/volvox/config.json',
   )
   expect(createPluginManager).toHaveBeenCalledWith(config)
-  expect(mockLoadSessionSpec).not.toHaveBeenCalled()
+  expect(mockLoadLinkSpec).not.toHaveBeenCalled()
   expect(result).toBe(pluginManager)
 })
 
@@ -217,7 +222,10 @@ test('a spec on a .json url is still read as the spec link it is', async () => {
   )
 
   expect(fetchConfig).not.toHaveBeenCalled()
-  expect(mockLoadSessionSpec).toHaveBeenCalledWith(spec, pluginManager)
+  expect(mockLoadLinkSpec).toHaveBeenCalledWith(
+    expect.objectContaining({ spec }),
+    pluginManager,
+  )
 })
 
 test('a link naming neither a config nor a view still reports why', async () => {
@@ -244,7 +252,7 @@ test('a failed config fetch surfaces rather than building an empty session', asy
   ).rejects.toThrow('404 not found')
 
   expect(createPluginManager).not.toHaveBeenCalled()
-  expect(mockLoadSessionSpec).not.toHaveBeenCalled()
+  expect(mockLoadLinkSpec).not.toHaveBeenCalled()
 })
 
 // What JBrowse Web's share button and genomes.jbrowse.org's protein browser
@@ -280,7 +288,7 @@ test("a link carrying its whole session opens it as the config's session", async
     defaultSession: snapshot,
   })
   expect(trustPlugins).not.toHaveBeenCalled()
-  expect(mockLoadSessionSpec).not.toHaveBeenCalled()
+  expect(mockLoadLinkSpec).not.toHaveBeenCalled()
   expect(result).toBe(pluginManager)
 })
 

@@ -1,6 +1,4 @@
-import { setConf } from '@jbrowse/core/configuration'
 import {
-  isObject,
   isSessionWithAddAssembly,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
@@ -10,8 +8,6 @@ import {
 } from '@jbrowse/core/util/withLaunchInput'
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
-
-import { shortHubLabel } from './lgvUrlInit.ts'
 
 import type { LayoutSpecNode } from '../WorkspaceLayout/spec.ts'
 import type { LayoutNode, ViewSpec } from './types.ts'
@@ -68,7 +64,8 @@ function isSessionWithSpecConnections(
 /**
  * Register `&sessionTracks=` / a spec's `sessionTracks` into a session.
  *
- * Exported because the hub launch needs it too and must not reimplement it.
+ * Exported because jbrowse-web's default session adds a link's
+ * `&sessionTracks=` too and must not reimplement it.
  *
  * A track that fails to register does not cost the caller the rest of them —
  * same reasoning as the per-connection and per-view try/catch around it, one
@@ -98,72 +95,6 @@ export function addSessionTracks(
         e,
       )
     }
-  }
-}
-
-// isStateTreeNode first: the liveness question only applies to a real MST
-// session, and loadSessionSpec is called with plain object sessions under test
-function isGone(session: AbstractSessionModel) {
-  return isStateTreeNode(session) && !isAlive(session)
-}
-
-function isNameableSession(
-  session: AbstractSessionModel,
-): session is AbstractSessionModel & { setName: (name: string) => void } {
-  return 'setName' in session
-}
-
-interface HubConnectionConf extends Record<string, unknown> {
-  hubTxtLocation: { uri: string }
-}
-function isHubConnectionConf(
-  conf: Record<string, unknown>,
-): conf is HubConnectionConf {
-  const { type, hubTxtLocation } = conf
-  return (
-    type === 'UCSCTrackHubConnection' &&
-    isObject(hubTxtLocation) &&
-    typeof hubTxtLocation.uri === 'string'
-  )
-}
-
-/** the hub.txt shortLabel line, used as a human-readable session name */
-export function parseHubShortLabel(hubTxt: string) {
-  return hubTxt
-    .split('\n')
-    .find(line => line.startsWith('shortLabel'))
-    ?.replace('shortLabel', '')
-    .trim()
-}
-
-// A spec that attaches a track hub and names no session is named after the
-// hub: its url until hub.txt is read, then its shortLabel. The connection
-// takes the shortLabel too while it still has the placeholder name
-// hubConnectionSpec gave it; a name the spec wrote stays. Not awaited by the
-// load, which owes nothing to a name.
-async function nameAfterHub(
-  session: AbstractSessionModel,
-  uri: string,
-  renameSession: boolean,
-  connection: AnyConfigurationModel | undefined,
-) {
-  try {
-    const res = await fetch(uri)
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} fetching ${uri}`)
-    }
-    const label = parseHubShortLabel(await res.text())
-    if (label && !isGone(session)) {
-      if (renameSession && isNameableSession(session)) {
-        session.setName(label)
-      }
-      if (connection) {
-        setConf(connection, 'name', label)
-      }
-    }
-  } catch (e) {
-    console.error(e)
-    session.notifyError(`${e}`, e)
   }
 }
 
@@ -488,14 +419,10 @@ export async function loadSessionSpec(
     sessionName,
   } = spec
   const rootModel = pluginManager.rootModel!
-  const hub = sessionConnections.find(isHubConnectionConf)
-  const hubUri = hub?.hubTxtLocation.uri
-  let hubConnection: AnyConfigurationModel | undefined
 
   try {
     rootModel.setSession?.({
-      name:
-        sessionName ?? hubUri ?? `New session ${new Date().toLocaleString()}`,
+      name: sessionName ?? `New session ${new Date().toLocaleString()}`,
     })
 
     const { session } = rootModel
@@ -566,13 +493,12 @@ export async function loadSessionSpec(
             // `defaultPos`) would otherwise open a second view competing with
             // the one the spec asked for. With no views the spec is only asking
             // to attach the connection, so let it do its own thing.
-            const connection = session.addSessionConnectionConf
-              ? session.addSessionConnectionConf(conf)
-              : session.addConnectionConf(conf)
-            if (hubUri && conf === hub && conf.name === shortHubLabel(hubUri)) {
-              hubConnection = connection
-            }
-            session.makeConnection(connection, { silent: views.length > 0 })
+            session.makeConnection(
+              session.addSessionConnectionConf
+                ? session.addSessionConnectionConf(conf)
+                : session.addConnectionConf(conf),
+              { silent: views.length > 0 },
+            )
           } catch (e) {
             console.error(e)
             session.notifyError(
@@ -588,9 +514,6 @@ export async function loadSessionSpec(
       }
     }
     addSessionTracks(session, sessionTracks)
-    if (session && hubUri && (!sessionName || hubConnection)) {
-      void nameAfterHub(session, hubUri, !sessionName, hubConnection)
-    }
 
     // A view type with no registered LaunchView-<type> extension point makes
     // evaluateAsyncExtensionPoint a silent no-op, leaving an empty session with

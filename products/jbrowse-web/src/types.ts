@@ -55,6 +55,8 @@ export type SessionSource =
       // what the link asked for that the spec cannot carry, shown on the
       // session it opens (see hubLinkSpec)
       notice?: string
+      // the hub a hub link's session is named after
+      hubUrl?: string
     }
   | { type: 'default' }
   | { type: 'error'; error: unknown }
