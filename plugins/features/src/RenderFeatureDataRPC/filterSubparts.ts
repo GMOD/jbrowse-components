@@ -1,7 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { impliedUTRs } from './impliedUTRs.ts'
-import { featureType, getSubfeatures } from './util.ts'
+import { getSubfeatures, isCDS, isUTR } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -29,19 +29,11 @@ function impliedUTRFeatures(parent: Feature, subs: Feature[]) {
 
 // The boxes a coding transcript draws. Its exons stay out: the CDS and UTR
 // boxes, implied UTRs included, already tile them.
-const SUBPART_TYPES = new Set([
-  'cds',
-  'utr',
-  'five_prime_utr',
-  'three_prime_utr',
-])
-
 export function getSubparts(f: Feature) {
   const subs = getSubfeatures(f)
-  if (subs.length === 0) {
-    return []
-  }
-  return [...subs, ...impliedUTRFeatures(f, subs)].filter(child =>
-    SUBPART_TYPES.has(featureType(child).toLowerCase()),
-  )
+  return subs.length === 0
+    ? []
+    : [...subs, ...impliedUTRFeatures(f, subs)].filter(
+        child => isCDS(child) || isUTR(child),
+      )
 }

@@ -55,6 +55,30 @@ function transcript(type: string, cdsType = 'CDS') {
 }
 
 describe('getSubparts implied UTRs', () => {
+  it.each(["5'UTR", 'untranslated_region'])(
+    'keeps a UTR row a file spells %s, which the implied fill counts as covered',
+    utrType => {
+      const parts = getSubparts(
+        mockFeature({
+          type: 'mRNA',
+          start: 0,
+          end: 500,
+          subfeatures: [
+            mockFeature({ type: 'exon', start: 0, end: 500 }),
+            mockFeature({ type: utrType, start: 0, end: 100 }),
+            mockFeature({ type: 'CDS', start: 100, end: 500 }),
+          ],
+        }),
+      )
+      expect(
+        parts.map(f => [f.get('type'), f.get('start'), f.get('end')]),
+      ).toEqual([
+        [utrType, 0, 100],
+        ['CDS', 100, 500],
+      ])
+    },
+  )
+
   it('implies UTRs for mRNA', () => {
     expect(typesOf(getSubparts(transcript('mRNA')))).toEqual([
       'CDS',
