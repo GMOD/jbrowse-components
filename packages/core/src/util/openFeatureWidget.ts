@@ -30,7 +30,7 @@ export interface ParentFeatureSummary {
   type?: string
 }
 
-const DEFAULT_FEATURE_WIDGET: FeatureWidgetTypeRef = {
+export const DEFAULT_FEATURE_WIDGET: FeatureWidgetTypeRef = {
   type: 'BaseFeatureWidget',
   id: 'baseFeature',
 }

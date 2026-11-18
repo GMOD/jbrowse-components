@@ -6,6 +6,7 @@ import { withFeatureDetails } from './withFeatureDetails.ts'
 
 import type { createAbortRotation } from './createAbortRotation.ts'
 import type { CoreGetEncodedLayersArgs } from './markEncodingTypes.ts'
+import type { FeatureWidgetTypeRef } from './openFeatureWidget.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -18,7 +19,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * bin or run the steps made. A second click aborts the first request.
  */
 export function selectEncodedFeature(
-  self: IStateTreeNode,
+  self: IStateTreeNode & { featureWidgetType: FeatureWidgetTypeRef },
   rotation: ReturnType<typeof createAbortRotation>,
   args: Omit<CoreGetEncodedLayersArgs, 'byteLimit'> & {
     layer: number
@@ -47,7 +48,10 @@ export function selectEncodedFeature(
       }
     },
     feature => {
-      openFeatureWidget(self, feature.toJSON(), { feature })
+      openFeatureWidget(self, feature.toJSON(), {
+        feature,
+        widget: self.featureWidgetType,
+      })
     },
   )
 }

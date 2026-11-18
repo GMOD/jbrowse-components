@@ -1,11 +1,14 @@
 import { createElement } from 'react'
 
+import Plugin from '@jbrowse/core/Plugin'
 import {
+  ConfigurationSchema,
   getConfigurationSchemaDefinition,
   getConfigurationSchemaUnion,
   isSlotDefinitionEntry,
   setConf,
 } from '@jbrowse/core/configuration'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
@@ -19,7 +22,7 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { YSCALEBAR_LABEL_OFFSET, axisPlotBox } from '@jbrowse/display-ui'
-import { asArrayType, destroy, isType } from '@jbrowse/mobx-state-tree'
+import { asArrayType, destroy, isType, types } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -40,6 +43,7 @@ import { defaultPlot } from './plotDefault.ts'
 import { placeTextMarks } from './textMarks.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
@@ -2184,6 +2188,101 @@ test('a click asks the worker which feature the instance is, under the request i
     featureIndex: 1,
   })
   expect(asked).not.toHaveProperty('byteLimit')
+})
+
+const VARIANT_WIDGET = { type: 'VariantFeatureWidget', id: 'variantFeature' }
+
+class StubVariantWidgetPlugin extends Plugin {
+  name = 'StubVariantWidgetPlugin'
+
+  install(pm: PluginManager) {
+    pm.addWidgetType(
+      () =>
+        new WidgetType({
+          name: VARIANT_WIDGET.type,
+          configSchema: ConfigurationSchema(VARIANT_WIDGET.type, {}),
+          stateModel: types.model(VARIANT_WIDGET.type, {}),
+          ReactComponent: () => null,
+        }),
+    )
+  }
+}
+
+async function widgetOpenedByAClickOn({
+  trackType,
+  featureWidget,
+  widgetRegistered,
+}: {
+  trackType: string
+  featureWidget?: typeof VARIANT_WIDGET
+  widgetRegistered: boolean
+}) {
+  const { createDisplay } =
+    createDisplayTestEnvironment<LinearMarkDisplayModel>({
+      plugins: [
+        new LinearGenomeViewPlugin(),
+        new WigglePlugin(),
+        ...(widgetRegistered ? [new StubVariantWidgetPlugin()] : []),
+      ],
+      trackType,
+      featureWidget,
+      adapter: { name: 'VcfAdapter', config: { type: 'VcfAdapter' } },
+      displayName: 'LinearMarkDisplay',
+      configSchema: () => configSchemaFactory(),
+      stateModel: (pm, schema) => stateModelFactory(pm, schema),
+      viewModel: linearGenomeViewStateModelFactory,
+      displayConfig: { marks: DENSITY_MARKS },
+      regions: [REGION],
+      assemblyRegions: [REGION],
+      onViewReady: view => {
+        view.showAllRegions()
+      },
+    })
+  const { display, session, mockRpcCall } = createDisplay()
+  await loadedThroughTheWorker(display, mockRpcCall, {
+    uniqueId: 'bnd1',
+    refName: 'ctgA',
+    start: 99,
+    end: 100,
+    type: 'breakend',
+  })
+  display.selectFeature(hitOn(0, 0))
+  await waitFor(() => {
+    expect(session.openedWidgets).toHaveLength(1)
+  })
+  return session.openedWidgets[0]!
+}
+
+test("a click on a mark opens the widget its track declares, so a breakend reaches the variant widget's split-view launch", async () => {
+  const opened = await widgetOpenedByAClickOn({
+    trackType: 'VariantTrack',
+    featureWidget: VARIANT_WIDGET,
+    widgetRegistered: true,
+  })
+  expect(opened).toMatchObject(VARIANT_WIDGET)
+})
+
+test('a track declaring a widget no loaded plugin registers opens the generic one', async () => {
+  const opened = await widgetOpenedByAClickOn({
+    trackType: 'VariantTrack',
+    featureWidget: VARIANT_WIDGET,
+    widgetRegistered: false,
+  })
+  expect(opened).toMatchObject({
+    type: 'BaseFeatureWidget',
+    id: 'baseFeature',
+  })
+})
+
+test('a track declaring no widget opens the generic one, whatever its adapter holds', async () => {
+  const opened = await widgetOpenedByAClickOn({
+    trackType: 'FeatureTrack',
+    widgetRegistered: true,
+  })
+  expect(opened).toMatchObject({
+    type: 'BaseFeatureWidget',
+    id: 'baseFeature',
+  })
 })
 
 const AUTO_BIN_MARKS = [

@@ -21,6 +21,7 @@ import {
   statusFraction,
   statusMessageText,
 } from '../../util/index.ts'
+import { DEFAULT_FEATURE_WIDGET } from '../../util/openFeatureWidget.ts'
 import { ElementId } from '../../util/types/mst.ts'
 import { displaySetterName } from '../../util/unknownSnapshotKeys.ts'
 
@@ -31,6 +32,7 @@ import type {
   PlotWriteOptions,
 } from '../../configuration/plot.ts'
 import type { MenuItem } from '../../ui/index.ts'
+import type { FeatureWidgetTypeRef } from '../../util/openFeatureWidget.ts'
 import type { RpcStatus } from '../../util/progress.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { UnappliedSetting } from '../../util/unknownSnapshotKeys.ts'
@@ -208,19 +210,22 @@ function stateModelFactory() {
       /**
        * #getter
        * The widget `openFeatureWidget` opens for one of this display's
-       * features. Displays may override it. The default is the generic feature
-       * widget, for displays drawing plain features.
+       * features: the one the parent track's type declares (a read on an
+       * AlignmentsTrack, a variant on a VariantTrack), so every display on a
+       * track shares one drawer panel. The generic feature widget when the
+       * track type declares none, or names one no loaded plugin registers.
        *
-       * Displays whose features are a specific kind (a read, a variant, a
-       * synteny block) override it, including the `id`: two displays naming
-       * one id share the drawer panel, which suits two displays showing the
-       * same kind of feature.
+       * A display overrides it only when its features are a different kind
+       * from its track's.
        */
-      get featureWidgetType(): { type: string; id: string } {
-        return {
-          type: 'BaseFeatureWidget',
-          id: 'baseFeature',
-        }
+      get featureWidgetType(): FeatureWidgetTypeRef {
+        const { pluginManager } = getEnv(self)
+        const declared = pluginManager.getTrackType(
+          self.parentTrack.configuration.type,
+        ).featureWidget
+        return declared && pluginManager.widgetTypes.has(declared.type)
+          ? declared
+          : DEFAULT_FEATURE_WIDGET
       },
     }))
     .views(self => ({

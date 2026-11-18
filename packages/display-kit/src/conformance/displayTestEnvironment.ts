@@ -18,7 +18,7 @@ import type {
   AnyConfigurationSchemaType,
   ConfigurationSchemaDefinition,
 } from '@jbrowse/core/configuration'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, FeatureWidgetTypeRef } from '@jbrowse/core/util'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 // `'config' in adapter`, not `??`: the two states a caller needs are "give me
@@ -65,6 +65,8 @@ export interface DisplayTestEnvironmentOptions {
   plugins?: Plugin[]
   /** Track type to register and put the display on, e.g. `'VariantTrack'`. */
   trackType: string
+  /** The track type's declared feature widget, as `VariantTrack` declares one. */
+  featureWidget?: FeatureWidgetTypeRef
   /** Registered only when given; a display with no adapter needs none. */
   adapter?: TestAdapterSpec
   displayName: string
@@ -156,6 +158,7 @@ export interface DisplayTestEnvironmentOptions {
 export function createDisplayTestEnvironment<T>({
   plugins = [],
   trackType,
+  featureWidget,
   adapter,
   displayName,
   configSchema,
@@ -205,6 +208,7 @@ export function createDisplayTestEnvironment<T>({
     )
     return new TrackType({
       name: trackType,
+      featureWidget,
       configSchema: trackConfigSchema,
       stateModel: createBaseTrackModel(
         pluginManager,
