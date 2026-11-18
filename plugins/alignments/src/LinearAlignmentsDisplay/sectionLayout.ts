@@ -99,8 +99,9 @@ export interface Section {
   // The laid-out rows alone, the band the dip law sizes a discordant dip to
   // (`discordantDipPx`), so a drag padding the band deepens no curve.
   rowsHeight: number
-  // The whole strip this section owns, down to the next section's top: carried because the label-chip pad belongs to it, and re-deriving it
-  // from the next section put a group's name over the next.
+  // The whole strip this section owns, down to the next section's top:
+  // carried because the label-chip pad belongs to it, and re-deriving it from
+  // the next section put a group's name over the next.
   height: number
 }
 
@@ -157,8 +158,9 @@ export function laneBandBottom(
  * undefined where the band has none. A band reserving no px has none. With
  * the pileup shown the handle sits on the band's bottom seam. With it hidden
  * the coverage takes what the strips leave of each slot, so it has no handle,
- * and a strip's sits on its top seam, where dragging up grows it and the
- * coverage gives way; slots never move, so it moves 1 px per px.
+ * and a strip's sits on the seam it shares with the coverage: its top seam
+ * below the coverage, where dragging up grows it, and its bottom seam above
+ * it, where dragging down does. Slots never move, so it moves 1 px per px.
  */
 export function laneBandHandle(
   sections: readonly Pick<Section, 'sectionTop' | 'bands'>[],
@@ -534,7 +536,8 @@ export function buildSectionRenders(
           ? { ...sec.arcBand, top: bandScreenTop(sec.arcBand.top, scroll) }
           : undefined,
       sashimiBand:
-        sec.bands.reserved.sashimi > 0
+        sec.bands.reserved.sashimi > 0 ||
+        bandAboveCoverage(sec.bands, 'sashimi')
           ? {
               top: bandScreenTop(
                 sec.sectionTop + sec.bands.top.sashimi,

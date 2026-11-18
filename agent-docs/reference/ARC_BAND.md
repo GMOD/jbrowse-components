@@ -33,8 +33,8 @@ default), `above` it, or as an `overlay` on it**
   band's fallback differs: its `overlay` and `auto` arcs hang in the strip
   below (`effectiveSashimiPlacement`). An `above` strip keeps its place on both
   bands.
-- The read cloud's TLEN axis draws on the right under `overlay` and on the left
-  in a strip of its own.
+- The read cloud's TLEN axis draws on the right under `overlay`, its
+  coverage-hidden strip included, and on the left under `above` and `below`.
 - The alignment tables state the result as `bandStack`, the bands top to bottom
   with the px each reserves, and `arcScale.band`, `coverage` under an overlay.
 

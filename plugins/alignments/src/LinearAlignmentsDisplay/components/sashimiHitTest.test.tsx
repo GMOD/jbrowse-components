@@ -176,6 +176,23 @@ describe('a strip above coverage', () => {
     })
   })
 
+  // every junction is on the up mark under `above`, so a strip with no room
+  // must not hand that mark the coverage band, where `overlay` draws
+  it.each([0, 3])(
+    'draws nothing, over coverage included, in a strip %i px tall',
+    height => {
+      const base = makeTestRenderState({ coverage: { height: 45 } })
+      const section = base.sections[0]!
+      expect(sashimiBandsOf(base, section).up).toBeDefined()
+      expect(
+        sashimiBandsOf(base, {
+          ...section,
+          sashimiBand: { top: 0, height, above: true },
+        }),
+      ).toEqual({ up: undefined, down: undefined })
+    },
+  )
+
   it('answers on the apex in the strip, not where the overlay drew it', () => {
     const { feeds, state } = aboveScene([junction(100, 300)])
     expect(

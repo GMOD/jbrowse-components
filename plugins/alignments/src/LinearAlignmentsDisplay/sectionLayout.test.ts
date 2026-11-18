@@ -467,6 +467,19 @@ describe('the sashimi strip above coverage', () => {
     })
   })
 
+  // its junctions are on the up mark, which draws over coverage wherever the
+  // render carries no strip, so a strip stated at 0 px still says it is above
+  test('stated at 0 px, still tells the render it sits above', () => {
+    const layout = stack(
+      [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiStripArcs: true })],
+      { ...above, sashimiHeight: 0 },
+    )
+    expect(layout.sections[0]!.bands.reserved.sashimi).toBe(0)
+    expect(
+      renders(layout, { scrollTop: 0, canvasHeight: 200 })[0]!.sashimiBand,
+    ).toEqual({ top: 0, height: 0, above: true })
+  })
+
   test('takes no px for a lane with no junction, or under another placement', () => {
     const empty = stack([lane({ key: 'a', maxY: 2, hasArcs: false })], above)
     expect(empty.sections[0]).toMatchObject({

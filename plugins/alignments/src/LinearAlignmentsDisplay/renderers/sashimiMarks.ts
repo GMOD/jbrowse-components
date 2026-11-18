@@ -69,14 +69,16 @@ export function sashimiBandsOf(
   const { sashimiBand } = sec
   const stripHeight = (sashimiBand?.height ?? 0) - SASHIMI_APEX_CLEARANCE_PX
   const strip = sashimiBand && stripHeight > 0 ? sashimiBand : undefined
-  return strip?.above
+  return sashimiBand?.above
     ? {
-        up: {
-          top: strip.top + SASHIMI_APEX_CLEARANCE_PX,
-          height: stripHeight,
-          clipTop: strip.top,
-          clipHeight: strip.height,
-        },
+        up: strip
+          ? {
+              top: strip.top + SASHIMI_APEX_CLEARANCE_PX,
+              height: stripHeight,
+              clipTop: strip.top,
+              clipHeight: strip.height,
+            }
+          : undefined,
         down: undefined,
       }
     : {
