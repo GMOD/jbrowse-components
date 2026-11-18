@@ -45,7 +45,7 @@ const color = (i: number) => PALETTE[i % PALETTE.length]!
 const scoreY = (score: number, rowTop: number, rowHeight: number) =>
   rowTop + valueToYPxUnclamped(score, DOMAIN[0], DOMAIN[1], rowHeight, 0, 1)
 
-function uniforms(
+export function uniforms(
   renderingType: number,
   dpr: number,
   { numRows = 1, lineWidth = 1 } = {},

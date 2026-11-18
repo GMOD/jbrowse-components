@@ -60,7 +60,7 @@ const vec4 = ([r, g, b]: Rgb): Vec4 => [r / 255, g / 255, b / 255, 1]
 const slots = <T>(n: number, at: (i: number) => T) =>
   Array.from({ length: n }, (_, i) => at(i))
 
-function pileupUniforms(
+export function pileupUniforms(
   width: number,
   height: number,
   bpPerPx: number,
