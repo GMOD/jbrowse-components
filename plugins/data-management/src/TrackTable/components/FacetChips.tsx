@@ -62,7 +62,7 @@ function selectionText(label: string, selected: string[]) {
  * facet still filtering, and "More filters" for the rest. A chip opens its
  * facet's values; an active chip names its selection and clears with its ×.
  * A cleared chip that goes away hands focus to "More filters", or to the
- * filter box drawn just before the row when that goes too.
+ * filter box when that goes too.
  */
 const FacetChips = observer(function FacetChips({
   table,
@@ -71,7 +71,6 @@ const FacetChips = observer(function FacetChips({
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState<{ el: HTMLElement; field?: string }>()
-  const rowRef = useRef<HTMLDivElement>(null)
   const moreRef = useRef<HTMLDivElement>(null)
   const { filterFacets, chipFacets, moreFacets, filters, nonMetadataFieldSet } =
     table
@@ -80,7 +79,7 @@ const FacetChips = observer(function FacetChips({
   )
   const listed = open ? (open.field ? [open.field] : moreFacets) : []
   return chips.length || moreFacets.length ? (
-    <div className={classes.row} ref={rowRef}>
+    <div className={classes.row}>
       {chips.map(field => {
         const label = facetLabel(field, nonMetadataFieldSet)
         const selected = filters.get(field)
@@ -113,9 +112,7 @@ const FacetChips = observer(function FacetChips({
                       if (table.moreFacets.length) {
                         moreRef.current?.focus()
                       } else {
-                        rowRef.current?.previousElementSibling
-                          ?.querySelector('input')
-                          ?.focus()
+                        table.filterBoxInput?.focus()
                       }
                     }
                   }

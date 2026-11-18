@@ -15,6 +15,7 @@ const TrackFilterBox = observer(function TrackFilterBox({
     <ClearableSearchField
       className={className}
       label="Filter tracks"
+      inputRef={table.setFilterBoxInput}
       value={table.filterText}
       status={
         matchCounts

@@ -9,6 +9,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import type { Ref } from 'react'
+
 const ClearableSearchField = observer(function ClearableSearchField({
   value,
   onChange,
@@ -16,6 +18,7 @@ const ClearableSearchField = observer(function ClearableSearchField({
   className,
   fullWidth,
   status,
+  inputRef,
 }: {
   value: string
   onChange: (value: string) => void
@@ -24,6 +27,7 @@ const ClearableSearchField = observer(function ClearableSearchField({
   fullWidth?: boolean
   /** a few words drawn before the clear button, such as a match count */
   status?: string
+  inputRef?: Ref<HTMLInputElement>
 }) {
   const [localValue, setLocalValue] = useState(value)
   const [, startTransition] = useTransition()
@@ -38,6 +42,7 @@ const ClearableSearchField = observer(function ClearableSearchField({
     <TextField
       className={className}
       fullWidth={fullWidth}
+      inputRef={inputRef}
       label={label}
       value={localValue}
       onChange={event => {

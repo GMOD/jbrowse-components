@@ -211,6 +211,12 @@ export function trackTableModelFactory() {
        * #volatile
        */
       session: undefined as AbstractSessionModel | undefined,
+      /**
+       * #volatile
+       * the input of the filter box drawn above this table's chips, which a
+       * cleared chip hands focus to when "More filters" goes with it
+       */
+      filterBoxInput: null as HTMLInputElement | null,
     }))
     .actions(self => ({
       /**
@@ -275,6 +281,12 @@ export function trackTableModelFactory() {
        */
       setTextKeptIdsSource(getTextKeptIds: () => Set<string> | undefined) {
         self.getTextKeptIds = getTextKeptIds
+      },
+      /**
+       * #action
+       */
+      setFilterBoxInput(input: HTMLInputElement | null) {
+        self.filterBoxInput = input
       },
     }))
     .actions(self => ({
