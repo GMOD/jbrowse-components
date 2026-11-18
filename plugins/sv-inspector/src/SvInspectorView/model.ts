@@ -503,7 +503,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               const conf = self.featuresCircularTrackConfiguration
               circularView.hideTrack(variantTrackId)
               if (conf) {
-                void circularView.launchTrackConf(conf)
+                circularView.addTrackConf(conf)
               }
             },
             { name: 'SvInspectorView track configuration binding' },

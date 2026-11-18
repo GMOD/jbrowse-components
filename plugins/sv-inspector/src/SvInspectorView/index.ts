@@ -80,13 +80,17 @@ export default function SvInspectorViewF(pluginManager: PluginManager) {
   pluginManager.jexl.addFunction('defaultOnChordClick', defaultOnChordClick)
 
   pluginManager.addViewType(() => {
-    // the model embeds both of these state models
+    // the model embeds both view state models, and adds its chord track in
+    // one synchronous step, which an unloaded display would defer
     const stateModel = async (): Promise<
       ViewTypeRegistry['SvInspectorView']
     > => {
       await Promise.all([
         pluginManager.getViewType('SpreadsheetView').loadStateModel(),
         pluginManager.getViewType('CircularView').loadStateModel(),
+        pluginManager
+          .resolveDisplayTypeRecord('ChordVariantDisplay')
+          ?.loadStateModel(),
       ])
       return import('./model.ts').then(f => f.default(pluginManager))
     }

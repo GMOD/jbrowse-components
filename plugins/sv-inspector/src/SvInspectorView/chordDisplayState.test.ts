@@ -83,6 +83,25 @@ test('a filter narrows what the chord display draws, on the same track', async (
   expect(display.visibleFeatureIds).toBeUndefined()
 })
 
+test('a sheet replaced before the chord track opens draws the newer rows', async () => {
+  const { session, view } = await openInspector()
+  await session.assemblyManager.waitForAssembly('volvox')
+  const sheet = (count: number) => ({
+    assemblyName: 'volvox',
+    columns: [{ name: 'INFO.SVTYPE' }, { name: 'INFO.EVENT' }],
+    rowSet: { rows: rows.slice(0, count) },
+  })
+  view.spreadsheetView.displaySpreadsheet(sheet(1))
+  view.spreadsheetView.displaySpreadsheet(sheet(3))
+
+  await when(() => view.circularView.tracks.length > 0)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  expect(view.circularView.tracks).toHaveLength(1)
+  expect(
+    view.circularView.tracks[0]!.configuration.adapter.features,
+  ).toHaveLength(3)
+})
+
 test('the snapshot drops the generated chord track but keeps a second one', async () => {
   const { session, view } = await inspectorWithRows()
   session.addSessionTrackConf({
