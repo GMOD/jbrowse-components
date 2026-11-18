@@ -188,8 +188,7 @@ describe('NaN through the clamping helpers', () => {
   })
 
   test('smoothstep on a degenerate edge pair does not go NaN', () => {
-    // `e0 == e1` makes the ratio 0/0. Reachable: `vertCoverage(20, 20, 0)`,
-    // which is what the differential oracle failed on.
+    // `e0 == e1` makes the ratio 0/0.
     const ss = evaluate(
       emit(
         `fn f_0( e_0 : f32,  x_0 : f32) -> f32 { return smoothstep(e_0, e_0, x_0); }`,

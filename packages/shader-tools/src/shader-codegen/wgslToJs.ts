@@ -754,10 +754,11 @@ const HELPERS: Record<string, string> = {
   // other". The emitter was reintroducing that generically, in every twin that
   // clamps.
   //
-  // Found by the differential oracle once it swept unexported functions:
-  // `vertCoverage(20, 20, 0)` is 1 in slangc's C++ and was NaN here. WGSL calls
-  // min/max on a NaN indeterminate, so neither is *wrong* — but agreeing with
-  // the compiler that also generates the GPU path is the only useful choice.
+  // Found by the differential oracle once it swept unexported functions: a
+  // zero-width ramp at its own edge, `aaRamp(0, 0)`, clamps 0/0 to 0 in
+  // slangc's C++ and was NaN here. WGSL calls min/max on a NaN indeterminate,
+  // so neither is *wrong* — but agreeing with the compiler that also generates
+  // the GPU path is the only useful choice.
   _clamp: [
     'function _clamp(x: number, lo: number, hi: number) {',
     '  return _min(_max(x, lo), hi)',

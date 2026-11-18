@@ -79,8 +79,8 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // (`spanRectWidthPx`, the width `fillSpanRect` fills): a few-bp deletion is
   // sub-pixel at ordinary zoom, and without this it rasterized to partial
   // coverage (or nothing) on the GPU while Canvas2D and SVG export drew a full
-  // 1px mark. The alpha fade above is what's meant to
-  // thin these out, not the geometry.
+  // 1px mark. The alpha fade above is what's meant to thin these out, not the
+  // geometry.
   float2 xx = expandMinWidthX(
     bpToClipX(inst.startOff, u), bpToClipX(inst.endOff, u), u.canvasW);
   float2 yy = skip ? pileupCenterlineY(row, u) : pileupY(row, u);
