@@ -212,8 +212,8 @@ export interface FitRung {
   level: FitLevel
   reserved: LabelReservation
   layout: () => Map<number, FeatureDataResult>
-  // Carried on the rung rather than derived from the level, because the two
-  // rungs below `isoforms` inherit the count it failed at.
+  // Carried on the rung rather than derived from the level, because every
+  // rung below `isoforms` inherits the count it failed at.
   maxIsoforms?: () => number | undefined
   bodyScale?: () => number
 }

@@ -39,6 +39,7 @@ import {
   createPackHeightProbe,
 } from './layout.ts'
 import {
+  createMembershipMemo,
   keepsAnyName,
   maxDrawnBoxHeight,
   minDrawnBoxHeight,
@@ -174,6 +175,13 @@ export function featureBandViews(self: FeatureBandHost) {
   const incrementalLayoutDecimated = createIncrementalLayout({
     seedPriorRows: false,
   })
+  // The kept-name stack is a second config of that rung, committed right after
+  // the solved factors' stack is asked whether it keeps a name; sharing one
+  // instance, each would evict the other on every solve.
+  const incrementalLayoutKeptNames = createIncrementalLayout({
+    seedPriorRows: false,
+  })
+  const sameKeptNames = createMembershipMemo()
   const incrementalLayoutIsoforms = createIncrementalLayout({
     seedPriorRows: false,
   })
@@ -209,6 +217,7 @@ export function featureBandViews(self: FeatureBandHost) {
     if (!self.fitHeightToDisplay) {
       incrementalLayoutLabelsOnly.clear()
       incrementalLayoutDecimated.clear()
+      incrementalLayoutKeptNames.clear()
       incrementalLayoutThinned.clear()
       incrementalLayoutBodiesOnly.clear()
       incrementalLayoutBare.clear()
@@ -224,6 +233,7 @@ export function featureBandViews(self: FeatureBandHost) {
       incrementalLayoutLabelsOnly,
       incrementalLayoutBodiesOnly,
       incrementalLayoutDecimated,
+      incrementalLayoutKeptNames,
       incrementalLayoutIsoforms,
       incrementalLayoutThinned,
       incrementalLayoutBare,
@@ -571,7 +581,11 @@ export function featureBandViews(self: FeatureBandHost) {
               this.decimatedLayoutAt(solved),
               self.fitMeasureFeatureIds,
             ))
-      const keptNameIds = keepsNoName ? this.namesThatFit(unnamed) : undefined
+      // Kept by membership, since the layout memo compares inputs by
+      // reference and a fresh set of the same names would repack.
+      const keptNameIds = keepsNoName
+        ? sameKeptNames(this.namesThatFit(unnamed))
+        : undefined
       // An empty set would repack the stack the ladder is about to reject.
       return keptNameIds?.size ? { ...unnamed, keptNameIds } : solved
     },
@@ -614,10 +628,13 @@ export function featureBandViews(self: FeatureBandHost) {
      * whatever height the dropped names freed.
      */
     decimatedLayoutAt(factors: LabelRoomFactors) {
-      // Probe and commit must pack identically, hence the unseeded
-      // `incrementalLayoutDecimated`; seeding this rung from the `labels`
-      // stack was tried and moved zero rows.
-      return incrementalLayoutDecimated(self.rpcDataMap, {
+      // Probe and commit must pack identically, hence the unseeded memos;
+      // seeding this rung from the `labels` stack was tried and moved zero
+      // rows.
+      const memo = factors.keptNameIds
+        ? incrementalLayoutKeptNames
+        : incrementalLayoutDecimated
+      return memo(self.rpcDataMap, {
         ...this.decimatedLayoutInputs(factors),
         bodyScale: this.decimatedBodyScale(factors),
       })

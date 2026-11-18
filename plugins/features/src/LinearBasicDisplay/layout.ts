@@ -550,9 +550,11 @@ const PROBE_CONFIG_KEYS = LAYOUT_CACHE_KEYS.filter(
   (key): key is keyof PackKnobFreeInputs => !(key in PACK_KNOBS),
 )
 
-// Two settles of the largest solve: two tiers of label-room factors at ~11
-// packs each, then ~7 body scales.
-const PROBE_PACK_LIMIT = 64
+// Two settles of the largest solve, ~45 packs each: two tiers of label-room
+// factors at ~11 packs each and ~7 body scales, then on a sparse track up to
+// `MAX_KEPT_NAME_CANDIDATES` kept-name probes and ~7 body scales for the names
+// they keep.
+const PROBE_PACK_LIMIT = 96
 
 export interface PackHeightCacheEntry {
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>
