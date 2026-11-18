@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
 import { formatSessionSummary, sessionLastUsed } from '@jbrowse/app-core'
-import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
+import VirtualTable, { EditableTextCell } from '@jbrowse/core/ui/VirtualTable'
+import { compareValues } from '@jbrowse/core/util/tableText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Typography } from '@mui/material'
-import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import { THUMBNAIL_WIDTH } from '../../sessionThumbnail.ts'
@@ -13,24 +13,31 @@ import { DeleteCell, FavoriteCell, NameCell, ThumbnailCell } from './cells.tsx'
 
 import type { Row } from './cells.tsx'
 import type { SessionModel } from './util.ts'
+import type { VirtualTableColumn } from '@jbrowse/core/ui/VirtualTable'
 
 const useStyles = makeStyles()(theme => ({
-  // The widget fills its drawer and the grid takes what is left below the
-  // controls. Not cosmetic: MUI's DataGrid draws its horizontal scrollbar as an
-  // absolutely positioned overlay at the bottom of its own box, so a grid sized
-  // to its content puts that 14px bar *on top of the last row* — and z-index 60
-  // wins the hit test, so the bottom session silently stops responding to
-  // clicks. Given room, the bar lands below every row.
+  // the widget fills its drawer and the table takes what is left below the
+  // controls, scrolling its own rows
   root: {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
   },
-  grid: {
+  table: {
     flex: 1,
     // a flex child defaults to min-height:auto, which refuses to shrink below
-    // its content and would push the grid past the drawer instead of scrolling
+    // its content and would push the table past the drawer instead of
+    // scrolling
     minHeight: 0,
+  },
+  nameCell: {
+    display: 'flex',
+    alignItems: 'center',
+    minWidth: 0,
+  },
+  name: {
+    flex: 1,
+    minWidth: 0,
   },
   mb: {
     margin: theme.spacing(1),
@@ -38,9 +45,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const ROW_HEIGHT = 72
+
 /**
- * The rows of the grid: the saved-session metadata the root model read out of
- * IndexedDB, in display shape, favorites first and each group by last use.
+ * The rows of the table: the saved-session metadata the root model read out
+ * of IndexedDB, in display shape, favorites first and each group by last use.
  * `undefined` in, `undefined` out — that is the "database still opening"
  * state, and it is deliberately not the same value as an empty database (see
  * the render below).
@@ -64,67 +73,6 @@ function buildRows(session: SessionModel): Row[] | undefined {
     .sort((a, b) => +b.fav - +a.fav)
 }
 
-/**
- * One entry per column, each deferring to a named cell in cells.tsx so this
- * reads as the shape of the table rather than as four inline components.
- *
- * Name takes the leftover width (`flex`) rather than a width measured from the
- * session names, and the three fixed columns are kept narrow enough that their
- * sum plus Name's minWidth fits a default-width drawer. `measureGridWidth`
- * hands back a *fixed* width — up to 1000px for a long session name — and any
- * total past the panel width grows the horizontal scrollbar this widget's
- * styles exist to keep off the rows (see useStyles).
- */
-function buildColumns(session: SessionModel) {
-  return [
-    {
-      field: 'thumbnail',
-      headerName: '',
-      width: THUMBNAIL_WIDTH + 16,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      renderCell: ({ row }: { row: Row }) => (
-        <ThumbnailCell row={row} session={session} />
-      ),
-    },
-    {
-      field: 'name',
-      headerName: 'Name',
-      editable: true,
-      flex: 1,
-      minWidth: 100,
-      renderCell: ({ row }: { row: Row }) => (
-        <NameCell row={row} session={session} />
-      ),
-    },
-    {
-      field: 'fav',
-      headerName: 'Fav',
-      // the header of an icon column is short, and its sort arrow and column
-      // menu are what push it into an ellipsis
-      width: 60,
-      disableColumnMenu: true,
-      renderCell: ({ row }: { row: Row }) => (
-        <FavoriteCell row={row} session={session} />
-      ),
-    },
-    {
-      field: 'delete',
-      headerName: 'Delete',
-      // nothing to sort or filter on a column of buttons, and dropping both
-      // gives the header room to say "Delete" instead of "Del..."
-      width: 66,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      renderCell: ({ row }: { row: Row }) => (
-        <DeleteCell row={row} session={session} />
-      ),
-    },
-  ]
-}
-
 const SessionManager = observer(function SessionManager({
   session,
 }: {
@@ -132,7 +80,42 @@ const SessionManager = observer(function SessionManager({
 }) {
   const { classes } = useStyles()
   const [deleteOldOpen, setDeleteOldOpen] = useState(false)
+  const [sortField, setSortField] = useState('')
+  const [sortAscending, setSortAscending] = useState(true)
   const rows = buildRows(session)
+  const direction = sortAscending ? 1 : -1
+  const sortedRows =
+    rows && sortField === 'name'
+      ? rows.toSorted((a, b) => compareValues(a.name, b.name, direction))
+      : rows
+
+  const columns: VirtualTableColumn<Row>[] = [
+    {
+      id: 'name',
+      header: 'Name',
+      fill: true,
+      cell: row => (
+        <div className={classes.nameCell}>
+          <div className={classes.name}>
+            <EditableTextCell
+              value={row.name}
+              label={`Rename ${row.name}`}
+              onCommit={text => {
+                const name = text.trim()
+                if (name !== row.name) {
+                  void session.renameSavedSession(row.id, name)
+                }
+              }}
+            >
+              <NameCell row={row} session={session} />
+            </EditableTextCell>
+          </div>
+          <FavoriteCell row={row} session={session} />
+          <DeleteCell row={row} session={session} />
+        </div>
+      ),
+    },
+  ]
 
   return (
     <div className={classes.root}>
@@ -147,36 +130,33 @@ const SessionManager = observer(function SessionManager({
           Delete old sessions...
         </Button>
       </div>
-      {rows ? (
-        <DataGridFlexContainer className={classes.grid}>
-          <DataGrid
-            disableRowSelectionOnClick
-            columnHeaderHeight={35}
-            rowHeight={72}
-            hideFooter={rows.length < 100}
-            showToolbar
-            slotProps={{ toolbar: { showQuickFilter: true } }}
-            rows={rows}
-            columns={buildColumns(session)}
-            processRowUpdate={(newRow: Row, oldRow: Row) => {
-              const name = newRow.name.trim()
-              if (!name) {
-                return oldRow
-              }
-              if (name !== oldRow.name) {
-                void session.renameSavedSession(newRow.id, name)
-              }
-              return { ...newRow, name }
+      {sortedRows ? (
+        <div className={classes.table}>
+          <VirtualTable
+            rows={sortedRows}
+            columns={columns}
+            widths={() => ({})}
+            rowHeight={ROW_HEIGHT}
+            leading={{
+              width: THUMBNAIL_WIDTH + 16,
+              header: null,
+              cell: row => <ThumbnailCell row={row} session={session} />,
             }}
-            onProcessRowUpdateError={e => {
-              console.error(e)
-              session.notifyError(`${e}`, e)
+            sortField={sortField}
+            sortAscending={sortAscending}
+            onSort={(field, ascending) => {
+              setSortField(field)
+              setSortAscending(ascending)
             }}
+            resetKey={JSON.stringify([sortField, sortAscending])}
+            emptyMessage="No saved sessions"
+            testId="session-manager-table"
           />
-        </DataGridFlexContainer>
+        </div>
       ) : (
         // undefined, not empty: the saved-session database has not finished
-        // opening. An empty list renders the grid with its own "no rows" row.
+        // opening. An empty list renders the table with its own "no saved
+        // sessions" row.
         <Typography className={classes.mb}>
           Loading saved sessions...
         </Typography>

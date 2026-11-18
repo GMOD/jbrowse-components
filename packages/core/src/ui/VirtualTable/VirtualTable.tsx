@@ -53,6 +53,7 @@ const VirtualTable = observer(function VirtualTable<
   widths,
   width = 0,
   leading,
+  rowHeight = ROW_HEIGHT,
   isRowSelected,
   onRowClick,
   sortField,
@@ -73,6 +74,8 @@ const VirtualTable = observer(function VirtualTable<
   width?: number
   /** a narrow first column, such as a checkbox */
   leading?: VirtualTableLeading<R>
+  /** each row's height, for rows taller than a line of text */
+  rowHeight?: number
   isRowSelected?: (row: R) => boolean
   onRowClick?: (row: R) => void
   sortField: string
@@ -98,7 +101,7 @@ const VirtualTable = observer(function VirtualTable<
   const { items, leadingGap, trailingGap, clientWidth } = useVirtualRows({
     parentRef,
     count: rows.length,
-    rowHeight: ROW_HEIGHT,
+    rowHeight,
     resetKey,
     scrollToKey,
     scrollToIndex,
@@ -153,6 +156,7 @@ const VirtualTable = observer(function VirtualTable<
                 row={row}
                 columns={columns}
                 leadingCell={leading?.cell}
+                height={rowHeight === ROW_HEIGHT ? undefined : rowHeight}
                 isRowSelected={isRowSelected}
                 onRowClick={onRowClick}
               />

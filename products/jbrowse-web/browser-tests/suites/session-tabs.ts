@@ -122,9 +122,11 @@ const suite: TestSuite = {
         await (await findByText(page, 'Recent sessions...')).click()
         await findByText(page, 'Edited one')
         const rows = await page.evaluate(() =>
-          [...document.querySelectorAll('.MuiDataGrid-row')].map(
-            e => e.textContent,
-          ),
+          [
+            ...document.querySelectorAll(
+              '[data-testid="session-manager-table"] tbody tr',
+            ),
+          ].map(e => e.textContent),
         )
         if (rows.some(t => t.includes('Untouched one'))) {
           throw new Error(`untouched session listed in ${JSON.stringify(rows)}`)
@@ -159,7 +161,11 @@ const suite: TestSuite = {
         await openDrawer()
         await page.waitForFunction(
           () =>
-            [...document.querySelectorAll('.MuiDataGrid-row')].some(
+            [
+              ...document.querySelectorAll(
+                '[data-testid="session-manager-table"] tbody tr',
+              ),
+            ].some(
               row =>
                 row.textContent.includes('Left behind') &&
                 row.querySelector('img[src^="data:image/"]'),
@@ -189,9 +195,11 @@ const suite: TestSuite = {
         // in one task, so the second lands before the first can finish
         await page.evaluate(() => {
           const link = (name: string) =>
-            [...document.querySelectorAll('.MuiDataGrid-row a')].find(
-              a => a.textContent === name,
-            ) as HTMLAnchorElement
+            [
+              ...document.querySelectorAll(
+                '[data-testid="session-manager-table"] tbody tr a',
+              ),
+            ].find(a => a.textContent === name) as HTMLAnchorElement
           link('Clicked first').click()
           link('Clicked second').click()
         })

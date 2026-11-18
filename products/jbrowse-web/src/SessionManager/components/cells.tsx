@@ -1,6 +1,6 @@
 import { queryParamsHref } from '@jbrowse/app-core'
 import { formatRelativeTime } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
@@ -12,7 +12,7 @@ import { THUMBNAIL_HEIGHT, THUMBNAIL_WIDTH } from '../../sessionThumbnail.ts'
 import type { SessionModel } from './util.ts'
 
 /**
- * One row of the saved-session grid. `current` is precomputed rather than
+ * One row of the saved-session table. `current` is precomputed rather than
  * re-derived per cell: two cells turn on it, and it is the fact that decides
  * what each of them is allowed to do (see DeleteCell).
  */
@@ -100,6 +100,9 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     minWidth: 0,
   },
+  thumbnailCell: {
+    padding: '0 8px',
+  },
   thumbnail: {
     display: 'block',
     width: THUMBNAIL_WIDTH,
@@ -150,7 +153,7 @@ export const ThumbnailCell = observer(function ThumbnailCell({
 }: CellProps) {
   const { classes } = useStyles()
   return (
-    <div className={classes.cell}>
+    <div className={cx(classes.cell, classes.thumbnailCell)}>
       <SessionLink row={row} session={session}>
         {row.thumbnail ? (
           <img className={classes.thumbnail} src={row.thumbnail} alt="" />
@@ -164,9 +167,8 @@ export const ThumbnailCell = observer(function ThumbnailCell({
 
 // A native `title`, not a MUI Tooltip: the drawer is narrow enough that a long
 // session name ellipses, and a tooltip here would mean a popper laid over the
-// row underneath — which is exactly how this column lost its clicks once
-// already (see the scrollbar note in SessionManager's useStyles). Last use leads
-// the second line, so the ellipsis eats the summary rather than the date.
+// row underneath. Last use leads the second line, so the ellipsis eats the
+// summary rather than the date.
 export const NameCell = observer(function NameCell({
   row,
   session,
