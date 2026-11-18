@@ -128,7 +128,7 @@ function sdfUnitPx(radiusPx: number, glyphScale = 1) {
 // pointMark.slang routes only GLYPH_DISC to the crisp-square fallback, so a
 // 0.8 px diamond or triangle arrives here at radius 0.4.
 const RADII_PX = [0.1, 0.4, 0.5, 1, 1.5, 4, 10]
-const DPRS = [1, 2, 3]
+const DPRS = [0.5, 1, 2, 3]
 
 describe('the pieces model the SDFs fs_main branches to', () => {
   test.each([
@@ -169,6 +169,16 @@ describe('glyphExpand', () => {
       }
     },
   )
+
+  test('pads a zoomed-out page by half an output pixel, wider than a CSS px', () => {
+    const dpr = 0.5
+    for (const radiusPx of RADII_PX) {
+      expect(quadHalfExtentPx(radiusPx, dpr) - radiusPx).toBeCloseTo(
+        0.5 / dpr,
+        12,
+      )
+    }
+  })
 
   // wiggle.slang's scatter branch calls `discExpand`, which is the one-reach
   // case of the same expansion rather than a second rule.

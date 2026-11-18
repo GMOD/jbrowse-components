@@ -216,7 +216,7 @@ const DOMES = [
 ] as const
 
 test.each(DOMES)('a %sx%s dome covers all of its ink', (rx, ry) => {
-  for (const dpr of [1, 1.5, 2]) {
+  for (const dpr of [0.5, 1, 1.5, 2]) {
     for (const lineWidthPx of [0.5, 2, 6]) {
       expect(
         worstOnDome(rx, ry, dpr, lineWidthPx, LINK_CURVE_SEGMENTS),
@@ -239,7 +239,7 @@ test.each([
 ] as const)(
   'a far pair at r=%s through a %spx reach covers its legs',
   (r, reach) => {
-    for (const dpr of [1, 2]) {
+    for (const dpr of [0.5, 1, 2]) {
       for (const lineWidthPx of [1, 6]) {
         expect(
           worstOnLegs(r, reach, dpr, lineWidthPx, LINK_CURVE_SEGMENTS),
@@ -315,7 +315,7 @@ test.each([
   // the foot on the canvas, just off it, deep inside the pair, and the apex
   // on the canvas with the stretch running past it
   for (const footX of [200, 700, -40, -0.4 * rx, canvasPx / 2 - rx]) {
-    for (const dpr of [1, 2]) {
+    for (const dpr of [0.5, 1, 2]) {
       for (const lineWidthPx of [1, 6]) {
         expect(
           worstOnFarDome(

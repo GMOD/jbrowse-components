@@ -180,7 +180,7 @@ const SEGMENTS: [string, Pt, Pt][] = [
 ]
 
 const HALF_WIDTHS = [0.25, 0.5, 1.25, 4]
-const DPRS = [1, 2]
+const DPRS = [0.5, 1, 2]
 
 describe('dotplot capsule vertex pad', () => {
   test.each(SEGMENTS)('contains the whole shaded region: %s', (_n, p1, p2) => {
