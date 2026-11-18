@@ -79,25 +79,23 @@ describe('host entries', () => {
 })
 
 describe('prefix entries', () => {
-  // the shape RpcManager's ephemeral HTTP Basic accounts store: the origin
-  // plus the directory the 401 came from
-  const ephemeral = ['https://data.mylab.org/reads/']
+  const readsDir = ['https://data.mylab.org/reads/']
 
   it('matches a file under the prefix', () => {
     expect(
-      uriMatchesDomains('https://data.mylab.org/reads/x.bam', ephemeral),
+      uriMatchesDomains('https://data.mylab.org/reads/x.bam', readsDir),
     ).toBe(true)
   })
 
   it('does not match a sibling directory or another origin', () => {
     expect(
-      uriMatchesDomains('https://data.mylab.org/other/x.bam', ephemeral),
+      uriMatchesDomains('https://data.mylab.org/other/x.bam', readsDir),
     ).toBe(false)
     expect(
-      uriMatchesDomains('https://elsewhere.org/reads/x.bam', ephemeral),
+      uriMatchesDomains('https://elsewhere.org/reads/x.bam', readsDir),
     ).toBe(false)
     expect(
-      uriMatchesDomains('http://data.mylab.org/reads/x.bam', ephemeral),
+      uriMatchesDomains('http://data.mylab.org/reads/x.bam', readsDir),
     ).toBe(false)
   })
 

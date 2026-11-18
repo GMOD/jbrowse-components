@@ -170,8 +170,7 @@ export function openTabixIndexFilehandle(
  * back through the account's `handlesLocation`, which is the same
  * `uriMatchesDomains` test that chose the account in the first place. Both
  * directions matter: `domains` entries scope to a path as well as a host
- * (`data.mylab.org/private`, and the origin-plus-directory form every ephemeral
- * HTTP Basic account is minted with), and one account routinely spans several
+ * (`data.mylab.org/private`), and one account routinely spans several
  * hosts (Dropbox lists seven). An origin comparison is wrong for both.
  *
  * Anything out of scope gets a plain fetch rather than `checkAuthNeededFetch`:

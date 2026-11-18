@@ -15,9 +15,9 @@
  *   domains this way.
  * - **a URL prefix** (`https://data.mylab.org/reads/`, `mylab.org/reads`) — the
  *   scheme is optional, and the match runs to a path-segment boundary, so
- *   `/reads` does not match `/readsets`. This is the shape RpcManager's
- *   ephemeral HTTP Basic accounts store (origin + the file's directory), and
- *   the shape a config uses to scope an account to part of a server.
+ *   `/reads` does not match `/readsets`. This is the shape a config uses to
+ *   scope an account to part of a server, and RpcManager's ephemeral HTTP
+ *   Basic accounts store their origin as one (`https://data.mylab.org/`).
  *
  * The query string and fragment are never consulted under either shape: they
  * are the caller's data, not the server's identity.

@@ -71,8 +71,7 @@ test('a block on an unrelated origin is fetched without the credential', async (
 
 // The case an origin comparison gets wrong in the permissive direction. A
 // `domains` entry containing a `/` scopes to a path — the authentication docs
-// recommend exactly this pair of accounts, and it is the shape every ephemeral
-// HTTP Basic account is minted with (origin plus the file's directory).
+// recommend exactly this pair of accounts.
 test('a block on the same origin but outside the account path is fetched without the credential', async () => {
   const fetcher = getFetcher(locationFor(BASE), pluginManagerFor(PRIVATE))
 
