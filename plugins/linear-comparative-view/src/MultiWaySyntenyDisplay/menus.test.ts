@@ -468,7 +468,7 @@ test('a lane names its other contigs and offers each, and a pin offers its relea
   })
   expect(labelsOf(pinnedItems).slice(5)).toEqual([
     'Show Pp1 in this lane',
-    'Let the lane choose where it draws (pinned to Pp5)',
+    'Unpin Pp5',
     'Flip lane',
     'Color...',
   ])
@@ -563,7 +563,7 @@ test('a lane flips from its menu, and a flip pin offers its release', () => {
   const items = laneHeaderMenuItems(pinned.model, peach)
   expect(labelsOf(items).slice(5)).toEqual([
     'Flip lane',
-    'Let the lane choose its orientation (pinned on Pp1)',
+    'Unpin orientation',
     'Color...',
   ])
   click(items[6])

@@ -76,10 +76,7 @@ test('a lane names its other block, and its menu draws it and lets go', async ()
     { start: drawn.fitMin, end: drawn.fitMax },
   ])
 
-  click(
-    laneHeaderMenuItems(display, laneC(display)),
-    'Let the lane choose where it draws',
-  )
+  click(laneHeaderMenuItems(display, laneC(display)), 'Unpin ctgB')
   await until(() => display.laneDecisions.get(C)!.fitMin > APART)
   expect(display.lanePins).toBeUndefined()
 })

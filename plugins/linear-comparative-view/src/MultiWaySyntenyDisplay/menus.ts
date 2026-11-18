@@ -311,7 +311,8 @@ function laneContigMenuItems(
       ? []
       : [
           {
-            label: `Let the lane choose where it draws (pinned to ${lane.canon(pinned.refName)})`,
+            label: `Unpin ${lane.canon(pinned.refName)}`,
+            helpText: 'Let the lane choose where it draws again.',
             onClick: () => {
               model.pinLane(name, undefined)
             },
@@ -341,7 +342,8 @@ function laneFlipMenuItems(
       ? []
       : [
           {
-            label: `Let the lane choose its orientation (pinned on ${lane.canon(pin.refName)})`,
+            label: 'Unpin orientation',
+            helpText: `Let the lane choose its orientation again; it is pinned on ${lane.canon(pin.refName)}.`,
             onClick: () => {
               model.unpinLaneFlip(name)
             },

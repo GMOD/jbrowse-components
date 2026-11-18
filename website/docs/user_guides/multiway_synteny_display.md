@@ -95,10 +95,9 @@ offers it:
   names after `also at`.
 - **Flip lane** turns the lane the other way on the same chromosome, for a lane
   whose blocks split about evenly between the two orientations.
-- **Let the lane choose where it draws (pinned to ⟨chromosome⟩)** undoes either
-  **Show** item.
-- **Let the lane choose its orientation (pinned on ⟨chromosome⟩)** undoes a
-  flip.
+- **Unpin ⟨chromosome⟩** undoes either **Show** item, so the lane chooses where
+  it draws again.
+- **Unpin orientation** undoes a flip.
 
 ## The lane header menu
 
