@@ -2,6 +2,14 @@ import { getDpr, syncCanvasSize } from '../canvas2dUtils.ts'
 import { canvasContextError, noteCanvasContext } from '../canvasContext.ts'
 import { createGpuShaderBuildError } from '../gpuContextLostError.ts'
 import { GpuHalBase } from './gpuHalBase.ts'
+import {
+  LAYER_SAMPLER,
+  isUnion,
+  layerOverId,
+  layerOverInstance,
+  uncomposited,
+  withLayerOver,
+} from './unionLayer.ts'
 
 import type {
   BlendFactor,
@@ -12,6 +20,7 @@ import type {
   TextureBinding,
   TextureSource,
 } from './types.ts'
+import type { PxRect } from './unionLayer.ts'
 
 type GlslStages = Awaited<ReturnType<ShaderSource['glsl']>>
 
@@ -142,6 +151,16 @@ interface RegionPassBuffer {
   count: number
 }
 
+// A union pass's layer at the drawing buffer's size, and the composite's one
+// instance, which carries that size.
+interface GlLayer {
+  fbo: WebGLFramebuffer
+  texture: WebGLTexture
+  instance: WebGLBuffer
+  width: number
+  height: number
+}
+
 // Live-context counts for the debug log: a leaked context evicts the oldest
 // once the browser's cap is reached.
 let totalCreated = 0
@@ -177,6 +196,16 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   // when isContextLost() already answers false.
   private contextWasLost = false
 
+  // By union pass id, allocated at the pass's first draw, so a display with no
+  // union pass holds none; and the rects composited from each this frame.
+  private layers = new Map<string, GlLayer>()
+  private composited = new Map<string, PxRect[]>()
+
+  // The caller's clip in device px, top-left origin, null for the whole
+  // buffer: a composite draws under its own and puts this back.
+  private scissorRect: PxRect | null = null
+  private viewportRect: PxRect | null = null
+
   private contextLostListener: ((e: Event) => void) | null = null
   private contextRestoredListener: (() => void) | null = null
 
@@ -201,10 +230,11 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     descriptors: PipelineDescriptor[],
     sampleCount: SampleCount = 4,
   ) {
+    const passes = withLayerOver(descriptors)
     const glsl = await Promise.all(
-      descriptors.map(async d => [d.id, await d.source.glsl()] as const),
+      passes.map(async d => [d.id, await d.source.glsl()] as const),
     )
-    return new WebGL2Hal(canvas, descriptors, new Map(glsl), sampleCount)
+    return new WebGL2Hal(canvas, passes, new Map(glsl), sampleCount)
   }
 
   private constructor(
@@ -400,15 +430,91 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   }
 
   /**
-   * Nothing to give back. WebGL2 multisamples in the drawing buffer the context
-   * owns (`antialias` above one sample), so this HAL holds no separate target —
-   * releasing its samples means dropping the context, which costs a re-acquire
-   * against a hard 16-context ceiling and a full shader recompile per display.
-   * `agent-docs/reference/GPU_PORTABILITY.md` measured that trade and
-   * declined it; what makes the WebGPU side worth doing is that it pays
-   * neither.
+   * The union layers, and nothing else. WebGL2 multisamples in the drawing
+   * buffer the context owns (`antialias` above one sample), so this HAL holds
+   * no separate MSAA target — releasing its samples means dropping the
+   * context, which costs a re-acquire against a hard 16-context ceiling and a
+   * full shader recompile per display. `agent-docs/reference/GPU_PORTABILITY.md`
+   * measured that trade and declined it; what makes the WebGPU side worth doing
+   * is that it pays neither.
    */
-  releaseRenderTargets() {}
+  releaseRenderTargets() {
+    if (!this.disposed) {
+      this.dropLayers()
+    }
+  }
+
+  private dropLayers() {
+    for (const [passId, layer] of this.layers) {
+      this.dropLayer(passId, layer)
+    }
+  }
+
+  private dropLayer(passId: string, layer: GlLayer) {
+    const gl = this.gl
+    if (!this.contextWasLost && !gl.isContextLost()) {
+      gl.deleteFramebuffer(layer.fbo)
+      gl.deleteTexture(layer.texture)
+      gl.deleteBuffer(layer.instance)
+    }
+    this.passTextures.delete(layerOverId(passId))
+    this.layers.delete(passId)
+    this.composited.delete(passId)
+  }
+
+  private layerOf(passId: string) {
+    const gl = this.gl
+    const { drawingBufferWidth: width, drawingBufferHeight: height } = gl
+    const held = this.layers.get(passId)
+    if (held && (held.width !== width || held.height !== height)) {
+      this.dropLayer(passId, held)
+    }
+    let layer = this.layers.get(passId)
+    if (!layer) {
+      const texture = gl.createTexture()
+      gl.bindTexture(gl.TEXTURE_2D, texture)
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA8,
+        width,
+        height,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        null,
+      )
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+      gl.bindTexture(gl.TEXTURE_2D, null)
+      const fbo = gl.createFramebuffer()
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0,
+        gl.TEXTURE_2D,
+        texture,
+        0,
+      )
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+      const instance = gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER, instance)
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        layerOverInstance(width, height),
+        gl.STATIC_DRAW,
+      )
+      layer = { fbo, texture, instance, width, height }
+      this.layers.set(passId, layer)
+      this.passTextures.set(
+        layerOverId(passId),
+        new Map([[LAYER_SAMPLER, texture]]),
+      )
+    }
+    return layer
+  }
 
   protected createTexture(
     passId: string,
@@ -463,30 +569,60 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
 
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
     const gl = this.gl
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.disable(gl.SCISSOR_TEST)
+    this.scissorRect = null
+    this.viewportRect = null
+    if (this.layers.size > 0) {
+      gl.clearColor(0, 0, 0, 0)
+      for (const layer of this.layers.values()) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, layer.fbo)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+      }
+      this.composited.clear()
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
     gl.clearColor(clearR, clearG, clearB, clearA)
     gl.clear(gl.COLOR_BUFFER_BIT)
   }
 
   setScissor(x: number, y: number, w: number, h: number) {
-    const gl = this.gl
-    gl.enable(gl.SCISSOR_TEST)
-    gl.scissor(x, gl.drawingBufferHeight - y - h, w, h)
+    this.scissorRect = { x, y, w, h }
+    this.applyScissor(this.scissorRect)
   }
 
   clearScissor() {
-    this.gl.disable(this.gl.SCISSOR_TEST)
+    this.scissorRect = null
+    this.applyScissor(null)
   }
 
   setViewport(x: number, y: number, w: number, h: number) {
-    this.gl.viewport(x, this.gl.drawingBufferHeight - y - h, w, h)
+    this.viewportRect = { x, y, w, h }
+    this.applyViewport(this.viewportRect)
   }
 
   clearViewport() {
+    this.viewportRect = null
+    this.applyViewport(null)
+  }
+
+  private applyScissor(r: PxRect | null) {
     const gl = this.gl
-    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
+    if (r) {
+      gl.enable(gl.SCISSOR_TEST)
+      gl.scissor(r.x, gl.drawingBufferHeight - r.y - r.h, r.w, r.h)
+    } else {
+      gl.disable(gl.SCISSOR_TEST)
+    }
+  }
+
+  private applyViewport(r: PxRect | null) {
+    const gl = this.gl
+    if (r) {
+      gl.viewport(r.x, gl.drawingBufferHeight - r.y - r.h, r.w, r.h)
+    } else {
+      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
+    }
   }
 
   drawPass(
@@ -510,14 +646,34 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     if (samplers.some(tb => !textures?.has(tb.name))) {
       return
     }
+    const vertices = verticesPerInstance ?? pass.descriptor.verticesPerInstance
+    if (isUnion(pass.descriptor)) {
+      const layer = this.layerOf(passId)
+      gl.bindFramebuffer(gl.FRAMEBUFFER, layer.fbo)
+      this.draw(passId, pass, regionBuf.vbo, vertices, regionBuf.count)
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+      this.composite(passId, layer)
+    } else {
+      this.draw(passId, pass, regionBuf.vbo, vertices, regionBuf.count)
+    }
+  }
 
+  private draw(
+    passId: string,
+    pass: PassState,
+    vbo: WebGLBuffer,
+    vertices: number,
+    instances: number,
+  ) {
+    const gl = this.gl
+    const textures = this.passTextures.get(passId)
     this.applyBlendState(pass.descriptor)
     gl.useProgram(pass.linked.program)
     gl.bindVertexArray(pass.linked.vao)
-    this.bindAttributes(pass, regionBuf.vbo)
-    for (const tb of samplers) {
+    this.bindAttributes(pass, vbo)
+    for (const tb of pass.descriptor.textures ?? NO_TEXTURES) {
       gl.activeTexture(gl.TEXTURE0 + tb.glTextureUnit)
-      gl.bindTexture(gl.TEXTURE_2D, textures!.get(tb.name)!)
+      gl.bindTexture(gl.TEXTURE_2D, textures?.get(tb.name) ?? null)
     }
     const topo = pass.descriptor.topology ?? 'triangle-list'
     const glMode =
@@ -526,27 +682,54 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
         : topo === 'line-list'
           ? gl.LINES
           : gl.TRIANGLES
-    gl.drawArraysInstanced(
-      glMode,
-      0,
-      verticesPerInstance ?? pass.descriptor.verticesPerInstance,
-      regionBuf.count,
-    )
+    gl.drawArraysInstanced(glMode, 0, vertices, instances)
     if (this.debug && !this.firstDrawSeen.has(passId)) {
       this.firstDrawSeen.add(passId)
       const err = gl.getError()
       console.warn(
-        `[WebGL2Hal #${this.instanceId}] first draw pass="${passId}" verts=${pass.descriptor.verticesPerInstance} instances=${regionBuf.count} err=${glErrorName(gl, err)}`,
+        `[WebGL2Hal #${this.instanceId}] first draw pass="${passId}" verts=${vertices} instances=${instances} err=${glErrorName(gl, err)}`,
       )
     }
 
     gl.bindVertexArray(null)
   }
 
-  endFrame() {
+  // The layer under the caller's scissor, less what an earlier draw of the
+  // pass composited, then the caller's clip back. The layer's texture leaves
+  // its unit after, so no later draw into the layer samples its own target.
+  private composite(passId: string, layer: GlLayer) {
     const gl = this.gl
-    gl.disable(gl.SCISSOR_TEST)
-    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
+    const overId = layerOverId(passId)
+    const done = this.composited.get(passId) ?? []
+    this.composited.set(passId, done)
+    const over = uncomposited(
+      this.scissorRect ?? { x: 0, y: 0, w: layer.width, h: layer.height },
+      done,
+    )
+    const overPass = this.getPass(overId)
+    if (over && overPass) {
+      done.push(over)
+      this.applyScissor(over)
+      this.applyViewport(null)
+      this.draw(
+        overId,
+        overPass,
+        layer.instance,
+        overPass.descriptor.verticesPerInstance,
+        1,
+      )
+      for (const tb of overPass.descriptor.textures ?? NO_TEXTURES) {
+        gl.activeTexture(gl.TEXTURE0 + tb.glTextureUnit)
+        gl.bindTexture(gl.TEXTURE_2D, null)
+      }
+      this.applyScissor(this.scissorRect)
+      this.applyViewport(this.viewportRect)
+    }
+  }
+
+  endFrame() {
+    this.clearScissor()
+    this.clearViewport()
   }
 
   protected releaseResources() {
@@ -572,6 +755,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
 
     this.regions.deleteAll()
+    this.dropLayers()
     if (!this.contextWasLost && !gl.isContextLost()) {
       for (const byVertex of this.programs.values()) {
         for (const linked of byVertex.values()) {
@@ -598,7 +782,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private applyBlendState(desc: PipelineDescriptor) {
     const gl = this.gl
     const bs = desc.blendState
-    if (bs.op === 'max') {
+    if (bs.op === 'max' || bs.op === 'union') {
       gl.blendEquation(gl.MAX)
     } else if (bs.op === 'behind') {
       gl.blendEquation(gl.FUNC_ADD)

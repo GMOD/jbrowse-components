@@ -68,7 +68,7 @@ function gpuBlendState(bs: BlendState): GPUBlendState {
   // accumulates as webgl2Hal's applyBlendState does.
   const max = { srcFactor: 'one', dstFactor: 'one', operation: 'max' } as const
   const behind = { srcFactor: 'one-minus-dst-alpha', dstFactor: 'one' } as const
-  return bs.op === 'max'
+  return bs.op === 'max' || bs.op === 'union'
     ? { color: max, alpha: max }
     : bs.op === 'behind'
       ? { color: behind, alpha: behind }
@@ -97,7 +97,7 @@ export function pipelineRecipe(
     },
     blend: gpuBlendState(desc.blendState),
     topology: desc.topology ?? 'triangle-list',
-    sampleCount,
+    sampleCount: desc.blendState.op === 'union' ? 1 : sampleCount,
   }
 }
 

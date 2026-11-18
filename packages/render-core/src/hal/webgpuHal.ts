@@ -17,6 +17,14 @@ import {
   pipelineRecipe,
 } from './deviceGpuCache.ts'
 import { GpuHalBase } from './gpuHalBase.ts'
+import {
+  LAYER_SAMPLER,
+  isUnion,
+  layerOverId,
+  layerOverInstance,
+  uncomposited,
+  withLayerOver,
+} from './unionLayer.ts'
 
 import type { PipelineRecipe } from './deviceGpuCache.ts'
 import type {
@@ -27,6 +35,7 @@ import type {
   TextureBinding,
   TextureSource,
 } from './types.ts'
+import type { PxRect } from './unionLayer.ts'
 
 class ShaderCompileError extends Error {
   constructor(passId: string, details: string) {
@@ -123,11 +132,23 @@ interface PassTextureState {
   sampler: GPUSampler
 }
 
-interface Rect {
-  x: number
-  y: number
-  w: number
-  h: number
+type Rect = PxRect
+
+// A union pass's layer: a one-sample canvas-sized target, and the composite's
+// one instance, which carries the layer's size.
+interface UnionLayer {
+  texture: GPUTexture
+  view: GPUTextureView
+  instance: GPUBuffer
+}
+
+// A union pass's layer within the open frame: its own render pass, begun at
+// the pass's first draw and submitted ahead of the frame's, and the rects
+// composited from it so far.
+interface LayerFrame {
+  encoder: GPUCommandEncoder
+  pass: GPURenderPassEncoder
+  composited: Rect[]
 }
 
 // Behavioral parity with WebGL2Hal is enforced by tests, not by this file:
@@ -187,6 +208,11 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private currentTextureView: GPUTextureView | null = null
   private currentEncoder: GPUCommandEncoder | null = null
   private currentPass: GPURenderPassEncoder | null = null
+
+  // By union pass id. Allocated at the pass's first draw, so a display with no
+  // union pass holds none.
+  private layers = new Map<string, UnionLayer>()
+  private layerFrames = new Map<string, LayerFrame>()
 
   /**
    * Buffers and textures whose destroy landed while the frame's render pass was
@@ -383,7 +409,8 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     // compile here the canvas stays pristine and createGpuHal's WebGL2 fallback
     // can still claim it — otherwise a partial WebGPU init would drop us all the
     // way to Canvas2D on a WebGL2-capable machine.
-    const pipelines = await resolvePipelines(device, descriptors, sampleCount)
+    const passes = withLayerOver(descriptors)
+    const pipelines = await resolvePipelines(device, passes, sampleCount)
     const context = canvas.getContext('webgpu')
     if (!context) {
       throw canvasContextError(canvas, 'webgpu')
@@ -393,7 +420,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       device,
       canvas,
       context,
-      descriptors,
+      passes,
       sampleCount,
       pipelines,
     )
@@ -411,13 +438,83 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     if (changed || (this.sampleCount > 1 && !this.msaaTexture)) {
       this.recreateMsaaTexture(this.canvas.width, this.canvas.height)
     }
+    if (changed) {
+      this.dropLayers()
+    }
     return scale
   }
 
   releaseRenderTargets() {
     if (!this.disposed) {
       this.recreateMsaaTexture(0, 0)
+      this.dropLayers()
     }
+  }
+
+  private dropLayers() {
+    for (const [passId, layer] of this.layers) {
+      this.destroyWhenIdle(layer.texture)
+      this.destroyWhenIdle(layer.instance)
+      this.passTextures.delete(layerOverId(passId))
+      this.passBindGroups.delete(layerOverId(passId))
+    }
+    this.layers.clear()
+  }
+
+  private layerOf(passId: string) {
+    let layer = this.layers.get(passId)
+    if (!layer) {
+      const { width, height } = this.canvas
+      const texture = this.device.createTexture({
+        size: [width, height],
+        format: navigator.gpu.getPreferredCanvasFormat(),
+        usage:
+          GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+      })
+      const sampler = this.device.createSampler({
+        magFilter: 'nearest',
+        minFilter: 'nearest',
+      })
+      layer = {
+        texture,
+        view: texture.createView(),
+        instance: createVertexBuffer(
+          this.device,
+          layerOverInstance(width, height),
+        ),
+      }
+      const id = layerOverId(passId)
+      this.passTextures.set(
+        id,
+        new Map([[LAYER_SAMPLER, { texture, sampler }]]),
+      )
+      this.passBindGroups.delete(id)
+      this.layers.set(passId, layer)
+    }
+    return layer
+  }
+
+  private layerFrameOf(passId: string, layer: UnionLayer) {
+    let frame = this.layerFrames.get(passId)
+    if (!frame) {
+      const layerEncoder = this.device.createCommandEncoder()
+      frame = {
+        encoder: layerEncoder,
+        pass: layerEncoder.beginRenderPass({
+          colorAttachments: [
+            {
+              view: layer.view,
+              loadOp: 'clear',
+              storeOp: 'store',
+              clearValue: { r: 0, g: 0, b: 0, a: 0 },
+            },
+          ],
+        }),
+        composited: [],
+      }
+      this.layerFrames.set(passId, frame)
+    }
+    return frame
   }
 
   private recreateMsaaTexture(width: number, height: number) {
@@ -760,15 +857,72 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     const dynamicOffset =
       Math.max(0, this.uniformSlot - 1) * this.alignedUniformSize
 
-    this.applyViewport(this.currentPass)
-    this.applyScissor(this.currentPass)
-    this.currentPass.setPipeline(pipeline)
-    this.currentPass.setBindGroup(0, bindGroup, [dynamicOffset])
-    this.currentPass.setVertexBuffer(0, regionBuf.dataBuffer)
-    this.currentPass.draw(
-      verticesPerInstance ?? desc.verticesPerInstance,
-      regionBuf.count,
-    )
+    const vertices = verticesPerInstance ?? desc.verticesPerInstance
+    if (isUnion(desc)) {
+      this.drawUnion(passId, this.currentPass, {
+        pipeline,
+        bindGroup,
+        dynamicOffset,
+        regionBuf,
+        vertices,
+      })
+    } else {
+      this.applyViewport(this.currentPass)
+      this.applyScissor(this.currentPass)
+      this.currentPass.setPipeline(pipeline)
+      this.currentPass.setBindGroup(0, bindGroup, [dynamicOffset])
+      this.currentPass.setVertexBuffer(0, regionBuf.dataBuffer)
+      this.currentPass.draw(vertices, regionBuf.count)
+    }
+  }
+
+  /**
+   * Draw a union pass into its layer under the frame's clip, then composite
+   * the layer into the frame under the scissor, less what an earlier draw of
+   * the pass composited. The layer's own pass runs ahead of the frame's, so
+   * the composite reads every draw of the pass, which is why its draws must
+   * scissor apart.
+   */
+  private drawUnion(
+    passId: string,
+    main: GPURenderPassEncoder,
+    draw: {
+      pipeline: GPURenderPipeline
+      bindGroup: GPUBindGroup
+      dynamicOffset: number
+      regionBuf: RegionPassBuffer
+      vertices: number
+    },
+  ) {
+    const layer = this.layerOf(passId)
+    const { pass, composited } = this.layerFrameOf(passId, layer)
+    const viewport = this.viewportRect ?? this.wholeCanvas()
+    const scissor = this.scissorRect ?? this.wholeCanvas()
+    pass.setViewport(viewport.x, viewport.y, viewport.w, viewport.h, 0, 1)
+    pass.setScissorRect(scissor.x, scissor.y, scissor.w, scissor.h)
+    pass.setPipeline(draw.pipeline)
+    pass.setBindGroup(0, draw.bindGroup, [draw.dynamicOffset])
+    pass.setVertexBuffer(0, draw.regionBuf.dataBuffer)
+    pass.draw(draw.vertices, draw.regionBuf.count)
+
+    const overId = layerOverId(passId)
+    const over = uncomposited(scissor, composited)
+    const overPipeline = this.pipelines.get(overId)
+    const overGroup = this.getBindGroup(overId)
+    const overDesc = this.descriptors.get(overId)
+    if (over && overPipeline && overGroup && overDesc) {
+      composited.push(over)
+      this.applyViewport(main, null)
+      this.applyScissor(main, over)
+      main.setPipeline(overPipeline)
+      main.setBindGroup(0, overGroup, [draw.dynamicOffset])
+      main.setVertexBuffer(0, layer.instance)
+      main.draw(overDesc.verticesPerInstance, 1)
+    }
+  }
+
+  private wholeCanvas(): Rect {
+    return { x: 0, y: 0, w: this.canvas.width, h: this.canvas.height }
   }
 
   /**
@@ -808,6 +962,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     this.currentPass = null
     this.currentEncoder = null
     this.currentTextureView = null
+    this.layerFrames.clear()
     this.outgrownRings.length = 0
     this.drainPendingDestroy()
   }
@@ -848,10 +1003,21 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
           `[WebGPUHal] this frame used ${slotAtSubmit} of ${MAX_UNIFORM_SLOTS} uniform ring slots. At the cap, writes are dropped and their draws render against another batch's uniforms — wrong pixels, no error. A count this high usually means a per-frame write inside a loop that has grown a dimension (stacked sections, displayed regions), or a write nothing draws with. Check the renderer before raising the cap.`,
         )
       }
-      this.device.queue.submit([encoder.finish()])
+      this.device.queue.submit(
+        this.layerFrames.size === 0
+          ? [encoder.finish()]
+          : [...this.finishLayers(), encoder.finish()],
+      )
     } finally {
       this.closeFrame(slotAtSubmit)
     }
+  }
+
+  private finishLayers() {
+    return [...this.layerFrames.values()].map(({ encoder, pass }) => {
+      pass.end()
+      return encoder.finish()
+    })
   }
 
   /**
@@ -885,8 +1051,10 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
    * the kind this package exists to refuse: right on Canvas2D, right on WebGL2,
    * wrong on WebGPU alone, and silent everywhere.
    */
-  private applyScissor(pass: GPURenderPassEncoder) {
-    const r = this.scissorRect
+  private applyScissor(
+    pass: GPURenderPassEncoder,
+    r: Rect | null = this.scissorRect,
+  ) {
     const x = r ? r.x : 0
     const y = r ? r.y : 0
     const w = r ? r.w : this.canvas.width
@@ -902,8 +1070,10 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   }
 
   /** The viewport half of {@link applyScissor}; same reasoning throughout. */
-  private applyViewport(pass: GPURenderPassEncoder) {
-    const r = this.viewportRect
+  private applyViewport(
+    pass: GPURenderPassEncoder,
+    r: Rect | null = this.viewportRect,
+  ) {
     const x = r ? r.x : 0
     const y = r ? r.y : 0
     const w = r ? r.w : this.canvas.width
@@ -945,6 +1115,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
     this.regions.deleteAll()
     this.uniformRingBuffer.destroy()
+    this.dropLayers()
     for (const byName of this.passTextures.values()) {
       for (const ts of byName.values()) {
         ts.texture.destroy()

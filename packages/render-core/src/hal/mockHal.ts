@@ -1,6 +1,7 @@
 import { getDpr } from '../canvas2dUtils.ts'
 import { GpuHalBase } from './gpuHalBase.ts'
 import { assertUniquePassIds } from './passIds.ts'
+import { isUnion, uncomposited } from './unionLayer.ts'
 
 import type { CanvasScale } from '../canvas2dUtils.ts'
 import type {
@@ -64,6 +65,12 @@ export interface MockDraw {
   scissor: MockRect | null
   viewport: MockRect | null
   uniformWrite: number
+  /**
+   * Where a `union` pass's draw composited its layer into the frame: its
+   * scissor less what an earlier draw of the pass composited, null where that
+   * left nothing. Undefined for every other pass.
+   */
+  composite?: MockRect | null
 }
 
 function textureKey(passId: string, sampler: string) {
@@ -100,6 +107,15 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
   private scissor: MockRect | null = null
   private viewport: MockRect | null = null
   private drawLog: MockDraw[] = []
+
+  // The canvas in device px, from the last `resize`, which an unclipped
+  // composite covers.
+  private canvasPx: MockRect = { x: 0, y: 0, w: 0, h: 0 }
+  // Each union pass's composites this frame, and the union passes holding a
+  // layer, as both real HALs allocate one at a union pass's first draw and
+  // drop it with the render targets.
+  private composited = new Map<string, MockRect[]>()
+  private layers = new Set<string>()
 
   /**
    * `${regionKey}:${passId}` for every buffer the open frame has drawn from,
@@ -179,6 +195,7 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
   protected releaseResources() {
     this.record('dispose')
     this.regions.deleteAll()
+    this.layers.clear()
   }
 
   private record(method: string, ...args: unknown[]) {
@@ -202,13 +219,26 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     // every device-px rect a renderer builds comes from this. `getDpr()` is the
     // unclamped answer; `reportedScale` stands in for a clamped canvas or a
     // drawing buffer the browser shrank.
-    return this.reportedScale ?? { x: getDpr(), y: getDpr() }
+    const scale = this.reportedScale ?? { x: getDpr(), y: getDpr() }
+    this.canvasPx = {
+      x: 0,
+      y: 0,
+      w: Math.round(width * scale.x),
+      h: Math.round(height * scale.y),
+    }
+    return scale
   }
 
   reportedScale: CanvasScale | undefined = undefined
 
   releaseRenderTargets() {
     this.record('releaseRenderTargets')
+    this.layers.clear()
+  }
+
+  /** The union passes holding a layer, which `releaseRenderTargets` drops. */
+  layerTargets() {
+    return [...this.layers]
   }
 
   // The overrides below log and then defer to the base's shells, so the buffer
@@ -266,6 +296,7 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     this.viewport = null
     this.frameOpen = true
     this.drawnThisFrame.clear()
+    this.composited.clear()
   }
 
   // Throws on an id the display never registered, where both real HALs return
@@ -308,17 +339,28 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
       this.drawnThisFrame.set(regionKey, drawn)
     }
     drawn.add(bufferKey)
+    const desc = this.descriptors.get(passId)!
     this.drawLog.push({
       passId,
       regionKey,
       bufferPassId,
-      verticesPerInstance:
-        verticesPerInstance ??
-        this.descriptors.get(passId)!.verticesPerInstance,
+      verticesPerInstance: verticesPerInstance ?? desc.verticesPerInstance,
       scissor: this.scissor && { ...this.scissor },
       viewport: this.viewport && { ...this.viewport },
       uniformWrite: this.uniformWrites.length - 1,
+      ...(isUnion(desc) ? { composite: this.composite(passId) } : {}),
     })
+  }
+
+  private composite(passId: string) {
+    this.layers.add(passId)
+    const done = this.composited.get(passId) ?? []
+    this.composited.set(passId, done)
+    const over = uncomposited(this.scissor ?? this.canvasPx, done)
+    if (over) {
+      done.push(over)
+    }
+    return over ?? null
   }
 
   private assertRegistered(passId: string, role: string) {

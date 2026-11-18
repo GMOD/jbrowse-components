@@ -1,13 +1,13 @@
 import { MockHal } from './mockHal.ts'
 
-import type { PipelineDescriptor } from './types.ts'
+import type { BlendState, PipelineDescriptor } from './types.ts'
 
-function pass(id: string) {
-  return { id } as PipelineDescriptor
+function pass(id: string, blendState: BlendState = { op: 'max' }) {
+  return { id, blendState } as PipelineDescriptor
 }
 
 function uploaded(passIds: string[], regionKeys = [0]) {
-  const hal = new MockHal(passIds.map(pass))
+  const hal = new MockHal(passIds.map(id => pass(id)))
   for (const regionKey of regionKeys) {
     for (const passId of passIds) {
       hal.uploadBuffer(regionKey, passId, new Float32Array([1]), 1)
@@ -341,5 +341,76 @@ describe('MockHal texture uploads', () => {
 
     expect(hal.getTexture('point', 'rowTable')).toEqual(table)
     expect(hal.getTexture('point', 'colorRamp')).toBeUndefined()
+  })
+})
+
+describe('MockHal union passes', () => {
+  function unionHal() {
+    const hal = new MockHal([pass('bar'), pass('line', { op: 'union' })])
+    for (const regionKey of [0, 1]) {
+      hal.uploadBuffer(regionKey, 'bar', new Float32Array([1]), 1)
+      hal.uploadBuffer(regionKey, 'line', new Float32Array([1]), 1)
+    }
+    hal.resize(160, 40)
+    return hal
+  }
+
+  it('composites a union draw under its scissor, and no other pass', () => {
+    const hal = unionHal()
+    hal.beginFrame(0, 0, 0, 0)
+    hal.setScissor(0, 0, 101, 40)
+    hal.drawPass('bar', 0)
+    hal.drawPass('line', 0)
+    hal.endFrame()
+
+    expect(hal.draws().map(d => [d.passId, d.composite])).toEqual([
+      ['bar', undefined],
+      ['line', { x: 0, y: 0, w: 101, h: 40 }],
+    ])
+  })
+
+  it('composites the column two blocks share once a frame', () => {
+    const hal = unionHal()
+    for (let frame = 0; frame < 2; frame++) {
+      hal.beginFrame(0, 0, 0, 0)
+      hal.setScissor(0, 0, 101, 40)
+      hal.drawPass('line', 0)
+      hal.setScissor(100, 0, 60, 40)
+      hal.drawPass('line', 1)
+      hal.endFrame()
+    }
+
+    expect(hal.draws().map(d => d.composite)).toEqual([
+      { x: 0, y: 0, w: 101, h: 40 },
+      { x: 101, y: 0, w: 59, h: 40 },
+      { x: 0, y: 0, w: 101, h: 40 },
+      { x: 101, y: 0, w: 59, h: 40 },
+    ])
+  })
+
+  it('composites an unclipped union draw over the whole canvas', () => {
+    const hal = unionHal()
+    hal.beginFrame(0, 0, 0, 0)
+    hal.drawPass('line', 0)
+    hal.drawPass('line', 1)
+    hal.endFrame()
+
+    expect(hal.draws().map(d => d.composite)).toEqual([
+      { x: 0, y: 0, w: 160, h: 40 },
+      null,
+    ])
+  })
+
+  it('holds a layer from the first union draw until the targets go', () => {
+    const hal = unionHal()
+    expect(hal.layerTargets()).toEqual([])
+    hal.beginFrame(0, 0, 0, 0)
+    hal.drawPass('bar', 0)
+    expect(hal.layerTargets()).toEqual([])
+    hal.drawPass('line', 0)
+    hal.endFrame()
+    expect(hal.layerTargets()).toEqual(['line'])
+    hal.releaseRenderTargets()
+    expect(hal.layerTargets()).toEqual([])
   })
 })

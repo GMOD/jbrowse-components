@@ -4,10 +4,13 @@ import path from 'node:path'
 
 import { makeComputePipelineCache } from '../computePipeline.ts'
 import { getGpuDevice } from '../gpuDevice.ts'
+import * as barShader from '../shaders/barMark.generated.ts'
+import * as lineCenterShader from '../shaders/lineCenterMark.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { WebGPUHal } from './webgpuHal.ts'
 
 import type { ShaderModule } from '../slangPass.ts'
+import type { BlendState, SampleCount } from './types.ts'
 
 // Every shader in the tree, built into a pipeline, bound and drawn by the
 // WebGPU HAL on Dawn, the WebGPU implementation inside Chrome. Its null
@@ -179,4 +182,135 @@ test.each(shaders)('%s', async rel => {
       hal.dispose()
     })
   }
+})
+
+// A bar pass and a linear line two blocks draw, the line union or max.
+async function barAndLine(
+  sampleCount: SampleCount,
+  lineBlend: BlendState = { op: 'union' },
+) {
+  const passes = [
+    slangPass({ id: 'bar', mod: barShader }),
+    slangPass({ id: 'line', mod: lineCenterShader, blendState: lineBlend }),
+  ]
+  const hal = await WebGPUHal.create(
+    canvasOn(gpu.getPreferredCanvasFormat()),
+    passes,
+    sampleCount,
+  )
+  if (!hal) {
+    throw new Error('Dawn failed to build a HAL')
+  }
+  hal.resize(100, 40)
+  for (const desc of passes) {
+    for (const { name } of desc.textures ?? []) {
+      hal.uploadTexture(desc.id, new Uint8Array(256 * 4), 256, 1, name)
+    }
+    for (const regionKey of [0, 1]) {
+      hal.uploadBuffer(
+        regionKey,
+        desc.id,
+        new ArrayBuffer(desc.instanceStride),
+        1,
+      )
+    }
+  }
+  const uniforms = new ArrayBuffer(hal.uniformByteSize)
+  const frame = () => {
+    hal.beginFrame(0, 0, 0, 0)
+    for (const [regionKey, x, w] of [
+      [0, 0, 51],
+      [1, 50, 50],
+    ] as const) {
+      hal.setScissor(x, 0, w, 40)
+      hal.setViewport(x, 0, w, 40)
+      hal.writeUniforms(uniforms)
+      hal.drawPass('bar', regionKey)
+      hal.drawPass('line', regionKey)
+    }
+    hal.clearScissor()
+    hal.clearViewport()
+    hal.endFrame()
+  }
+  return { hal, frame }
+}
+
+// What the device was asked for while `work` ran: each texture with its
+// usage and whether it was destroyed, and the command buffers per submit.
+async function deviceCallsOf(work: () => Promise<void>) {
+  const textures: { usage: number; size: unknown; destroyed: boolean }[] = []
+  const submits: number[] = []
+  const createTexture = device.createTexture.bind(device)
+  const submit = device.queue.submit.bind(device.queue)
+  const textureSpy = jest
+    .spyOn(device, 'createTexture')
+    .mockImplementation(desc => {
+      const texture = createTexture(desc)
+      const made = { usage: desc.usage, size: desc.size, destroyed: false }
+      textures.push(made)
+      const destroy = texture.destroy.bind(texture)
+      jest.spyOn(texture, 'destroy').mockImplementation(() => {
+        made.destroyed = true
+        destroy()
+      })
+      return texture
+    })
+  const submitSpy = jest
+    .spyOn(device.queue, 'submit')
+    .mockImplementation(buffers => {
+      submits.push([...buffers].length)
+      submit(buffers)
+    })
+  try {
+    await validationErrorsOf(work)
+  } finally {
+    textureSpy.mockRestore()
+    submitSpy.mockRestore()
+  }
+  const layerUsage =
+    GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
+  return {
+    layers: textures
+      .filter(t => t.usage === layerUsage)
+      .map(({ size, destroyed }) => ({ size, destroyed })),
+    submits,
+  }
+}
+
+// A union pass draws into a one-sample layer whose own render pass is
+// submitted ahead of the frame's, which samples it: Dawn holds the two
+// encoders, the layer's two usages and the composite's pipeline beside a
+// multisampled one to WebGPU's validation, over two blocks sharing a column,
+// across a frame that reuses the layer and one after the layer was released.
+test.each([1, 4] as const)(
+  'a union pass beside a bar pass at %i samples',
+  async sampleCount => {
+    const { layers, submits } = await deviceCallsOf(async () => {
+      const { hal, frame } = await barAndLine(sampleCount)
+      frame()
+      frame()
+      hal.releaseRenderTargets()
+      hal.resize(100, 40)
+      frame()
+      hal.dispose()
+    })
+    expect(layers).toEqual([
+      { size: [100, 40], destroyed: true },
+      { size: [100, 40], destroyed: true },
+    ])
+    expect(submits).toEqual([2, 2, 2])
+  },
+)
+
+// The display the fix leaves alone: a max line allocates no layer and its
+// frame is one command buffer, as before union existed.
+test('a max line allocates nothing and submits one command buffer', async () => {
+  const { layers, submits } = await deviceCallsOf(async () => {
+    const { hal, frame } = await barAndLine(4, { op: 'max' })
+    frame()
+    frame()
+    hal.dispose()
+  })
+  expect(layers).toEqual([])
+  expect(submits).toEqual([1, 1])
 })

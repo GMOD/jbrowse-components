@@ -40,10 +40,20 @@ export type BlendFactor = 'one' | 'src-alpha' | 'one-minus-src-alpha' | 'zero'
 // blend factors entirely (and WebGPU rejects any factor but 'one' under it), so
 // that variant carries none. 'behind' composites a premultiplied fragment under
 // what the target already holds, for a pass drawn after the ink it sits behind.
+//
+// 'union' is 'max' kept off the ink drawn before it: the pass's fragments
+// max-blend into a one-sample layer of their own, cleared once a frame, and
+// the HAL composites that layer premultiplied source-over at each of the
+// pass's draws, under its scissor. The layer is rendered before the frame, so
+// a pass's draws within a frame must scissor apart; where one draw's scissor
+// spans the height of an earlier one's and overlaps an end of it, as blocks
+// meeting mid-pixel do, it composites only the columns the earlier one left.
+// `layerOver.slang` is the composite.
 export type BlendState =
   | { op?: 'add'; srcFactor: BlendFactor; dstFactor: BlendFactor }
   | { op: 'max' }
   | { op: 'behind' }
+  | { op: 'union' }
 
 export type ShaderStage = 'vertex' | 'fragment' | 'compute'
 

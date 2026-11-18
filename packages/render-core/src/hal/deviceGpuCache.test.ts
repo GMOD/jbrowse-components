@@ -222,6 +222,19 @@ describe('deviceGpuCache', () => {
     expect(built.map(r => r.sampleCount)).toEqual([1, 4])
   })
 
+  // A union pass draws into its own one-sample layer whatever the display's
+  // count, and max-blends there as a max pass does.
+  it('builds a union pass at one sample, max blended', () => {
+    const union = { ...SPAN, blendState: { op: 'union' } as const }
+    const max = { ...SPAN, blendState: { op: 'max' } as const }
+    for (const sampleCount of [1, 4] as const) {
+      const recipe = pipelineRecipe(union, WGSL_SOURCE, sampleCount)
+      expect(recipe.sampleCount).toBe(1)
+      expect(recipe.blend).toEqual(pipelineRecipe(max, WGSL_SOURCE, 1).blend)
+    }
+    expect(pipelineRecipe(max, WGSL_SOURCE, 4).sampleCount).toBe(4)
+  })
+
   it('caches a compile failure rather than re-running it per display', async () => {
     let builds = 0
     const build = () => {
