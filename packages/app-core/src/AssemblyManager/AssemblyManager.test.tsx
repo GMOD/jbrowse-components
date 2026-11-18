@@ -22,6 +22,7 @@ jest.mock('@jbrowse/core/util', () => ({
 const assemblies = [
   {
     name: 'testAssembly',
+    aliases: [],
     sequence: {
       type: 'testSequenceTrack',
       trackId: '',

@@ -40,8 +40,8 @@ function measureColumn<R>(rows: readonly R[], col: DetailTableColumn<R>) {
 
 /**
  * A feature-details table: as tall as its rows up to `maxHeight`, then
- * scrolling, with header clicks sorting it and a quiet search and CSV export
- * above it
+ * scrolling, with header clicks sorting it and, given an `exportName`, a quiet
+ * search and CSV export above it
  */
 const DetailTable = observer(function DetailTable<
   R extends { id: string | number },
@@ -60,8 +60,11 @@ const DetailTable = observer(function DetailTable<
   columns: DetailTableColumn<R>[]
   /** drawn at the start of the toolbar row */
   title?: React.ReactNode
-  /** the exported file's name, without `.csv` */
-  exportName: string
+  /**
+   * the exported file's name, without `.csv`; a table without one has no
+   * search, export or title row
+   */
+  exportName?: string
   maxHeight?: number
   leading?: VirtualTableLeading<R>
   isRowSelected?: (row: R) => boolean
@@ -108,15 +111,17 @@ const DetailTable = observer(function DetailTable<
 
   return (
     <div className={classes.root} data-testid={testId}>
-      <DetailTableToolbar
-        title={title}
-        rows={shownRows}
-        columns={columns}
-        total={rows.length}
-        searchText={searchText}
-        onSearch={setSearchText}
-        exportName={exportName}
-      />
+      {exportName ? (
+        <DetailTableToolbar
+          title={title}
+          rows={shownRows}
+          columns={columns}
+          total={rows.length}
+          searchText={searchText}
+          onSearch={setSearchText}
+          exportName={exportName}
+        />
+      ) : null}
       <div className={classes.tableBox} style={{ maxHeight }}>
         <VirtualTable
           rows={shownRows}

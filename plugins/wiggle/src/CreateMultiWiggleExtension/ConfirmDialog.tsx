@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import { SanitizedHTML, SubmitDialog } from '@jbrowse/core/ui'
-import { measureGridWidth } from '@jbrowse/core/util'
+import DetailTable from '@jbrowse/core/ui/DetailTable'
+import { coarseStripHTML } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Alert, IconButton, TextField } from '@mui/material'
-import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import {
@@ -17,7 +18,19 @@ import {
 
 import type { StackKind } from '../MultiWiggleAddTrackWorkflow/util.ts'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
+import type { DetailTableColumn } from '@jbrowse/core/ui/DetailTable'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
+
+interface TrackRow {
+  id: string
+  name: string
+}
+
+const useStyles = makeStyles()({
+  button: {
+    padding: 0,
+  },
+})
 
 const ConfirmDialog = observer(function ConfirmDialog({
   tracks: initialTracks,
@@ -34,10 +47,41 @@ const ConfirmDialog = observer(function ConfirmDialog({
     kind: StackKind
   }) => void
 }) {
+  const { classes } = useStyles()
   const [val, setVal] = useState('Multi-row track')
   const [tracks, setTracks] = useState(initialTracks)
   const kind = stackKind(tracks.flatMap(t => stackKindOf(t.type) ?? []))
   const { assemblyNames, shared } = stackAssemblies(tracks, assemblyManager)
+  const rows = tracks.map((track): TrackRow => ({
+    id: track.trackId,
+    name: trackNameOf(track),
+  }))
+  const columns: DetailTableColumn<TrackRow>[] = [
+    {
+      field: 'name',
+      header: 'Name',
+      value: row => row.name,
+      text: row => coarseStripHTML(row.name),
+      cell: row => <SanitizedHTML html={row.name} />,
+    },
+    {
+      field: 'remove',
+      header: '',
+      value: () => '',
+      cell: row => (
+        <IconButton
+          size="small"
+          className={classes.button}
+          aria-label={`Remove ${coarseStripHTML(row.name)}`}
+          onClick={() => {
+            setTracks(prev => prev.filter(t => t.trackId !== row.id))
+          }}
+        >
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      ),
+    },
+  ]
   return (
     <SubmitDialog
       open
@@ -67,38 +111,7 @@ const ConfirmDialog = observer(function ConfirmDialog({
           {assemblyNames.join(', ')}); remove all but one
         </Alert>
       )}
-      <DataGrid
-        autoHeight
-        rows={tracks}
-        getRowId={row => row.trackId}
-        columns={[
-          {
-            field: 'name',
-            headerName: 'Name',
-            width: measureGridWidth(tracks.map(t => trackNameOf(t))),
-            renderCell: ({ row }) => <SanitizedHTML html={trackNameOf(row)} />,
-          },
-          {
-            field: 'remove',
-            headerName: '',
-            width: 50,
-            sortable: false,
-            renderCell: ({ row }) => (
-              <IconButton
-                size="small"
-                onClick={() => {
-                  setTracks(prev => prev.filter(t => t.trackId !== row.trackId))
-                }}
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            ),
-          },
-        ]}
-        rowHeight={25}
-        columnHeaderHeight={33}
-        hideFooter
-      />
+      <DetailTable rows={rows} columns={columns} testId="multi-row-tracks" />
       <TextField
         value={val}
         onChange={event => {
