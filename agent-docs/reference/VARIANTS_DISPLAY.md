@@ -581,6 +581,12 @@ A cell is its record's reference span floored at `MIN_CELL_PX`, insertions
 included, with both sides on the backing store's device pixels
 (`snapCellEdgePx`). Its hover box and click target are the cell mark's own ink.
 
+**A cell is `max(rowHeight, 2 - rowHeight)` tall** (`drawnCellHeightPx`). On
+rows of a pixel or more a cell is exactly its row and covers none of the row
+below. Under a pixel the rows cannot be told apart, and the mark climbs back
+toward 2px as they thin, so a lone carrier stays visible at any device pixel
+ratio. A plain 1px floor was declined (ADR-256).
+
 **Edges go in in RECORD order, `toX(start)` then `toX(end)`** — never sorted,
 never pre-snapped. `snappedCellLeftPx` hangs the 2px floor off the record's
 _start_, which on a reversed block is its right edge (the reversed-block family

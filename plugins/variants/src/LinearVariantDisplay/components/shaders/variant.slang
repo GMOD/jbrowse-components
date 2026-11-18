@@ -35,16 +35,17 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 static const uint SHAPE_RECT = 0u;
 static const uint SHAPE_TRI_LEFT = 1u;
 
-// Height a cell is painted at. The 2px floor keeps a lone cell in a sparse
-// matrix visible (matching the 2px min width) rather than fading to a sub-pixel
-// sliver, while preserving draw order for variant priority.
+// Height a cell is painted at. A row of a pixel or more draws exactly its own
+// height, so its cell covers none of the row below. Under a pixel the rows
+// cannot be told apart anyway, and the mark climbs back toward 2px as they
+// thin, so a lone carrier among thousands of rows stays visible at any device
+// pixel ratio.
 //
 // `//! js-export`ed: the Canvas2D draw and the hit test both need the same
-// band, and both spelled `Math.max(rowHeight, 2)` under comments naming this
-// one. A cell painted taller than it hit-tests is unclickable along its bottom
-// edge — a difference nothing but a user would notice.
+// band. A cell painted taller than it hit-tests is unclickable along its
+// bottom edge — a difference nothing but a user would notice.
 float drawnCellHeightPx(float rowHeight) {
-  return max(rowHeight, 2.0);
+  return max(rowHeight, 2.0 - rowHeight);
 }
 
 // Snap a cell edge, in canvas CSS px, to the backing store's pixel grid at x
@@ -200,8 +201,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // "== TRI_LEFT" so a third shape added to the vocabulary above draws
   // SOMETHING here rather than silently falling back to a plain box.
   if (fragIn.shapeType != SHAPE_RECT) {
-    // No whole-mark size fade here: both cell sides floor at 2px, so one is a
-    // constant dim on the inversion alone (inversionGlyphInk.test.ts).
+    // No whole-mark size fade here: a cell floors at 2px wide and 1px tall, so
+    // one is a constant dim on the inversion alone (inversionGlyphInk.test.ts).
     alpha *= inversionCoverage(
       fragIn.localPx.x, fragIn.localPx.y, fragIn.widthPx, fragIn.heightPx,
       u.devicePixelRatio);

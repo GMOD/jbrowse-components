@@ -63,12 +63,15 @@ const cells: CellChannels = {
 }
 
 // The two floors are the whole domain a size-keyed fade could see on this
-// display: a ramp reaching past 2px dims every genome-wide inversion by a
+// display: a ramp reaching past them dims every genome-wide inversion by a
 // constant it can never climb out of.
-test('the 2px floors leave a genome-wide cell 2px on both sides', () => {
+test('the floors leave a genome-wide cell 2px wide and 1px to 2px tall', () => {
   expect(snappedCellWidthPx(700.1, 700.2, 1)).toBe(2)
   expect(snappedCellWidthPx(700.2, 700.1, 1)).toBe(2)
-  expect(drawnCellHeightPx(0.5)).toBe(2)
+  expect(drawnCellHeightPx(0.1)).toBeCloseTo(1.9)
+  expect(drawnCellHeightPx(0.5)).toBe(1.5)
+  expect(drawnCellHeightPx(1)).toBe(1)
+  expect(drawnCellHeightPx(1.5)).toBe(1.5)
   expect(drawnCellHeightPx(7.5)).toBe(7.5)
 })
 
@@ -100,7 +103,7 @@ test('the Canvas2D twin paints a floored inversion in the cell color, at the cel
   ])
   expect(calls.map(c => [c.w, c.h])).toEqual([
     [2, 2],
-    [2, 2],
+    [2, 1],
   ])
 })
 

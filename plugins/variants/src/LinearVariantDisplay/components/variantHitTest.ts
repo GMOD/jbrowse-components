@@ -19,8 +19,10 @@ interface VariantHitQuery {
   // Genomic position (absolute bp) under the cursor within this region.
   genomicPos: number
   // Rows whose drawn cell covers the cursor: `rowNearest` is the row the cursor
-  // is actually in, `rowLowest` the furthest row still covering it under the
-  // 2px floor. Equal unless rows are sub-pixel.
+  // is actually in, `rowLowest` the furthest row whose cell still covers it. A
+  // cell is its row from 1px up and nearer 2px as rows thin under a pixel, so
+  // a lone carrier stays visible (`drawnCellHeightPx`): the two are equal
+  // unless rows are sub-pixel.
   rowNearest: number
   rowLowest: number
   // Half-width of the bp search window: the click tolerance past a cell's

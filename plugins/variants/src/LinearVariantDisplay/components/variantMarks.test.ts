@@ -184,12 +184,36 @@ describe('painter', () => {
     expect(w).toBe(2)
   })
 
-  test('floors the painted height at 2px', () => {
-    const { fillRectCalls } = paint(rect([100, 200]), makeBlock(), {
-      ...STATE,
-      rowHeight: 0.5,
-    })
-    expect(fillRectCalls[0]![3]).toBe(2)
+  test.each([1, 1.5, 2.5])(
+    'a cell on %spx rows paints exactly its row, covering none of the row below',
+    rowHeight => {
+      const rows = [0, 1, 2, 3, 4, 5]
+      const { fillRectCalls } = paint(
+        rect(
+          rows.flatMap(() => [100, 200]),
+          rows,
+          rows.map(() => 0),
+        ),
+        makeBlock(),
+        { ...STATE, rowHeight },
+      )
+      const bands = fillRectCalls.map(([, y, , h]) => [y, y + h])
+      for (let i = 1; i < bands.length; i++) {
+        expect(bands[i]![0]).toBe(bands[i - 1]![1])
+      }
+    },
+  )
+
+  test('a cell on half-pixel rows paints 1.5px, on whole pixels', () => {
+    const { fillRectCalls } = paint(
+      rect([100, 200, 100, 200], [0, 1], [0, 0]),
+      makeBlock(),
+      { ...STATE, rowHeight: 0.5 },
+    )
+    expect(fillRectCalls.map(([, y, , h]) => [y, h])).toEqual([
+      [0, 2],
+      [1, 1],
+    ])
   })
 
   test('culls rows scrolled above the canvas', () => {

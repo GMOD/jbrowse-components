@@ -87,10 +87,28 @@ describe('computeVariantHitQuery row band', () => {
     expect(rowLowest).toBe(12)
   })
 
+  test.each([1, 1.5])(
+    '%spx rows: every cursor pixel is under its own row alone',
+    rowHeight => {
+      for (let mouseY = 0; mouseY < 30; mouseY++) {
+        const { rowNearest, rowLowest } = computeVariantHitQuery(
+          fwd,
+          0,
+          mouseY,
+          0,
+          rowHeight,
+          1,
+        )
+        expect(rowLowest).toBe(rowNearest)
+      }
+    },
+  )
+
   test('sub-pixel rows: one cursor pixel spans a band of many rows', () => {
-    // rowHeight 0.5 draws at the 2px minimum on whole pixels. Row 51's top,
-    // 25.5, snaps down to 26, so rows 47..50 are the drawn cells covering pixel
-    // 25, and row 50 is the row the cursor is in.
+    // rowHeight 0.5 draws 1.5px, on whole pixels. Row 48 spans 24..25.5,
+    // snapped to 24..26; rows 49 and 50 start on pixel 25 and row 51 on 26, so
+    // rows 48..50 are the drawn cells covering pixel 25, and row 50 is the row
+    // the cursor is in.
     const { rowNearest, rowLowest } = computeVariantHitQuery(
       fwd,
       0,
@@ -100,6 +118,6 @@ describe('computeVariantHitQuery row band', () => {
       1,
     )
     expect(rowNearest).toBe(50)
-    expect(rowLowest).toBe(47)
+    expect(rowLowest).toBe(48)
   })
 })

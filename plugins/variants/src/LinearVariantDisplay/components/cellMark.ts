@@ -36,7 +36,11 @@ export interface CellChannels {
 }
 
 export interface CellParams {
-  /** CSS px per row; the painted height floors at 2 (`drawnCellHeightPx`). */
+  /**
+   * CSS px per row. A cell paints `max(rowHeight, 2 - rowHeight)` tall
+   * (`drawnCellHeightPx`): its row from 1px up, nearer 2px as rows thin under a
+   * pixel, so a lone carrier stays visible.
+   */
   rowHeight: number
   /** Rows-area scroll offset in CSS px. */
   scrollTop: number

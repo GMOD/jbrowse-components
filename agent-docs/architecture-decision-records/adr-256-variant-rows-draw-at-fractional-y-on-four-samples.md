@@ -81,6 +81,20 @@ one-sample build.
   and is gone. Its Canvas2D painter keeps `rowSnap`, as the variant painters do.
   `markPassCoverage.test.ts` pins the vertex stage free of `snappedRowTopPx`.
 
+## Amendment (2026-11-18): a cell is its row from a pixel up
+
+- The `cell` pass's `drawnCellHeightPx` is `max(rowHeight, 2 - rowHeight)`, not
+  `max(rowHeight, 2)`. Rows of a pixel or more draw their own height and no
+  longer overlap the row below, so the overlap in Context is left only where
+  rows are under a pixel, and those still blend at four samples. There the
+  mark climbs back toward 2 CSS px as rows thin, so a lone carrier stays
+  visible at any device pixel ratio.
+- **A plain 1px floor, `max(rowHeight, 1)` as `matrixCell` has, was
+  rejected.** On the manuscript's 3,202-row cohort figure it thinned the
+  one-carrier lines from 2px to 1px and doubled the soft left edge of an
+  inversion on sub-pixel rows; this formula left that figure within 258 pixels
+  of the 2px floor's.
+
 ## Revisit if
 
 - Rows are averaged into device-px bins before upload, one color per pixel row
