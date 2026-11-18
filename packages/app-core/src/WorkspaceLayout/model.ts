@@ -239,6 +239,16 @@ export function WorkspaceLayoutMixin() {
           return from
         }
 
+        function removeSessionViews(viewIds: string[]) {
+          const host: LayoutHostSelf = self
+          if (host.views && host.removeView) {
+            const closing = new Set(viewIds)
+            for (const view of host.views.filter(v => closing.has(v.id))) {
+              host.removeView(view)
+            }
+          }
+        }
+
         /**
          * The panel a dropped tab is leaving, or `undefined` if the tab or the
          * target is missing. Every drop gesture checks this before touching the
@@ -300,8 +310,14 @@ export function WorkspaceLayoutMixin() {
             activate(panel.id)
             return panel
           },
+          /** Close a grid cell, and every view in its tabs leaves the session. */
           closePanel(panelId: string) {
+            const viewIds =
+              panels(self.tree)
+                .find(p => p.id === panelId)
+                ?.tabs.flatMap(t => t.viewIds) ?? []
             apply(removePanel(self.tree, panelId))
+            removeSessionViews(viewIds)
           },
           /** "New empty tab": a tab in an existing cell, showing the launcher. */
           addTab(panelId: string, viewIds: string[] = []) {
@@ -314,15 +330,18 @@ export function WorkspaceLayoutMixin() {
             return tab
           },
           /**
-           * Close a tab, and its cell too if that was the last tab and not the
-           * workspace's last cell: a tabless cell renders nothing at all.
+           * Close a tab, and its views leave the session. Its cell goes too if
+           * that was the last tab and not the workspace's last cell: a tabless
+           * cell renders nothing at all.
            */
           closeTab(tabId: string) {
-            const panelId = findTab(self.tree, tabId)?.panel.id
-            if (panelId === undefined) {
-              return
+            const found = findTab(self.tree, tabId)
+            if (found) {
+              apply(
+                pruneEmptyPanel(removeTab(self.tree, tabId), found.panel.id),
+              )
+              removeSessionViews(found.tab.viewIds)
             }
-            apply(pruneEmptyPanel(removeTab(self.tree, tabId), panelId))
           },
           addViewToTab(tabId: string, viewId: string) {
             apply(addViewToTab(self.tree, tabId, viewId))

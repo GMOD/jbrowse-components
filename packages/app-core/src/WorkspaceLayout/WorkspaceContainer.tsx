@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useMemo } from 'react'
+import { Suspense, useMemo } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -40,53 +40,20 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
   const { classes } = useStyles()
   const { drag, handlers } = useLayoutDrag(session)
 
-  // the layout does not own views, so every close gesture goes through here
-  // or leaks them
-  const closeViews = useCallback(
-    (viewIds: string[]) => {
-      for (const view of viewsOf(session, viewIds)) {
-        session.removeView(view)
-      }
-    },
-    [session],
-  )
-
-  const closeTab = useCallback(
-    (tabId: string) => {
-      const tab = session.findTab(tabId)?.tab
-      if (!tab) {
-        return
-      }
-      closeViews(tab.viewIds)
-      session.closeTab(tabId)
-    },
-    [session, closeViews],
-  )
-
-  const closePanel = useCallback(
-    (panelId: string) => {
-      const panel = session.panels.find(p => p.id === panelId)
-      if (!panel) {
-        return
-      }
-      closeViews(panel.tabs.flatMap(t => t.viewIds))
-      session.closePanel(panelId)
-    },
-    [session, closeViews],
-  )
-
   // memoised by hand (the React Compiler skips `observer`): a fresh object
   // re-renders every panel's ViewStack. `drag` stays out for the same reason.
   const chrome = useMemo<PanelChrome>(
     () => ({
       dragHandlers: handlers,
-      onTabClose: closeTab,
+      onTabClose: tabId => {
+        session.closeTab(tabId)
+      },
       renderPanelActions: panel => (
         <WorkspacePanelActions
           panel={panel}
           session={session}
           onClose={() => {
-            closePanel(panel.id)
+            session.closePanel(panel.id)
           }}
         />
       ),
@@ -96,7 +63,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
           views={viewsOf(session, tab.viewIds)}
           session={session}
           onClose={() => {
-            closeTab(tab.id)
+            session.closeTab(tab.id)
           }}
         />
       ),
@@ -113,7 +80,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
         )
       },
     }),
-    [session, handlers, closeTab, closePanel, classes.empty],
+    [session, handlers, classes.empty],
   )
 
   return (

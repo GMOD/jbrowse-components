@@ -888,3 +888,80 @@ describe('closeView', () => {
     expect(getSnapshot(session)).toEqual(before)
   })
 })
+
+const ClosingRoot = types.model('ClosingRoot', { session: ClosingSession })
+
+// attached, so the homing autorun runs and would re-seat a view left behind
+function createAttachedClosingSession() {
+  const { session } = ClosingRoot.create({
+    session: { views: [{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }] },
+  })
+  return session
+}
+
+describe('closing a tab or a cell closes its views', () => {
+  test('a closed tab’s views do not come back in the tab beside it', () => {
+    const session = createAttachedClosingSession()
+    session.moveViewToNewTab('v3')
+    const [first, second] = session.tabs
+
+    session.closeTab(first!.id)
+
+    expect(session.tabs.map(t => t.id)).toEqual([second!.id])
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v3']])
+    expect(session.views.map(v => v.id)).toEqual(['v3'])
+  })
+
+  test('a closed cell’s views do not come back in the cell that is left', () => {
+    const session = createAttachedClosingSession()
+    const right = session.moveViewToSplit('v2', 'row')!
+    session.moveViewToTab('v3', session.tabContainingView('v2')!.tab.id)
+
+    session.closePanel(right)
+
+    expect(session.panels).toHaveLength(1)
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1']])
+    expect(session.views.map(v => v.id)).toEqual(['v1'])
+  })
+
+  test('closing the last tab leaves one empty tab showing the launcher', () => {
+    const session = createAttachedClosingSession()
+
+    session.closeTab(session.tabs[0]!.id)
+
+    expect(session.views).toHaveLength(0)
+    expect(session.panels).toHaveLength(1)
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([[]])
+  })
+
+  test('a view the tab still lists but the session already lost is passed over', () => {
+    const session = createClosingSession()
+    session.moveViewToNewTab('v3')
+    const first = session.tabContainingView('v1')!.tab.id
+    session.removeView({ id: 'v2' })
+    expect(session.findTab(first)?.tab.viewIds).toContain('v2')
+
+    session.closeTab(first)
+
+    expect(session.views.map(v => v.id)).toEqual(['v3'])
+    expect(session.findTab(first)).toBeUndefined()
+  })
+
+  test('a tab or cell that is not there closes no views', () => {
+    const session = createAttachedClosingSession()
+
+    session.closeTab('no-such-tab')
+    session.closePanel('no-such-panel')
+
+    expect(session.views.map(v => v.id)).toEqual(['v1', 'v2', 'v3'])
+  })
+
+  test('a host that cannot remove views still closes the tab', () => {
+    const session = createViewsSession()
+    session.moveViewToNewTab('v2')
+
+    session.closeTab(session.tabContainingView('v2')!.tab.id)
+
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3']])
+  })
+})
