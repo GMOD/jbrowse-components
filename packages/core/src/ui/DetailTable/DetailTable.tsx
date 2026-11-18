@@ -13,7 +13,10 @@ import { makeStyles } from '../../util/tss-react/index.ts'
 import VirtualTable from '../VirtualTable/VirtualTable.tsx'
 import DetailTableToolbar from './DetailTableToolbar.tsx'
 
-import type { VirtualTableLeading } from '../VirtualTable/VirtualTable.tsx'
+import type {
+  VirtualTableColumn,
+  VirtualTableLeading,
+} from '../VirtualTable/VirtualTable.tsx'
 
 export interface DetailTableColumn<R> {
   field: string
@@ -134,7 +137,7 @@ const DetailTable = observer(function DetailTable<
       <div className={classes.tableBox} style={{ maxHeight }}>
         <VirtualTable
           rows={shownRows}
-          columns={columns.map((col, i) => ({
+          columns={columns.map((col, i): VirtualTableColumn<R> => ({
             id: col.field,
             header: col.header ?? col.field,
             headerTitle: col.description,
