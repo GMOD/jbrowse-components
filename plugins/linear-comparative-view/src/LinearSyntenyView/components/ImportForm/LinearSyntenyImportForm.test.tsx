@@ -129,21 +129,17 @@ const launchButton = () => screen.getByRole('button', { name: 'Launch' })
 // the per-pair heading, which is also the track radio group's accessible name
 const pairHeading = () => screen.getByRole('status')
 
-// the assembly each row was built for. A row's `assemblyNames` derives from
-// displayedRegions, which its afterAttach autorun loads asynchronously, so the
-// declarative init is what a synchronous launch can be checked against.
-const launchedRows = (model: LinearSyntenyViewModel) =>
-  model.views.map(v => v.pendingLaunch?.assembly)
+// the launch the form submits: the same declarative blob a session spec
+// writes, which the view applies once it has a width
+const launchedViews = (model: LinearSyntenyViewModel) =>
+  model.pendingLaunch?.views ?? []
 
-// the synteny track on each level. A level's `tracks` is loosely typed, so the
-// track is annotated rather than cast.
+const launchedRows = (model: LinearSyntenyViewModel) =>
+  launchedViews(model).map(v => v.assembly)
+
+// the synteny tracks the launch names for each band
 const levelTrackIds = (model: LinearSyntenyViewModel) =>
-  model.levels.map(level =>
-    level.tracks.map(
-      (track: { configuration: { trackId: string } }) =>
-        track.configuration.trackId,
-    ),
-  )
+  model.pendingLaunch?.tracks
 
 const goManual = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Manual' }))
@@ -241,7 +237,6 @@ test('Quick start launch builds one row per assembly and shows the track', async
   })
   fireEvent.click(launchButton())
   expect(launchedRows(model)).toEqual(['hg38', 'mm39'])
-  // the show goes through the async launchTrack path now
   await waitFor(() => {
     expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
   })
@@ -506,7 +501,6 @@ test('removing a row drops that pair selection and keeps the others', async () =
   ])
   fireEvent.click(launchButton())
   expect(launchedRows(model)).toEqual(['hg38', 'mm39'])
-  // the show goes through the async launchTrack path now
   await waitFor(() => {
     expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
   })
@@ -685,7 +679,7 @@ test('a chromosome box reaches that row as its init displayedRegionNames', async
   showChromosomeBoxes()
   fireEvent.change(chromosomeBox(0), { target: { value: 'ctgA, ctgB' } })
   fireEvent.click(launchButton())
-  expect(model.views.map(v => v.pendingLaunch)).toEqual([
+  expect(launchedViews(model)).toEqual([
     { assembly: 'hg38', displayedRegionNames: ['ctgA', 'ctgB'] },
     // omitted rather than [], which would take the named-regions path with
     // nothing to name
@@ -732,7 +726,7 @@ test('hiding the boxes clears what was typed in them', async () => {
 
   fireEvent.click(chromosomesCheckbox())
   fireEvent.click(launchButton())
-  expect(model.views.map(v => v.pendingLaunch)).toEqual([
+  expect(launchedViews(model)).toEqual([
     { assembly: 'hg38' },
     { assembly: 'mm39' },
   ])

@@ -32,7 +32,9 @@ blocks. For which file formats have one and which adapter reads each, see
 **Add → Linear synteny view** opens the import form. If your config already has
 a synteny track, it opens in **Quick start**: pick the track and it fills in a
 row per assembly that track names, then click **Launch**. **Swap** reverses the
-row order.
+row order. A launch of two different genomes with a synteny track re-orders the
+second row's chromosomes against the first, as **Re-order chromosomes...** does;
+a longer stack opens in each assembly's own order.
 
 **Manual** is the same form with the rows exposed: select each row's assembly
 yourself, click the arrow between two rows to give that pair its dataset, and

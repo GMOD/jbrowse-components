@@ -12,14 +12,20 @@ const track = (trackId: string, assemblyNames: string[]) =>
     assemblyNames,
   }) as unknown as AnyConfigurationModel
 
+interface Launch {
+  views: { assembly: string; displayedRegionNames?: string[] }[]
+  tracks: string[][]
+  autoDiagonalize: boolean
+}
+
 interface Calls {
+  launch?: Launch
   views: { assembly: string }[]
   shown: [string, number][]
   toggled: [string, number][]
   added: { trackId: string }[]
   notified: string[]
   cleared: number
-  autoScaled: number
 }
 
 function setup({
@@ -40,7 +46,6 @@ function setup({
     added: [],
     notified: [],
     cleared: 0,
-    autoScaled: 0,
   }
   const session = {
     rpcManager: {},
@@ -61,14 +66,16 @@ function setup({
   }
   const model = {
     importFormSyntenyTrackSelections: selections,
-    setViews: (views: { assembly: string }[]) => {
-      calls.views = views
+    setError() {},
+    setLaunch: (launch: Launch) => {
+      calls.launch = launch
+      calls.views = launch.views
+      calls.shown = launch.tracks.flatMap((ids, level) =>
+        ids.map((id): [string, number] => [id, level]),
+      )
     },
-    launchTrack: async (trackId: string, level: number) =>
-      calls.shown.push([trackId, level]),
     toggleTrack: (trackId: string, level: number) =>
       calls.toggled.push([trackId, level]),
-    autoScaleLevelHeights: () => calls.autoScaled++,
     clearImportFormSyntenyTracks: () => calls.cleared++,
   }
   return {
@@ -82,7 +89,6 @@ test('one LinearGenomeView row per assembly, in order', () => {
   const { calls, model, session } = setup({ selections: [] })
   doSubmit({ selectedAssemblyNames: ['hg38', 'mm39', 'rn7'], model, session })
   expect(calls.views.map(v => v.assembly)).toEqual(['hg38', 'mm39', 'rn7'])
-  expect(calls.autoScaled).toBe(1)
   expect(calls.cleared).toBe(1)
 })
 
@@ -208,4 +214,44 @@ test('a session that cannot add tracks says so about an upload, and still builds
   expect(calls.views).toHaveLength(2)
   expect(calls.shown).toEqual([])
   expect(calls.notified).toEqual(["Can't add tracks"])
+})
+
+test('a pair of different genomes with a track asks for the re-order', () => {
+  const { calls, model, session } = setup({
+    selections: [],
+    tracks: [track('hg38_mm39', ['hg38', 'mm39'])],
+  })
+  doSubmit({ selectedAssemblyNames: ['hg38', 'mm39'], model, session })
+  expect(calls.launch?.autoDiagonalize).toBe(true)
+})
+
+test('no track, a self-alignment or a longer stack keeps the assembly order', () => {
+  const tracks = [
+    track('hg38_mm39', ['hg38', 'mm39']),
+    track('mm39_rn7', ['mm39', 'rn7']),
+    track('hg38_self', ['hg38', 'hg38']),
+  ]
+  const none = setup({ selections: [{ type: 'none' }], tracks })
+  doSubmit({ ...none, selectedAssemblyNames: ['hg38', 'mm39'] })
+  const self = setup({ selections: [], tracks })
+  doSubmit({ ...self, selectedAssemblyNames: ['hg38', 'hg38'] })
+  const stack = setup({ selections: [], tracks })
+  doSubmit({ ...stack, selectedAssemblyNames: ['hg38', 'mm39', 'rn7'] })
+  expect([none, self, stack].map(s => s.calls.launch?.autoDiagonalize)).toEqual(
+    [false, false, false],
+  )
+})
+
+test('a chromosome box reaches its row as displayedRegionNames', () => {
+  const { calls, model, session } = setup({ selections: [] })
+  doSubmit({
+    selectedAssemblyNames: ['hg38', 'mm39'],
+    regionNames: ['chr1, chr2', ''],
+    model,
+    session,
+  })
+  expect(calls.launch?.views).toEqual([
+    { assembly: 'hg38', displayedRegionNames: ['chr1', 'chr2'] },
+    { assembly: 'mm39' },
+  ])
 })

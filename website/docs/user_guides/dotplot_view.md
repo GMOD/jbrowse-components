@@ -14,13 +14,15 @@ blocks.
 **Add → Dotplot view** opens the import form. It is the same one the linear
 synteny view uses, so see
 [Opening a linear synteny view](/docs/user_guides/linear_synteny_view#opening-a-linear-synteny-view)
-for its Quick start / Manual modes and the file types it accepts. Two things are
-dotplot-specific:
+for its Quick start / Manual modes and the file types it accepts. Three things
+are dotplot-specific:
 
 - Both axes come from the chosen track's `assemblyNames`: the
   [query](/docs/user_guides/linear_synteny_view#query-target-and-cigar)
   horizontally and the target vertically.
 - **Swap** transposes the plot.
+- A launch of two different genomes re-orders the vertical axis's chromosomes
+  against the horizontal axis, so the alignments fall along the diagonal.
 
 <Figure caption="Launching a dotplot from the Add menu (top), and the import form's Manual mode (bottom)." src="/img/dotplot_add.png" />
 

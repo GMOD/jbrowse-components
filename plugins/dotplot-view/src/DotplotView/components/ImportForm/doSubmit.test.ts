@@ -12,13 +12,19 @@ const track = (trackId: string) =>
     assemblyNames: ['hg38', 'mm10'],
   }) as unknown as AnyConfigurationModel
 
+interface Launch {
+  views: { assembly: string; displayedRegionNames: string[] }[]
+  tracks?: string[]
+  autoDiagonalize?: boolean
+}
+
 interface Calls {
   shown: string[]
   toggled: string[]
   added: { trackId: string }[]
   assemblyNames?: [string, string]
   cleared: number
-  init?: unknown
+  init?: Launch
 }
 
 function setup(
@@ -29,13 +35,13 @@ function setup(
   const model = {
     importFormSyntenyTrackSelections: [selection],
     setError() {},
-    launchTrack: async (trackId: string) => calls.shown.push(trackId),
     toggleTrack: (trackId: string) => calls.toggled.push(trackId),
     setAssemblyNames: (x: string, y: string) => {
       calls.assemblyNames = [x, y]
     },
-    setLaunch: (init: unknown) => {
+    setLaunch: (init?: Launch) => {
       calls.init = init
+      calls.shown = init?.tracks ?? []
     },
     clearImportFormSyntenyTracks: () => {
       calls.cleared++
@@ -244,5 +250,36 @@ describe('doSubmit', () => {
       regionsY: ',',
     })
     expect(calls.init).toBeUndefined()
+  })
+
+  test('a track on two different genomes asks for the re-order', () => {
+    const { calls, model, session } = setup(
+      { type: 'preConfigured', value: 'picked' },
+      [track('picked')],
+    )
+    doSubmit({ model, session, assemblyX: 'hg38', assemblyY: 'mm10' })
+    expect(calls.init).toEqual({
+      views: [
+        { assembly: 'hg38', displayedRegionNames: [] },
+        { assembly: 'mm10', displayedRegionNames: [] },
+      ],
+      tracks: ['picked'],
+      autoDiagonalize: true,
+    })
+  })
+
+  test('a self-alignment keeps the assembly order', () => {
+    const self = {
+      trackId: 'self',
+      type: 'SyntenyTrack',
+      assemblyNames: ['hg38', 'hg38'],
+    } as unknown as AnyConfigurationModel
+    const { calls, model, session } = setup(
+      { type: 'preConfigured', value: 'self' },
+      [self],
+    )
+    doSubmit({ model, session, assemblyX: 'hg38', assemblyY: 'hg38' })
+    expect(calls.init?.tracks).toEqual(['self'])
+    expect(calls.init?.autoDiagonalize).toBe(false)
   })
 })

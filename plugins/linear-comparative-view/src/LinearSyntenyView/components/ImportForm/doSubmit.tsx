@@ -22,38 +22,34 @@ export function doSubmit({
   model: LinearSyntenyViewModel
   session: AssemblyHost & NotificationSink & TrackCatalog
 }) {
-  // one batch, so no observer sees the rows without their tracks
   transaction(() => {
-    // each row is a LinearGenomeView with its settings written on it — its
-    // afterAttach autorun loads the assembly regions and shows the whole
-    // genome, so we don't wait for assemblies or navigate here (see
-    // LinearGenomeView model.ts). Width flows in from the comparative view's
-    // width autorun.
-    model.setViews(
-      selectedAssemblyNames.map((assembly, idx) => {
-        // omitted rather than passed as [] when the box is empty: the LGV
-        // branches on the key being present, and an empty list would take the
-        // named-regions path with nothing to name
-        const names = parseRegionNames(regionNames[idx] ?? '')
-        return {
-          type: 'LinearGenomeView' as const,
-          hideHeader: true,
-          assembly,
-          ...(names.length ? { displayedRegionNames: names } : {}),
-        }
-      }),
-    )
+    model.setError(undefined)
+    const tracks = selectedAssemblyNames.slice(1).map((): string[] => [])
     applySyntenyTrackSelections({
       session,
       selections: model.importFormSyntenyTrackSelections,
       assemblyNames: selectedAssemblyNames,
       showTrack: (trackId, level) => {
-        void model.launchTrack(trackId, level)
+        tracks[level]?.push(trackId)
       },
     })
-    // no-op for few levels (per-level height is capped at the 100px default),
-    // so safe to always run; only shrinks bands once the stack gets tall
-    model.autoScaleLevelHeights()
+    const [first, second, ...rest] = selectedAssemblyNames
+    // the launch a session spec writes, so the rows, their tracks and the
+    // re-order land in the order applyInit already keeps
+    model.setLaunch({
+      views: selectedAssemblyNames.map((assembly, idx) => {
+        const displayedRegionNames = parseRegionNames(regionNames[idx] ?? '')
+        return {
+          assembly,
+          ...(displayedRegionNames.length ? { displayedRegionNames } : {}),
+        }
+      }),
+      tracks,
+      // one pair of different genomes, the case the circular view re-orders by
+      // default: a longer stack keeps its rows as the assemblies order them
+      autoDiagonalize:
+        rest.length === 0 && first !== second && tracks.some(t => t.length > 0),
+    })
     model.clearImportFormSyntenyTracks()
   })
 }

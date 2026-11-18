@@ -26,6 +26,7 @@ export function doSubmit({
 }) {
   model.setError(undefined)
   transaction(() => {
+    const tracks: string[] = []
     // a dotplot is the single-pair case of the same resolution the synteny form
     // runs per row pair, so it is the same call with one pair's worth of rows
     applySyntenyTrackSelections({
@@ -33,32 +34,36 @@ export function doSubmit({
       selections: model.importFormSyntenyTrackSelections,
       assemblyNames: [assemblyX, assemblyY],
       showTrack: trackId => {
-        // voided, not awaited: this sits inside a mobx transaction, and the
-        // display's state model may still be a dynamic import away
-        void model.launchTrack(trackId)
+        tracks.push(trackId)
       },
     })
     model.setAssemblyNames(assemblyX, assemblyY)
 
-    // The axis restriction goes through the SAME declarative init a session
-    // spec and LaunchView-DotplotView use, rather than a second
-    // setDisplayedRegions path living here. It cannot be done inline: resolving
-    // `*_MATERNAL` needs the assembly's regions, the assembly is generally not
-    // loaded at the instant Launch is pressed, and waiting for that — then
-    // replacing the whole-genome regions the regions autorun populates in the
-    // meantime — is exactly what applyInit already does, ordered ahead of
-    // autoDiagonalize. An init carrying only `views` is otherwise inert: its
-    // tracks and display-settings steps each guard on their own key.
+    // The tracks, the axis restriction and the re-order go through the SAME
+    // declarative init a session spec and LaunchView-DotplotView use: resolving
+    // `*_MATERNAL` needs the assembly's regions, the re-order needs the track's
+    // display, and applyInit already awaits each ahead of the next.
     const views = [
       { assembly: assemblyX, displayedRegionNames: parseRegionNames(regionsX) },
       { assembly: assemblyY, displayedRegionNames: parseRegionNames(regionsY) },
     ]
-    // undefined rather than an init with two empty lists when neither box was
-    // used: `init` is persisted and is what "has something to show" consults,
-    // so an empty one is a request that never resolves to anything.
+    // undefined rather than an init with nothing to do when no track and
+    // neither box was used: `init` is persisted and is what "has something to
+    // show" consults, so an empty one is a request that never resolves to
+    // anything.
     model.setLaunch(
-      views.some(v => v.displayedRegionNames.length > 0)
-        ? { views }
+      tracks.length > 0 || views.some(v => v.displayedRegionNames.length > 0)
+        ? {
+            views,
+            ...(tracks.length > 0
+              ? {
+                  tracks,
+                  // two different genomes, the case the circular view
+                  // re-orders by default
+                  autoDiagonalize: assemblyX !== assemblyY,
+                }
+              : {}),
+          }
         : undefined,
     )
 
