@@ -4,6 +4,7 @@ import {
   isSessionWithAddAssembly,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
+import { normalizeTrackInit } from '@jbrowse/core/util/tracks'
 import {
   legacyInitMessage,
   unknownKeysMessage,
@@ -167,23 +168,41 @@ async function nameAfterHub(
   }
 }
 
+// A view entry's own names: the assembly it opens and the track ids it shows.
+// An entry naming no assembly states nothing to check, so it waits for every
+// connection.
+function namesExist(session: AbstractSessionModel, view: ViewSpec) {
+  return (
+    !!view.assembly &&
+    !!session.assemblyManager.get(view.assembly) &&
+    (view.tracks ?? []).every(
+      track => !!session.getTrackById(normalizeTrackInit(track).trackId),
+    )
+  )
+}
+
 // A connection supplies assemblies and tracks that the spec's views go on to
 // reference by name, and it supplies them from a fetch. Launching a view before
 // that fetch lands gives it an assembly that doesn't exist yet ("Assembly X not
 // found") and a `tracks` list whose ids don't resolve yet.
 //
-// Causal, not timed: every connection reports `loading` from its own
-// afterAttach until its connect() promise settles, success or failure, so this
-// proceeds the moment the last one is done and never waits on one that failed.
+// Causal, not timed, on both sides: this proceeds the moment every view's
+// assembly and tracks exist — a hub adds a genome's assembly before it fetches
+// that genome's trackDb, so a view naming tracks waits for those as well — and
+// otherwise once every connection has settled, success or failure. A view then
+// never waits on a connection it names nothing from, and a name no connection
+// brings reports itself through the view rather than hanging the launch.
 // A session destroyed mid-wait (a StrictMode remount, a session swap) resolves
 // it too — reading a detached node throws, and here that would land in the
 // caller's catch and report a spurious error against the *new* session.
-async function whenConnectionsSettle(
+async function whenViewsCanLaunch(
   session: AbstractSessionModel & SessionWithSpecConnections,
+  views: ViewSpec[],
 ) {
   await when(
     () =>
       isGone(session) ||
+      views.every(view => namesExist(session, view)) ||
       session.connectionInstances.every(conn => !conn.loading),
   )
   return !isGone(session)
@@ -611,18 +630,18 @@ export async function loadSessionSpec(
       session?.notifyError(noLauncherMessage(noLauncher))
     }
 
-    // Let any connection this spec registered finish before the views that
-    // reference what it supplies are launched (see whenConnectionsSettle). Gated
-    // on there being views: with none, nothing is waiting on the connection, and
-    // holding the load open until a hub finishes fetching would be pure delay —
-    // the connection is the deliverable. A session that went away while we
-    // waited has nothing left to launch into.
+    // Let any connection this spec registered supply what the views name
+    // before they are launched (see whenViewsCanLaunch). Gated on there being
+    // views: with none, nothing is waiting on the connection, and holding the
+    // load open until a hub finishes fetching would be pure delay — the
+    // connection is the deliverable. A session that went away while we waited
+    // has nothing left to launch into.
     if (
       sessionConnections.length &&
       views.length &&
       session &&
       isSessionWithSpecConnections(session) &&
-      !(await whenConnectionsSettle(session))
+      !(await whenViewsCanLaunch(session, views))
     ) {
       return
     }
