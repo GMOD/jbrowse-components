@@ -1,11 +1,13 @@
 import { valueText } from '@jbrowse/core/util/groupKeys'
+import { transcriptCDS } from '@jbrowse/core/util/translateTranscript'
 
 import { INSET_HEIGHT_FRACTION } from '../../LinearBasicDisplay/passes/shaders/rectInstance.generated.ts'
+import { subtractSpans } from '../../shared/mergeSpans.ts'
 import { LITERAL } from '../colorClasses.ts'
 import { DEFAULT_TOOLTIP } from '../featureTooltip.ts'
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
 import { PAM_LABEL, findPamSubfeature } from '../glyphs/crisprGuide.ts'
-import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
+import { collectPolyproteins } from '../glyphs/matureProteinRegion.ts'
 import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
 import {
   productLabelText,
@@ -252,6 +254,43 @@ function registerSubfeature(
   }
 }
 
+// The coding bases no product covers, such as the stop codon or the rest of a
+// CDS that names only its signal peptide, overlap no row's product, so they
+// draw on the first row as plain CDS.
+function emitUncoveredCoding(
+  layout: FeatureLayout,
+  productSpans: Span[],
+  aminoAcids: AggregatedAminoAcid[] | undefined,
+  place: GlyphPlacement,
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const { feature } = layout
+  const firstRow = layout.children[0]
+  if (firstRow) {
+    const coding = transcriptCDS(feature).map(({ start, end }): Span => [
+      start,
+      end,
+    ])
+    for (const span of subtractSpans(coding, productSpans)) {
+      emitCodonsOrBoxes(
+        aminoAcids && aminoAcidsInSpans(aminoAcids, [span]),
+        {
+          feature,
+          span,
+          topPx: place.baseTopPx + firstRow.y,
+          height: firstRow.height,
+          flatbushIdx: place.flatbushIdx,
+          labelRowsAbove: place.labelRowsAbove + (firstRow.labelRowsAbove ?? 0),
+        },
+        feature.get('strand') ?? 0,
+        ctx,
+        collector,
+      )
+    }
+  }
+}
+
 // The strand arrow draws unconditionally, unlike a leaf glyph's: an enclosing
 // gene renders as a Subfeatures container that draws none, so a nested
 // polyprotein CDS would otherwise show no direction at all.
@@ -273,7 +312,8 @@ function processMatureProteinLayout(
   // Two polyprotein CDS children of one gene carry the same cleavage products at
   // identical coordinates, so their labels need the owning CDS to tell them
   // apart; a single-polyprotein gene would just repeat one suffix on every row.
-  const disambiguateWithCds = collectPolyproteinCDS(rootFeature).length > 1
+  const disambiguateWithCds = collectPolyproteins(rootFeature).length > 1
+  const productSpans: Span[] = []
 
   for (const [i, row] of layout.children.entries()) {
     const lines = row.children.length > 0 ? row.children : [row]
@@ -285,6 +325,7 @@ function processMatureProteinLayout(
       feature.get('start'),
       feature.get('end'),
     ])
+    productSpans.push(...spans)
     const rowAminoAcids = aminoAcids && aminoAcidsInSpans(aminoAcids, spans)
 
     emitCodonsOrBoxes(
@@ -334,6 +375,7 @@ function processMatureProteinLayout(
       )
     }
   }
+  emitUncoveredCoding(layout, productSpans, aminoAcids, place, ctx, collector)
   emitStrandArrow(
     {
       feature: layout.feature,

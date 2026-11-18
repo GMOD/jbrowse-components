@@ -3,7 +3,7 @@ import { layoutBox } from './box.ts'
 import { layoutCrisprGuide } from './crisprGuide.ts'
 import { hasCDSSubfeature, hasContainerChildren } from './glyphUtils.ts'
 import {
-  hasMatureProteinChildren,
+  isPolyprotein,
   layoutMatureProteinRegion,
 } from './matureProteinRegion.ts'
 import { layoutProcessedTranscript } from './processed.ts'
@@ -37,13 +37,11 @@ export function findGlyph(
   // A frameshift polyprotein's CDS carries a CDS segment per reading frame
   // beside its cleavage products, and still draws the products. A CDS whose
   // rows are only CDS is a discontinuous one, drawn below as a transcript.
-  if (isCDS(feature)) {
-    if (hasMatureProteinChildren(feature)) {
-      return layoutMatureProteinRegion
-    }
-    if (!hasCDSSubfeature(feature)) {
-      return layoutBox
-    }
+  if (isPolyprotein(feature)) {
+    return layoutMatureProteinRegion
+  }
+  if (isCDS(feature) && !hasCDSSubfeature(feature)) {
+    return layoutBox
   }
   if (subfeatures.length > 0) {
     const { containerTypes } = config
@@ -52,7 +50,7 @@ export function findGlyph(
     // same shape appears a level deeper as gene → mRNA → CDS → mat_peptide, and
     // dispatch recurses only through layoutSubfeatures — so a top-level-only
     // test drops every cleavage product to a flat CDS box.
-    if (subfeatures.some(f => isCDS(f) && hasMatureProteinChildren(f))) {
+    if (subfeatures.some(isPolyprotein)) {
       return layoutSubfeatures
     }
 

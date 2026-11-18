@@ -22,3 +22,27 @@ export function mergeSpans(
   }
   return merged
 }
+
+/** The stretches of `spans` that no span in `removed` covers, ascending. */
+export function subtractSpans(
+  spans: readonly (readonly [number, number])[],
+  removed: readonly (readonly [number, number])[],
+): Span[] {
+  const cuts = mergeSpans(removed)
+  return mergeSpans(spans).flatMap(([start, end]) => {
+    const kept: Span[] = []
+    let cursor = start
+    for (const [cutStart, cutEnd] of cuts) {
+      if (cutStart < end && cutEnd > cursor) {
+        if (cutStart > cursor) {
+          kept.push([cursor, cutStart])
+        }
+        cursor = cutEnd
+      }
+    }
+    if (cursor < end) {
+      kept.push([cursor, end])
+    }
+    return kept
+  })
+}

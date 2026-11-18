@@ -27,11 +27,17 @@ types work with no configuration.
 children are containers" and before the transcript and segment shapes, so a
 top-level feature of a listed type stacks its children even when it has a
 direct CDS child. Four tests come before it: the two semantic types (guide RNAs
-and motifs, which name a meaning rather than a shape), a CDS with
-mature-protein children or no CDS rows, a child CDS with mature-protein
-children, and a top-level repeat region. A CDS
-whose children are CDS rows, a discontinuous one, falls through to the shapes
-and draws as a transcript.
+and motifs, which name a meaning rather than a shape), a polyprotein or a CDS
+with no CDS rows, a polyprotein child, and a top-level repeat region. A
+polyprotein is a CDS with mature-protein children, or a feature whose children
+are only CDS rows and mature proteins, the gene a GenBank conversion hangs both
+under. A CDS whose children are CDS rows, a discontinuous one, falls through to
+the shapes and draws as a transcript.
+
+A polyprotein draws one row per product. The coding bases no product covers,
+its stop codon or the rest of a CDS that names only its signal peptide, draw on
+the first row as plain CDS: they overlap no product, so any row would hold
+them.
 
 ## How much fits
 

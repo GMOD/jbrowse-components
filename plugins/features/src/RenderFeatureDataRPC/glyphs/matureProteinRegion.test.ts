@@ -5,7 +5,7 @@ import { FEATURE_NAME_FIELD } from '../featureNameField.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 import { findGlyph } from './findGlyph.ts'
 import {
-  hasMatureProteinChildren,
+  isPolyprotein,
   layoutMatureProteinRegion,
 } from './matureProteinRegion.ts'
 
@@ -69,47 +69,67 @@ function viralPolyprotein(matureTypes: string[]) {
   })
 }
 
-describe('hasMatureProteinChildren', () => {
+describe('isPolyprotein', () => {
   it('detects mature_protein_region children', () => {
-    expect(
-      hasMatureProteinChildren(viralPolyprotein(['mature_protein_region'])),
-    ).toBe(true)
+    expect(isPolyprotein(viralPolyprotein(['mature_protein_region']))).toBe(
+      true,
+    )
   })
 
   it('detects mature_protein_region_of_CDS children', () => {
     expect(
-      hasMatureProteinChildren(
-        viralPolyprotein(['mature_protein_region_of_CDS']),
-      ),
+      isPolyprotein(viralPolyprotein(['mature_protein_region_of_CDS'])),
     ).toBe(true)
   })
 
   it('detects GenBank mat_peptide/sig_peptide children (GenBank→GFF3 conversion of a downloaded viral genome)', () => {
     expect(
-      hasMatureProteinChildren(
-        viralPolyprotein(['mat_peptide', 'sig_peptide']),
-      ),
+      isPolyprotein(viralPolyprotein(['mat_peptide', 'sig_peptide'])),
     ).toBe(true)
+  })
+
+  it('detects the plain SO signal_peptide term', () => {
+    expect(isPolyprotein(viralPolyprotein(['signal_peptide']))).toBe(true)
   })
 
   it('matches types case-insensitively, like isCDS/isExon', () => {
     expect(
-      hasMatureProteinChildren(
-        viralPolyprotein(['Mature_Protein_Region_of_CDS']),
-      ),
+      isPolyprotein(viralPolyprotein(['Mature_Protein_Region_of_CDS'])),
     ).toBe(true)
   })
 
   it('is false for a plain CDS with no mature regions', () => {
-    expect(
-      hasMatureProteinChildren(mockFeature({ type: 'CDS', start: 1, end: 9 })),
-    ).toBe(false)
+    expect(isPolyprotein(mockFeature({ type: 'CDS', start: 1, end: 9 }))).toBe(
+      false,
+    )
   })
 
   it('is false when children are some other type', () => {
-    expect(hasMatureProteinChildren(viralPolyprotein(['exon', 'exon']))).toBe(
-      false,
+    expect(isPolyprotein(viralPolyprotein(['exon', 'exon']))).toBe(false)
+  })
+
+  const gene = (types: string[]) =>
+    mockFeature({
+      type: 'gene',
+      start: 100,
+      end: 400,
+      subfeatures: types.map((type, i) =>
+        mockFeature({ type, start: 100 + i * 100, end: 200 + i * 100 }),
+      ),
+    })
+
+  it('detects a gene holding a CDS beside its products', () => {
+    expect(isPolyprotein(gene(['CDS', 'mat_peptide', 'mat_peptide']))).toBe(
+      true,
     )
+  })
+
+  it('leaves a gene with exons beside its CDS and products a transcript', () => {
+    expect(isPolyprotein(gene(['exon', 'CDS', 'mat_peptide']))).toBe(false)
+  })
+
+  it('leaves a gene with products and no CDS alone', () => {
+    expect(isPolyprotein(gene(['mat_peptide', 'mat_peptide']))).toBe(false)
   })
 })
 
@@ -550,7 +570,7 @@ describe('collectRenderData for mature protein regions', () => {
     const layout = findGlyph(feature, config)({ feature, config })
 
     const result = collect(layout, config)
-    expect(result.rectPositions).toHaveLength(2 * 2)
+    expect([...result.rectPositions]).toEqual([100, 200, 200, 300, 300, 400])
     expect(result.arrowXs).toHaveLength(1)
     expect(result.arrowXs[0]).toBe(feature.get('end'))
     expect(result.arrowDirections[0]).toBe(1)
@@ -676,8 +696,13 @@ describe('a frameshift polyprotein CDS', () => {
 
   it('gives a multi-line product one color and one label over its whole span', () => {
     const result = render(false)
+    const nspBRowY = Math.max(...result.rectYs)
     expect(new Set(result.rectYs).size).toBe(2)
-    expect(new Set(result.rectColors).size).toBe(2)
+    expect(
+      new Set(
+        [...result.rectColors].filter((_, i) => result.rectYs[i] === nspBRowY),
+      ).size,
+    ).toBe(1)
     expect(
       [...result.floatingLabelsData.values()].map(l => [
         l.subfeatureLabel?.text,
@@ -701,5 +726,92 @@ describe('a frameshift polyprotein CDS', () => {
     expect(
       overlay.filter(a => a.topPx === rowY).map(a => a.proteinIndex),
     ).toEqual([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
+  })
+
+  it('letters the stop codon no product covers on the first row', () => {
+    const overlay = render(true).aminoAcidOverlay!
+    const rowY = Math.min(...overlay.map(a => a.topPx))
+    expect(
+      overlay.filter(a => a.topPx === rowY).map(a => a.proteinIndex),
+    ).toEqual([0, 1, 2, 3, 4, 20])
+  })
+})
+
+describe('coding bases no product covers', () => {
+  const config = mockDisplayConfig()
+  const render = (feature: Feature) =>
+    collectRenderData({
+      layouts: [findGlyph(feature, config)({ feature, config })],
+      regionStart: 0,
+      regionEnd: 10_000,
+      config,
+      colorByFrame: false,
+      peptideDataMap: undefined,
+      jexl,
+    })
+  const rects = (result: ReturnType<typeof render>) =>
+    [...result.rectYs].map((y, i) => [
+      result.rectPositions[i * 2],
+      result.rectPositions[i * 2 + 1],
+      y,
+    ])
+
+  it('draws the rest of a CDS that names only its signal peptide beside it', () => {
+    const feature = mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 1000,
+      subfeatures: [mockFeature({ type: 'sig_peptide', start: 100, end: 160 })],
+    })
+    const result = render(feature)
+    expect(rects(result)).toEqual([
+      [100, 160, 1],
+      [160, 1000, 1],
+    ])
+    expect(new Set(result.rectColors).size).toBe(2)
+    expect(result.subfeatureInfos.map(s => s.type)).toEqual(['sig_peptide'])
+  })
+
+  it('draws the stop codon after the last product on the first row', () => {
+    const feature = mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 403,
+      subfeatures: [
+        mockFeature({ type: 'mat_peptide', start: 100, end: 250 }),
+        mockFeature({ type: 'mat_peptide', start: 250, end: 400 }),
+      ],
+    })
+    expect(rects(render(feature))).toEqual([
+      [100, 250, 1],
+      [250, 400, 11],
+      [400, 403, 1],
+    ])
+  })
+
+  it('draws a gene whose products sit beside its CDS as a polyprotein', () => {
+    const products = [
+      mockFeature({ type: 'mat_peptide', start: 100, end: 400 }),
+      mockFeature({ type: 'mat_peptide', start: 400, end: 997 }),
+    ]
+    const feature = mockFeature({
+      type: 'gene',
+      start: 100,
+      end: 1000,
+      subfeatures: [
+        mockFeature({ type: 'CDS', start: 100, end: 1000 }),
+        ...products,
+      ],
+    })
+    const result = render(feature)
+    expect(rects(result)).toEqual([
+      [100, 400, 1],
+      [400, 997, 11],
+      [997, 1000, 1],
+    ])
+    expect(result.subfeatureInfos.map(s => s.featureId)).toEqual(
+      products.map(p => p.id()),
+    )
+    expect([...result.arrowXs]).toEqual([1000])
   })
 })

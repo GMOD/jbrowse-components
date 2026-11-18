@@ -253,7 +253,11 @@ that straddle an exon boundary:
 Many viral genomes encode one polyprotein cleaved into mature peptides. When a
 CDS has `mature_protein_region` (or `mature_protein_region_of_CDS`) subfeatures,
 the track draws each cleavage product as a separate stacked row in a distinct
-color, hoverable and clickable.
+color, hoverable and clickable. A GenBank conversion's `mat_peptide` and
+`sig_peptide` draw the same way, under the CDS or beside it under the gene.
+
+The first row also draws the coding bases no product covers, in the CDS color:
+the stop codon, or the rest of a CDS that names only its signal peptide.
 
 - The track names each row by its `product` attribute, which NCBI writes in
   place of a Name, and falls back to the track's `labels.name`.

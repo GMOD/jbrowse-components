@@ -1,32 +1,29 @@
 digraph feature_glyph {
   rankdir=TB
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] semantic; cds; mature; cdsrows; kids; cleaved; repeat; container; coding }
+  { node [shape=diamond] semantic; poly; cdsrows; kids; cleaved; repeat; container; coding }
 
   f [label="feature", shape=oval]
   f -> semantic
   semantic [label="a semantic type with\nits own glyph"]
   semantic -> typed [label=" guide_rna, motif"]
-  semantic -> cds   [label=" no"]
+  semantic -> poly  [label=" no"]
   typed [label="CrisprGuide, Motif"]
 
-  cds [label="is a CDS"]
-  cds -> mature [label=" yes"]
-  cds -> kids   [label=" no"]
-  mature [label="has mature-protein children"]
-  mature -> matureglyph [label=" yes"]
-  mature -> cdsrows     [label=" no"]
-  cdsrows [label="has CDS rows\n(a discontinuous CDS)"]
-  cdsrows -> box  [label=" no"]
-  cdsrows -> kids [label=" yes"]
-  matureglyph [label="MatureProteinRegion"]
+  poly [label="a polyprotein: a CDS with\nmature-protein children, or\nonly CDS and mature-protein\nchildren"]
+  poly -> matureglyph [label=" yes"]
+  poly -> cdsrows     [label=" no"]
+  cdsrows [label="a CDS with no CDS rows"]
+  cdsrows -> box  [label=" yes"]
+  cdsrows -> kids [label=" no"]
+  matureglyph [label="MatureProteinRegion\none row per product"]
 
   kids [label="has subfeatures"]
   kids -> box     [label=" no"]
   kids -> cleaved [label=" yes"]
   box [label="Box"]
 
-  cleaved [label="a CDS child with\nmature-protein children\n(at any depth)"]
+  cleaved [label="a polyprotein child\n(at any depth)"]
   cleaved -> stack  [label=" yes"]
   cleaved -> repeat [label=" no"]
   stack [label="Subfeatures\none row per child"]

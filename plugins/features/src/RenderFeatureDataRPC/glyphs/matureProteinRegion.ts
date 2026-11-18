@@ -9,17 +9,26 @@ function getMatureProteinChildren(feature: Feature): Feature[] {
   return getSubfeatures(feature).filter(isCleavageProduct)
 }
 
-export function hasMatureProteinChildren(feature: Feature) {
-  return getMatureProteinChildren(feature).length > 0
+// A CDS carrying its cleavage products, or a feature whose children are only
+// CDS rows and cleavage products: the gene a GenBank conversion hangs both
+// under when nothing ties a mat_peptide to its CDS.
+export function isPolyprotein(feature: Feature) {
+  const subfeatures = getSubfeatures(feature)
+  return (
+    subfeatures.some(isCleavageProduct) &&
+    (isCDS(feature) ||
+      (subfeatures.some(isCDS) &&
+        subfeatures.every(sub => isCDS(sub) || isCleavageProduct(sub))))
+  )
 }
 
-// Each polyprotein CDS is its own reading frame and translates independently,
-// so the walk collects one at whatever depth it sits.
-export function collectPolyproteinCDS(feature: Feature): Feature[] {
+// Each polyprotein is its own reading frame and translates independently, so
+// the walk collects one at whatever depth it sits.
+export function collectPolyproteins(feature: Feature): Feature[] {
   const out: Feature[] = []
   const walk = (f: Feature) => {
     for (const sub of getSubfeatures(f)) {
-      if (isCDS(sub) && hasMatureProteinChildren(sub)) {
+      if (isPolyprotein(sub)) {
         out.push(sub)
       } else {
         walk(sub)

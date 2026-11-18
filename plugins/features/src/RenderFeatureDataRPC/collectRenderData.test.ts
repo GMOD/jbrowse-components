@@ -336,22 +336,25 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
   })
 
   // The CDS spans the stop codon (118-121) but no mature region covers it.
-  it('excludes the trailing stop codon from every region', () => {
+  it('letters the trailing stop codon once, as CDS outside every region', () => {
     const { layout } = polyproteinLayout(100, 121, [{ start: 100, end: 118 }])
     const result = collect(layout, {
       colorByFrame: true,
       peptideDataMap: new Map([['cds1', { protein: 'MFKLST*' }]]),
     })
     const overlay = result.aminoAcidOverlay!
-    expect(overlay.map(a => a.aminoAcid).sort()).toEqual([
-      'F',
-      'K',
-      'L',
-      'M',
-      'S',
-      'T',
+    expect(overlay.map(a => [a.aminoAcid, a.startBp])).toEqual([
+      ['M', 100],
+      ['F', 103],
+      ['K', 106],
+      ['L', 109],
+      ['S', 112],
+      ['T', 115],
+      ['*', 118],
     ])
-    expect(overlay.some(a => a.aminoAcid === '*')).toBe(false)
+    expect(result.subfeatureInfos.map(s => [s.startBp, s.endBp])).toEqual([
+      [100, 118],
+    ])
   })
 
   // On the - strand the protein's N-terminus (M) is at the highest genomic

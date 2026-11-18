@@ -217,6 +217,30 @@ describe.each(MODES)('HIV-1, geneGlyphMode %s', mode => {
     ])
   })
 
+  it('draws gag-pol’s Gag half and stop codon, which no product covers, on its first row', async () => {
+    const data = buildFeatureRenderData({
+      features: [geneNamed(await loadGenome('hiv'), 'gag-pol')],
+      config: configFor(mode),
+      jexl: JexlF(),
+      regionStart: 0,
+      regionEnd: GENOMES.hiv.end,
+      colorByFrame: false,
+      peptideDataMap: undefined,
+    })
+    const firstRowY = Math.min(...data.rectYs)
+    const firstRow = [...data.rectYs].flatMap((y, i) =>
+      y === firstRowY
+        ? [[data.rectPositions[i * 2], data.rectPositions[i * 2 + 1]]]
+        : [],
+    )
+    expect(firstRow).toEqual([
+      [1631, 1637],
+      [1636, 1798],
+      [335, 1631],
+      [4639, 4642],
+    ])
+  })
+
   it('still draws the spliced, childless tat, rev and vpr as two-block transcripts', async () => {
     const features = await loadGenome('hiv')
     const blocks = ['tat', 'rev', 'vpr'].map(name => {

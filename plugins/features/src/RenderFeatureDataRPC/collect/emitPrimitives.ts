@@ -14,6 +14,7 @@ import {
   THEMED_STROKE,
 } from './glyphColors.ts'
 
+import type { Span } from '../../shared/mergeSpans.ts'
 import type { SubfeatureLabelPlacement } from '../labelUtils.ts'
 import type { AggregatedAminoAcid } from '../peptides/aggregateAminoAcids.ts'
 import type { FeatureLayout } from '../types.ts'
@@ -156,6 +157,8 @@ export interface BoxRectArgs {
   level?: Feature
   // Thinned within `height` by the passes; a UTR is unless this says otherwise.
   inset?: boolean
+  // The stretch of `feature` the box covers, all of it by default.
+  span?: Span
 }
 
 export function pushBoxRect(
@@ -172,14 +175,16 @@ export function pushBoxRect(
     glyphDefault,
     level,
     inset,
+    span = [feature.get('start'), feature.get('end')],
   } = args
   const { rects } = collector
   const fill = packColor(
     boxColor(feature, ctx, collector.colorKey, level, glyphDefault),
   )
+  const [start, end] = span
   rects.push({
-    start: feature.get('start'),
-    end: feature.get('end'),
+    start,
+    end,
     y: topPx,
     height,
     inset: inset ?? isUTR(feature),
