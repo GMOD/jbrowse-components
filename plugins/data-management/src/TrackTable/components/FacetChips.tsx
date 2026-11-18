@@ -11,6 +11,7 @@ import FacetFilter from './FacetFilter.tsx'
 import { facetLabel } from './util.ts'
 
 import type { TrackTableModel } from '../trackTableModel.ts'
+import type { RefObject } from 'react'
 
 const useStyles = makeStyles()(theme => {
   const accent =
@@ -66,8 +67,10 @@ function selectionText(label: string, selected: string[]) {
  */
 const FacetChips = observer(function FacetChips({
   table,
+  filterBoxRef,
 }: {
   table: TrackTableModel
+  filterBoxRef: RefObject<HTMLInputElement | null>
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState<{ el: HTMLElement; field?: string }>()
@@ -112,7 +115,7 @@ const FacetChips = observer(function FacetChips({
                       if (table.moreFacets.length) {
                         moreRef.current?.focus()
                       } else {
-                        table.filterBoxInput?.focus()
+                        filterBoxRef.current?.focus()
                       }
                     }
                   }

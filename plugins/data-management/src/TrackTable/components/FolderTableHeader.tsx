@@ -9,6 +9,7 @@ import { tableMenuItems } from './tableLayout.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { TrackTableModel } from '../trackTableModel.ts'
+import type { Ref } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   toolbar: {
@@ -29,10 +30,12 @@ const FolderTableHeader = observer(function FolderTableHeader({
   model,
   table,
   shown,
+  filterBoxRef,
 }: {
   model: HierarchicalTrackSelectorModel
   table: TrackTableModel
   shown: string[]
+  filterBoxRef: Ref<HTMLInputElement>
 }) {
   const { classes } = useStyles()
   return (
@@ -45,7 +48,11 @@ const FolderTableHeader = observer(function FolderTableHeader({
         <ViewColumnIcon />
       </CascadingMenuButton>
       <ShoppingCart model={model} />
-      <TrackFilterBox table={table} className={classes.searchBox} />
+      <TrackFilterBox
+        table={table}
+        className={classes.searchBox}
+        inputRef={filterBoxRef}
+      />
     </div>
   )
 })

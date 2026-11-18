@@ -1,3 +1,5 @@
+import { useRef } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -35,6 +37,7 @@ const FolderTable = observer(function FolderTable({
   table: TrackTableModel
 }) {
   const { classes } = useStyles()
+  const filterBoxRef = useRef<HTMLInputElement>(null)
   const windowSize = useWindowSize()
   const width = windowSize.width * frac
   const shown = shownFields(table, width)
@@ -43,8 +46,13 @@ const FolderTable = observer(function FolderTable({
       className={classes.root}
       style={{ width, height: windowSize.height * frac }}
     >
-      <FolderTableHeader model={model} table={table} shown={shown} />
-      <FacetChips table={table} />
+      <FolderTableHeader
+        model={model}
+        table={table}
+        shown={shown}
+        filterBoxRef={filterBoxRef}
+      />
+      <FacetChips table={table} filterBoxRef={filterBoxRef} />
       <div className={classes.grid}>
         <TrackTableGrid
           model={model}

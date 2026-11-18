@@ -1,3 +1,5 @@
+import { useRef } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -34,6 +36,7 @@ const HierarchicalTrackSelectorHeader = observer(
   }) {
     const { classes } = useStyles()
     const { trackTable } = model
+    const filterBoxRef = useRef<HTMLInputElement>(null)
     return (
       <>
         <div
@@ -42,9 +45,13 @@ const HierarchicalTrackSelectorHeader = observer(
         >
           <HamburgerMenu model={model} tableMenuItems={tableMenuItems} />
           <ShoppingCart model={model} />
-          <TrackFilterBox table={trackTable} className={classes.searchBox} />
+          <TrackFilterBox
+            table={trackTable}
+            className={classes.searchBox}
+            inputRef={filterBoxRef}
+          />
         </div>
-        <FacetChips table={trackTable} />
+        <FacetChips table={trackTable} filterBoxRef={filterBoxRef} />
       </>
     )
   },
