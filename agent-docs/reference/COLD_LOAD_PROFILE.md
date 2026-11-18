@@ -145,8 +145,11 @@ registry's off the chain:
 - **`index.html`'s `early-config` script requests the config** as the page
   parses, and `prefetchConfig` adopts the parsed JSON when it resolved the same
   path (`prefetchConfig.test.ts` runs the script and pins the two).
-- **The same script preloads the re-export registry's chunks** once the config
-  names a plugin. `BootChunksPlugin` lists them in a JSON
+- **The same script preloads the re-export loader map's chunks** once the
+  config names a plugin, and fetches each named bundle's text for the registry
+  scan
+  ([ADR-274](../architecture-decision-records/adr-274-a-plugin-page-publishes-only-the-keys-its-bundles-read.md)).
+  `BootChunksPlugin` lists the chunks in a JSON
   `<script id="plugin-registry-chunks">`.
 
 Measured 2026-10-20 on ada against main `6df9b52fa8`, Chrome pinned to 4 cores,

@@ -610,9 +610,74 @@ function emitMap(
   }${lines.join('\n')}\n}\n\nexport default libs\n`
 }
 
+// The same keys as emitMap, each behind its own import(), so a host can
+// publish only the keys a plugin's bundle reads (PluginLoader's registry scan).
+// The framework keys come out of the hand-written framework module whole: the
+// shared singletons are in every first paint anyway.
+function emitLoaders(
+  file: string,
+  what: string,
+  modules: Served[],
+  {
+    worker,
+    base,
+    frameworkKeys = [],
+    frameworkSpecifier,
+    specifierOf,
+  }: {
+    worker: boolean
+    base?: { specifier: string; name: string }
+    frameworkKeys?: string[]
+    frameworkSpecifier?: string
+    specifierOf: (m: Served) => string
+  },
+) {
+  const imports = [
+    `import type { ReExportLoaders } from ${q(
+      file.startsWith(CORE_REEXPORTS)
+        ? './registry.ts'
+        : `${CORE}/ReExports/registry`,
+    )}`,
+  ]
+  if (base) {
+    imports.push(`import ${base.name} from ${q(base.specifier)}`)
+  }
+  if (worker && modules.some(m => m.ui)) {
+    imports.push(
+      `import { uiNamespace, uiStub } from ${q(
+        file.startsWith(CORE_REEXPORTS)
+          ? './uiStub.ts'
+          : `${CORE}/ReExports/uiStub`,
+      )}`,
+    )
+  }
+  const lines = [
+    ...frameworkKeys.map(
+      key =>
+        `  ${q(key)}: () => import(${q(frameworkSpecifier!)}).then(m => m.default[${q(key)}]),`,
+    ),
+    ...modules.map(m => {
+      const served = servedExpression('ns', m.names)
+      return worker && m.ui
+        ? `  ${q(m.key)}: () => Promise.resolve(${stubExpression(m.names)}),`
+        : served === 'ns'
+          ? `  ${q(m.key)}: () => import(${q(specifierOf(m))}),`
+          : `  ${q(m.key)}: () => import(${q(specifierOf(m))}).then(ns => ${served.startsWith('{') ? `(${served})` : served}),`
+    }),
+  ]
+  return `${HEADER(what)}${imports.join('\n')}\n\nconst loaders: ReExportLoaders = {\n${
+    base ? `  ...${base.name},\n` : ''
+  }${lines.join('\n')}\n}\n\nexport default loaders\n`
+}
+
 const coreModules = servedModules.filter(m => m.pkg === CORE)
 const coreMain = path.join(CORE_REEXPORTS, 'coreModules.generated.ts')
 const coreWorker = path.join(CORE_REEXPORTS, 'coreWorkerModules.generated.ts')
+const coreLoaders = path.join(CORE_REEXPORTS, 'coreLoaders.generated.ts')
+const coreWorkerLoaders = path.join(
+  CORE_REEXPORTS,
+  'coreWorkerLoaders.generated.ts',
+)
 const coreSpecifier = (from: string) => (m: Served) =>
   relativeImport(from, m.file)
 
@@ -709,6 +774,34 @@ const generated = [
       },
     ),
   },
+  {
+    path: coreLoaders,
+    content: emitLoaders(
+      coreLoaders,
+      'The runtime ABI @jbrowse/core alone can serve on the main thread, one import() per key.',
+      coreModules,
+      {
+        worker: false,
+        frameworkKeys: framework.map(m => m.key),
+        frameworkSpecifier: './frameworkModules.ts',
+        specifierOf: coreSpecifier(coreLoaders),
+      },
+    ),
+  },
+  {
+    path: coreWorkerLoaders,
+    content: emitLoaders(
+      coreWorkerLoaders,
+      'The keys coreLoaders.generated.ts serves, as the RPC worker serves them: a rendering module stubbed.',
+      coreModules,
+      {
+        worker: true,
+        frameworkKeys: framework.map(m => m.key),
+        frameworkSpecifier: './frameworkWorkerModules.generated.ts',
+        specifierOf: coreSpecifier(coreWorkerLoaders),
+      },
+    ),
+  },
   { path: MUI_STYLES_FILE, content: muiStylesFile },
   {
     path: path.join(CORE_REEXPORTS, 'frameworkWorkerModules.generated.ts'),
@@ -738,7 +831,38 @@ for (const product of PRODUCTS) {
   const dir = path.join(ROOT, 'products', product, 'src')
   const main = path.join(dir, 'reExports.generated.ts')
   const worker = path.join(dir, 'workerReExports.generated.ts')
+  const mainLoaders = path.join(dir, 'reExportLoaders.generated.ts')
+  const workerLoaders = path.join(dir, 'workerReExportLoaders.generated.ts')
   generated.push(
+    {
+      path: mainLoaders,
+      content: emitLoaders(
+        mainLoaders,
+        `The keys reExports.generated.ts serves, one import() per key, so ${product} publishes only what a plugin reads.`,
+        modules,
+        {
+          worker: false,
+          base: { specifier: `${CORE}/ReExports/loaders`, name: 'coreLoaders' },
+          specifierOf: m => m.key,
+        },
+      ),
+    },
+    {
+      path: workerLoaders,
+      content: emitLoaders(
+        workerLoaders,
+        `The keys workerReExports.generated.ts serves, one import() per key, as ${product}'s RPC worker serves them.`,
+        modules,
+        {
+          worker: true,
+          base: {
+            specifier: `${CORE}/ReExports/workerLoaders`,
+            name: 'coreLoaders',
+          },
+          specifierOf: m => m.key,
+        },
+      ),
+    },
     {
       path: main,
       content: emitMap(

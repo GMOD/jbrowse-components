@@ -1,4 +1,7 @@
-import PluginLoader, { preloadUMDBundles } from '@jbrowse/core/PluginLoader'
+import PluginLoader, {
+  preloadPluginTexts,
+  preloadUMDBundles,
+} from '@jbrowse/core/PluginLoader'
 import PluginManager, {
   runtimePluginRecords,
 } from '@jbrowse/core/PluginManager'
@@ -11,6 +14,7 @@ import { parallelizeWorkerChunkLoading } from './parallelChunkLoading.ts'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type {
   LoadedPlugin,
+  ReExportLoadersLoader,
   ReExportRegistryLoader,
 } from '@jbrowse/core/PluginLoader'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
@@ -30,6 +34,11 @@ export interface WorkerOptions {
    * bundles.
    */
   reExports: ReExportRegistryLoader
+  /**
+   * The product's `workerReExportLoaders.generated.ts`: given it, the worker
+   * publishes only the keys its plugins' bundles read
+   */
+  reExportLoaders?: ReExportLoadersLoader
 }
 
 interface WorkerConfiguration {
@@ -55,8 +64,12 @@ function preloadHintedPlugins(
   opts: WorkerOptions,
 ) {
   if (plugins.length) {
-    opts.reExports().catch(() => {})
-    preloadUMDBundles(plugins, windowHref)
+    if (opts.reExportLoaders) {
+      preloadPluginTexts(plugins, windowHref)
+    } else {
+      opts.reExports().catch(() => {})
+      preloadUMDBundles(plugins, windowHref)
+    }
   }
 }
 
@@ -94,7 +107,7 @@ async function getPluginManager(
   // needs the main thread's display preference before any RPC method runs
   setNumberGrouping(config.numberGrouping)
   const runtimePlugins = await new PluginLoader(config.plugins, opts)
-    .installGlobalReExports(self, opts.reExports)
+    .installGlobalReExports(self, opts.reExports, opts.reExportLoaders)
     .load(config.windowHref)
   // The definitions ride along: a plugin that resolves a sibling asset from
   // its own bundle url here, as GraphGenomeView's Bandage layout engine does,

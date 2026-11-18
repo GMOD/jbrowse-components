@@ -1,5 +1,5 @@
 import {
-  getReExportRegistry,
+  isReExportRegistryComplete,
   setReExportRegistry,
 } from '@jbrowse/core/ReExports/registry'
 import {
@@ -1654,7 +1654,7 @@ export async function ensureReExports(
 }
 
 function hasReExports() {
-  return Object.keys(getReExportRegistry()).length > 0
+  return isReExportRegistryComplete()
 }
 
 // The front door for an agent that just found `jb` and knows nothing else —

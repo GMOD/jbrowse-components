@@ -19,15 +19,16 @@ const TRACK_ID = 'local-file-blob'
 const FILE = 'test_data/volvox/volvox_microarray.bw'
 
 // Fetch the bytes and hand them in as a File, which is what the file input in
-// LocalFileChooser produces. `storeBlobLocation` is reached the way a runtime
-// plugin reaches it, so it is the same core module instance the RPC layer reads
-// `getBlobMap()` from.
+// LocalFileChooser produces. `storeBlobLocation` is reached through the
+// re-export registry, as a runtime plugin reaches it, so it is the same core
+// module instance the RPC layer reads `getBlobMap()` from. `jb.ensureRequire`
+// fills the registry, which holds only what a page's plugins read.
 function addBlobTrack(page: Page) {
   return page.evaluate(
     async ({ trackId, file }) => {
       const w = window as any
-      const { storeBlobLocation } =
-        w.JBrowseRootModel.pluginManager.lib['@jbrowse/core/util']
+      await w.jb.ensureRequire()
+      const { storeBlobLocation } = w.jb.require('@jbrowse/core/util')
       const bytes = await (await fetch(`/${file}`)).arrayBuffer()
       const location = storeBlobLocation({
         blob: new File([bytes], 'volvox_microarray.bw'),

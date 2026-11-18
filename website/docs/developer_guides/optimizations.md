@@ -566,10 +566,12 @@ bundle of every entry point that can reach the helper: 23.4 KB gzipped, against
 
 Round trips cost a cold load more than bytes do. jbrowse-web's `index.html`
 requests the config from an inline script, so the config downloads beside
-`main.js` instead of after it has run, and preloads the plugin re-export
-registry as soon as the config names a plugin. A share link's session goes out
-to the share service from `main.js` once that config arrives, while the session
-loader is still building the config's plugins.
+`main.js` instead of after it has run, and once the config names a plugin it
+fetches the plugin's bundle so the app can read which shared modules the plugin
+uses and download only those (about 330 KB gzipped less for a plugin that uses
+none, the volvox demo's). A share link's session goes out to the share service
+from `main.js` once that config arrives, while the session loader is still
+building the config's plugins.
 [COLD_LOAD_PROFILE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/COLD_LOAD_PROFILE.md)
 has the measurements and what was tried beside them.
 

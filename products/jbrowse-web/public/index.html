@@ -184,9 +184,11 @@
       })()
     </script>
     <!-- requests the config as the HTML parses, a round trip before main.js
-         could, and preloads the plugin re-export registry's chunks once it
-         names plugins (BootChunksPlugin lists them in #plugin-registry-chunks);
-         src/prefetchConfig.ts adopts the config, and its test pins this -->
+         could, and once it names plugins preloads the re-export registry's
+         loader chunks (BootChunksPlugin lists them in #plugin-registry-chunks)
+         and fetches each bundle's text, which PluginLoader's registry scan
+         then reads from the cache; src/prefetchConfig.ts adopts the config,
+         and its test pins this -->
     <script id="early-config">
       ;(function () {
         try {
@@ -217,6 +219,16 @@
                 link.as = 'script'
                 link.href = href
                 document.head.append(link)
+              })
+              c.plugins.forEach(function (p) {
+                var url = p.umdUrl || p.url
+                if (typeof url === 'string') {
+                  fetch(url, p.integrity ? { integrity: p.integrity } : {})
+                    .then(function (r) {
+                      return r.text()
+                    })
+                    .catch(function () {})
+                }
               })
             }
           })

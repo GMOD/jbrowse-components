@@ -157,6 +157,9 @@ metafile.
   `JBrowseExports[key]` at module scope and cannot await, so every served
   module is loaded before the first plugin evaluates. Per-key laziness needs
   the plugin to declare what it reads, which the bundle does not carry.
+  Superseded for UMD bundles by
+  [ADR-274](adr-274-a-plugin-page-publishes-only-the-keys-its-bundles-read.md):
+  the bundle's text does carry it, as literal reads off the global.
 - **Serve every `@jbrowse` package a product bundles.** This ADR's first
   form: 422 keys over 47 packages, 33 of them plugins. It made other plugins'
   code a runtime dependency of any plugin that imported it, which is the

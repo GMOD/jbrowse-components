@@ -14,11 +14,12 @@ const bootChunkOrigins = [
 ]
 
 // Fetched when the config names a plugin. index.html preloads these as soon as
-// the config arrives, before main.js has run far enough to ask for them.
+// the config arrives, before main.js has run far enough to ask for them. Only
+// the loader map: the modules behind it are the ones the plugins' bundles read.
 const pluginRegistryOrigins = [
   {
     issuer: 'jbrowse-web/src/sessionLoaderHelpers.ts',
-    request: './reExports.generated.ts',
+    request: './reExportLoaders.generated.ts',
   },
 ]
 

@@ -33,12 +33,12 @@ export async function loadPluginRecords(defs: PluginDefinition[]) {
   // RpcManager ships them to the worker. So main thread and worker cannot
   // resolve the same ref to two different builds; only one of them resolves.
   //
-  // The registry does not depend on which build a ref resolves to, so it
-  // downloads while the store answers.
-  const registry = dropVendoredPlugins(defs).length
-    ? import('./reExports.generated.ts')
+  // The registry's loader map does not depend on which build a ref resolves
+  // to, so it downloads while the store answers.
+  const loaders = dropVendoredPlugins(defs).length
+    ? import('./reExportLoaders.generated.ts')
     : undefined
-  registry?.catch(() => {})
+  loaders?.catch(() => {})
   const { definitions, failures: unresolved } = await resolveStorePluginRefs(
     defs,
     packageJSON.version,
@@ -52,7 +52,8 @@ export async function loadPluginRecords(defs: PluginDefinition[]) {
   })
     .installGlobalReExports(
       window,
-      () => registry ?? import('./reExports.generated.ts'),
+      () => import('./reExports.generated.ts'),
+      () => loaders ?? import('./reExportLoaders.generated.ts'),
     )
     .loadSettled(window.location.href)
   // A ref with no build for this JBrowse and a bundle that 404s are the same

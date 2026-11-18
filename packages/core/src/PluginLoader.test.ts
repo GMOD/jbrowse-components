@@ -244,6 +244,94 @@ test('a module worker, which cannot importScripts, runs each UMD bundle from its
   }
 })
 
+// Given the per-key loader map, a realm reads each UMD bundle's text, publishes
+// only the keys the bundles read, and evaluates the same bytes it scanned.
+describe('the registry scan', () => {
+  const scope = globalThis as unknown as Record<string, unknown>
+  const bundles: Record<string, string> = {
+    'https://example.com/reads.js':
+      'var JBrowsePluginReads={default:class Reads{},util:JBrowseExports["@jbrowse/core/util"].name,react:JBrowseExports.react}',
+    'https://example.com/computed.js':
+      'var k="react";var JBrowsePluginComputed={default:class Computed{},r:JBrowseExports[k]}',
+  }
+  const loaders = {
+    '@jbrowse/core/util': jest.fn(async () => ({ name: 'util' })),
+    '@jbrowse/core/ui': jest.fn(async () => ({ name: 'ui' })),
+    react: jest.fn(async () => ({ name: 'react' })),
+  }
+  const whole = { '@jbrowse/core/util': {}, '@jbrowse/core/ui': {}, react: {} }
+  let fetched: string[] = []
+  let fetchSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    jest.resetModules()
+    fetched = []
+    for (const load of Object.values(loaders)) {
+      load.mockClear()
+    }
+    scope.WorkerGlobalScope = class {}
+    scope.importScripts = () => {
+      throw new Error('a scanned bundle runs from its fetched text')
+    }
+    fetchSpy = jest.spyOn(globalThis, 'fetch').mockImplementation(async url => {
+      fetched.push(String(url))
+      return { ok: true, text: async () => bundles[String(url)] } as Response
+    })
+  })
+
+  afterEach(() => {
+    fetchSpy.mockRestore()
+    for (const key of [
+      'WorkerGlobalScope',
+      'importScripts',
+      'JBrowseExports',
+      'JBrowsePluginReads',
+      'JBrowsePluginComputed',
+    ]) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete scope[key]
+    }
+  })
+
+  async function load(defs: PluginDefinition[]) {
+    const { default: Loader } = await import('./PluginLoader.ts')
+    const registry = jest.fn(async () => ({ default: whole }))
+    const records = await new Loader(defs)
+      .installGlobalReExports(globalThis, registry, async () => ({
+        default: loaders,
+      }))
+      .load()
+    return {
+      records,
+      registry,
+      exports: scope.JBrowseExports as Record<string, unknown>,
+    }
+  }
+
+  it('publishes only the keys a bundle reads, and runs the bytes it read', async () => {
+    const { records, registry, exports } = await load([
+      { name: 'Reads', url: 'https://example.com/reads.js' },
+    ])
+    expect(records.map(r => r.plugin.name)).toEqual(['Reads'])
+    expect(fetched).toEqual(['https://example.com/reads.js'])
+    expect(registry).not.toHaveBeenCalled()
+    expect(loaders['@jbrowse/core/ui']).not.toHaveBeenCalled()
+    expect(exports['@jbrowse/core/util']).toEqual({ name: 'util' })
+    expect(() => exports['@jbrowse/core/ui']).toThrow(
+      /'@jbrowse\/core\/ui' was not among them/,
+    )
+  })
+
+  it('publishes the whole registry when a bundle reads a computed key', async () => {
+    const { registry, exports } = await load([
+      { name: 'Reads', url: 'https://example.com/reads.js' },
+      { name: 'Computed', url: 'https://example.com/computed.js' },
+    ])
+    expect(registry).toHaveBeenCalledTimes(1)
+    expect(Object.keys(exports).sort()).toEqual(Object.keys(whole).sort())
+  })
+})
+
 // load() stays all-or-nothing for callers that cannot degrade (the RPC worker),
 // and rethrows by definition order so which error surfaces doesn't depend on
 // which request happened to fail first.

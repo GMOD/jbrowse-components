@@ -20,13 +20,29 @@
  * module deliberately imports nothing, so holding the slot costs no graph.
  */
 let registry: Record<string, unknown> = {}
+let complete = false
 
-export function setReExportRegistry(libs: Record<string, unknown>) {
+export type ReExportLoaders = Record<string, () => Promise<unknown>>
+
+/**
+ * `partial` is a registry holding only the keys a registry scan found the
+ * loaded plugins reading (PluginLoader), which `jbrequire` and an agent's
+ * `ensureReExports` must not take for the whole map
+ */
+export function setReExportRegistry(
+  libs: Record<string, unknown>,
+  partial = false,
+) {
   registry = libs
+  complete = !partial
 }
 
 export function getReExportRegistry() {
   return registry
+}
+
+export function isReExportRegistryComplete() {
+  return complete && Object.keys(registry).length > 0
 }
 
 // A bundle built against another @jbrowse/core, or against a package this host
@@ -35,17 +51,26 @@ export function getReExportRegistry() {
 // plugin's own build tool only ever externalizes a key `ReExports/list.ts`
 // names, so every scoped-or-slashed read that misses is that case, and this
 // names it. Anything else missing reads `undefined` as it always did.
-export function loudOnMissingModule(libs: Record<string, unknown>) {
+//
+// `served` is every key the host could have published when it published only
+// the ones a registry scan found, so a read the scan missed says so instead of
+// blaming the plugin's build.
+export function loudOnMissingModule(
+  libs: Record<string, unknown>,
+  served?: ReadonlySet<string>,
+) {
   return new Proxy(libs, {
     get(target, key, receiver) {
-      if (
-        typeof key === 'string' &&
-        !(key in target) &&
-        (key.startsWith('@') || key.includes('/'))
-      ) {
-        throw new Error(
-          `This JBrowse does not serve '${key}' to plugins: the plugin was built against an older or newer @jbrowse/core, or against a package this host does not bundle`,
-        )
+      if (typeof key === 'string' && !(key in target)) {
+        if (served?.has(key)) {
+          throw new Error(
+            `This JBrowse published only the modules its plugins' bundles were found to read, and '${key}' was not among them: a plugin reads it in a way the registry scan (ReExports/reExportKeysRead.ts) does not recognize`,
+          )
+        } else if (key.startsWith('@') || key.includes('/')) {
+          throw new Error(
+            `This JBrowse does not serve '${key}' to plugins: the plugin was built against an older or newer @jbrowse/core, or against a package this host does not bundle`,
+          )
+        }
       }
       return Reflect.get(target, key, receiver)
     },

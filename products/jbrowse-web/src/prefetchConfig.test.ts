@@ -127,6 +127,25 @@ test('a config naming plugins preloads the registry chunks', async () => {
   expect(preloads()).toEqual(['static/js/1.js', 'static/js/2.js'])
 })
 
+test('a config naming plugins fetches the text of each bundle with a url', async () => {
+  config = {
+    plugins: [
+      { name: 'P', url: 'p.js' },
+      { name: 'S', umdUrl: 'https://example.com/s.js', integrity: 'sha384-x' },
+      { name: 'Ref', version: '^1' },
+    ],
+  }
+  load('/')
+  runHtmlScript()
+  listChunks([])
+  await window.__jbrowseEarlyConfig!.config
+  await Promise.resolve()
+  expect(fetchMock.mock.calls.slice(1)).toEqual([
+    ['p.js', {}],
+    ['https://example.com/s.js', { integrity: 'sha384-x' }],
+  ])
+})
+
 test('a config naming no plugins preloads nothing', async () => {
   load('/')
   runHtmlScript()

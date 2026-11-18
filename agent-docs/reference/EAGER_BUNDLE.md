@@ -71,7 +71,9 @@ the registry at all keeps every export of every served module.
   importers of a generated map. Keep it that way.
 
 **Quote registry sizes from `scripts/registryBundleSizes.json`**, which
-`pnpm measure-registry-bundle` writes and CI gates.
+`pnpm measure-registry-bundle` writes and CI gates. They are the whole map; a
+jbrowse-web page whose plugins the registry scan can read loads only their
+keys ([ADR-274](../architecture-decision-records/adr-274-a-plugin-page-publishes-only-the-keys-its-bundles-read.md)).
 
 ### 4. The `@jbrowse/core/ui` barrel
 
@@ -302,10 +304,9 @@ and uncompressed, and its CDP throttle may not reach the worker.
 What did measure is filed under `ideas/`:
 [hashless-chunk-names-for-jbrowse-web](../ideas/ready/hashless-chunk-names-for-jbrowse-web.md),
 [lazy-rpc-method-bodies](../ideas/ready/lazy-rpc-method-bodies.md),
-[write-uniforms-as-loops-above-sixteen-elements](../ideas/ready/write-uniforms-as-loops-above-sixteen-elements.md),
-[brotli-11-from-the-deploy](../ideas/waiting-on-a-call/brotli-11-from-the-deploy.md)
+[write-uniforms-as-loops-above-sixteen-elements](../ideas/ready/write-uniforms-as-loops-above-sixteen-elements.md)
 and
-[plugin-aware-re-export-registry](../ideas/waiting-on-a-number/plugin-aware-re-export-registry.md).
+[brotli-11-from-the-deploy](../ideas/waiting-on-a-call/brotli-11-from-the-deploy.md).
 
 ## The RPC worker's React stack, and two ways of removing it that lose
 

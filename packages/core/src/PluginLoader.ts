@@ -1,6 +1,9 @@
 import { enableContractReports } from '@jbrowse/render-core/contractReports'
 
+import { reExportKeysRead } from './ReExports/reExportKeysRead.ts'
 import {
+  getReExportRegistry,
+  isReExportRegistryComplete,
   loudOnMissingModule,
   setReExportRegistry,
 } from './ReExports/registry.ts'
@@ -15,6 +18,7 @@ import {
 import { isWebWorker } from './util/isWebWorker.ts'
 
 import type { PluginConstructor } from './Plugin.ts'
+import type { ReExportLoaders } from './ReExports/registry.ts'
 import type {
   ESMPluginDefinition,
   LegacyUMDPluginDefinition,
@@ -75,11 +79,19 @@ export type ReExportRegistryLoader = () => Promise<{
   default: Record<string, unknown>
 }>
 
+export type ReExportLoadersLoader = () => Promise<{
+  default: ReExportLoaders
+}>
+
 export interface LoadedPlugin {
   default: PluginConstructor
 }
 
-function promisifiedLoadScript(src: string, integrity?: string) {
+function promisifiedLoadScript(
+  src: string,
+  integrity?: string,
+  cors?: boolean,
+) {
   return new Promise<string>((resolve, reject) => {
     const script = document.createElement('script')
     script.type = 'text/javascript'
@@ -87,9 +99,13 @@ function promisifiedLoadScript(src: string, integrity?: string) {
     // Subresource integrity guarantees the fetched bytes match the hash the
     // plugin store published, so a tampered or swapped artifact fails to load.
     // crossOrigin is required for the browser to enforce integrity on a
-    // cross-origin script.
+    // cross-origin script. It is also what makes the script a cache read after
+    // the registry scan fetched its text with CORS: a host that varies on
+    // Origin caches the two request modes apart.
     if (integrity) {
       script.integrity = integrity
+    }
+    if (integrity || cors) {
       script.crossOrigin = 'anonymous'
     }
     script.src = src
@@ -164,15 +180,50 @@ async function evalInGlobalScope(
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`)
   }
+  evalScriptText(await response.text(), scriptUrl, globalName)
+}
+
+function evalScriptText(text: string, scriptUrl: string, globalName: string) {
   const readGlobal = /^[A-Za-z_$][\w$]*$/.test(globalName)
     ? `typeof ${globalName} === 'undefined' ? undefined : ${globalName}`
     : 'undefined'
   // eslint-disable-next-line no-eval
   const value: unknown = (0, eval)(
-    `${await response.text()}\n;${readGlobal}\n//# sourceURL=${scriptUrl}`,
+    `${text}\n;${readGlobal}\n//# sourceURL=${scriptUrl}`,
   )
   if (value !== undefined) {
     Reflect.set(globalThis, globalName, value)
+  }
+}
+
+const pluginTexts = new Map<string, Promise<string | undefined>>()
+
+/**
+ * A UMD bundle's text, fetched once per realm for the registry scan and then
+ * evaluated as the same bytes. `undefined` when the host refuses CORS or the
+ * fetch fails, which sends the realm the whole registry and the bundle by its
+ * usual route.
+ */
+function fetchPluginText(url: string, integrity?: string) {
+  let text = pluginTexts.get(url)
+  if (!text) {
+    text = fetch(url, { integrity })
+      .then(r => (r.ok ? r.text() : undefined))
+      .catch(() => undefined)
+    pluginTexts.set(url, text)
+  }
+  return text
+}
+
+/**
+ * Start fetching the texts of the UMD bundles a worker was told of ahead of
+ * its boot configuration, for the registry scan to read
+ */
+export function preloadPluginTexts(defs: PluginDefinition[], baseUri?: string) {
+  if (!('__jbrowseCacheBuster' in globalThis)) {
+    for (const def of defs) {
+      void fetchUMDText(def, baseUri)
+    }
   }
 }
 
@@ -203,13 +254,16 @@ async function loadScript(
   scriptUrl: string,
   globalName: string,
   integrity?: string,
+  text?: string,
 ) {
   const scope = globalThis
   if (!isWebWorker()) {
-    await promisifiedLoadScript(scriptUrl, integrity)
+    await promisifiedLoadScript(scriptUrl, integrity, text !== undefined)
   } else {
     try {
-      if (canImportScripts(scope)) {
+      if (text !== undefined) {
+        evalScriptText(text, scriptUrl, globalName)
+      } else if (canImportScripts(scope)) {
         await workerPrefetches.get(scriptUrl)
         scope.importScripts(scriptUrl)
       } else {
@@ -318,6 +372,45 @@ function addCacheBuster(url: string) {
   return u.href
 }
 
+// a cache buster query string would change the bytes the browser hashes for
+// SRI, so skip it when an integrity hash is present (the url is already
+// version-pinned and immutable, so cache-busting is unnecessary anyway)
+function umdLoadUrl(
+  def: UMDPluginDefinition | LegacyUMDPluginDefinition,
+  baseUri?: string,
+) {
+  const { href } = pluginLoadUrl(def, baseUri)
+  return def.integrity ? href : addCacheBuster(href)
+}
+
+async function fetchUMDText(def: PluginDefinition, baseUri?: string) {
+  if (isUMDPluginDefinition(def)) {
+    try {
+      const url = umdLoadUrl(def, baseUri)
+      const text = await fetchPluginText(url, def.integrity)
+      return text === undefined ? undefined : { url, text }
+    } catch {
+      // loadPlugin reports a url it cannot resolve
+    }
+  }
+  return undefined
+}
+
+// the keys every bundle reads, or undefined when any of them cannot say
+function keysReadBy(texts: (string | undefined)[]) {
+  const keys = new Set<string>()
+  for (const text of texts) {
+    const read = text === undefined ? undefined : reExportKeysRead(text)
+    if (!read) {
+      return undefined
+    }
+    for (const key of read) {
+      keys.add(key)
+    }
+  }
+  return keys
+}
+
 /**
  * The url PluginLoader fetches a definition from, read from the same pick the
  * trust gate vets (`pluginUrlSource`), with the protocol rules of
@@ -410,9 +503,8 @@ export default class PluginLoader {
   async loadUMDPlugin(
     def: UMDPluginDefinition | LegacyUMDPluginDefinition,
     baseUri?: string,
+    fetched?: { url: string; text: string },
   ) {
-    const parsedUrl = pluginLoadUrl(def, baseUri)
-
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
     // An install rebuilds the app in this page, where the build an earlier
@@ -421,13 +513,11 @@ export default class PluginLoader {
     if (umdName in globalThis) {
       Reflect.set(globalThis, umdName, undefined)
     }
-    // a cache buster query string would change the bytes the browser hashes for
-    // SRI, so skip it when an integrity hash is present (the url is already
-    // version-pinned and immutable, so cache-busting is unnecessary anyway)
     await loadScript(
-      def.integrity ? parsedUrl.href : addCacheBuster(parsedUrl.href),
+      fetched?.url ?? umdLoadUrl(def, baseUri),
       umdName,
       def.integrity,
+      fetched?.text,
     )
 
     const plugin = (globalThis as Record<string, unknown>)[umdName] as
@@ -441,7 +531,11 @@ export default class PluginLoader {
     return plugin
   }
 
-  async loadPlugin(def: PluginDefinition, baseUri?: string) {
+  async loadPlugin(
+    def: PluginDefinition,
+    baseUri?: string,
+    fetched?: { url: string; text: string },
+  ) {
     assertRetiredKinds(def)
     assertSingleKind(def)
     armIfUnderDevelopment(def)
@@ -449,7 +543,7 @@ export default class PluginLoader {
     if (isESMPluginDefinition(def)) {
       plugin = await this.loadESMPlugin(def, baseUri)
     } else if (isUMDPluginDefinition(def)) {
-      plugin = await this.loadUMDPlugin(def, baseUri)
+      plugin = await this.loadUMDPlugin(def, baseUri, fetched)
     } else {
       throw new Error(`Could not determine plugin type: ${JSON.stringify(def)}`)
     }
@@ -465,14 +559,18 @@ export default class PluginLoader {
   }
 
   private reExports:
-    | { target: WindowOrWorkerGlobalScope; registry: ReExportRegistryLoader }
+    | {
+        target: WindowOrWorkerGlobalScope
+        registry: ReExportRegistryLoader
+        loaders?: ReExportLoadersLoader
+      }
     | undefined
 
   /**
    * Ask for the runtime ABI (`JBrowseExports`) to be published on `target`
    * before any plugin bundle is evaluated. Records the target and the loader;
-   * `loadSettled` fetches the registry, a ~126 KB gzipped module only a runtime
-   * plugin can use (see `ReExports/registry.ts` for why it cannot shrink).
+   * `loadSettled` fetches the registry, which only a runtime plugin can use
+   * (`ReExports/registry.ts`).
    *
    * `registry` is the product's generated map — `reExports.generated.ts` on
    * the main thread, `workerReExports.generated.ts` in its worker — which
@@ -480,27 +578,50 @@ export default class PluginLoader {
    * because the registry serves this module: an `import()` of it from here is
    * a cycle rolldown keeps in any host bundling this file, whether or not
    * anything loads a plugin (EAGER_BUNDLE.md §3).
+   *
+   * `loaders` is the same map with each key behind its own `import()`
+   * (`reExportLoaders.generated.ts`). Given it, the loader reads each UMD
+   * bundle's text first and publishes only the keys the bundles read, falling
+   * back to `registry` whole when any bundle cannot say (an ESM plugin, a
+   * computed read, `jbrequire`, a host refusing CORS).
    */
   installGlobalReExports(
     target: WindowOrWorkerGlobalScope,
     registry: ReExportRegistryLoader,
+    loaders?: ReExportLoadersLoader,
   ) {
-    this.reExports = { target, registry }
+    this.reExports = { target, registry, loaders }
     return this
   }
 
-  private async publishReExports() {
-    if (!this.reExports) {
-      return
+  private async publishReExports(keys?: Set<string>) {
+    if (this.reExports) {
+      const { target, registry, loaders } = this.reExports
+      this.reExports = undefined
+      if (keys && loaders && !isReExportRegistryComplete()) {
+        const { default: all } = await loaders()
+        const before = getReExportRegistry()
+        const loaded = await Promise.all(
+          [...keys].flatMap(key => {
+            const load = all[key]
+            return load && !(key in before)
+              ? [load().then(value => [key, value] as const)]
+              : []
+          }),
+        )
+        const libs = { ...before, ...Object.fromEntries(loaded) }
+        ;(target as unknown as Record<string, unknown>).JBrowseExports =
+          loudOnMissingModule(libs, new Set(Object.keys(all)))
+        setReExportRegistry(libs, true)
+      } else {
+        const { default: ReExports } = await registry()
+        ;(target as unknown as Record<string, unknown>).JBrowseExports =
+          loudOnMissingModule({ ...ReExports })
+        // the synchronous half: `pluginManager.jbrequire(name)` is what a CJS
+        // plugin calls, and it cannot await
+        setReExportRegistry(ReExports)
+      }
     }
-    const { target, registry } = this.reExports
-    const { default: ReExports } = await registry()
-    ;(target as unknown as Record<string, unknown>).JBrowseExports =
-      loudOnMissingModule({ ...ReExports })
-    // the synchronous half: `pluginManager.jbrequire(name)` is what a CJS
-    // plugin calls, and it cannot await
-    setReExportRegistry(ReExports)
-    this.reExports = undefined
   }
 
   /**
@@ -525,13 +646,22 @@ export default class PluginLoader {
     // nothing to load publishes nothing: the registry is ~126 KB gzipped that
     // only a runtime plugin reads
     if (this.definitions.length > 0) {
-      preloadUMDBundles(this.definitions, baseUri)
+      const fetched = this.reExports?.loaders
+        ? await Promise.all(
+            this.definitions.map(def => fetchUMDText(def, baseUri)),
+          )
+        : undefined
+      if (!fetched) {
+        preloadUMDBundles(this.definitions, baseUri)
+      }
       // before the first plugin script evaluates — a UMD bundle reads
       // `JBrowseExports` off the global at module scope
-      await this.publishReExports()
+      await this.publishReExports(
+        fetched && keysReadBy(fetched.map(f => f?.text)),
+      )
       const results = await Promise.allSettled(
-        this.definitions.map(async definition => ({
-          plugin: await this.loadPlugin(definition, baseUri),
+        this.definitions.map(async (definition, i) => ({
+          plugin: await this.loadPlugin(definition, baseUri, fetched?.[i]),
           definition,
         })),
       )

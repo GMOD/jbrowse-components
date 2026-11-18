@@ -1665,6 +1665,7 @@
     "@jbrowse/core/ui/ClearableSearchField": {
       "package": "@jbrowse/core",
       "names": [
+        "SearchField",
         "default"
       ],
       "worker": "stub",
@@ -1762,6 +1763,16 @@
         "default"
       ],
       "worker": "real"
+    },
+    "@jbrowse/core/ui/DetailTable": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
     },
     "@jbrowse/core/ui/Dialog": {
       "package": "@jbrowse/core",
@@ -2328,6 +2339,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/ui/useSearchHighlight": {
+      "package": "@jbrowse/core",
+      "names": [
+        "useSearchHighlight"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/ui/VerticalScrollbar": {
       "package": "@jbrowse/core",
       "names": [
@@ -2347,6 +2365,20 @@
         "@mui/material",
         "@mui/material/IconButton",
         "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/core/ui/VirtualTable": {
+      "package": "@jbrowse/core",
+      "names": [
+        "CellTextInput",
+        "DEFAULT_COL_WIDTH",
+        "EditableTextCell",
+        "TableCheckbox",
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
       ]
     },
     "@jbrowse/core/ui/zIndexes": {
@@ -3661,7 +3693,8 @@
       "package": "@jbrowse/core",
       "names": [
         "measureText",
-        "measuredFont"
+        "measuredFont",
+        "truncateToWidth"
       ],
       "worker": "real"
     },
@@ -4036,6 +4069,19 @@
         "readTabixHeaderLines",
         "readTabixLines",
         "readTabixLinesRedispatched"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/tableText": {
+      "package": "@jbrowse/core",
+      "names": [
+        "cellText",
+        "compareValues",
+        "csvLine",
+        "csvText",
+        "naturalOrder",
+        "searchHighlightPatterns",
+        "splitSearchWords"
       ],
       "worker": "real"
     },

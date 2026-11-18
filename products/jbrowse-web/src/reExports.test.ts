@@ -1,7 +1,9 @@
 import reExportsList from '@jbrowse/core/ReExports/list'
 import { REACT_INTERNAL_KEYS, uiStub } from '@jbrowse/core/ReExports/uiStub'
 
+import loaders from './reExportLoaders.generated.ts'
 import modules from './reExports.generated.ts'
+import workerLoaders from './workerReExportLoaders.generated.ts'
 import workerModules from './workerReExports.generated.ts'
 
 // `list.ts` is the union over the products, so what jbrowse-web serves is a
@@ -75,3 +77,36 @@ test('a real package module is the same value in both realms', () => {
     }
   }
 })
+
+function field(value: unknown, name: string) {
+  return value !== null &&
+    (typeof value === 'object' || typeof value === 'function')
+    ? Reflect.get(value, name)
+    : undefined
+}
+
+// The registry scan publishes a key from the loader map, so each loader has to
+// yield what the whole registry serves under that key, in both realms
+test.each([
+  ['main thread', loaders, modules],
+  ['worker', workerLoaders, workerModules],
+])(
+  'on the %s, each loader yields what the registry serves',
+  async (_, loaderMap, registry) => {
+    expect(Object.keys(loaderMap).sort()).toEqual(Object.keys(registry).sort())
+    for (const [key, load] of Object.entries(loaderMap)) {
+      const value = await load()
+      const served = registry[key]
+      if (value !== served) {
+        expect({ key, names: ownKeys(value) }).toEqual({
+          key,
+          names: ownKeys(served),
+        })
+        for (const name of ownKeys(served)) {
+          expect(field(value, name)).toBe(field(served, name))
+        }
+      }
+    }
+  },
+  60000,
+)
