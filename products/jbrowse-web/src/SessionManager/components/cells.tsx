@@ -37,49 +37,14 @@ interface CellProps {
   session: SessionModel
 }
 
-// Every icon-only control here carries the same string as its tooltip and its
-// aria-label. Without the label a screen reader announces an unnamed button per
-// row; without the tooltip a sighted user has to guess what the icon deletes.
-const IconCell = observer(function IconCell({
-  label,
-  disabled,
-  onClick,
-  children,
-}: {
-  label: string
-  disabled?: boolean
-  onClick: () => void
-  children: React.ReactElement
-}) {
-  return (
-    <Tooltip title={label}>
-      {/* span so the tooltip still fires over a disabled button */}
-      <span>
-        <IconButton aria-label={label} disabled={disabled} onClick={onClick}>
-          {children}
-        </IconButton>
-      </span>
-    </Tooltip>
-  )
-})
-
-export const FavoriteCell = observer(function FavoriteCell({
-  row,
-  session,
-}: CellProps) {
-  return (
-    <IconCell
-      label={row.fav ? 'Remove from favorites' : 'Add to favorites'}
-      onClick={() => {
-        void session.setSavedSessionFavorite(row.id, !row.fav)
-      }}
-    >
-      {row.fav ? <StarIcon /> : <StarBorderIcon />}
-    </IconCell>
-  )
-})
-
 const useStyles = makeStyles()(theme => ({
+  // the size of the shared rename pencil beside them
+  iconButton: {
+    padding: 2,
+  },
+  icon: {
+    fontSize: 16,
+  },
   name: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -125,6 +90,60 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.background.default,
   },
 }))
+
+// Every icon-only control here carries the same string as its tooltip and its
+// aria-label. Without the label a screen reader announces an unnamed button per
+// row; without the tooltip a sighted user has to guess what the icon deletes.
+const IconCell = observer(function IconCell({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string
+  disabled?: boolean
+  onClick: () => void
+  children: React.ReactElement
+}) {
+  const { classes } = useStyles()
+  return (
+    <Tooltip title={label}>
+      {/* span so the tooltip still fires over a disabled button */}
+      <span>
+        <IconButton
+          className={classes.iconButton}
+          size="small"
+          aria-label={label}
+          disabled={disabled}
+          onClick={onClick}
+        >
+          {children}
+        </IconButton>
+      </span>
+    </Tooltip>
+  )
+})
+
+export const FavoriteCell = observer(function FavoriteCell({
+  row,
+  session,
+}: CellProps) {
+  const { classes } = useStyles()
+  return (
+    <IconCell
+      label={row.fav ? 'Remove from favorites' : 'Add to favorites'}
+      onClick={() => {
+        void session.setSavedSessionFavorite(row.id, !row.fav)
+      }}
+    >
+      {row.fav ? (
+        <StarIcon className={classes.icon} />
+      ) : (
+        <StarBorderIcon className={classes.icon} />
+      )}
+    </IconCell>
+  )
+})
 
 // The open session is not offered as a link: re-opening it from IndexedDB can
 // only lose work, since that row is up to one autosave tick behind the live
@@ -209,6 +228,7 @@ export const DeleteCell = observer(function DeleteCell({
   row,
   session,
 }: CellProps) {
+  const { classes } = useStyles()
   // the open session is rewritten by the autosave autorun every 400ms, so
   // deleting it only makes it vanish until the next edit puts it back — say so
   // on a disabled button rather than on a snackbar after the click
@@ -224,7 +244,7 @@ export const DeleteCell = observer(function DeleteCell({
         void session.deleteSavedSession(row.id)
       }}
     >
-      <DeleteIcon />
+      <DeleteIcon className={classes.icon} />
     </IconCell>
   )
 })
