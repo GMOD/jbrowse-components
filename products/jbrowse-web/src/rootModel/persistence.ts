@@ -17,7 +17,6 @@ import {
 import type { SessionDBHandle } from '../sessionDbOps.ts'
 import type { Session, SessionMetadata } from '../types.ts'
 import type { WebRootModel } from './rootModel.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { IStateTreeNode, IType } from '@jbrowse/mobx-state-tree'
 
 // Autosaves accumulate in IndexedDB forever otherwise: every distinct session
@@ -291,7 +290,7 @@ export function setupSessionLock(self: WebRootModel) {
 // surfaced by the autorun.
 function setupUnloadFlush(self: WebRootModel) {
   const flush = () => {
-    const session = self.session as AbstractSessionModel | undefined
+    const { session } = self
     // isAlive because reading a destroyed node's props throws, and throwing out
     // of an unload handler is a bad way to find out
     if (session && isAlive(self)) {
@@ -340,8 +339,8 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
     autorun(
       () => {
         if (self.session) {
-          const s = self.session as AbstractSessionModel
-          const sessionSnap = getSnapshot(s)
+          const s = self.session
+          const sessionSnap = getSnapshot<Record<string, unknown>>(s)
           try {
             writeSessionSnapshot(sessionSnap)
             autosaveReporter.saved(s)
