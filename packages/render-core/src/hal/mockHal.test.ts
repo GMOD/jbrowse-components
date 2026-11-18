@@ -244,14 +244,14 @@ describe('MockHal mid-frame buffer replacement', () => {
     expect(hal.replacedWhileDrawn()).toEqual(['0:overlay'])
   })
 
-  it('leaves a mid-frame delete of an undrawn pass out of it', () => {
-    // Synteny's shape: `ensureUploaded` deletes a pass mid-frame that nothing in
-    // the open frame referenced, which was never the hazard.
+  it('leaves a mid-frame release of an undrawn pass out of it', () => {
+    // Releasing a pass mid-frame that nothing in the open frame referenced was
+    // never the hazard.
     const hal = new MockHal([pass('a'), pass('b')])
     hal.beginFrame(0, 0, 0, 0)
     hal.uploadBuffer(0, 'a', new Float32Array([1]), 1)
     hal.drawPass('a', 0)
-    hal.deleteBuffer(0, 'b')
+    hal.uploadBuffer(0, 'b', new Float32Array(0), 0)
     hal.endFrame()
 
     expect(hal.replacedWhileDrawn()).toEqual([])

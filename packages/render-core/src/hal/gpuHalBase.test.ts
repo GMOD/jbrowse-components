@@ -50,6 +50,10 @@ class TestHal extends GpuHalBase<TestBuffer> {
   protected releaseResources() {
     this.released++
   }
+
+  getBufferCount(regionKey: number, passId: string) {
+    return this.regions.get(regionKey, passId)?.count ?? 0
+  }
 }
 
 const textured = {

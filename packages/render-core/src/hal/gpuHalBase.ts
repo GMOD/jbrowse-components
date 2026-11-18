@@ -29,8 +29,8 @@ export interface HalLimits {
  * pipeline build, and WebGPU's deferred destroy, which the `destroyBuffer` hook
  * keeps WebGPU's alone.
  *
- * A backend's `Buf` carries its own leaf handle plus the instance `count` every
- * caller reads through `getBufferCount`.
+ * A backend's `Buf` carries its own leaf handle plus the instance `count` its
+ * draw reads.
  */
 export abstract class GpuHalBase<Buf extends { count: number }> {
   protected descriptors: Map<string, PipelineDescriptor>
@@ -102,14 +102,6 @@ export abstract class GpuHalBase<Buf extends { count: number }> {
         this.regions.set(regionKey, passId, this.createBuffer(data, count))
       }
     }
-  }
-
-  getBufferCount(regionKey: number, passId: string) {
-    return this.regions.get(regionKey, passId)?.count ?? 0
-  }
-
-  deleteBuffer(regionKey: number, passId: string) {
-    this.regions.deleteBuffer(regionKey, passId)
   }
 
   deleteRegion(regionKey: number) {

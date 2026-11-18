@@ -156,8 +156,8 @@ export interface GpuHal {
    */
   releaseRenderTargets(): void
 
-  // Replacing or deleting a buffer between `beginFrame` and `endFrame` is legal
-  // on every HAL, including one the open frame has already drawn from. WebGL2
+  // Replacing a buffer, or releasing it with an empty upload, between
+  // `beginFrame` and `endFrame` is legal on every HAL, including one the open frame has already drawn from. WebGL2
   // is immediate-mode so the old contents are already consumed; WebGPU holds
   // the `destroy()` until after the frame's submit, because destroying a buffer
   // an encoded draw references fails validation for the WHOLE command buffer
@@ -168,8 +168,6 @@ export interface GpuHal {
     data: ArrayBuffer | ArrayBufferView,
     count: number,
   ): void
-  getBufferCount(regionKey: number, passId: string): number
-  deleteBuffer(regionKey: number, passId: string): void
   deleteRegion(regionKey: number): void
 
   // `sampler` names which of the pass's textures; a pass sampling one may

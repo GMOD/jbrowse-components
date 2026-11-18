@@ -126,8 +126,8 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
    * precisely so it is — but it is the sequence that used to blank a frame, and
    * it stays worth pinning per renderer: alignments re-uploads `OVERLAY_REGION`
    * once per section inside its block loop, so a chain selection spanning two
-   * sections lands here, while synteny's mid-frame delete of an undrawn pass
-   * does not. A renderer test asserts on which of the two shapes it has.
+   * sections lands here, while a mid-frame release of an undrawn pass does
+   * not. A renderer test asserts on which of the two shapes it has.
    */
   private frameOpen = false
   private drawnThisFrame = new Map<number, Set<string>>()
@@ -254,12 +254,6 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     this.record('uploadBuffer', regionKey, passId, data.byteLength, count)
     this.noteReplaced(regionKey, passId)
     super.uploadBuffer(regionKey, passId, data, count)
-  }
-
-  deleteBuffer(regionKey: number, passId: string) {
-    this.record('deleteBuffer', regionKey, passId)
-    this.noteReplaced(regionKey, passId)
-    super.deleteBuffer(regionKey, passId)
   }
 
   deleteRegion(regionKey: number) {
@@ -430,6 +424,10 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
 
   getBuffer(regionKey: number, passId: string) {
     return this.regions.get(regionKey, passId)
+  }
+
+  getBufferCount(regionKey: number, passId: string) {
+    return this.regions.get(regionKey, passId)?.count ?? 0
   }
 
   /** What the pass's `sampler` samples, named as `uploadTexture` names it. */
