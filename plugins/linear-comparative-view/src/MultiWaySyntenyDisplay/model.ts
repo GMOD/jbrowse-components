@@ -55,7 +55,7 @@ import {
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
-import { isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { FEATURE_NAME_FIELD, getFeatureName } from '@jbrowse/plugin-features'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -3239,6 +3239,18 @@ export function stateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * holds a lane's temporary assembly again, after the new view it was
+       * released to failed to open
+       */
+      holdReleasedLane(assemblyName: string) {
+        self.releasedLanes = new Set(
+          [...self.releasedLanes].filter(lane => lane !== assemblyName),
+        )
+      },
+    }))
+    .actions(self => ({
       /** #action */
       selectFeature(feature: Feature, sourceTrackId?: string) {
         openFeatureWidget(self, feature.toJSON(), {
@@ -3271,6 +3283,9 @@ export function stateModelFactory(
             ...(genes ? [genes.trackId] : []),
           ],
         }).catch((e: unknown) => {
+          if (isAlive(self)) {
+            self.holdReleasedLane(assemblyName)
+          }
           session.notifyError(`${e}`, e)
         })
       },

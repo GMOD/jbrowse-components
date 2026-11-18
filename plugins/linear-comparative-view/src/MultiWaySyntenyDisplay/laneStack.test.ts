@@ -469,6 +469,30 @@ describe('the baseline', () => {
       expect(display.holdsAssembly('hg002')).toBe(false)
     })
 
+    test('"Open in new view" that fails to open holds the genome again', async () => {
+      const { display, session } = createDisplayWithSession({
+        trackAssemblyNames: ['volvox', 'hg002'],
+        describeAssemblies: () => ({
+          hg002: {
+            assembly: HG002,
+            geneAdapter: { type: 'DescribedGenesAdapter' },
+          },
+        }),
+      })
+      await frameDisplay(display, 'hg002')
+      await when(() => display.holdsAssembly('hg002'), { timeout: 5000 })
+      const failing = {
+        id: `${display.id}-mate-hg002`,
+        navToLocString: () => Promise.reject(new Error('no such view')),
+      }
+      session.views.push(failing)
+      display.openInNewView('hg002', 'ctgA:1-100')
+      expect(session.temporaryAssemblies).toEqual([])
+      await when(() => display.holdsAssembly('hg002'), { timeout: 5000 })
+      expect(session.temporaryAssemblies).toEqual([HG002])
+      expect(display.laneAssemblyConfs.has('hg002')).toBe(true)
+    })
+
     test('a session torn down with the display in it goes quietly', async () => {
       const display = await describedDisplay()
       const session = getSession(display)
