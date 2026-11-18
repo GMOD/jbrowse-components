@@ -1,3 +1,8 @@
+import {
+  buildSearchText,
+  parseSearchQuery,
+} from '@jbrowse/core/util/searchText'
+
 import type { IndexRow } from './searchIndex.ts'
 
 // Ported from jb2hubs website/src/components/searchScoring.ts, which ranks the
@@ -82,6 +87,8 @@ interface Searchable {
   // accessionText with a space at each end, so a whole token is a substring
   accessionTokens: string
   all: string
+  // what an excluded term is checked against, as every table's search reads
+  searchText: string
   bonus: number
 }
 
@@ -103,6 +110,14 @@ function prepare(row: IndexRow): Searchable {
     accessionText,
     accessionTokens: ` ${accessionText} `,
     all: `${accessionText} ${commonName} ${aliases.join(' ')} ${scientificName} ${assemblyName}`,
+    searchText: buildSearchText([
+      row[0],
+      row[10],
+      row[1],
+      ...aliases,
+      row[2],
+      row[3],
+    ]),
     bonus: tiebreak(row, aliases[0] ? bareCommonName(aliases[0]) : bare),
   }
 }
@@ -114,9 +129,10 @@ interface Term {
 
 // A bare `gcf_` strips to nothing, and an empty term is a substring of every
 // row, so it is not a term at all
-function prepareTerms(tokens: string[]): Term[] {
-  return tokens
-    .map(text => ({ text, accession: withoutAccessionPrefix(text) }))
+function prepareTerms(query: { text: string; exclude: boolean }[]): Term[] {
+  return query
+    .filter(term => !term.exclude)
+    .map(({ text }) => ({ text, accession: withoutAccessionPrefix(text) }))
     .filter(term => term.accession !== '')
 }
 
@@ -161,11 +177,17 @@ function searchable(index: IndexRow[]) {
   return rows
 }
 
-/** Best-first rows of the index matching every token */
-export function rankRows(index: IndexRow[], tokens: string[]) {
-  const terms = prepareTerms(tokens)
+/**
+ * Best-first rows of the index matching every term the query asks for and
+ * none it excludes; a query that asks for nothing finds nothing
+ */
+export function rankRows(index: IndexRow[], searchQuery: string) {
+  const query = parseSearchQuery(searchQuery)
+  const terms = prepareTerms(query)
+  const excluded = query.filter(term => term.exclude).map(term => term.text)
   return terms.length
     ? searchable(index)
+        .filter(s => !excluded.some(text => s.searchText.includes(text)))
         .map(s => ({ row: s.row, score: score(s, terms) }))
         .filter(s => s.score >= 0)
         .toSorted((a, b) => b.score - a.score)

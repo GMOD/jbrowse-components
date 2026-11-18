@@ -95,3 +95,8 @@ test('a term matched past a hyphen is highlighted across it', () => {
   ])
   expect(highlighted('a.b (c', 'a.b (c axb')).toEqual(['a.b', '(c'])
 })
+
+test('each word of a query is marked on its own, wherever it falls', () => {
+  expect(highlighted('e coli', 'Escherichia coli')).toEqual(['E', 'e', 'coli'])
+  expect(highlighted('hg38', 'GRCh38/hg38 hg38')).toEqual(['hg38', 'hg38'])
+})

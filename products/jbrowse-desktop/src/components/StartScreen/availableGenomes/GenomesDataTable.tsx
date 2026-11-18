@@ -1,5 +1,7 @@
 import { useRef } from 'react'
 
+import { useSearchHighlight } from '@jbrowse/core/ui/useSearchHighlight'
+import { highlightPatterns } from '@jbrowse/core/util/searchText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -14,7 +16,6 @@ import useCategories from './useCategories.ts'
 import { ncbiFilterApplies } from './useGenomesData.ts'
 import { useGenomesTableState } from './useGenomesTableState.ts'
 import { useResultSet } from './useResultSet.ts'
-import { useSearchHighlight } from './useSearchHighlight.ts'
 
 import type { Fav, LaunchCallback } from '../types.ts'
 import type { Entry } from './getColumnDefinitions.tsx'
@@ -68,8 +69,12 @@ const GenomesDataTable = observer(function GenomesDataTable({
     setPageSize,
   } = state
 
-  const tableRef = useRef<HTMLDivElement>(null)
-  useSearchHighlight(tableRef, searchQuery)
+  const bodyRef = useRef<HTMLTableSectionElement>(null)
+  useSearchHighlight(
+    bodyRef,
+    highlightPatterns(searchQuery),
+    'jbrowse-genome-search',
+  )
 
   const {
     categories,
@@ -151,8 +156,9 @@ const GenomesDataTable = observer(function GenomesDataTable({
       {loadError ? null : results.isLoading ? (
         <SkeletonLoader columnCount={columns.length} />
       ) : (
-        <div ref={tableRef}>
+        <>
           <GenomesTable
+            bodyRef={bodyRef}
             columns={columns}
             rows={pageRows}
             multipleSelection={multipleSelection}
@@ -171,7 +177,7 @@ const GenomesDataTable = observer(function GenomesDataTable({
             onPageChange={setPageIndex}
             onPageSizeChange={setPageSize}
           />
-        </div>
+        </>
       )}
     </div>
   )

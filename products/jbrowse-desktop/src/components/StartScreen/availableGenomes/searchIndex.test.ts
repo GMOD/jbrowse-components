@@ -262,3 +262,12 @@ test('between otherwise equal hits, the newer assembly leads', () => {
   )
   expect(hits.map(r => r.accession)).toEqual(['mm39', 'mm7'])
 })
+
+test('quotes keep a phrase together, and a minus rules a term out', () => {
+  expect(search('"homo sapiens"')).toHaveLength(4)
+  expect(search('"sapiens homo"')).toEqual([])
+  // T2T is in the GenArk row's common name and in hs1's assembly name
+  expect(search('human -t2t').map(r => r.accession)).toEqual(['hg38', 'hg19'])
+  // a query that only excludes asks for nothing, so it finds nothing
+  expect(search('-t2t')).toEqual([])
+})

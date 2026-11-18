@@ -1,7 +1,6 @@
 import { notEmpty } from '@jbrowse/core/util'
 
 import { rankRows } from './searchScoring.ts'
-import { searchTokens } from './searchTokens.ts'
 
 import type { Entry } from './getColumnDefinitions.tsx'
 
@@ -114,7 +113,7 @@ export function searchAllGroups(
   data: IndexRow[] | undefined,
   searchQuery: string,
 ): Entry[] {
-  return rankRows(data ?? [], searchTokens(searchQuery))
+  return rankRows(data ?? [], searchQuery)
     .map(row => toEntry(row))
     .filter(notEmpty)
 }

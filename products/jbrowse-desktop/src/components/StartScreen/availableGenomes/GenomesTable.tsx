@@ -89,6 +89,7 @@ const GenomesTable = observer(function GenomesTable({
   setSelected,
   sorting,
   toggleSort,
+  bodyRef,
 }: {
   columns: GenomeColumn[]
   rows: Entry[]
@@ -97,6 +98,7 @@ const GenomesTable = observer(function GenomesTable({
   setSelected: (arg: Set<string>) => void
   sorting?: Sorting
   toggleSort: (colId: string) => void
+  bodyRef?: React.Ref<HTMLTableSectionElement>
 }) {
   const { classes } = useStyles()
   const allSelected =
@@ -148,7 +150,7 @@ const GenomesTable = observer(function GenomesTable({
           ))}
         </tr>
       </thead>
-      <tbody>
+      <tbody ref={bodyRef}>
         {rows.length ? (
           rows.map(row => {
             const isSelected = selected.has(row.accession)
