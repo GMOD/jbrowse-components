@@ -81,8 +81,9 @@ either.** A mark display holds one per linear line declared after another
 mark, 4 B per device px on both GPU backends, from the line's first draw until
 `releaseRenderTargets`, a resize or dispose: 2.0 MB for a 1266x100 CSS px track
 at dpr 2, 17.0 MB at 1266x840. On WebGL2 it is a framebuffer outside the
-drawing buffer, which `releaseRenderTargets` gives back. A display
-with no such line holds none (ADR-273).
+drawing buffer, which `releaseRenderTargets` gives back, and a resize frees
+the old one at the pass's next draw rather than at once. A display with no
+such line holds none (ADR-273).
 
 ### The uniform ring drops a write past 2048 slots
 
