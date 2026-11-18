@@ -19,7 +19,7 @@ const useStyles = makeStyles()(theme => ({
     flex: 1,
   },
   search: {
-    width: 180,
+    width: 140,
     '& input': {
       fontSize: theme.typography.body2.fontSize,
     },

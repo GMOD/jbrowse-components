@@ -13,15 +13,12 @@ interface GenotypeRow {
   count: number
 }
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   checkbox: {
     padding: 0,
     '& svg': { width: '1.15rem', height: '1.15rem' },
-    '&.Mui-checked, &.MuiCheckbox-indeterminate': {
-      color: theme.palette.accent,
-    },
   },
-}))
+})
 
 function tallyGenotypes(rows: VariantSampleGridRow[]) {
   const tally = new Map<string, GenotypeRow>()
