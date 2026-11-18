@@ -214,6 +214,7 @@ describe('the swap', () => {
   it('is loading until the read lands and the export waits with it', () => {
     const { display, view } = setup()
     view.zoomTo(100)
+    display.markCanvasDrawn()
     expect(display.coarseTierActive).toBe(true)
     expect(display.displayPhase).toBe('loading')
     expect(display.svgReady).toBe(false)
@@ -232,6 +233,7 @@ describe('the swap', () => {
   it('hands a standing cancel to the foundation, which reads canceled', () => {
     const { display, view } = setup()
     view.zoomTo(100)
+    display.markCanvasDrawn()
     expect(display.coarseTierActive).toBe(true)
     const seen: string[] = []
     const dispose = autorun(() => {
@@ -248,6 +250,7 @@ describe('the swap', () => {
       [{ displayedRegionIndex: 0, payload: { tag: 't' } }],
       { regions: [], key: 'k' },
     )
+    display.markCanvasDrawn()
     expect(display.displayPhase).toBe('ready')
     expect(seen).toEqual(['loading', 'canceled', 'loading', 'ready'])
     dispose()
@@ -280,6 +283,7 @@ describe('each tier holds its own span', () => {
     const { display, view, control } = setup()
     view.zoomTo(100)
     await settle(display)
+    display.markCanvasDrawn()
     expect(control.coarseCalls).toHaveLength(1)
     const wide = display.coarseTierRead!.regions[0]!.region
 
@@ -474,5 +478,44 @@ describe('a read in flight', () => {
     view.zoomTo(100)
     await settle(display)
     expect(control.coarseCalls).toHaveLength(1)
+  })
+})
+
+// The tier arm asks `computeActivityPhase` with the tier's read in place of the
+// detail fetch, so it takes every suppression and the first-paint term.
+describe('the tier arm takes the shared activity terms', () => {
+  const scaffolds: Region[] = Array.from({ length: 400 }, (_, i) => ({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: i * 1000,
+    end: i * 1000 + 100,
+  }))
+
+  // `visibleBp` is 0 with no content block on screen, so a threshold over the
+  // span (MAF's) cannot stand in here; one over the zoom alone can
+  it('is at rest over a viewport holding no content block', async () => {
+    const { display, view, control } = setup({
+      displayedRegions: scaffolds,
+      threshold: 0,
+    })
+    view.zoomTo(50)
+    await settle(display)
+    expect(view.hasVisibleContent).toBe(false)
+    expect(display.coarseTierStandsIn).toBe(true)
+    expect(control.coarseCalls).toHaveLength(0)
+    expect(display.displayPhase).toBe('ready')
+    expect(display.svgReady).toBe(true)
+  })
+
+  it('is loading until the canvas has painted', () => {
+    const { display, view } = setup()
+    view.zoomTo(100)
+    display.setCoarseTier(
+      [{ displayedRegionIndex: 0, payload: { tag: 't' } }],
+      { regions: [], key: 'k' },
+    )
+    expect(display.displayPhase).toBe('loading')
+    display.markCanvasDrawn()
+    expect(display.displayPhase).toBe('ready')
   })
 })

@@ -48,8 +48,15 @@ export interface SvgReadyFoundation {
  * viewport holding no content block has nothing it could be stale about, so it
  * is vacuously current. Without it a display parked off content never resolves,
  * and `awaitSvgReady` is an unbounded `when`.
+ *
+ * `dataCurrent` defaults to the foundation's own answer; a stand-in tier
+ * (`CoarseTierMixin`) passes its read's, since the detail fetch it suspends is
+ * not what the export waits for.
  */
-export function foundationSvgReady(self: SvgReadyFoundation): boolean {
+export function foundationSvgReady(
+  self: SvgReadyFoundation,
+  dataCurrent = () => self.dataCurrent,
+): boolean {
   return computeSvgReady(
     {
       error: self.error,
@@ -57,7 +64,6 @@ export function foundationSvgReady(self: SvgReadyFoundation): boolean {
       extraTerminal: self.fetchInert,
       fetchCanceled: self.fetchCanceled,
     },
-    () =>
-      self.viewportEmpty || (self.dataCurrent && !self.awaitingDependentData),
+    () => self.viewportEmpty || (dataCurrent() && !self.awaitingDependentData),
   )
 }

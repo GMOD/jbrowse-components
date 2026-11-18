@@ -251,6 +251,7 @@ describe('each tier answers for its own span', () => {
   // consulted there and never widened by a summary read either.
   it('suspends the detail fetch on the summary tier and leaves its stamp alone', () => {
     const { display, view } = env().createDisplay()
+    display.markCanvasDrawn()
     seedSources(display)
     seedSummary(display, view.displayedRegions)
     view.zoomTo(1)
@@ -266,6 +267,7 @@ describe('each tier answers for its own span', () => {
 
   it('is loading on the summary tier until its read lands, whatever the detail store holds', () => {
     const { display, view } = env().createDisplay()
+    display.markCanvasDrawn()
     seedSources(display)
     display.setLoadedRegion(0, view.displayedRegions[0], undefined)
     seedAlignment(display)
@@ -280,6 +282,7 @@ describe('each tier answers for its own span', () => {
 
   it('holds the summary tier and its export for a declared clustering run', () => {
     const { display, view } = env().createDisplay()
+    display.markCanvasDrawn()
     seedSources(display)
     seedSummary(display, view.displayedRegions)
     view.zoomTo(100)
