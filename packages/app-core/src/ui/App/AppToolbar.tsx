@@ -2,14 +2,19 @@ import AppLogo from '@jbrowse/core/ui/AppLogo'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Toolbar, Tooltip, useMediaQuery, useTheme } from '@mui/material'
+import { Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ThemeModeButton from './ThemeModeButton.tsx'
 
 import type { AppSession } from './types.ts'
 
+const LOGO_MIN_BAR_WIDTH = 700
+
 const useStyles = makeStyles()(theme => ({
+  toolbar: {
+    containerType: 'inline-size',
+  },
   grow: {
     flexGrow: 1,
   },
@@ -48,6 +53,11 @@ const useStyles = makeStyles()(theme => ({
       maxWidth: 150,
       objectFit: 'contain',
     },
+    // the drawer narrows the bar as much as a small window does, so the logo
+    // goes when the bar has no room for it rather than when the window is small
+    [`@container (max-width: ${LOGO_MIN_BAR_WIDTH}px)`]: {
+      display: 'none',
+    },
   },
 }))
 
@@ -60,13 +70,9 @@ const AppToolbar = observer(function AppToolbar({
 }) {
   const { classes } = useStyles()
   const { name, menus } = session
-  // a phone needs the logo's 150px for the menus and Share
-  const narrow = useMediaQuery(useTheme().breakpoints.down('sm'), {
-    noSsr: true,
-  })
 
   return (
-    <Toolbar>
+    <Toolbar className={classes.toolbar}>
       {menus().map(menu => (
         <DropDownMenu
           key={menu.label}
@@ -102,11 +108,9 @@ const AppToolbar = observer(function AppToolbar({
       {HeaderButtons}
       <ThemeModeButton session={session} />
       <div className={classes.grow} />
-      {narrow ? null : (
-        <div className={classes.logo}>
-          <AppLogo session={session} />
-        </div>
-      )}
+      <div className={classes.logo}>
+        <AppLogo session={session} />
+      </div>
     </Toolbar>
   )
 })
