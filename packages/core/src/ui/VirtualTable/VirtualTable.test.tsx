@@ -90,36 +90,48 @@ test('a row already on view does not scroll', () => {
   expect(getByTestId('table').scrollTop).toBe(0)
 })
 
-test('a row the filters leave out does not scroll', () => {
-  const { getByTestId } = render(
-    table({ shown: rows.slice(0, 10), scrollToRowId: 250 }),
+function Stepped({ steps }: { steps: Parameters<typeof table>[0][] }) {
+  const [step, setStep] = useState(0)
+  return (
+    <>
+      <button
+        onClick={() => {
+          setStep(step + 1)
+        }}
+      >
+        next
+      </button>
+      {table(steps[step]!)}
+    </>
   )
-  expect(getByTestId('table').scrollTop).toBe(0)
+}
+
+test('a row the filters leave out does not scroll', () => {
+  const { getByTestId, getByText } = render(
+    <Stepped
+      steps={[
+        { scrollToRowId: 250 },
+        { shown: rows.filter(row => row.id !== 10), scrollToRowId: 10 },
+      ]}
+    />,
+  )
+  const { scrollTop } = getByTestId('table')
+  expect(scrollTop).toBeGreaterThan(0)
+  fireEvent.click(getByText('next'))
+  expect(getByTestId('table').scrollTop).toBe(scrollTop)
 })
 
 test('a row a sort moves does not pull the list after it', () => {
   const reversed = rows.toReversed()
-  const steps = [
-    { scrollToRowId: 2 },
-    { shown: reversed, scrollToRowId: 2 },
-    { shown: reversed, scrollToRowId: 3 },
-  ]
-  function Harness() {
-    const [step, setStep] = useState(0)
-    return (
-      <>
-        <button
-          onClick={() => {
-            setStep(step + 1)
-          }}
-        >
-          next
-        </button>
-        {table(steps[step]!)}
-      </>
-    )
-  }
-  const { getByTestId, getByText } = render(<Harness />)
+  const { getByTestId, getByText } = render(
+    <Stepped
+      steps={[
+        { scrollToRowId: 2 },
+        { shown: reversed, scrollToRowId: 2 },
+        { shown: reversed, scrollToRowId: 3 },
+      ]}
+    />,
+  )
   fireEvent.click(getByText('next'))
   expect(getByTestId('table').scrollTop).toBe(0)
   fireEvent.click(getByText('next'))
