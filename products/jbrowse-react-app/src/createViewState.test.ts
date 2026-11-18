@@ -1,6 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import createViewState from './createViewState.ts'
+import createViewState, { createViewStateAsync } from './createViewState.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
@@ -138,4 +139,62 @@ test('localFiles reach a loose { trackId, uri } track, index sibling and all', (
   }
   expect(adapter.bamLocation.locationType).toBe('BlobLocation')
   expect(adapter.index.location.locationType).toBe('BlobLocation')
+})
+
+test('a mount-time session from an older release opens, its retired display renamed and an unknown view held', async () => {
+  const state = await createViewStateAsync({
+    config: {
+      assemblies,
+      tracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'bam',
+          name: 'bam',
+          assemblyNames: ['volvox'],
+          adapter: { type: 'BamAdapter', uri: 'a.bam' },
+        },
+      ],
+    },
+    session: {
+      name: 'v4',
+      views: [
+        {
+          id: 'lgv',
+          type: 'LinearGenomeView',
+          offsetPx: 0,
+          bpPerPx: 1,
+          displayedRegions: [
+            { refName: 'ctgA', start: 0, end: 10, assemblyName: 'volvox' },
+          ],
+          tracks: [
+            {
+              id: 't1',
+              type: 'AlignmentsTrack',
+              configuration: 'bam',
+              displays: [
+                {
+                  id: 'd1',
+                  type: 'LinearPileupDisplay',
+                  configuration: 'bam-LinearPileupDisplay',
+                },
+              ],
+            },
+          ],
+        },
+        { id: 'maf', type: 'SomeUnloadedPluginView' },
+      ],
+    },
+  })
+
+  expect(getSnapshot(state.session)).toMatchObject({
+    views: [
+      {
+        id: 'lgv',
+        tracks: [{ displays: [{ type: 'LinearAlignmentsDisplay' }] }],
+      },
+    ],
+    heldForMissingPlugins: [
+      { snapshot: { id: 'maf', type: 'SomeUnloadedPluginView' } },
+    ],
+  })
 })

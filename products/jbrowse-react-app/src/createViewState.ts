@@ -14,6 +14,7 @@ import {
 } from '@jbrowse/product-core'
 
 import createModel, { hasSession } from './createModel.ts'
+import { destroyViewState } from './destroyViewState.ts'
 
 import type { ViewModel } from './createModel.ts'
 import type { PluginsUpdate } from './rootModel/rootModel.ts'
@@ -80,8 +81,8 @@ export async function createViewStateAsync(opts: CreateViewStateOptions) {
     runtimePlugins: plugins,
     makeWorkerInstance,
   })
-  // both: the tree is created from `defaultSession` and a restored `session`
-  // is applied afterwards
+  // both: a restored `session` opens now, and File → New session opens
+  // `defaultSession` synchronously later
   await pluginManager.preloadSessionTypes(opts.config.defaultSession)
   await pluginManager.preloadSessionTypes(opts.session)
   return finishCreateViewState(opts, model, pluginManager)
@@ -149,16 +150,20 @@ function finishCreateViewState(
         // at all, so for those this is the only place they are written down.
         plugins: dedupePlugins([...(config.plugins ?? []), ...loaded]),
       },
-      session: withPageBaseUri(session ?? defaultSession),
     },
     { pluginManager },
   )
+  pluginManager.setRootModel(stateTree)
+  pluginManager.configure()
+  try {
+    stateTree.setSession(withPageBaseUri(session ?? defaultSession))
+  } catch (e) {
+    destroyViewState(stateTree)
+    throw e
+  }
   if (!hasSession(stateTree)) {
     throw new Error('createViewState built a root with no session')
   }
-
-  pluginManager.setRootModel(stateTree)
-  pluginManager.configure()
 
   if (onPluginsUpdated) {
     stateTree.setPluginsUpdatedCallback(onPluginsUpdated)
