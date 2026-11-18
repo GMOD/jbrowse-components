@@ -159,7 +159,6 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
-import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type {
   HighlightRect,
   HighlightStyle,
@@ -179,33 +178,18 @@ type VariantHoverFields = Record<string, unknown> & {
   name: string
 }
 
-// Called from the actions that set an attribute and from `setSources`, never
-// from a computed, which would console.warn per menu render. Silent on an empty
-// source list, the pre-load state.
-function warnMissingAttribute(
-  setting: string,
-  attribute: string,
-  sources: Record<string, unknown>[],
-) {
-  if (sources.length) {
+// Warned as the sample list lands rather than from a computed, which would
+// warn per menu render.
+function warnUnknownRowColorField(rowColorField: string, sources: Source[]) {
+  if (
+    rowColorField &&
+    sources.length &&
+    !sources.some(s => rowColorField in s)
+  ) {
     console.warn(
-      `${setting} attribute "${attribute}" not found in sample metadata. ` +
+      `rows.color attribute "${rowColorField}" not found in sample metadata. ` +
         `Available attributes: ${[...new Set(sources.flatMap(Object.keys))].join(', ')}`,
     )
-  }
-}
-
-function warnUnknownArrangementAttributes(
-  self: { rowColorField: string; facet: FacetSetting | undefined },
-  sources: Source[],
-) {
-  const { rowColorField } = self
-  if (rowColorField && !sources.some(source => rowColorField in source)) {
-    warnMissingAttribute('rows.color', rowColorField, sources)
-  }
-  const field = self.facet?.field
-  if (field && !sources.some(source => field in source)) {
-    warnMissingAttribute('facet', field, sources)
   }
 }
 
@@ -409,12 +393,6 @@ export function stateModelFactory(
         hovered: undefined as VariantHover | undefined,
         /**
          * #volatile
-         * Whether the attached backend draws columns, so the upload sends it
-         * the payload it can draw across the swap a layout change makes.
-         */
-        backendDrawsColumns: false,
-        /**
-         * #volatile
          * The records-only height this display opened at
          * (`settleRecordsOpeningHeight`), held while no `height` is written.
          */
@@ -448,6 +426,20 @@ export function stateModelFactory(
         }
       })
       .views(self => ({
+        /**
+         * #getter
+         * Whether the attached backend draws columns, so the upload sends it
+         * the payload it can draw across the swap a layout change makes.
+         */
+        get backendDrawsColumns() {
+          const backend = self.currentRenderingBackend
+          return (
+            typeof backend === 'object' &&
+            backend !== null &&
+            'columns' in backend &&
+            backend.columns === true
+          )
+        },
         /**
          * #getter
          * The genotype cell under the pointer.
@@ -544,12 +536,14 @@ export function stateModelFactory(
           },
           /**
            * #method
-           * The payload's positional record behind a cell.
+           * The record a click on the rows or the matrix resolved to,
+           * positional fields only: its genotypes are in the cell payload.
            */
-          simplifiedFeatureById(featureId: string) {
-            return self.cellData
+          featureById(featureId: string): Feature | undefined {
+            const hit = self.cellData
               ? recordsOf(self.cellData).positional.get(featureId)
               : undefined
+            return hit && new SimpleFeature(hit)
           },
           /**
            * #getter
@@ -595,15 +589,6 @@ export function stateModelFactory(
          */
         baseFilters(): string[] {
           return baseJexlFilters(self)
-        },
-        /**
-         * #method
-         * The record a click on the rows or the matrix resolved to,
-         * positional fields only: its genotypes are in the cell payload.
-         */
-        featureById(featureId: string): Feature | undefined {
-          const hit = self.simplifiedFeatureById(featureId)
-          return hit && new SimpleFeature(hit)
         },
         /**
          * #getter
@@ -810,7 +795,6 @@ export function stateModelFactory(
       .actions(self => {
         const fetchMetadata = createAdapterMetadataFetch(self)
         const openDetails = createFeatureDetailsOpener(self)
-        const superSetRowColorChoice = self.setRowColorChoice
         // a click in flight is aborted by the next one for the same
         // consumer, so the last click wins; each consumer holds its own, so
         // the details widget and the split view never abort each other
@@ -917,17 +901,7 @@ export function stateModelFactory(
               self.resetRowArrangement()
             }
             warnHaplotypeNameCollisions([...names])
-            warnUnknownArrangementAttributes(self, sources)
-          },
-          /**
-           * #action
-           * The mixin's, then a warning naming a metadata field no sample
-           * carries. The tint is resolved on every read of `drawnRows`, so a
-           * recolor moves no rows and drops no cluster tree.
-           */
-          setRowColorChoice(choice: string) {
-            superSetRowColorChoice(choice)
-            warnUnknownArrangementAttributes(self, self.adapterSamples ?? [])
+            warnUnknownRowColorField(self.rowColorField, sources)
           },
           /**
            * #action
@@ -1028,12 +1002,6 @@ export function stateModelFactory(
                 : arg,
             )
             self.setRenderError(undefined)
-          },
-          /**
-           * #action
-           */
-          setBackendDrawsColumns(arg: boolean) {
-            self.backendDrawsColumns = arg
           },
           /**
            * #action
@@ -1787,7 +1755,6 @@ export function stateModelFactory(
          * backend arrives, the old one is sent nothing it cannot draw.
          */
         startRenderingBackend(backend: VariantLayoutBackend) {
-          self.setBackendDrawsColumns(backend.columns)
           installUpload<number, Placed<VariantCellData>, VariantLayoutBackend>(
             self,
             backend,
