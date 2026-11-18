@@ -61,8 +61,7 @@ export interface Entry {
 
 export type GenomeColumn = VirtualTableColumn<Entry>
 
-// each column's starting width; the column naming the row takes what the rest
-// leave
+// each column's narrowest width, which a wider table grows in proportion
 export const columnWidths: Record<string, number> = {
   favorite: 96,
   name: 260,
@@ -202,7 +201,6 @@ export function getColumnDefinitions({
   }) => ({
     id,
     header,
-    fill: true,
     sortValue: value,
     title: (row: Entry) => cellText(value(row)),
     cell: (row: Entry) => (
