@@ -1,12 +1,12 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { rampLabels } from '@jbrowse/core/ui/colorScale'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { SimpleFeature } from '@jbrowse/core/util'
 import {
   MISCONFIGURED_COLOR,
   NO_CATEGORY_COLOR,
 } from '@jbrowse/core/util/color'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { SimpleFeature } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 import { autorun } from 'mobx'
 

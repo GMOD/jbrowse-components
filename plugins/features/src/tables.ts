@@ -25,6 +25,7 @@ import {
 import { resolveMapColors } from './LinearBasicDisplay/components/resolveRegionColors.ts'
 import { chevronGridWindow } from './LinearBasicDisplay/components/sharedRendererConstants.ts'
 import { sectionIdsOf } from './LinearBasicDisplay/facet.ts'
+import { countTruncatedFeatures } from './LinearBasicDisplay/layoutQueries.ts'
 import {
   ARROW_LENGTH_PX,
   STEM_HALF_H_PX,
@@ -42,7 +43,6 @@ import {
   INSET_HEIGHT_FRACTION,
   RECT_FLAG_INSET,
 } from './LinearBasicDisplay/passes/shaders/rectInstance.generated.ts'
-import { countTruncatedFeatures } from './LinearBasicDisplay/layoutQueries.ts'
 import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 import { centerShrink } from './RenderFeatureDataRPC/collect/emitPrimitives.ts'
 import { ROOT_CHILD_ORDINAL } from './RenderFeatureDataRPC/rpcTypes.ts'
