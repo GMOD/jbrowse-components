@@ -1,18 +1,16 @@
-import { useState } from 'react'
-
 import { ActionLink } from '@jbrowse/core/ui'
 import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import VirtualTable, {
   EditableTextCell,
   TableCheckbox,
+  useTableSort,
 } from '@jbrowse/core/ui/VirtualTable'
 import { getSession } from '@jbrowse/core/util'
 import {
   HIGHLIGHT_ALPHA,
   getHighlightColor,
 } from '@jbrowse/core/util/highlights'
-import { compareValues } from '@jbrowse/core/util/tableText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -57,19 +55,13 @@ const HighlightGrid = observer(function HighlightGrid({
   const { classes } = useStyles()
   const theme = useStyleTheme()
   const session = getSession(model)
-  const [sortField, setSortField] = useState('')
-  const [sortAscending, setSortAscending] = useState(true)
   const { rows, selectedIds, selectedHighlights } = model
   const bandColor = (h: { color?: string }) =>
     getHighlightColor(h, theme).toRgbString()
   const assemblyNames = rows.map(r => r.assemblyName)
   const multipleAssemblies = new Set(assemblyNames).size > 1
 
-  const sortKey = sortKeys[sortField]
-  const direction = sortAscending ? 1 : -1
-  const sortedRows = sortKey
-    ? rows.toSorted((a, b) => compareValues(sortKey(a), sortKey(b), direction))
-    : rows
+  const { sortedRows, sortProps, sortResetKey } = useTableSort(rows, sortKeys)
 
   const columns: VirtualTableColumn<HighlightRow>[] = [
     {
@@ -172,13 +164,8 @@ const HighlightGrid = observer(function HighlightGrid({
             assemblyName: colWidth('Assembly', assemblyNames),
             color: COLOR_WIDTH,
           })}
-          sortField={sortField}
-          sortAscending={sortAscending}
-          onSort={(field, ascending) => {
-            setSortField(field)
-            setSortAscending(ascending)
-          }}
-          resetKey={JSON.stringify([sortField, sortAscending])}
+          {...sortProps}
+          resetKey={sortResetKey}
           emptyMessage="No highlights yet. Drag across a view to highlight a region, or import from the menu."
           isRowSelected={row => selectedIds.has(row.id)}
           leading={{

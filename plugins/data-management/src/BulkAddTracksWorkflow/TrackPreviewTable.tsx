@@ -1,7 +1,7 @@
-import { useState } from 'react'
-
-import VirtualTable, { EditableTextCell } from '@jbrowse/core/ui/VirtualTable'
-import { compareValues } from '@jbrowse/core/util/tableText'
+import VirtualTable, {
+  EditableTextCell,
+  useTableSort,
+} from '@jbrowse/core/ui/VirtualTable'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Typography } from '@mui/material'
@@ -78,8 +78,6 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
   onRemove: (id: string) => void
 }) {
   const { classes } = useStyles()
-  const [sortField, setSortField] = useState('')
-  const [sortAscending, setSortAscending] = useState(true)
   const rows: PreviewRow[] = named.map(({ row, name, autoName }) => ({
     id: row.id,
     name,
@@ -88,11 +86,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
     index: row.indexName ?? '',
     status: row.status,
   }))
-  const sortKey = sortKeys[sortField]
-  const direction = sortAscending ? 1 : -1
-  const sortedRows = sortKey
-    ? rows.toSorted((a, b) => compareValues(sortKey(a), sortKey(b), direction))
-    : rows
+  const { sortedRows, sortProps, sortResetKey } = useTableSort(rows, sortKeys)
 
   const columns: VirtualTableColumn<PreviewRow>[] = [
     {
@@ -163,13 +157,8 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
             columns.map(col => [col.id, available / columns.length]),
           )
         }
-        sortField={sortField}
-        sortAscending={sortAscending}
-        onSort={(field, ascending) => {
-          setSortField(field)
-          setSortAscending(ascending)
-        }}
-        resetKey={JSON.stringify([sortField, sortAscending])}
+        {...sortProps}
+        resetKey={sortResetKey}
         emptyMessage="No tracks"
         testId="bulk-add-preview"
       />

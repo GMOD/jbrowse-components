@@ -63,17 +63,22 @@ describe('sortRows', () => {
   })
 })
 
-describe('compareCells via sortRows', () => {
-  test('unset cells sort together, not under "undefined"', () => {
+describe('cell order', () => {
+  test('unset cells sort last either way, not under "undefined"', () => {
     const rows = [
       { name: 'a', group: 'zeta' },
       { name: 'b' },
       { name: 'c', group: 'alpha' },
     ]
     expect(sortRows(rows, 'group', 'asc').map(r => r.name)).toEqual([
-      'b',
       'c',
       'a',
+      'b',
+    ])
+    expect(sortRows(rows, 'group', 'desc').map(r => r.name)).toEqual([
+      'a',
+      'c',
+      'b',
     ])
   })
 

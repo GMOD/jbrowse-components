@@ -4,12 +4,12 @@ import { observer } from 'mobx-react'
 
 import { measureGridWidth } from '../../util/dataGridUtils.ts'
 import {
-  compareValues,
   searchHighlightPatterns,
   splitSearchWords,
 } from '../../util/tableText.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import VirtualTable from '../VirtualTable/VirtualTable.tsx'
+import { useTableSort } from '../VirtualTable/useTableSort.ts'
 import DetailTableToolbar from './DetailTableToolbar.tsx'
 import { columnText } from './detailColumns.ts'
 
@@ -78,8 +78,6 @@ const DetailTable = observer(function DetailTable<
 )) {
   const { classes } = useStyles()
   const [searchText, setSearchText] = useState('')
-  const [sortField, setSortField] = useState('')
-  const [sortAscending, setSortAscending] = useState(true)
 
   const widths = useMemo(
     () =>
@@ -98,21 +96,23 @@ const DetailTable = observer(function DetailTable<
     )
   }, [rows, columns])
   const words = useMemo(() => splitSearchWords(searchText), [searchText])
-  const shownRows = useMemo(() => {
-    const searched = words.length
-      ? rows.filter((_, i) =>
-          words.every(word => searchTexts[i]!.includes(word)),
-        )
-      : rows
-    const sortColumn = columns.find(col => col.field === sortField)
-    const direction = sortAscending ? 1 : -1
-    return sortColumn
-      ? searched
-          .map(row => ({ row, key: sortColumn.value(row) }))
-          .sort((a, b) => compareValues(a.key, b.key, direction))
-          .map(({ row }) => row)
-      : searched
-  }, [rows, columns, searchTexts, words, sortField, sortAscending])
+  const searchedRows = useMemo(
+    () =>
+      words.length
+        ? rows.filter((_, i) =>
+            words.every(word => searchTexts[i]!.includes(word)),
+          )
+        : rows,
+    [rows, searchTexts, words],
+  )
+  const {
+    sortedRows: shownRows,
+    sortProps,
+    sortResetKey,
+  } = useTableSort(
+    searchedRows,
+    Object.fromEntries(columns.map(col => [col.field, col.value])),
+  )
 
   return (
     <div className={classes.root} data-testid={testId}>
@@ -145,13 +145,8 @@ const DetailTable = observer(function DetailTable<
           leading={leading}
           isRowSelected={isRowSelected}
           onRowClick={onRowClick}
-          sortField={sortField}
-          sortAscending={sortAscending}
-          onSort={(field, ascending) => {
-            setSortField(field)
-            setSortAscending(ascending)
-          }}
-          resetKey={JSON.stringify([searchText, sortField, sortAscending])}
+          {...sortProps}
+          resetKey={JSON.stringify([searchText, sortResetKey])}
           highlightPatterns={searchHighlightPatterns(words)}
           emptyMessage={rows.length ? 'No rows match the search' : 'No rows'}
         />

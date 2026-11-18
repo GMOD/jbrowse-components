@@ -3,9 +3,8 @@ import { useState } from 'react'
 import { formatSessionSummary, sessionLastUsed } from '@jbrowse/app-core'
 import { SearchField } from '@jbrowse/core/ui/ClearableSearchField'
 import ControlRow from '@jbrowse/core/ui/ControlRow'
-import VirtualTable from '@jbrowse/core/ui/VirtualTable'
+import VirtualTable, { useTableSort } from '@jbrowse/core/ui/VirtualTable'
 import {
-  compareValues,
   searchHighlightPatterns,
   splitSearchWords,
 } from '@jbrowse/core/util/tableText'
@@ -46,6 +45,8 @@ const useStyles = makeStyles()(theme => ({
 
 const ROW_HEIGHT = 72
 
+const sortKeys = { name: (row: Row) => row.name }
+
 /**
  * The saved sessions, favorites first and each group by last use; `undefined`
  * while the database is still opening, which is not the same as empty.
@@ -76,8 +77,6 @@ const SessionManager = observer(function SessionManager({
 }) {
   const { classes } = useStyles()
   const [deleteOldOpen, setDeleteOldOpen] = useState(false)
-  const [sortField, setSortField] = useState('')
-  const [sortAscending, setSortAscending] = useState(true)
   const [searchText, setSearchText] = useState('')
   const rows = buildRows(session)
   const words = splitSearchWords(searchText)
@@ -87,11 +86,10 @@ const SessionManager = observer(function SessionManager({
         return words.every(word => name.includes(word))
       })
     : rows
-  const direction = sortAscending ? 1 : -1
-  const sortedRows =
-    searched && sortField === 'name'
-      ? searched.toSorted((a, b) => compareValues(a.name, b.name, direction))
-      : searched
+  const { sortedRows, sortProps, sortResetKey } = useTableSort(
+    searched ?? [],
+    sortKeys,
+  )
 
   const columns: VirtualTableColumn<Row>[] = [
     {
@@ -115,7 +113,7 @@ const SessionManager = observer(function SessionManager({
           Delete old sessions...
         </Button>
         <div className={classes.spacer} />
-        {rows && sortedRows && sortedRows.length !== rows.length ? (
+        {rows && sortedRows.length !== rows.length ? (
           <Typography
             variant="caption"
             color="textSecondary"
@@ -134,7 +132,7 @@ const SessionManager = observer(function SessionManager({
           onChange={setSearchText}
         />
       </ControlRow>
-      {sortedRows ? (
+      {rows ? (
         <div className={classes.table}>
           <VirtualTable
             rows={sortedRows}
@@ -146,13 +144,8 @@ const SessionManager = observer(function SessionManager({
               header: null,
               cell: row => <ThumbnailCell row={row} session={session} />,
             }}
-            sortField={sortField}
-            sortAscending={sortAscending}
-            onSort={(field, ascending) => {
-              setSortField(field)
-              setSortAscending(ascending)
-            }}
-            resetKey={JSON.stringify([searchText, sortField, sortAscending])}
+            {...sortProps}
+            resetKey={JSON.stringify([searchText, sortResetKey])}
             highlightPatterns={searchHighlightPatterns(words)}
             emptyMessage={
               words.length ? 'No matching sessions' : 'No saved sessions'

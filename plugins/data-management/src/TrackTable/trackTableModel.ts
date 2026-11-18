@@ -6,11 +6,11 @@ import {
   localStorageSetJSON,
   measureGridWidth,
 } from '@jbrowse/core/util'
+import { compareValues } from '@jbrowse/core/util/tableText'
 import { trackCatalogEntry } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
-import { trackNameCollator } from '../shared/collator.ts'
 import { configScopedKey } from '../shared/configScopedKey.ts'
 import { buildSearchText, searchMatcher } from '../shared/searchText.ts'
 import { measureNameColumnWidth } from '../shared/trackGridUtils.ts'
@@ -738,7 +738,7 @@ export function trackTableModelFactory() {
             row,
             key: coarseStripHTML(getRowStr(sortField, row)),
           }))
-          .sort((a, b) => dir * trackNameCollator.compare(a.key, b.key))
+          .sort((a, b) => compareValues(a.key, b.key, dir))
           .map(({ row }) => row)
       },
       /**

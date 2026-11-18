@@ -1,8 +1,8 @@
-import { useState } from 'react'
-
-import VirtualTable, { TableCheckbox } from '@jbrowse/core/ui/VirtualTable'
+import VirtualTable, {
+  TableCheckbox,
+  useTableSort,
+} from '@jbrowse/core/ui/VirtualTable'
 import { measureGridWidth } from '@jbrowse/core/util'
-import { compareValues } from '@jbrowse/core/util/tableText'
 import { useMediaQuery } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -51,8 +51,6 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
   toggleFavorite: (sessionPath: string) => void
   addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
-  const [sortField, setSortField] = useState('')
-  const [sortAscending, setSortAscending] = useState(true)
   // The same query the start screen stacks its panels at, so "narrow" here
   // means the table has the whole window and still not much of it. `noSsr`
   // because the default renders once with `false` before the real value: on a
@@ -68,11 +66,7 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
       lastModifiedTooltip: tooltip,
     }
   })
-  const sortKey = sortKeys[sortField]
-  const direction = sortAscending ? 1 : -1
-  const sortedRows = sortKey
-    ? rows.toSorted((a, b) => compareValues(sortKey(a), sortKey(b), direction))
-    : rows
+  const { sortedRows, sortProps, sortResetKey } = useTableSort(rows, sortKeys)
 
   const lastModifiedWidth =
     measureGridWidth(
@@ -136,13 +130,8 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
       rows={sortedRows}
       columns={columns}
       widths={() => ({ name: 150, path: 200, lastModified: lastModifiedWidth })}
-      sortField={sortField}
-      sortAscending={sortAscending}
-      onSort={(field, ascending) => {
-        setSortField(field)
-        setSortAscending(ascending)
-      }}
-      resetKey={JSON.stringify([sortField, sortAscending])}
+      {...sortProps}
+      resetKey={sortResetKey}
       emptyMessage="No sessions"
       isRowSelected={narrow ? undefined : row => selectedPaths.has(row.path)}
       // 50px of checkbox for a multi-select whose two toolbar buttons the

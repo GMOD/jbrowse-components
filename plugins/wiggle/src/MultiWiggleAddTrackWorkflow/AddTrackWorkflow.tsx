@@ -4,6 +4,7 @@ import { AssemblySelector, FileDropZone, SanitizedHTML } from '@jbrowse/core/ui'
 import VirtualTable, {
   EditableTextCell,
   TableCheckbox,
+  useTableSort,
 } from '@jbrowse/core/ui/VirtualTable'
 import {
   addTrackFromWidget,
@@ -13,7 +14,6 @@ import {
   workflowForm,
 } from '@jbrowse/core/util'
 import { nanoid } from '@jbrowse/core/util/nanoid'
-import { compareValues } from '@jbrowse/core/util/tableText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
@@ -148,8 +148,6 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
   const currentTracks = () => currentForm().tracks
   const guessers = sessionGuessers(model)
   const [ticked, setTicked] = useState<ReadonlySet<string>>(() => new Set())
-  const [sortField, setSortField] = useState('')
-  const [sortAscending, setSortAscending] = useState(true)
 
   function addClassified(classified: (Member | Refusal)[]) {
     const added = partition(classified)
@@ -182,13 +180,11 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
     tracks.filter(t => ticked.has(t.id)).map(t => t.id),
   )
   const allSelected = tracks.length > 0 && selectedIds.size === tracks.length
-  const sortKey = sortKeys[sortField]
-  const direction = sortAscending ? 1 : -1
-  const sortedTracks = sortKey
-    ? tracks.toSorted((a, b) =>
-        compareValues(sortKey(a), sortKey(b), direction),
-      )
-    : tracks
+  const {
+    sortedRows: sortedTracks,
+    sortProps,
+    sortResetKey,
+  } = useTableSort(tracks, sortKeys)
   const columns: VirtualTableColumn<TrackRow>[] = [
     {
       id: 'name',
@@ -306,13 +302,8 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
               rows={sortedTracks}
               columns={columns}
               widths={() => ({ kind: KIND_WIDTH })}
-              sortField={sortField}
-              sortAscending={sortAscending}
-              onSort={(field, ascending) => {
-                setSortField(field)
-                setSortAscending(ascending)
-              }}
-              resetKey={JSON.stringify([sortField, sortAscending])}
+              {...sortProps}
+              resetKey={sortResetKey}
               emptyMessage="No tracks"
               isRowSelected={row => selectedIds.has(row.id)}
               leading={{
