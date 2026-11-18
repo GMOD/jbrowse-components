@@ -94,7 +94,11 @@ import { cellGlyphs } from './components/cellGlyphs.ts'
 import { withClickedSample } from './components/enrichFeatureFromClick.ts'
 import { tooltipPlainText } from './components/getTooltipRows.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
-import { densityRung, recordDensityAlpha } from './densityFade.ts'
+import {
+  densityRung,
+  recordDensityAlpha,
+  sameRegionRecordAlpha,
+} from './densityFade.ts'
 import { keyedRecordViews, keyedVariantViews } from './keyedVariants.ts'
 import { loadedRegionIndexOverlapping } from './loadedRegionIndexOverlapping.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
@@ -1495,31 +1499,43 @@ export function stateModelFactory(
           })
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * The power-of-two zoom the density fade is computed at, so a zoom
-         * inside one rung repaints and re-uploads no cell.
-         */
-        get densityRung() {
-          return densityRung(self.host.bpPerPx)
-        },
-        /**
-         * #getter
-         * Each fetched region's records' alpha factors where they share
-         * pixels at genomic positions (`recordDensityAlpha`), so a zoomed-out
-         * row shades by the share of its records that are alt instead of
-         * filling wherever any is
-         */
-        get regionRecordAlpha() {
-          const { cellData } = self
-          return cellData && self.atGenomicPositions
-            ? mapPayloadRegions(cellData, data =>
-                recordDensityAlpha(data.featurePositions, this.densityRung),
-              )
-            : new Map<number, Float32Array | undefined>()
-        },
-      }))
+      .views(self => {
+        let lastRegionRecordAlpha:
+          | Map<number, Float32Array | undefined>
+          | undefined
+        return {
+          /**
+           * #getter
+           * The power-of-two zoom the density fade is computed at, so a zoom
+           * inside one rung repaints and re-uploads no cell.
+           */
+          get densityRung() {
+            return densityRung(self.host.bpPerPx)
+          },
+          /**
+           * #getter
+           * Each fetched region's records' alpha factors where they share
+           * pixels at genomic positions (`recordDensityAlpha`), so a zoomed-out
+           * row shades by the share of its records that are alt instead of
+           * filling wherever any is. The previous map while every alpha is
+           * the same, so a zoom across a rung that fades nothing new
+           * re-uploads no cell.
+           */
+          get regionRecordAlpha() {
+            const { cellData } = self
+            const out =
+              cellData && self.atGenomicPositions
+                ? mapPayloadRegions(cellData, data =>
+                    recordDensityAlpha(data.featurePositions, this.densityRung),
+                  )
+                : new Map<number, Float32Array | undefined>()
+            const last = lastRegionRecordAlpha
+            lastRegionRecordAlpha =
+              last && sameRegionRecordAlpha(last, out) ? last : out
+            return lastRegionRecordAlpha
+          },
+        }
+      })
       .views(self => regionCellColorViews(self))
       .views(self => ({
         /**

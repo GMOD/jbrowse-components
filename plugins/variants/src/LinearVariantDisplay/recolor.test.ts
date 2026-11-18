@@ -69,6 +69,41 @@ function cellData(colorRead: CellHueRead): CellDataResult {
   }
 }
 
+// one-base records at each of `starts`, a het cell on every sample, AF '0.5'
+function snvsAt(starts: number[], colorRead: CellHueRead): CellDataResult {
+  const data = cellData(colorRead)
+  const index = new Flatbush(starts.length, 16, Uint32Array)
+  for (const [f, start] of starts.entries()) {
+    index.add(start, f, start + 1, f + 1)
+  }
+  index.finish()
+  const numCells = starts.length * SAMPLES.length
+  return {
+    ...data,
+    simplifiedFeatures: starts.map((start, f) => ({
+      id: `v${f}`,
+      data: { start, end: start + 1, refName: 'ctgA', name: `v${f}` },
+    })),
+    perRegionCellData: {
+      0: {
+        ...data.perRegionCellData[0]!,
+        cellRowIndices: Uint32Array.from({ length: numCells }, (_, i) => i % 3),
+        cellColors: new Uint32Array(numCells).fill(het(ALT_HUE)),
+        cellAltDosage: new Uint8Array(numCells).fill(128),
+        cellFeatureIndices: Uint32Array.from({ length: numCells }, (_, i) =>
+          Math.floor(i / 3),
+        ),
+        numCells,
+        featureCategories: new Uint8Array(starts.length).fill(1 << CELL_ALT),
+        featureColorValues: new Uint32Array(starts.length).fill(1),
+        featureInfo: starts.map((_, f) => featureInfoOf(`v${f}`)),
+        featurePositions: Uint32Array.from(starts.flatMap(s => [s, s + 1])),
+        featureIndexData: index.data,
+      },
+    },
+  }
+}
+
 function setup() {
   const { display, view } = createTestEnvironment().createDisplay()
   display.setSources(SAMPLES.map(name => ({ name })))
@@ -207,36 +242,7 @@ test('a pick of what already paints writes nothing', () => {
 test('records too short to see that share pixels paint their cells faded, keeping the hue', () => {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SAMPLES.map(name => ({ name })))
-  const index = new Flatbush(2, 16, Uint32Array)
-  index.add(100, 0, 101, 1)
-  index.add(100, 1, 101, 2)
-  index.finish()
-  const data = cellData({ field: '' })
-  const region = data.perRegionCellData[0]!
-  display.setCellData({
-    ...data,
-    simplifiedFeatures: [
-      ...data.simplifiedFeatures,
-      { id: 'v1', data: { start: 100, end: 101, refName: 'ctgA', name: 'v1' } },
-    ],
-    perRegionCellData: {
-      0: {
-        ...region,
-        cellRowIndices: Uint32Array.from([0, 1, 2, 0, 1, 2]),
-        cellColors: new Uint32Array(6).fill(het(ALT_HUE)),
-        cellAltDosage: new Uint8Array(6).fill(128),
-        cellFeatureIndices: Uint32Array.from([0, 0, 0, 1, 1, 1]),
-        numCells: 6,
-        featureColorValues: Uint32Array.of(0, 0),
-        featureInfo: [
-          featureInfoOf('v0', { length: 1 }),
-          featureInfoOf('v1', { length: 1 }),
-        ],
-        featurePositions: Uint32Array.from([100, 101, 100, 101]),
-        featureIndexData: index.data,
-      },
-    },
-  })
+  display.setCellData(snvsAt([100, 100], { field: '' }))
   const painted = [...display.regionCellColors.get(0)!]
   const full = het(ALT_HUE)
   expect(painted.every(c => c >>> 24 < full >>> 24)).toBe(true)
@@ -267,8 +273,45 @@ test('a zoom that keeps the density rung repaints no cell', () => {
   view.zoomTo(rung * 1.2)
   expect(densityRung(view.bpPerPx)).toBe(rung)
   expect(display.perRegionCellMap === painted).toBe(true)
-  view.zoomTo(rung * 4)
+  dispose()
+})
+
+// 10 bp apart, two one-base records share no pixel at 2 bp/px and share one
+// at 8 bp/px
+test('a zoom across a density rung that fades nothing repaints no cell', () => {
+  const { display, view, dispose } = setup()
+  display.setCellData(snvsAt([100, 110], { field: 'INFO.AF' }))
+  view.zoomTo(1)
+  const painted = display.perRegionCellMap
+  view.zoomTo(2)
+  expect(densityRung(view.bpPerPx)).toBe(2)
+  expect(display.perRegionCellMap === painted).toBe(true)
+  dispose()
+})
+
+test('a zoom across a density rung that changes a fade repaints the cells', () => {
+  const { display, view, dispose } = setup()
+  display.setCellData(snvsAt([100, 110], { field: 'INFO.AF' }))
+  view.zoomTo(1)
+  const painted = display.perRegionCellMap
+  view.zoomTo(8)
+  expect(densityRung(view.bpPerPx)).toBe(8)
   expect(display.perRegionCellMap === painted).toBe(false)
+  expect(cells(display).every(c => c >>> 24 < het('#aa0000') >>> 24)).toBe(true)
+  dispose()
+})
+
+test('a new payload whose records fade alike repaints its cells', () => {
+  const { display, view, dispose } = setup()
+  view.zoomTo(8)
+  display.setCellData(snvsAt([100, 110], { field: 'INFO.AF' }))
+  const alpha = display.regionRecordAlpha
+  expect(alpha.get(0)).toBeDefined()
+  const rgb = () => new Set(cells(display).map(c => c & 0xffffff))
+  expect(rgb()).toEqual(new Set([het('#aa0000') & 0xffffff]))
+  display.setCellData(snvsAt([100, 110], { field: 'INFO.DP' }))
+  expect(display.regionRecordAlpha).toBe(alpha)
+  expect(rgb()).toEqual(new Set([het(ALT_HUE) & 0xffffff]))
   dispose()
 })
 

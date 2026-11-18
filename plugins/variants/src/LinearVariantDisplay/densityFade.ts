@@ -82,6 +82,27 @@ export function recordDensityAlpha(
   return alpha
 }
 
+function sameAlpha(a: Float32Array | undefined, b: Float32Array | undefined) {
+  return (
+    a === b ||
+    (a !== undefined &&
+      b !== undefined &&
+      a.length === b.length &&
+      a.every((v, i) => v === b[i]))
+  )
+}
+
+/** Whether two per-region fades give every record the same alpha */
+export function sameRegionRecordAlpha(
+  a: ReadonlyMap<number, Float32Array | undefined>,
+  b: ReadonlyMap<number, Float32Array | undefined>,
+) {
+  return (
+    a.size === b.size &&
+    [...a].every(([k, alpha]) => b.has(k) && sameAlpha(alpha, b.get(k)))
+  )
+}
+
 /**
  * `colors` with each cell's alpha scaled by its record's factor; the same
  * array when there is none
