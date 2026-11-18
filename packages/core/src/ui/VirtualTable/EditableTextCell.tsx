@@ -1,42 +1,40 @@
 import { useRef, useState } from 'react'
 
+import EditIcon from '@mui/icons-material/Edit'
+import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../../util/tss-react/index.ts'
+import CellTextInput from './CellTextInput.tsx'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
+  cell: {
+    display: 'flex',
+    alignItems: 'center',
+    minWidth: 0,
+  },
   text: {
-    display: 'block',
+    flex: 1,
     minWidth: 0,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+  },
+  clickable: {
     cursor: 'text',
-    '&:focus-visible': {
-      outline: `2px solid ${theme.palette.accent}`,
-      outlineOffset: -2,
-    },
   },
-  input: {
-    width: '100%',
-    height: 21,
-    boxSizing: 'border-box',
-    padding: '0 4px',
-    font: 'inherit',
-    color: theme.palette.text.primary,
-    background: theme.palette.background.paper,
-    border: `1px solid ${theme.palette.accent}`,
-    borderRadius: 2,
-    outline: 'none',
-    verticalAlign: 'middle',
+  pencil: {
+    padding: 2,
+    flexShrink: 0,
   },
-}))
+  pencilIcon: {
+    fontSize: 16,
+  },
+})
 
 /**
- * A table cell's text that edits in place: a double click, or Enter or F2
- * while it has focus, opens a small input; Enter or leaving it commits and
- * Escape cancels. An unchanged value, or a blank one unless `allowBlank`,
- * commits nothing.
+ * A table cell's text with a pencil that edits it in place through a
+ * `CellTextInput`; focus goes back to the pencil when a key closes the input.
  */
 const EditableTextCell = observer(function EditableTextCell({
   value,
@@ -47,84 +45,60 @@ const EditableTextCell = observer(function EditableTextCell({
   children,
 }: {
   value: string
-  /** names the text and its input, such as "Rename chr1:1..100" */
+  /** names the pencil and the input, such as "Rename chr1:1..100" */
   label: string
   onCommit: (text: string) => void
   allowBlank?: boolean
-  /** a single click opens the input too */
+  /** a click on the text opens the input too */
   editOnClick?: boolean
   /** what the cell shows while not editing, the value when unset */
   children?: React.ReactNode
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const [editing, setEditing] = useState(false)
-  const settled = useRef(false)
+  const refocus = useRef(false)
 
   function start() {
-    settled.current = false
     setEditing(true)
-  }
-  function finish(text?: string) {
-    if (!settled.current) {
-      settled.current = true
-      setEditing(false)
-      if (
-        text !== undefined &&
-        text !== value &&
-        (allowBlank || text.trim() !== '')
-      ) {
-        onCommit(text)
-      }
-    }
   }
 
   return editing ? (
-    <input
-      className={classes.input}
-      aria-label={label}
-      defaultValue={value}
-      autoFocus
-      onFocus={event => {
-        event.currentTarget.select()
-      }}
-      onClick={event => {
-        event.stopPropagation()
-      }}
-      onDoubleClick={event => {
-        event.stopPropagation()
-      }}
-      onKeyDown={event => {
-        if (event.key === 'Enter' || event.key === 'Escape') {
-          event.preventDefault()
-          event.stopPropagation()
-          finish(event.key === 'Enter' ? event.currentTarget.value : undefined)
-        }
-      }}
-      onBlur={event => {
-        finish(event.currentTarget.value)
+    <CellTextInput
+      value={value}
+      label={label}
+      allowBlank={allowBlank}
+      onCommit={onCommit}
+      onClose={byKey => {
+        refocus.current = byKey
+        setEditing(false)
       }}
     />
   ) : (
-    <span
-      className={classes.text}
-      role="button"
-      tabIndex={0}
-      aria-label={label}
-      title={value}
-      onClick={editOnClick ? start : undefined}
-      onDoubleClick={start}
-      onKeyDown={event => {
-        if (
-          event.target === event.currentTarget &&
-          (event.key === 'Enter' || event.key === 'F2')
-        ) {
-          event.preventDefault()
+    <div className={classes.cell}>
+      <span
+        className={cx(classes.text, editOnClick && classes.clickable)}
+        onClick={editOnClick ? start : undefined}
+      >
+        {children ?? value}
+      </span>
+      <IconButton
+        ref={el => {
+          if (el && refocus.current) {
+            refocus.current = false
+            el.focus()
+          }
+        }}
+        className={classes.pencil}
+        size="small"
+        aria-label={label}
+        onClick={event => {
+          event.stopPropagation()
           start()
-        }
-      }}
-    >
-      {children ?? value}
-    </span>
+        }}
+      >
+        <EditIcon className={classes.pencilIcon} />
+      </IconButton>
+    </div>
   )
 })
 

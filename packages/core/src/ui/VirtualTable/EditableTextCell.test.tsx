@@ -1,3 +1,5 @@
+import { StrictMode } from 'react'
+
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen } from '@testing-library/react'
 
@@ -11,27 +13,29 @@ function setup({
   editOnClick,
 }: { allowBlank?: boolean; editOnClick?: boolean } = {}) {
   const onCommit = jest.fn()
-  render(
-    <ThemeProvider theme={theme}>
-      <EditableTextCell
-        value="old"
-        label="Rename old"
-        onCommit={onCommit}
-        allowBlank={allowBlank}
-        editOnClick={editOnClick}
-      />
-    </ThemeProvider>,
+  const { unmount } = render(
+    <StrictMode>
+      <ThemeProvider theme={theme}>
+        <EditableTextCell
+          value="old"
+          label="Rename old"
+          onCommit={onCommit}
+          allowBlank={allowBlank}
+          editOnClick={editOnClick}
+        />
+      </ThemeProvider>
+    </StrictMode>,
   )
-  return onCommit
+  return { onCommit, unmount }
 }
 
 function openInput() {
-  fireEvent.doubleClick(screen.getByRole('button', { name: 'Rename old' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Rename old' }))
   return screen.getByRole<HTMLInputElement>('textbox', { name: 'Rename old' })
 }
 
 test('Enter commits the typed text and closes the input', () => {
-  const onCommit = setup()
+  const { onCommit } = setup()
   const input = openInput()
   fireEvent.change(input, { target: { value: 'new' } })
   fireEvent.keyDown(input, { key: 'Enter' })
@@ -41,7 +45,7 @@ test('Enter commits the typed text and closes the input', () => {
 })
 
 test('leaving the input commits the typed text', () => {
-  const onCommit = setup()
+  const { onCommit } = setup()
   const input = openInput()
   fireEvent.change(input, { target: { value: 'new' } })
   fireEvent.blur(input)
@@ -50,7 +54,7 @@ test('leaving the input commits the typed text', () => {
 })
 
 test('Escape closes the input and commits nothing', () => {
-  const onCommit = setup()
+  const { onCommit } = setup()
   const input = openInput()
   fireEvent.change(input, { target: { value: 'new' } })
   fireEvent.keyDown(input, { key: 'Escape' })
@@ -59,7 +63,7 @@ test('Escape closes the input and commits nothing', () => {
 })
 
 test('an unchanged or blank value commits nothing', () => {
-  const onCommit = setup()
+  const { onCommit } = setup()
   fireEvent.keyDown(openInput(), { key: 'Enter' })
   const input = openInput()
   fireEvent.change(input, { target: { value: '  ' } })
@@ -68,28 +72,70 @@ test('an unchanged or blank value commits nothing', () => {
 })
 
 test('a cell that takes blanks commits an emptied value', () => {
-  const onCommit = setup({ allowBlank: true })
+  const { onCommit } = setup({ allowBlank: true })
   const input = openInput()
   fireEvent.change(input, { target: { value: '' } })
   fireEvent.keyDown(input, { key: 'Enter' })
   expect(onCommit).toHaveBeenCalledWith('')
 })
 
-test('F2 or Enter on the focused text opens the input, a click only when asked', () => {
+test('a click on the text opens the input only when asked', () => {
   setup()
-  const text = screen.getByRole('button', { name: 'Rename old' })
-  fireEvent.click(text)
+  fireEvent.click(screen.getByText('old'))
   expect(screen.queryByRole('textbox')).toBeNull()
-  fireEvent.keyDown(text, { key: 'F2' })
-  fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Escape' })
-  fireEvent.keyDown(screen.getByRole('button', { name: 'Rename old' }), {
-    key: 'Enter',
-  })
-  expect(screen.getByRole('textbox')).toBeTruthy()
 })
 
-test('a single click opens the input on a cell that edits on click', () => {
+test('a click on the text opens the input on a cell that edits on click', () => {
   setup({ editOnClick: true })
-  fireEvent.click(screen.getByRole('button', { name: 'Rename old' }))
+  fireEvent.click(screen.getByText('old'))
   expect(screen.getByRole('textbox', { name: 'Rename old' })).toBeTruthy()
+})
+
+test('a row scrolled out of view commits what was typed', () => {
+  const { onCommit, unmount } = setup()
+  fireEvent.change(openInput(), { target: { value: 'new' } })
+  unmount()
+  expect(onCommit).toHaveBeenCalledWith('new')
+  expect(onCommit).toHaveBeenCalledTimes(1)
+})
+
+test('an untouched input that unmounts commits nothing', () => {
+  const { onCommit, unmount } = setup()
+  openInput()
+  expect(screen.getByRole('textbox')).toBeTruthy()
+  unmount()
+  expect(onCommit).not.toHaveBeenCalled()
+})
+
+test('Enter or Escape while an IME composes keeps the input open', () => {
+  const { onCommit } = setup()
+  const input = openInput()
+  fireEvent.change(input, { target: { value: 'new' } })
+  fireEvent.keyDown(input, { key: 'Enter', isComposing: true })
+  fireEvent.keyDown(input, { key: 'Escape', isComposing: true })
+  fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 })
+  expect(screen.getByRole('textbox')).toBe(input)
+  expect(onCommit).not.toHaveBeenCalled()
+  fireEvent.keyDown(input, { key: 'Enter' })
+  expect(onCommit).toHaveBeenCalledWith('new')
+})
+
+test('focus returns to the pencil after Enter or Escape', () => {
+  setup()
+  fireEvent.keyDown(openInput(), { key: 'Enter' })
+  expect(document.activeElement).toBe(
+    screen.getByRole('button', { name: 'Rename old' }),
+  )
+  fireEvent.keyDown(openInput(), { key: 'Escape' })
+  expect(document.activeElement).toBe(
+    screen.getByRole('button', { name: 'Rename old' }),
+  )
+})
+
+test('leaving the input does not pull focus back to the pencil', () => {
+  setup()
+  fireEvent.blur(openInput())
+  expect(document.activeElement).not.toBe(
+    screen.getByRole('button', { name: 'Rename old' }),
+  )
 })
