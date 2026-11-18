@@ -118,9 +118,7 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
   // resolved exactly; read back off its y it would lose float32 precision
   bool levelRamp = seg == 1u && u.rampMode != RAMP_THRESHOLD;
   o.colorAlongY =
-    lineColorAlongY(u.rampMode, u.colorFromY, place.overridden) && !levelRamp
-      ? 1.0
-      : 0.0;
+    !levelRamp && lineReadsColorAlongY(place.overridden, u) ? 1.0 : 0.0;
   o.yPx = sy;
   o.bandTop = bandTop;
   return o;
@@ -134,6 +132,10 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
 // cut stays one color.
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
-  return lineFragmentColor(
-    clamp(v.yPx, v.colorLine.x, v.colorLine.y), v.cutYsLo, v.cutYsHi, v.color, v.colorAlongY, v.bandTop, u, colorRamp);
+  float4 color = v.color;
+  if (v.colorAlongY >= 0.5) {
+    color = lineColorAtYPx(
+      clamp(v.yPx, v.colorLine.x, v.colorLine.y), v.cutYsLo, v.cutYsHi, v.bandTop, u, colorRamp);
+  }
+  return color;
 }

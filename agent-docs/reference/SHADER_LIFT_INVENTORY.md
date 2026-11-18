@@ -85,8 +85,8 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 27 | `boxCoverage`, `boxInkCoverage`, `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, … |
-| type 'vec4' is outside the supported scalar subset | 21 | `bandColorAt`, `chevronCoverage`, `colorCutAt`, `colorCutYsPx`, `cutYsPx`, `edgeSpan`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `bandCoverage`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, `flipX`, … |
+| type 'vec4' is outside the supported scalar subset | 22 | `bandColorAt`, `chevronCoverage`, `colorCutAt`, `colorCutYsPx`, `cutYsPx`, `edgeSpan`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 21 | `bandCoverage`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, `flipX`, … |
 | type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'RibbonCurves' is outside the supported scalar subset | 8 | `bandNormal`, `bandWidthAt`, `curvesCross`, `curvesMeet`, `firstCurve`, `refineCrossing`, … |
 | type 'vec3' is outside the supported scalar subset | 7 | `baseColor`, `bpRange`, `buttSegmentCoverage`, `capsuleDist`, `categoryPaletteColor`, `getReadColor`, … |

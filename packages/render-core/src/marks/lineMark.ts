@@ -630,7 +630,7 @@ function paintLine(
   const { rampMode } = rampUniforms(scale)
   // a ramp along y reads values back through the y scale, which a domain
   // with no range cannot give, so the instances keep their own colors there,
-  // as the shader's `lineFragmentColor` does
+  // as the shader's `lineReadsColorAlongY` does
   const yHasRange =
     denormalizeScore(
       1,

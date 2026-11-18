@@ -8,7 +8,7 @@ import { lineStepMark } from './lineMark.ts'
 import type { LineChannels, LineParams } from './lineMark.ts'
 
 // A line under a ramp over its own `y` reads the value at each fragment's
-// color y back through the y scale (`lineFragmentColor`). The vertex places
+// color y back through the y scale (`lineColorAtYPx`). The vertex places
 // that y as `lineColorYPx` does: the band's top, plus the unclamped fraction
 // down the band.
 

@@ -98,22 +98,28 @@ public float lineValueAtColorYPx(float colorYPx, float bandTop, float rowBandPx,
     domainMin, domainMax, scaleType, symlogConstant);
 }
 
-// A line fragment's color: along y, the interval the color y it is read at
-// falls in, or under a ramp the ramp at the value that y stands for, read
-// back through the y scale; otherwise the color its vertex resolved. A y
-// domain with no range, after a log floor, says no value, so the vertex's
-// color stands.
-public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, float4 own, float alongY, float bandTop, Uniforms u, Sampler2D<float4> ramp) {
-  if (alongY < 0.5) {
-    return own;
-  }
+// Whether the draw's color scale can be read off a y: a threshold's cuts sit
+// on y, and a ramp's value is read back through the y scale, which a y domain
+// with no range, after a log floor, cannot give.
+bool lineColorReadableAlongY(Uniforms u) {
+  return u.rampMode == RAMP_THRESHOLD
+    || denormalizeScore(1.0, u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant)
+       > denormalizeScore(0.0, u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
+}
+
+// `lineColorAlongY` for a vertex, with the draw's scale able to answer it: the
+// flag the vertex hands its fragments, so they test nothing but it.
+public bool lineReadsColorAlongY(bool overridden, Uniforms u) {
+  return lineColorAlongY(u.rampMode, u.colorFromY, overridden)
+    && lineColorReadableAlongY(u);
+}
+
+// A line fragment's color read along y: the interval the color y falls in, or
+// under a ramp the ramp at the value that y stands for, read back through the
+// y scale. Only for a fragment whose vertex said `lineReadsColorAlongY`.
+public float4 lineColorAtYPx(float colorYPx, float4 cutYsLo, float4 cutYsHi, float bandTop, Uniforms u, Sampler2D<float4> ramp) {
   if (u.rampMode == RAMP_THRESHOLD) {
     return u.colorBands[thresholdBandAtYPx(colorYPx, u.colorCutCount, cutYsLo, cutYsHi)];
-  }
-  float bottom = denormalizeScore(0.0, u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
-  float top = denormalizeScore(1.0, u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
-  if (!(top > bottom)) {
-    return own;
   }
   float value = lineValueAtColorYPx(
     colorYPx, bandTop, u.rowBandPx,
@@ -121,4 +127,15 @@ public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, 
   return rampColor(
     ramp,
     rampMidT(normalizeScore(value, u.rampMin, u.rampMax, rampScaleType(u.rampMode), 1.0), u.rampMidNorm));
+}
+
+// `lineColorAtYPx` where the vertex's flag is `lineColorAlongY` alone, so the
+// fragment still asks whether the scale can answer; otherwise the color its
+// vertex resolved.
+public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, float4 own, float alongY, float bandTop, Uniforms u, Sampler2D<float4> ramp) {
+  float4 color = own;
+  if (alongY >= 0.5 && lineColorReadableAlongY(u)) {
+    color = lineColorAtYPx(colorYPx, cutYsLo, cutYsHi, bandTop, u, ramp);
+  }
+  return color;
 }
