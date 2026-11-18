@@ -103,13 +103,11 @@ const useStyles = makeStyles()(theme => {
 
 const FacetFilter = observer(function FacetFilter({
   field,
-  vals,
   table,
   defaultExpanded = true,
   collapsible = true,
 }: {
   field: string
-  vals: [string, number][]
   table: TrackTableModel
   defaultExpanded?: boolean
   collapsible?: boolean
@@ -121,7 +119,7 @@ const FacetFilter = observer(function FacetFilter({
   const { filters, nonMetadataFieldSet } = table
   const selected = filters.get(field) ?? []
   const label = facetLabel(field, nonMetadataFieldSet)
-  const sorted = vals.toSorted(
+  const sorted = [...(expanded ? table.facetCounts(field) : [])].toSorted(
     (a, b) => b[1] - a[1] || trackNameCollator.compare(a[0], b[0]),
   )
   const listed =

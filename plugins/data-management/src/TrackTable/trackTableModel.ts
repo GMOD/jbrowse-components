@@ -21,7 +21,7 @@ import {
   metadataFacet,
 } from './components/util.ts'
 import {
-  computeFacetCategoryCounts,
+  countFacetValues,
   filterRowsByFacets,
   filterRowsByText,
   rowSearchText,
@@ -624,16 +624,12 @@ export function trackTableModelFactory() {
     }))
     .views(self => ({
       /**
-       * #getter
-       * Per-facet value counts for the filter chips. Cached by MobX so it
-       * recomputes only when rows or filters change, not on every render.
+       * #method
+       * one facet's value counts, read by its filter only while it lists its
+       * values, so a collapsed facet costs nothing
        */
-      get facetCategoryCounts() {
-        return computeFacetCategoryCounts(
-          self.rows,
-          self.filterFacets,
-          self.filters,
-        )
+      facetCounts(field: string) {
+        return countFacetValues(self.rows, field, self.filters)
       },
       /**
        * #getter

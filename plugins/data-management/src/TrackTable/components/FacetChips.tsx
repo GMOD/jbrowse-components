@@ -141,7 +141,6 @@ const FacetChips = observer(function FacetChips({
             <FacetFilter
               key={field}
               field={field}
-              vals={[...(table.facetCategoryCounts.get(field) ?? [])]}
               table={table}
               collapsible={!open?.field}
               defaultExpanded={filters.has(field)}

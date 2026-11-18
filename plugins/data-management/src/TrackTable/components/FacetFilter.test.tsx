@@ -1,25 +1,52 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render } from '@testing-library/react'
 
 import { trackTableModelFactory } from '../trackTableModel.ts'
 import FacetFilter from './FacetFilter.tsx'
 
-function renderFilter() {
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+function tableOf(metadata: Record<string, string>[]) {
+  const tracks = metadata.map((m, i) => ({
+    trackId: `t${i}`,
+    name: `track ${i}`,
+    type: 'FeatureTrack',
+    metadata: m,
+  }))
   const table = trackTableModelFactory().create({})
-  const utils = render(
+  table.setTrackSource(() => tracks, createTestSession(), [])
+  return table
+}
+
+function renderFacet(
+  table: ReturnType<typeof tableOf>,
+  field: string,
+  defaultExpanded?: boolean,
+) {
+  return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <FacetFilter
-        field="metadata.assay"
-        vals={[
-          ['DNA', 2],
-          ['RNA', 1],
-        ]}
+        field={field}
         table={table}
+        defaultExpanded={defaultExpanded}
       />
     </ThemeProvider>,
   )
-  return { table, ...utils }
+}
+
+function assayTable() {
+  return tableOf([
+    { assay: 'DNA', lab: 'x' },
+    { assay: 'DNA', lab: 'y' },
+    { assay: 'RNA', lab: 'y' },
+  ])
+}
+
+function renderFilter() {
+  const table = assayTable()
+  return { table, ...renderFacet(table, 'metadata.assay') }
 }
 
 test('checking values stores them as a string array, in click order', () => {
@@ -54,24 +81,12 @@ test('each value shows its count, and clearing appears once one is checked', () 
 })
 
 function renderValues(count: number, defaultExpanded?: boolean) {
-  const table = trackTableModelFactory().create({})
-  const vals = Array.from(
-    { length: count },
-    (_, i) => [`c${i}`, 100 - i] satisfies [string, number],
+  const table = tableOf(
+    Array.from({ length: count }, (_, i) =>
+      Array.from({ length: count - i }, () => ({ cell: `c${i}` })),
+    ).flat(),
   )
-  return {
-    table,
-    ...render(
-      <ThemeProvider theme={createJBrowseTheme()}>
-        <FacetFilter
-          field="metadata.cell"
-          vals={vals}
-          table={table}
-          defaultExpanded={defaultExpanded}
-        />
-      </ThemeProvider>,
-    ),
-  }
+  return { table, ...renderFacet(table, 'metadata.cell', defaultExpanded) }
 }
 
 test('a facet of up to 20 values lists them all', () => {
@@ -101,4 +116,28 @@ test('a collapsed facet shows its heading, and opens on a click', () => {
   expect(queryByLabelText('c0')).toBeNull()
   fireEvent.click(getByRole('button', { name: 'cell' }))
   expect(getByLabelText('c0')).toBeTruthy()
+})
+
+test('a facet counts its values over the tracks the other facets keep', () => {
+  const { table, getByLabelText } = renderFilter()
+  act(() => {
+    table.setFilter('metadata.lab', ['y'])
+  })
+  expect(getByLabelText('DNA').closest('label')!.textContent).toBe('DNA1')
+  expect(getByLabelText('RNA').closest('label')!.textContent).toBe('RNA1')
+})
+
+test('a collapsed facet lists its counts once opened, after a filter changed', () => {
+  const table = assayTable()
+  const { getByRole, getByLabelText, queryByLabelText } = renderFacet(
+    table,
+    'metadata.assay',
+    false,
+  )
+  act(() => {
+    table.setFilter('metadata.lab', ['x'])
+  })
+  fireEvent.click(getByRole('button', { name: 'assay' }))
+  expect(getByLabelText('DNA').closest('label')!.textContent).toBe('DNA1')
+  expect(queryByLabelText('RNA')).toBeNull()
 })

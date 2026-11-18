@@ -60,41 +60,31 @@ export function filterRowsByFacets<T extends Row>(
 }
 
 /**
- * Per-facet value counts for the filter chips. Each facet is counted over
- * the rows that pass every *other* active facet, but not its own selection, so
- * its options keep showing the counts you'd get by switching to them. This is
- * order-independent: a facet's counts reflect all other active filters
- * regardless of column order.
+ * One facet's value counts for its filter chip, over the rows that pass every
+ * *other* active facet but not its own selection, so its options keep showing
+ * the counts you'd get by switching to them. Every active filter counts, not
+ * just those offered as chips: a filter on a field that stopped grouping
+ * tracks still narrows the grid.
  */
-export function computeFacetCategoryCounts<T extends Row>(
+export function countFacetValues<T extends Row>(
   rows: T[],
-  facets: string[],
+  facet: string,
   filters: Map<string, string[]>,
-): Map<string, Map<string, number>> {
-  // Honor every active filter (matching filterRowsByFacets), not just those in
-  // `facets` — a filter on a column that has dropped out of `facets` (e.g. gone
-  // sparse) still constrains the grid, so it must constrain these counts too.
-  const activeFilters = filterSets(filters)
-  return new Map(
-    facets.map(facet => {
-      const categoryCountMap = new Map<string, number>()
-      for (const row of rows) {
-        const passesOthers = activeFilters.every(
-          ([f, set]) => f === facet || set.has(getRowStr(f, row)),
-        )
-        const key = getRowStr(facet, row)
-        if (passesOthers && key) {
-          categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
-        }
-      }
-      // a selected value stays listed, at 0, when no row shows it any more,
-      // so an active filter never hides its own option
-      for (const value of filters.get(facet) ?? []) {
-        if (!categoryCountMap.has(value)) {
-          categoryCountMap.set(value, 0)
-        }
-      }
-      return [facet, categoryCountMap] as const
-    }),
-  )
+) {
+  const others = filterSets(filters).filter(([f]) => f !== facet)
+  const counts = new Map<string, number>()
+  for (const row of rows) {
+    const key = getRowStr(facet, row)
+    if (key && others.every(([f, set]) => set.has(getRowStr(f, row)))) {
+      counts.set(key, (counts.get(key) ?? 0) + 1)
+    }
+  }
+  // a selected value stays listed, at 0, when no row shows it any more, so an
+  // active filter never hides its own option
+  for (const value of filters.get(facet) ?? []) {
+    if (!counts.has(value)) {
+      counts.set(value, 0)
+    }
+  }
+  return counts
 }

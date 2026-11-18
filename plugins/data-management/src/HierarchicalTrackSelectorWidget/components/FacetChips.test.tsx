@@ -165,10 +165,10 @@ test("in tree mode the chips count what the tree's own search keeps", () => {
   const table = model.trackTable
   model.setFilterText('K562')
   expect(treeTrackIds(model)).toEqual([])
-  expect(table.facetCategoryCounts.get('metadata.biosample')?.size).toBe(0)
+  expect(table.facetCounts('metadata.biosample').size).toBe(0)
 
   model.openTable()
-  expect(table.facetCategoryCounts.get('metadata.biosample')).toEqual(
+  expect(table.facetCounts('metadata.biosample')).toEqual(
     new Map([['K562', 4]]),
   )
 })

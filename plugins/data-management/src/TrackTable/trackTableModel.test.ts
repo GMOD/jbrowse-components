@@ -399,7 +399,7 @@ describe('columns and facets', () => {
     expect(table.filterFacets).not.toContain('metadata.flag')
     table.setFilter('metadata.flag', ['true'])
     expect(table.filterFacets).toContain('metadata.flag')
-    expect([...table.facetCategoryCounts.keys()]).toContain('metadata.flag')
+    expect(table.facetCounts('metadata.flag').has('true')).toBe(true)
   })
 
   test('the first three default columns that group tracks, shown grouping columns and active filters get a chip', () => {

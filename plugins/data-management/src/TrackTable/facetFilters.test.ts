@@ -1,5 +1,5 @@
 import {
-  computeFacetCategoryCounts,
+  countFacetValues,
   filterRowsByFacets,
   filterRowsByText,
   rowSearchText,
@@ -122,91 +122,60 @@ describe('filterRowsByFacets', () => {
   })
 })
 
-describe('computeFacetCategoryCounts', () => {
-  const facets = ['category', 'metadata.sampleType', 'metadata.assay']
-
+describe('countFacetValues', () => {
   test('a selected value no row shows any more stays listed, at 0', () => {
-    const counts = computeFacetCategoryCounts(
+    const counts = countFacetValues(
       rows.filter(r => r.id === 't1'),
-      facets,
+      'metadata.assay',
       new Map([['metadata.assay', ['DNA']]]),
     )
-    expect(counts.get('metadata.assay')!.get('DNA')).toBe(0)
+    expect(counts.get('DNA')).toBe(0)
   })
 
-  test('counts every facet over all rows when nothing is filtered', () => {
-    const counts = computeFacetCategoryCounts(rows, facets, new Map())
-    expect([...counts.get('category')!]).toEqual([
+  test('counts a facet over all rows when nothing is filtered', () => {
+    expect([...countFacetValues(rows, 'category', new Map())]).toEqual([
       ['Annotation', 2],
       ['Quantitative', 1],
     ])
-    expect([...counts.get('metadata.assay')!]).toEqual([
+    expect([...countFacetValues(rows, 'metadata.assay', new Map())]).toEqual([
       ['RNA', 1],
       ['DNA', 2],
     ])
   })
 
   test('an active filter drills down other facets but counts itself over the full set', () => {
-    const counts = computeFacetCategoryCounts(
-      rows,
-      facets,
-      new Map([['metadata.assay', ['DNA']]]),
-    )
-    // assay excludes only its own selection, so it counts over the full set
-    expect([...counts.get('metadata.assay')!]).toEqual([
+    const filters = new Map([['metadata.assay', ['DNA']]])
+    expect([...countFacetValues(rows, 'metadata.assay', filters)]).toEqual([
       ['RNA', 1],
       ['DNA', 2],
     ])
-    // other facets count only among the DNA rows (t2, t3)
-    expect([...counts.get('category')!]).toEqual([
+    expect([...countFacetValues(rows, 'category', filters)]).toEqual([
       ['Annotation', 1],
       ['Quantitative', 1],
     ])
-    expect([...counts.get('metadata.sampleType')!]).toEqual([
-      ['normal', 1],
-      ['tumor', 1],
-    ])
-  })
-
-  test('honors an active filter on a column absent from the facets list', () => {
-    // metadata.assay is filtered but not in `facets` (e.g. it went sparse and
-    // dropped out) — its constraint must still drill down the listed facets
-    const counts = computeFacetCategoryCounts(
-      rows,
-      ['category', 'metadata.sampleType'],
-      new Map([['metadata.assay', ['DNA']]]),
+    expect([...countFacetValues(rows, 'metadata.sampleType', filters)]).toEqual(
+      [
+        ['normal', 1],
+        ['tumor', 1],
+      ],
     )
-    // only DNA rows (t2, t3) are counted
-    expect([...counts.get('category')!]).toEqual([
-      ['Annotation', 1],
-      ['Quantitative', 1],
-    ])
-    expect([...counts.get('metadata.sampleType')!]).toEqual([
-      ['normal', 1],
-      ['tumor', 1],
-    ])
   })
 
   test('each facet reflects every other active filter, independent of order', () => {
-    const counts = computeFacetCategoryCounts(
-      rows,
-      facets,
-      new Map([
-        ['category', ['Annotation']],
-        ['metadata.assay', ['DNA']],
-      ]),
-    )
-    // category excludes its own filter but still honors assay=DNA (t2, t3)
-    expect([...counts.get('category')!]).toEqual([
+    const filters = new Map([
+      ['category', ['Annotation']],
+      ['metadata.assay', ['DNA']],
+    ])
+    expect([...countFacetValues(rows, 'category', filters)]).toEqual([
       ['Annotation', 1],
       ['Quantitative', 1],
     ])
-    // assay excludes its own filter but still honors category=Annotation (t1, t2)
-    expect([...counts.get('metadata.assay')!]).toEqual([
+    expect([...countFacetValues(rows, 'metadata.assay', filters)]).toEqual([
       ['RNA', 1],
       ['DNA', 1],
     ])
-    // sampleType is inactive, so it honors both filters (t2 only)
-    expect([...counts.get('metadata.sampleType')!]).toEqual([['normal', 1]])
+    expect([...countFacetValues(rows, 'metadata.sampleType', filters)]).toEqual(
+      [['normal', 1]],
+    )
   })
 })
