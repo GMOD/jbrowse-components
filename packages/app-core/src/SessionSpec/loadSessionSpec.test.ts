@@ -38,9 +38,6 @@ function connectionStub({
   throwOnAdd = false,
 } = {}) {
   const connectionInstances = observable.array<{ loading: boolean }>([])
-  // the assemblies and track ids the connections have supplied so far
-  const assemblies = observable.set<string>()
-  const trackIds = observable.set<string>()
   const made: { conf: Record<string, unknown>; silent?: boolean }[] = []
   const addedVia: string[] = []
   const adder = (via: string) => (conf: Record<string, unknown>) => {
@@ -55,22 +52,6 @@ function connectionStub({
     // which of the two adders the spec reached for — the destination is not
     // the same, so this is the assertion, not an implementation detail
     addedVia,
-    supply: ({
-      assembly,
-      trackId,
-    }: {
-      assembly?: string
-      trackId?: string
-    }) => {
-      runInAction(() => {
-        if (assembly) {
-          assemblies.add(assembly)
-        }
-        if (trackId) {
-          trackIds.add(trackId)
-        }
-      })
-    },
     settle: () => {
       runInAction(() => {
         for (const conn of connectionInstances) {
@@ -80,10 +61,6 @@ function connectionStub({
     },
     session: {
       connectionInstances,
-      assemblyManager: {
-        get: (name: string) => (assemblies.has(name) ? { name } : undefined),
-      },
-      getTrackById: (id: string) => (trackIds.has(id) ? { id } : undefined),
       setName: jest.fn(),
       addConnectionConf: adder('addConnectionConf'),
       ...(sessionScoped
@@ -1002,56 +979,6 @@ describe('sessionConnections', () => {
 
     expect(log).toEqual(['settle', 'launch'])
     expect(session.views).toHaveLength(1)
-  })
-
-  // A view needs only what it names. Waiting for every connection held a hub
-  // link's view until each genome's trackDb in a multi-genome hub, and every
-  // other hub on the link, had loaded
-  it('launches a view once the assembly it names exists, before the connections settle', async () => {
-    const log: string[] = []
-    const { session, pluginManager, connections } = setupWithHub(log)
-
-    const p = loadSessionSpec(
-      {
-        sessionConnections: [HUB],
-        views: [{ type: 'LinearGenomeView', assembly: 'hubGenome' }],
-      },
-      pluginManager,
-    )
-    log.push('assembly')
-    connections.supply({ assembly: 'hubGenome' })
-    await p
-
-    expect(log).toEqual(['assembly', 'launch'])
-    expect(session.views).toHaveLength(1)
-  })
-
-  // a hub adds a genome's assembly before it fetches that genome's trackDb, so
-  // the assembly alone is not yet the track ids the view names
-  it('holds a view naming tracks until those tracks exist too', async () => {
-    const log: string[] = []
-    const { pluginManager, connections } = setupWithHub(log)
-
-    const p = loadSessionSpec(
-      {
-        sessionConnections: [HUB],
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'hubGenome',
-            tracks: ['t1', { trackId: 't2', height: 50 }],
-          },
-        ],
-      },
-      pluginManager,
-    )
-    connections.supply({ assembly: 'hubGenome', trackId: 't1' })
-    await new Promise(resolve => setTimeout(resolve, 0))
-    log.push('tracks')
-    connections.supply({ trackId: 't2' })
-    await p
-
-    expect(log).toEqual(['tracks', 'launch'])
   })
 
   it('silences a connection when the spec launches its own views', async () => {

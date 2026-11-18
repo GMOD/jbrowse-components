@@ -17,13 +17,37 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 
-// the connection's hub.txt read (the session name's read goes through global
+// the connection's reads, by uri (the session name's read goes through global
 // fetch instead), so a test can hold a connection in flight or fail it
 const mockReadFile = jest.fn()
 jest.mock('@jbrowse/core/util/io', () => ({
   ...jest.requireActual('@jbrowse/core/util/io'),
-  openLocation: () => ({ readFile: mockReadFile }),
+  openLocation: (location: { uri: string }) => ({
+    readFile: () => mockReadFile(location.uri),
+    read: () => new Promise(() => {}),
+  }),
 }))
+
+const HUB_TXT =
+  'hub myHub\nshortLabel My Cool Hub\nlongLabel x\ngenomesFile genomes.txt\nemail hub@example.com'
+const GENOMES_TXT =
+  'genome hubAsm\ntrackDb hubAsm/trackDb.txt\ntwoBitPath hubAsm/hubAsm.2bit'
+const TRACKDB_TXT =
+  'track genes\ntype bigBed 12\nbigDataUrl genes.bb\nshortLabel Genes\nlongLabel Genes'
+
+// a multi-genome hub: hub.txt and genomes.txt arrive at once, so the hub adds
+// hubAsm right away, and its tracks arrive with `trackDb`
+function serveHub(trackDb: Promise<string>) {
+  mockReadFile.mockImplementation((uri: string) =>
+    uri.endsWith('/hub.txt')
+      ? Promise.resolve(HUB_TXT)
+      : uri.endsWith('/genomes.txt')
+        ? Promise.resolve(GENOMES_TXT)
+        : uri.endsWith('/trackDb.txt')
+          ? trackDb
+          : new Promise(() => {}),
+  )
+}
 
 const mainThreadConfig = {
   jbrowse: {
@@ -187,40 +211,69 @@ describe('a hub link with a view init', () => {
 
   const flush = () => new Promise(resolve => setTimeout(resolve, 0))
 
-  it('waits for the hub assembly before launching, then navigates', async () => {
+  // a hub track's id is a hash of its trackDb stanza, so read it off the hub
+  async function hubTrackId() {
     const { pluginManager, rootModel } = setup()
-    resolvingFetch()
-    // keep the connection in flight, so the only thing that can release the
-    // launch is the assembly appearing
-    mockReadFile.mockReturnValue(new Promise(() => {}))
+    await loadHubLink({ hubURL }, pluginManager)
+    const connection = rootModel.session!.connectionInstances[0]!
+    await when(() => !connection.loading)
+    return connection.tracks[0]!.trackId
+  }
+
+  // a gene-name &loc= searches the index the hub brings with its tracks, so
+  // the hub's assembly appearing is not yet enough to launch against
+  it('launches the view once the hub has loaded, not when its assembly appears', async () => {
+    const { pluginManager, rootModel } = setup()
+    pendingFetch()
+    let releaseTrackDb = (_text: string) => {}
+    serveHub(
+      new Promise(resolve => {
+        releaseTrackDb = resolve
+      }),
+    )
 
     const p = loadHubLink(
-      { hubURL, viewInit: { loc: 'chr1:1-100', assembly: 'hubAsm' } },
+      { hubURL, viewInit: { loc: 'BRCA1', assembly: 'hubAsm' } },
       pluginManager,
     )
     const session = rootModel.session!
-    // the launch is now parked on an assembly the hub's connect() has not
-    // produced. An LGV created here would report "Assembly hubAsm not found"
-    // until it arrived
+    await when(() => session.assemblyManager.has('hubAsm'))
     await flush()
     expect(session.views).toHaveLength(0)
 
-    session.addSessionAssembly({
-      name: 'hubAsm',
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'hubAsm-ref',
-        adapter: { type: 'FromConfigSequenceAdapter', features: [] },
-      },
-    })
+    releaseTrackDb(TRACKDB_TXT)
     await p
 
     expect(session.views).toHaveLength(1)
+  })
+
+  it('launches with a &tracks= id the hub brings already present', async () => {
+    pendingFetch()
+    serveHub(Promise.resolve(TRACKDB_TXT))
+    const trackId = await hubTrackId()
+    const { pluginManager, rootModel } = setup()
+
+    const p = loadHubLink(
+      {
+        hubURL,
+        viewInit: { loc: 'chr1:1-100', assembly: 'hubAsm', tracks: [trackId] },
+      },
+      pluginManager,
+    )
+    const session = rootModel.session!
+    const presentAtLaunch: boolean[] = []
+    void when(
+      () => session.views.length > 0,
+      () => presentAtLaunch.push(!!session.getTrackById(trackId)),
+    )
+    await p
+
+    expect(presentAtLaunch).toEqual([true])
     const view = session.views[0] as LinearGenomeViewModel
-    expect(view.type).toBe('LinearGenomeView')
     expect(view.pendingLaunch).toMatchObject({
       loc: 'chr1:1-100',
       assembly: 'hubAsm',
+      tracks: [trackId],
     })
   })
 
