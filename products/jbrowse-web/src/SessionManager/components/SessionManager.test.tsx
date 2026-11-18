@@ -40,6 +40,16 @@ function setup(savedSessionMetadata: SessionMetadata[] | undefined) {
   return { ...result, session }
 }
 
+test("a saved session's picture shows beside it, and one without gets a blank box", () => {
+  const picture = 'data:image/webp;base64,UklGRg=='
+  const { getByTestId } = setup([
+    { ...meta('pictured'), thumbnail: picture },
+    meta('plain'),
+  ])
+  const images = getByTestId('session-manager-table').querySelectorAll('img')
+  expect([...images].map(img => img.getAttribute('src'))).toEqual([picture])
+})
+
 // undefined means the saved-session database is still opening. It used to read
 // "No sessions loaded", which is the same words an empty database deserves.
 test('says it is loading while the database has not opened', () => {
