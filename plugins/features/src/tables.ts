@@ -341,7 +341,8 @@ const TABLES_ASSEMBLY = ''
  * features listed reads over `fetchRegions`. A feature in view the packer
  * could not place within its 10000 px row ceiling
  * is left out of every table and counted in `truncated`; the legend keys the
- * boxes the layout kept of the features in view, as the browser's key does.
+ * boxes the layout kept of the features in view, such a feature included, as
+ * the browser's key does.
  *
  * Under a `facet` the display packs a section per value, each under its
  * `sectionLabelHeight` chip row, and `sections` lists them in stacking order:

@@ -21,10 +21,7 @@ export const GENE_GLYPH_MODE_OPTIONS = [
 ] as const satisfies readonly { value: GeneGlyphMode; label: string }[]
 
 /** `auto` draws every transcript up to 100 bp/px and one per gene past it. */
-export function resolvedGeneGlyphMode(
-  mode: GeneGlyphMode,
-  bpPerPx: number,
-): ResolvedGeneGlyphMode {
+export function resolvedGeneGlyphMode(mode: GeneGlyphMode, bpPerPx: number) {
   return mode === 'auto' ? (bpPerPx > 100 ? 'representative' : 'all') : mode
 }
 
