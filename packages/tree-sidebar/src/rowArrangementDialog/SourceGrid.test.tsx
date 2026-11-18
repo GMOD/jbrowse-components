@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 
 import SourceGrid from './SourceGrid.tsx'
 
@@ -9,12 +9,6 @@ interface Src {
   color?: string
   rowColor?: string
 }
-
-// These tests deliberately drive the @mui/x-data-grid interaction surface
-// (checkbox selection model + header sort), which MUI has reshaped across
-// majors (e.g. the row-selection model became `{ type, ids: Set }`). If an
-// upgrade changes that shape, `onRowSelectionModelChange`/`onSortModelChange`
-// wiring in SourceGrid breaks silently in the app but loudly here.
 
 const RESERVED = new Set(['name', 'source', 'baseUri', 'color', 'rowColor'])
 
@@ -33,11 +27,10 @@ function renderGrid(rows: Src[]) {
 }
 
 function selectRow(name: string) {
-  const row = screen.getByText(name).closest('[role="row"]')!
-  fireEvent.click(within(row as HTMLElement).getByRole('checkbox'))
+  fireEvent.click(screen.getByRole('checkbox', { name: `Select ${name}` }))
 }
 
-test('checkbox selection feeds the move-to-bottom action (arg.ids wiring)', () => {
+test('checkbox selection feeds the move-to-bottom action', () => {
   const rows: Src[] = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
   const { onChange } = renderGrid(rows)
 
@@ -72,11 +65,11 @@ test("a row's own color is not rendered as an extras column", () => {
   ).toBeInTheDocument()
 })
 
-test('clicking the Name header sorts rows through onSortModelChange', () => {
+test('clicking the Name header sorts the rows', () => {
   const rows: Src[] = [{ name: 'c' }, { name: 'a' }, { name: 'b' }]
   const { onChange } = renderGrid(rows)
 
-  fireEvent.click(screen.getByRole('columnheader', { name: /Name/ }))
+  fireEvent.click(screen.getByRole('button', { name: 'Name' }))
 
   expect(onChange).toHaveBeenCalledWith([
     { name: 'a' },

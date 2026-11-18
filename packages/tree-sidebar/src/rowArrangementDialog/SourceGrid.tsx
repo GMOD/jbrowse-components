@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
-import { resolveSelectedIds } from '@jbrowse/core/util'
+import VirtualTable from '@jbrowse/core/ui/VirtualTable'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { DataGrid } from '@mui/x-data-grid'
+import { Checkbox } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { extraColumns } from '../rows/rowFields.ts'
@@ -12,7 +12,8 @@ import { buildSourceColumns } from './buildSourceColumns.tsx'
 import { useSourceSort } from './useSourceSort.ts'
 
 import type { EachRowPicks } from './buildSourceColumns.tsx'
-import type { GridRowId, GridSortModel } from '@mui/x-data-grid'
+
+const CHECKBOX_WIDTH = 50
 
 const useStyles = makeStyles()({
   cell: {
@@ -20,11 +21,17 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  // no height of its own, so the swatch overhangs a row rather than growing
+  // it, and the cell clips it
+  swatch: {
+    display: 'flex',
+    alignItems: 'center',
+    height: 0,
+  },
+  checkbox: {
+    padding: 0,
+  },
 })
-
-// Permanently empty: the grid's sort is controlled externally via
-// onSortModelChange (see useSourceSort), so MUI's own model stays unset.
-const EMPTY_SORT_MODEL: GridSortModel = []
 
 export default observer(function SourceGrid<S extends { name: string }>({
   rows,
@@ -45,9 +52,20 @@ export default observer(function SourceGrid<S extends { name: string }>({
   reserved: ReadonlySet<string>
 }) {
   const { classes } = useStyles()
-  const [selected, setSelected] = useState<GridRowId[]>([])
-  const onSortModelChange = useSourceSort(rows, onChange)
+  const [ticked, setTicked] = useState<ReadonlySet<string>>(() => new Set())
+  const sortBy = useSourceSort(rows, onChange)
   const extras = extraColumns(rows, reserved)
+  const columns = buildSourceColumns({
+    colors,
+    eachRow,
+    extras,
+    rows,
+    cellClassName: classes.cell,
+    swatchClassName: classes.swatch,
+  })
+  const widths = Object.fromEntries(columns.map(col => [col.id, col.width]))
+  const selected = rows.filter(r => ticked.has(r.name)).map(r => r.name)
+  const allSelected = rows.length > 0 && selected.length === rows.length
 
   return (
     <div>
@@ -58,30 +76,51 @@ export default observer(function SourceGrid<S extends { name: string }>({
         onChange={onChange}
       />
       <div style={{ height: 400, width: '100%' }}>
-        <DataGrid
-          disableRowSelectionOnClick
-          getRowId={row => row.name}
-          checkboxSelection
-          onRowSelectionModelChange={arg => {
-            setSelected([
-              ...resolveSelectedIds(
-                arg,
-                rows.map(r => r.name),
-              ),
-            ])
+        <VirtualTable
+          rows={rows.map(source => ({ id: source.name, source }))}
+          columns={columns}
+          widths={() => widths}
+          // the header click reorders the rows themselves, so no column
+          // shows a sort
+          sortField=""
+          sortAscending
+          onSort={field => {
+            sortBy(field)
           }}
-          rows={rows}
-          rowHeight={25}
-          columnHeaderHeight={33}
-          columns={buildSourceColumns({
-            colors,
-            eachRow,
-            extras,
-            rows,
-            cellClassName: classes.cell,
-          })}
-          sortModel={EMPTY_SORT_MODEL}
-          onSortModelChange={onSortModelChange}
+          resetKey=""
+          emptyMessage="No rows"
+          isRowSelected={({ id }) => ticked.has(id)}
+          leading={{
+            width: CHECKBOX_WIDTH,
+            header: (
+              <Checkbox
+                className={classes.checkbox}
+                checked={allSelected}
+                indeterminate={selected.length > 0 && !allSelected}
+                onChange={() => {
+                  setTicked(new Set(allSelected ? [] : rows.map(r => r.name)))
+                }}
+                slotProps={{ input: { 'aria-label': 'Select all rows' } }}
+              />
+            ),
+            cell: ({ id }) => (
+              <Checkbox
+                className={classes.checkbox}
+                checked={ticked.has(id)}
+                onChange={() => {
+                  const next = new Set(ticked)
+                  if (next.has(id)) {
+                    next.delete(id)
+                  } else {
+                    next.add(id)
+                  }
+                  setTicked(next)
+                }}
+                slotProps={{ input: { 'aria-label': `Select ${id}` } }}
+              />
+            ),
+          }}
+          testId="row-arrangement-rows"
         />
       </div>
     </div>

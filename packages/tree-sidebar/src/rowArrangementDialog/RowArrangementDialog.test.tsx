@@ -144,9 +144,7 @@ function pickColor(swatch: Element, from: string, to: string) {
 }
 
 function gridRow(name: string) {
-  return within(
-    screen.getAllByRole('gridcell', { name }).at(-1)!.closest('[role="row"]')!,
-  )
+  return within(screen.getAllByRole('cell', { name }).at(-1)!.closest('tr')!)
 }
 
 function choices() {
@@ -750,7 +748,7 @@ test('showRows false drops the row choice, the grid, the bulk editor and the res
   expect(screen.getByTestId('plot-color-row')).toBeInTheDocument()
   expect(screen.queryByText('Color rows by')).toBeNull()
   expect(screen.queryByText('Bulk row editor')).toBeNull()
-  expect(screen.queryByRole('grid')).toBeNull()
+  expect(screen.queryByRole('table')).toBeNull()
   expect(screen.queryByText('Reset row order')).toBeNull()
 })
 

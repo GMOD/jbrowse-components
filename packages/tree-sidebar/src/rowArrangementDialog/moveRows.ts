@@ -1,10 +1,8 @@
-import type { GridRowId } from '@mui/x-data-grid'
-
 // Move the selected rows up by `by` slots. Selected rows keep their relative
 // order; the first row clamps at the top.
 export function moveUp<T extends { name: string }>(
   arr: readonly T[],
-  sel: GridRowId[],
+  sel: readonly string[],
   by = 1,
 ): T[] {
   const result = [...arr]
@@ -24,7 +22,7 @@ export function moveUp<T extends { name: string }>(
 // Mirror of moveUp, descending.
 export function moveDown<T extends { name: string }>(
   arr: readonly T[],
-  sel: GridRowId[],
+  sel: readonly string[],
   by = 1,
 ): T[] {
   const result = [...arr]

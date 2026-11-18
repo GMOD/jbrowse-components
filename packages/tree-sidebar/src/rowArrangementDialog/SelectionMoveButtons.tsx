@@ -7,8 +7,6 @@ import { observer } from 'mobx-react'
 
 import { moveDown, moveUp } from './moveRows.ts'
 
-import type { GridRowId } from '@mui/x-data-grid'
-
 export default observer(function SelectionMoveButtons<
   T extends { name: string },
 >({
@@ -17,7 +15,7 @@ export default observer(function SelectionMoveButtons<
   onChange,
 }: {
   rows: T[]
-  selected: GridRowId[]
+  selected: readonly string[]
   onChange: (arg: T[]) => void
 }) {
   const disabled = !selected.length

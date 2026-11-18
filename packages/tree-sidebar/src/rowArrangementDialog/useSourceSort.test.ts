@@ -6,37 +6,24 @@ const initial: SortState = { direction: 'asc', field: null }
 
 describe('nextSortState', () => {
   test('first click on a column sorts ascending', () => {
-    const next = nextSortState(initial, [{ field: 'name', sort: 'asc' }])
+    const next = nextSortState(initial, 'name')
     expect(next).toEqual({ direction: 'asc', field: 'name' })
   })
 
-  test('second click on the same column flips to descending', () => {
-    const first = nextSortState(initial, [{ field: 'name', sort: 'asc' }])
-    const second = nextSortState(first, [{ field: 'name', sort: 'desc' }])
-    expect(second).toEqual({ direction: 'desc', field: 'name' })
+  test('clicks on the same column flip between ascending and descending', () => {
+    let state = nextSortState(initial, 'name')
+    state = nextSortState(state, 'name')
+    expect(state).toEqual({ direction: 'desc', field: 'name' })
+    state = nextSortState(state, 'name')
+    expect(state).toEqual({ direction: 'asc', field: 'name' })
   })
 
   // The direction does not carry over from the prior column: a click on a
   // different column always starts ascending.
   test('clicking a new column resets direction to ascending', () => {
     const prior: SortState = { direction: 'desc', field: 'name' }
-    const next = nextSortState(prior, [{ field: 'color', sort: 'asc' }])
+    const next = nextSortState(prior, 'color')
     expect(next).toEqual({ direction: 'asc', field: 'color' })
-  })
-
-  test('MUI tri-state clear keeps the field and flips direction', () => {
-    const prior: SortState = { direction: 'asc', field: 'name' }
-    const next = nextSortState(prior, [])
-    expect(next).toEqual({ direction: 'desc', field: 'name' })
-  })
-
-  test('a long sequence stays on the same column when MUI clears', () => {
-    let state = initial
-    state = nextSortState(state, [{ field: 'name', sort: 'asc' }])
-    state = nextSortState(state, [{ field: 'name', sort: 'desc' }])
-    state = nextSortState(state, []) // tri-state clear → flip + keep field
-    expect(state.field).toBe('name')
-    expect(state.direction).toBe('asc')
   })
 })
 

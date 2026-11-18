@@ -2,27 +2,18 @@ import { useState } from 'react'
 
 import { getStr } from '@jbrowse/core/util'
 
-import type { GridSortModel } from '@mui/x-data-grid'
-
 export interface SortState {
   direction: 'asc' | 'desc'
   field: string | null
 }
 
-// Two-state (asc/desc) sort. SourceGrid pins `sortModel` empty, so MUI re-emits
-// `asc` on every header click and its own tri-state never advances — direction
-// lives here: a new column starts ascending, the same column again flips. An
-// empty model (MUI's clear) keeps the field and flips too, so the user never
-// sees an unsorted intermediate state.
-export function nextSortState(
-  prev: SortState,
-  model: GridSortModel,
-): SortState {
-  const requested = model[0]?.field
-  const field = requested ?? prev.field
-  const isNewField = requested !== undefined && requested !== prev.field
+// Two-state (asc/desc) sort of the rows themselves: a header click reorders
+// the list the move buttons then work on, so there is no unsorted state to
+// return to. A new column starts ascending, the same column again flips.
+export function nextSortState(prev: SortState, field: string): SortState {
   return {
-    direction: isNewField ? 'asc' : prev.direction === 'asc' ? 'desc' : 'asc',
+    direction:
+      field !== prev.field || prev.direction === 'desc' ? 'asc' : 'desc',
     field,
   }
 }
@@ -74,9 +65,9 @@ export function useSourceSort<S extends { name: string }>(
     field: null,
   })
 
-  return (model: GridSortModel) => {
-    const next = nextSortState(sort, model)
+  return (field: string) => {
+    const next = nextSortState(sort, field)
     setSort(next)
-    onChange(next.field ? sortRows(rows, next.field, next.direction) : rows)
+    onChange(sortRows(rows, field, next.direction))
   }
 }

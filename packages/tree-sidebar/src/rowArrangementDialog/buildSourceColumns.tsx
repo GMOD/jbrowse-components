@@ -2,7 +2,7 @@ import { SanitizedHTML } from '@jbrowse/core/ui'
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { getStr, measureGridWidth } from '@jbrowse/core/util'
 
-import type { GridColDef } from '@mui/x-data-grid'
+import type { VirtualTableColumn } from '@jbrowse/core/ui/VirtualTable'
 
 /**
  * The colors pinned on rows, which the swatch column edits: the colors
@@ -13,53 +13,66 @@ export interface EachRowPicks {
   onPick: (picked: ReadonlyMap<string, string>) => void
 }
 
+export interface SourceRow<S> {
+  id: string
+  source: S
+}
+
+function fieldText(row: unknown, field: string) {
+  return getStr((row as Record<string, unknown>)[field] ?? '')
+}
+
 export function buildSourceColumns<S extends { name: string }>({
   colors,
   eachRow,
   extras,
   rows,
   cellClassName,
+  swatchClassName,
 }: {
   colors: ReadonlyMap<string, string>
   eachRow: EachRowPicks
   extras: string[]
   rows: S[]
   cellClassName: string
-}): GridColDef<S>[] {
-  return [
+  swatchClassName: string
+}) {
+  const columns: (VirtualTableColumn<SourceRow<S>> & { width: number })[] = [
     {
-      field: 'rowColorSwatch',
-      headerName: 'Color',
+      id: 'rowColorSwatch',
+      header: 'Color',
       width: 70,
-      sortable: false,
-      renderCell: ({ row }) => (
-        <PopoverPicker
-          color={colors.get(row.name) ?? 'auto'}
-          unset={!eachRow.picks.has(row.name)}
-          onChange={next => {
-            eachRow.onPick(new Map([[row.name, next]]))
-          }}
-        />
+      cell: ({ source }) => (
+        <div className={swatchClassName}>
+          <PopoverPicker
+            color={colors.get(source.name) ?? 'auto'}
+            unset={!eachRow.picks.has(source.name)}
+            onChange={next => {
+              eachRow.onPick(new Map([[source.name, next]]))
+            }}
+          />
+        </div>
       ),
-    } satisfies GridColDef<S>,
+    },
     {
-      field: 'name',
-      headerName: 'Name',
+      id: 'name',
+      header: 'Name',
       width: measureGridWidth(rows.map(r => r.name)),
+      title: ({ source }) => source.name,
+      cell: ({ source }) => source.name,
     },
     ...extras.map(
-      field =>
-        ({
-          field,
-          renderCell: ({ value }) => (
-            <div className={cellClassName}>
-              <SanitizedHTML html={getStr(value ?? '')} />
-            </div>
-          ),
-          width: measureGridWidth(
-            rows.map(r => getStr((r as Record<string, unknown>)[field] ?? '')),
-          ),
-        }) satisfies GridColDef<S>,
+      (field): VirtualTableColumn<SourceRow<S>> & { width: number } => ({
+        id: field,
+        header: field,
+        width: measureGridWidth(rows.map(r => fieldText(r, field))),
+        cell: ({ source }) => (
+          <div className={cellClassName}>
+            <SanitizedHTML html={fieldText(source, field)} />
+          </div>
+        ),
+      }),
     ),
   ]
+  return columns.map((col, i) => ({ ...col, fill: i === columns.length - 1 }))
 }
