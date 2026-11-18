@@ -408,7 +408,7 @@ stay.
 - **Unset, the track is 390 px**: the rows' 200, the chips' 20 and the band's
   170. At any smaller default some window gives the rows less than the 200
   they had. The default keys on the VCF having rows, so the Layout menu,
-  hiding the rows and a ring all leave an unset track at 390. The track is
+  hiding the rows and a ring all leave the unset slot at 390. The track is
   390 until the sample listing lands, and a sites-only or one-sample VCF
   shrinks once then, as it did from 220.
 - **An unwritten band is `min(opening stack, 170, room × 170/370)`**, room
@@ -432,9 +432,9 @@ stay.
   halves of the Rejected row "Keep genotypes off as the sites-only look" hold.
 - **`Records ×` leaves the track where it is**, and the rows take the band's
   px. It used to shrink the track.
-- **The track no longer moves on a fetch.** Until the band settled, the track
-  followed its stack, so an empty or collapsed opening window resized the
-  track on a later fetch.
+- **While rows draw, the track no longer moves on a fetch.** Until the band
+  settled, the track followed its stack, so an empty or collapsed opening
+  window resized the track on a later fetch.
 - **Records-only tracks are unchanged**: a sites-only VCF, one sample with
   `genotypes.show` unset, and a ring.
 - **`variantTables` answers `height` as the track.** Its host has no window to

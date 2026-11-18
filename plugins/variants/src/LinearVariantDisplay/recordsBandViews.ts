@@ -13,6 +13,7 @@ import {
   boundBandHeight,
   clampBandHeight,
 } from '@jbrowse/core/util/bandHeight'
+import { reservedPx } from '@jbrowse/core/util/bandLayout'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -791,6 +792,21 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     },
     /**
      * #getter
+     * The px the band takes of the track over drawn rows, answered while the
+     * rows are hidden too: what a band write made then moves the slot
+     * `height` from, so the rows come back at the px they left.
+     */
+    get recordsBandOverRows() {
+      return reservedPx(
+        boundRecordsBand({
+          band: { active: self.showRecords, height: heldHeight.get() },
+          written: self.recordsHeightWritten,
+          trackHeight: self.fitTargetHeight,
+        }),
+      )
+    },
+    /**
+     * #getter
      * The track at which the genotype rows under the bands show their whole
      * content, the lines leading them included: what the track handle's
      * double click grows to at genomic positions.
@@ -1124,9 +1140,10 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
     if (after !== before) {
       const written =
         before === 0 ? boundBandHeight(after, RECORDS_BAND_BOUNDS) : after
+      const overRows = self.recordsBandOverRows
       setConf(self, ['records', 'height'], written)
       if (movesTrack) {
-        self.setHeight(self.configuredHeight + written - before)
+        self.setHeight(self.configuredHeight + written - overRows)
       }
     }
     return self.topBands.reserved.records - before

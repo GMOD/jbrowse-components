@@ -74,7 +74,7 @@ export const recordsBandConfigSchema = ConfigurationSchema(
     height: {
       type: 'maybeNumber',
       description:
-        "height in pixels of the band beside genotype rows; the band's seam drag writes it, and `+N hidden` writes it to the whole stack and raises the track `height` by as much. Over drawn rows it comes out of the track `height`: at least 8 px, and at most what leaves the rows 20 px. With the rows hidden it is the track above the chip strip. Unset, the band opens at its stack of records, up to 170 px, and holds that; over drawn rows it also takes at most 170 of every 370 px the track has under the chip strip, so a short track shortens it. Not read while the records are the display",
+        "height in pixels of the band beside genotype rows; the band's seam drag writes it, and `+N hidden` writes it to the whole stack and raises the track `height` by as much. Over drawn rows it comes out of the track `height`: a drag stops at 8 px, and the band takes at most what leaves the rows 20 px. With the rows hidden it is the track above the chip strip. Unset, the band opens at its stack of records, up to 170 px, and holds that; over drawn rows it also takes at most 170 of every 370 px the track has under the chip strip, so a short track shortens it. Not read while the records are the display",
     },
     ...featureGateConfigSchemaFields,
     /**

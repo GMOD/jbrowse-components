@@ -536,16 +536,37 @@ describe('`height` is the whole track while rows draw', () => {
     expect(display.expandToContentHeight()).toBe(0)
   })
 
-  test('the double click under a written band grows by the rows it hides', () => {
-    const { display } = recordsDisplayAt(KIT, 51, { height: 60 }, true, {
+  // a written band the track holds short of its height takes that height
+  // back as the track grows, so the track grows by more than the rows lack
+  test('the double click under a written band grows to the rows and the band it states', () => {
+    const { display } = recordsDisplayAt(KIT, 51, { height: 200 }, true, {
       height: 200,
-      rows: { step: 2 },
+      rows: { step: 1 },
     })
     display.setSources(
       Array.from({ length: 100 }, (_, i) => ({ name: `S${i}` })),
     )
+    expect(display.topBands.reserved.records).toBe(
+      200 - BAND_CHIPS_HEIGHT - MIN_BAND_HEIGHT,
+    )
     display.expandToContentHeight()
-    expect(display.height).toBe(BAND_CHIPS_HEIGHT + 60 + 200)
+    expect(display.height).toBe(BAND_CHIPS_HEIGHT + 200 + 100)
     expect(display.scrollableHeight).toBe(0)
+  })
+
+  // hidden, the band draws at its own height, past the share it has over
+  // rows; the slot moves from the share, which is what the rows come back to
+  test('a hidden-rows resize of a band its share held brings the rows back at their px', () => {
+    const { display } = recordsDisplayAt(NESTED, 51, TALL, true, {
+      height: 290,
+    })
+    expect(display.topBands.reserved.records).toBe(124)
+    expect(display.availableHeight).toBe(146)
+    display.setShowGenotypes(false)
+    expect(display.topBands.reserved.records).toBe(DEFAULT_RECORDS_HEIGHT)
+    display.resizeHeight(1)
+    display.setShowGenotypes(true)
+    expect(display.topBands.reserved.records).toBe(DEFAULT_RECORDS_HEIGHT + 1)
+    expect(display.availableHeight).toBe(146)
   })
 })
