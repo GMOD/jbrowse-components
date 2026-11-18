@@ -3,8 +3,9 @@
 // only a real session can say whether addConnectionConf coerces that into a
 // config model and whether makeConnection accepts what it hands back. The
 // ordering rules are unit-tested against stubs in @jbrowse/app-core.
-import { loadSessionSpec } from '@jbrowse/app-core'
+import { hubConnectionSpec, loadSessionSpec } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { when } from 'mobx'
 
 import corePlugins from './corePlugins.ts'
 import rootModelFactory from './rootModel/rootModel.ts'
@@ -51,6 +52,12 @@ function setup({ adminMode = false } = {}) {
 
 beforeEach(() => {
   mockReadFile.mockReturnValue(new Promise(() => {}))
+  // the hub.txt read that names an unnamed session after its hub
+  jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
+})
+
+afterEach(() => {
+  jest.restoreAllMocks()
 })
 
 test('a spec registers its connections as real session connections', async () => {
@@ -119,4 +126,41 @@ test('a spec holds its views until the connection settles', async () => {
 
   expect(rootModel.session!.connectionInstances[0]!.loading).toBe(true)
   expect(rootModel.session!.views).toHaveLength(0)
+})
+
+// the hub's shortLabel names the connection's track-selector category, but
+// only over the placeholder hubConnectionSpec wrote: a name the spec chose stays
+describe('a hub.txt shortLabel', () => {
+  beforeEach(() => {
+    jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response('hub myHub\nshortLabel My Cool Hub'))
+  })
+
+  test('renames a hub connection still carrying its placeholder name', async () => {
+    const { pluginManager, rootModel } = setup()
+    const conf = hubConnectionSpec('https://example.com/hubs/my-hub/hub.txt')
+
+    await loadSessionSpec(
+      { sessionConnections: [conf], views: [] },
+      pluginManager,
+    )
+
+    const session = rootModel.session!
+    await when(() => session.name === 'My Cool Hub')
+    expect(session.sessionConnections[0]!.name).toBe('My Cool Hub')
+  })
+
+  test('keeps a connection name the spec wrote', async () => {
+    const { pluginManager, rootModel } = setup()
+
+    await loadSessionSpec(
+      { sessionConnections: [HUB], views: [] },
+      pluginManager,
+    )
+
+    const session = rootModel.session!
+    await when(() => session.name === 'My Cool Hub')
+    expect(session.sessionConnections[0]!.name).toBe('my-hub')
+  })
 })

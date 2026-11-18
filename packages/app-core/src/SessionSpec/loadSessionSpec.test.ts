@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { observable, runInAction } from 'mobx'
 
 import { resolveLayoutSpec, viewIdsInSpec } from '../WorkspaceLayout/spec.ts'
-import { loadSessionSpec } from './loadSessionSpec.ts'
+import { loadSessionSpec, parseHubShortLabel } from './loadSessionSpec.ts'
 
 import type { LayoutSpecNode } from '../WorkspaceLayout/spec.ts'
 import type { AbstractRootModel } from '@jbrowse/core/util'
@@ -61,6 +61,7 @@ function connectionStub({
     },
     session: {
       connectionInstances,
+      setName: jest.fn(),
       addConnectionConf: adder('addConnectionConf'),
       ...(sessionScoped
         ? { addSessionConnectionConf: adder('addSessionConnectionConf') }
@@ -845,6 +846,18 @@ describe('sessionTracks', () => {
   })
 })
 
+describe('parseHubShortLabel', () => {
+  it('extracts the shortLabel value', () => {
+    expect(
+      parseHubShortLabel('hub myHub\nshortLabel My Cool Hub\nlongLabel x'),
+    ).toBe('My Cool Hub')
+  })
+
+  it('returns undefined when there is no shortLabel line', () => {
+    expect(parseHubShortLabel('hub myHub\nlongLabel x')).toBeUndefined()
+  })
+})
+
 // A hub (or any connection) brings its own assemblies and tracks, from a fetch.
 // Before `sessionConnections` a spec could not carry one at all — a URL was
 // either a hub or a spec, never both — so a hub could never be opened with a
@@ -875,6 +888,75 @@ describe('sessionConnections', () => {
     )
     return { session, pluginManager, connections }
   }
+
+  // the hub.txt read that names the session, held in flight unless a test is
+  // about it
+  beforeEach(() => {
+    jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
+  })
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  function hubTxt(text: string) {
+    jest.spyOn(global, 'fetch').mockResolvedValue(new Response(text))
+  }
+
+  const flush = () => new Promise(resolve => setTimeout(resolve, 0))
+
+  // a hub link names no session, and "New session <date>" says nothing about
+  // what it opened
+  it('names an unnamed session after its hub, then after the hub’s shortLabel', async () => {
+    const { session, pluginManager, connections } = setupWithHub([])
+    hubTxt('hub myHub\nshortLabel My Cool Hub\nlongLabel x')
+
+    await loadSessionSpec(
+      { sessionConnections: [HUB], views: [] },
+      pluginManager,
+    )
+    await flush()
+
+    expect(pluginManager.rootModel?.setSession).toHaveBeenCalledWith({
+      name: 'https://example.com/hub.txt',
+    })
+    expect(connections.session.setName).toHaveBeenCalledWith('My Cool Hub')
+    expect(session.notifyError).not.toHaveBeenCalled()
+  })
+
+  it('keeps a session name the spec gives', async () => {
+    const { pluginManager, connections } = setupWithHub([])
+    hubTxt('hub myHub\nshortLabel My Cool Hub')
+
+    await loadSessionSpec(
+      { sessionConnections: [HUB], views: [], sessionName: 'Mine' },
+      pluginManager,
+    )
+    await flush()
+
+    expect(pluginManager.rootModel?.setSession).toHaveBeenCalledWith({
+      name: 'Mine',
+    })
+    expect(connections.session.setName).not.toHaveBeenCalled()
+  })
+
+  it('says when the hub.txt it names the session from cannot be read', async () => {
+    const { session, pluginManager } = setupWithHub([])
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response('', { status: 404 }))
+
+    await loadSessionSpec(
+      { sessionConnections: [HUB], views: [] },
+      pluginManager,
+    )
+    await flush()
+
+    expect(session.notifyError).toHaveBeenCalledWith(
+      'Error: HTTP 404 fetching https://example.com/hub.txt',
+      expect.anything(),
+    )
+  })
 
   // the whole point of waiting: a view launched mid-fetch resolves neither the
   // assembly the hub is about to define nor the track ids it is about to add
