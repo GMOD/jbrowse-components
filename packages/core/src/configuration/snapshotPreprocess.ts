@@ -79,12 +79,16 @@ export function refusingUndeclaredKeys<T>(write: () => T) {
  * names it once on the console and loads without it.
  */
 export function refuseOnWrite(notice: string) {
+  refuseElseWarnOnce(notice, `${notice}: loading without it`)
+}
+
+function refuseElseWarnOnce(refusal: string, notice: string) {
   if (writes > 0) {
-    throw new Error(notice)
+    throw new Error(refusal)
   }
   if (!warned.has(notice)) {
     warned.add(notice)
-    console.warn(`${notice}: loading without it`)
+    console.warn(notice)
   }
 }
 
@@ -271,16 +275,10 @@ function boundedMembers(
     const value = snapshot[key]
     if (isBelowMinimum(definition, value)) {
       const slot = slotLabel(name, key, at)
-      if (writes > 0) {
-        throw new Error(minimumRefusal(slot, definition, value))
-      }
-      const notice = belowMinimumNotice(slot, definition, value)
-      if (!warned.has(notice)) {
-        warned.add(notice)
-        console.warn(
-          `${notice}: loading the default, ${JSON.stringify(definition.defaultValue)}`,
-        )
-      }
+      refuseElseWarnOnce(
+        minimumRefusal(slot, definition, value),
+        `${belowMinimumNotice(slot, definition, value)}: loading the default, ${JSON.stringify(definition.defaultValue)}`,
+      )
       out = out === snapshot ? { ...snapshot } : out
       out[key] = undefined
     }
@@ -321,9 +319,6 @@ function misshapenMaps(
         entry,
         value,
       )
-      if (writes > 0) {
-        throw new Error(notice)
-      }
       const kept = isPlainObject(value)
         ? Object.fromEntries(
             Object.entries(value).filter(([, v]) => typeof v === 'string'),
@@ -334,10 +329,7 @@ function misshapenMaps(
             Object.keys(value).filter(k => typeof value[k] !== 'string'),
           )}`
         : 'loading the default'
-      if (!warned.has(notice)) {
-        warned.add(notice)
-        console.warn(`${notice}: ${loading}`)
-      }
+      refuseElseWarnOnce(notice, `${notice}: ${loading}`)
       out = out === snapshot ? { ...snapshot } : out
       out[key] = kept
     }
@@ -363,14 +355,7 @@ function refusedMembers(
 ) {
   let out = snapshot
   for (const problem of refusalProblems(schema, snapshot)) {
-    const notice = refusalNotice(schema.name, at, problem)
-    if (writes > 0) {
-      throw new Error(notice)
-    }
-    if (!warned.has(notice)) {
-      warned.add(notice)
-      console.warn(`${notice}: loading without it`)
-    }
+    refuseOnWrite(refusalNotice(schema.name, at, problem))
     out = withoutPath(out, problem.slot.split('.'))
   }
   return out
