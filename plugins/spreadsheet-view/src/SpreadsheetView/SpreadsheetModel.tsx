@@ -6,7 +6,7 @@ import {
   selectedFeatureIdFor,
   toLocale,
 } from '@jbrowse/core/util'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   distinctJunctions,
   junctionFromFeature,
@@ -172,10 +172,10 @@ export default function stateModelFactory() {
       ),
       /**
        * #property
-       * the SV class the sheet is narrowed to, such as `BND` (undefined = show
-       * all); a class rather than a raw `INFO.SVTYPE` token
+       * the SV classes the sheet is narrowed to, such as `BND` (empty = show
+       * all); classes rather than raw `INFO.SVTYPE` tokens
        */
-      svTypeFilter: types.maybe(types.string),
+      svTypeFilter: types.stripDefault(types.array(types.string), []),
       /**
        * #property
        * the caller's event the sheet is narrowed to (undefined = show all), a
@@ -449,8 +449,9 @@ export default function stateModelFactory() {
         const { svEventColumnField } = self
         return self.rows?.filter(
           row =>
-            (svTypeFilter === undefined ||
-              row.derived.svType === svTypeFilter) &&
+            (svTypeFilter.length === 0 ||
+              (row.derived.svType !== undefined &&
+                svTypeFilter.includes(row.derived.svType))) &&
             (svEventFilter === undefined ||
               eventLabel(row, svEventColumnField) === svEventFilter),
         )
@@ -478,8 +479,8 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
-       * the dropdowns above the grid, as data; `key` is what `setGridFacet`
-       * takes and the sheet persists
+       * the dropdowns above the grid, as data; a `key` is what `setGridFacet`
+       * takes and the sheet persists, and none selected shows all
        */
       get gridFacets() {
         return [
@@ -488,7 +489,8 @@ export default function stateModelFactory() {
                 {
                   id: 'sv-type-filter' as const,
                   label: 'Filter by SV type',
-                  selected: self.svTypeFilter,
+                  multiple: true,
+                  selected: [...self.svTypeFilter],
                   options: this.svTypeOptions.map(o => ({
                     key: o.type,
                     label: `${o.label} (${o.count})`,
@@ -501,7 +503,11 @@ export default function stateModelFactory() {
                 {
                   id: 'sv-event-filter' as const,
                   label: 'Filter by event',
-                  selected: self.svEventFilter,
+                  multiple: false,
+                  selected:
+                    self.svEventFilter === undefined
+                      ? []
+                      : [self.svEventFilter],
                   options: self.svEvents.map(e => ({
                     key: e.label,
                     label: `${e.label} (${e.count} records; ${e.refNames.join(', ')})`,
@@ -556,8 +562,20 @@ export default function stateModelFactory() {
       /**
        * #action
        */
-      setSvTypeFilter(arg?: string) {
-        self.svTypeFilter = arg
+      setSvTypeFilter(svTypes: string[]) {
+        self.svTypeFilter = cast(svTypes)
+      },
+      /**
+       * #action
+       * add an SV class to the filter, or take it out; taking the last one
+       * out shows every class again
+       */
+      toggleSvType(svType: string) {
+        self.svTypeFilter = cast(
+          self.svTypeFilter.includes(svType)
+            ? self.svTypeFilter.filter(t => t !== svType)
+            : [...self.svTypeFilter, svType],
+        )
       },
       /**
        * #action
@@ -567,13 +585,14 @@ export default function stateModelFactory() {
       },
       /**
        * #action
-       * select an option of one of `gridFacets` by its `key`
+       * select options of one of `gridFacets` by their `key`; a facet that
+       * is not `multiple` takes the first
        */
-      setGridFacet(id: 'sv-type-filter' | 'sv-event-filter', key?: string) {
+      setGridFacet(id: 'sv-type-filter' | 'sv-event-filter', keys: string[]) {
         if (id === 'sv-type-filter') {
-          self.svTypeFilter = key
+          self.svTypeFilter = cast(keys)
         } else {
-          self.svEventFilter = key
+          self.svEventFilter = keys[0]
         }
       },
       /**
@@ -594,6 +613,7 @@ export default function stateModelFactory() {
         snap:
           | ({
               columns?: { name: string; isDerived?: boolean }[]
+              svTypeFilter?: string | string[]
               rowSet?: { rows?: LegacyRow[] }
             } & Record<string, unknown>)
           | undefined,
@@ -608,6 +628,11 @@ export default function stateModelFactory() {
         const legacy = rows?.some(r => !!r.cells || !!r.extendedData)
         return {
           ...snap,
+          // one class, as written before the filter took several
+          svTypeFilter:
+            typeof snap.svTypeFilter === 'string'
+              ? [snap.svTypeFilter]
+              : snap.svTypeFilter,
           columns,
           rowSet:
             legacy && rows

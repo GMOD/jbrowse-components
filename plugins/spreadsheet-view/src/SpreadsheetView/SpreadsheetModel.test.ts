@@ -255,16 +255,51 @@ describe('the derived size column', () => {
   })
 })
 
-test('setSvTypeFilter stores the selected value', () => {
-  const model = makeModel({
-    rowSet: { rows: [{ cellData: { 'INFO.SVTYPE': 'DEL' } }] },
-    columns: [{ name: 'INFO.SVTYPE' }],
+describe('the SV type filter', () => {
+  const sheet = (overrides: Record<string, unknown> = {}) =>
+    makeModel({
+      rowSet: {
+        rows: ['DEL', 'DUP', 'INV', 'DEL'].map(svType => ({
+          cellData: { 'INFO.SVTYPE': svType },
+        })),
+      },
+      columns: [{ name: 'INFO.SVTYPE' }],
+      ...overrides,
+    })
+
+  test('no class selected shows every row', () => {
+    const model = sheet()
+    expect([...model.svTypeFilter]).toEqual([])
+    expect(model.gridRows?.map(r => r.id)).toEqual([0, 1, 2, 3])
   })
-  expect(model.svTypeFilter).toBeUndefined()
-  model.setSvTypeFilter('DEL')
-  expect(model.svTypeFilter).toBe('DEL')
-  model.setSvTypeFilter(undefined)
-  expect(model.svTypeFilter).toBeUndefined()
+
+  test('toggling adds a class, and taking the last one out shows all', () => {
+    const model = sheet()
+    model.toggleSvType('DEL')
+    expect(model.gridRows?.map(r => r.id)).toEqual([0, 3])
+    model.toggleSvType('INV')
+    expect([...model.svTypeFilter]).toEqual(['DEL', 'INV'])
+    expect(model.gridRows?.map(r => r.id)).toEqual([0, 2, 3])
+    model.toggleSvType('DEL')
+    model.toggleSvType('INV')
+    expect(model.gridRows?.map(r => r.id)).toEqual([0, 1, 2, 3])
+  })
+
+  test('the dropdown and the toggle write one filter', () => {
+    const model = sheet()
+    model.setGridFacet('sv-type-filter', ['DUP', 'INV'])
+    model.toggleSvType('DUP')
+    expect(model.gridFacets[0]).toMatchObject({
+      multiple: true,
+      selected: ['INV'],
+    })
+  })
+
+  test('a session saved with one class reads it as the only class', () => {
+    const model = sheet({ svTypeFilter: 'DUP' })
+    expect([...model.svTypeFilter]).toEqual(['DUP'])
+    expect(model.gridRows?.map(r => r.id)).toEqual([1])
+  })
 })
 
 // Walking a rearrangement from one of its records to the rest. The row menu had
@@ -479,7 +514,7 @@ describe('the junctions the sheet can walk', () => {
       ],
       eventColumns,
     )
-    sheet.setGridFacet('sv-event-filter', 'cluster_1')
+    sheet.setGridFacet('sv-event-filter', ['cluster_1'])
     expect(sheet.svEventFilter).toBe('cluster_1')
     expect(sheet.visibleRows?.map(r => r.id)).toEqual([0, 1, 2, 3])
   })
@@ -496,8 +531,8 @@ describe('the junctions the sheet can walk', () => {
       cellData: { 'INFO.SVTYPE': 'DEL', 'INFO.EVENT': 'cluster_1' },
     }
     const sheet = sheetWith([...chromoplexy, del, ...lone], eventColumns)
-    sheet.setGridFacet('sv-event-filter', 'cluster_1')
-    sheet.setGridFacet('sv-type-filter', 'BND')
+    sheet.setGridFacet('sv-event-filter', ['cluster_1'])
+    sheet.setGridFacet('sv-type-filter', ['BND'])
     expect(sheet.gridRows?.map(r => r.id)).toEqual([0, 1, 2, 3])
     sheet.setVisibleRows({ 0: true, 1: false, 2: false, 3: true })
     expect(sheet.visibleRows?.map(r => r.id)).toEqual([0, 3])

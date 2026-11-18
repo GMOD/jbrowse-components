@@ -1,20 +1,12 @@
-import { lazy } from 'react'
-
 import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  clamp,
-  getDialogHost,
-  getSession,
-  selectedFeatureIdFor,
-} from '@jbrowse/core/util'
+import { clamp, getSession, selectedFeatureIdFor } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
 import { featureRefNames } from './featureRefNames.ts'
@@ -34,14 +26,15 @@ import type {} from '@jbrowse/plugin-circular-view'
 import type {} from '@jbrowse/plugin-spreadsheet-view'
 /* eslint-enable unicorn/require-module-specifiers */
 
-const ReturnToImportFormDialog = lazy(
-  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
-)
-
 function trackConfId(configuration: unknown) {
   return typeof configuration === 'string'
     ? configuration
-    : (configuration as { trackId?: string } | undefined)?.trackId
+    : typeof configuration === 'object' &&
+        configuration !== null &&
+        'trackId' in configuration &&
+        typeof configuration.trackId === 'string'
+      ? configuration.trackId
+      : undefined
 }
 
 function variantTrackIdFor(viewId: string) {
@@ -53,14 +46,16 @@ function rowFeatures(rows?: { feature?: SimpleFeatureSerialized }[]) {
 }
 
 // the ChordVariantDisplay the inspector's circular view draws its rows with
-interface ChordSelectionTarget {
+interface InspectorChordDisplay {
   setHighlightedFeatureIds: (ids: string[] | undefined) => void
   setVisibleFeatureIds: (ids: string[] | undefined) => void
+  paintedColorField?: { field: string }
+  paintedColorValues: ReadonlyMap<string, unknown>
 }
 
-function isChordSelectionTarget<D extends object>(
+function isInspectorChordDisplay<D extends object>(
   display: D,
-): display is D & ChordSelectionTarget {
+): display is D & InspectorChordDisplay {
   return (
     'setHighlightedFeatureIds' in display && 'setVisibleFeatureIds' in display
   )
@@ -308,6 +303,56 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * the display drawing the sheet's rows as chords, once its track is open
+       */
+      get chordDisplay() {
+        const { variantTrackId } = this
+        return self.circularView.tracks
+          .find(t => t.configuration.trackId === variantTrackId)
+          ?.displays.find(isInspectorChordDisplay)
+      },
+      /**
+       * #getter
+       * the SV classes a chord paints at this zoom, which leaves out a class
+       * whose records all end under a pixel apart; undefined while the chords
+       * color by something else
+       */
+      get drawnSvTypes() {
+        const display = this.chordDisplay
+        return display?.paintedColorField?.field === SV_TYPE_FIELD
+          ? new Set(display.paintedColorValues.keys())
+          : undefined
+      },
+      /**
+       * #getter
+       * the legend's rows, one per SV class in the sheet. `count` is the
+       * class's rows on screen, undefined for a class the type filter leaves
+       * out; `swatch` is undefined while the chords do not color by SV type,
+       * and `hollow` for a shown class no chord draws
+       */
+      get svTypeLegend() {
+        const sheet = self.spreadsheetView.spreadsheet
+        const filter: readonly string[] = sheet?.svTypeFilter ?? []
+        const counts = new Map(
+          sheet?.visibleSvTypes.map(t => [t.type, t.count]),
+        )
+        const drawn = this.drawnSvTypes
+        return (sheet?.svTypeOptions ?? []).map(({ type, label }) => {
+          const shown = filter.length === 0 || filter.includes(type)
+          return {
+            type,
+            label,
+            count: shown ? (counts.get(type) ?? 0) : undefined,
+            swatch: drawn
+              ? shown && !drawn.has(type)
+                ? ('hollow' as const)
+                : ('filled' as const)
+              : undefined,
+          }
+        })
+      },
+      /**
+       * #getter
        */
       get featuresCircularTrackConfiguration() {
         const { assemblyName, variantTrackId: trackId } = this
@@ -375,27 +420,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #method
+       * the sheet's own items
        */
       menuItems(): MenuItem[] {
-        return [
-          {
-            label: 'Return to import form',
-            icon: FolderOpenIcon,
-            onClick: () => {
-              getDialogHost(self).queueDialog(handleClose => [
-                ReturnToImportFormDialog,
-                {
-                  model: {
-                    clearView: () => {
-                      self.spreadsheetView.returnToImportForm()
-                    },
-                  },
-                  handleClose,
-                },
-              ])
-            },
-          },
-        ]
+        return self.spreadsheetView.menuItems()
       },
       /**
        * #method
@@ -514,17 +542,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              const { highlightedChordIds, visibleChordIds, variantTrackId } =
+              const { chordDisplay, highlightedChordIds, visibleChordIds } =
                 self
-              const track = self.circularView.tracks.find(
-                t => t.configuration.trackId === variantTrackId,
-              )
-              for (const display of track?.displays ?? []) {
-                if (isChordSelectionTarget(display)) {
-                  display.setHighlightedFeatureIds(highlightedChordIds)
-                  display.setVisibleFeatureIds(visibleChordIds)
-                }
-              }
+              chordDisplay?.setHighlightedFeatureIds(highlightedChordIds)
+              chordDisplay?.setVisibleFeatureIds(visibleChordIds)
             },
             { name: 'SvInspectorView chord display state binding' },
           ),

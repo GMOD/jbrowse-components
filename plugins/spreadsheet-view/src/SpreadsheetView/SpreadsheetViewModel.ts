@@ -1,5 +1,11 @@
+import { lazy } from 'react'
+
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { getSession, isSessionWithAddSessionTrack } from '@jbrowse/core/util'
+import {
+  getDialogHost,
+  getSession,
+  isSessionWithAddSessionTrack,
+} from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
   pendingLaunch,
@@ -19,6 +25,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+const ReturnToImportFormDialog = lazy(
+  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
+)
 
 const minHeight = 40
 const defaultHeight = 440
@@ -143,7 +153,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
                 ? {
                     ...spreadsheet,
                     visibleColumns: prev.visibleColumns,
-                    svTypeFilter: prev.svTypeFilter,
+                    svTypeFilter: [...prev.svTypeFilter],
                     svEventFilter: prev.svEventFilter,
                     filterText: prev.filterText,
                   }
@@ -311,17 +321,30 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
           },
           /**
            * #method
+           * empty while the import form is what shows
            */
           menuItems(): MenuItem[] {
-            return [
-              {
-                label: 'Return to import form',
-                icon: FolderOpenIcon,
-                onClick: () => {
-                  self.returnToImportForm()
-                },
-              },
-            ]
+            return self.spreadsheet?.initialized
+              ? [
+                  {
+                    label: 'Return to import form',
+                    icon: FolderOpenIcon,
+                    onClick: () => {
+                      getDialogHost(self).queueDialog(handleClose => [
+                        ReturnToImportFormDialog,
+                        {
+                          model: {
+                            clearView: () => {
+                              self.returnToImportForm()
+                            },
+                          },
+                          handleClose,
+                        },
+                      ])
+                    },
+                  },
+                ]
+              : []
           },
         })),
     )

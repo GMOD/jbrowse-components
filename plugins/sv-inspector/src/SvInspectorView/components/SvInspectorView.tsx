@@ -66,9 +66,8 @@ const SvInspectorView = observer(function SvInspectorView({
               className={classes.circularPane}
               style={{ width: model.circularView.width }}
             >
-              <ChordLegend model={model}>
-                <CircularViewReactComponent model={model.circularView} />
-              </ChordLegend>
+              <CircularViewReactComponent model={model.circularView} />
+              <ChordLegend model={model} />
               <div className={classes.circularPaneMenu}>
                 <CascadingMenuButton
                   tooltip="Circular view options"

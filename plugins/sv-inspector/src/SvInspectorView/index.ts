@@ -30,45 +30,44 @@ function defaultOnChordClick(
   try {
     const view = getContainingView(chordDisplay)
     const assemblyName = view.assemblyNames?.[0]
-    if (!assemblyName) {
-      return
-    }
-    session.setSelection(
-      feature,
-      getContainingTrack(chordDisplay).configuration.trackId,
-    )
-    const parentView = getParent<{
-      type?: string
-      spreadsheetView?: {
-        id: string
-        drilldownTrackIds: string[]
-        spreadsheet?: {
-          findJunctionsNear: () => FindJunctionsNear
-          svEventFor: (feature: { uniqueId: string }) => SvEvent | undefined
+    if (assemblyName) {
+      session.setSelection(
+        feature,
+        getContainingTrack(chordDisplay).configuration.trackId,
+      )
+      const parentView = getParent<{
+        type?: string
+        spreadsheetView?: {
+          id: string
+          drilldownTrackIds: string[]
+          spreadsheet?: {
+            findJunctionsNear: () => FindJunctionsNear
+            svEventFor: (feature: { uniqueId: string }) => SvEvent | undefined
+          }
         }
-      }
-    }>(view)
-    const inspector =
-      parentView.type === 'SvInspectorView'
-        ? parentView.spreadsheetView
-        : undefined
-    const sheet = inspector?.spreadsheet
-    launchBreakpointSplitView({
-      session,
-      feature,
-      assemblyName,
-      // the sheet has the callset parsed already; the adapter re-reads it
-      // over RPC per hop
-      findJunctionsNear: sheet
-        ? sheet.findJunctionsNear()
-        : makeFindJunctionsNear(chordDisplay, assemblyName),
-      event: sheet?.svEventFor({ uniqueId: unwrapFeature(feature).id() }),
-      defaultTrackIds: inspector?.drilldownTrackIds,
-      // shared with the sheet's row menu, so the two don't stack views
-      stableViewId: inspector
-        ? breakpointSplitViewId(inspector.id, assemblyName)
-        : undefined,
-    })
+      }>(view)
+      const inspector =
+        parentView.type === 'SvInspectorView'
+          ? parentView.spreadsheetView
+          : undefined
+      const sheet = inspector?.spreadsheet
+      launchBreakpointSplitView({
+        session,
+        feature,
+        assemblyName,
+        // the sheet has the callset parsed already; the adapter re-reads it
+        // over RPC per hop
+        findJunctionsNear: sheet
+          ? sheet.findJunctionsNear()
+          : makeFindJunctionsNear(chordDisplay, assemblyName),
+        event: sheet?.svEventFor({ uniqueId: unwrapFeature(feature).id() }),
+        defaultTrackIds: inspector?.drilldownTrackIds,
+        // shared with the sheet's row menu, so the two don't stack views
+        stableViewId: inspector
+          ? breakpointSplitViewId(inspector.id, assemblyName)
+          : undefined,
+      })
+    }
   } catch (e) {
     console.error(e)
     session.notifyError(`${e}`, e)

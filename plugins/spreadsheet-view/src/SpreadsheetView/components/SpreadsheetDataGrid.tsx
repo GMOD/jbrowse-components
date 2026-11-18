@@ -109,28 +109,40 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
             margin: 8,
           }}
         >
-          {gridFacets.map(({ id, label, selected, options }) => (
-            <TextField
-              key={id}
-              select
-              variant="outlined"
-              size="small"
-              label={label}
-              value={options.some(o => o.key === selected) ? selected : ''}
-              onChange={event => {
-                model.setGridFacet(id, event.target.value || undefined)
-              }}
-              sx={{ minWidth: 160 }}
-              slotProps={{ htmlInput: { 'data-testid': id } }}
-            >
-              <MenuItem value="">All</MenuItem>
-              {options.map(opt => (
-                <MenuItem key={opt.key} value={opt.key}>
-                  {opt.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          ))}
+          {gridFacets.map(({ id, label, multiple, selected, options }) => {
+            const known = selected.filter(key =>
+              options.some(o => o.key === key),
+            )
+            return (
+              <TextField
+                key={id}
+                select
+                variant="outlined"
+                size="small"
+                label={label}
+                value={multiple ? known : (known[0] ?? '')}
+                onChange={event => {
+                  // a multiple select hands back an array
+                  model.setGridFacet(
+                    id,
+                    [event.target.value].flat().filter(key => key !== ''),
+                  )
+                }}
+                sx={{ minWidth: 160, maxWidth: 320 }}
+                slotProps={{
+                  htmlInput: { 'data-testid': id },
+                  select: { multiple },
+                }}
+              >
+                {multiple ? null : <MenuItem value="">All</MenuItem>}
+                {options.map(opt => (
+                  <MenuItem key={opt.key} value={opt.key}>
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )
+          })}
           {/* the toolbar's search collapses to a magnifier, which would leave
               a restored search invisible */}
           {filterText ? (

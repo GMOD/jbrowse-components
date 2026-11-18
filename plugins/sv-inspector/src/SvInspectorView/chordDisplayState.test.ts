@@ -83,6 +83,76 @@ test('a filter narrows what the chord display draws, on the same track', async (
   expect(display.visibleFeatureIds).toBeUndefined()
 })
 
+describe('the legend', () => {
+  const del = {
+    feature: {
+      uniqueId: 'd',
+      refName: 'ctgA',
+      start: 5,
+      end: 7,
+      ALT: ['<DEL>'],
+    },
+    cellData: { 'INFO.SVTYPE': 'DEL' },
+  }
+
+  async function inspectorWithClasses() {
+    const { session, view } = await openInspector()
+    await session.assemblyManager.waitForAssembly('volvox')
+    view.spreadsheetView.displaySpreadsheet({
+      assemblyName: 'volvox',
+      columns: [{ name: 'INFO.SVTYPE' }, { name: 'INFO.EVENT' }],
+      rowSet: { rows: [...rows, del] },
+    })
+    await when(() => view.chordDisplay !== undefined)
+    return view
+  }
+
+  const summary = (view: Awaited<ReturnType<typeof inspectorWithClasses>>) =>
+    view.svTypeLegend.map(({ type, count, swatch }) => [type, count, swatch])
+
+  test('a class the filter leaves out stays listed, without a count', async () => {
+    const view = await inspectorWithClasses()
+    const sheet = view.spreadsheetView.spreadsheet!
+    expect(summary(view).map(([type, count]) => [type, count])).toEqual([
+      ['DEL', 1],
+      ['BND', 3],
+    ])
+
+    sheet.toggleSvType('BND')
+    expect(summary(view).map(([type, count]) => [type, count])).toEqual([
+      ['DEL', undefined],
+      ['BND', 3],
+    ])
+
+    sheet.toggleSvType('BND')
+    expect(summary(view).map(([, count]) => count)).toEqual([1, 3])
+  })
+
+  test('a shown class no chord paints gets a hollow swatch', async () => {
+    const view = await inspectorWithClasses()
+    expect(view.drawnSvTypes).toEqual(new Set())
+    expect(summary(view).map(([, , swatch]) => swatch)).toEqual([
+      'hollow',
+      'hollow',
+    ])
+
+    chordDisplay(view.circularView.tracks[0]!).setFeatures(
+      view.allFeatures.map(f => new SimpleFeature(f)),
+    )
+    expect(summary(view).map(([, , swatch]) => swatch)).toEqual([
+      'hollow',
+      'filled',
+    ])
+
+    // filtered out, DEL is dimmed instead of marked
+    view.spreadsheetView.spreadsheet!.toggleSvType('BND')
+    expect(summary(view).map(([, , swatch]) => swatch)).toEqual([
+      'filled',
+      'filled',
+    ])
+  })
+})
+
 test('a sheet replaced before the chord track opens draws the newer rows', async () => {
   const { session, view } = await openInspector()
   await session.assemblyManager.waitForAssembly('volvox')

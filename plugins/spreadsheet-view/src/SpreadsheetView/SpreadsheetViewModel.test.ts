@@ -101,13 +101,13 @@ test('reloading the same file preserves column visibility and SV-type filter', (
   const columns = [{ name: 'CHROM' }, { name: 'INFO.SVTYPE' }]
   model.displaySpreadsheet({ columns, rowSet: { rows: [] } })
   model.spreadsheet!.setVisibleColumns({ 'INFO.SVTYPE': false })
-  model.spreadsheet!.setSvTypeFilter('DEL')
+  model.spreadsheet!.setSvTypeFilter(['DEL'])
 
   // a re-fetch supplies only columns/rowSet (no view state); same columns ⇒
   // carry over the user's choices
   model.displaySpreadsheet({ columns, rowSet: { rows: [] } })
   expect(model.spreadsheet!.visibleColumns).toEqual({ 'INFO.SVTYPE': false })
-  expect(model.spreadsheet!.svTypeFilter).toBe('DEL')
+  expect([...model.spreadsheet!.svTypeFilter]).toEqual(['DEL'])
 
   // a genuinely different file (different columns) starts clean
   model.spreadsheet!.setVisibleColumns({ CHROM: false })
@@ -116,7 +116,7 @@ test('reloading the same file preserves column visibility and SV-type filter', (
     rowSet: { rows: [] },
   })
   expect(model.spreadsheet!.visibleColumns).toEqual({})
-  expect(model.spreadsheet!.svTypeFilter).toBeUndefined()
+  expect([...model.spreadsheet!.svTypeFilter]).toEqual([])
 })
 
 test('returning to the import form drops the cached location', () => {

@@ -7,9 +7,6 @@ import type { SvInspectorViewModel } from '../model.ts'
 
 // the disc leaves the square's bottom-left corner empty at every size
 const useStyles = makeStyles()(theme => ({
-  container: {
-    position: 'relative',
-  },
   legend: {
     position: 'absolute',
     left: 4,
@@ -39,10 +36,11 @@ const useStyles = makeStyles()(theme => ({
       textDecoration: 'underline',
     },
   },
-  active: {
-    fontWeight: 'bold',
+  filteredOut: {
+    opacity: 0.4,
   },
   swatch: {
+    boxSizing: 'border-box',
     width: 10,
     height: 10,
     flexShrink: 0,
@@ -53,48 +51,61 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+function swatchStyle(type: string, swatch: 'filled' | 'hollow') {
+  const color = chordColorForType(type)
+  return swatch === 'filled'
+    ? { background: color }
+    : { border: `2px solid ${color}` }
+}
+
 const ChordLegend = observer(function ChordLegend({
   model,
-  children,
 }: {
   model: SvInspectorViewModel
-  children: React.ReactNode
 }) {
   const { classes, cx } = useStyles()
   const { spreadsheet } = model.spreadsheetView
-  const tallies = spreadsheet?.visibleSvTypes ?? []
+  const rows = model.svTypeLegend
+  const filtering = rows.some(row => row.count === undefined)
 
-  return (
-    <div className={classes.container}>
-      {children}
-      {tallies.length > 0 ? (
-        <div className={classes.legend}>
-          {tallies.map(({ type, label, count }) => {
-            const active = spreadsheet?.svTypeFilter === type
-            return (
-              <button
-                key={type}
-                type="button"
-                className={cx(classes.row, active && classes.active)}
-                title={`Show only ${label} (click again for all)`}
-                onClick={() => {
-                  spreadsheet?.setSvTypeFilter(active ? undefined : type)
-                }}
-              >
-                <div
-                  className={classes.swatch}
-                  style={{ background: chordColorForType(type) }}
-                  aria-hidden
-                />
-                <span>{label}</span>
-                <span className={classes.count}>{count}</span>
-              </button>
-            )
-          })}
-        </div>
-      ) : null}
+  return rows.length > 0 ? (
+    <div className={classes.legend}>
+      {rows.map(({ type, label, count, swatch }) => {
+        const shown = count !== undefined
+        const action = filtering
+          ? shown
+            ? `Hide ${label}`
+            : `Also show ${label}`
+          : `Show only ${label}`
+        return (
+          <button
+            key={type}
+            type="button"
+            aria-pressed={filtering && shown}
+            className={cx(classes.row, !shown && classes.filteredOut)}
+            title={
+              swatch === 'hollow'
+                ? `${action} (no chord of this type draws at this zoom)`
+                : action
+            }
+            onClick={() => {
+              spreadsheet?.toggleSvType(type)
+            }}
+          >
+            {swatch ? (
+              <div
+                className={classes.swatch}
+                style={swatchStyle(type, swatch)}
+                aria-hidden
+              />
+            ) : null}
+            <span>{label}</span>
+            {shown ? <span className={classes.count}>{count}</span> : null}
+          </button>
+        )
+      })}
     </div>
-  )
+  ) : null
 })
 
 export default ChordLegend
