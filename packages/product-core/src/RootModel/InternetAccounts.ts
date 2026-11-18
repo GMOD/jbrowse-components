@@ -5,6 +5,7 @@ import { asRoot } from '../siblingCast.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseInternetAccountModel } from '@jbrowse/core/pluggableElementTypes'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -161,10 +162,13 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
       findAppropriateInternetAccount(location: UriLocation) {
         // find the existing account selected from menu
         const selectedId = location.internetAccountId
+        const selectedAccount = selectedId
+          ? self.internetAccounts.find(
+              (account): account is BaseInternetAccountModel =>
+                account.internetAccountId === selectedId,
+            )
+          : undefined
         if (selectedId) {
-          const selectedAccount = self.internetAccounts.find(account => {
-            return account.internetAccountId === selectedId
-          })
           // The account still has to be scoped for the URL. Naming one used to
           // be enough on its own, which made the field a way to redirect
           // someone else's credential: jbrowse-web builds tracks out of
@@ -207,9 +211,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         // 401 it gets, which is the failure the user can act on.
         if (
           selectedId &&
-          !self.internetAccounts.some(
-            a => a.internetAccountId === selectedId,
-          ) &&
+          !selectedAccount &&
           namesOwnOrigin(selectedId, location) &&
           pluginManager
             .getElementTypesInGroup('internet account')
