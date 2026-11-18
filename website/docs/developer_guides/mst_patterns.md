@@ -288,18 +288,26 @@ get inRing(): boolean {
 },
 /**
  * #getter
+ * Whether the VCF has genotype rows to draw or hide, whatever hosts the
+ * display: it lists samples, more than one or one whose row somebody
+ * asked for. True until the sample listing lands.
+ */
+get hasSampleRows(): boolean {
+  const sampleCount = self.adapterSamples?.length
+  return !(
+    sampleCount === 0 ||
+    (sampleCount === 1 && !self.genotypesShowWritten)
+  )
+},
+/**
+ * #getter
  * Whether the records band is the display, every record the filter
  * admits, sized by `heightMode` and lettered as a feature track: a VCF
  * with no samples, a one-sample call set whose row nobody asked for,
  * or a ring, which draws one canvas and so the records alone.
  */
 get recordsOnly(): boolean {
-  const sampleCount = self.adapterSamples?.length
-  return (
-    sampleCount === 0 ||
-    (sampleCount === 1 && !self.genotypesShowWritten) ||
-    this.inRing
-  )
+  return !this.hasSampleRows || this.inRing
 },
 /**
  * #getter
