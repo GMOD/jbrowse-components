@@ -4,10 +4,8 @@ import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import {
   destroyViewState,
   registerLocalFiles,
-  resolveAssembly,
+  resolveAssemblies,
   resolveLocalConfig,
-  searchIndexKey,
-  withHostOverrides,
 } from '@jbrowse/product-core'
 
 import createModel from './createModel/index.ts'
@@ -174,16 +172,15 @@ async function resolveJBrowseHub(
     throw new Error(ONE_GENOME_SOURCE)
   }
   const { jbrowseHub, ...rest } = opts
-  const hub = await resolveAssembly(jbrowseHub)
+  const hub = await resolveAssemblies([jbrowseHub], {
+    tracks: rest.tracks ?? [],
+    aggregateTextSearchAdapters: rest.aggregateTextSearchAdapters,
+  })
   return {
     ...rest,
-    assembly: hub.assembly,
-    tracks: withHostOverrides(hub.tracks, rest.tracks ?? [], 'trackId'),
-    aggregateTextSearchAdapters: withHostOverrides(
-      hub.aggregateTextSearchAdapters,
-      rest.aggregateTextSearchAdapters,
-      searchIndexKey,
-    ),
+    assemblies: hub.assemblies,
+    tracks: hub.tracks,
+    aggregateTextSearchAdapters: hub.aggregateTextSearchAdapters,
   }
 }
 
