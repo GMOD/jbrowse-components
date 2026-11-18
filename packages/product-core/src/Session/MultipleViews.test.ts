@@ -564,3 +564,29 @@ test('takeOutViewsMissingFrom refuses anything but a session snapshot', () => {
   })
   expect(session.views.map(v => v.displayName)).toEqual(['first'])
 })
+
+// A session only runs its attach-time reactions under a root, as in the app
+function attachedSession(snapshot: Record<string, unknown>) {
+  const Root = types.model({
+    jbrowse: types.frozen(),
+    session: MultipleViewsSessionMixin(pluginManager),
+  })
+  return Root.create(
+    {
+      jbrowse: { configuration: {} },
+      session: { name: 'test', ...snapshot },
+    },
+    { pluginManager },
+  ).session
+}
+
+test("a snapshot's stickyViewHeaders does not become the visitor's preference", () => {
+  localStorage.setItem('stickyViewHeaders', 'true')
+  const session = attachedSession({ stickyViewHeaders: false })
+  expect(session.stickyViewHeaders).toBe(false)
+  expect(localStorage.getItem('stickyViewHeaders')).toBe('true')
+
+  session.setStickyViewHeaders(false)
+  expect(localStorage.getItem('stickyViewHeaders')).toBe('false')
+  localStorage.removeItem('stickyViewHeaders')
+})

@@ -328,3 +328,20 @@ test('reopening a closed widget id builds a fresh one', () => {
   expect(session.visibleWidget).toBe(reopened)
   jest.useRealTimers()
 })
+
+// A session only runs its attach-time reactions under a root, as in the app
+function attachedSession(snapshot: Record<string, unknown>) {
+  const Root = types.model({ session: DrawerWidgetSessionMixin(pluginManager) })
+  return Root.create({ session: snapshot }, { pluginManager }).session
+}
+
+test("a snapshot's drawerPosition does not become the visitor's preference", () => {
+  localStorage.setItem('drawerPosition', 'right')
+  const session = attachedSession({ drawerPosition: 'left' })
+  expect(session.drawerPosition).toBe('left')
+  expect(localStorage.getItem('drawerPosition')).toBe('right')
+
+  session.setDrawerPosition('left')
+  expect(localStorage.getItem('drawerPosition')).toBe('left')
+  localStorage.removeItem('drawerPosition')
+})

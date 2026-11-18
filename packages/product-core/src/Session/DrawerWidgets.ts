@@ -6,8 +6,7 @@ import {
   scheduleDetachedDestroy,
 } from '@jbrowse/core/util'
 import { getEditableTrackConfigById } from '@jbrowse/core/util/types'
-import { addDisposer, detach, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { detach, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -194,6 +193,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
          */
         setDrawerPosition(arg: DrawerPosition) {
           self.drawerPosition = arg
+          localStorageSetItem('drawerPosition', arg)
         },
 
         /**
@@ -312,18 +312,6 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
             this.hideWidget(widget)
           }
           self.poppedOut = false
-        },
-
-        afterAttach() {
-          addDisposer(
-            self,
-            autorun(
-              function drawerPositionAutorun() {
-                localStorageSetItem('drawerPosition', self.drawerPosition)
-              },
-              { name: 'DrawerPosition' },
-            ),
-          )
         },
       }
     })

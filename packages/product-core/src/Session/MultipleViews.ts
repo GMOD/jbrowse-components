@@ -6,7 +6,6 @@ import {
   scheduleDetachedDestroy,
 } from '@jbrowse/core/util'
 import {
-  addDisposer,
   applyPatch,
   cast,
   detach,
@@ -17,7 +16,6 @@ import {
   isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
 
 import { BaseSessionModel } from './BaseSession.ts'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
@@ -396,6 +394,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          */
         setStickyViewHeaders(sticky: boolean) {
           self.stickyViewHeaders = sticky
+          localStorageSetBoolean('stickyViewHeaders', sticky)
         },
 
         /**
@@ -404,21 +403,6 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * protein3d and msaview bundles call it after placing a view.
          */
         setUseWorkspaces(_useWorkspaces?: boolean) {},
-
-        afterAttach() {
-          addDisposer(
-            self,
-            autorun(
-              function stickyViewHeadersAutorun() {
-                localStorageSetBoolean(
-                  'stickyViewHeaders',
-                  self.stickyViewHeaders,
-                )
-              },
-              { name: 'StickyViewHeaders' },
-            ),
-          )
-        },
       }
     })
     .actions(self => ({
