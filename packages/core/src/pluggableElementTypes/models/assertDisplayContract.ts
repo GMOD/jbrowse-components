@@ -121,13 +121,10 @@ interface RetryContractHost {
 // returns the fetch's promise, and an override declines by returning early, which
 // is indistinguishable from returning the promise of a fetch that has started.
 //
-// **A fetch answers an outstanding retry wherever `reload()` reached it from**,
-// which is why `noteFetchStarted` tells the ledger rather than only setting a
-// flag for the autorun to read. The feature display's `reload()` fetches directly — it clears
-// and runs `FetchVisibleRegions`' plan itself (`fetchVisibleRegions`) instead of
-// waiting out its 600ms debounce — so by the time that autorun runs, the blocks
-// are covered and the run reads as a decline. Judging only from the autorun reports a dead button
-// on the display with the liveliest one.
+// **A fetch answers an outstanding retry wherever it started**, which is why
+// `noteFetchStarted` tells the ledger rather than only setting a flag for the
+// autorun to read: the check judges a click by whether a fetch followed it, not
+// by which caller issued that fetch.
 const fetchStarted = new WeakSet<object>()
 const ledgers = new WeakMap<object, (outcome: FetchAutorunOutcome) => void>()
 
@@ -184,10 +181,8 @@ export function takeFetchStarted(self: object) {
  * decline; there is no such override, and one added later gets a false report
  * rather than a silent gap, which is the right way round.
  *
- * **A fetch also answers the retry on its own** (`noteFetchStarted`), because
- * `reload()` may reach one without an autorun run in between: the feature display's clears and
- * calls `fetchVisibleRegions` rather than waiting out the 600ms debounce, and
- * the autorun's next run then finds the blocks covered.
+ * **A fetch also answers the retry on its own** (`noteFetchStarted`), so a
+ * fetch counts for the click that preceded it whichever caller issued it.
  *
  * A display deliberately not fetching at all is the one exempt decline — LD with
  * the triangle off, whose `reload()` correctly does nothing because there is

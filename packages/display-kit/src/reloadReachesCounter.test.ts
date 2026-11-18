@@ -85,8 +85,8 @@ const declarations = reloadDeclarations()
 // true, which is the one way a source-level test fails open.
 test('the scan finds the reload declarations it is about', () => {
   // The files, not the line numbers, which move under every edit. The two fetch
-  // foundations and the display that overrides one of them are what the rule
-  // exists for; canvas is the one it was written against. (The global family's
+  // foundations and a display that overrides its foundation's are what the rule
+  // exists for. (The global family's
   // displays no longer appear: KeyedFetchMixin.reload owns their key
   // invalidation, for the comparative displays too; and the variants sources fetch reads `reloadCounter`
   // directly through the shared fetch skeleton, so its override is gone too.)
@@ -95,7 +95,7 @@ test('the scan finds the reload declarations it is about', () => {
     'packages/display-kit/src/FetchMixin.ts',
     'packages/display-kit/src/MultiRegionDisplayMixin.ts',
     'packages/display-kit/src/KeyedFetchMixin.ts',
-    'plugins/features/src/LinearBasicDisplay/baseModel.ts',
+    'plugins/circular-view/src/ChordSyntenyDisplay/models/stateModelFactory.ts',
     'packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx',
   ]) {
     expect(files).toContain(expected)

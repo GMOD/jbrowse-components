@@ -1148,57 +1148,38 @@ export default function baseStateModelFactory(
         )
       },
     }))
-    .actions(self => {
-      const superReload = self.reload
-      return {
-        // `superReload()` is what bumps `reloadCounter`, the arming
-        // mechanism of the dead-Retry check; skipping it turns that check
-        // off with no symptom.
-        /**
-         * #action
-         * Clears the loaded regions and fetches straight away, rather than
-         * waiting out `FetchVisibleRegions`' 600ms debounce as the rest of
-         * the family does — Retry and Force load are both clicks, and this
-         * is the display the user is most often clicking on.
-         */
-        reload() {
-          superReload()
-          self.fetchVisibleRegions()
-        },
-
-        /**
-         * #action
-         */
-        fetchNeeded(needed: IndexedRegion[]) {
-          const view = containingLgv(self)
-          const bpPerPx = view.bpPerPx
-          // Not in `rpcProps()`, so a budget change is not a cache-key
-          // invalidation.
-          const maxFeatureDensity = self.maxFeatureDensity
-          const args = rpcArgs(self)
-          const zoomArgs = self.zoomFetchArgs()
-          void fetchGatedRegions(self, needed, {
-            call: (region, ctx) => {
-              // The assembly's genetic code, so the worker can translate
-              // peptides on contigs whose features carry no transl_table.
-              const assembly = getSession(self).assemblyManager.get(
-                region.assemblyName,
-              )
-              return ctx.callRpc('RenderFeatureData', {
-                ...args,
-                ...zoomArgs,
-                geneticCodeId: assembly?.getGeneticCodeId(region.refName),
-                region,
-                bpPerPx,
-                maxFeatureDensity,
-              })
-            },
-            onResult: (_idx, result, region) =>
-              loadedFeatureData(result, region),
-          })
-        },
-      }
-    })
+    .actions(self => ({
+      /**
+       * #action
+       */
+      fetchNeeded(needed: IndexedRegion[]) {
+        const view = containingLgv(self)
+        const bpPerPx = view.bpPerPx
+        // Not in `rpcProps()`, so a budget change is not a cache-key
+        // invalidation.
+        const maxFeatureDensity = self.maxFeatureDensity
+        const args = rpcArgs(self)
+        const zoomArgs = self.zoomFetchArgs()
+        void fetchGatedRegions(self, needed, {
+          call: (region, ctx) => {
+            // The assembly's genetic code, so the worker can translate
+            // peptides on contigs whose features carry no transl_table.
+            const assembly = getSession(self).assemblyManager.get(
+              region.assemblyName,
+            )
+            return ctx.callRpc('RenderFeatureData', {
+              ...args,
+              ...zoomArgs,
+              geneticCodeId: assembly?.getGeneticCodeId(region.refName),
+              region,
+              bpPerPx,
+              maxFeatureDensity,
+            })
+          },
+          onResult: (_idx, result, region) => loadedFeatureData(result, region),
+        })
+      },
+    }))
     .views(self => featureColorScaleViews(self))
     .views(self => ({
       /**

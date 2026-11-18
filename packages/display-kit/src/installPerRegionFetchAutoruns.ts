@@ -57,10 +57,9 @@ export interface PerRegionFetchHost extends FetchSkeletonHost {
 }
 
 /**
- * What `FetchVisibleRegions` would fetch now, for that autorun and for a
- * `reload()` that fetches without waiting out its debounce.
+ * What `FetchVisibleRegions` would fetch now.
  */
-export function planVisibleRegionFetch(
+function planVisibleRegionFetch(
   self: IStateTreeNode &
     Pick<
       PerRegionFetchHost,

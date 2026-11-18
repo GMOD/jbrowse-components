@@ -73,9 +73,10 @@ This family has no `prepare()` to ask, so the retry classification is: `needed`
 empty is the decline, and reaching `FetchMixin.runFetch` is the fetch. Every
 `fetchNeeded` override gets there in its synchronous prefix; an override that
 awaits first gets a false report, not silence. `runFetch` also answers the retry
-by itself, because a `reload()` can reach a fetch with no autorun run in
-between (the feature display's clears and calls `fetchVisibleRegions`, the
-autorun's plan without its debounce).
+by itself, so a fetch counts for the click before it whichever caller issued
+it. Every per-region `reload()` reaches its fetch through the autorun: a click
+on a display idle for the 600 ms debounce fetches on the leading edge, one
+microtask later.
 
 **`reloadCounter` is the whole arming mechanism, and MST replaces an action
 outright.** A `reload()` override that neither bumps it nor chains to a captured

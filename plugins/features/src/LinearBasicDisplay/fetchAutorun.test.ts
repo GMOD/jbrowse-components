@@ -290,9 +290,58 @@ describe('FetchVisibleRegions autorun', () => {
     })
   })
 
-  // No timer runs between the click and the assertion, so the fetch is the
-  // reload's own and not the debounced autorun's.
-  it("reload fetches the track's own genome at once, and only that", async () => {
+  // A click lands well past the last fetch, so the autorun has sat idle and
+  // fetches on its leading edge. Advancing 0 ms runs the microtask and leaves
+  // the 600 ms debounce timer unfired.
+  describe('a click on an idle display fetches before the debounce could fire', () => {
+    const idle = 600
+
+    it('Retry after an error', async () => {
+      const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
+      const { createDisplay, mockRpcCall } = createTestEnvironment()
+      const { display } = createDisplay()
+      mockRpcCall.mockRejectedValue(new Error('network failure'))
+      await jest.advanceTimersByTimeAsync(800)
+      await waitFor(() => {
+        expect(display.error).toBeTruthy()
+      })
+      reported.mockRestore()
+      await jest.advanceTimersByTimeAsync(idle)
+      mockRpcCall.mockClear()
+      mockRpcCall.mockResolvedValue(makeFeatureData())
+
+      display.reload()
+      await jest.advanceTimersByTimeAsync(0)
+
+      expect(mockRpcCall).toHaveBeenCalledWith(
+        expect.any(String),
+        'RenderFeatureData',
+        expect.anything(),
+      )
+    })
+
+    it('Force load after the too-large banner', async () => {
+      const { display, mockRpcCall } = createLargeDisplay()
+      mockRpcCall.mockImplementation(makeByteGatedRender(200))
+      await jest.advanceTimersByTimeAsync(800)
+      await waitFor(() => {
+        expect(display.regionTooLarge).toBe(true)
+      })
+      await jest.advanceTimersByTimeAsync(idle)
+      mockRpcCall.mockClear()
+
+      display.forceLoad()
+      await jest.advanceTimersByTimeAsync(0)
+
+      expect(mockRpcCall).toHaveBeenCalledWith(
+        expect.any(String),
+        'RenderFeatureData',
+        expect.anything(),
+      )
+    })
+  })
+
+  it("reload fetches only the track's own genome", async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
       extraAssemblyNames: ['volvox2'],
     })
@@ -308,9 +357,7 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockClear()
 
     display.reload()
-    for (let i = 0; i < 20; i++) {
-      await Promise.resolve()
-    }
+    await jest.advanceTimersByTimeAsync(800)
 
     const genomes = mockRpcCall.mock.calls.map(
       ([, , args]: [string, string, { region: Region }]) =>
