@@ -16,7 +16,7 @@
     "@astrojs/react": "^7.1.9",
     "@jbrowse/core": "workspace:*",
     "@jbrowse/display-ui": "workspace:*",
-    "@jbrowse/mobx-state-tree": "^6.10.0",
+    "@jbrowse/mobx-state-tree": "^6.10.1",
     "@jbrowse/react-app2": "workspace:*",
     "astro": "^7.4.12",
     "mobx": "^7.1.7",
