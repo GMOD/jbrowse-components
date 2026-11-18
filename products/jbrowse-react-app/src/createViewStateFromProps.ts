@@ -1,4 +1,4 @@
-import createViewState, { createViewStateAsync } from './createViewState.ts'
+import { createViewStateAsync } from './createViewState.ts'
 
 import type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
 import type { SessionObservers, SessionSnapshot } from './types.ts'
@@ -63,16 +63,10 @@ export function viewsToSession(
   }
 }
 
-// Build the engine from the declarative props. Shared by the two entry points
-// that accept them — <JBrowse> and createApp — which otherwise construct this
-// identically and drift apart.
-export function createViewStateFromProps(opts: CreateAppOptions) {
-  return createViewState(viewStateOptionsFromProps(opts))
-}
-
 /**
- * `createViewStateFromProps` for a config or session that may name lazily
- * loaded view types — see `createViewStateAsync`.
+ * Build the engine from the declarative props, for the two entry points that
+ * accept them: <JBrowse> and createApp. Asynchronous because the config or
+ * session may name lazily loaded view types — see `createViewStateAsync`.
  */
 export function createViewStateFromPropsAsync(opts: CreateAppOptions) {
   return createViewStateAsync(viewStateOptionsFromProps(opts))

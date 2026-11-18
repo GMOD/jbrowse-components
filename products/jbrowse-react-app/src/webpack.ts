@@ -1,5 +1,5 @@
-// The UMD entry point: everything the npm entry exports, plus the stylesheet
-// and React itself, since a <script>-tag consumer can't import either.
+// The UMD entry point: everything the npm entry exports, plus React itself,
+// since a <script>-tag consumer can't import it.
 //
 // Re-exported wholesale rather than hand-listed. The list drifted while it was
 // hand-written — `createApp`, the very API that exists for the script-tag

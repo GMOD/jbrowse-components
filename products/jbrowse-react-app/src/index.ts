@@ -2,8 +2,8 @@
 // npm entry point forces every consumer's bundler to have a CSS loader and
 // makes this barrel unloadable in Node/SSR entirely (its loader has no CSS
 // support) — see mui/mui-x#17427 for that mistake shipped. Consumers import
-// '@jbrowse/react-app2/styles.css' instead; the UMD bundle built from
-// webpack.ts still inlines it, since a script-tag user can't import anything.
+// '@jbrowse/react-app2/styles.css' instead, and a script-tag user of the UMD
+// bundle links the published esm/styles.css.
 export { default as JBrowseApp } from './JBrowseApp/index.ts'
 export { default as JBrowse } from './JBrowse/index.ts'
 export type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
