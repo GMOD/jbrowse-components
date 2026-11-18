@@ -34,8 +34,8 @@ export function isAimedAtPanel(
   apex: AimPoint,
   panel: AimRect,
 ) {
-  // whichever vertical edge faces the tip: MUI flips a submenu to the other
-  // side of its row when the viewport has no room on the usual one
+  // whichever vertical edge faces the tip: `submenuSide` opens a panel on
+  // either side of its row
   const nearX =
     Math.abs(panel.left - apex.x) <= Math.abs(panel.right - apex.x)
       ? panel.left

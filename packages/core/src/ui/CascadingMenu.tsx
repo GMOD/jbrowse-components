@@ -17,6 +17,7 @@ import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 import { resolveSubMenu, staysOpenOnClick } from './MenuTypes.ts'
 import { hasMenuItemAdornment } from './menuItemAdornment.tsx'
 import { isAimedAtPanel } from './submenuAim.ts'
+import { submenuOrigins, submenuSide } from './submenuSide.ts'
 import { usePlacedMenuFocus } from './usePlacedMenuFocus.ts'
 
 import type { MenuColumnFlags } from './MenuItemTrailing.tsx'
@@ -30,6 +31,7 @@ import type {
   SubMenuItem,
 } from './MenuTypes.ts'
 import type { AimPoint } from './submenuAim.ts'
+import type { SubmenuSide } from './submenuSide.ts'
 import type { PopoverOrigin } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
@@ -87,6 +89,8 @@ interface CascadingMenuShared {
 const CascadingMenuContext = createContext<CascadingMenuShared | undefined>(
   undefined,
 )
+
+const SubmenuSideContext = createContext<SubmenuSide>('right')
 
 function useCascadingMenu() {
   const shared = use(CascadingMenuContext)
@@ -493,6 +497,8 @@ const CascadingSubmenu = observer(function CascadingSubmenu({
   onNavigateBack?: () => void
 }) {
   const { zIndex } = useCascadingMenu()
+  const parentSide = use(SubmenuSideContext)
+  const [side, setSide] = useState(parentSide)
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
   // a rebuild can disable the row while its panel is up, and a disabled row has
   // no way left to close it
@@ -535,8 +541,19 @@ const CascadingSubmenu = observer(function CascadingSubmenu({
       {isOpen ? (
         <HoverMenu
           anchorEl={anchorEl}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          {...submenuOrigins(side)}
+          onPlaced={paper => {
+            if (anchorEl) {
+              setSide(
+                submenuSide(
+                  parentSide,
+                  anchorEl.getBoundingClientRect(),
+                  paper.offsetWidth,
+                  window.innerWidth,
+                ),
+              )
+            }
+          }}
           zIndex={zIndex}
           // the pointer completed the trip, so drop the close a row it crossed
           // on the way scheduled
@@ -546,13 +563,15 @@ const CascadingSubmenu = observer(function CascadingSubmenu({
             hover.setSubmenu(undefined)
           }}
         >
-          <SubMenuList
-            item={item}
-            onNavigateBack={() => {
-              hover.setSubmenu(undefined)
-              anchorEl?.focus()
-            }}
-          />
+          <SubmenuSideContext value={side}>
+            <SubMenuList
+              item={item}
+              onNavigateBack={() => {
+                hover.setSubmenu(undefined)
+                anchorEl?.focus()
+              }}
+            />
+          </SubmenuSideContext>
         </HoverMenu>
       ) : null}
     </>
