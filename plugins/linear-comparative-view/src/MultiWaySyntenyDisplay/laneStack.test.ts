@@ -613,14 +613,27 @@ describe('the baseline', () => {
 })
 
 describe('lane geometry', () => {
-  test('split strands, two compact gene rows that leave the gutter its height', () => {
-    const one = laneGeometry(600, 9, false, 12)
-    const split = laneGeometry(600, 9, true, 12)
-    expect(split.strandRows).toBe(true)
-    expect(split.glyphHeight).toBe(22)
-    const gutter = ({ rows, glyphHeight }: typeof one) =>
-      rows[1]!.glyphTop - rows[0]!.glyphTop - glyphHeight - 12 - 12
-    expect(gutter(split)).toBeGreaterThan(0.8 * gutter(one))
+  const gutter = ({ rows, glyphHeight }: ReturnType<typeof laneGeometry>) =>
+    rows[1]!.glyphTop - rows[0]!.glyphTop - glyphHeight - 12 - 12
+
+  test('split strands, normal gene rows once the gutter is as tall as the glyph', () => {
+    const roomy = laneGeometry(9 * 68, 9, true, 12)
+    expect(roomy.strandRows).toBe(true)
+    expect(roomy.glyphHeight).toBe(22)
+    expect(gutter(roomy)).toBeGreaterThanOrEqual(roomy.glyphHeight)
+  })
+
+  test('split strands, compact gene rows short of that', () => {
+    const tight = laneGeometry(9 * 68 - 1, 9, true, 12)
+    expect(tight.strandRows).toBe(true)
+    expect(tight.glyphHeight).toBe(14)
+    expect(laneGeometry(600, 9, true, 12).glyphHeight).toBe(14)
+  })
+
+  test('split strands, the compact rows squeeze toward the pitch floor', () => {
+    const squeezed = laneGeometry(9 * 43, 9, true, 12)
+    expect(squeezed.strandRows).toBe(true)
+    expect(squeezed.glyphHeight).toBe(13)
   })
 
   test('split strands, a lane at the pitch floor draws one row', () => {

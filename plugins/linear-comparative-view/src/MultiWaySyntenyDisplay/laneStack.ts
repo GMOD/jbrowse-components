@@ -24,8 +24,9 @@ const LABEL_HEIGHT = 12
 const MIN_GLYPH_PX = 5
 const MAX_GLYPH_PX = 18
 export const STRAND_GAP_PX = 2
-// two strand rows of a compact feature track's gene height
-const MAX_SPLIT_GLYPH_PX = 2 * 10 + STRAND_GAP_PX
+// two strand rows of a feature track's gene height, normal and compact
+const FULL_SPLIT_GLYPH_PX = 2 * 10 + STRAND_GAP_PX
+const COMPACT_SPLIT_GLYPH_PX = 2 * 6 + STRAND_GAP_PX
 const MIN_SPLIT_GLYPH_PX = 2 * MIN_GLYPH_PX + STRAND_GAP_PX
 
 // the pitch floor: below it the stack scrolls instead of dividing the height
@@ -80,13 +81,14 @@ export function laneGeometry(
     inlineNames,
   )
   const above = (inlineNames ? 0 : LABEL_HEIGHT) + layerPx
-  const room = contentHeight / rowCount - above - geneLabelPx - 6
+  const share = contentHeight / rowCount - above - geneLabelPx
+  const room = share - 6
   const strandRows = splitStrands && room >= MIN_SPLIT_GLYPH_PX
-  const glyphHeight = clamp(
-    room,
-    MIN_GLYPH_PX,
-    strandRows ? MAX_SPLIT_GLYPH_PX : MAX_GLYPH_PX,
-  )
+  const glyphHeight = strandRows
+    ? share >= 2 * FULL_SPLIT_GLYPH_PX
+      ? FULL_SPLIT_GLYPH_PX
+      : Math.min(room, COMPACT_SPLIT_GLYPH_PX)
+    : clamp(room, MIN_GLYPH_PX, MAX_GLYPH_PX)
   // room for the top lane's name where it stands taller than its genes
   const top = above + (inlineNames ? inlineNameRise(glyphHeight) : 0)
   const usable = contentHeight - top - glyphHeight - geneLabelPx - 4
