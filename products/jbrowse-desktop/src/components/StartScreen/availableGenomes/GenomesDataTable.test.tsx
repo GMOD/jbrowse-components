@@ -14,15 +14,12 @@ import { SEARCH_INDEX_URL } from './searchIndex.ts'
 import type { Fav } from '../types.ts'
 
 const UCSC_URL = 'https://example.com/ucsc.json'
+const PRIMATES_URL = 'https://example.com/primates.json'
 
 const categories = {
   categories: [
     { key: 'ucsc', title: 'UCSC Main Genomes', url: UCSC_URL },
-    {
-      key: 'primates',
-      title: 'UCSC GenArk - Primates',
-      url: 'https://example.com/primates.json',
-    },
+    { key: 'primates', title: 'UCSC GenArk - Primates', url: PRIMATES_URL },
   ],
 }
 
@@ -49,6 +46,21 @@ const ucscRows = [
     taxonId: 10090,
     orderKey: 2,
     jbrowseConfig: 'https://jbrowse.org/ucsc/mm39/config.json',
+  },
+]
+
+const primatesRows = [
+  {
+    accession: 'GCF_028858775.2',
+    commonName: 'chimpanzee',
+    scientificName: 'Pan troglodytes',
+    jbrowseConfig: 'https://jbrowse.org/hubs/genark/chimp/config.json',
+  },
+  {
+    accession: 'GCF_029281585.2',
+    commonName: 'western lowland gorilla',
+    scientificName: 'Gorilla gorilla gorilla',
+    jbrowseConfig: 'https://jbrowse.org/hubs/genark/gorilla/config.json',
   },
 ]
 
@@ -79,9 +91,11 @@ let indexRows: unknown[] = searchIndex
 const bodyFor = (url: string) =>
   url === UCSC_URL
     ? groupList
-    : url === SEARCH_INDEX_URL
-      ? indexRows
-      : categories
+    : url === PRIMATES_URL
+      ? primatesRows
+      : url === SEARCH_INDEX_URL
+        ? indexRows
+        : categories
 
 beforeEach(() => {
   fetched = []
@@ -340,6 +354,44 @@ test('sort headers are buttons and expose their direction', async () => {
         .getAttribute('aria-sort'),
     ).toBe('descending')
   })
+})
+
+test('a sort on a column the next group lacks waits for the group that has it', async () => {
+  setup()
+  await screen.findByText('Homo sapiens')
+  const scientificNames = () =>
+    within(screen.getByTestId('genomes-table'))
+      .getAllByText(
+        /^(Homo sapiens|Mus musculus|Pan troglodytes|Gorilla gorilla gorilla)$/,
+      )
+      .map(cell => cell.textContent)
+  const sortStates = () =>
+    screen
+      .getAllByRole('columnheader')
+      .map(header => header.getAttribute('aria-sort'))
+      .filter(state => state !== null)
+
+  fireEvent.click(screen.getByRole('button', { name: 'Organism' }))
+  fireEvent.click(screen.getByRole('button', { name: /Organism/ }))
+  expect(scientificNames()).toEqual(['Mus musculus', 'Homo sapiens'])
+
+  const pickGroup = async (title: string) => {
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Group' }))
+    fireEvent.click(await screen.findByRole('option', { name: title }))
+  }
+
+  await pickGroup('UCSC GenArk - Primates')
+  await screen.findByText('Pan troglodytes')
+  expect(sortStates()).toEqual([])
+  expect(scientificNames()).toEqual([
+    'Pan troglodytes',
+    'Gorilla gorilla gorilla',
+  ])
+
+  await pickGroup('UCSC Main Genomes')
+  await screen.findByText('Homo sapiens')
+  expect(sortStates()).toEqual(['descending'])
+  expect(scientificNames()).toEqual(['Mus musculus', 'Homo sapiens'])
 })
 
 test('a long group scrolls rather than pages, and the count covers every row', async () => {
