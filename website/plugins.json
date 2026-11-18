@@ -9,12 +9,12 @@
       "tags": ["plug-and-play", "alignment"],
       "license": "Apache License 2.0",
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/msaview-screenshot-fs8.png",
-      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/5.4.0/dist/jbrowse-plugin-msaview.esm.js",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/5.18.0/dist/jbrowse-plugin-msaview.esm.js",
       "versions": [
         {
-          "pluginVersion": "5.4.0",
+          "pluginVersion": "5.18.0",
           "jbrowseRange": ">=5.0.0",
-          "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/5.4.0/dist/jbrowse-plugin-msaview.esm.js"
+          "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/5.18.0/dist/jbrowse-plugin-msaview.esm.js"
         }
       ],
       "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.esm.js"
@@ -60,27 +60,6 @@
         }
       ],
       "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-biothings/latest/dist/jbrowse-plugin-biothings.umd.production.min.js"
-    },
-    {
-      "name": "Ideogram",
-      "packageName": "jbrowse-plugin-ideogram",
-      "authors": ["Colin Diesh", "Caroline Bridge"],
-      "description": "JBrowse 2 plugin for rendering ideograms",
-      "location": "https://github.com/cmdcolin/jbrowse-plugin-ideogram",
-      "tags": ["bring-your-own-data", "ideogram"],
-      "license": "Apache License 2.0",
-      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/ideogram-screenshot-fs8.png",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-ideogram/2.0.0/dist/jbrowse-plugin-ideogram.umd.production.min.js",
-      "integrity": "sha384-LD/+MUK8XaVmNsslVgoxvtiSCqqzCM/OqO6tZqOjmslQg/l9luyQcvGNOmj3YBzH",
-      "versions": [
-        {
-          "pluginVersion": "2.0.0",
-          "jbrowseRange": "*",
-          "url": "https://jbrowse.org/plugins/jbrowse-plugin-ideogram/2.0.0/dist/jbrowse-plugin-ideogram.umd.production.min.js",
-          "integrity": "sha384-LD/+MUK8XaVmNsslVgoxvtiSCqqzCM/OqO6tZqOjmslQg/l9luyQcvGNOmj3YBzH"
-        }
-      ],
-      "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-ideogram/latest/dist/jbrowse-plugin-ideogram.umd.production.min.js"
     },
     {
       "name": "CIVIC",
@@ -195,12 +174,12 @@
       "tags": ["needs-setup", "protein", "structure"],
       "license": "MIT",
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/protein3d-fs8.png",
-      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/1.9.1/dist/jbrowse-plugin-protein3d.esm.js",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/1.34.0/dist/jbrowse-plugin-protein3d.esm.js",
       "versions": [
         {
-          "pluginVersion": "1.9.1",
+          "pluginVersion": "1.34.0",
           "jbrowseRange": ">=5.0.0",
-          "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/1.9.1/dist/jbrowse-plugin-protein3d.esm.js"
+          "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/1.34.0/dist/jbrowse-plugin-protein3d.esm.js"
         }
       ],
       "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/latest/dist/jbrowse-plugin-protein3d.esm.js"
@@ -213,14 +192,14 @@
       "location": "https://github.com/cmdcolin/jbrowse-plugin-hubs",
       "tags": ["needs-setup", "track-hubs"],
       "license": "MIT",
-      "url": "https://jbrowse.org/plugins/@cmdcolin/jbrowse-plugin-hubs/1.0.16/dist/jbrowse-plugin-hubs.umd.production.min.js",
-      "integrity": "sha384-epsq51WRJeQazSXujU86K2cuYCBQYmVL0cKanIU/1/rSlzBZX2mUUdCB4c1EJPLm",
+      "url": "https://jbrowse.org/plugins/@cmdcolin/jbrowse-plugin-hubs/1.0.18/dist/jbrowse-plugin-hubs.umd.production.min.js",
+      "integrity": "sha384-H3aCwT3i/OZMWI6cOE+EE0CBKaRjirht2ZhlxqWvLT4RAVOXg9WsF8pqpZWVI6cQ",
       "versions": [
         {
-          "pluginVersion": "1.0.16",
+          "pluginVersion": "1.0.18",
           "jbrowseRange": "*",
-          "url": "https://jbrowse.org/plugins/@cmdcolin/jbrowse-plugin-hubs/1.0.16/dist/jbrowse-plugin-hubs.umd.production.min.js",
-          "integrity": "sha384-epsq51WRJeQazSXujU86K2cuYCBQYmVL0cKanIU/1/rSlzBZX2mUUdCB4c1EJPLm"
+          "url": "https://jbrowse.org/plugins/@cmdcolin/jbrowse-plugin-hubs/1.0.18/dist/jbrowse-plugin-hubs.umd.production.min.js",
+          "integrity": "sha384-H3aCwT3i/OZMWI6cOE+EE0CBKaRjirht2ZhlxqWvLT4RAVOXg9WsF8pqpZWVI6cQ"
         }
       ],
       "latestUrl": "https://jbrowse.org/plugins/@cmdcolin/jbrowse-plugin-hubs/latest/dist/jbrowse-plugin-hubs.umd.production.min.js"
@@ -282,15 +261,57 @@
       "tags": ["bring-your-own-data", "pangenome"],
       "license": "GPL-3.0-or-later",
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/graphgenomeview.png",
-      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/7.3.0/dist/jbrowse-plugin-graphgenomeviewer.esm.js",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/9.1.0/dist/jbrowse-plugin-graphgenomeviewer.esm.js",
       "versions": [
         {
-          "pluginVersion": "7.3.0",
+          "pluginVersion": "9.1.0",
           "jbrowseRange": ">=5.0.0",
-          "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/7.3.0/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
+          "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/9.1.0/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
         }
       ],
       "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
+    },
+    {
+      "name": "Blat",
+      "packageName": "jbrowse-plugin-blat",
+      "authors": ["JBrowse Team"],
+      "description": "UCSC BLAT search and in-silico PCR, through the jbrowse.org proxy",
+      "location": "https://github.com/GMOD/jbrowse-plugin-blat",
+      "tags": ["needs-setup", "sequence", "remote-api"],
+      "license": "Apache-2.0",
+      "unlisted": true,
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-blat/1.1.0/dist/jbrowse-plugin-blat.umd.production.min.js",
+      "integrity": "sha384-KmENN1F1H+LxYDqlViQr1Hf4TqwGVQBEPsPEK39tHJqhPkE2sxvSzOQUZebiS9RY",
+      "versions": [
+        {
+          "pluginVersion": "1.1.0",
+          "jbrowseRange": "*",
+          "url": "https://jbrowse.org/plugins/jbrowse-plugin-blat/1.1.0/dist/jbrowse-plugin-blat.umd.production.min.js",
+          "integrity": "sha384-KmENN1F1H+LxYDqlViQr1Hf4TqwGVQBEPsPEK39tHJqhPkE2sxvSzOQUZebiS9RY"
+        }
+      ],
+      "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-blat/latest/dist/jbrowse-plugin-blat.umd.production.min.js"
+    },
+    {
+      "name": "Zarr",
+      "packageName": "jbrowse-plugin-zarr",
+      "authors": ["Colin Diesh"],
+      "description": "Multi-sample quantitative signal from a Zarr v3 store: per-base or binned values for hundreds to thousands of samples in a few requests",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-zarr",
+      "tags": ["bring-your-own-data", "quantitative"],
+      "license": "MIT",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/zarr-screenshot-fs8.png",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-zarr/0.2.0/dist/jbrowse-plugin-zarr.umd.production.min.js",
+      "integrity": "sha384-RpG3qYKRh7x9Hb+ei6XxTVr1BqbXvfISBs4I8sLQMksrzxGRKbKvFvOdKIBlHONa",
+      "versions": [
+        {
+          "pluginVersion": "0.2.0",
+          "jbrowseRange": ">=5.0.0",
+          "url": "https://jbrowse.org/plugins/jbrowse-plugin-zarr/0.2.0/dist/jbrowse-plugin-zarr.umd.production.min.js",
+          "integrity": "sha384-RpG3qYKRh7x9Hb+ei6XxTVr1BqbXvfISBs4I8sLQMksrzxGRKbKvFvOdKIBlHONa"
+        }
+      ],
+      "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-zarr/latest/dist/jbrowse-plugin-zarr.umd.production.min.js"
     }
   ]
 }
