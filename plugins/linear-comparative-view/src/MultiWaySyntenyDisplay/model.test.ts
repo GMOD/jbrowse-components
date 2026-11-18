@@ -2,7 +2,11 @@ import { parseCigar2 } from '@jbrowse/cigar-utils'
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { DEAL_COLOR_DIFFERENCE, colorDifference } from '@jbrowse/core/ui/colors'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-import { SimpleFeature, getContainingTrack } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  getContainingTrack,
+  getSession,
+} from '@jbrowse/core/util'
 import {
   NO_VALUE_LABEL,
   categoricalField,
@@ -1174,15 +1178,20 @@ describe('the lane stack scrolls once lanes would crush', () => {
     ])
 
     display.openContextMenu({ clientX: 0, clientY: 0, target: target! })
-    expect(
+    const labels = () =>
       display
         .contextMenuItems()
-        .map(item => ('label' in item ? item.label : '')),
-    ).toEqual([
+        .map(item => ('label' in item ? item.label : ''))
+    expect(labels()).toEqual(['Open feature details'])
+    const held = jest
+      .spyOn(getSession(display).assemblyManager, 'has')
+      .mockReturnValue(true)
+    expect(labels()).toEqual([
       'Open feature details',
       expect.stringMatching(/^Open .* at gene1$/),
       expect.stringMatching(/^Re-anchor on .* at gene1$/),
     ])
+    held.mockRestore()
 
     const [anchor] = lanes
     const [a1, a2] = anchor!.placements.get('gene1')!.spans[0]!
