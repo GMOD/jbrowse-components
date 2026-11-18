@@ -216,23 +216,32 @@ async function barAndLine(
     }
   }
   const uniforms = new ArrayBuffer(hal.uniformByteSize)
-  const frame = () => {
+  const draw = (height: number) => {
     hal.beginFrame(0, 0, 0, 0)
     for (const [regionKey, x, w] of [
       [0, 0, 51],
       [1, 50, 50],
     ] as const) {
-      hal.setScissor(x, 0, w, 40)
-      hal.setViewport(x, 0, w, 40)
+      hal.setScissor(x, 0, w, height)
+      hal.setViewport(x, 0, w, height)
       hal.writeUniforms(uniforms)
       hal.drawPass('bar', regionKey)
       hal.drawPass('line', regionKey)
     }
+  }
+  const frame = (height = 40) => {
+    draw(height)
     hal.clearScissor()
     hal.clearViewport()
     hal.endFrame()
   }
-  return { hal, frame }
+  return {
+    hal,
+    frame,
+    abandonedFrame: () => {
+      draw(40)
+    },
+  }
 }
 
 // What the device was asked for while `work` ran: each texture with its
@@ -313,4 +322,24 @@ test('a max line allocates nothing and submits one command buffer', async () => 
   })
   expect(layers).toEqual([])
   expect(submits).toEqual([1, 1])
+})
+
+// A frame that throws between beginFrame and endFrame never submits; the
+// next frame begins a layer pass of its own on the resized layer.
+test('a frame left open leaves no layer pass to the next frame', async () => {
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+  try {
+    await validationErrorsOf(async () => {
+      const { hal, frame, abandonedFrame } = await barAndLine(4)
+      abandonedFrame()
+      hal.resize(100, 60)
+      frame(60)
+      await device.popErrorScope()
+      await device.popErrorScope()
+      hal.dispose()
+    })
+    expect(error).not.toHaveBeenCalled()
+  } finally {
+    error.mockRestore()
+  }
 })

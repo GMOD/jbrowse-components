@@ -746,6 +746,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   }
 
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
+    this.layerFrames.clear()
     // Skip the frame entirely rather than encode one that cannot be valid.
     // Zero-size canvas: nothing to draw. Missing MSAA target while MSAA is
     // configured: every pipeline was built with `multisample.count =
