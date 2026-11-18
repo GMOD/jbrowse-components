@@ -794,8 +794,8 @@ export async function multiwayTables(
     if (cell?.kind !== 'ribbons') {
       continue
     }
-    const [row, toRow] = layer.rows
-    const upperRow = rowsVsAnchor && row > 0 ? 0 : row
+    const [upperRow, toRow] = layer.rows
+    const gutter = rowsVsAnchor ? toRow - 1 : upperRow
     const upper = stack.lanes[upperRow]!
     const lower = stack.lanes[toRow]!
     const { bp1, bp2, bp3, bp4, kinds, colors, instanceFeatureIdx } = cell.data
@@ -824,7 +824,7 @@ export async function multiwayTables(
       ribbons.alignment.push(target)
       ribbons.group.push(ref?.groupKey ?? ref?.linkId ?? '')
       ribbons.kind.push(KIND_NAMES[kind] ?? 'match')
-      ribbons.gutter.push(row)
+      ribbons.gutter.push(gutter)
       ribbons.upperLane.push(upperRow)
       ribbons.lowerLane.push(toRow)
       ribbons.upperRegion.push(top.region)
@@ -844,7 +844,7 @@ export async function multiwayTables(
       ribbons.color.push(color)
       ribbons.alpha.push(alpha * fade)
       ribbons.thin.push(thin)
-      ribbons.bridge.push(toRow !== row + 1)
+      ribbons.bridge.push(toRow !== gutter + 1)
     }
   }
 

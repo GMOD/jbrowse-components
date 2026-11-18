@@ -33,6 +33,8 @@ import { LaneGene } from './geneGlyph.ts'
 import { buildLanes, laneGeometry } from './laneStack.ts'
 import { frameSpan, groupFeatures } from './layoutMultiWay.ts'
 import {
+  anchorRuleY,
+  buildAnchorRule,
   buildBandCell,
   buildLaneCells,
   buildRibbonGeometry,
@@ -43,7 +45,11 @@ import {
   ribbonSides,
   ribbonTooltip,
 } from './multiwayGeometry.ts'
-import { PX_ORIGIN } from './multiwayRenderTypes.ts'
+import {
+  PX_ORIGIN,
+  glyphBlockRange,
+  ribbonParams,
+} from './multiwayRenderTypes.ts'
 import { paintedRibbonColor } from './ribbonColorConfigSchema.ts'
 
 import type { BuildLanesOpts } from './laneStack.ts'
@@ -1146,6 +1152,49 @@ describe('a source stating each lane against the anchor alone', () => {
   test('a source stating neighbour pairs takes it from the lane above', () => {
     const [first, second] = topEdges(false)
     expect(second).not.toEqual(first)
+  })
+
+  // peach, the middle lane, mid-flip: its map mirrors it about the canvas
+  const state = {
+    canvasWidth: WIDTH,
+    canvasHeight: HEIGHT,
+    dragOffsetPx: 0,
+    scrollTopPx: 0,
+    hoveredFeatureId: 0,
+    clickedFeatureId: 0,
+    laneMaps: new Map([[1, { scale: -1, offset: WIDTH }]]),
+    groundColor: 'white',
+    layers: new Map(),
+  }
+
+  test('the gutter under a moving lane keeps its top edge on the anchor', () => {
+    const { layers } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+      rowsVsAnchor: true,
+    })
+    const below = layers.find(l => l.key === 'ribbons:1')!
+    const params = ribbonParams(below, state)
+    expect(params.bpPerPx0).toBe(1)
+    expect(params.offsetPx0).toBeCloseTo(0)
+    expect(below.rows[1]).toBe(2)
+  })
+
+  test('the anchor rule under a moving lane draws on the anchor’s map', () => {
+    const { cells, layer } = buildAnchorRule({
+      stack: s,
+      ticks: [100],
+      stroke: 'black',
+    })
+    const cell = cells.get(layer.key)!
+    expect(cell.kind === 'glyphs' && cell.data.lineYs[0]).toBe(
+      anchorRuleY(s.lanes[1]!, s.bandHeight),
+    )
+    expect(glyphBlockRange(layer, state)).toEqual(
+      glyphBlockRange({ ...layer, row: 0 }, { ...state, laneMaps: new Map() }),
+    )
   })
 })
 

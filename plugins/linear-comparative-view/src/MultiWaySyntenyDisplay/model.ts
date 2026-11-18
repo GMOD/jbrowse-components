@@ -191,11 +191,11 @@ import { laneLocusMenuItems, multiWayTrackMenuItems } from './menus.ts'
 import {
   BANDS_KEY,
   boxesKey,
+  buildAnchorRule,
   buildBandCell,
   buildLaneCells,
   buildRibbonGeometry,
   buildTickGeometry,
-  anchorRuleY,
   glyphHitAt,
   glyphsKey,
   ribbonEnds,
@@ -259,11 +259,7 @@ import type {
   RowFrame,
   Span,
 } from './layoutMultiWay.ts'
-import type {
-  AnchorRule,
-  LaneGlyphColors,
-  TickGeometry,
-} from './multiwayGeometry.ts'
+import type { LaneGlyphColors, TickGeometry } from './multiwayGeometry.ts'
 import type {
   GlyphHit,
   LaneMap,
@@ -2362,6 +2358,16 @@ export function stateModelFactory(
             )
           : []
       },
+      /** #getter */
+      get anchorRule() {
+        return self.rowsVsAnchor
+          ? buildAnchorRule({
+              stack: self.laneStack,
+              ticks: this.anchorTickXs,
+              stroke: bandInk().text,
+            })
+          : undefined
+      },
     }))
     .views(self => {
       let held: {
@@ -2372,7 +2378,6 @@ export function stateModelFactory(
         boxes: MultiWayCell
         boxNames: NamedSpan[]
         geneGroups: Map<string, string>
-        rule: AnchorRule | undefined
       }[] = []
       return {
         /**
@@ -2382,18 +2387,9 @@ export function stateModelFactory(
         get laneCells() {
           const { laneGeneColors, boxColors } = self
           const laneGenes = self.laneGenes.held
-          const { lanes, glyphHeight, bandHeight } = self.laneStack
+          const { lanes, glyphHeight } = self.laneStack
           const ink = bandInk()
-          const anchorLane = self.rowsVsAnchor ? lanes[0] : undefined
           held = lanes.map((lane, row) => {
-            const rule =
-              anchorLane && row > 0 && row + 1 < lanes.length
-                ? {
-                    y: anchorRuleY(lane, bandHeight),
-                    spans: anchorLane.baseline,
-                    ticks: self.anchorTickXs,
-                  }
-                : undefined
             const colors = {
               genes: laneGeneColors.get(lane.assemblyName) ?? boxColors,
               boxes: boxColors,
@@ -2404,8 +2400,6 @@ export function stateModelFactory(
             const prev = held[row]
             if (
               prev?.lane === lane &&
-              prev.rule?.spans === rule?.spans &&
-              prev.rule?.ticks === rule?.ticks &&
               prev.genes === genes &&
               prev.colors.genes === colors.genes &&
               prev.colors.boxes === colors.boxes &&
@@ -2420,11 +2414,9 @@ export function stateModelFactory(
               glyphHeight,
               width: self.canvasWidthPx,
               colors,
-              anchorRule: rule,
             })
             return {
               lane,
-              rule,
               genes,
               colors,
               glyphs: { kind: 'glyphs', data: glyphs },
@@ -2897,6 +2889,7 @@ export function stateModelFactory(
           [BANDS_KEY, self.bandCell],
           ...self.ribbonGeometry.cells,
           ...self.tickGeometry.cells,
+          ...(self.anchorRule ? self.anchorRule.cells : []),
           ...this.laneLayerCells.cells,
           ...self.laneGlyphCells,
         ])
@@ -2911,6 +2904,7 @@ export function stateModelFactory(
           { kind: 'glyphs', key: BANDS_KEY, scrolled: false },
           ...self.ribbonGeometry.layers,
           ...self.tickGeometry.layers,
+          ...(self.anchorRule ? [self.anchorRule.layer] : []),
           ...this.laneLayerCells.layers,
           ...lanes.flatMap((_lane, row): MultiWayLayer[] => [
             { kind: 'glyphs', key: glyphsKey(row), scrolled: true, row },
@@ -3169,7 +3163,7 @@ export function stateModelFactory(
           (hit && self.ribbonRecords.get(hit.key)?.get(hit.instanceIndex)) ??
           target?.feature
         const rows = hit && self.ribbonLayerRows.get(hit.key)
-        const upper = rows && lanes[self.rowsVsAnchor ? 0 : rows[0]]
+        const upper = rows && lanes[rows[0]]
         const lower = rows && lanes[rows[1]]
         const sides =
           target && record && upper && lower

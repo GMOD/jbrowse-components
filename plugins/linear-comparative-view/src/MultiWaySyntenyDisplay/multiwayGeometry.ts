@@ -46,6 +46,7 @@ import type { Lane, LaneBand, LaneStack } from './laneStack.ts'
 import type { PlacedGroup, MultiWayPlacement, Span } from './layoutMultiWay.ts'
 import type {
   GlyphHit,
+  GlyphLayer,
   LaneEnd,
   LaneGlyphData,
   MultiWayCell,
@@ -661,7 +662,7 @@ export function buildRibbonGeometry({
       yTop: y1,
       height: y2 - y1,
       curves: drawCurves,
-      rows: [row, row + 1],
+      rows: [onAnchor ? 0 : row, row + 1],
     })
     for (const [toRow, builder] of bridges) {
       const bridgeKey = ribbonsKey(row, toRow)
@@ -965,11 +966,44 @@ function geneRow(lane: Lane, glyphHeight: number, pxDir: number) {
   }
 }
 
-/** the anchor's axis under a lane, where the next gutter reads it */
-export interface AnchorRule {
-  y: number
-  spans: readonly Span[]
+export const ANCHOR_RULE_KEY = 'anchorRule'
+
+/**
+ * The anchor's axis under each lane whose gutter below reads it, on the
+ * anchor's map, so a lane's nudge or flip leaves it where the anchor is.
+ */
+export function buildAnchorRule({
+  stack,
+  ticks,
+  stroke,
+}: {
+  stack: LaneStack
   ticks: readonly number[]
+  stroke: string
+}) {
+  const { lanes, bandHeight } = stack
+  const spans = lanes[0]?.baseline ?? []
+  const color = cssColorToABGR(stroke)
+  const glyphs = new GlyphBuilder()
+  for (const lane of lanes.slice(1, -1)) {
+    const y = anchorRuleY(lane, bandHeight)
+    for (const [x1, x2] of spans) {
+      glyphs.line(x1, x2, y, 0, 0, color)
+    }
+    for (const x of ticks) {
+      glyphs.rect(x, x + 1, y - ANCHOR_RULE_TICK_PX, ANCHOR_RULE_TICK_PX, color)
+    }
+  }
+  const cells = new Map<string, MultiWayCell>([
+    [ANCHOR_RULE_KEY, { kind: 'glyphs', data: glyphs.build() }],
+  ])
+  const layer: GlyphLayer = {
+    kind: 'glyphs',
+    key: ANCHOR_RULE_KEY,
+    scrolled: true,
+    row: 0,
+  }
+  return { cells, layer }
 }
 
 /**
@@ -982,14 +1016,12 @@ export function buildLaneCells({
   glyphHeight,
   width,
   colors,
-  anchorRule,
 }: {
   lane: Lane
   genes: LaneGene[]
   glyphHeight: number
   width: number
   colors: LaneGlyphColors
-  anchorRule?: AnchorRule
 }): LaneCells {
   const glyphs = new GlyphBuilder()
   const boxes = new GlyphBuilder()
@@ -1002,20 +1034,6 @@ export function buildLaneCells({
   const divider = cssColorToABGR(colors.divider)
   for (const [x1, x2] of lane.baseline) {
     glyphs.line(x1, x2, centerY, glyphHeight, 0, divider)
-  }
-  if (anchorRule) {
-    for (const [x1, x2] of anchorRule.spans) {
-      glyphs.line(x1, x2, anchorRule.y, 0, 0, stroke)
-    }
-    for (const x of anchorRule.ticks) {
-      glyphs.rect(
-        x,
-        x + 1,
-        anchorRule.y - ANCHOR_RULE_TICK_PX,
-        ANCHOR_RULE_TICK_PX,
-        stroke,
-      )
-    }
   }
 
   const drawn: DrawnGene[] = []
