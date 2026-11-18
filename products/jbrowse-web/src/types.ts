@@ -1,4 +1,4 @@
-import type { SessionMetadata } from '@jbrowse/app-core'
+import type { SessionMetadata, SessionSpec } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 import type { DBSchema } from 'idb'
@@ -50,7 +50,7 @@ export type SessionTriagedInfo =
  */
 export type SessionSource =
   | { type: 'snapshot'; snapshot: Snap }
-  | { type: 'spec'; spec: Snap }
+  | { type: 'spec'; spec: SessionSpec }
   | {
       type: 'hub'
       // a plain string[], not the loader's own `hubURL` MST array: this whole

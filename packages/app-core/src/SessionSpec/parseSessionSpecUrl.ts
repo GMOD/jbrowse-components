@@ -1,4 +1,4 @@
-import { SPEC_PREFIX, sessionParamKind } from '@jbrowse/core/util'
+import { SPEC_PREFIX, isObject, sessionParamKind } from '@jbrowse/core/util'
 
 import { readAllQueryParams } from '../queryParams.ts'
 import {
@@ -168,7 +168,18 @@ function lgvSpec(init: LgvUrlInit): ViewSpec {
 }
 
 function readSessionTracks(params: URLSearchParams) {
-  const sessionTracks = params.get('sessionTracks')
+  return parseSessionTracks(params.get('sessionTracks') ?? undefined)
+}
+
+function isTrackConfigList(value: unknown): value is Record<string, unknown>[] {
+  return Array.isArray(value)
+}
+
+/**
+ * A link's `&sessionTracks=` value: track configs the link's views can then
+ * name by id
+ */
+export function parseSessionTracks(sessionTracks: string | undefined) {
   if (!sessionTracks) {
     return undefined
   }
@@ -180,12 +191,38 @@ function readSessionTracks(params: URLSearchParams) {
       cause: e,
     })
   }
-  if (!Array.isArray(parsed)) {
+  if (!isTrackConfigList(parsed)) {
     throw new Error(
       'The "sessionTracks" in that link is not a list of track configurations.',
     )
   }
-  return parsed as Record<string, unknown>[]
+  return parsed
+}
+
+// `views: []` is legitimate and deliberate — it opens a session showing the
+// import form (several docs figures are exactly that). Only a spec with no views
+// *key* is malformed, and would otherwise build an empty session that reads as a
+// silent failure.
+function isSessionSpec(value: unknown): value is SessionSpec {
+  return isObject(value) && Array.isArray(value.views)
+}
+
+/** The JSON after a link's `session=spec-` */
+export function parseSessionSpec(payload: string) {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(payload)
+  } catch (e) {
+    throw new Error(`The session spec in that link isn't valid JSON: ${e}`, {
+      cause: e,
+    })
+  }
+  if (!isSessionSpec(parsed)) {
+    throw new Error(
+      'The session spec in that link has no "views" list, so there is nothing to open.',
+    )
+  }
+  return parsed
 }
 
 export interface ParsedSessionSnapshotUrl {
@@ -282,25 +319,7 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
     )
   }
 
-  let spec: ParsedSessionSpec['spec']
-  try {
-    spec = JSON.parse(
-      session.slice(SPEC_PREFIX.length),
-    ) as ParsedSessionSpec['spec']
-  } catch (e) {
-    throw new Error(`The session spec in that link isn't valid JSON: ${e}`, {
-      cause: e,
-    })
-  }
-  // `views: []` is legitimate and deliberate — it opens a session showing the
-  // import form (several docs figures are exactly that). Only a spec with no
-  // views *key* is malformed, and would otherwise build an empty session that
-  // reads as a silent failure.
-  if (!Array.isArray(spec.views)) {
-    throw new Error(
-      'The session spec in that link has no "views" list, so there is nothing to open.',
-    )
-  }
+  const spec = parseSessionSpec(session.slice(SPEC_PREFIX.length))
 
   return {
     ...resolveConfig(params, url),

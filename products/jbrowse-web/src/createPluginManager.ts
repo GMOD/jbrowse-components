@@ -228,13 +228,9 @@ function initSession(
   pluginManager: PluginManager,
   model: PluginManagerSource,
 ) {
-  const {
-    sessionSource,
-    sessionName,
-    defaultSessionViewInit,
-    defaultSessionTracks = [],
-  } = model
+  const { sessionSource } = model
   try {
+    const { sessionName, defaultSessionViewInit } = model
     if (sessionSource?.type === 'error') {
       throw sessionSource.error
     } else if (sessionSource?.type === 'snapshot') {
@@ -257,14 +253,13 @@ function initSession(
       })
     } else if (sessionSource?.type === 'spec') {
       void loadSessionSpec(
-        // @ts-expect-error spec is dynamic JSON (Record<string,unknown>); the
-        // required shape is validated at runtime inside loadSessionSpec
         sessionName
           ? { ...sessionSource.spec, sessionName }
           : sessionSource.spec,
         pluginManager,
       )
     } else {
+      const defaultSessionTracks = model.defaultSessionTracks ?? []
       rootModel.startNewSession()
       addSessionTracks(rootModel.session, defaultSessionTracks)
       if (defaultSessionViewInit) {

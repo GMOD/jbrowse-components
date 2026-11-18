@@ -1,6 +1,8 @@
 import {
   parseSessionSnapshotUrl,
+  parseSessionSpec,
   parseSessionSpecUrl,
+  parseSessionTracks,
 } from './parseSessionSpecUrl.ts'
 
 const SPEC = { views: [{ type: 'LinearGenomeView', assembly: 'volvox' }] }
@@ -438,4 +440,46 @@ test('spec, local and session-less links hand over no snapshot', () => {
   expect(
     parseSessionSnapshotUrl('https://jbrowse.org/code/jb2/main/?loc=ctgA:1-10'),
   ).toBeUndefined()
+})
+
+describe('parseSessionSpec', () => {
+  test('reads a spec payload', () => {
+    expect(parseSessionSpec(JSON.stringify(SPEC))).toEqual(SPEC)
+  })
+
+  test('refuses a payload that is not JSON', () => {
+    expect(() => parseSessionSpec('{oops')).toThrow(/isn't valid JSON/)
+  })
+
+  test('refuses a spec with no views list', () => {
+    expect(() =>
+      parseSessionSpec('{"sessionConnections":[{"connectionId":"c"}]}'),
+    ).toThrow(/no "views" list/)
+  })
+
+  test('refuses JSON that is not an object', () => {
+    expect(() => parseSessionSpec('null')).toThrow(/no "views" list/)
+  })
+})
+
+describe('parseSessionTracks', () => {
+  test('reads a list of track configs', () => {
+    expect(parseSessionTracks('[{"trackId":"t"}]')).toEqual([{ trackId: 't' }])
+  })
+
+  test('reads an absent param as no tracks', () => {
+    expect(parseSessionTracks(undefined)).toBeUndefined()
+  })
+
+  test('refuses a value that is not JSON', () => {
+    expect(() => parseSessionTracks('[{bad')).toThrow(
+      /"sessionTracks" in that link isn't valid JSON/,
+    )
+  })
+
+  test('refuses a value that is not a list', () => {
+    expect(() => parseSessionTracks('{"a":1}')).toThrow(
+      /not a list of track configurations/,
+    )
+  })
 })

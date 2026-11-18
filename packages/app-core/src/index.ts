@@ -43,7 +43,9 @@ export {
   loadSessionSpec,
   parseConfigUrl,
   parseSessionSnapshotUrl,
+  parseSessionSpec,
   parseSessionSpecUrl,
+  parseSessionTracks,
   readHubUrlParam,
   readNavParam,
   readTracklistParam,
@@ -52,6 +54,7 @@ export type {
   LayoutNode,
   ParsedSessionSnapshotUrl,
   ParsedSessionSpec,
+  SessionSpec,
   ViewSpec,
 } from './SessionSpec/index.ts'
 // URL params, for the two products that own their page (web, desktop). An

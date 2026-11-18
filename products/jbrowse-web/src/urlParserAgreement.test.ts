@@ -32,6 +32,7 @@ import {
   type ParsedSessionSpec,
 } from '@jbrowse/app-core'
 
+import { createPluginManager } from './createPluginManager.ts'
 import { createSessionLoaderFromUrl } from './createSessionLoader.ts'
 
 jest.mock('./makeWorkerInstance', () => () => {})
@@ -87,14 +88,10 @@ async function fromJbrowseWeb(): Promise<Resolved> {
     sessionName: loader.sessionName,
   }
   if (source?.type === 'spec') {
-    const spec = source.spec as {
-      views?: unknown[]
-      sessionTracks?: unknown[]
-      sessionConnections?: unknown[]
-    }
+    const { spec } = source
     return {
       ...common,
-      views: spec.views ?? [],
+      views: spec.views,
       sessionTracks: spec.sessionTracks ?? [],
       sessionConnections: spec.sessionConnections ?? [],
     }
@@ -247,5 +244,89 @@ describe('the disagreements are deliberate', () => {
     expect(() => parseSessionSpecUrl(window.location.href)).toThrow(
       /no session in it/,
     )
+  })
+})
+
+async function bootSnackbar() {
+  const loader = createSessionLoaderFromUrl(0)
+  loader.setConfigAndPlugins(
+    {
+      configuration: {
+        rpc: { defaultDriver: 'MainThreadRpcDriver' },
+        disableAnalytics: true,
+      },
+    },
+    [],
+  )
+  await loader.loadSessionByType()
+  const pluginManager = await createPluginManager(loader, () => {})
+  return pluginManager.rootModel?.session
+}
+
+function appCoreError(url: string) {
+  try {
+    parseSessionSpecUrl(url)
+  } catch (e) {
+    return `${e}`
+  }
+  throw new Error(`app-core accepted ${url}`)
+}
+
+describe('a malformed link', () => {
+  beforeEach(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  test.each([
+    [
+      'a spec with no views',
+      '/?session=spec-{"sessionConnections":[{"connectionId":"c"}]}',
+    ],
+    ['a spec that is not JSON', '/?session=spec-{oops'],
+    [
+      'sessionTracks that is not JSON',
+      '/?assembly=volvox&loc=ctgA:1-100&sessionTracks=[{bad',
+    ],
+    [
+      'sessionTracks that is not a list',
+      '/?assembly=volvox&loc=ctgA:1-100&sessionTracks={"a":1}',
+    ],
+  ])('%s: web reports what app-core reports', async (_name, url) => {
+    setUrl(url)
+    const expected = appCoreError(window.location.href)
+    const loader = createSessionLoaderFromUrl(0)
+    await loader.loadSessionByType()
+    const source = loader.sessionSource
+    expect(source?.type).toBe('error')
+    expect(source?.type === 'error' ? `${source.error}` : undefined).toBe(
+      expected,
+    )
+    expect(await bootSnackbar()).toMatchObject({
+      snackbarMessages: [
+        expect.objectContaining({
+          message: expect.stringContaining(
+            expected.replace(/: SyntaxError.*/, ''),
+          ),
+        }),
+      ],
+    })
+  })
+
+  test('sessionTracks that is not JSON beside extendSession falls back to the default session and says so', async () => {
+    setUrl(
+      '/?extendSession=true&assembly=volvox&loc=ctgA:1-100&sessionTracks=[{bad',
+    )
+    expect(await bootSnackbar()).toMatchObject({
+      snackbarMessages: [
+        expect.objectContaining({
+          message: expect.stringContaining(
+            '"sessionTracks" in that link isn\'t valid JSON',
+          ),
+        }),
+      ],
+    })
   })
 })

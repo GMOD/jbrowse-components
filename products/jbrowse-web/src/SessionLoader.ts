@@ -1,4 +1,9 @@
-import { deleteQueryParams, resolveShareUrl } from '@jbrowse/app-core'
+import {
+  deleteQueryParams,
+  parseSessionSpec,
+  parseSessionTracks,
+  resolveShareUrl,
+} from '@jbrowse/app-core'
 import {
   dropVendoredPlugins,
   pluginsNotIn,
@@ -283,8 +288,8 @@ const SessionLoader = types
     /**
      * #getter
      */
-    get sessionTracksParsed(): Record<string, unknown>[] {
-      return self.sessionTracks ? JSON.parse(self.sessionTracks) : []
+    get sessionTracksParsed() {
+      return parseSessionTracks(self.sessionTracks) ?? []
     },
     /**
      * #getter
@@ -702,7 +707,7 @@ const SessionLoader = types
     decodeSessionSpec() {
       self.setSessionSource({
         type: 'spec',
-        spec: JSON.parse(sessionParamPayload(self.sessionQuery!)),
+        spec: parseSessionSpec(sessionParamPayload(self.sessionQuery!)),
       })
     },
     /**

@@ -18,10 +18,13 @@ export {
 export {
   parseConfigUrl,
   parseSessionSnapshotUrl,
+  parseSessionSpec,
   parseSessionSpecUrl,
+  parseSessionTracks,
 } from './parseSessionSpecUrl.ts'
 
 export type { LgvUrlInit } from './lgvUrlInit.ts'
+export type { SessionSpec } from './loadSessionSpec.ts'
 export type {
   ParsedSessionSnapshotUrl,
   ParsedSessionSpec,
