@@ -173,7 +173,7 @@ async function resolveJBrowseHub(
   }
   const { jbrowseHub, ...rest } = opts
   const hub = await resolveAssemblies([jbrowseHub], {
-    tracks: rest.tracks ?? [],
+    tracks: rest.tracks,
     aggregateTextSearchAdapters: rest.aggregateTextSearchAdapters,
   })
   return {

@@ -77,8 +77,7 @@ export async function createViewStateAsync(opts: CreateViewStateOptions) {
     runtimePlugins: plugins,
     makeWorkerInstance,
   })
-  // both: a restored `session` opens now, and File → New session opens
-  // `defaultSession` synchronously later
+  // `defaultSession` even beside a `session`: File → New session opens it later
   await pluginManager.preloadSessionTypes(opts.config.defaultSession)
   await pluginManager.preloadSessionTypes(opts.session)
   return finishCreateViewState(opts, model, pluginManager)
