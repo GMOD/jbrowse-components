@@ -675,7 +675,7 @@ export function trackTableModelFactory() {
        * #getter
        * Measured pixel widths for every column that can show. Measured over
        * allRows so widths stay stable and don't recompute on every filterText
-       * keystroke.
+       * keystroke, each distinct value once.
        */
       get initialWidths(): Record<string, number> {
         return Object.fromEntries(
@@ -685,7 +685,7 @@ export function trackTableModelFactory() {
               ? measureNameColumnWidth(self.allRows)
               : Math.max(
                   measureGridWidth(
-                    self.allRows.map(r => getRowStr(f, r)),
+                    [...new Set(self.allRows.map(r => getRowStr(f, r)))],
                     { maxWidth: 400, stripHTML: true },
                   ),
                   measureGridWidth([facetLabel(f, self.nonMetadataFieldSet)], {
