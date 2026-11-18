@@ -1,7 +1,4 @@
-import {
-  buildSearchText,
-  parseSearchQuery,
-} from '@jbrowse/core/util/searchText'
+import { parseSearchQuery } from '@jbrowse/core/util/searchText'
 
 import type { IndexRow } from './searchIndex.ts'
 
@@ -87,8 +84,6 @@ interface Searchable {
   // accessionText with a space at each end, so a whole token is a substring
   accessionTokens: string
   all: string
-  // what an excluded term is checked against, as every table's search reads
-  searchText: string
   bonus: number
 }
 
@@ -110,14 +105,6 @@ function prepare(row: IndexRow): Searchable {
     accessionText,
     accessionTokens: ` ${accessionText} `,
     all: `${accessionText} ${commonName} ${aliases.join(' ')} ${scientificName} ${assemblyName}`,
-    searchText: buildSearchText([
-      row[0],
-      row[10],
-      row[1],
-      ...aliases,
-      row[2],
-      row[3],
-    ]),
     bonus: tiebreak(row, aliases[0] ? bareCommonName(aliases[0]) : bare),
   }
 }
@@ -125,14 +112,18 @@ function prepare(row: IndexRow): Searchable {
 interface Term {
   text: string
   accession: string
+  exclude: boolean
 }
 
 // A bare `gcf_` strips to nothing, and an empty term is a substring of every
 // row, so it is not a term at all
-function prepareTerms(query: { text: string; exclude: boolean }[]): Term[] {
-  return query
-    .filter(term => !term.exclude)
-    .map(({ text }) => ({ text, accession: withoutAccessionPrefix(text) }))
+function prepareTerms(searchQuery: string): Term[] {
+  return parseSearchQuery(searchQuery)
+    .map(({ text, exclude }) => ({
+      text,
+      accession: withoutAccessionPrefix(text),
+      exclude,
+    }))
     .filter(term => term.accession !== '')
 }
 
@@ -148,9 +139,11 @@ function scoreNames(term: string, s: Searchable) {
 // since genus names get typed as often and weighting the common name higher put
 // viruses named after a host above the host. A whole accession outranks one it
 // is a prefix of: GCA_000001405.1 is hg19, and would otherwise tie hg38's .15.
-function score(s: Searchable, terms: Term[]) {
-  return terms.every(t => s.all.includes(t.accession))
-    ? terms.reduce(
+// A query that only excludes ranks what it leaves by the tiebreak alone.
+function score(s: Searchable, asked: Term[], excluded: Term[]) {
+  return asked.every(t => s.all.includes(t.accession)) &&
+    !excluded.some(t => s.all.includes(t.accession))
+    ? asked.reduce(
         (total, { text, accession }) =>
           total +
           Math.max(
@@ -179,16 +172,15 @@ function searchable(index: IndexRow[]) {
 
 /**
  * Best-first rows of the index matching every term the query asks for and
- * none it excludes; a query that asks for nothing finds nothing
+ * none it excludes; a query with no terms finds nothing
  */
 export function rankRows(index: IndexRow[], searchQuery: string) {
-  const query = parseSearchQuery(searchQuery)
-  const terms = prepareTerms(query)
-  const excluded = query.filter(term => term.exclude).map(term => term.text)
+  const terms = prepareTerms(searchQuery)
+  const asked = terms.filter(term => !term.exclude)
+  const excluded = terms.filter(term => term.exclude)
   return terms.length
     ? searchable(index)
-        .filter(s => !excluded.some(text => s.searchText.includes(text)))
-        .map(s => ({ row: s.row, score: score(s, terms) }))
+        .map(s => ({ row: s.row, score: score(s, asked, excluded) }))
         .filter(s => s.score >= 0)
         .toSorted((a, b) => b.score - a.score)
         .map(s => s.row)

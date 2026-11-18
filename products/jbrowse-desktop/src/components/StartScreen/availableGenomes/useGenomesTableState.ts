@@ -2,6 +2,8 @@ import { useState } from 'react'
 
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 
+import { isSearching } from './useGenomesData.ts'
+
 import type { FilterOption } from './useGenomesData.ts'
 
 export interface Sorting {
@@ -66,7 +68,7 @@ export function useGenomesTableState() {
     },
     setSearchQuery: (q: string) => {
       setSearchQuery(q)
-      if (q.trim()) {
+      if (isSearching(q)) {
         setHasSearched(true)
       }
       setPageIndex(0)

@@ -150,6 +150,17 @@ test('a search covers every group, and the index waits for the first query', asy
   ])
 })
 
+test('a lone minus or quote, on the way to a term, keeps browsing the group', async () => {
+  setup()
+  const search = await screen.findByPlaceholderText('Search genomes...')
+  for (const value of ['-', '"', ' - "']) {
+    fireEvent.change(search, { target: { value } })
+    expect(screen.getByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
+    expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
+  }
+  expect(fetched).not.toContain(SEARCH_INDEX_URL)
+})
+
 test('a search that matches nothing says so instead of showing a blank table', async () => {
   setup()
   const search = await screen.findByPlaceholderText('Search genomes...')

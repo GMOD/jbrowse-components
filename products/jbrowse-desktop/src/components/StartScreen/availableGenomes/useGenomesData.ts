@@ -1,4 +1,5 @@
 import { fetchJson } from '@jbrowse/core/util'
+import { parseSearchQuery } from '@jbrowse/core/util/searchText'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 
 import type { Entry } from './getColumnDefinitions.tsx'
@@ -25,9 +26,10 @@ export function ncbiFilterApplies(typeOption: string, searchQuery: string) {
   return typeOption !== 'ucsc' || isSearching(searchQuery)
 }
 
-// A query searches every group; with none, the table browses the selected one
+// A query searches every group; with no terms, as while a lone `-` or `"` is
+// typed, the table browses the selected one
 export function isSearching(searchQuery: string) {
-  return !!searchQuery.trim()
+  return parseSearchQuery(searchQuery).length > 0
 }
 
 // Reads the accession rather than ncbiName because search-index rows carry no

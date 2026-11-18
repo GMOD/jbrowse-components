@@ -268,6 +268,27 @@ test('quotes keep a phrase together, and a minus rules a term out', () => {
   expect(search('"sapiens homo"')).toEqual([])
   // T2T is in the GenArk row's common name and in hs1's assembly name
   expect(search('human -t2t').map(r => r.accession)).toEqual(['hg38', 'hg19'])
-  // a query that only excludes asks for nothing, so it finds nothing
-  expect(search('-t2t')).toEqual([])
+})
+
+test('a query that only excludes lists the rest in tiebreak order', () => {
+  expect(search('-t2t').map(r => r.accession)).toEqual([
+    'hg38',
+    'hg19',
+    'GCF_000004335.4',
+  ])
+  // a lone minus is no term yet
+  expect(search('-')).toEqual([])
+})
+
+test('an excluded term hides just the rows the same term would find', () => {
+  expect(search('t2t-chm13').map(r => r.accession)).toEqual([
+    'hs1',
+    'GCA_009914755.4',
+  ])
+  expect(search('human -t2t-chm13').map(r => r.accession)).toEqual([
+    'hg38',
+    'hg19',
+  ])
+  expect(search('t2tchm13')).toEqual([])
+  expect(search('human -t2tchm13')).toHaveLength(4)
 })
