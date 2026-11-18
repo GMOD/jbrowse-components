@@ -431,6 +431,24 @@ function addAlignmentDetail(
   return false
 }
 
+/** by row, the next row down placing each of that row's groups */
+function nextPlacedRows(lanes: Lane[]) {
+  const below = new Map<string, number>()
+  const out: Map<string, number>[] = []
+  for (let row = lanes.length - 1; row >= 0; row--) {
+    const next = new Map<string, number>()
+    for (const key of lanes[row]!.placements.keys()) {
+      const at = below.get(key)
+      if (at !== undefined) {
+        next.set(key, at)
+      }
+      below.set(key, row)
+    }
+    out[row] = next
+  }
+  return out
+}
+
 // Every record a ribbon can draw: each lane's placed runs and each lane
 // pair's direct links
 function* ribbonRecords(
@@ -493,6 +511,7 @@ export function buildRibbonGeometry({
   const linkTarget = new Map<string, number>()
   const records = new Map<string, ReadonlyMap<number, Feature>>()
   const anchor = lanes[0]
+  const nextRows = nextPlacedRows(lanes)
   const targetOfGroup = (key: string, group: PlacedGroup) => {
     let idx = groupTarget.get(key)
     if (idx === undefined) {
@@ -526,17 +545,18 @@ export function buildRibbonGeometry({
       key,
       { group, spans, orientations, intervals },
     ] of upper.placements) {
-      let toRow = row + 1
-      let far = lower.placements.get(key)
-      const bridging = !rowsVsAnchor && groupSpansLanes(group)
-      while (!far && bridging && toRow + 1 < lanes.length) {
-        far = lanes[++toRow]!.placements.get(key)
-      }
-      if (!far) {
+      const toRow = lower.placements.has(key)
+        ? row + 1
+        : !rowsVsAnchor && groupSpansLanes(group)
+          ? nextRows[row]!.get(key)
+          : undefined
+      const far =
+        toRow === undefined ? undefined : lanes[toRow]!.placements.get(key)
+      if (toRow === undefined || !far) {
         continue
       }
-      const bridged = toRow !== row + 1
       const farLane = lanes[toRow]!
+      const bridged = toRow !== row + 1
       let builder = ribbons
       if (bridged) {
         builder = bridges.get(toRow) ?? new RibbonBuilder()

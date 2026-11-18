@@ -150,6 +150,7 @@ function stack({
     rowFrames: new Map([
       ['peach', peach],
       ['cacao', cacao],
+      ['lime', { ...cacaoFrame, refName: 'Lm1' }],
     ]),
     axisSpanOf,
     axisSpansOf: (refName: string, start: number, end: number) => {
@@ -293,6 +294,27 @@ describe('the ribbons', () => {
     const layer = layers.find(l => l.key === 'ribbons:0>2')!
     expect(layer.yTop).toBe(s.lanes[0]!.glyphTop + s.glyphHeight)
     expect(layer.height).toBe(s.lanes[2]!.glyphTop - layer.yTop)
+  })
+
+  test('bridge a group to the nearest lane below that places it', () => {
+    const { layers } = buildRibbonGeometry({
+      stack: stack({
+        features: [
+          pairFeature('g1', 100, 200, { mate: 'cacao', mateRef: 'Tc1' }),
+          pairFeature('g1', 100, 200, { mate: 'lime', mateRef: 'Lm1' }),
+        ],
+        assemblyNames: ['grape', 'peach', 'cacao', 'lime'],
+      }),
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+    })
+    expect(layers.map(l => l.key)).toEqual([
+      'ribbons:0',
+      'ribbons:0>2',
+      'ribbons:1',
+      'ribbons:2',
+    ])
   })
 
   test('do not bridge a nameless record: its group has one mate and no lane it is missing from', () => {
