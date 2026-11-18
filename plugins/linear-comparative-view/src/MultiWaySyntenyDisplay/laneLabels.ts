@@ -45,11 +45,16 @@ interface DrawnName extends NamedSpan {
   width: number
 }
 
-function widest(spans: readonly Span[]) {
+function widestOnScreen(spans: readonly Span[], width: number) {
   let best: Span | undefined
+  let bestPx = -1
   for (const span of spans) {
-    if (!best || Math.abs(span[1] - span[0]) > Math.abs(best[1] - best[0])) {
+    const px =
+      Math.min(Math.max(span[0], span[1]), width) -
+      Math.max(Math.min(span[0], span[1]), 0)
+    if (px > bestPx && px >= 0) {
       best = span
+      bestPx = px
     }
   }
   return best
@@ -72,20 +77,23 @@ function drawnNames(
     }))
   for (const { feature, drawn } of genes) {
     const label = labelOf(feature)
-    const span = widest(
+    const span = widestOnScreen(
       lane.spansOf(
         feature.get('refName'),
         drawn.get('start'),
         drawn.get('end'),
       ),
+      width,
     )
     if (label && span) {
-      const left = Math.min(span[0], span[1])
-      const right = Math.max(span[0], span[1])
-      if (right >= 0 && left <= width) {
-        const id = feature.id()
-        out.push({ id, ...label, left, right, group: groups?.get(id) })
-      }
+      const id = feature.id()
+      out.push({
+        id,
+        ...label,
+        left: Math.min(span[0], span[1]),
+        right: Math.max(span[0], span[1]),
+        group: groups?.get(id),
+      })
     }
   }
   return out.sort((a, b) => a.left - b.left)

@@ -166,6 +166,28 @@ describe('placeLaneLabels', () => {
     expect(label!.left).toBeCloseTo(1920)
   })
 
+  it('labels a gene cut by a hole on its widest piece on screen', () => {
+    const [label] = placeLaneLabels({
+      lanes: [
+        {
+          assemblyName: 'a',
+          glyphTop: 20,
+          spansOf: () => [
+            [760, 900],
+            [1010, 1410],
+          ],
+        },
+      ],
+      genesOf: () => [gene('G', 0, 1)],
+      labelOf,
+      glyphHeight: 10,
+      width: 1000,
+      height: 200,
+      fontFamily: 'sans-serif',
+    })
+    expect(label?.left).toBe(760)
+  })
+
   it('leaves out a nameless gene and one off the canvas', () => {
     expect(place({ a: [gene('', 100, 200), gene('OFF', 2000, 2100)] })).toEqual(
       [],
