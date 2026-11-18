@@ -79,7 +79,7 @@ public struct Uniforms {
   public float  canvasHeight;
   public int    scaleType;
   public int    renderingType;
-  public float  numRows;
+  public float  rowHeight;
   public float  domainYMin;
   public float  domainYMax;
   public float  zero;

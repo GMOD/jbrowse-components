@@ -1,4 +1,4 @@
-// Density (and multirowdensity — one code path, `rowIndex`/`numRows` are what
+// Density (and multirowdensity — one code path, `rowIndex`/`rowHeight` are what
 // differ) as a composed shape: `rowRect`'s geometry, `scoreScale`'s normalizer,
 // colorRampLut's ramp. One instance is a rect filling its whole row over
 // [startBp, endBp), colored by its score through the uniform domain — the
@@ -66,7 +66,7 @@ DensityVsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   r.minCellDenomPx = u.viewportWidth;
   r.minCellPx     = MIN_FILL_WIDTH_PX;
   r.zero          = u.zero;
-  r.rowHeight     = u.canvasHeight / u.numRows;
+  r.rowHeight     = u.rowHeight;
   r.rowProportion = 1.0;
   r.scrollTop     = 0.0;
 

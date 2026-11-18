@@ -55,7 +55,7 @@ function uniforms(
     canvasHeight: H,
     scaleType: 0,
     renderingType,
-    numRows,
+    rowHeight: H / numRows,
     domainYMin: DOMAIN[0],
     domainYMax: DOMAIN[1],
     zero: 0,

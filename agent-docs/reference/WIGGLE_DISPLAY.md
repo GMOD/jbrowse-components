@@ -225,8 +225,8 @@ value's row.
 `findRowHit` picks the sources of row `floor(offsetY / rowHeight)`, one
 source's bin or, in a grouped row, every source at the cursor base as an
 overlay does, so `effectiveRowHeight` must equal the renderer's
-`getRowHeight(...)`. `numRows` is
-floored at 1 or the shader seeds the row transform with Infinity.
+`getRowHeight(...)`, which both backends lay rows out by: the shaders read it
+as the `rowHeight` uniform.
 
 ## Two gap rules
 

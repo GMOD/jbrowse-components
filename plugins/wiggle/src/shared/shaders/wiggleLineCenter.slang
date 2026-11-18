@@ -58,7 +58,7 @@ VsOut vs_main(WiggleLineCenterInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startEnd.x, u);
   float sx2 = bpToClipX(inst.startEnd.y, u);
 
-  float rowHeight = u.canvasHeight / u.numRows;
+  float rowHeight = u.rowHeight;
   float rowTop = inst.rowIndex * rowHeight;
   float pxToClip = 2.0 / u.canvasHeight;
 
@@ -109,7 +109,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float4 color = lineColorAt(
     fragIn.startLine.x + fragIn.startLine.y * along,
     fragIn.rowTop,
-    u.canvasHeight / u.numRows,
+    u.rowHeight,
     fragIn.cutYsLo,
     fragIn.cutYsHi,
     u,

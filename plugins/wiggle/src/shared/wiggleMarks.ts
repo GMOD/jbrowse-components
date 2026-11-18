@@ -119,7 +119,7 @@ function writeWiggleUniforms(
     scaleType: p.scaleType,
     symlogConstant: p.symlogConstant,
     renderingType: p.renderingType,
-    numRows: p.numRows,
+    rowHeight: getRowHeight(frame.canvasHeight, p.numRows),
     domainYMin: p.domainY[0],
     domainYMax: p.domainY[1],
     // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision

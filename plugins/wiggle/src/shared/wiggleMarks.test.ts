@@ -227,6 +227,20 @@ describe('the wiggle mark list', () => {
     expect(f32[U.bpRangeX + 2]!).toBeGreaterThan(0)
   })
 
+  it('writes the row height both backends lay rows out by', () => {
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
+    const source = makeSource()
+
+    backend.upload(0, [source])
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+      ...DEFAULT_STATE,
+      numRows: 3,
+    })
+
+    expect(hal.getLastUniformsF32()![U.rowHeight]).toBe(Math.fround(400 / 3))
+  })
+
   it('uses line pass for LINE rendering type', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)

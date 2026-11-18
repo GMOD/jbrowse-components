@@ -82,7 +82,7 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startEnd.x, u);
   float sx2 = bpToClipX(inst.startEnd.y, u);
 
-  float rowHeight = u.canvasHeight / u.numRows;
+  float rowHeight = u.rowHeight;
   float rowTop = inst.rowIndex * rowHeight;
   float pxToClip = 2.0 / u.canvasHeight;
 

@@ -94,12 +94,7 @@ export function makeWiggleRenderState(
     renderingType: renderingTypeToInt(self.renderingType),
     canvasWidth: width,
     canvasHeight: height,
-    // Floored at 1: a source list that filters to empty (a subtree filter
-    // naming nothing present) leaves numRows 0. Nothing is encoded for that
-    // state any more, but the shader's bare `canvasHeight / numRows` divides
-    // regardless of instance count and would seed the row transform with
-    // Infinity. Flooring here is the one place both backends read.
-    numRows: Math.max(1, numRows),
+    numRows,
     diameterPx: self.size,
     lineWidth: self.lineWidth,
     origin: self.origin,

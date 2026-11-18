@@ -56,7 +56,7 @@ float edgePerp(float dyPx, float dxPx, float dpr) {
 
 [shader("vertex")]
 VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
-  float rowHeight = u.canvasHeight / u.numRows;
+  float rowHeight = u.rowHeight;
   float rowTop = inst.rowIndex * rowHeight;
   float startX = bpToClipX(inst.startEnd.x, u);
   float endX = bpToClipX(inst.startEnd.y, u);
@@ -122,7 +122,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
       discard;
     }
     float3 ramp = lineColorAt(
-      y, fragIn.rowTop, u.canvasHeight / u.numRows, fragIn.cutYsLo,
+      y, fragIn.rowTop, u.rowHeight, fragIn.cutYsLo,
       fragIn.cutYsHi, u, fragIn.posColor, fragIn.negColor, colorRamp).rgb;
     float rampAlpha = WHISKER_BAND_OPACITY * c;
     return float4(ramp * rampAlpha, rampAlpha);
