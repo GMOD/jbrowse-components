@@ -40,13 +40,6 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.text.secondary,
     fontStyle: 'italic',
   },
-  // no height of its own, so the swatch overhangs the row rather than
-  // growing it, and the cell clips it
-  swatch: {
-    display: 'flex',
-    alignItems: 'center',
-    height: 0,
-  },
 }))
 
 const sortKeys: Record<string, (row: HighlightRow) => unknown> = {
@@ -131,16 +124,14 @@ const HighlightGrid = observer(function HighlightGrid({
       id: 'color',
       header: 'Color',
       cell: row => (
-        <div className={classes.swatch}>
-          <PopoverPicker
-            color={bandColor(row.highlight)}
-            unset={!row.highlight.color}
-            presetAlpha={HIGHLIGHT_ALPHA}
-            onChange={color => {
-              session.updateHighlight(row.highlight, { color })
-            }}
-          />
-        </div>
+        <PopoverPicker
+          color={bandColor(row.highlight)}
+          unset={!row.highlight.color}
+          presetAlpha={HIGHLIGHT_ALPHA}
+          onChange={color => {
+            session.updateHighlight(row.highlight, { color })
+          }}
+        />
       ),
     },
   ]

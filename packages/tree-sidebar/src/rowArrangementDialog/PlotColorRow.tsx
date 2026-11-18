@@ -12,7 +12,13 @@ const useStyles = makeStyles()(theme => ({
     marginBottom: theme.spacing(1),
   },
   // PopoverPicker's trigger swatch, minus the click
-  read: { width: 24, height: 24, margin: 4 },
+  read: {
+    width: 16,
+    height: 16,
+    margin: 4,
+    boxSizing: 'border-box',
+    border: `1px solid ${theme.palette.tableBorder}`,
+  },
 }))
 
 /**

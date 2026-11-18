@@ -4,19 +4,15 @@ import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 import { ColorPopover } from './ColorPicker.tsx'
-import { swatchStyle } from './colorSwatchStyle.ts'
+import { triggerSwatchStyle } from './colorSwatchStyle.ts'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   picker: { position: 'relative' },
-  swatch: swatchStyle,
-  // Signals a color that isn't explicitly set — the swatch shows the effective
-  // (auto) color, bordered to distinguish it from a user-chosen value, which has
-  // none.
-  unset: {
-    border: '2px solid #999',
-    boxSizing: 'border-box',
+  swatch: {
+    ...triggerSwatchStyle(theme.palette.tableBorder),
+    cursor: 'pointer',
   },
-})
+}))
 
 const PopoverPicker = observer(function PopoverPicker({
   color,
@@ -27,17 +23,16 @@ const PopoverPicker = observer(function PopoverPicker({
   color: string
   onChange: (color: string) => void
   presetAlpha?: number
-  // When true, style the swatch as an auto/unset value (grey border) and
-  // seed the picker from a sane color if `color` is the 'auto' sentinel.
+  /** the color is automatic, which the swatch's hover title says */
   unset?: boolean
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const isAuto = color === 'auto'
   return (
     <div className={classes.picker}>
       <div
-        className={cx(classes.swatch, unset ? classes.unset : undefined)}
+        className={classes.swatch}
         style={{ backgroundColor: isAuto ? 'transparent' : color }}
         title={unset ? 'Automatic — click to set a custom color' : undefined}
         onClick={event => {

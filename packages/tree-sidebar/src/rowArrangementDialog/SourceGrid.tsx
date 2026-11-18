@@ -20,13 +20,6 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  // no height of its own, so the swatch overhangs a row rather than growing
-  // it, and the cell clips it
-  swatch: {
-    display: 'flex',
-    alignItems: 'center',
-    height: 0,
-  },
 })
 
 export default observer(function SourceGrid<S extends { name: string }>({
@@ -57,7 +50,6 @@ export default observer(function SourceGrid<S extends { name: string }>({
     extras,
     rows,
     cellClassName: classes.cell,
-    swatchClassName: classes.swatch,
   })
   const widths = Object.fromEntries(columns.map(col => [col.id, col.width]))
   const selected = rows.filter(r => ticked.has(r.name)).map(r => r.name)

@@ -28,14 +28,12 @@ export function buildSourceColumns<S extends { name: string }>({
   extras,
   rows,
   cellClassName,
-  swatchClassName,
 }: {
   colors: ReadonlyMap<string, string>
   eachRow: EachRowPicks
   extras: string[]
   rows: S[]
   cellClassName: string
-  swatchClassName: string
 }) {
   const columns: (VirtualTableColumn<SourceRow<S>> & { width: number })[] = [
     {
@@ -43,15 +41,13 @@ export function buildSourceColumns<S extends { name: string }>({
       header: 'Color',
       width: 70,
       cell: ({ source }) => (
-        <div className={swatchClassName}>
-          <PopoverPicker
-            color={colors.get(source.name) ?? 'auto'}
-            unset={!eachRow.picks.has(source.name)}
-            onChange={next => {
-              eachRow.onPick(new Map([[source.name, next]]))
-            }}
-          />
-        </div>
+        <PopoverPicker
+          color={colors.get(source.name) ?? 'auto'}
+          unset={!eachRow.picks.has(source.name)}
+          onChange={next => {
+            eachRow.onPick(new Map([[source.name, next]]))
+          }}
+        />
       ),
     },
     {
