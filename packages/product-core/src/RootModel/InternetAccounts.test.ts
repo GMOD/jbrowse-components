@@ -244,10 +244,49 @@ test('an ephemeral id for a registered type still mints an account', () => {
     internetAccountId: 'HTTPBasicInternetAccount-https://data.mylab.org',
   })
   expect(found?.type).toBe('HTTPBasicInternetAccount')
-  expect(found?.domains).toEqual(['https://data.mylab.org/dir/'])
+  expect(found?.domains).toEqual(['https://data.mylab.org/'])
 })
 
 const labOrigin = 'HTTPBasicInternetAccount-https://data.mylab.org'
+
+// What RpcManager's 401 retry does: the first file's 401 mints the origin
+// account, and every later read of that server reaches it through `domains`,
+// since a retried location names no account.
+describe('an origin account minted for one file', () => {
+  function rootAfterFirst401() {
+    const root = makeRoot()
+    root.createEphemeralInternetAccount(
+      labOrigin,
+      {},
+      'https://data.mylab.org/a/x.bam',
+    )
+    return root
+  }
+
+  test('answers a file in another directory of that origin', () => {
+    const root = rootAfterFirst401()
+    expect(
+      root.findAppropriateInternetAccount({
+        locationType: 'UriLocation',
+        uri: 'https://data.mylab.org/b/y.bam',
+      }),
+    ).toBe(root.internetAccounts[0])
+  })
+
+  test.each([
+    [
+      'a host the origin is a prefix of',
+      'https://data.mylab.org.evil.com/x.bam',
+    ],
+    ['another port', 'https://data.mylab.org:8443/x.bam'],
+    ['plain http', 'http://data.mylab.org/x.bam'],
+  ])('does not answer %s', (_, uri) => {
+    const root = rootAfterFirst401()
+    expect(
+      root.findAppropriateInternetAccount({ locationType: 'UriLocation', uri }),
+    ).toBe(null)
+  })
+})
 
 test('an existing origin account is not offered to another host', () => {
   const root = makeRoot()
@@ -319,6 +358,7 @@ test('an origin account is created for a relative uri under its own origin', () 
     internetAccountId: labOrigin,
   })
   expect(found?.internetAccountId).toBe(labOrigin)
+  expect(found?.domains).toEqual(['https://data.mylab.org/'])
 })
 
 test('an id naming no registered type is ignored', () => {
@@ -365,16 +405,18 @@ describe.each([
   })
 })
 
-// An id is only an origin account's when its leading segment is the account's
-// own type; a configured account whose id merely reads like one keeps to its
-// domains.
+// A configured account keeps to its domains, whatever its id reads like.
 describe.each([
-  'Other-https://data.mylab.org',
-  'HTTPBasicInternetAccount-https://data.mylab.org',
-])('a configured account with id %s', internetAccountId => {
+  ['TestInternetAccount', 'Other-https://data.mylab.org'],
+  ['TestInternetAccount', 'HTTPBasicInternetAccount-https://data.mylab.org'],
+  [
+    'HTTPBasicInternetAccount',
+    'HTTPBasicInternetAccount-https://data.mylab.org',
+  ],
+])('a configured %s with id %s', (type, internetAccountId) => {
   test('is not used outside its domains on that origin', () => {
     const root = makeRoot({
-      type: 'TestInternetAccount',
+      type,
       internetAccountId,
       name: 'Public data',
       domains: ['https://data.mylab.org/public/'],

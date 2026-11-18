@@ -121,31 +121,24 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
 
       /**
        * #action
+       * An account for the whole origin `url` is on, which is what its
+       * `<TypeName>-<origin>` id names. Its one `domains` entry is the origin
+       * and a `/`, the URL-prefix spelling that matches only that scheme, host
+       * and port.
        */
       createEphemeralInternetAccount(
         internetAccountId: string,
         initialSnapshot: Record<string, unknown>,
         url: string,
       ) {
-        let hostUri: string | undefined
-
-        try {
-          const urlObj = new URL(url)
-          const pathname = urlObj.pathname
-          const lastSlash = pathname.lastIndexOf('/')
-          const dirPath =
-            lastSlash !== -1 ? pathname.slice(0, lastSlash + 1) : '/'
-          hostUri = `${urlObj.origin}${dirPath}`
-        } catch {
-          // ignore
-        }
+        const origin = URL.canParse(url) ? new URL(url).origin : 'null'
         const { type, name } = parseEphemeralId(internetAccountId)
         const configuration = {
           type,
           internetAccountId,
           name,
           description: '',
-          domains: hostUri ? [hostUri] : [],
+          domains: origin === 'null' ? [] : [`${origin}/`],
         }
         self.internetAccounts.push({
           ...initialSnapshot,
@@ -180,9 +173,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           if (selectedAccount) {
             if (
               selectedAccount.handlesLocation(location) ||
-              resolvesToAppOrigin(location) ||
-              (parseEphemeralId(selectedId).type === selectedAccount.type &&
-                namesOwnOrigin(selectedId, location))
+              resolvesToAppOrigin(location)
             ) {
               return selectedAccount
             }
@@ -220,7 +211,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           return self.createEphemeralInternetAccount(
             selectedId,
             {},
-            location.uri,
+            parseEphemeralId(selectedId).name,
           )
         }
         return null
