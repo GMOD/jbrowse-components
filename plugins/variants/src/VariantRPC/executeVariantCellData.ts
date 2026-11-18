@@ -30,14 +30,19 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
+function spanOf({ feature }: FilteredVariant) {
+  return feature.get('end') - feature.get('start')
+}
+
 // Which records each payload draws, under the key of the block that draws it.
-// At genomic positions, each displayed region's in file order, so overlapping
-// records paint later over earlier whatever order the merged fetches arrived
-// in. In columns, every record once under 0, in the screen order its column
-// index is. A block with no records still gets a payload, an empty one: the
-// canvas counts as painted only once a block on screen has a payload, so a
-// window with no records at all would otherwise read as loading for good.
-function recordsByBlock({
+// At genomic positions, each displayed region's longest first, then by start,
+// so of two overlapping records the shorter paints over the longer whichever
+// starts first; two alike in both keep fetch order. In columns, every record
+// once under 0, in the screen order its column index is. A block with no
+// records still gets a payload, an empty one: the canvas counts as painted
+// only once a block on screen has a payload, so a window with no records at
+// all would otherwise read as loading for good.
+export function recordsByBlock({
   layout,
   lookupRegions,
   filteredVariants,
@@ -52,7 +57,9 @@ function recordsByBlock({
   }
   return groupFeaturesByRegion(
     [...filteredVariants].sort(
-      (a, b) => a.feature.get('start') - b.feature.get('start'),
+      (a, b) =>
+        spanOf(b) - spanOf(a) ||
+        a.feature.get('start') - b.feature.get('start'),
     ),
     lookupRegions,
     v => v.feature,

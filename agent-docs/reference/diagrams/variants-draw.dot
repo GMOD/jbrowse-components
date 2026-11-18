@@ -10,7 +10,7 @@ digraph variant_draw {
   layout [label="layout"]
   layout -> genomic [label=" genomic"]
   layout -> columns [label=" columns"]
-  genomic [label="a block per displayed region,\nrecords sorted by start"]
+  genomic [label="a block per displayed region,\nrecords longest first"]
   columns [label="one block for the window,\nrecords in screen order"]
   cells [label="computeVariantCells, one payload\nfor both: reference cells forward\nfrom 0, alt cells backward from the end"]
   genomic -> cells  columns -> cells

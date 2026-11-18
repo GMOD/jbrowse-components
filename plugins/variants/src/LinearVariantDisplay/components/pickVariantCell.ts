@@ -9,9 +9,7 @@ import type {
   VariantUploadData,
 } from './variantRenderingBackendTypes.ts'
 
-export interface PickCellData extends CellLookupData, VariantUploadData {
-  featurePositions: Uint32Array
-}
+export interface PickCellData extends CellLookupData, VariantUploadData {}
 
 interface PickedCell {
   cellIndex: number
@@ -52,10 +50,12 @@ function withinCellTolerance(
  * row unless rows are sub-pixel), which is the largest cell index there, not
  * the nearest row's: a lower row's alt cell paints over a nearer reference
  * cell. Candidates whose *drawn* cell is not within the click tolerance of the
- * cursor are dropped, and the shortest survivor wins, which keeps a SNP inside
- * a large deletion selectable. Between two as short — a site split into one
- * record per allele — the later cell, painted on top, wins. Where the ink is
- * comes from the cell shape's own hit test.
+ * cursor are dropped, and of the survivors the one whose top cell has the
+ * largest index wins, since cells paint in index order: the reference bucket
+ * under the rest, and within a bucket a shorter record over a longer one, as
+ * records are laid out longest first (`recordsByBlock`). That keeps a SNP
+ * inside a large deletion selectable from a click tolerance away. Where the
+ * ink is comes from the cell shape's own hit test.
  *
  * Rows are screen rows throughout, in and out; `rowUnmap` converts each to the
  * worker numbering the cell arrays are keyed by (see variantCellLookup.ts). A screen
@@ -87,7 +87,6 @@ export function pickVariantCell({
   rowUnmap: Int32Array
 }): PickedCell | undefined {
   let best: PickedCell | undefined
-  let bestLen = Infinity
   for (const featureIndex of candidateFeatures) {
     const top = topDrawnCell(
       data,
@@ -98,16 +97,10 @@ export function pickVariantCell({
     )
     if (top) {
       const { cellIndex, rowIndex } = top
-      const len =
-        data.featurePositions[featureIndex * 2 + 1]! -
-        data.featurePositions[featureIndex * 2]!
-      const onTop =
-        len < bestLen || (len === bestLen && cellIndex > best!.cellIndex)
       if (
-        onTop &&
+        cellIndex > (best?.cellIndex ?? -1) &&
         withinCellTolerance(data, block, state, mouseX, mouseY, cellIndex)
       ) {
-        bestLen = len
         best = { cellIndex, featureIndex, rowIndex }
       }
     }

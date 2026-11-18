@@ -632,6 +632,36 @@ test('a no-call at a site with no ALT has no dosage, and an all-missing FORMAT k
   expect(records!.format.XX).toEqual([null, null, null, null])
 })
 
+test('records list in start order, then file order, though the longest paints first', async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'order-'))
+  const vcf = path.join(dir, 'order.vcf')
+  writeFileSync(
+    vcf,
+    [
+      '##fileformat=VCFv4.2',
+      '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\ts1\ts2',
+      'ctgA\t100\t.\tC\tT\t50\tPASS\t.\tGT\t0/1\t1/1',
+      `ctgA\t200\t.\t${'A'.repeat(50)}\tA\t50\tPASS\t.\tGT\t0/1\t0/0`,
+      `ctgA\t210\t.\t${'A'.repeat(11)}\tA\t50\tPASS\t.\tGT\t0/0\t0/1`,
+      `ctgA\t300\t.\t${'A'.repeat(5)}\tA\t50\tPASS\t.\tGT\t0/1\t0/1`,
+      `ctgA\t300\t.\t${'A'.repeat(20)}\tA\t50\tPASS\t.\tGT\t0/1\t1/1`,
+    ].join('\n'),
+  )
+  const t = await engine.variants({
+    adapterConfig: {
+      type: 'VcfAdapter',
+      vcfLocation: { uri: pathToFileURL(vcf).href },
+    },
+    region: { refName: 'ctgA', start: 0, end: 1000 },
+  })
+  expect(t.variants.start).toEqual([99, 199, 209, 299, 299])
+  expect(t.variants.end).toEqual([100, 249, 220, 304, 319])
+  const startOfCell = t.cells.variant.map(v => t.variants.start[v])
+  expect(new Set(startOfCell)).toEqual(new Set([99, 199, 209, 299]))
+  expect(t.cells.row.filter((_, i) => startOfCell[i] === 209)).toEqual(['s2'])
+})
+
 test('VEP’s CSQ parses under its header’s Format list, one row a consequence', async () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'csq-'))
   const vcf = path.join(dir, 'vep.vcf')

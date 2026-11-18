@@ -20,7 +20,7 @@
 <title>genomic</title>
 <polygon fill="none" stroke="black" points="291,-996 101,-996 101,-960 291,-960 291,-996"/>
 <text xml:space="preserve" text-anchor="middle" x="196" y="-981.25" font-family="monospace" font-size="10.00">a block per displayed region,</text>
-<text xml:space="preserve" text-anchor="middle" x="196" y="-968.5" font-family="monospace" font-size="10.00">records sorted by start</text>
+<text xml:space="preserve" text-anchor="middle" x="196" y="-968.5" font-family="monospace" font-size="10.00">records longest first</text>
 </g>
 <!-- layout&#45;&gt;genomic -->
 <g id="edge3" class="edge">
@@ -273,5 +273,5 @@
 <polygon fill="black" stroke="black" points="295.5,-47.54 292,-37.54 288.5,-47.54 295.5,-47.54"/>
 </g>
 </g>
-<!-- diagram-source-sha256 ff54800e97fe50f6d7029e11d3cf2d37c10341651d12f04c191356d7f4632df6 -->
+<!-- diagram-source-sha256 6a7ad82ec1a738b91adbc21edbda9e3b0f0226d3371c563398f909f42e13e30c -->
 </svg>

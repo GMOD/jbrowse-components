@@ -1320,13 +1320,13 @@ export function stateModelFactory(
         /**
          * #action
          * `sortByGenotype` at a genomic column, the declarative `sortRowsBy`
-         * entry point. Anchors on the record a click there picks
-         * (`pickVariantCell`): the shortest covering the column, the later of
-         * two as short. Returns whether it sorted, so `sortRowsBy` stays set
-         * for the fetch that brings a record to the column. Declines on a
-         * loaded region the held payload has nothing for (`regionHasData`),
-         * which the shared gate cannot tell. `refName` arrives canonical; a
-         * record's is whatever the file spelled.
+         * entry point. Anchors on the shortest record covering the column,
+         * the later of two as short in screen order. Returns whether it
+         * sorted, so `sortRowsBy` stays set for the fetch that brings a
+         * record to the column. Declines on a loaded region the held payload
+         * has nothing for (`regionHasData`), which the shared gate cannot
+         * tell. `refName` arrives canonical; a record's is whatever the file
+         * spelled.
          */
         sortRowsByGenotypeAt(refName: string, pos: number) {
           const features = self.cellData?.simplifiedFeatures

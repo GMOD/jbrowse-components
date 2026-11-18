@@ -232,8 +232,9 @@ export interface VariantTablesArgs {
 
 /**
  * The variant display's host over what it fetched for `regions`: each
- * region's records its window shows (`perRegion`, their features in
- * `records`), and the rows it draws (`drawn`), top to bottom.
+ * region's records its window shows in start order, then in the order they
+ * were fetched (`perRegion`, their features in `records`), and the rows it
+ * draws (`drawn`), top to bottom.
  */
 async function fetchedVariantHost(
   pluginManager: PluginManager,
@@ -299,6 +300,7 @@ async function fetchedVariantHost(
     throw tooLarge(result.bytes)
   }
   const value = result.value
+  const fetchOrder = new Map(result.records.map((r, i) => [r.id(), i]))
   const perRegion = regions.flatMap(({ start, end }, i) => {
     const data = value.perRegionCellData[i]
     return data
@@ -306,12 +308,20 @@ async function fetchedVariantHost(
           {
             region: i,
             data,
-            shown: data.featureInfo.flatMap((_, f) =>
-              data.featurePositions[f * 2 + 1]! > start &&
-              data.featurePositions[f * 2]! < end
-                ? [f]
-                : [],
-            ),
+            shown: data.featureInfo
+              .flatMap((_, f) =>
+                data.featurePositions[f * 2 + 1]! > start &&
+                data.featurePositions[f * 2]! < end
+                  ? [f]
+                  : [],
+              )
+              .sort(
+                (a, b) =>
+                  data.featurePositions[a * 2]! -
+                    data.featurePositions[b * 2]! ||
+                  fetchOrder.get(data.featureInfo[a]!.featureId)! -
+                    fetchOrder.get(data.featureInfo[b]!.featureId)!,
+              ),
           },
         ]
       : []

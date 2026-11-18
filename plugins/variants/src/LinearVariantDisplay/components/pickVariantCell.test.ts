@@ -1,5 +1,10 @@
-import Flatbush from '@jbrowse/core/util/flatbush'
+import { SimpleFeature } from '@jbrowse/core/util'
 
+import { recordsByBlock } from '../../VariantRPC/executeVariantCellData.ts'
+import { internGenotype } from '../../shared/genotypeCodec.ts'
+import { placeVariantRows } from '../placeVariantRows.ts'
+import { cellGlyphs } from './cellGlyphs.ts'
+import { computeVariantCells } from './computeVariantCells.ts'
 import { pickVariantCell } from './pickVariantCell.ts'
 import {
   HIT_TOLERANCE_PX,
@@ -38,11 +43,70 @@ function build({
     cellWorkerRowIndices: Uint32Array.from(all.map(c => c.row)),
     numCells: all.length,
     refCellCount: refCells.length,
-    featurePositions: Uint32Array.from(features.flat()),
     cellPositions: Uint32Array.from(all.flatMap(c => features[c.feature]!)),
     cellRowIndices: Uint32Array.from(all.map(c => screenRow(c.row))),
     cellColors: new Uint32Array(all.length),
     cellShapeTypes: new Uint8Array(all.length),
+  }
+}
+
+interface PaintedRecord {
+  id: string
+  start: number
+  end: number
+  // one genotype per row
+  genotypes: string[]
+}
+
+// Records in fetch order, through the worker's own layout (`recordsByBlock`)
+// and cell builder, placed on identity rows: the payload the display picks
+// from. `indexOf` names a record's feature index in it.
+function painted(records: PaintedRecord[], showReference = false) {
+  const samples = records[0]!.genotypes.map((_, i) => `s${i}`)
+  const genotypeDict: string[] = []
+  const dictIndex = new Map<string, number>()
+  const featureGenotypeCodes = new Map(
+    records.map(({ id, genotypes }) => [
+      id,
+      Uint32Array.from(genotypes, gt =>
+        internGenotype(gt, genotypeDict, dictIndex),
+      ),
+    ]),
+  )
+  const filteredVariants = recordsByBlock({
+    layout: 'genomic',
+    lookupRegions: [
+      { refName: 'ctgA', start: 0, end: 800, displayedRegionIndex: 0 },
+    ],
+    filteredVariants: records.map(({ id, start, end }) => ({
+      feature: new SimpleFeature({
+        id,
+        data: { refName: 'ctgA', start, end, REF: 'A', ALT: ['T'] },
+      }),
+      mostFrequentAlt: '1',
+    })),
+  }).get(0)!
+  const cells = computeVariantCells({
+    filteredVariants,
+    sources: samples.map(name => ({ name, sampleName: name })),
+    rowsField: 'sample',
+    showReference,
+    featureGenotypeCodes,
+    genotypeDict,
+    sampleNames: samples,
+  })
+  const data: PickCellData = {
+    ...placeVariantRows(
+      cells,
+      Uint32Array.from(samples, (_, i) => i),
+    ),
+    ...cellGlyphs(cells),
+  }
+  return {
+    data,
+    featureIndexData: cells.featureIndexData,
+    indexOf: (id: string) =>
+      cells.featureInfo.findIndex(f => f.featureId === id),
   }
 }
 
@@ -77,20 +141,77 @@ const geom = {
 
 describe('pickVariantCell candidate narrowing', () => {
   // A 400bp deletion with a 1bp SNP inside it, both called in row 0.
-  const data = build({
-    altCells: [
-      { feature: 0, row: 0 },
-      { feature: 1, row: 0 },
-    ],
-    features: [
-      [100, 500],
-      [300, 301],
-    ],
+  const { data, featureIndexData, indexOf } = painted([
+    { id: 'del', start: 100, end: 500, genotypes: ['0/1'] },
+    { id: 'snp', start: 300, end: 301, genotypes: ['0/1'] },
+  ])
+  const del = indexOf('del')
+  const snp = indexOf('snp')
+
+  test('a SNP inside a deletion paints over it, so it picks from a click tolerance away', () => {
+    for (const mouseX of [300, 302 + HIT_TOLERANCE_PX]) {
+      const picked = pickVariantCell({
+        data,
+        candidateFeatures: [del, snp],
+        mouseX,
+        mouseY: rowY(0),
+        rowNearest: 0,
+        rowLowest: 0,
+        ...geom,
+      })
+      expect(picked?.featureIndex).toBe(snp)
+    }
   })
 
-  test('prefers the shortest feature so a SNP inside a deletion stays selectable', () => {
+  test('of two offset overlapping SVs the shorter, painted on top, wins whichever starts first', () => {
+    const { data: offset, indexOf: offsetIndexOf } = painted([
+      { id: 'shortFirst', start: 100, end: 500, genotypes: ['0/1'] },
+      { id: 'longLater', start: 300, end: 900, genotypes: ['1/1'] },
+    ])
+    for (const candidateFeatures of [
+      [0, 1],
+      [1, 0],
+    ]) {
+      const picked = pickVariantCell({
+        data: offset,
+        candidateFeatures,
+        mouseX: 400,
+        mouseY: rowY(0),
+        rowNearest: 0,
+        rowLowest: 0,
+        ...geom,
+      })
+      expect(picked?.featureIndex).toBe(offsetIndexOf('shortFirst'))
+    }
+  })
+
+  test('a no-call on a shorter record paints over an alt on a longer one, so it picks', () => {
+    const { data: noCallOver, indexOf: noCallIndexOf } = painted([
+      { id: 'cnv', start: 100, end: 500, genotypes: ['./.'] },
+      { id: 'deletion', start: 300, end: 900, genotypes: ['0/1'] },
+    ])
     const picked = pickVariantCell({
-      data,
+      data: noCallOver,
+      candidateFeatures: [0, 1],
+      mouseX: 400,
+      mouseY: rowY(0),
+      rowNearest: 0,
+      rowLowest: 0,
+      ...geom,
+    })
+    expect(picked?.featureIndex).toBe(noCallIndexOf('cnv'))
+  })
+
+  test('a reference cell on a SNP paints under an alt on a deletion, so the deletion picks', () => {
+    const { data: refUnder, indexOf: refUnderIndexOf } = painted(
+      [
+        { id: 'del', start: 100, end: 500, genotypes: ['0/1'] },
+        { id: 'snp', start: 300, end: 301, genotypes: ['0/0'] },
+      ],
+      true,
+    )
+    const picked = pickVariantCell({
+      data: refUnder,
       candidateFeatures: [0, 1],
       mouseX: 300,
       mouseY: rowY(0),
@@ -98,7 +219,7 @@ describe('pickVariantCell candidate narrowing', () => {
       rowLowest: 0,
       ...geom,
     })
-    expect(picked?.featureIndex).toBe(1)
+    expect(picked?.featureIndex).toBe(refUnderIndexOf('del'))
   })
 
   test('between two records as short, the one painted on top', () => {
@@ -133,14 +254,14 @@ describe('pickVariantCell candidate narrowing', () => {
   test('candidate order does not change the pick', () => {
     const reversed = pickVariantCell({
       data,
-      candidateFeatures: [1, 0],
+      candidateFeatures: [snp, del],
       mouseX: 300,
       mouseY: rowY(0),
       rowNearest: 0,
       rowLowest: 0,
       ...geom,
     })
-    expect(reversed?.featureIndex).toBe(1)
+    expect(reversed?.featureIndex).toBe(snp)
   })
 
   test('rejects a candidate the cursor is not actually over', () => {
@@ -149,21 +270,21 @@ describe('pickVariantCell candidate narrowing', () => {
     // leaving the deletion.
     const picked = pickVariantCell({
       data,
-      candidateFeatures: [0, 1],
+      candidateFeatures: [del, snp],
       mouseX: 150,
       mouseY: rowY(0),
       rowNearest: 0,
       rowLowest: 0,
       ...geom,
     })
-    expect(picked?.featureIndex).toBe(0)
+    expect(picked?.featureIndex).toBe(del)
   })
 
   test('the click tolerance extends exactly one tolerance past the drawn edge', () => {
     const atX = (mouseX: number) =>
       pickVariantCell({
         data,
-        candidateFeatures: [1],
+        candidateFeatures: [snp],
         mouseX,
         mouseY: rowY(0),
         rowNearest: 0,
@@ -181,15 +302,11 @@ describe('pickVariantCell candidate narrowing', () => {
   test('the bp window reaches a click tolerance past the drawn edge', () => {
     // the SNP's span [300, 301) draws over [300, 302) at the 2px floor, inside
     // the deletion every window here also finds
-    const index = new Flatbush(2, 16, Uint32Array)
-    index.add(100, 0, 500, 1)
-    index.add(300, 0, 301, 1)
-    index.finish()
     const atX = (mouseX: number) => {
       const query = computeVariantHitQuery(block, mouseX, rowY(0), 0, 10, 1)
       return pickVariantCell({
         data,
-        candidateFeatures: featuresNearCursor(index.data, query),
+        candidateFeatures: featuresNearCursor(featureIndexData, query),
         mouseX,
         mouseY: rowY(0),
         rowNearest: query.rowNearest,
@@ -197,8 +314,8 @@ describe('pickVariantCell candidate narrowing', () => {
         ...geom,
       })
     }
-    expect(atX(302 + HIT_TOLERANCE_PX)?.featureIndex).toBe(1)
-    expect(atX(300 - HIT_TOLERANCE_PX)?.featureIndex).toBe(1)
+    expect(atX(302 + HIT_TOLERANCE_PX)?.featureIndex).toBe(snp)
+    expect(atX(300 - HIT_TOLERANCE_PX)?.featureIndex).toBe(snp)
   })
 
   test('returns undefined when nothing is under the cursor', () => {
@@ -252,9 +369,25 @@ describe('pickVariantCell row resolution', () => {
     ).toBeUndefined()
   })
 
-  // Half-pixel rows under the 2px floor, so rows 0..2 all draw over the
-  // cursor pixel.
+  // Half-pixel rows: a cell draws taller than its row, so several rows cover
+  // the cursor's pixel. Each band is the one the hit query derives.
   const subPixel = { ...geom, state: { ...state, rowHeight: 0.5 } }
+  const bandAt = (mouseY: number) => {
+    const { rowNearest, rowLowest } = computeVariantHitQuery(
+      block,
+      100,
+      mouseY,
+      0,
+      subPixel.state.rowHeight,
+      1,
+    )
+    return { mouseY, rowNearest, rowLowest }
+  }
+  const pixelOne = bandAt(1.2)
+
+  test('sub-pixel rows: rows 0..2 all cover the second pixel', () => {
+    expect(pixelOne).toMatchObject({ rowLowest: 0, rowNearest: 2 })
+  })
 
   test('sub-pixel rows: the occupied row painted last in the band wins', () => {
     // Row 2's alt cell paints after row 0's reference cell, so it reports.
@@ -262,9 +395,7 @@ describe('pickVariantCell row resolution', () => {
       data,
       candidateFeatures: [0],
       mouseX: 100,
-      mouseY: 1.2,
-      rowNearest: 2,
-      rowLowest: 0,
+      ...pixelOne,
       ...subPixel,
     })
     expect(picked?.rowIndex).toBe(2)
@@ -282,46 +413,44 @@ describe('pickVariantCell row resolution', () => {
       data: altBelow,
       candidateFeatures: [0],
       mouseX: 100,
-      mouseY: 1.2,
-      rowNearest: 2,
-      rowLowest: 0,
+      ...pixelOne,
       ...subPixel,
     })
     expect(picked?.rowIndex).toBe(0)
     expect(picked?.cellIndex).toBe(1)
   })
 
-  test('sub-pixel rows: the shorter record wins over the band, as within one row', () => {
-    const snpUnderDeletion = build({
-      refCells: [{ feature: 1, row: 0 }],
-      altCells: [{ feature: 0, row: 2 }],
-      features: [
-        [50, 500],
-        [100, 101],
+  test('sub-pixel rows: an alt on a deletion covers a reference cell on a SNP in the band', () => {
+    const { data: refUnder, indexOf } = painted(
+      [
+        { id: 'del', start: 50, end: 500, genotypes: ['0/0', '0/0', '0/1'] },
+        { id: 'snp', start: 100, end: 101, genotypes: ['0/0', '0/0', '0/0'] },
       ],
-    })
+      true,
+    )
     const picked = pickVariantCell({
-      data: snpUnderDeletion,
+      data: refUnder,
       candidateFeatures: [0, 1],
       mouseX: 100,
-      mouseY: 1.2,
-      rowNearest: 2,
-      rowLowest: 0,
+      ...pixelOne,
       ...subPixel,
     })
-    expect(picked?.featureIndex).toBe(1)
-    expect(picked?.rowIndex).toBe(0)
+    expect(picked?.featureIndex).toBe(indexOf('del'))
+    expect(picked?.rowIndex).toBe(2)
   })
 
   test('sub-pixel rows: walks down the band when the nearest row is empty', () => {
-    // Row 1 has no cell, so the band continues to row 0 rather than giving up.
+    // Rows 1 and 2 have no cell, so the band continues to row 0 rather than
+    // giving up.
+    const rowZeroOnly = build({
+      refCells: [{ feature: 0, row: 0 }],
+      features: [[100, 101]],
+    })
     const picked = pickVariantCell({
-      data,
+      data: rowZeroOnly,
       candidateFeatures: [0],
       mouseX: 100,
-      mouseY: 0.7,
-      rowNearest: 1,
-      rowLowest: 0,
+      ...pixelOne,
       ...subPixel,
     })
     expect(picked?.rowIndex).toBe(0)

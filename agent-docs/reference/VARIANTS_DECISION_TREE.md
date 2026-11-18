@@ -112,6 +112,11 @@ packed colors it produces.
 - **Reference and alt cells are written from opposite ends of one buffer.** The
   reference fill has to paint under the marks; painted after them it occluded
   them at small heights.
+- **Records paint longest first.** Where records overlap on a row the shorter
+  record's cell is on top whatever it says, a no-call included; only a
+  reference genotype is background. A no-call is something the file says about
+  that record and that sample, so it paints by record order like any other
+  mark.
 
 ## What transfers
 
