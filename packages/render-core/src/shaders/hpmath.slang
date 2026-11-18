@@ -15,7 +15,7 @@
 // move every export above with it. adr-051 §"a shader may also export a
 // function it only imports" is the mechanism; grep the name before assuming it
 // is unlifted.
-//! js-export: snapBoxHeightPx, snapBoxTopPx, snapBoxCenterYPx, extendToMinWidthPx
+//! js-export: snapBoxHeightPx, snapBoxTopPx, snapBoxCenterYPx, extendToMinWidthPx, guardBandClipX
 //! js-skip: hpSplitUint — the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number
 //! js-skip: quadLocal — maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect
 //! js-skip: yPxToClipY — clip space is the GPU coordinate system; the px-space decision it wraps is what gets exported (snapBoxCenterYPx and friends)
@@ -264,4 +264,16 @@ public float pxToClipLen(float px, float size) {
 
 public float clipLenToPx(float clipLen, float size) {
   return clipLen * 0.5 * size;
+}
+
+// An end of an axis-aligned span further than this past the edge of a
+// `widthPx` view is drawn this far past it instead, so a span with one end 1e8
+// px off screen is built from small numbers and its near edge keeps float32's
+// precision. Further than any pad, outline or arrowhead reaches back onto the
+// screen from an end.
+public static const float GUARD_BAND_PX = 1024.0;
+
+public float guardBandClipX(float clipX, float widthPx) {
+  float edge = 1.0 + pxToClipLen(GUARD_BAND_PX, widthPx);
+  return clamp(clipX, -edge, edge);
 }

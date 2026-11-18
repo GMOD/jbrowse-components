@@ -83,8 +83,8 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
   float prevYPx = rowScoreToYPx(inst.prevScore, rowTop, rowHeight, u);
   float nextYPx = rowScoreToYPx(inst.nextScore, rowTop, rowHeight, u);
   float hw = u.lineWidth * 0.5;
-  float px1 = clipXToPx(sx1, u.viewportWidth);
-  float px2 = clipXToPx(sx2, u.viewportWidth);
+  float px1 = clipXToPx(guardBandClipX(sx1, u.viewportWidth), u.viewportWidth);
+  float px2 = clipXToPx(guardBandClipX(sx2, u.viewportWidth), u.viewportWidth);
 
   float4 box;
   float2 centerLine;

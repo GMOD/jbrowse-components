@@ -323,6 +323,7 @@ public ColorVsOut discardVertex() {
 // reverse-strand X flip. Y args are (bottom, top) to match quadLocal's Y-up
 // local.y. Collapses the flip+lerp corner math shared by every box glyph.
 public float4 flippedQuadPos(float x0, float x1, float yBot, float yTop, float2 local, Uniforms u) {
-  return float4(flipX(lerp(x0, x1, local.x), u), lerp(yBot, yTop, local.y), 0.0, 1.0);
+  float x = lerp(guardBandClipX(x0, u.canvasW), guardBandClipX(x1, u.canvasW), local.x);
+  return float4(flipX(x, u), lerp(yBot, yTop, local.y), 0.0, 1.0);
 }
 

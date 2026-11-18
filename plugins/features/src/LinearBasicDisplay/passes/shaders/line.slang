@@ -24,8 +24,8 @@ struct VsOut {
 [shader("vertex")]
 VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float cw = u.canvasWidth;
-  float x1 = clipXToPx(bpToClipX(inst.startEnd.x, u), cw);
-  float x2 = clipXToPx(bpToClipX(inst.startEnd.y, u), cw);
+  float x1 = clipXToPx(guardBandClipX(bpToClipX(inst.startEnd.x, u), cw), cw);
+  float x2 = clipXToPx(guardBandClipX(bpToClipX(inst.startEnd.y, u), cw), cw);
   float left = min(x1, x2);
   float right = max(x1, x2);
   float cy = snapBoxCenterYPx(inst.y, u.scrollY);

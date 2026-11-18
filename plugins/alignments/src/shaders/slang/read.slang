@@ -160,9 +160,9 @@ struct VsOut {
   // Body: x is CSS px from the read's start edge (negative in the pad), y the
   // row-local 0..1. Cap: CSS px to each slanted edge.
   float2 localPos : COLOR1;
-  // On-screen width of this read in CSS px, for the outline's inset and its
-  // width gate. The height half of this used to ride along and was `u.featHeight`
-  // every time — see READ_OUTLINE_MIN_HEIGHT_PX.
+  // Width of this read in CSS px between its guard-banded ends, for the
+  // outline's inset and its width gate. The height half of this used to ride
+  // along and was `u.featHeight` every time — see READ_OUTLINE_MIN_HEIGHT_PX.
   nointerpolation float featWPx  : COLOR2;
   // Which edge the arrowhead caps: 0/±1 on the body quad, 2 on the cap
   // triangle. `nointerpolation` unlike the others is safe per PRIMITIVE rather
@@ -236,13 +236,13 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   uint flags = (inst.packedFields >> READ_PACK_FLAGS_SHIFT) & READ_PACK_FLAGS_MASK;
 
   uint v = vid % 9u;
-  float sx1 = bpToClipX(inst.startOff, u);
+  float sx1 = guardBandClipX(bpToClipX(inst.startOff, u), u.canvasW);
   // Floored at 1 CSS px and anchored on the read's start, as `pileupCellX`
   // anchors a cell and the Canvas2D painter its rect: a read narrower than a
   // pixel is otherwise a quad the rasterizer covers on some pans and not
   // others, while the painter — and so the SVG export — always drew it.
   float sx2 = extendToMinWidthX(
-      sx1, bpToClipX(inst.endOff, u), 1.0, u.canvasW);
+      sx1, guardBandClipX(bpToClipX(inst.endOff, u), u.canvasW), 1.0, u.canvasW);
 
   float2 yy = pileupY(float(row), u);
   float syTop = yy.x;

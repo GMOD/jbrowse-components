@@ -63,8 +63,8 @@ VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
   float top = rowScoreToYPx(inst.maxScore, rowTop, rowHeight, u);
   float bottom = rowScoreToYPx(inst.minScore, rowTop, rowHeight, u);
 
-  float x0 = startX;
-  float x1 = endX;
+  float x0 = guardBandClipX(startX, u.viewportWidth);
+  float x1 = guardBandClipX(endX, u.viewportWidth);
   float top0 = top;
   float bottom0 = bottom;
   if (u.renderingType == RENDERING_TYPE_LINE_CENTER) {

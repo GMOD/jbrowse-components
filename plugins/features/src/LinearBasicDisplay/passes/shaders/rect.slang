@@ -69,8 +69,8 @@ public bool rectDrawsOutline(float widthPx, float heightPx) {
 VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float cw = u.canvasWidth;
   float2 span = rectSpanPx(
-    clipXToPx(bpToClipX(inst.startEnd.x, u), cw),
-    clipXToPx(bpToClipX(inst.startEnd.y, u), cw),
+    clipXToPx(guardBandClipX(bpToClipX(inst.startEnd.x, u), cw), cw),
+    clipXToPx(guardBandClipX(bpToClipX(inst.startEnd.y, u), cw), cw),
     inst.startEnd.x == inst.startEnd.y,
     (inst.densityFade & RECT_FLAG_SPARSE_EXONS) != 0u
       ? SPARSE_RECT_MIN_WIDTH_PX

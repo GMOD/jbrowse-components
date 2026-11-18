@@ -39,6 +39,14 @@ interface every plugin's `Uniforms` must conform to, leaking render-core UBO sha
 into plugin structs, and external authors copy a self-contained uniforms module
 from the GPU-display guide.
 
+**Pass each end of an axis-aligned span through `guardBandClipX` before
+building anything from it.** A quad corner `lerp`ed off an end 1e8 px away, an
+end built as the other plus a length, and a distance interpolated across the
+quad all carry the far end's float32 rounding onto the visible edge, 3 to 5 px
+on some drivers (`far-corner-*` in `scripts/gpu-pixels`). Pulled in to
+`GUARD_BAND_PX` past the view, every number is small. A sloped segment keeps its
+far end, since moving it moves the visible line (ADR-067).
+
 ## Synteny + dotplot: window-relative Float32 cumulative-bp
 
 A synteny ribbon corner is **cumulative bp across all regions of its view**

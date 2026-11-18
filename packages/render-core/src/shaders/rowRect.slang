@@ -39,7 +39,8 @@ public struct RowRectUniforms {
   // what unit `minCellPx` IS. Named for that rather than for the viewport
   // because the callers that floor pass a CSS width. Pass a DEVICE width and
   // the floor moves with the reader's monitor — MAF did, and rendered
-  // measurably differently on a retina screen until it stopped flooring.
+  // measurably differently on a retina screen until it stopped flooring. It
+  // also places the guard band, so it is the width clip x ±1 spans.
   public float  minCellDenomPx;
   // Narrowest a cell is painted, in whatever unit `minCellDenomPx` is in. Zero
   // is a no-op, and over marks that tile so is every other value; what a floor
@@ -160,7 +161,8 @@ float4 rowRectCorner(
     hpToClipX(hpSplitUint(endBp), u.bpRangeX, u.zero),
     startBp == endBp,
     pxToClipLen(u.minCellPx, u.minCellDenomPx));
-  return float4(lerp(span.x, span.y, local.x),
+  return float4(lerp(guardBandClipX(span.x, u.minCellDenomPx),
+                     guardBandClipX(span.y, u.minCellDenomPx), local.x),
                 yPxToClipY(lerp(topPx, bottomPx, local.y), u.canvasHeight),
                 0.0, 1.0);
 }

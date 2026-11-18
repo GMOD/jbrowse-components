@@ -64,7 +64,9 @@ VsOut slabVertex(WiggleFillInstance inst, uint vid, float topPx, float botPx) {
   float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
   float pxToClip = 2.0 / u.canvasHeight;
   VsOut o;
-  o.position = float4(lerp(sx1, sx2, q.x), 1.0 - vy * pxToClip, 0.0, 1.0);
+  o.position = float4(
+    lerp(guardBandClipX(sx1, u.viewportWidth), guardBandClipX(sx2, u.viewportWidth), q.x),
+    1.0 - vy * pxToClip, 0.0, 1.0);
   o.barInkPx = float2(vy - topPx, vy - botPx);
   return o;
 }
