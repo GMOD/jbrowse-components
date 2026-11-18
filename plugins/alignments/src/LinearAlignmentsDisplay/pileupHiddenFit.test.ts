@@ -27,26 +27,39 @@ const STATED = [0, 5, 20, 45, 120, 5000]
 const HEIGHTS = [
   20, 21, 37, 100, 249, 250, 251, 399, 500, 799, 800, 801, 999, 1000,
 ]
-const CONNECTIONS: { mode: ReadConnectionsMode; down: boolean }[] = [
-  { mode: 'off', down: false },
-  { mode: 'link', down: true },
-  { mode: 'link', down: false },
+const CONNECTIONS: {
+  mode: ReadConnectionsMode
+  down: boolean
+  above: boolean
+}[] = [
+  { mode: 'off', down: false, above: false },
+  { mode: 'link', down: true, above: false },
+  { mode: 'link', down: false, above: false },
+  { mode: 'link', down: false, above: true },
+]
+const SASHIMI: { show: boolean; above: boolean }[] = [
+  { show: false, above: false },
+  { show: true, above: false },
+  { show: true, above: true },
 ]
 
-// Every band subset: coverage on or off, the connections off, down or up, the
-// sashimi strip on or off, each at a stated height from `STATED`.
+// Every band subset: coverage on or off, the connections off, down, up or
+// above, the sashimi strip off, below or above, each at a stated height from
+// `STATED`.
 function* settingsCases(random: () => number) {
   for (const showCoverage of [true, false]) {
-    for (const { mode, down } of CONNECTIONS) {
-      for (const showSashimi of [true, false]) {
+    for (const { mode, down, above } of CONNECTIONS) {
+      for (const sashimi of SASHIMI) {
         const pick = () => STATED[Math.floor(random() * STATED.length)]!
         yield {
           showCoverage,
           coverageHeight: pick(),
           drawnReadConnections: mode,
           readConnectionsDown: down,
+          readConnectionsAbove: above,
           readConnectionsHeight: pick(),
-          showSashimi,
+          showSashimi: sashimi.show,
+          sashimiAbove: sashimi.above,
           sashimiHeight: pick(),
         } satisfies BelowCoverageBandsSettings
       }
@@ -108,7 +121,7 @@ function remainderSplit(
   const room = Math.max(0, slot - MIN_BAND_HEIGHT)
   const arcsStrip =
     stated.drawnReadConnections !== 'off' &&
-    stated.readConnectionsDown &&
+    (stated.readConnectionsDown || stated.readConnectionsAbove === true) &&
     stated.hasArcs
   const readConnections = arcsStrip
     ? Math.min(stated.readConnectionsHeight, room)
