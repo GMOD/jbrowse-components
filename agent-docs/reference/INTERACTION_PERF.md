@@ -48,8 +48,8 @@ would repaint every surviving label.
 - **Clamp inside the computed.** `visibleRegions` rebuilds fresh objects every
   frame; the view's `contentRightEdgePx` applies `Math.min(trackWidthPx, …)` where
   MobX can stop at it. Publishing the raw edge changes nothing.
-- **Split a computed by the clock each half answers to.** `sashimiJunctionSections`
-  is the memoized merge and `projectSashimiArcs` was the per-frame half, until
+- **Split a computed by the clock each half answers to.** `junctionSections`
+  is the memoized merge and `projectJunctionArcs` was the per-frame half, until
   the arcs became link marks and left the frame (ADR-222):
 
 <!-- BEGIN GENERATED MEASUREMENT sashimi-frame-split -->

@@ -179,9 +179,9 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ([ADR-267](../architecture-decision-records/adr-267-the-mark-tooltip-names-the-feature-from-a-lane-the-worker-fills.md)).
 - **A band is one config object**
   ([ADR-231](../architecture-decision-records/adr-231-an-alignments-band-is-one-config-object.md)).
-  The alignments `coverage`, `pileup`, `sashimi` and `readConnections`, and
+  The alignments `coverage`, `pileup`, `junctions` and `readConnections`, and
   MAF's `coverage` and `conservation`, each hold `show` and `height`, and
-  `placement` where the band has one (sashimi and `readConnections`: `overlay`,
+  `placement` where the band has one (junctions and `readConnections`: `overlay`,
   `above` or `below` against the coverage band,
   [ADR-272](../architecture-decision-records/adr-272-an-arc-band-sits-above-over-or-below-coverage.md)),
   each meaning the same in every band. `show` toggles a band, a layer
@@ -190,7 +190,7 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ([ADR-232](../architecture-decision-records/adr-232-a-predicate-lives-where-what-it-selects-lives.md)).
   The alignments display's `filter` holds its tests on reads and on the data
   derived from them, the `junction`, `connection` and `breakpoint` fields, and
-  every part drawing junctions or connections reads them: the sashimi arcs and the
+  every part drawing junctions or connections reads them: the junction arcs and the
   tables engine's junctions, and the arcs, the read cloud and the curved
   connectors over the pileup.
 - **`encoding.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,

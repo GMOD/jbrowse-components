@@ -4,13 +4,13 @@ import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
-import { arcSplitJunction } from '../../features/sashimi/supportingReads.ts'
+import { arcSplitJunction } from '../../features/junctions/supportingReads.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import { arcBandState } from '../renderers/arcMarks.ts'
 import { connectorBandState } from '../renderers/connectorMarks.ts'
+import { junctionsBandState } from '../renderers/junctionMarks.ts'
 import { sectionRenderState } from '../renderers/rendererTypes.ts'
-import { sashimiBandState } from '../renderers/sashimiMarks.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 import { resolveConnectorHover } from './connectorHitTest.ts'
 import {
@@ -18,12 +18,12 @@ import {
   openCoverageWidget,
   openIndicatorWidget,
   openModificationWidget,
-  openSashimiWidget,
+  openJunctionWidget,
 } from './detailWidgets.ts'
 import { findSectionAtY } from './findSectionAtY.ts'
 import { contextMenuTargetForHit, performHitTest } from './hitTestPipeline.ts'
+import { resolveJunctionHover } from './junctionHitTest.ts'
 import { PAN_DRAGGING } from './panState.ts'
-import { resolveSashimiHover } from './sashimiHitTest.ts'
 import { onPileupBand } from './sectionScreen.ts'
 import {
   formatArcLineTooltip,
@@ -34,7 +34,7 @@ import {
   formatIndicatorTooltip,
   formatModificationTooltip,
   formatReadTooltip,
-  formatSashimiTooltip,
+  formatJunctionTooltip,
 } from './tooltipUtils.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
@@ -43,7 +43,7 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
 import type { ConnectorMarkHit } from './connectorHitTest.ts'
 import type { MarkHitResult } from './hitTestPipeline.ts'
-import type { SashimiMarkHit } from './sashimiHitTest.ts'
+import type { JunctionMarkHit } from './junctionHitTest.ts'
 import type React from 'react'
 
 export type { LinearAlignmentsDisplayModel }
@@ -102,7 +102,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const sec = picked ? renderState.sections[picked.index] : undefined
     const arc =
       (picked && sec
-        ? (resolveSashimiHit(
+        ? (resolveJunctionHit(
             canvasX,
             canvasY,
             picked.section,
@@ -197,28 +197,28 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   // The splice junction under the cursor in the hovered section, asked of the
-  // sashimi marks.
-  function resolveSashimiHit(
+  // junctions marks.
+  function resolveJunctionHit(
     canvasX: number,
     canvasY: number,
     section: LinearAlignmentsDisplayModel['renderSections'][number],
     renderState: RenderStateOf,
     sec: SectionRenderOf,
-  ): SashimiMarkHit | undefined {
-    const feeds = model.themed.sashimiFeedsByGroup.get(section.groupKey)
+  ): JunctionMarkHit | undefined {
+    const feeds = model.themed.junctionFeedsByGroup.get(section.groupKey)
     if (!feeds || feeds.size === 0) {
       return undefined
     }
-    const hover = resolveSashimiHover(
+    const hover = resolveJunctionHover(
       canvasX,
       canvasY,
       feeds,
-      sashimiBandState(renderState, sec),
+      junctionsBandState(renderState, sec),
     )
     return hover
       ? {
-          type: 'sashimi',
-          tooltip: formatSashimiTooltip(hover.junction),
+          type: 'junctions',
+          tooltip: formatJunctionTooltip(hover.junction),
           highlight: hover.highlight,
           junction: hover.junction,
           groupKey: section.groupKey,
@@ -383,7 +383,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   function hoverStateForResult(result: MarkHitResult): HoverState {
     switch (result.type) {
-      case 'sashimi': {
+      case 'junctions': {
         const { refName, start, end, split } = result.junction
         return {
           overCigarItem: true,
@@ -522,8 +522,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       // widget for the column while the tooltip said "Read connection".
       case 'arc':
         return
-      case 'sashimi':
-        openSashimiWidget(model, result.junction, result.groupKey)
+      case 'junctions':
+        openJunctionWidget(model, result.junction, result.groupKey)
         return
       case 'connector':
         void model.selectFeatureById(result.nearerId)

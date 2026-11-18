@@ -42,7 +42,7 @@ const ArcHoverOverlay = observer(function ArcHoverOverlay({
 }) {
   const { classes } = useStyles()
   const highlights = [
-    { key: 'selected', highlight: model.selectedSashimiHighlight },
+    { key: 'selected', highlight: model.selectedJunctionHighlight },
     { key: 'selectedConnector', highlight: model.selectedConnectorHighlight },
     { key: 'hover', highlight: model.hoveredArcHighlight },
   ].flatMap(h => (h.highlight ? [{ ...h, highlight: h.highlight }] : []))

@@ -422,6 +422,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/withLaunchInput': ['defineLaunchKeys', 'isTrackRecipe', 'legacyInitMessage', 'pendingLaunch', 'snapshotSettings', 'unknownKeysMessage', 'withLaunchInput'],
   '@jbrowse/display-kit/AttributeFieldInput': ['default'],
   '@jbrowse/display-kit/attributeVerdict': ['COLORING', 'GROUPING', 'ROWS', 'attributeVerdict', 'candidateCountHint'],
+  '@jbrowse/display-kit/BandChips': ['BandChip', 'BandChipButton', 'BandChipRow'],
   '@jbrowse/display-kit/BandSeamHandle': ['BAND_SEAM_HIT_PX', 'BandSeamHandle'],
   '@jbrowse/display-kit/BlockMsg': ['default'],
   '@jbrowse/display-kit/BottomRightIndicators': ['default'],

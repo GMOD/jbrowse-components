@@ -131,7 +131,7 @@ describe("a mafviewer session's pinned rowHeight is dropped", () => {
 
 // A band's floor has to be expressed in terms of the
 // current height rather than the bare 20px constant — same rule (and same
-// regression) as the alignments coverage/arc/sashimi bands, now shared via
+// regression) as the alignments coverage/arc/junctions bands, now shared via
 // clampBandHeight. See LinearAlignmentsDisplay/bandHeight.test.ts.
 describe('resizable band height floor', () => {
   it('stops a drag from shrinking a default band below 20', () => {

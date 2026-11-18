@@ -4,11 +4,11 @@ import type { JunctionClass, JunctionSource } from './junctionVocabulary.ts'
 export { JUNCTION_CLASSES, JUNCTION_SOURCES } from './junctionVocabulary.ts'
 export type { JunctionClass, JunctionSource } from './junctionVocabulary.ts'
 
-/** The split classes a sashimi arc draws: those spanning reference. */
-export type SashimiSplitClass = Exclude<ArcSplitCategory, 'splitInsertion'>
+/** The split classes a junction arc draws: those spanning reference. */
+export type JunctionSplitClass = Exclude<ArcSplitCategory, 'splitInsertion'>
 
 /**
- * The split classes in `sashimiClass` code order: code 0 is a splice junction
+ * The split classes in `junctionSplitClass` code order: code 0 is a splice junction
  * counted from N gaps, code `i + 1` the class at `i`.
  */
 export const SPLIT_JUNCTION_CLASSES = [
@@ -16,27 +16,27 @@ export const SPLIT_JUNCTION_CLASSES = [
   'splitBack',
   'splitInvLL',
   'splitInvRR',
-] as const satisfies readonly SashimiSplitClass[]
+] as const satisfies readonly JunctionSplitClass[]
 
-/** The split class a `sashimiClass` code names, undefined for an N-gap splice. */
-export function splitClassOf(code: number): SashimiSplitClass | undefined {
+/** The split class a `junctionSplitClass` code names, undefined for an N-gap splice. */
+export function splitClassOf(code: number): JunctionSplitClass | undefined {
   return SPLIT_JUNCTION_CLASSES[code - 1]
 }
 
 /** What the tooltip, feature widget and junction key call a split junction. */
-export const SPLIT_JUNCTION_NAMES: Record<SashimiSplitClass, string> = {
+export const SPLIT_JUNCTION_NAMES: Record<JunctionSplitClass, string> = {
   splitForward: 'Split junction (deletion-type)',
   splitBack: 'Split junction (duplication-type)',
   splitInvLL: 'Split junction (inversion, LL-type)',
   splitInvRR: 'Split junction (inversion, RR-type)',
 }
 
-/** A split class's `sashimiClass` code. */
-export function splitClassCode(split: SashimiSplitClass) {
+/** A split class's `junctionSplitClass` code. */
+export function splitClassCode(split: JunctionSplitClass) {
   return SPLIT_JUNCTION_CLASSES.indexOf(split) + 1
 }
 
-const CLASS_OF_SPLIT: Record<SashimiSplitClass, JunctionClass> = {
+const CLASS_OF_SPLIT: Record<JunctionSplitClass, JunctionClass> = {
   splitForward: 'deletion',
   splitBack: 'duplication',
   splitInvLL: 'inversion',
@@ -44,7 +44,7 @@ const CLASS_OF_SPLIT: Record<SashimiSplitClass, JunctionClass> = {
 }
 
 /** A junction's `junction.class`, by its split class or none. */
-export function junctionClass(split: SashimiSplitClass | undefined) {
+export function junctionClass(split: JunctionSplitClass | undefined) {
   return split ? CLASS_OF_SPLIT[split] : 'splice'
 }
 

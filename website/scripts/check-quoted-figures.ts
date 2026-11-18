@@ -121,7 +121,7 @@ const DECLARATION =
  *
  * Indexed by symbol rather than pooled repo-wide, for the reason the doc side is
  * scoped to the docs a page links. Pooled, this side accepted 73 of the 101
- * integer percentages — a mistyped `28%` finds a `29%` in an unrelated sashimi
+ * integer percentages — a mistyped `28%` finds a `29%` in an unrelated junctions
  * comment and passes, and so does almost any other typo. "A page cites source by
  * symbol and not by path" was the stated reason for going wide; indexing by the
  * declared symbol is that sentence implemented, and it gives a reader the same

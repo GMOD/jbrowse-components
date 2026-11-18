@@ -25,13 +25,13 @@ default), `above` it, or as an `overlay` on it**
   `overlay` reserves nothing and draws in the coverage band, standing on its
   baseline.
 - `laneBandOrder` orders the strips. Above coverage the read connections lead
-  the sashimi strip, as they do below it.
+  the junctions strip, as they do below it.
 - Only `below` hangs its arcs from the strip's top (`ArcBand.down`). `above`
   and `overlay` rise.
 - With coverage hidden `overlay` has nothing to draw on, so it takes a strip of
-  its own with its arcs still rising (`arcsOverlayCoverage`). The sashimi
+  its own with its arcs still rising (`arcsOverlayCoverage`). The junctions
   band's fallback differs: its `overlay` and `auto` arcs hang in the strip
-  below (`effectiveSashimiPlacement`). An `above` strip keeps its place on both
+  below (`effectiveJunctionsPlacement`). An `above` strip keeps its place on both
   bands.
 - The read cloud's TLEN axis draws on the right under `overlay`, its
   coverage-hidden strip included, and on the left under `above` and `below`.

@@ -5,18 +5,18 @@ import { NO_HIDDEN_GROUPS } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import {
   mergeJunctions,
   stripJunctionKeys,
-} from '../features/sashimi/junctions.ts'
+} from '../features/junctions/junctions.ts'
 import { getOrCreate } from '../shared/util.ts'
 
 import type {
   GroupedAlignmentsResult,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { RegionJunctions } from '../features/sashimi/junctions.ts'
+import type { RegionJunctions } from '../features/junctions/junctions.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
 import type { JunctionFilter } from '../shared/types.ts'
-import type { SashimiPlacement } from './constants.ts'
+import type { JunctionsPlacement } from './constants.ts'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
 export { NO_HIDDEN_GROUPS }
@@ -28,7 +28,7 @@ export { NO_HIDDEN_GROUPS }
 //
 // `hidden` is the display's `hiddenGroups`, so a dropped lane stays out of
 // the derivations shared across the visible ones (coverage domain, color legend,
-// sashimi strip).
+// junctions strip).
 export function* eachGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   hidden: ReadonlySet<string> = NO_HIDDEN_GROUPS,
@@ -42,9 +42,9 @@ export function* eachGroup(
   }
 }
 
-export interface SashimiSidesOpts {
+export interface JunctionSidesOpts {
   filter: JunctionFilter
-  placement: SashimiPlacement
+  placement: JunctionsPlacement
   // refName of the region each `rpcDataMap` key was fetched from — the display
   // reads it off `loadedRegions`, which is keyed the same way and updates with
   // the fetch, not with pan. Required rather than defaulted: without it every
@@ -54,7 +54,7 @@ export interface SashimiSidesOpts {
   hidden?: ReadonlySet<string>
 }
 
-// Per group, which of its junctions land in the sashimi strip, keyed by
+// Per group, which of its junctions land in the junctions strip, keyed by
 // `junctionKey`. Two questions come off this one scan, and sharing the set is
 // what makes them agree: the LAYOUT asks whether a lane needs the strip reserved
 // at all (a non-empty set), and the OVERLAY asks which side to draw each arc on.
@@ -65,13 +65,13 @@ export interface SashimiSidesOpts {
 // `rpcDataMap`: projecting to screen px would re-lay-out the pileup on every pan
 // frame and flip an arc between bands as regions scroll in and out of view.
 // Interleaving survives any monotonic projection, so the answer is the same.
-export function buildSashimiStripKeys(
+export function buildJunctionsStripKeys(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  opts: SashimiSidesOpts,
+  opts: JunctionSidesOpts,
 ) {
   const { filter, placement, refNameFor, hidden } = opts
   const out = new Map<string, ReadonlySet<string>>()
-  for (const [key, regions] of sashimiRegionsByGroup(
+  for (const [key, regions] of junctionsRegionsByGroup(
     rpcDataMap,
     refNameFor,
     hidden,
@@ -85,9 +85,9 @@ export function buildSashimiStripKeys(
   return out
 }
 
-// Each group's per-region sashimi arrays, tagged with the refName they were
+// Each group's per-region junctions arrays, tagged with the refName they were
 // fetched from.
-function sashimiRegionsByGroup(
+function junctionsRegionsByGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   refNameFor: (displayedRegionIndex: number) => string,
   hidden?: ReadonlySet<string>,

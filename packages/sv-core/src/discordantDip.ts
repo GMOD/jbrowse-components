@@ -8,7 +8,7 @@ import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 // something: keyed on the endpoints' pixel separation, as it was, the only
 // channel the mark has left restated the x-axis — one 20 kb event drew 55 px
 // deep in a 20 kb view and 7.5 px deep in a 400 kb view. `f` is the log lerp
-// sashimi's `arcHeightFraction` uses, on an SV-scale window rather than that
+// junctions's `arcHeightFraction` uses, on an SV-scale window rather than that
 // one's 50 bp - 100 kb, and a second copy of it rather than a shared call.
 // Zoomed out, the connector mark caps the dip at a quarter of the ends' screen
 // separation (`connectorLiftPx`), so a narrow pair flattens toward a line.

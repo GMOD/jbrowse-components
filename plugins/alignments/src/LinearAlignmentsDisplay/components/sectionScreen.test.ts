@@ -9,7 +9,7 @@ const ungrouped = { isGrouped: false, scrollTop: 40, canvasHeight: 600 }
 const grouped = { isGrouped: true, scrollTop: 40, canvasHeight: 600 }
 
 describe('bandScreenTop: sticky-capable tier', () => {
-  it('ignores scroll when ungrouped (sticky coverage/arc/sashimi band)', () => {
+  it('ignores scroll when ungrouped (sticky coverage/arc/junctions band)', () => {
     expect(bandScreenTop(100, ungrouped)).toBe(100)
   })
   it('scrolls with its section when grouped', () => {

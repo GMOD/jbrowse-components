@@ -27,7 +27,7 @@ function alignmentsEntries(displays: Record<string, unknown>[]) {
 test.each([
   [
     'LinearPileupDisplay',
-    { coverage: { show: false }, sashimi: { show: false } },
+    { coverage: { show: false }, junctions: { show: false } },
   ],
   ['LinearSNPCoverageDisplay', { pileup: { show: false } }],
   [
@@ -35,7 +35,7 @@ test.each([
     {
       pileup: { show: false },
       coverage: { show: false },
-      sashimi: { show: false },
+      junctions: { show: false },
       readConnections: { show: true },
     },
   ],
@@ -44,7 +44,7 @@ test.each([
     {
       pileup: { show: false },
       coverage: { show: false },
-      sashimi: { show: false },
+      junctions: { show: false },
       readConnections: { show: true, mark: 'rule' },
     },
   ],
@@ -58,9 +58,9 @@ test.each([
   ])
 })
 
-test('a migrated SNPCoverage entry keeps the sashimi arcs v4 drew', () => {
+test('a migrated SNPCoverage entry keeps the junction arcs v4 drew', () => {
   const [entry] = alignmentsEntries([{ type: 'LinearSNPCoverageDisplay' }])
-  expect(entry).not.toHaveProperty('sashimi')
+  expect(entry).not.toHaveProperty('junctions')
 })
 
 test('an explicit author value wins over the band a retired type implies', () => {

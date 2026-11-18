@@ -1,4 +1,4 @@
-import { computeSashimiJunctions } from './compute.ts'
+import { computeJunctions } from './compute.ts'
 import { splitClassCode } from './junctionClass.ts'
 import { mergeJunctions } from './junctions.ts'
 import {
@@ -16,11 +16,11 @@ import type { CoverageGap } from '@jbrowse/alignments-core'
 // tests read them back through.
 function merged(
   gaps: CoverageGap[],
-  reference?: Parameters<typeof computeSashimiJunctions>[1],
+  reference?: Parameters<typeof computeJunctions>[1],
 ) {
   return [
     ...mergeJunctions(
-      [{ refName: 'chr1', data: computeSashimiJunctions(gaps, reference) }],
+      [{ refName: 'chr1', data: computeJunctions(gaps, reference) }],
       { minReads: 0 },
     ).values(),
   ]
@@ -44,40 +44,45 @@ test('emits one arc per junction, counting reads on every strand', () => {
   // A junction whose reads disagree used to become three arcs (fwd/rev/unknown)
   // with a byte-identical path — stacked on the same pixels with their count
   // labels piled on one point, the visible one advertising 20 of 25 reads.
-  const { sashimiX1, sashimiX2, sashimiCounts, sashimiFwd, sashimiRev } =
-    computeSashimiJunctions(
+  const { junctionX1, junctionX2, junctionCounts, junctionFwd, junctionRev } =
+    computeJunctions(
       skips([
         ...rep(20, 100, 1100, 1),
         ...rep(3, 100, 1100, -1),
         ...rep(2, 100, 1100, 0),
       ]),
     )
-  expect([...sashimiX1]).toEqual([100])
-  expect([...sashimiX2]).toEqual([1100])
-  expect([...sashimiCounts]).toEqual([25])
-  expect([...sashimiFwd]).toEqual([20])
-  expect([...sashimiRev]).toEqual([3])
+  expect([...junctionX1]).toEqual([100])
+  expect([...junctionX2]).toEqual([1100])
+  expect([...junctionCounts]).toEqual([25])
+  expect([...junctionFwd]).toEqual([20])
+  expect([...junctionRev]).toEqual([3])
 })
 
 test('emits the split junctions after the N gaps, each with its class', () => {
   const back = splitClassCode('splitBack')
-  const { sashimiX1, sashimiX2, sashimiCounts, sashimiClass, sashimiDonors } =
-    computeSashimiJunctions(skips(rep(4, 100, 1100, 1)), undefined, [
-      { start: 100, end: 1100, splitClass: back, n: 3 },
-    ])
-  expect([...sashimiX1]).toEqual([100, 100])
-  expect([...sashimiX2]).toEqual([1100, 1100])
-  expect([...sashimiCounts]).toEqual([4, 3])
-  expect([...sashimiClass]).toEqual([0, back])
-  expect(sashimiDonors[1]).toBe(DINUCLEOTIDE_UNKNOWN)
+  const {
+    junctionX1,
+    junctionX2,
+    junctionCounts,
+    junctionSplitClass,
+    junctionDonors,
+  } = computeJunctions(skips(rep(4, 100, 1100, 1)), undefined, [
+    { start: 100, end: 1100, splitClass: back, n: 3 },
+  ])
+  expect([...junctionX1]).toEqual([100, 100])
+  expect([...junctionX2]).toEqual([1100, 1100])
+  expect([...junctionCounts]).toEqual([4, 3])
+  expect([...junctionSplitClass]).toEqual([0, back])
+  expect(junctionDonors[1]).toBe(DINUCLEOTIDE_UNKNOWN)
 })
 
 test('keeps distinct junctions apart', () => {
-  const { sashimiX1, sashimiCounts } = computeSashimiJunctions(
+  const { junctionX1, junctionCounts } = computeJunctions(
     skips([...rep(4, 100, 300, 1), ...rep(7, 500, 900, 1)]),
   )
-  expect([...sashimiX1]).toEqual([100, 500])
-  expect([...sashimiCounts]).toEqual([4, 7])
+  expect([...junctionX1]).toEqual([100, 500])
+  expect([...junctionCounts]).toEqual([4, 7])
 })
 
 test('ignores deletion gaps', () => {
@@ -85,7 +90,7 @@ test('ignores deletion gaps', () => {
     { start: 100, end: 200, type: 'deletion', strand: 1, featureStrand: 1 },
     { start: 100, end: 200, type: 'skip', strand: 1, featureStrand: 1 },
   ] as CoverageGap[]
-  expect([...computeSashimiJunctions(gaps).sashimiCounts]).toEqual([1])
+  expect([...computeJunctions(gaps).junctionCounts]).toEqual([1])
 })
 
 test('an untagged junction is unknown, not reverse', () => {
@@ -157,14 +162,14 @@ describe('splice motifs', () => {
     // Each half is reported on its own: the acceptor of the first junction and
     // the donor of the second fall outside the window, and the OTHER end of
     // each is still read, ready for a region that covers its partner.
-    const { sashimiDonors, sashimiAcceptors } = computeSashimiJunctions(
+    const { junctionDonors, junctionAcceptors } = computeJunctions(
       skips([...rep(1, 1004, 1030, 0), ...rep(1, 990, 1016, 0)]),
       plus,
     )
-    expect(sashimiDonors[0]).not.toBe(DINUCLEOTIDE_UNKNOWN)
-    expect(sashimiAcceptors[0]).toBe(DINUCLEOTIDE_UNKNOWN)
-    expect(sashimiDonors[1]).toBe(DINUCLEOTIDE_UNKNOWN)
-    expect(sashimiAcceptors[1]).not.toBe(DINUCLEOTIDE_UNKNOWN)
+    expect(junctionDonors[0]).not.toBe(DINUCLEOTIDE_UNKNOWN)
+    expect(junctionAcceptors[0]).toBe(DINUCLEOTIDE_UNKNOWN)
+    expect(junctionDonors[1]).toBe(DINUCLEOTIDE_UNKNOWN)
+    expect(junctionAcceptors[1]).not.toBe(DINUCLEOTIDE_UNKNOWN)
     expect(
       merged(
         skips([...rep(1, 1004, 1030, 0), ...rep(1, 990, 1016, 0)]),
@@ -177,12 +182,12 @@ describe('splice motifs', () => {
   })
 
   test('an intron too short to hold two distinct dinucleotides is unknown', () => {
-    const { sashimiDonors, sashimiAcceptors } = computeSashimiJunctions(
+    const { junctionDonors, junctionAcceptors } = computeJunctions(
       skips(rep(1, 1004, 1007, 0)),
       plus,
     )
-    expect([...sashimiDonors]).toEqual([DINUCLEOTIDE_UNKNOWN])
-    expect([...sashimiAcceptors]).toEqual([DINUCLEOTIDE_UNKNOWN])
+    expect([...junctionDonors]).toEqual([DINUCLEOTIDE_UNKNOWN])
+    expect([...junctionAcceptors]).toEqual([DINUCLEOTIDE_UNKNOWN])
   })
 
   test('no reference means every motif is unknown', () => {

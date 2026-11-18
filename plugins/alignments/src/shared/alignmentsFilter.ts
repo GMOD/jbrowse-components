@@ -17,7 +17,7 @@ import {
   JUNCTION_CLASSES,
   JUNCTION_SOURCES,
   junctionSource,
-} from '../features/sashimi/junctionClass.ts'
+} from '../features/junctions/junctionClass.ts'
 import {
   BREAKPOINT_READS,
   CONNECTION_INTERCHROM,
@@ -36,7 +36,7 @@ import {
   isReadField,
 } from './filterFields.ts'
 
-import type { JunctionClass } from '../features/sashimi/junctionClass.ts'
+import type { JunctionClass } from '../features/junctions/junctionClass.ts'
 import type {
   CategoryFilter,
   ConnectionFilter,
@@ -69,7 +69,7 @@ export {
 // The supporting-read floor for a splice junction: a single-read junction is
 // dominated by alignment noise, and unreadable at the 1px stroke
 // `strokeWidthForCount` floors it to.
-export const DEFAULT_MIN_SASHIMI_READS = 2
+export const DEFAULT_MIN_JUNCTION_READS = 2
 
 // The reads an inter-chromosomal breakpoint must gather before its connector
 // ticks draw, for the same reason: single-read marks are dominated by
@@ -90,7 +90,7 @@ export const ALIGNMENTS_FILTER_DEFAULTS: readonly FieldPredicate[] = [
   { field: 'flags.UNMAP', equal: false },
   { field: 'flags.QCFAIL', equal: false },
   { field: 'flags.DUP', equal: false },
-  { field: JUNCTION_READS, gte: DEFAULT_MIN_SASHIMI_READS },
+  { field: JUNCTION_READS, gte: DEFAULT_MIN_JUNCTION_READS },
   { field: BREAKPOINT_READS, gte: DEFAULT_MIN_INTERCHROM_READS },
 ]
 
@@ -234,7 +234,7 @@ function junctionClassesOf(predicates: readonly FieldPredicate[]) {
   return admits && JUNCTION_CLASSES.filter(admits)
 }
 
-/** The junctions drawn, as the sashimi and tables code test them. */
+/** The junctions drawn, as the junctions and tables code test them. */
 export function junctionFilterOf(
   predicates: readonly FieldPredicate[],
 ): JunctionFilter {

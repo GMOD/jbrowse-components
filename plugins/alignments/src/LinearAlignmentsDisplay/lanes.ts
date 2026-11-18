@@ -30,8 +30,8 @@ export interface AlignmentLane {
   rawPileupMap: ReadonlyMap<number, WorkerPileupData>
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
   hasArcs: boolean
-  sashimiStripKeys: ReadonlySet<string>
-  hasSashimiStripArcs: boolean
+  junctionsStripKeys: ReadonlySet<string>
+  hasJunctionsStripArcs: boolean
   maxY: number
   collapsed: boolean
   // The height (px) a drag pinned this lane's pileup band at, or `undefined`
@@ -80,8 +80,8 @@ const SYNTHETIC_LANE: AlignmentLane = {
   rawPileupMap: EMPTY_RAW,
   laidOutPileupMap: EMPTY_LAID_OUT,
   hasArcs: false,
-  sashimiStripKeys: EMPTY_KEYS,
-  hasSashimiStripArcs: false,
+  junctionsStripKeys: EMPTY_KEYS,
+  hasJunctionsStripArcs: false,
   maxY: 0,
   collapsed: false,
   heightOverridePx: undefined,
@@ -99,7 +99,7 @@ export interface BuildLanesInput {
   laidOutByGroup: ReadonlyMap<string, ReadonlyMap<number, PileupDataResult>>
   // The lanes with arc-band ink (`inkGroupKeys`), cross-region arcs included.
   arcInkKeys: ReadonlySet<string>
-  sashimiStripKeysByGroup: ReadonlyMap<string, ReadonlySet<string>>
+  junctionsStripKeysByGroup: ReadonlyMap<string, ReadonlySet<string>>
   collapsedKeys: ReadonlySet<string>
   // The lane sizes IN EFFECT (`groupSizesInEffect`), which fit mode empties.
   sizes: ReadonlyMap<string, GroupSize>
@@ -112,7 +112,7 @@ export interface BuildLanesInput {
  *
  * The single place a lane's key is turned into its data. Every per-lane
  * collection used to be looked up separately by each consumer — the raw map, the
- * laid-out map, the arc feeds, the sashimi sides, the collapse/override
+ * laid-out map, the arc feeds, the junctions sides, the collapse/override
  * volatiles — so a lane's identity was a bare string indexed into as many keyed
  * collections as there were questions, each with its own `?? empty` for a key
  * that structurally cannot be missing.
@@ -123,7 +123,7 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
     rawByGroup,
     laidOutByGroup,
     arcInkKeys,
-    sashimiStripKeysByGroup,
+    junctionsStripKeysByGroup,
     collapsedKeys,
     sizes,
     showPileup,
@@ -136,7 +136,7 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
   const drawsCeilingNotice = showPileup && !fitHeightToDisplay
   return order.map(({ key, label }) => {
     const laidOutPileupMap = laidOutByGroup.get(key) ?? EMPTY_LAID_OUT
-    const sashimiStripKeys = sashimiStripKeysByGroup.get(key) ?? EMPTY_KEYS
+    const junctionsStripKeys = junctionsStripKeysByGroup.get(key) ?? EMPTY_KEYS
     const collapsed = collapsedKeys.has(key)
     const clippedBy = groupClipSource(laidOutPileupMap)
     const size = sizes.get(key)
@@ -146,8 +146,8 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
       rawPileupMap: rawByGroup.get(key) ?? EMPTY_RAW,
       laidOutPileupMap,
       hasArcs: arcInkKeys.has(key),
-      sashimiStripKeys,
-      hasSashimiStripArcs: sashimiStripKeys.size > 0,
+      junctionsStripKeys,
+      hasJunctionsStripArcs: junctionsStripKeys.size > 0,
       // showPileup off collapses every pileup band to zero height (coverage +
       // arcs only), the same height-0 path a collapsed lane takes.
       maxY: drawsPileupRows(showPileup, collapsed)

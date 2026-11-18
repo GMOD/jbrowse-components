@@ -289,7 +289,7 @@ function drawAt(reversed: boolean, overrides: Partial<RenderState> = {}) {
         groupKey: '',
         laidOutPileupMap: new Map([[0, pileupData()]]),
         arcFeeds: new Map(),
-        sashimiFeeds: new Map(),
+        junctionFeeds: new Map(),
         connectorFeeds: new Map(),
       },
     ],

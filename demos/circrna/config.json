@@ -112,7 +112,7 @@
       },
       "displayDefaults": {
         "height": 300,
-        "sashimi": { "labels": { "show": true } },
+        "junctions": { "labels": { "show": true } },
         "filter": [{ "field": "mapq", "gte": 1 }]
       }
     },
@@ -128,7 +128,7 @@
       },
       "displayDefaults": {
         "height": 300,
-        "sashimi": { "labels": { "show": true } },
+        "junctions": { "labels": { "show": true } },
         "filter": [{ "field": "mapq", "gte": 1 }]
       }
     },
@@ -144,7 +144,7 @@
       },
       "displayDefaults": {
         "height": 300,
-        "sashimi": { "labels": { "show": true } }
+        "junctions": { "labels": { "show": true } }
       }
     }
   ],

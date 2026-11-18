@@ -983,7 +983,7 @@ const DISPLAY_MODES: Record<string, string> = Object.fromEntries(
   DISPLAY_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
 
-const SASHIMI_PLACEMENT: Record<string, string> = {
+const JUNCTIONS_PLACEMENT: Record<string, string> = {
   auto: 'Auto (minimize overlap)',
   overlay: 'Over coverage',
   above: 'Above coverage',
@@ -1911,9 +1911,9 @@ export const trackFields: Record<string, FieldRecipe> = {
   // layout the reader sets to taste: a step per track buries the settings
   // that make the picture
   height: () => [],
-  'sashimi.placement': fromTable(
-    'Advanced → Sashimi placement',
-    SASHIMI_PLACEMENT,
+  'junctions.placement': fromTable(
+    'Advanced → Junction placement',
+    JUNCTIONS_PLACEMENT,
   ),
   readConnections: fromTable('Read connections', READ_CONNECTIONS),
   'pileup.softClips': layerCheckbox(
@@ -1953,8 +1953,8 @@ export const trackFields: Record<string, FieldRecipe> = {
   // Unchecking leaves the coverage band, which is what a figure about the
   // histogram wants: the arcs are strand-colored too, from the XS/TS tag, and
   // outdraw it.
-  'sashimi.show': checkbox(
-    'Show → Show sashimi arcs',
+  'junctions.show': checkbox(
+    'Show → Show junctions',
     'Hides the splice-junction arcs and keeps the coverage band underneath them.',
   ),
   'pileup.mismatches': mismatchesStep,
@@ -1967,7 +1967,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   forward: layerCheckbox('Show → Show forward'),
   reverse: layerCheckbox('Show → Show reverse'),
   translation: layerCheckbox('Show → Show translation'),
-  'sashimi.labels': layerCheckbox('Show → Show sashimi read counts'),
+  'junctions.labels': layerCheckbox('Show → Show junction read counts'),
   'readConnections.placement': fromTable(
     'Advanced → Read connections placement',
     READ_CONNECTIONS_PLACEMENT,

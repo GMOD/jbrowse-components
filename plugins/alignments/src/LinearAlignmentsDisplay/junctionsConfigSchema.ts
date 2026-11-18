@@ -1,13 +1,13 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { SASHIMI_PLACEMENTS } from './constants.ts'
-import { sashimiLabelsConfigSchema } from './sashimiLabelsConfigSchema.ts'
+import { JUNCTIONS_PLACEMENTS } from './constants.ts'
+import { junctionLabelsConfigSchema } from './junctionLabelsConfigSchema.ts'
 
 /**
- * #config Sashimi
+ * #config Junctions
  * #category display
- * The alignments display's `sashimi` setting: the junction arcs, over the
+ * The alignments display's `junctions` setting: the junction arcs, over the
  * coverage band or in a strip above or below it, and in a strip of their own
  * while `coverage.show` is off. The band counts each splice junction from the reads'
  * N gaps and each same-reference join of a split read's segments by its class
@@ -21,7 +21,7 @@ import { sashimiLabelsConfigSchema } from './sashimiLabelsConfigSchema.ts'
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   sashimi: { placement: 'auto', labels: { show: true } },
+ *   junctions: { placement: 'auto', labels: { show: true } },
  *   filter: [
  *     { field: 'junction.reads', gte: 5 },
  *     { field: 'junction.canonical', equal: true },
@@ -30,8 +30,8 @@ import { sashimiLabelsConfigSchema } from './sashimiLabelsConfigSchema.ts'
  * }
  * ```
  */
-export const sashimiConfigSchema = ConfigurationSchema(
-  'Sashimi',
+export const junctionsConfigSchema = ConfigurationSchema(
+  'Junctions',
   {
     /**
      * #slot
@@ -55,7 +55,7 @@ export const sashimiConfigSchema = ConfigurationSchema(
      */
     placement: {
       type: 'stringEnum',
-      model: types.enumeration('SashimiPlacement', [...SASHIMI_PLACEMENTS]),
+      model: types.enumeration('JunctionsPlacement', [...JUNCTIONS_PLACEMENTS]),
       defaultValue: 'overlay',
       description:
         'where the arcs sit against the coverage band: overlay on its histogram, above in a strip of their own over it, below in a strip under it, or auto, which sends a junction below where it would cross another. With coverage hidden there is nothing to overlay: overlay and auto draw every arc hanging in the strip below, and above keeps its strip, arcs rising',
@@ -64,7 +64,7 @@ export const sashimiConfigSchema = ConfigurationSchema(
      * #slot labels
      * The read count on each arc: `show`.
      */
-    labels: sashimiLabelsConfigSchema,
+    labels: junctionLabelsConfigSchema,
   },
   { closed: true, plot: true },
 )

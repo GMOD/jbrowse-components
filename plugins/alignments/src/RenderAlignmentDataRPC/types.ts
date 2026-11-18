@@ -47,9 +47,9 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   showCoverage?: boolean
   interbaseIndicators?: InterbaseIndicatorRule
   // Whether the reply carries the splice junctions and fetches their motifs:
-  // `hasSashimi && (coverage.show || sashimi.show)`, so with coverage shown a
-  // sashimi toggle refetches nothing, and with both off, or on a display with
-  // no sashimi band, no fetch reads sequence for arcs nothing draws. Defaults
+  // `hasJunctions && (coverage.show || junctions.show)`, so with coverage shown a
+  // junctions toggle refetches nothing, and with both off, or on a display with
+  // no junctions band, no fetch reads sequence for arcs nothing draws. Defaults
   // true.
   junctions?: boolean
   // In-track stacked grouping: the worker partitions the fetch into N ordered
@@ -308,18 +308,18 @@ export interface WorkerPileupData {
   // per segment in place of a color type.
   modCovPackedBuffer: ArrayBuffer
 
-  // Sashimi arc data (splice junctions from skip gaps). One entry per junction,
+  // Junction arc data (splice junctions from skip gaps). One entry per junction,
   // parallel across all seven arrays. Strand votes and motif halves ship raw
   // because a region holding one end of a junction can settle neither — both are
-  // resolved by mergeJunctions (features/sashimi/junctions.ts).
-  sashimiX1: Uint32Array // absolute genomic bp (junction start)
-  sashimiX2: Uint32Array // absolute genomic bp (junction end)
-  sashimiCounts: Uint32Array // supporting reads per junction, all strands
-  sashimiFwd: Uint32Array // of those, reads tagged forward-strand
-  sashimiRev: Uint32Array // of those, reads tagged reverse-strand
-  sashimiDonors: Uint8Array // encoded donor dinucleotide (features/sashimi/motif.ts)
-  sashimiAcceptors: Uint8Array // encoded acceptor dinucleotide
-  sashimiClass: Uint8Array // 0 for an N gap, else a split class (features/sashimi/junctionClass.ts)
+  // resolved by mergeJunctions (features/junctions/junctions.ts).
+  junctionX1: Uint32Array // absolute genomic bp (junction start)
+  junctionX2: Uint32Array // absolute genomic bp (junction end)
+  junctionCounts: Uint32Array // supporting reads per junction, all strands
+  junctionFwd: Uint32Array // of those, reads tagged forward-strand
+  junctionRev: Uint32Array // of those, reads tagged reverse-strand
+  junctionDonors: Uint8Array // encoded donor dinucleotide (features/junctions/motif.ts)
+  junctionAcceptors: Uint8Array // encoded acceptor dinucleotide
+  junctionSplitClass: Uint8Array // 0 for an N gap, else a split class (features/junctions/junctionClass.ts)
 
   // All detected modification types in this region (detected during feature processing)
   detectedModifications: string[]

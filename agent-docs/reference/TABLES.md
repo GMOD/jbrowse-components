@@ -88,7 +88,7 @@ Limits and shared behavior:
   wherever its reads reach, which past the region is a partial count.
 - A band or mark the display's `show` members hide (`coverage.show`,
   `pileup.show`, `pileup.mismatches.show`, `coverage.interbase.show`,
-  `coverage.alleles.show`, `sashimi.show`) comes back as empty tables.
+  `coverage.alleles.show`, `junctions.show`) comes back as empty tables.
   `pileup.mismatches.show: false` empties `mismatches` and `insertions` and drops
   the deletions from `gaps`, as the display's marks do; the skips and `clips` stay.
 
@@ -113,7 +113,7 @@ a quiet region.
 - A BED, GFF or VCF lists only contigs holding records, so for those a contig of
   the call's sequence counts as the file's.
 - `alignmentTables`'s `config` holds the four band objects resolved (`coverage`,
-  `pileup`, `sashimi`, `readConnections`), which decide which bands a host stacks,
+  `pileup`, `junctions`, `readConnections`), which decide which bands a host stacks,
   so the host composes the track from the config and restates none of its
   defaults.
 - The engine also serves the colors a host should draw in (`alignmentColors`),
@@ -131,7 +131,7 @@ a quiet region.
   `gaps`, `insertions`, `clips`, `coverage`, `alleleCoverage`, `interbaseCoverage`,
   `indicators` and `junctions`. It resolves a base through `effectiveBaseColors`,
   so under a `modifications` or `bisulfite` layer every base is the muted grey.
-- `baseLegend` (empty while the bases are muted), `junctionLegend` (the sashimi
+- `baseLegend` (empty while the bases are muted), `junctionLegend` (the junctions
   band's own strand and split-class key, over the junctions shown, empty while the
   band is hidden) and `interbaseLegend` come back as `legend` does, each with its
   title, keying only what the tables paint.
@@ -141,13 +141,13 @@ a quiet region.
   `level` tells them apart.
 - `junctions` has `shown`, true where the junction passes the `junction` filter
   fields (the browser counts a junction whose motif it never read as canonical),
-  `arcHeight` (`sashimiArcHeightFraction`) and `strokeWidth`
-  (`sashimiStrokeWidth`, in px). `alleleCoverage` has `shown`, true where the
+  `arcHeight` (`junctionArcHeightFraction`) and `strokeWidth`
+  (`junctionStrokeWidth`, in px). `alleleCoverage` has `shown`, true where the
   allele's share of the depth passes `coverage.alleles.filter`, the coverageSnp
   shader's test.
 - `junctions` has `band`, the band the junction's arc draws in: `coverage`, over
-  the histogram, or `sashimi`, the arcs' own strip (`junctionBandOf`, off the
-  display's `sashimiStripKeysByGroup`). Under `sashimi.placement: 'auto'` the two
+  the histogram, or `junctions`, the arcs' own strip (`junctionBandOf`, off the
+  display's `junctionsStripKeysByGroup`). Under `junctions.placement: 'auto'` the two
   mix. A junction `shown` false names the band its placement gives every
   junction, and `coverage` under `auto`.
 - `readPitch` gives the read height (`pileup.mark.height`) and the gap below a read
@@ -315,7 +315,7 @@ ships it:
 
 - `insertions` (position, length, sequence, read) and `clips` (position, length,
   `soft` or `hard`, read).
-- `junctions`, the skips merged as the sashimi band merges them (start, end,
+- `junctions`, the skips merged as the junctions band merges them (start, end,
   supporting-read count, strand off the reads' tags or the splice motif, and the
   motif where the region's sequence covers both ends), every junction down to a
   single read, with `shown` marking the ones the display's `junction` filter fields
@@ -403,7 +403,7 @@ section shares it.
 its pileup, top to bottom as the display orders them (`laneBandOrder`), and
 `heightPx` the px each reserves, pooled over the sections as `arcScale` is. A
 strip listed before `coverage` sits above it with its arcs rising from its floor
-(`placement: 'above'`). A sashimi strip listed after `coverage` hangs its arcs
+(`placement: 'above'`). A junctions strip listed after `coverage` hangs its arcs
 from its top; the read-connection band says which way its arcs go in
 `arcScale.reverse`. A band reserves 0 px where it is hidden, has nothing to draw,
 or draws over the coverage band, which `arcScale.band` and `junctions.band` then

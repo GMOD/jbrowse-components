@@ -4,16 +4,16 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 
 import { collapseSectionsItems, hiddenGroupsItems } from './groupByMenu.ts'
-import { sashimiShowItems } from './sashimi.ts'
+import { junctionsShowItems } from './junctions.ts'
 
 import type { MismatchOpacityField } from '../../features/mismatch/qualityOpacity.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { CollapseSectionsModel, HiddenGroupsModel } from './groupByMenu.ts'
-import type { SashimiModel } from './sashimi.ts'
+import type { JunctionsModel } from './junctions.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadsModel
-  extends CollapseSectionsModel, HiddenGroupsModel, SashimiModel {
+  extends CollapseSectionsModel, HiddenGroupsModel, JunctionsModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
   showCoverage: boolean
@@ -116,7 +116,7 @@ export function getReadsMenuItems(model: ReadsModel) {
     // LGVSyntenyDisplay's twin, which defaults `showCoverage` off and so would
     // spend its life greyed.
     interbaseIndicatorsMenuItem(model),
-    ...sashimiShowItems(model),
+    ...junctionsShowItems(model),
     ...legendMenuItems(model),
   ] satisfies MenuItem[])
 }

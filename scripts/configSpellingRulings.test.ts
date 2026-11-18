@@ -45,7 +45,7 @@ test("a part's facet, mark and placement compare with the display's own", () => 
   )
   expect(holdersOf('placement')).toEqual(
     expect.arrayContaining([
-      'LinearAlignments `sashimi`',
+      'LinearAlignments `junctions`',
       'LinearBasic `labels.subfeatures`',
     ]),
   )

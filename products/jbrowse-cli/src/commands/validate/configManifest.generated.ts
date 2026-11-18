@@ -4482,8 +4482,8 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "sashimi",
-          "type": "SashimiConfigurationSchema",
+          "name": "junctions",
+          "type": "JunctionsConfigurationSchema",
           "subSlots": [
             {
               "name": "show",
@@ -4495,22 +4495,22 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "placement",
-              "type": "SashimiPlacement"
+              "type": "JunctionsPlacement"
             },
             {
               "name": "labels",
-              "type": "SashimiLabelsConfigurationSchema",
+              "type": "JunctionLabelsConfigurationSchema",
               "subSlots": [
                 {
                   "name": "show",
                   "type": "boolean"
                 }
               ],
-              "schema": "SashimiLabels",
+              "schema": "JunctionLabels",
               "writes": "members"
             }
           ],
-          "schema": "Sashimi",
+          "schema": "Junctions",
           "writes": "members"
         },
         {

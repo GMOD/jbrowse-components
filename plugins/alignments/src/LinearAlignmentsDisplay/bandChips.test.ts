@@ -10,15 +10,15 @@ const SETTINGS: LaneBandsSettings = {
   readConnectionsDown: true,
   readConnectionsAbove: false,
   readConnectionsHeight: 35,
-  showSashimi: true,
-  sashimiAbove: false,
-  sashimiHeight: 30,
+  showJunctions: true,
+  junctionsAbove: false,
+  junctionsHeight: 30,
 }
 
 interface LaneSpec {
   hasArcs?: boolean
-  hasSashimiStripArcs?: boolean
-  sashimiOverCoverage?: boolean
+  hasJunctionsStripArcs?: boolean
+  junctionsOverCoverage?: boolean
   maxY?: number
 }
 
@@ -27,9 +27,9 @@ function lanesOf(specs: LaneSpec[], settings: Partial<LaneBandsSettings> = {}) {
     specs.map(s => ({
       maxY: s.maxY ?? 10,
       hasArcs: s.hasArcs ?? false,
-      hasSashimiStripArcs: s.hasSashimiStripArcs ?? false,
+      hasJunctionsStripArcs: s.hasJunctionsStripArcs ?? false,
       heightOverridePx: undefined,
-      sashimiOverCoverage: s.sashimiOverCoverage ?? false,
+      junctionsOverCoverage: s.junctionsOverCoverage ?? false,
     })),
     { ...SETTINGS, ...settings },
     { rowHeight: 5, minSectionHeight: 0 },
@@ -56,8 +56,8 @@ test('the coverage and the pileup each get a chip', () => {
 })
 
 test('junctions over the coverage are named beside it, arcs in their strip', () => {
-  expect(chipsOf([{ hasArcs: true, sashimiOverCoverage: true }])).toEqual([
-    ['coverage', ['coverage', 'sashimi']],
+  expect(chipsOf([{ hasArcs: true, junctionsOverCoverage: true }])).toEqual([
+    ['coverage', ['coverage', 'junctions']],
     ['readConnections', ['readConnections']],
     ['pileup', ['pileup']],
   ])
@@ -71,26 +71,26 @@ test('arcs drawn up over the coverage are named in the coverage row', () => {
 })
 
 test('junctions bound for the strip below get a chip on the strip', () => {
-  expect(chipsOf([{ hasSashimiStripArcs: true }])).toEqual([
+  expect(chipsOf([{ hasJunctionsStripArcs: true }])).toEqual([
     ['coverage', ['coverage']],
-    ['sashimi', ['sashimi']],
+    ['junctions', ['junctions']],
     ['pileup', ['pileup']],
   ])
 })
 
 test('junctions split by auto placement are named once, on their strip', () => {
   expect(
-    chipsOf([{ sashimiOverCoverage: true, hasSashimiStripArcs: true }]),
+    chipsOf([{ junctionsOverCoverage: true, hasJunctionsStripArcs: true }]),
   ).toEqual([
     ['coverage', ['coverage']],
-    ['sashimi', ['sashimi']],
+    ['junctions', ['junctions']],
     ['pileup', ['pileup']],
   ])
 })
 
 test('no chip for arcs or junctions that draw nothing', () => {
   expect(
-    chipsOf([{}], { drawnReadConnections: 'off', showSashimi: false }),
+    chipsOf([{}], { drawnReadConnections: 'off', showJunctions: false }),
   ).toEqual([
     ['coverage', ['coverage']],
     ['pileup', ['pileup']],
@@ -126,7 +126,7 @@ test('a stack of lanes names each band once, on the first lane drawing it', () =
 
 test('each row sits at the top of the band it names', () => {
   const { sections } = lanesOf([
-    { hasArcs: true, hasSashimiStripArcs: true, maxY: 20 },
+    { hasArcs: true, hasJunctionsStripArcs: true, maxY: 20 },
   ])
   const lane = sections[0]!
   expect(
@@ -134,20 +134,20 @@ test('each row sits at the top of the band it names', () => {
   ).toEqual([
     ['coverage', 0],
     ['readConnections', lane.bands.top.readConnections],
-    ['sashimi', lane.bands.top.sashimi],
+    ['junctions', lane.bands.top.junctions],
     ['pileup', lane.pileupTop],
   ])
 })
 
 test('a strip above the coverage is named at its own top, the coverage below it', () => {
-  const { sections } = lanesOf([{ hasSashimiStripArcs: true }], {
-    sashimiAbove: true,
+  const { sections } = lanesOf([{ hasJunctionsStripArcs: true }], {
+    junctionsAbove: true,
   })
   expect(
     bandChips(sections, true, false).rows.map(row => [row.band, row.top]),
   ).toEqual([
     ['coverage', 30],
-    ['sashimi', 0],
+    ['junctions', 0],
     ['pileup', 30 + 45],
   ])
 })
@@ -176,8 +176,8 @@ test('under section chips, whichever row heads the first lane leads them', () =>
     ['readConnections'],
   ])
   expect(
-    leadingOf([{ hasSashimiStripArcs: true }, {}], { sashimiAbove: true }),
-  ).toEqual(['sashimi', ['coverage', 'pileup']])
+    leadingOf([{ hasJunctionsStripArcs: true }, {}], { junctionsAbove: true }),
+  ).toEqual(['junctions', ['coverage', 'pileup']])
   expect(leadingOf(bothArcs, {}, false)).toEqual([
     undefined,
     ['coverage', 'readConnections', 'pileup'],
@@ -187,5 +187,5 @@ test('under section chips, whichever row heads the first lane leads them', () =>
 test('the read connections chip is named by the mark the band draws', () => {
   expect(bandChipLabel('readConnections', 'link')).toBe('Read arcs')
   expect(bandChipLabel('readConnections', 'rule')).toBe('Read cloud')
-  expect(bandChipLabel('sashimi', 'link')).toBe('Junctions')
+  expect(bandChipLabel('junctions', 'link')).toBe('Junctions')
 })

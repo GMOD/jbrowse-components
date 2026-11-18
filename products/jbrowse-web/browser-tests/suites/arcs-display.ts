@@ -211,7 +211,7 @@ const suite: TestSuite = {
       displayTestId: pileup,
     }),
     lgvSnapshotTest({
-      name: 'RNA-seq sashimi arcs (spliced alignments)',
+      name: 'RNA-seq junction arcs (spliced alignments)',
       snapshot: 'arcs-rnaseq-sashimi',
       loc: 'ctgA:1-10000',
       tracks: ['spliced'],
@@ -354,11 +354,11 @@ const suite: TestSuite = {
       expected: { drawnAcross: 0, crossRegion: 0, ticks: 12 },
     }),
     {
-      name: 'collapse introns view with RNA-seq sashimi arcs (EDEN gene)',
+      name: 'collapse introns view with RNA-seq junction arcs (EDEN gene)',
       fn: async page => {
         // EDEN gene is at ctgA:1050-9000 with 3 isoforms (CDS blocks at
         // ~1200, ~3000, ~5000, ~7000). The spliced RNA-seq BAM has reads
-        // covering this region with N-CIGAR operations that produce sashimi
+        // covering this region with N-CIGAR operations that produce junctions
         // arcs.
         await navigateWithSessionSpec(page, {
           views: [
@@ -406,7 +406,7 @@ const suite: TestSuite = {
         await waitForDataLoaded(page)
 
         // Both views: the original, and the collapsed exon view's gene track.
-        // Its sashimi band is below the page's fold, so the painted count
+        // Its junctions band is below the page's fold, so the painted count
         // above is what holds that one.
         await pageSnapshot(page, 'arcs-collapse-introns-sashimi')
       },

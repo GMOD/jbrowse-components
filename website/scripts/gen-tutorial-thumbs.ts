@@ -128,7 +128,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   rnaseq: {
-    // sashimi arcs over the junction reads
+    // junction arcs over the junction reads
     src: 'rnaseq/basic.png',
     band: [0.3, 1],
   },

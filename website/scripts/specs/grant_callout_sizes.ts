@@ -229,13 +229,13 @@ function svReadsFrame({ base, key, viewportHeight }: SvReads) {
     url: editSpecSession(spec.url, session => {
       const [lgv] = session.views as [ViewJson]
       const tracks = lgv.tracks as { trackId: string; pileup?: object }[]
-      // split reads alone, grouped by split; the read arcs draw each junction, not sashimi too
+      // split reads alone, grouped by split; the read arcs draw each junction, not junctions too
       lgv.tracks = tracks
         .filter(t => t.trackId !== 'hg38_ncbiRefSeq_ucsc')
         .map(t => ({
           ...t,
           ...(t.trackId.startsWith('hg008_t_')
-            ? { sashimi: { show: false } }
+            ? { junctions: { show: false } }
             : {}),
           ...(t.trackId === 'hg008_t_hifi_chains'
             ? {
@@ -413,7 +413,7 @@ const readsPart = (suffix: string) => {
               facet: { field: 'split', hidden: ['unsplit'] },
               encoding: { color: 'insertSizeAndOrientation' },
               readConnections: { show: true, height: 70 },
-              sashimi: { show: false },
+              junctions: { show: false },
               legend: { show: true },
               pileup: { mark: { height: 2 } },
               height: 530,

@@ -3,7 +3,7 @@ import { formatLocationRange } from '@jbrowse/alignments-core'
 describe('formatLocationRange', () => {
   // The junction start is stored 0-based half-open; the tooltip must render it
   // 1-based (start + 1) to agree with formatCigarTooltip/formatLocation and the
-  // detail widget (openSashimiWidget stores the raw start, shown as start + 1).
+  // detail widget (openJunctionWidget stores the raw start, shown as start + 1).
   it('renders the start 1-based and the end as-is', () => {
     expect(formatLocationRange('chr1', 1000, 2000)).toBe('chr1:1,001-2,000')
   })

@@ -43,8 +43,8 @@ export const SV_CHANNELS_SETTINGS = {
     ordinaryPairs: { show: false },
   },
   // Each band's read arcs already draw its split junctions, merged on their
-  // exact coordinates; sashimi over the same coverage would draw each again.
-  sashimi: { show: false },
+  // exact coordinates; junctions over the same coverage would draw each again.
+  junctions: { show: false },
 } as const
 
 // A filter keeping only SV evidence, as an entry or its bare-string shorthand
@@ -66,10 +66,10 @@ function keepsOnlySvEvidence(filter: unknown) {
  */
 export function matchesSvChannels(settings: Record<string, unknown>) {
   const on = SV_CHANNELS_SETTINGS
-  const { facet, filter, pileup, readConnections, sashimi } = settings
+  const { facet, filter, pileup, readConnections, junctions } = settings
   return (
     member(pileup, 'show') === on.pileup.show &&
-    member(sashimi, 'show') === on.sashimi.show &&
+    member(junctions, 'show') === on.junctions.show &&
     (typeof facet === 'string' ? facet : member(facet, 'field')) ===
       on.facet.field &&
     keepsOnlySvEvidence(filter) &&

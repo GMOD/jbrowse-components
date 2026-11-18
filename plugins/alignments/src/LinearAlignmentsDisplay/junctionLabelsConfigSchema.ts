@@ -1,18 +1,18 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * #config SashimiLabels
+ * #config JunctionLabels
  * #category display
  * The junctions band's `labels` layer: each junction's supporting-read count,
  * drawn at its arc's apex.
  *
  * #example
  * ```js
- * { type: 'LinearAlignmentsDisplay', sashimi: { labels: { show: true } } }
+ * { type: 'LinearAlignmentsDisplay', junctions: { labels: { show: true } } }
  * ```
  */
-export const sashimiLabelsConfigSchema = ConfigurationSchema(
-  'SashimiLabels',
+export const junctionLabelsConfigSchema = ConfigurationSchema(
+  'JunctionLabels',
   {
     /**
      * #slot

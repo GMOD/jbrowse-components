@@ -58,7 +58,7 @@ re-anchoring of the index SNP. Only a user guide covers it; distinct from
 
 **Long-read transcriptome and isoforms.** `NA12878-DirectRNA...minimap2.sorted`,
 a whole-genome BAM plus a chr1 CRAM subset, unused. Pair with a StringTie or
-FLAIR GTF against Gencode to show novel isoform calls and sashimi
+FLAIR GTF against Gencode to show novel isoform calls and junctions
 quantification, past where `rnaseq.md`'s one-paragraph "Short reads vs long
 reads" stops.
 

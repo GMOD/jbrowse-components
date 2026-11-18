@@ -8,19 +8,19 @@ import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import {
-  SASHIMI_MAX_STROKE_PX,
-  SASHIMI_SIDES,
-} from '../../features/sashimi/bandFeed.ts'
+  JUNCTION_MAX_STROKE_PX,
+  JUNCTION_SIDES,
+} from '../../features/junctions/bandFeed.ts'
 import {
-  SASHIMI_APEX_CLEARANCE_PX,
-  sashimiLabelSpanPx,
-} from '../../features/sashimi/computeOverlay.ts'
+  JUNCTION_APEX_CLEARANCE_PX,
+  junctionLabelSpanPx,
+} from '../../features/junctions/computeOverlay.ts'
 import { sectionRenderState } from './rendererTypes.ts'
 
 import type {
-  SashimiBandFeed,
-  SashimiSide,
-} from '../../features/sashimi/bandFeed.ts'
+  JunctionsBandFeed,
+  JunctionSide,
+} from '../../features/junctions/bandFeed.ts'
 import type {
   DisplayRenderState,
   RenderState,
@@ -29,7 +29,7 @@ import type {
 import type { LinkParams, Mark } from '@jbrowse/render-core/marks'
 
 /** One side's band in screen px: where its arcs stand and the box that clips them. */
-export interface SashimiBand {
+export interface JunctionsBand {
   top: number
   height: number
   clipTop: number
@@ -37,18 +37,18 @@ export interface SashimiBand {
 }
 
 /** A section's render state with the band each side's arcs draw in. */
-export interface SashimiBandState extends RenderState {
-  sashimi: Record<SashimiSide, SashimiBand | undefined>
+export interface JunctionsBandState extends RenderState {
+  junctions: Record<JunctionSide, JunctionsBand | undefined>
 }
 
-/** The state the sashimi marks draw and hit-test a section's bands by. */
-export function sashimiBandState(
+/** The state the junctions marks draw and hit-test a section's bands by. */
+export function junctionsBandState(
   state: DisplayRenderState,
   sec: SectionRender,
-): SashimiBandState {
+): JunctionsBandState {
   return {
     ...sectionRenderState(state, sec),
-    sashimi: sashimiBandsOf(state, sec),
+    junctions: junctionsBandsOf(state, sec),
   }
 }
 
@@ -61,19 +61,19 @@ export function sashimiBandState(
  * stand on its floor, short of its top by the same label room, and nothing
  * draws down.
  */
-export function sashimiBandsOf(
+export function junctionsBandsOf(
   state: DisplayRenderState,
   sec: SectionRender,
-): SashimiBandState['sashimi'] {
+): JunctionsBandState['junctions'] {
   const upHeight = state.coverage.height - 2 * YSCALEBAR_LABEL_OFFSET
-  const { sashimiBand } = sec
-  const stripHeight = (sashimiBand?.height ?? 0) - SASHIMI_APEX_CLEARANCE_PX
-  const strip = sashimiBand && stripHeight > 0 ? sashimiBand : undefined
-  return sashimiBand?.above
+  const { junctionsBand } = sec
+  const stripHeight = (junctionsBand?.height ?? 0) - JUNCTION_APEX_CLEARANCE_PX
+  const strip = junctionsBand && stripHeight > 0 ? junctionsBand : undefined
+  return junctionsBand?.above
     ? {
         up: strip
           ? {
-              top: strip.top + SASHIMI_APEX_CLEARANCE_PX,
+              top: strip.top + JUNCTION_APEX_CLEARANCE_PX,
               height: stripHeight,
               clipTop: strip.top,
               clipHeight: strip.height,
@@ -102,7 +102,7 @@ export function sashimiBandsOf(
       }
 }
 
-function sideParams(band: SashimiBand, state: RenderState, down: boolean) {
+function sideParams(band: JunctionsBand, state: RenderState, down: boolean) {
   return {
     reverse: down,
     rowOffsetPx: band.top,
@@ -114,22 +114,25 @@ function sideParams(band: SashimiBand, state: RenderState, down: boolean) {
     valued: true,
     sizePx: 1,
     sizeScale: {
-      domain: [1, SASHIMI_MAX_STROKE_PX] as [number, number],
+      domain: [1, JUNCTION_MAX_STROKE_PX] as [number, number],
       scale: 'linear' as const,
-      range: [1, SASHIMI_MAX_STROKE_PX] as [number, number],
+      range: [1, JUNCTION_MAX_STROKE_PX] as [number, number],
     },
   } satisfies LinkParams
 }
 
-const NO_BAND: SashimiBand = { top: 0, height: 0, clipTop: 0, clipHeight: 0 }
+const NO_BAND: JunctionsBand = { top: 0, height: 0, clipTop: 0, clipHeight: 0 }
 
-function sideMark(side: SashimiSide) {
+function sideMark(side: JunctionSide) {
   return defineMark({
-    shape: withPassId(linkMark, side === 'up' ? 'sashimiUp' : 'sashimiDown'),
-    channels: (f: SashimiBandFeed) => f[side],
-    params: (s: SashimiBandState) =>
-      sideParams(s.sashimi[side] ?? NO_BAND, s, side === 'down'),
-    enabled: (s: SashimiBandState) => s.sashimi[side] !== undefined,
+    shape: withPassId(
+      linkMark,
+      side === 'up' ? 'junctionsUp' : 'junctionsDown',
+    ),
+    channels: (f: JunctionsBandFeed) => f[side],
+    params: (s: JunctionsBandState) =>
+      sideParams(s.junctions[side] ?? NO_BAND, s, side === 'down'),
+    enabled: (s: JunctionsBandState) => s.junctions[side] !== undefined,
   })
 }
 
@@ -138,16 +141,16 @@ function sideMark(side: SashimiSide) {
  * the junction's span and whose stroke its read count. Each spans the view, so
  * a junction crosses a collapsed intron whole.
  */
-export const SASHIMI_MARK: Record<
-  SashimiSide,
-  Mark<SashimiBandFeed, SashimiBandState>
+export const JUNCTION_MARK: Record<
+  JunctionSide,
+  Mark<JunctionsBandFeed, JunctionsBandState>
 > = { up: sideMark('up'), down: sideMark('down') }
 
-/** `SASHIMI_MARK` in `SASHIMI_SIDES` order, for the uploads and the hit chain. */
-export const SASHIMI_MARKS = SASHIMI_SIDES.map(side => SASHIMI_MARK[side])
+/** `JUNCTION_MARK` in `JUNCTION_SIDES` order, for the uploads and the hit chain. */
+export const JUNCTION_MARKS = JUNCTION_SIDES.map(side => JUNCTION_MARK[side])
 
 /** A junction's read count, at its arc's apex in canvas px. */
-export interface SashimiLabel {
+export interface JunctionLabel {
   key: string
   x: number
   y: number
@@ -155,7 +158,7 @@ export interface SashimiLabel {
 }
 
 /** The feed array holding each side's junctions, by side. */
-export const SASHIMI_HITS = { up: 'upHits', down: 'downHits' } as const
+export const JUNCTION_HITS = { up: 'upHits', down: 'downHits' } as const
 
 /**
  * The count labels of every section, each where its mark says a label stands
@@ -163,24 +166,24 @@ export const SASHIMI_HITS = { up: 'upHits', down: 'downHits' } as const
  * a junction the view sits inside. An arc too narrow on screen for its count
  * gets none, nor does one with nothing on the canvas.
  */
-export function sashimiLabels(
+export function junctionLabels(
   state: DisplayRenderState,
-  sectionFeeds: readonly (ReadonlyMap<number, SashimiBandFeed> | undefined)[],
-): SashimiLabel[] {
-  const labels: SashimiLabel[] = []
+  sectionFeeds: readonly (ReadonlyMap<number, JunctionsBandFeed> | undefined)[],
+): JunctionLabel[] {
+  const labels: JunctionLabel[] = []
   state.sections.forEach((sec, s) => {
     const feeds = sectionFeeds[s]
     if (!feeds || feeds.size === 0) {
       return
     }
-    const bandState = sashimiBandState(state, sec)
-    for (const side of SASHIMI_SIDES) {
-      const band = bandState.sashimi[side]
+    const bandState = junctionsBandState(state, sec)
+    for (const side of JUNCTION_SIDES) {
+      const band = bandState.junctions[side]
       if (band) {
         const params = sideParams(band, bandState, side === 'down')
         for (const [regionIdx, feed] of feeds) {
           const block = canvasWideBlock(regionIdx, state.canvasWidth)
-          const hits = feed[SASHIMI_HITS[side]]
+          const hits = feed[JUNCTION_HITS[side]]
           for (let i = 0; i < hits.length; i++) {
             const { key, count } = hits[i]!
             const apex = linkLabelAnchor(
@@ -192,7 +195,7 @@ export function sashimiLabels(
             )
             if (
               apex &&
-              2 * apex.halfWidth >= sashimiLabelSpanPx(count) &&
+              2 * apex.halfWidth >= junctionLabelSpanPx(count) &&
               apex.x >= 0 &&
               apex.x <= state.canvasWidth
             ) {

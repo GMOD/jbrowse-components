@@ -24,7 +24,7 @@
           "pileup": {
             "show": false
           },
-          "sashimi": {
+          "junctions": {
             "labels": {
               "show": true
             }
@@ -36,7 +36,7 @@
           "pileup": {
             "show": false
           },
-          "sashimi": {
+          "junctions": {
             "labels": {
               "show": true
             }

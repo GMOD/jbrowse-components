@@ -42,7 +42,7 @@ test('a JSON modifier merges into the display snapshot', async () => {
 
 // Renders with a pile of alignment overlay/layout modifiers at once. The value
 // is that showTrack must ACCEPT every snapshot key these produce — a stale key
-// (the silently-broken-modifier class, e.g. the old setSashimiArcs) would throw
+// (the silently-broken-modifier class, e.g. the old setJunctionArcs) would throw
 // an invalid-snapshot error and yield no display, not just a no-op.
 test('alignment overlay/layout modifiers all produce a valid display snapshot', async () => {
   const svg = await renderRegion({
@@ -59,7 +59,7 @@ test('alignment overlay/layout modifiers all produce a valid display snapshot', 
           'facet=strand',
           'arcs:cloud',
           'coverage.height=200',
-          'sashimi:below',
+          'junctions:below',
           'pileup.softClips.show=true',
           'featureHeight:compact',
           'height:500',

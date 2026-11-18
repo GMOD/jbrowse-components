@@ -20,7 +20,7 @@ say where it drew one, the way `featuresNamed` does, resolved through capture's
   would cover all three.
 - **An alignments read** (`alignments.ts`, `ui.ts`, `cancer_sv.ts`,
   `bovine_bola`), by read name.
-- **A sashimi arc or `link` mark** (`alignments.ts`, `cancer_sv.ts` K562,
+- **A junction arc or `link` mark** (`alignments.ts`, `cancer_sv.ts` K562,
   `protein_figure_met_ex14.ts`), by its two ends.
 - **A synteny chain block or multi-way lane record** (`synteny.ts`,
   `videos/synteny.ts`).

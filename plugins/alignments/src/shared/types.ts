@@ -5,7 +5,7 @@ import { fieldTag } from './facetLabels.ts'
 import type {
   JunctionClass,
   JunctionSource,
-} from '../features/sashimi/junctionClass.ts'
+} from '../features/junctions/junctionClass.ts'
 import type { ReadDimension } from './readFieldLevels.ts'
 import type { FieldPredicate, Floor } from '@jbrowse/core/util/fieldPredicate'
 import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'

@@ -1,10 +1,10 @@
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { computeJunctionArcs } from './junctionArcs.fixture.ts'
 import { mergeJunctions, stripJunctionKeys } from './junctions.ts'
 import { encodeDinucleotide, spliceMotifLabel } from './motif.ts'
-import { computeSashimiArcs } from './sashimiArcs.fixture.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ComputeSashimiArcsOpts } from './sashimiArcs.fixture.ts'
+import type { ComputeJunctionArcsOpts } from './junctionArcs.fixture.ts'
 
 // Collapsed introns (plugins/features CollapseIntronsDialog) are the one routine
 // way a single refName becomes many displayedRegions: each exon is padded by a
@@ -46,29 +46,29 @@ function junctions(
   const donor = ends === 'donor' || ends === 'both'
   const acceptor = ends === 'acceptor' || ends === 'both'
   return makePileupDataResult({
-    sashimiX1: new Uint32Array(specs.map(s => s[0])),
-    sashimiX2: new Uint32Array(specs.map(s => s[1])),
-    sashimiCounts: new Uint32Array(specs.map(s => s[2])),
-    sashimiFwd: new Uint32Array(specs.length),
-    sashimiRev: new Uint32Array(specs.length),
-    sashimiDonors: new Uint8Array(
+    junctionX1: new Uint32Array(specs.map(s => s[0])),
+    junctionX2: new Uint32Array(specs.map(s => s[1])),
+    junctionCounts: new Uint32Array(specs.map(s => s[2])),
+    junctionFwd: new Uint32Array(specs.length),
+    junctionRev: new Uint32Array(specs.length),
+    junctionDonors: new Uint8Array(
       specs.map(() => (donor ? encodeDinucleotide('GT') : 0)),
     ),
-    sashimiAcceptors: new Uint8Array(
+    junctionAcceptors: new Uint8Array(
       specs.map(() => (acceptor ? encodeDinucleotide('AG') : 0)),
     ),
-    sashimiClass: new Uint8Array(specs.length),
+    junctionSplitClass: new Uint8Array(specs.length),
   })
 }
 
 // A read carrying a junction spans it, so a BAM overlap query returns that read
 // for EVERY region intersecting its span — including regions the read has no
 // aligned bases in. So each of the three exon regions re-emits the same
-// junctions, which is exactly the duplication `computeSashimiArcs` merges.
+// junctions, which is exactly the duplication `computeJunctionArcs` merges.
 function collapsedOpts(
   perRegion: PileupDataResult[],
   regions = EXONS,
-  overrides: Partial<Parameters<typeof computeSashimiArcs>[0]> = {},
+  overrides: Partial<Parameters<typeof computeJunctionArcs>[0]> = {},
 ) {
   return {
     rpcDataMap: new Map(perRegion.map((d, i) => [i, d])),
@@ -88,7 +88,7 @@ function collapsedOpts(
     // the piecewise projection.
     viewWidthPx: 10_000,
     coverageHeight: 100,
-    sashimiHeight: 40,
+    junctionsHeight: 40,
     minReads: 0,
     downJunctionKeys: new Set<string>(),
     ...overrides,
@@ -96,7 +96,7 @@ function collapsedOpts(
 }
 
 // The side assignment the display would hand these regions in 'auto': merged in
-// genomic bp over every loaded region, exactly as `buildSashimiStripKeys` does it
+// genomic bp over every loaded region, exactly as `buildJunctionsStripKeys` does it
 // for the layout. Used where a test is about the two agreeing.
 function autoDownKeys(perRegion: PileupDataResult[]) {
   return stripJunctionKeys(
@@ -114,13 +114,13 @@ const ADJACENT_A: [number, number, number] = [1200, 2000, 30]
 const ADJACENT_B: [number, number, number] = [2000, 3000, 25]
 const EXON_SKIP: [number, number, number] = [1200, 3000, 4]
 
-// WHICH junctions draw, not in what order — `computeSashimiArcs` emits ascending
+// WHICH junctions draw, not in what order — `computeJunctionArcs` emits ascending
 // by score so the heaviest paints last, and that is `computeOverlay.test.ts`'s to
 // pin. The count is half the claim here: three distinct spans AND three arcs is
 // "each exactly once", where a set alone would hide a duplicate.
 test('every region re-emits the gene’s junctions; each draws exactly once', () => {
   const all = junctions([ADJACENT_A, ADJACENT_B, EXON_SKIP])
-  const arcs = computeSashimiArcs(collapsedOpts([all, all, all]))
+  const arcs = computeJunctionArcs(collapsedOpts([all, all, all]))
   expect(arcs).toHaveLength(3)
   expect(new Set(arcs.map(a => `${a.start}-${a.end}`))).toEqual(
     new Set(['1200-2000', '2000-3000', '1200-3000']),
@@ -134,7 +134,7 @@ test('a junction split across two regions is still classified and tinted', () =>
   // name the pair. Classified per region, every arc in a collapsed view came
   // back with no motif at all however much sequence was on screen; the two
   // halves merge separately so the pair resolves once both regions report.
-  const arcs = computeSashimiArcs(
+  const arcs = computeJunctionArcs(
     collapsedOpts([
       junctions([ADJACENT_A], 'donor'),
       junctions([ADJACENT_A], 'acceptor'),
@@ -147,7 +147,7 @@ test('a junction split across two regions is still classified and tinted', () =>
 })
 
 test('a junction no region could read either end of stays unlabelled', () => {
-  const arcs = computeSashimiArcs(
+  const arcs = computeJunctionArcs(
     collapsedOpts([junctions([ADJACENT_A]), junctions([ADJACENT_A])]),
   )
   expect(spliceMotifLabel(arcs[0]!.motif)).toBeUndefined()
@@ -158,7 +158,7 @@ test('a collapsed intron leaves its junction a narrow arc, not a zero-width spik
   // inside one region and its acceptor 100bp inside the next, so the collapsed
   // intron is 200bp of screen space rather than nothing. Without padding the two
   // endpoints would project to the same x.
-  const arcs = computeSashimiArcs(collapsedOpts([junctions([ADJACENT_A])]))
+  const arcs = computeJunctionArcs(collapsedOpts([junctions([ADJACENT_A])]))
   const [arc] = arcs
   // Its feet lie in two displayed regions, which the mark places each through
   // its own.
@@ -169,7 +169,7 @@ test('a collapsed intron leaves its junction a narrow arc, not a zero-width spik
 })
 
 test('an exon-skipping junction draws wider and taller than the introns it spans', () => {
-  const arcs = computeSashimiArcs(
+  const arcs = computeJunctionArcs(
     collapsedOpts([junctions([ADJACENT_A, ADJACENT_B, EXON_SKIP])]),
   )
   const byStart = new Map(arcs.map(a => [`${a.start}-${a.end}`, a]))
@@ -184,7 +184,7 @@ test('a junction reaching into a collapsed intron is dropped, not clamped', () =
   // An unannotated donor at 1500 sits in the intron this view collapsed away,
   // so there is no pixel to anchor that end of the arc to. Drawing it against a
   // clamped edge would assert a splice site at a coordinate not on screen.
-  const arcs = computeSashimiArcs(
+  const arcs = computeJunctionArcs(
     collapsedOpts([junctions([[1500, 3000, 9], ADJACENT_A])]),
   )
   expect(arcs.map(a => a.start)).toEqual([1200])
@@ -194,7 +194,7 @@ test('a flipped (minus-strand) gene keeps arcs in screen order', () => {
   // `flip` reverses the region list and marks each region reversed, so screen x
   // runs against genomic coordinate. The feed is in bp and the mark orders
   // each arc's feet on screen, so both junctions still draw.
-  const arcs = computeSashimiArcs(
+  const arcs = computeJunctionArcs(
     collapsedOpts([junctions([ADJACENT_A, EXON_SKIP])], FLIPPED_EXONS),
   )
   expect(new Set(arcs.map(a => a.end - a.start)).size).toBe(2)
@@ -210,7 +210,7 @@ test('flipped regions still split a crossing pair across bands in auto mode', ()
     [1200, 3000, 20],
     [2000, 3200, 20],
   ])
-  const arcs = computeSashimiArcs(
+  const arcs = computeJunctionArcs(
     collapsedOpts([crossing], FLIPPED_EXONS, {
       downJunctionKeys: autoDownKeys([crossing]),
     }),
@@ -223,7 +223,7 @@ test('a junction the layout never reserved for is drawn up, not into the pileup'
   // Sides come from the layout's own set, so the only junctions that go down are
   // ones it reserved a strip for — an unlisted junction takes the side that
   // needs no strip.
-  const arcs = computeSashimiArcs(
+  const arcs = computeJunctionArcs(
     collapsedOpts([junctions([ADJACENT_A])], EXONS, {
       downJunctionKeys: new Set(['chr1:9999:99999']),
     }),
@@ -240,10 +240,10 @@ test('a flanking region that clips only some supporting reads cannot lower the c
   const spanning = junctions([EXON_SKIP])
   const clipping = junctions([[EXON_SKIP[0], EXON_SKIP[1], 1]])
   expect(
-    computeSashimiArcs(collapsedOpts([clipping, spanning]))[0]!.score,
+    computeJunctionArcs(collapsedOpts([clipping, spanning]))[0]!.score,
   ).toBe(EXON_SKIP[2])
   expect(
-    computeSashimiArcs(collapsedOpts([spanning, clipping]))[0]!.score,
+    computeJunctionArcs(collapsedOpts([spanning, clipping]))[0]!.score,
   ).toBe(EXON_SKIP[2])
 })
 
@@ -257,8 +257,8 @@ test('only the regions actually on screen contribute arcs', () => {
     junctions([EXON_SKIP]),
   ])
   // Sorted, for the same reason as above: the emitted order is by score.
-  const ends = (o: ComputeSashimiArcsOpts) =>
-    computeSashimiArcs(o)
+  const ends = (o: ComputeJunctionArcsOpts) =>
+    computeJunctionArcs(o)
       .map(a => a.end)
       .toSorted((p, q) => p - q)
   expect(ends(opts)).toEqual([2000, 3000, 3000])
@@ -273,14 +273,14 @@ test('a refName displayed twice anchors arcs to its first occurrence', () => {
   // verbatim (nothing sorts, merges or dedupes displayedRegions). A bp inside
   // the overlap is then painted at two screen x's, and `bpToPx` resolves it to
   // the first — the same first-occurrence rule `resolveNavEndpoint` follows for
-  // navigation. Pinned here so sashimi is known to share that convention rather
+  // navigation. Pinned here so junctions is known to share that convention rather
   // than to have picked one by accident.
   const overlapping: TestRegion[] = [
     { start: 0, end: 1000 },
     { start: 500, end: 1500 },
   ]
   const data = junctions([[700, 1200, 5]])
-  const arcs = computeSashimiArcs(collapsedOpts([data, data], overlapping))
+  const arcs = computeJunctionArcs(collapsedOpts([data, data], overlapping))
   expect(arcs).toHaveLength(1)
   // 700 resolves in region 0 (x 700), not its second painting inside region 1;
   // 1200 exists only in region 1, at 1000 + (1200 - 500) = 1700.

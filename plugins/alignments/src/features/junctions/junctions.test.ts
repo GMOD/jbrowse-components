@@ -7,8 +7,8 @@ import {
 } from './motif.ts'
 
 import type { CategoryFilter, JunctionFilter } from '../../shared/types.ts'
-import type { SashimiSplitClass } from './junctionClass.ts'
-import type { RegionJunctions, SashimiPlacement } from './junctions.ts'
+import type { JunctionSplitClass } from './junctionClass.ts'
+import type { RegionJunctions, JunctionsPlacement } from './junctions.ts'
 
 // [start, end, count] per junction, plus whatever this test cares about of the
 // raw strand votes and the two motif halves. An absent dinucleotide is an end
@@ -18,7 +18,7 @@ interface JunctionDetail {
   rev?: number
   donor?: string
   acceptor?: string
-  split?: SashimiSplitClass
+  split?: JunctionSplitClass
 }
 type Spec = [number, number, number] | [number, number, number, JunctionDetail]
 
@@ -36,23 +36,23 @@ function region(refName: string, junctions: Spec[]): RegionJunctions {
   return {
     refName,
     data: {
-      sashimiX1: new Uint32Array(junctions.map(j => j[0])),
-      sashimiX2: new Uint32Array(junctions.map(j => j[1])),
-      sashimiCounts: new Uint32Array(junctions.map(j => j[2])),
-      sashimiFwd: new Uint32Array(details.map(d => d.fwd ?? 0)),
-      sashimiRev: new Uint32Array(details.map(d => d.rev ?? 0)),
-      sashimiDonors: new Uint8Array(details.map(d => dinucleotide(d.donor))),
-      sashimiAcceptors: new Uint8Array(
+      junctionX1: new Uint32Array(junctions.map(j => j[0])),
+      junctionX2: new Uint32Array(junctions.map(j => j[1])),
+      junctionCounts: new Uint32Array(junctions.map(j => j[2])),
+      junctionFwd: new Uint32Array(details.map(d => d.fwd ?? 0)),
+      junctionRev: new Uint32Array(details.map(d => d.rev ?? 0)),
+      junctionDonors: new Uint8Array(details.map(d => dinucleotide(d.donor))),
+      junctionAcceptors: new Uint8Array(
         details.map(d => dinucleotide(d.acceptor)),
       ),
-      sashimiClass: new Uint8Array(
+      junctionSplitClass: new Uint8Array(
         details.map(d => (d.split ? splitClassCode(d.split) : 0)),
       ),
     },
   }
 }
 
-function down(regions: RegionJunctions[], mode: SashimiPlacement, min = 0) {
+function down(regions: RegionJunctions[], mode: JunctionsPlacement, min = 0) {
   return stripJunctionKeys(mergeJunctions(regions, keep(min)).values(), mode)
 }
 

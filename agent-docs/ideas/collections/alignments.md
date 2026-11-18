@@ -32,7 +32,7 @@ real-read fixtures and a golden refresh, and the escape hatch
 (`pileup.fadeLowFrequency`) already exists to keep the old behaviour reachable.
 
 **Auto-detect when to use first-of-pair strand.** The precedents are both in
-hand: sashimi already picks its own settings, and `geneGlyphMode`'s `auto` is the
+hand: junctions already picks its own settings, and `geneGlyphMode`'s `auto` is the
 shape of the affordance — a token in the bottom-right of the display saying which
 way it resolved, so the automatic choice is visible and overridable rather than
 silent. What is undecided is the detection itself: what in the data says a
@@ -66,7 +66,7 @@ as a bedGraph; the packed SNP buffer beside it decodes through
 the other half.
 
 **Typed-array refactor.** Worker return is flat parallel arrays — could regroup into
-sub-objects (mods, sashimi, coverage). Flat is simple but long; just an idea.
+sub-objects (mods, junctions, coverage). Flat is simple but long; just an idea.
 
 **Per-record allocation may be the CRAM lever.** The slice workers are starved
 and the RPC worker spends 12% (724 ms) in GC on a 1000x short-read render
@@ -193,7 +193,7 @@ already on the feature. The join answers the real question and needs a whole
 UI; the ramp is cheap and answers a narrower one. Picking between them is the
 first move, and neither is started.
 
-**Sashimi labels as a fraction, with a depth-proof floor** — a junction arc
+**Junction labels as a fraction, with a depth-proof floor** — a junction arc
 carries its supporting read count today. A fraction of local depth is more
 honest (40 reads across a junction means different things at 50x and 5000x) but
 a ratio over a small denominator is noise, so it needs a floor below which the
@@ -244,7 +244,7 @@ ticks for a spelled plain grey (`menus/colorBy.ts`), and `showChevron`
 **Mate-supported exon links.** In paired RNA-seq, a pair whose mates land in
 two exons is evidence those exons share a molecule even when neither read
 crosses a junction. Assemblers (StringTie) and fusion callers (STAR-Fusion,
-Arriba) use it; sashimi arcs, ours and IGV's, count split reads only. The shape
+Arriba) use it; junction arcs, ours and IGV's, count split reads only. The shape
 would be junction arcs that also count such pairs. Waits on a user.
 
 **The key covers the first section's coverage axis when reads are grouped.**

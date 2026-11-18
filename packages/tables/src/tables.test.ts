@@ -471,7 +471,7 @@ test('a band the display hides leaves its tables empty', async () => {
   expect(noAlleles.interbaseCoverage).toEqual(shown.interbaseCoverage)
   const noPileup = await engine.alignments({
     ...SPLICED,
-    display: { pileup: { show: false }, sashimi: { show: false } },
+    display: { pileup: { show: false }, junctions: { show: false } },
   })
   expect(empty(noPileup.reads)).toBe(true)
   expect(empty(noPileup.gaps)).toBe(true)
@@ -1444,14 +1444,14 @@ test('a junction says whether the display shows it, its arc height and its strok
   expect(hidden.junctions.shown).toEqual(
     all.junctions.motif.map(m => m !== 'non-canonical'),
   )
-  const sashimiArcHeightFraction = (span: number) =>
+  const junctionArcHeightFraction = (span: number) =>
     0.3 +
     0.65 *
       Math.min(1, Math.max(0, Math.log(span / 50) / Math.log(100_000 / 50)))
   all.junctions.start.forEach((start, i) => {
     const span = all.junctions.end[i]! - start
     expect(all.junctions.arcHeight[i]).toBeCloseTo(
-      sashimiArcHeightFraction(span),
+      junctionArcHeightFraction(span),
       12,
     )
     expect(all.junctions.strokeWidth[i]).toBeCloseTo(
@@ -1461,7 +1461,7 @@ test('a junction says whether the display shows it, its arc height and its strok
   })
 })
 
-test('the junction key lists the split classes shown, and nothing while the sashimi band is hidden', async () => {
+test('the junction key lists the split classes shown, and nothing while the junctions band is hidden', async () => {
   const t = await engine.alignments(LONG_READS)
   const splits = new Set(
     t.junctions.level
@@ -1472,7 +1472,7 @@ test('the junction key lists the split classes shown, and nothing while the sash
   expect(t.junctionLegend.label).toHaveLength(splits.size)
   const hidden = await engine.alignments({
     ...LONG_READS,
-    display: { sashimi: { show: false } },
+    display: { junctions: { show: false } },
   })
   expect(hidden.junctions.level).toEqual([])
   expect(hidden.junctionLegend).toEqual({ label: [], color: [] })

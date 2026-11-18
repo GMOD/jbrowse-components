@@ -5,13 +5,13 @@ import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 // tiers here keeps each overlay from re-deriving `isGrouped ? y - scroll : y`
 // inline and crossing the tiers (the off-by-a-scroll bugs all live there).
 //
-//   - Ungrouped: the coverage band — and the arc/sashimi bands and their resize
+//   - Ungrouped: the coverage band — and the arc/junctions bands and their resize
 //     handles — is sticky at the top; only the pileup *content* scrolls beneath
 //     it. So a band top ignores scrollTop, while a pileup row subtracts it.
 //   - Grouped: each section scrolls as one unit, bands included, so a band top
 //     scrolls exactly like the rows below it.
 //
-// `bandScreenTop` projects the sticky-capable tier (coverage/arc/sashimi band
+// `bandScreenTop` projects the sticky-capable tier (coverage/arc/junctions band
 // tops, and a section's pileup-clip ceiling, which clips identically).
 // `contentScreenY` projects the always-scrolling tier (pileup rows, pileup band
 // bottom). The renderers' clips (`buildSectionRenders`) project through these
@@ -54,7 +54,7 @@ export function makeBpToPx(region: BpScreenRegion, bpPerPx: number) {
 
 export { sectionKey } from '@jbrowse/display-kit/groupLabelStyle'
 
-// Screen Y of a sticky-capable band top (coverage / arcs / sashimi), or of a
+// Screen Y of a sticky-capable band top (coverage / arcs / junctions), or of a
 // section's pileup-clip ceiling. Sticky (unscrolled) when ungrouped; scrolls
 // with its section when grouped.
 export function bandScreenTop(contentTop: number, m: ScrollModel) {

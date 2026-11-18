@@ -11,23 +11,23 @@ import type { ReadSlot } from '../../shared/readSlot.ts'
 import type { ArcSplitCategory } from '../arcs/arcSplitCategory.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { ArcBandHit } from '../arcs/bandFeed.ts'
-import type { SashimiSplitClass } from './junctionClass.ts'
+import type { JunctionSplitClass } from './junctionClass.ts'
 import type { AdapterRefName } from '@jbrowse/core/util'
 
-/** A junction as one lane draws it: what a hovered sashimi arc names. */
+/** A junction as one lane draws it: what a hovered junction arc names. */
 export interface LaneJunction {
   groupKey: string
   refName: string
   start: number
   end: number
   // the split class of a split junction, unset for an N gap
-  split?: SashimiSplitClass
+  split?: JunctionSplitClass
 }
 
 /**
- * A hovered junction: a sashimi junction names its lane, and a split arc,
+ * A hovered junction: a junction names its lane, and a split arc,
  * whose support pools every lane, names none. A split arc names its arc
- * class, an insertion included, which no sashimi arc draws.
+ * class, an insertion included, which no junction arc draws.
  */
 export interface HoveredJunction extends Omit<
   LaneJunction,

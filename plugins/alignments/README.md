@@ -121,7 +121,7 @@ scale (`arcBandScale`): the read cloud's log `domain`, or for arcs none, as
 their linear domain is `[0, reachPx / pxPerBp]` at the host's own scale, and the
 band they draw in. `bandStack` is where each band sits: the bands a section
 stacks above its pileup, top to bottom, with the px each reserves, so a
-read-connection or sashimi strip listed before `coverage` sits above it, its
+read-connection or junctions strip listed before `coverage` sits above it, its
 arcs rising from its floor, and one after it sits below. `warnings` names what
 the config asked for that the tables dropped. For a host that draws them itself,
 such as R through V8. The adapters must be registered on `pluginManager`
@@ -172,7 +172,7 @@ function alignmentTables(
       }
     | null
   bandStack: {
-    key: ('coverage' | 'readConnections' | 'sashimi')[]
+    key: ('coverage' | 'junctions' | 'readConnections')[]
     heightPx: number[]
   }
   coverageScale: {

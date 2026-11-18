@@ -1,4 +1,4 @@
-import { JUNCTION_CLASSES } from './features/sashimi/junctionClass.ts'
+import { JUNCTION_CLASSES } from './features/junctions/junctionClass.ts'
 import { ARC_SLOT_CATEGORY } from './shaders/palettes.ts'
 import { arcClassOf } from './tables.ts'
 
@@ -21,7 +21,7 @@ test('the arcs table names each split arc class, an insertion included', () => {
   })
 })
 
-test('the junction table keeps the four sashimi classes', () => {
+test('the junction table keeps the four junctions classes', () => {
   expect(JUNCTION_CLASSES).toEqual([
     'splice',
     'deletion',

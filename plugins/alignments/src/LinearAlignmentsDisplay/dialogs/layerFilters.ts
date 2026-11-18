@@ -8,10 +8,10 @@ import {
 import {
   JUNCTION_CLASSES,
   junctionSource,
-} from '../../features/sashimi/junctionClass.ts'
+} from '../../features/junctions/junctionClass.ts'
 import {
   DEFAULT_MIN_INTERCHROM_READS,
-  DEFAULT_MIN_SASHIMI_READS,
+  DEFAULT_MIN_JUNCTION_READS,
   connectionEntries,
   connectionFilterOf,
   junctionEntries,
@@ -73,7 +73,7 @@ export function declaredFiltersOf(
 export interface LayerFiltersModel {
   filterPredicates: FieldPredicate[]
   declaredFilters: DeclaredFilters
-  showSashimi?: boolean
+  showJunctions?: boolean
   junctionFilter?: JunctionFilter
   drawnReadConnections?: ReadConnectionsMode
   drawsConnectors?: boolean
@@ -153,16 +153,16 @@ function percentOf(min: number) {
 
 /**
  * Which derived rows' filters narrow something drawn: the junctions while the
- * sashimi arcs draw, the connections while the band or the connectors do.
+ * junction arcs draw, the connections while the band or the connectors do.
  */
 export function layersInEffect(
   model: Pick<
     LayerFiltersModel,
-    'showSashimi' | 'drawnReadConnections' | 'drawsConnectors'
+    'showJunctions' | 'drawnReadConnections' | 'drawsConnectors'
   >,
 ) {
   return {
-    junctions: model.showSashimi === true,
+    junctions: model.showJunctions === true,
     connections:
       (model.drawnReadConnections !== undefined &&
         model.drawnReadConnections !== 'off') ||
@@ -265,8 +265,8 @@ export function layerFilterEntries(
     of: (s: LayerFilterState) => unknown,
     entries: () => Record<string, FieldPredicate[]>,
   ) => sectionEntries(of, state, initial, declared, entries)
-  const sashimiReads = (s: LayerFilterState) =>
-    countOf(s.junctions?.minReads ?? '', DEFAULT_MIN_SASHIMI_READS)
+  const junctionReads = (s: LayerFilterState) =>
+    countOf(s.junctions?.minReads ?? '', DEFAULT_MIN_JUNCTION_READS)
   const interchromReads = (s: LayerFilterState) =>
     countOf(
       s.connections?.minInterchromReads ?? '',
@@ -284,8 +284,8 @@ export function layerFilterEntries(
             s => s.junctions?.split,
             () => junctionEntries(splitJunctionsPatch(junctions.split)),
           ),
-          ...section(sashimiReads, () =>
-            junctionEntries({ minReads: sashimiReads(state) }, written),
+          ...section(junctionReads, () =>
+            junctionEntries({ minReads: junctionReads(state) }, written),
           ),
         }
       : {}),

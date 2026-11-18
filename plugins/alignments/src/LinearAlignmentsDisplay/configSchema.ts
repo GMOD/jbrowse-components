@@ -1,9 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { baseLinearAlignmentsDisplayConfigSchema } from './baseConfigSchema.ts'
+import { junctionsConfigSchema } from './junctionsConfigSchema.ts'
 import { normalInsertSizeConfigSchema } from './normalInsertSizeConfigSchema.ts'
 import { readsPileupConfigSchema } from './readsPileupConfigSchema.ts'
-import { sashimiConfigSchema } from './sashimiConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -13,7 +13,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #category display
  * Draws the reads of an `AlignmentsTrack` as a stack of bands: the coverage
  * histogram with the junction arcs over it, the read connections, and the
- * pileup. Each band is one object, `coverage`, `sashimi`, `readConnections`
+ * pileup. Each band is one object, `coverage`, `junctions`, `readConnections`
  * and `pileup`, holding whether it draws and its height; the settings every
  * band shares sit beside them: `filter`, one list of the read, junction and
  * connection tests, `unit`, `facet`, `sort`, `encoding` and `legend`.
@@ -89,7 +89,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   adapter: { type: 'BamAdapter', uri: 'https://example.com/rnaseq.bam' },
  *   displayDefaults: {
  *     coverage: { height: 80 },
- *     sashimi: { placement: 'auto', labels: { show: true } },
+ *     junctions: { placement: 'auto', labels: { show: true } },
  *     filter: [
  *       { field: 'junction.reads', gte: 5 },
  *       { field: 'junction.canonical', equal: true },
@@ -110,12 +110,12 @@ export const linearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      */
     pileup: readsPileupConfigSchema,
     /**
-     * #slot sashimi
+     * #slot junctions
      * The splice-junction arcs, drawn in the coverage band: `show`,
      * `height`, `placement` and `labels`; the `junction` filter fields
      * filter the junctions drawn.
      */
-    sashimi: sashimiConfigSchema,
+    junctions: junctionsConfigSchema,
     /**
      * #slot normalInsertSize
      * The insert sizes a proper pair counts as `normal`, from `min` to

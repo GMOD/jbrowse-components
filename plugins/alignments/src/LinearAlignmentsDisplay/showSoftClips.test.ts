@@ -209,18 +209,18 @@ describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)',
   })
 })
 
-describe('alignments sashimi.labels.show (sashimi arc counts)', () => {
+describe('alignments junctions.labels.show (junction arc counts)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
-    expect(display.showSashimiLabels).toBe(false)
+    expect(display.showJunctionLabels).toBe(false)
   })
 
-  it('setShowSashimiLabels writes the slot both ways', () => {
-    const { display } = createDisplay({ sashimi: { labels: { show: true } } })
-    display.setShowSashimiLabels(false)
-    expect(display.showSashimiLabels).toBe(false)
-    display.setShowSashimiLabels(true)
-    expect(display.showSashimiLabels).toBe(true)
+  it('setShowJunctionLabels writes the slot both ways', () => {
+    const { display } = createDisplay({ junctions: { labels: { show: true } } })
+    display.setShowJunctionLabels(false)
+    expect(display.showJunctionLabels).toBe(false)
+    display.setShowJunctionLabels(true)
+    expect(display.showJunctionLabels).toBe(true)
   })
 })
 

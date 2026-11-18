@@ -69,16 +69,16 @@ describe('resizable band height floor', () => {
     expect(display.coverageHeight).toBe(display.height - 20)
   })
 
-  it('applies the same rule to the sashimi and read-connection bands', () => {
+  it('applies the same rule to the junctions and read-connection bands', () => {
     const display = createDisplay()
-    display.setSashimiHeight(10)
-    expect(display.sashimiHeight).toBe(20)
+    display.setJunctionsHeight(10)
+    expect(display.junctionsHeight).toBe(20)
     display.setReadConnectionsHeight(10)
     expect(display.readConnectionsHeight).toBe(20)
 
-    setConf(requireReadsConf(display), ['sashimi', 'height'], 8)
-    display.setSashimiHeight(9)
-    expect(display.sashimiHeight).toBe(9)
+    setConf(requireReadsConf(display), ['junctions', 'height'], 8)
+    display.setJunctionsHeight(9)
+    expect(display.junctionsHeight).toBe(9)
 
     setConf(display, ['readConnections', 'height'], 8)
     display.setReadConnectionsHeight(9)
@@ -88,19 +88,19 @@ describe('resizable band height floor', () => {
 
 // A band dragged tall stays tall in its slot when the track is later made
 // shorter, and a config can state any height. The layout reserved the bound
-// height while the axis ticks, the arc draw band and the sashimi strips drew
+// height while the axis ticks, the arc draw band and the junctions strips drew
 // the raw one, so the bars and their axis disagreed and arcs painted over the
 // pileup.
 describe('a stated band height past its ceiling', () => {
   it('is drawn at the height the layout reserves', () => {
     const display = createDisplay()
     setConf(display, ['coverage', 'height'], 5000)
-    setConf(requireReadsConf(display), ['sashimi', 'height'], 5000)
+    setConf(requireReadsConf(display), ['junctions', 'height'], 5000)
     setConf(display, ['readConnections', 'height'], 5000)
     const ceiling = display.fitTargetHeight - 20
     expect(display.bandHeights).toEqual({
       coverageHeight: ceiling,
-      sashimiHeight: ceiling,
+      junctionsHeight: ceiling,
       readConnectionsHeight: ceiling,
     })
     expect(display.sections.sections[0]!.bands.reserved.coverage).toBe(ceiling)

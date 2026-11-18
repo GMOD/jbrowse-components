@@ -1,15 +1,15 @@
 ---
 id: linearalignmentsdisplay
 title: LinearAlignmentsDisplay
-description: "Draws the reads of an AlignmentsTrack as a stack of bands: the coverage histogram with the sashimi arcs over it, the read connections, and the pileup."
+description: "Draws the reads of an AlignmentsTrack as a stack of bands: the coverage histogram with the junction arcs over it, the read connections, and the pileup."
 sidebar_label: Display -> LinearAlignmentsDisplay
 ---
 
 Auto-generated from the config schema in the source. See the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts).
 
 Draws the reads of an `AlignmentsTrack` as a stack of bands: the coverage
-histogram with the sashimi arcs over it, the read connections, and the
-pileup. Each band is one object, `coverage`, `sashimi`, `readConnections`
+histogram with the junction arcs over it, the read connections, and the
+pileup. Each band is one object, `coverage`, `junctions`, `readConnections`
 and `pileup`, holding whether it draws and its height; the settings every
 band shares sit beside them: `filter`, one list of the read, junction and
 connection tests, `unit`, `facet`, `sort`, `encoding` and `legend`.
@@ -74,7 +74,7 @@ segment colored by its strand against its molecule's:
 }
 ```
 
-RNA-seq — sashimi arcs placed to avoid crossings, labelled with their read
+RNA-seq — junction arcs placed to avoid crossings, labelled with their read
 counts, dropping junctions under five reads, the non-canonical ones and the
 split-read joins:
 
@@ -87,7 +87,7 @@ split-read joins:
   adapter: { type: 'BamAdapter', uri: 'https://example.com/rnaseq.bam' },
   displayDefaults: {
     coverage: { height: 80 },
-    sashimi: { placement: 'auto', labels: { show: true } },
+    junctions: { placement: 'auto', labels: { show: true } },
     filter: [
       { field: 'junction.reads', gte: 5 },
       { field: 'junction.canonical', equal: true },
@@ -121,12 +121,12 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearAlignmentsDi
 | Slot | Description |
 | --- | --- |
 | <span id="slot-pileup">**pileup**</span><br>[ReadsPileup](../readspileup) | The stacked reads, with the per-base layer drawn over them, whatever fills them: `bases: { show: true, encoding: { color: "modifications" } }`, `"bisulfite"`, `"baseQuality"` or `"base"`. |
-| <span id="slot-sashimi">**sashimi**</span><br>[Sashimi](../sashimi) | The splice-junction arcs, drawn in the coverage band: `show`, `height`, `placement` and `labels`; the `junction` filter fields filter the junctions drawn. |
+| <span id="slot-junctions">**junctions**</span><br>[Junctions](../junctions) | The splice-junction arcs, drawn in the coverage band: `show`, `height`, `placement` and `labels`; the `junction` filter fields filter the junctions drawn. |
 | <span id="slot-normalinsertsize">**normalInsertSize**</span><br>[NormalInsertSize](../normalinsertsize) | The insert sizes a proper pair counts as `normal`, from `min` to `max` bp: shorter is `short`, longer `long`, under `insertSizeAndOrientation`, on the reads, the connections and the hover alike. Unset, each region's band is sampled from its pairs. |
 | <span class="slot-group">Inherited from [BaseLinearAlignmentsDisplay](../baselinearalignmentsdisplay)</span> | <span class="slot-group-count">12 slots</span> |
 | <span id="slot-height">**height**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does. Unset, the track opens at 250 with the pileup shown and at 100 with it hidden, and showing or hiding the pileup from the menu writes the height it had, so the toggle never resizes the track |
 | <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('read', 'chain') = <code>'read'</code> | The unit one row draws: a read, or a chain, which is a read, its mate and its split segments rather than a UCSC chain file's alignment (the "View as pairs/link supplementary alignments" menu row) |
-| <span id="slot-filter">**filter**</span><br>[FieldPredicate](../fieldpredicate) | The alignments drawn, a list of [](/docs/config/fieldpredicate) entries every one of which must hold. The flags, `mapq` and tags decide which reads count, so coverage, the sashimi junctions and the insert-size colors count only the reads they pass: `flags.UNMAP` and the other samtools flag names, `mapq` (MAPQ 255, none reported, passes a floor), and `tags.HP` and any other tag. `name` and the read categories pick which of those reads the pileup, the arcs, the consensus and an export draw, and leave coverage whole: `spliced` per alignment, and `svSignal`, `alone` and `split` over a read, its mate and its split segments together, each taking `equal: true` or `false`. The `facet` read fields `pairOrientation`, `pairing`, `svKind`, `firstOfPairStrand` (`1` or `-1`), `mateRefName`, `alignedRefNames` and `mateAssembly` pick drawn reads too, each read by the section a facet by read files it under (`svKind` by its whole chain's), with `equal` or `oneOf` of their values, or `valid: false` for the reads with none; `alignedRefNames`, the references every alignment of the read's chain is on (its split pieces, and a pair's both mates), passes when any of them does, so an entry each for `chr9` and `chr22` keeps a split read aligned to both and a pair with a mate on each; a read's strand is `flags.REVERSE`. A facet on a category gives its own coverage. `junction.reads`, `junction.canonical` (a split junction reads no motif and counts as canonical, so `equal: false` hides it), `junction.class` (`splice` for an N gap, or a split read's `deletion`, `duplication` or `inversion`) and `junction.source` (`gap` or `split`) test the sashimi junctions, and `connection.interchrom`, `connection.offscreen` and `breakpoint.reads` the connections the arcs, the read cloud and the connectors draw.<br><br>A written list merges with the defaults by field: unmapped, QC-failed and duplicate reads out (`flags.UNMAP`, `flags.QCFAIL` and `flags.DUP` `equal: false`), and `junction.reads` and `breakpoint.reads` at least 2. An entry replaces the defaults for the field it names, and an entry naming a field with no test, such as `{ field: "flags.DUP" }`, only removes them. |
+| <span id="slot-filter">**filter**</span><br>[FieldPredicate](../fieldpredicate) | The alignments drawn, a list of [](/docs/config/fieldpredicate) entries every one of which must hold. The flags, `mapq` and tags decide which reads count, so coverage, the junction arcs and the insert-size colors count only the reads they pass: `flags.UNMAP` and the other samtools flag names, `mapq` (MAPQ 255, none reported, passes a floor), and `tags.HP` and any other tag. `name` and the read categories pick which of those reads the pileup, the arcs, the consensus and an export draw, and leave coverage whole: `spliced` per alignment, and `svSignal`, `alone` and `split` over a read, its mate and its split segments together, each taking `equal: true` or `false`. The `facet` read fields `pairOrientation`, `pairing`, `svKind`, `firstOfPairStrand` (`1` or `-1`), `mateRefName`, `alignedRefNames` and `mateAssembly` pick drawn reads too, each read by the section a facet by read files it under (`svKind` by its whole chain's), with `equal` or `oneOf` of their values, or `valid: false` for the reads with none; `alignedRefNames`, the references every alignment of the read's chain is on (its split pieces, and a pair's both mates), passes when any of them does, so an entry each for `chr9` and `chr22` keeps a split read aligned to both and a pair with a mate on each; a read's strand is `flags.REVERSE`. A facet on a category gives its own coverage. `junction.reads`, `junction.canonical` (a split junction reads no motif and counts as canonical, so `equal: false` hides it), `junction.class` (`splice` for an N gap, or a split read's `deletion`, `duplication` or `inversion`) and `junction.source` (`gap` or `split`) test the junctions band's arcs, and `connection.interchrom`, `connection.offscreen` and `breakpoint.reads` the connections the arcs, the read cloud and the connectors draw.<br><br>A written list merges with the defaults by field: unmapped, QC-failed and duplicate reads out (`flags.UNMAP`, `flags.QCFAIL` and `flags.DUP` `equal: false`), and `junction.reads` and `breakpoint.reads` at least 2. An entry replaces the defaults for the field it names, and an entry naming a field with no test, such as `{ field: "flags.DUP" }`, only removes them. |
 | <span id="slot-facet">**facet**</span><br>[SectionFacet](../sectionfacet) | In-track stacked grouping, one labelled section per value: a read dimension (`strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svKind`, `mapq`, `mateRefName`, `alignedRefNames` (one section per set of references, `chr22 + chr9`), `mateAssembly`), a tag (`tags.HP`), or any other field. `{ field: "tags.HP", sort: ["2", "1"] }` stacks the listed values first. |
 | <span id="slot-sort">**sort**</span><br>[AlignmentsSort](../alignmentssort) | The pileup's row order by one `field`: a whole-window order (`position`, `length`, `spliced`, `split`, `svSignal`) or a column sort at one base (`{ field: "strand", pos, refName }`). |
 | <span id="slot-encoding">**encoding**</span><br>[AlignmentsEncoding](../alignmentsencoding) | The channels the reads paint through: `encoding.color`, the read fill. |

@@ -15,11 +15,11 @@ import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult, transferableBuffers } from '@jbrowse/core/util/librpc'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
-import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
 import {
   computeSplitJunctions,
   fetchedSplitSegments,
-} from '../features/sashimi/splitJunctions.ts'
+} from '../features/junctions/splitJunctions.ts'
+import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
 import { buildBaseFeatureData } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
@@ -48,8 +48,8 @@ import { getFlags } from '../shared/util.ts'
 import { drawnReadMask, mateKey } from './filterChainFeatures.ts'
 import { sampleLanes } from './sampleLanes.ts'
 
-import type { JunctionReference } from '../features/sashimi/compute.ts'
-import type { FetchedSegments } from '../features/sashimi/splitJunctions.ts'
+import type { JunctionReference } from '../features/junctions/compute.ts'
+import type { FetchedSegments } from '../features/junctions/splitJunctions.ts'
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ModCoverageKind } from '../shared/runCoveragePipeline.ts'

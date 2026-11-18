@@ -184,9 +184,9 @@ describe('a display with the pileup hidden', () => {
       ['c', 83],
     ])
     expect(sections.map(s => s.bands.reserved)).toEqual([
-      { coverage: 48, readConnections: 0, sashimi: 0 },
-      { coverage: 48, readConnections: 35, sashimi: 0 },
-      { coverage: 48, readConnections: 0, sashimi: 0 },
+      { coverage: 48, readConnections: 0, junctions: 0 },
+      { coverage: 48, readConnections: 35, junctions: 0 },
+      { coverage: 48, readConnections: 0, junctions: 0 },
     ])
     expect(display.coverageBandHeight).toBe(83 - display.readConnectionsHeight)
     expect(contentHeight).toBeLessThanOrEqual(display.height)
@@ -201,7 +201,7 @@ describe('a display with the pileup hidden', () => {
     expect(display.sections.sections[0]!.bands.reserved).toEqual({
       coverage: 25,
       readConnections: 35,
-      sashimi: 0,
+      junctions: 0,
     })
   })
 
@@ -219,7 +219,7 @@ describe('a display with the pileup hidden', () => {
     expect(display.sections.sections[0]!.bands.reserved).toEqual({
       coverage: 185,
       readConnections: 65,
-      sashimi: 0,
+      junctions: 0,
     })
     expect(display.coverageHeight).toBe(coverageHeight)
     expect(display.height).toBe(height)

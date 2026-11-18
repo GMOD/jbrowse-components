@@ -91,7 +91,7 @@ describe('runCoveragePipeline coverage-band gate', () => {
     expect(packedOff.snpPackedBuffer.byteLength).toBe(0)
     expect(packedOff.interbasePackedBuffer.byteLength).toBe(0)
     expect(packedOff.modCovPackedBuffer.byteLength).toBe(0)
-    expect(noBand.sashimi.sashimiX1.length).toBe(0)
+    expect(noBand.junctionArrays.junctionX1.length).toBe(0)
 
     // With the band on, the SNP segment IS produced (50% variant at depth 40).
     const snp = readSnpSegments(withBand.coverageAreaPacked.snpPackedBuffer)
@@ -134,8 +134,8 @@ test('the junctions run without the coverage band, unless asked not to', async (
     runCoveragePipeline({ ...baseArgs, gaps, showCoverage: false, junctions })
   const kept = await run(true)
   expect(kept.coverage.depths.length).toBe(0)
-  expect(Array.from(kept.sashimi.sashimiX1)).toEqual([20])
-  expect((await run(false)).sashimi.sashimiX1.length).toBe(0)
+  expect(Array.from(kept.junctionArrays.junctionX1)).toEqual([20])
+  expect((await run(false)).junctionArrays.junctionX1.length).toBe(0)
 })
 
 describe('runCoveragePipeline bisulfite mod coverage', () => {

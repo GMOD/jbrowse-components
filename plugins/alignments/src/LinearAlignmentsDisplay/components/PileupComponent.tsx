@@ -13,8 +13,8 @@ import { LANE_BAND_ORDER, laneBandHandle } from '../sectionLayout.ts'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
 import BandChipsOverlay from './BandChipsOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
+import JunctionLabelsOverlay from './JunctionLabelsOverlay.tsx'
 import PileupTruncationRule from './PileupTruncationRule.tsx'
-import SashimiLabelsOverlay from './SashimiLabelsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { bandScreenTop, contentScreenY, sectionKey } from './sectionScreen.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
@@ -81,7 +81,7 @@ const PileupBody = observer(function PileupBody({
       <BandChipsOverlay model={model} />
       <PileupTruncationRule model={model} />
 
-      <SashimiLabelsOverlay model={model} />
+      <JunctionLabelsOverlay model={model} />
       <ArcHoverOverlay model={model} />
 
       <VisibleLabelsHost model={model} width={width} height={height} />
@@ -104,7 +104,7 @@ const PileupBody = observer(function PileupBody({
 // Shared horizontal drag handle for the pileup's resizable bands. Callers pass
 // the screen-space `seam` and the canvas height; the strip is the shared
 // `BandSeamHandle`, and the off-screen cull and the `value`/`onChange` contract
-// are uniform across coverage, arc/sashimi, and group handles.
+// are uniform across coverage, arc/junctions, and group handles.
 //
 // `gain` (see `useResizeDrag`) is what keeps a handle on a DISPLAY-GLOBAL band
 // under the pointer: growing the coverage height grows the bands of the groups
@@ -155,7 +155,7 @@ export const PileupResizeHandle = observer(function PileupResizeHandle({
 const BAND_NAMES: Record<LaneBandKey, string> = {
   coverage: 'coverage',
   readConnections: 'read connections',
-  sashimi: 'sashimi',
+  junctions: 'junctions',
 }
 
 const SET_BAND_HEIGHT: Record<
@@ -168,8 +168,8 @@ const SET_BAND_HEIGHT: Record<
   readConnections: (model, height) => {
     model.setReadConnectionsHeight(height)
   },
-  sashimi: (model, height) => {
-    model.setSashimiHeight(height)
+  junctions: (model, height) => {
+    model.setJunctionsHeight(height)
   },
 }
 

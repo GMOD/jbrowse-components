@@ -259,7 +259,7 @@
 <title>overlays</title>
 <polygon fill="none" stroke="black" points="431,-36 211,-36 211,0 431,0 431,-36"/>
 <text xml:space="preserve" text-anchor="middle" x="321" y="-21.25" font-family="monospace" font-size="10.00">React SVG overlays:</text>
-<text xml:space="preserve" text-anchor="middle" x="321" y="-8.5" font-family="monospace" font-size="10.00">sashimi, bezier, cross&#45;region arcs</text>
+<text xml:space="preserve" text-anchor="middle" x="321" y="-8.5" font-family="monospace" font-size="10.00">junctions, bezier, cross&#45;region arcs</text>
 </g>
 <!-- arc&#45;&gt;overlays -->
 <g id="edge21" class="edge">

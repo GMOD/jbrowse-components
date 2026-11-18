@@ -147,17 +147,17 @@ test('group draws per-section read-cloud lines', async () => {
   expectCanvasMatch(findCanvasIn(el), RECOLOR_THRESHOLD)
 }, 90000)
 
-// Sashimi junction arcs draw per stacked section. Grouping spliced RNA-seq
+// Junction arcs draw per stacked section. Grouping spliced RNA-seq
 // reads by strand keeps each junction in its read's strand group, so each
 // section's arcs come only from that section's reads.
-test('group draws per-section sashimi arcs', async () => {
+test('group draws per-section junction arcs', async () => {
   const { view } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
   fireEvent.click(await screen.findByTestId(hts('spliced'), ...opts))
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
-  display.setShowSashimi(true)
+  display.setShowJunctions(true)
   display.facetByField('strand')
 
   await waitFor(
@@ -170,8 +170,8 @@ test('group draws per-section sashimi arcs', async () => {
       // is below the default `junction.reads` floor of 2. Asserting each section by
       // key (rather than just "some section has arcs") is what pins arcs to the
       // group whose reads produced them.
-      expect(display.sashimiJunctionSections.length).toBe(2)
-      const [forward, reverse] = display.sashimiJunctionSections
+      expect(display.junctionSections.length).toBe(2)
+      const [forward, reverse] = display.junctionSections
       expect(forward!.groupKey).toBe('1')
       expect(reverse!.groupKey).toBe('-1')
       expect(forward!.junctions.length).toBe(0)
@@ -179,7 +179,7 @@ test('group draws per-section sashimi arcs', async () => {
       // and each lane's marks are fed its own junctions
       const drawn = (key: string) =>
         [
-          ...(display.themed.sashimiFeedsByGroup.get(key)?.values() ?? []),
+          ...(display.themed.junctionFeedsByGroup.get(key)?.values() ?? []),
         ].reduce((n, feed) => n + feed.up.count + feed.down.count, 0)
       expect(drawn('1')).toBe(0)
       expect(drawn('-1')).toBe(reverse!.junctions.length)
@@ -196,23 +196,23 @@ test('group draws per-section sashimi arcs', async () => {
 // lone single-read junction (ctgA:23074, 87M6023N13M) in the forward section
 // and nowhere else. Without this, a regression that dropped a group's junctions
 // on the floor entirely would still satisfy the test above.
-test('lowering the sashimi score reveals a group-specific junction', async () => {
+test('lowering the junction score reveals a group-specific junction', async () => {
   const { view } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
   fireEvent.click(await screen.findByTestId(hts('spliced'), ...opts))
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
-  display.setShowSashimi(true)
+  display.setShowJunctions(true)
   display.facetByField('strand')
   await waitFor(() => {
-    expect(display.sashimiJunctionSections.length).toBe(2)
+    expect(display.junctionSections.length).toBe(2)
   }, delay)
 
   display.setJunctionFilter({ minReads: 0 })
 
   await waitFor(() => {
-    const forward = display.sashimiJunctionSections[0]!
+    const forward = display.junctionSections[0]!
     expect(forward.groupKey).toBe('1')
     // exactly one junction on this strand, supported by exactly one read.
     expect(forward.junctions.length).toBe(1)

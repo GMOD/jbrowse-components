@@ -39,7 +39,7 @@ function withReadPair(display: TestDisplay) {
 }
 
 function withJunction(display: TestDisplay) {
-  display.setShowSashimi(true)
+  display.setShowJunctions(true)
   display.setRpcData(
     0,
     {
@@ -49,14 +49,14 @@ function withJunction(display: TestDisplay) {
           label: '',
           data: {
             ...makeEmptyPileupData(),
-            sashimiX1: new Uint32Array([1000]),
-            sashimiX2: new Uint32Array([5000]),
-            sashimiFwd: new Uint32Array([0]),
-            sashimiRev: new Uint32Array([0]),
-            sashimiDonors: new Uint8Array([0]),
-            sashimiAcceptors: new Uint8Array([0]),
-            sashimiClass: new Uint8Array([0]),
-            sashimiCounts: new Uint32Array([20]),
+            junctionX1: new Uint32Array([1000]),
+            junctionX2: new Uint32Array([5000]),
+            junctionFwd: new Uint32Array([0]),
+            junctionRev: new Uint32Array([0]),
+            junctionDonors: new Uint8Array([0]),
+            junctionAcceptors: new Uint8Array([0]),
+            junctionSplitClass: new Uint8Array([0]),
+            junctionCounts: new Uint32Array([20]),
           },
         },
       ],
@@ -137,13 +137,13 @@ describe('the read connections export where their placement puts them', () => {
   })
 })
 
-describe('the sashimi arcs export where their placement puts them', () => {
+describe('the junction arcs export where their placement puts them', () => {
   test('above: in the strip over coverage, standing on its floor', async () => {
     const display = booted(d => {
       withJunction(d)
-      d.setSashimiPlacement('above')
+      d.setJunctionsPlacement('above')
     })
-    const strip = display.sashimiHeight
+    const strip = display.junctionsHeight
     expect(await exportedArc(display)).toEqual({
       clipTop: 0,
       clipHeight: strip,
@@ -156,11 +156,11 @@ describe('the sashimi arcs export where their placement puts them', () => {
   test('below: in the strip under coverage, hanging from its top', async () => {
     const display = booted(d => {
       withJunction(d)
-      d.setSashimiPlacement('below')
+      d.setJunctionsPlacement('below')
     })
     expect(await exportedArc(display)).toEqual({
       clipTop: display.coverageHeight,
-      clipHeight: display.sashimiHeight,
+      clipHeight: display.junctionsHeight,
       footY: display.coverageHeight,
       rises: false,
     })
@@ -173,10 +173,10 @@ describe('the sashimi arcs export where their placement puts them', () => {
   test('above, coverage hidden: the strip keeps its place', async () => {
     const display = booted(d => {
       d.setShowCoverage(false)
-      d.setSashimiPlacement('above')
+      d.setJunctionsPlacement('above')
       withJunction(d)
     })
-    const strip = display.sashimiHeight
+    const strip = display.junctionsHeight
     expect(await exportedArc(display)).toEqual({
       clipTop: 0,
       clipHeight: strip,
@@ -188,12 +188,12 @@ describe('the sashimi arcs export where their placement puts them', () => {
   test('overlay, coverage hidden: the arcs hang in a strip of their own', async () => {
     const display = booted(d => {
       d.setShowCoverage(false)
-      d.setSashimiPlacement('overlay')
+      d.setJunctionsPlacement('overlay')
       withJunction(d)
     })
     expect(await exportedArc(display)).toEqual({
       clipTop: 0,
-      clipHeight: display.sashimiHeight,
+      clipHeight: display.junctionsHeight,
       footY: 0,
       rises: false,
     })

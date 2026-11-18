@@ -370,11 +370,11 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'exports SVG with alignments including sashimi arcs',
+      name: 'exports SVG with alignments including junction arcs',
       fn: async page => {
         const downloadDir = await setupDownloadInterception(page)
         // 'spliced' is the volvox-rnaseq BAM — spliced reads (N CIGAR) are what
-        // produce sashimi arcs; the plain DNA alignment track has none.
+        // produce junction arcs; the plain DNA alignment track has none.
         await navigateWithSessionSpec(page, {
           views: [
             {
@@ -394,9 +394,11 @@ const suite: TestSuite = {
           'svg-export-sashimi-arcs',
         )
         const pathCount = (svg.match(/<path/g) ?? []).length
-        console.log(`    ${pathCount} path elements (includes sashimi arcs)`)
+        console.log(`    ${pathCount} path elements (includes junction arcs)`)
         if (pathCount === 0) {
-          throw new Error('sashimi SVG export has no <path> elements (no arcs)')
+          throw new Error(
+            'junctions SVG export has no <path> elements (no arcs)',
+          )
         }
       },
     },

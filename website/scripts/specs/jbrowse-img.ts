@@ -385,7 +385,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'height:90',
     '--bam',
     'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam',
-    'sashimi:auto',
+    'junctions:auto',
     'coverage.height=170',
     // junction depth spans three orders of magnitude; a linear axis flattens
     // every exon but the last

@@ -84,7 +84,7 @@ function sources(): AlignmentsSources {
       {
         groupKey: '',
         arcFeeds: new Map(),
-        sashimiFeeds: new Map(),
+        junctionFeeds: new Map(),
         connectorFeeds: new Map(),
         laidOutPileupMap: new Map([
           [

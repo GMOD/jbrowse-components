@@ -1,19 +1,19 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
 import {
-  SASHIMI_LABEL_FONT_SIZE,
-  SASHIMI_LABEL_HALO_WIDTH,
-} from '../../features/sashimi/computeOverlay.ts'
+  JUNCTION_LABEL_FONT_SIZE,
+  JUNCTION_LABEL_HALO_WIDTH,
+} from '../../features/junctions/computeOverlay.ts'
 
-import type { SashimiLabel } from '../renderers/sashimiMarks.ts'
+import type { JunctionLabel } from '../renderers/junctionMarks.ts'
 
 // The read count at each arc's apex, shared by the overlay and the export. The
 // halo is the surface color, so it reads in either theme.
 // eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
-export default function SashimiLabels({
+export default function JunctionLabels({
   labels,
 }: {
-  labels: readonly SashimiLabel[]
+  labels: readonly JunctionLabel[]
 }) {
   const palette = usePalette()
   return labels.map(label => (
@@ -23,10 +23,10 @@ export default function SashimiLabels({
       y={label.y}
       textAnchor="middle"
       dominantBaseline="central"
-      fontSize={SASHIMI_LABEL_FONT_SIZE}
+      fontSize={JUNCTION_LABEL_FONT_SIZE}
       fill={palette.text.primary}
       stroke={palette.background.paper}
-      strokeWidth={SASHIMI_LABEL_HALO_WIDTH}
+      strokeWidth={JUNCTION_LABEL_HALO_WIDTH}
       paintOrder="stroke"
       style={{ pointerEvents: 'none', userSelect: 'none' }}
     >

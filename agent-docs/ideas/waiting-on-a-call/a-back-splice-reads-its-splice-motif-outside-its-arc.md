@@ -6,9 +6,9 @@ description: A duplication-type split junction (a circRNA back-splice) reads no 
 # A back-splice reads its splice motif outside its arc
 
 Found auditing circRNA support on 2026-11-12. A split junction reads no motif:
-`computeSashimiJunctions` (`plugins/alignments/src/features/sashimi/compute.ts`)
+`computeJunctions` (`plugins/alignments/src/features/junctions/compute.ts`)
 ships `DINUCLEOTIDE_UNKNOWN` for both halves, `passesJunctionFilter`
-(`junctions.ts`) counts unknown as canonical, and `formatSashimiTooltip`
+(`junctions.ts`) counts unknown as canonical, and `formatJunctionTooltip`
 (`LinearAlignmentsDisplay/components/tooltipUtils.ts`) leaves the motif and
 strand lines off. So **Hide non-canonical** keeps every back-splice, and nothing
 separates a real circle (GT-AG at the back-splice) from a reverse-transcription

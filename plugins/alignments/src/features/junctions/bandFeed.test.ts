@@ -2,16 +2,16 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { arcCategoryColor } from '../../shaders/palettes.ts'
-import { buildSashimiBandFeeds } from './bandFeed.ts'
+import { buildJunctionsBandFeeds } from './bandFeed.ts'
 import { junctionKey } from './junctions.ts'
 
-import type { SashimiSplitClass } from './junctionClass.ts'
+import type { JunctionSplitClass } from './junctionClass.ts'
 import type { MergedJunction } from './junctions.ts'
 
 function junction(
   start: number,
   end: number,
-  split?: SashimiSplitClass,
+  split?: JunctionSplitClass,
 ): MergedJunction {
   return {
     key: junctionKey('chr1', start, end, split),
@@ -27,7 +27,7 @@ function junction(
 
 test('a split junction paints its read arc color, a splice junction its strand', () => {
   const colors = makeTestPalette()
-  const feeds = buildSashimiBandFeeds({
+  const feeds = buildJunctionsBandFeeds({
     junctions: [
       junction(100, 500),
       junction(200, 900, 'splitBack'),

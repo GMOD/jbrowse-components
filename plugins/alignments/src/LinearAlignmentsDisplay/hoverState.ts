@@ -1,8 +1,8 @@
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 
-import { sameLaneJunction } from '../features/sashimi/supportingReads.ts'
+import { sameLaneJunction } from '../features/junctions/supportingReads.ts'
 
-import type { HoveredJunction } from '../features/sashimi/supportingReads.ts'
+import type { HoveredJunction } from '../features/junctions/supportingReads.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 

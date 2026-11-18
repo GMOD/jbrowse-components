@@ -1,4 +1,4 @@
-import { SASHIMI_SIDES } from '../../features/sashimi/bandFeed.ts'
+import { JUNCTION_SIDES } from '../../features/junctions/bandFeed.ts'
 import {
   ARC_CLIPPED_MARKS,
   ARC_LINK_MARKS,
@@ -6,7 +6,7 @@ import {
   arcBandState,
 } from './arcMarks.ts'
 import { CONNECTOR_MARK, connectorBandState } from './connectorMarks.ts'
-import { SASHIMI_MARK, sashimiBandState } from './sashimiMarks.ts'
+import { JUNCTION_MARK, junctionsBandState } from './junctionMarks.ts'
 
 import type { DisplayRenderState, SectionSource } from './rendererTypes.ts'
 import type { Mark, MarkFrame } from '@jbrowse/render-core/marks'
@@ -35,7 +35,7 @@ export interface BandPassVisitor {
 /**
  * The bands both renderers draw after every block, in draw order: each
  * section's pileup connectors, then each section's read connections, then
- * each section's sashimi sides. A band with no feed or no strip is left out.
+ * each section's junctions sides. A band with no feed or no strip is left out.
  */
 export function forEachBandPass(
   sections: readonly SectionSource[],
@@ -71,11 +71,11 @@ export function forEachBandPass(
     }
   })
   state.sections.forEach((sec, section) => {
-    const feeds = sections[section]?.sashimiFeeds
+    const feeds = sections[section]?.junctionFeeds
     if (feeds && feeds.size > 0) {
-      const bandState = sashimiBandState(state, sec)
-      for (const side of SASHIMI_SIDES) {
-        const band = bandState.sashimi[side]
+      const bandState = junctionsBandState(state, sec)
+      for (const side of JUNCTION_SIDES) {
+        const band = bandState.junctions[side]
         if (band && band.clipHeight > 0) {
           visitor.visit({
             section,
@@ -83,7 +83,7 @@ export function forEachBandPass(
             height: band.clipHeight,
             state: bandState,
             feeds,
-            spanning: [SASHIMI_MARK[side]],
+            spanning: [JUNCTION_MARK[side]],
           })
         }
       }

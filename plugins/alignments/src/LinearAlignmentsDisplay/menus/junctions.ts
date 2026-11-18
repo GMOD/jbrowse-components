@@ -4,33 +4,35 @@ import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 import { junctionEntries } from '../../shared/alignmentsFilter.ts'
 
 import type { JunctionFilter } from '../../shared/types.ts'
-import type { SashimiPlacement } from '../constants.ts'
+import type { JunctionsPlacement } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { FieldsPatch } from '@jbrowse/core/util/fieldPredicate'
 
-const SASHIMI_PLACEMENT_OPTIONS: { value: SashimiPlacement; label: string }[] =
-  [
-    { value: 'auto', label: 'Auto (minimize overlap)' },
-    { value: 'overlay', label: 'Over coverage' },
-    { value: 'above', label: 'Above coverage' },
-    { value: 'below', label: 'Below coverage' },
-  ]
+const JUNCTIONS_PLACEMENT_OPTIONS: {
+  value: JunctionsPlacement
+  label: string
+}[] = [
+  { value: 'auto', label: 'Auto (minimize overlap)' },
+  { value: 'overlay', label: 'Over coverage' },
+  { value: 'above', label: 'Above coverage' },
+  { value: 'below', label: 'Below coverage' },
+]
 
-export interface SashimiModel {
-  showSashimi: boolean
-  setShowSashimi: (show: boolean) => void
-  showSashimiLabels: boolean
-  setShowSashimiLabels: (show: boolean) => void
+export interface JunctionsModel {
+  showJunctions: boolean
+  setShowJunctions: (show: boolean) => void
+  showJunctionLabels: boolean
+  setShowJunctionLabels: (show: boolean) => void
 }
 
-interface SashimiPlacementModel {
-  showSashimi: boolean
-  sashimiPlacement: SashimiPlacement
-  setSashimiPlacement: (placement: SashimiPlacement) => void
+interface JunctionsPlacementModel {
+  showJunctions: boolean
+  junctionsPlacement: JunctionsPlacement
+  setJunctionsPlacement: (placement: JunctionsPlacement) => void
 }
 
 interface JunctionFilterModel {
-  showSashimi: boolean
+  showJunctions: boolean
   junctionFilter: JunctionFilter
   setFilterFields: (patch: FieldsPatch) => void
 }
@@ -40,7 +42,7 @@ interface JunctionFilterModel {
  * split-read and min-reads filters are in the "More filters..." dialog.
  */
 export function getJunctionFilterItems(model: JunctionFilterModel): MenuItem[] {
-  return model.showSashimi
+  return model.showJunctions
     ? [
         categoryFilterItem(
           {
@@ -63,18 +65,18 @@ export function getJunctionFilterItems(model: JunctionFilterModel): MenuItem[] {
 }
 
 /** The arcs' rows in "Show": the arcs, and while they draw their counts. */
-export function sashimiShowItems(model: SashimiModel): MenuItem[] {
+export function junctionsShowItems(model: JunctionsModel): MenuItem[] {
   return [
-    toggleItem('Show junctions', model.showSashimi, show => {
-      model.setShowSashimi(show)
+    toggleItem('Show junctions', model.showJunctions, show => {
+      model.setShowJunctions(show)
     }),
-    ...(model.showSashimi
+    ...(model.showJunctions
       ? [
           toggleItem(
             'Show junction read counts',
-            model.showSashimiLabels,
+            model.showJunctionLabels,
             show => {
-              model.setShowSashimiLabels(show)
+              model.setShowJunctionLabels(show)
             },
           ),
         ]
@@ -87,19 +89,19 @@ export function sashimiShowItems(model: SashimiModel): MenuItem[] {
  * coverage band, where the choice is still between the strip above, arcs
  * rising, and the strip below.
  */
-export function getSashimiPlacementItems(
-  model: SashimiPlacementModel,
+export function getJunctionsPlacementItems(
+  model: JunctionsPlacementModel,
 ): MenuItem[] {
-  return model.showSashimi
+  return model.showJunctions
     ? [
         {
           label: 'Junction placement',
           type: 'subMenu' as const,
           subMenu: radioItems(
-            SASHIMI_PLACEMENT_OPTIONS,
-            model.sashimiPlacement,
+            JUNCTIONS_PLACEMENT_OPTIONS,
+            model.junctionsPlacement,
             placement => {
-              model.setSashimiPlacement(placement)
+              model.setJunctionsPlacement(placement)
             },
           ),
         },

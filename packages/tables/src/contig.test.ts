@@ -43,14 +43,14 @@ test('an alignments table reports the band settings it composed in its config', 
     ...BAM,
     display: {
       coverage: { show: false },
-      sashimi: { height: 50 },
+      junctions: { height: 50 },
       pileup: { mark: { height: 3 } },
     },
   })
   expect(t.config).toMatchObject({
     coverage: { show: false, height: 45 },
     pileup: { show: true, fadeLowFrequency: true, mark: { height: 3 } },
-    sashimi: { height: 50, labels: { show: false } },
+    junctions: { height: 50, labels: { show: false } },
     readConnections: { show: false, mark: { type: 'link' } },
   })
 })

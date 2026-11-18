@@ -69,8 +69,8 @@ function facetedWithArcs() {
 // coverage and pushes the 2-read one to the strip below.
 function displayWithSplitJunctions() {
   const { display } = createTestAlignmentsDisplay()
-  display.setShowSashimi(true)
-  display.setSashimiPlacement('auto')
+  display.setShowJunctions(true)
+  display.setJunctionsPlacement('auto')
   display.setJunctionFilter({ minReads: 0 })
   display.setRpcData(
     0,
@@ -81,14 +81,14 @@ function displayWithSplitJunctions() {
           label: '',
           data: {
             ...makeEmptyPileupData(),
-            sashimiX1: new Uint32Array([100, 300]),
-            sashimiX2: new Uint32Array([500, 700]),
-            sashimiFwd: new Uint32Array([0, 0]),
-            sashimiRev: new Uint32Array([0, 0]),
-            sashimiDonors: new Uint8Array([0, 0]),
-            sashimiAcceptors: new Uint8Array([0, 0]),
-            sashimiClass: new Uint8Array([0, 0]),
-            sashimiCounts: new Uint32Array([20, 2]),
+            junctionX1: new Uint32Array([100, 300]),
+            junctionX2: new Uint32Array([500, 700]),
+            junctionFwd: new Uint32Array([0, 0]),
+            junctionRev: new Uint32Array([0, 0]),
+            junctionDonors: new Uint8Array([0, 0]),
+            junctionAcceptors: new Uint8Array([0, 0]),
+            junctionSplitClass: new Uint8Array([0, 0]),
+            junctionCounts: new Uint32Array([20, 2]),
           },
         },
       ],
@@ -149,10 +149,10 @@ test('the coverage chip hides the coverage band', () => {
 
 test('junctions split by auto placement get one chip, on their strip', () => {
   const display = displayWithSplitJunctions()
-  expect(display.renderSections[0]!.bands.reserved.sashimi).toBeGreaterThan(0)
+  expect(display.renderSections[0]!.bands.reserved.junctions).toBeGreaterThan(0)
   expect(screen.getAllByTestId('band_chip_Junctions')).toHaveLength(1)
   expect(
-    within(screen.getByTestId('band_chips_sashimi')).getByTitle(
+    within(screen.getByTestId('band_chips_junctions')).getByTitle(
       'Hide junctions',
     ),
   ).toBeTruthy()
@@ -161,7 +161,7 @@ test('junctions split by auto placement get one chip, on their strip', () => {
 test('the junctions chip hides the junctions', () => {
   const display = displayWithSplitJunctions()
   fireEvent.click(screen.getByTitle('Hide junctions'))
-  expect(display.showSashimi).toBe(false)
+  expect(display.showJunctions).toBe(false)
   expect(display.showCoverage).toBe(true)
   expect(display.showPileup).toBe(true)
 })

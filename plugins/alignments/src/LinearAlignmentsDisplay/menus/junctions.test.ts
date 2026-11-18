@@ -7,26 +7,26 @@ import {
 } from '../../shared/alignmentsFilter.ts'
 import {
   getJunctionFilterItems,
-  getSashimiPlacementItems,
-  sashimiShowItems,
-} from './sashimi.ts'
+  getJunctionsPlacementItems,
+  junctionsShowItems,
+} from './junctions.ts'
 
 import type { JunctionFilter, JunctionFilterPatch } from '../../shared/types.ts'
-import type { SashimiPlacement } from '../constants.ts'
+import type { JunctionsPlacement } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
 function makeModel() {
   return {
-    showSashimi: false,
-    setShowSashimi(v: boolean) {
-      this.showSashimi = v
+    showJunctions: false,
+    setShowJunctions(v: boolean) {
+      this.showJunctions = v
     },
-    showSashimiLabels: false,
-    setShowSashimiLabels() {},
-    sashimiPlacement: 'auto' as SashimiPlacement,
-    setSashimiPlacement(mode: SashimiPlacement) {
-      this.sashimiPlacement = mode
+    showJunctionLabels: false,
+    setShowJunctionLabels() {},
+    junctionsPlacement: 'auto' as JunctionsPlacement,
+    setJunctionsPlacement(mode: JunctionsPlacement) {
+      this.junctionsPlacement = mode
     },
     // the display's own write and read of `filter`
     filter: [] as FieldPredicate[],
@@ -61,24 +61,24 @@ function click(items: MenuItem[], label: string) {
   row.onClick()
 }
 
-describe('sashimi rows in Show', () => {
+describe('junctions rows in Show', () => {
   test('the counts appear only while the arcs draw', () => {
     const model = makeModel()
-    expect(labelsOf(sashimiShowItems(model))).toEqual(['Show junctions'])
-    model.showSashimi = true
-    expect(labelsOf(sashimiShowItems(model))).toEqual([
+    expect(labelsOf(junctionsShowItems(model))).toEqual(['Show junctions'])
+    model.showJunctions = true
+    expect(labelsOf(junctionsShowItems(model))).toEqual([
       'Show junctions',
       'Show junction read counts',
     ])
   })
 })
 
-describe('sashimi placement row', () => {
+describe('junctions placement row', () => {
   test('appears while the arcs draw', () => {
     const model = makeModel()
-    expect(getSashimiPlacementItems(model)).toEqual([])
-    model.showSashimi = true
-    expect(labelsOf(getSashimiPlacementItems(model))).toEqual([
+    expect(getJunctionsPlacementItems(model)).toEqual([])
+    model.showJunctions = true
+    expect(labelsOf(getJunctionsPlacementItems(model))).toEqual([
       'Junction placement',
     ])
   })
@@ -86,30 +86,30 @@ describe('sashimi placement row', () => {
   // The model the row reads has no coverage member, so a strip above coverage
   // can be left from the menu with the band hidden.
   test('leaves the strip above coverage on click', () => {
-    const model = { ...makeModel(), showSashimi: true }
-    model.sashimiPlacement = 'above'
+    const model = { ...makeModel(), showJunctions: true }
+    model.junctionsPlacement = 'above'
     click(
-      subMenuByLabel(getSashimiPlacementItems(model), 'Junction placement'),
+      subMenuByLabel(getJunctionsPlacementItems(model), 'Junction placement'),
       'Over coverage',
     )
-    expect(model.sashimiPlacement).toBe('overlay')
+    expect(model.junctionsPlacement).toBe('overlay')
   })
 
   test('switches the mode on click', () => {
     const model = makeModel()
-    model.showSashimi = true
+    model.showJunctions = true
     click(
-      subMenuByLabel(getSashimiPlacementItems(model), 'Junction placement'),
+      subMenuByLabel(getJunctionsPlacementItems(model), 'Junction placement'),
       'Below coverage',
     )
-    expect(model.sashimiPlacement).toBe('below')
+    expect(model.junctionsPlacement).toBe('below')
   })
 
   test('names the overlay and the strip above coverage apart', () => {
     const model = makeModel()
-    model.showSashimi = true
+    model.showJunctions = true
     const rows = subMenuByLabel(
-      getSashimiPlacementItems(model),
+      getJunctionsPlacementItems(model),
       'Junction placement',
     )
     expect(labelsOf(rows)).toEqual([
@@ -119,13 +119,13 @@ describe('sashimi placement row', () => {
       'Below coverage',
     ])
     click(rows, 'Above coverage')
-    expect(model.sashimiPlacement).toBe('above')
+    expect(model.junctionsPlacement).toBe('above')
   })
 })
 
 describe('junction filter row', () => {
   test('carries its help text on the category row', () => {
-    const model = { ...makeModel(), showSashimi: true, setFilterFields() {} }
+    const model = { ...makeModel(), showJunctions: true, setFilterFields() {} }
     const [row] = getJunctionFilterItems(model)
     expect(row && 'helpText' in row ? row.helpText : undefined).toMatch(/GT-AG/)
   })

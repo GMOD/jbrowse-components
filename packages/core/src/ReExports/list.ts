@@ -422,6 +422,7 @@ export default [
   '@jbrowse/core/util/withLaunchInput',
   '@jbrowse/display-kit/AttributeFieldInput',
   '@jbrowse/display-kit/attributeVerdict',
+  '@jbrowse/display-kit/BandChips',
   '@jbrowse/display-kit/BandSeamHandle',
   '@jbrowse/display-kit/BlockMsg',
   '@jbrowse/display-kit/BottomRightIndicators',

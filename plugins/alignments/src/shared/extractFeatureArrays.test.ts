@@ -314,7 +314,7 @@ describe('CIGAR-only features', () => {
 
 // Collapsed introns with padding 0 make each region exactly one exon, so the
 // intron touches both edges and overlaps neither; the walk's half-open window
-// test dropped it from both and the view drew no sashimi arc at all
+// test dropped it from both and the view drew no junction arc at all
 describe('an intron that only touches a region edge', () => {
   const spliced = new SimpleFeature({
     uniqueId: 'spliced',

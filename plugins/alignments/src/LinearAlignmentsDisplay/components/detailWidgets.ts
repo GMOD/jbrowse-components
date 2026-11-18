@@ -8,17 +8,17 @@ import { openFeatureWidget } from '@jbrowse/core/util'
 import {
   SPLIT_JUNCTION_NAMES,
   junctionClass,
-} from '../../features/sashimi/junctionClass.ts'
-import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
+} from '../../features/junctions/junctionClass.ts'
+import { spliceMotifLabel } from '../../features/junctions/motif.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel, isInterbaseType } from '../../shared/types.ts'
+import { junctionFeatureId } from './junctionArcs.ts'
 import { getCoverageBin, getInterbaseBin } from './positionStats.ts'
-import { sashimiFeatureId } from './sashimiArcs.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
+import type { MergedJunction } from '../../features/junctions/junctions.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
-import type { MergedJunction } from '../../features/sashimi/junctions.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { CoverageBin } from './positionStats.ts'
 import type { CoverageRow } from '@jbrowse/alignments-core'
@@ -117,14 +117,14 @@ export function openCoverageWidget(
   openFeatureWidget(model, featureData)
 }
 
-export function openSashimiWidget(
+export function openJunctionWidget(
   model: IAnyStateTreeNode,
   junction: Omit<MergedJunction, 'key'>,
   groupKey: string,
 ) {
   const { split } = junction
   const location = {
-    uniqueId: sashimiFeatureId(groupKey, junction),
+    uniqueId: junctionFeatureId(groupKey, junction),
     refName: junction.refName,
     start: junction.start,
     end: junction.end,

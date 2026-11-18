@@ -4432,6 +4432,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/BandChips": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "BandChip",
+        "BandChipButton",
+        "BandChipRow"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/BandSeamHandle": {
       "package": "@jbrowse/display-kit",
       "names": [

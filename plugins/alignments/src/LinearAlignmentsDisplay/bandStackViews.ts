@@ -1,4 +1,4 @@
-import { buildSashimiStripKeys } from './groupedDataMaps.ts'
+import { buildJunctionsStripKeys } from './groupedDataMaps.ts'
 import {
   boundLaneBandHeights,
   dragLaneBand,
@@ -14,37 +14,37 @@ import type { JunctionFilter } from '../shared/types.ts'
 import type {
   ReadConnectionsMode,
   ReadConnectionsPlacement,
-  SashimiPlacement,
+  JunctionsPlacement,
 } from './constants.ts'
 import type { LaneBandsInput, StripKey } from './sectionLayout.ts'
 import type { BandPlot } from '@jbrowse/core/util/bandLayout'
 
-/** What {@link sashimiStripViews} reads: the fetch and the junction settings. */
-export interface SashimiStripHost {
+/** What {@link junctionsStripViews} reads: the fetch and the junction settings. */
+export interface JunctionsStripHost {
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>
   junctionFilter: JunctionFilter
-  effectiveSashimiPlacement: SashimiPlacement
+  effectiveJunctionsPlacement: JunctionsPlacement
   loadedRegions: ReadonlyMap<number, { refName: string }>
   hiddenGroups: ReadonlySet<string>
 }
 
-/** Which junctions draw in the sashimi strip, per lane. */
-export function sashimiStripViews(self: SashimiStripHost) {
+/** Which junctions draw in the junctions strip, per lane. */
+export function junctionsStripViews(self: JunctionsStripHost) {
   return {
     /**
      * #getter
-     * Per group, which junctions draw in the sashimi strip (by
-     * `junctionKey`): the one sashimi side decision, read by
-     * `sashimiStripLanes` to reserve the strip and `themed`'s sashimi
+     * Per group, which junctions draw in the junctions strip (by
+     * `junctionKey`): the one junctions side decision, read by
+     * `junctionsStripLanes` to reserve the strip and `themed`'s junctions
      * feeds to place each arc. refNames come from `loadedRegions`, keeping this
      * a tier-1 (fetch) derivation. A region not yet loaded gets a unique
      * key, so regions not proven to share a chromosome never pool onto
      * one bp line.
      */
-    get sashimiStripKeysByGroup() {
-      return buildSashimiStripKeys(self.rpcDataMap, {
+    get junctionsStripKeysByGroup() {
+      return buildJunctionsStripKeys(self.rpcDataMap, {
         filter: self.junctionFilter,
-        placement: self.effectiveSashimiPlacement,
+        placement: self.effectiveJunctionsPlacement,
         refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
         hidden: self.hiddenGroups,
       })
@@ -52,12 +52,12 @@ export function sashimiStripViews(self: SashimiStripHost) {
 
     /**
      * #getter
-     * Group keys whose junctions draw in the sashimi strip, i.e.
+     * Group keys whose junctions draw in the junctions strip, i.e.
      * the lanes that strip is reserved for.
      */
-    get sashimiStripLanes(): ReadonlySet<string> {
+    get junctionsStripLanes(): ReadonlySet<string> {
       return new Set(
-        [...this.sashimiStripKeysByGroup]
+        [...this.junctionsStripKeysByGroup]
           .filter(([, down]) => down.size > 0)
           .map(([key]) => key),
       )
@@ -72,11 +72,11 @@ export interface BandStackHost {
   drawnReadConnections: ReadConnectionsMode
   readConnectionsPlacement: ReadConnectionsPlacement
   readConnectionsHeight: number
-  showSashimi: boolean
-  sashimiHeight: number
-  effectiveSashimiPlacement: SashimiPlacement
+  showJunctions: boolean
+  junctionsHeight: number
+  effectiveJunctionsPlacement: JunctionsPlacement
   arcsResult: { inkGroupKeys: ReadonlySet<string> }
-  sashimiStripLanes: ReadonlySet<string>
+  junctionsStripLanes: ReadonlySet<string>
   bandPlot: BandPlot
   showPileup: boolean
   autoHeight: boolean
@@ -95,7 +95,7 @@ export function bandStackViews(self: BandStackHost) {
     /**
      * #getter
      * A lane's bands as stated: the height slots, the settings
-     * and whether any lane has arcs or a sashimi junction bound for its
+     * and whether any lane has arcs or a junction bound for its
      * strip.
      */
     get statedLaneBands() {
@@ -106,11 +106,11 @@ export function bandStackViews(self: BandStackHost) {
         readConnectionsDown: self.readConnectionsPlacement === 'below',
         readConnectionsAbove: self.readConnectionsPlacement === 'above',
         readConnectionsHeight: self.readConnectionsHeight,
-        showSashimi: self.showSashimi,
-        sashimiHeight: self.sashimiHeight,
-        sashimiAbove: self.effectiveSashimiPlacement === 'above',
+        showJunctions: self.showJunctions,
+        junctionsHeight: self.junctionsHeight,
+        junctionsAbove: self.effectiveJunctionsPlacement === 'above',
         hasArcs: self.arcsResult.inkGroupKeys.size > 0,
-        hasSashimiStripArcs: self.sashimiStripLanes.size > 0,
+        hasJunctionsStripArcs: self.junctionsStripLanes.size > 0,
       }
     },
 
@@ -127,7 +127,7 @@ export function bandStackViews(self: BandStackHost) {
     /**
      * #getter
      * The pooled band stack as stated: the bound heights, the settings, and
-     * whether any lane has arcs or a sashimi junction bound for its strip.
+     * whether any lane has arcs or a junction bound for its strip.
      * The row budget and the band drags read it, never the fitted stack, so
      * hiding the pileup moves no row pitch and no stated height.
      */

@@ -554,7 +554,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     name: 'alignments_track_arcs',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
-      // B2M: one isoform and 3 introns, so the sashimi arcs are few
+      // B2M: one isoform and 3 introns, so the junction arcs are few
       loc: 'chr15:45,003,000-45,012,000',
       trackLabels: 'offset',
       tracks: [
@@ -566,7 +566,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           // featureSpacing is derived from mark.height, not a config slot, so
           // the display drops one added here
-          sashimi: { labels: { show: true }, placement: 'auto' },
+          junctions: { labels: { show: true }, placement: 'auto' },
           pileup: { mark: { height: 1 } },
           coverage: { encoding: { y: { scale: { type: 'log' } } } },
         },
@@ -1216,7 +1216,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           facet: 'firstOfPairStrand',
           encoding: { color: 'firstOfPairStrand' },
           pileup: { mark: { height: 3 } },
-          sashimi: { show: false },
+          junctions: { show: false },
           coverage: { height: 110 },
           height: 560,
         },

@@ -24,7 +24,7 @@ interface ModelOptions {
   layer?: BaseLayer['field']
   unmodified?: boolean
   types?: string[]
-  showSashimi?: boolean
+  showJunctions?: boolean
   drawnReadConnections?: 'off' | 'link' | 'rule'
   // What the track's config declares, for Reset
   declared?: { filter?: FieldPredicate[]; bases?: FieldPredicate[] }
@@ -36,14 +36,14 @@ function makeModel({
   layer,
   unmodified = false,
   types = ['m', 'h'],
-  showSashimi = false,
+  showJunctions = false,
   drawnReadConnections = 'off',
   declared = {},
 }: ModelOptions = {}) {
   return {
     filterPredicates: filter,
     bases,
-    showSashimi,
+    showJunctions,
     drawnReadConnections,
     drawsConnectors: false,
     detectedModificationTypes: types,
@@ -106,7 +106,7 @@ describe('the More filters... layer sections', () => {
       Object.keys(
         layerFilterStateOf(
           makeModel({
-            showSashimi: true,
+            showJunctions: true,
             drawnReadConnections: 'link',
             layer: 'modifications',
           }),
@@ -136,7 +136,7 @@ describe('the More filters... layer sections', () => {
       [],
       junctionEntries({ classes: ['splice', 'deletion'], minReads: 3 }),
     )
-    const model = makeModel({ filter, showSashimi: true })
+    const model = makeModel({ filter, showJunctions: true })
     submit(model, s => s)
     expect(model.filterPredicates).toEqual(filter)
   })
@@ -149,7 +149,7 @@ describe('the More filters... layer sections', () => {
     ]
     const model = makeModel({
       filter,
-      showSashimi: true,
+      showJunctions: true,
       drawnReadConnections: 'link',
     })
     submit(model, s => s)
@@ -159,7 +159,7 @@ describe('the More filters... layer sections', () => {
   test('a raised floor keeps the cap the field declares', () => {
     const model = makeModel({
       filter: [{ field: 'junction.reads', gte: 3, lte: 100 }],
-      showSashimi: true,
+      showJunctions: true,
     })
     submit(model, s => ({
       ...s,
@@ -174,7 +174,7 @@ describe('the More filters... layer sections', () => {
     const declared = [{ field: 'junction.reads', gt: 4 }]
     const model = makeModel({
       filter: [{ field: 'junction.reads', gte: 7 }],
-      showSashimi: true,
+      showJunctions: true,
       declared: { filter: declared },
     })
     const reset = declaredLayerFilterState(model)
@@ -190,7 +190,7 @@ describe('the More filters... layer sections', () => {
   })
 
   test('hiding split-read junctions writes junction.source', () => {
-    const model = makeModel({ showSashimi: true })
+    const model = makeModel({ showJunctions: true })
     submit(model, s => ({
       ...s,
       junctions: { ...s.junctions!, split: 'exclude' },

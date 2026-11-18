@@ -87,7 +87,7 @@ test('the preset writes all six settings, not a subset', () => {
   ])
   expect(display.drawnReadConnections).toBe('link')
   expect(display.showOrdinaryPairs).toBe(false)
-  expect(display.showSashimi).toBe(false)
+  expect(display.showJunctions).toBe(false)
 })
 
 test('the filter joins the reads already filtered out', () => {
@@ -165,7 +165,7 @@ const SETTINGS = {
     mark: 'link',
     ordinaryPairs: { show: false },
   },
-  sashimi: { show: false },
+  junctions: { show: false },
 } as const
 
 test('the preset reads as itself', () => {
@@ -193,7 +193,7 @@ test.each([
       readConnections: { ...SETTINGS.readConnections, mark: 'rule' as const },
     },
   ],
-  ['sashimi.show', { ...SETTINGS, sashimi: { show: true } }],
+  ['junctions.show', { ...SETTINGS, junctions: { show: true } }],
   [
     'readConnections.ordinaryPairs.show',
     {

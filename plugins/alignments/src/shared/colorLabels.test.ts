@@ -154,7 +154,7 @@ describe('legend.title heads the key the color channel draws', () => {
     legendItems: () => reads,
     arcLegendTitle: 'Arc colors',
     arcLegendItems: () => arcs,
-    sashimiLegend: { strands: [], splits: [] },
+    junctionLegend: { strands: [], splits: [] },
   })
   const titles = (scales: ReturnType<typeof getAlignmentsColorScales>) =>
     scales

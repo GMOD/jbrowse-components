@@ -15,8 +15,8 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 function hideBand(model: LinearAlignmentsDisplayModel, key: BandChipKey) {
   if (key === 'coverage') {
     model.setShowCoverage(false)
-  } else if (key === 'sashimi') {
-    model.setShowSashimi(false)
+  } else if (key === 'junctions') {
+    model.setShowJunctions(false)
   } else if (key === 'readConnections') {
     model.setDrawnReadConnections('off')
   } else {

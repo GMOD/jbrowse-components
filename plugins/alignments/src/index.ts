@@ -100,7 +100,7 @@ export type {
   ArcsByGroupResult,
 } from './features/arcs/compute.ts'
 export type { ArcBandFeed } from './features/arcs/bandFeed.ts'
-export type { SashimiBandFeed } from './features/sashimi/bandFeed.ts'
+export type { JunctionsBandFeed } from './features/junctions/bandFeed.ts'
 export type { ConnectorFeed } from './features/linkedReads/connectorFeed.ts'
 export type {
   MismatchOpacityField,
@@ -110,13 +110,13 @@ export type {
   ConnectorStyle,
   ConnectorStyler,
 } from './features/linkedReads/connectorStyle.ts'
-export type { SashimiLabel } from './LinearAlignmentsDisplay/renderers/sashimiMarks.ts'
+export type { JunctionLabel } from './LinearAlignmentsDisplay/renderers/junctionMarks.ts'
 export type { LinkedPair } from './features/linkedReads/compute.ts'
-export type { MergedJunction } from './features/sashimi/junctions.ts'
+export type { MergedJunction } from './features/junctions/junctions.ts'
 export type {
   HoveredJunction,
   LaneJunction,
-} from './features/sashimi/supportingReads.ts'
+} from './features/junctions/supportingReads.ts'
 export type { ReadSlot } from './shared/readSlot.ts'
 export type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 export type { ArcCategory } from './shaders/palettes.ts'
@@ -128,7 +128,7 @@ export type { TooltipPayload } from './LinearAlignmentsDisplay/components/toolti
 export type {
   AlignmentsUnit,
   ReadConnectionsMode,
-  SashimiPlacement,
+  JunctionsPlacement,
 } from './LinearAlignmentsDisplay/constants.ts'
 // The shared "this display hides no lane" set, the identity `hiddenGroups`
 // returns while nothing is hidden.

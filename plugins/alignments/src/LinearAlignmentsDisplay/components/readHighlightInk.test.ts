@@ -121,7 +121,7 @@ test('two hovered reads on different rows get a box each', () => {
   expect(boxes[1]!.width).toBeCloseTo(2)
 })
 
-// A sashimi junction lights every read carrying it, and a pileup row packs
+// A junction lights every read carrying it, and a pileup row packs
 // reads that do not: one box per read keeps the gap between them unlit.
 test('two plain reads on one row get a box each', () => {
   const [a, b, ...rest] = run(['read0', 'read1'], open)

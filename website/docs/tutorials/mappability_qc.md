@@ -193,7 +193,7 @@ decodes it against hg38; for your own sample, swap the `uri`. In
   "assemblyNames": ["hg38"],
   "displayDefaults": {
     "encoding": { "color": "mapq" },
-    "sashimi": { "show": false }
+    "junctions": { "show": false }
   }
 }
 ```
@@ -227,7 +227,7 @@ that is a `facet` on the `mapq` field:
   "displayDefaults": {
     "facet": "mapq",
     "pileup": { "show": false },
-    "sashimi": { "show": false }
+    "junctions": { "show": false }
   }
 }
 ```

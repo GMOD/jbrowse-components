@@ -13,7 +13,7 @@ import {
 
 /**
  * A symmetric cubic's extreme sits 3/4 of the way from its baseline to its
- * controls; the sashimi labels solve the same equation in the other direction.
+ * controls; the junction labels solve the same equation in the other direction.
  */
 export const CUBIC_APEX_RATIO = CONNECTOR_APEX_RATIO
 

@@ -101,7 +101,7 @@ function sources(): AlignmentsSources {
     sections: [
       {
         groupKey: '',
-        sashimiFeeds: new Map(),
+        junctionFeeds: new Map(),
         connectorFeeds: new Map(),
         arcFeeds: buildArcBandFeeds({
           byRegion: new Map([[0, oneArc()]]),

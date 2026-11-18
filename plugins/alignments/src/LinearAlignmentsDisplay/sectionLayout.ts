@@ -20,23 +20,23 @@ import type { Band, BandPlot, BandStack } from '@jbrowse/core/util/bandLayout'
 export const LANE_BAND_ORDER = [
   'coverage',
   'readConnections',
-  'sashimi',
+  'junctions',
 ] as const
 export type LaneBandKey = (typeof LANE_BAND_ORDER)[number]
 
-const SASHIMI_ABOVE_BAND_ORDER: readonly LaneBandKey[] = [
-  'sashimi',
+const JUNCTIONS_ABOVE_BAND_ORDER: readonly LaneBandKey[] = [
+  'junctions',
   'coverage',
   'readConnections',
 ]
 const READ_CONNECTIONS_ABOVE_BAND_ORDER: readonly LaneBandKey[] = [
   'readConnections',
   'coverage',
-  'sashimi',
+  'junctions',
 ]
 const BOTH_ABOVE_BAND_ORDER: readonly LaneBandKey[] = [
   'readConnections',
-  'sashimi',
+  'junctions',
   'coverage',
 ]
 
@@ -47,14 +47,14 @@ const BOTH_ABOVE_BAND_ORDER: readonly LaneBandKey[] = [
  */
 export function laneBandOrder(s: {
   readConnectionsAbove: boolean
-  sashimiAbove: boolean
+  junctionsAbove: boolean
 }) {
   return s.readConnectionsAbove
-    ? s.sashimiAbove
+    ? s.junctionsAbove
       ? BOTH_ABOVE_BAND_ORDER
       : READ_CONNECTIONS_ABOVE_BAND_ORDER
-    : s.sashimiAbove
-      ? SASHIMI_ABOVE_BAND_ORDER
+    : s.junctionsAbove
+      ? JUNCTIONS_ABOVE_BAND_ORDER
       : LANE_BAND_ORDER
 }
 
@@ -75,7 +75,7 @@ export function coverageBandTop(
 
 // The strips beside the coverage histogram, which keep their stated heights
 // while the pileup is hidden, the coverage taking the rest of the slot.
-const STRIP_ORDER = ['readConnections', 'sashimi'] as const
+const STRIP_ORDER = ['readConnections', 'junctions'] as const
 export type StripKey = (typeof STRIP_ORDER)[number]
 
 // The geometry of one stacked lane, in content space. The lane's own identity
@@ -117,8 +117,8 @@ export interface SectionLaneInput {
   // Whether this lane's arcs draw anything at all (`inkGroupKeys`), cross-region
   // arcs included. A lane with none reserves no strip and gets no draw band.
   hasArcs: boolean
-  // Whether a junction is bound for this lane's sashimi strip.
-  hasSashimiStripArcs: boolean
+  // Whether a junction is bound for this lane's junctions strip.
+  hasJunctionsStripArcs: boolean
   // Height a drag pinned this lane's pileup band at. Only ever pads, and only a
   // lane that draws rows at all, which keeps a collapsed lane's banked
   // override from reopening its band.
@@ -197,16 +197,16 @@ export interface LaneBandsSettings {
   // (`placement: 'above'`).
   readConnectionsAbove: boolean
   readConnectionsHeight: number
-  showSashimi: boolean
-  sashimiAbove: boolean
-  sashimiHeight: number
+  showJunctions: boolean
+  junctionsAbove: boolean
+  junctionsHeight: number
 }
 
 // What a lane's data says about its strips, the half of the reserve rule the
 // settings cannot answer.
 export interface LaneBandData {
   hasArcs: boolean
-  hasSashimiStripArcs: boolean
+  hasJunctionsStripArcs: boolean
 }
 
 export type LaneBandsInput = LaneBandsSettings & LaneBandData
@@ -215,7 +215,7 @@ export type LaneBandsInput = LaneBandsSettings & LaneBandData
 export interface LaneBandHeights {
   coverageHeight: number
   readConnectionsHeight: number
-  sashimiHeight: number
+  junctionsHeight: number
 }
 
 export interface LaneBands {
@@ -267,9 +267,9 @@ function bandStackOf(
       active: arcsDrawn(s, lane) && !arcsOverlayCoverage(s),
       height: heights.readConnectionsHeight,
     },
-    sashimi: {
-      active: s.showSashimi && lane.hasSashimiStripArcs,
-      height: heights.sashimiHeight,
+    junctions: {
+      active: s.showJunctions && lane.hasJunctionsStripArcs,
+      height: heights.junctionsHeight,
     },
   }
 }
@@ -307,7 +307,7 @@ export function laneBands(
 // subset of it, so binding the pooled stack keeps every lane's stack inside
 // the plot too.
 export function boundLaneBandHeights(s: LaneBandsInput, plot: BandPlot) {
-  const { coverage, readConnections, sashimi } = boundStackedBands(
+  const { coverage, readConnections, junctions } = boundStackedBands(
     laneBandOrder(s),
     bandStackOf(s, s),
     plot,
@@ -315,7 +315,7 @@ export function boundLaneBandHeights(s: LaneBandsInput, plot: BandPlot) {
   return {
     coverageHeight: coverage.height,
     readConnectionsHeight: readConnections.height,
-    sashimiHeight: sashimi.height,
+    junctionsHeight: junctions.height,
   }
 }
 
@@ -341,12 +341,12 @@ function stripPlot(slot: number) {
 // The pooled strips at their stated heights, bound top-down to the room the
 // coverage's floor leaves of `slot`, and folded.
 function stripStack(s: LaneBandsInput, slot: number) {
-  const { readConnections, sashimi } = bandStackOf(s, s)
+  const { readConnections, junctions } = bandStackOf(s, s)
   return stackBands(
     STRIP_ORDER,
     boundStackedBands(
       STRIP_ORDER,
-      { readConnections, sashimi },
+      { readConnections, junctions },
       stripPlot(slot),
     ),
   )
@@ -362,7 +362,7 @@ function coverageRemainderHeights(
   return {
     coverageHeight: slot - strips.bottom,
     readConnectionsHeight: strips.height.readConnections,
-    sashimiHeight: strips.height.sashimi,
+    junctionsHeight: strips.height.junctions,
   }
 }
 
@@ -373,7 +373,7 @@ function proportionalHeights(s: LaneBandsInput, slot: number): LaneBandHeights {
   return {
     coverageHeight: filled('coverage'),
     readConnectionsHeight: filled('readConnections'),
-    sashimiHeight: filled('sashimi'),
+    junctionsHeight: filled('junctions'),
   }
 }
 
@@ -440,13 +440,13 @@ export function laneBandOverheads(
   settings: LaneBandsSettings,
   keys: readonly string[],
   arcLanes: ReadonlySet<string>,
-  sashimiStripLanes: ReadonlySet<string>,
+  junctionsStripLanes: ReadonlySet<string>,
 ) {
   return keys.map(
     key =>
       laneBands(settings, {
         hasArcs: arcLanes.has(key),
-        hasSashimiStripArcs: sashimiStripLanes.has(key),
+        hasJunctionsStripArcs: junctionsStripLanes.has(key),
       }).stack.bottom,
   )
 }
@@ -535,16 +535,16 @@ export function buildSectionRenders(
         sec.arcBand && sec.arcBand.height > 0
           ? { ...sec.arcBand, top: bandScreenTop(sec.arcBand.top, scroll) }
           : undefined,
-      sashimiBand:
-        sec.bands.reserved.sashimi > 0 ||
-        bandAboveCoverage(sec.bands, 'sashimi')
+      junctionsBand:
+        sec.bands.reserved.junctions > 0 ||
+        bandAboveCoverage(sec.bands, 'junctions')
           ? {
               top: bandScreenTop(
-                sec.sectionTop + sec.bands.top.sashimi,
+                sec.sectionTop + sec.bands.top.junctions,
                 scroll,
               ),
-              height: sec.bands.reserved.sashimi,
-              above: bandAboveCoverage(sec.bands, 'sashimi'),
+              height: sec.bands.reserved.junctions,
+              above: bandAboveCoverage(sec.bands, 'junctions'),
             }
           : undefined,
     }

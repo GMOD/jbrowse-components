@@ -40,5 +40,5 @@ digraph alignments_draw {
   cov     [label="coverage band: the coverage layers\nthat are enabled this frame"]
   pileup  [label="pileup band: the pileup layers\nthat are enabled this frame"]
   arc     [label="arc band: drawn whole or not at all"]
-  overlays[label="React SVG overlays:\nsashimi, bezier, cross-region arcs"]
+  overlays[label="React SVG overlays:\njunctions, bezier, cross-region arcs"]
 }

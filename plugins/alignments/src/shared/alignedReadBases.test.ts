@@ -15,7 +15,7 @@ import {
 import cramConfigSchema from '../CramAdapter/configSchema.ts'
 import SamAdapter from '../SamAdapter/SamAdapter.ts'
 import samConfigSchema from '../SamAdapter/configSchema.ts'
-import { forEachSAEntry } from '../features/sashimi/splitJunctions.ts'
+import { forEachSAEntry } from '../features/junctions/splitJunctions.ts'
 import { isMismatchFeature } from './extractCigarFeatures.ts'
 import { saTagOf } from './splitAlignment.ts'
 

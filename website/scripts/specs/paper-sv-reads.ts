@@ -42,7 +42,7 @@ const connections = {
   ],
   coverage: { height: 60 },
   // the read arcs below already draw each split junction
-  sashimi: { show: false },
+  junctions: { show: false },
   forceLoad: true,
 }
 

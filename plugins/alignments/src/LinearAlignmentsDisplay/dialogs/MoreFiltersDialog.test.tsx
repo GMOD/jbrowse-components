@@ -272,7 +272,7 @@ test('the Junctions section shows while the arcs draw, and writes its floor', ()
     filterPredicates: mergeFilter([]),
     declaredFilters: declaredFiltersOf([], []),
     setFilterFields,
-    showSashimi: true,
+    showJunctions: true,
     junctionFilter: { minReads: 1 },
   }
   render(

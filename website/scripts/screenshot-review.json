@@ -1494,7 +1494,7 @@
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
     "status": "good",
-    "note": "DELETED (reviewer: not interesting, MXE not visible in the sashimi arcs): the single-sample RNA-seq at PKM does not show the mutually-exclusive exon choice in the junction arcs. Removed spec+PNG+alternative-splicing section in rnaseq.md.",
+    "note": "DELETED (reviewer: not interesting, MXE not visible in the junction arcs): the single-sample RNA-seq at PKM does not show the mutually-exclusive exon choice in the junction arcs. Removed spec+PNG+alternative-splicing section in rnaseq.md.",
     "reviewedAt": "2026-07-10T18:24:01.000Z",
     "hash": "2acd8900cf0f22cae0fe4e7d2d64715b8dc82e8e"
   },

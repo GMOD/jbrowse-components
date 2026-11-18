@@ -1,5 +1,5 @@
 // Default floor for a user-resizable band (an alignments coverage / arc /
-// sashimi band, a MAF coverage / conservation band), in px. It exists so the
+// junctions band, a MAF coverage / conservation band), in px. It exists so the
 // drag handle stays grabbable, which is a constraint on dragging, not on what
 // config may declare. Bands with their own vocabulary of "too small" pass their
 // own. It is also the floor a plot keeps under the bands stacked over it

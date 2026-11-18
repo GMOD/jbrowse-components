@@ -72,7 +72,7 @@ describe('the Filter by count over every layer it filters', () => {
 
   test('the submenu holds the everyday read filters, then the dialog, with no icons', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
+    display.setShowJunctions(true)
     display.setDrawnReadConnections('link')
     const rows = filterRow(display).subMenu
     expect(rows.map(i => ('label' in i ? i.label : i.type))).toEqual([
@@ -88,11 +88,11 @@ describe('the Filter by count over every layer it filters', () => {
 
   test('the non-canonical junctions row filters and counts while the arcs draw', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
+    display.setShowJunctions(true)
     clickMenuItem(filterRow(display).subMenu, 'Hide non-canonical junctions')
     expect(display.junctionFilter.nonCanonical).toBe('exclude')
     expect(filterRow(display).label).toBe('Filter by (1)')
-    display.setShowSashimi(false)
+    display.setShowJunctions(false)
     expect(
       filterRow(display).subMenu.map(i => ('label' in i ? i.label : i.type)),
     ).not.toContain('Non-canonical junctions')
@@ -102,7 +102,7 @@ describe('the Filter by count over every layer it filters', () => {
     const display = createDisplay()
     display.setJunctionFilter({ minReads: 50 })
     expect(filterRow(display).label).toBe('Filter by (1)')
-    display.setShowSashimi(false)
+    display.setShowJunctions(false)
     expect(filterRow(display).label).toBe('Filter by')
   })
 })

@@ -14,7 +14,7 @@ import type {
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
-import type { MergedJunction } from '../features/sashimi/junctions.ts'
+import type { MergedJunction } from '../features/junctions/junctions.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 

@@ -14,7 +14,7 @@ import type { PendingArc } from './arcTypes.ts'
 // away would coalesce. `yBp` is keyed because in the read cloud it is |TLEN|,
 // a record field rather than a function of the drawn endpoints.
 //
-// Exact coordinates, as sashimi's `junctionKey`: a tolerance is declined
+// Exact coordinates, as junctions's `junctionKey`: a tolerance is declined
 // because junctions genuinely cluster at this scale (the HG002 chr12 fold-back
 // has five distinct events inside 2.3 kb). The separator is NUL because a
 // refName may contain any printable character, and it must stay written as the

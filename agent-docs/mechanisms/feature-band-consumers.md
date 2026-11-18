@@ -73,7 +73,7 @@ making it unit-testable without booting a tree, so it is owed anyway.
 
 The word names a different thing in each plugin that uses it:
 
-- **An `AlignmentLane`** is a group section: the whole coverage → arcs → sashimi →
+- **An `AlignmentLane`** is a group section: the whole coverage → arcs → junctions →
   pileup stack, repeated once per group key, with ungrouped as the one-lane case.
   Its bands are what this doc is about; the lane itself is the fold run per lane.
 - **A MultiWaySynteny lane** is a proportional genome row with its own tiling

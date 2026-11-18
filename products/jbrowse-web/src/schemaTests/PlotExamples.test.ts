@@ -109,7 +109,7 @@ test("each display's plot settings", () => {
       'legend',
       'pileup',
       'readConnections',
-      'sashimi',
+      'junctions',
       'sort',
       'unit',
     ],

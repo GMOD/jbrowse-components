@@ -12,9 +12,9 @@ import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
 import { EMPTY_ARC_BAND_FEED } from '../../features/arcs/bandFeed.ts'
+import { EMPTY_JUNCTIONS_BAND_FEED } from '../../features/junctions/bandFeed.ts'
 import { LINKED_READ_LINE_MARK } from '../../features/linkedReads/mark.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
-import { EMPTY_SASHIMI_BAND_FEED } from '../../features/sashimi/bandFeed.ts'
 import { ARC_BAND_MARKS } from './arcMarks.ts'
 import { forEachBandPass } from './bandPasses.ts'
 import { CONNECTOR_MARK, EMPTY_CONNECTOR_FEED } from './connectorMarks.ts'
@@ -24,6 +24,7 @@ import {
   coverageRegionOf,
   emptyCoverageRegion,
 } from './coverageMarks.ts'
+import { JUNCTION_MARKS } from './junctionMarks.ts'
 import { PILEUP_MARKS } from './pileupMarks.ts'
 import {
   PILEUP_UNIFORMS_SIZE_BYTES,
@@ -32,12 +33,11 @@ import {
   writePileupPalette,
 } from './pileupUniforms.ts'
 import { sectionRegionKey, sectionRenderState } from './rendererTypes.ts'
-import { SASHIMI_MARKS } from './sashimiMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
+import type { JunctionsBandFeed } from '../../features/junctions/bandFeed.ts'
 import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
-import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { PileupUniformViews } from './pileupUniforms.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -74,7 +74,7 @@ interface UploadedRegion {
   // curved-connector toggle changes them within one layout run.
   lines: Uint32Array | undefined
   arcs: ArcBandFeed | undefined
-  sashimi: SashimiBandFeed | undefined
+  junctions: JunctionsBandFeed | undefined
   connectors: ConnectorFeed | undefined
 }
 
@@ -85,7 +85,7 @@ export const ALIGNMENTS_PASSES: PipelineDescriptor[] = [
   ...PILEUP_MARKS.map(m => m.pass),
   ...ALIGNMENTS_COVERAGE_MARKS.map(m => m.pass),
   ...ARC_BAND_MARKS.map(m => m.pass),
-  ...SASHIMI_MARKS.map(m => m.pass),
+  ...JUNCTION_MARKS.map(m => m.pass),
   CONNECTOR_MARK.pass,
 ]
 
@@ -137,14 +137,14 @@ export class GpuAlignmentsRenderer
     this.sections = sources.sections
     const seen = new Set<number>()
     sources.sections.forEach((section, s) => {
-      const { laidOutPileupMap, arcFeeds, sashimiFeeds, connectorFeeds } =
+      const { laidOutPileupMap, arcFeeds, junctionFeeds, connectorFeeds } =
         section
       // A region with connections or junctions and no pileup (a far foot's
       // region) gets its own key.
       for (const regionIdx of new Set([
         ...laidOutPileupMap.keys(),
         ...arcFeeds.keys(),
-        ...sashimiFeeds.keys(),
+        ...junctionFeeds.keys(),
         ...connectorFeeds.keys(),
       ])) {
         const idx = sectionRegionKey(s, regionIdx)
@@ -153,7 +153,7 @@ export class GpuAlignmentsRenderer
           idx,
           laidOutPileupMap.get(regionIdx),
           arcFeeds.get(regionIdx),
-          sashimiFeeds.get(regionIdx),
+          junctionFeeds.get(regionIdx),
           connectorFeeds.get(regionIdx),
         )
       }
@@ -204,7 +204,7 @@ export class GpuAlignmentsRenderer
     idx: number,
     data: PileupDataResult | undefined,
     arcs: ArcBandFeed | undefined,
-    sashimi: SashimiBandFeed | undefined,
+    junctions: JunctionsBandFeed | undefined,
     connectors: ConnectorFeed | undefined,
   ) {
     this.regions.set(idx, data ? coverageRegionOf(data) : emptyCoverageRegion())
@@ -215,7 +215,7 @@ export class GpuAlignmentsRenderer
       colorCategories: data?.readColorCategories,
       lines: data?.linkedReadLinePositions,
       arcs,
-      sashimi,
+      junctions,
       connectors,
     })
 
@@ -237,12 +237,12 @@ export class GpuAlignmentsRenderer
         // per-pass delete this path needs in place of the whole-region wipe.
         uploadMarks(this.hal, idx, ARC_BAND_MARKS, arcs ?? EMPTY_ARC_BAND_FEED)
       }
-      if (prev.sashimi !== sashimi) {
+      if (prev.junctions !== junctions) {
         uploadMarks(
           this.hal,
           idx,
-          SASHIMI_MARKS,
-          sashimi ?? EMPTY_SASHIMI_BAND_FEED,
+          JUNCTION_MARKS,
+          junctions ?? EMPTY_JUNCTIONS_BAND_FEED,
         )
       }
       if (prev.connectors !== connectors) {
@@ -264,8 +264,8 @@ export class GpuAlignmentsRenderer
       if (arcs) {
         uploadMarks(this.hal, idx, ARC_BAND_MARKS, arcs)
       }
-      if (sashimi) {
-        uploadMarks(this.hal, idx, SASHIMI_MARKS, sashimi)
+      if (junctions) {
+        uploadMarks(this.hal, idx, JUNCTION_MARKS, junctions)
       }
       if (connectors) {
         uploadMarks(this.hal, idx, [CONNECTOR_MARK], connectors)

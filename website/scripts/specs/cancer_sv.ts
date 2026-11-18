@@ -796,8 +796,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           trackId: 'K562_isoseq',
           height: 450,
           coverage: { height: 90 },
-          sashimi: {
-            // Sashimi arcs read as read connections joining the wrong places.
+          junctions: {
+            // Junction arcs read as read connections joining the wrong places.
             show: false,
           },
           pileup: SPLIT_READS,
@@ -876,7 +876,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           trackId: 'K562_isoseq',
           height: 800,
           coverage: { height: 110 },
-          sashimi: { show: false },
+          junctions: { show: false },
           pileup: SPLIT_READS,
           readConnections: {
             // The donor tick for the remaining reads keeps its width:

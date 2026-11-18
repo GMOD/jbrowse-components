@@ -136,7 +136,7 @@ export const volvoxSvChannelsTrack = {
     mark: 'link',
     ordinaryPairs: { show: false },
   },
-  sashimi: { show: false },
+  junctions: { show: false },
 }
 
 export const volvoxAlignmentsLinks: readonly SampleLink[] = [
@@ -201,7 +201,7 @@ export const volvoxAlignmentsLinks: readonly SampleLink[] = [
     href: volvoxView('ctgA:28000-33000', {
       trackId: 'spliced',
       sort: 'spliced',
-      sashimi: { labels: { show: true } },
+      junctions: { labels: { show: true } },
     }),
     label: 'Volvox RNA-seq: junction read counts, spliced reads first',
   },

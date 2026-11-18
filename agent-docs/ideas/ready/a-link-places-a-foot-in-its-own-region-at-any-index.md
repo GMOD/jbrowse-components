@@ -21,7 +21,7 @@ Reaching it takes a view of more than 256 displayed regions: a draft assembly
 shown whole, then a search for a late scaffold, which moves inside the
 displayed regions and keeps them. The read-connections band has had the limit
 since [ADR-170](../../architecture-decision-records/adr-170-the-read-connections-band-is-a-marks-list.md);
-sashimi gained it in
+junctions gained it in
 [ADR-222](../../architecture-decision-records/adr-222-sashimi-arcs-are-link-marks.md),
 where the SVG overlay had none. A `link` layer of the marks display feeds the
 same shader through `linkOwners.ts`.

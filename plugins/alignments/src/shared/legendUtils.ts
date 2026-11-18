@@ -32,11 +32,11 @@ import {
   ARC_SPLIT_SWATCH,
   isArcSplitCategory,
 } from '../features/arcs/arcSplitCategory.ts'
-import { sashimiArcColor } from '../features/sashimi/computeOverlay.ts'
+import { junctionArcColor } from '../features/junctions/computeOverlay.ts'
 import {
   SPLIT_JUNCTION_CLASSES,
   SPLIT_JUNCTION_NAMES,
-} from '../features/sashimi/junctionClass.ts'
+} from '../features/junctions/junctionClass.ts'
 import { arcCategoryColor } from '../shaders/palettes.ts'
 import {
   OVERLAP_ALPHA,
@@ -67,7 +67,7 @@ import type {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
-import type { SashimiSplitClass } from '../features/sashimi/junctionClass.ts'
+import type { JunctionSplitClass } from '../features/junctions/junctionClass.ts'
 import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from './alignmentsColor.ts'
@@ -199,7 +199,7 @@ function scaleOf(
 
 /**
  * The display's color vocabularies as its color scales: the color bars, the
- * read fills, the connection colors and the sashimi arcs.
+ * read fills, the connection colors and the junction arcs.
  * `LegendMixin`'s `colorScales` lists them, so the on-screen key and the SVG
  * export derive from this one list and a heading can't appear in one and not
  * the other. Empty scales drop out of the key, and a lone survivor's title
@@ -233,13 +233,13 @@ export function getAlignmentsColorScales(model: {
   legendItems: () => LegendItem[]
   arcLegendTitle: string
   arcLegendItems: () => LegendItem[]
-  sashimiLegend: SashimiLegend
+  junctionLegend: JunctionLegend
 }): ColorScale[] {
   const reads = model.legendItems()
   const drawnArcs = model.arcLegendItems()
-  const { arcs, sashimi } = keySashimiSplitsWithArcs(
+  const { arcs, junctions } = keyJunctionSplitsWithArcs(
     drawnArcs,
-    model.sashimiLegend,
+    model.junctionLegend,
   )
   // Color-less rows (headings, notes) never count as a shared color — a `reads`
   // and an `arcs` entry that both omit `color` would otherwise both land on
@@ -268,7 +268,7 @@ export function getAlignmentsColorScales(model: {
       model.arcLegendTitle,
       merge ? [] : oneRowPerSplitTwin(arcs),
     ),
-    scaleOf('sashimi', SASHIMI_LEGEND_TITLE, sashimi),
+    scaleOf('junctions', JUNCTION_LEGEND_TITLE, junctions),
   ]
 }
 
@@ -292,19 +292,19 @@ export function titledReadColorKey(
   }
 }
 
-// A sashimi split row whose color the read arcs key already moves into the
+// A junctions split row whose color the read arcs key already moves into the
 // arcs' rows under their wording, where `oneRowPerSplitTwin` folds it with its
-// pair twin: one color, one row. The rest stay in the sashimi section.
-function keySashimiSplitsWithArcs(
+// pair twin: one color, one row. The rest stay in the junctions section.
+function keyJunctionSplitsWithArcs(
   drawnArcs: LegendItem[],
-  { strands, splits }: SashimiLegend,
+  { strands, splits }: JunctionLegend,
 ) {
   const arcColors = new Set(
     drawnArcs.flatMap(i => legendSwatches(i).map(s => s.color)),
   )
   const keyed = new Set(drawnArcs.map(legendKey))
   const arcs = [...drawnArcs]
-  const own: SashimiLegend['splits'] = []
+  const own: JunctionLegend['splits'] = []
   for (const s of splits) {
     if (arcColors.has(s.color)) {
       const row = { color: s.color, label: ARC_SPLIT_LABELS[s.split] }
@@ -315,42 +315,42 @@ function keySashimiSplitsWithArcs(
       own.push(s)
     }
   }
-  return { arcs, sashimi: sashimiLegendItems({ strands, splits: own }) }
+  return { arcs, junctions: junctionLegendItems({ strands, splits: own }) }
 }
 
 // Transcript strand, from the XS/TS tag or the splice motif — not the read's
 // alignment strand, which a read-color row may key in the same hue.
-const SASHIMI_STRAND_LABELS = [
+const JUNCTION_STRAND_LABELS = [
   [1, 'Forward transcript strand'],
   [-1, 'Reverse transcript strand'],
   [0, 'Transcript strand unknown'],
 ] as const
 
-/** The sashimi band's key heading, as its menu names it. */
-export const SASHIMI_LEGEND_TITLE = 'Junctions'
+/** The junctions band's key heading, as its menu names it. */
+export const JUNCTION_LEGEND_TITLE = 'Junctions'
 
 /**
- * The junction strands and the split classes the sashimi band draws, each
+ * The junction strands and the split classes the junctions band draws, each
  * split class in its read-arc color.
  */
-export interface SashimiLegend {
+export interface JunctionLegend {
   strands: LegendItem[]
-  splits: { split: SashimiSplitClass; color: string }[]
+  splits: { split: JunctionSplitClass; color: string }[]
 }
 
-export function sashimiLegend(
+export function junctionLegend(
   strands: ReadonlySet<number>,
   fill: Pick<AlignmentFill, 'read'>,
   split?: {
     classes: ReadonlySet<ArcSplitCategory>
     palette: Pick<ColorPalette, 'readCategoryColors'>
   },
-): SashimiLegend {
+): JunctionLegend {
   return {
-    strands: SASHIMI_STRAND_LABELS.filter(([strand]) =>
+    strands: JUNCTION_STRAND_LABELS.filter(([strand]) =>
       strands.has(strand),
     ).map(([strand, label]) => ({
-      color: sashimiArcColor(strand, fill),
+      color: junctionArcColor(strand, fill),
       label,
     })),
     splits: split
@@ -362,11 +362,11 @@ export function sashimiLegend(
   }
 }
 
-/** The sashimi key's rows on their own: the strands, then the split classes. */
-export function sashimiLegendItems({
+/** The junctions key's rows on their own: the strands, then the split classes. */
+export function junctionLegendItems({
   strands,
   splits,
-}: SashimiLegend): LegendItem[] {
+}: JunctionLegend): LegendItem[] {
   return [
     ...strands,
     ...splits.map(({ split, color }) => ({

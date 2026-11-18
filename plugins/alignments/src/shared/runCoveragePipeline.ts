@@ -6,11 +6,11 @@ import {
 import { updateStatus } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
+import { computeJunctions } from '../features/junctions/compute.ts'
 import {
   computeBisulfiteCoverage,
   computeModificationCoverage,
 } from '../features/modCoverage/compute.ts'
-import { computeSashimiJunctions } from '../features/sashimi/compute.ts'
 import { computeFrequenciesAndThresholds } from './computeFrequenciesAndThresholds.ts'
 import {
   buildModTooltipIndex,
@@ -18,8 +18,8 @@ import {
 } from './modTooltipIndex.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 
-import type { JunctionReference } from '../features/sashimi/compute.ts'
-import type { SplitJunction } from '../features/sashimi/splitJunctions.ts'
+import type { JunctionReference } from '../features/junctions/compute.ts'
+import type { SplitJunction } from '../features/junctions/splitJunctions.ts'
 import type { StrandBaseCounts } from './calculateModificationCounts.ts'
 import type {
   FeatureData,
@@ -35,7 +35,7 @@ import type { Region, StatusCallback } from '@jbrowse/core/util'
 /**
  * Runs the full coverage-area computation pipeline as a single named operation,
  * in step order: compute → freqs → SNP → interbase → mod → mod-tooltip → pack →
- * sashimi.
+ * junctions.
  *
  * Mod coverage runs under a `modCoverage` kind (the modification color modes);
  * a fetch with no modification layer passes none, so `packCoverageAreaForGpu`
@@ -84,7 +84,7 @@ export async function runCoveragePipeline({
   gapArrays: Parameters<typeof computeFrequenciesAndThresholds>[2]
   showCoverage: boolean
   interbaseIndicators?: InterbaseIndicatorRule
-  // The sashimi junctions, which draw over the band or in a strip of their
+  // The junctions, which draw over the band or in a strip of their
   // own without it; see `RenderAlignmentDataArgs.junctions`
   junctions?: boolean
   modCoverage?: ModCoverageKind
@@ -127,7 +127,7 @@ export async function runCoveragePipeline({
   // the band is off we skip every band computation and return an empty coverage
   // depth array; the coverage uploads / packCoverageAreaForGpu / coverageStats all
   // no-op on a zero-length depth array. The junctions are not part of the
-  // band: they still run while the sashimi arcs draw in their own strip.
+  // band: they still run while the junction arcs draw in their own strip.
   const band = showCoverage
     ? computeCoverageBand({
         coverage,
@@ -143,7 +143,7 @@ export async function runCoveragePipeline({
         interbaseIndicators,
       })
     : emptyCoverageBand()
-  const sashimi = computeSashimiJunctions(
+  const junctionArrays = computeJunctions(
     junctions ? gaps : [],
     junctionReference,
     splitJunctions,
@@ -161,7 +161,7 @@ export async function runCoveragePipeline({
           startPos: coverage.startPos,
         },
     ...band,
-    sashimi,
+    junctionArrays,
     mismatchFrequencies,
     interbaseFrequencies,
     gapFrequencies,

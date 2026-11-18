@@ -18,7 +18,7 @@ export function formatEndLocation(refName: string, end: number) {
 }
 
 /**
- * `refName:first-last` for a 0-based half-open interval — a read, a sashimi
+ * `refName:first-last` for a 0-based half-open interval — a read, a junctions
  * intron, an SA-tag record. Matches `formatCigarTooltip`, "Copy location", the
  * SAM export, and `BaseFeatureDetail`, so a hover can't disagree by one with
  * the click-through.

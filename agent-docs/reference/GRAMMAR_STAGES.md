@@ -135,7 +135,7 @@ SVG export) and one hit test, in `packages/render-core/src/marks/`;
 `defineMark` declares one, and `createMarkBackend` derives the GPU and Canvas2D
 backends from a display's mark list. Displays outside the mark display declare
 mark lists too (ADR [106](../architecture-decision-records/adr-106-a-display-declares-its-marks.md)). The link and the line are marks (ADRs [163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md), [184](../architecture-decision-records/adr-184-a-line-is-a-mark.md));
-sashimi arcs are links, and read connectors a connector mark (ADRs [222](../architecture-decision-records/adr-222-sashimi-arcs-are-link-marks.md), [225](../architecture-decision-records/adr-225-read-connectors-are-a-connector-mark.md)). Text is a DOM layer, emitted by
+junction arcs are links, and read connectors a connector mark (ADRs [222](../architecture-decision-records/adr-222-sashimi-arcs-are-link-marks.md), [225](../architecture-decision-records/adr-225-read-connectors-are-a-connector-mark.md)). Text is a DOM layer, emitted by
 `FloatingText` and `SvgHaloText` (display-ui) and placed by each display
 (ADR [162](../architecture-decision-records/adr-162-a-text-mark-is-a-dom-layer-placed-by-one-rule.md)).
 

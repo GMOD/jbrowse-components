@@ -1,6 +1,6 @@
 ---
 name: a-quantitative-splice-junction-track-of-its-own
-description: sashimi exists only as an overlay on the pileup, so junction counts cannot be read, sorted or exported as a track of their own — but a new track type is a design nobody has started, and the overlay's own future is part of it
+description: junctions exists only as an overlay on the pileup, so junction counts cannot be read, sorted or exported as a track of their own — but a new track type is a design nobody has started, and the overlay's own future is part of it
 ---
 
 # A quantitative splice-junction track of its own
@@ -11,11 +11,11 @@ is designed — no adapter, no display, no decision about whether the overlay
 stays beside it or becomes it.
 
 Since ADR-222 the arcs are link marks fed by
-`features/sashimi/bandFeed.ts`, so what a junction track needs is a display to
+`features/junctions/bandFeed.ts`, so what a junction track needs is a display to
 hold that feed, not a renderer.
 
-Sashimi is a band on the alignments display
-(`plugins/alignments/src/features/sashimi`) and nothing else. There is no junction track type — confirmed 2026-08-26, no
+Junctions is a band on the alignments display
+(`plugins/alignments/src/features/junctions`) and nothing else. There is no junction track type — confirmed 2026-08-26, no
 `SpliceJunction`/`JunctionTrack` anywhere in `plugins` or `packages` — so
 junction counts can only be read where a pileup is already drawn, at whatever
 height that pileup wants.

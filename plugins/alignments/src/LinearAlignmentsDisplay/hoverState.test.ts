@@ -2,7 +2,7 @@ import { autorun } from 'mobx'
 
 import { createRpcTestEnvironment } from './testUtils.ts'
 
-import type { HoveredJunction } from '../features/sashimi/supportingReads.ts'
+import type { HoveredJunction } from '../features/junctions/supportingReads.ts'
 import type { TextTooltipPayload } from './components/tooltipUtils.ts'
 import type { AlignmentsHover } from './hoverState.ts'
 

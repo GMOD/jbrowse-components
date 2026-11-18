@@ -76,7 +76,7 @@ import type {
   ReadConnectionsMark,
   ReadConnectionsMode,
   ReadConnectionsPlacement,
-  SashimiPlacement,
+  JunctionsPlacement,
 } from './constants.ts'
 import type { DeclaredFilters } from './dialogs/layerFilters.ts'
 import type { Reversible } from '@jbrowse/core/ui/filterMenuItems'
@@ -152,7 +152,7 @@ export interface ConfigSlotSelf extends IStateTreeNode {
 }
 
 /**
- * The display's configuration when it declares `sashimi` and `pileup.bases`,
+ * The display's configuration when it declares `junctions` and `pileup.bases`,
  * which LGVSyntenyDisplay's leaves out, and so draws the
  * splice junctions the `junction` filter fields test.
  * `getConf` reads an undeclared slot as undefined without failing, so every
@@ -161,7 +161,7 @@ export interface ConfigSlotSelf extends IStateTreeNode {
 export function readsConfOf(
   conf: BaseLinearAlignmentsDisplayConfigModel,
 ): LinearAlignmentsDisplayConfigModel | undefined {
-  return 'sashimi' in conf
+  return 'junctions' in conf
     ? (conf as LinearAlignmentsDisplayConfigModel)
     : undefined
 }
@@ -171,7 +171,7 @@ export function requireReadsConf(self: ConfigSlotSelf) {
   const conf = readsConfOf(self.configuration)
   if (!conf) {
     throw new Error(
-      `${self.type} has no sashimi, junction filter or pileup.bases`,
+      `${self.type} has no junctions, junction filter or pileup.bases`,
     )
   }
   return conf
@@ -285,42 +285,44 @@ export function configSlotViews(
     },
     /**
      * #getter
-     * Whether the display declares the sashimi band, which a synteny block,
+     * Whether the display declares the junctions band, which a synteny block,
      * having no introns, has no use for.
      */
-    get hasSashimi(): boolean {
+    get hasJunctions(): boolean {
       return readsConfOf(self.configuration) !== undefined
     },
     /** #getter */
-    get showSashimi(): boolean {
+    get showJunctions(): boolean {
       const conf = readsConfOf(self.configuration)
-      return conf ? readConfObject(conf, ['sashimi', 'show']) : false
+      return conf ? readConfObject(conf, ['junctions', 'show']) : false
     },
     /** #getter */
-    get sashimiHeight(): number {
+    get junctionsHeight(): number {
       const conf = readsConfOf(self.configuration)
-      return conf ? readConfObject(conf, ['sashimi', 'height']) : 0
+      return conf ? readConfObject(conf, ['junctions', 'height']) : 0
     },
     /** #getter */
-    get sashimiPlacement(): SashimiPlacement {
+    get junctionsPlacement(): JunctionsPlacement {
       const conf = readsConfOf(self.configuration)
-      return conf ? readConfObject(conf, ['sashimi', 'placement']) : 'overlay'
+      return conf ? readConfObject(conf, ['junctions', 'placement']) : 'overlay'
     },
     /**
      * #getter
-     * Where the arcs draw: `sashimi.placement` while the coverage band shows,
+     * Where the arcs draw: `junctions.placement` while the coverage band shows,
      * and `below`, in a strip of their own, while it is hidden. `above` already
      * draws in a strip of its own, so it keeps it, arcs rising, either way.
      */
-    get effectiveSashimiPlacement(): SashimiPlacement {
-      return self.showCoverage || this.sashimiPlacement === 'above'
-        ? this.sashimiPlacement
+    get effectiveJunctionsPlacement(): JunctionsPlacement {
+      return self.showCoverage || this.junctionsPlacement === 'above'
+        ? this.junctionsPlacement
         : 'below'
     },
     /** #getter */
-    get showSashimiLabels(): boolean {
+    get showJunctionLabels(): boolean {
       const conf = readsConfOf(self.configuration)
-      return conf ? readConfObject(conf, ['sashimi', 'labels', 'show']) : false
+      return conf
+        ? readConfObject(conf, ['junctions', 'labels', 'show'])
+        : false
     },
     /**
      * #getter
@@ -660,25 +662,25 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
-     * Writes `sashimi.show` alone. Without the coverage band the arcs draw
-     * in a separate strip (`effectiveSashimiPlacement`).
+     * Writes `junctions.show` alone. Without the coverage band the arcs draw
+     * in a separate strip (`effectiveJunctionsPlacement`).
      */
-    setShowSashimi(show: boolean) {
-      setConf(requireReadsConf(self), ['sashimi', 'show'], show)
+    setShowJunctions(show: boolean) {
+      setConf(requireReadsConf(self), ['junctions', 'show'], show)
     },
 
     /**
      * #action
      */
-    setSashimiPlacement(placement: SashimiPlacement) {
-      setConf(requireReadsConf(self), ['sashimi', 'placement'], placement)
+    setJunctionsPlacement(placement: JunctionsPlacement) {
+      setConf(requireReadsConf(self), ['junctions', 'placement'], placement)
     },
 
     /**
      * #action
      */
-    setShowSashimiLabels(show: boolean) {
-      setConf(requireReadsConf(self), ['sashimi', 'labels', 'show'], show)
+    setShowJunctionLabels(show: boolean) {
+      setConf(requireReadsConf(self), ['junctions', 'labels', 'show'], show)
     },
 
     /**

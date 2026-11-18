@@ -16,7 +16,7 @@ import {
 } from './splitJunctions.ts'
 
 import type { FeatureData } from '../../shared/webglRpcTypes.ts'
-import type { SashimiSplitClass } from './junctionClass.ts'
+import type { JunctionSplitClass } from './junctionClass.ts'
 
 interface Rec {
   name: string
@@ -64,7 +64,7 @@ function count(refName: string, recs: Rec[], fetch = recs) {
 const junction = (
   start: number,
   end: number,
-  split: SashimiSplitClass,
+  split: JunctionSplitClass,
   n = 1,
 ) => ({ start, end, splitClass: splitClassCode(split), n })
 
@@ -308,8 +308,8 @@ test('an SA entry without a CIGAR, span or position joins nothing', () => {
 })
 
 // The read arcs chain the same records (`collectPendingArcs`) and coalesce a
-// junction's connections into `support`; the sashimi count must be that number.
-test('the sashimi count is the read arcs support for the same junction', () => {
+// junction's connections into `support`; the junction count must be that number.
+test('the junction count is the read arcs support for the same junction', () => {
   const recs: Rec[] = [
     HIPK3_PRIMARY,
     HIPK3_SUPPLEMENTARY,
@@ -332,7 +332,7 @@ test('the sashimi count is the read arcs support for the same junction', () => {
       sa: 'chr11,33286413,+,1099S1099M,60,0;',
     },
   ]
-  const [sashimi, ...rest] = count('chr11', recs)
+  const [junctions, ...rest] = count('chr11', recs)
   const { arcs } = computeArcsFromPileupData(
     new Map([
       [
@@ -360,12 +360,12 @@ test('the sashimi count is the read arcs support for the same junction', () => {
     {},
   )
   expect(rest).toEqual([])
-  expect(sashimi).toEqual(junction(33286412, 33287511, 'splitBack', 4))
+  expect(junctions).toEqual(junction(33286412, 33287511, 'splitBack', 4))
   expect(
     arcs.map(a => [
       Math.min(a.p1.bp, a.p2.bp),
       Math.max(a.p1.bp, a.p2.bp),
       a.support,
     ]),
-  ).toEqual([[sashimi!.start, sashimi!.end, sashimi!.n]])
+  ).toEqual([[junctions!.start, junctions!.end, junctions!.n]])
 })

@@ -1,17 +1,17 @@
 import { observer } from 'mobx-react'
 
-import SashimiLabels from './SashimiLabels.tsx'
+import JunctionLabels from './JunctionLabels.tsx'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 
 // The junction read counts over the canvas the arcs draw on. The canvas
 // underneath answers the hover and the click.
-const SashimiLabelsOverlay = observer(function SashimiLabelsOverlay({
+const JunctionLabelsOverlay = observer(function JunctionLabelsOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const labels = model.sashimiLabels
+  const labels = model.junctionLabels
   return labels.length === 0 ? null : (
     <svg
       style={{
@@ -23,9 +23,9 @@ const SashimiLabelsOverlay = observer(function SashimiLabelsOverlay({
         pointerEvents: 'none',
       }}
     >
-      <SashimiLabels labels={labels} />
+      <JunctionLabels labels={labels} />
     </svg>
   )
 })
 
-export default SashimiLabelsOverlay
+export default JunctionLabelsOverlay

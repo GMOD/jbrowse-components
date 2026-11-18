@@ -1,11 +1,15 @@
-import { SASHIMI_LEGEND_TITLE } from '../shared/legendUtils.ts'
+import { JUNCTION_LEGEND_TITLE } from '../shared/legendUtils.ts'
 import { READ_CONNECTIONS_MARK_LABELS } from './constants.ts'
 import { coverageBandTop } from './sectionLayout.ts'
 
 import type { ReadConnectionsMark } from './constants.ts'
 import type { Section } from './sectionLayout.ts'
 
-export type BandChipKey = 'coverage' | 'sashimi' | 'readConnections' | 'pileup'
+export type BandChipKey =
+  | 'coverage'
+  | 'junctions'
+  | 'readConnections'
+  | 'pileup'
 
 export interface BandChipRow {
   band: BandChipKey
@@ -18,12 +22,12 @@ export type BandChipLane = Pick<
   Section,
   'sectionTop' | 'bands' | 'arcBand' | 'pileupTop' | 'pileupHeight'
 > & {
-  sashimiOverCoverage: boolean
+  junctionsOverCoverage: boolean
 }
 
-const STRIP_KEYS = ['readConnections', 'sashimi'] as const
+const STRIP_KEYS = ['readConnections', 'junctions'] as const
 
-const OVER_COVERAGE_KEYS = ['sashimi', 'readConnections'] as const
+const OVER_COVERAGE_KEYS = ['junctions', 'readConnections'] as const
 
 function arcsOverCoverage(lane: BandChipLane) {
   return (
@@ -37,8 +41,8 @@ function drawsOverCoverage(
   lanes: readonly BandChipLane[],
   key: (typeof OVER_COVERAGE_KEYS)[number],
 ) {
-  return key === 'sashimi'
-    ? lanes.some(l => l.sashimiOverCoverage)
+  return key === 'junctions'
+    ? lanes.some(l => l.junctionsOverCoverage)
     : lanes.some(arcsOverCoverage)
 }
 
@@ -110,8 +114,8 @@ function bandChipRows(lanes: readonly BandChipLane[], showPileup: boolean) {
 export function bandChipLabel(key: BandChipKey, mark: ReadConnectionsMark) {
   return key === 'coverage'
     ? 'Coverage'
-    : key === 'sashimi'
-      ? SASHIMI_LEGEND_TITLE
+    : key === 'junctions'
+      ? JUNCTION_LEGEND_TITLE
       : key === 'pileup'
         ? 'Pileup'
         : READ_CONNECTIONS_MARK_LABELS[mark]

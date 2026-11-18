@@ -1,5 +1,5 @@
 import { EMPTY_ARC_BAND_FEED } from '../../features/arcs/bandFeed.ts'
-import { EMPTY_SASHIMI_BAND_FEED } from '../../features/sashimi/bandFeed.ts'
+import { EMPTY_JUNCTIONS_BAND_FEED } from '../../features/junctions/bandFeed.ts'
 import { makeTestRenderState } from '../testUtils.ts'
 import {
   ARC_CLIPPED_MARKS,
@@ -8,7 +8,7 @@ import {
 } from './arcMarks.ts'
 import { forEachBandPass } from './bandPasses.ts'
 import { CONNECTOR_MARK, EMPTY_CONNECTOR_FEED } from './connectorMarks.ts'
-import { SASHIMI_MARK } from './sashimiMarks.ts'
+import { JUNCTION_MARK } from './junctionMarks.ts'
 
 import type { SectionRender, SectionSource } from './rendererTypes.ts'
 
@@ -27,7 +27,7 @@ const SECTION: SectionRender = {
   pileupClipHeight: 200,
   connectorClipHeight: 220,
   arcBand: { top: 60, height: 40, down: true },
-  sashimiBand: { top: 300, height: 40, above: false },
+  junctionsBand: { top: 300, height: 40, above: false },
 }
 
 function source(over: Partial<SectionSource> = {}): SectionSource {
@@ -35,7 +35,7 @@ function source(over: Partial<SectionSource> = {}): SectionSource {
     groupKey: '',
     laidOutPileupMap: new Map(),
     arcFeeds: new Map([[0, EMPTY_ARC_BAND_FEED]]),
-    sashimiFeeds: new Map([[0, EMPTY_SASHIMI_BAND_FEED]]),
+    junctionFeeds: new Map([[0, EMPTY_JUNCTIONS_BAND_FEED]]),
     connectorFeeds: new Map([[0, EMPTY_CONNECTOR_FEED]]),
     ...over,
   }
@@ -60,7 +60,7 @@ function passesOf(
 
 // Both renderers draw exactly this list, so a mark missing from it is missing
 // from the screen and the SVG export alike, and no parity test can tell
-test('each band draws its own marks, connectors then arcs then sashimi', () => {
+test('each band draws its own marks, connectors then arcs then junctions', () => {
   const passes = passesOf([source()])
   expect(passes.map(p => [p.top, p.height, p.spanning, p.perBlock])).toEqual([
     [100, 220, [CONNECTOR_MARK], undefined],
@@ -70,8 +70,8 @@ test('each band draws its own marks, connectors then arcs then sashimi', () => {
       ARC_LINK_MARKS,
       { wide: ARC_CLIPPED_MARKS, own: [ARC_MARKER_MARK] },
     ],
-    [0, 60, [SASHIMI_MARK.up], undefined],
-    [300, 40, [SASHIMI_MARK.down], undefined],
+    [0, 60, [JUNCTION_MARK.up], undefined],
+    [300, 40, [JUNCTION_MARK.down], undefined],
   ])
 })
 
@@ -82,17 +82,17 @@ test('every section draws its connectors before any section draws its arcs', () 
     [1, CONNECTOR_MARK],
     [0, ARC_LINK_MARKS[0]],
     [1, ARC_LINK_MARKS[0]],
-    [0, SASHIMI_MARK.up],
-    [0, SASHIMI_MARK.down],
-    [1, SASHIMI_MARK.up],
-    [1, SASHIMI_MARK.down],
+    [0, JUNCTION_MARK.up],
+    [0, JUNCTION_MARK.down],
+    [1, JUNCTION_MARK.up],
+    [1, JUNCTION_MARK.down],
   ])
 })
 
 test('a band with no feed or no strip draws nothing', () => {
   const noFeeds = source({
     arcFeeds: new Map(),
-    sashimiFeeds: new Map(),
+    junctionFeeds: new Map(),
     connectorFeeds: new Map(),
   })
   expect(passesOf([noFeeds])).toEqual([])
@@ -100,9 +100,9 @@ test('a band with no feed or no strip draws nothing', () => {
     ...SECTION,
     connectorClipHeight: 0,
     arcBand: undefined,
-    sashimiBand: undefined,
+    junctionsBand: undefined,
   }
   expect(passesOf([source()], [noStrips]).map(p => p.spanning)).toEqual([
-    [SASHIMI_MARK.up],
+    [JUNCTION_MARK.up],
   ])
 })

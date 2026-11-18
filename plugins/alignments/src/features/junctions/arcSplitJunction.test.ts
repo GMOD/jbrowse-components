@@ -120,7 +120,7 @@ function litBy(
 
 const flip = ([start, end, strand]: Segment): Segment => [start, end, -strand]
 
-describe('a split arc names the sashimi junction its reads make', () => {
+describe('a split arc names the junction its reads make', () => {
   const cases: [string, Segment, Segment][] = [
     ['splitForward', [100, 200, 1], [500, 600, 1]],
     ['splitBack', [400, 600, 1], [100, 300, 1]],

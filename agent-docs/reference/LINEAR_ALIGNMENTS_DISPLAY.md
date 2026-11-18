@@ -29,7 +29,7 @@ handed unlaid data and the worker cannot state a field it has no answer for.
 toggle relayouts, and refetches only where chain mode drops a fetch input:
 under a facet, whose unit it changes, and with soft clips shown or a tag sort,
 which chain layout reads neither of (ADR-188).
-`rawDataByGroup` stays chain-free: the arcs, sashimi and a split view overlaying
+`rawDataByGroup` stays chain-free: the arcs, junctions and a split view overlaying
 the display read it and must not recompute on the toggle.
 
 - **Never put a fetch-result derivative in `rpcProps()`** — infinite loop.
@@ -79,7 +79,7 @@ vocabularies.
 ## A lane, not a group key
 
 **`buildLanes` (lanes.ts) is where a group key becomes data** — the raw map, the
-laid-out map, the sashimi sides, and the collapse/override state, per lane, in
+laid-out map, the junctions sides, and the collapse/override state, per lane, in
 stacking order. The read-connection feeds join in `themed.sourceSections`, after
 layout, because they are colored and the layout must not read the palette. A
 `renderSections` entry IS its lane plus band geometry, so a consumer walking
@@ -130,7 +130,7 @@ its file has no records in (read-cloud with only the pileup band, a coverage-off
 `coverageParity.test.ts` runs the scenario table against both backends.
 
 `hiddenGroupKeys` must be filtered out of the **cross-group** derivations too
-(coverage stats, legend, sashimi, arcs) — for arcs, before `poolArcScale`.
+(coverage stats, legend, junctions, arcs) — for arcs, before `poolArcScale`.
 
 ## Four row caps, and only two are an affordance
 
@@ -234,26 +234,26 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   no-op, and a tag sort additionally refetches.
 - `placeRect` cannot use a levels / right-edge-only array: features arrive out of
   start order in both layouts.
-- On-screen and SVG export share `drawAlignmentBlocks`, sashimi arcs and read
-  connectors included: the junctions are link marks (`SASHIMI_MARKS`, ADR-222)
+- On-screen and SVG export share `drawAlignmentBlocks`, junction arcs and read
+  connectors included: the junctions are link marks (`JUNCTION_MARKS`, ADR-222)
   and the curved connectors a connector mark (`CONNECTOR_MARK`, ADR-225), both
-  fed in bp, so a pan rebuilds nothing. The sashimi count labels stay an SVG
-  overlay, placed by the marks (`sashimiLabels`, through `linkApex`), never by a
+  fed in bp, so a pan rebuilds nothing. The junction count labels stay an SVG
+  overlay, placed by the marks (`junctionLabels`, through `linkApex`), never by a
   second spelling of the band geometry.
-- **Ask `drawsSashimi`, not `showSashimi`, before reading the pan for sashimi.**
+- **Ask `drawsJunctions`, not `showJunctions`, before reading the pan for junctions.**
   The setting is on by default on every alignments track, and a track of
   unspliced reads must not rebuild `renderState` per frame for it.
-- **The worker's `junctions` is `coverage.show || sashimi.show`.** With coverage
-  shown a sashimi toggle changes no fetch key; without it the arcs draw in their
-  own strip (`effectiveSashimiPlacement` is `below`, or stays `above`), so the
+- **The worker's `junctions` is `coverage.show || junctions.show`.** With coverage
+  shown a junctions toggle changes no fetch key; without it the arcs draw in their
+  own strip (`effectiveJunctionsPlacement` is `below`, or stays `above`), so the
   junctions ride with the arcs.
 - **A per-block pass cannot join two displayed regions**, since it maps bp
   through its own block. The read-connection band's links do, drawing over the
   whole canvas through the view's region table (ADR-170), and so do the pileup
   connectors (ADR-225). Whether those draw is `drawsConnectors` (always in chain
   layout); read that, never `showConnectors`.
-- **Which sub-band a sashimi arc draws in is decided once**, in genomic bp, by
-  `sashimiStripKeysByGroup`, read by both the layout reserving the strip and the
+- **Which sub-band a junction arc draws in is decided once**, in genomic bp, by
+  `junctionsStripKeysByGroup`, read by both the layout reserving the strip and the
   geometry filling it. Junction identity is `junctionKey`, refName included.
 - **A band's height MINUS its reserved margin is floored at 0** where the
   expression is declared, not per consumer. If a shader computes it too, the
@@ -285,7 +285,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   `laneSlot`, `floor(H / N)` px, H the track's height (capped at
   `growMaxHeight` in grow, which `growTargetHeight` returns) and N the drawn
   lanes or one, so `N * slot <= H` and nothing scrolls. With coverage on, the
-  arcs and sashimi strips, above or below it, keep their stated heights, bound
+  arcs and junctions strips, above or below it, keep their stated heights, bound
   top-down
   against `{ height: slot, floor: MIN_BAND_HEIGHT }`, and the coverage takes
   the rest of the slot (`fittedLaneBandHeights`): 215/35 for coverage 45
@@ -318,12 +318,12 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 - **`laneBands` is the one statement of a lane's band stack**: which strips it
   reserves, their order and tops, and where its arcs draw — their own strip, or
   over the coverage histogram in overlay mode. The order is `laneBandOrder`'s:
-  coverage, read connections, sashimi, with a strip placed `above` moved ahead
-  of coverage and the read connections leading the sashimi strip on either
+  coverage, read connections, junctions, with a strip placed `above` moved ahead
+  of coverage and the read connections leading the junctions strip on either
   side (ADR-272). `Section.sectionTop` is the section's top, and
   `coverageBandTop(section)` the coverage band's under whatever stacks before
   it. Each `Section` carries that fold as `bands`,
-  a core `BandStack` keyed `coverage`, `readConnections` and `sashimi`, rather
+  a core `BandStack` keyed `coverage`, `readConnections` and `junctions`, rather
   than a copy of it in named fields, so a new key fails to compile wherever a
   consumer does not handle it. `computeStackedSections`, the fit budget
   (`laneBandOverheads`) and the binders all read the same band description. The
@@ -331,7 +331,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   routes the fit volatile back through the layout it feeds.
 - **Each band that draws is named once by a chip at its top-left**
   (`bandChips`, `BandChipsOverlay`), over its own marks, reserving no px:
-  `Coverage`, with `Sashimi arcs` and the read connections beside it while
+  `Coverage`, with `Junction arcs` and the read connections beside it while
   they draw over the histogram, then each strip and `Pileup` on the first
   lane drawing it. The read connections chip is the mark's menu name (`Read
   arcs`, `Read cloud`). The × writes the slot the Show menu writes. A lone
@@ -341,7 +341,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   placed `above`, the coverage, or with coverage hidden a strip or the
   pileup), rides ahead of the topmost section chip (`leading`), as the
   variant display's records chips do. A strip drawing arcs that also draw
-  over the histogram (`auto` sashimi) is named on the strip alone. The
+  over the histogram (`auto` junctions) is named on the strip alone. The
   export draws none: they are controls.
 - **A display-wide render state carries no section offsets.** The model builds a
   `DisplayRenderState`; `sectionRenderState` adds a section's `pileupTopOffset`
@@ -351,7 +351,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 - **`readLayoutRecord` answers in content space**, and a view overlaying the
   reads stops at `stickyBandHeight`, which is 0 when grouped — nothing scrolls
   under a sticky band there.
-- Screen-x is not start/end-ordered — keep new sashimi geometry on the
+- Screen-x is not start/end-ordered — keep new junctions geometry on the
   normalized fields. In shaders use `bpToClipX`, never
   `hpClipX(hpSplitUint(…))`.
 
@@ -362,7 +362,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   carries ticks and no arcs.
 - **Across lanes, ask `resolveArcsByGroup`**, not a walk of `arcsByGroup`,
   and after regionization.
-- **A splice junction outranks the arc band** (`resolveSashimiHit`), its mark
+- **A splice junction outranks the arc band** (`resolveJunctionHit`), its mark
   painting last, and unlike an arc it is clickable.
 - **`runHitTest` asks the arc band FIRST and returns
   `arc ?? performHitTest(…)`** — the one place "an arc outranks the band under

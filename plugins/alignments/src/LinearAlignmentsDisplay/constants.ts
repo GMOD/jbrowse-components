@@ -60,12 +60,12 @@ export const READ_CONNECTIONS_WIDTH_SCALES = ['log', 'linear'] as const
 export type ReadConnectionsWidthScale =
   (typeof READ_CONNECTIONS_WIDTH_SCALES)[number]
 
-// Where a layer sits against the coverage band (`sashimi.placement`,
+// Where a layer sits against the coverage band (`junctions.placement`,
 // `readConnections.placement`): overlay on it, above in a band over it, or
-// below in a band under it. Each layer holds its own setting, and only sashimi
+// below in a band under it. Each layer holds its own setting, and only junctions
 // has 'auto', which sends a junction below where it would cross another; arcs
 // have no such side assignment, so one shared enum would offer them a value
-// that means nothing. Sashimi's list sits beside the side-assignment algorithm
+// that means nothing. Junctions's list sits beside the side-assignment algorithm
 // it selects.
 export const READ_CONNECTIONS_PLACEMENTS = [
   'overlay',
@@ -75,9 +75,9 @@ export const READ_CONNECTIONS_PLACEMENTS = [
 export type ReadConnectionsPlacement =
   (typeof READ_CONNECTIONS_PLACEMENTS)[number]
 export {
-  SASHIMI_PLACEMENTS,
-  type SashimiPlacement,
-} from '../features/sashimi/junctions.ts'
+  JUNCTIONS_PLACEMENTS,
+  type JunctionsPlacement,
+} from '../features/junctions/junctions.ts'
 
 // Whether a point feature (mismatch / small insertion) may intercept a
 // click/hover. Clickable when zoomed to base level (bpPerPx <= 1), when

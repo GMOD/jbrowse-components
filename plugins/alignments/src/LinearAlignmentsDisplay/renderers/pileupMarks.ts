@@ -51,7 +51,7 @@ export type PileupMark = Mark<PileupRegion, RenderState>
  * The coverage band is a mark list of its own (`ALIGNMENTS_COVERAGE_MARKS`),
  * separate because its marks are position-aggregate — packed in the worker,
  * drawn through the shared band — the arc band another (`ARC_BAND_MARKS`)
- * and the splice junctions a fourth (`SASHIMI_MARKS`); the bands share one
+ * and the splice junctions a fourth (`JUNCTION_MARKS`); the bands share one
  * renderer scaffold and nothing else.
  */
 export const PILEUP_MARKS: readonly PileupMark[] = [

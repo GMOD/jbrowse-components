@@ -7,17 +7,17 @@ import type { RegionInfo } from '../arcs/arcTypes.ts'
 import type { MergedJunction } from './junctions.ts'
 import type { LinkChannels } from '@jbrowse/render-core/marks'
 
-export const SASHIMI_SIDES = ['up', 'down'] as const
-export type SashimiSide = (typeof SASHIMI_SIDES)[number]
+export const JUNCTION_SIDES = ['up', 'down'] as const
+export type JunctionSide = (typeof JUNCTION_SIDES)[number]
 
 /**
- * One region's junctions as the two sashimi marks read them: `up` rising,
+ * One region's junctions as the two junctions marks read them: `up` rising,
  * over the coverage histogram or in the strip above it, and `down` hanging in
  * the strip below it, each ascending by
  * count so a heavy junction paints over, and takes the hover from, a light one
  * near it. `upHits[i]` and `downHits[i]` are the junctions instance `i` draws.
  */
-export interface SashimiBandFeed {
+export interface JunctionsBandFeed {
   up: LinkChannels
   down: LinkChannels
   upHits: MergedJunction[]
@@ -34,7 +34,7 @@ const LOG_REF_MIN = Math.log(SPAN_REF_MIN_BP)
 const LOG_REF_RANGE = Math.log(SPAN_REF_MAX_BP) - LOG_REF_MIN
 
 /** A junction's apex as a fraction of its band, the `y` the marks plot on [0, 1]. */
-export function sashimiArcHeightFraction(genomicSpan: number) {
+export function junctionArcHeightFraction(genomicSpan: number) {
   const norm = Math.min(
     1,
     Math.max(
@@ -46,7 +46,7 @@ export function sashimiArcHeightFraction(genomicSpan: number) {
 }
 
 /** The widest stroke the size scale passes through unclamped. */
-export const SASHIMI_MAX_STROKE_PX = 16
+export const JUNCTION_MAX_STROKE_PX = 16
 
 /**
  * A junction's stroke in CSS px: a thinner one can be neither seen nor hovered.
@@ -54,8 +54,8 @@ export const SASHIMI_MAX_STROKE_PX = 16
  * asked, and the 1 px floor would stay under any written scale (declined
  * 2026-11-08).
  */
-export function sashimiStrokeWidth(count: number) {
-  return Math.min(SASHIMI_MAX_STROKE_PX, Math.max(1, Math.log(count + 1)))
+export function junctionStrokeWidth(count: number) {
+  return Math.min(JUNCTION_MAX_STROKE_PX, Math.max(1, Math.log(count + 1)))
 }
 
 class SideLanes {
@@ -80,7 +80,7 @@ class SideLanes {
   }
 }
 
-function feedOf(up: SideLanes, down: SideLanes): SashimiBandFeed {
+function feedOf(up: SideLanes, down: SideLanes): JunctionsBandFeed {
   return {
     up: up.channels(),
     down: down.channels(),
@@ -89,7 +89,10 @@ function feedOf(up: SideLanes, down: SideLanes): SashimiBandFeed {
   }
 }
 
-export const EMPTY_SASHIMI_BAND_FEED = feedOf(new SideLanes(), new SideLanes())
+export const EMPTY_JUNCTIONS_BAND_FEED = feedOf(
+  new SideLanes(),
+  new SideLanes(),
+)
 
 // The first displayed region holding `bp`, as `bpToPx` resolves a refName the
 // view shows twice. Indexed by refName, so a view of thousands of scaffolds
@@ -111,17 +114,17 @@ function regionFinder(displayed: readonly RegionInfo[]) {
 
 const none = () => undefined
 
-export type SashimiColors = Pick<
+export type JunctionColors = Pick<
   ColorPalette,
   'colorFwdStrand' | 'colorRevStrand' | 'colorPairLR' | 'readCategoryColors'
 >
 
 // A splice junction is tinted like the reads supporting it, and an unstranded
 // one takes the unpaired-read grey. A split junction takes its class's read-arc
-// color in every `readConnections` color field (`sashimiConfigSchema`).
+// color in every `readConnections` color field (`junctionsConfigSchema`).
 export function junctionColor(
   j: Pick<MergedJunction, 'strand' | 'split'>,
-  colors: SashimiColors,
+  colors: JunctionColors,
 ) {
   return normalizedRgbToABGR(
     ...(j.split
@@ -134,27 +137,27 @@ export function junctionColor(
   )
 }
 
-export interface SashimiBandFeedInput {
+export interface JunctionsBandFeedInput {
   junctions: readonly MergedJunction[]
   /** By `junctionKey`: the junctions that hang in the strip below coverage, on the `down` mark. */
   downJunctionKeys: ReadonlySet<string>
   /** The view's displayed regions, which each foot resolves against. */
   displayed: readonly RegionInfo[]
-  colors: SashimiColors
+  colors: JunctionColors
 }
 
 /**
- * Every region's sashimi feed. A junction draws from the displayed region
+ * Every region's junctions feed. A junction draws from the displayed region
  * holding its start, its end placed through the displayed region that holds
  * it, so one crosses a collapsed intron whole. A junction with a foot on no
  * displayed region has no pixel to hang from and is left out.
  */
-export function buildSashimiBandFeeds({
+export function buildJunctionsBandFeeds({
   junctions,
   downJunctionKeys,
   displayed,
   colors,
-}: SashimiBandFeedInput): Map<number, SashimiBandFeed> {
+}: JunctionsBandFeedInput): Map<number, JunctionsBandFeed> {
   const lanes = new Map<number, { up: SideLanes; down: SideLanes }>()
   const regionHolding = junctions.length > 0 ? regionFinder(displayed) : none
   for (const j of [...junctions].sort((a, b) => a.count - b.count)) {
@@ -172,8 +175,8 @@ export function buildSashimiBandFeeds({
       side.x.push(j.start)
       side.x2.push(j.end)
       side.x2Region.push(far)
-      side.y.push(sashimiArcHeightFraction(Math.abs(j.end - j.start)))
-      side.size.push(sashimiStrokeWidth(j.count))
+      side.y.push(junctionArcHeightFraction(Math.abs(j.end - j.start)))
+      side.size.push(junctionStrokeWidth(j.count))
       side.color.push(junctionColor(j, colors))
       side.hits.push(j)
     }

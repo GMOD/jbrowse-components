@@ -9,7 +9,7 @@ import {
   sectionOrder,
 } from '../shared/groupFeatures.ts'
 import {
-  buildSashimiStripKeys,
+  buildJunctionsStripKeys,
   buildRawDataByGroup,
   buildReadIdIndex,
   hasNamedGroups,
@@ -477,14 +477,14 @@ test('buildRawDataByGroup keeps the single ungrouped group under key ""', () => 
 // [start, end, count] per junction.
 function junctionData(junctions: [number, number, number][]): PileupDataResult {
   return makePileupDataResult({
-    sashimiX1: new Uint32Array(junctions.map(j => j[0])),
-    sashimiX2: new Uint32Array(junctions.map(j => j[1])),
-    sashimiCounts: new Uint32Array(junctions.map(j => j[2])),
-    sashimiFwd: new Uint32Array(junctions.length),
-    sashimiRev: new Uint32Array(junctions.length),
-    sashimiDonors: new Uint8Array(junctions.length),
-    sashimiAcceptors: new Uint8Array(junctions.length),
-    sashimiClass: new Uint8Array(junctions.length),
+    junctionX1: new Uint32Array(junctions.map(j => j[0])),
+    junctionX2: new Uint32Array(junctions.map(j => j[1])),
+    junctionCounts: new Uint32Array(junctions.map(j => j[2])),
+    junctionFwd: new Uint32Array(junctions.length),
+    junctionRev: new Uint32Array(junctions.length),
+    junctionDonors: new Uint8Array(junctions.length),
+    junctionAcceptors: new Uint8Array(junctions.length),
+    junctionSplitClass: new Uint8Array(junctions.length),
   })
 }
 
@@ -495,13 +495,13 @@ const crossing: [number, number, number][] = [
 ]
 
 // Every region of these fixtures is on one chromosome; the per-refName partition
-// itself is covered in features/sashimi/junctions.test.ts.
+// itself is covered in features/junctions/junctions.test.ts.
 function downKeys(
-  rpcDataMap: Parameters<typeof buildSashimiStripKeys>[0],
+  rpcDataMap: Parameters<typeof buildJunctionsStripKeys>[0],
   minReads: number,
   placement: 'overlay' | 'below' | 'auto',
 ) {
-  return buildSashimiStripKeys(rpcDataMap, {
+  return buildJunctionsStripKeys(rpcDataMap, {
     filter: { minReads },
     placement,
     refNameFor: () => 'chr1',
@@ -509,7 +509,7 @@ function downKeys(
 }
 
 // The lanes the strip is reserved for: the keys whose set is non-empty, which is
-// how `model.sashimiStripLanes` reads this for `totalBandOverhead`.
+// how `model.junctionsStripLanes` reads this for `totalBandOverhead`.
 function lanes(...args: Parameters<typeof downKeys>) {
   return [...downKeys(...args)]
     .filter(([, down]) => down.size > 0)
@@ -564,7 +564,7 @@ test('auto pools a group across regions, but not across groups', () => {
 
 // A lane with no junction must be named as not needing the
 // strip, so `computeStackedSections` can drop it rather than leaving dead space.
-test('buildSashimiStripKeys: names only the lanes needing the strip', () => {
+test('buildJunctionsStripKeys: names only the lanes needing the strip', () => {
   const m = new Map([
     [
       0,
@@ -580,7 +580,7 @@ test('buildSashimiStripKeys: names only the lanes needing the strip', () => {
   expect(lanes(m, 0, 'overlay')).toEqual([])
 })
 
-test('buildSashimiStripKeys: auto names only the lane whose junctions cross', () => {
+test('buildJunctionsStripKeys: auto names only the lane whose junctions cross', () => {
   const m = new Map([
     [
       0,
@@ -599,15 +599,15 @@ test('buildSashimiStripKeys: auto names only the lane whose junctions cross', ()
   expect(lanes(m, 0, 'auto')).toEqual(['crossing'])
 })
 
-test('buildSashimiStripKeys: the keys name the junctions the overlay will look up', () => {
-  // The set is the whole sashimi side decision — the layout reserves off its
-  // size and `projectSashimiArcs` places each arc off its membership, so a lane
+test('buildJunctionsStripKeys: the keys name the junctions the overlay will look up', () => {
+  // The set is the whole junctions side decision — the layout reserves off its
+  // size and `projectJunctionArcs` places each arc off its membership, so a lane
   // has to name WHICH junction goes down, not just that one does.
   const m = new Map([[0, grouped([{ key: '', data: junctionData(crossing) }])]])
   expect([...downKeys(m, 0, 'auto').get('')!]).toEqual(['chr1:300:700'])
 })
 
-test('buildSashimiStripKeys: a hidden lane is never named', () => {
+test('buildJunctionsStripKeys: a hidden lane is never named', () => {
   const m = new Map([
     [
       0,
@@ -617,7 +617,7 @@ test('buildSashimiStripKeys: a hidden lane is never named', () => {
       ]),
     ],
   ])
-  const keys = buildSashimiStripKeys(m, {
+  const keys = buildJunctionsStripKeys(m, {
     filter: { minReads: 0 },
     placement: 'below',
     refNameFor: () => 'chr1',

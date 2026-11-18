@@ -5,9 +5,9 @@ import { createDisplay } from './testEnv.ts'
 
 // A synteny block has no introns, basecaller tags or qualities, so the schema
 // stops at the alignments base and the shared model answers these off.
-test('the schema declares no sashimi, pileup.bases or modifications', () => {
+test('the schema declares no junctions, pileup.bases or modifications', () => {
   const definition = getConfigurationSchemaDefinition(configSchemaF())!
-  for (const slot of ['sashimi', 'modifications']) {
+  for (const slot of ['junctions', 'modifications']) {
     expect(definition).not.toHaveProperty(slot)
   }
   const partOf = (name: string) =>
@@ -37,9 +37,9 @@ test('a junction field in the filter is a config problem', () => {
 test('the model answers the four off and fetches no junctions', () => {
   const display = createDisplay()
   display.setShowCoverage(true)
-  expect(display.hasSashimi).toBe(false)
-  expect(display.showSashimi).toBe(false)
-  expect(display.showSashimiLabels).toBe(false)
+  expect(display.hasJunctions).toBe(false)
+  expect(display.showJunctions).toBe(false)
+  expect(display.showJunctionLabels).toBe(false)
   expect(display.baseLayer).toBeUndefined()
   expect(display.basesFilter).toEqual({
     probability: { min: 0.1, strict: false },
@@ -51,12 +51,12 @@ test('the model answers the four off and fetches no junctions', () => {
 test('a write to one of the four throws rather than landing nowhere', () => {
   const display = createDisplay()
   expect(() => {
-    display.setShowSashimi(true)
-  }).toThrow('LGVSyntenyDisplay has no sashimi')
+    display.setShowJunctions(true)
+  }).toThrow('LGVSyntenyDisplay has no junctions')
   expect(() => {
     display.setJunctionFilter({ minReads: 5 })
-  }).toThrow('LGVSyntenyDisplay has no sashimi')
+  }).toThrow('LGVSyntenyDisplay has no junctions')
   expect(() => {
     display.setBases({ show: true, field: 'baseQuality' })
-  }).toThrow('LGVSyntenyDisplay has no sashimi')
+  }).toThrow('LGVSyntenyDisplay has no junctions')
 })

@@ -235,16 +235,16 @@ test('census: gene track, label zoom', async () => {
   })
 }, 90000)
 
-// An alignments track over DNA, which is where `showSashimi` defaulting
-// on costs something for nothing: every alignments track evaluates the sashimi
+// An alignments track over DNA, which is where `showJunctions` defaulting
+// on costs something for nothing: every alignments track evaluates the junctions
 // pipeline now, and reads with no skip gap give it nothing to draw.
 //
-// The sashimi overlay re-rendered on every frame of every gesture here, because
+// The junctions overlay re-rendered on every frame of every gesture here, because
 // its sections rebuilt a fresh list of empty ones each time
 // `view.visibleRegions` did. Zero is the whole band of headroom this one gets:
 // with no junction in the file there is no frame on which the overlay has
 // anything to say, and the counting window opens after first paint so the mount
-// is not in it. `sashimiFrameSplit.test.ts` is the same statement one layer
+// is not in it. `junctionsFrameSplit.test.ts` is the same statement one layer
 // down, where it can also count the merge.
 test('census: alignments over DNA, no junctions to draw', async () => {
   const { counts } = await census({
@@ -253,22 +253,22 @@ test('census: alignments over DNA, no junctions to draw', async () => {
     startBpPerPx: 5,
     painted: 'pileup-display',
   })
-  expect(counts.get('SashimiLabelsOverlay') ?? 0).toBe(0)
+  expect(counts.get('JunctionLabelsOverlay') ?? 0).toBe(0)
 }, 90000)
 
 // Spliced reads. The arcs are link marks (ADR-222), placed through the view's
 // region table, so a zoom writes a uniform and no arc owes the DOM a frame.
 // Before that each arc was a `<path>` patched one `attr:d` per frame, a rate a
 // bigger dataset multiplied. The count labels are off by default, and they are
-// the only part of sashimi left in the DOM.
-test('census: spliced alignments, sashimi arcs drawn', async () => {
+// the only part of junctions left in the DOM.
+test('census: spliced alignments, junction arcs drawn', async () => {
   const { counts } = await census({
     label: 'spliced',
     trackIds: ['spliced'],
     startBpPerPx: 5,
     painted: 'pileup-display',
   })
-  expect(counts.get('SashimiLabelsOverlay') ?? 0).toBe(0)
+  expect(counts.get('JunctionLabelsOverlay') ?? 0).toBe(0)
 }, 90000)
 
 // Arcs are link marks on the mark display: GPU instances placed through a

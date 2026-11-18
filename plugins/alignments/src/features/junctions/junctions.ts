@@ -1,12 +1,12 @@
-// The junction set behind sashimi arcs, and which sub-band each junction lands
+// The junction set behind junction arcs, and which sub-band each junction lands
 // in. Both questions are answered here, in genomic bp, from the worker's
 // `rpcDataMap` alone:
 //
-//   - the LAYOUT asks whether a lane needs the sashimi strip reserved
-//     (`sashimiStripKeysByGroup` -> non-empty set), and must not depend on
+//   - the LAYOUT asks whether a lane needs the junctions strip reserved
+//     (`junctionsStripKeysByGroup` -> non-empty set), and must not depend on
 //     pan/zoom or the pileup would re-lay-out on every frame;
 //   - the OVERLAY/EXPORT asks which side to draw each arc on
-//     (`projectSashimiArcs`, which looks its arcs up in the same set).
+//     (`projectJunctionArcs`, which looks its arcs up in the same set).
 //
 // They used to be two separate O(n^2) crossing passes — a genomic one over every
 // loaded region for the layout, a screen-space one over the visible ones for the
@@ -32,14 +32,19 @@ import {
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { JunctionFilter } from '../../shared/types.ts'
-import type { SashimiSplitClass } from './junctionClass.ts'
+import type { JunctionSplitClass } from './junctionClass.ts'
 
-// Sashimi placement, owned here because it selects the assignment algorithm
+// Junction placement, owned here because it selects the assignment algorithm
 // below (the display imports it via constants.ts): 'overlay' draws every arc
 // over the coverage band, 'above' in a reserved strip above it, 'below' in the
 // reserved strip below it, 'auto' splits each junction to minimize crossings.
-export const SASHIMI_PLACEMENTS = ['overlay', 'above', 'below', 'auto'] as const
-export type SashimiPlacement = (typeof SASHIMI_PLACEMENTS)[number]
+export const JUNCTIONS_PLACEMENTS = [
+  'overlay',
+  'above',
+  'below',
+  'auto',
+] as const
+export type JunctionsPlacement = (typeof JUNCTIONS_PLACEMENTS)[number]
 
 // A junction's identity, and the ONE spelling of it. The layout's side
 // assignment and the geometry's cross-region merge both key on this, so a
@@ -53,7 +58,7 @@ export function junctionKey(
   refName: string,
   start: number,
   end: number,
-  split?: SashimiSplitClass,
+  split?: JunctionSplitClass,
 ) {
   return split
     ? `${refName}:${start}:${end}:${split}`
@@ -70,12 +75,12 @@ export interface MergedJunction {
   strand: number
   motif: number
   /** The split class of a junction counted from split reads, undefined for an N gap. */
-  split: SashimiSplitClass | undefined
+  split: JunctionSplitClass | undefined
 }
 
 // The same junction mid-merge, before the two motif halves are a motif and the
 // strand votes are a strand. Neither can be settled per region: see
-// `computeSashimiJunctions`.
+// `computeJunctions`.
 interface JunctionAccumulator {
   key: string
   refName: string
@@ -86,7 +91,7 @@ interface JunctionAccumulator {
   rev: number
   donor: number
   acceptor: number
-  split: SashimiSplitClass | undefined
+  split: JunctionSplitClass | undefined
 }
 
 // Which strand tints a junction whose reads disagree. Only tagged reads vote:
@@ -98,7 +103,7 @@ interface JunctionAccumulator {
 // antisense genes) are genuinely ambiguous and stay 0.
 //
 // The result is a plain +1/-1/0 strand — the same vocabulary as
-// `getEffectiveStrand`, `SashimiArc.strand`, the tooltip, and the detail widget.
+// `getEffectiveStrand`, `JunctionArc.strand`, the tooltip, and the detail widget.
 function junctionStrand(fwd: number, rev: number, motif: number) {
   return fwd > rev
     ? 1
@@ -109,24 +114,24 @@ function junctionStrand(fwd: number, rev: number, motif: number) {
         : 0
 }
 
-// The sashimi slice of a worker result. Narrowed to what the merge reads so the
+// The junctions slice of a worker result. Narrowed to what the merge reads so the
 // tests (and `groupedDataMaps`, which walks `GroupedAlignmentsResult`) don't
 // have to build a whole WorkerPileupData.
-export type SashimiFields = Pick<
+export type JunctionFields = Pick<
   WorkerPileupData,
-  | 'sashimiX1'
-  | 'sashimiX2'
-  | 'sashimiCounts'
-  | 'sashimiFwd'
-  | 'sashimiRev'
-  | 'sashimiDonors'
-  | 'sashimiAcceptors'
-  | 'sashimiClass'
+  | 'junctionX1'
+  | 'junctionX2'
+  | 'junctionCounts'
+  | 'junctionFwd'
+  | 'junctionRev'
+  | 'junctionDonors'
+  | 'junctionAcceptors'
+  | 'junctionSplitClass'
 >
 
 export interface RegionJunctions {
   refName: string
-  data: SashimiFields
+  data: JunctionFields
 }
 
 // Bucket the per-region worker output into one entry per junction, dropping
@@ -166,22 +171,22 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
   const out = new Map<string, JunctionAccumulator>()
   for (const { refName, data } of regions) {
     const {
-      sashimiX1,
-      sashimiX2,
-      sashimiCounts,
-      sashimiFwd,
-      sashimiRev,
-      sashimiDonors,
-      sashimiAcceptors,
-      sashimiClass,
+      junctionX1,
+      junctionX2,
+      junctionCounts,
+      junctionFwd,
+      junctionRev,
+      junctionDonors,
+      junctionAcceptors,
+      junctionSplitClass,
     } = data
-    for (let i = 0; i < sashimiX1.length; i++) {
-      const count = sashimiCounts[i]!
-      const donor = sashimiDonors[i]!
-      const acceptor = sashimiAcceptors[i]!
-      const start = sashimiX1[i]!
-      const end = sashimiX2[i]!
-      const split = splitClassOf(sashimiClass[i]!)
+    for (let i = 0; i < junctionX1.length; i++) {
+      const count = junctionCounts[i]!
+      const donor = junctionDonors[i]!
+      const acceptor = junctionAcceptors[i]!
+      const start = junctionX1[i]!
+      const end = junctionX2[i]!
+      const split = splitClassOf(junctionSplitClass[i]!)
       const key = junctionKey(refName, start, end, split)
       const prev = out.get(key)
       if (prev === undefined) {
@@ -191,8 +196,8 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
           start,
           end,
           count,
-          fwd: sashimiFwd[i]!,
-          rev: sashimiRev[i]!,
+          fwd: junctionFwd[i]!,
+          rev: junctionRev[i]!,
           donor,
           acceptor,
           split,
@@ -209,8 +214,8 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
         }
         if (count > prev.count) {
           prev.count = count
-          prev.fwd = sashimiFwd[i]!
-          prev.rev = sashimiRev[i]!
+          prev.fwd = junctionFwd[i]!
+          prev.rev = junctionRev[i]!
         }
       }
     }
@@ -334,14 +339,14 @@ function byRefName(junctions: Iterable<MergedJunction>) {
 
 const NO_STRIP_KEYS: ReadonlySet<string> = new Set()
 
-// Which of these junctions the placement sends to the sashimi strip, as a set
+// Which of these junctions the placement sends to the junctions strip, as a set
 // of `junctionKey`s. 'overlay' sends none (and allocates nothing — it is the
 // default), 'below' and 'above' send all, to the strip below coverage and the
 // one above it, 'auto' runs the greedy 2-coloring per chromosome. The set being
 // non-empty is exactly "this lane needs the strip reserved".
 export function stripJunctionKeys(
   junctions: Iterable<MergedJunction>,
-  placement: SashimiPlacement,
+  placement: JunctionsPlacement,
 ): ReadonlySet<string> {
   if (placement === 'overlay') {
     return NO_STRIP_KEYS

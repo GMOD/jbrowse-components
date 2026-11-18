@@ -4,11 +4,11 @@ import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
-import SashimiLabels from './components/SashimiLabels.tsx'
+import JunctionLabels from './components/JunctionLabels.tsx'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
-import { sashimiLabels } from './renderers/sashimiMarks.ts'
+import { junctionLabels } from './renderers/junctionMarks.ts'
 
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { VisibleLabel } from './components/computeVisibleLabels.ts'
@@ -39,7 +39,7 @@ interface AlignmentsSvgModel extends LgvSvgExportable {
   }
   renderState: DisplayRenderState
   visibleLabels: VisibleLabel[]
-  showSashimiLabels: boolean
+  showJunctionLabels: boolean
   showsGroupLabels: boolean
   groupChipLabel: (label: string) => string
 }
@@ -95,14 +95,14 @@ function AlignmentsSvgBody({
   const state = { ...model.renderState, canvasWidth, colors: themed.colors }
   const labels = model.visibleLabels
   const sections = themed.sourceSections
-  const sashimiCounts = model.showSashimiLabels
-    ? sashimiLabels(
+  const junctionCounts = model.showJunctionLabels
+    ? junctionLabels(
         state,
-        sections.map(sec => sec.sashimiFeeds),
+        sections.map(sec => sec.junctionFeeds),
       )
     : []
 
-  // The arcs and connectors paint into the canvas with the reads; the sashimi
+  // The arcs and connectors paint into the canvas with the reads; the junctions
   // count labels are vector SVG on screen too, and share their geometry with
   // the overlay so the two can't drift.
   return (
@@ -125,7 +125,7 @@ function AlignmentsSvgBody({
           }
         }}
       />
-      {overlays ? <SashimiLabels labels={sashimiCounts} /> : null}
+      {overlays ? <JunctionLabels labels={junctionCounts} /> : null}
       {overlays && model.showsGroupLabels ? (
         <GroupLabelBoxes
           sections={screenSections.map(s => ({

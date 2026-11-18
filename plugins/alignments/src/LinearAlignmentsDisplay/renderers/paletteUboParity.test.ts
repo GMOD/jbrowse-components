@@ -79,7 +79,7 @@ function frameUniforms() {
           [0, makePileupDataResult({ readPositions: Uint32Array.of(10, 50) })],
         ]),
         arcFeeds: new Map(),
-        sashimiFeeds: new Map(),
+        junctionFeeds: new Map(),
         connectorFeeds: new Map(),
       },
     ],

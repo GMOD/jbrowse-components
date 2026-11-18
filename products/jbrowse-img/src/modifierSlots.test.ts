@@ -80,7 +80,7 @@ const SAMPLES: Record<string, string[] | Partial<Record<Category, string[]>>> =
     featureHeight: ['normal', 'compact', 'super-compact', '4'],
     sort: ['position', 'strand', 'basePair', 'tag:HP'],
     arcs: ['off', 'overlay', 'above', 'below', 'cloud'],
-    sashimi: ['off', 'overlay', 'above', 'below', 'auto'],
+    junctions: ['off', 'overlay', 'above', 'below', 'auto'],
     spliced: ['all', 'only', 'exclude'],
     svSignal: ['all', 'only', 'exclude'],
     alone: ['all', 'only', 'exclude'],

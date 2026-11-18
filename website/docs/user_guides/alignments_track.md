@@ -353,11 +353,12 @@ draw:
   the N-gap splices, and **Min reads at a junction** drops the junctions with
   fewer reads.
 - **Advanced → Junction placement** sets where the arcs sit
-  ([`sashimi.placement`](/docs/config/sashimi/#slot-placement)):
+  ([`junctions.placement`](/docs/config/junctions/#slot-placement)):
   - **Over coverage** (`overlay`, the default) draws them on the coverage
     histogram.
   - **Above coverage** (`above`) and **Below coverage** (`below`) give them a
-    strip of their own, `sashimi.height` px tall, so the histogram stays clear.
+    strip of their own, `junctions.height` px tall, so the histogram stays
+    clear.
   - **Auto (minimize overlap)** (`auto`) keeps the arcs over coverage and sends
     a junction below where it would cross another.
 

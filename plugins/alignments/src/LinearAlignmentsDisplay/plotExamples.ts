@@ -24,7 +24,7 @@ export const ALIGNMENTS_PLOT_EXAMPLES: PlotExample[] = [
     description: 'base modifications such as 5mC from the MM/ML tags',
   },
   {
-    plot: '{ "sashimi": { "show": true, "labels": { "show": true } } }',
+    plot: '{ "junctions": { "show": true, "labels": { "show": true } } }',
     description: 'splice junctions as arcs labeled with their read counts',
   },
   {

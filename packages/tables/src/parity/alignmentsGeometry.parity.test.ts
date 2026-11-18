@@ -12,6 +12,7 @@ import AlignmentsPlugin, {
 
 import { sectionDipFloor } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/sectionLayout.ts'
 import { arcColorSlot } from '../../../../plugins/alignments/src/features/arcs/arcColors.ts'
+import { junctionColor } from '../../../../plugins/alignments/src/features/junctions/bandFeed.ts'
 import {
   connectorArrowPx,
   connectorInWindows,
@@ -20,7 +21,6 @@ import {
   linePassInstance,
 } from '../../../../plugins/alignments/src/features/linkedReads/connectorFeed.ts'
 import { effectiveBaseColors } from '../../../../plugins/alignments/src/features/mismatch/baseColors.ts'
-import { junctionColor } from '../../../../plugins/alignments/src/features/sashimi/bandFeed.ts'
 import { buildArcColorPalette } from '../../../../plugins/alignments/src/shaders/palettes.ts'
 import {
   CONNECTOR_BOW,
@@ -133,7 +133,7 @@ function readRows(
  * What the alignments display draws of its pileup's geometry in `window`,
  * read off the model as its renderers read it: each drawn read's section and
  * row, every connector the line pass and the connector mark draw, the
- * junctions the sashimi band draws and their color, the arcs the read-connection band draws (those joining two regions
+ * junctions the junctions band draws and their color, the arcs the read-connection band draws (those joining two regions
  * by its overlay), and the color each mismatched base paints. The display
  * lays out the view's margin around a one-locus window too, which the window
  * does not show. A dip is the one the connector mark draws with the display
@@ -238,7 +238,7 @@ function modelGeometry(
     rows: m.showPileup ? readRows(sections, shown) : {},
     connectors: sorted([...straightLines, ...marked]),
     junctions: Object.fromEntries(
-      m.sashimiJunctionSections.flatMap(sec =>
+      m.junctionSections.flatMap(sec =>
         sec.junctions.map(j => [
           `${labelOf.get(sec.groupKey)} ${j.refName}:${j.start}-${j.end}`,
           abgrToHex(junctionColor(j, palette)),

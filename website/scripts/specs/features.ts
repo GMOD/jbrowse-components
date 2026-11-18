@@ -292,7 +292,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
             {
               trackId: 'pten_directrna',
               pileup: { mark: { height: 3 } },
-              sashimi: {
+              junctions: {
                 placement: 'auto',
               },
               // PTEN's 8 real introns carry 446-717 reads each and the

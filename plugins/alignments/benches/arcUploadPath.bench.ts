@@ -213,7 +213,7 @@ function sources(data: PileupDataResult, arcs: ArcBandFeed): AlignmentsSources {
         groupKey: '',
         laidOutPileupMap: new Map([[0, data]]),
         arcFeeds: new Map([[0, arcs]]),
-        sashimiFeeds: new Map(),
+        junctionFeeds: new Map(),
         connectorFeeds: new Map(),
       },
     ],

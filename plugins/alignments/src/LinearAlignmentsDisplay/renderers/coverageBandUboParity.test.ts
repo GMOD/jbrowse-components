@@ -87,7 +87,7 @@ function bandUniforms(state: RenderState, depth?: number) {
         groupKey: '',
         laidOutPileupMap: new Map([[0, data]]),
         arcFeeds: new Map(),
-        sashimiFeeds: new Map(),
+        junctionFeeds: new Map(),
         connectorFeeds: new Map(),
       },
     ],

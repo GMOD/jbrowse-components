@@ -15,9 +15,9 @@ import {
   ARC_SHAPE_FLAT,
   isUnplacedArcShape,
 } from '../../features/arcs/shapes.ts'
-import { SPLIT_JUNCTION_NAMES } from '../../features/sashimi/junctionClass.ts'
-import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
-import { forEachSAEntry } from '../../features/sashimi/splitJunctions.ts'
+import { SPLIT_JUNCTION_NAMES } from '../../features/junctions/junctionClass.ts'
+import { spliceMotifLabel } from '../../features/junctions/motif.ts'
+import { forEachSAEntry } from '../../features/junctions/splitJunctions.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
@@ -29,9 +29,9 @@ import { getCoverageBin, getInterbaseBin } from './positionStats.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
 import type { PartnerLocus } from '../../features/arcs/arcTypes.ts'
 import type { ArcHit, TickHit } from '../../features/arcs/bandFeed.ts'
+import type { MergedJunction } from '../../features/junctions/junctions.ts'
 import type { ConnectorHit } from '../../features/linkedReads/connectorFeed.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
-import type { MergedJunction } from '../../features/sashimi/junctions.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
@@ -64,8 +64,8 @@ export interface ModificationTooltipPayload extends ModificationHitResult {
   snpBase?: string
 }
 
-export interface SashimiTooltipPayload {
-  type: 'sashimi'
+export interface JunctionTooltipPayload {
+  type: 'junctions'
   // 'Intron/Skip', or a split junction's read-arc label
   name: string
   start: number
@@ -166,7 +166,7 @@ export type TooltipPayload =
   | IndicatorTooltipPayload
   | CoverageTooltipPayload
   | ModificationTooltipPayload
-  | SashimiTooltipPayload
+  | JunctionTooltipPayload
   | ArcTooltipPayload
   | ArcLineTooltipPayload
 
@@ -435,14 +435,14 @@ export function formatModificationTooltip(
   return { type: 'modification', ...hit, refName, snpBase }
 }
 
-// The hover of a junction the sashimi marks' hit test found
-// (`resolveSashimiHover`).
-export function formatSashimiTooltip(
+// The hover of a junction the junctions marks' hit test found
+// (`resolveJunctionHover`).
+export function formatJunctionTooltip(
   junction: Omit<MergedJunction, 'key'>,
-): SashimiTooltipPayload {
+): JunctionTooltipPayload {
   const { start, end, count, strand, refName, motif, split } = junction
   return {
-    type: 'sashimi',
+    type: 'junctions',
     name: split ? SPLIT_JUNCTION_NAMES[split] : 'Intron/Skip',
     start,
     end,

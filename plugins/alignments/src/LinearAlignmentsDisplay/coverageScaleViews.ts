@@ -13,7 +13,7 @@ export interface BandPlotHost {
   fitTargetHeight: number
 }
 
-/** The plot the coverage, arc and sashimi bands are taken from. */
+/** The plot the coverage, arc and junctions bands are taken from. */
 export function bandPlotViews(self: BandPlotHost) {
   return {
     /**

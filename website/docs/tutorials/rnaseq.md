@@ -305,7 +305,7 @@ The reads load as an alignments track with junction read counts shown:
   "uri": "https://jbrowse.org/demos/circrna/SRR1636985.slice.bam",
   "displayDefaults": {
     "height": 300,
-    "sashimi": { "labels": { "show": true } },
+    "junctions": { "labels": { "show": true } },
     "filter": [{ "field": "mapq", "gte": 1 }]
   }
 }
@@ -358,7 +358,7 @@ HeLa RNA left untreated is the control:
   "uri": "https://jbrowse.org/demos/circrna/SRR1637089.slice.bam",
   "displayDefaults": {
     "height": 300,
-    "sashimi": { "labels": { "show": true } },
+    "junctions": { "labels": { "show": true } },
     "filter": [{ "field": "mapq", "gte": 1 }]
   }
 }
@@ -385,7 +385,7 @@ laps. The demo holds HEK293 isoCirc reads aligned with `minimap2 -ax splice`:
   "uri": "https://jbrowse.org/demos/circrna/SRR10612055.slice.bam",
   "displayDefaults": {
     "height": 300,
-    "sashimi": { "labels": { "show": true } }
+    "junctions": { "labels": { "show": true } }
   }
 }
 ```

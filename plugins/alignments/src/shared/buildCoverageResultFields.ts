@@ -31,7 +31,7 @@ export function buildCoverageResultFields(
     coverage,
     interbaseMaxCount,
     coverageAreaPacked,
-    sashimi,
+    junctionArrays,
     modTooltip,
   } = pipeline
 
@@ -62,7 +62,7 @@ export function buildCoverageResultFields(
     interbaseMaxCount,
 
     ...coverageAreaPacked,
-    ...sashimi,
+    ...junctionArrays,
     // Spread flat: `transferableBuffers` walks the result's own values,
     // so a typed array nested one level down would be structured-cloned instead
     // of transferred — silently, and this is the field that shape was built to

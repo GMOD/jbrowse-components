@@ -160,7 +160,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
         </>
       )
     }
-    case 'sashimi': {
+    case 'junctions': {
       const { name, start, end, score, strand, refName, motif } = tooltipData
       return (
         <BaseTooltip clientPoint={{ x, y }}>

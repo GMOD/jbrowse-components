@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 import {
   DEFAULT_MIN_INTERCHROM_READS,
-  DEFAULT_MIN_SASHIMI_READS,
+  DEFAULT_MIN_JUNCTION_READS,
 } from '../../shared/alignmentsFilter.ts'
 import {
   bootAlignmentsDisplay,
@@ -30,7 +30,7 @@ function openOn(
 
 function drawingBothLayers() {
   const { display } = createTestAlignmentsDisplay()
-  display.setShowSashimi(true)
+  display.setShowJunctions(true)
   display.setDrawnReadConnections('link')
   display.setJunctionFilter({ minReads: 7 })
   display.setConnectionFilter({ minInterchromReads: 9 })
@@ -52,7 +52,7 @@ test('Reset keeps each drawn layer, and Submit writes its declared floor', () =>
   expect(screen.getByText('Junctions')).toBeTruthy()
   expect(screen.getByText('Read connections')).toBeTruthy()
   fireEvent.click(screen.getByText('Submit'))
-  expect(display.junctionFilter.minReads).toBe(DEFAULT_MIN_SASHIMI_READS)
+  expect(display.junctionFilter.minReads).toBe(DEFAULT_MIN_JUNCTION_READS)
   expect(display.connectionFilter.minInterchromReads).toBe(
     DEFAULT_MIN_INTERCHROM_READS,
   )

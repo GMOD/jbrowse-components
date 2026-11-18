@@ -380,7 +380,7 @@ export interface DisplaySnapshot {
     mark?: 'link' | 'rule'
     placement?: 'overlay' | 'above' | 'below'
   }
-  sashimi?: {
+  junctions?: {
     show?: boolean
     placement?: 'overlay' | 'above' | 'below' | 'auto'
   }
@@ -651,10 +651,10 @@ const modifiers: Record<string, Modifier> = {
       })
     },
   },
-  sashimi: {
+  junctions: {
     on: ['alignments'],
     apply: (r, v) => {
-      const mode = parseEnum('sashimi', v, [
+      const mode = parseEnum('junctions', v, [
         'off',
         'overlay',
         'above',
@@ -662,7 +662,7 @@ const modifiers: Record<string, Modifier> = {
         'auto',
       ])
       mergeSettings(settingsOf(r), {
-        sashimi:
+        junctions:
           mode === 'off' ? { show: false } : { show: true, placement: mode },
       })
     },

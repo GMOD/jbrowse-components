@@ -74,13 +74,13 @@ describe('alignments modifiers', () => {
     expect(snap).toEqual({})
   })
 
-  test('sashimi:off hides arcs; sashimi:below sets the placement', () => {
+  test('junctions:off hides arcs; junctions:below sets the placement', () => {
     expect(
-      buildDisplaySnapshot('LinearAlignmentsDisplay', ['sashimi:off']).snap,
-    ).toMatchObject({ sashimi: { show: false } })
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['junctions:off']).snap,
+    ).toMatchObject({ junctions: { show: false } })
     expect(
-      buildDisplaySnapshot('LinearAlignmentsDisplay', ['sashimi:below']).snap,
-    ).toMatchObject({ sashimi: { show: true, placement: 'below' } })
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['junctions:below']).snap,
+    ).toMatchObject({ junctions: { show: true, placement: 'below' } })
   })
 
   test('sort is returned as an intent (resolved against the view)', () => {
@@ -136,10 +136,10 @@ describe('alignments modifiers', () => {
 
   test('a band modifier keeps the members a JSON modifier wrote', () => {
     const { snap } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
-      '{"pileup":{"softClips":{"show":true}},"readConnections":{"height":100},"sashimi":{"labels":{"show":true}}}',
+      '{"pileup":{"softClips":{"show":true}},"readConnections":{"height":100},"junctions":{"labels":{"show":true}}}',
       'featureHeight:4',
       'arcs:below',
-      'sashimi:auto',
+      'junctions:auto',
     ])
     expect(snap).toMatchObject({
       pileup: { softClips: { show: true }, mark: { height: 4 } },
@@ -149,7 +149,7 @@ describe('alignments modifiers', () => {
         mark: 'link',
         placement: 'below',
       },
-      sashimi: { labels: { show: true }, show: true, placement: 'auto' },
+      junctions: { labels: { show: true }, show: true, placement: 'auto' },
     })
   })
 
@@ -171,8 +171,8 @@ describe('alignments modifiers', () => {
     'softClipping',
     'legend',
     'maxHeight:4000',
-    'sashimiScore:3',
-    'sashimiHeight:120',
+    'junctionScore:3',
+    'junctionsHeight:120',
     'arcColor:insertSize',
     'readConnectionsHeight:100',
     'readConnectionsLineWidth:2',
@@ -218,20 +218,20 @@ describe('feature modifiers', () => {
   })
 
   // A modifier aimed at the wrong track type used to be dropped in silence, so
-  // `--gff genes.gff.gz sashimi:below` looked like it had worked.
+  // `--gff genes.gff.gz junctions:below` looked like it had worked.
   test('alignment-only modifiers warn on a feature track', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const { snap } = buildDisplaySnapshot('LinearBasicDisplay', [
       'arcs:overlay',
-      'sashimi:below',
+      'junctions:below',
     ])
     expect(snap.readConnections).toBeUndefined()
-    expect(snap.sashimi).toBeUndefined()
+    expect(snap.junctions).toBeUndefined()
     expect(warn).toHaveBeenCalledWith(
       'Warning: track option "arcs" has no effect on a feature track (applies to: alignments)',
     )
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('"sashimi" has no effect on a feature track'),
+      expect.stringContaining('"junctions" has no effect on a feature track'),
     )
     warn.mockRestore()
   })
@@ -332,7 +332,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
       'showOutline=false',
       'legend.show=true',
       'pileup.maxLayoutHeight=4000',
-      'sashimi.height=120',
+      'junctions.height=120',
     ])
     expect(snap).toEqual({ showOutline: false })
   })
@@ -571,10 +571,10 @@ describe('alignments settings a static export cannot reach any other way', () =>
   test('the new alignments modifiers warn on a wiggle track', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const { snap } = buildDisplaySnapshot('LinearWiggleDisplay', [
-      'sashimi:overlay',
+      'junctions:overlay',
       'flags:2:1540',
     ])
-    expect(snap.sashimi).toBeUndefined()
+    expect(snap.junctions).toBeUndefined()
     expect(snap.filter).toBeUndefined()
     expect(warn).toHaveBeenCalledTimes(2)
     warn.mockRestore()
@@ -845,7 +845,7 @@ describe('modifier values are validated the same way everywhere', () => {
     // a bare `arcs` used to mean OFF, the opposite of every other bare modifier
     ['alignments', 'arcs', /Missing arcs/],
     ['alignments', 'arcs:upp', /Invalid arcs value "upp"/],
-    ['alignments', 'sashimi:downn', /Invalid sashimi/],
+    ['alignments', 'junctions:downn', /Invalid junctions/],
     ['alignments', 'featureHeight:bogus', /Invalid featureHeight/],
     ['feature', 'heightMode:bogus', /Invalid heightMode/],
     ['variant', 'display:', /Missing display/],

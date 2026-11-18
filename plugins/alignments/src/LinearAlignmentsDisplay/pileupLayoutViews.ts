@@ -169,7 +169,7 @@ export function groupLayoutViews(self: GroupLayoutHost) {
      * #getter
      * The layout's input: `chainAttachment` in chain mode, else the
      * fetched data. `rawDataByGroup` stays chain-free, so the arcs,
-     * sashimi, coverage and a split view overlaying this display do not
+     * junctions, coverage and a split view overlaying this display do not
      * recompute on the toggle.
      */
     get chainedByGroup(): ReadonlyMap<

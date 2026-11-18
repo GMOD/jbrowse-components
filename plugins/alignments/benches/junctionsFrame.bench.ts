@@ -1,6 +1,6 @@
-// How much of a sashimi frame is the merge, which the frame does not owe?
+// How much of a junctions frame is the merge, which the frame does not owe?
 //
-//   node --expose-gc plugins/alignments/benches/sashimiFrame.bench.ts
+//   node --expose-gc plugins/alignments/benches/junctionsFrame.bench.ts
 //
 // Flags: --rounds=<n> (default 60), --copies=<n> (region copies per junction,
 // default 1)
@@ -8,7 +8,7 @@
 // The harness rules — interleave, min-of-rounds, run a control, check identity
 // before believing timing — are in `agent-docs/reference/BENCHMARKING.md`.
 //
-// THE QUESTION, as it stood. `sashimiArcSections` read `view.visibleRegions` and
+// THE QUESTION, as it stood. `junctionArcSections` read `view.visibleRegions` and
 // `makeBpToScreenX(view)`, so it invalidates on every pan and zoom frame, and
 // inside it `mergeJunctions` rebuilds a string-keyed Map with one object per
 // junction from scratch. The merge answers to loaded data and two filter
@@ -18,8 +18,8 @@
 // ARMS. Each is a whole frame's worth for ONE lane, written out longhand — a
 // shared driver goes polymorphic and puts the control off 1.00.
 //
-//   whole    what shipped: `mergeJunctions` then `projectSashimiArcs`
-//   project  what a frame owes: `projectSashimiArcs` off a merge held elsewhere
+//   whole    what shipped: `mergeJunctions` then `projectJunctionArcs`
+//   project  what a frame owes: `projectJunctionArcs` off a merge held elsewhere
 //   control  a second, separately-declared driver over the same two calls
 //
 // THE FIXTURE is real: 651 distinct junctions with their true read support
@@ -42,15 +42,15 @@
 import { CUBIC_APEX_RATIO, measureText } from '@jbrowse/core/util'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
-import { visibleRegionJunctions } from '../src/features/sashimi/computeOverlay.ts'
-import { mergeJunctions } from '../src/features/sashimi/junctions.ts'
-import { encodeDinucleotide } from '../src/features/sashimi/motif.ts'
+import { visibleRegionJunctions } from '../src/features/junctions/computeOverlay.ts'
+import { mergeJunctions } from '../src/features/junctions/junctions.ts'
+import { encodeDinucleotide } from '../src/features/junctions/motif.ts'
 
 import type { WorkerPileupData } from '../src/RenderAlignmentDataRPC/types.ts'
 import type {
   MergedJunction,
   RegionJunctions,
-} from '../src/features/sashimi/junctions.ts'
+} from '../src/features/junctions/junctions.ts'
 
 // ---------------------------------------------------------------------------
 // THE PROJECTION AS IT RAN, frozen here. The arcs are link marks since ADR-222:
@@ -58,7 +58,7 @@ import type {
 // this function and a frame runs neither half for them. It stays so the
 // published split can be taken again.
 // ---------------------------------------------------------------------------
-interface SashimiArc {
+interface JunctionArc {
   d: string
   strokeWidth: number
   start: number
@@ -73,26 +73,26 @@ interface SashimiArc {
   showLabel: boolean
 }
 
-interface SashimiArcsBySide {
-  up: SashimiArc[]
-  down: SashimiArc[]
+interface JunctionArcsBySide {
+  up: JunctionArc[]
+  down: JunctionArc[]
 }
 
 // Every field here moves during a gesture; the merge's inputs do not.
-interface ProjectSashimiArcsOpts {
+interface ProjectJunctionArcsOpts {
   bpToScreenX: (refName: string, bp: number) => number | undefined
   // the box both hosts draw into, so the cull cannot drop an arc either shows
   viewWidthPx: number
   coverageHeight: number
-  sashimiHeight: number
+  junctionsHeight: number
   // by `junctionKey`, decided in `junctions.ts` from the loaded data so the
   // strip the layout reserved and the arcs drawn into it are one decision
   downJunctionKeys: ReadonlySet<string>
 }
 
 // Owned here because `labelSpanPx` and the apex clearance both depend on them.
-const SASHIMI_LABEL_FONT_SIZE = 9
-const SASHIMI_LABEL_HALO_WIDTH = 2.5
+const JUNCTION_LABEL_FONT_SIZE = 9
+const JUNCTION_LABEL_HALO_WIDTH = 2.5
 
 const MIN_LABEL_SPAN_PX = 22
 const LABEL_PADDING_PX = 6
@@ -102,7 +102,7 @@ const LABEL_PADDING_PX = 6
 function labelSpanPx(count: number) {
   return Math.max(
     MIN_LABEL_SPAN_PX,
-    measureText(count, SASHIMI_LABEL_FONT_SIZE) + LABEL_PADDING_PX,
+    measureText(count, JUNCTION_LABEL_FONT_SIZE) + LABEL_PADDING_PX,
   )
 }
 
@@ -117,8 +117,8 @@ const SPAN_REF_MAX_BP = 100_000
 // it, because only the down band is clipped; an up arc's label draws into the
 // histogram's scalebar margin. Charging the up band too took 16% off every arc
 // in the default 45px coverage band to avoid a rare overlap with the axis text.
-const SASHIMI_APEX_CLEARANCE_PX =
-  SASHIMI_LABEL_FONT_SIZE / 2 + SASHIMI_LABEL_HALO_WIDTH / 2
+const JUNCTION_APEX_CLEARANCE_PX =
+  JUNCTION_LABEL_FONT_SIZE / 2 + JUNCTION_LABEL_HALO_WIDTH / 2
 
 // Screen-ordered: a reversed region maps start to the larger x.
 function screenSpan(x1: number, x2: number) {
@@ -145,12 +145,12 @@ function arcHeightFraction(genomicSpan: number) {
 // config-declared height, and a negative band flips the arcs through the
 // neighbouring band instead of collapsing them flat.
 function bandGeometry(
-  side: keyof SashimiArcsBySide,
-  heights: { effectiveHeight: number; sashimiHeight: number },
+  side: keyof JunctionArcsBySide,
+  heights: { effectiveHeight: number; junctionsHeight: number },
 ) {
   return side === 'down'
     ? {
-        band: Math.max(0, heights.sashimiHeight - SASHIMI_APEX_CLEARANCE_PX),
+        band: Math.max(0, heights.junctionsHeight - JUNCTION_APEX_CLEARANCE_PX),
         baseline: 0,
         dir: 1,
       }
@@ -175,22 +175,22 @@ function arcCubic(
   }
 }
 
-const byScore = (a: SashimiArc, b: SashimiArc) => a.score - b.score
+const byScore = (a: JunctionArc, b: JunctionArc) => a.score - b.score
 
 /**
  * The frame-owed half: merged junctions in, screen geometry out, each side
  * ascending by score. That order is document order, so a heavy junction paints
  * over, and takes the hover from, a light one drawn near it.
  */
-function projectSashimiArcs(
+function projectJunctionArcs(
   merged: Iterable<MergedJunction>,
-  opts: ProjectSashimiArcsOpts,
-): SashimiArcsBySide {
+  opts: ProjectJunctionArcsOpts,
+): JunctionArcsBySide {
   const {
     bpToScreenX,
     viewWidthPx,
     coverageHeight,
-    sashimiHeight,
+    junctionsHeight,
     downJunctionKeys,
   } = opts
   // Up arcs hang off the histogram's zero line, one scalebar offset above the
@@ -200,7 +200,7 @@ function projectSashimiArcs(
     0,
     coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET,
   )
-  const out: SashimiArcsBySide = { up: [], down: [] }
+  const out: JunctionArcsBySide = { up: [], down: [] }
   for (const j of merged) {
     const x1 = bpToScreenX(j.refName, j.start)
     const x2 = bpToScreenX(j.refName, j.end)
@@ -223,7 +223,7 @@ function projectSashimiArcs(
     const side = downJunctionKeys.has(j.key) ? 'down' : 'up'
     const { band, baseline, dir } = bandGeometry(side, {
       effectiveHeight,
-      sashimiHeight,
+      junctionsHeight,
     })
     const arcHeight = band * arcHeightFraction(Math.abs(j.end - j.start))
     out[side].push({
@@ -279,37 +279,37 @@ async function loadFixture(): Promise<Junction[]> {
 }
 
 // The worker's output shape for one region: seven parallel arrays, one entry per
-// distinct junction. Only the sashimi fields are read, so the rest is absent.
+// distinct junction. Only the junctions fields are read, so the rest is absent.
 function regionData(junctions: Junction[]) {
   const n = junctions.length
-  const sashimiX1 = new Uint32Array(n)
-  const sashimiX2 = new Uint32Array(n)
-  const sashimiCounts = new Uint32Array(n)
-  const sashimiFwd = new Uint32Array(n)
-  const sashimiRev = new Uint32Array(n)
-  const sashimiDonors = new Uint8Array(n)
-  const sashimiAcceptors = new Uint8Array(n)
+  const junctionX1 = new Uint32Array(n)
+  const junctionX2 = new Uint32Array(n)
+  const junctionCounts = new Uint32Array(n)
+  const junctionFwd = new Uint32Array(n)
+  const junctionRev = new Uint32Array(n)
+  const junctionDonors = new Uint8Array(n)
+  const junctionAcceptors = new Uint8Array(n)
   for (let i = 0; i < n; i++) {
     const j = junctions[i]!
-    sashimiX1[i] = j.start
-    sashimiX2[i] = j.end
-    sashimiCounts[i] = j.count
-    sashimiFwd[i] = i % 2 === 0 ? j.count : 0
-    sashimiRev[i] = i % 2 === 0 ? 0 : j.count
+    junctionX1[i] = j.start
+    junctionX2[i] = j.end
+    junctionCounts[i] = j.count
+    junctionFwd[i] = i % 2 === 0 ? j.count : 0
+    junctionRev[i] = i % 2 === 0 ? 0 : j.count
     // GT / AG — a canonical junction, so nothing is filtered on the motif and
     // both arms carry every junction through.
-    sashimiDonors[i] = encodeDinucleotide('GT')
-    sashimiAcceptors[i] = encodeDinucleotide('AG')
+    junctionDonors[i] = encodeDinucleotide('GT')
+    junctionAcceptors[i] = encodeDinucleotide('AG')
   }
   return {
-    sashimiX1,
-    sashimiX2,
-    sashimiCounts,
-    sashimiFwd,
-    sashimiRev,
-    sashimiDonors,
-    sashimiAcceptors,
-    sashimiClass: new Uint8Array(n),
+    junctionX1,
+    junctionX2,
+    junctionCounts,
+    junctionFwd,
+    junctionRev,
+    junctionDonors,
+    junctionAcceptors,
+    junctionSplitClass: new Uint8Array(n),
   } as unknown as WorkerPileupData
 }
 
@@ -327,7 +327,7 @@ const projectOpts = {
   bpToScreenX,
   viewWidthPx: VIEW_WIDTH_PX,
   coverageHeight: 100,
-  sashimiHeight: 40,
+  junctionsHeight: 40,
   downJunctionKeys: NO_DOWN_KEYS,
 }
 
@@ -338,7 +338,7 @@ function frameWhole(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   visibleRegions: { refName: string; displayedRegionIndex: number }[],
 ) {
-  return projectSashimiArcs(
+  return projectJunctionArcs(
     mergeJunctions(
       visibleRegionJunctions(rpcDataMap, visibleRegions),
       mergeOpts,
@@ -349,7 +349,7 @@ function frameWhole(
 
 // ARM 2: project — what a frame owes once the merge is memoized off the pan.
 function frameProject(merged: MergedJunction[]) {
-  return projectSashimiArcs(merged, projectOpts)
+  return projectJunctionArcs(merged, projectOpts)
 }
 
 // ARM 3: control — a second, separately-declared driver over the same call as
@@ -359,7 +359,7 @@ function frameControl(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   visibleRegions: { refName: string; displayedRegionIndex: number }[],
 ) {
-  return projectSashimiArcs(
+  return projectJunctionArcs(
     mergeJunctions(
       visibleRegionJunctions(rpcDataMap, visibleRegions),
       mergeOpts,
@@ -375,16 +375,16 @@ function time(fn: () => unknown) {
   return performance.now() - t0
 }
 
-function firstDifference(sa: SashimiArcsBySide, sb: SashimiArcsBySide) {
-  const a: SashimiArc[] = [...sa.up, ...sa.down]
-  const b: SashimiArc[] = [...sb.up, ...sb.down]
+function firstDifference(sa: JunctionArcsBySide, sb: JunctionArcsBySide) {
+  const a: JunctionArc[] = [...sa.up, ...sa.down]
+  const b: JunctionArc[] = [...sb.up, ...sb.down]
   if (a.length !== b.length) {
     return `length ${a.length} vs ${b.length}`
   }
   for (let i = 0; i < a.length; i++) {
     const x = a[i]!
     const y = b[i]!
-    for (const k of Object.keys(x) as (keyof SashimiArc)[]) {
+    for (const k of Object.keys(x) as (keyof JunctionArc)[]) {
       if (x[k] !== y[k]) {
         return `arc ${i} field ${k}: ${String(x[k])} vs ${String(y[k])}`
       }
@@ -438,7 +438,7 @@ async function main() {
   const x = (v: number) => `${(v / best.whole).toFixed(3)}x`
   const ms = (v: number) => v.toFixed(4).padStart(9)
   console.log(
-    `sashimi frame, ${junctions.length} junctions x ${COPIES} region cop${COPIES === 1 ? 'y' : 'ies'}, ` +
+    `junctions frame, ${junctions.length} junctions x ${COPIES} region cop${COPIES === 1 ? 'y' : 'ies'}, ` +
       `${merged.length} merged, ${outWhole.up.length + outWhole.down.length} arcs drawn, min of ${ROUNDS} rotated rounds\n` +
       `  whole (was)   ${ms(best.whole)} ms\n` +
       `  project (is)  ${ms(best.project)} ms   ${x(best.project)}   ` +

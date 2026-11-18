@@ -1,12 +1,12 @@
 import {
-  sashimiBandsOf,
-  sashimiLabels,
-} from '../../LinearAlignmentsDisplay/renderers/sashimiMarks.ts'
+  junctionsBandsOf,
+  junctionLabels,
+} from '../../LinearAlignmentsDisplay/renderers/junctionMarks.ts'
 import {
   makeTestPalette,
   makeTestRenderState,
 } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { SASHIMI_SIDES, buildSashimiBandFeeds } from './bandFeed.ts'
+import { JUNCTION_SIDES, buildJunctionsBandFeeds } from './bandFeed.ts'
 import { visibleRegionJunctions } from './computeOverlay.ts'
 import { mergeJunctions } from './junctions.ts'
 
@@ -18,7 +18,7 @@ export interface TestDisplayedRegion extends RegionInfo {
   reversed?: boolean
 }
 
-export interface ComputeSashimiArcsOpts extends JunctionFilter {
+export interface ComputeJunctionArcsOpts extends JunctionFilter {
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>
   visibleRegions: {
     refName: string
@@ -31,7 +31,7 @@ export interface ComputeSashimiArcsOpts extends JunctionFilter {
   displayed?: TestDisplayedRegion[]
   viewWidthPx: number
   coverageHeight: number
-  sashimiHeight: number
+  junctionsHeight: number
   downJunctionKeys: ReadonlySet<string>
 }
 
@@ -44,7 +44,7 @@ const COLORS = {
   colorRevStrand: [0, 0, 1],
   colorPairLR: [0.5, 0.5, 0.5],
   readCategoryColors: makeTestPalette().readCategoryColors,
-} satisfies Parameters<typeof buildSashimiBandFeeds>[0]['colors']
+} satisfies Parameters<typeof buildJunctionsBandFeeds>[0]['colors']
 
 // The view's region table for regions laid out left to right, a reversed one
 // anchored on its end and counting down.
@@ -65,7 +65,7 @@ function linkRegionsOf(displayed: TestDisplayedRegion[]) {
 // the marks draw, tagged with its side, the displayed regions its feet are
 // filed under and its count label where one shows (x in canvas px, y from its
 // band's top), ascending by score.
-export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
+export function computeJunctionArcs(opts: ComputeJunctionArcsOpts) {
   const displayed = opts.displayed ?? ALL_OF_CHR1
   const junctions = [
     ...mergeJunctions(
@@ -73,7 +73,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       opts,
     ).values(),
   ]
-  const feeds = buildSashimiBandFeeds({
+  const feeds = buildJunctionsBandFeeds({
     junctions,
     downJunctionKeys: opts.downJunctionKeys,
     displayed,
@@ -91,21 +91,21 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
         pileupClipTop: 200,
         pileupClipHeight: 200,
         connectorClipHeight: 0,
-        sashimiBand: {
+        junctionsBand: {
           top: opts.coverageHeight,
-          height: opts.sashimiHeight,
+          height: opts.junctionsHeight,
           above: false,
         },
       },
     ],
   })
-  const bands = sashimiBandsOf(state, state.sections[0]!)
+  const bands = junctionsBandsOf(state, state.sections[0]!)
   const labels = new Map(
-    sashimiLabels(state, [feeds]).map(label => [label.key, label]),
+    junctionLabels(state, [feeds]).map(label => [label.key, label]),
   )
   return [...feeds]
     .flatMap(([regionIndex, feed]) =>
-      SASHIMI_SIDES.flatMap(side =>
+      JUNCTION_SIDES.flatMap(side =>
         feed[side === 'up' ? 'upHits' : 'downHits'].map((j, i) => {
           const label = labels.get(`0:${j.key}`)
           return {

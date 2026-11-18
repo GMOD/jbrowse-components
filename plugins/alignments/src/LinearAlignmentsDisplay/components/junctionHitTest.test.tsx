@@ -1,18 +1,18 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
-import { buildSashimiBandFeeds } from '../../features/sashimi/bandFeed.ts'
-import { SASHIMI_APEX_CLEARANCE_PX } from '../../features/sashimi/computeOverlay.ts'
-import { junctionKey } from '../../features/sashimi/junctions.ts'
+import { buildJunctionsBandFeeds } from '../../features/junctions/bandFeed.ts'
+import { JUNCTION_APEX_CLEARANCE_PX } from '../../features/junctions/computeOverlay.ts'
+import { junctionKey } from '../../features/junctions/junctions.ts'
 import { drawAlignmentsToCtx } from '../renderers/Canvas2DAlignmentsRenderer.ts'
-import { sashimiBandsOf, sashimiLabels } from '../renderers/sashimiMarks.ts'
+import { junctionsBandsOf, junctionLabels } from '../renderers/junctionMarks.ts'
 import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
-import { sashimiArcKey, sashimiFeatureId } from './sashimiArcs.ts'
+import { junctionArcKey, junctionFeatureId } from './junctionArcs.ts'
 import {
-  resolveSashimiHover,
-  selectedSashimiHighlight,
-} from './sashimiHitTest.ts'
+  resolveJunctionHover,
+  selectedJunctionHighlight,
+} from './junctionHitTest.ts'
 
-import type { MergedJunction } from '../../features/sashimi/junctions.ts'
+import type { MergedJunction } from '../../features/junctions/junctions.ts'
 import type { LinkRegion } from '@jbrowse/render-core/marks'
 
 function junction(start: number, end: number, count = 5): MergedJunction {
@@ -45,7 +45,7 @@ function scene(
   down: MergedJunction[] = [],
   layout = FORWARD,
 ) {
-  const feeds = buildSashimiBandFeeds({
+  const feeds = buildJunctionsBandFeeds({
     junctions: [...junctions, ...down],
     downJunctionKeys: new Set(down.map(j => j.key)),
     displayed: layout.displayed.map((r, displayedRegionIndex) => ({
@@ -67,20 +67,23 @@ function scene(
         pileupClipTop: 140,
         pileupClipHeight: 160,
         connectorClipHeight: 0,
-        sashimiBand: { top: 100, height: 40, above: false },
+        junctionsBand: { top: 100, height: 40, above: false },
       },
     ],
   })
-  const state = { ...base, sashimi: sashimiBandsOf(base, base.sections[0]!) }
+  const state = {
+    ...base,
+    junctions: junctionsBandsOf(base, base.sections[0]!),
+  }
   const hit = (x: number, y: number) =>
-    resolveSashimiHover(x, y, feeds, state)?.junction
+    resolveJunctionHover(x, y, feeds, state)?.junction
   return { feeds, state, hit }
 }
 
 // The zero line an up arc stands on, and the 90px it may rise.
 const UP_BASELINE = 100 - YSCALEBAR_LABEL_OFFSET
 const UP_HEIGHT = 100 - 2 * YSCALEBAR_LABEL_OFFSET
-const DOWN_HEIGHT = 40 - SASHIMI_APEX_CLEARANCE_PX
+const DOWN_HEIGHT = 40 - JUNCTION_APEX_CLEARANCE_PX
 
 // A junction's apex as a fraction of its band, restated from the feed's rule
 // so a change to either shows up here.
@@ -92,9 +95,9 @@ function apexFraction(spanBp: number) {
 const upApexY = (spanBp: number) =>
   UP_BASELINE - apexFraction(spanBp) * UP_HEIGHT
 
-describe('sashimiBandsOf', () => {
+describe('junctionsBandsOf', () => {
   it('stands the up arcs on the histogram zero line, clipped to coverage', () => {
-    expect(scene([junction(100, 300)]).state.sashimi.up).toEqual({
+    expect(scene([junction(100, 300)]).state.junctions.up).toEqual({
       top: YSCALEBAR_LABEL_OFFSET,
       height: UP_HEIGHT,
       clipTop: 0,
@@ -103,7 +106,7 @@ describe('sashimiBandsOf', () => {
   })
 
   it('hangs the down arcs in the reserved strip, short of its bottom', () => {
-    expect(scene([junction(100, 300)]).state.sashimi.down).toEqual({
+    expect(scene([junction(100, 300)]).state.junctions.down).toEqual({
       top: 100,
       height: DOWN_HEIGHT,
       clipTop: 100,
@@ -117,23 +120,23 @@ describe('sashimiBandsOf', () => {
   it('draws no side whose band has no height', () => {
     const base = makeTestRenderState({ coverage: { height: 4 } })
     expect(
-      sashimiBandsOf(base, {
+      junctionsBandsOf(base, {
         ...base.sections[0]!,
-        sashimiBand: { top: 10, height: 3, above: false },
+        junctionsBand: { top: 10, height: 3, above: false },
       }),
     ).toEqual({ up: undefined, down: undefined })
   })
 
   it('draws no down side in a section that reserved no strip', () => {
     const base = makeTestRenderState()
-    expect(sashimiBandsOf(base, base.sections[0]!).down).toBeUndefined()
+    expect(junctionsBandsOf(base, base.sections[0]!).down).toBeUndefined()
   })
 })
 
 // A 40px strip stacked over the 100px coverage band, which then starts at 40.
 describe('a strip above coverage', () => {
   function aboveScene(junctions: MergedJunction[]) {
-    const feeds = buildSashimiBandFeeds({
+    const feeds = buildJunctionsBandFeeds({
       junctions,
       downJunctionKeys: new Set(),
       displayed: FORWARD.displayed.map((r, displayedRegionIndex) => ({
@@ -155,19 +158,22 @@ describe('a strip above coverage', () => {
           pileupClipTop: 140,
           pileupClipHeight: 160,
           connectorClipHeight: 0,
-          sashimiBand: { top: 0, height: 40, above: true },
+          junctionsBand: { top: 0, height: 40, above: true },
         },
       ],
     })
-    const state = { ...base, sashimi: sashimiBandsOf(base, base.sections[0]!) }
+    const state = {
+      ...base,
+      junctions: junctionsBandsOf(base, base.sections[0]!),
+    }
     return { feeds, state }
   }
   const apexY = (spanBp: number) => 40 - apexFraction(spanBp) * DOWN_HEIGHT
 
   it('stands the up arcs on the strip floor and draws none down', () => {
-    expect(aboveScene([junction(100, 300)]).state.sashimi).toEqual({
+    expect(aboveScene([junction(100, 300)]).state.junctions).toEqual({
       up: {
-        top: SASHIMI_APEX_CLEARANCE_PX,
+        top: JUNCTION_APEX_CLEARANCE_PX,
         height: DOWN_HEIGHT,
         clipTop: 0,
         clipHeight: 40,
@@ -183,11 +189,11 @@ describe('a strip above coverage', () => {
     height => {
       const base = makeTestRenderState({ coverage: { height: 45 } })
       const section = base.sections[0]!
-      expect(sashimiBandsOf(base, section).up).toBeDefined()
+      expect(junctionsBandsOf(base, section).up).toBeDefined()
       expect(
-        sashimiBandsOf(base, {
+        junctionsBandsOf(base, {
           ...section,
-          sashimiBand: { top: 0, height, above: true },
+          junctionsBand: { top: 0, height, above: true },
         }),
       ).toEqual({ up: undefined, down: undefined })
     },
@@ -196,25 +202,25 @@ describe('a strip above coverage', () => {
   it('answers on the apex in the strip, not where the overlay drew it', () => {
     const { feeds, state } = aboveScene([junction(100, 300)])
     expect(
-      resolveSashimiHover(200, apexY(200), feeds, state)?.junction,
+      resolveJunctionHover(200, apexY(200), feeds, state)?.junction,
     ).toMatchObject({ start: 100, end: 300 })
     expect(
-      resolveSashimiHover(200, 40 + upApexY(200), feeds, state),
+      resolveJunctionHover(200, 40 + upApexY(200), feeds, state),
     ).toBeUndefined()
     expect(
-      resolveSashimiHover(200, apexY(200), feeds, state)!.highlight.clip,
+      resolveJunctionHover(200, apexY(200), feeds, state)!.highlight.clip,
     ).toEqual({ x: 0, y: 0, width: 1000, height: 40 })
   })
 
   it('labels each count at its apex in the strip', () => {
     const { feeds, state } = aboveScene([junction(100, 300, 42)])
-    const [label] = sashimiLabels(state, [feeds])
+    const [label] = junctionLabels(state, [feeds])
     expect(label).toMatchObject({ x: 200, count: 42 })
     expect(label!.y).toBeCloseTo(apexY(200))
   })
 })
 
-describe('resolveSashimiHover', () => {
+describe('resolveJunctionHover', () => {
   it('answers on the apex of an up arc and nowhere under it', () => {
     const { hit } = scene([junction(100, 300)])
     expect(hit(200, upApexY(200))).toMatchObject({ start: 100, end: 300 })
@@ -265,7 +271,7 @@ describe('resolveSashimiHover', () => {
 
   it('traces the highlight along the arc it found', () => {
     const { feeds, state } = scene([junction(100, 300)])
-    const hover = resolveSashimiHover(200, upApexY(200), feeds, state)!
+    const hover = resolveJunctionHover(200, upApexY(200), feeds, state)!
     expect(hover.highlight.d).toMatch(/^M ?100[ ,]/)
     expect(hover.highlight.clip).toEqual({
       x: 0,
@@ -276,10 +282,10 @@ describe('resolveSashimiHover', () => {
   })
 })
 
-describe('sashimiLabels', () => {
+describe('junctionLabels', () => {
   const labelsOf = (...args: Parameters<typeof scene>) => {
     const { feeds, state } = scene(...args)
-    return sashimiLabels(state, [feeds])
+    return junctionLabels(state, [feeds])
   }
 
   it('puts each count at the apex its arc draws', () => {
@@ -332,20 +338,20 @@ describe('sashimiLabels', () => {
   it('labels nothing in a band with no height', () => {
     const { feeds, state } = scene([junction(100, 300)])
     expect(
-      sashimiLabels({ ...state, coverage: { ...state.coverage, height: 4 } }, [
+      junctionLabels({ ...state, coverage: { ...state.coverage, height: 4 } }, [
         feeds,
       ]),
     ).toEqual([])
   })
 })
 
-describe('selectedSashimiHighlight', () => {
+describe('selectedJunctionHighlight', () => {
   const first = junction(100, 300)
   const second = junction(400, 600)
   const { feeds, state } = scene([first, second])
   const outline = (groupKey: string, j: MergedJunction) =>
-    selectedSashimiHighlight(
-      sashimiFeatureId(groupKey, j),
+    selectedJunctionHighlight(
+      junctionFeatureId(groupKey, j),
       'sampleA',
       feeds,
       state,
@@ -387,7 +393,7 @@ describe('the painter', () => {
             groupKey: '',
             laidOutPileupMap: new Map(),
             arcFeeds: new Map(),
-            sashimiFeeds: feeds,
+            junctionFeeds: feeds,
             connectorFeeds: new Map(),
           },
         ],
@@ -405,15 +411,15 @@ describe('the painter', () => {
   })
 })
 
-describe('sashimiArcKey', () => {
+describe('junctionArcKey', () => {
   it('names a junction by where it is', () => {
-    expect(sashimiArcKey(junction(1000, 2000))).toBe('chr1:1000:2000')
+    expect(junctionArcKey(junction(1000, 2000))).toBe('chr1:1000:2000')
   })
 
   it('scopes a selection to its group', () => {
     const j = junction(1, 2)
-    expect(sashimiFeatureId('sampleA', j)).not.toBe(
-      sashimiFeatureId('sampleB', j),
+    expect(junctionFeatureId('sampleA', j)).not.toBe(
+      junctionFeatureId('sampleB', j),
     )
   })
 })

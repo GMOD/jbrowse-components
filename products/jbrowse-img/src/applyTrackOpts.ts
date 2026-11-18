@@ -68,7 +68,7 @@ type ConfigSlotKey =
   | 'sort'
   | 'pileup'
   | 'readConnections'
-  | 'sashimi'
+  | 'junctions'
   | 'mark'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel

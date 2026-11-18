@@ -9,9 +9,9 @@ import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.consts.gene
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
+import type { JunctionsBandFeed } from '../../features/junctions/bandFeed.ts'
 import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { QualityOpacity } from '../../features/mismatch/qualityOpacity.ts'
-import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { BaseLayerField } from '../../shared/types.ts'
 import type { AlignmentsUnit } from '../constants.ts'
@@ -101,7 +101,7 @@ export interface SectionRender {
   // junctions, at its reserved height, undefined where it reserved none.
   // `above` where it stacks over the coverage band and its arcs rise from its
   // floor; otherwise it sits below and they hang from its top.
-  sashimiBand?: { top: number; height: number; above: boolean }
+  junctionsBand?: { top: number; height: number; above: boolean }
 }
 
 // HAL/region key namespacing: section 0 keys equal the raw displayedRegionIndex
@@ -132,7 +132,7 @@ export interface SectionSource {
   // This group's read connections by region index. Empty when they are off.
   arcFeeds: ReadonlyMap<number, ArcBandFeed>
   // This group's splice junctions by region index. Empty when they are off.
-  sashimiFeeds: ReadonlyMap<number, SashimiBandFeed>
+  junctionFeeds: ReadonlyMap<number, JunctionsBandFeed>
   // This group's curved and cross-region connectors by region index. Empty
   // when none draw.
   connectorFeeds: ReadonlyMap<number, ConnectorFeed>

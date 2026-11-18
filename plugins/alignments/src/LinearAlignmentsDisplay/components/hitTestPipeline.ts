@@ -37,7 +37,7 @@ import type { PileupMark } from '../renderers/pileupMarks.ts'
 import type { RenderState } from '../renderers/rendererTypes.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
 import type { ConnectorMarkHit } from './connectorHitTest.ts'
-import type { SashimiMarkHit } from './sashimiHitTest.ts'
+import type { JunctionMarkHit } from './junctionHitTest.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export type HitTestResult =
@@ -72,7 +72,7 @@ export type HitTestResult =
 export type MarkHitResult =
   | HitTestResult
   | ArcMarkHit
-  | SashimiMarkHit
+  | JunctionMarkHit
   | ConnectorMarkHit
 
 // Above ~50kbp visible region (2000px / 50000bp = 25), per-base detail is
@@ -135,7 +135,7 @@ export function contextMenuTargetForHit(
   if (
     result.type === 'none' ||
     result.type === 'arc' ||
-    result.type === 'sashimi'
+    result.type === 'junctions'
   ) {
     return undefined
   }

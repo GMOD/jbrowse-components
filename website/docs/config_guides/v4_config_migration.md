@@ -99,9 +99,9 @@ a file, and fails on a key it does not know.
 | `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearHicDisplay` | `showLegend` (session) | `legend.show` |
 | `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `inverted`, `numStdDev` | dropped |
 | `LinearAlignmentsDisplay` | `colorBy` | `encoding.color.field`, `pileup.bases.encoding.color.field`, `pileup.bases.show` |
-|  | type `LinearPileupDisplay` | `LinearAlignmentsDisplay` with `coverage.show: false`, `sashimi.show: false` |
-|  | type `LinearReadArcsDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.show: false`, `sashimi.show: false`, `readConnections.show: true` |
-|  | type `LinearReadCloudDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.show: false`, `sashimi.show: false`, `readConnections.show: true`, `readConnections.mark: "rule"` |
+|  | type `LinearPileupDisplay` | `LinearAlignmentsDisplay` with `coverage.show: false`, `junctions.show: false` |
+|  | type `LinearReadArcsDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.show: false`, `junctions.show: false`, `readConnections.show: true` |
+|  | type `LinearReadCloudDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.show: false`, `junctions.show: false`, `readConnections.show: true`, `readConnections.mark: "rule"` |
 |  | type `LinearSNPCoverageDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false` |
 |  | `colorBy` (session), `colorBySetting` (session) | `encoding.color.field`, `pileup.bases.encoding.color.field`, `pileup.bases.show` |
 | `LinearArcDisplay` | `color`, `renderer` | dropped |

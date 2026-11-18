@@ -7393,8 +7393,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "SashimiLabels": {
-      "title": "SashimiLabels",
+    "JunctionLabels": {
+      "title": "JunctionLabels",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -7414,13 +7414,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "Sashimi": {
-      "title": "Sashimi",
+    "Junctions": {
+      "title": "Junctions",
       "type": "object",
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw the sashimi arcs.",
+          "description": "draw the junction arcs.",
           "default": true,
           "if": {
             "type": "null"
@@ -7459,7 +7459,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/SashimiLabels"
+            "$ref": "#/$defs/JunctionLabels"
           }
         }
       },
@@ -7640,12 +7640,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/ReadTooltip"
           }
         },
-        "sashimi": {
+        "junctions": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Sashimi"
+            "$ref": "#/$defs/Junctions"
           }
         },
         "normalInsertSize": {
@@ -18536,8 +18536,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "sashimi": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimi"
+            "junctions": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/junctions"
             },
             "normalInsertSize": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/normalInsertSize"

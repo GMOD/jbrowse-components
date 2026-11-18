@@ -65,7 +65,7 @@ export const RULINGS: Record<string, Ruling> = {
   },
   labels: {
     variants: 6,
-    why: "each display names the label parts it draws: LD a variant name, features `description` and `subfeatures`, multi-way its `lanes` (ADR-238); the records band a record's name and description (recordsBandConfigSchema.ts); sashimi its read counts, a text layer with `show` (ADR-240, sashimiLabelsConfigSchema.ts). `rows.labels`, the row axis's name-to-text map, and `rows.axis.labels`, its draw toggle, are another thing sharing the word (ADR-257)",
+    why: "each display names the label parts it draws: LD a variant name, features `description` and `subfeatures`, multi-way its `lanes` (ADR-238); the records band a record's name and description (recordsBandConfigSchema.ts); junctions its read counts, a text layer with `show` (ADR-240, junctionLabelsConfigSchema.ts). `rows.labels`, the row axis's name-to-text map, and `rows.axis.labels`, its draw toggle, are another thing sharing the word (ADR-257)",
   },
   'labels.name': {
     variants: 2,
@@ -93,7 +93,7 @@ export const RULINGS: Record<string, Ruling> = {
   },
   placement: {
     variants: 4,
-    why: "one word, one meaning, where a thing sits against its anchor: `above`, `below` or as an `overlay`, each holder listing the positions it draws. An arc band sits against the coverage band, with `auto` on sashimi alone, which sends a junction below where it would cross another (ADR-272); a label sits against its feature, with `auto` on a feature's parts, the part labels and the multi-way lane names each listing their own (ADR-238)",
+    why: "one word, one meaning, where a thing sits against its anchor: `above`, `below` or as an `overlay`, each holder listing the positions it draws. An arc band sits against the coverage band, with `auto` on junctions alone, which sends a junction below where it would cross another (ADR-272); a label sits against its feature, with `auto` on a feature's parts, the part labels and the multi-way lane names each listing their own (ADR-238)",
   },
   rows: {
     variants: 5,

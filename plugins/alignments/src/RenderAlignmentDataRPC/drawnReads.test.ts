@@ -107,7 +107,7 @@ function band(d: WorkerPileupData) {
     snp: bytes(d.snpPackedBuffer),
     interbase: bytes(d.interbasePackedBuffer),
     indicators: [...d.indicatorPositions],
-    sashimi: [...d.sashimiX1, ...d.sashimiX2, ...d.sashimiCounts],
+    junctions: [...d.junctionX1, ...d.junctionX2, ...d.junctionCounts],
   }
 }
 

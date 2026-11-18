@@ -160,7 +160,7 @@ describe('a track whose display no translating modifier targets', () => {
     warn.mockClear()
   })
 
-  test.each(['heightMode:fit', 'featureHeight:compact', 'sashimi:overlay'])(
+  test.each(['heightMode:fit', 'featureHeight:compact', 'junctions:overlay'])(
     '%s warns and writes nothing',
     opt => {
       expect(buildDisplaySnapshot('LinearMafDisplay', [opt]).snap).toEqual({})

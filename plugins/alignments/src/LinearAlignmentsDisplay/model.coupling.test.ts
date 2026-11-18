@@ -20,13 +20,13 @@ import {
   baseWorkerPileupData,
   makePileupDataResult,
 } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { arcSplitJunction } from '../features/junctions/supportingReads.ts'
 import { LINKED_READ_LINE_MARK } from '../features/linkedReads/mark.ts'
-import { arcSplitJunction } from '../features/sashimi/supportingReads.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
 import {
   DEFAULT_MIN_INTERCHROM_READS,
-  DEFAULT_MIN_SASHIMI_READS,
+  DEFAULT_MIN_JUNCTION_READS,
   mergeFilter,
 } from '../shared/alignmentsFilter.ts'
 import { layerForTest } from '../shared/splitFieldForTest.ts'
@@ -48,7 +48,7 @@ import {
 } from './testUtils.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
-import type { HoveredJunction } from '../features/sashimi/supportingReads.ts'
+import type { HoveredJunction } from '../features/junctions/supportingReads.ts'
 import type { ResolvedBlock } from '../shared/hitTestTypes.ts'
 import type { BaseLayer } from '../shared/types.ts'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
@@ -141,64 +141,64 @@ function connectionCategories(display: {
 }
 
 describe('alignments display cross-feature coupling', () => {
-  test('setShowSashimi leaves coverage alone', () => {
+  test('setShowJunctions leaves coverage alone', () => {
     const display = createDisplay()
     display.setShowCoverage(false)
-    display.setShowSashimi(true)
+    display.setShowJunctions(true)
     expect(display.showCoverage).toBe(false)
-    expect(display.showSashimi).toBe(true)
+    expect(display.showJunctions).toBe(true)
   })
 
   // Without the band the arcs draw in their own strip, and the configured
   // placement returns with the band.
   test.each(['overlay', 'auto'] as const)(
-    'sashimi %s draws below while coverage is off, and its placement returns with it',
+    'junctions %s draws below while coverage is off, and its placement returns with it',
     placement => {
       const display = createDisplay()
-      display.setSashimiPlacement(placement)
+      display.setJunctionsPlacement(placement)
       display.setShowCoverage(false)
-      expect(display.showSashimi).toBe(true)
-      expect(display.effectiveSashimiPlacement).toBe('below')
+      expect(display.showJunctions).toBe(true)
+      expect(display.effectiveJunctionsPlacement).toBe('below')
       display.setShowCoverage(true)
-      expect(display.effectiveSashimiPlacement).toBe(placement)
+      expect(display.effectiveJunctionsPlacement).toBe(placement)
     },
   )
 
   // The strip above coverage is already the arcs' own, so hiding the band
   // moves nothing.
-  test('sashimi above keeps its strip while coverage is off', () => {
+  test('junctions above keeps its strip while coverage is off', () => {
     const display = createDisplay()
-    display.setSashimiPlacement('above')
+    display.setJunctionsPlacement('above')
     display.setShowCoverage(false)
-    expect(display.effectiveSashimiPlacement).toBe('above')
+    expect(display.effectiveJunctionsPlacement).toBe('above')
   })
 
-  // The junctions ride with coverage, so a sashimi toggle under the band
+  // The junctions ride with coverage, so a junctions toggle under the band
   // writes no fetch key; without it they ride with the arcs.
-  test('the worker reads junctions while coverage or sashimi shows', () => {
+  test('the worker reads junctions while coverage or junctions shows', () => {
     const display = createDisplay()
     expect(display.rpcProps().junctions).toBe(true)
-    display.setShowSashimi(false)
+    display.setShowJunctions(false)
     expect(display.rpcProps().junctions).toBe(true)
     display.setShowCoverage(false)
     expect(display.rpcProps().junctions).toBe(false)
-    display.setShowSashimi(true)
+    display.setShowJunctions(true)
     expect(display.rpcProps().junctions).toBe(true)
   })
 
   // Each layer holds its own placement, so moving the read connections cannot
-  // disturb sashimi visibility.
-  test('setReadConnectionsPlacement does not affect sashimi visibility', () => {
+  // disturb junctions visibility.
+  test('setReadConnectionsPlacement does not affect junctions visibility', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
+    display.setShowJunctions(true)
 
     display.setReadConnectionsPlacement('below')
-    expect(display.showSashimi).toBe(true)
+    expect(display.showJunctions).toBe(true)
     expect(display.readConnectionsPlacement).toBe('below')
 
-    display.setShowSashimi(false)
+    display.setShowJunctions(false)
     display.setReadConnectionsPlacement('overlay')
-    expect(display.showSashimi).toBe(false)
+    expect(display.showJunctions).toBe(false)
     expect(display.readConnectionsPlacement).toBe('overlay')
   })
 
@@ -1231,12 +1231,12 @@ describe('read categories + filter submenu', () => {
   // `{ ...display }` saw no layer drawing and dropped every layer's section
   test('More filters... Reset keeps each drawn layer at its declared values', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
+    display.setShowJunctions(true)
     display.setDrawnReadConnections('link')
     display.setJunctionFilter({ minReads: 7 })
     display.setConnectionFilter({ minInterchromReads: 9 })
     expect(declaredLayerFilterState(display)).toMatchObject({
-      junctions: { minReads: `${DEFAULT_MIN_SASHIMI_READS}` },
+      junctions: { minReads: `${DEFAULT_MIN_JUNCTION_READS}` },
       connections: { minInterchromReads: `${DEFAULT_MIN_INTERCHROM_READS}` },
     })
   })
@@ -1479,12 +1479,12 @@ describe('the feature-details lookup', () => {
   })
 })
 
-// The strip below coverage is reserved for sashimi arcs that 'auto' pushed down,
+// The strip below coverage is reserved for junction arcs that 'auto' pushed down,
 // and 'auto' only pushes an arc down to resolve a crossing. So filtering out the
 // junctions that did the crossing has to hand that space back to the pileup —
 // driven here through the real model (config slot -> getter -> band geometry)
 // rather than the pure `laneBands`, so the wiring is covered too.
-describe('sashimi score filter releases the reserved band', () => {
+describe('junction score filter releases the reserved band', () => {
   // Two interleaving junctions, the second supported by only 2 reads.
   function seedCrossingJunctions(display: ReturnType<typeof createDisplay>) {
     display.setRpcData(
@@ -1496,14 +1496,14 @@ describe('sashimi score filter releases the reserved band', () => {
             label: '',
             data: {
               ...makeEmptyPileupData(),
-              sashimiX1: new Uint32Array([100, 300]),
-              sashimiX2: new Uint32Array([500, 700]),
-              sashimiFwd: new Uint32Array([0, 0]),
-              sashimiRev: new Uint32Array([0, 0]),
-              sashimiDonors: new Uint8Array([0, 0]),
-              sashimiAcceptors: new Uint8Array([0, 0]),
-              sashimiClass: new Uint8Array([0, 0]),
-              sashimiCounts: new Uint32Array([20, 2]),
+              junctionX1: new Uint32Array([100, 300]),
+              junctionX2: new Uint32Array([500, 700]),
+              junctionFwd: new Uint32Array([0, 0]),
+              junctionRev: new Uint32Array([0, 0]),
+              junctionDonors: new Uint8Array([0, 0]),
+              junctionAcceptors: new Uint8Array([0, 0]),
+              junctionSplitClass: new Uint8Array([0, 0]),
+              junctionCounts: new Uint32Array([20, 2]),
             },
           },
         ],
@@ -1514,65 +1514,65 @@ describe('sashimi score filter releases the reserved band', () => {
 
   test('auto: filtering out the crossing junction gives the strip back to the pileup', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
-    display.setSashimiPlacement('auto')
+    display.setShowJunctions(true)
+    display.setJunctionsPlacement('auto')
     display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
     expect(
-      display.sections.sections[0]!.bands.reserved.sashimi,
+      display.sections.sections[0]!.bands.reserved.junctions,
     ).toBeGreaterThan(0)
     expect(display.stickyBandHeight).toBe(
-      display.coverageHeight + display.sashimiHeight,
+      display.coverageHeight + display.junctionsHeight,
     )
 
     // drops the 2-read junction => nothing left to cross => nothing goes down
     display.setJunctionFilter({ minReads: 5 })
-    expect(display.sections.sections[0]!.bands.reserved.sashimi).toBe(0)
+    expect(display.sections.sections[0]!.bands.reserved.junctions).toBe(0)
     expect(display.stickyBandHeight).toBe(display.coverageHeight)
   })
 
   test('below: the strip stays reserved for any surviving junction', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
-    display.setSashimiPlacement('below')
+    display.setShowJunctions(true)
+    display.setJunctionsPlacement('below')
     display.setJunctionFilter({ minReads: 5 })
     seedCrossingJunctions(display)
 
     // the 20-read junction survives and still draws below coverage
     expect(
-      display.sections.sections[0]!.bands.reserved.sashimi,
+      display.sections.sections[0]!.bands.reserved.junctions,
     ).toBeGreaterThan(0)
 
     display.setJunctionFilter({ minReads: 50 })
-    expect(display.sections.sections[0]!.bands.reserved.sashimi).toBe(0)
+    expect(display.sections.sections[0]!.bands.reserved.junctions).toBe(0)
   })
 
   test('overlay: arcs draw over coverage, so the strip is never reserved', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
-    display.setSashimiPlacement('overlay')
+    display.setShowJunctions(true)
+    display.setJunctionsPlacement('overlay')
     display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
-    expect(display.sections.sections[0]!.bands.reserved.sashimi).toBe(0)
+    expect(display.sections.sections[0]!.bands.reserved.junctions).toBe(0)
     expect(display.stickyBandHeight).toBe(display.coverageHeight)
   })
 
   // The reserved strip and the arcs drawn into it come off one set of junction
-  // keys (`sashimiStripKeysByGroup`), so the lane naming the strip has to name
+  // keys (`junctionsStripKeysByGroup`), so the lane naming the strip has to name
   // WHICH junction claimed it — the overlay places each arc by looking itself up
   // in that same set.
   test('auto: the lane names the junction the overlay will draw below', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
-    display.setSashimiPlacement('auto')
+    display.setShowJunctions(true)
+    display.setJunctionsPlacement('auto')
     display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
-    expect([...display.sashimiStripLanes]).toEqual([''])
+    expect([...display.junctionsStripLanes]).toEqual([''])
     // heaviest-first: the 20-read junction claims 'up', the 2-read one drops
-    expect([...display.sashimiStripKeysByGroup.get('')!]).toEqual([
+    expect([...display.junctionsStripKeysByGroup.get('')!]).toEqual([
       'ctgA:300:700',
     ])
   })
@@ -1583,19 +1583,19 @@ describe('sashimi score filter releases the reserved band', () => {
   // every lane's coverage that no arc was ever bound for.
   test('auto: two chromosomes in view do not cross each other', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
-    display.setSashimiPlacement('auto')
+    display.setShowJunctions(true)
+    display.setJunctionsPlacement('auto')
     display.setJunctionFilter({ minReads: 0 })
     const junction = (start: number, end: number): WorkerPileupData => ({
       ...makeEmptyPileupData(),
-      sashimiX1: new Uint32Array([start]),
-      sashimiX2: new Uint32Array([end]),
-      sashimiFwd: new Uint32Array([0]),
-      sashimiRev: new Uint32Array([0]),
-      sashimiDonors: new Uint8Array([0]),
-      sashimiAcceptors: new Uint8Array([0]),
-      sashimiClass: new Uint8Array([0]),
-      sashimiCounts: new Uint32Array([20]),
+      junctionX1: new Uint32Array([start]),
+      junctionX2: new Uint32Array([end]),
+      junctionFwd: new Uint32Array([0]),
+      junctionRev: new Uint32Array([0]),
+      junctionDonors: new Uint8Array([0]),
+      junctionAcceptors: new Uint8Array([0]),
+      junctionSplitClass: new Uint8Array([0]),
+      junctionCounts: new Uint32Array([20]),
     })
     // interleaving as bare numbers (10k < 30k < 50k < 70k), but one per chrom
     display.setRpcData(
@@ -1623,7 +1623,7 @@ describe('sashimi score filter releases the reserved band', () => {
       },
     )
 
-    expect(display.sections.sections[0]!.bands.reserved.sashimi).toBe(0)
+    expect(display.sections.sections[0]!.bands.reserved.junctions).toBe(0)
 
     // the same two spans on ONE chromosome do interleave and claim the strip
     display.setRpcData(
@@ -1632,7 +1632,7 @@ describe('sashimi score filter releases the reserved band', () => {
       { refName: 'ctgA', start: 0, end: 100_000, assemblyName: 'volvox' },
     )
     expect(
-      display.sections.sections[0]!.bands.reserved.sashimi,
+      display.sections.sections[0]!.bands.reserved.junctions,
     ).toBeGreaterThan(0)
   })
 })
@@ -2182,7 +2182,7 @@ describe('rows the layer menus hand to other menus', () => {
 
   test('reach "Filter by" and "Advanced" once their layer draws', () => {
     const display = createDisplay()
-    display.setShowSashimi(false)
+    display.setShowJunctions(false)
     expect(labelsUnder(display, 'Filter by')).not.toContain(
       'Inter-chromosomal connections',
     )
@@ -2196,7 +2196,7 @@ describe('rows the layer menus hand to other menus', () => {
 
     // the arcs bring their everyday filter; the rest are in More filters...
     display.setDrawnReadConnections('link')
-    display.setShowSashimi(true)
+    display.setShowJunctions(true)
     expect(labelsUnder(display, 'Filter by')).toEqual([
       'Mapping quality',
       'SV evidence',
@@ -2217,9 +2217,9 @@ describe('rows the layer menus hand to other menus', () => {
     ])
   })
 
-  test('the sashimi toggles sit in "Show"', () => {
+  test('the junctions toggles sit in "Show"', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
+    display.setShowJunctions(true)
     expect(labelsUnder(display, 'Show')).toEqual(
       expect.arrayContaining(['Show junctions', 'Show junction read counts']),
     )
@@ -2230,10 +2230,10 @@ describe('rows the layer menus hand to other menus', () => {
 
   // With coverage hidden the choice is still between the strip above, arcs
   // rising, and the strip below, so the row stays.
-  test('the sashimi placement row stays with coverage hidden', () => {
+  test('the junctions placement row stays with coverage hidden', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
-    display.setSashimiPlacement('above')
+    display.setShowJunctions(true)
+    display.setJunctionsPlacement('above')
     display.setShowCoverage(false)
     expect(hasMenuItem(display.trackMenuItems(), 'Junction placement')).toBe(
       true,
@@ -2329,7 +2329,7 @@ describe('setHoverState', () => {
   const litLanes = (display: ReturnType<typeof createDisplay>) =>
     display.hoveredJunction
       ? display
-          .sashimiSupportingReadSlots(display.hoveredJunction)
+          .junctionSupportingReadSlots(display.hoveredJunction)
           .map(s => s.groupKey)
           .toSorted()
       : []
@@ -2351,7 +2351,7 @@ describe('setHoverState', () => {
     expect(display.hoverInk).toHaveLength(2)
   })
 
-  test("a sashimi junction's hover lights its own lane only", () => {
+  test("a junction's hover lights its own lane only", () => {
     const display = invertedReadByStrand()
     hoverOn(display, {
       groupKey: 'rev',

@@ -32,13 +32,13 @@ export interface JunctionReference {
 // are `mergeJunctions`', once every region has contributed what it saw.
 //
 // Split-read junctions arrive already counted (`computeSplitJunctions`) and
-// ship after the skip gaps' with their class in `sashimiClass`; they read no
+// ship after the skip gaps' with their class in `junctionSplitClass`; they read no
 // motif.
 //
-// Worker-side compute. SVG-overlay geometry (`projectSashimiArcs`) lives in
+// Worker-side compute. SVG-overlay geometry (`projectJunctionArcs`) lives in
 // `./computeOverlay.ts` (intentionally SVG-only — see
 // reference/LINEAR_ALIGNMENTS_DISPLAY.md).
-export function computeSashimiJunctions(
+export function computeJunctions(
   gaps: CoverageGap[],
   reference?: JunctionReference,
   splitJunctions?: readonly SplitJunction[],
@@ -70,14 +70,14 @@ export function computeSashimiJunctions(
   }
 
   const n = junctions.size + (splitJunctions?.length ?? 0)
-  const sashimiX1 = new Uint32Array(n)
-  const sashimiX2 = new Uint32Array(n)
-  const sashimiCounts = new Uint32Array(n)
-  const sashimiFwd = new Uint32Array(n)
-  const sashimiRev = new Uint32Array(n)
-  const sashimiDonors = new Uint8Array(n)
-  const sashimiAcceptors = new Uint8Array(n)
-  const sashimiClass = new Uint8Array(n)
+  const junctionX1 = new Uint32Array(n)
+  const junctionX2 = new Uint32Array(n)
+  const junctionCounts = new Uint32Array(n)
+  const junctionFwd = new Uint32Array(n)
+  const junctionRev = new Uint32Array(n)
+  const junctionDonors = new Uint8Array(n)
+  const junctionAcceptors = new Uint8Array(n)
+  const junctionSplitClass = new Uint8Array(n)
 
   let i = 0
   for (const j of junctions.values()) {
@@ -89,33 +89,33 @@ export function computeSashimiJunctions(
           reference.start,
         )
       : { donor: DINUCLEOTIDE_UNKNOWN, acceptor: DINUCLEOTIDE_UNKNOWN }
-    sashimiX1[i] = j.start
-    sashimiX2[i] = j.end
-    sashimiCounts[i] = j.total
-    sashimiFwd[i] = j.fwd
-    sashimiRev[i] = j.rev
-    sashimiDonors[i] = donor
-    sashimiAcceptors[i] = acceptor
+    junctionX1[i] = j.start
+    junctionX2[i] = j.end
+    junctionCounts[i] = j.total
+    junctionFwd[i] = j.fwd
+    junctionRev[i] = j.rev
+    junctionDonors[i] = donor
+    junctionAcceptors[i] = acceptor
     i++
   }
   for (const j of splitJunctions ?? []) {
-    sashimiX1[i] = j.start
-    sashimiX2[i] = j.end
-    sashimiCounts[i] = j.n
-    sashimiDonors[i] = DINUCLEOTIDE_UNKNOWN
-    sashimiAcceptors[i] = DINUCLEOTIDE_UNKNOWN
-    sashimiClass[i] = j.splitClass
+    junctionX1[i] = j.start
+    junctionX2[i] = j.end
+    junctionCounts[i] = j.n
+    junctionDonors[i] = DINUCLEOTIDE_UNKNOWN
+    junctionAcceptors[i] = DINUCLEOTIDE_UNKNOWN
+    junctionSplitClass[i] = j.splitClass
     i++
   }
 
   return {
-    sashimiX1,
-    sashimiX2,
-    sashimiCounts,
-    sashimiFwd,
-    sashimiRev,
-    sashimiDonors,
-    sashimiAcceptors,
-    sashimiClass,
+    junctionX1,
+    junctionX2,
+    junctionCounts,
+    junctionFwd,
+    junctionRev,
+    junctionDonors,
+    junctionAcceptors,
+    junctionSplitClass,
   }
 }

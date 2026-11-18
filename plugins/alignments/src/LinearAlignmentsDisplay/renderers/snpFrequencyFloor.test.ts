@@ -112,7 +112,7 @@ test('the GPU carries the floor as its own uniform', () => {
           [0, makePileupDataResult({ snpPackedBuffer: stacked() })],
         ]),
         arcFeeds: new Map(),
-        sashimiFeeds: new Map(),
+        junctionFeeds: new Map(),
         connectorFeeds: new Map(),
       },
     ],

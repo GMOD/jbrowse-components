@@ -61,7 +61,7 @@ function buildAlignmentsRegionMap(
     }
     for (const regionIdx of [
       ...section.arcFeeds.keys(),
-      ...section.sashimiFeeds.keys(),
+      ...section.junctionFeeds.keys(),
       ...section.connectorFeeds.keys(),
     ]) {
       if (!section.laidOutPileupMap.has(regionIdx)) {

@@ -9,4 +9,4 @@ export type { FieldPredicate } from '@jbrowse/core/util/fieldPredicateType'
 export {
   JUNCTION_CLASSES,
   JUNCTION_SOURCES,
-} from '../features/sashimi/junctionVocabulary.ts'
+} from '../features/junctions/junctionVocabulary.ts'

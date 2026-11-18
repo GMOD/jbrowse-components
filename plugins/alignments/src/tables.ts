@@ -92,7 +92,7 @@ import {
 import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import {
   bandStackViews,
-  sashimiStripViews,
+  junctionsStripViews,
 } from './LinearAlignmentsDisplay/bandStackViews.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
@@ -153,6 +153,22 @@ import {
 } from './features/arcs/arcSplitCategory.ts'
 import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
+import {
+  junctionColor,
+  junctionArcHeightFraction,
+  junctionStrokeWidth,
+} from './features/junctions/bandFeed.ts'
+import { visibleRegionJunctions } from './features/junctions/computeOverlay.ts'
+import {
+  SPLIT_JUNCTION_CLASSES,
+  junctionClass,
+  junctionSource,
+} from './features/junctions/junctionClass.ts'
+import {
+  mergeJunctions,
+  passesJunctionFilter,
+} from './features/junctions/junctions.ts'
+import { spliceMotifLabel } from './features/junctions/motif.ts'
 import { connectorCategories } from './features/linkedReads/computeOverlay.ts'
 import {
   connectorArrowPx,
@@ -172,22 +188,6 @@ import {
   BASE_QUALITY_UNAVAILABLE,
   qualityAbgr,
 } from './features/perBaseQuality/colors.ts'
-import {
-  junctionColor,
-  sashimiArcHeightFraction,
-  sashimiStrokeWidth,
-} from './features/sashimi/bandFeed.ts'
-import { visibleRegionJunctions } from './features/sashimi/computeOverlay.ts'
-import {
-  SPLIT_JUNCTION_CLASSES,
-  junctionClass,
-  junctionSource,
-} from './features/sashimi/junctionClass.ts'
-import {
-  mergeJunctions,
-  passesJunctionFilter,
-} from './features/sashimi/junctions.ts'
-import { spliceMotifLabel } from './features/sashimi/motif.ts'
 import { arcSlotCategory, buildArcColorPalette } from './shaders/palettes.ts'
 import {
   frequencyFadeGate,
@@ -212,9 +212,9 @@ import {
   arcLegendTitle,
   getArcLegendItems,
   oneRowPerSplitTwin,
-  sashimiLegendItems,
-  SASHIMI_LEGEND_TITLE,
-  sashimiLegend,
+  junctionLegendItems,
+  JUNCTION_LEGEND_TITLE,
+  junctionLegend,
   throughHiddenLegendItems,
   titledReadColorKey,
 } from './shared/legendUtils.ts'
@@ -243,11 +243,11 @@ import type {
 import type { ArcSplitCategory } from './features/arcs/arcSplitCategory.ts'
 import type { CrossRegionArc, RegionInfo } from './features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from './features/arcs/types.ts'
-import type { LinkedPair } from './features/linkedReads/compute.ts'
 import type {
   MergedJunction,
   RegionJunctions,
-} from './features/sashimi/junctions.ts'
+} from './features/junctions/junctions.ts'
+import type { LinkedPair } from './features/linkedReads/compute.ts'
 import type { ColorPalette, RGBColor } from './shaders/colors.ts'
 import type { ArcCategory } from './shaders/palettes.ts'
 import type {
@@ -318,7 +318,7 @@ export interface AlignmentTablesArgs {
    * The display's config as a track's `displays` entry writes it for a
    * `LinearAlignmentsDisplay`. The tables read its `encoding.color`,
    * `filter`, `sort` and `facet` objects, and its four
-   * bands: `coverage`, `pileup` (with `pileup.bases`), `sashimi` and
+   * bands: `coverage`, `pileup` (with `pileup.bases`), `junctions` and
    * `readConnections`, each with its own `show`. `filter` holds the tests on reads, on junctions
    * (the `junction` filter fields) and on connections (the `connection` fields). Unset
    * reads the default display.
@@ -456,7 +456,7 @@ const BASES = ['A', 'C', 'G', 'T', 'N'] as const
  * The colors the display paints its per-base and coverage marks in, off its
  * palette: each base through `effectiveBaseColors`, so a modifications or
  * bisulfite layer mutes them, the interbase histogram in its band variants,
- * and each junction as the sashimi band paints it (`junctionColor`).
+ * and each junction as the junctions band paints it (`junctionColor`).
  */
 function markColors(palette: ColorPalette, baseLayer: BaseLayer | undefined) {
   const muted = paintsModifications(baseLayer)
@@ -641,7 +641,7 @@ const AlignmentsTablesHost = types
   .views(self => pileupLayoutViews(self))
   .views(self => connectorViews(self))
   .views(self => bandPlotViews(self))
-  .views(self => sashimiStripViews(self))
+  .views(self => junctionsStripViews(self))
   .views(self => bandStackViews(self))
   .views(self => coverageStatsViews(self))
   .views(self => coverageAutoscaleViews(self))
@@ -880,7 +880,7 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
 
 /**
  * The junctions the reads' skips and split reads support, merged as the
- * sashimi band merges them: each once, with its supporting-read count, its
+ * junctions band merges them: each once, with its supporting-read count, its
  * `class` and `source` as the filter's `junction` fields name them, a split
  * junction's `level` (the `insertSizeAndOrientation` level its color paints,
  * '' for a splice junction), the
@@ -890,10 +890,10 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
  * read, with `shown` false where the display's `junction` filter fields hide it; a
  * junction whose motif was never read counts as canonical, as the display
  * counts it. `arcHeight` is the apex as a fraction
- * of the band and `strokeWidth` the stroke in px, the sashimi marks' own.
+ * of the band and `strokeWidth` the stroke in px, the junctions marks' own.
  * `band` is the band its arc draws in (`junctionBandOf`).
  * A junction the reads of several regions show is merged once, as the
- * sashimi band merges it, and `startRegion` and `endRegion` name the region
+ * junctions band merges it, and `startRegion` and `endRegion` name the region
  * holding each foot, -1 where none does.
  */
 function junctions(
@@ -927,9 +927,9 @@ function junctions(
     color: merged.map(j => paint.junction(j)),
     shown: merged.map(j => passesJunctionFilter(j, thresholds.junctions)),
     arcHeight: merged.map(j =>
-      sashimiArcHeightFraction(Math.abs(j.end - j.start)),
+      junctionArcHeightFraction(Math.abs(j.end - j.start)),
     ),
-    strokeWidth: merged.map(j => sashimiStrokeWidth(j.count)),
+    strokeWidth: merged.map(j => junctionStrokeWidth(j.count)),
     band: merged.map(j => bandOf(j)),
     refName: merged.map(j => j.refName),
     startRegion: merged.map(j => footRegion(regionInfos, j.refName, j.start)),
@@ -937,22 +937,22 @@ function junctions(
   }
 }
 
-type JunctionBand = 'coverage' | 'sashimi'
+type JunctionBand = 'coverage' | 'junctions'
 
 /**
  * The band a section's junction draws in, as `bandStack` names it:
- * `sashimi`, the arcs' own strip, where `sashimi.placement` sends the
- * junction there (`sashimiStripKeysByGroup`), and `coverage`, over the
+ * `junctions`, the arcs' own strip, where `junctions.placement` sends the
+ * junction there (`junctionsStripKeysByGroup`), and `coverage`, over the
  * histogram, otherwise. A junction the display hides is in no lane's set, so
  * it takes the band its placement gives every junction, and `coverage` under
  * `auto`.
  */
 function junctionBandOf(host: AlignmentsTablesHostModel, section: string) {
-  const strip = host.sashimiStripKeysByGroup.get(section) ?? NO_KEYS
-  const placement = host.effectiveSashimiPlacement
+  const strip = host.junctionsStripKeysByGroup.get(section) ?? NO_KEYS
+  const placement = host.effectiveJunctionsPlacement
   const everyJunction = placement === 'above' || placement === 'below'
   return (junction: MergedJunction): JunctionBand =>
-    everyJunction || strip.has(junction.key) ? 'sashimi' : 'coverage'
+    everyJunction || strip.has(junction.key) ? 'junctions' : 'coverage'
 }
 
 /** The index of the region holding `bp`, -1 where none does. */
@@ -976,8 +976,8 @@ function arcLevelOf(category: ArcCategory) {
   )
 }
 
-// A split read's arc's class: a sashimi junction's `junction.class`, and an
-// insertion, which draws no sashimi junction.
+// A split read's arc's class: a junction's `junction.class`, and an
+// insertion, which draws no junction.
 const ARC_SPLIT_CLASS: Record<ArcSplitCategory, string> = {
   splitForward: junctionClass('splitForward'),
   splitBack: junctionClass('splitBack'),
@@ -1276,7 +1276,7 @@ function stackedSections(host: AlignmentsTablesHostModel, readPitch: number) {
         ? groupMaxY(host.laidOutByGroupFramed.get(key) ?? new Map())
         : 0,
       hasArcs: host.arcsResult.inkGroupKeys.has(key),
-      hasSashimiStripArcs: host.sashimiStripLanes.has(key),
+      hasJunctionsStripArcs: host.junctionsStripLanes.has(key),
       heightOverridePx: undefined,
     })),
     host.drawnLaneBandsInput,
@@ -1609,7 +1609,7 @@ function coverageScale(host: AlignmentsTablesHostModel) {
  * as their linear domain is `[0, reachPx / pxPerBp]` at the host's own
  * scale, and the band they draw in. `bandStack` is where each band sits: the
  * bands a section stacks above its pileup, top to bottom, with the px each
- * reserves, so a read-connection or sashimi strip listed before `coverage`
+ * reserves, so a read-connection or junctions strip listed before `coverage`
  * sits above it, its arcs rising from its floor, and one after it sits below.
  * `warnings` names what the config asked
  * for that the tables dropped. For a host that draws them itself, such as R
@@ -1982,7 +1982,7 @@ function layoutWarnings({
  * The keys of the marks the reads' own `legend` leaves out, each over what the
  * tables paint: the bases (none while a modifications layer mutes them, and
  * no allele segment under the band's floor), the
- * splice junction strands and split junction classes shown, as the sashimi
+ * splice junction strands and split junction classes shown, as the junctions
  * band keys them, and the interbase histogram's events.
  */
 function markLegends(
@@ -2010,8 +2010,8 @@ function markLegends(
     ),
   ])
   const keyedBases = paint.muted ? [] : BASES.filter(b => bases.has(b))
-  const junctionKey = sashimiLegendItems(
-    sashimiLegend(
+  const junctionKey = junctionLegendItems(
+    junctionLegend(
       new Set(
         tables.junctions.strand.filter(
           (_, i) => shownJunction(i) && tables.junctions.source[i] === 'gap',
@@ -2048,7 +2048,7 @@ function markLegends(
       label: junctionKey.map(item => item.label),
       color: junctionKey.map(item => cssColorToHex(item.color!)),
     },
-    junctionLegendTitle: SASHIMI_LEGEND_TITLE,
+    junctionLegendTitle: JUNCTION_LEGEND_TITLE,
     interbaseLegend: {
       label: keyedEvents.map(t => getCigarTypeLabel(t)),
       color: keyedEvents.map(t => paint.interbase[t]),
@@ -2102,7 +2102,7 @@ const BAND_TABLES: readonly {
     tables: ['alleleCoverage'],
   },
   {
-    shown: conf => readConfObject(conf.sashimi, 'show'),
+    shown: conf => readConfObject(conf.junctions, 'show'),
     tables: ['junctions'],
   },
 ]

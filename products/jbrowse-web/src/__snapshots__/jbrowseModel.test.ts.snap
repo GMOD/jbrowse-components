@@ -694,7 +694,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "color": "mapq",
           },
           "height": 400,
-          "sashimi": {
+          "junctions": {
             "show": false,
           },
           "type": "LinearAlignmentsDisplay",
@@ -789,7 +789,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "show": false,
           },
           "displayId": "volvox_cram_pileup_ctga_pileup",
-          "sashimi": {
+          "junctions": {
             "show": false,
           },
           "type": "LinearAlignmentsDisplay",
@@ -943,7 +943,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "show": false,
           },
           "displayId": "volvox_bam_pileup_pileup",
-          "sashimi": {
+          "junctions": {
             "show": false,
           },
           "type": "LinearAlignmentsDisplay",

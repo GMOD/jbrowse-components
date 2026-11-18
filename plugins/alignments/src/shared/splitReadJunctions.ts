@@ -3,12 +3,12 @@ import { getClip, getLengthSansClipping } from '@jbrowse/cigar-utils'
 import {
   forEachSAEntry,
   splitJoin,
-} from '../features/sashimi/splitJunctions.ts'
+} from '../features/junctions/splitJunctions.ts'
 import { isMismatchFeature } from './extractCigarFeatures.ts'
 import { getMappingQuality, getStrand } from './util.ts'
 
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
-import type { SplitPiece } from '../features/sashimi/splitJunctions.ts'
+import type { SplitPiece } from '../features/junctions/splitJunctions.ts'
 import type { SvKind } from './readFieldLevels.ts'
 import type { Feature } from '@jbrowse/core/util'
 

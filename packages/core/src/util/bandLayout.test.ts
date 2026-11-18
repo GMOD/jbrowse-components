@@ -29,16 +29,16 @@ test('without bounds the stated height is trusted as-is', () => {
 })
 
 test('the fold states the order once and every top reads it', () => {
-  const stack = stackBands(['coverage', 'arcs', 'sashimi'], {
+  const stack = stackBands(['coverage', 'arcs', 'junctions'], {
     coverage: { active: true, height: 45 },
     arcs: { active: true, height: 30 },
-    sashimi: { active: false, height: 30 },
+    junctions: { active: false, height: 30 },
   })
   expect(stack).toEqual({
-    order: ['coverage', 'arcs', 'sashimi'],
-    top: { coverage: 0, arcs: 45, sashimi: 75 },
-    reserved: { coverage: 45, arcs: 30, sashimi: 0 },
-    height: { coverage: 45, arcs: 30, sashimi: 30 },
+    order: ['coverage', 'arcs', 'junctions'],
+    top: { coverage: 0, arcs: 45, junctions: 75 },
+    reserved: { coverage: 45, arcs: 30, junctions: 0 },
+    height: { coverage: 45, arcs: 30, junctions: 30 },
     bottom: 75,
   })
 })
@@ -67,12 +67,12 @@ test('the pointer finds the band the fold placed, and none below it', () => {
 })
 
 describe('a stack bound against the plot it shares', () => {
-  const order = ['coverage', 'arcs', 'sashimi'] as const
+  const order = ['coverage', 'arcs', 'junctions'] as const
   const plot = { height: 300, floor: 20 }
-  const bands = (coverage: number, arcs: number, sashimi = 0) => ({
+  const bands = (coverage: number, arcs: number, junctions = 0) => ({
     coverage: { active: true, height: coverage },
     arcs: { active: true, height: arcs },
-    sashimi: { active: sashimi > 0, height: sashimi },
+    junctions: { active: junctions > 0, height: junctions },
   })
 
   test('two bands at their own ceilings leave the plot its floor', () => {
@@ -80,7 +80,7 @@ describe('a stack bound against the plot it shares', () => {
       order,
       boundStackedBands(order, bands(5000, 5000), plot),
     )
-    expect(stack.reserved).toEqual({ coverage: 280, arcs: 0, sashimi: 0 })
+    expect(stack.reserved).toEqual({ coverage: 280, arcs: 0, junctions: 0 })
     expect(stack.bottom).toBe(280)
   })
 
@@ -98,13 +98,13 @@ describe('a stack bound against the plot it shares', () => {
 
   test('an inactive band is bound to the whole room, not the room left', () => {
     const bound = boundStackedBands(order, bands(200, 50), plot)
-    expect(bound.sashimi).toEqual({ active: false, height: 0 })
+    expect(bound.junctions).toEqual({ active: false, height: 0 })
     const off = boundStackedBands(
       order,
-      { ...bands(200, 50), sashimi: { active: false, height: 5000 } },
+      { ...bands(200, 50), junctions: { active: false, height: 5000 } },
       plot,
     )
-    expect(off.sashimi.height).toBe(280)
+    expect(off.junctions.height).toBe(280)
   })
 
   test('a plot that draws nothing gives the bands all of it', () => {

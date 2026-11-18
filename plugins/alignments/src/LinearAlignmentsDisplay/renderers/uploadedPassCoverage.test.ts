@@ -119,7 +119,7 @@ function oneRegion(): AlignmentsSources {
         groupKey: '',
         laidOutPileupMap: new Map([[0, fullyPopulated()]]),
         arcFeeds: new Map(),
-        sashimiFeeds: new Map(),
+        junctionFeeds: new Map(),
         connectorFeeds: new Map(),
       },
     ],

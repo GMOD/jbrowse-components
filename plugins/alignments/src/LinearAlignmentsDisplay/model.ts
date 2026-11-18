@@ -62,13 +62,13 @@ import { ScoreScaleMixin } from '@jbrowse/wiggle-core'
 import { autorun, computed, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
+import { buildJunctionsBandFeeds } from '../features/junctions/bandFeed.ts'
+import { visibleRegionJunctions } from '../features/junctions/computeOverlay.ts'
+import { mergeJunctions } from '../features/junctions/junctions.ts'
+import { junctionSupportingReadSlots } from '../features/junctions/supportingReads.ts'
 import { connectorCategories } from '../features/linkedReads/computeOverlay.ts'
 import { buildConnectorFeeds } from '../features/linkedReads/connectorFeed.ts'
 import { connectorStyler } from '../features/linkedReads/connectorStyle.ts'
-import { buildSashimiBandFeeds } from '../features/sashimi/bandFeed.ts'
-import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
-import { mergeJunctions } from '../features/sashimi/junctions.ts'
-import { junctionSupportingReadSlots } from '../features/sashimi/supportingReads.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { withBasesFields } from '../shared/basesFilter.ts'
 import { paintsEveryBase, workerColorField } from '../shared/colorFieldDefs.ts'
@@ -88,7 +88,7 @@ import {
   getArcLegendItems,
   readCategoryLabelOverrides,
   readColorCategoryLabel,
-  sashimiLegend,
+  junctionLegend,
   throughHiddenLegendItems,
 } from '../shared/legendUtils.ts'
 import {
@@ -101,21 +101,21 @@ import { bandChips } from './bandChips.ts'
 import {
   bandStackViews,
   dragStripHeight,
-  sashimiStripViews,
+  junctionsStripViews,
 } from './bandStackViews.ts'
 import { buildReadIdsByChainName } from './chainFields.ts'
 import { rgb255 } from './colorUtils.ts'
 import { firstSectionHighlight } from './components/arcHitTest.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { selectedConnectorHighlight } from './components/connectorHitTest.ts'
+import { JUNCTION_FEATURE_ID_PREFIX } from './components/junctionArcs.ts'
+import { selectedJunctionHighlight } from './components/junctionHitTest.ts'
 import { nonReferenceAt } from './components/positionStats.ts'
 import {
   readHighlightInk,
   readsToLight,
   slotsOfIds,
 } from './components/readHighlightInk.ts'
-import { SASHIMI_FEATURE_ID_PREFIX } from './components/sashimiArcs.ts'
-import { selectedSashimiHighlight } from './components/sashimiHitTest.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import {
   alignmentsConfigProblems,
@@ -167,7 +167,7 @@ import {
   getPresetsMenuItem,
   getReadsColorByMenuItem,
   getReadsMenuItems,
-  getSashimiPlacementItems,
+  getJunctionsPlacementItems,
   getSortMenuItem,
   getTrackSizingItems,
   sectionOrderResetItems,
@@ -183,7 +183,10 @@ import {
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
 import { readCloudDomainBp } from './renderers/arcMarks.ts'
 import { connectorBandState } from './renderers/connectorMarks.ts'
-import { sashimiBandState, sashimiLabels } from './renderers/sashimiMarks.ts'
+import {
+  junctionsBandState,
+  junctionLabels,
+} from './renderers/junctionMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
   buildSectionRenders,
@@ -202,10 +205,10 @@ import type {
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
+import type { JunctionsBandFeed } from '../features/junctions/bandFeed.ts'
+import type { HoveredJunction } from '../features/junctions/supportingReads.ts'
 import type { ConnectorFeed } from '../features/linkedReads/connectorFeed.ts'
 import type { ConnectorStyler } from '../features/linkedReads/connectorStyle.ts'
-import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
-import type { HoveredJunction } from '../features/sashimi/supportingReads.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
@@ -227,11 +230,11 @@ import type { AlignmentsUnit } from './constants.ts'
 import type { GroupSize } from './groupLayout.ts'
 import type { AlignmentsHover } from './hoverState.ts'
 import type { AlignmentLane } from './lanes.ts'
+import type { JunctionLabel } from './renderers/junctionMarks.ts'
 import type {
   AlignmentsRenderingBackend,
   SectionSource,
 } from './renderers/rendererTypes.ts'
-import type { SashimiLabel } from './renderers/sashimiMarks.ts'
 import type { VariantAllele, VariantSortColumn } from '@jbrowse/alignments-core'
 import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -262,12 +265,12 @@ const NO_GROUP_SIZES: ReadonlyMap<string, GroupSize> = new Map()
 
 // One frozen empty array, so the common no-arcs frame invalidates no observer.
 // Frozen so no caller's in-place `.sort()` corrupts the singleton.
-const NO_SASHIMI_LABELS = Object.freeze([]) as readonly SashimiLabel[]
-const NO_SASHIMI_FEEDS_BY_GROUP: ReadonlyMap<
+const NO_JUNCTION_LABELS = Object.freeze([]) as readonly JunctionLabel[]
+const NO_JUNCTION_FEEDS_BY_GROUP: ReadonlyMap<
   string,
-  ReadonlyMap<number, SashimiBandFeed>
+  ReadonlyMap<number, JunctionsBandFeed>
 > = new Map()
-const NO_SASHIMI_FEEDS: ReadonlyMap<number, SashimiBandFeed> = new Map()
+const NO_JUNCTION_FEEDS: ReadonlyMap<number, JunctionsBandFeed> = new Map()
 const NO_HANGING_JUNCTION_KEYS: ReadonlySet<string> = new Set()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 const NO_ARC_FEEDS: ReadonlyMap<number, ArcBandFeed> = new Map()
@@ -280,7 +283,10 @@ const NO_CONNECTOR_FEEDS: ReadonlyMap<number, ConnectorFeed> = new Map()
 export interface ThemedSources {
   colors: ColorPalette
   arcFeedsByGroup: ReadonlyMap<string, ReadonlyMap<number, ArcBandFeed>>
-  sashimiFeedsByGroup: ReadonlyMap<string, ReadonlyMap<number, SashimiBandFeed>>
+  junctionFeedsByGroup: ReadonlyMap<
+    string,
+    ReadonlyMap<number, JunctionsBandFeed>
+  >
   connectorFeedsByGroup: ReadonlyMap<string, ReadonlyMap<number, ConnectorFeed>>
   sourceSections: SectionSource[]
 }
@@ -460,7 +466,7 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The sashimi junction or split-read arc under the cursor, whose
+         * The junction or split-read arc under the cursor, whose
          * supporting reads the hover lights.
          */
         get hoveredJunction() {
@@ -717,7 +723,7 @@ export default function stateModelFactory(
         },
       }))
       .views(self => arcViews(self))
-      .views(self => sashimiStripViews(self))
+      .views(self => junctionsStripViews(self))
       .views(self => bandStackViews(self))
       .views(self => {
         let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
@@ -830,7 +836,7 @@ export default function stateModelFactory(
               self.laneBandsInput,
               self.groupOrder.map(g => g.key),
               self.arcsResult.inkGroupKeys,
-              self.sashimiStripLanes,
+              self.junctionsStripLanes,
             )
           },
 
@@ -1129,7 +1135,7 @@ export default function stateModelFactory(
             rawByGroup: self.rawDataByGroup,
             laidOutByGroup: self.laidOutByGroup,
             arcInkKeys: self.arcsResult.inkGroupKeys,
-            sashimiStripKeysByGroup: self.sashimiStripKeysByGroup,
+            junctionsStripKeysByGroup: self.junctionsStripKeysByGroup,
             collapsedKeys: self.collapsedGroups,
             sizes: self.groupSizesInEffect,
             showPileup: self.showPileup,
@@ -1562,20 +1568,20 @@ export default function stateModelFactory(
            * The junctions each lane draws, merged and filtered, in stacking
            * order. A gesture owes none of it: it reads loaded data, the on-screen
            * region set and the junction filters, and only the count labels
-           * (`sashimiLabels`) read the pan. Not a lane
+           * (`junctionLabels`) read the pan. Not a lane
            * field: a lane feeds the LAYOUT, which the on-screen region set must
            * never reach.
            */
-          get sashimiJunctionSections() {
+          get junctionSections() {
             const view = self.view
-            if (!self.showSashimi || !view.initialized) {
+            if (!self.showJunctions || !view.initialized) {
               return []
             }
             const filter = self.junctionFilter
             const regions = junctionRegions.get()
             return self.renderSections.map(sec => ({
               groupKey: sec.groupKey,
-              sashimiStripKeys: sec.sashimiStripKeys,
+              junctionsStripKeys: sec.junctionsStripKeys,
               junctions: [
                 ...mergeJunctions(
                   visibleRegionJunctions(sec.rawPileupMap, regions),
@@ -1591,10 +1597,8 @@ export default function stateModelFactory(
            * table and the count labels wait on, so a track of unspliced reads
            * pays for neither.
            */
-          get drawsSashimi() {
-            return this.sashimiJunctionSections.some(
-              sec => sec.junctions.length > 0,
-            )
+          get drawsJunctions() {
+            return this.junctionSections.some(sec => sec.junctions.length > 0)
           },
 
           /**
@@ -1604,13 +1608,13 @@ export default function stateModelFactory(
            * (`bandChips`).
            */
           get bandChips() {
-            const junctionSections = this.sashimiJunctionSections
+            const junctionSections = this.junctionSections
             return bandChips(
               self.renderSections.map((sec, i) => ({
                 ...sec,
-                sashimiOverCoverage:
+                junctionsOverCoverage:
                   junctionSections[i]?.junctions.some(
-                    j => !sec.sashimiStripKeys.has(j.key),
+                    j => !sec.junctionsStripKeys.has(j.key),
                   ) ?? false,
               })),
               self.showPileup,
@@ -1626,12 +1630,12 @@ export default function stateModelFactory(
            * frames do not rebuild the legend. A split junction has no
            * transcript strand.
            */
-          get sashimiLegendKeys() {
+          get junctionLegendKeys() {
             const strands = new Set<number>()
             const splitClasses = new Set<ArcSplitCategory>()
             if (self.showLegend) {
               const windows = self.keyWindows
-              for (const sec of this.sashimiJunctionSections) {
+              for (const sec of this.junctionSections) {
                 for (const j of sec.junctions.filter(j =>
                   junctionInWindows(j, windows),
                 )) {
@@ -1651,7 +1655,7 @@ export default function stateModelFactory(
            * The slots of the reads that support the junction, in its lane, or
            * in every drawn lane for a junction naming none.
            */
-          sashimiSupportingReadSlots(junction: HoveredJunction) {
+          junctionSupportingReadSlots(junction: HoveredJunction) {
             return self.renderSections
               .filter(
                 s =>
@@ -1691,20 +1695,20 @@ export default function stateModelFactory(
               ]),
             )
           })
-          const sashimiFeedsByGroup = computed(() => {
-            if (!self.drawsSashimi) {
-              return NO_SASHIMI_FEEDS_BY_GROUP
+          const junctionFeedsByGroup = computed(() => {
+            if (!self.drawsJunctions) {
+              return NO_JUNCTION_FEEDS_BY_GROUP
             }
             const displayed = self.displayedRegionInfos
             return new Map(
-              self.sashimiJunctionSections.map(sec => [
+              self.junctionSections.map(sec => [
                 sec.groupKey,
-                buildSashimiBandFeeds({
+                buildJunctionsBandFeeds({
                   junctions: sec.junctions,
                   downJunctionKeys:
-                    self.effectiveSashimiPlacement === 'above'
+                    self.effectiveJunctionsPlacement === 'above'
                       ? NO_HANGING_JUNCTION_KEYS
-                      : sec.sashimiStripKeys,
+                      : sec.junctionsStripKeys,
                   displayed,
                   colors: colors.get(),
                 }),
@@ -1734,8 +1738,8 @@ export default function stateModelFactory(
               groupKey,
               laidOutPileupMap,
               arcFeeds: arcFeedsByGroup.get().get(groupKey) ?? NO_ARC_FEEDS,
-              sashimiFeeds:
-                sashimiFeedsByGroup.get().get(groupKey) ?? NO_SASHIMI_FEEDS,
+              junctionFeeds:
+                junctionFeedsByGroup.get().get(groupKey) ?? NO_JUNCTION_FEEDS,
               connectorFeeds:
                 connectorFeedsByGroup.get().get(groupKey) ?? NO_CONNECTOR_FEEDS,
             })),
@@ -1747,8 +1751,8 @@ export default function stateModelFactory(
             get arcFeedsByGroup() {
               return arcFeedsByGroup.get()
             },
-            get sashimiFeedsByGroup() {
-              return sashimiFeedsByGroup.get()
+            get junctionFeedsByGroup() {
+              return junctionFeedsByGroup.get()
             },
             get connectorFeedsByGroup() {
               return connectorFeedsByGroup.get()
@@ -1817,10 +1821,10 @@ export default function stateModelFactory(
               legendItems: () => self.legendItems(palette),
               arcLegendTitle: self.arcLegendTitle,
               arcLegendItems: () => self.connectionLegendItems(palette),
-              sashimiLegend: sashimiLegend(
-                self.sashimiLegendKeys.strands,
+              junctionLegend: junctionLegend(
+                self.junctionLegendKeys.strands,
                 theme.alignmentFill,
-                { classes: self.sashimiLegendKeys.splitClasses, palette },
+                { classes: self.junctionLegendKeys.splitClasses, palette },
               ),
             })
           },
@@ -1900,7 +1904,7 @@ export default function stateModelFactory(
          */
         get linkRegions(): readonly LinkRegion[] {
           return (self.drawnReadConnections === 'off' &&
-            !self.drawsSashimi &&
+            !self.drawsJunctions &&
             self.connectorPairSections.length === 0) ||
             !self.view.initialized
             ? NO_LINK_REGIONS
@@ -1909,18 +1913,18 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The junction read counts, each at its arc's apex (`sashimiLabels`).
-         * The one part of sashimi that reads the pan, and only while the
+         * The junction read counts, each at its arc's apex (`junctionLabels`).
+         * The one part of junctions that reads the pan, and only while the
          * labels are shown; the same empty array otherwise, so the overlay's
          * observer stops.
          */
-        get sashimiLabels(): readonly SashimiLabel[] {
-          return self.showSashimiLabels && self.drawsSashimi
-            ? sashimiLabels(
+        get junctionLabels(): readonly JunctionLabel[] {
+          return self.showJunctionLabels && self.drawsJunctions
+            ? junctionLabels(
                 this.renderState,
-                self.themed.sourceSections.map(sec => sec.sashimiFeeds),
+                self.themed.sourceSections.map(sec => sec.junctionFeeds),
               )
-            : NO_SASHIMI_LABELS
+            : NO_JUNCTION_LABELS
         },
 
         /**
@@ -1928,19 +1932,19 @@ export default function stateModelFactory(
          * The selected splice junction's ink, for the overlay that outlines
          * it. Reads the pan, and only while a junction is selected.
          */
-        get selectedSashimiHighlight(): ArcHighlight | undefined {
+        get selectedJunctionHighlight(): ArcHighlight | undefined {
           const id = self.selectedFeatureId
-          return id?.startsWith(SASHIMI_FEATURE_ID_PREFIX)
+          return id?.startsWith(JUNCTION_FEATURE_ID_PREFIX)
             ? firstSectionHighlight(
                 this.renderState,
                 self.renderSections,
-                self.themed.sashimiFeedsByGroup,
+                self.themed.junctionFeedsByGroup,
                 (feeds, groupKey, sec, state) =>
-                  selectedSashimiHighlight(
+                  selectedJunctionHighlight(
                     id,
                     groupKey,
                     feeds,
-                    sashimiBandState(state, sec),
+                    junctionsBandState(state, sec),
                   ),
               )
             : undefined
@@ -1983,7 +1987,7 @@ export default function stateModelFactory(
           const junction = self.hoveredJunction
           if (junction) {
             return this.slotInk(
-              self.sashimiSupportingReadSlots(junction),
+              self.junctionSupportingReadSlots(junction),
               false,
             )
           }
@@ -2173,11 +2177,11 @@ export default function stateModelFactory(
             // chromosome scale, when the band is off.
             showCoverage: self.showCoverage,
             interbaseIndicators: self.interbaseIndicatorRule,
-            // The junctions ride with coverage, so a sashimi toggle with the
+            // The junctions ride with coverage, so a junctions toggle with the
             // band shown refetches nothing; without it they ride with the arcs.
-            // A display without the sashimi band fetches none.
+            // A display without the junctions band fetches none.
             junctions:
-              self.hasSashimi && (self.showCoverage || self.showSashimi),
+              self.hasJunctions && (self.showCoverage || self.showJunctions),
             // `readConnections` is not here: the SA tag walk it could gate also
             // feeds linked reads and the curved connectors (see
             // `extractFeatureArrays`).
@@ -2697,11 +2701,11 @@ export default function stateModelFactory(
            * #action
            * Clamped as `setReadConnectionsHeight` is.
            */
-          setSashimiHeight(height: number) {
+          setJunctionsHeight(height: number) {
             setConf(
               requireReadsConf(self),
-              ['sashimi', 'height'],
-              dragStripHeight(self, 'sashimi', height),
+              ['junctions', 'height'],
+              dragStripHeight(self, 'junctions', height),
             )
           },
 
@@ -2928,7 +2932,7 @@ export default function stateModelFactory(
             disabledHelpText: 'Turn on "Show pileup" to change read height',
           }
           // Where the band switches live is settled (Coverage, Pileup and
-          // Sashimi arcs in "Show...", the connection band in "Read
+          // Junction arcs in "Show...", the connection band in "Read
           // connections"), so a menu review leaves them there.
           return [
             getReadsColorByMenuItem(self),
@@ -2951,7 +2955,7 @@ export default function stateModelFactory(
               ...getCoverageMenuItems(self),
               ...getTrackSizingItems(self, pileupGate),
               ...getReadConnectionsBandItems(self),
-              ...getSashimiPlacementItems(self),
+              ...getJunctionsPlacementItems(self),
             ]),
           ] satisfies MenuItem[]
         },

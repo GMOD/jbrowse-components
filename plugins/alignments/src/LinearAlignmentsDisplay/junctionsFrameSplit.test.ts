@@ -1,6 +1,6 @@
 import { autorun } from 'mobx'
 
-import { encodeDinucleotide } from '../features/sashimi/motif.ts'
+import { encodeDinucleotide } from '../features/junctions/motif.ts'
 import {
   createTestAlignmentsDisplay,
   makeEmptyPileupData,
@@ -9,7 +9,7 @@ import {
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 import type { LinearAlignmentsDisplayModel } from './components/useAlignmentsBase.ts'
 
-// A pan neither re-merges the sashimi junctions nor rebuilds the feed their
+// A pan neither re-merges the junctions nor rebuilds the feed their
 // marks draw from, and this file counts both rather than asserting the shape
 // that is supposed to produce them.
 //
@@ -34,14 +34,14 @@ const FRAMES = 20
 function seedJunctions(display: LinearAlignmentsDisplayModel) {
   const data: WorkerPileupData = {
     ...makeEmptyPileupData(),
-    sashimiX1: new Uint32Array([1000, 3000]),
-    sashimiX2: new Uint32Array([2000, 5000]),
-    sashimiFwd: new Uint32Array([40, 0]),
-    sashimiRev: new Uint32Array([0, 12]),
-    sashimiDonors: new Uint8Array([encodeDinucleotide('GT'), 0]),
-    sashimiAcceptors: new Uint8Array([encodeDinucleotide('AG'), 0]),
-    sashimiClass: new Uint8Array([0, 0]),
-    sashimiCounts: new Uint32Array([40, 12]),
+    junctionX1: new Uint32Array([1000, 3000]),
+    junctionX2: new Uint32Array([2000, 5000]),
+    junctionFwd: new Uint32Array([40, 0]),
+    junctionRev: new Uint32Array([0, 12]),
+    junctionDonors: new Uint8Array([encodeDinucleotide('GT'), 0]),
+    junctionAcceptors: new Uint8Array([encodeDinucleotide('AG'), 0]),
+    junctionSplitClass: new Uint8Array([0, 0]),
+    junctionCounts: new Uint32Array([40, 12]),
   }
   display.setRpcData(
     0,
@@ -68,7 +68,7 @@ function identityCounter<T>() {
 function panningDisplay() {
   const { view, display } = createTestAlignmentsDisplay()
   view.setNewView(10, 0)
-  display.setShowSashimi(true)
+  display.setShowJunctions(true)
   display.setShowCoverage(true)
   return { view, display }
 }
@@ -81,16 +81,16 @@ test('a pan re-merges nothing and rebuilds no feed', () => {
   const feeds = identityCounter<unknown>()
   const labels = identityCounter<unknown>()
   const stop = autorun(() => {
-    merges.note(display.sashimiJunctionSections)
-    feeds.note(display.themed.sashimiFeedsByGroup)
-    labels.note(display.sashimiLabels)
+    merges.note(display.junctionSections)
+    feeds.note(display.themed.junctionFeedsByGroup)
+    labels.note(display.junctionLabels)
   })
 
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
-    merges.note(display.sashimiJunctionSections)
-    feeds.note(display.themed.sashimiFeedsByGroup)
-    labels.note(display.sashimiLabels)
+    merges.note(display.junctionSections)
+    feeds.note(display.themed.junctionFeedsByGroup)
+    labels.note(display.junctionLabels)
   }
   stop()
 
@@ -103,43 +103,43 @@ test('a pan re-merges nothing and rebuilds no feed', () => {
 
   // …and the feed is carrying something, so the expectations above cannot
   // pass by the pipeline being empty or the pan being a no-op.
-  expect(display.themed.sashimiFeedsByGroup.get('')!.get(0)!.up.count).toBe(2)
-  expect(display.sashimiJunctionSections[0]!.junctions).toHaveLength(2)
+  expect(display.themed.junctionFeedsByGroup.get('')!.get(0)!.up.count).toBe(2)
+  expect(display.junctionSections[0]!.junctions).toHaveLength(2)
 })
 
 // The count labels are the one part still in the DOM, so they are the one part
 // a pan re-projects, and only while they are shown.
 test('with count labels on, a pan re-projects the labels alone', () => {
   const { view, display } = panningDisplay()
-  display.setShowSashimiLabels(true)
+  display.setShowJunctionLabels(true)
   seedJunctions(display)
 
   const feeds = identityCounter<unknown>()
   const labels = identityCounter<unknown>()
   const stop = autorun(() => {
-    feeds.note(display.themed.sashimiFeedsByGroup)
-    labels.note(display.sashimiLabels)
+    feeds.note(display.themed.junctionFeedsByGroup)
+    labels.note(display.junctionLabels)
   })
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
-    feeds.note(display.themed.sashimiFeedsByGroup)
-    labels.note(display.sashimiLabels)
+    feeds.note(display.themed.junctionFeedsByGroup)
+    labels.note(display.junctionLabels)
   }
   stop()
 
   expect(feeds.count).toBe(1)
   expect(labels.count).toBe(FRAMES + 1)
-  expect(display.sashimiLabels).toHaveLength(2)
+  expect(display.junctionLabels).toHaveLength(2)
 })
 
-// The DNA case, which is most alignments tracks: `showSashimi` resolves on
+// The DNA case, which is most alignments tracks: `showJunctions` resolves on
 // wherever coverage draws, so every one of them evaluates this pipeline, and a
 // track whose reads carry no skip gap has nothing for it to draw. One shared
-// empty array is what lets `SashimiLabelsOverlay`'s observer stop on `===`
+// empty array is what lets `JunctionLabelsOverlay`'s observer stop on `===`
 // instead of reconciling a list of empty sections per frame.
 test('a track with no junctions hands the overlay the same empty array', () => {
   const { view, display } = panningDisplay()
-  display.setShowSashimiLabels(true)
+  display.setShowJunctionLabels(true)
   display.setRpcData(
     0,
     {
@@ -151,12 +151,12 @@ test('a track with no junctions hands the overlay the same empty array', () => {
   const projections = identityCounter<unknown>()
   const states = identityCounter<unknown>()
   const stop = autorun(() => {
-    projections.note(display.sashimiLabels)
+    projections.note(display.junctionLabels)
     states.note(display.renderState)
   })
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
-    projections.note(display.sashimiLabels)
+    projections.note(display.junctionLabels)
     states.note(display.renderState)
   }
   stop()
@@ -167,7 +167,7 @@ test('a track with no junctions hands the overlay the same empty array', () => {
   // render state the same object: gating the table on the SETTING, which is on
   // by default, rebuilt it on every frame of every alignments track.
   expect(states.count).toBe(1)
-  expect(display.sashimiLabels).toHaveLength(0)
+  expect(display.junctionLabels).toHaveLength(0)
 })
 
 // The band's feeds are placed through the view's region table, a uniform, so
@@ -210,5 +210,5 @@ test('a pan leaves the legend the same object', () => {
   stop()
 
   expect(scales.count).toBe(1)
-  expect(display.sashimiLegendKeys.strands).toEqual(new Set([1, -1]))
+  expect(display.junctionLegendKeys.strands).toEqual(new Set([1, -1]))
 })
