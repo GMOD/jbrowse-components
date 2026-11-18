@@ -10,25 +10,41 @@ the genome, **BLAT search** and **In-silico PCR**. Both query UCSC-style
 sequence-search servers and turn the hits into a track built on the fly, with
 every hit listed so you can go to the one you want.
 
-Neither JBrowse Web nor JBrowse Desktop bundles it. It loads from a config's
-`plugins` entry, and every genome on
-[genomes.jbrowse.org](https://genomes.jbrowse.org) names it, in either app.
-Another JBrowse offers the two items once its config has the same entry:
+## Where it is set up
 
-```json
-{
-  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
-  "plugins": [
-    {
-      "name": "Blat",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-blat/latest/dist/jbrowse-plugin-blat.umd.production.min.js"
-    }
-  ]
-}
-```
+BLAT search and In-silico PCR are ready to use, with nothing to install, on:
 
-A search only finds something on an assembly UCSC hosts, which is why the
-genomes.jbrowse.org configs are where it is switched on.
+- every genome on [genomes.jbrowse.org](https://genomes.jbrowse.org), in JBrowse
+  Web
+- the genomes JBrowse Desktop opens from its start screen, which are the same
+  genomes.jbrowse.org configs
+
+There, a search goes to UCSC's own BLAT and In-silico PCR servers, through a
+[shared jbrowse.org server](#the-shared-server) that needs no UCSC account.
+
+Anywhere else takes setup. Neither JBrowse Web nor JBrowse Desktop bundles the
+plugin, so a genome opened from your own files or config lacks the two items
+until:
+
+- **The plugin:** the config's `plugins` names it.
+
+  ```json
+  {
+    "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+    "plugins": [
+      {
+        "name": "Blat",
+        "url": "https://jbrowse.org/plugins/jbrowse-plugin-blat/latest/dist/jbrowse-plugin-blat.umd.production.min.js"
+      }
+    ]
+  }
+  ```
+
+- **The database:** UCSC searches only the assemblies it hosts, so the assembly
+  has to be one of them, under its UCSC name or with the
+  [database set](#which-database-gets-searched).
+- **A server of your own:** a genome UCSC does not host needs a UCSC Genome
+  Browser mirror of your own that has it, entered in the dialog's server field.
 
 ## BLAT search
 
