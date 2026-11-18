@@ -41,6 +41,7 @@ export type { SpreadsheetViewCommands } from './SpreadsheetView/types.ts'
 export type {
   GridRow,
   RowSet,
+  SheetColumn,
   SpreadsheetSnapshot,
 } from './SpreadsheetView/SpreadsheetModel.tsx'
 

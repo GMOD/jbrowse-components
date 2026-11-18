@@ -37,7 +37,7 @@ const muiMaterialLib = {
 }
 const muiStylesLib = { ...MUIStyles, makeStyles: legacyMakeStyles }
 
-const libs = {
+const libs: Record<string, unknown> = {
   ...frameworkShared,
   'mobx-react': mxreact,
   'react-dom': ReactDom,

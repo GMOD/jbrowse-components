@@ -2371,11 +2371,14 @@
     "@jbrowse/core/ui/VirtualTable": {
       "package": "@jbrowse/core",
       "names": [
+        "CHECKBOX_WIDTH",
         "CellTextInput",
         "DEFAULT_COL_WIDTH",
         "EditableTextCell",
         "TableCheckbox",
-        "default"
+        "checkboxLeading",
+        "default",
+        "useTableSort"
       ],
       "worker": "stub",
       "uiVia": [
@@ -3418,6 +3421,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/idbConnection": {
+      "package": "@jbrowse/core",
+      "names": [
+        "idbConnection"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/indexCandidates": {
       "package": "@jbrowse/core",
       "names": [
@@ -3921,6 +3931,16 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/searchText": {
+      "package": "@jbrowse/core",
+      "names": [
+        "buildSearchText",
+        "highlightPatterns",
+        "parseSearchQuery",
+        "searchMatcher"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/selectEncodedFeature": {
       "package": "@jbrowse/core",
       "names": [
@@ -4080,9 +4100,7 @@
         "compareValues",
         "csvLine",
         "csvText",
-        "naturalOrder",
-        "searchHighlightPatterns",
-        "splitSearchWords"
+        "naturalOrder"
       ],
       "worker": "real"
     },
@@ -5523,6 +5541,7 @@
         "ScoreRules",
         "SvgHaloText",
         "TEXT_BASELINE_RATIO",
+        "TRACK_CONTROL_DISMISS_TESTID",
         "Tooltip",
         "TrackControlProvider",
         "TrackOverlayContext",
@@ -5548,6 +5567,7 @@
         "sidebarCovers",
         "textHalo",
         "tooLargeBannerText",
+        "trackControlTestId",
         "useChromeOverlayOverride",
         "useTooltip",
         "useTrackControlMenu",
@@ -5874,6 +5894,7 @@
         "pointInsetPx",
         "pointInstance",
         "pointMark",
+        "predecessorReach",
         "rampAsThreshold",
         "rampUniforms",
         "rampValueBits",
@@ -5885,6 +5906,7 @@
         "rowTableKeys",
         "rowTableTextures",
         "ruleMark",
+        "segmentsIntoRow",
         "shiftInk",
         "spanMark",
         "spansInRow",
@@ -5957,7 +5979,10 @@
         "inkAtPoint",
         "inkHitNearest",
         "inkOnRect",
+        "inkOnStroke",
+        "nearSegment",
         "nearestInk",
+        "reachesBox",
         "shapeHitNearest"
       ],
       "worker": "real"
