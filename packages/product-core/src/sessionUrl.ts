@@ -42,7 +42,7 @@ export async function encodeSessionToUrl(
   return `${ENCODED_PREFIX}${await toUrlSafeB64(JSON.stringify(snap))}`
 }
 
-function isSessionSnapshot(value: unknown): value is SessionSnapshot {
+export function isSessionSnapshot(value: unknown): value is SessionSnapshot {
   return (
     typeof value === 'object' &&
     value !== null &&

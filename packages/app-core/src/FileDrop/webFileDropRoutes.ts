@@ -1,4 +1,4 @@
-import { parseSessionFile } from '../AppWidgets/ImportSessionWidget/parseSessionFile.ts'
+import { importSessionFile } from '../AppWidgets/ImportSessionWidget/importSessionFile.ts'
 import { AssemblyManager } from '../AssemblyManager/index.ts'
 
 import type { AssemblyManagerSession } from '../AssemblyManager/types.ts'
@@ -21,7 +21,7 @@ export function webFileDropRoutes(session: WebDropSession): FileDropRoutes {
       const text = await file.text()
       const parsed: unknown = JSON.parse(text)
       if (parsed && typeof parsed === 'object' && 'session' in parsed) {
-        await session.openSessionCopy(parseSessionFile(text))
+        await importSessionFile(session, text)
       } else {
         throw new Error(
           `${file.name} is not a JBrowse session export, which holds a top-level "session" key`,

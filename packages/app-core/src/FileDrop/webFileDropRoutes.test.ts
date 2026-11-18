@@ -34,6 +34,19 @@ test('a JSON file that is not a session export leaves the session alone', async 
   expect(rootModel?.session).toBe(session)
 })
 
+test('a dropped session export with no name is refused and leaves the session alone', async () => {
+  const session = createTestSession()
+  const { rootModel } = getEnv(session).pluginManager
+  const file = new File(
+    [JSON.stringify({ session: { id: 'old', views: [] } })],
+    'session.json',
+  )
+  await expect(
+    webFileDropRoutes(session).openSessionFile(file),
+  ).rejects.toThrow(/no "name"/)
+  expect(rootModel?.session).toBe(session)
+})
+
 test('on Web a dropped .jbrowse goes to the tracks route, not the session one', async () => {
   const session = createTestSession()
   const { rootModel } = getEnv(session).pluginManager

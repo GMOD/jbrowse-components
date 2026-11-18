@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
 import { FileDropZone } from '@jbrowse/core/ui'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { parseSessionFile } from '../parseSessionFile.ts'
+import { importSessionFile } from '../importSessionFile.ts'
 import ImportError from './ImportError.tsx'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -44,9 +44,10 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
                   rejectedFiles[0]!.errors.map(e => e.message).join(', '),
                 )
               }
-              const session = parseSessionFile(await acceptedFiles[0]!.text())
-              await getEnv(model).pluginManager.preloadSessionTypes(session)
-              getSession(model).setSession?.(session)
+              await importSessionFile(
+                getSession(model),
+                await acceptedFiles[0]!.text(),
+              )
             } catch (e) {
               console.error(e)
               setError(e)
