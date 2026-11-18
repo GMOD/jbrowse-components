@@ -246,3 +246,17 @@ two exons is evidence those exons share a molecule even when neither read
 crosses a junction. Assemblers (StringTie) and fusion callers (STAR-Fusion,
 Arriba) use it; sashimi arcs, ours and IGV's, count split reads only. The shape
 would be junction arcs that also count such pairs. Waits on a user.
+
+**The key covers the first section's coverage axis when reads are grouped.**
+Grouping moves the coverage scale to the right (`side: self.showsGroupLabels ?
+'right' : 'left'`, `LinearAlignmentsDisplay/model.ts`), and `FloatingLegend`
+(display-ui) is pinned to the top right. With `legend.show` on, the key hides
+the first section's tick labels: a capture of NA12878 faceted by `mapq` on
+2026-11-17 shows it. `legend.show` is off by default. The key would sit left of
+the axis gutter while the scale is on the right.
+
+**The key lists the read colors while the pileup is hidden.** With `pileup.show`
+off and `legend.show` on, the key lists the levels of `encoding.color` though
+the display draws no read (the same NA12878 track, colored by `mapq`). The read
+connections paint `insertSizeAndOrientation` in the reads' colors, so the rows
+would go when no drawn mark paints the field.
