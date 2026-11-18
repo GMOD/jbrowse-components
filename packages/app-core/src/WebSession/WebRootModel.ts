@@ -1,8 +1,7 @@
 import type { AppSessionRoot } from '../AppSession/index.ts'
 import type { SessionSummary } from '../sessionSummary.ts'
-import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { EditableJBrowseConfigModel } from '@jbrowse/core/util'
+import type { BaseSessionRoot } from '@jbrowse/product-core'
 
 export interface SessionMetadata {
   id: string
@@ -46,18 +45,16 @@ export function byLastUsedDesc(a: SessionMetadata, b: SessionMetadata) {
 export interface AbstractJBrowseModel extends EditableJBrowseConfigModel {}
 
 /**
- * What BaseWebSession requires from its parent root model: the shared
- * {@link AppSessionRoot} surface plus the web-only members both web roots provide.
+ * What BaseWebSession requires from its parent root model: what any session
+ * reads off its root ({@link BaseSessionRoot}), the app surface
+ * ({@link AppSessionRoot}), and the web-only members both web roots provide.
  * Both jbrowse-web's and react-app's roots satisfy this. The saved-session DB
  * surface (see {@link AbstractWebSessionDbRootModel}) is intentionally NOT here
  * — only the full-app jbrowse-web root provides it, via the separate
  * `WebSessionManagementMixin`.
  */
-export interface AbstractWebRootModel extends AppSessionRoot {
+export interface AbstractWebRootModel extends BaseSessionRoot, AppSessionRoot {
   readonly jbrowse: AbstractJBrowseModel
-  readonly rpcManager: RpcManager
-  readonly adminMode: boolean
-  readonly textSearchManager: TextSearchManager
   setPluginsUpdated(): void
   setSession(snapshot: Record<string, unknown>): void
 }
