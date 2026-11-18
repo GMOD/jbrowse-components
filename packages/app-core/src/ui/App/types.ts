@@ -5,6 +5,11 @@ import type {
   SnackbarMessage,
 } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
+import type { IsAny } from '@jbrowse/core/util/types'
+import type {
+  AssertNotAny,
+  SessionWithMultipleViews,
+} from '@jbrowse/product-core'
 
 export { type Menu } from '../../menus.ts'
 
@@ -19,14 +24,20 @@ export interface ThemeSwitchSession {
   setSystemThemeOverride: (mode?: 'light' | 'dark') => void
 }
 
-// What a workspace needs of the session it drives
-export type WorkspaceSessionType = SessionWithFocusedViewAndDrawerWidgets
+// The session the workspace and each view's chrome are mounted with: a list of
+// views arranged by a workspace layout
+export type WorkspaceSessionType = SessionWithFocusedViewAndDrawerWidgets &
+  SessionWithMultipleViews &
+  WorkspaceLayout
+
+export type _WorkspaceSessionIsTyped = AssertNotAny<
+  IsAny<WorkspaceSessionType | WorkspaceSessionType['moveViewToTop']>
+>
 
 // The app's own session: a workspace-drivable one plus the chrome around the
 // views. An extension rather than a parallel list, since App hands the same
 // session to ViewsContainer and on to the workspace.
 export type AppSession = WorkspaceSessionType &
-  WorkspaceLayout &
   ThemeSwitchSession & {
     menus: () => Menu[]
     errorDialog: ErrorDialogState | undefined

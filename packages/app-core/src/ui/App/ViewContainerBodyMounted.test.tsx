@@ -13,7 +13,7 @@ import { LayoutRenderer } from '../../WorkspaceLayout/LayoutRenderer.tsx'
 import { WorkspaceLayoutMixin } from '../../WorkspaceLayout/model.ts'
 import ViewContainer from './ViewContainer.tsx'
 
-import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
+import type { WorkspaceSessionType } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 afterEach(cleanup)
@@ -46,8 +46,7 @@ const Session = types.compose(
   WorkspaceLayoutMixin(),
 )
 
-type TestSession = SessionWithFocusedViewAndDrawerWidgets &
-  Instance<typeof Session>
+type TestSession = WorkspaceSessionType & Instance<typeof Session>
 
 // As much of the workspace as this is about: one panel, two tabs, a view in
 // each, rendered the way `WorkspaceContainer` renders them — a `ViewContainer`

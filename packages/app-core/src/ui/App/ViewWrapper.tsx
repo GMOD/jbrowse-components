@@ -7,10 +7,8 @@ import { observer } from 'mobx-react'
 
 import ViewErrorFallback from './ViewErrorFallback.tsx'
 
-import type {
-  AbstractViewModel,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { WorkspaceSessionType } from './types.ts'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 
 // Separate from the boundary below on purpose: `getViewType` throws when no
 // plugin registered the type, and a lookup done in the boundary's own render is
@@ -21,7 +19,7 @@ const ViewComponent = observer(function ViewComponent({
   session,
 }: {
   view: AbstractViewModel
-  session: SessionWithFocusedViewAndDrawerWidgets
+  session: WorkspaceSessionType
 }) {
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getViewType(view.type)
@@ -68,7 +66,7 @@ const ViewWrapper = observer(function ViewWrapper({
   session,
 }: {
   view: AbstractViewModel
-  session: SessionWithFocusedViewAndDrawerWidgets
+  session: WorkspaceSessionType
 }) {
   return (
     <ErrorBoundary

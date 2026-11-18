@@ -7,12 +7,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { MultipleViewsSessionMixin } from '@jbrowse/product-core'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
+import { WorkspaceLayoutMixin } from '../../WorkspaceLayout/model.ts'
 import ViewWrapper from './ViewWrapper.tsx'
 
-import type {
-  AbstractViewModel,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { WorkspaceSessionType } from './types.ts'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 
 afterEach(cleanup)
 
@@ -53,18 +52,17 @@ const pluginManager = new PluginManager([new FakeViewsPlugin()])
   .configure()
 
 function sessionWithView(type = 'ThrowingView') {
-  const session = MultipleViewsSessionMixin(pluginManager).create(
-    { name: 'test' },
-    { pluginManager },
-  )
+  const session = types
+    .compose(MultipleViewsSessionMixin(pluginManager), WorkspaceLayoutMixin())
+    .create({ name: 'test' }, { pluginManager }) as WorkspaceSessionType
   session.addView(type, { displayName: 'my crashed view' })
-  return session as unknown as SessionWithFocusedViewAndDrawerWidgets
+  return session
 }
 
 // The outer boundary stands in for the product's own — jbrowse-web's fallback
 // there is FatalErrorDialog, i.e. the whole application. Every assertion that
 // 'app boundary' is absent is the containment claim.
-function renderView(session: SessionWithFocusedViewAndDrawerWidgets) {
+function renderView(session: WorkspaceSessionType) {
   return render(
     <ErrorBoundary FallbackComponent={() => <div>app boundary</div>}>
       <ViewWrapper view={session.views[0]!} session={session} />

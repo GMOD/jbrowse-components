@@ -8,9 +8,10 @@ import { MultipleViewsSessionMixin } from '@jbrowse/product-core'
 import { ThemeProvider } from '@mui/material'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
+import { WorkspaceLayoutMixin } from '../../WorkspaceLayout/model.ts'
 import ViewContainer from './ViewContainer.tsx'
 
-import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
+import type { WorkspaceSessionType } from './types.ts'
 
 afterEach(cleanup)
 
@@ -43,10 +44,9 @@ const pluginManager = new PluginManager([new FakeViewsPlugin()])
   .configure()
 
 function setup() {
-  const session = MultipleViewsSessionMixin(pluginManager).create(
-    { name: 'test' },
-    { pluginManager },
-  ) as unknown as SessionWithFocusedViewAndDrawerWidgets
+  const session = types
+    .compose(MultipleViewsSessionMixin(pluginManager), WorkspaceLayoutMixin())
+    .create({ name: 'test' }, { pluginManager }) as WorkspaceSessionType
   session.addView('StubView', { displayName: 'my view' })
   const view = session.views[0]!
   const utils = render(

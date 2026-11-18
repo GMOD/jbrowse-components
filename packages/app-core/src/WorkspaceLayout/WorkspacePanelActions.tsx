@@ -17,7 +17,6 @@ import { observer } from 'mobx-react'
 import { stripIconColor, workspaceTheme } from './workspaceTheme.ts'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
-import type { WorkspaceLayout } from './model.ts'
 import type { TileMode } from './spec.ts'
 import type { PanelNode } from './tree.ts'
 
@@ -41,7 +40,7 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
   onClose,
 }: {
   panel: PanelNode
-  session: WorkspaceSessionType & WorkspaceLayout
+  session: WorkspaceSessionType
   /** closes the cell and the views its tabs hold */
   onClose: () => void
 }) {

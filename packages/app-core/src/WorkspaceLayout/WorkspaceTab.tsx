@@ -8,7 +8,6 @@ import JBrowseTabMenu from '../ui/App/JBrowseTabMenu.tsx'
 import { tabDisplayName } from './tabName.ts'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
-import type { WorkspaceLayout } from './model.ts'
 import type { TabNode } from './tree.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 
@@ -47,7 +46,7 @@ export const WorkspaceTab = observer(function WorkspaceTab({
 }: {
   tab: TabNode
   views: AbstractViewModel[]
-  session: WorkspaceSessionType & WorkspaceLayout
+  session: WorkspaceSessionType
   /** closes the tab and the views it holds */
   onClose: () => void
 }) {

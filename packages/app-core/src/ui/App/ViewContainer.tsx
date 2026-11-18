@@ -12,10 +12,8 @@ import ViewWrapper from './ViewWrapper.tsx'
 import { useViewVisibility } from './useViewVisibility.ts'
 import { viewTitle } from './viewTitle.ts'
 
-import type {
-  AbstractViewModel,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { WorkspaceSessionType } from './types.ts'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 
 // Scroll-space reserved for a view that has never been measured yet, so a fresh
 // load spreads views down the page instead of stacking them all in the viewport
@@ -105,7 +103,7 @@ const ViewContainer = observer(function ViewContainer({
   scrollOnMount,
 }: {
   view: AbstractViewModel
-  session: SessionWithFocusedViewAndDrawerWidgets
+  session: WorkspaceSessionType
   scrollOnMount?: boolean
 }) {
   const ref = useWidthSetter(view)
@@ -199,6 +197,7 @@ const ViewContainer = observer(function ViewContainer({
     >
       <ViewHeader
         view={view}
+        session={session}
         className={backgroundColorClassName}
         scrollOnMount={scrollOnMount}
       />

@@ -1,4 +1,3 @@
-import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
@@ -6,8 +5,7 @@ import MinimizeIcon from '@mui/icons-material/Minimize'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { closeViewFromChrome } from '../../WorkspaceLayout/model.ts'
-
+import type { WorkspaceSessionType } from './types.ts'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
@@ -24,11 +22,12 @@ const useStyles = makeStyles()(theme => ({
 // anyway: both handlers are the same two lines wherever they are written.
 const ViewButtons = observer(function ViewButtons({
   view,
+  session,
 }: {
   view: IBaseViewModel
+  session: WorkspaceSessionType
 }) {
   const { classes } = useStyles()
-  const session = getSession(view)
   const minimizeLabel = view.minimized ? 'Restore view' : 'Minimize view'
   return (
     <>
@@ -52,7 +51,7 @@ const ViewButtons = observer(function ViewButtons({
           aria-label="Close view"
           data-testid="close_view"
           onClick={() => {
-            closeViewFromChrome(session, view)
+            session.closeView(view.id)
           }}
         >
           <CloseIcon className={classes.icon} fontSize="small" />

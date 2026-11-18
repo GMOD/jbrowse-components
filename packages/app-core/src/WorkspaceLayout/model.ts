@@ -573,26 +573,5 @@ export function WorkspaceLayoutMixin() {
   )
 }
 
-function closesViewsInLayout(
-  session: object,
-): session is Pick<WorkspaceLayout, 'closeView'> {
-  return 'closeView' in session && typeof session.closeView === 'function'
-}
-
-/**
- * What a view's own close control calls: through the layout where the session
- * has one, so the tab or cell the view empties goes too.
- */
-export function closeViewFromChrome<V extends { id: string }>(
-  session: { removeView: (view: V) => void },
-  view: V,
-) {
-  if (closesViewsInLayout(session)) {
-    session.closeView(view.id)
-  } else {
-    session.removeView(view)
-  }
-}
-
 export type WorkspaceLayoutMixinType = ReturnType<typeof WorkspaceLayoutMixin>
 export interface WorkspaceLayout extends Instance<WorkspaceLayoutMixinType> {}

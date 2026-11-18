@@ -11,7 +11,6 @@ import { WorkspaceTab } from './WorkspaceTab.tsx'
 import { useLayoutDrag } from './useLayoutDrag.ts'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
-import type { WorkspaceLayout } from './model.ts'
 import type { PanelChrome } from './panelChrome.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -30,12 +29,10 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type WorkspaceSession = WorkspaceSessionType & WorkspaceLayout
-
 export const WorkspaceContainer = observer(function WorkspaceContainer({
   session,
 }: {
-  session: WorkspaceSession
+  session: WorkspaceSessionType
 }) {
   const { classes } = useStyles()
   const { drag, handlers } = useLayoutDrag(session)
@@ -96,7 +93,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
 })
 
 // `session.views` is the order; a tab's `viewIds` is membership only
-function viewsOf(session: WorkspaceSession, viewIds: string[]) {
+function viewsOf(session: WorkspaceSessionType, viewIds: string[]) {
   const members = new Set(viewIds)
   return session.views.filter(v => members.has(v.id))
 }

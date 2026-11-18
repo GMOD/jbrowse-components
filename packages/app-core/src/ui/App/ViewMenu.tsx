@@ -1,5 +1,4 @@
 import ViewMenuButton from '@jbrowse/core/ui/ViewMenuButton'
-import { getSession } from '@jbrowse/core/util'
 import { renameIds } from '@jbrowse/core/util/types/mst'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -15,27 +14,21 @@ import { observer } from 'mobx-react'
 
 import { tabDisplayName } from '../../WorkspaceLayout/tabName.ts'
 
-import type { WorkspaceLayout } from '../../WorkspaceLayout/model.ts'
 import type { WorkspaceSessionType } from './types.ts'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { ReorderDirection } from '@jbrowse/core/util'
-import type { SessionWithMultipleViews } from '@jbrowse/product-core'
-
-type ViewMenuSession = SessionWithMultipleViews &
-  WorkspaceLayout &
-  WorkspaceSessionType
 
 // takes a class string rather than an SvgIconProps object, which a caller
 // builds inline and so defeats this observer's memo
 const ViewMenu = observer(function ViewMenu({
   model,
+  session,
   className,
 }: {
   model: IBaseViewModel
+  session: WorkspaceSessionType
   className?: string
 }) {
-  const session = getSession(model) as unknown as ViewMenuSession
-
   const moves: Record<
     ReorderDirection,
     (id: string, scopeIds?: string[]) => void

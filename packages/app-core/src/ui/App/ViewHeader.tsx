@@ -14,6 +14,7 @@ import ViewButtons from './ViewButtons.tsx'
 import ViewContainerTitle from './ViewContainerTitle.tsx'
 import ViewMenu from './ViewMenu.tsx'
 
+import type { WorkspaceSessionType } from './types.ts'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
@@ -59,17 +60,19 @@ const ViewFocusIndicator = observer(function ViewFocusIndicator({
 
 const ViewHeader = observer(function ViewHeader({
   view,
+  session,
   className,
   scrollOnMount,
 }: {
   view: IBaseViewModel
+  session: WorkspaceSessionType
   className?: string
   scrollOnMount?: boolean
 }) {
   const { classes } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   useChromeHeightVar(scrollRef, VIEW_HEADER_HEIGHT_VAR)
-  const stickyViewHeaders = getSession(view).stickyViewHeaders === true
+  const { stickyViewHeaders } = session
 
   // Scroll a newly-added view into view on mount. Gated on scrollOnMount so a
   // cold load / session restore with several views doesn't have every header
@@ -86,14 +89,14 @@ const ViewHeader = observer(function ViewHeader({
       className={cx(classes.viewHeader, className)}
       style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
     >
-      <ViewMenu model={view} className={classes.icon} />
+      <ViewMenu model={view} session={session} className={classes.icon} />
       <div className={classes.grow} />
       <div className={classes.viewTitle}>
         <ViewFocusIndicator view={view} className={classes.icon} />
         <ViewContainerTitle view={view} />
       </div>
       <div className={classes.grow} />
-      <ViewButtons view={view} />
+      <ViewButtons view={view} session={session} />
     </div>
   )
 })

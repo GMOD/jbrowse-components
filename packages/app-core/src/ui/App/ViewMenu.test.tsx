@@ -10,6 +10,8 @@ import { userEvent } from '@testing-library/user-event'
 import { WorkspaceLayoutMixin } from '../../WorkspaceLayout/model.ts'
 import ViewMenu from './ViewMenu.tsx'
 
+import type { WorkspaceSessionType } from './types.ts'
+
 afterEach(cleanup)
 
 class FakeViewsPlugin extends Plugin {
@@ -39,8 +41,15 @@ const Session = types.compose(
   WorkspaceLayoutMixin(),
 )
 
+function createSession() {
+  return Session.create(
+    { name: 'test' },
+    { pluginManager },
+  ) as WorkspaceSessionType
+}
+
 function setup() {
-  const session = Session.create({ name: 'test' }, { pluginManager })
+  const session = createSession()
   for (const name of ['first', 'second', 'third']) {
     session.addView('StubView', { displayName: name })
   }
@@ -50,9 +59,10 @@ function setup() {
 
 async function openViewOptions(
   user: ReturnType<typeof userEvent.setup>,
+  session: WorkspaceSessionType,
   view: (typeof Session.Type)['views'][number],
 ) {
-  render(<ViewMenu model={view} />)
+  render(<ViewMenu model={view} session={session} />)
   await user.click(screen.getByTestId('view_menu_icon'))
   await user.click(await screen.findByText('View options'))
 }
@@ -64,11 +74,11 @@ const moveLabels = [
 ]
 
 test('a lone view is offered none of the moves that change nothing', async () => {
-  const session = Session.create({ name: 'test' }, { pluginManager })
+  const session = createSession()
   session.addView('StubView', { displayName: 'only' })
   session.homeUnassignedViews(session.views.map(v => v.id))
   const user = userEvent.setup()
-  await openViewOptions(user, session.views[0]!)
+  await openViewOptions(user, session, session.views[0]!)
 
   expect(await screen.findByText('Copy view')).toBeTruthy()
   for (const label of moveLabels) {
@@ -82,7 +92,7 @@ test('a view alone in one of two tabs can split but not move to a new tab', asyn
   session.moveViewToNewTab(third!.id)
   session.moveViewToNewTab(second!.id)
   expect(session.tabContainingView(first!.id)!.tab.viewIds).toHaveLength(1)
-  await openViewOptions(user, session.views[2]!)
+  await openViewOptions(user, session, session.views[2]!)
 
   expect(await screen.findByText('Move to split view (right)')).toBeTruthy()
   expect(screen.getByText('Move to split view (below)')).toBeTruthy()
@@ -91,7 +101,7 @@ test('a view alone in one of two tabs can split but not move to a new tab', asyn
 
 test('a view can be moved into a new tab or either split', async () => {
   const { session, user } = setup()
-  await openViewOptions(user, session.views[0]!)
+  await openViewOptions(user, session, session.views[0]!)
 
   expect(await screen.findByText('Move to new tab')).toBeTruthy()
   expect(screen.getByText('Move to split view (right)')).toBeTruthy()
@@ -104,7 +114,7 @@ test('a view moves into another tab, by that tab’s name, at its bottom', async
   session.moveViewToNewTab(third!.id)
   const target = session.tabContainingView(third!.id)!.tab.id
 
-  await openViewOptions(user, first!)
+  await openViewOptions(user, session, first!)
   await user.click(await screen.findByText('Move to tab'))
   await user.click(await screen.findByText('third'))
 
@@ -118,7 +128,7 @@ test('a view moves into another tab, by that tab’s name, at its bottom', async
 
 test('with one tab there is no tab to move to', async () => {
   const { session, user } = setup()
-  await openViewOptions(user, session.views[0]!)
+  await openViewOptions(user, session, session.views[0]!)
 
   expect(await screen.findByText('Move to new tab')).toBeTruthy()
   expect(screen.queryByText('Move to tab')).toBeNull()

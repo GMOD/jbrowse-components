@@ -9,6 +9,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { WorkspaceLayoutMixin } from '../../WorkspaceLayout/model.ts'
 import ViewButtons from './ViewButtons.tsx'
 
+import type { WorkspaceSessionType } from './types.ts'
+
 afterEach(cleanup)
 
 class FakeViewsPlugin extends Plugin {
@@ -39,7 +41,10 @@ const Session = types.compose(
 )
 
 function setup(count: number) {
-  const session = Session.create({ name: 'test' }, { pluginManager })
+  const session = Session.create(
+    { name: 'test' },
+    { pluginManager },
+  ) as WorkspaceSessionType
   for (let i = 0; i < count; i++) {
     session.addView('StubView', { displayName: `view ${i}` })
   }
@@ -53,7 +58,7 @@ test('closing the only view of a cell takes the cell too', () => {
   session.moveViewToSplit(closed!.id, 'row')
   expect(session.panels).toHaveLength(2)
 
-  render(<ViewButtons view={closed!} />)
+  render(<ViewButtons view={closed!} session={session} />)
   fireEvent.click(screen.getByTestId('close_view'))
 
   expect(session.views.map(v => v.id)).toEqual([kept!.id])
@@ -64,7 +69,7 @@ test('closing the only view of a cell takes the cell too', () => {
 test('closing the last view leaves the launcher tab', () => {
   const session = setup(1)
 
-  render(<ViewButtons view={session.views[0]!} />)
+  render(<ViewButtons view={session.views[0]!} session={session} />)
   fireEvent.click(screen.getByTestId('close_view'))
 
   expect(session.views).toHaveLength(0)

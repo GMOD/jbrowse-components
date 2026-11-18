@@ -3,13 +3,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { closeViewFromChrome } from '../../WorkspaceLayout/model.ts'
 import { viewTitle } from './viewTitle.ts'
 
-import type {
-  AbstractViewModel,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { WorkspaceSessionType } from './types.ts'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   which: {
@@ -23,10 +20,7 @@ const useStyles = makeStyles()(theme => ({
 // goes to the app boundary and puts up FatalErrorDialog, i.e. the whole-page
 // failure this boundary exists to avoid. `displayName` and `type` are plain
 // properties and cannot.
-function safeViewTitle(
-  view: AbstractViewModel,
-  session: SessionWithFocusedViewAndDrawerWidgets,
-) {
+function safeViewTitle(view: AbstractViewModel, session: WorkspaceSessionType) {
   try {
     return viewTitle(view, r => session.assemblyManager.getDisplayName(r))
   } catch {
@@ -51,7 +45,7 @@ const ViewErrorFallback = observer(function ViewErrorFallback({
   onRetry,
 }: {
   view: AbstractViewModel
-  session: SessionWithFocusedViewAndDrawerWidgets
+  session: WorkspaceSessionType
   error: unknown
   onRetry: () => void
 }) {
@@ -68,7 +62,7 @@ const ViewErrorFallback = observer(function ViewErrorFallback({
           <Button
             data-testid="close_crashed_view"
             onClick={() => {
-              closeViewFromChrome(session, view)
+              session.closeView(view.id)
             }}
           >
             Close view

@@ -9,10 +9,8 @@ import { observer } from 'mobx-react'
 
 import ViewContainer from './ViewContainer.tsx'
 
-import type {
-  AbstractViewModel,
-  SessionWithFocusedViewAndDrawerWidgets,
-} from '@jbrowse/core/util'
+import type { WorkspaceSessionType } from './types.ts'
+import type { AbstractViewModel } from '@jbrowse/core/util'
 
 // What the trailing space is *for*, which is what sets it: `ViewHeader` brings a
 // newly-added view in with `scrollIntoView({ block: 'center' })`, and centering
@@ -50,7 +48,7 @@ const ViewStack = observer(function ViewStack({
   session,
 }: {
   views: AbstractViewModel[]
-  session: SessionWithFocusedViewAndDrawerWidgets
+  session: WorkspaceSessionType
 }) {
   const { classes } = useStyles()
   const viewsRef = useRef<HTMLDivElement>(null)
