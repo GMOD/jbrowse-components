@@ -23,7 +23,10 @@ export interface VirtualTableColumn<R> {
   sortValue?: (row: R) => unknown
   title?: (row: R) => string
   align?: 'right'
-  /** takes the room the other columns leave rather than a set width */
+  /**
+   * takes the room the other columns leave rather than a set width, until a
+   * drag gives it one
+   */
   fill?: boolean
 }
 
@@ -110,22 +113,27 @@ const VirtualTable = observer(function VirtualTable<
       resetKey: JSON.stringify([sortField, sortAscending, resetKey]),
       scrollToId: scrollToRowId,
     })
-  const { colWidths, onResizeStart } = useColumnResize(
+  const { colWidths, resized, onResizeStart } = useColumnResize(
     widths((clientWidth || width) - leadingWidth),
   )
+  const fills = (col: VirtualTableColumn<R>) =>
+    col.fill && resized[col.id] === undefined
+  const totalWidth =
+    leadingWidth +
+    columns.reduce(
+      (sum, col) => sum + (colWidths[col.id] ?? DEFAULT_COL_WIDTH),
+      0,
+    )
 
   return (
     <div ref={parentRef} className={classes.root} data-testid={testId}>
       <table
         className={classes.table}
-        style={{
-          minWidth:
-            leadingWidth +
-            columns.reduce(
-              (sum, col) => sum + (colWidths[col.id] ?? DEFAULT_COL_WIDTH),
-              0,
-            ),
-        }}
+        style={
+          columns.some(col => col.fill) && !columns.some(fills)
+            ? { width: totalWidth }
+            : { minWidth: totalWidth }
+        }
       >
         <colgroup>
           {leading ? <col style={{ width: leadingWidth }} /> : null}
@@ -133,7 +141,7 @@ const VirtualTable = observer(function VirtualTable<
             <col
               key={col.id}
               style={
-                col.fill
+                fills(col)
                   ? undefined
                   : { width: colWidths[col.id] ?? DEFAULT_COL_WIDTH }
               }

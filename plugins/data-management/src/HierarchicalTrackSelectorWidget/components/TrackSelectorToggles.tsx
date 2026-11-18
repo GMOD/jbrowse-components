@@ -24,14 +24,9 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// the drawer column and the grid it shares with the views, as Drawer.tsx
-// clamps against; absent in a modal
+// absent in a modal, which has no drawer column
 function measureDrawer(from: HTMLElement) {
-  const column = from.closest<HTMLElement>('[data-drawer-column]')
-  const grid = column?.parentElement
-  return column && grid
-    ? { width: column.offsetWidth, availableWidth: grid.clientWidth }
-    : undefined
+  return from.closest<HTMLElement>('[data-drawer-column]')?.offsetWidth
 }
 
 function isTrackList(value: unknown): value is TrackList {

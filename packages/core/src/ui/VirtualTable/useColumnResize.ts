@@ -39,5 +39,5 @@ export function useColumnResize(initialWidths: Record<string, number>) {
     document.addEventListener('mouseup', onMouseUp)
   }
 
-  return { colWidths, onResizeStart }
+  return { colWidths, resized: overrides, onResizeStart }
 }

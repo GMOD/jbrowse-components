@@ -217,3 +217,35 @@ describe('search highlight', () => {
     expect(highlightStyles()).toHaveLength(0)
   })
 })
+
+test('dragging a fill column gives it its width, and the table stops stretching', () => {
+  const { container } = render(
+    <ThemeProvider theme={theme}>
+      <VirtualTable
+        rows={rows}
+        columns={[
+          { id: 'name', header: 'Name', fill: true, cell: row => row.name },
+          { id: 'id', header: 'Id', cell: row => row.id },
+        ]}
+        widths={() => ({ name: 300, id: 100 })}
+        sortField=""
+        sortAscending
+        onSort={() => {}}
+        emptyMessage="none"
+      />
+    </ThemeProvider>,
+  )
+  const tableEl = container.querySelector('table')!
+  const nameCol = container.querySelector('col')!
+  expect(nameCol.style.width).toBe('')
+  expect(tableEl.style.width).toBe('')
+  expect(tableEl.style.minWidth).toBe('400px')
+
+  const handle = container.querySelector('th')!.lastElementChild!
+  fireEvent.mouseDown(handle, { clientX: 300 })
+  fireEvent.mouseMove(document, { clientX: 150 })
+  fireEvent.mouseUp(document)
+
+  expect(nameCol.style.width).toBe('150px')
+  expect(tableEl.style.width).toBe('250px')
+})

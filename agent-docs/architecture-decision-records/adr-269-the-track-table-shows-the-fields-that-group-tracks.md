@@ -11,7 +11,9 @@ Accepted (2026-11-16); ADR-271 turns its facet panel into filter chips that the
 tree shares; amended 2026-11-17 by ADR-271, which moves Manage columns to the
 track selector's ☰ menu in the drawer and a columns button in the folder
 dialog; amended 2026-11-18, when the name's share went from half the table
-to two thirds (The width decides how many show). Built over five commits
+to two thirds (The width decides how many show); amended 2026-11-18, when
+opening the table stopped widening the drawer and a dragged name column
+started keeping its width. Built over five commits
 after a code review, a product review and a scale review at 5,000 and 20,000
 tracks, judged on the jb2hubs human configs (hg38 799 tracks, hs1 627, hg19
 528). Colin asked that the narrow drawer show "a subset of the total metadata
@@ -58,9 +60,10 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   table, every other column at least 100 px, and the table shows as many
   default columns as fit beside the name, with no sideways scroll. On hg38 in
   the usual drawer that is name and kind, and a wider drawer adds category.
-  Column labels start with a capital, as a hub's metadata keys mostly do. The name takes whatever room the others leave, and
-  opening the table widens the drawer only to the table's natural width, up to
-  45% of the room.
+  Column labels start with a capital, as a hub's metadata keys mostly do. The name takes whatever room the others leave until
+  its edge is dragged, which gives it a width of its own, and the table opens
+  at the drawer's current width: Colin found widening the drawer on open
+  presumptive (2026-11-18).
 - **`configuration.hierarchical.table.columns` ranks columns first** for a
   hub whose metadata has many keys of which a few matter. It is a string list
   of field paths (`category`, `kind`, `description`, `adapter`,

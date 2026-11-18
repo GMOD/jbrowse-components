@@ -15,7 +15,6 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
 import { autorun, compareShallow, computed, observable, reaction } from 'mobx'
 
-import { naturalTableWidth } from '../TrackTable/components/tableLayout.ts'
 import { trackTableModelFactory } from '../TrackTable/trackTableModel.ts'
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
@@ -51,8 +50,6 @@ const MAX_RECENTLY_USED = 10
 const mainGroupId = 'Tracks'
 
 type CategoryModes = ReadonlyMap<string, CategoryMode>
-
-const tableDrawerFraction = 0.45
 
 function recentlyUsedK(assemblyNames: string[]) {
   return configScopedKey('recentlyUsedTracks', assemblyNames)
@@ -443,25 +440,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * shows this view's tracks as a table in the drawer, which widens to
-       * the table's natural width, up to 45% of the room it shares with the
-       * views, and never narrows
-       * @param drawer - the drawer's current width and the width it shares
-       * with the views, measured by the caller; absent when there is no drawer
-       * column (popped out, or a phone host), and the table then asks for no
-       * width
+       * shows this view's tracks as a table in the drawer, at the drawer's
+       * current width
+       * @param drawerWidth - the drawer column's width, measured by the caller;
+       * absent when there is no drawer column (popped out, or a phone host),
+       * and the table then asks for no width
        */
-      openTable(drawer?: { width: number; availableWidth: number }) {
+      openTable(drawerWidth?: number) {
         self.tableViewId = self.view?.id
-        self.tableDrawerWidth = drawer
-          ? Math.max(
-              drawer.width,
-              Math.min(
-                naturalTableWidth(self.trackTable),
-                Math.round(drawer.availableWidth * tableDrawerFraction),
-              ),
-            )
-          : undefined
+        self.tableDrawerWidth = drawerWidth
       },
       /**
        * #action
