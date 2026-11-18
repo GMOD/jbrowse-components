@@ -137,10 +137,12 @@ export interface ActiveFetch {
  * see {@link ActiveFetch.end} for the two things it does together.
  *
  * Owns the controller and the status channel; the caller keeps its own
- * loading/error/commit side-effects. Three holders: `FetchMixin` as a member
- * (so `cancelFetch` can reach it), `installFetch` one per installation (every
- * other fetch in the tree runs on that skeleton), and the synteny diagonalize
- * progress wrapper (`withDiagonalizeProgress`) directly.
+ * loading/error/commit side-effects. Four holders: `FetchMixin` as a member
+ * (so `cancelFetch` can reach it), `CoarseTierMixin` as a member (so
+ * navigation and the user's Cancel can reach the summary read without the
+ * detail fetch's supersede reaching it), `installFetch` one per installation
+ * (every other fetch in the tree runs on that skeleton), and the synteny
+ * diagonalize progress wrapper (`withDiagonalizeProgress`) directly.
  *
  * `report` is passed rather than read off `self`, so where the status lands is
  * the caller's decision and not a shape this imposes. A display passes itself —

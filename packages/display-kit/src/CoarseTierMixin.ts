@@ -1,9 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { getContainingTrack } from '@jbrowse/core/util'
+import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
 import { coarseTierCovers, isSubAdapterConfig } from './coarseTier.ts'
@@ -43,6 +44,7 @@ export interface CoarseTierHost
     >,
     GateCommitHost {
   setError: (error?: unknown) => void
+  cancelFetchByUser: () => void
   isMinimized: boolean
   statusWindow: StatusWindow
 }
@@ -63,8 +65,10 @@ function view(self: object) {
  * The zoomed-out tier a display draws in place of its detail past a threshold
  * the display sets: MAF's summary bars. This mixin adds the swap decision, the
  * per-region payloads and the read that fills them, through the shared fetch
- * skeleton on a separate rotation, so the detail fetch's cancel never reaches
- * it.
+ * skeleton on a rotation of its own, so a detail fetch superseding its
+ * predecessor or `cancelFetch` resetting the detail store never aborts it.
+ * Navigation and the loading overlay's Cancel stop it, since both end the
+ * user's interest in what it would commit.
  * While the tier is up the byte gate measures the coarse read, so its refusal
  * is the banner and the detail fetch stands down.
  *
@@ -105,6 +109,16 @@ export default function CoarseTierMixin<P extends object>() {
        * #volatile
        */
       coarseTierLoading: false,
+    }))
+    .volatile(self => ({
+      /**
+       * #volatile
+       * The latest-wins machine the coarse read runs on, with a slot on the
+       * display's status window beside the detail fetch's.
+       */
+      coarseTierRotation: createAbortRotation(self, {
+        statusWindow: host(self).statusWindow,
+      }),
     }))
     .views(() => ({
       /**
@@ -252,6 +266,15 @@ export default function CoarseTierMixin<P extends object>() {
       },
       /**
        * #action
+       * Stop the read in flight, if any. Its `onEnd` sees a stale run and
+       * leaves the loading flag alone, so this clears it.
+       */
+      cancelCoarseTier() {
+        self.coarseTierRotation.cancel()
+        self.coarseTierLoading = false
+      },
+      /**
+       * #action
        * Overridable hook (no-op base): the coarse read over `read.regions`,
        * returning one payload per region it covered, or a refusal. `ctx` is the
        * skeleton's — its `callRpc` passes the signal and the status slot,
@@ -265,11 +288,29 @@ export default function CoarseTierMixin<P extends object>() {
         return Promise.resolve({ entries: [] })
       },
     }))
+    .actions(self => {
+      const superCancelFetchByUser = host(self).cancelFetchByUser
+      return {
+        /**
+         * #action
+         * `FetchMixin`'s Cancel, reaching the coarse read too: while the tier
+         * stands in, that read is what the overlay is waiting on.
+         */
+        cancelFetchByUser() {
+          superCancelFetchByUser()
+          self.cancelCoarseTier()
+        },
+      }
+    })
     .actions(self => ({
       afterAttach() {
+        addDisposer(self, () => {
+          self.coarseTierRotation.dispose()
+        })
         onDisplayedRegionsChange(
           self,
           () => {
+            self.cancelCoarseTier()
             self.clearCoarseTier()
           },
           'ClearCoarseTierOnNav',
@@ -280,7 +321,7 @@ export default function CoarseTierMixin<P extends object>() {
         >(host(self), {
           name: 'FetchCoarseTier',
           delay: 300,
-          report: { statusWindow: host(self).statusWindow },
+          rotation: self.coarseTierRotation,
           gate: () => self.coarseTierActive && !host(self).isMinimized,
           prepare: () => {
             const v = view(self)

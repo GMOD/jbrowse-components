@@ -48,6 +48,7 @@ interface Control {
   coarseBytes: number | undefined
   detailBytes: number | undefined
   threshold: number
+  coarseHold: Promise<void> | undefined
 }
 
 type CoarsePayload = { tag: string }
@@ -100,24 +101,25 @@ function makeStateModel(
           onResult: (_idx, result) => result.tag,
         })
       },
-      fetchCoarseTier(
+      async fetchCoarseTier(
         read: CoarseTierRead,
         _ctx: FetchContext,
       ): Promise<CoarseTierResult<CoarsePayload>> {
         control.coarseCalls.push(read)
         const bytes = control.coarseBytes
         const byteLimit = self.resolvedByteLimit()
-        return Promise.resolve(
-          byteLimit !== undefined && bytes !== undefined && bytes > byteLimit
-            ? { regionTooLarge: true as const, bytes }
-            : {
-                entries: read.regions.map(({ displayedRegionIndex }) => ({
-                  displayedRegionIndex,
-                  payload: { tag: 'coarse' },
-                })),
-                bytes,
-              },
-        )
+        await control.coarseHold
+        return byteLimit !== undefined &&
+          bytes !== undefined &&
+          bytes > byteLimit
+          ? { regionTooLarge: true as const, bytes }
+          : {
+              entries: read.regions.map(({ displayedRegionIndex }) => ({
+                displayedRegionIndex,
+                payload: { tag: 'coarse' },
+              })),
+              bytes,
+            }
       },
     }))
 }
@@ -139,6 +141,7 @@ function setup({
     coarseBytes: undefined,
     detailBytes: undefined,
     threshold,
+    coarseHold: undefined,
   }
   const env = createDisplayTestEnvironment<TestDisplay>({
     trackType: 'FeatureTrack',
@@ -384,6 +387,91 @@ describe('a track on one genome of two', () => {
     )
 
     await settle(display)
+    await settle(display)
+    expect(control.coarseCalls).toHaveLength(1)
+  })
+})
+
+function holdCoarseReads(control: Control) {
+  let release = () => {}
+  control.coarseHold = new Promise<void>(resolve => {
+    release = resolve
+  })
+  return () => {
+    control.coarseHold = undefined
+    release()
+  }
+}
+
+async function readInFlight(display: TestDisplay, control: Control) {
+  await waitFor(() => {
+    expect(control.coarseCalls).toHaveLength(1)
+    expect(display.coarseTierLoading).toBe(true)
+  })
+}
+
+// A held summary read is stopped by what ends the user's interest in it: a
+// move to another chromosome, whose payloads it would write at the indices of
+// the new one, and the loading overlay's Cancel.
+describe('a read in flight', () => {
+  it('commits nothing once the view moves to another chromosome', async () => {
+    const { display, view, control } = setup()
+    control.coarseBytes = 1000
+    const release = holdCoarseReads(control)
+    view.zoomTo(100)
+    await readInFlight(display, control)
+
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 8_000_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(1)
+    expect(display.coarseTierActive).toBe(false)
+    release()
+    await settle(display)
+
+    expect(display.coarseTier.size).toBe(0)
+    expect(display.coarseTierRead).toBeUndefined()
+    expect(display.byteEstimate?.bytes).toBeUndefined()
+    expect(display.coarseTierLoading).toBe(false)
+  })
+
+  it('commits nothing once the user cancels, and Retry reads again', async () => {
+    const { display, view, control } = setup()
+    const release = holdCoarseReads(control)
+    view.zoomTo(100)
+    await readInFlight(display, control)
+
+    display.cancelFetchByUser()
+    expect(display.coarseTierLoading).toBe(false)
+    release()
+    await settle(display)
+
+    expect(display.coarseTier.size).toBe(0)
+    expect(display.coarseTierRead).toBeUndefined()
+    expect(display.displayPhase).toBe('canceled')
+
+    display.reload()
+    await settle(display)
+    expect(control.coarseCalls).toHaveLength(2)
+    expect(display.coarseTier.get(0)).toEqual({ tag: 'coarse' })
+  })
+
+  it('lands across a detail fetch, so zooming back out reads nothing', async () => {
+    const { display, view, control } = setup()
+    const release = holdCoarseReads(control)
+    view.zoomTo(100)
+    await readInFlight(display, control)
+
+    view.zoomTo(1)
+    jest.advanceTimersByTime(700)
+    await waitFor(() => {
+      expect(control.detailCalls).toHaveLength(1)
+    })
+    release()
+    await settle(display)
+    expect(display.coarseTier.get(0)).toEqual({ tag: 'coarse' })
+
+    view.zoomTo(100)
     await settle(display)
     expect(control.coarseCalls).toHaveLength(1)
   })
