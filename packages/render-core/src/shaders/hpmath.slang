@@ -266,8 +266,8 @@ public float clipLenToPx(float clipLen, float size) {
   return clipLen * 0.5 * size;
 }
 
-// Further past the view than any pad, outline, arrowhead or line half-width
-// reaches back from an end.
+// Further past the view than a pad, outline or arrowhead reaches back from an
+// end, and than a line half-width under 1024 px does.
 public static const float GUARD_BAND_PX = 1024.0;
 
 public float guardBandClipX(float clipX, float widthPx) {

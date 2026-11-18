@@ -12,9 +12,10 @@ reach, at the deepest zoom with one end 1e7 to 1e8 px off screen:
 
 ## Variant cells
 
-`variant.slang` builds a cell as `x1Px + q.x * wPx`, the far end plus a width,
-so a long variant's near edge is off on every adapter, llvmpipe included. The
-clamp fits its rect cells. It does not fit the inversion glyph, whose slope
+`variant.slang` builds a cell as `x1Px + q.x * wPx`, the left end plus a
+width, so a long variant whose left end is far off screen has its right edge
+off on every adapter, llvmpipe included; with the far end off the right, the
+near edge is `x1Px` itself and exact. The clamp fits its rect cells. It does not fit the inversion glyph, whose slope
 `inversionCoverage` computes from `widthPx`, so clamping the width moves the
 visible diagonal. Open: a far-corner fixture for variant cells (llvmpipe can
 gate it), and how the inversion glyph keeps its slope.
@@ -39,7 +40,7 @@ whiskers band clears ADR-067's bar.
 Chrome's `fillRect` rounds x and width to float32 separately: with the far end
 off the left, the near edge is 0.3 px off at 1e7 px and 3.3 px at 1e8, by a
 Chrome probe on 2026-11-17. The wiggle painters pass unclamped spans
-(`fillRect(spanLeft(x1, x2, w), …, w)` in `wiggleDrawFunctions.ts`). Those
-spans are shared with the hit boxes, which must stay unclamped. Open: where
-the painters clamp without the hit test seeing it, and whether SVG export
-inherits the same rounding.
+(`fillRect(spanLeft(x1, x2, w), …, w)` in `wiggleDrawFunctions.ts`). Each
+painter computes its own px ends and `findHit.ts` hit-tests in bp, so a painter
+can clamp without the hit test seeing it. Open: whether SVG export inherits the
+same rounding.
