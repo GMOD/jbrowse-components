@@ -59,10 +59,8 @@ module antialias;
 
 // Width of a ramp covering exactly one output pixel, in CSS px. THE conversion
 // between the two units in this file: a fragment measuring in CSS px against a
-// device-px grid asks for this and nothing else. getDpr() caps the ratio from
-// above only, so a zoomed-out page asks for a ramp wider than a CSS px. The
-// floor is the lowest a browser zooms to (25% at dpr 1), and keeps a zero or
-// bogus uniform from blowing the ramp up or inverting it.
+// device-px grid asks for this and nothing else. The floor is the furthest a
+// browser zooms out, 25% at dpr 1.
 public float aaPx(float dpr) {
   return 1.0 / max(dpr, 0.25);
 }
@@ -113,8 +111,7 @@ public float strokeCoverage(float halfWidthPx, float distPx, float dpr) {
        - edgeCoverage(-halfWidthPx - distPx, dpr);
 }
 
-// A stroke width floored at one and a half output pixels, so a stroke drawn
-// with a single edge ramp always has room for it.
+// So a stroke drawn with a single edge ramp always has room for it.
 public float flooredStrokeWidthPx(float widthPx, float dpr) {
   return max(widthPx, 1.5 * aaPx(dpr));
 }

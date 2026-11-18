@@ -98,25 +98,19 @@ public float lineValueAtColorYPx(float colorYPx, float bandTop, float rowBandPx,
     domainMin, domainMax, scaleType, symlogConstant);
 }
 
-// Whether the draw's color scale can be read off a y: a threshold's cuts sit
-// on y, and a ramp's value is read back through the y scale, which a y domain
-// with no range, after a log floor, cannot give.
+// A y domain with no range, after a log floor, reads no value back off a y.
 bool lineColorReadableAlongY(Uniforms u) {
   return u.rampMode == RAMP_THRESHOLD
     || denormalizeScore(1.0, u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant)
        > denormalizeScore(0.0, u.domainMin, u.domainMax, u.valueScaleType, u.valueSymlogConstant);
 }
 
-// `lineColorAlongY` for a vertex, with the draw's scale able to answer it: the
-// flag the vertex hands its fragments, so they test nothing but it.
 public bool lineReadsColorAlongY(bool overridden, Uniforms u) {
   return lineColorAlongY(u.rampMode, u.colorFromY, overridden)
     && lineColorReadableAlongY(u);
 }
 
-// A line fragment's color read along y: the interval the color y falls in, or
-// under a ramp the ramp at the value that y stands for, read back through the
-// y scale. Only for a fragment whose vertex said `lineReadsColorAlongY`.
+// Only for a fragment whose vertex said `lineReadsColorAlongY`.
 public float4 lineColorAtYPx(float colorYPx, float4 cutYsLo, float4 cutYsHi, float bandTop, Uniforms u, Sampler2D<float4> ramp) {
   if (u.rampMode == RAMP_THRESHOLD) {
     return u.colorBands[thresholdBandAtYPx(colorYPx, u.colorCutCount, cutYsLo, cutYsHi)];
