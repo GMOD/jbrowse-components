@@ -1,11 +1,8 @@
-import { useRef, useState } from 'react'
-
 import { queryParamsHref } from '@jbrowse/app-core'
-import { CellTextInput } from '@jbrowse/core/ui/VirtualTable'
+import { EditableTextCell } from '@jbrowse/core/ui/VirtualTable'
 import { formatRelativeTime } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
-import EditIcon from '@mui/icons-material/Edit'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
 import { IconButton, Link, Tooltip } from '@mui/material'
@@ -47,25 +44,18 @@ const IconCell = observer(function IconCell({
   label,
   disabled,
   onClick,
-  buttonRef,
   children,
 }: {
   label: string
   disabled?: boolean
   onClick: () => void
-  buttonRef?: React.Ref<HTMLButtonElement>
   children: React.ReactElement
 }) {
   return (
     <Tooltip title={label}>
       {/* span so the tooltip still fires over a disabled button */}
       <span>
-        <IconButton
-          ref={buttonRef}
-          aria-label={label}
-          disabled={disabled}
-          onClick={onClick}
-        >
+        <IconButton aria-label={label} disabled={disabled} onClick={onClick}>
           {children}
         </IconButton>
       </span>
@@ -244,44 +234,22 @@ export const SessionRowCell = observer(function SessionRowCell({
   session,
 }: CellProps) {
   const { classes } = useStyles()
-  const [renaming, setRenaming] = useState(false)
-  const refocus = useRef(false)
   return (
     <div className={classes.row}>
       <div className={classes.grow}>
-        {renaming ? (
-          <CellTextInput
-            value={row.name}
-            label={`Rename ${row.name}`}
-            onCommit={text => {
-              const name = text.trim()
-              if (name !== row.name) {
-                void session.renameSavedSession(row.id, name)
-              }
-            }}
-            onClose={byKey => {
-              refocus.current = byKey
-              setRenaming(false)
-            }}
-          />
-        ) : (
+        <EditableTextCell
+          value={row.name}
+          label={`Rename session ${row.name}`}
+          onCommit={text => {
+            const name = text.trim()
+            if (name !== row.name) {
+              void session.renameSavedSession(row.id, name)
+            }
+          }}
+        >
           <NameCell row={row} session={session} />
-        )}
+        </EditableTextCell>
       </div>
-      <IconCell
-        label={`Rename session ${row.name}`}
-        buttonRef={el => {
-          if (el && refocus.current) {
-            refocus.current = false
-            el.focus()
-          }
-        }}
-        onClick={() => {
-          setRenaming(true)
-        }}
-      >
-        <EditIcon />
-      </IconCell>
       <FavoriteCell row={row} session={session} />
       <DeleteCell row={row} session={session} />
     </div>

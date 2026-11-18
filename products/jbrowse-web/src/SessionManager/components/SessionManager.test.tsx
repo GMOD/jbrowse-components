@@ -88,7 +88,7 @@ function rename(name: string, value: string) {
   fireEvent.click(
     screen.getByRole('button', { name: `Rename session ${name}` }),
   )
-  const input = screen.getByRole('textbox', { name: `Rename ${name}` })
+  const input = screen.getByRole('textbox', { name: `Rename session ${name}` })
   fireEvent.change(input, { target: { value } })
   return input
 }
@@ -97,7 +97,9 @@ test('the rename button renames the session, trimmed', () => {
   const { session } = setup([meta('open'), meta('other')])
   fireEvent.keyDown(rename('other', '  renamed  '), { key: 'Enter' })
   expect(session.renameSavedSession).toHaveBeenCalledWith('other', 'renamed')
-  expect(screen.queryByRole('textbox', { name: 'Rename other' })).toBeNull()
+  expect(
+    screen.queryByRole('textbox', { name: 'Rename session other' }),
+  ).toBeNull()
   expect(document.activeElement).toBe(
     screen.getByRole('button', { name: 'Rename session other' }),
   )
@@ -107,7 +109,9 @@ test('a click on the name switches sessions rather than renaming', () => {
   const { session } = setup([meta('open'), meta('other')])
   fireEvent.click(screen.getByText('other'))
   expect(session.activateSession).toHaveBeenCalledWith('other')
-  expect(screen.queryByRole('textbox', { name: 'Rename other' })).toBeNull()
+  expect(
+    screen.queryByRole('textbox', { name: 'Rename session other' }),
+  ).toBeNull()
 })
 
 test('a blank or padded-but-unchanged name renames nothing', () => {
