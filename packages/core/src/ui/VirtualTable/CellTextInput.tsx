@@ -21,10 +21,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function isComposing(event: React.KeyboardEvent) {
-  return event.nativeEvent.isComposing || event.keyCode === 229
-}
-
 /**
  * A small input that edits a cell's text: Enter, leaving it, or its row
  * scrolling out of view commits, and Escape cancels. An unchanged value, or a
@@ -93,7 +89,7 @@ const CellTextInput = observer(function CellTextInput({
       onKeyDown={event => {
         if (
           (event.key === 'Enter' || event.key === 'Escape') &&
-          !isComposing(event)
+          !event.nativeEvent.isComposing
         ) {
           event.preventDefault()
           event.stopPropagation()

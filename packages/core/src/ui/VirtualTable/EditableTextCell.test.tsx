@@ -113,7 +113,6 @@ test('Enter or Escape while an IME composes keeps the input open', () => {
   fireEvent.change(input, { target: { value: 'new' } })
   fireEvent.keyDown(input, { key: 'Enter', isComposing: true })
   fireEvent.keyDown(input, { key: 'Escape', isComposing: true })
-  fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 })
   expect(screen.getByRole('textbox')).toBe(input)
   expect(onCommit).not.toHaveBeenCalled()
   fireEvent.keyDown(input, { key: 'Enter' })
