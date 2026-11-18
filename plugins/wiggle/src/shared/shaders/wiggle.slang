@@ -1,37 +1,36 @@
-// The wiggle renderer's xyplot and scatter renderings, branched on the
-// `renderingType` uniform. Its siblings: `wiggleLine.slang` and
+// The xyplot rendering: a bar from the origin to each bin's score. Its
+// siblings: `wiggleScatter.slang` and `wiggleDensity.slang` draw scatter and
+// density off this same fill buffer, and `wiggleLine.slang` and
 // `wiggleLineCenter.slang` stroke the two line renderings off wider records of
-// their own, and `wiggleDensity.slang` draws density off this same fill buffer
-// by composing the shared `rowRect` shape. All import `wiggleCommon` for the
-// uniform block and the score math. Bound to PASS_FILL, which draws 12 vertices
-// per instance: the bar or point quad, then its clip strip.
+// their own. All import `wiggleCommon` for the uniform block and the score
+// math. Bound to PASS_FILL, which draws 12 vertices per instance: the bar quad,
+// then its clip strip.
 //
-// Neither rendering here reads a neighbouring feature, which is why the
-// instance record (`WiggleFillInstance`, declared in wiggleCommon so the
-// density entry point can share the buffer) is the five words it is: while all
+// No fill rendering reads a neighbouring feature, which is why the instance
+// record (`WiggleFillInstance`, declared in wiggleCommon so the scatter and
+// density entry points can share the buffer) is the five words it is: while all
 // five renderings shared this shader every fill buffer also carried the
 // step-line's prevScore/nextScore and the center-line's
 // prevStartEnd/prevScoreLine — 20 bytes per feature that no fill pass reads,
 // and tens of MB of a 1000-source multiwiggle's single per-region allocation.
 //
-// Under a gradient (`u.rampLut`) a bar or point takes the colorRamp LUT's
-// color at its score, as wiggleDensity.slang does: the vertex stage places the
-// flat ramp position and the fragment samples, since the HALs bind textures to
-// the fragment stage. The domain stays a uniform, so an autoscale pan
-// re-colors without touching the instance buffer.
+// Under a gradient (`u.rampLut`) a bar takes the colorRamp LUT's color at its
+// score, as wiggleDensity.slang does: the vertex stage places the flat ramp
+// position and the fragment samples, since the HALs bind textures to the
+// fragment stage. The domain stays a uniform, so an autoscale pan re-colors
+// without touching the instance buffer.
 //! targets: wgsl, glsl
 
 import antialias;
 import hpmath;
 import colorPack;
 import colorRampLut;
-import pointGlyph;
 import scoreScale;
 import wiggleCommon;
 import clipStrip;
 
-// Two quads: the bar or point, then its clip strip, which every vertex of a
-// bar the domain did not cut sends off clip.
+// Two quads: the bar, then its clip strip, which every vertex of a bar the
+// domain did not cut sends off clip.
 public static const uint VERTS_PER_INSTANCE = 12u;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -40,54 +39,27 @@ public static const uint VERTS_PER_INSTANCE = 12u;
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
-  // scatter: local quad coord (-1..1) for disc AA.
-  float2 localPos : TEXCOORD0;
-  // xyplot: CSS px below the bar's top cut (.x) and below its bottom cut (.y).
-  // Both are affine in screen y with unit slope — the vertex sets them from the
+  // CSS px below the quad's top cut (.x) and below its bottom cut (.y). Both
+  // are affine in screen y with unit slope — the vertex sets them from the
   // same `vy` it converts to clip — so the fragment's ramp is one OUTPUT pixel
   // wide by construction and takes no derivative. Same shape as
   // syntenyTypes.slang's `vertCoverage`, which is where the band-as-a-difference
   // -of-two-ramps form is written up.
-  float2 barInkPx : TEXCOORD1;
+  float2 barInkPx : TEXCOORD0;
   nointerpolation float rampT : COLOR1;
   // 1 on the clip strip, whose color is its own rather than the ramp's.
   nointerpolation float strip : COLOR2;
-  // the small-point square: the fragment and its box, CSS px
-  float2 squarePx : TEXCOORD2;
-  nointerpolation float4 squareBox : TEXCOORD3;
 };
 
-// Which glyph the pass draws follows entirely from uniforms, so both stages
-// derive it instead of passing a discriminator varying. That also keeps the
-// fragment's branch in UNIFORM control flow, which WGSL requires around the
-// derivatives it takes (a branch on a varying is rejected outright).
-//
-// Point-like scatter features become an AA disc; tiny ones a crisp square, like
-// manhattan.slang. SMALL_POINT_MAX_DIAMETER and the disc SDF live in the shared
-// pointGlyph module so the two stay in lockstep.
-bool drawsDisc() {
-  return u.renderingType == RENDERING_TYPE_SCATTER
-    && u.diameterPx > SMALL_POINT_MAX_DIAMETER;
-}
-
-// Whether this pass draws the xyplot bar, whose two HORIZONTAL cuts the shader
-// antialiases itself. Uniform for the same reason drawsDisc() is.
-bool drawsBar() {
-  return u.renderingType == RENDERING_TYPE_XYPLOT;
-}
-
 // The strip quad: CLIP_STRIP_PX of red across the row edge that cut the bar,
-// antialiased at its two horizontal cuts the way the bar is. A point, or a bar
-// inside the domain, has none, and its six vertices go off clip.
+// antialiased at its two horizontal cuts the way the bar is. A bar inside the
+// domain has none, and its six vertices go off clip.
 VsOut clipStripVertex(WiggleFillInstance inst, uint vid, float sx1, float sx2,
                       float rowTop, float rowHeight, float pxToClip) {
   VsOut o;
-  o.localPos = float2(0.0, 0.0);
   o.rampT = 0.0;
   o.strip = 1.0;
-  int side = drawsBar()
-    ? clipSide(inst.score, u.domainYMin, u.domainYMax, u.scaleType)
-    : 0;
+  int side = clipSide(inst.score, u.domainYMin, u.domainYMax, u.scaleType);
   if (side == 0) {
     o.position = float4(2.0, 2.0, 0.0, 1.0);
     o.color = float4(0.0);
@@ -118,63 +90,22 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
     return clipStripVertex(inst, vid, sx1, sx2, rowTop, rowHeight, pxToClip);
   }
 
-  float sx;
-  float sy;
-  float2 localPos = float2(0.0, 0.0);
-  float2 barInkPx = float2(0.0, 0.0);
-  float2 squarePx = float2(0.0, 0.0);
-  float4 squareBox = float4(0.0);
-
-  if (u.renderingType == RENDERING_TYPE_SCATTER) {
-    // Point plot: every feature is a point marker centered on the bp midpoint,
-    // never a bar (unlike manhattan.slang, which bars wide bins). Tiny points
-    // draw as a crisp square like manhattan.
-    float midX = (sx1 + sx2) * 0.5;
-    float scoreYPx = rowScoreToYPx(inst.score, rowTop, rowHeight, u);
-    float2 q = quadLocal(vid);
-    if (drawsDisc()) {
-      // expand the quad by the AA pad so the disc's fade edge isn't clipped
-      float radiusPx = u.diameterPx * 0.5;
-      float2 local = q * 2.0 - float2(1.0, 1.0);
-      float expand = discExpand(radiusPx, u.devicePixelRatio);
-      float halfPx = radiusPx * expand;
-      sx = midX + pxToClipLen(local.x * halfPx, u.viewportWidth);
-      sy = (1.0 - scoreYPx * pxToClip) + local.y * halfPx * pxToClip;
-      localPos = local * expand;
-    } else {
-      CrispSquareCorner c = crispSquareCorner(
-        float2(clipXToPx(midX, u.viewportWidth), scoreYPx), u.diameterPx, q,
-        u.devicePixelRatio);
-      sx = pxToClipX(c.px.x, u.viewportWidth);
-      sy = yPxToClipY(c.px.y, u.canvasHeight);
-      squarePx = c.px;
-      squareBox = c.box;
-    }
-  } else {
-    // The min-width floor, anchored at the bin's start so it grows the way the
-    // Canvas2D `spanLeft` twin does. `u.viewportWidth` is CSS px (see
-    // wiggleMarks.ts), which is what makes the floor the same 1.5 CSS px at
-    // every dpr rather than 1.5 device px.
-    sx2 = extendToMinWidthX(sx1, sx2, MIN_FILL_WIDTH_PX, u.viewportWidth);
-    float2 q = quadLocal(vid);
-    sx = lerp(sx1, sx2, q.x);
-
-    float scoreY  = rowScoreToYPx(inst.score, rowTop, rowHeight, u);
-    float originY = rowScoreToYPx(u.origin,   rowTop, rowHeight, u);
-    float topPx = min(scoreY, originY);
-    float botPx = max(scoreY, originY);
-    float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
-    sy = 1.0 - vy * pxToClip;
-    barInkPx = float2(vy - topPx, vy - botPx);
-  }
+  // The min-width floor, anchored at the bin's start so it grows the way the
+  // Canvas2D `spanLeft` twin does. `u.viewportWidth` is CSS px (see
+  // wiggleMarks.ts), which is what makes the floor the same 1.5 CSS px at
+  // every dpr rather than 1.5 device px.
+  sx2 = extendToMinWidthX(sx1, sx2, MIN_FILL_WIDTH_PX, u.viewportWidth);
+  float2 q = quadLocal(vid);
+  float scoreY  = rowScoreToYPx(inst.score, rowTop, rowHeight, u);
+  float originY = rowScoreToYPx(u.origin,   rowTop, rowHeight, u);
+  float topPx = min(scoreY, originY);
+  float botPx = max(scoreY, originY);
+  float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
 
   VsOut o;
-  o.position = float4(sx, sy, 0.0, 1.0);
+  o.position = float4(lerp(sx1, sx2, q.x), 1.0 - vy * pxToClip, 0.0, 1.0);
   o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
-  o.localPos = localPos;
-  o.barInkPx = barInkPx;
-  o.squarePx = squarePx;
-  o.squareBox = squareBox;
+  o.barInkPx = float2(vy - topPx, vy - botPx);
   o.strip = 0.0;
   o.rampT = u.rampLut == 1
     ? rampMidT(
@@ -184,6 +115,23 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   return o;
 }
 
+// A bar's top cut IS the datum, so it must not quantise to the output grid:
+// the reader takes the score off that edge, and rounding it to a whole device
+// pixel rounds the value.
+//
+// The VERTICAL cuts stay hard on purpose. Bins tile, so two neighbours split
+// one pixel column, and per-fragment alpha on both sides of that shared edge
+// composites to less than full ink — the seam GPU_SHADERS.md refuses for hi-C.
+//
+// The horizontal cuts conflate too, and the bound is worth knowing rather than
+// claiming away: `extendToMinWidthX` above floors a bin at MIN_FILL_WIDTH_PX by
+// growing it off its anchor, so at any zoom whose bin is under 1.5 CSS px a bar
+// OVERLAPS its neighbours and a column carries two or three of them. Where
+// their tops agree — a flat run, a plateau — the fringe row composites
+// 1-(1-a)^n instead of a, up to 0.375 too much ink at n=3. It reads as a top
+// edge a third of a device pixel too tall on flat stretches, against the 0.277
+// of MSAA quantisation this replaces everywhere, so the trade is worth taking
+// and is not worth hiding. barCutCoverage.test.ts pins it.
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float4 color = fragIn.color;
@@ -191,44 +139,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     float4 ramped = rampColor(colorRamp, fragIn.rampT);
     color = fragIn.strip > 0.5 ? fragIn.color : ramped;
   }
-  float4 outColor;
-  if (drawsDisc()) {
-    float alpha = discAlpha(fragIn.localPos);
-    if (alpha <= 0.0) {
-      discard;
-    }
-    outColor = float4(color.rgb, color.a * alpha);
-  } else if (drawsBar()) {
-    // A bar's top cut IS the datum, so it must not quantise to the output grid:
-    // the reader takes the score off that edge, and rounding it to a whole
-    // device pixel rounds the value.
-    //
-    // The VERTICAL cuts stay hard on purpose. Bins tile, so two neighbours split
-    // one pixel column, and per-fragment alpha on both sides of that shared edge
-    // composites to less than full ink — the seam GPU_SHADERS.md refuses for
-    // hi-C.
-    //
-    // The horizontal cuts conflate too, and the bound is worth knowing rather
-    // than claiming away: `extendToMinWidthX` above floors a bin at
-    // MIN_FILL_WIDTH_PX by growing it off its anchor, so at any zoom whose bin
-    // is under 1.5 CSS px a bar OVERLAPS its neighbours and a column carries two
-    // or three of them. Where their tops agree — a flat run, a plateau — the
-    // fringe row composites 1-(1-a)^n instead of a, up to 0.375 too much ink at
-    // n=3. It reads as a top edge a third of a device pixel too tall on flat
-    // stretches, against the 0.277 of MSAA quantisation this replaces
-    // everywhere, so the trade is worth taking and is not worth hiding.
-    // barCutCoverage.test.ts pins it.
-    float alpha = slabCoverage(fragIn.barInkPx.x, fragIn.barInkPx.y, u.devicePixelRatio);
-    if (alpha <= 0.0) {
-      discard;
-    }
-    outColor = float4(color.rgb, color.a * alpha);
-  } else {
-    float alpha = boxInkCoverage(fragIn.squarePx, fragIn.squareBox, u.devicePixelRatio);
-    if (alpha <= 0.0) {
-      discard;
-    }
-    outColor = float4(color.rgb, color.a * alpha);
+  float alpha = slabCoverage(fragIn.barInkPx.x, fragIn.barInkPx.y, u.devicePixelRatio);
+  if (alpha <= 0.0) {
+    discard;
   }
-  return outColor;
+  return float4(color.rgb, color.a * alpha);
 }

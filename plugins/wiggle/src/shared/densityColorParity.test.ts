@@ -22,6 +22,11 @@ import {
 import { WGSL_SOURCE as FILL_WGSL_SOURCE } from './shaders/wiggle.wgsl.generated.ts'
 import { GLSL_FRAGMENT } from './shaders/wiggleDensity.glsl.generated.ts'
 import { WGSL_SOURCE } from './shaders/wiggleDensity.wgsl.generated.ts'
+import {
+  GLSL_FRAGMENT as SCATTER_GLSL_FRAGMENT,
+  GLSL_VERTEX as SCATTER_GLSL_VERTEX,
+} from './shaders/wiggleScatter.glsl.generated.ts'
+import { WGSL_SOURCE as SCATTER_WGSL_SOURCE } from './shaders/wiggleScatter.wgsl.generated.ts'
 import { WIGGLE_MARKS } from './wiggleMarks.ts'
 
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
@@ -360,6 +365,8 @@ describe('the emitted ramp sample lands entry i on its own texel', () => {
     ['density GLSL', GLSL_FRAGMENT],
     ['fill WGSL', FILL_WGSL_SOURCE],
     ['fill GLSL', FILL_GLSL_FRAGMENT],
+    ['scatter WGSL', SCATTER_WGSL_SOURCE],
+    ['scatter GLSL', SCATTER_GLSL_FRAGMENT],
   ])('%s remaps t into texel space', (_lang, src) => {
     const body = sampleBody(src)
     expect(body).toContain(`${COLOR_RAMP_LUT_ENTRIES - 1}.0`)
@@ -473,15 +480,17 @@ const GRADIENTS = [
   },
 ]
 
-// Bars and points under a gradient: the fill pass's vertex stage places each
-// instance on the ramp through the same two decisions density does, and its
-// fragment samples the same texture, so the GPU side is the density mirror
+// Bars and points under a gradient: the bar and scatter passes' vertex stages
+// place each instance on the ramp through the same two decisions density does,
+// and their fragments sample the same texture, so the GPU side is the density mirror
 // above. The emitted source is read to hold the shader to that; the Canvas2D
 // side is painted through the mark list, which is also the SVG export.
 describe('bars and points under a gradient', () => {
   test.each([
-    ['WGSL', FILL_WGSL_SOURCE],
-    ['GLSL', FILL_GLSL_VERTEX],
+    ['bar WGSL', FILL_WGSL_SOURCE],
+    ['bar GLSL', FILL_GLSL_VERTEX],
+    ['point WGSL', SCATTER_WGSL_SOURCE],
+    ['point GLSL', SCATTER_GLSL_VERTEX],
   ])(
     '%s places each instance on the ramp as density does, under the flag alone',
     (_lang, src) => {
@@ -492,8 +501,10 @@ describe('bars and points under a gradient', () => {
   )
 
   test.each([
-    ['WGSL', FILL_WGSL_SOURCE],
-    ['GLSL', FILL_GLSL_FRAGMENT],
+    ['bar WGSL', FILL_WGSL_SOURCE],
+    ['bar GLSL', FILL_GLSL_FRAGMENT],
+    ['point WGSL', SCATTER_WGSL_SOURCE],
+    ['point GLSL', SCATTER_GLSL_FRAGMENT],
   ])('%s samples the ramp only under the flag', (_lang, src) => {
     expect(src).toMatch(/rampLut_0\) == (i32\()?1\)?\)[^}]*rampColor_0\(/)
   })

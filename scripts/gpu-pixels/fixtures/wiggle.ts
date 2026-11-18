@@ -11,6 +11,7 @@ import * as wiggle from '../../../plugins/wiggle/src/shared/shaders/wiggle.gener
 import { MIN_FILL_WIDTH_PX } from '../../../plugins/wiggle/src/shared/shaders/wiggleCommon.generated.ts'
 import * as wiggleDensity from '../../../plugins/wiggle/src/shared/shaders/wiggleDensity.generated.ts'
 import * as wiggleLine from '../../../plugins/wiggle/src/shared/shaders/wiggleLine.generated.ts'
+import * as wiggleScatter from '../../../plugins/wiggle/src/shared/shaders/wiggleScatter.generated.ts'
 import {
   abgr,
   box,
@@ -205,9 +206,9 @@ export default [
   // same kernel, so the two displays agree on it.
   defineFixture({
     name: 'wiggle-scatter-square',
-    slang: `${SLANG}/wiggle.slang`,
+    slang: `${SLANG}/wiggleScatter.slang`,
     about: `wiggle scatter points ${DIAMETER} px across, drawn as the small-point square`,
-    mod: wiggle,
+    mod: wiggleScatter,
     width: W,
     height: H,
     count: points.length,

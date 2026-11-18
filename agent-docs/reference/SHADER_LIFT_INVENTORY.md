@@ -14,7 +14,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 47 shaders with entry points. 175 functions
+Scanned 48 shaders with entry points. 175 functions
 are inside the emitter's subset, of which **140 are exported**.
 
 ## Candidates
@@ -85,8 +85,8 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 27 | `boxCoverage`, `boxInkCoverage`, `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 21 | `bandCoverage`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, `flipX`, … |
 | type 'vec4' is outside the supported scalar subset | 21 | `bandColorAt`, `chevronCoverage`, `colorCutAt`, `colorCutYsPx`, `cutYsPx`, `edgeSpan`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 20 | `bandCoverage`, `bpToClipX`, `capVertex`, `drawsDisc`, `flipX`, `frequencyFade`, … |
 | type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'RibbonCurves' is outside the supported scalar subset | 8 | `bandNormal`, `bandWidthAt`, `curvesCross`, `curvesMeet`, `firstCurve`, `refineCrossing`, … |
 | type 'vec3' is outside the supported scalar subset | 7 | `baseColor`, `bpRange`, `buttSegmentCoverage`, `capsuleDist`, `categoryPaletteColor`, `getReadColor`, … |

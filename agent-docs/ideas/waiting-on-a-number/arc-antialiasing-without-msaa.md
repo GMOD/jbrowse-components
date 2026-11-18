@@ -279,9 +279,9 @@ four.
 - `wiggleDensity.slang` — a pass of its own, not a branch of `wiggle.slang` as
   this bullet used to say. Its cuts are row boundaries that tile and its datum
   is the color, so it is a refusal rather than a leftover.
-- `wiggle.slang` — the bar's vertical cuts, in the list above. Its
-  small-point square inks its box by area since 2026-10-30, through the
-  kernel `pointMark` uses.
+- `wiggle.slang` — the bar's vertical cuts, in the list above.
+  `wiggleScatter.slang`'s small-point square inks its box by area since
+  2026-10-30, through the kernel `pointMark` uses.
 - `coverageBar.slang`, `coverageSnp.slang`, `mismatch.slang`, `gap.slang`,
   `insertion.slang`, `coverageInterbase.slang`, `coverageMod.slang` — flat
   fills with **no** pixel snap. `read.slang` was one, and inks its own x

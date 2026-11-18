@@ -520,7 +520,7 @@ export function drawScatter(
   const toX = makeBpMapper(block)
   const n = source.numFeatures
   // Every feature draws as a point marker (square/disc via appendPointMarker)
-  // centered on the bp midpoint. Mirrors the GPU wiggle.slang scatter branch.
+  // centered on the bp midpoint. Mirrors the GPU wiggleScatter.slang.
   const path = new CappedPath(ctx, 'fill')
   let lastAbgr = NO_COLOR
   let lastFill = ''

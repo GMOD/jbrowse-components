@@ -19,6 +19,7 @@ import * as wiggleBandShader from './shaders/wiggleBand.generated.ts'
 import * as wiggleDensityShader from './shaders/wiggleDensity.generated.ts'
 import * as wiggleLineShader from './shaders/wiggleLine.generated.ts'
 import * as wiggleLineCenterShader from './shaders/wiggleLineCenter.generated.ts'
+import * as wiggleScatterShader from './shaders/wiggleScatter.generated.ts'
 import { getRowHeight, getRowTop } from './wiggleComponentUtils.ts'
 import {
   drawDensity,
@@ -109,7 +110,7 @@ function writeWiggleUniforms(
   frame: MarkFrame,
   p: WiggleParams,
 ) {
-  // Any module's packer serves: the five entry shaders share
+  // Any module's packer serves: the six entry shaders share
   // `wiggleCommon.slang`'s uniform block, so the generated `Uniforms` are one
   // block.
   wiggleShader.writeUniforms(scratch, {
@@ -226,9 +227,9 @@ function wiggleShape(
   }
 }
 
-// xyplot and scatter, the two renderings the narrow five-word record serves,
-// and the family anything unrecognized falls to — the default arm both
-// backends have always had.
+// xyplot, the rendering that owns the narrow five-word record, and the family
+// anything unrecognized falls to — the default arm both backends have always
+// had.
 const fillShape = wiggleShape(
   {
     ...slangPass({ id: 'fill', mod: wiggleShader }),
@@ -236,14 +237,22 @@ const fillShape = wiggleShape(
   },
   type =>
     type !== RENDERING_TYPE_DENSITY &&
+    type !== RENDERING_TYPE_SCATTER &&
     type !== RENDERING_TYPE_LINE &&
     type !== RENDERING_TYPE_LINE_CENTER,
   row => {
-    if (row.source.renderingType === RENDERING_TYPE_SCATTER) {
-      drawScatter({ ...row, rgb: cssRgb(row.source) })
-    } else {
-      drawXYPlot({ ...row, rgb: cssRgb(row.source) })
-    }
+    drawXYPlot({ ...row, rgb: cssRgb(row.source) })
+  },
+)
+
+const scatterShape = wiggleShape(
+  {
+    ...slangPass({ id: 'scatter', mod: wiggleScatterShader }),
+    pack: packFillInstances,
+  },
+  type => type === RENDERING_TYPE_SCATTER,
+  row => {
+    drawScatter({ ...row, rgb: cssRgb(row.source) })
   },
 )
 
@@ -320,20 +329,27 @@ const fill = defineMark({
 
 /**
  * The wiggle family as a mark list: one mark per hand-written shader, and one
- * uniform block behind all five, since every entry shader imports
+ * uniform block behind all six, since every entry shader imports
  * `wiggleCommon.slang`'s.
  *
- * Four instance layouts, so four of the five marks carry the region's buffer
- * and density borrows the fill record through `bufferOf`
- * (`wiggleDensity.slang` declares the same struct). Each packer returns empty
- * for layers that aren't its own, and an empty pack IS the release, so a
- * region holds only the layouts its rendering actually draws. The band draws
- * last, behind the lines already in the target.
+ * Four instance layouts, so four of the six marks carry the region's buffer
+ * and density and scatter borrow the fill record through `bufferOf`
+ * (`wiggleCommon.slang` declares the struct all three read). Each packer
+ * returns empty for layers that aren't its own, and an empty pack IS the
+ * release, so a region holds only the layouts its rendering actually draws.
+ * The band draws last, behind the lines already in the target.
  */
 export const WIGGLE_MARKS = [
   fill,
   defineMark({
     shape: densityShape,
+    channels,
+    params: wiggleParams,
+    bufferOf: fill,
+    textures: rampTextures,
+  }),
+  defineMark({
+    shape: scatterShape,
     channels,
     params: wiggleParams,
     bufferOf: fill,

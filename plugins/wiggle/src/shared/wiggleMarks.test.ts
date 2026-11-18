@@ -333,6 +333,24 @@ describe('the wiggle mark list', () => {
     expect(drawCalls[0]!.args[2]).toBe('fill')
   })
 
+  it('draws scatter through its own pass, off the fill buffer', () => {
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
+    const source = makeSource({ renderingType: RENDERING_TYPE_SCATTER })
+
+    backend.upload(0, [source])
+    expect(hal.getBufferCount(0, 'fill')).toBe(2)
+
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_SCATTER,
+    })
+
+    expect(hal.callsOf('drawPass').map(c => c.args)).toEqual([
+      ['scatter', 0, 'fill'],
+    ])
+  })
+
   // Gate A of agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md, instrumented as
   // bytes rather than writes counted: density's autoscale domain re-resolves
   // against the visible data on every pan, and because the score stays in the
@@ -413,7 +431,7 @@ describe('the wiggle mark list', () => {
   describe.each([
     ['density', RENDERING_TYPE_DENSITY, 'density'],
     ['xyplot', RENDERING_TYPE_XYPLOT, 'fill'],
-    ['scatter', RENDERING_TYPE_SCATTER, 'fill'],
+    ['scatter', RENDERING_TYPE_SCATTER, 'scatter'],
     ['line', RENDERING_TYPE_LINE, 'line'],
     ['linecenter', RENDERING_TYPE_LINE_CENTER, 'lineCenter'],
   ] as const)('a gradient on %s', (_name, renderingType, pass) => {

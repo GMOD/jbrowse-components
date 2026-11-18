@@ -1,7 +1,8 @@
 // Uniform block, plot-box math and mode enums shared by the wiggle renderer's
-// entry-point shaders: `wiggle.slang` and `wiggleDensity.slang` fill (xyplot,
-// scatter, density), `wiggleLine.slang` and `wiggleLineCenter.slang` stroke
-// (line, linecenter), and `wiggleBand.slang` fills a line's whiskers band. They
+// entry-point shaders: `wiggle.slang`, `wiggleScatter.slang` and
+// `wiggleDensity.slang` fill (xyplot, scatter, density), `wiggleLine.slang`
+// and `wiggleLineCenter.slang` stroke (line, linecenter), and
+// `wiggleBand.slang` fills a line's whiskers band. They
 // draw off different per-instance records while agreeing exactly on where a
 // score lands vertically, where a bp lands horizontally, and which side of the
 // pivot a line is on. One UBO is written per block render
@@ -56,11 +57,12 @@ public static const float MIN_FILL_WIDTH_PX = 1.5;
 // a band through its `colorCutYsPx`, and the uniform block holds this many.
 public static const int MAX_WIGGLE_CUTS = MAX_COLOR_CUTS;
 
-// The fill renderings' per-instance record, declared here because two entry
-// shaders draw off ONE buffer packed in this layout: `wiggle.slang` (xyplot,
-// scatter) and `wiggleDensity.slang` both read the fill pass's buffer, and two
-// passes sharing a buffer must share the struct declaration itself rather than
-// mirror it (slangPass.ts §"There is deliberately no bufferStride override").
+// The fill renderings' per-instance record, declared here because three entry
+// shaders draw off ONE buffer packed in this layout: `wiggle.slang`,
+// `wiggleScatter.slang` and `wiggleDensity.slang` all read the fill pass's
+// buffer, and passes sharing a buffer must share the struct declaration itself
+// rather than mirror it (slangPass.ts §"There is deliberately no bufferStride
+// override").
 // `rowIndex` is float, not `rowRect.slang`'s uint: the record is what
 // `packFillInstances` writes for every fill rendering, the row transform
 // consumes it as float arithmetic either way, and re-typing the lane would

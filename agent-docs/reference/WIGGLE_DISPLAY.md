@@ -15,9 +15,9 @@ the wiggle display.
 ## Four records, because a module reflects one instance struct
 
 The fill record (20 bytes, `WiggleFillInstance` in `shared/shaders/wiggleCommon.slang`)
-feeds `wiggle.slang` (xyplot, scatter) and `wiggleDensity.slang` (density as the
-composed render-core `rowRect` shape, drawn off the fill pass's buffer via
-`bufferPassId`). `wiggleLine.slang` strokes the step line on 32 bytes and
+feeds `wiggle.slang` (xyplot), `wiggleScatter.slang` (scatter) and
+`wiggleDensity.slang` (density as the composed render-core `rowRect` shape),
+the last two drawn off the fill pass's buffer via `bufferPassId`. `wiggleLine.slang` strokes the step line on 32 bytes and
 `wiggleLineCenter.slang` the interpolated line on 36, each with a buffer of its
 own. Only stroked renderings read a neighbour, so a shared record made every
 fill buffer carry bytes it never read, against the 256MB `maxBufferSize` floor
@@ -41,13 +41,13 @@ in). The **binding is not** shared, and each shader re-imports
 `colorPack`/`hpmath`. The gradient's color parity across GPU / Canvas2D / SVG,
 for density, bars and points, is swept by `densityColorParity.test.ts`; its
 autoscale-pan cost (one uniform write, zero buffer bytes, zero texture uploads)
-is pinned per rendering in `wiggleMarks.test.ts`. The `fill` and `density`
-passes each bind the LUT texture, since a texture binds per pass and not per
-buffer.
+is pinned per rendering in `wiggleMarks.test.ts`. The `fill`, `scatter` and
+`density` passes each bind the LUT texture, since a texture binds per pass and
+not per buffer.
 
 **The mark that draws, the buffer, the `renderingType` uniform and the Canvas2D
 painter all come off the encoded layers, never off `renderState`** — each of the
-five marks in `WIGGLE_MARKS` declines a block through `paintsBlock` when the
+six marks in `WIGGLE_MARKS` declines a block through `paintsBlock` when the
 region's layers are not its family. Encode and render are separate autoruns and
 render is registered first, so the frame after a plot-type switch sees a state
 that moved and a region that has not. Drawing the previous plot for one frame is
