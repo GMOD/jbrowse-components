@@ -194,6 +194,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
       id: 'name',
       header: 'Name',
       fill: true,
+      title: row => coarseStripHTML(row.name),
       cell: row => (
         <EditableTextCell
           value={row.name}

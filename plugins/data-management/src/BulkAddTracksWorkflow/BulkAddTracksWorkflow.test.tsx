@@ -227,11 +227,10 @@ test('opening a name cell without typing does not opt the row out of stripping',
   } = render(<BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />)
   pasteUrls(getByLabelText, 'https://x.com/a.bam')
 
-  // the grid commits a row update even when nothing was typed, which used to
-  // be recorded as a rename and pin the name against the checkbox
-  fireEvent.doubleClick(getByText('a.bam'))
+  // an untouched rename used to be recorded as one and pin the name against
+  // the checkbox
+  fireEvent.click(getByRole('button', { name: 'Rename a.bam' }))
   fireEvent.keyDown(getByDisplayValue('a.bam'), { key: 'Enter' })
-  // the grid leaves edit mode a microtask after processRowUpdate resolves
   await waitFor(() => {
     expect(queryByDisplayValue('a.bam')).toBeNull()
   })
@@ -246,12 +245,13 @@ test('a removed row does not resurrect its edited name when re-added', async () 
     getAllByLabelText,
     getByDisplayValue,
     getByLabelText,
+    getByRole,
     getByText,
     queryByDisplayValue,
   } = render(<BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />)
   pasteUrls(getByLabelText, 'https://x.com/a.bam')
 
-  fireEvent.doubleClick(getByText('a.bam'))
+  fireEvent.click(getByRole('button', { name: 'Rename a.bam' }))
   fireEvent.change(getByDisplayValue('a.bam'), { target: { value: 'renamed' } })
   fireEvent.keyDown(getByDisplayValue('renamed'), { key: 'Enter' })
   await waitFor(() => {
@@ -272,13 +272,11 @@ test('an emptied name falls back to the automatic one', () => {
   )
   pasteUrls(getByLabelText, 'https://x.com/a.bam')
 
-  fireEvent.doubleClick(getByRole('button', { name: 'Rename a.bam' }))
+  fireEvent.click(getByRole('button', { name: 'Rename a.bam' }))
   const renaming = getByRole('textbox', { name: 'Rename a.bam' })
   fireEvent.change(renaming, { target: { value: 'renamed' } })
   fireEvent.keyDown(renaming, { key: 'Enter' })
-  fireEvent.keyDown(getByRole('button', { name: 'Rename renamed' }), {
-    key: 'F2',
-  })
+  fireEvent.click(getByRole('button', { name: 'Rename renamed' }))
   const emptying = getByRole('textbox', { name: 'Rename renamed' })
   fireEvent.change(emptying, { target: { value: '' } })
   fireEvent.blur(emptying)

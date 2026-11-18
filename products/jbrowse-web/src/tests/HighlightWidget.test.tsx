@@ -146,22 +146,17 @@ test('Edit a highlight label with a single click in the list', async () => {
   fireEvent.click(await findByText('Highlights'))
   session.addHighlight(region)
 
-  // typing goes to whatever the click focused, which is the input the cell
-  // opens in place of its text
-  await userEvent
-    .setup()
-    .type(
-      await findByRole('button', { name: 'Edit label of ctgA:201..240' }),
-      'new label{Enter}',
-    )
+  fireEvent.click(await findByText('Add label...'))
+  const input = await findByRole('textbox', {
+    name: 'Edit label of ctgA:201..240',
+  })
+  fireEvent.change(input, { target: { value: 'new label' } })
+  fireEvent.keyDown(input, { key: 'Enter' })
 
   await waitFor(() => {
     expect(session.highlights[0]!.label).toBe('new label')
   })
-  expect(
-    (await findByRole('button', { name: 'Edit label of ctgA:201..240' }))
-      .textContent,
-  ).toBe('new label')
+  expect(await findByText('new label')).toBeTruthy()
 }, 60000)
 
 test('Toggle highlight visibility across all views', async () => {

@@ -98,6 +98,7 @@ const HighlightGrid = observer(function HighlightGrid({
       id: 'label',
       header: 'Label',
       fill: true,
+      title: row => row.label,
       cell: row => (
         <EditableTextCell
           value={row.label}

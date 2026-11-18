@@ -98,13 +98,13 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
     {
       id: 'name',
       header: 'Track name',
+      title: row => row.name,
       cell: row => (
         <div className={classes.nameCell}>
           <div className={classes.name}>
             <EditableTextCell
               value={row.name}
               label={`Rename ${row.name}`}
-              // an emptied name falls back to the automatic one
               allowBlank
               onCommit={name => {
                 onRename({ id: row.id, name, autoName: row.autoName })

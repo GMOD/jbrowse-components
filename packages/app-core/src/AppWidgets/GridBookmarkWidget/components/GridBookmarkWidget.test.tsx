@@ -58,9 +58,7 @@ test('the list shows each highlight with its label', async () => {
 
 test('a click on a label edits it, and Enter writes it to the highlight', async () => {
   const { session } = setup()
-  fireEvent.click(
-    await screen.findByRole('button', { name: 'Edit label of ctgA:201..300' }),
-  )
+  fireEvent.click(await screen.findByText('Add label...'))
   const input = screen.getByRole('textbox', {
     name: 'Edit label of ctgA:201..300',
   })
@@ -70,7 +68,7 @@ test('a click on a label edits it, and Enter writes it to the highlight', async 
   expect(screen.getByText('second region')).toBeTruthy()
 })
 
-test('emptying a label clears it from the highlight', async () => {
+test('the pencil edits a label, and emptying it clears it from the highlight', async () => {
   const { session } = setup()
   fireEvent.click(
     await screen.findByRole('button', { name: 'Edit label of ctgA:1..100' }),
