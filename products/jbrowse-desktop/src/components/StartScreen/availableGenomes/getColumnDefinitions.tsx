@@ -66,7 +66,8 @@ export interface GenomeRow extends Entry {
 
 export type GenomeColumn = VirtualTableColumn<Entry>
 
-// each column's narrowest width, which a wider table grows in proportion
+// each column's width; the column naming the row takes what the rest leave,
+// so a long GenArk name keeps its launch link in view
 export const columnWidths: Record<string, number> = {
   favorite: 96,
   name: 260,
@@ -206,6 +207,7 @@ export function getColumnDefinitions({
   }) => ({
     id,
     header,
+    fill: true,
     sortValue: value,
     title: (row: Entry) => cellText(value(row)),
     cell: (row: Entry) => (
