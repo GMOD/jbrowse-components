@@ -7,7 +7,7 @@ import { getStr } from '../../util/getStr.ts'
 import { isObject } from '../../util/objectUtils.ts'
 import FieldName from './FieldName.tsx'
 
-import type { DetailTableColumn } from '../../ui/DetailTable/DetailTable.tsx'
+import type { DetailTableColumn } from '../../ui/DetailTable/detailColumns.ts'
 
 interface AttributeRow {
   id: number
