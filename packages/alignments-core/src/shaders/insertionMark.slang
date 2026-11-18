@@ -71,17 +71,18 @@ VsOut culled() {
 
 [shader("vertex")]
 VsOut vs_main(InsertionInstance inst, uint vid : SV_VertexID) {
-  RowPlacement p = rowTableLookup(rowTable, inst.row, u.rowTableKeys, float4(0.0));
   uint rectIdx = vid / 6u;
+  if (rectIdx != 0u && !insertionSerifsDraw(inst.length, u.pxPerBp)) {
+    return culled();
+  }
+  RowPlacement p = rowTableLookup(rowTable, inst.row, u.rowTableKeys, float4(0.0));
   float pxSize = pxToClipLen(1.0, u.viewportWidth);
   float halfW = u.viewportWidth * 0.5;
   float x1 = viewportPx(inst.x, pxSize, halfW);
   float x2 = viewportPx(inst.x2, pxSize, halfW);
   float h = u.bandHeightPx;
   float barW = insertionBarWidthPx(inst.length, u.pxPerBp, h);
-  if (p.hidden
-      || !insertionMarkerDraws(barW, x2 - x1, u.spanFloorPx)
-      || (rectIdx != 0u && !insertionSerifsDraw(inst.length, u.pxPerBp))) {
+  if (p.hidden || !insertionMarkerDraws(barW, x2 - x1, u.spanFloorPx)) {
     return culled();
   }
   float cx = 0.5 * (x1 + x2);
