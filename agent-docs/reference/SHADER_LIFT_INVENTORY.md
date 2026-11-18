@@ -95,6 +95,7 @@ noticing in a diff.
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markScaleColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
 | type 'VsOut' is outside the supported scalar subset | 4 | `culled`, `linkDash`, `linkDashAlong`, `linkDistance` |
 | type 'Instance' is outside the supported scalar subset | 3 | `computeCorners`, `fillVsBegin`, `isClickedSilhouette` |
+| type 'WiggleFillInstance' is outside the supported scalar subset | 3 | `barVertex`, `clipStripVertex`, `slabVertex` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'ConnectorInstance' is outside the supported scalar subset | 2 | `placeCubic`, `placedVertex` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
@@ -107,7 +108,6 @@ noticing in a diff.
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
-| type 'WiggleFillInstance' is outside the supported scalar subset | 1 | `clipStripVertex` |
 
 ## Exported, but nothing imports it
 

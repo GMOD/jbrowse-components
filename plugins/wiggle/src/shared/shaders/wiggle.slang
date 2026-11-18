@@ -51,67 +51,67 @@ struct VsOut {
   nointerpolation float strip : COLOR2;
 };
 
-// The strip quad: CLIP_STRIP_PX of red across the row edge that cut the bar,
-// antialiased at its two horizontal cuts the way the bar is. A bar inside the
-// domain has none, and its six vertices go off clip.
-VsOut clipStripVertex(WiggleFillInstance inst, uint vid, float sx1, float sx2,
-                      float rowTop, float rowHeight, float pxToClip) {
-  VsOut o;
-  o.rampT = 0.0;
-  o.strip = 1.0;
-  int side = clipSide(inst.score, u.domainYMin, u.domainYMax, u.scaleType);
-  if (side == 0) {
-    o.position = float4(2.0, 2.0, 0.0, 1.0);
-    o.color = float4(0.0);
-    o.barInkPx = float2(0.0, 0.0);
-    return o;
-  }
-  float topPx = clipStripTopPx(side, rowTop, rowHeight);
-  float botPx = topPx + CLIP_STRIP_PX;
+// A quad's slab from `topPx` to `botPx` over the bin, the bar's or the strip's.
+// The min-width floor is anchored at the bin's start so it grows the way the
+// Canvas2D `spanLeft` twin does. `u.viewportWidth` is CSS px (see
+// wiggleMarks.ts), which is what makes the floor the same 1.5 CSS px at every
+// dpr rather than 1.5 device px.
+VsOut slabVertex(WiggleFillInstance inst, uint vid, float topPx, float botPx) {
+  float sx1 = bpToClipX(inst.startEnd.x, u);
+  float sx2 = extendToMinWidthX(
+    sx1, bpToClipX(inst.startEnd.y, u), MIN_FILL_WIDTH_PX, u.viewportWidth);
   float2 q = quadLocal(vid);
   float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
-  float x2 = extendToMinWidthX(sx1, sx2, MIN_FILL_WIDTH_PX, u.viewportWidth);
-  o.position = float4(lerp(sx1, x2, q.x), 1.0 - vy * pxToClip, 0.0, 1.0);
-  o.color = float4(unpackRGBA(CLIP_STRIP_COLOR).rgb, 1.0);
+  float pxToClip = 2.0 / u.canvasHeight;
+  VsOut o;
+  o.position = float4(lerp(sx1, sx2, q.x), 1.0 - vy * pxToClip, 0.0, 1.0);
   o.barInkPx = float2(vy - topPx, vy - botPx);
   return o;
 }
 
-[shader("vertex")]
-VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
-  float sx1 = bpToClipX(inst.startEnd.x, u);
-  float sx2 = bpToClipX(inst.startEnd.y, u);
-
-  float rowHeight = u.rowHeight;
-  float rowTop = inst.rowIndex * rowHeight;
-  float pxToClip = 2.0 / u.canvasHeight;
-
-  if (vid >= 6u) {
-    return clipStripVertex(inst, vid, sx1, sx2, rowTop, rowHeight, pxToClip);
-  }
-
-  // The min-width floor, anchored at the bin's start so it grows the way the
-  // Canvas2D `spanLeft` twin does. `u.viewportWidth` is CSS px (see
-  // wiggleMarks.ts), which is what makes the floor the same 1.5 CSS px at
-  // every dpr rather than 1.5 device px.
-  sx2 = extendToMinWidthX(sx1, sx2, MIN_FILL_WIDTH_PX, u.viewportWidth);
-  float2 q = quadLocal(vid);
-  float scoreY  = rowScoreToYPx(inst.score, rowTop, rowHeight, u);
-  float originY = rowScoreToYPx(u.origin,   rowTop, rowHeight, u);
-  float topPx = min(scoreY, originY);
-  float botPx = max(scoreY, originY);
-  float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
-
+// The strip quad: CLIP_STRIP_PX of red across the row edge that cut the bar,
+// antialiased at its two horizontal cuts the way the bar is. A bar inside the
+// domain has none, and its six vertices go off clip before converting a bp.
+VsOut clipStripVertex(WiggleFillInstance inst, uint vid, float rowTop) {
+  int side = clipSide(inst.score, u.domainYMin, u.domainYMax, u.scaleType);
   VsOut o;
-  o.position = float4(lerp(sx1, sx2, q.x), 1.0 - vy * pxToClip, 0.0, 1.0);
+  if (side == 0) {
+    o.position = float4(2.0, 2.0, 0.0, 1.0);
+    o.barInkPx = float2(0.0, 0.0);
+    o.color = float4(0.0);
+  } else {
+    float topPx = clipStripTopPx(side, rowTop, u.rowHeight);
+    o = slabVertex(inst, vid, topPx, topPx + CLIP_STRIP_PX);
+    o.color = float4(unpackRGBA(CLIP_STRIP_COLOR).rgb, 1.0);
+  }
+  o.rampT = 0.0;
+  o.strip = 1.0;
+  return o;
+}
+
+VsOut barVertex(WiggleFillInstance inst, uint vid, float rowTop) {
+  float scoreY  = rowScoreToYPx(inst.score, rowTop, u.rowHeight, u);
+  float originY = rowScoreToYPx(u.origin,   rowTop, u.rowHeight, u);
+  VsOut o = slabVertex(inst, vid, min(scoreY, originY), max(scoreY, originY));
   o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
-  o.barInkPx = float2(vy - topPx, vy - botPx);
   o.strip = 0.0;
   o.rampT = u.rampLut == 1
     ? rampMidT(
         normalizeScore(inst.score, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant),
         u.rampMidNorm)
     : 0.0;
+  return o;
+}
+
+[shader("vertex")]
+VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
+  float rowTop = inst.rowIndex * u.rowHeight;
+  VsOut o;
+  if (vid < 6u) {
+    o = barVertex(inst, vid, rowTop);
+  } else {
+    o = clipStripVertex(inst, vid, rowTop);
+  }
   return o;
 }
 
