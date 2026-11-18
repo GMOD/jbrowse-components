@@ -13,6 +13,22 @@ three-way capture of the coverage band over a collapsed-repeat pile-up.
 Amended by [ADR-208](adr-208-clip-outliers-fences-a-spike-and-one-y-axis-drawer-holds-the-scale.md):
 a default wiggle plot strips only the bars past the outlier fence.
 
+Amended 2026-11-17: the coverage band's interbase bars are cut by the same
+axis. A bar of N insertion and clip events stands half as tall as a depth bar
+of N reads, so a stack of more events than the depth axis tops out at stops at
+half the band's drawing height and wears the strip across its cut end, the
+bottom, since the bars hang from the band's top. Until then nothing cut it: at
+chr5:70,954,910 in NA12878, 661 soft clips at one boundary under an axis the
+0.99 fence put near 120 ran through the depth bars to the band's bottom edge,
+and Colin's rule for the layer is half the band. The
+stack is cut edge by edge (`interbaseEdgePx`), so the segments past the cut
+draw nothing where a rescaled stack would squeeze them back in, and the hover
+still reads each count. The strip is the second quad of each instance, as on
+the wiggle xyplot. This closes the breakend case parked on 2026-08-14, where
+the reads ending and starting at one base outnumber the peak depth; a clamp was
+declined there because a flat end read as "exactly at the peak", which the
+strip now answers.
+
 ## Context
 
 `domainQuantile` (ADR-179) clips an autoscaled axis at the 0.99 quantile on

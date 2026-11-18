@@ -26,7 +26,7 @@ import {
   makeScoreNormalizer,
 } from '@jbrowse/wiggle-core/normalize'
 
-import { interbaseBarHeightPx } from './coverageBandBox.ts'
+import { interbaseBarHeightPx, interbaseFullScale } from './coverageBandBox.ts'
 import {
   interbaseBarLeftPx,
   interbaseEdgePx,
@@ -350,7 +350,8 @@ export const coverageModShape = layerShape(
  * painter and the hit read the bar's edges through `interbaseEdgePx` and
  * `interbaseBarLeftPx`, the shader's own snaps, so the hit rectangle is the
  * painted one.
- * A bar taller than the band is clipped to it on both backends, and here too.
+ * A stack of more events than the depth axis tops out at stops at the
+ * half-band on both backends, and here too.
  */
 export const coverageInterbaseShape = layerShape(
   COVERAGE_INTERBASE_PASS,
@@ -378,17 +379,20 @@ export const coverageInterbaseShape = layerShape(
         ? undefined
         : readInterbaseSegments(c.interbasePackedBuffer)
     const bandBottom = p.top + p.height
+    const fullScale = interbaseFullScale(p.height)
     return (
       segments &&
       nearestInk(candidates, maxDistSq, i => {
         const left = interbaseBarLeftPx(bpToX(segments.position(i)))
-        const top = p.top + interbaseEdgePx(segments.stackStart(i), barHeight)
+        const top =
+          p.top + interbaseEdgePx(segments.stackStart(i), barHeight, fullScale)
         const bottom = Math.min(
           bandBottom,
-          p.top + interbaseEdgePx(segments.stackEnd(i), barHeight),
+          p.top + interbaseEdgePx(segments.stackEnd(i), barHeight, fullScale),
         )
-        // a stack clipped entirely out of the band has no ink to be near
-        return bottom < top
+        // a stack clipped out of the band, or a segment past the half-band,
+        // has no ink to be near
+        return bottom < top || segments.stackStart(i) * barHeight >= fullScale
           ? undefined
           : inkOnRect(xPx, yPx, left, top, 1, bottom - top)
       })

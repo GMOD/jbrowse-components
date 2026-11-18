@@ -697,11 +697,31 @@ describe('drawInterbaseSegments', () => {
     return buf
   }
 
-  function draw(bpToX: (bp: number) => number, domainMax = DOMAIN_MAX) {
+  // An insertion and a softclip segment at bp 100, each half the stack.
+  function twoSegments() {
+    const buf = new ArrayBuffer(32)
+    const u32 = new Uint32Array(buf)
+    const f32 = new Float32Array(buf)
+    u32[0] = 100
+    f32[1] = 0
+    f32[2] = 0.5
+    f32[3] = 1
+    u32[4] = 100
+    f32[5] = 0.5
+    f32[6] = 0.5
+    f32[7] = 2
+    return buf
+  }
+
+  function draw(
+    bpToX: (bp: number) => number,
+    domainMax = DOMAIN_MAX,
+    buffer = oneSegment(),
+  ) {
     const { ctx, calls } = makeCtx()
     drawInterbaseSegments(
       ctx,
-      oneSegment(),
+      buffer,
       MAX_COUNT,
       interbaseColors,
       bpToX,
@@ -736,6 +756,35 @@ describe('drawInterbaseSegments', () => {
   it('draws nothing before the coverage domain resolves', () => {
     expect(draw(bp => bp - 50, 0)).toHaveLength(0)
   })
+
+  it('stops a stack at the half-band and strips the cut end', () => {
+    // 20 events under a domain of 10 ask for 80 px of the 40 px half-band.
+    expect(draw(bp => bp - 50, 10).map(c => c.args)).toEqual([
+      [50, 4, 1, 40],
+      [50, 42, 1, 2],
+    ])
+  })
+
+  it('strips the segment that crosses the half-band, and draws no bar past it', () => {
+    // Under a domain of 10 the first segment ends on the half-band exactly,
+    // so the second crosses it with no height of its own.
+    expect(draw(bp => bp - 50, 10, twoSegments()).map(c => c.args)).toEqual([
+      [50, 4, 1, 40],
+      [50, 44, 1, 0],
+      [50, 42, 1, 2],
+    ])
+    // Under a domain of 15 the stack asks for 53 px, so the second segment
+    // holds the cut.
+    expect(draw(bp => bp - 50, 15, twoSegments()).map(c => c.args)).toEqual([
+      [50, 4, 1, 27],
+      [50, 31, 1, 13],
+      [50, 42, 1, 2],
+    ])
+  })
+
+  it('leaves a stack that reaches the half-band exactly unstripped', () => {
+    expect(draw(bp => bp - 50, 20, twoSegments())).toHaveLength(2)
+  })
 })
 
 describe('interbaseBarHeightPx', () => {
@@ -758,11 +807,10 @@ describe('interbaseBarHeightPx', () => {
   })
 
   // A 300x breakpoint in the fetched block under a domain bounded to 20. The
-  // overflow is deliberately the DRAW's to scissor: clamping it here would
-  // compress the stack into the band instead, so segments the scissor drops
-  // would reappear squeezed in, painting colors where the band shows one.
-  // `hitTestInterbase` carries its own band gate for that reason.
-  it('overflows the band rather than rescaling when the domain is bounded below the peak', () => {
+  // stack is cut at the half-band by `interbaseEdgePx`, edge by edge: clamping
+  // the scale here would compress the stack instead, so the segments past the
+  // cut would reappear squeezed in, painting colors where the bar shows one.
+  it('keeps its scale rather than rescaling when the domain is bounded below the peak', () => {
     expect(interbaseBarHeightPx(90, 300, 20)).toBe(600)
   })
 })

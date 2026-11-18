@@ -4,6 +4,7 @@ import {
   covBottomOffsetPx,
   covEffectiveHeightPx,
 } from './coverageBandLayout.generated.ts'
+import { interbaseFullScalePx } from './interbaseEdge.generated.ts'
 
 // Where the coverage bars live inside the band: the drawable height, and how
 // far the baseline sits below the band's top edge. Every coverage mark on both
@@ -22,6 +23,11 @@ export function coverageLayout(coverageHeight: number) {
     effectiveH: covEffectiveHeightPx(coverageHeight, YSCALEBAR_LABEL_OFFSET),
     bottom: covBottomOffsetPx(coverageHeight, YSCALEBAR_LABEL_OFFSET),
   }
+}
+
+/** The tallest an interbase stack draws, half the band's drawing height. */
+export function interbaseFullScale(coverageHeight: number) {
+  return interbaseFullScalePx(coverageLayout(coverageHeight).effectiveH)
 }
 
 /**
@@ -64,7 +70,6 @@ export function interbaseBarHeightPx(
   domainMax: number | undefined,
 ) {
   return interbaseMaxCount > 0 && domainMax !== undefined && domainMax > 0
-    ? (coverageLayout(coverageHeight).effectiveH / 2) *
-        (interbaseMaxCount / domainMax)
+    ? interbaseFullScale(coverageHeight) * (interbaseMaxCount / domainMax)
     : 0
 }

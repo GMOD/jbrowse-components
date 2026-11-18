@@ -141,11 +141,11 @@ describe('the interbase histogram bars', () => {
     ).toBe(type)
   })
 
-  // A bar taller than the band it is drawn in: `interbaseMaxCount` is the
-  // fetched block's peak and `domainMax` the visible, bounded domain, so a
-  // 300x breakpoint under a bound of 20 scales to 600 px off a 90 px band.
-  // Both backends clip it to the band; the hit stops there too, or a 3 px
-  // column would answer interbase for every read hover under it.
+  // A stack of more events than the axis tops out at: `interbaseMaxCount` is
+  // the fetched block's peak and `domainMax` the visible, bounded domain, so a
+  // 300x breakpoint under a bound of 20 asks for 600 px. Both backends cut it
+  // at the half-band, px [4, 44]; the hit stops there too, or a 3 px column
+  // would answer interbase for every depth bar and read hover under it.
   const overflowingAt1005 = region({
     interbasePackedBuffer: segments([
       { position: 1005, yOffset: 0, height: 1, colorType: 2 },
@@ -153,13 +153,28 @@ describe('the interbase histogram bars', () => {
     interbaseMaxCount: 300,
   })
 
-  it('still hits the overflowing bar inside the band', () => {
+  it('still hits the cut bar inside its half-band', () => {
     expect(
-      hitCoverageBand(overflowingAt1005, band(), block, xOf(1005), 50),
+      hitCoverageBand(overflowingAt1005, band(), block, xOf(1005), 30),
     ).toEqual({ layer: 'interbase', position: 1005, type: 2 })
   })
 
+  const cutStackAt1005 = region({
+    interbasePackedBuffer: segments([
+      { position: 1005, yOffset: 0, height: 0.5, colorType: 2 },
+      { position: 1005, yOffset: 0.5, height: 0.5, colorType: 3 },
+    ]),
+    interbaseMaxCount: 300,
+  })
+
+  it('names the segment the cut leaves drawn, not one past it', () => {
+    expect(
+      hitCoverageBand(cutStackAt1005, band(), block, xOf(1005), 45)?.type,
+    ).toBe(2)
+  })
+
   it.each([
+    ['below the cut, over the depth bars', 60],
     ['on the band bottom, the first row of what lies below', COV_HEIGHT],
     ['just past the band bottom', 100],
     ['deep in the pileup', 400],

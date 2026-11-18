@@ -1845,7 +1845,7 @@ function laidOutTables(
       indicatorWidth: 2 * INDICATOR_TRIANGLE_HW,
       indicatorHeight: INDICATOR_TRIANGLE_H,
       coverageInset: YSCALEBAR_LABEL_OFFSET,
-      interbaseTop: interbaseEdgePx(0, 0),
+      interbaseTop: interbaseEdgePx(0, 0, 0),
     },
     readPitch: {
       featureHeight,
