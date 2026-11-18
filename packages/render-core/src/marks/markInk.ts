@@ -3,6 +3,9 @@ import { canvasWideBlock } from '../renderBlock.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { InkRect, Mark, MarkFrame } from './types.ts'
 
+/** A canvas px as an ink stroke's SVG path writes it, to the hundredth. */
+export const svgNumber = (n: number) => Math.round(n * 100) / 100
+
 /** `r` moved by (`dx`, `dy`), its stroke with it. */
 export function shiftInk<R extends InkRect>(r: R, dx: number, dy: number): R {
   const { stroke } = r

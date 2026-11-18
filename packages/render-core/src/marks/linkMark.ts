@@ -36,8 +36,9 @@ import {
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { ellipseNearest } from './ellipseDistance.ts'
-import { linkedRegion, regionPx } from './linkRegion.ts'
-import { nearestInk } from './markHit.ts'
+import { linkedRegion, paintsOwnRegion, regionPx } from './linkRegion.ts'
+import { inkOnStroke, nearestInk, reachesBox } from './markHit.ts'
+import { svgNumber } from './markInk.ts'
 import {
   colorBits,
   instanceColor,
@@ -730,8 +731,6 @@ function footSegments(g: LinkFrame): FootSegment[] {
   return segments
 }
 
-const svgNumber = (n: number) => Math.round(n * 100) / 100
-
 // The curve and its feet as an SVG path, traced by the painter's own
 // `tracePath`. Every arc starts where the path already stands.
 function svgPathOf(g: LinkFrame) {
@@ -960,9 +959,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
 
   textures: rowTableTextures,
 
-  paintsBlock(block, _frame, params) {
-    return params.regions[block.displayedRegionIndex] !== undefined
-  },
+  paintsBlock: paintsOwnRegion,
 
   verticesPerInstance(_frame, params) {
     return (curveSegments(params) + 1) * 2 + FOOT_STRIP_VERTS
@@ -1042,24 +1039,11 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       }
       placeLink(channels, g, i)
       const box = inkBox(g)
-      if (
-        !box ||
-        xPx < box.left - reach ||
-        xPx > box.left + box.width + reach ||
-        yPx < box.top - reach ||
-        yPx > box.top + box.height + reach
-      ) {
+      if (!box || !reachesBox(box, xPx, yPx, reach)) {
         return undefined
       }
       const near = nearestOnCurve(g, xPx, yPx)
-      const half = g.strokePx / 2
-      if (near.dist <= half) {
-        return { x: xPx, y: yPx, distSq: 0 }
-      }
-      const t = half / near.dist
-      const x = near.x + (xPx - near.x) * t
-      const y = near.y + (yPx - near.y) * t
-      return { x, y, distSq: (xPx - x) ** 2 + (yPx - y) ** 2 }
+      return inkOnStroke(xPx, yPx, near.x, near.y, near.dist, g.strokePx)
     })
   },
 }

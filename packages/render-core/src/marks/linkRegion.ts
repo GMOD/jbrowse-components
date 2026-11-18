@@ -1,5 +1,8 @@
 import { LINK_MAX_REGIONS } from '../shaders/linkMark.consts.generated.ts'
 
+import type { RenderBlock } from '../renderBlock.ts'
+import type { MarkFrame } from './types.ts'
+
 /**
  * One displayed region as a foot places through it: the canvas px of an
  * anchor bp chosen near the view, so a foot's offset from it stays inside
@@ -28,4 +31,17 @@ export function regionPx(
 /** Displayed region `index` as a far end finds it: none past the shader's table. */
 export function linkedRegion(regions: readonly LinkRegion[], index: number) {
   return index < LINK_MAX_REGIONS ? regions[index] : undefined
+}
+
+/**
+ * Whether a shape placing through `regions` paints over the block: only where
+ * the block's own region is one of them, as a link's or a connector's near end
+ * places through it.
+ */
+export function paintsOwnRegion(
+  block: RenderBlock,
+  _frame: MarkFrame,
+  params: { regions: readonly LinkRegion[] },
+) {
+  return params.regions[block.displayedRegionIndex] !== undefined
 }

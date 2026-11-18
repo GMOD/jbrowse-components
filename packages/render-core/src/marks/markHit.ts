@@ -1,4 +1,4 @@
-import type { MarkHit, MarkShape } from './types.ts'
+import type { InkRect, MarkHit, MarkShape } from './types.ts'
 
 /** One instance's ink measured against a cursor — a `MarkHit` before it is one. */
 export type InkHit = Omit<MarkHit, 'index'>
@@ -32,6 +32,79 @@ export function inkAtPoint(
   const dx = xPx - x
   const dy = yPx - y
   return { x, y, distSq: dx * dx + dy * dy }
+}
+
+/**
+ * The nearest point to `(px, py)` on the segment from `(ax, ay)` to `(bx, by)`,
+ * written into `best` where it is nearer than what `best` holds.
+ */
+export function nearSegment(
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+  px: number,
+  py: number,
+  best: InkHit,
+) {
+  const dx = bx - ax
+  const dy = by - ay
+  const lenSq = dx * dx + dy * dy
+  const t =
+    lenSq > 0
+      ? Math.min(1, Math.max(0, ((px - ax) * dx + (py - ay) * dy) / lenSq))
+      : 0
+  const x = ax + t * dx
+  const y = ay + t * dy
+  const distSq = (px - x) ** 2 + (py - y) ** 2
+  if (distSq < best.distSq) {
+    best.x = x
+    best.y = y
+    best.distSq = distSq
+  }
+}
+
+/** Whether `(xPx, yPx)` lies within `reach` of `box`, its edges included. */
+export function reachesBox(
+  box: InkRect,
+  xPx: number,
+  yPx: number,
+  reach: number,
+) {
+  return (
+    xPx >= box.left - reach &&
+    xPx <= box.left + box.width + reach &&
+    yPx >= box.top - reach &&
+    yPx <= box.top + box.height + reach
+  )
+}
+
+/**
+ * The ink of a stroke `widthPx` wide nearest `(xPx, yPx)`, given the point
+ * `(x, y)` of its centreline nearest the cursor, `dist` away: the cursor
+ * itself inside the stroke, else that point moved half the width toward it.
+ */
+export function inkOnStroke(
+  xPx: number,
+  yPx: number,
+  x: number,
+  y: number,
+  dist: number,
+  widthPx: number,
+): InkHit {
+  const half = widthPx / 2
+  if (dist <= half) {
+    return { x: xPx, y: yPx, distSq: 0 }
+  } else {
+    const t = half / dist
+    const edgeX = x + (xPx - x) * t
+    const edgeY = y + (yPx - y) * t
+    return {
+      x: edgeX,
+      y: edgeY,
+      distSq: (xPx - edgeX) ** 2 + (yPx - edgeY) ** 2,
+    }
+  }
 }
 
 /**

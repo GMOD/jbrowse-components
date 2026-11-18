@@ -9,7 +9,9 @@ import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { newPlaced, placeConnector } from './connectorPlacement.ts'
 import { viewRegionUniforms } from './linkMark.ts'
-import { nearestInk } from './markHit.ts'
+import { paintsOwnRegion } from './linkRegion.ts'
+import { inkOnStroke, nearSegment, nearestInk, reachesBox } from './markHit.ts'
+import { svgNumber } from './markInk.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
 import type { ConnectorPlacement } from './connectorPlacement.ts'
@@ -100,8 +102,6 @@ function traceArrow(ctx: PathSink, p: ConnectorPlacement, arrowPx: number) {
   ctx.lineTo(p.x3, p.y3)
 }
 
-const svgNumber = (n: number) => Math.round(n * 100) / 100
-
 function svgPathOf(p: ConnectorPlacement, arrowPx: number) {
   const parts: string[] = []
   const pt = (x: number, y: number) => `${svgNumber(x)} ${svgNumber(y)}`
@@ -146,34 +146,6 @@ function inkBox(p: ConnectorPlacement, arrowPx: number): InkRect {
     top: top - half,
     width: right - left + p.strokePx,
     height: bottom - top + p.strokePx,
-  }
-}
-
-// The nearest point to (px, py) on segment (ax, ay)-(bx, by), into `best`
-// where it is nearer than what `best` holds.
-function nearSegment(
-  ax: number,
-  ay: number,
-  bx: number,
-  by: number,
-  px: number,
-  py: number,
-  best: { x: number; y: number; distSq: number },
-) {
-  const dx = bx - ax
-  const dy = by - ay
-  const lenSq = dx * dx + dy * dy
-  const t =
-    lenSq > 0
-      ? Math.min(1, Math.max(0, ((px - ax) * dx + (py - ay) * dy) / lenSq))
-      : 0
-  const x = ax + t * dx
-  const y = ay + t * dy
-  const distSq = (px - x) ** 2 + (py - y) ** 2
-  if (distSq < best.distSq) {
-    best.x = x
-    best.y = y
-    best.distSq = distSq
   }
 }
 
@@ -264,9 +236,7 @@ export const connectorMark: MarkShape<ConnectorChannels, ConnectorParams> = {
     })
   },
 
-  paintsBlock(block, _frame, params) {
-    return params.regions[block.displayedRegionIndex] !== undefined
-  },
+  paintsBlock: paintsOwnRegion,
 
   paintBlock(ctx, c, block, frame, params) {
     const own = block.displayedRegionIndex
@@ -318,25 +288,18 @@ export const connectorMark: MarkShape<ConnectorChannels, ConnectorParams> = {
       if (!placeConnector(c, params, own, i, PLACED, dpr)) {
         return undefined
       }
-      const box = inkBox(PLACED, params.arrowPx)
-      if (
-        xPx < box.left - reach ||
-        xPx > box.left + box.width + reach ||
-        yPx < box.top - reach ||
-        yPx > box.top + box.height + reach
-      ) {
+      if (!reachesBox(inkBox(PLACED, params.arrowPx), xPx, yPx, reach)) {
         return undefined
       }
       const near = nearestOnConnector(PLACED, params.arrowPx, xPx, yPx)
-      const dist = Math.sqrt(near.distSq)
-      const half = PLACED.strokePx / 2
-      if (dist <= half) {
-        return { x: xPx, y: yPx, distSq: 0 }
-      }
-      const t = half / dist
-      const x = near.x + (xPx - near.x) * t
-      const y = near.y + (yPx - near.y) * t
-      return { x, y, distSq: (xPx - x) ** 2 + (yPx - y) ** 2 }
+      return inkOnStroke(
+        xPx,
+        yPx,
+        near.x,
+        near.y,
+        Math.sqrt(near.distSq),
+        PLACED.strokePx,
+      )
     })
   },
 }
