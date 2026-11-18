@@ -273,3 +273,20 @@ test('a height bounds the view with no drawer, and outranks drawerViewHeight', a
   )
   expect(box.parentElement?.style.height).toBe('400px')
 }, 40000)
+
+// The embedded drawer is the app's drawer without the app's own buttons: there
+// is no dialog to pop a widget out into here.
+test('the embedded drawer has the shared controls and no pop-out button', async () => {
+  const state = await createViewStateAsync({
+    assembly,
+    tracks: [],
+    defaultSession,
+  })
+  const { findByTestId, queryByTestId } = render(
+    <JBrowseLinearGenomeView viewState={state} />,
+  )
+  state.session.view.activateTrackSelector()
+
+  await findByTestId('drawer-minimize', {}, { timeout })
+  expect(queryByTestId('drawer-popout')).toBeNull()
+}, 40000)

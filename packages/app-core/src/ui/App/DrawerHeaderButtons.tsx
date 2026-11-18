@@ -1,8 +1,6 @@
 import { Suspense, lazy } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { DrawerHeader as DrawerHeaderShell } from '@jbrowse/product-core'
 import LaunchIcon from '@mui/icons-material/Launch'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -13,36 +11,18 @@ const DrawerHeaderHelpButton = lazy(
   () => import('./DrawerHeaderHelpButton.tsx'),
 )
 
-const useStyles = makeStyles()(theme => ({
-  headerUnfocused: {
-    background: theme.palette.secondary.dark,
-  },
-}))
-
-const DrawerHeader = observer(function DrawerHeader({
+const DrawerHeaderButtons = observer(function DrawerHeaderButtons({
   session,
-  setToolbarHeight,
 }: {
   session: SessionWithFocusedViewAndDrawerWidgets
-  setToolbarHeight: (arg: number) => void
 }) {
-  const { classes } = useStyles()
-  const { focusedViewId, visibleWidget } = session
-  const viewWidgetId = visibleWidget?.view?.id
+  const { visibleWidget } = session
   const helpText = visibleWidget
     ? getEnv(session).pluginManager.getWidgetType(visibleWidget.type).helpText
     : undefined
 
   return (
-    <DrawerHeaderShell
-      session={session}
-      setToolbarHeight={setToolbarHeight}
-      className={
-        viewWidgetId !== undefined && focusedViewId === viewWidgetId
-          ? undefined
-          : classes.headerUnfocused
-      }
-    >
+    <>
       <Tooltip title="Open drawer in dialog">
         <IconButton
           color="inherit"
@@ -59,8 +39,8 @@ const DrawerHeader = observer(function DrawerHeader({
           <DrawerHeaderHelpButton helpText={helpText} session={session} />
         </Suspense>
       ) : null}
-    </DrawerHeaderShell>
+    </>
   )
 })
 
-export default DrawerHeader
+export default DrawerHeaderButtons
