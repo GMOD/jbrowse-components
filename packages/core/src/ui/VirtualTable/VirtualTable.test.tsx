@@ -26,6 +26,7 @@ function table({
   sortField = '',
   sortAscending = true,
   onRowClick,
+  rowHeight,
 }: {
   scrollToIndex?: number
   scrollToKey?: string | number
@@ -33,6 +34,7 @@ function table({
   sortField?: string
   sortAscending?: boolean
   onRowClick?: (row: { id: number; name: string }) => void
+  rowHeight?: number
 }) {
   return (
     <ThemeProvider theme={theme}>
@@ -44,6 +46,7 @@ function table({
         sortAscending={sortAscending}
         onSort={onSort}
         onRowClick={onRowClick}
+        rowHeight={rowHeight}
         resetKey=""
         scrollToKey={scrollToKey}
         scrollToIndex={scrollToIndex}
@@ -60,6 +63,20 @@ test('a row far down scrolls to the middle of the rows on view', () => {
   expect(getByTestId('table').scrollTop).toBe(
     250 * ROW_HEIGHT - (room - ROW_HEIGHT) / 2,
   )
+})
+
+test('a short row height draws each row at that height and scrolls by it', () => {
+  const rowHeight = 18
+  const { getByTestId, getByText } = render(
+    table({ scrollToIndex: 250, rowHeight }),
+  )
+  const room = viewport - HEADER_HEIGHT
+  expect(getByTestId('table').scrollTop).toBe(
+    250 * rowHeight - (room - rowHeight) / 2,
+  )
+  const { style } = getByText('r0').closest('tr')!
+  expect(style.height).toBe(`${rowHeight}px`)
+  expect(style.lineHeight).toBe(`${rowHeight - 1}px`)
 })
 
 test('a row already on view does not scroll', () => {

@@ -75,13 +75,11 @@ export const useVirtualTableStyles = makeStyles()(theme => {
       },
     },
     bodyCell: {
-      height: ROW_HEIGHT,
       padding: '0 10px',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
       borderBottom: border,
-      lineHeight: `${ROW_HEIGHT - 1}px`,
       boxSizing: 'border-box',
     },
     alignRight: {

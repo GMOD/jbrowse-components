@@ -156,7 +156,7 @@ const VirtualTable = observer(function VirtualTable<
                 row={row}
                 columns={columns}
                 leadingCell={leading?.cell}
-                height={rowHeight === ROW_HEIGHT ? undefined : rowHeight}
+                height={rowHeight}
                 isRowSelected={isRowSelected}
                 onRowClick={onRowClick}
               />

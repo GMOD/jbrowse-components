@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
 import { cx } from '../../util/tss-react/index.ts'
-import { useVirtualTableStyles } from './tableStyles.ts'
+import { ROW_HEIGHT, useVirtualTableStyles } from './tableStyles.ts'
 
 import type { VirtualTableColumn } from './VirtualTable.tsx'
 
@@ -16,7 +16,7 @@ const VirtualTableRow = observer(function VirtualTableRow<R>({
   row: R
   columns: VirtualTableColumn<R>[]
   leadingCell?: (row: R) => React.ReactNode
-  height?: number
+  height: number
   isRowSelected?: (row: R) => boolean
   onRowClick?: (row: R) => void
 }) {
@@ -28,7 +28,10 @@ const VirtualTableRow = observer(function VirtualTableRow<R>({
         onRowClick && classes.clickableRow,
         isRowSelected?.(row) && classes.selectedRow,
       )}
-      style={height ? { height } : undefined}
+      style={{
+        height,
+        lineHeight: `${Math.min(height, ROW_HEIGHT) - 1}px`,
+      }}
       onClick={
         onRowClick
           ? () => {
