@@ -67,11 +67,18 @@ dpr 1 / 1.5 / 2, against 8 / 11 / 17 for the line alone. The volvox
   `[point, line]` display goes from none to one.
 - **Per frame:** one more encoder and render pass per layer on WebGPU, two
   framebuffer switches per block per layer on WebGL2, and a block-sized
-  composite at the display's sample count. Through `WebGPUHal` on Dawn, a
-  1266x100 CSS px canvas at dpr 2 and four samples, 1266 bars and 1266
-  capsules, timed from `beginFrame` to `onSubmittedWorkDone`, minimum over 21
-  interleaved rounds of ten frames: 0.157 ms for the bars alone, 0.179 ms with
-  the line under max, 0.238 ms under union, on an RTX A6000. On a tile-based
+  composite at the display's sample count, so the cost grows with track area.
+  Through `WebGPUHal` on Dawn at dpr 2 and four samples, 1266 bars and 1266
+  capsules, timed from `beginFrame` to `onSubmittedWorkDone` over interleaved
+  rounds of ten frames, minimum / median ms per frame:
+
+  | GPU, CSS px canvas      | bars        | bars + max line | bars + union line |
+  | ----------------------- | ----------- | --------------- | ----------------- |
+  | RTX A6000, 1266x100     | 0.157 / –   | 0.179 / –       | 0.238 / –         |
+  | Intel UHD 630, 1266x100 | 1.21 / 1.35 | 1.43 / 1.63     | 1.70 / 1.98       |
+  | Intel UHD 630, 1266x840 | 4.90 / 5.08 | 5.17 / 5.40     | 5.97 / 6.22       |
+
+  On a tile-based
   GPU each WebGL2 switch stores and reloads the multisampled default buffer;
   unmeasured.
 - **Not fixed:** inside one layer, capsules of different colours still mix
@@ -90,9 +97,10 @@ dpr 1 / 1.5 / 2, against 8 / 11 / 17 for the line alone. The volvox
 - **Gates:** `mark-line-linear-over-bars`, an alpha 0.6 line over the bars,
   two line layers and a line under a later point layer carry `meanErr: 0.015`
   on their one-sample row; drawn max they score 3.0-7.5%. The cross-backend
-  gate compares `marks_bars_linear_line` against Canvas2D on WebGL2: with the
-  max line it drifts 2.12% under SwiftShader, CI's rung, against a 1.5%
-  ceiling, so the margin is that thin; fixed, 0.00%. Dawn's null backend
+  gate compares `marks_bars_linear_line`, the line over bars on a full-height
+  light ground, against Canvas2D on WebGL2: with the max line it drifts 3.88%
+  under SwiftShader, CI's rung, and 3.84% on an RTX A6000 through ANGLE's GL,
+  against a 1.5% ceiling; fixed, 0.00% on both. Dawn's null backend
   validates a union pass beside a multisampled one but draws nothing.
 
 ## Rejected alternatives
