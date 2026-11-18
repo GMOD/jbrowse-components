@@ -253,6 +253,22 @@ describe('the derived size column', () => {
     })
     expect(col.valueFormatter(undefined)).toBe('')
   })
+
+  // the grid's CSV export and copy write the formatted value
+  test('a number exports plain and draws with separators', () => {
+    const model = makeModel({
+      rowSet: { rows: [{ cellData: { POS: 1234567 } }, { cellData: {} }] },
+      columns: [{ name: 'POS' }],
+    })
+    const col = model.dataGridColumns!.find(c => c.field === 'POS')!
+    const format = col.valueFormatter as (v?: number) => string
+    const draw = col.renderCell as (p: { value?: number }) => string
+    expect(col.type).toBe('number')
+    expect(format(1234567)).toBe('1234567')
+    expect(format(undefined)).toBe('')
+    expect(draw({ value: 1234567 })).toBe((1234567).toLocaleString('en-US'))
+    expect(draw({ value: undefined })).toBe('')
+  })
 })
 
 describe('the SV type filter', () => {

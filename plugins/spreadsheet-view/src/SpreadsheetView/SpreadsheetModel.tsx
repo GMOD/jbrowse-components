@@ -120,6 +120,15 @@ function sameVisibleRowFlags(a?: VisibleRowFlags, b?: VisibleRowFlags) {
   )
 }
 
+// The CSV export and a copy write a column's formatted value, so a number
+// formats plain there and only its cell draws the thousands separators.
+const numberColumn = {
+  type: 'number',
+  valueFormatter: (value?: unknown) => (value == null ? '' : `${value}`),
+  renderCell: ({ value }: { value?: unknown }) =>
+    typeof value === 'number' ? toLocale(value) : `${value ?? ''}`,
+} satisfies Partial<GridColDef<GridRow>>
+
 function naturalOrder(a: string, b: string) {
   return a.localeCompare(b, undefined, { numeric: true })
 }
@@ -386,14 +395,12 @@ export default function stateModelFactory() {
             // one field for both headers, so one saved visibility covers them
             field: 'Length',
             headerName: isSvSheet ? 'SV size' : 'Length',
-            type: 'number',
+            ...numberColumn,
             width: measureGridWidth(
               sample.map(d => (d.size === undefined ? '' : toLocale(d.size))),
             ),
+            // undefined for an interchromosomal breakend, which has no size
             valueGetter: (_val, row) => row.derived.size,
-            // an interchromosomal breakend has no size
-            valueFormatter: (arg?: number) =>
-              arg === undefined ? '' : toLocale(arg),
           },
           // without this column the mate's chromosome is only in ALT, where
           // the quick filter cannot single it out
@@ -428,11 +435,10 @@ export default function stateModelFactory() {
                 ),
                 // typed by the first populated cell, off every row: a sample
                 // could miss the only values of a sparse column
-                type:
-                  typeof rows.find(r => r[f.name] != null)?.[f.name] ===
-                  'number'
-                    ? 'number'
-                    : undefined,
+                ...(typeof rows.find(r => r[f.name] != null)?.[f.name] ===
+                'number'
+                  ? numberColumn
+                  : {}),
               }) satisfies GridColDef<GridRow>,
           ),
         ]
