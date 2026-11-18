@@ -25,7 +25,6 @@ import { WebSessionConnectionsMixin } from './SessionConnections.ts'
 
 import type { AbstractWebRootModel } from './WebRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type {
   AnyConfiguration,
@@ -99,12 +98,6 @@ export function BaseWebSessionModel({
        */
       get shareURL() {
         return getConf(editableConfig(self), 'shareURL')
-      },
-      /**
-       * #getter
-       */
-      get textSearchManager(): TextSearchManager {
-        return self.root.textSearchManager
       },
     }))
     .actions(self => ({
