@@ -52,14 +52,14 @@ export default function baseConfigSchemaFactory(
        * `transcripts.types` and `containers.types`, and a top-level CDS.
        */
       filter: fieldPredicateList(),
-      // Not a fallback for the byte axis: an index size cannot tell a few
-      // large features from many tiny ones.
       /**
        * #slot
        * The box hovering a feature opens, a [](/docs/config/featuretooltip)
        * object.
        */
       tooltip: featureTooltipConfigSchema,
+      // Not a fallback for the byte axis: an index size cannot tell a few
+      // large features from many tiny ones.
       ...featureGateConfigSchemaFields,
       /**
        * #slot legend

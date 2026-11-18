@@ -3,8 +3,8 @@
 // collapsing the hidden ones — against the same picture from a buffer packed
 // down to the kept rows, and against the whole region drawn?
 //
-//   node plugins/features/benches/rowTableFrame.probe.ts
-//   node plugins/features/benches/rowTableFrame.probe.ts --rows=1000 --features=500000 --kept=10 --real-gpu
+//   node plugins/marks/benches/rowTableFrame.probe.ts
+//   node plugins/marks/benches/rowTableFrame.probe.ts --rows=1000 --features=500000 --kept=10 --real-gpu
 //
 // A PROBE: it draws the span pass's own GLSL on a bare WebGL2 context in
 // headless Chrome, one instanced draw per frame, and sizes the vertex work a

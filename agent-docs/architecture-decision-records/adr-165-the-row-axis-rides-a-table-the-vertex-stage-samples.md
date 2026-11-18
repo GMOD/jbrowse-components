@@ -158,7 +158,7 @@ pass. Its transport — a second texture binding in both HALs, or the ramp and
 the table in one texture — is stage 2's decision. The bench of its cost today
 stays as the baseline.
 
-**A hidden key's instances stay in the buffer.** `plugins/features/benches/rowTableFrame.probe.ts`
+**A hidden key's instances stay in the buffer.** `plugins/marks/benches/rowTableFrame.probe.ts`
 draws the span pass's own GLSL on a bare WebGL2 context, 1000 rows and 500k
 instances, 10 rows kept, 30 interleaved frames, on this box's Intel UHD
 Graphics 630 through ANGLE:

@@ -160,8 +160,8 @@ function createHitIndexes(self: FeatureBandHost, band: HitIndexSource) {
  * The feature pipeline from fetched regions to what a band draws and picks:
  * the fit ladder, the kept stack, the labels it reserved, its sections, its
  * id lookups and its hit indexes. LinearBasicDisplay mixes it into its views;
- * the variant display's records band and the R export host it on a plain
- * object.
+ * the variant display's records band hosts it on a plain object, the tables
+ * export on `FeatureStaticHost`.
  */
 export function featureBandViews(self: FeatureBandHost) {
   // One memo per reservation config, since an instance caches one config at a

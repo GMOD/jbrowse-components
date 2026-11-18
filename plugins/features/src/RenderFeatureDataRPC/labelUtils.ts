@@ -146,11 +146,6 @@ export function sharedChildLabelRows(
     : 0
 }
 
-/**
- * The text a subfeature's label draws. A subfeature needs a label row only
- * when this text is visible. Both the reservation and the emit go through this, so a track
- * labelling its children by `product` reserves the row it then paints into.
- */
 // A polyprotein and its cleavage products are named by their INSDC `product`,
 // which NCBI writes in place of a Name, before the track's name label.
 export function productLabelText(
@@ -164,6 +159,12 @@ export function productLabelText(
   )
 }
 
+/**
+ * The text a subfeature's label draws. A subfeature needs a label row only
+ * when this text is visible. Both the reservation and the emit go through
+ * this, so a track labelling its children by `product` reserves the row it
+ * then paints into.
+ */
 export function subfeatureLabelText(
   feature: Feature,
   config: DisplayConfig,
