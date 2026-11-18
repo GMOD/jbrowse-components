@@ -15,7 +15,6 @@ import { BaseRootModelFactory } from './RootModel/BaseRootModel.ts'
 import { BaseSessionModel } from './Session/BaseSession.ts'
 import { DrawerWidgetSessionMixin } from './Session/DrawerWidgets.ts'
 
-import type { BaseRootModelType } from './RootModel/BaseRootModel.ts'
 import type {
   AbstractSessionModel,
   EditableJBrowseConfigModel,
@@ -98,7 +97,7 @@ function makeRootType(viewTypes: string[], widgetTypes: string[] = []) {
   const sessionModelType = types
     .compose(
       'TestSession',
-      BaseSessionModel<BaseRootModelType>(pluginManager),
+      BaseSessionModel(pluginManager),
       DrawerWidgetSessionMixin(pluginManager),
       types.model({
         views: types.array(

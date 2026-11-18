@@ -48,6 +48,7 @@ export type {
   AssemblySnapshot,
   AssertSessionModel,
   BaseSession,
+  BaseSessionRoot,
   BaseSessionType,
   ConnectionTrackConfigEntry,
   DeletedTrack,

@@ -10,11 +10,12 @@ import { observable } from 'mobx'
 
 import { applyDeveloperMode } from './developerMode.ts'
 
-import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type { HeldNode } from '../pruneUnbuildableNodes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type {
   AnimationMode,
   DialogComponentType,
@@ -30,14 +31,24 @@ function isAnimationMode(val: unknown): val is AnimationMode {
 }
 
 /**
+ * What a session may read off whichever root holds it: an app's
+ * `BaseRootModel` or an embedded product's root. Anything only one of them has
+ * is read through that root's own contract.
+ */
+export interface BaseSessionRoot {
+  readonly jbrowse: JBrowseConfigModel
+  readonly rpcManager: RpcManager
+  readonly adminMode: boolean
+  readonly textSearchManager: TextSearchManager
+}
+
+/**
  * #stateModel BaseSessionModel
  *
  * Holds a session's name, focused view, highlights and notifications. Every
  * product's session composes this model, so add to it with care.
  */
-export function BaseSessionModel<ROOT_MODEL_TYPE extends BaseRootModelType>(
-  _pluginManager: PluginManager,
-) {
+export function BaseSessionModel(_pluginManager: PluginManager) {
   const baseModel = types
     .model({
       /**
@@ -146,8 +157,8 @@ export function BaseSessionModel<ROOT_MODEL_TYPE extends BaseRootModelType>(
       /**
        * #getter
        */
-      get root() {
-        return getParent<ROOT_MODEL_TYPE>(self)
+      get root(): BaseSessionRoot {
+        return getParent<BaseSessionRoot>(self)
       },
     }))
     .views(self => ({

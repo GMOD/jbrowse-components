@@ -30,7 +30,11 @@ export type {
 } from './MultipleViews.ts'
 export { PreferencesSessionMixin } from './Preferences.ts'
 export { BaseSessionModel, isBaseSession } from './BaseSession.ts'
-export type { BaseSession, BaseSessionType } from './BaseSession.ts'
+export type {
+  BaseSession,
+  BaseSessionRoot,
+  BaseSessionType,
+} from './BaseSession.ts'
 export { SessionTracksManagerSessionMixin } from './SessionTracks.ts'
 export type {
   DeletedTrack,

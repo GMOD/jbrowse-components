@@ -16,12 +16,18 @@ import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
 import { dropUnloadableTracks } from '../sessionUtils.ts'
 
 import type { RootSession } from '../RootModel/index.ts'
+import type { BaseSessionRoot } from '../Session/index.ts'
+import type { AssertExtends } from '../assertExtends.ts'
 import type { SessionSnapshot } from '../sessionUrl.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
 import type { JBrowseConfigModel } from '@jbrowse/core/util'
-import type { IAnyModelType, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyModelType,
+  Instance,
+  SnapshotIn,
+} from '@jbrowse/mobx-state-tree'
 
 /**
  * A session an embedder hands over may be a v4 one: a share link, a stored
@@ -183,3 +189,8 @@ export function createEmbeddedRootModel<
         : snap,
     )
 }
+
+export type _EmbeddedRootServesItsSession = AssertExtends<
+  Instance<ReturnType<typeof createEmbeddedRootModel>>,
+  BaseSessionRoot
+>

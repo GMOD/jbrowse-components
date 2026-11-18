@@ -10,6 +10,8 @@ import {
 
 import { replaceSession } from './replaceSession.ts'
 
+import type { BaseSessionRoot } from '../Session/BaseSession.ts'
+import type { AssertExtends } from '../assertExtends.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
@@ -230,3 +232,8 @@ export function BaseRootModelFactory<
 
 export type BaseRootModelType = ReturnType<typeof BaseRootModelFactory>
 export type BaseRootModel = Instance<BaseRootModelType>
+
+export type _BaseRootServesItsSession = AssertExtends<
+  BaseRootModel,
+  BaseSessionRoot
+>
