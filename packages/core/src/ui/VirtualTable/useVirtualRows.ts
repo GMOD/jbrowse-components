@@ -12,24 +12,23 @@ const OVERSCAN = 20
  * returning the range of row indices to render, the spacer heights that
  * offset that window from the top/bottom, and the width inside any vertical
  * scrollbar. The container scrolls back to the top whenever `resetKey`
- * changes, and brings row `scrollToIndex` into view, below the sticky header,
- * whenever `scrollToKey` changes: a row a sort or a filter moves stays where
- * the reader left the list.
+ * changes, and brings the row with id `scrollToId` into view, below the
+ * sticky header, whenever that id changes: a row a sort or a filter moves
+ * stays where the reader left the list, and a row the filters leave out
+ * scrolls nowhere.
  */
 export function useVirtualRows({
   parentRef,
-  count,
+  rows,
   rowHeight,
   resetKey,
-  scrollToKey,
-  scrollToIndex,
+  scrollToId,
 }: {
   parentRef: React.RefObject<HTMLDivElement | null>
-  count: number
+  rows: readonly { id: string | number }[]
   rowHeight: number
   resetKey: string
-  scrollToKey?: string | number
-  scrollToIndex?: number
+  scrollToId?: string | number
 }) {
   // read by the reset below, which skips scrollTo (and the layout it forces)
   // when the list is already at the top, as it is for most keystrokes
@@ -75,22 +74,27 @@ export function useVirtualRows({
   }, [resetKey, parentRef])
 
   // declared after the reset, so a target row wins over the top
-  const scrolledKey = useRef<string | number>(undefined)
+  const scrolledId = useRef<string | number>(undefined)
   useEffect(() => {
     const el = parentRef.current
-    if (el && scrollToKey !== scrolledKey.current) {
-      scrolledKey.current = scrollToKey
-      if (scrollToIndex !== undefined) {
-        const top = scrollToIndex * rowHeight
+    if (el && scrollToId !== scrolledId.current) {
+      scrolledId.current = scrollToId
+      const index =
+        scrollToId === undefined
+          ? -1
+          : rows.findIndex(row => row.id === scrollToId)
+      if (index !== -1) {
+        const top = index * rowHeight
         const room = el.clientHeight - HEADER_HEIGHT
         if (top < el.scrollTop || top + rowHeight > el.scrollTop + room) {
           el.scrollTop = Math.max(0, top - (room - rowHeight) / 2)
         }
       }
     }
-  }, [scrollToKey, scrollToIndex, rowHeight, parentRef])
+  }, [scrollToId, rows, rowHeight, parentRef])
 
   const { scrollTop, clientHeight, clientWidth } = scrollState
+  const count = rows.length
   const { start, end } = virtualRange({
     scroll: scrollTop,
     cellSize: rowHeight,

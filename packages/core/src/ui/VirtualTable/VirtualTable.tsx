@@ -45,8 +45,8 @@ const SpacerRow = observer(function SpacerRow({ height }: { height: number }) {
 /**
  * A table of fixed-height rows that draws only the rows in view, under a
  * sticky header whose sortable columns sort on click and whose columns resize
- * on drag. It holds no
- * row state: the caller hands it the rows in order and the sort to show.
+ * on drag. It holds no row state: the caller hands it the rows in order and
+ * the sort to show.
  */
 const VirtualTable = observer(function VirtualTable<
   R extends { id: string | number },
@@ -102,18 +102,13 @@ const VirtualTable = observer(function VirtualTable<
   const highlightName = `jbrowse-table-${useId().replaceAll(/[^a-zA-Z0-9]/g, '')}`
   useSearchHighlight(bodyRef, highlightPatterns, highlightName)
   const leadingWidth = leading?.width ?? 0
-  const scrollToIndex =
-    scrollToRowId === undefined
-      ? -1
-      : rows.findIndex(row => row.id === scrollToRowId)
   const { startIndex, endIndex, leadingGap, trailingGap, clientWidth } =
     useVirtualRows({
       parentRef,
-      count: rows.length,
+      rows,
       rowHeight,
       resetKey: JSON.stringify([sortField, sortAscending, resetKey]),
-      scrollToKey: scrollToRowId,
-      scrollToIndex: scrollToIndex === -1 ? undefined : scrollToIndex,
+      scrollToId: scrollToRowId,
     })
   const { colWidths, onResizeStart } = useColumnResize(
     widths((clientWidth || width) - leadingWidth),
