@@ -457,9 +457,8 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
 }
 
 // Clicked-feature outline: a 1 CSS px line, i.e. half-max STROKE_HALF_PX either
-// side of the edge. STROKE_PERP_PX is how far the ramp can reach in the worst
-// case (STROKE_HALF_PX + aaHalfPx, maximal at dpr=1), and so how much extra room
-// the geometry has to leave — see the geometry functions' extraPerpPx.
+// side of the edge. STROKE_PERP_PX is the room the geometry leaves for it on top
+// of the ramp's own aaHalfPx pad — see the geometry functions' extraPerpPx.
 static const float STROKE_HALF_PX = 0.5;
 public static const float STROKE_PERP_PX = 1.0;
 // Exported so the Canvas2D twin strokes its clicked outline at the same weight
@@ -492,15 +491,15 @@ public float thinRibbonPad(float perpFactor, float4 c, float s0, float s1) {
 // Float32 headroom on both pads below, and nothing else.
 //
 // It was 1.0, described as a fourth term for "AA fade at the boundary" — which
-// term (1) already covers: the ramp is aaHalf = 0.5/dpr PERPENDICULAR px
-// (aaHalfPx), maximal at dpr=1, and perpFactor·0.5 is exactly that projected
-// onto x. `syntenyFillPad.test.ts` measures the two pads against the coverage
-// footprint at every row of every shape it sweeps and the worst case comes out
-// at exactly -slack, i.e. the whole pixel went unused in all of them. On the
-// thin near-vertical ribbons a whole-genome view is mostly made of, 1px on each
-// side of a ~2px-wide quad was most of what the rasterizer walked: dropping it
-// to float slop cuts their rasterized area to 83.7% with the footprint still
-// fully contained. The vertex pad and the fragment's edges are computed from the
+// term (1) already covers: the ramp is aaHalfPx PERPENDICULAR px, and
+// perpFactor·aaHalfPx is exactly that projected onto x.
+// `syntenyFillPad.test.ts` measures the two pads against the coverage footprint
+// at every row of every shape it sweeps and the worst case comes out at exactly
+// -slack, i.e. the whole pixel went unused in all of them. On the thin
+// near-vertical ribbons a whole-genome view is mostly made of, 1px on each side
+// of a ~2px-wide quad was most of what the rasterizer walked: dropping it to
+// float slop cuts their rasterized area to 83.7% with the footprint still fully
+// contained. The vertex pad and the fragment's edges are computed from the
 // same float32 corners, so the two only disagree by arithmetic rounding, which
 // at |x| ~ 4000px is ~1e-4.
 static const float PAD_SLACK_PX = 0.25;
@@ -610,8 +609,8 @@ public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   float d1 = abs(i.localPos.x - e.edge1) / e.pf1;
   // A stroke of fixed CSS width (half-max at STROKE_HALF_PX, so 1 CSS px wide
   // at any dpr) with a one-output-pixel ramp. The ramp reaches zero at
-  // STROKE_HALF_PX + aaHalfPx ≤ STROKE_PERP_PX, which is what the geometry's
-  // extraPerpPx guarantees room for.
+  // STROKE_HALF_PX + aaHalfPx, which the geometry's aaHalfPx + extraPerpPx pad
+  // holds since STROKE_HALF_PX ≤ STROKE_PERP_PX.
   float dpr = u.devicePixelRatio;
   float band = max(strokeCoverage(STROKE_HALF_PX, d0, dpr),
                    strokeCoverage(STROKE_HALF_PX, d1, dpr));
@@ -644,8 +643,8 @@ public bool isClickedSilhouette(Instance inst, Uniforms u) {
 //
 // `extraPerpPx` widens the polygon by that many PERPENDICULAR px on each side.
 // The fill passes 0 (the pad already covers coverage's own footprint); the
-// outline passes STROKE_PERP_PX, because its stroke reaches a full perpendicular
-// pixel OUTSIDE each edge while the fill pad only guarantees ~0.5 there.
+// outline passes STROKE_PERP_PX, because its stroke reaches STROKE_HALF_PX past
+// the aaHalfPx that is all the fill pad guarantees OUTSIDE each edge.
 // ---------------------------------------------------------------------------
 
 public static const uint CURVE_SEGMENTS = 8u;

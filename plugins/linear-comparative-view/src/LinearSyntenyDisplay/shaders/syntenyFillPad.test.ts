@@ -64,10 +64,6 @@ function edgesAt(c: Corners, h: number, t: number, curve: boolean) {
 // perpCoverage: the outermost x on each side where coverage is still non-zero.
 // dL = (x - xL)/pfL + expand must exceed -aaHalf, so the footprint reaches
 // pfL*(aaHalf + expand) past the edge.
-//
-// aaHalf is 0.5/dpr CSS px (aaHalfPx), so dpr=1 gives the largest footprint and
-// is the case the geometry has to cover — that is why 0.5 is hard-coded here
-// rather than parameterised. Same for STROKE_PERP_PX below.
 function footprint(c: Corners, h: number, t: number, curve: boolean, dpr = 1) {
   const { e0, e1, pf0, pf1 } = edgesAt(c, h, t, curve)
   const xL = Math.min(e0, e1)
@@ -125,7 +121,7 @@ const bulgeX = (c: Corners) =>
 
 // `extraPerpPx` mirrors the geometry functions' parameter: 0 for the fill
 // passes, STROKE_PERP_PX for the clicked-outline passes, whose stroke ramp
-// reaches STROKE_HALF_PX + aaHalf = 1 CSS px outside each edge at dpr=1.
+// reaches STROKE_HALF_PX + aaHalf outside each edge.
 const STROKE_PERP_PX = 1
 const STROKE_HALF_PX = 0.5
 
