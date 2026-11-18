@@ -266,6 +266,55 @@ test('relative uris in the options resolve against the page for the worker', asy
   controller.destroy()
 })
 
+const shorthandLocalTrack = {
+  ...featureTrack('local'),
+  adapter: { type: 'BedTabixAdapter', uri: 'peaks.bed.gz' },
+}
+
+const peakFiles = {
+  'peaks.bed.gz': new Uint8Array([1]),
+  'peaks.bed.gz.tbi': new Uint8Array([2]),
+}
+
+function expectLocalPeaks(session: ViewModel['session']) {
+  const conf = session.getTrackById('local')
+  expect(isStateTreeNode(conf) ? getSnapshot(conf) : conf).toMatchObject({
+    adapter: {
+      bedGzLocation: { locationType: 'BlobLocation', name: 'peaks.bed.gz' },
+      index: {
+        location: { locationType: 'BlobLocation', name: 'peaks.bed.gz.tbi' },
+      },
+    },
+  })
+}
+
+test('a shorthand adapter in the launch tracks reads its local file, index sibling and all', async () => {
+  const controller = createLinearGenomeView(document.createElement('div'), {
+    assembly,
+    tracks: [shorthandLocalTrack],
+    localFiles: peakFiles,
+  })
+  const { session } = await controller.whenReady()
+
+  expectLocalPeaks(session)
+  controller.destroy()
+})
+
+test('update() with a shorthand adapter reads its local file, index sibling and all', async () => {
+  const controller = createLinearGenomeView(document.createElement('div'), {
+    assembly,
+    tracks: [],
+  })
+  const { session } = await controller.whenReady()
+  await controller.update({
+    tracks: [shorthandLocalTrack],
+    localFiles: peakFiles,
+  })
+
+  expectLocalPeaks(session)
+  controller.destroy()
+})
+
 class GeneIndexPlugin extends Plugin {
   name = 'GeneIndexPlugin'
 

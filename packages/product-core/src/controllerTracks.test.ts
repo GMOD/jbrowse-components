@@ -1,4 +1,14 @@
-import { isLooseTrack, withAssemblyName } from './controllerTracks.ts'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
+import { types } from '@jbrowse/mobx-state-tree'
+
+import {
+  isLooseTrack,
+  resolveTracks,
+  withAssemblyName,
+} from './controllerTracks.ts'
+import { registerLocalFiles } from './localFiles.ts'
 
 test('stamps the assembly name onto a config that omits assemblyNames', () => {
   expect(
@@ -25,4 +35,58 @@ test('a bare URL and a { uri } object are loose; a full config is not', () => {
     false,
   )
   expect(isLooseTrack({ trackId: 't', uri: 42 })).toBe(false)
+})
+
+function sessionWithShorthandAdapter() {
+  const pluginManager = new PluginManager()
+  pluginManager.addAdapterType(
+    () =>
+      new AdapterType({
+        name: 'ShorthandAdapter',
+        configSchema: ConfigurationSchema(
+          'ShorthandAdapter',
+          { dataLocation: { type: 'fileLocation', defaultValue: { uri: '' } } },
+          {
+            explicitlyTyped: true,
+            preProcessSnapshot: (snap: Record<string, unknown>) =>
+              snap.uri ? { ...snap, dataLocation: { uri: snap.uri } } : snap,
+          },
+        ),
+        getAdapterClass: () => {
+          throw new Error('no adapter is instantiated in this test')
+        },
+      }),
+  )
+  pluginManager.createPluggableElements()
+  return types
+    .model({})
+    .views(() => ({
+      get view() {
+        return { tracks: [], launchTrack: async () => {}, hideTrack: () => {} }
+      },
+      getTrackById: () => undefined,
+      addSessionTrackConf: () => {},
+    }))
+    .create({}, { pluginManager })
+}
+
+test('a shorthand adapter in a track reads its registered local file', () => {
+  const localFiles = registerLocalFiles({ 'x.dat': new Uint8Array([1]) })
+
+  const [conf] = resolveTracks(
+    [
+      {
+        type: 'FeatureTrack',
+        trackId: 't',
+        adapter: { type: 'ShorthandAdapter', uri: 'x.dat' },
+      },
+    ],
+    sessionWithShorthandAdapter(),
+    'volvox',
+    localFiles,
+  )
+
+  expect(conf).toMatchObject({
+    adapter: { type: 'ShorthandAdapter', dataLocation: localFiles['x.dat'] },
+  })
 })

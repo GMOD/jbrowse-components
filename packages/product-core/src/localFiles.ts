@@ -1,4 +1,5 @@
 import { storeBlobLocation } from '@jbrowse/core/util'
+import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BlobLocation } from '@jbrowse/core/util'
@@ -196,4 +197,24 @@ export function resolveLocalFileUris<T>(
     ) as T
   }
   return config
+}
+
+/**
+ * A host-written config node made ready for the engine: shorthand adapters
+ * expanded, registered names swapped for their blobs, and every remaining
+ * relative URI stamped against the page.
+ */
+export function resolveLocalConfig<T>(
+  config: T,
+  pluginManager: PluginManager,
+  locations?: Record<string, BlobLocation>,
+) {
+  return withPageBaseUri(
+    locations
+      ? resolveLocalFileUris(
+          normalizeAdapterSnapshots(config, pluginManager),
+          locations,
+        )
+      : config,
+  )
 }

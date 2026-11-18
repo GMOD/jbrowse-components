@@ -3,10 +3,9 @@ import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import {
   destroyViewState,
-  normalizeAdapterSnapshots,
   registerLocalFiles,
   resolveAssemblies,
-  resolveLocalFileUris,
+  resolveLocalConfig,
 } from '@jbrowse/product-core'
 
 import createModel from './createModel/index.ts'
@@ -197,23 +196,7 @@ export default async function createViewState(
   // displays a session names are dynamic imports too
   await pluginManager.preloadSessionTypes(opts.defaultSession)
   await pluginManager.preloadSessionTypes(opts.session)
-  // registered once, here, rather than per track: each registration pushes a
-  // File into core's process-global blobMap. Adapters are expanded out of their
-  // `{ type, uri }` shorthand first, because that is the form the substitution
-  // recognizes — see normalizeAdapterSnapshots
   const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
-  // a declaration rather than a generic arrow: `<T>(x: T) => …` in a .ts file
-  // is a JSX tag to babel, which is what jest parses these with
-  function local<T>(node: T) {
-    return withPageBaseUri(
-      blobs
-        ? resolveLocalFileUris(
-            normalizeAdapterSnapshots(node, pluginManager),
-            blobs,
-          )
-        : node,
-    )
-  }
   const stateTree = model.create(
     {
       config: {
@@ -228,10 +211,18 @@ export default async function createViewState(
         // `uri` here is on the assembly itself — which is not a location node
         // and must not be rewritten as one.
         assemblies: assemblies.map(a =>
-          local(expandAssemblyShorthand(a, pluginManager)),
+          resolveLocalConfig(
+            expandAssemblyShorthand(a, pluginManager),
+            pluginManager,
+            blobs,
+          ),
         ),
         tracks: tracks?.map(t =>
-          local(expandLooseTrackConfig(t, pluginManager, assemblyNames[0])),
+          resolveLocalConfig(
+            expandLooseTrackConfig(t, pluginManager, assemblyNames[0]),
+            pluginManager,
+            blobs,
+          ),
         ),
         internetAccounts,
         aggregateTextSearchAdapters: withPageBaseUri(

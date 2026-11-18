@@ -3,10 +3,9 @@ import { assembleLocString, expandLooseTrackConfig } from '@jbrowse/core/util'
 import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import {
   destroyViewState,
-  normalizeAdapterSnapshots,
   registerLocalFiles,
   resolveAssembly,
-  resolveLocalFileUris,
+  resolveLocalConfig,
   searchIndexKey,
   withHostOverrides,
 } from '@jbrowse/product-core'
@@ -266,23 +265,7 @@ function finishCreateViewState(
           highlight: highlight ?? view?.highlight,
         }
       : undefined
-  // registered once, here, rather than per track: each registration pushes a
-  // File into core's process-global blobMap. Adapters are expanded out of their
-  // `{ type, uri }` shorthand first, because that is the form the substitution
-  // recognizes — see normalizeAdapterSnapshots
   const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
-  // a declaration rather than a generic arrow: `<T>(x: T) => …` in a .ts file
-  // is a JSX tag to babel, which is what jest parses these with
-  function local<T>(node: T) {
-    return withPageBaseUri(
-      blobs
-        ? resolveLocalFileUris(
-            normalizeAdapterSnapshots(node, pluginManager),
-            blobs,
-          )
-        : node,
-    )
-  }
   const stateTree = model.create(
     {
       config: {
@@ -297,11 +280,19 @@ function finishCreateViewState(
         // `uri` here is on the assembly itself — which is not a location node
         // and must not be rewritten as one.
         assemblies: genomes.map(a =>
-          local(expandAssemblyShorthand(a, pluginManager)),
+          resolveLocalConfig(
+            expandAssemblyShorthand(a, pluginManager),
+            pluginManager,
+            blobs,
+          ),
         ),
         // a loose `{ trackId, uri }` has no location node until it is guessed
         tracks: tracks?.map(t =>
-          local(expandLooseTrackConfig(t, pluginManager, assemblyName)),
+          resolveLocalConfig(
+            expandLooseTrackConfig(t, pluginManager, assemblyName),
+            pluginManager,
+            blobs,
+          ),
         ),
         internetAccounts,
         aggregateTextSearchAdapters: withPageBaseUri(

@@ -7,11 +7,7 @@ import {
 } from '@jbrowse/core/pluginDefinitions'
 import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
-import {
-  normalizeAdapterSnapshots,
-  registerLocalFiles,
-  resolveLocalFileUris,
-} from '@jbrowse/product-core'
+import { registerLocalFiles, resolveLocalConfig } from '@jbrowse/product-core'
 
 import createModel, { hasSession } from './createModel.ts'
 import { destroyViewState } from './destroyViewState.ts'
@@ -104,29 +100,17 @@ function finishCreateViewState(
   // what the plugin manager actually installed at runtime, i.e. the subset of
   // `plugins` that carried a definition (a bare plugin class carries none)
   const loaded = pluginManager.runtimePluginDefinitions
-  // registered once, here, rather than per track: each registration pushes a
-  // File into core's process-global blobMap. Adapters are expanded out of their
-  // `{ type, uri }` shorthand first, because that is the form the substitution
-  // recognizes — see normalizeAdapterSnapshots
   const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
-  // a declaration rather than a generic arrow: `<T>(x: T) => …` in a .ts file
-  // is a JSX tag to babel, which is what jest parses these with
-  function local<T>(node: T) {
-    return withPageBaseUri(
-      blobs
-        ? resolveLocalFileUris(
-            normalizeAdapterSnapshots(node, pluginManager),
-            blobs,
-          )
-        : node,
-    )
-  }
   const stateTree = model.create(
     {
       jbrowse: {
         ...config,
         tracks: config.tracks?.map(t =>
-          local(expandLooseTrackConfig(t, pluginManager, onlyAssembly)),
+          resolveLocalConfig(
+            expandLooseTrackConfig(t, pluginManager, onlyAssembly),
+            pluginManager,
+            blobs,
+          ),
         ),
         connections: withPageBaseUri(config.connections),
         aggregateTextSearchAdapters: withPageBaseUri(
@@ -139,7 +123,11 @@ function finishCreateViewState(
         // Their own shorthand is expanded first, by a different door than an
         // adapter's — see the lgv product's createViewState for why.
         assemblies: config.assemblies.map(a =>
-          local(expandAssemblyShorthand(a, pluginManager)),
+          resolveLocalConfig(
+            expandAssemblyShorthand(a, pluginManager),
+            pluginManager,
+            blobs,
+          ),
         ),
         // The plugins the host loaded for us belong in the app's own plugin
         // list, not only in the plugin manager. `onPluginsUpdated` answers

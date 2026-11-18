@@ -10,11 +10,7 @@ import {
   withHostOverrides,
 } from './controllerTracks.ts'
 import { destroyViewState } from './destroyViewState.ts'
-import {
-  mergeLocalFiles,
-  registerLocalFiles,
-  resolveLocalFileUris,
-} from './localFiles.ts'
+import { mergeLocalFiles, registerLocalFiles } from './localFiles.ts'
 import { observeSession } from './observeSession.ts'
 import { resolveAssembly } from './resolveAssemblies.ts'
 
@@ -123,12 +119,7 @@ export function createEmbeddedController<
         resolved.tracks,
         (wanted.tracks ?? [])
           .filter((track): track is TrackConf => !isLooseTrack(track))
-          .map(track =>
-            resolveLocalFileUris(
-              withAssemblyName(track, assemblyName),
-              localFiles,
-            ),
-          ),
+          .map(track => withAssemblyName(track, assemblyName)),
         'trackId',
       ),
       view: hasSession ? undefined : launchFor(wanted, wanted),

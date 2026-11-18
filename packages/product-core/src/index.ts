@@ -109,6 +109,7 @@ export type { SessionSnapshot, SharedSessionSource } from './sessionUrl.ts'
 export {
   normalizeAdapterSnapshots,
   registerLocalFiles,
+  resolveLocalConfig,
   resolveLocalFileUris,
 } from './localFiles.ts'
 export type { LocalFileInput } from './localFiles.ts'

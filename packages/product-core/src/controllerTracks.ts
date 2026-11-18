@@ -1,5 +1,4 @@
 import { getEnv } from '@jbrowse/core/util'
-import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import {
   canonicalTrackId,
   guessTrackConf,
@@ -7,7 +6,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import { resolveLocalFileUris } from './localFiles.ts'
+import { resolveLocalConfig } from './localFiles.ts'
 
 import type { BlobLocation } from '@jbrowse/core/util'
 import type { LooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
@@ -91,11 +90,7 @@ export function resolveTracks(
         // through that seed, and would otherwise reach addSessionTrackConf with no
         // assemblyNames and silently fail to display
         withAssemblyName(track, assemblyName)
-    // after the guess, so the adapter has already derived its index sibling
-    // from the uri string and both get swapped for blobs together
-    return withPageBaseUri(
-      localFiles ? resolveLocalFileUris(conf, localFiles) : conf,
-    )
+    return resolveLocalConfig(conf, pluginManager, localFiles)
   })
 }
 
