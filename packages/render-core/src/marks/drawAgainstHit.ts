@@ -284,6 +284,7 @@ export interface SweepOptions<C> {
   sliceOne?: (channels: C, index: number) => C
   inkSlackPx?: number
   contains?: (index: number, xPx: number, yPx: number) => boolean
+  instanceOf?: (rect: RecordedRect) => number | undefined
 }
 
 /**
@@ -377,7 +378,10 @@ function hitViolations(
  * that way at all — the batch has fewer rects than instances, or the wrong ones.
  * `sliceOne` is the way in for those: hand back one instance's channels and the
  * sweep paints it alone, so the attribution holds by construction and a culled
- * instance is visibly an empty painting.
+ * instance is visibly an empty painting. A painter that strokes a run through
+ * its instances (`line`'s segment from the previous midpoint) cannot paint one
+ * alone at all; `instanceOf` names the instance each recorded rect belongs to
+ * instead, which a test reads off a color it gives each instance.
  *
  * Four claims, all of them one-directional and true of every mark:
  *
@@ -427,6 +431,7 @@ export function sweepMarkAgainstHit<C extends Counted, S extends MarkFrame>(
     sliceOne,
     inkSlackPx = 1,
     contains: rule,
+    instanceOf,
   }: SweepOptions<C> = {},
 ) {
   const { count } = channels
@@ -436,15 +441,19 @@ export function sweepMarkAgainstHit<C extends Counted, S extends MarkFrame>(
     return calls
   }
   const rects = paint(channels)
-  const perRect = rects.length === count
-  if (!perRect && !sliceOne) {
+  const perRect = !instanceOf && rects.length === count
+  if (!perRect && !sliceOne && !instanceOf) {
     return [`painted ${rects.length} rects for ${count} instances`]
   }
-  const boxes: readonly (Box | undefined)[] = sliceOne
+  const boxes: readonly (Box | undefined)[] = instanceOf
     ? Array.from({ length: count }, (_, i) =>
-        unionBox(paint(sliceOne(channels, i))),
+        unionBox(rects.filter(r => instanceOf(r) === i)),
       )
-    : rects.map(r => ({ x: r.x, y: r.y, w: r.w, h: r.h }))
+    : sliceOne
+      ? Array.from({ length: count }, (_, i) =>
+          unionBox(paint(sliceOne(channels, i))),
+        )
+      : rects.map(r => ({ x: r.x, y: r.y, w: r.w, h: r.h }))
   let yMin = Infinity
   let yMax = -Infinity
   for (const b of boxes) {

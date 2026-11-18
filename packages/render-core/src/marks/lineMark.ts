@@ -9,6 +9,8 @@ import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
 import { denormalizeScore } from '../shaders/scoreScale.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
+import { inkOnRect, inkOnStroke, nearSegment, nearestInk } from './markHit.ts'
+import { svgNumber } from './markInk.ts'
 import {
   colorBits,
   isThreshold,
@@ -30,6 +32,7 @@ import { valueScaleUniforms } from './valueScale.ts'
 import type { BlockClipResult } from '../blockClipUtils.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { ScaleTypeCode } from '../scoreScale.ts'
+import type { InkHit } from './markHit.ts'
 import type { ColorChannel } from './markRamp.ts'
 import type { RowChannel, RowParams } from './rowLane.ts'
 import type { RowTable } from './rowTable.ts'
@@ -731,25 +734,75 @@ function paintCenter(
   })
 }
 
-function box(
-  x0: number,
-  x1: number,
-  y0: number,
-  y1: number,
-  half: number,
-): InkRect {
-  const left = Math.min(x0, x1) - half
-  const top = Math.min(y0, y1) - half
-  return {
+// The box a polyline of `points` (x, y pairs) stroked `widthPx` wide lies in,
+// and the polyline, which a highlight strokes. One of no length, the linear
+// variant's dot, is its box alone: a path of no length strokes nothing.
+function polylineInk(points: readonly number[], widthPx: number): InkRect {
+  const half = widthPx / 2
+  let minX = Infinity
+  let maxX = -Infinity
+  let minY = Infinity
+  let maxY = -Infinity
+  let d = ''
+  for (let k = 0; k < points.length; k += 2) {
+    const x = points[k]!
+    const y = points[k + 1]!
+    minX = Math.min(minX, x)
+    maxX = Math.max(maxX, x)
+    minY = Math.min(minY, y)
+    maxY = Math.max(maxY, y)
+    d += `${k === 0 ? 'M' : 'L'}${svgNumber(x)} ${svgNumber(y)}`
+  }
+  const left = minX - half
+  const top = minY - half
+  const rect = {
     left,
     top,
-    width: Math.max(x0, x1) + half - left,
-    height: Math.max(y0, y1) + half - top,
+    width: maxX + half - left,
+    height: maxY + half - top,
   }
+  return maxX > minX || maxY > minY
+    ? { ...rect, stroke: { d, widthPx, originX: 0, originY: 0 } }
+    : rect
 }
 
-// The step's ink for one instance: its rise, its top and, where nothing abuts
-// it, its drop, each stroked `lineWidth` wide.
+/**
+ * Instance `i`'s step as `traceStep` strokes it, in canvas px: the rise at
+ * its start from the value before it, or from the origin where nothing abuts
+ * it; the top across its span; and the drop at its end to the origin, or to
+ * its own top where the next abuts it and rises from there.
+ */
+interface StepStroke {
+  start: number
+  end: number
+  riseFrom: number
+  top: number
+  dropTo: number
+}
+
+function stepStroke(
+  c: LineChannels,
+  g: LineFrame,
+  origin: number,
+  i: number,
+): StepStroke | undefined {
+  const { x, x2, y, row, count } = c
+  const slot = rowSlot(row, i, g.table)
+  if (slot !== undefined) {
+    const s = spansOf(c)
+    const top = valueYPx(g, y[i]!, slot)
+    const originY = valueYPx(g, origin, slot)
+    return {
+      start: g.bpToPx(x[i]!),
+      end: g.bpToPx(x2[i]!),
+      riseFrom: abutsBefore(s, i) ? valueYPx(g, y[i - 1]!, slot) : originY,
+      top,
+      dropTo: i < count - 1 && abutsBefore(s, i + 1) ? top : originY,
+    }
+  }
+  return undefined
+}
+
 function stepInk(
   c: LineChannels,
   block: RenderBlock,
@@ -757,28 +810,118 @@ function stepInk(
   params: LineParams,
   i: number,
 ): InkRect | undefined {
-  const { x, x2, y, row, count } = c
-  const slot = rowSlot(row, i, params.rowTable)
-  if (slot === undefined) {
-    return undefined
-  }
-  const g = lineFrame(block, frame, params)
-  const s = spansOf(c)
-  const top = valueYPx(g, y[i]!, slot)
-  const originY = valueYPx(g, params.origin, slot)
-  const riseFrom = abutsBefore(s, i) ? valueYPx(g, y[i - 1]!, slot) : originY
-  const dropTo = i < count - 1 && abutsBefore(s, i + 1) ? top : originY
-  return box(
-    g.bpToPx(x[i]!),
-    g.bpToPx(x2[i]!),
-    Math.min(top, riseFrom, dropTo),
-    Math.max(top, riseFrom, dropTo),
-    params.lineWidth / 2,
+  const st = stepStroke(c, lineFrame(block, frame, params), params.origin, i)
+  return (
+    st &&
+    polylineInk(
+      [
+        st.start,
+        st.riseFrom,
+        st.start,
+        st.top,
+        st.end,
+        st.top,
+        st.end,
+        st.dropTo,
+      ],
+      params.lineWidth,
+    )
   )
 }
 
-// The linear variant's ink for one instance: the segment from the previous
-// midpoint to its own, or its dot at a run start.
+// Where a vertical quad at `x` from `y0` to `y1`, square capped and `widthPx`
+// wide, is nearest the cursor: its box, since the cap squares it off.
+function inkOnRise(
+  xPx: number,
+  yPx: number,
+  x: number,
+  y0: number,
+  y1: number,
+  widthPx: number,
+) {
+  const half = widthPx / 2
+  return inkOnRect(
+    xPx,
+    yPx,
+    x - half,
+    Math.min(y0, y1) - half,
+    widthPx,
+    Math.abs(y1 - y0) + widthPx,
+  )
+}
+
+const nearer = (a: InkHit, b: InkHit) => (b.distSq < a.distSq ? b : a)
+
+// The step's three square-capped quads are its stroke whole, so the nearest
+// of their boxes is the nearest ink.
+function stepHitNearest(
+  c: LineChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: LineParams,
+  xPx: number,
+  yPx: number,
+  candidates: Iterable<number>,
+  maxDistSq: number,
+) {
+  const g = lineFrame(block, frame, params)
+  const w = params.lineWidth
+  const half = w / 2
+  return nearestInk(candidates, maxDistSq, i => {
+    const st = stepStroke(c, g, params.origin, i)
+    return (
+      st &&
+      nearer(
+        nearer(
+          inkOnRise(xPx, yPx, st.start, st.riseFrom, st.top, w),
+          inkOnRect(
+            xPx,
+            yPx,
+            Math.min(st.start, st.end) - half,
+            st.top - half,
+            Math.abs(st.end - st.start) + w,
+            w,
+          ),
+        ),
+        inkOnRise(xPx, yPx, st.end, st.top, st.dropTo, w),
+      )
+    )
+  })
+}
+
+/**
+ * Instance `i`'s segment as `traceCenter` strokes it, in canvas px: from the
+ * previous midpoint where the instance links to it, else from its own, which
+ * is its dot at a run start.
+ */
+interface CenterStroke {
+  fromX: number
+  fromY: number
+  x: number
+  y: number
+}
+
+function centerStroke(
+  c: LineChannels,
+  g: LineFrame,
+  i: number,
+): CenterStroke | undefined {
+  const { x, x2, y, row } = c
+  const slot = rowSlot(row, i, g.table)
+  if (slot !== undefined) {
+    const cx = (g.bpToPx(x[i]!) + g.bpToPx(x2[i]!)) / 2
+    const cy = valueYPx(g, y[i]!, slot)
+    const linked = linksBefore(spansOf(c), i)
+    return {
+      fromX: linked ? (g.bpToPx(x[i - 1]!) + g.bpToPx(x2[i - 1]!)) / 2 : cx,
+      fromY: linked ? valueYPx(g, y[i - 1]!, slot) : cy,
+      x: cx,
+      y: cy,
+    }
+  }
+  return undefined
+}
+
 function centerInk(
   c: LineChannels,
   block: RenderBlock,
@@ -786,19 +929,38 @@ function centerInk(
   params: LineParams,
   i: number,
 ): InkRect | undefined {
-  const { x, x2, y, row } = c
-  const slot = rowSlot(row, i, params.rowTable)
-  if (slot === undefined) {
-    return undefined
-  }
+  const st = centerStroke(c, lineFrame(block, frame, params), i)
+  return st && polylineInk([st.fromX, st.fromY, st.x, st.y], params.lineWidth)
+}
+
+// A round-capped capsule: the segment's nearest point, half the stroke out.
+function centerHitNearest(
+  c: LineChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: LineParams,
+  xPx: number,
+  yPx: number,
+  candidates: Iterable<number>,
+  maxDistSq: number,
+) {
   const g = lineFrame(block, frame, params)
-  const s = spansOf(c)
-  const cx = (g.bpToPx(x[i]!) + g.bpToPx(x2[i]!)) / 2
-  const cy = valueYPx(g, y[i]!, slot)
-  const linked = linksBefore(s, i)
-  const px = linked ? (g.bpToPx(x[i - 1]!) + g.bpToPx(x2[i - 1]!)) / 2 : cx
-  const py = linked ? valueYPx(g, y[i - 1]!, slot) : cy
-  return box(px, cx, py, cy, params.lineWidth / 2)
+  return nearestInk(candidates, maxDistSq, i => {
+    const st = centerStroke(c, g, i)
+    if (st) {
+      const near = { x: st.x, y: st.y, distSq: Infinity }
+      nearSegment(st.fromX, st.fromY, st.x, st.y, xPx, yPx, near)
+      return inkOnStroke(
+        xPx,
+        yPx,
+        near.x,
+        near.y,
+        Math.sqrt(near.distSq),
+        params.lineWidth,
+      )
+    }
+    return undefined
+  })
 }
 
 /** The step variant: three square-capped quads an instance, flat filled. */
@@ -809,6 +971,7 @@ export const lineStepMark: MarkShape<LineChannels, LineParams> = {
   textures: rowTableTextures,
   paintBlock: paintStep,
   ink: stepInk,
+  hitNearest: stepHitNearest,
 }
 
 /** The linear variant: one round-capped capsule an instance, max blended. */
@@ -822,6 +985,7 @@ export const lineCenterMark: MarkShape<LineChannels, LineParams> = {
   textures: rowTableTextures,
   paintBlock: paintCenter,
   ink: centerInk,
+  hitNearest: centerHitNearest,
 }
 
 // Max into the frame would keep the brighter of the line and the marks under it.

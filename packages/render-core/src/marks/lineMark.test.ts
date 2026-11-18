@@ -5,6 +5,7 @@ import * as step from '../shaders/lineStepMark.iface.generated.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
 import { lineCenterMark, lineMarkOf, lineStepMark } from './lineMark.ts'
+import { shapeHitNearest } from './markHit.ts'
 import { HIDDEN_ROW, NO_ROW_COLOR, buildRowTable } from './rowTable.ts'
 
 import type { LineChannels, LineParams } from './lineMark.ts'
@@ -175,11 +176,18 @@ test('the step painter strokes a rise, the tops, the steps and a drop at each ga
   expect(calls.every(c => c.fillStyle === abgrToCssRgba(RED))).toBe(true)
 })
 
-test("the step's ink is each instance's rise, top and drop", () => {
+test("the step's ink is each instance's rise, top and drop, the stroke a highlight follows", () => {
   const ink = (i: number) => lineStepMark.ink!(stepped, block, frame, params, i)
-  expect(ink(0)).toEqual({ left: 99, top: 79, width: 102, height: 22 })
-  expect(ink(1)).toEqual({ left: 199, top: 39, width: 102, height: 42 })
-  expect(ink(2)).toEqual({ left: 299, top: 39, width: 102, height: 62 })
+  expect(ink(0)).toMatchObject({ left: 99, top: 79, width: 102, height: 22 })
+  expect(ink(1)).toMatchObject({ left: 199, top: 39, width: 102, height: 42 })
+  expect(ink(2)).toMatchObject({ left: 299, top: 39, width: 102, height: 62 })
+  // a rise from the value before, the top, and a drop to the origin at the gap
+  expect(ink(2)!.stroke).toEqual({
+    d: 'M300 40L300 60L400 60L400 100',
+    widthPx: 2,
+    originX: 0,
+    originY: 0,
+  })
   expect(ink(3)).toMatchObject({ left: 599, width: 102 })
   expect(ink(3)!.top).toBeCloseTo(19)
   expect(ink(3)!.height).toBeCloseTo(82)
@@ -206,9 +214,16 @@ test('the linear painter joins midpoints on a row and dots a run start', () => {
     top: 39,
     width: 102,
     height: 42,
+    stroke: { d: 'M150 80L250 40', widthPx: 2, originX: 0, originY: 0 },
   })
+  // a path of no length strokes nothing, so the dot is lit as its box
   const dot = lineCenterMark.ink!(c, block, frame, params, 2)!
-  expect([dot.left, dot.width, dot.height]).toEqual([649, 2, 2])
+  expect([dot.left, dot.width, dot.height, dot.stroke]).toEqual([
+    649,
+    2,
+    2,
+    undefined,
+  ])
   expect(dot.top).toBeCloseTo(19)
 })
 
@@ -236,6 +251,70 @@ test('a row color override paints the row', () => {
   const { ctx, calls } = mockCtx()
   lineStepMark.paintBlock(ctx, c, block, frame, { ...params, rowTable: table })
   expect(calls[0]!.fillStyle).toBe(abgrToCssRgba(BLUE))
+})
+
+// Two series on one row that cross, the second drawn over the first, so the
+// second's instances are asked first. A cursor on the first series' stroke,
+// inside the box the second's crossing stroke lies in, answers the first.
+describe('a hover where two series cross answers the stroke under the cursor', () => {
+  const crossing = (
+    rows: { x: number; x2: number; y: number }[],
+  ): LineChannels => ({ ...channels(rows), series: Uint32Array.of(0, 0, 1, 1) })
+  const hitAt = (
+    shape: typeof lineStepMark,
+    c: LineChannels,
+    reversed: boolean,
+    x: number,
+    y: number,
+  ) =>
+    shapeHitNearest(shape)!(
+      c,
+      { ...block, reversed },
+      frame,
+      params,
+      reversed ? frame.canvasWidth - x : x,
+      y,
+      [3, 2, 1, 0],
+      64,
+    )
+
+  // midpoints (150, 90) to (450, 10), and (150, 10) to (450, 90)
+  test.each([false, true])('linear, reversed %s', reversed => {
+    const c = crossing([
+      { x: 10, x2: 20, y: 1 },
+      { x: 40, x2: 50, y: 9 },
+      { x: 10, x2: 20, y: 9 },
+      { x: 40, x2: 50, y: 1 },
+    ])
+    expect(hitAt(lineCenterMark, c, reversed, 225, 70)).toMatchObject({
+      index: 1,
+      distSq: 0,
+    })
+    expect(hitAt(lineCenterMark, c, reversed, 225, 30)).toMatchObject({
+      index: 3,
+      distSq: 0,
+    })
+    expect(hitAt(lineCenterMark, c, reversed, 225, 75)?.index).toBe(1)
+  })
+
+  // the first steps up at x 200 to a top at y 20, the second down to y 80
+  test.each([false, true])('step, reversed %s', reversed => {
+    const c = crossing([
+      { x: 10, x2: 20, y: 2 },
+      { x: 20, x2: 30, y: 8 },
+      { x: 10, x2: 20, y: 8 },
+      { x: 20, x2: 30, y: 2 },
+    ])
+    expect(hitAt(lineStepMark, c, reversed, 250, 20)).toMatchObject({
+      index: 1,
+      distSq: 0,
+    })
+    expect(hitAt(lineStepMark, c, reversed, 250, 80)).toMatchObject({
+      index: 3,
+      distSq: 0,
+    })
+    expect(hitAt(lineStepMark, c, reversed, 250, 25)?.index).toBe(1)
+  })
 })
 
 test('interpolate picks the variant', () => {

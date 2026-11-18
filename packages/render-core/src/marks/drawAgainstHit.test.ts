@@ -6,7 +6,9 @@ import {
   GLYPH_TRIANGLE,
 } from '../shaders/pointMark.consts.generated.ts'
 import { barMark } from './barMark.ts'
+import { abgrToCssRgba } from './colorFill.ts'
 import { recordingContext, sweepMarkAgainstHit } from './drawAgainstHit.ts'
+import { lineCenterMark, lineStepMark } from './lineMark.ts'
 import {
   LINK_ELSEWHERE,
   LINK_NO_REGION,
@@ -22,6 +24,8 @@ import { spanMark } from './spanMark.ts'
 import { defineMark } from './types.ts'
 
 import type { BarChannels, BarParams } from './barMark.ts'
+import type { RecordedRect, SweepOptions } from './drawAgainstHit.ts'
+import type { LineChannels, LineParams } from './lineMark.ts'
 import type { LinkChannels, LinkParams } from './linkMark.ts'
 import type { PointChannels, PointParams } from './pointMark.ts'
 import type { RuleChannels, RuleParams } from './ruleMark.ts'
@@ -588,5 +592,79 @@ describe('link: every stroked curve answers its own hit, in both orientations', 
         ),
       ).toEqual([])
     }
+  })
+})
+
+// Two series on one row that cross: the first steps through three abutting
+// spans, a gap and two more; the second's spans stand apart, each linking to
+// the last within `gapBp` but the final one, a dot. The painter strokes a run
+// through its instances, so none paints alone, and each wears a color of its
+// own to be told apart in the record.
+const lineInstances: LineChannels = {
+  x: Uint32Array.from([5, 20, 30, 60, 75, 10, 40, 70]),
+  x2: Uint32Array.from([20, 30, 45, 70, 90, 25, 55, 95]),
+  y: Float32Array.from([0.2, 0.8, 0.5, 0.9, 0.1, 0.9, 0.1, 0.6]),
+  series: Uint32Array.from([0, 0, 0, 0, 0, 1, 1, 1]),
+  color: Uint32Array.from({ length: 8 }, (_, i) => 0xff000000 + i * 0x10101),
+  gapBp: 32,
+  count: 8,
+}
+
+const lineCss = [...lineInstances.color].map(c => abgrToCssRgba(c))
+const lineInstanceOf = (r: RecordedRect) => {
+  const i = lineCss.indexOf(r.fillStyle)
+  return i === -1 ? undefined : i
+}
+
+const lineParams: LineParams = { domain: [0, 1], origin: 0, lineWidth: 2 }
+
+describe('line: every stroke answers its own hit, in both orientations', () => {
+  const sweepLine = (
+    shape: MarkShape<LineChannels, LineParams>,
+    reversed: boolean,
+    options: SweepOptions<LineChannels>,
+  ) =>
+    sweepMarkAgainstHit(
+      defineMark({
+        shape,
+        channels: (c: LineChannels) => c,
+        params: () => lineParams,
+      }),
+      lineInstances,
+      { ...block, reversed },
+      frame,
+      { instanceOf: lineInstanceOf, ...options },
+    )
+
+  // The step's quads are square capped, so the boxes the recorder takes for
+  // its edges are its stroke exactly, and a point inside one answers it.
+  test.each([false, true])('step, reversed %s', reversed => {
+    const { ctx, calls } = recordingContext()
+    lineStepMark.paintBlock(
+      ctx,
+      lineInstances,
+      { ...block, reversed },
+      frame,
+      lineParams,
+    )
+    const onStroke = (i: number, x: number, y: number) =>
+      calls.some(
+        r =>
+          lineInstanceOf(r) === i &&
+          x >= r.x &&
+          x <= r.x + r.w &&
+          y >= r.y &&
+          y <= r.y + r.h,
+      )
+    expect(
+      sweepLine(lineStepMark, reversed, {
+        maxDistSq: Number.MIN_VALUE,
+        contains: onStroke,
+      }),
+    ).toEqual([])
+  })
+
+  test.each([false, true])('linear, reversed %s', reversed => {
+    expect(sweepLine(lineCenterMark, reversed, { maxDistSq: 400 })).toEqual([])
   })
 })
