@@ -348,7 +348,8 @@ export const svSpecs: ScreenshotSpec[] = [
     actions: [
       {
         type: 'type',
-        selector: 'input[placeholder^="Search"]',
+        selector:
+          '[data-testid="spreadsheet-toolbar"] input:not([aria-hidden])',
         value: 'X',
         clear: true,
       },
@@ -887,8 +888,8 @@ export const svSpecs: ScreenshotSpec[] = [
           type: 'SvInspectorView',
           assembly: 'GRCh38_GIABv3',
           uri: 'https://jbrowse.org/genomes/GRCh38/cgiab/GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf.gz',
-          // SV_20 is row 27, past the DataGrid's virtualization buffer at the
-          // default height, so the hover below cannot find it without this.
+          // SV_20 is row 27, which a virtualized table this short may not
+          // draw, so the hover below cannot find it without this.
           height: 1000,
         },
       ],

@@ -102,7 +102,8 @@ export const svVideos: VideoSpec[] = [
       // and the tour ended on "No results found".
       {
         type: 'type',
-        selector: 'input[placeholder^="Search"]',
+        selector:
+          '[data-testid="spreadsheet-toolbar"] input:not([aria-hidden])',
         value: 'X',
         clear: true,
         say: 'Filter the table to chromosome X',

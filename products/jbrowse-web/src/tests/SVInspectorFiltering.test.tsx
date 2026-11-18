@@ -90,21 +90,13 @@ test('opens SVInspector and tests data grid filtering functionality', async () =
   })
 }, 60000)
 
-// Regression test for the circular-view-not-filtering bug: driving the actual
-// DataGrid quick-filter input (rather than calling setVisibleRows directly, as
-// the tests above do) must propagate through visibleRows -> features. Before the
-// fix, onFilterModelChange read the visible-rows lookup synchronously — before
-// the filter pipeline recomputed it — so visibleRows stayed at the full set and
-// the circular view never filtered.
-test('SVInspector quick-filter input propagates to visibleRows/features', async () => {
+// Regression test for the circular-view-not-filtering bug: typing in the
+// table's search box must propagate through visibleRows -> features, not only
+// narrow the table's own rows.
+test('SVInspector search box input propagates to visibleRows/features', async () => {
   await mockConsoleWarn(async () => {
-    const {
-      session,
-      findByTestId,
-      getByTestId,
-      findByText,
-      findByPlaceholderText,
-    } = await createView(config)
+    const { session, findByTestId, getByTestId, findByText, findByLabelText } =
+      await createView(config)
 
     fireEvent.click(await findByText('File'))
     fireEvent.click(await findByText('Add'))
@@ -136,10 +128,11 @@ test('SVInspector quick-filter input propagates to visibleRows/features', async 
     const initialRowCount = spreadsheet.rows!.length
     expect(svInspectorView.features.length).toBe(initialRowCount)
 
-    // bnd_W is a unique ID present in no other row's data, so the quick filter
+    // bnd_W is a unique ID present in no other row's data, so the search
     // matches exactly one row
-    const quickFilterInput = await findByPlaceholderText('Search…', {}, delay)
-    fireEvent.change(quickFilterInput, { target: { value: 'bnd_W' } })
+    const searchInput = await findByLabelText('Search rows', {}, delay)
+    fireEvent.change(searchInput, { target: { value: 'bnd_W' } })
+    await findByText(`1 of ${initialRowCount}`, {}, delay)
 
     // the filter must reach visibleRows (and therefore the circular view's
     // feature set), not just the table's own rendering
@@ -214,11 +207,10 @@ test('SVInspector filtering updates circular view accordingly', async () => {
     expect(svInspectorView.visibleChordIds).toBeUndefined()
 
     const allRows = spreadsheet.rows!
-    const visibilityMap: Record<number, boolean> = {}
-    allRows.forEach((row: any, index: number) => {
-      visibilityMap[index] = row.CHROM === 'B'
-    })
-    spreadsheet.setVisibleRows(visibilityMap)
+    for (const { field } of spreadsheet.sheetColumns) {
+      spreadsheet.setColumnVisible(field, field === 'CHROM')
+    }
+    spreadsheet.setFilterText('b')
 
     const filteredRows = allRows.filter((row: any) => row.CHROM === 'B')
 
@@ -244,10 +236,8 @@ test('SVInspector filtering updates circular view accordingly', async () => {
   })
 }, 60000)
 
-// A search restored with the view — a saved session, a spec link — is pushed
-// into the grid by the effect that also publishes `filteredRowsSet`, and a
-// subscription made after it missed the event: two rows on screen under a chip
-// saying every row was shown, and a circle drawing the whole callset.
+// A search restored with the view — a saved session, a spec link — narrows the
+// rows and the circle as soon as the sheet loads.
 test('a search the view is launched with narrows visibleRows and the circle', async () => {
   await mockConsoleWarn(async () => {
     const { session } = await createView(config)

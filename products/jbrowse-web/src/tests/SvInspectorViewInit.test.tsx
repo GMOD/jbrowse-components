@@ -125,21 +125,23 @@ async function loadedSvInspector() {
   return view
 }
 
-// Regression: the relevant-regions getter recomputes on every grid filter
-// change, and setDisplayedRegions refits the circle. Reapplying an unchanged
-// region list therefore threw away the user's pan/zoom once per keystroke in the
-// quick-filter box. autoFit is the observable proxy: a refit sets it back true.
+// Regression: the relevant-regions getter recomputes on every search change,
+// and setDisplayedRegions refits the circle. Reapplying an unchanged region
+// list therefore threw away the user's pan/zoom once per keystroke in the
+// search box. autoFit is the observable proxy: a refit sets it back true.
+// bnd_W and bnd_Y each join ctgA to ctgB, so neither search changes the
+// relevant regions.
 test('filtering rows leaves the circular view zoom alone', async () => {
   const view = await loadedSvInspector()
   const { spreadsheet } = view.spreadsheetView
   const before = view.features.length
-  expect(before).toBeGreaterThan(0)
+  expect(before).toBeGreaterThan(1)
 
   view.circularView.zoomInButton()
   expect(view.circularView.autoFit).toBe(false)
 
-  spreadsheet!.setVisibleRows({ 0: false })
-  expect(view.features.length).toBe(before - 1)
+  spreadsheet!.setFilterText('bnd_W')
+  expect(view.features).toHaveLength(1)
   expect(view.circularView.autoFit).toBe(false)
 
   // and again with the toggle on, where the relevant-set really is a dependency
@@ -148,8 +150,8 @@ test('filtering rows leaves the circular view zoom alone', async () => {
   view.circularView.zoomInButton()
   expect(view.circularView.autoFit).toBe(false)
 
-  spreadsheet!.setVisibleRows({ 0: false, 1: false })
-  expect(view.features.length).toBe(before - 2)
+  spreadsheet!.setFilterText('bnd_Y')
+  expect(view.features).toHaveLength(1)
   expect(view.circularView.autoFit).toBe(false)
 }, 40000)
 

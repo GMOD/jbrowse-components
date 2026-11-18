@@ -44,7 +44,8 @@ const TYPO_TIMEOUT = 30_000
 
 const CHORDS =
   '[data-testid="structuralVariantChordRenderer"]:not([data-chord-count="0"])'
-const GRID_ROWS = '.MuiDataGrid-row'
+const GRID_ROWS =
+  '[data-testid="spreadsheet-view-data-grid"] tbody tr:has(> td + td)'
 const IMPORT_FORM = '[data-testid="import-form"]'
 const SPREADSHEET_IMPORT = '[data-testid="open_spreadsheet"]'
 const PENDING_MARKERS = [

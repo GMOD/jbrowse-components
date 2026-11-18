@@ -30,7 +30,7 @@ const SpreadsheetToolbar = observer(function SpreadsheetToolbar({
   const total = rows?.length ?? 0
   const shown = visibleRows?.length ?? 0
   return (
-    <ControlRow className={classes.toolbar}>
+    <ControlRow className={classes.toolbar} data-testid="spreadsheet-toolbar">
       {gridFacets.map(({ id, label, multiple, selected, options }) => {
         const known = selected.filter(key => options.some(o => o.key === key))
         return (

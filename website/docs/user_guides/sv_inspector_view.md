@@ -66,7 +66,10 @@ whole-genome circular overview.
 
 <Figure caption="The SV inspector with loaded results." src="/img/sv_inspector_importform_loaded.png" />
 
-Table filters are reflected in the circular view.
+The circle draws the rows the table keeps, so a word typed in **Search rows** or
+a choice in a dropdown above the table narrows the chords too. Clicking a row
+selects its record and highlights its chord, and clicking a chord scrolls the
+table to its row.
 
 <Figure caption="The SV inspector with filter applied." src="/img/sv_inspector_importform_filtered.png" />
 

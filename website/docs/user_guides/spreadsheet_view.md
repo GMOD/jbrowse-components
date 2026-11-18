@@ -20,8 +20,15 @@ name or its `#FusionName` header.
 
 ## Working with the table
 
-Click a column header to sort, and use the column and text filters to narrow
-rows.
+- Click a column header to sort by it; a second click reverses the order and a
+  third returns to the file's order
+- Type in **Search rows** to keep the rows where every word appears in some
+  shown column, in any case; the count in the box says how many rows are left
+- The columns button above the table shows and hides columns, and the search
+  reads only the shown ones
+- The export button saves the rows on view, in their order and with their shown
+  columns, as a CSV file
+- Clicking a row selects its feature
 
 <Figure src="/img/spreadsheet/feature_menu.png" caption="An SV callset in the spreadsheet view, with the feature menu open from the triangle beside the first row's location." />
 

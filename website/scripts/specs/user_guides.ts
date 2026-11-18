@@ -182,13 +182,13 @@ export const userGuideSpecs: ScreenshotSpec[] = [
       ],
     }),
     formAssembly: true,
-    readySelector: '.MuiDataGrid-row[data-rowindex="0"]',
+    readySelector: '[data-testid="spreadsheet-view-data-grid"] tbody tr button',
     readyTimeout: 60000,
     viewportHeight: 500,
     actions: [
       {
         type: 'click',
-        selector: '.MuiDataGrid-row[data-rowindex="0"] button',
+        selector: '[data-testid="spreadsheet-view-data-grid"] tbody tr button',
       },
       { type: 'waitForText', text: 'Open in breakpoint split view' },
     ],
