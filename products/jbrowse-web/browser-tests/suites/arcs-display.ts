@@ -212,7 +212,7 @@ const suite: TestSuite = {
     }),
     lgvSnapshotTest({
       name: 'RNA-seq junction arcs (spliced alignments)',
-      snapshot: 'arcs-rnaseq-sashimi',
+      snapshot: 'arcs-rnaseq-junctions',
       loc: 'ctgA:1-10000',
       tracks: ['spliced'],
       displayTestId: pileup,
@@ -408,7 +408,7 @@ const suite: TestSuite = {
         // Both views: the original, and the collapsed exon view's gene track.
         // Its junctions band is below the page's fold, so the painted count
         // above is what holds that one.
-        await pageSnapshot(page, 'arcs-collapse-introns-sashimi')
+        await pageSnapshot(page, 'arcs-collapse-introns-junctions')
       },
     },
   ],

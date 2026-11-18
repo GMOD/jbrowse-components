@@ -391,7 +391,7 @@ const suite: TestSuite = {
         const svg = await exportSvgAndSave(
           page,
           downloadDir,
-          'svg-export-sashimi-arcs',
+          'svg-export-junction-arcs',
         )
         const pathCount = (svg.match(/<path/g) ?? []).length
         console.log(`    ${pathCount} path elements (includes junction arcs)`)

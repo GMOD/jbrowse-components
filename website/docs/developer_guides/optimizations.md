@@ -424,14 +424,14 @@ projection to screen x depends on the pan. In one computed, a gesture recomputed
 both although only the projection changed. With the merge and the projection in
 separate computeds, at real RNA-seq junction counts:
 
-<!-- BEGIN GENERATED MEASUREMENT sashimi-frame-split -->
+<!-- BEGIN GENERATED MEASUREMENT junctions-frame-split -->
 
 | region copies | junction entries merged | merge + project (was) | project only (is) | control | of the frame the merge was |
 | ------------: | ----------------------: | --------------------: | ----------------: | ------: | -------------------------: |
 |             1 |                     651 |               0.516ms |           0.271ms | 0.530ms |                    **47%** |
 |             3 |                   1,953 |               0.838ms |           0.236ms | 0.861ms |                    **72%** |
 
-<!-- END GENERATED MEASUREMENT sashimi-frame-split -->
+<!-- END GENERATED MEASUREMENT junctions-frame-split -->
 
 The bigger case is a track with nothing to draw, where the computed still costs
 time. Junction arcs are on by default wherever the coverage band draws, so every

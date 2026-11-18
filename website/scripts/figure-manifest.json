@@ -1105,8 +1105,8 @@
     "type": "jbrowse-img",
     "docs": ["docs/jbrowse-img.md"]
   },
-  "jbrowse-img/sashimi_junctions": {
-    "name": "jbrowse-img/sashimi_junctions",
+  "jbrowse-img/rnaseq_junctions": {
+    "name": "jbrowse-img/rnaseq_junctions",
     "type": "jbrowse-img",
     "docs": ["docs/jbrowse-img.md"]
   },

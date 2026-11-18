@@ -1123,7 +1123,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   ...(
     [
       {
-        suffix: 'all_junctions',
+        suffix: 'all',
         display: {},
         // the two thin red arcs, which the canonical filter removes
         annotations: [
@@ -1152,7 +1152,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     ] as const
   ).map(({ suffix, display, annotations }) => ({
     mode: 'url' as const,
-    name: `rnaseq/sashimi_${suffix}`,
+    name: `rnaseq/junctions_${suffix}`,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr7:5,566,500-5,570,500',
@@ -1178,7 +1178,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   {
     mode: 'compose',
     name: 'rnaseq/hide_non_canonical',
-    parts: ['rnaseq/sashimi_all_junctions', 'rnaseq/sashimi_canonical_only'],
+    parts: ['rnaseq/junctions_all', 'rnaseq/junctions_canonical_only'],
   },
 
   // Built by scripts/build_rnaseq_junctions.sh.

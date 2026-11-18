@@ -377,7 +377,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  cliSpec('sashimi_junctions', [
+  cliSpec('rnaseq_junctions', [
     '--genome',
     'hg19',
     '--track',

@@ -28,7 +28,7 @@
 // chr22:23,000,000-24,000,000 — a megabase of K562 Iso-Seq, which is a wide
 // window on a gene-dense arm and so an upper end of what one lane carries.
 // `k562-chr22-junctions.tsv` beside this file is that output; the header of
-// `sashimi-frame-split` in agent-docs/measurements has the command.
+// `junctions-frame-split` in agent-docs/measurements has the command.
 //
 // `--copies` is the collapsed-intron multiplier: the per-region worker re-emits
 // a junction in every region its reads reach, so a gene drawn as N exon regions

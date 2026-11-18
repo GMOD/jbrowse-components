@@ -197,7 +197,7 @@ either strand. Raising **Min reads at a junction** in **Filter by → More
 filters...** also drops thin arcs, along with any real junction few reads
 support.
 
-<Figure caption="Every junction above, only the canonical ones below." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
+<Figure caption="Every junction above, only the canonical ones below." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/junctions_all,Canonical only=rnaseq/junctions_canonical_only" />
 
 ## Long-read splicing: IsoSeq over ACTB
 

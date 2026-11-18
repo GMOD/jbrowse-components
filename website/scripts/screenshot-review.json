@@ -1394,8 +1394,8 @@
     "note": "resolved: deleted in commit 3be9f8f745 (human archaic-introgression tutorial + figures removed).",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
-  "jbrowse-img/sashimi_junctions": {
-    "name": "jbrowse-img/sashimi_junctions",
+  "jbrowse-img/rnaseq_junctions": {
+    "name": "jbrowse-img/rnaseq_junctions",
     "status": "good",
     "note": "might consider rendering with log scale coverage  DONE 2026-08-08: scaletype:log on the coverage band. Required widening jb2export's scaletype/autoscale/minmax from wiggle-only to alignments too, since LinearAlignmentsDisplay's coverage band has the same four slots under the same names.",
     "reviewedAt": "2026-08-08T18:33:18.919Z",

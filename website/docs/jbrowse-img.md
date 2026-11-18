@@ -311,15 +311,15 @@ This strand-specific paired-end RNA-seq (hg19, public) over `B2M` shows the long
 first intron as one big arc and the closely-spaced downstream exons as smaller
 arcs, with the spliced read pairs (green mate lines) below:
 
-<!-- jb2export: sashimi_junctions -->
+<!-- jb2export: rnaseq_junctions -->
 
 ```bash
 jb2export --genome hg19 --track hg19-ncbiRefSeqCurated height:90 \
   --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam junctions:auto coverage.height=170 coverage.encoding.y.scale.type=log featureHeight:super-compact height:420 \
-  --loc B2M --width 1400 --out sashimi_junctions.png
+  --loc B2M --width 1400 --out rnaseq_junctions.png
 ```
 
-<Figure src="/img/jbrowse-img/sashimi_junctions.png" caption="RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup" />
+<Figure src="/img/jbrowse-img/rnaseq_junctions.png" caption="RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup" />
 
 Three modifiers draw the ~1.2 kb chr1 inversion in the 1000 Genomes ONT sample
 HG00151 (long reads streamed from the 1000G-ONT S3):

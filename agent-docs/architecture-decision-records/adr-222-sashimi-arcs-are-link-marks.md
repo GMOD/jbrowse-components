@@ -60,12 +60,12 @@ the input to this decision.
   (`drawsSashimi`), so `renderState` stays one object across a pan on a track
   of unspliced reads. Gating it on the setting, which is on by default,
   rebuilt it on every frame of every alignments track
-  (`sashimiFrameSplit.test.ts`).
+  (`junctionsFrameSplit.test.ts`).
 
 ## Consequences
 
 - A pan or zoom re-merges nothing and rebuilds no feed
-  (`sashimiFrameSplit.test.ts`); the `sashimi-frame-split` measurement
+  (`junctionsFrameSplit.test.ts`); the `junctions-frame-split` measurement
   describes the SVG overlay this replaces. While a lane has a junction the
   region table and `renderState` do rebuild per frame, as they do under the
   read-connections band, and a selected junction's outline is re-traced.
