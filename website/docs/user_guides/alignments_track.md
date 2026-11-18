@@ -216,6 +216,10 @@ which makes grouping a check on the reads:
   mismatches in that strand's reads. A position colored in one band and not the
   other comes from one strand alone, the signature of a basecalling error; a
   position that disagrees in both bands is a real variant.
+- **Mapping quality:** group by **Mapping quality** and turn off **Show → Show
+  pileup** for one histogram per MAPQ bin on a shared scale, which shows how
+  much of a region's depth is reads the aligner could not place uniquely; the
+  [mappability tutorial](/docs/tutorials/mappability_qc) does this at _SMN1_.
 - **Transcript strand:** long-read cDNA reads are oriented to the transcript, so
   **Strand** splits them by transcript strand. On a strand-specific paired-end
   library group by **First-of-pair strand** instead, since there the transcript

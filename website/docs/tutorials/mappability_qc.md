@@ -212,6 +212,26 @@ dark blue.
 Dark blue is MAPQ 0; yellow is MAPQ 30 and above. **Advanced → Edit plot...** on
 the reads track shows this `encoding.color` as text and applies edits live.
 
+Coloring shows each read's MAPQ, and the coverage band above the reads still
+counts every read. **Group by → Mapping quality** in the track menu gives each
+MAPQ bin a section with a coverage band of its own, and turning off **Show →
+Show pileup** leaves only the bands, drawn on one scale. In the track config
+that is a `facet` on the `mapq` field:
+
+```json
+{
+  "displayDefaults": {
+    "facet": "mapq",
+    "pileup": { "show": false }
+  }
+}
+```
+
+<Figure src="/img/qc/smn1_mapq_coverage.png" caption="The same 100 kb around SMN1 with the reads grouped by mapping quality and the pileup hidden: one coverage band per MAPQ bin, on a shared scale." links="Open this view=qc/smn1_mapq_coverage" />
+
+The MAPQ 0 band has depth across the whole window. The MAPQ 30+ band has depth
+only in the islands where the gnomAD track reaches its flank level.
+
 ## Does T2T-CHM13 resolve the SMN duplication?
 
 T2T-CHM13, the telomere-to-telomere assembly, is finished on this chromosome.
@@ -265,7 +285,7 @@ the share of reads at MAPQ 0 separates them.
 
 - Turn on the four tracks above, with the same Umap settings
 - Add your reads with the `uri` in the read track config swapped for your BAM or
-  CRAM, colored by mapping quality
+  CRAM, colored by mapping quality, then grouped by it with the pileup hidden
 - Open a second window of the same width, from the same sample and outside every
   flagged interval, beside the first
 

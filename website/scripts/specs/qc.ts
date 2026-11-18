@@ -125,7 +125,22 @@ const na12878Track = {
   displayDefaults: { sashimi: { show: false } },
 }
 
-const panel = (loc: string) => ({
+const READS_BY_ROW = {
+  encoding: { color: 'mapq' },
+  legend: { show: true },
+  pileup: {
+    // At the default height the lane hits "Max layout height reached" and
+    // crops the pileup.
+    mark: { height: 2 },
+  },
+}
+
+const DEPTH_BY_MAPQ = {
+  facet: 'mapq',
+  pileup: { show: false },
+}
+
+const panel = (loc: string, reads: Record<string, unknown> = READS_BY_ROW) => ({
   type: 'LinearGenomeView',
   assembly: 'hg38',
   loc,
@@ -135,13 +150,7 @@ const panel = (loc: string) => ({
     gnomadCoverageTrack(),
     {
       trackId: 'na12878_qc_reads',
-      encoding: { color: 'mapq' },
-      legend: { show: true },
-      pileup: {
-        // At the default height the lane hits "Max layout height reached" and
-        // crops the pileup.
-        mark: { height: 2 },
-      },
+      ...reads,
       height: 300,
       // 100 kb of a 30x CRAM is past the byte gate, and a capture has nobody to
       // click the banner.
@@ -177,6 +186,16 @@ export const qcSpecs: ScreenshotSpec[] = [
         },
       },
     ],
+  },
+  {
+    mode: 'url',
+    name: 'qc/smn1_mapq_coverage',
+    url: sessionSpec(HG38_HUB, {
+      sessionTracks: [na12878Track, umapTrack],
+      views: [panel(SMN1_ZOOM_LOC, DEPTH_BY_MAPQ)],
+    }),
+    hideSelectors: HIDE_ISOFORM_CHIP,
+    viewportHeight: 844,
   },
   {
     mode: 'url',
