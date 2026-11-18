@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Facet filters are a chip row under the track selector's filter box in both modes, replacing the panel; one table state per selector holds facets, sort and columns, and the tree shows only the tracks they keep. Amended: ☰ rows move where they act, the table's checkboxes only show tracks, and a lone group draws no row"
+summary: "Facet filters are a chip row under the track selector's filter box in both modes, replacing the panel; one table state per selector holds facets, sort and columns, and the tree shows only the tracks they keep"
 ---
 
 # ADR-271: The track filters are chips the tree and the table share

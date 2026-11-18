@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The drawer's track table shows, beside the name, as many columns as fit, the name keeping up to two thirds: `hierarchical.table.columns` first, then the fields that group tracks, then kind and category if they vary. Manage columns wins. Names shrink from the middle; the filter box needs every word"
+summary: "The drawer's track table shows, beside the name, as many columns as fit: `hierarchical.table.columns` first, then the fields that group tracks, then kind and category if they vary. Names shrink from the middle and keep up to two thirds of the width"
 ---
 
 # ADR-269: The track table shows the fields that group tracks

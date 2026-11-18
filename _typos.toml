@@ -73,6 +73,10 @@ assemblys = "assemblys"
 # same fixture shape for jb.addTrack: jbApi.test.ts passes `setings` to assert
 # the refusal names the key it does not take beside the ones it does
 setings = "setings"
+# same fixture shape for a label part: LinearBasicDisplay's configSchema.test.ts
+# writes `descripton` to assert the labels bag refuses it, naming the parts it
+# takes
+descripton = "descripton"
 # pre-existing allowances
 vview = "vview"
 Wnt = "Wnt"
