@@ -128,14 +128,3 @@ public float4 lineColorAtYPx(float colorYPx, float4 cutYsLo, float4 cutYsHi, flo
     ramp,
     rampMidT(normalizeScore(value, u.rampMin, u.rampMax, rampScaleType(u.rampMode), 1.0), u.rampMidNorm));
 }
-
-// `lineColorAtYPx` where the vertex's flag is `lineColorAlongY` alone, so the
-// fragment still asks whether the scale can answer; otherwise the color its
-// vertex resolved.
-public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, float4 own, float alongY, float bandTop, Uniforms u, Sampler2D<float4> ramp) {
-  float4 color = own;
-  if (alongY >= 0.5 && lineColorReadableAlongY(u)) {
-    color = lineColorAtYPx(colorYPx, cutYsLo, cutYsHi, bandTop, u, ramp);
-  }
-  return color;
-}

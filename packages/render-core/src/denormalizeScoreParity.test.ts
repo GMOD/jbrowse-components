@@ -11,7 +11,7 @@ import {
 import type { ScaleTypeCode } from './scoreScale.ts'
 
 // A line under a ramp reads the value at a fragment's height back through the
-// y scale (`lineFragmentColor`), and Canvas2D cuts its bands in value space
+// y scale (`lineColorAtYPx`), and Canvas2D cuts its bands in value space
 // with scoreScale.ts's `denormalizeScore`. The shader's inverse has to agree
 // with that one, and undo the shader's own normalizer.
 

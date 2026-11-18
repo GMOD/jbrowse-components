@@ -97,8 +97,7 @@ VsOut vs_main(LineCenterInstance inst, uint vid : SV_VertexID) {
     c.lenPx > CAPSULE_MIN_LEN_PX ? (currColorYPx - prevColorYPx) / c.lenPx : 0.0);
   o.cutYsLo = lineCutYsPx(0, bandTop, u);
   o.cutYsHi = lineCutYsPx(4, bandTop, u);
-  o.colorAlongY =
-    lineColorAlongY(u.rampMode, u.colorFromY, place.overridden) ? 1.0 : 0.0;
+  o.colorAlongY = lineReadsColorAlongY(place.overridden, u) ? 1.0 : 0.0;
   o.bandTop = bandTop;
   return o;
 }
@@ -111,8 +110,11 @@ float4 fs_main(VsOut v) : SV_Target {
     discard;
   }
   float along = clamp(v.localPos.x, 0.0, v.localPos.x + v.localPos.y);
-  float4 color = lineFragmentColor(
-    v.colorLine.x + v.colorLine.y * along, v.cutYsLo, v.cutYsHi, v.color, v.colorAlongY, v.bandTop, u, colorRamp);
+  float4 color = v.color;
+  if (v.colorAlongY >= 0.5) {
+    color = lineColorAtYPx(
+      v.colorLine.x + v.colorLine.y * along, v.cutYsLo, v.cutYsHi, v.bandTop, u, colorRamp);
+  }
   // premultiplied, so same-color overlaps union under the max blend
   float a = color.a * alpha;
   return float4(color.rgb * a, a);
