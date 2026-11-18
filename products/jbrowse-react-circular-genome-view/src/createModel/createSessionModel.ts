@@ -8,6 +8,8 @@ import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type {
+  SessionWithAddSessionTrack,
+  SessionWithPublishTrackConf,
   SessionWithConfigEditing,
   SessionWithConnections,
   SessionWithDrawerWidgets,
@@ -115,6 +117,14 @@ export type _AssertDrawerWidgets = AssertExtends<
 export type _AssertConnections = AssertExtends<
   Instance<SessionStateModel>,
   SessionWithConnections
+>
+export type _AssertAddSessionTrack = AssertExtends<
+  Instance<SessionStateModel>,
+  SessionWithAddSessionTrack
+>
+export type _AssertPublishTrackConf = AssertExtends<
+  Instance<SessionStateModel>,
+  SessionWithPublishTrackConf
 >
 export type _AssertConfigEditing = AssertExtends<
   Instance<SessionStateModel>,
