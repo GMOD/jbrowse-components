@@ -39,6 +39,7 @@ import {
 } from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
 import { displayedRegionSpans } from './MultiWaySyntenyDisplay/anchorAxis.ts'
 import { configSchemaFactory } from './MultiWaySyntenyDisplay/configSchema.ts'
+import { geneNamesDraw } from './MultiWaySyntenyDisplay/configSlotViews.ts'
 import {
   laneGroupsFetchSpecsOf,
   laneLinksFetchSpecsOf,
@@ -233,7 +234,7 @@ function readDisplay(slots: MultiWayTablesArgs['display'] = {}) {
     opacity: opacitySnapshotOf(conf.ribbons.encoding.opacity),
     filter: predicatesOf(conf.ribbons.filter),
     curves: readConfObject(conf, ['ribbons', 'mark', 'interpolate']) === 'bump',
-    showGeneLabels: readConfObject(conf, ['labels', 'name', 'show']),
+    showGeneLabels: geneNamesDraw(conf),
     inlineLaneNames:
       readConfObject(conf, ['labels', 'lanes', 'placement']) === 'overlay',
     height: readConfObject(conf, 'height'),

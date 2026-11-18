@@ -1,4 +1,4 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { persistTrackConfigNow } from '@jbrowse/core/util/mstUtils'
@@ -122,7 +122,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get geneLabelPx() {
-      return geneLabelRowPx(getConf(self, ['labels', 'name', 'show']))
+      return geneLabelRowPx(geneNamesDraw(self.configuration))
     },
     /** #getter */
     get laneLayerHeights(): number[] {
@@ -161,6 +161,16 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return raw !== undefined && !isJexl(raw) ? raw : undefined
     },
   }
+}
+
+/** `labels.name` shown, with a field to read the names from */
+export function geneNamesDraw(
+  conf: Instance<MultiWaySyntenyDisplayConfigModel>,
+): boolean {
+  return (
+    readConfObject(conf, ['labels', 'name', 'show']) &&
+    readConfObject(conf, ['labels', 'name', 'field']) !== ''
+  )
 }
 
 /** the field `ribbons.encoding.color` paints by */
