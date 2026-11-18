@@ -21,16 +21,16 @@ const theme = createJBrowseTheme()
 const rows = Array.from({ length: 300 }, (_, i) => ({ id: i, name: `r${i}` }))
 
 function table({
-  scrollToIndex,
-  scrollToKey = scrollToIndex,
+  shown = rows,
+  scrollToRowId,
   onSort = () => {},
   sortField = '',
   sortAscending = true,
   onRowClick,
   rowHeight,
 }: {
-  scrollToIndex?: number
-  scrollToKey?: string | number
+  shown?: typeof rows
+  scrollToRowId?: number
   onSort?: (field: string, ascending: boolean) => void
   sortField?: string
   sortAscending?: boolean
@@ -40,7 +40,7 @@ function table({
   return (
     <ThemeProvider theme={theme}>
       <VirtualTable
-        rows={rows}
+        rows={shown}
         columns={[
           {
             id: 'name',
@@ -55,8 +55,7 @@ function table({
         onSort={onSort}
         onRowClick={onRowClick}
         rowHeight={rowHeight}
-        scrollToKey={scrollToKey}
-        scrollToIndex={scrollToIndex}
+        scrollToRowId={scrollToRowId}
         emptyMessage="none"
         testId="table"
       />
@@ -65,7 +64,7 @@ function table({
 }
 
 test('a row far down scrolls to the middle of the rows on view', () => {
-  const { getByTestId } = render(table({ scrollToIndex: 250 }))
+  const { getByTestId } = render(table({ scrollToRowId: 250 }))
   const room = viewport - HEADER_HEIGHT
   expect(getByTestId('table').scrollTop).toBe(
     250 * ROW_HEIGHT - (room - ROW_HEIGHT) / 2,
@@ -75,7 +74,7 @@ test('a row far down scrolls to the middle of the rows on view', () => {
 test('a short row height draws each row at that height and scrolls by it', () => {
   const rowHeight = 18
   const { getByTestId, getByText } = render(
-    table({ scrollToIndex: 250, rowHeight }),
+    table({ scrollToRowId: 250, rowHeight }),
   )
   const room = viewport - HEADER_HEIGHT
   expect(getByTestId('table').scrollTop).toBe(
@@ -87,15 +86,23 @@ test('a short row height draws each row at that height and scrolls by it', () =>
 })
 
 test('a row already on view does not scroll', () => {
-  const { getByTestId } = render(table({ scrollToIndex: 2 }))
+  const { getByTestId } = render(table({ scrollToRowId: 2 }))
+  expect(getByTestId('table').scrollTop).toBe(0)
+})
+
+test('a row the filters leave out does not scroll', () => {
+  const { getByTestId } = render(
+    table({ shown: rows.slice(0, 10), scrollToRowId: 250 }),
+  )
   expect(getByTestId('table').scrollTop).toBe(0)
 })
 
 test('a row a sort moves does not pull the list after it', () => {
+  const reversed = rows.toReversed()
   const steps = [
-    { scrollToKey: 'a', scrollToIndex: 2 },
-    { scrollToKey: 'a', scrollToIndex: 250 },
-    { scrollToKey: 'b', scrollToIndex: 250 },
+    { scrollToRowId: 2 },
+    { shown: reversed, scrollToRowId: 2 },
+    { shown: reversed, scrollToRowId: 3 },
   ]
   function Harness() {
     const [step, setStep] = useState(0)

@@ -78,7 +78,6 @@ const SpreadsheetTable = observer(function SpreadsheetTable({
     filterText,
     svTypeFilter,
     svEventFilter,
-    selectedRowIndex,
   } = model
   const sortField = sortColumn?.field ?? ''
   return rows ? (
@@ -104,8 +103,7 @@ const SpreadsheetTable = observer(function SpreadsheetTable({
             [...svTypeFilter],
             svEventFilter,
           ])}
-          scrollToKey={model.selectedRowId}
-          scrollToIndex={selectedRowIndex}
+          scrollToRowId={model.selectedRowId}
           isRowSelected={row => row.id === model.selectedRowId}
           onRowClick={row => {
             model.setSelectedFeature(row.feature)

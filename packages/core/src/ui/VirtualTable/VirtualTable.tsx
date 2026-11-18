@@ -7,7 +7,6 @@ import VirtualTableHead from './VirtualTableHead.tsx'
 import VirtualTableRow from './VirtualTableRow.tsx'
 import {
   DEFAULT_COL_WIDTH,
-  HEADER_HEIGHT,
   ROW_HEIGHT,
   useVirtualTableStyles,
 } from './tableStyles.ts'
@@ -64,8 +63,7 @@ const VirtualTable = observer(function VirtualTable<
   sortAscending,
   onSort,
   resetKey,
-  scrollToKey,
-  scrollToIndex,
+  scrollToRowId,
   emptyMessage,
   highlightPatterns = [],
   testId,
@@ -88,10 +86,11 @@ const VirtualTable = observer(function VirtualTable<
   onSort: (field: string, ascending: boolean) => void
   /** scrolls back to the top when it changes, as a sort change does */
   resetKey?: string
-  /** names the row to bring into view, which happens when it changes */
-  scrollToKey?: string | number
-  /** where that row is in `rows`, undefined while it is not among them */
-  scrollToIndex?: number
+  /**
+   * the id of the row to bring into view, which happens when it changes and
+   * not when a sort or a filter moves that row
+   */
+  scrollToRowId?: R['id']
   emptyMessage: React.ReactNode
   /** the search matches to mark in the rows on screen */
   highlightPatterns?: RegExp[]
@@ -103,15 +102,19 @@ const VirtualTable = observer(function VirtualTable<
   const highlightName = `jbrowse-table-${useId().replaceAll(/[^a-zA-Z0-9]/g, '')}`
   useSearchHighlight(bodyRef, highlightPatterns, highlightName)
   const leadingWidth = leading?.width ?? 0
-  const { items, leadingGap, trailingGap, clientWidth } = useVirtualRows({
-    parentRef,
-    count: rows.length,
-    rowHeight,
-    resetKey: JSON.stringify([sortField, sortAscending, resetKey]),
-    scrollToKey,
-    scrollToIndex,
-    stickyTop: HEADER_HEIGHT,
-  })
+  const scrollToIndex =
+    scrollToRowId === undefined
+      ? -1
+      : rows.findIndex(row => row.id === scrollToRowId)
+  const { startIndex, endIndex, leadingGap, trailingGap, clientWidth } =
+    useVirtualRows({
+      parentRef,
+      count: rows.length,
+      rowHeight,
+      resetKey: JSON.stringify([sortField, sortAscending, resetKey]),
+      scrollToKey: scrollToRowId,
+      scrollToIndex: scrollToIndex === -1 ? undefined : scrollToIndex,
+    })
   const { colWidths, onResizeStart } = useColumnResize(
     widths((clientWidth || width) - leadingWidth),
   )
@@ -153,20 +156,17 @@ const VirtualTable = observer(function VirtualTable<
         />
         <tbody ref={bodyRef}>
           <SpacerRow height={leadingGap} />
-          {items.map(virtualRow => {
-            const row = rows[virtualRow.index]!
-            return (
-              <VirtualTableRow
-                key={row.id}
-                row={row}
-                columns={columns}
-                leadingCell={leading?.cell}
-                height={rowHeight}
-                isRowSelected={isRowSelected}
-                onRowClick={onRowClick}
-              />
-            )
-          })}
+          {rows.slice(startIndex, endIndex).map(row => (
+            <VirtualTableRow
+              key={row.id}
+              row={row}
+              columns={columns}
+              leadingCell={leading?.cell}
+              height={rowHeight}
+              isRowSelected={isRowSelected}
+              onRowClick={onRowClick}
+            />
+          ))}
           <SpacerRow height={trailingGap} />
         </tbody>
         {rows.length === 0 ? (

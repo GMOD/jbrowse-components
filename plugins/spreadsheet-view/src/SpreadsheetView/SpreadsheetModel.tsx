@@ -586,17 +586,6 @@ export default function stateModelFactory() {
           : self.rows?.find(r => r.feature?.uniqueId === id)?.id
       },
       /**
-       * #getter
-       * where `selectedRowId` sits in `sortedRows`, which the table scrolls
-       * into view; undefined when the filters leave it out
-       */
-      get selectedRowIndex() {
-        const id = this.selectedRowId
-        const index =
-          id === undefined ? -1 : this.sortedRows.findIndex(r => r.id === id)
-        return index === -1 ? undefined : index
-      },
-      /**
        * #method
        * `sortedRows` under the shown columns' headers as CSV, each value
        * plain, as the search reads it

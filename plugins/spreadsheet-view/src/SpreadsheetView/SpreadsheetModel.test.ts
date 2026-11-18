@@ -693,17 +693,15 @@ describe('the row the table scrolls to', () => {
     }).sheet!
   }
 
-  test('is where the selected row sits in the sorted rows', () => {
+  test('is the row holding the selected feature, whatever the sort', () => {
     const sheet = sheetWithSelection('f1')
-    expect(sheet.selectedRowIndex).toBe(1)
+    const id = sheet.rows?.[1]?.id
+    expect(sheet.selectedRowId).toBe(id)
     sheet.setSort('SCORE', true)
-    expect(sheet.selectedRowIndex).toBe(2)
+    expect(sheet.selectedRowId).toBe(id)
   })
 
-  test('is none when the search leaves the selected row out, or nothing is selected', () => {
-    const sheet = sheetWithSelection('f1')
-    sheet.setFilterText('chr1:31')
-    expect(sheet.selectedRowIndex).toBeUndefined()
-    expect(sheetWithSelection().selectedRowIndex).toBeUndefined()
+  test('is none when nothing is selected', () => {
+    expect(sheetWithSelection().selectedRowId).toBeUndefined()
   })
 })

@@ -1,17 +1,20 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { virtualRange } from '../../util/virtualRange.ts'
+import { HEADER_HEIGHT } from './tableStyles.ts'
+
+const OVERSCAN = 20
 
 /**
  * Minimal fixed-height row virtualization. Tracks the scroll container's
  * scrollTop and client size and hands them to the shared `virtualRange` (which
  * owns the clamping, including a list that shrank under its scroll position),
- * returning the row indices to render, the spacer heights that offset that
- * window from the top/bottom, and the width inside any vertical scrollbar.
- * The container scrolls back to the top whenever `resetKey` changes, and
- * brings row `scrollToIndex` into view, below the `stickyTop` px a sticky
- * header covers, whenever `scrollToKey` changes: a row a sort or a filter
- * moves stays where the reader left the list.
+ * returning the range of row indices to render, the spacer heights that
+ * offset that window from the top/bottom, and the width inside any vertical
+ * scrollbar. The container scrolls back to the top whenever `resetKey`
+ * changes, and brings row `scrollToIndex` into view, below the sticky header,
+ * whenever `scrollToKey` changes: a row a sort or a filter moves stays where
+ * the reader left the list.
  */
 export function useVirtualRows({
   parentRef,
@@ -20,8 +23,6 @@ export function useVirtualRows({
   resetKey,
   scrollToKey,
   scrollToIndex,
-  stickyTop = 0,
-  overscan = 20,
 }: {
   parentRef: React.RefObject<HTMLDivElement | null>
   count: number
@@ -29,8 +30,6 @@ export function useVirtualRows({
   resetKey: string
   scrollToKey?: string | number
   scrollToIndex?: number
-  stickyTop?: number
-  overscan?: number
 }) {
   // read by the reset below, which skips scrollTo (and the layout it forces)
   // when the list is already at the top, as it is for most keystrokes
@@ -83,32 +82,28 @@ export function useVirtualRows({
       scrolledKey.current = scrollToKey
       if (scrollToIndex !== undefined) {
         const top = scrollToIndex * rowHeight
-        const room = el.clientHeight - stickyTop
+        const room = el.clientHeight - HEADER_HEIGHT
         if (top < el.scrollTop || top + rowHeight > el.scrollTop + room) {
           el.scrollTop = Math.max(0, top - (room - rowHeight) / 2)
         }
       }
     }
-  }, [scrollToKey, scrollToIndex, rowHeight, stickyTop, parentRef])
+  }, [scrollToKey, scrollToIndex, rowHeight, parentRef])
 
   const { scrollTop, clientHeight, clientWidth } = scrollState
-  const { start: startIdx, end: endIdx } = virtualRange({
+  const { start, end } = virtualRange({
     scroll: scrollTop,
     cellSize: rowHeight,
     viewport: clientHeight,
-    overscan,
+    overscan: OVERSCAN,
     total: count,
   })
 
-  const items = []
-  for (let i = startIdx; i < endIdx; i++) {
-    items.push({ index: i, start: i * rowHeight })
-  }
-
   return {
-    items,
-    leadingGap: startIdx * rowHeight,
-    trailingGap: (count - endIdx) * rowHeight,
+    startIndex: start,
+    endIndex: end,
+    leadingGap: start * rowHeight,
+    trailingGap: (count - end) * rowHeight,
     clientWidth,
   }
 }
