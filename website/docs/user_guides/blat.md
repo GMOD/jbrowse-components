@@ -12,12 +12,13 @@ every hit listed so you can go to the one you want.
 
 ## Where it is set up
 
-BLAT search and In-silico PCR are ready to use, with nothing to install, on:
+BLAT search and In-silico PCR come pre-installed on the hosted genomes, with
+nothing to set up:
 
-- every genome on [genomes.jbrowse.org](https://genomes.jbrowse.org), in JBrowse
-  Web
-- the genomes JBrowse Desktop opens from its start screen, which are the same
-  genomes.jbrowse.org configs
+- **JBrowse Web:** every genome on
+  [genomes.jbrowse.org](https://genomes.jbrowse.org)
+- **JBrowse Desktop:** every genome opened from **Browse hosted genomes** on the
+  start screen, which are the same configs
 
 There, a search goes to UCSC's own BLAT and In-silico PCR servers, through a
 [shared jbrowse.org server](#the-shared-server) that needs no UCSC account.
