@@ -86,6 +86,21 @@ answer the arithmetic question with the compiled shader
 ([SHADER_JS_CODEGEN.md](SHADER_JS_CODEGEN.md) §"Probing one function in real
 float32").
 
+**That same real-GPU path drops whole draws at random, and nobody knows why.**
+Headless Chrome on ada's NVIDIA RTX A6000 (driver 535) with
+`--use-angle=gl-egl --use-gl=angle` loses a pass, a block or the whole track in
+some page loads: of first captures on main, 35 of 50 of the `marks_line` track
+at ctgA:1-20,000 lacked its second line, 8 of 30 of the same track across two
+regions lacked the second region's ink, and the wiggle display came up blank
+in others. A forced redraw repaired the one-region view and not the two-region
+one. SwiftShader on ada drew all 80 of the same captures, and this laptop's
+AMD Radeon through ANGLE's Vulkan backend drew all 90 (2026-11-18, main at
+`d03d34b32c`). So it is that card, driver, ANGLE backend or
+headless EGL, untested on any desktop NVIDIA browser, where ANGLE picks a
+different backend. Until someone reproduces it elsewhere it is a capture
+hazard: take a line or wiggle picture on ada from SwiftShader, and count a
+hardware capture there only when several loads agree.
+
 **A pin always wins, because two consumers render on SwiftShader:**
 
 - **The cross-backend gate.** Headless Chrome is SwiftShader with or without
