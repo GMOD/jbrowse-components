@@ -29,6 +29,15 @@ import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import type { ReorderDirection } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
+// Sticky headers are the browser's, so a session snapshot coming in cannot set
+// them: an undo applies a snapshot that never holds them, and would flip them.
+function withoutStickyViewHeaders<S extends { stickyViewHeaders?: unknown }>({
+  stickyViewHeaders,
+  ...rest
+}: S) {
+  return rest
+}
+
 // Whether `node` IS `view` or lives somewhere under it. A view can CONTAIN
 // views, so `takeOut` matches widgets to the view leaving by containment rather
 // than by `widget.view.id === view.id`. ADR-069 says what that cost.
@@ -425,6 +434,10 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         return self.addView(typeName, initialState)
       },
     }))
+    .preProcessSnapshot(snap =>
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      snap ? withoutStickyViewHeaders(snap) : snap,
+    )
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {

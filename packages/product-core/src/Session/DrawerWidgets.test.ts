@@ -3,7 +3,12 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  applySnapshot,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 
@@ -329,19 +334,29 @@ test('reopening a closed widget id builds a fresh one', () => {
   jest.useRealTimers()
 })
 
-// A session only runs its attach-time reactions under a root, as in the app
+// Under a root and composed into a larger session, as in the app
 function attachedSession(snapshot: Record<string, unknown>) {
-  const Root = types.model({ session: DrawerWidgetSessionMixin(pluginManager) })
+  const Root = types.model({
+    session: types.compose(
+      DrawerWidgetSessionMixin(pluginManager),
+      types.model({ name: types.optional(types.string, 'test') }),
+    ),
+  })
   return Root.create({ session: snapshot }, { pluginManager }).session
 }
 
-test("a snapshot's drawerPosition does not become the visitor's preference", () => {
-  localStorage.setItem('drawerPosition', 'right')
+test('a snapshot cannot set the drawer side', () => {
   const session = attachedSession({ drawerPosition: 'left' })
-  expect(session.drawerPosition).toBe('left')
-  expect(localStorage.getItem('drawerPosition')).toBe('right')
+  expect(session.drawerPosition).toBe('right')
+  expect(localStorage.getItem('drawerPosition')).toBe(null)
+})
 
+test("the user's drawer side survives an undo", () => {
+  const session = attachedSession({})
+  const before = getSnapshot(session)
   session.setDrawerPosition('left')
   expect(localStorage.getItem('drawerPosition')).toBe('left')
+  applySnapshot(session, before)
+  expect(session.drawerPosition).toBe('left')
   localStorage.removeItem('drawerPosition')
 })

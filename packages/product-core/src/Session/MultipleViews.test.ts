@@ -7,6 +7,8 @@ import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   addDisposer,
+  applySnapshot,
+  getSnapshot,
   isAlive,
   onSnapshot,
   types,
@@ -565,11 +567,14 @@ test('takeOutViewsMissingFrom refuses anything but a session snapshot', () => {
   expect(session.views.map(v => v.displayName)).toEqual(['first'])
 })
 
-// A session only runs its attach-time reactions under a root, as in the app
+// Under a root and composed into a larger session, as in the app
 function attachedSession(snapshot: Record<string, unknown>) {
   const Root = types.model({
     jbrowse: types.frozen(),
-    session: MultipleViewsSessionMixin(pluginManager),
+    session: types.compose(
+      MultipleViewsSessionMixin(pluginManager),
+      types.model({ extra: types.optional(types.string, '') }),
+    ),
   })
   return Root.create(
     {
@@ -580,13 +585,23 @@ function attachedSession(snapshot: Record<string, unknown>) {
   ).session
 }
 
-test("a snapshot's stickyViewHeaders does not become the visitor's preference", () => {
-  localStorage.setItem('stickyViewHeaders', 'true')
-  const session = attachedSession({ stickyViewHeaders: false })
-  expect(session.stickyViewHeaders).toBe(false)
-  expect(localStorage.getItem('stickyViewHeaders')).toBe('true')
+test('a snapshot cannot set sticky headers or the drawer side', () => {
+  const session = attachedSession({
+    stickyViewHeaders: false,
+    drawerPosition: 'left',
+  })
+  expect(session.stickyViewHeaders).toBe(true)
+  expect(session.drawerPosition).toBe('right')
+  expect(localStorage.getItem('stickyViewHeaders')).toBe(null)
+  expect(localStorage.getItem('drawerPosition')).toBe(null)
+})
 
+test("the user's sticky headers choice survives an undo", () => {
+  const session = attachedSession({})
+  const before = getSnapshot(session)
   session.setStickyViewHeaders(false)
   expect(localStorage.getItem('stickyViewHeaders')).toBe('false')
+  applySnapshot(session, before)
+  expect(session.stickyViewHeaders).toBe(false)
   localStorage.removeItem('stickyViewHeaders')
 })

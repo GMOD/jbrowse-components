@@ -26,6 +26,15 @@ function storedDrawerPosition(): DrawerPosition {
   return drawerPositions.find(position => position === stored) ?? 'right'
 }
 
+// The side is the browser's, so a session snapshot coming in cannot set it:
+// an undo applies a snapshot that never holds it, and would move it back.
+function withoutDrawerPosition<S extends { drawerPosition?: unknown }>({
+  drawerPosition,
+  ...rest
+}: S) {
+  return rest
+}
+
 // The one clamp both resize paths share. `drawerWidth` is a
 // `types.refinement(types.integer, >= minDrawerWidth)`, so the three things this
 // does are load-bearing rather than cosmetic — MST throws on an assignment that
@@ -397,6 +406,10 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         editor.setExpandedDisplayId(opts?.expandedDisplayId)
       },
     }))
+    .preProcessSnapshot(snap =>
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      snap ? withoutDrawerPosition(snap) : snap,
+    )
     .postProcessSnapshot(snap => {
       // drawerPosition is a personal per-browser layout preference, not shared
       // view state: destructure it out so it never lands in the snapshot. It

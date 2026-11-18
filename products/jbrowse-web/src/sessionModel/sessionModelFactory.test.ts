@@ -4,7 +4,7 @@ import {
   setNumberGrouping,
   toLocale,
 } from '@jbrowse/core/util'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { applySnapshot, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { createTestSession } from '../rootModel/test_util.ts'
 import sessionModelFactory from './index.ts'
@@ -76,6 +76,23 @@ describe('JBrowseWebSessionModel', () => {
   it('accepts a custom drawer width', () => {
     const session = createTestSession({ sessionSnapshot: { drawerWidth: 256 } })
     expect(session.drawerWidth).toBe(256)
+  })
+
+  it('keeps the browser’s drawer side and sticky headers over a snapshot’s', () => {
+    const session = createTestSession({
+      sessionSnapshot: { drawerPosition: 'left', stickyViewHeaders: false },
+    })
+    expect(session.drawerPosition).toBe('right')
+    expect(session.stickyViewHeaders).toBe(true)
+
+    const before = getSnapshot(session)
+    session.setDrawerPosition('left')
+    session.setStickyViewHeaders(false)
+    applySnapshot(session, before)
+    expect(session.drawerPosition).toBe('left')
+    expect(session.stickyViewHeaders).toBe(false)
+    localStorage.removeItem('drawerPosition')
+    localStorage.removeItem('stickyViewHeaders')
   })
 
   describe('connections', () => {
