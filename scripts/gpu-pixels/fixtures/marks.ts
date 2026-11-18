@@ -1,5 +1,10 @@
+import * as bar from '../../../packages/render-core/src/shaders/barMark.generated.ts'
 import { extendToMinWidthPx } from '../../../packages/render-core/src/shaders/hpmath.js.generated.ts'
-import { GAP_Y } from '../../../packages/render-core/src/shaders/lineCommon.generated.ts'
+import * as lineCenter from '../../../packages/render-core/src/shaders/lineCenterMark.generated.ts'
+import {
+  GAP_Y,
+  NO_PREV_X,
+} from '../../../packages/render-core/src/shaders/lineCommon.generated.ts'
 import * as lineStep from '../../../packages/render-core/src/shaders/lineStepMark.generated.ts'
 import { SMALL_POINT_MAX_DIAMETER } from '../../../packages/render-core/src/shaders/pointGlyph.generated.ts'
 import { crispSquareTopLeftPx } from '../../../packages/render-core/src/shaders/pointGlyph.js.generated.ts'
@@ -23,7 +28,7 @@ import {
   union,
 } from '../fixture.ts'
 
-import type { Budget, Shape } from '../fixture.ts'
+import type { Budget, PixelFixture, Shape } from '../fixture.ts'
 
 const SHADERS = 'packages/render-core/src/shaders'
 const W = 200
@@ -431,6 +436,150 @@ function stepFixture(
   })
 }
 
+// ---- linear line over earlier marks ----
+
+const valueYPx = (v: number) =>
+  valueToYPxScaled(v, DOMAIN[0], DOMAIN[1], H, 0, 1)
+
+type Span3 = readonly [number, number, number]
+
+const BAR_FILL = [222, 222, 222] as const
+const LINE_INK = [40, 40, 40] as const
+
+// [x px, x2 px, value]: light bars from the origin, which the line crosses
+const UNDER_BARS: readonly Span3[] = [
+  [30.4, 75.9, 85.2],
+  [75.9, 121.3, 60.7],
+  [121.3, 166.8, 92.4],
+]
+
+// [x px, x2 px, value]: the spans whose midpoints the line joins
+const LINE_SPANS: readonly Span3[] = Array.from({ length: 24 }, (_, i) => {
+  const x = 4.6 + i * 7.9
+  return [x, x + 6.1, 50 + 38 * Math.sin(i * 0.9)] as const
+})
+
+const barShapes = UNDER_BARS.map(([x1, x2, v]) =>
+  boxShape(px(bp(x1)), valueYPx(v), px(bp(x2)), H, rgba(BAR_FILL)),
+)
+
+const underBars = defineFixture({
+  name: 'mark-bar-under',
+  slang: `${SHADERS}/barMark.slang`,
+  about: 'light bars a later mark draws over',
+  mod: bar,
+  width: W,
+  height: H,
+  count: UNDER_BARS.length,
+  instances: {
+    x: UNDER_BARS.map(s => bp(s[0])),
+    x2: UNDER_BARS.map(s => bp(s[1])),
+    y: UNDER_BARS.map(s => s[2]),
+    color: UNDER_BARS.map(() => abgr(BAR_FILL)),
+    row: UNDER_BARS.map(() => 0),
+  },
+  uniforms: dpr => ({
+    bpRangeX: BP_RANGE,
+    canvasHeight: H,
+    domainMin: DOMAIN[0],
+    domainMax: DOMAIN[1],
+    valueScaleType: 0,
+    valueSymlogConstant: 1,
+    ...NO_RAMP,
+    originYPx: H,
+    rowHeight: H,
+    rowBandPx: H,
+    rowOffsetPx: 0,
+    zero: 0,
+    minCellDenomPx: W,
+    minWidthPx: 0,
+    devicePixelRatio: dpr,
+    rowTableKeys: -1,
+  }),
+  reference: paintOver(barShapes),
+})
+
+function capsule(
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+  hw: number,
+): Shape['inside'] {
+  const dx = bx - ax
+  const dy = by - ay
+  const len2 = dx * dx + dy * dy
+  return (x, y) => {
+    const t =
+      len2 > 0
+        ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len2))
+        : 0
+    return Math.hypot(x - ax - t * dx, y - ay - t * dy) <= hw
+  }
+}
+
+function linearLineFixture(
+  name: string,
+  about: string,
+  lineWidth: number,
+  under: readonly PixelFixture[],
+  underShapes: readonly Shape[],
+) {
+  const mid = ([x1, x2]: Span3) => (px(bp(x1)) + px(bp(x2))) / 2
+  const pieces = LINE_SPANS.map((s, i) => {
+    const prev = LINE_SPANS[i - 1] ?? s
+    return capsule(
+      mid(prev),
+      valueYPx(prev[2]),
+      mid(s),
+      valueYPx(s[2]),
+      lineWidth / 2,
+    )
+  })
+  return defineFixture({
+    name,
+    slang: `${SHADERS}/lineCenterMark.slang`,
+    about,
+    mod: lineCenter,
+    width: W,
+    height: H,
+    count: LINE_SPANS.length,
+    instances: {
+      x: LINE_SPANS.map(s => bp(s[0])),
+      x2: LINE_SPANS.map(s => bp(s[1])),
+      y: LINE_SPANS.map(s => s[2]),
+      color: LINE_SPANS.map(() => abgr(LINE_INK)),
+      row: LINE_SPANS.map(() => 0),
+      prevX: LINE_SPANS.map((_, i) =>
+        i > 0 ? bp(LINE_SPANS[i - 1]![0]) : NO_PREV_X,
+      ),
+      prevX2: LINE_SPANS.map((_, i) => (i > 0 ? bp(LINE_SPANS[i - 1]![1]) : 0)),
+      prevY: LINE_SPANS.map((_, i) => (i > 0 ? LINE_SPANS[i - 1]![2] : 0)),
+    },
+    uniforms: dpr => ({
+      bpRangeX: BP_RANGE,
+      canvasHeight: H,
+      domainMin: DOMAIN[0],
+      domainMax: DOMAIN[1],
+      valueScaleType: 0,
+      valueSymlogConstant: 1,
+      ...NO_RAMP,
+      colorFromY: 0,
+      rowHeight: H,
+      rowBandPx: H,
+      rowOffsetPx: 0,
+      origin: 0,
+      lineWidth,
+      zero: 0,
+      viewportWidth: W,
+      devicePixelRatio: dpr,
+      rowTableKeys: -1,
+    }),
+    reference: paintOver([...underShapes, union(rgba(LINE_INK), pieces)]),
+    under,
+  })
+}
+
 export default [
   pointFixture(
     'mark-point',
@@ -493,4 +642,18 @@ export default [
   stepFixture(1, {}),
   stepFixture(2, {}),
   stepFixture(1, {}, denseSteps(40.37), 'mark-step-dense-flat'),
+  linearLineFixture(
+    'mark-line-linear',
+    'a dark 1.5 px linear line alone, its capsules joined at each midpoint',
+    1.5,
+    [],
+    [],
+  ),
+  linearLineFixture(
+    'mark-line-linear-over-bars',
+    'mark-line-linear drawn after light bars, as a later marks[] layer is',
+    1.5,
+    [underBars],
+    barShapes,
+  ),
 ]

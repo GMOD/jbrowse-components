@@ -60,19 +60,16 @@ function textureOf(
 }
 
 /**
- * The fixture drawn through the pipeline the WebGPU HAL builds for its pass
- * (`pipelineRecipe`: layout, blend, topology), into an RGBA8 target at
- * `samples` resolved to one, read back as premultiplied RGBA8 rows.
+ * One pass's pipeline, bindings and buffers, built as the WebGPU HAL builds
+ * them (`pipelineRecipe`: layout, blend, topology).
  */
-export async function render(
-  { device }: Gpu,
+async function passDraw(
+  device: GPUDevice,
   f: PixelFixture,
   wgsl: string,
   dpr: number,
   samples: 1 | 4,
 ) {
-  const w = Math.round(f.width * dpr)
-  const h = Math.round(f.height * dpr)
   const desc = slangPass({ id: f.name, mod: f.mod })
   const recipe = pipelineRecipe(desc, wgsl, samples)
   const module = device.createShaderModule({ code: wgsl })
@@ -136,6 +133,38 @@ export async function render(
       }
     }),
   })
+  return {
+    encode: (pass: GPURenderPassEncoder) => {
+      pass.setPipeline(pipeline)
+      pass.setBindGroup(0, bindGroup, [0])
+      pass.setVertexBuffer(0, vertexBuffer)
+      pass.draw(desc.verticesPerInstance, f.count)
+    },
+    buffers: [uniformBuffer, vertexBuffer],
+  }
+}
+
+/**
+ * The fixture drawn through the pipeline the WebGPU HAL builds for its pass,
+ * over its `under` passes, into an RGBA8 target at `samples` resolved to one,
+ * read back as premultiplied RGBA8 rows. `wgsl` is the fixture's own pass's;
+ * the passes under it draw their current WGSL.
+ */
+export async function render(
+  { device }: Gpu,
+  f: PixelFixture,
+  wgsl: string,
+  dpr: number,
+  samples: 1 | 4,
+) {
+  const w = Math.round(f.width * dpr)
+  const h = Math.round(f.height * dpr)
+  const draws = []
+  for (const u of f.under ?? []) {
+    const uWgsl = (await u.mod.SOURCE.wgsl()).WGSL_SOURCE
+    draws.push(await passDraw(device, u, uWgsl, dpr, samples))
+  }
+  draws.push(await passDraw(device, f, wgsl, dpr, samples))
 
   const target = device.createTexture({
     size: [w, h],
@@ -163,10 +192,9 @@ export async function render(
       },
     ],
   })
-  pass.setPipeline(pipeline)
-  pass.setBindGroup(0, bindGroup, [0])
-  pass.setVertexBuffer(0, vertexBuffer)
-  pass.draw(desc.verticesPerInstance, f.count)
+  for (const d of draws) {
+    d.encode(pass)
+  }
   pass.end()
   const bytesPerRow = Math.ceil((w * 4) / 256) * 256
   const readback = device.createBuffer({
@@ -186,7 +214,7 @@ export async function render(
     px.set(rows.subarray(y * bytesPerRow, y * bytesPerRow + w * 4), y * w * 4)
   }
   readback.unmap()
-  for (const r of [readback, uniformBuffer, vertexBuffer, target, msaa]) {
+  for (const r of [readback, target, msaa, ...draws.flatMap(d => d.buffers)]) {
     r?.destroy()
   }
   return { px, w, h }

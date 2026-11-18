@@ -43,6 +43,8 @@ export interface PixelFixture {
   budget?: Budget
   /** What the fixture shows, for the report. */
   about: string
+  /** Passes drawn first, in order, into the same target, as earlier marks of a display are. */
+  under?: readonly PixelFixture[]
 }
 
 interface PassModule<U, I> extends ShaderModule {
@@ -65,6 +67,7 @@ export function defineFixture<U, I>(f: {
   reference: (x: number, y: number, dpr: number) => Rgba
   translucent?: number
   budget?: Budget
+  under?: readonly PixelFixture[]
 }): PixelFixture {
   const { mod } = f
   return {
