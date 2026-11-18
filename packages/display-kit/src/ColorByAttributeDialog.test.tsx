@@ -26,6 +26,7 @@ test('the attribute box lists what the features in view carry, with color counts
           colorByAttribute: '',
           colorField: undefined,
           colorByField,
+          setShowLegend: jest.fn(),
           openPlotDialog: jest.fn(),
           scanGroupByCandidates: jest.fn(async () => SCAN),
         }}
@@ -44,6 +45,30 @@ test('the attribute box lists what the features in view carry, with color counts
   expect(handleClose).toHaveBeenCalled()
 })
 
+// the dialog promises a key, so Apply brings back one the user had hidden, as
+// the preset rows of the same menu do
+test('Apply shows the legend before it colors', () => {
+  const calls: string[] = []
+  const { getByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ColorByAttributeDialog
+        model={{
+          id: 'display1',
+          colorByAttribute: 'biotype',
+          colorField: undefined,
+          colorByField: field => calls.push(`color ${field}`),
+          setShowLegend: show => calls.push(`legend ${show}`),
+          openPlotDialog: jest.fn(),
+          scanGroupByCandidates: jest.fn(async () => SCAN),
+        }}
+        handleClose={jest.fn()}
+      />
+    </ThemeProvider>,
+  )
+  fireEvent.click(getByText('Apply'))
+  expect(calls).toEqual(['legend true', 'color biotype'])
+})
+
 // a parked field fills the box while nothing paints, so Edit plot seeds it
 test('Edit plot over the parked field opens on that field', () => {
   const openPlotDialog = jest.fn()
@@ -55,6 +80,7 @@ test('Edit plot over the parked field opens on that field', () => {
           colorByAttribute: 'biotype',
           colorField: undefined,
           colorByField: jest.fn(),
+          setShowLegend: jest.fn(),
           openPlotDialog,
           scanGroupByCandidates: jest.fn(async () => SCAN),
         }}

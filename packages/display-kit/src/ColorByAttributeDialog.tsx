@@ -19,6 +19,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
     colorField: string | undefined
     colorFieldNoun?: string
     colorByField: (field: string) => void
+    setShowLegend: (show: boolean) => void
     openPlotDialog: (seed?: Plot) => void
   }
   handleClose: () => void
@@ -36,6 +37,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
         handleClose()
       }}
       onSubmit={() => {
+        model.setShowLegend(true)
         model.colorByField(trimmed)
         handleClose()
       }}
