@@ -16,7 +16,7 @@ const useStyles = makeStyles()(theme => ({
   },
   searchBox: {
     flexGrow: 1,
-    margin: theme.spacing(1, 1, 1, 1.5),
+    margin: theme.spacing(1, 1.5, 1, 1),
   },
 }))
 
@@ -37,6 +37,8 @@ const FolderTableHeader = observer(function FolderTableHeader({
   const { matchCounts } = table
   return (
     <div className={classes.toolbar}>
+      <TableMenuButton menuItems={() => tableMenuItems(table, shown)} />
+      <ShoppingCart model={model} />
       <ClearableSearchField
         className={classes.searchBox}
         label="Filter tracks"
@@ -50,8 +52,6 @@ const FolderTableHeader = observer(function FolderTableHeader({
           table.setFilterText(value)
         }}
       />
-      <TableMenuButton menuItems={() => tableMenuItems(table, shown)} />
-      <ShoppingCart model={model} />
     </div>
   )
 })
