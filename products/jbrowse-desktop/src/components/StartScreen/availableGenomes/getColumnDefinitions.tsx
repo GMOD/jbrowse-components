@@ -59,7 +59,6 @@ export interface Entry {
   suppressed?: boolean
 }
 
-/** an entry keyed for a table row by its accession */
 export interface GenomeRow extends Entry {
   id: string
 }

@@ -7,8 +7,6 @@ import GenomesDataTable from './GenomesDataTable.tsx'
 
 import type { Fav, LaunchCallback } from '../types.ts'
 
-// the dialog takes the window's height whatever the row count, and the table
-// scrolls inside it
 const useStyles = makeStyles()({
   paper: {
     height: '100%',

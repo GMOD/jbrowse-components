@@ -35,8 +35,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// what the counts are scoped to: the selected group while browsing, every
-// group while searching
 function countText(shown: number, scopeTotal: number, scopeLabel: string) {
   const scope = `${scopeTotal.toLocaleString()} ${scopeTotal === 1 ? 'genome' : 'genomes'} ${scopeLabel}`
   return shown === scopeTotal ? scope : `${shown.toLocaleString()} of ${scope}`

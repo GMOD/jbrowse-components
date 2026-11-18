@@ -18,7 +18,6 @@ import type { FilterOption } from './useGenomesData.ts'
  * in one place keeps a new filter from being wired into only one of them.
  */
 interface ResultSet {
-  /** filtered and ready to sort and paginate */
   rows: GenomeRow[]
   /** the entries for a selection, which outlives the query that surfaced them */
   resolveSelection: (accessions: Set<string>) => Entry[]
