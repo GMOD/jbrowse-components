@@ -54,9 +54,10 @@ function stripRow(
 /**
  * The chips naming each band that draws, once for the whole stack: the
  * coverage and anything drawn over it on the first lane's coverage band, and
- * each strip and the pileup on the first lane drawing it. A lone band is not
- * named, so a chip never hides the last thing the track draws. Under section
- * chips, the row heading the first lane, whichever band that is, is
+ * each strip and the pileup on the first lane drawing it. Arcs drawing both
+ * over the coverage and in a strip are named on the strip. A lone band is
+ * not named, so a chip never hides the last thing the track draws. Under
+ * section chips, the row heading the first lane, whichever band that is, is
  * `leading`, drawn ahead of the topmost section chip that would cover it.
  */
 export function bandChips(
@@ -76,6 +77,7 @@ function bandChipRows(lanes: readonly BandChipLane[], showPileup: boolean) {
   const pileupLane = showPileup
     ? lanes.find(l => l.pileupHeight > 0)
     : undefined
+  const stripRows = STRIP_KEYS.map(band => stripRow(lanes, band))
   const coverageRow: BandChipRow | undefined =
     first && first.bands.reserved.coverage > 0
       ? {
@@ -83,18 +85,20 @@ function bandChipRows(lanes: readonly BandChipLane[], showPileup: boolean) {
           top: first.coverageTop,
           chips: [
             'coverage',
-            ...OVER_COVERAGE_KEYS.filter(key => drawsOverCoverage(lanes, key)),
+            ...OVER_COVERAGE_KEYS.filter(
+              key =>
+                drawsOverCoverage(lanes, key) &&
+                !stripRows.some(row => row?.band === key),
+            ),
           ],
         }
       : undefined
   const pileupRow: BandChipRow | undefined = pileupLane
     ? { band: 'pileup', top: pileupLane.pileupTop, chips: ['pileup'] }
     : undefined
-  const rows = [
-    coverageRow,
-    ...STRIP_KEYS.map(band => stripRow(lanes, band)),
-    pileupRow,
-  ].filter(row => row !== undefined)
+  const rows = [coverageRow, ...stripRows, pileupRow].filter(
+    row => row !== undefined,
+  )
   return rows.reduce((n, row) => n + row.chips.length, 0) > 1 ? rows : []
 }
 

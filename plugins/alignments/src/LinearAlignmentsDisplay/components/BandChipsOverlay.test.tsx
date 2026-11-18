@@ -64,6 +64,40 @@ function facetedWithArcs() {
   return display
 }
 
+// Two interleaving junctions, so 'auto' draws the 20-read one over the
+// coverage and pushes the 2-read one to the strip below.
+function displayWithSplitJunctions() {
+  const { display } = createTestAlignmentsDisplay()
+  display.setShowSashimi(true)
+  display.setSashimiPlacement('auto')
+  display.setJunctionFilter({ minReads: 0 })
+  display.setRpcData(
+    0,
+    {
+      groups: [
+        {
+          key: '',
+          label: '',
+          data: {
+            ...makeEmptyPileupData(),
+            sashimiX1: new Uint32Array([100, 300]),
+            sashimiX2: new Uint32Array([500, 700]),
+            sashimiFwd: new Uint32Array([0, 0]),
+            sashimiRev: new Uint32Array([0, 0]),
+            sashimiDonors: new Uint8Array([0, 0]),
+            sashimiAcceptors: new Uint8Array([0, 0]),
+            sashimiClass: new Uint8Array([0, 0]),
+            sashimiCounts: new Uint32Array([20, 2]),
+          },
+        },
+      ],
+    },
+    display.view.displayedRegions[0]!,
+  )
+  renderOverlays(display)
+  return display
+}
+
 function stackedReads(n: number, tag: string) {
   const positions = new Uint32Array(n * 2)
   for (let i = 0; i < n; i++) {
@@ -110,6 +144,25 @@ test('the coverage chip hides the coverage band', () => {
   fireEvent.click(screen.getByTitle('Hide coverage'))
   expect(display.showCoverage).toBe(false)
   expect(display.drawnReadConnections).toBe('link')
+})
+
+test('junctions split by auto placement get one chip, on their strip', () => {
+  const display = displayWithSplitJunctions()
+  expect(display.renderSections[0]!.bands.reserved.sashimi).toBeGreaterThan(0)
+  expect(screen.getAllByTestId('band_chip_Sashimi arcs')).toHaveLength(1)
+  expect(
+    within(screen.getByTestId('band_chips_sashimi')).getByTitle(
+      'Hide sashimi arcs',
+    ),
+  ).toBeTruthy()
+})
+
+test('the sashimi chip hides the sashimi arcs', () => {
+  const display = displayWithSplitJunctions()
+  fireEvent.click(screen.getByTitle('Hide sashimi arcs'))
+  expect(display.showSashimi).toBe(false)
+  expect(display.showCoverage).toBe(true)
+  expect(display.showPileup).toBe(true)
 })
 
 test('the pileup chip hides the pileup', () => {

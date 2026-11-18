@@ -80,6 +80,16 @@ test('junctions bound for the strip below get a chip on the strip', () => {
   ])
 })
 
+test('junctions split by auto placement are named once, on their strip', () => {
+  expect(
+    chipsOf([{ sashimiOverCoverage: true, hasSashimiDownArcs: true }]),
+  ).toEqual([
+    ['coverage', ['coverage']],
+    ['sashimi', ['sashimi']],
+    ['pileup', ['pileup']],
+  ])
+})
+
 test('no chip for arcs or junctions that draw nothing', () => {
   expect(
     chipsOf([{}], { drawnReadConnections: 'off', showSashimi: false }),
