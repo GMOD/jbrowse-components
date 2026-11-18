@@ -1,5 +1,5 @@
 import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
-import { getSession, installedVersionFromUrl } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { isSessionWithPermanentPlugins } from '@jbrowse/core/util/types'
 import { List, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -41,28 +41,14 @@ const InstalledPluginsList = observer(function InstalledPluginsList({
     <>
       <List>
         {shown.length > 0
-          ? shown.map(p => {
-              // match the store entry by the v2 identity (packageName embedded in
-              // the version-pinned install url), not by display name: a plugin's
-              // runtime name is its Plugin class name (e.g. "GWASPlugin") while
-              // the store name is the UMD global (e.g. "GWAS"), so a name compare
-              // misses for almost every plugin and no update is ever offered.
-              const installedUrl = pluginManager.pluginMetadata[p.name]?.url
-              const storeEntry = storePlugins?.find(
-                s =>
-                  s.packageName !== undefined &&
-                  installedVersionFromUrl(installedUrl, s.packageName) !==
-                    undefined,
-              )
-              return (
-                <InstalledPlugin
-                  key={p.name}
-                  plugin={p}
-                  model={model}
-                  storeEntry={storeEntry}
-                />
-              )
-            })
+          ? shown.map(p => (
+              <InstalledPlugin
+                key={p.name}
+                plugin={p}
+                model={model}
+                storePlugins={storePlugins}
+              />
+            ))
           : kept.length === 0 && (
               <Typography>
                 {externalPlugins.length > 0

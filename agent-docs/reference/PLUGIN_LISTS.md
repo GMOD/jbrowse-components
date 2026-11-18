@@ -73,7 +73,8 @@ under safe mode a rebuild would skip the list anyway.
 one is**, and the two disagree when an admin opens a shared or hub session carrying its
 own `sessionPlugins`. Editing the wrong list fails silently: `removePlugin` filters a
 list the plugin was never in, and an update `addPlugin`s a second copy under the same
-UMD name. `pluginHome(plugin, session)` and `addPluginTo`/`removePluginFrom`
+UMD name. `installedPluginInfo(plugin, session, storePlugins)`, whose `home` is
+the list the loaded copy came from, and `addPluginTo`/`removePluginFrom`
 (`PluginStoreWidget/components/util.ts`) are the route every call site takes.
 
 **A definition's identity is its url, never `pluginUrl`'s placeholder.** `pluginUrl()`

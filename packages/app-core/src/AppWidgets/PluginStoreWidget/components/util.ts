@@ -2,13 +2,18 @@ import { holdsPlugin, isPluginUrl } from '@jbrowse/core/pluginDefinitions'
 import {
   editableConfig,
   getEnv,
+  installedVersionFromUrl,
   isEditableJBrowseConfig,
   isSessionWithPermanentPlugins,
   isSessionWithSessionPlugins,
 } from '@jbrowse/core/util'
 
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
-import type { AbstractSessionModel, BasePlugin } from '@jbrowse/core/util/types'
+import type {
+  AbstractSessionModel,
+  BasePlugin,
+  JBrowsePlugin,
+} from '@jbrowse/core/util/types'
 
 /**
  * Which plugin list a definition lives in: the jbrowse config's `plugins[]`, the
@@ -53,11 +58,10 @@ function loadedDefinition(plugin: BasePlugin, session: AbstractSessionModel) {
  * display string 'unknown url', so neither may match anything — and matches a
  * store ref against what it resolved to, which no url comparison can.
  */
-export function pluginHome(
-  plugin: BasePlugin,
+function pluginHome(
+  loaded: PluginDefinition | undefined,
   session: AbstractSessionModel,
 ): PluginHome | undefined {
-  const loaded = loadedDefinition(plugin, session)
   if (loaded === undefined) {
     return session.adminMode ? 'config' : undefined
   }
@@ -80,6 +84,46 @@ export function pluginHome(
     return 'permanent'
   }
   return session.adminMode ? 'config' : undefined
+}
+
+/**
+ * Everything the Installed list says and does about one loaded plugin, read
+ * from one lookup of its install url, so the Uninstall and Update buttons act
+ * on the definition the version label and the update offer describe.
+ *
+ * The store entry is matched by the packageName embedded in the version-pinned
+ * install url, not by name: a plugin's runtime name is its Plugin class name
+ * (e.g. "GWASPlugin") while the store's is the UMD global (e.g. "GWAS"). The
+ * installed version is that url's version segment, which the store put there,
+ * rather than the plugin's self-declared version, which is optional and often
+ * unset.
+ *
+ * A global plugin (Desktop) has no home: it is in every session's plugin list
+ * but in no session's config, so removing it here would filter a list it is not
+ * in and then ask for a reload that brings it straight back.
+ */
+export function installedPluginInfo(
+  plugin: BasePlugin,
+  session: AbstractSessionModel,
+  storePlugins: JBrowsePlugin[] | undefined,
+) {
+  const { pluginManager } = getEnv(session)
+  const metadata = pluginManager.pluginMetadata[plugin.name]
+  const url = metadata?.url
+  const isGlobal = metadata?.isGlobal ?? false
+  const definition = loadedDefinition(plugin, session)
+  const storeEntry = storePlugins?.find(
+    s =>
+      s.packageName !== undefined &&
+      installedVersionFromUrl(url, s.packageName) !== undefined,
+  )
+  return {
+    definition,
+    storeEntry,
+    installedVersion: installedVersionFromUrl(url, storeEntry?.packageName),
+    isGlobal,
+    home: isGlobal ? undefined : pluginHome(definition, session),
+  }
 }
 
 /**
@@ -115,8 +159,8 @@ export function unloadedPermanentPlugins(session: AbstractSessionModel) {
   if (isSessionWithPermanentPlugins(session)) {
     const { pluginManager } = getEnv(session)
     const loaded = pluginManager.plugins
-      .filter(p => pluginHome(p, session) === 'permanent')
       .map(p => loadedDefinition(p, session))
+      .filter(d => pluginHome(d, session) === 'permanent')
     return session.permanentPlugins.filter(
       entry => !loaded.some(d => d !== undefined && holdsPlugin(entry, d)),
     )

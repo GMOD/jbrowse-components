@@ -1,12 +1,6 @@
 import { lazy, useState } from 'react'
 
-import { isPluginUrl } from '@jbrowse/core/pluginDefinitions'
-import {
-  getEnv,
-  getPluginUpdate,
-  getSession,
-  installedVersionFromUrl,
-} from '@jbrowse/core/util'
+import { getPluginUpdate, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import LockIcon from '@mui/icons-material/Lock'
@@ -27,7 +21,7 @@ import {
   addPluginTo,
   canInstallPermanently,
   hasPluginName,
-  pluginHome,
+  installedPluginInfo,
   removePluginFrom,
   setPluginPermanent,
 } from './util.ts'
@@ -200,36 +194,16 @@ const UpdatePluginButton = observer(function UpdatePluginButton({
 const InstalledPlugin = observer(function InstalledPlugin({
   plugin,
   model,
-  storeEntry,
+  storePlugins,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
-  storeEntry?: JBrowsePlugin
+  storePlugins?: JBrowsePlugin[]
 }) {
   const { classes } = useStyles()
-  const { pluginManager } = getEnv(model)
   const session = getSession(model)
-  // a global plugin (Desktop) is in every session's plugin list but in no
-  // session's config, so removing it here would filter a list it isn't in and
-  // then ask for a reload that brings it straight back
-  const isGlobal = pluginManager.pluginMetadata[plugin.name]?.isGlobal
-  // which list to edit, rather than whether this user is an admin: an admin
-  // looking at a session that brought its own plugins has to edit that session,
-  // not the config those plugins were never in (see pluginHome)
-  const home = isGlobal ? undefined : pluginHome(plugin, session)
-
-  // the install url is recorded in the plugin metadata at load time; the matching
-  // runtime definition is the concrete, version-pinned thing we remove/replace
-  const installedUrl = pluginManager.pluginMetadata[plugin.name]?.url
-  const definition = pluginManager.runtimePluginDefinitions.find(d =>
-    isPluginUrl(d, installedUrl),
-  )
-  // read the installed version from the store-minted, version-pinned url rather
-  // than the plugin's self-declared version, which is optional and often unset
-  const installedVersion = installedVersionFromUrl(
-    installedUrl,
-    storeEntry?.packageName,
-  )
+  const { definition, storeEntry, installedVersion, isGlobal, home } =
+    installedPluginInfo(plugin, session, storePlugins)
   const update = storeEntry
     ? getPluginUpdate(storeEntry, session.version, installedVersion)
     : undefined
