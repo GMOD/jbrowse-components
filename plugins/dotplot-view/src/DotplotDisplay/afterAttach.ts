@@ -71,33 +71,26 @@ export function doAfterAttach(
   installComparativeFetchAutorun(self, {
     name: 'DotplotFetch',
     delay: RPC_DEBOUNCE_MS,
+    gate: () => self.view.initialized,
+    // The installer reads `currentFetchKey` (LOD tier, both axes' zoom and
+    // displayed-region order, the snapped h-axis fetch window) beside the
+    // adapter config, so the autorun refires exactly when a refetch is needed.
+    // `prepare` runs untracked: it captures the values behind that key, so raw
+    // offsetPx/width changes do not refire the fetch while the worker still
+    // sees the current axes.
     prepare: () => {
       const { view } = self
-      if (view.initialized) {
-        // `view.initialized` is this gate's only tracked read. The installer
-        // reads `currentFetchKey` — LOD tier, both axes' zoom and
-        // displayed-region order, the snapped h-axis fetch window — beside the
-        // adapter config, so the autorun refires exactly when a refetch is
-        // needed.
-        // #region untracked
-        // Untracked: the values behind that key. Reading them here rather than
-        // as deps keeps raw offsetPx/width changes from refiring the fetch,
-        // while the worker still sees the current axes.
-        // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, currentFetchKey is the decision
-        return untracked(() => ({
-          // the resolved tier, which is what `currentFetchKey` holds —
-          // `view.resolution` stays 'auto' while the tier flips under it
-          lodTier: self.lodTier,
-          hViewSnap: makeViewSnap(view.hview),
-          vViewSnap: makeViewSnap(view.vview),
-          regions: self.fetchRegions,
-          // stamped at commit, so it names the order this fetch was laid out
-          // under rather than whatever the axes show when it completes
-          regionSignature: self.regionSignature,
-        }))
-        // #endregion
+      return {
+        // the resolved tier, which is what `currentFetchKey` holds —
+        // `view.resolution` stays 'auto' while the tier flips under it
+        lodTier: self.lodTier,
+        hViewSnap: makeViewSnap(view.hview),
+        vViewSnap: makeViewSnap(view.vview),
+        regions: self.fetchRegions,
+        // stamped at commit, so it names the order this fetch was laid out
+        // under rather than whatever the axes show when it completes
+        regionSignature: self.regionSignature,
       }
-      return undefined
     },
     run: async ({ lodTier, hViewSnap, vViewSnap, regions }, ctx) => {
       const { adapterConfig, rename, assemblyManager } = ctx
@@ -182,6 +175,7 @@ export function doAfterAttach(
           return
         }
         const { drawCigar, indelGaps, hview, vview, minLength } = view
+        // #region untracked
         // GPU precision anchor: the viewport-start cumBp per axis at build time.
         // Read offsetPx untracked so panning alone doesn't rebuild geometry
         // (pan is a uniform-only update on the GPU); a zoom changes bpPerPx,
@@ -193,6 +187,7 @@ export function doAfterAttach(
           baseH: Math.round(hview.offsetPx * hview.bpPerPx),
           baseV: Math.round(vview.offsetPx * vview.bpPerPx),
         }))
+        // #endregion
         self.setInstanceData(
           buildLineSegments(
             rpcData,

@@ -2,6 +2,7 @@ import { getSession } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { fetchMixinLifecycle } from '@jbrowse/display-kit/FetchMixin'
+import { untracked } from 'mobx'
 
 import { renameRegionsForAdapter } from './renameRegionsForAdapter.ts'
 
@@ -71,11 +72,13 @@ interface ComparativeIssue<TArgs> {
  * The three phases are {@link FetchPhases}, the same contract the LGV global
  * family runs on, over this family's own context. The rules are there.
  *
- * **What the tracked half may read.** Two fetch-lifecycle observables are read
- * in the autorun body — `reloadCounter` and `fetchCanceled` — and both are safe
- * for the same reason: only a user gesture moves either one. Nothing
- * fetch-DERIVED may join them, `prepare` included, since it runs inside this
- * derivation. **`error` is the one that will be reached for**: the skeleton
+ * **What the tracked half may read.** The trigger list is the skeleton's two
+ * fetch-lifecycle reads, the display's `gate`, `currentFetchKey` and the
+ * adapter config. The display's `prepare` runs `untracked`: it captures what
+ * the worker consumes, and the key is the decision. `reloadCounter` and
+ * `fetchCanceled` are safe for the same reason: only a user gesture moves
+ * either one. Nothing fetch-DERIVED may join them, `gate` included, since it
+ * runs inside this derivation. **`error` is the one that will be reached for**: the skeleton
  * clears it at the start of every fetch and sets it on failure, so a tracked
  * read of it turns a single failure into an unbounded retry loop — fetch, fail,
  * error changes, autorun refires — paced only by the debounce, against the
@@ -84,9 +87,10 @@ interface ComparativeIssue<TArgs> {
  * either one.
  *
  * **The freshness key is `currentFetchKey`, read here and stamped here.** The
- * display's `viewSignature` plus the settings and adapter axes, read tracked in
- * `prepare` (so an adapter edited in the config editor refetches the way a zoom
- * does; `run`'s reads are untracked by contract), stamped onto `loadedFetchKey`
+ * display's `viewSignature` plus the settings and adapter axes, read tracked
+ * once `gate` is open, since both displays' `viewSignature` reads view
+ * geometry that throws before the view is initialized (so an adapter edited in
+ * the config editor refetches the way a zoom does), stamped onto `loadedFetchKey`
  * by `commitFetchResult` in the same transaction as the display's own store,
  * and compared by `dataCurrent` — one key, one stamp, so the fetch gate and the
  * export gate cannot disagree on which axes a fetch has. A display's `prepare`
@@ -97,12 +101,14 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
   {
     name,
     delay,
+    gate,
     prepare,
     run,
     commit,
   }: FetchPhases<TArgs, TResult, ComparativeFetchContext> & {
     name: string
     delay: number
+    gate: () => boolean
   },
 ) {
   installFetch<ComparativeIssue<TArgs>, TResult>(self, {
@@ -110,16 +116,13 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
     delay,
     rotation: self.fetchRotation,
     contract: `${name}'s installComparativeFetchAutorun`,
+    gate,
     fetchKey: ({ key }) => key,
     loadedKey: () => self.loadedFetchKey,
-    // The display's `prepare` first, the key second: both displays gate on
-    // the view being initialized inside `prepare`, and their `viewSignature`
-    // reads view geometry that throws before it is — so the key is read only
-    // once the gate is open, where the global family reads it first because
-    // its `viewSignature` answers `undefined` for the same state.
     prepare: () => {
-      const args = prepare()
-      const key = args === undefined ? undefined : self.currentFetchKey
+      const key = self.currentFetchKey
+      // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the capture, currentFetchKey is the decision
+      const args = key === undefined ? undefined : untracked(prepare)
       return args === undefined || key === undefined
         ? undefined
         : { args, key, adapterConfig: self.adapterConfig }

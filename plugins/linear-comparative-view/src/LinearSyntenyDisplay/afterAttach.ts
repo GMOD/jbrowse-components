@@ -5,7 +5,6 @@ import {
   installComparativeFetchAutorun,
   installLodTierInfoFetch,
 } from '@jbrowse/synteny-core'
-import { untracked } from 'mobx'
 
 import { renameOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
@@ -25,63 +24,59 @@ export function doAfterAttach(
   installComparativeFetchAutorun(self, {
     name: 'SyntenyFetch',
     delay: RPC_DEBOUNCE_MS,
+    // A synteny level draws between two adjacent genome views; this display
+    // only depends on those two, not the whole stack. `fetchInert` is the
+    // shared gate: the loading overlay and the SVG export read the same one,
+    // so neither can wait on a fetch this decides not to run.
+    gate: () => !self.fetchInert && self.connectedViews !== undefined,
+    // The installer reads `currentFetchKey` (both views' region sets, the
+    // snapped fetch window, the log2 zoom bucket, the CIGAR draw options and
+    // the resolved LOD tier) beside the adapter config, so the autorun refires
+    // exactly when a refetch is needed. Tracking the underlying observables
+    // individually is strictly noisier: a setDisplayedRegions that yields an
+    // identical region signature would refetch data that is still valid. Same
+    // shape as dotplot's fetch.
+    //
+    // `prepare` runs untracked: it captures the values behind that key and the
+    // axes the worker projects with, so offsetPx/width changes do not refire
+    // the fetch while the worker still sees the current axes.
+    //
+    // Query axis (v0) drives the scoped fetch, so it alone carries the width;
+    // the target axis (v1) supplies its cumBp index and the window the
+    // geometry is emitted for, and asks the worker to query that window too
+    // only when the view marks off-screen mates.
     prepare: () => {
-      // A synteny level draws between two adjacent genome views; this display
-      // only depends on those two, not the whole stack. `fetchInert` is the
-      // shared gate — the loading overlay and the SVG export read the same one,
-      // so neither can wait on a fetch this decides not to run.
-      const connected = self.fetchInert ? undefined : self.connectedViews
+      const connected = self.connectedViews
       if (connected) {
         const { v0, v1 } = connected
-        // `fetchInert` and `connectedViews` are this gate's only tracked reads.
-        // The installer reads `currentFetchKey` — both views' region sets, the
-        // snapped fetch window, the log2 zoom bucket, the CIGAR draw options
-        // and the resolved LOD tier — beside the adapter config, so the autorun
-        // refires exactly when a refetch is needed. Tracking the underlying
-        // observables individually (as this once did) is strictly noisier: a
-        // setDisplayedRegions that yields an identical region signature would
-        // refetch data that is still valid. Same shape as dotplot's fetch.
-        //
-        // Untracked: the values behind that key, and the axes the worker
-        // projects with. Reading them here rather than as deps keeps
-        // offsetPx/width changes from refiring the fetch, while the worker
-        // still sees the current axes.
-        //
-        // Query axis (v0) drives the scoped fetch, so it alone carries the
-        // width; the target axis (v1) supplies its cumBp index and the window
-        // the geometry is emitted for, and asks the worker to query that
-        // window too only when the view marks off-screen mates.
-        // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the geometry, currentFetchKey is the decision
-        return untracked(() => {
-          const { view } = self
-          return {
-            cigarMode: view.cigarMode,
-            lodTier: self.lodTier,
-            regionSignature: self.regionSignature,
-            // Captured as strings HERE, not derived from the views after the
-            // RPC: a fetch can outlive the level it was started from, and
-            // reading a dead view throws into an unawaited promise.
-            // `assemblyNames` is the unique set of the regions' own
-            // `assemblyName`s, so this is the same value read while it is
-            // still safe to read.
-            queryAssemblyName: v0.assemblyNames[0],
-            targetAssemblyName: v1.assemblyNames[0],
-            rawQuery: {
-              bpPerPx: v0.bpPerPx,
-              offsetPx: v0.offsetPx,
-              displayedRegions: v0.displayedRegions,
-              width: v0.width,
-              fetchRegions: self.fetchRegions,
-            },
-            rawTarget: {
-              bpPerPx: v1.bpPerPx,
-              offsetPx: v1.offsetPx,
-              displayedRegions: v1.displayedRegions,
-              windowRegions: self.targetWindowRegions,
-              queried: view.offscreenDrawn,
-            },
-          }
-        })
+        const { view } = self
+        return {
+          cigarMode: view.cigarMode,
+          lodTier: self.lodTier,
+          regionSignature: self.regionSignature,
+          // Captured as strings HERE, not derived from the views after the
+          // RPC: a fetch can outlive the level it was started from, and
+          // reading a dead view throws into an unawaited promise.
+          // `assemblyNames` is the unique set of the regions' own
+          // `assemblyName`s, so this is the same value read while it is
+          // still safe to read.
+          queryAssemblyName: v0.assemblyNames[0],
+          targetAssemblyName: v1.assemblyNames[0],
+          rawQuery: {
+            bpPerPx: v0.bpPerPx,
+            offsetPx: v0.offsetPx,
+            displayedRegions: v0.displayedRegions,
+            width: v0.width,
+            fetchRegions: self.fetchRegions,
+          },
+          rawTarget: {
+            bpPerPx: v1.bpPerPx,
+            offsetPx: v1.offsetPx,
+            displayedRegions: v1.displayedRegions,
+            windowRegions: self.targetWindowRegions,
+            queried: view.offscreenDrawn,
+          },
+        }
       }
       return undefined
     },

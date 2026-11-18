@@ -14,6 +14,7 @@
 // is synchronous and unreachable unless the fetch is still current.
 
 import { types } from '@jbrowse/mobx-state-tree'
+import { reactionDependencies } from '@jbrowse/render-core/namedReactions'
 import { autorun } from 'mobx'
 
 import { ComparativeFetchMixin } from './ComparativeFetchMixin.ts'
@@ -24,6 +25,20 @@ import type { ComparativeFetchContext } from './installComparativeFetchAutorun.t
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const DELAY = 10
+
+const DEPENDENCIES = [
+  'TestDisplay.adapterType',
+  'TestDisplay.fetchCanceled',
+  'TestDisplay.gated',
+  // the freshness gate's stamp
+  'TestDisplay.loadedFetchKey',
+  'TestDisplay.reloadCounter',
+  // the settings axis of `currentFetchKey` probing for the hook
+  'TestDisplay.rpcProps?',
+  'TestDisplay.viewKey',
+  // the skeleton's `isAlive` check
+  'alive',
+]
 
 const PAINTED = {
   painted: true,
@@ -51,7 +66,8 @@ const TestDisplayBase = types
     // the view input behind `viewSignature` below. Observable, so changing
     // it refires the autorun the way a zoom does.
     viewKey: 'k1',
-    // read inside `untracked` by prepare below, so it must NOT refire anything
+    // read by prepare below, which the installer runs untracked, so it must
+    // NOT refire anything
     geometry: 0,
     gated: false,
     adapterType: 'TestAdapter',
@@ -87,8 +103,8 @@ const TestDisplay = types
     // the settings axis, which carries the adapter, so the installer tracks it.
     // It THROWS while gated, the way both real displays' signatures throw on
     // view geometry before the view is initialized: the installer has to read
-    // `prepare` first and the key only once the gate is open, or the first
-    // autorun run of every dotplot dies in a reaction error.
+    // the key only once `gate` is open, or the first autorun run of every
+    // dotplot dies in a reaction error.
     get viewSignature() {
       if (self.gated) {
         throw new Error('width not initialized')
@@ -161,6 +177,7 @@ async function setup({
   installComparativeFetchAutorun(display, {
     name: 'TestComparativeFetch',
     delay: DELAY,
+    gate: () => !display.gated,
     prepare: () =>
       prepare ? prepare(display) : { geometry: display.geometry },
     run: (args, ctx) => {
@@ -211,19 +228,33 @@ describe('installComparativeFetchAutorun', () => {
     expect(display.isLoading).toBe(false)
   })
 
-  it('re-runs when an observable prepare read changes, and not on an untracked one', async () => {
+  it('re-runs when the key moves, and not on a read prepare made', async () => {
     const { display, prepared } = await setup({
       run: () => Promise.resolve('r1'),
     })
     await settle()
     expect(prepared).toHaveLength(1)
 
-    // geometry is read inside prepare's untracked block in the real displays;
-    // here it is simply not read until after the key, so only the key refires
+    display.setGeometry(1)
+    await settle()
+    expect(prepared).toHaveLength(1)
+
     display.setViewKey('k2')
     await settle()
     expect(prepared).toHaveLength(2)
+    expect(prepared[1]).toEqual({ geometry: 1 })
     expect(display.loadedFetchKey).toEqual(keyFor('k2'))
+  })
+
+  // The whole trigger list: the skeleton's two user-gesture reads, the
+  // display's gate, and the key with its adapter axis. `geometry`, which the
+  // default `prepare` reads, is absent.
+  it('tracks the counter, the cancel, the gate and the key, and nothing prepare reads', async () => {
+    const { display } = await setup({ run: () => Promise.resolve('r1') })
+    await settle()
+    expect(reactionDependencies(display, 'TestComparativeFetch')).toEqual(
+      DEPENDENCIES,
+    )
   })
 
   // `FetchPhases.run` promises nothing it reads is tracked, and `run` being
@@ -385,7 +416,6 @@ describe('installComparativeFetchAutorun', () => {
 test('a gate flip over unchanged inputs re-runs nothing', async () => {
   const { display, prepared, committed } = await setup({
     run: () => Promise.resolve('r1'),
-    prepare: d => (d.gated ? undefined : { geometry: 0 }),
   })
   await settle()
   expect(committed).toHaveLength(1)
@@ -447,12 +477,10 @@ test('reload() refires the fetch with no input change', async () => {
 })
 
 test('reload() refires even while the gate is closed, so the wake chain holds', async () => {
-  // `prepare` returning undefined still records its reads as dependencies; the
-  // counter is read BEFORE that bail-out, so a reload during a gated state is
-  // not swallowed.
+  // A shut `gate` still records its reads as dependencies; the counter is read
+  // BEFORE that bail-out, so a reload during a gated state is not swallowed.
   const { display, prepared } = await setup({
     run: () => Promise.resolve('ok'),
-    prepare: d => (d.gated ? undefined : { geometry: 0 }),
   })
   await settle()
   expect(prepared).toHaveLength(1)
@@ -464,6 +492,8 @@ test('reload() refires even while the gate is closed, so the wake chain holds', 
   display.reload()
   await settle()
   expect(prepared).toHaveLength(1) // still gated: reload does not bypass the gate
+  // the display's gate is the skeleton's `gated` outcome, not a dead Retry
+  expect(takeContractReports()).toEqual([])
 
   display.setGated(false)
   await settle()
@@ -486,7 +516,6 @@ test('a reload the gate does not clear is reported as a dead button', async () =
   expect(takeContractReports()).toEqual([])
 
   display.setGeometry(1)
-  await settle()
   display.reload()
   await settle()
 

@@ -29,6 +29,8 @@ export interface FetchPhases<TArgs, TResult, TCtx> {
    * the reads that decided that stay tracked, so the autorun rewakes. Everything
    * the round trip has to be judged against is captured here and travels in
    * `TArgs`: the viewport, the region set, the resolution.
+   * `installComparativeFetchAutorun` runs it untracked instead, under its
+   * `gate` and key reads, so there it is the capture alone.
    *
    * Prefer folding the fetch's inputs into one `currentFetchKey` computed over
    * tracking them individually: a pan inside the buffered window then recomputes

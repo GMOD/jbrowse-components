@@ -41,34 +41,30 @@ tracks dependencies automatically. Use `reaction` only to separate the tracked
 expression from the effect.
 
 To read an observable inside an autorun **without** making it a dependency, wrap
-it in `untracked()`. The dotplot's fetch tracks exactly one computed and reads
-everything else untracked:
+it in `untracked()`. The dotplot's geometry build tracks the zoom and reads the
+pan offset untracked:
 
 <!-- include: plugins/dotplot-view/src/DotplotDisplay/afterAttach.ts#untracked -->
 
 ```ts
-// Untracked: the values behind that key. Reading them here rather than
-// as deps keeps raw offsetPx/width changes from refiring the fetch,
-// while the worker still sees the current axes.
-// eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, currentFetchKey is the decision
-return untracked(() => ({
-  // the resolved tier, which is what `currentFetchKey` holds —
-  // `view.resolution` stays 'auto' while the tier flips under it
-  lodTier: self.lodTier,
-  hViewSnap: makeViewSnap(view.hview),
-  vViewSnap: makeViewSnap(view.vview),
-  regions: self.fetchRegions,
-  // stamped at commit, so it names the order this fetch was laid out
-  // under rather than whatever the axes show when it completes
-  regionSignature: self.regionSignature,
+// GPU precision anchor: the viewport-start cumBp per axis at build time.
+// Read offsetPx untracked so panning alone doesn't rebuild geometry
+// (pan is a uniform-only update on the GPU); a zoom changes bpPerPx,
+// which IS tracked, so the base is recaptured near the view on zoom.
+// Whole bp, so an integer coordinate minus it stays exact in Float32
+// out to 2^24 bp.
+// eslint-disable-next-line no-restricted-syntax -- effect input: the geometry build consumes the pan offset, zoom is the decision
+const { baseH, baseV } = untracked(() => ({
+  baseH: Math.round(hview.offsetPx * hview.bpPerPx),
+  baseV: Math.round(vview.offsetPx * vview.bpPerPx),
 }))
 ```
 
-The computed-and-untracked split is the pattern to copy for any expensive
-effect: fold every input that should trigger it into one computed, track only
-that, and read the raw values inside `untracked`. Tracking the underlying
-observables individually would refire the worker fetch on every pan frame for an
-identical result.
+The dotplot's fetch takes the split further, and it is the pattern to copy for
+any expensive effect: fold every input that should trigger it into one computed
+(`currentFetchKey`), track only that, and read the raw values inside
+`untracked`. Tracking the underlying observables individually would refire the
+worker fetch on every pan frame for an identical result.
 
 :::warning An autorun must do its own reads — an MST action is an untracked one
 
