@@ -1,8 +1,8 @@
-import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import FacetChips from '../../../TrackTable/components/FacetChips.tsx'
+import TrackFilterBox from '../../../TrackTable/components/TrackFilterBox.tsx'
 import ShoppingCart from '../ShoppingCart.tsx'
 import HamburgerMenu from './HamburgerMenu.tsx'
 
@@ -34,7 +34,6 @@ const HierarchicalTrackSelectorHeader = observer(
   }) {
     const { classes } = useStyles()
     const { trackTable } = model
-    const { matchCounts } = trackTable
     return (
       <>
         <div
@@ -43,19 +42,7 @@ const HierarchicalTrackSelectorHeader = observer(
         >
           <HamburgerMenu model={model} tableMenuItems={tableMenuItems} />
           <ShoppingCart model={model} />
-          <ClearableSearchField
-            className={classes.searchBox}
-            label="Filter tracks"
-            value={model.filterText}
-            status={
-              matchCounts
-                ? `${matchCounts.matched} of ${matchCounts.total}`
-                : undefined
-            }
-            onChange={v => {
-              model.setFilterText(v)
-            }}
-          />
+          <TrackFilterBox table={trackTable} className={classes.searchBox} />
         </div>
         <FacetChips table={trackTable} />
       </>

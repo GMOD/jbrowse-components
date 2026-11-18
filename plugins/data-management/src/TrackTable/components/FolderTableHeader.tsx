@@ -1,9 +1,10 @@
-import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import ViewColumnIcon from '@mui/icons-material/ViewColumn'
 import { observer } from 'mobx-react'
 
 import ShoppingCart from '../../HierarchicalTrackSelectorWidget/components/ShoppingCart.tsx'
-import TableMenuButton from './TableMenuButton.tsx'
+import TrackFilterBox from './TrackFilterBox.tsx'
 import { tableMenuItems } from './tableLayout.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
@@ -34,24 +35,17 @@ const FolderTableHeader = observer(function FolderTableHeader({
   shown: string[]
 }) {
   const { classes } = useStyles()
-  const { matchCounts } = table
   return (
     <div className={classes.toolbar}>
-      <TableMenuButton menuItems={() => tableMenuItems(table, shown)} />
+      <CascadingMenuButton
+        data-testid="track-table-menu"
+        tooltip="Table options"
+        menuItems={() => tableMenuItems(table, shown)}
+      >
+        <ViewColumnIcon />
+      </CascadingMenuButton>
       <ShoppingCart model={model} />
-      <ClearableSearchField
-        className={classes.searchBox}
-        label="Filter tracks"
-        value={table.filterText}
-        status={
-          matchCounts
-            ? `${matchCounts.matched} of ${matchCounts.total}`
-            : undefined
-        }
-        onChange={value => {
-          table.setFilterText(value)
-        }}
-      />
+      <TrackFilterBox table={table} className={classes.searchBox} />
     </div>
   )
 })
