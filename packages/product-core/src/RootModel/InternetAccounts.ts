@@ -189,11 +189,10 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           }
         }
 
-        // if still no account, recreate the origin account a saved session
-        // names — only when no account holds that id, only for the location's
-        // own origin, and only for an id whose
-        // leading segment names an account type this session actually has.
-        // Anything else is a location pointing at an account that is simply
+        // if still no account, create the one the location names — only when
+        // no account holds that id, only for a file on the app's own origin or
+        // on the origin the id names, and only for an id whose leading segment
+        // names an account type this session actually has. Anything else is a location pointing at an account that is simply
         // gone (a track from a shared session whose config defined one, a
         // config it was removed from, a host that never loaded the
         // authentication plugin), and pushing an unknown type into the array
@@ -203,7 +202,8 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         if (
           selectedId &&
           !selectedAccount &&
-          namesOwnOrigin(selectedId, location) &&
+          (resolvesToAppOrigin(location) ||
+            namesOwnOrigin(selectedId, location)) &&
           pluginManager
             .getElementTypesInGroup('internet account')
             .some(t => t.name === parseEphemeralId(selectedId).type)

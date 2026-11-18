@@ -121,9 +121,13 @@ walk below. This is also what the Add Track form's account picker writes:
   location is used whatever its `domains` say. A link cannot move a same-origin
   file anywhere but the server already serving the page.
 - **An id the config does not declare** is honoured only when its leading
-  segment is an account type (`HTTPBasicInternetAccount-myserver`, the form
-  JBrowse mints when a server answers 401). Any other unknown id is ignored and
-  the file is read unauthenticated, so the user sees the server's 401.
+  segment is an account type and the file is one of two kinds. A file on the
+  app's own origin takes any such id (`HTTPBasicInternetAccount-myserver` on a
+  relative path). A file elsewhere takes only the id naming its own origin
+  (`HTTPBasicInternetAccount-https://data.mylab.org`, the form JBrowse mints
+  when a server answers 401), and that account then covers the whole origin. Any
+  other unknown id is ignored and the file is read unauthenticated, so the user
+  sees the server's 401.
 
 **Otherwise, the `domains` walk.** JBrowse goes through `internetAccounts` in
 order and picks the **first** whose `domains` matches, so put the most specific

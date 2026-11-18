@@ -233,6 +233,35 @@ test('a mismatched name falls through to the domains walk', () => {
   expect(found?.internetAccountId).toBe('cdnToken')
 })
 
+// A config asks for a login on its own relative data paths without declaring an
+// account by naming an id that leads with an account type.
+test('an undeclared typed id is created for a file on the app origin only', () => {
+  const root = makeRoot()
+  const created = root.findAppropriateInternetAccount({
+    locationType: 'UriLocation',
+    uri: 'volvox_microarray.bw',
+    internetAccountId: 'HTTPBasicInternetAccount-HTTPBasicTest',
+  })
+  expect(created?.type).toBe('HTTPBasicInternetAccount')
+  expect(
+    root.findAppropriateInternetAccount({
+      locationType: 'UriLocation',
+      uri: 'volvox_microarray.bw',
+      internetAccountId: 'HTTPBasicInternetAccount-HTTPBasicTest',
+    }),
+  ).toBe(created)
+  expect(root.internetAccounts.length).toBe(1)
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const offOrigin = root.findAppropriateInternetAccount({
+    locationType: 'UriLocation',
+    uri: 'https://evil.example.com/attacker.bam',
+    internetAccountId: 'HTTPBasicInternetAccount-HTTPBasicTest',
+  })
+  warn.mockRestore()
+  expect(offOrigin).toBe(null)
+  expect(root.internetAccounts.length).toBe(1)
+})
+
 // A location carries a `<TypeName>-<origin>` id when the file selector's
 // account picker chose an origin account, or a saved session held one; the
 // account is recreated, scoped to that origin.
