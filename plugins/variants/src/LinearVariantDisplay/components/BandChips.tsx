@@ -1,119 +1,11 @@
-import { alpha } from '@jbrowse/core/ui/palette'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
-  GROUP_LABEL_FONT_SIZE,
-  GROUP_LABEL_FONT_WEIGHT,
-  GROUP_LABEL_HEIGHT,
-  GROUP_LABEL_ICON_SIZE,
-  GROUP_LABEL_INSET_X,
-  GROUP_LABEL_PADDING_X,
-  GROUP_LABEL_RADIUS,
-  GROUP_LABEL_TINT,
-} from '@jbrowse/display-kit/groupLabelStyle'
-import CloseIcon from '@mui/icons-material/Close'
+  BandChip,
+  BandChipButton,
+  BandChipRow,
+} from '@jbrowse/display-kit/BandChips'
 import { observer } from 'mobx-react'
 
 import type { LinearVariantDisplayModel } from '../model.ts'
-
-const useStyles = makeStyles()(theme => {
-  const tint = alpha(theme.palette.text.primary, GROUP_LABEL_TINT)
-  const pill = {
-    display: 'flex',
-    alignItems: 'center',
-    height: GROUP_LABEL_HEIGHT,
-    padding: `0 ${GROUP_LABEL_PADDING_X}px`,
-    border: 'none',
-    borderRadius: GROUP_LABEL_RADIUS,
-    fontSize: GROUP_LABEL_FONT_SIZE,
-    fontWeight: GROUP_LABEL_FONT_WEIGHT,
-    color: theme.palette.text.primary,
-    backgroundColor: theme.palette.background.paper,
-    backgroundImage: `linear-gradient(${tint}, ${tint})`,
-    whiteSpace: 'nowrap' as const,
-    userSelect: 'none' as const,
-    pointerEvents: 'auto' as const,
-  }
-  return {
-    row: {
-      position: 'absolute',
-      left: GROUP_LABEL_INSET_X,
-      display: 'flex',
-      gap: 4,
-      pointerEvents: 'none',
-    },
-    pill,
-    button: {
-      ...pill,
-      cursor: 'pointer',
-    },
-    hide: {
-      display: 'flex',
-      alignItems: 'center',
-      marginLeft: 2,
-      marginRight: -4,
-      padding: 0,
-      border: 'none',
-      background: 'transparent',
-      color: 'inherit',
-      cursor: 'pointer',
-    },
-    hideIcon: {
-      fontSize: GROUP_LABEL_ICON_SIZE - 2,
-    },
-  }
-})
-
-const HideablePill = observer(function HideablePill({
-  label,
-  onHide,
-}: {
-  label: string
-  onHide: () => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.pill} data-testid={`band_chip_${label}`}>
-      {label}
-      <button
-        type="button"
-        className={classes.hide}
-        title={`Hide ${label.toLowerCase()}`}
-        onClick={() => {
-          onHide()
-        }}
-      >
-        <CloseIcon className={classes.hideIcon} />
-      </button>
-    </div>
-  )
-})
-
-const ChipButton = observer(function ChipButton({
-  testid,
-  title,
-  text,
-  onClick,
-}: {
-  testid: string
-  title: string
-  text: string
-  onClick: () => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <button
-      type="button"
-      data-testid={testid}
-      className={classes.button}
-      title={title}
-      onClick={() => {
-        onClick()
-      }}
-    >
-      {text}
-    </button>
-  )
-})
 
 /**
  * The records' chips: the band's hide and the count of records it hides past
@@ -129,7 +21,7 @@ export const RecordsChips = observer(function RecordsChips({
   return (
     <>
       {hideable ? (
-        <HideablePill
+        <BandChip
           label="Records"
           onHide={() => {
             model.setShowRecords(false)
@@ -137,7 +29,7 @@ export const RecordsChips = observer(function RecordsChips({
         />
       ) : null}
       {model.recordsHiddenCount > 0 ? (
-        <ChipButton
+        <BandChipButton
           testid="records_hidden_chip"
           title="Records that do not fit the band. Click to show every row."
           text={`+${model.recordsHiddenCount.toLocaleString('en-US')} hidden`}
@@ -163,7 +55,6 @@ const BandChips = observer(function BandChips({
 }: {
   model: LinearVariantDisplayModel
 }) {
-  const { classes } = useStyles()
   const {
     drawsGenotypeRows,
     showRecords,
@@ -175,24 +66,16 @@ const BandChips = observer(function BandChips({
   return topBands.reserved.chips > 0 ? (
     <>
       {recordsChipsHeadBand && !recordsSectionChipsDrawn ? (
-        <div
-          className={classes.row}
-          style={{ top: 1 }}
-          data-testid="records_band_chips"
-        >
+        <BandChipRow top={1} testid="records_band_chips">
           <RecordsChips model={model} hideable />
-        </div>
+        </BandChipRow>
       ) : null}
-      <div
-        className={classes.row}
-        style={{ top: topBands.top.chips + 2 }}
-        data-testid="band_chips_strip"
-      >
+      <BandChipRow top={topBands.top.chips + 2} testid="band_chips_strip">
         {recordsChipsHeadBand ? null : (
           <RecordsChips model={model} hideable={bothShown} />
         )}
         {bothShown ? (
-          <HideablePill
+          <BandChip
             label="Genotypes"
             onHide={() => {
               model.setShowGenotypes(false)
@@ -200,7 +83,7 @@ const BandChips = observer(function BandChips({
           />
         ) : null}
         {drawsGenotypeRows && !showRecords ? (
-          <ChipButton
+          <BandChipButton
             testid="show_records_chip"
             title="Draw the records above the genotype rows"
             text="Show records"
@@ -210,7 +93,7 @@ const BandChips = observer(function BandChips({
           />
         ) : null}
         {drawsGenotypeRows ? null : (
-          <ChipButton
+          <BandChipButton
             testid="show_genotypes_chip"
             title="Draw a row per sample under the records"
             text="Show genotypes"
@@ -219,7 +102,7 @@ const BandChips = observer(function BandChips({
             }}
           />
         )}
-      </div>
+      </BandChipRow>
     </>
   ) : null
 })
