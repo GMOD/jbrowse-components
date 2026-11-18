@@ -6,7 +6,7 @@ import webpack from 'webpack'
 // (react-circular-genome-view, react-linear-genome-view, react-app).
 // Keeping these in one place ensures fixes like the .mjs fullySpecified rule
 // below stay in sync across all products.
-export default function umdConfig({ filename, library, cssUse }) {
+export default function umdConfig({ filename, library }) {
   const mode = process.env.NODE_ENV || 'production'
   return {
     mode,
@@ -46,9 +46,6 @@ export default function umdConfig({ filename, library, cssUse }) {
           // (which has no jsxDEV export), a mismatch that crashes at runtime.
           options: { rootMode: 'upward', envName: mode },
         },
-        // only react-app imports a .css file (dockview); css-loader resolves it
-        // and style-loader injects it into the DOM
-        ...(cssUse ? [{ test: /\.css$/, use: cssUse }] : []),
       ],
     },
   }
