@@ -45,7 +45,8 @@ dpr 1 / 1.5 / 2, against 8 / 11 / 17 for the line alone. The volvox
   where that draw's scissor spans its height (`uncomposited`), so the shared
   column is composited once.
 - **`lineMarkOf(interpolate, overMarks)` gives the linear line `union` only
-  where `buildMarkList` finds a non-text entry before it.** A line-only or
+  where `buildMarkList` has built a per-block mark before it.** Text builds
+  none, and a link spans the view and draws after every block. A line-only or
   line-first display, a step line and the whole wiggle display keep the max
   path: no layer, no second encoder, one command buffer a frame.
 - **`layerOver` carries a one-field instance, the layer's size.** The codegen

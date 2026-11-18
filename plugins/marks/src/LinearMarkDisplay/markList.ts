@@ -353,12 +353,19 @@ function withMarkIndex(
  * One mark per `marks` entry with a shape, reading `layers[i]` inside its
  * zoom range. A text mark is the text layer's and takes no place here.
  */
-export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
-  return entries.flatMap((entry, i) => {
-    const overMarks = entries.slice(0, i).some(e => e.type !== 'text')
-    const mark = shapeMark(entry, i, overMarks)
-    return mark ? [withMarkIndex(mark, i, entry.type)] : []
-  })
+export function buildMarkList(entries: readonly MarkEntry[]) {
+  const marks: DisplayMark[] = []
+  for (const [i, entry] of entries.entries()) {
+    const mark = shapeMark(
+      entry,
+      i,
+      marks.some(m => !m.spansView),
+    )
+    if (mark) {
+      marks.push(withMarkIndex(mark, i, entry.type))
+    }
+  }
+  return marks
 }
 
 // Entry `i`'s shape over layer `i`, sampling the ramp its region paints

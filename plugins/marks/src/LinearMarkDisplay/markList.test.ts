@@ -414,7 +414,7 @@ function linear(...types: MarkEntry['type'][]): MarkEntry[] {
   )
 }
 
-test('a linear line unions over an earlier shape, blends max first, and text counts for neither', () => {
+test('a linear line unions over an earlier shape, blends max first, and text and a link, which draws after every block, count for neither', () => {
   const blends = (list: MarkEntry[]) =>
     buildMarkList(list).map(m => [m.pass.id, m.pass.blendState.op])
   expect(blends(linear('line', 'bar', 'line'))).toEqual([
@@ -423,6 +423,10 @@ test('a linear line unions over an earlier shape, blends max first, and text cou
     ['line-linear#2', 'union'],
   ])
   expect(blends(linear('text', 'line'))).toEqual([['line-linear#1', 'max']])
+  expect(blends(linear('link', 'line'))).toEqual([
+    ['link#0', undefined],
+    ['line-linear#1', 'max'],
+  ])
   expect(blends(linear('line', 'line'))).toEqual([
     ['line-linear#0', 'max'],
     ['line-linear#1', 'union'],
