@@ -1,7 +1,11 @@
+import { useRef, useState } from 'react'
+
 import { queryParamsHref } from '@jbrowse/app-core'
+import { CellTextInput } from '@jbrowse/core/ui/VirtualTable'
 import { formatRelativeTime } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
 import { IconButton, Link, Tooltip } from '@mui/material'
@@ -43,18 +47,25 @@ const IconCell = observer(function IconCell({
   label,
   disabled,
   onClick,
+  buttonRef,
   children,
 }: {
   label: string
   disabled?: boolean
   onClick: () => void
+  buttonRef?: React.Ref<HTMLButtonElement>
   children: React.ReactElement
 }) {
   return (
     <Tooltip title={label}>
       {/* span so the tooltip still fires over a disabled button */}
       <span>
-        <IconButton aria-label={label} disabled={disabled} onClick={onClick}>
+        <IconButton
+          ref={buttonRef}
+          aria-label={label}
+          disabled={disabled}
+          onClick={onClick}
+        >
           {children}
         </IconButton>
       </span>
@@ -92,6 +103,16 @@ const useStyles = makeStyles()(theme => ({
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     lineHeight: 1.4,
+  },
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    height: '100%',
+    minWidth: 0,
+  },
+  grow: {
+    flex: 1,
+    minWidth: 0,
   },
   cell: {
     display: 'flex',
@@ -165,10 +186,7 @@ export const ThumbnailCell = observer(function ThumbnailCell({
   )
 })
 
-// A native `title`, not a MUI Tooltip: the drawer is narrow enough that a long
-// session name ellipses, and a tooltip here would mean a popper laid over the
-// row underneath. Last use leads the second line, so the ellipsis eats the
-// summary rather than the date.
+// a native title, not a Tooltip, which would lay a popper over the next row
 export const NameCell = observer(function NameCell({
   row,
   session,
@@ -218,5 +236,54 @@ export const DeleteCell = observer(function DeleteCell({
     >
       <DeleteIcon />
     </IconCell>
+  )
+})
+
+export const SessionRowCell = observer(function SessionRowCell({
+  row,
+  session,
+}: CellProps) {
+  const { classes } = useStyles()
+  const [renaming, setRenaming] = useState(false)
+  const refocus = useRef(false)
+  return (
+    <div className={classes.row}>
+      <div className={classes.grow}>
+        {renaming ? (
+          <CellTextInput
+            value={row.name}
+            label={`Rename ${row.name}`}
+            onCommit={text => {
+              const name = text.trim()
+              if (name !== row.name) {
+                void session.renameSavedSession(row.id, name)
+              }
+            }}
+            onClose={byKey => {
+              refocus.current = byKey
+              setRenaming(false)
+            }}
+          />
+        ) : (
+          <NameCell row={row} session={session} />
+        )}
+      </div>
+      <IconCell
+        label={`Rename session ${row.name}`}
+        buttonRef={el => {
+          if (el && refocus.current) {
+            refocus.current = false
+            el.focus()
+          }
+        }}
+        onClick={() => {
+          setRenaming(true)
+        }}
+      >
+        <EditIcon />
+      </IconCell>
+      <FavoriteCell row={row} session={session} />
+      <DeleteCell row={row} session={session} />
+    </div>
   )
 })

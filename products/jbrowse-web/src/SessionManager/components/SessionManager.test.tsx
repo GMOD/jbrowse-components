@@ -73,22 +73,56 @@ test('the open session is neither activatable nor deletable', () => {
   expect((blocked[0] as HTMLButtonElement).disabled).toBe(true)
 })
 
-test('a double click on a name renames the session, trimmed', () => {
+function rename(name: string, value: string) {
+  fireEvent.click(
+    screen.getByRole('button', { name: `Rename session ${name}` }),
+  )
+  const input = screen.getByRole('textbox', { name: `Rename ${name}` })
+  fireEvent.change(input, { target: { value } })
+  return input
+}
+
+test('the rename button renames the session, trimmed', () => {
   const { session } = setup([meta('open'), meta('other')])
-  fireEvent.doubleClick(screen.getByRole('button', { name: 'Rename other' }))
-  const input = screen.getByRole('textbox', { name: 'Rename other' })
-  fireEvent.change(input, { target: { value: '  renamed  ' } })
-  fireEvent.keyDown(input, { key: 'Enter' })
+  fireEvent.keyDown(rename('other', '  renamed  '), { key: 'Enter' })
   expect(session.renameSavedSession).toHaveBeenCalledWith('other', 'renamed')
+  expect(screen.queryByRole('textbox', { name: 'Rename other' })).toBeNull()
+  expect(document.activeElement).toBe(
+    screen.getByRole('button', { name: 'Rename session other' }),
+  )
+})
+
+test('a click on the name switches sessions rather than renaming', () => {
+  const { session } = setup([meta('open'), meta('other')])
+  fireEvent.click(screen.getByText('other'))
+  expect(session.activateSession).toHaveBeenCalledWith('other')
+  expect(screen.queryByRole('textbox', { name: 'Rename other' })).toBeNull()
 })
 
 test('a blank or padded-but-unchanged name renames nothing', () => {
   const { session } = setup([meta('other')])
   for (const value of ['   ', ' other ']) {
-    fireEvent.doubleClick(screen.getByRole('button', { name: 'Rename other' }))
-    const input = screen.getByRole('textbox', { name: 'Rename other' })
-    fireEvent.change(input, { target: { value } })
-    fireEvent.blur(input)
+    fireEvent.blur(rename('other', value))
   }
   expect(session.renameSavedSession).not.toHaveBeenCalled()
+})
+
+test('the search narrows the list by name and says how many are left', () => {
+  setup([meta('open'), meta('other'), meta('another')])
+  expect(screen.queryByRole('status')).toBeNull()
+  const search = screen.getByRole('textbox', { name: 'Search' })
+  fireEvent.change(search, { target: { value: 'OTHER' } })
+  expect(screen.queryByText('open (current)')).toBeNull()
+  expect(screen.getByText('other')).toBeTruthy()
+  expect(screen.getByText('another')).toBeTruthy()
+  expect(screen.getByRole('status').textContent).toBe('2 of 3')
+})
+
+test('the search reads the name, not the "(current)" the label adds', () => {
+  setup([meta('open'), meta('other')])
+  fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
+    target: { value: 'current' },
+  })
+  expect(screen.getByText('No matching sessions')).toBeTruthy()
+  expect(screen.getByRole('status').textContent).toBe('0 of 2')
 })

@@ -1,23 +1,27 @@
 import { useState } from 'react'
 
 import { formatSessionSummary, sessionLastUsed } from '@jbrowse/app-core'
-import VirtualTable, { EditableTextCell } from '@jbrowse/core/ui/VirtualTable'
-import { compareValues } from '@jbrowse/core/util/tableText'
+import { SearchField } from '@jbrowse/core/ui/ClearableSearchField'
+import ControlRow from '@jbrowse/core/ui/ControlRow'
+import VirtualTable from '@jbrowse/core/ui/VirtualTable'
+import {
+  compareValues,
+  searchHighlightPatterns,
+  splitSearchWords,
+} from '@jbrowse/core/util/tableText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { THUMBNAIL_WIDTH } from '../../sessionThumbnail.ts'
 import DeleteOldSessionsDialog from './DeleteOldSessionsDialog.tsx'
-import { DeleteCell, FavoriteCell, NameCell, ThumbnailCell } from './cells.tsx'
+import { SessionRowCell, ThumbnailCell } from './cells.tsx'
 
 import type { Row } from './cells.tsx'
 import type { SessionModel } from './util.ts'
 import type { VirtualTableColumn } from '@jbrowse/core/ui/VirtualTable'
 
 const useStyles = makeStyles()(theme => ({
-  // the widget fills its drawer and the table takes what is left below the
-  // controls, scrolling its own rows
   root: {
     display: 'flex',
     flexDirection: 'column',
@@ -25,19 +29,14 @@ const useStyles = makeStyles()(theme => ({
   },
   table: {
     flex: 1,
-    // a flex child defaults to min-height:auto, which refuses to shrink below
-    // its content and would push the table past the drawer instead of
-    // scrolling
+    // a flex child's min-height:auto would push the table past the drawer
     minHeight: 0,
   },
-  nameCell: {
-    display: 'flex',
-    alignItems: 'center',
-    minWidth: 0,
-  },
-  name: {
+  spacer: {
     flex: 1,
-    minWidth: 0,
+  },
+  search: {
+    width: 160,
   },
   mb: {
     margin: theme.spacing(1),
@@ -48,11 +47,8 @@ const useStyles = makeStyles()(theme => ({
 const ROW_HEIGHT = 72
 
 /**
- * The rows of the table: the saved-session metadata the root model read out
- * of IndexedDB, in display shape, favorites first and each group by last use.
- * `undefined` in, `undefined` out — that is the "database still opening"
- * state, and it is deliberately not the same value as an empty database (see
- * the render below).
+ * The saved sessions, favorites first and each group by last use; `undefined`
+ * while the database is still opening, which is not the same as empty.
  */
 function buildRows(session: SessionModel): Row[] | undefined {
   return session.savedSessionMetadata
@@ -82,44 +78,33 @@ const SessionManager = observer(function SessionManager({
   const [deleteOldOpen, setDeleteOldOpen] = useState(false)
   const [sortField, setSortField] = useState('')
   const [sortAscending, setSortAscending] = useState(true)
+  const [searchText, setSearchText] = useState('')
   const rows = buildRows(session)
+  const words = splitSearchWords(searchText)
+  const searched = words.length
+    ? rows?.filter(row => {
+        const name = row.name.toLowerCase()
+        return words.every(word => name.includes(word))
+      })
+    : rows
   const direction = sortAscending ? 1 : -1
   const sortedRows =
-    rows && sortField === 'name'
-      ? rows.toSorted((a, b) => compareValues(a.name, b.name, direction))
-      : rows
+    searched && sortField === 'name'
+      ? searched.toSorted((a, b) => compareValues(a.name, b.name, direction))
+      : searched
 
   const columns: VirtualTableColumn<Row>[] = [
     {
       id: 'name',
       header: 'Name',
       fill: true,
-      cell: row => (
-        <div className={classes.nameCell}>
-          <div className={classes.name}>
-            <EditableTextCell
-              value={row.name}
-              label={`Rename ${row.name}`}
-              onCommit={text => {
-                const name = text.trim()
-                if (name !== row.name) {
-                  void session.renameSavedSession(row.id, name)
-                }
-              }}
-            >
-              <NameCell row={row} session={session} />
-            </EditableTextCell>
-          </div>
-          <FavoriteCell row={row} session={session} />
-          <DeleteCell row={row} session={session} />
-        </div>
-      ),
+      cell: row => <SessionRowCell row={row} session={session} />,
     },
   ]
 
   return (
     <div className={classes.root}>
-      <div className={classes.mb}>
+      <ControlRow className={classes.mb}>
         <Button
           variant="contained"
           disabled={!rows}
@@ -129,7 +114,26 @@ const SessionManager = observer(function SessionManager({
         >
           Delete old sessions...
         </Button>
-      </div>
+        <div className={classes.spacer} />
+        {rows && sortedRows && sortedRows.length !== rows.length ? (
+          <Typography
+            variant="caption"
+            color="textSecondary"
+            noWrap
+            role="status"
+          >
+            {sortedRows.length} of {rows.length}
+          </Typography>
+        ) : null}
+        <SearchField
+          quiet
+          size="small"
+          className={classes.search}
+          label="Search"
+          value={searchText}
+          onChange={setSearchText}
+        />
+      </ControlRow>
       {sortedRows ? (
         <div className={classes.table}>
           <VirtualTable
@@ -148,15 +152,16 @@ const SessionManager = observer(function SessionManager({
               setSortField(field)
               setSortAscending(ascending)
             }}
-            resetKey={JSON.stringify([sortField, sortAscending])}
-            emptyMessage="No saved sessions"
+            resetKey={JSON.stringify([searchText, sortField, sortAscending])}
+            highlightPatterns={searchHighlightPatterns(words)}
+            emptyMessage={
+              words.length ? 'No matching sessions' : 'No saved sessions'
+            }
             testId="session-manager-table"
           />
         </div>
       ) : (
-        // undefined, not empty: the saved-session database has not finished
-        // opening. An empty list renders the table with its own "no saved
-        // sessions" row.
+        // undefined, not empty: the database has not finished opening
         <Typography className={classes.mb}>
           Loading saved sessions...
         </Typography>
