@@ -2,9 +2,10 @@ import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
-import { Button, IconButton } from '@mui/material'
+import { Button, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { MAX_GENOMES_PER_LAUNCH, TOO_MANY_GENOMES } from '../launchLimit.ts'
 import CategorySelector from './CategorySelector.tsx'
 import SearchField from './SearchField.tsx'
 import { getTableMenuItems } from './getTableMenuItems.ts'
@@ -46,18 +47,26 @@ const GenomesTableToolbar = observer(function GenomesTableToolbar({
     setTypeOption,
   } = state
 
+  const tooMany = selected.size > MAX_GENOMES_PER_LAUNCH
+
   return (
     <div className={classes.span}>
       {multipleSelection ? (
-        <Button
-          variant="contained"
-          disabled={selected.size === 0}
-          onClick={() => {
-            onLaunchSelected()
-          }}
-        >
-          {selected.size ? `Open ${selected.size} selected` : 'Open selected'}
-        </Button>
+        <Tooltip title={tooMany ? TOO_MANY_GENOMES : ''}>
+          <span>
+            <Button
+              variant="contained"
+              disabled={selected.size === 0 || tooMany}
+              onClick={() => {
+                onLaunchSelected()
+              }}
+            >
+              {selected.size
+                ? `Open ${selected.size.toLocaleString()} selected`
+                : 'Open selected'}
+            </Button>
+          </span>
+        </Tooltip>
       ) : null}
 
       <SearchField searchQuery={searchQuery} onChange={setSearchQuery} />

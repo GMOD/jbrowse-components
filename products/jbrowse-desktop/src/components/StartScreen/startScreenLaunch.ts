@@ -2,6 +2,7 @@ import { createContext, use } from 'react'
 
 import { useNotifyError } from '../NotifyContext.ts'
 import { mergeConfigInputs } from './configInputs.ts'
+import { MAX_GENOMES_PER_LAUNCH, TOO_MANY_GENOMES } from './launchLimit.ts'
 import { fetchConfig, launchSnapshot } from './util.tsx'
 
 import type { JBrowseConfigInput } from './types.ts'
@@ -43,9 +44,18 @@ export function useLaunchConfigs() {
     }
   }
 
+  async function launchConfigUrls(configUrls: string[]) {
+    if (configUrls.length > MAX_GENOMES_PER_LAUNCH) {
+      notifyError(new Error(TOO_MANY_GENOMES))
+    } else {
+      await launchConfigs(() =>
+        Promise.all(configUrls.map(url => fetchConfig(url))),
+      )
+    }
+  }
+
   return {
     launchConfigs,
-    launchConfigUrls: (configUrls: string[]) =>
-      launchConfigs(() => Promise.all(configUrls.map(url => fetchConfig(url)))),
+    launchConfigUrls,
   }
 }

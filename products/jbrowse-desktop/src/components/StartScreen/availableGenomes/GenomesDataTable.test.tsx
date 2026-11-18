@@ -361,24 +361,33 @@ test('select-all takes every row the search leaves, drawn or not, and keeps the 
   setup()
   await screen.findByText('release 0')
   await enableMultipleSelection()
+  const selectAll = () =>
+    screen.getByRole('checkbox', { name: 'Select all genomes shown' })
+  const open = (count: number) =>
+    screen.getByRole('button', { name: `Open ${count} selected` })
 
-  fireEvent.click(
-    screen.getByRole('checkbox', { name: 'Select all genomes shown' }),
+  fireEvent.click(selectAll())
+  expect(open(300).hasAttribute('disabled')).toBe(true)
+  fireEvent.mouseOver(open(300).parentElement!)
+  expect((await screen.findByRole('tooltip')).textContent).toBe(
+    'Open at most 50 genomes at once',
   )
-  expect(screen.getByText('Open 300 selected')).toBeTruthy()
 
   const search = screen.getByPlaceholderText('Search genomes...')
   fireEvent.change(search, { target: { value: 'panda' } })
   await screen.findByText('Ailuropoda melanoleuca')
-  fireEvent.click(
-    screen.getByRole('checkbox', { name: 'Select all genomes shown' }),
-  )
-  expect(screen.getByText('Open 301 selected')).toBeTruthy()
+  fireEvent.click(selectAll())
+  expect(open(301)).toBeTruthy()
 
-  fireEvent.click(
-    screen.getByRole('checkbox', { name: 'Select all genomes shown' }),
-  )
-  expect(screen.getByText('Open 300 selected')).toBeTruthy()
+  fireEvent.click(selectAll())
+  expect(open(300)).toBeTruthy()
+
+  fireEvent.change(search, { target: { value: '' } })
+  await screen.findByText('release 0')
+  fireEvent.click(selectAll())
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Select Human db0' }))
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Select Human db1' }))
+  expect(open(2).hasAttribute('disabled')).toBe(false)
 })
 
 test('a sort undone returns the hits to relevance order', async () => {
