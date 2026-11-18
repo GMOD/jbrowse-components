@@ -4,7 +4,6 @@ import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
   DrawerWidgetSessionMixin,
-  ReferenceManagementSessionMixin,
   TrackMenuSessionMixin,
 } from '../Session/index.ts'
 import { EmbeddedSessionThemeMixin } from './EmbeddedSessionThemeMixin.ts'
@@ -50,9 +49,6 @@ export function EmbeddedSessionMixin(pluginManager: PluginManager) {
       BaseSessionModel(pluginManager),
       DrawerWidgetSessionMixin(pluginManager),
       ConnectionManagementSessionMixin(pluginManager),
-      // ReferenceManagementSessionMixin and either tracks mixin share no
-      // members, so their order relative to each other is not load-bearing
-      ReferenceManagementSessionMixin(pluginManager),
       TrackMenuSessionMixin(pluginManager),
       EmbeddedSessionThemeMixin(pluginManager),
     )

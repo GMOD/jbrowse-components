@@ -2,7 +2,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultipleViewsSessionMixin,
   PreferencesSessionMixin,
-  ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
 } from '@jbrowse/product-core'
@@ -30,7 +29,6 @@ export function AppSessionModel({
 }) {
   return types.compose(
     'AppSessionModel',
-    ReferenceManagementSessionMixin(pluginManager),
     ThemeManagerSessionMixin(pluginManager),
     MultipleViewsSessionMixin(pluginManager),
     PreferencesSessionMixin(pluginManager),
