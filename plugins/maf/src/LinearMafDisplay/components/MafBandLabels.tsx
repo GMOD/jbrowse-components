@@ -8,15 +8,17 @@ import { observer } from 'mobx-react'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
-// Just clear of the Y-axis gutter the two bands share.
+// The export's title x, just clear of the Y-axis gutter the two bands share.
 const LABEL_X = AXIS_GUTTER_WIDTH_PX + 2
 const FONT_SIZE = 9
 // SVG `<text>` is placed by its baseline, a line and a px under the band top.
 const BASELINE_OFFSET = FONT_SIZE + 1
 
 /**
- * The band titles for the SVG export, which draws no controls, so the on-screen
- * chips' names without their ×. `model.bandLabels` decides what is titled.
+ * The band titles for the SVG export, as plain text at the export's own x:
+ * the export draws no controls, so neither the on-screen chips nor their x,
+ * which follows the axes (`leftAxisGutterWidth`). `model.bandLabels` decides
+ * what is titled.
  */
 export function SvgMafBandLabels({
   labels,
