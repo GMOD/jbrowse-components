@@ -618,15 +618,9 @@ assembly's sequence track or a connection's track. The track selector's
 `AnyTrackConfig` too. `readConfObject` on an entry is a compile error: read
 `trackId` and `type` off it, and its assemblies with
 `getConfAssemblyNamesOrNone`, which returns `[]` for an entry that omits them.
-
-## A track's `aliases` keep a renamed trackId working
-
-A track config takes `aliases`, the trackIds it went by before, so renaming
-`genes` to `genes_v2` with `aliases: ["genes"]` keeps a saved session, a share
-link, a URL `tracks=` entry, a session spec and a search index that name the old
-id opening the track. `getTrackById` resolves an alias too, so the config it
-returns can carry a `trackId` other than the one passed in: compare against the
-returned `trackId` rather than your argument.
+`getTrackById` also resolves a track's `aliases`, so the config it returns can
+carry a `trackId` other than the one passed in; compare against the returned
+`trackId`.
 
 ## An embedded view has no title bar
 
@@ -891,7 +885,9 @@ click is registered by `@jbrowse/plugin-alignments`, under the same name, where
 v4 registered it from the breakpoint split view plugin. A host that loads the
 breakpoint split view without the alignments plugin loses that widget. The
 widget holds its two reads as `read1` and `read2`, and a saved one whose
-`featureData` holds `feature1` and `feature2` loads as them.
+`featureData` holds `feature1` and `feature2` loads as them. It has no
+`featureData`, `setFeatureData` or `clearFeatureData`; open one with
+`featureData: { feature1, feature2 }` in its snapshot.
 
 ## A UCSC hub track's stanza is under `metadata.ucsc`
 
@@ -937,8 +933,8 @@ display that defines it keeps a method nothing calls, so a switch carries no
 settings across; pass them yourself as `replaceDisplay`'s third argument, or
 apply them with `applyDisplaySettings`.
 
-**`CircularView.resizeWidth` was removed.** Nothing in the tree called it; set
-the width with `setWidth`.
+**`CircularView.resizeWidth` and `SpreadsheetView.resizeWidth` were removed.**
+Set the width with `setWidth`.
 
 **The row displays' `sources` getter is `drawnRows`.** v4's multi-sample variant
 and multi-wiggle displays exposed the rows they drew as `sources`; every row
