@@ -69,3 +69,17 @@ instance and is a geometry change.
 segments as lines, so whichever it is lands in both views. The dotplot's gap
 drawing (`indels: { encoding: { opacity: 0 } }`) skips the mislabelled segments
 too, so its lines lose the merged match bases as the synteny view's ribbons do.
+
+## It also decides which indels pair
+
+`visitCigarPairedIndelSegments` (ADR-275) pairs consecutive rendered D and I
+segments by their labels, so a mislabelled segment pairs too. Over 3,000 random
+60-op CIGARs at 1x, 1.7x and 5x the `--coarse` bound (bound 1,000 and 10,000),
+the fine CIGAR and its `coarsenCigar` fold agree on the sequence of rendered
+indels and pairs in all but 68 of 18,000 walks, 13,089 pairs drawn. The traced
+case at 5x is this bug: the fine walk labels sub-pixel matches, a 3.9 kb
+deletion and a 7.7 kb insertion as one I segment, which pairs with the 7.4 kb
+deletion before it and leaves the matches inside the gap; the coarse fold
+closes those matches as a run, which reports as M. The writer keeps every
+indel that can render at coarse zoom, so it needs no pairing of its own, and
+fixing the label here is what brings the two tiers together.
