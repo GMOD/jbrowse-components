@@ -34,6 +34,11 @@ test('finds the jexl in every channel, facet, filter, transform and label', () =
     { setting: 'transform[1].expr', code: 'jexl:g' },
     { setting: 'labels.description', code: 'jexl:i' },
   ])
+  expect(
+    plotJexlExpressions({
+      labels: { name: { field: 'jexl:n', show: false } },
+    }),
+  ).toEqual([{ setting: 'labels.name.field', code: 'jexl:n' }])
   expect(plotJexlExpressions({ facet: 'jexl:strand' })).toEqual([
     { setting: 'facet', code: 'jexl:strand' },
   ])

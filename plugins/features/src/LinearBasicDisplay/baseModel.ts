@@ -98,7 +98,7 @@ import {
   createMembershipMemo,
   featureIdsTouchingBlocks,
 } from './layoutQueries.ts'
-import { facetOf, plotJexlProblems } from './plotProblems.ts'
+import { plotJexlProblems } from './plotProblems.ts'
 import { featureRenderStateViews, groupLabelViews } from './renderStateViews.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
@@ -133,7 +133,7 @@ import type { LinearFeatureBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { FeatureRenderingBackend } from './components/featureRenderingBackendTypes.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { FeatureMatch } from './featureHighlightInk.ts'
-import type { GeneGlyphMode } from './geneGlyphMode.ts'
+import type { GeneGlyphMode, ResolvedGeneGlyphMode } from './geneGlyphMode.ts'
 import type { LayoutRegionData } from './layoutInputs.ts'
 import type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
@@ -587,7 +587,7 @@ export default function baseStateModelFactory(
        * Overridable hook (default all): the gene-glyph mode the worker
        * collapses under.
        */
-      get effectiveGeneGlyphMode(): GeneGlyphMode {
+      get effectiveGeneGlyphMode(): ResolvedGeneGlyphMode {
         return 'all'
       },
       /**
@@ -1213,9 +1213,8 @@ export default function baseStateModelFactory(
        */
       groupByColor(field: string | undefined, colorByGroup: boolean) {
         const groupColor = self.categoricalColorField?.field
-        const current = facetOf(self.facet, getConf(self, ['facet', 'hidden']))
         const written = self.writtenColor
-        const grouping = field ?? current?.field
+        const grouping = field ?? self.facet?.field
         const wasGroupColor =
           groupColor !== undefined && groupColor === grouping
         return colorByGroup && field

@@ -5,34 +5,8 @@ import {
 } from '@jbrowse/core/util/jexlDiagnostics'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 
-import type { FeatureFacet } from './facet.ts'
 import type { Plot } from '@jbrowse/core/configuration'
-import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { JexlChecker } from '@jbrowse/core/util/jexlDiagnostics'
-
-/**
- * A facet as the plot writes it, its field alone while it lists no order and
- * hides no section.
- */
-export function facetOf(
-  facet: FeatureFacet | undefined,
-  hidden: readonly string[] = [],
-) {
-  return facet
-    ? {
-        field: facet.field,
-        ...(facet.sort.length ? { sort: [...facet.sort] } : {}),
-        ...(hidden.length ? { hidden: [...hidden] } : {}),
-      }
-    : null
-}
-
-/** A plot's color channel as an object, its field shorthand unfolded. */
-export function colorOf(color: unknown): ColorSlots {
-  return typeof color === 'string'
-    ? { field: color }
-    : ((color as ColorSlots | undefined) ?? {})
-}
 
 interface Expression {
   setting: string
@@ -59,6 +33,17 @@ function channelExpressions(encoding: unknown): Expression[] {
   })
 }
 
+// A label is its field alone until `show` is written beside it.
+function labelExpressions(labels: unknown): Expression[] {
+  const members = membersOf(labels)
+  return ['name', 'description'].map(key => {
+    const label = members[key]
+    return typeof label === 'string'
+      ? { setting: `labels.${key}`, code: label }
+      : { setting: `labels.${key}.field`, code: membersOf(label).field }
+  })
+}
+
 function transformExpressions(transform: unknown): Expression[] {
   return Array.isArray(transform)
     ? transform.flatMap((step, i) =>
@@ -77,7 +62,7 @@ export function plotJexlExpressions(draft: Plot) {
       : { setting: 'facet.field', code: membersOf(facet).field },
     ...predicatesOf(filter).map(p => ({ setting: 'filter', code: p.field })),
     ...transformExpressions(transform),
-    ...membersAt(labels, 'labels', ['name', 'description']),
+    ...labelExpressions(labels),
   ].filter((entry): entry is { setting: string; code: string } =>
     isJexl(entry.code),
   )

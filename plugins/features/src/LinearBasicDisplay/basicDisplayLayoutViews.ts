@@ -15,7 +15,7 @@ import type { SectionStamp } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearFeatureBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { FeatureFacet } from './facet.ts'
-import type { GeneGlyphMode } from './geneGlyphMode.ts'
+import type { GeneGlyphMode, ResolvedGeneGlyphMode } from './geneGlyphMode.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -169,7 +169,7 @@ export function basicDisplayGlyphViews(self: BasicDisplayGlyphHost) {
      * just left read as current for 500ms, and an export in that window drew
      * it.
      */
-    get effectiveGeneGlyphMode(): GeneGlyphMode {
+    get effectiveGeneGlyphMode(): ResolvedGeneGlyphMode {
       return resolvedGeneGlyphMode(this.geneGlyphMode, self.host.bpPerPx)
     },
 

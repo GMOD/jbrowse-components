@@ -11,6 +11,9 @@ export const GENE_GLYPH_MODES = ['auto', 'all', 'representative'] as const
 
 export type GeneGlyphMode = (typeof GENE_GLYPH_MODES)[number]
 
+/** A mode the worker collapses under: `auto` is the display's to resolve. */
+export type ResolvedGeneGlyphMode = Exclude<GeneGlyphMode, 'auto'>
+
 export const GENE_GLYPH_MODE_OPTIONS = [
   { value: 'auto', label: 'Auto' },
   { value: 'all', label: 'All transcripts' },
@@ -18,7 +21,10 @@ export const GENE_GLYPH_MODE_OPTIONS = [
 ] as const satisfies readonly { value: GeneGlyphMode; label: string }[]
 
 /** `auto` draws every transcript up to 100 bp/px and one per gene past it. */
-export function resolvedGeneGlyphMode(mode: GeneGlyphMode, bpPerPx: number) {
+export function resolvedGeneGlyphMode(
+  mode: GeneGlyphMode,
+  bpPerPx: number,
+): ResolvedGeneGlyphMode {
   return mode === 'auto' ? (bpPerPx > 100 ? 'representative' : 'all') : mode
 }
 

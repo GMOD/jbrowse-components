@@ -18,7 +18,7 @@ export interface RenderFeatureDataArgs extends GatedFetchArgs {
   displayConfig: Omit<DisplayConfig, 'geneGlyphMode'>
   // Resolved against the zoom by the display, beside `displayConfig` because
   // it is a zoom input rather than a setting.
-  geneGlyphMode: DisplayConfig['geneGlyphMode']
+  geneGlyphMode: Exclude<DisplayConfig['geneGlyphMode'], 'auto'>
   // A caller that synthesizes a region must round start/end to integer bp
   // itself; the worker does no defensive re-round.
   region: {
