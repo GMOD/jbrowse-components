@@ -67,6 +67,7 @@ const ColorEditor = observer(function ColorEditor({
       />
       <Suspense fallback={null}>
         <PopoverPicker
+          label={`Pick ${slot.name}`}
           color={value}
           onChange={color => {
             slot.set(color)

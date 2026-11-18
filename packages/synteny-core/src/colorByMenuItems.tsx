@@ -141,6 +141,7 @@ function trackColorItems({
               }}
             >
               <PopoverPicker
+                label={`Color of ${track.name}`}
                 color={track.trackColor}
                 unset={!track.pinned}
                 onChange={value => {

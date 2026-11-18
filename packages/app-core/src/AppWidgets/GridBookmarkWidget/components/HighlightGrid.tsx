@@ -117,6 +117,7 @@ const HighlightGrid = observer(function HighlightGrid({
       header: 'Color',
       cell: row => (
         <PopoverPicker
+          label={`Color of ${row.locString}`}
           color={bandColor(row.highlight)}
           unset={!row.highlight.color}
           presetAlpha={HIGHLIGHT_ALPHA}

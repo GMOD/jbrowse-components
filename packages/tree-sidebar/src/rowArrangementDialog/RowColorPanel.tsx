@@ -80,6 +80,7 @@ const OtherControls = observer(function OtherControls({
   return (
     <>
       <PopoverPicker
+        label={`Color of ${label.toLowerCase()}`}
         color={other.color || 'auto'}
         unset={!other.color}
         onChange={other.onChange}
@@ -210,6 +211,7 @@ const RowColorPanel = observer(function RowColorPanel({
             {values.map(({ value, count, color, paired }) => (
               <Fragment key={value}>
                 <PopoverPicker
+                  label={`Color of ${value || NO_VALUE_LABEL}`}
                   color={color ?? 'auto'}
                   unset={!paired}
                   onChange={next => {

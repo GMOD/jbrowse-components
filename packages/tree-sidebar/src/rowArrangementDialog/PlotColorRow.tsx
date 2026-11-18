@@ -51,12 +51,14 @@ const PlotColorRow = observer(function PlotColorRow({
       {editable ? (
         <>
           <PopoverPicker
+            label="Plot color above the cut"
             color={above}
             onChange={next => {
               onChange({ above: next, below })
             }}
           />
           <PopoverPicker
+            label="Plot color below the cut"
             color={below}
             onChange={next => {
               onChange({ above, below: next })

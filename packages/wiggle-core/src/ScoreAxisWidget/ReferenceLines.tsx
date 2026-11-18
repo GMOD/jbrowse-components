@@ -128,6 +128,7 @@ export default observer(function ReferenceLines({
           />
           <Suspense fallback={null}>
             <PopoverPicker
+              label={`Color of reference line ${index + 1}`}
               color={row.color || DEFAULT_RULE_COLOR}
               unset={!row.color}
               onChange={color => {

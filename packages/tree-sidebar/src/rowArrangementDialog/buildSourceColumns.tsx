@@ -42,6 +42,7 @@ export function buildSourceColumns<S extends { name: string }>({
       width: 70,
       cell: ({ source }) => (
         <PopoverPicker
+          label={`Color of ${source.name}`}
           color={colors.get(source.name) ?? 'auto'}
           unset={!eachRow.picks.has(source.name)}
           onChange={next => {
