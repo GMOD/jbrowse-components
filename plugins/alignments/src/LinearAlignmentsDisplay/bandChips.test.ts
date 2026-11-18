@@ -1,46 +1,44 @@
 import { bandChipLabel, bandChips } from './bandChips.ts'
 import { computeStackedSections } from './sectionLayout.ts'
 
-import type { BelowCoverageBandsSettings } from './sectionLayout.ts'
+import type { LaneBandsSettings } from './sectionLayout.ts'
 
-const SETTINGS: BelowCoverageBandsSettings = {
+const SETTINGS: LaneBandsSettings = {
   showCoverage: true,
   coverageHeight: 45,
   drawnReadConnections: 'link',
   readConnectionsDown: true,
+  readConnectionsAbove: false,
   readConnectionsHeight: 35,
   showSashimi: true,
+  sashimiAbove: false,
   sashimiHeight: 30,
 }
 
 interface LaneSpec {
   hasArcs?: boolean
-  hasSashimiDownArcs?: boolean
+  hasSashimiStripArcs?: boolean
   sashimiOverCoverage?: boolean
   maxY?: number
 }
 
-function lanesOf(
-  specs: LaneSpec[],
-  settings: Partial<BelowCoverageBandsSettings> = {},
-) {
-  const { sections, contentHeight } = computeStackedSections(
+function lanesOf(specs: LaneSpec[], settings: Partial<LaneBandsSettings> = {}) {
+  return computeStackedSections(
     specs.map(s => ({
       maxY: s.maxY ?? 10,
       hasArcs: s.hasArcs ?? false,
-      hasSashimiDownArcs: s.hasSashimiDownArcs ?? false,
+      hasSashimiStripArcs: s.hasSashimiStripArcs ?? false,
       heightOverridePx: undefined,
       sashimiOverCoverage: s.sashimiOverCoverage ?? false,
     })),
     { ...SETTINGS, ...settings },
     { rowHeight: 5, minSectionHeight: 0 },
   )
-  return { sections, contentHeight }
 }
 
 function chipsOf(
   specs: LaneSpec[],
-  settings: Partial<BelowCoverageBandsSettings> = {},
+  settings: Partial<LaneBandsSettings> = {},
   showPileup = true,
 ) {
   return bandChips(
@@ -73,7 +71,7 @@ test('arcs drawn up over the coverage are named in the coverage row', () => {
 })
 
 test('junctions bound for the strip below get a chip on the strip', () => {
-  expect(chipsOf([{ hasSashimiDownArcs: true }])).toEqual([
+  expect(chipsOf([{ hasSashimiStripArcs: true }])).toEqual([
     ['coverage', ['coverage']],
     ['sashimi', ['sashimi']],
     ['pileup', ['pileup']],
@@ -82,7 +80,7 @@ test('junctions bound for the strip below get a chip on the strip', () => {
 
 test('junctions split by auto placement are named once, on their strip', () => {
   expect(
-    chipsOf([{ sashimiOverCoverage: true, hasSashimiDownArcs: true }]),
+    chipsOf([{ sashimiOverCoverage: true, hasSashimiStripArcs: true }]),
   ).toEqual([
     ['coverage', ['coverage']],
     ['sashimi', ['sashimi']],
@@ -120,15 +118,15 @@ test('a stack of lanes names each band once, on the first lane drawing it', () =
   const { sections } = lanesOf([{}, { hasArcs: true }])
   const { rows } = bandChips(sections, true, false)
   expect(rows.map(r => [r.band, r.top])).toEqual([
-    ['coverage', sections[0]!.coverageTop],
-    ['readConnections', sections[1]!.coverageTop + 45],
+    ['coverage', sections[0]!.sectionTop],
+    ['readConnections', sections[1]!.sectionTop + 45],
     ['pileup', sections[0]!.pileupTop],
   ])
 })
 
 test('each row sits at the top of the band it names', () => {
   const { sections } = lanesOf([
-    { hasArcs: true, hasSashimiDownArcs: true, maxY: 20 },
+    { hasArcs: true, hasSashimiStripArcs: true, maxY: 20 },
   ])
   const lane = sections[0]!
   expect(
@@ -141,10 +139,23 @@ test('each row sits at the top of the band it names', () => {
   ])
 })
 
+test('a strip above the coverage is named at its own top, the coverage below it', () => {
+  const { sections } = lanesOf([{ hasSashimiStripArcs: true }], {
+    sashimiAbove: true,
+  })
+  expect(
+    bandChips(sections, true, false).rows.map(row => [row.band, row.top]),
+  ).toEqual([
+    ['coverage', 30],
+    ['sashimi', 0],
+    ['pileup', 30 + 45],
+  ])
+})
+
 test('under section chips, whichever row heads the first lane leads them', () => {
   const leadingOf = (
     specs: LaneSpec[],
-    settings: Partial<BelowCoverageBandsSettings>,
+    settings: Partial<LaneBandsSettings>,
     underGroupChips = true,
   ) => {
     const { sections } = lanesOf(specs, settings)
@@ -164,6 +175,9 @@ test('under section chips, whichever row heads the first lane leads them', () =>
     'pileup',
     ['readConnections'],
   ])
+  expect(
+    leadingOf([{ hasSashimiStripArcs: true }, {}], { sashimiAbove: true }),
+  ).toEqual(['sashimi', ['coverage', 'pileup']])
   expect(leadingOf(bothArcs, {}, false)).toEqual([
     undefined,
     ['coverage', 'readConnections', 'pileup'],

@@ -1610,7 +1610,7 @@ export default function stateModelFactory(
                 ...sec,
                 sashimiOverCoverage:
                   junctionSections[i]?.junctions.some(
-                    j => !sec.sashimiDownKeys.has(j.key),
+                    j => !sec.sashimiStripKeys.has(j.key),
                   ) ?? false,
               })),
               self.showPileup,

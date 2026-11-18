@@ -10,6 +10,7 @@ import {
   within,
 } from '@testing-library/react'
 
+import { coverageBandTop } from '../sectionLayout.ts'
 import {
   createTestAlignmentsDisplay,
   makeEmptyPileupData,
@@ -34,7 +35,7 @@ function renderOverlays(display: LinearAlignmentsDisplayModel) {
 function displayWithArcs() {
   const { display } = createTestAlignmentsDisplay()
   display.setDrawnReadConnections('link')
-  display.setReadConnectionsPlacement('down')
+  display.setReadConnectionsPlacement('below')
   display.setRpcData(
     0,
     { groups: [{ key: '', label: '', data: oneReadWithMate(2000) }] },
@@ -121,10 +122,10 @@ test('each band draws its chip at its own top', () => {
   const display = displayWithArcs()
   const [lane] = display.renderSections
   expect(screen.getByTestId('band_chips_coverage').style.top).toBe(
-    `${lane!.coverageTop + 1}px`,
+    `${coverageBandTop(lane!) + 1}px`,
   )
   expect(screen.getByTestId('band_chips_readConnections').style.top).toBe(
-    `${lane!.coverageTop + lane!.bands.top.readConnections + 1}px`,
+    `${lane!.sectionTop + lane!.bands.top.readConnections + 1}px`,
   )
   expect(screen.getByTestId('band_chips_pileup').style.top).toBe(
     `${lane!.pileupTop + 1}px`,
@@ -188,6 +189,18 @@ test('under a facet with coverage hidden, the strip heading the first lane leads
   expect(display.renderSections[0]!.bands.top.readConnections).toBe(0)
   expect(within(firstGroupChip!).getByTitle('Hide read arcs')).toBeTruthy()
   expect(screen.queryByTestId('band_chips_readConnections')).toBeNull()
+})
+
+test('under a facet, arcs placed above the coverage lead the topmost group chip, the coverage chip at its band', () => {
+  const display = facetedWithArcs()
+  display.setReadConnectionsPlacement('above')
+  renderOverlays(display)
+  const [firstGroupChip] = screen.getAllByTestId('group-label-chip')
+  expect(within(firstGroupChip!).getByTitle('Hide read arcs')).toBeTruthy()
+  expect(within(firstGroupChip!).queryByTitle('Hide coverage')).toBeNull()
+  expect(screen.getByTestId('band_chips_coverage').style.top).toBe(
+    `${coverageBandTop(display.renderSections[0]!) + 1}px`,
+  )
 })
 
 test('a band chip scrolling under the pinned group chip is not drawn', () => {

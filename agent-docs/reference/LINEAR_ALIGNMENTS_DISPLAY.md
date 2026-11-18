@@ -337,10 +337,12 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   arcs`, `Read cloud`). The × writes the slot the Show menu writes. A lone
   band gets no chip, so a × never empties the track. The chips start past a
   left-side axis's gutter (`leftAxisGutterWidth`); under a facet the row
-  heading the first lane, coverage or else whichever strip or pileup sits at
-  its top, rides ahead of the topmost section chip (`leading`), as the
-  variant display's records chips do. The export draws none: they are
-  controls.
+  heading the first lane, whichever band sits at its `sectionTop` (a strip
+  placed `above`, the coverage, or with coverage hidden a strip or the
+  pileup), rides ahead of the topmost section chip (`leading`), as the
+  variant display's records chips do. A strip drawing arcs that also draw
+  over the histogram (`auto` sashimi) is named on the strip alone. The
+  export draws none: they are controls.
 - **A display-wide render state carries no section offsets.** The model builds a
   `DisplayRenderState`; `sectionRenderState` adds a section's `pileupTopOffset`
   and `coverageTopOffset`, and marks draw and hit-test by that `RenderState`

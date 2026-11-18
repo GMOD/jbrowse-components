@@ -1,5 +1,6 @@
 import { SASHIMI_LEGEND_TITLE } from '../shared/legendUtils.ts'
 import { READ_CONNECTIONS_MARK_LABELS } from './constants.ts'
+import { coverageBandTop } from './sectionLayout.ts'
 
 import type { ReadConnectionsMark } from './constants.ts'
 import type { Section } from './sectionLayout.ts'
@@ -15,7 +16,7 @@ export interface BandChipRow {
 
 export type BandChipLane = Pick<
   Section,
-  'coverageTop' | 'bands' | 'arcBand' | 'pileupTop' | 'pileupHeight'
+  'sectionTop' | 'bands' | 'arcBand' | 'pileupTop' | 'pileupHeight'
 > & {
   sashimiOverCoverage: boolean
 }
@@ -47,7 +48,7 @@ function stripRow(
 ): BandChipRow | undefined {
   const lane = lanes.find(l => l.bands.reserved[band] > 0)
   return lane
-    ? { band, top: lane.coverageTop + lane.bands.top[band], chips: [band] }
+    ? { band, top: lane.sectionTop + lane.bands.top[band], chips: [band] }
     : undefined
 }
 
@@ -67,7 +68,7 @@ export function bandChips(
 ) {
   const rows = bandChipRows(lanes, showPileup)
   const leading = underGroupChips
-    ? rows.find(row => row.top === lanes[0]?.coverageTop)
+    ? rows.find(row => row.top === lanes[0]?.sectionTop)
     : undefined
   return { leading, rows: rows.filter(row => row !== leading) }
 }
@@ -82,7 +83,7 @@ function bandChipRows(lanes: readonly BandChipLane[], showPileup: boolean) {
     first && first.bands.reserved.coverage > 0
       ? {
           band: 'coverage',
-          top: first.coverageTop,
+          top: coverageBandTop(first),
           chips: [
             'coverage',
             ...OVER_COVERAGE_KEYS.filter(
