@@ -46,6 +46,7 @@ function collect(
     data: KeyPayload
     spans: readonly { start: number; end: number }[]
   }>,
+  keep?: (featureId: string) => boolean,
 ): KeyedVariants {
   let categories = 0
   const altColorValues = new Set<string>()
@@ -60,16 +61,17 @@ function collect(
       featureInfo,
     } = data
     for (let i = 0; i < featureCategories.length; i++) {
+      const { svType, featureId } = featureInfo[i]!
       if (
         touchesAny(
           spans,
           featurePositions[i * 2]!,
           featurePositions[i * 2 + 1]!,
-        )
+        ) &&
+        (!keep || keep(featureId))
       ) {
         const painted = featureCategories[i]!
         const v = featureColorValues[i]!
-        const { svType } = featureInfo[i]!
         categories |= painted
         if (v > 0) {
           recordColorValues.add(colorValues[v - 1]!)
@@ -115,8 +117,14 @@ export function keyedVariantsInWindows(
  * Every variant fetched, for a fetch that is already what is shown: the
  * columns fetch only the visible span.
  */
-export function keyedVariantsFetched(payloads: Iterable<KeyPayload>) {
-  return collect([...payloads].map(data => ({ data, spans: EVERYWHERE })))
+export function keyedVariantsFetched(
+  payloads: Iterable<KeyPayload>,
+  keep?: (featureId: string) => boolean,
+) {
+  return collect(
+    [...payloads].map(data => ({ data, spans: EVERYWHERE })),
+    keep,
+  )
 }
 
 const NO_KEYED_VARIANTS = keyedVariantsFetched([])
@@ -146,6 +154,31 @@ export function keyedVariantViews(self: KeyedVariantHost) {
         ? self.atGenomicPositions
           ? keyedVariantsInWindows(cellData.perRegionCellData, self.keyWindows)
           : keyedVariantsFetched(Object.values(cellData.perRegionCellData))
+        : NO_KEYED_VARIANTS
+    },
+  }
+}
+
+/**
+ * What the records band keys: the records it placed on screen, which leaves
+ * out a hidden section's and those past its height.
+ */
+export function keyedRecordViews(self: {
+  cellData: { perRegionCellData: Record<string, KeyPayload> } | undefined
+  recordsPlacedOnScreenIds: ReadonlySet<string>
+}) {
+  return {
+    /**
+     * #getter
+     * The key's reading of the records band's placed records.
+     */
+    get keyedRecords() {
+      const { cellData } = self
+      const placed = self.recordsPlacedOnScreenIds
+      return cellData
+        ? keyedVariantsFetched(Object.values(cellData.perRegionCellData), id =>
+            placed.has(id),
+          )
         : NO_KEYED_VARIANTS
     },
   }

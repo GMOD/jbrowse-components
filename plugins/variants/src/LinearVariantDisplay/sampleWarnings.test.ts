@@ -33,3 +33,15 @@ test('the attributes a missing-field warning lists are the union over every samp
   )
   warn.mockRestore()
 })
+
+test('a facet field no sample carries warns as the samples land', () => {
+  const { display } = createTestEnvironment({
+    displayConfig: { facet: { field: 'superpop' } },
+  }).createDisplay()
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  display.setSources([{ name: 'S0', population: 'AFR' }])
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('facet attribute "superpop" not found'),
+  )
+  warn.mockRestore()
+})

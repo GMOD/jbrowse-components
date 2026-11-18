@@ -270,9 +270,9 @@ fetched visible-only and zoom-strict. The layout is a fetch input
 
 Each layout mounts its own `DisplayChrome` and mark backend (`matrix/` holds the
 columns' body, marks and export). **The upload lifecycle installs once per
-model**, so `startRenderingBackend` tags which backend is attached
-(`backendDrawsColumns`) and the one spec sends each backend only the payload it
-draws; across a switch the old backend is sent an empty map until the other
+model**, so the one spec reads which backend is attached
+(`backendDrawsColumns`, off the attached backend itself) and sends each backend
+only the payload it draws; across a switch the old backend is sent an empty map until the other
 chrome's backend arrives.
 
 Columns are for genotype PATTERN, not spans: the records band and the reference

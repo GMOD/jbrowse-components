@@ -169,6 +169,7 @@ export function regionCellColorViews(self: RegionCellColorHost) {
 /** What {@link cellKeyViews} reads: the variants keyed and their hue. */
 export interface CellKeyHost {
   keyedVariants: KeyedVariants
+  keyedRecords: KeyedVariants
   cellHue: CellHue
   cellHueValuesRead: boolean
   showRecords: boolean
@@ -181,17 +182,15 @@ export function cellKeyViews(self: CellKeyHost) {
     /**
      * #getter
      * The cell scale's domain values painted on screen — the impact
-     * tiers or SV classes the legend lists: every record's while the
-     * records band paints them, which covers each alt cell's, else
-     * those an alt cell was painted for.
+     * tiers or SV classes the legend lists: every placed record's while the
+     * records band paints them, else those an alt cell was painted for.
      */
     get paintedDomain(): string[] {
-      const { altColorValues, recordColorValues } = self.keyedVariants
       return self.cellHueValuesRead
         ? colorKeysOf(
             self.showRecords && !self.recordsColorBySvClass
-              ? recordColorValues
-              : altColorValues,
+              ? self.keyedRecords.recordColorValues
+              : self.keyedVariants.altColorValues,
             self.cellHue,
           )
         : []

@@ -57,7 +57,7 @@ import { inkOfInstances, shiftInk } from '@jbrowse/render-core/marks'
 import {
   RowHeightMixin,
   TreeSidebarMixin,
-  loadedRegionIndexAt,
+  regionCoversColumn,
 } from '@jbrowse/tree-sidebar'
 
 import { cellHueField } from '../shared/cellHue.ts'
@@ -96,7 +96,7 @@ import { withClickedSample } from './components/enrichFeatureFromClick.ts'
 import { tooltipPlainText } from './components/getTooltipRows.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
 import { densityRung, recordDensityAlpha } from './densityFade.ts'
-import { keyedVariantViews } from './keyedVariants.ts'
+import { keyedRecordViews, keyedVariantViews } from './keyedVariants.ts'
 import { loadedRegionIndexOverlapping } from './loadedRegionIndexOverlapping.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
 import { mapPayloadRegions } from './payloadRegions.ts'
@@ -180,16 +180,17 @@ type VariantHoverFields = Record<string, unknown> & {
 
 // Warned as the sample list lands rather than from a computed, which would
 // warn per menu render.
-function warnUnknownRowColorField(rowColorField: string, sources: Source[]) {
-  if (
-    rowColorField &&
-    sources.length &&
-    !sources.some(s => rowColorField in s)
-  ) {
-    console.warn(
-      `rows.color attribute "${rowColorField}" not found in sample metadata. ` +
-        `Available attributes: ${[...new Set(sources.flatMap(Object.keys))].join(', ')}`,
-    )
+function warnUnknownSampleFields(
+  fields: [setting: string, field: string | undefined][],
+  sources: Source[],
+) {
+  for (const [setting, field] of fields) {
+    if (field && sources.length && !sources.some(s => field in s)) {
+      console.warn(
+        `${setting} attribute "${field}" not found in sample metadata. ` +
+          `Available attributes: ${[...new Set(sources.flatMap(Object.keys))].join(', ')}`,
+      )
+    }
   }
 }
 
@@ -901,7 +902,13 @@ export function stateModelFactory(
               self.resetRowArrangement()
             }
             warnHaplotypeNameCollisions([...names])
-            warnUnknownRowColorField(self.rowColorField, sources)
+            warnUnknownSampleFields(
+              [
+                ['rows.color', self.rowColorField],
+                ['facet', self.facet?.field],
+              ],
+              sources,
+            )
           },
           /**
            * #action
@@ -1145,7 +1152,6 @@ export function stateModelFactory(
         }
       })
       .views(self => keyedVariantViews(self))
-      .views(self => cellKeyViews(self))
       .views(self => recordColorViews(self))
       .views(recordsRenderViews)
       .views(self => {
@@ -1205,6 +1211,8 @@ export function stateModelFactory(
       })
       .views(self => variantRowsHeightViews(self))
       .views(recordsLayoutViews)
+      .views(self => keyedRecordViews(self))
+      .views(self => cellKeyViews(self))
       .views(recordsColorScaleViews)
       .views(self => variantHeightViews(self))
       .views(recordsTrackHeightViews)
@@ -1323,9 +1331,13 @@ export function stateModelFactory(
          */
         sortRowsByGenotypeAt(refName: string, pos: number) {
           const features = self.cellData?.simplifiedFeatures
-          const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
+          const covered = [...self.loadedRegions.entries()].some(
+            ([index, region]) =>
+              regionCoversColumn(region, refName, pos) &&
+              self.regionHasData(index),
+          )
           let hit: { id: string; length: number } | undefined
-          if (features && index !== undefined && self.regionHasData(index)) {
+          if (features && covered) {
             for (const { id, data } of features) {
               const { start, end } = data
               if (

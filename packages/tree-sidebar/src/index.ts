@@ -43,6 +43,7 @@ export type { RowSortSpec } from './rows/rowSort.ts'
 export {
   loadedRegionIndexAt,
   orderRowsByValueAt,
+  regionCoversColumn,
   sortRowsAtColumn,
 } from './rows/rowSort.ts'
 export type { LoadedRegionSpan } from './rows/rowSort.ts'
