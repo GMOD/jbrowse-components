@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
+import { highlightPatterns } from '../../util/searchText.ts'
 import { createJBrowseTheme } from '../theme.ts'
 import VirtualTable from './VirtualTable.tsx'
 import { HEADER_HEIGHT, ROW_HEIGHT } from './tableStyles.ts'
@@ -130,4 +131,69 @@ test('a row click hands back its row', () => {
   const { getByText } = render(table({ onRowClick }))
   fireEvent.click(getByText('r3'))
   expect(onRowClick).toHaveBeenCalledWith(rows[3])
+})
+
+describe('search highlight', () => {
+  class FakeHighlight extends Set<AbstractRange> {}
+  const highlights = new Map<string, FakeHighlight>()
+
+  beforeAll(() => {
+    Object.defineProperty(globalThis, 'CSS', {
+      value: { highlights },
+      configurable: true,
+    })
+    Object.defineProperty(globalThis, 'Highlight', {
+      value: FakeHighlight,
+      configurable: true,
+    })
+  })
+
+  afterAll(() => {
+    Reflect.deleteProperty(globalThis, 'CSS')
+    Reflect.deleteProperty(globalThis, 'Highlight')
+  })
+
+  function highlightStyles() {
+    return [...document.head.querySelectorAll('style')].filter(el =>
+      el.textContent.includes('::highlight('),
+    )
+  }
+
+  function markedTags() {
+    return [...highlights.values()].flatMap(highlight =>
+      [...highlight].map(range => range.startContainer.parentElement?.tagName),
+    )
+  }
+
+  function searched(names: string[]) {
+    return (
+      <ThemeProvider theme={theme}>
+        <VirtualTable
+          rows={names.map((name, id) => ({ id, name }))}
+          columns={[{ id: 'name', header: 'Name', cell: row => row.name }]}
+          widths={() => ({ name: 100 })}
+          sortField=""
+          sortAscending
+          onSort={() => {}}
+          resetKey=""
+          emptyMessage="No matching name"
+          highlightPatterns={highlightPatterns('name')}
+        />
+      </ThemeProvider>
+    )
+  }
+
+  test('marks the rows, not the header or the empty message', () => {
+    const { rerender } = render(searched(['first name', 'surname']))
+    expect(markedTags()).toEqual(['TD', 'TD'])
+    rerender(searched([]))
+    expect(markedTags()).toEqual([])
+  })
+
+  test('its style element goes when the table unmounts', () => {
+    const { unmount } = render(searched(['first name']))
+    expect(highlightStyles()).toHaveLength(1)
+    unmount()
+    expect(highlightStyles()).toHaveLength(0)
+  })
 })

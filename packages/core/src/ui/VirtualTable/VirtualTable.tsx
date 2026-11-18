@@ -95,8 +95,9 @@ const VirtualTable = observer(function VirtualTable<
 }) {
   const { classes } = useVirtualTableStyles()
   const parentRef = useRef<HTMLDivElement>(null)
+  const bodyRef = useRef<HTMLTableSectionElement>(null)
   const highlightName = `jbrowse-table-${useId().replaceAll(/[^a-zA-Z0-9]/g, '')}`
-  useSearchHighlight(parentRef, highlightPatterns, highlightName)
+  useSearchHighlight(bodyRef, highlightPatterns, highlightName)
   const leadingWidth = leading?.width ?? 0
   const { items, leadingGap, trailingGap, clientWidth } = useVirtualRows({
     parentRef,
@@ -146,7 +147,7 @@ const VirtualTable = observer(function VirtualTable<
           sortAscending={sortAscending}
           onSort={onSort}
         />
-        <tbody>
+        <tbody ref={bodyRef}>
           <SpacerRow height={leadingGap} />
           {items.map(virtualRow => {
             const row = rows[virtualRow.index]!
@@ -163,7 +164,9 @@ const VirtualTable = observer(function VirtualTable<
             )
           })}
           <SpacerRow height={trailingGap} />
-          {rows.length === 0 ? (
+        </tbody>
+        {rows.length === 0 ? (
+          <tbody>
             <tr>
               <td
                 colSpan={columns.length + (leading ? 1 : 0)}
@@ -172,8 +175,8 @@ const VirtualTable = observer(function VirtualTable<
                 {emptyMessage}
               </td>
             </tr>
-          ) : null}
-        </tbody>
+          </tbody>
+        ) : null}
       </table>
     </div>
   )
