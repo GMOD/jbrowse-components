@@ -206,6 +206,25 @@ describe('MockHal uniforms per draw', () => {
     expect(hal.draws()[0]!.uniformWrite).toBe(-1)
     expect(hal.uniformsOf(hal.draws()[0]!)).toBeNull()
   })
+
+  it('does not pair a draw with the previous frame’s write', () => {
+    const hal = uploaded(['a'])
+    hal.beginFrame(0, 0, 0, 0)
+    hal.writeUniforms(u(10))
+    hal.drawPass('a', 0)
+    hal.endFrame()
+    hal.beginFrame(0, 0, 0, 0)
+    hal.drawPass('a', 0)
+    hal.writeUniforms(u(20))
+    hal.drawPass('a', 0)
+    hal.endFrame()
+
+    expect(hal.draws().map(d => hal.uniformsOf(d)?.[0] ?? null)).toEqual([
+      10,
+      null,
+      20,
+    ])
+  })
 })
 
 describe('MockHal mid-frame buffer replacement', () => {

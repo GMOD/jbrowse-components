@@ -42,10 +42,10 @@ export interface MockRect {
  * `clearViewport`.
  *
  * `uniformWrite` indexes {@link MockHal.getUniformWritesF32}, or is `-1` when
- * nothing has been written yet. It is here for the same reason the clip is:
- * uniforms are *state*, so "which values did this draw actually use" is a
- * question about the order of two methods, and a test asking it off `calls` has
- * to re-implement the pairing to find out.
+ * nothing has been written yet in the draw's frame. It is here for the same
+ * reason the clip is: uniforms are *state*, so "which values did this draw
+ * actually use" is a question about the order of two methods, and a test asking
+ * it off `calls` has to re-implement the pairing to find out.
  *
  * **The pairing is by adjacency, and the two HALs mean different things by
  * it.** `WebGPUHal` stages each write into a ring slot and binds slot
@@ -80,13 +80,14 @@ function textureKey(passId: string, sampler: string) {
 export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
   calls: MockCall[] = []
 
-  // Every write of the frame, in order, not just the last. A renderer that
-  // rewrites the UBO mid-frame — for a band that reads it differently, or a
+  // Every write since construction, in order, not just the last. A renderer
+  // that rewrites the UBO mid-frame — for a band that reads it differently, or a
   // section with its own offsets — has invariants the final state cannot show:
   // that each write carries the frame-constant slots, that a temporary
   // overwrite doesn't outlive its pass, and how many writes a frame costs at
   // all (the real HALs stage these into a fixed-size ring).
   private uniformWrites: ArrayBuffer[] = []
+  private frameFirstWrite = 0
 
   /**
    * The clip each draw of the frame went out under — see {@link draws}.
@@ -295,6 +296,7 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     this.scissor = null
     this.viewport = null
     this.frameOpen = true
+    this.frameFirstWrite = this.uniformWrites.length
     this.drawnThisFrame.clear()
     this.composited.clear()
   }
@@ -347,7 +349,10 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
       verticesPerInstance: verticesPerInstance ?? desc.verticesPerInstance,
       scissor: this.scissor && { ...this.scissor },
       viewport: this.viewport && { ...this.viewport },
-      uniformWrite: this.uniformWrites.length - 1,
+      uniformWrite:
+        this.uniformWrites.length > this.frameFirstWrite
+          ? this.uniformWrites.length - 1
+          : -1,
       ...(isUnion(desc) ? { composite: this.composite(passId) } : {}),
     })
   }
@@ -417,8 +422,8 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     return this.lastUniforms ? new Int32Array(this.lastUniforms) : null
   }
 
-  // Every write of the frame, in order. `getLastUniforms*` is the same list's
-  // tail and stays the right call for a renderer that writes once.
+  // Every write since construction, in order. `getLastUniforms*` is the same
+  // list's tail and stays the right call for a renderer that writes once.
   getUniformWritesF32() {
     return this.uniformWrites.map(u => new Float32Array(u))
   }
@@ -438,10 +443,10 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
   }
 
   /**
-   * Every draw of the frame with the state it went out under, in order — the
-   * answer to "which columns did this pass paint into" and "which uniforms did
-   * it read", neither of which `callsOf('drawPass')` can give, because clip and
-   * uniforms are state rather than arguments. `scissor: null` is unclipped;
+   * Every draw since construction with the state it went out under, in order
+   * — the answer to "which columns did this pass paint into" and "which
+   * uniforms did it read", neither of which `callsOf('drawPass')` can give,
+   * because clip and uniforms are state rather than arguments. `scissor: null` is unclipped;
    * `uniformWrite` indexes `getUniformWritesF32()`. See {@link MockDraw} for
    * what each is guarding.
    */
@@ -463,9 +468,9 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
    * The uniform bytes a recorded draw reads, as f32 — `draws()` joined to
    * `getUniformWritesF32()` for you, since doing it by hand at every call site
    * is how the index and the list drift apart. `null` when the draw preceded
-   * any write, which is the case no renderer should rely on: WebGPU clamps it
-   * to ring slot 0 and WebGL2 leaves the previous frame's UBO bound, so the two
-   * backends disagree about what it even means.
+   * every write of its frame, which is the case no renderer should rely on:
+   * WebGPU clamps it to ring slot 0 and WebGL2 leaves the previous frame's UBO
+   * bound, so the two backends disagree about what it even means.
    */
   uniformsOf(draw: MockDraw) {
     const buf = this.uniformWrites[draw.uniformWrite]
