@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 
 import Tooltip from './Tooltip.tsx'
 
@@ -118,7 +119,39 @@ test('pressing the trigger takes the bubble down', async () => {
   expect(await screen.findByRole('tooltip')).toBeTruthy()
 
   fireEvent.pointerDown(button)
+  fireEvent.mouseDown(button)
+  fireEvent.click(button)
   expect(screen.queryByRole('tooltip')).toBeNull()
+}, 60000)
+
+// A browser fires the press's focus after its pointerdown, so a focus that
+// raised the bubble regardless would put it straight back up.
+test('the focus a click causes raises nothing', async () => {
+  const user = userEvent.setup()
+  render(<Subject />)
+  const button = screen.getByRole('button')
+
+  await user.click(button)
+  expect(document.activeElement).toBe(button)
+  expect(button.getAttribute('aria-describedby')).toBeNull()
+  expect(screen.queryByRole('tooltip')).toBeNull()
+}, 60000)
+
+test('tabbing to the trigger after a click still raises the bubble', async () => {
+  const user = userEvent.setup()
+  render(
+    <>
+      <button type="button">before</button>
+      <Subject />
+    </>,
+  )
+  const button = screen.getByRole('button', { name: 'Hide legend' })
+
+  await user.click(button)
+  await user.tab({ shift: true })
+  await user.tab()
+  expect(document.activeElement).toBe(button)
+  expect(await screen.findByRole('tooltip')).toBeTruthy()
 }, 60000)
 
 // A touch "hover" is the press that is also about to be a click. Touch users

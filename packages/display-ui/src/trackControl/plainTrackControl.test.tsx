@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 
 import plainTrackControl from './plainTrackControl.tsx'
 
@@ -97,6 +98,48 @@ test('an option is reachable by keyboard alone', () => {
   expect(screen.queryByRole('menu')).toBeNull()
   expect(document.activeElement).toBe(screen.getByLabelText('Track sizing'))
 })
+
+// Picking hands focus back to the trigger with the pointer over where the menu
+// was, so no pointerleave would ever take a bubble raised by that focus down.
+test('picking an option with the pointer raises no tooltip on the trigger', async () => {
+  const user = userEvent.setup()
+  render(
+    <PlainTrackControl
+      icon="height"
+      tooltip="Track sizing"
+      options={options()}
+    />,
+  )
+  const trigger = screen.getByLabelText('Track sizing')
+
+  await user.click(trigger)
+  await user.click(screen.getByRole('menuitemradio', { name: 'Auto' }))
+
+  expect(screen.queryByRole('menu')).toBeNull()
+  expect(document.activeElement).toBe(trigger)
+  expect(trigger.getAttribute('aria-describedby')).toBeNull()
+  expect(screen.queryByRole('tooltip')).toBeNull()
+}, 60000)
+
+test('Escape from a menu opened by keyboard raises the tooltip again', async () => {
+  const user = userEvent.setup()
+  render(
+    <PlainTrackControl
+      icon="height"
+      tooltip="Track sizing"
+      options={options()}
+    />,
+  )
+  const trigger = screen.getByLabelText('Track sizing')
+
+  await user.tab()
+  await user.keyboard('{Enter}')
+  expect(screen.queryByRole('menu')).toBeTruthy()
+  await user.keyboard('{Escape}')
+
+  expect(document.activeElement).toBe(trigger)
+  expect(await screen.findByRole('tooltip')).toBeTruthy()
+}, 60000)
 
 // The three dismissal routes. Each is a bug when missed and none of them shows
 // up in a screenshot, which is the reason the hook owns them rather than leaving

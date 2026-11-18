@@ -80,6 +80,11 @@ export function useTooltip(
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [open, setOpen] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  // Set by a press on the trigger and cleared by the next key anywhere, so a
+  // focus in between came from the pointer: the press itself, or a menu handing
+  // focus back after a pick. `:focus-visible` answers the same question in a
+  // browser, but jsdom matches it on every focus, so no test could hold it.
+  const pointerPress = useRef<AbortController | undefined>(undefined)
   const id = useId()
 
   const cancel = () => {
@@ -89,6 +94,10 @@ export function useTooltip(
   const hide = () => {
     cancel()
     setOpen(false)
+  }
+  const endPointerPress = () => {
+    pointerPress.current?.abort()
+    pointerPress.current = undefined
   }
 
   useEffect(() => {
@@ -115,6 +124,7 @@ export function useTooltip(
   useEffect(
     () => () => {
       clearTimeout(timer.current)
+      pointerPress.current?.abort()
     },
     [],
   )
@@ -141,10 +151,22 @@ export function useTooltip(
       onPointerLeave: hide,
       // The press answers "what is this?", so a label still hanging over the
       // control that just did something reads as a stuck tooltip.
-      onPointerDown: hide,
+      onPointerDown: () => {
+        hide()
+        if (!pointerPress.current) {
+          const controller = new AbortController()
+          document.addEventListener('keydown', endPointerPress, {
+            capture: true,
+            signal: controller.signal,
+          })
+          pointerPress.current = controller
+        }
+      },
       onFocus: () => {
         cancel()
-        setOpen(true)
+        if (!pointerPress.current) {
+          setOpen(true)
+        }
       },
       onBlur: hide,
     },
