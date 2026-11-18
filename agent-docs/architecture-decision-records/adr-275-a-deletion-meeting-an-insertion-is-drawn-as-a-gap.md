@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A synteny ribbon leaves a rendered deletion meeting a rendered insertion see-through in both CIGAR modes: `visitCigarPairedIndelSegments` reports the pair as one `CIGAR_UNALIGNED` segment, and colored mode tiles a feature that has one. A replacement plus a net indel was rejected"
+summary: "A rendered deletion meeting a rendered insertion is drawn as a gap: `visitCigarPairedIndelSegments` reports it as one `CIGAR_UNALIGNED` segment, colored synteny mode tiles a feature that has one, and the dotplot draws no line for it. A replacement plus a net indel was rejected"
 ---
 
 # ADR-275: A deletion meeting an insertion is drawn as a gap
@@ -37,9 +37,12 @@ alignment records one unaligned stretch.
   CIGAR is still walked once.
 - **No location marker lands in it.** A tick needs a correspondence, and the
   stretch has none.
-- **The dotplot and the multiway view keep the plain walk.** The dotplot draws
-  a pair as an L-step in one color, which places both flanking matches
-  correctly; the multiway view already leaves both halves unpainted.
+- **The dotplot draws no line for it either.** It drew a pair as an L-step,
+  a long horizontal then a long vertical line through a stretch where nothing
+  corresponds; the flanking matches land in the same places without it. A
+  lone indel still draws as its line.
+- **The multiway view keeps the plain walk**, since it already leaves both
+  halves unpainted.
 
 ## Rejected
 
@@ -50,7 +53,7 @@ alignment records one unaligned stretch.
 
 ## Consequences
 
-- Shot on ada against the hg38→panTro6 chain at hg38 chr1:69,663,705 (an
+- Synteny shot on ada against the hg38→panTro6 chain at hg38 chr1:69,663,705 (an
   L1MA3/L1PA7 swap, 6,106 D beside 6,511 I) and chr1:91,000,680 (4,374 D
   beside 10,559 I).
 - A gap has no instance, so it shows no tooltip, as a transparent-mode indel

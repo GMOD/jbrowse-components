@@ -1,11 +1,12 @@
 import {
   CIGAR_INDEL_MASK,
   CIGAR_M,
+  CIGAR_UNALIGNED,
   cigarWalkBp1,
   cigarWalkBp2,
   cigarWalkRev1,
   cigarWalkRev2,
-  visitCigarRenderedSegments,
+  visitCigarPairedIndelSegments,
 } from '@jbrowse/cigar-utils'
 
 import { MIN_CIGAR_PX_WIDTH } from './dotplotCigarDetail.ts'
@@ -193,8 +194,8 @@ export function buildLineSegments(
       // not above it: at whole-genome zoom nearly every feature takes the flat
       // branch below and has no CIGAR to start.
       const strand = strands[i]!
-      visitCigarRenderedSegments(
-        // a view, not a copy — visitCigarRenderedSegments takes ArrayLike
+      visitCigarPairedIndelSegments(
+        // a view, not a copy — the walk takes ArrayLike
         cigarData.subarray(cigarStart, cigarEnd),
         cigarWalkBp1(x1, x2, strand),
         cigarWalkBp2(y1, y2, strand),
@@ -208,7 +209,10 @@ export function buildLineSegments(
           // write past the end is a no-op while `n` keeps counting, so
           // `trimToCount` would hand the renderer a short array and every read
           // past the end would project as NaN.
-          if (indelGaps && ((1 << op) & CIGAR_INDEL_MASK) !== 0) {
+          if (
+            op === CIGAR_UNALIGNED ||
+            (indelGaps && ((1 << op) & CIGAR_INDEL_MASK) !== 0)
+          ) {
             return
           }
           if (n < maxSegments) {

@@ -11,6 +11,7 @@ import type { DotplotRpcData } from './types.ts'
 // packed as parseCigar2Typed emits: len << 4 | op
 const M = (len: number) => (len << 4) | 0 // CIGAR_M
 const D = (len: number) => (len << 4) | 2 // CIGAR_D
+const I = (len: number) => (len << 4) | 1 // CIGAR_I
 
 describe('cigarWorthParsing', () => {
   it('keeps an alignment already wide enough to walk', () => {
@@ -96,6 +97,32 @@ describe('buildLineSegments over flat cigar buffers', () => {
     const segs = buildLineSegments(makeData(), false, 0, 1, 1, 0, 0)
     expect([...segs.segmentOps]).toEqual([0, 0, 0])
     expect(segmentCigarOp(segs, 0)).toBeUndefined()
+  })
+})
+
+describe('a deletion meeting an insertion', () => {
+  function pairData() {
+    const cigar = [M(50), D(60), I(50), M(50)]
+    return fakeDotplotRpcData({
+      p11: new Float64Array([0]),
+      p12: new Float64Array([160]),
+      p21: new Float64Array([0]),
+      p22: new Float64Array([150]),
+      strands: new Int8Array([1]),
+      alignmentLengths: new Uint32Array([160]),
+      cigarData: new Uint32Array(cigar),
+      cigarOffsets: new Uint32Array([0, cigar.length]),
+      totalFeatureCount: 1,
+    })
+  }
+
+  it('draws no line across the unaligned stretch', () => {
+    const segs = buildLineSegments(pairData(), true, 0, 1, 1, 0, 0)
+    expect([...segs.segmentOps]).toEqual([0, 0])
+    expect([...segs.x1]).toEqual([0, 110])
+    expect([...segs.x2]).toEqual([50, 160])
+    expect([...segs.y1]).toEqual([0, 100])
+    expect([...segs.y2]).toEqual([50, 150])
   })
 })
 

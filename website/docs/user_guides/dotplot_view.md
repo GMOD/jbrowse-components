@@ -55,7 +55,8 @@ The rest of the settings menu:
 
 - **Opacity** and **Line width** set how each alignment draws
 - **Identity fade** fades each alignment by its sequence identity
-- **CIGAR indels** draws per-base indels inside an alignment
+- **CIGAR indels** draws per-base indels inside an alignment. A deletion that
+  meets an insertion aligns nothing on either axis, so it is left as a gap
 - **Level of detail** sets how much of a tiered file is loaded
 - **Gridlines** extends each axis' ruler ticks across the plot. At whole-genome
   zoom neither axis has room for ticks, so the row reads **none at this zoom**
