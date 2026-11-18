@@ -1,6 +1,4 @@
-import VirtualTable, {
-  useVirtualTableStyles,
-} from '@jbrowse/core/ui/VirtualTable'
+import VirtualTable from '@jbrowse/core/ui/VirtualTable'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -73,7 +71,6 @@ const SpreadsheetTable = observer(function SpreadsheetTable({
   model: SpreadsheetModel
 }) {
   const { classes } = useStyles()
-  const { classes: tableClasses } = useVirtualTableStyles()
   const {
     rows,
     shownColumns,
@@ -112,21 +109,15 @@ const SpreadsheetTable = observer(function SpreadsheetTable({
             [...svTypeFilter],
             svEventFilter,
           ])}
+          scrollToKey={model.selectedRowId}
           scrollToIndex={selectedRowIndex}
-          rowClassName={row =>
-            row.id === model.selectedRowId
-              ? tableClasses.selectedRow
-              : undefined
-          }
+          isRowSelected={row => row.id === model.selectedRowId}
           onRowClick={row => {
             model.setSelectedFeature(row.feature)
           }}
-          highlight={{
-            name: 'jbrowse-sheet-search',
-            patterns: searchWords.map(
-              word => new RegExp(escapeRegExp(word), 'giu'),
-            ),
-          }}
+          highlightPatterns={searchWords.map(
+            word => new RegExp(escapeRegExp(word), 'giu'),
+          )}
           emptyMessage={
             rows.length ? 'No rows match the search and filters' : 'No rows'
           }

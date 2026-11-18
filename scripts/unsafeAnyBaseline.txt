@@ -175,7 +175,7 @@
 1 no-unsafe-assignment plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
 1 no-unsafe-call plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
 1 no-unsafe-member-access plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
-3 no-unsafe-return plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
+1 no-unsafe-return plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts
 4 no-unsafe-argument plugins/data-management/src/JB2TrackHubConnection/doConnect.ts
 1 no-unsafe-assignment plugins/data-management/src/JB2TrackHubConnection/doConnect.ts
 5 no-unsafe-member-access plugins/data-management/src/JB2TrackHubConnection/doConnect.ts
@@ -226,8 +226,6 @@
 1 no-unsafe-member-access plugins/marks/src/LinearMarkDisplay/testEnv.ts
 1 no-unsafe-call plugins/marks/src/LinearMultiRowFeatureDisplay/testEnv.ts
 1 no-unsafe-member-access plugins/marks/src/LinearMultiRowFeatureDisplay/testEnv.ts
-1 no-unsafe-argument plugins/spreadsheet-view/src/SpreadsheetView/components/SpreadsheetDataGrid.tsx
-1 no-unsafe-member-access plugins/spreadsheet-view/src/SpreadsheetView/components/SpreadsheetDataGrid.tsx
 1 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/anchoredHaplotypeSort.ts
 1 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/configSchema.ts
 2 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/model.ts

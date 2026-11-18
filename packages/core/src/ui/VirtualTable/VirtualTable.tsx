@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useId, useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -51,15 +51,16 @@ const VirtualTable = observer(function VirtualTable<
   widths,
   width = 0,
   leading,
-  rowClassName,
+  isRowSelected,
   onRowClick,
   sortField,
   sortAscending,
   onSort,
   resetKey,
+  scrollToKey,
   scrollToIndex,
   emptyMessage,
-  highlight,
+  highlightPatterns = [],
   testId,
 }: {
   rows: readonly R[]
@@ -70,7 +71,7 @@ const VirtualTable = observer(function VirtualTable<
   width?: number
   /** a narrow first column, such as a checkbox */
   leading?: VirtualTableLeading<R>
-  rowClassName?: (row: R) => string | undefined
+  isRowSelected?: (row: R) => boolean
   onRowClick?: (row: R) => void
   sortField: string
   sortAscending: boolean
@@ -78,26 +79,26 @@ const VirtualTable = observer(function VirtualTable<
   onSort: (field: string, ascending: boolean) => void
   /** scrolls back to the top when it changes */
   resetKey: string
-  /** a row brought into view whenever this changes */
+  /** names the row to bring into view, which happens when it changes */
+  scrollToKey?: string | number
+  /** where that row is in `rows`, undefined while it is not among them */
   scrollToIndex?: number
   emptyMessage: React.ReactNode
-  /** the search matches to mark in the rows on screen, under a highlight name of their own */
-  highlight?: { name: string; patterns: RegExp[] }
+  /** the search matches to mark in the rows on screen */
+  highlightPatterns?: RegExp[]
   testId?: string
 }) {
   const { classes } = useVirtualTableStyles()
   const parentRef = useRef<HTMLDivElement>(null)
-  useSearchHighlight(
-    parentRef,
-    highlight?.patterns ?? [],
-    highlight?.name ?? 'jbrowse-virtual-table',
-  )
+  const highlightName = `jbrowse-table-${useId().replaceAll(/[^a-zA-Z0-9]/g, '')}`
+  useSearchHighlight(parentRef, highlightPatterns, highlightName)
   const leadingWidth = leading?.width ?? 0
   const { items, leadingGap, trailingGap, clientWidth } = useVirtualRows({
     parentRef,
     count: rows.length,
     rowHeight: ROW_HEIGHT,
     resetKey,
+    scrollToKey,
     scrollToIndex,
     stickyTop: HEADER_HEIGHT,
   })
@@ -150,7 +151,7 @@ const VirtualTable = observer(function VirtualTable<
                 row={row}
                 columns={columns}
                 leadingCell={leading?.cell}
-                rowClassName={rowClassName}
+                isRowSelected={isRowSelected}
                 onRowClick={onRowClick}
               />
             )

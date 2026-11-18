@@ -1,10 +1,5 @@
 export { default } from './VirtualTable.tsx'
-export {
-  DEFAULT_COL_WIDTH,
-  HEADER_HEIGHT,
-  ROW_HEIGHT,
-  useVirtualTableStyles,
-} from './tableStyles.ts'
+export { DEFAULT_COL_WIDTH } from './tableStyles.ts'
 
 export type {
   VirtualTableColumn,

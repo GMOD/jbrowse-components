@@ -1,5 +1,5 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import ClearableSearchField from '@jbrowse/core/ui/ClearableSearchField'
+import { SearchField } from '@jbrowse/core/ui/ClearableSearchField'
 import ControlRow from '@jbrowse/core/ui/ControlRow'
 import { saveAs } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -70,8 +70,10 @@ const SpreadsheetToolbar = observer(function SpreadsheetToolbar({
           </TextField>
         )
       })}
-      <ClearableSearchField
+      <SearchField
         className={classes.search}
+        variant="outlined"
+        size="small"
         label="Search rows"
         value={model.filterText ?? ''}
         status={shown === total ? `${total} rows` : `${shown} of ${total}`}

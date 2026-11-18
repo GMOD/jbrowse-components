@@ -512,13 +512,16 @@ export default function stateModelFactory() {
        * the rows the dropdowns and the search leave, in file order
        */
       get visibleRows() {
-        const { searchWords, searchTexts } = self
-        return searchWords.length
-          ? this.gridRows?.filter(row => {
-              const text = searchTexts[row.id]!
-              return searchWords.every(word => text.includes(word))
-            })
-          : this.gridRows
+        const { searchWords } = self
+        let rows = this.gridRows
+        if (searchWords.length) {
+          const { searchTexts } = self
+          rows = rows?.filter(row => {
+            const text = searchTexts[row.id]!
+            return searchWords.every(word => text.includes(word))
+          })
+        }
+        return rows
       },
       /**
        * #getter

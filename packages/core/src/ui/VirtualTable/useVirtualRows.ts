@@ -10,13 +10,15 @@ import { virtualRange } from '../../util/virtualRange.ts'
  * window from the top/bottom, and the width inside any vertical scrollbar.
  * The container scrolls back to the top whenever `resetKey` changes, and
  * brings row `scrollToIndex` into view, below the `stickyTop` px a sticky
- * header covers, whenever that index changes.
+ * header covers, whenever `scrollToKey` changes: a row a sort or a filter
+ * moves stays where the reader left the list.
  */
 export function useVirtualRows({
   parentRef,
   count,
   rowHeight,
   resetKey,
+  scrollToKey,
   scrollToIndex,
   stickyTop = 0,
   overscan = 20,
@@ -25,6 +27,7 @@ export function useVirtualRows({
   count: number
   rowHeight: number
   resetKey: string
+  scrollToKey?: string | number
   scrollToIndex?: number
   stickyTop?: number
   overscan?: number
@@ -73,16 +76,20 @@ export function useVirtualRows({
   }, [resetKey, parentRef])
 
   // declared after the reset, so a target row wins over the top
+  const scrolledKey = useRef<string | number>(undefined)
   useEffect(() => {
     const el = parentRef.current
-    if (el && scrollToIndex !== undefined) {
-      const top = scrollToIndex * rowHeight
-      const room = el.clientHeight - stickyTop
-      if (top < el.scrollTop || top + rowHeight > el.scrollTop + room) {
-        el.scrollTop = Math.max(0, top - (room - rowHeight) / 2)
+    if (el && scrollToKey !== scrolledKey.current) {
+      scrolledKey.current = scrollToKey
+      if (scrollToIndex !== undefined) {
+        const top = scrollToIndex * rowHeight
+        const room = el.clientHeight - stickyTop
+        if (top < el.scrollTop || top + rowHeight > el.scrollTop + room) {
+          el.scrollTop = Math.max(0, top - (room - rowHeight) / 2)
+        }
       }
     }
-  }, [scrollToIndex, rowHeight, stickyTop, parentRef])
+  }, [scrollToKey, scrollToIndex, rowHeight, stickyTop, parentRef])
 
   const { scrollTop, clientHeight, clientWidth } = scrollState
   const { start: startIdx, end: endIdx } = virtualRange({

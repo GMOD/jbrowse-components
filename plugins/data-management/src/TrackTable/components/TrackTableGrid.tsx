@@ -1,7 +1,4 @@
-import VirtualTable, {
-  DEFAULT_COL_WIDTH,
-  useVirtualTableStyles,
-} from '@jbrowse/core/ui/VirtualTable'
+import VirtualTable, { DEFAULT_COL_WIDTH } from '@jbrowse/core/ui/VirtualTable'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
@@ -33,7 +30,6 @@ const TrackTableGrid = observer(function TrackTableGrid({
   emptyMessage?: string
 }) {
   const { classes } = useTableStyles()
-  const { classes: tableClasses } = useVirtualTableStyles()
   const {
     useShoppingCart,
     sortedRows,
@@ -72,10 +68,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
 
   return (
     <VirtualTable
-      highlight={{
-        name: 'jbrowse-table-search',
-        patterns: highlightPatterns(filterText),
-      }}
+      highlightPatterns={highlightPatterns(filterText)}
       rows={sortedRows}
       columns={columns}
       width={width}
@@ -118,9 +111,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
         ) : null,
         cell: checkboxCell,
       }}
-      rowClassName={row =>
-        isSelected(row) ? tableClasses.selectedRow : undefined
-      }
+      isRowSelected={isSelected}
       emptyMessage={
         table.allRows.length
           ? 'No tracks match the current search and filters'

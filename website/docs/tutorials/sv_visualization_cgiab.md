@@ -377,8 +377,8 @@ We read the same junction three ways:
 
 ### CUZD1: a small heterozygous deletion
 
-Use the **search** (magnifying glass) button in the SV inspector to find
-`SV_85`, a heterozygous deletion of two exons of _CUZD1_
+Use the **Search rows** box in the SV inspector to find `SV_85`, a heterozygous
+deletion of two exons of _CUZD1_
 ([NCBI Gene 50624](https://www.ncbi.nlm.nih.gov/gene/50624)). At about 1.8 kb,
 the whole deletion fits in a pileup at base level.
 
