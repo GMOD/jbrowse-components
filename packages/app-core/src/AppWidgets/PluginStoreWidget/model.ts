@@ -1,15 +1,14 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel PluginStoreWidget
  * Widget backing the plugin store: holds the text and tag filters applied to the
- * installable plugin list and the view it was opened from.
+ * installable plugin list.
  */
-export default function stateModelFactory(pluginManager: PluginManager) {
+export default function stateModelFactory() {
   return types
     .model('PluginStoreModel', {
       /**
@@ -31,12 +30,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * here — a tag this build has never seen still filters correctly.
        */
       tagFilters: types.optional(types.array(types.string), []),
-      /**
-       * #property
-       */
-      view: types.safeReference(
-        pluginManager.pluggableMstType('view', 'stateModel'),
-      ),
     })
     .views(self => ({
       /**

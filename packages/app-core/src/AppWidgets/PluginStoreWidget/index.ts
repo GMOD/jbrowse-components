@@ -15,7 +15,7 @@ export default function PluginStoreWidgetF(pluginManager: PluginManager) {
       discardOnClose: true,
       heading: 'Plugin store',
       configSchema,
-      stateModel: stateModelFactory(pluginManager),
+      stateModel: stateModelFactory(),
       ReactComponent: lazyWithPreload(
         () => import('./components/PluginStoreWidget.tsx'),
       ),

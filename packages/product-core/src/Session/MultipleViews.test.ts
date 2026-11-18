@@ -98,8 +98,8 @@ class FakeViewsPlugin extends Plugin {
       )
     }
     // The shape every real view-scoped widget has: a `types.safeReference` to a
-    // pluggable view (HierarchicalTrackSelectorWidget, AddTrackWidget,
-    // PluginStoreWidget all declare exactly this). What a replaced view does to
+    // pluggable view (HierarchicalTrackSelectorWidget and AddTrackWidget both
+    // declare exactly this). What a replaced view does to
     // that reference is the thing worth pinning down.
     //
     // The autorun is load-bearing, not decoration: a widget's model outlives
