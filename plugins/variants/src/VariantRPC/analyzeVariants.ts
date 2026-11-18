@@ -72,14 +72,24 @@ export function packGenotypeKey(str: string, start: number, end: number) {
   return (seen & 0xff80) === 0 ? key : 0
 }
 
+// A called genotype's ploidy outranks any no-call's, so a haploid sample's
+// `./.` gives it no second row, as one int: the memo hit compares once
+function ploidyRank(ploidy: number, called: boolean) {
+  return called ? ploidy * 256 : ploidy
+}
+
+function ploidyOfRank(rank: number) {
+  return rank < 256 ? rank : rank >> 8
+}
+
 function accumulatePloidy(
-  samplePloidy: Record<string, number>,
+  ploidyRanks: Record<string, number>,
   key: string,
-  ploidy: number,
+  rank: number,
 ) {
-  const existing = samplePloidy[key]
-  if (existing === undefined || ploidy > existing) {
-    samplePloidy[key] = ploidy
+  const existing = ploidyRanks[key]
+  if (existing === undefined || rank > existing) {
+    ploidyRanks[key] = rank
   }
 }
 
@@ -214,7 +224,7 @@ export function analyzeVariants({
   readGenotypes?: boolean
   report?: ProgressReporter
 }): AnalyzedVariants {
-  const samplePloidy: Record<string, number> = {}
+  const ploidyRanks: Record<string, number> = {}
   let hasPhasedOrHaploid = false
   let hasConsequence = false
   let hasPhaseSet = false
@@ -254,12 +264,12 @@ export function analyzeVariants({
   const memoStart = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoLen = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoCode = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
-  const memoPloidy = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
+  const memoPloidyRank = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoCount = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
 
-  // Ploidy 0 means the column was never reported, which keeps a sample with no
-  // genotype out of `samplePloidy`.
-  const ploidyByColumn = new Int32Array(numSamples)
+  // `ploidyRank`s; 0 means the column was never reported, which keeps a sample
+  // with no genotype out of `samplePloidy`.
+  const ploidyRankByColumn = new Int32Array(numSamples)
 
   // only populated on the no-header-sample-list path
   const pendingRecords: [string, Record<string, string>][] = []
@@ -325,8 +335,8 @@ export function analyzeVariants({
           if (eq) {
             siteCodes[column] = memoCode[m]!
             memoCount[m]!++
-            if (memoPloidy[m]! > ploidyByColumn[column]!) {
-              ploidyByColumn[column] = memoPloidy[m]!
+            if (memoPloidyRank[m]! > ploidyRankByColumn[column]!) {
+              ploidyRankByColumn[column] = memoPloidyRank[m]!
             }
             return
           }
@@ -347,8 +357,9 @@ export function analyzeVariants({
           }
         }
         hasPhasedOrHaploid ||= called && !unphased
-        if (ploidy > ploidyByColumn[column]!) {
-          ploidyByColumn[column] = ploidy
+        const rank = ploidyRank(ploidy, called)
+        if (rank > ploidyRankByColumn[column]!) {
+          ploidyRankByColumn[column] = rank
         }
 
         // an empty range is a sample whose FORMAT fields stop before GT: code
@@ -366,7 +377,7 @@ export function analyzeVariants({
           memoStart[memoN] = start
           memoLen[memoN] = len
           memoCode[memoN] = code
-          memoPloidy[memoN] = ploidy
+          memoPloidyRank[memoN] = rank
           memoCount[memoN] = 1
           memoN++
         } else {
@@ -407,7 +418,7 @@ export function analyzeVariants({
           }
         }
         hasPhasedOrHaploid ||= called && !unphased
-        accumulatePloidy(samplePloidy, key, ploidy)
+        accumulatePloidy(ploidyRanks, key, ploidyRank(ploidy, called))
       }
       alleleCounts = calculateAlleleCounts(record)
     }
@@ -445,18 +456,22 @@ export function analyzeVariants({
     }
   }
 
-  // Runs before the record block below, which reads `samplePloidy`'s keys to
+  // Runs before the record block below, which reads `ploidyRanks`' keys to
   // extend the canonical order.
   for (let column = 0; column < numSamples; column++) {
-    const ploidy = ploidyByColumn[column]!
-    if (ploidy > 0) {
-      accumulatePloidy(samplePloidy, sampleNames[column]!, ploidy)
+    const rank = ploidyRankByColumn[column]!
+    if (rank > 0) {
+      accumulatePloidy(ploidyRanks, sampleNames[column]!, rank)
     }
+  }
+  const samplePloidy: Record<string, number> = {}
+  for (const key in ploidyRanks) {
+    samplePloidy[key] = ploidyOfRank(ploidyRanks[key]!)
   }
 
   if (pendingRecords.length > 0) {
     // record-backed adapters: the samples are whatever the records mention
-    for (const key in samplePloidy) {
+    for (const key in ploidyRanks) {
       if (!sampleIndexByName.has(key)) {
         sampleIndexByName.set(key, sampleNames.length)
         sampleNames.push(key)

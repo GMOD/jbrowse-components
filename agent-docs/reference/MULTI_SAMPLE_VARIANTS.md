@@ -24,9 +24,12 @@ the passes measured slower.
 ## Nothing on the per-cell path may be keyed by sample NAME
 
 A string-hash lookup per cell is 10⁸ hashes. `samplePloidy` accumulates into typed arrays
-by column, then folds into the name-keyed `Record` once through `accumulatePloidy`. The
-fold runs **before** the record block, which reads `samplePloidy`'s keys to extend the
-canonical order. Ploidy 0 means "column never reported".
+by column, then folds into a name-keyed `Record` once through `accumulatePloidy`. The
+fold runs **before** the record block, which reads its keys to extend the canonical order.
+What accumulates is a `ploidyRank`, `ploidy * 256` for a genotype with a called allele and
+the bare ploidy for a no-call, so a haploid sample's `./.` gives it no second haplotype
+row while the memo hit stays one integer compare; a sample no-called throughout keeps the
+no-call's ploidy. Rank 0 means "column never reported".
 
 `packGenotypeKey` packs a genotype of at most 4 ASCII chars into one int for the site
 memo. A non-ASCII code unit declines to pack rather than truncating, since a truncated

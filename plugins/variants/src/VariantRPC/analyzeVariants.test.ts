@@ -1,4 +1,11 @@
+import VcfParser from '@gmod/vcf'
+
+import { computeVariantCells } from '../LinearVariantDisplay/components/computeVariantCells.ts'
+import VcfFeature from '../VcfFeature/index.ts'
+import { NO_CALL_COLOR } from '../shared/constants.ts'
 import { buildSampleIndex, decodeGenotype } from '../shared/genotypeCodec.ts'
+import { buildCanonicalRows } from '../shared/getSources.ts'
+import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import {
   analyzeVariants,
   buildHeaderRemap,
@@ -283,6 +290,75 @@ describe('buildHeaderRemap', () => {
     expect(buildHeaderRemap(['S1', 'nope'], columnByName)).toEqual(
       Int32Array.from([0, -1]),
     )
+  })
+})
+
+// A no-call's separators are formatting: `./.` is how many callers spell a
+// haploid sample's missing call too, so it sets the ploidy only of a sample
+// with nothing called in the window.
+describe('analyzeVariants ploidy', () => {
+  const header = ['NONE', 'MALE', 'DOT', 'FEMALE']
+  const ploidyOf = (...sites: string[][]) =>
+    analyzeFiltered(
+      sites.map((genotypes, i) => makeFeature(`f${i}`, header, genotypes)),
+    ).samplePloidy
+
+  // at the second site MALE's `./.` and FEMALE's `.` are memo hits
+  it('takes a called genotype over a no-call, at a memo hit too', () => {
+    expect(
+      ploidyOf(['./.', '1', '.', '0|1'], ['./.', './.', '.', '.']),
+    ).toEqual({ NONE: 2, MALE: 1, DOT: 1, FEMALE: 2 })
+  })
+
+  it('agrees on the genotypes-Record path', () => {
+    expect(
+      analyzeFiltered([
+        makeRecordFeature('f1', { MALE: '1', NONE: './.' }),
+        makeRecordFeature('f2', { MALE: './.', NONE: './.' }),
+      ]).samplePloidy,
+    ).toEqual({ MALE: 1, NONE: 2 })
+  })
+
+  it('gives a haploid sample its one row, and a no-call there', () => {
+    const parser = new VcfParser({
+      header:
+        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tMALE\tFEMALE',
+    })
+    const features = [
+      'ctgX\t100\trs1\tA\tG\t.\t.\t.\tGT\t1\t0|1',
+      'ctgX\t200\trs2\tC\tT\t.\t.\t.\tGT\t./.\t1|1',
+    ].map(
+      (line, i) =>
+        new VcfFeature({
+          parser,
+          variant: parser.parseLine(line),
+          id: `f${i}`,
+        }),
+    )
+    const analyzed = analyzeVariants({ features })
+    const sources = buildCanonicalRows({
+      samplePloidy: analyzed.samplePloidy,
+      sampleFilter: undefined,
+      rowsField: 'haplotype',
+    })
+    expect(sources.map(s => s.name)).toEqual([
+      'MALE HP1',
+      'FEMALE HP1',
+      'FEMALE HP2',
+    ])
+    const cells = computeVariantCells({
+      ...analyzed,
+      sources,
+      rowsField: 'haplotype',
+      showReference: false,
+    })
+    const maleNoCalls = [...cells.cellColors].filter(
+      (color, i) =>
+        cells.cellFeatureIndices[i] === 1 &&
+        cells.cellRowIndices[i] === 0 &&
+        color === getCachedABGR(NO_CALL_COLOR),
+    )
+    expect(maleNoCalls).toHaveLength(1)
   })
 })
 
