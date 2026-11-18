@@ -15,7 +15,7 @@ export {
 export { JBrowseModelF } from './JBrowseModel/index.ts'
 export { AssembliesMixin } from './Assemblies/index.ts'
 export { AppSessionMixin, AppSessionModel } from './AppSession/index.ts'
-export type { AppSessionRoot } from './AppSession/index.ts'
+export type { AppSessionRoot, UndoHistory } from './AppSession/index.ts'
 export { RootAppMenuMixin } from './RootMenu/index.ts'
 export {
   PluginsUpdatedMixin,

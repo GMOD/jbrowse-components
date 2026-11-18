@@ -1,6 +1,14 @@
 import type { Menu } from '../menus.ts'
 import type { AssemblyManager } from '@jbrowse/core/util/types'
 
+/** The undo/redo surface of a root's history, read by the Undo and Redo items */
+export interface UndoHistory {
+  canUndo: boolean
+  canRedo: boolean
+  undo(): void
+  redo(): void
+}
+
 /**
  * Contract a root model must satisfy to host an "app" session (the surface
  * {@link AppSessionMixin} delegates to via `self.root`). Every app-product root
@@ -20,12 +28,7 @@ export interface AppSessionRoot {
    * intentionally omits undo/redo (no global keydown listener / snapshot
    * tracking), so its root has no `history`.
    */
-  readonly history?: {
-    canUndo: boolean
-    canRedo: boolean
-    undo(): void
-    redo(): void
-  }
+  readonly history?: UndoHistory
   menus(): Menu[]
   renameCurrentSession(name: string): void
 }

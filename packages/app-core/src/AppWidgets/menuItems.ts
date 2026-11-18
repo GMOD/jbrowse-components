@@ -11,6 +11,7 @@ import UndoIcon from '@mui/icons-material/Undo'
 
 import { AssemblyManager } from '../AssemblyManager/index.ts'
 
+import type { UndoHistory } from '../AppSession/AppSessionRoot.ts'
 import type { AssemblyManagerSession } from '../AssemblyManager/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
@@ -139,14 +140,7 @@ export function assemblyManagerMenuItem(
 // undo/redo read the root's HistoryManagementMixin TimeTraveller; only the full
 // app shells (jbrowse-web, desktop) compose it, so the node is passed in rather
 // than reached for here
-interface HistoryManager {
-  canUndo: boolean
-  canRedo: boolean
-  undo(): void
-  redo(): void
-}
-
-export function undoMenuItem(history: HistoryManager): MenuItem {
+export function undoMenuItem(history: UndoHistory): MenuItem {
   return {
     label: 'Undo',
     icon: UndoIcon,
@@ -159,7 +153,7 @@ export function undoMenuItem(history: HistoryManager): MenuItem {
   }
 }
 
-export function redoMenuItem(history: HistoryManager): MenuItem {
+export function redoMenuItem(history: UndoHistory): MenuItem {
   return {
     label: 'Redo',
     icon: RedoIcon,
