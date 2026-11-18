@@ -11,6 +11,8 @@ export interface PaintInertFoundation {
   viewportEmpty: boolean
   /** `RegionTooLargeMixin`'s: the banner replaces the canvas until force-load or a zoom */
   regionTooLarge: boolean
+  /** `RenderLifecycleMixin`'s: the banner replaces the canvas until Retry */
+  renderError: unknown
 }
 
 /**
@@ -25,6 +27,7 @@ export function foundationPaintInert(self: PaintInertFoundation): boolean {
     !!self.error ||
     self.fetchCanceled ||
     self.viewportEmpty ||
-    self.regionTooLarge
+    self.regionTooLarge ||
+    !!self.renderError
   )
 }

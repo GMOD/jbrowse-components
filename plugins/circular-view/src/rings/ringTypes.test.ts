@@ -1,6 +1,7 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { autorun, when } from 'mobx'
 
+import { passPhase } from '../CircularView/passPhase.ts'
 import { RING_GAP_PX, ringAxisTicks } from './ringHost.ts'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
@@ -94,6 +95,7 @@ async function ringTestSession(
     viewportWithinLoadedData: boolean
     markCanvasDrawn: () => void
     setError: (error: unknown) => void
+    setRenderError: (error: unknown) => void
     regionTooLarge: boolean
     gateViewport: unknown
     commitFetchBytes: (
@@ -320,6 +322,17 @@ test('a ring canvas whose displays failed before painting has finished', async (
   expect(pass!.painted).toBe(false)
   display.setError(new Error('boom'))
   expect(pass!.painted).toBe(true)
+}, 30000)
+
+// a render error unmounts the strip's canvas, which then never paints
+test('a ring canvas whose display hit a render error has finished', async () => {
+  const { view, display } = await wiggleSession()
+  const [pass] = view.ringHost.passes
+  expect(passPhase(pass!)).toBe('loading')
+  display.setRenderError(new Error('device lost'))
+  expect(display.displayPhase).toBe('renderError')
+  expect(pass!.paintInert).toBe(true)
+  expect(passPhase(pass!)).toBe('ready')
 }, 30000)
 
 // the banner replaces the strip's canvas, which then never paints
