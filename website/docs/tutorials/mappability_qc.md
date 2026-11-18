@@ -218,11 +218,16 @@ MAPQ bin a section with a coverage band of its own, and turning off **Show →
 Show pileup** leaves only the bands, drawn on one scale. In the track config
 that is a `facet` on the `mapq` field:
 
-```json
+```json addtrack loc=chr5:70,889,000-70,989,000
 {
+  "trackId": "na12878_qc_reads",
+  "name": "NA12878, 30x Illumina (1000 Genomes)",
+  "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
+  "assemblyNames": ["hg38"],
   "displayDefaults": {
     "facet": "mapq",
-    "pileup": { "show": false }
+    "pileup": { "show": false },
+    "sashimi": { "show": false }
   }
 }
 ```
