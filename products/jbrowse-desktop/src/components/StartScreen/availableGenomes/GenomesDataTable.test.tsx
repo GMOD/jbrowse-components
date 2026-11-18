@@ -73,12 +73,12 @@ const searchIndex = [
 
 let fetched: string[] = []
 let failing = new Set<string>()
-let groupRows: unknown[] = ucscRows
+let groupList: unknown[] = ucscRows
 let indexRows: unknown[] = searchIndex
 
 const bodyFor = (url: string) =>
   url === UCSC_URL
-    ? groupRows
+    ? groupList
     : url === SEARCH_INDEX_URL
       ? indexRows
       : categories
@@ -86,7 +86,7 @@ const bodyFor = (url: string) =>
 beforeEach(() => {
   fetched = []
   failing = new Set()
-  groupRows = ucscRows
+  groupList = ucscRows
   indexRows = searchIndex
   globalThis.fetch = jest.fn((url: string) => {
     fetched.push(url)
@@ -343,7 +343,7 @@ test('sort headers are buttons and expose their direction', async () => {
 })
 
 test('a long group scrolls rather than pages, and the count covers every row', async () => {
-  groupRows = manyRows(300)
+  groupList = manyRows(300)
   setup()
   expect(await screen.findByText('release 0')).toBeTruthy()
   expect(screen.getByText('300 genomes in this group')).toBeTruthy()
@@ -357,7 +357,7 @@ test('a long group scrolls rather than pages, and the count covers every row', a
 })
 
 test('select-all takes every row the search leaves, drawn or not, and keeps the rest', async () => {
-  groupRows = manyRows(300)
+  groupList = manyRows(300)
   setup()
   await screen.findByText('release 0')
   await enableMultipleSelection()

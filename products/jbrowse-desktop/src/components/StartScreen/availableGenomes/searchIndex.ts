@@ -2,7 +2,7 @@ import { notEmpty } from '@jbrowse/core/util'
 
 import { rankRows } from './searchScoring.ts'
 
-import type { Entry } from './getColumnDefinitions.tsx'
+import type { GenomeRow } from './getColumnDefinitions.tsx'
 
 export const SEARCH_INDEX_URL = 'https://genomes.jbrowse.org/searchIndex.json'
 
@@ -61,7 +61,7 @@ function configUrls(accession: string, isUcsc: boolean) {
       : undefined
 }
 
-function toEntry(row: IndexRow): Entry | undefined {
+function toEntry(row: IndexRow): GenomeRow | undefined {
   const [
     accession,
     commonName,
@@ -79,6 +79,7 @@ function toEntry(row: IndexRow): Entry | undefined {
   return urls
     ? {
         ...urls,
+        id: accession,
         accession,
         commonName,
         scientificName,
@@ -101,7 +102,7 @@ function toEntry(row: IndexRow): Entry | undefined {
 export function entriesForAccessions(
   data: IndexRow[] | undefined,
   accessions: Set<string>,
-): Entry[] {
+): GenomeRow[] {
   return (data ?? [])
     .filter(row => accessions.has(row[0]))
     .map(row => toEntry(row))
@@ -112,7 +113,7 @@ export function entriesForAccessions(
 export function searchAllGroups(
   data: IndexRow[] | undefined,
   searchQuery: string,
-): Entry[] {
+): GenomeRow[] {
   return rankRows(data ?? [], searchQuery)
     .map(row => toEntry(row))
     .filter(notEmpty)

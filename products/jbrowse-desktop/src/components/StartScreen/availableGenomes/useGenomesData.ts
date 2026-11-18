@@ -36,7 +36,10 @@ export function isSearching(searchQuery: string) {
 // ncbiName. The two agree on the GC[AF]_ prefix for every GenArk row; UCSC rows
 // have neither, and a db name like ailMel1 matches no prefix, so they stay out
 // of both halves exactly as before.
-export function applyNcbiFilter(rows: Entry[], filterOption: FilterOption) {
+export function applyNcbiFilter<R extends Entry>(
+  rows: R[],
+  filterOption: FilterOption,
+) {
   return filterOption === 'refseq'
     ? rows.filter(r => r.accession.startsWith('GCF_'))
     : filterOption === 'genbank'
@@ -51,7 +54,7 @@ export function applyNcbiFilter(rows: Entry[], filterOption: FilterOption) {
  * table should show them. Sorted into a copy, never in place: callers keep this
  * array, and applyNcbiFilter passes it straight through for filterOption 'all'.
  */
-export function groupRows(data: Entry[] | undefined) {
+export function groupRows<R extends Entry>(data: R[] | undefined) {
   return (data ?? []).filter(r => r.accession).toSorted(byOrderKey)
 }
 
@@ -61,17 +64,16 @@ export function useGenomesData({
 }: {
   filterOption: FilterOption
   url?: string
-}): {
-  data: Entry[]
-  allData: Entry[]
-  error: unknown
-  isLoading: boolean
-} {
+}) {
   // no explicit type argument: it would pin `Data` and leave the key type to its
   // loose default, costing the fetcher its typed `u`
   const { data, error, isLoading } = useFetch(
     url,
-    (u: string, signal: AbortSignal) => fetchJson<Entry[]>(u, { signal }),
+    async (u: string, signal: AbortSignal) =>
+      (await fetchJson<Entry[]>(u, { signal })).map(row => ({
+        ...row,
+        id: row.accession,
+      })),
   )
 
   // allData is the whole group, so a multi-selection still resolves the rows

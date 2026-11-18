@@ -59,6 +59,11 @@ export interface Entry {
   suppressed?: boolean
 }
 
+/** an entry keyed for a table row by its accession */
+export interface GenomeRow extends Entry {
+  id: string
+}
+
 export type GenomeColumn = VirtualTableColumn<Entry>
 
 // each column's narrowest width, which a wider table grows in proportion

@@ -17,7 +17,7 @@ import { useGenomesTableState } from './useGenomesTableState.ts'
 import { useResultSet } from './useResultSet.ts'
 
 import type { Fav, LaunchCallback } from '../types.ts'
-import type { Entry } from './getColumnDefinitions.tsx'
+import type { Entry, GenomeRow } from './getColumnDefinitions.tsx'
 
 const useStyles = makeStyles()(theme => ({
   panel: {
@@ -34,10 +34,6 @@ const useStyles = makeStyles()(theme => ({
     marginTop: theme.spacing(1),
   },
 }))
-
-interface GenomeRow extends Entry {
-  id: string
-}
 
 // what the counts are scoped to: the selected group while browsing, every
 // group while searching
@@ -134,11 +130,7 @@ const GenomesDataTable = observer(function GenomesDataTable({
     groupTitles: results.isGlobal ? groupTitles : undefined,
   })
 
-  const rows: GenomeRow[] = results.rows.map(row => ({
-    ...row,
-    id: row.accession,
-  }))
-  const { sortedRows, sortProps } = useTableSort(rows, columns)
+  const { sortedRows, sortProps } = useTableSort(results.rows, columns)
 
   return (
     <div className={classes.panel}>

@@ -5,7 +5,7 @@ import {
 } from './useGenomesData.ts'
 import { useGlobalSearch } from './useGlobalSearch.ts'
 
-import type { Entry } from './getColumnDefinitions.tsx'
+import type { Entry, GenomeRow } from './getColumnDefinitions.tsx'
 import type { FilterOption } from './useGenomesData.ts'
 
 /**
@@ -19,7 +19,7 @@ import type { FilterOption } from './useGenomesData.ts'
  */
 interface ResultSet {
   /** filtered and ready to sort and paginate */
-  rows: Entry[]
+  rows: GenomeRow[]
   /** the entries for a selection, which outlives the query that surfaced them */
   resolveSelection: (accessions: Set<string>) => Entry[]
   isLoading: boolean
