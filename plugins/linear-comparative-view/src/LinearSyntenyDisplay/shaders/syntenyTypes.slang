@@ -318,7 +318,7 @@ public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
 // opaque base in colored mode). Measuring each edge's own signed perpendicular
 // distance keeps the transition ~1px on both edges regardless of curvature.
 float perpCoverage(float x, float edge0, float edge1, float pf0, float pf1,
-                   float kind, bool fadeThin, float aaHalf) {
+                   float kind, bool fadeThin, float dpr) {
   float xL = min(edge0, edge1);
   float xR = max(edge0, edge1);
   float pfL = (edge0 <= edge1) ? pf0 : pf1;
@@ -352,8 +352,8 @@ float perpCoverage(float x, float edge0, float edge1, float pf0, float pf1,
   // measured gradient collapses by a further 1/pf (0.05-0.32 of its correct
   // value on slanted ribbons) — a near-hard side edge on the ribbon's top and
   // bottom rows. At a bowtie's pinch the 2x2 quad straddles the edge-identity
-  // swap and reads 0.707. aaHalf is right in both.
-  return aaRamp(dL, 2.0 * aaHalf) * aaRamp(dR, 2.0 * aaHalf) * widthFade;
+  // swap and reads 0.707. The analytic width is right in both.
+  return edgeCoverage(dL, dpr) * edgeCoverage(dR, dpr) * widthFade;
 }
 
 // Ribbon edge X positions + per-edge slope foreshortening at a point along the
@@ -459,7 +459,7 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
 
 // Clicked-feature outline: a 1 CSS px line, i.e. half-max STROKE_HALF_PX either
 // side of the edge. STROKE_PERP_PX is how far the ramp can reach in the worst
-// case (STROKE_HALF_PX + aaHalf, maximal at dpr=1), and so how much extra room
+// case (STROKE_HALF_PX + aaHalfPx, maximal at dpr=1), and so how much extra room
 // the geometry has to leave — see the geometry functions' extraPerpPx.
 static const float STROKE_HALF_PX = 0.5;
 public static const float STROKE_PERP_PX = 1.0;
@@ -577,11 +577,11 @@ public void fillVsEmit(inout FillVsOut o, float vx, float y, Uniforms u) {
 // width-fade applies, which thinWidthFade answers inside perpCoverage.
 public float4 fillFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   FillEdges e = fillEdges(i.corners, s, sd, dydt);
-  float aaHalf = aaHalfPx(u.devicePixelRatio);
+  float dpr = u.devicePixelRatio;
   float coverage =
     perpCoverage(i.localPos.x, e.edge0, e.edge1, e.pf0, e.pf1, i.kind,
-                 u.fadeThinAlignments >= 0.5, aaHalf)
-    * vertCoverage(i.localPos.y, u.height, aaHalf);
+                 u.fadeThinAlignments >= 0.5, dpr)
+    * vertCoverage(i.localPos.y, u.height, dpr);
   if (coverage <= 0.0) {
     discard;
   }
@@ -611,14 +611,14 @@ public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   float d1 = abs(i.localPos.x - e.edge1) / e.pf1;
   // A stroke of fixed CSS width (half-max at STROKE_HALF_PX, so 1 CSS px wide
   // at any dpr) with a one-output-pixel ramp. The ramp reaches zero at
-  // STROKE_HALF_PX + aaHalf ≤ STROKE_PERP_PX, which is what the geometry's
+  // STROKE_HALF_PX + aaHalfPx ≤ STROKE_PERP_PX, which is what the geometry's
   // extraPerpPx guarantees room for.
-  float aaHalf = aaHalfPx(u.devicePixelRatio);
-  float band = max(aaRamp(STROKE_HALF_PX - d0, 2.0 * aaHalf),
-                   aaRamp(STROKE_HALF_PX - d1, 2.0 * aaHalf));
+  float dpr = u.devicePixelRatio;
+  float band = max(strokeCoverage(STROKE_HALF_PX, d0, dpr),
+                   strokeCoverage(STROKE_HALF_PX, d1, dpr));
   // Capped at the ribbon's top and bottom by the SAME vertical AA fillFs
   // applies, so the outline ends exactly where the fill does.
-  float alpha = band * vertCoverage(i.localPos.y, u.height, aaHalf)
+  float alpha = band * vertCoverage(i.localPos.y, u.height, dpr)
               * STROKE_ALPHA;
   if (alpha <= 0.0) {
     discard;
@@ -827,8 +827,8 @@ public float curveParamAtY(float yLocal, Uniforms u) {
 // Shared by fillFs and strokeFs rather than spelled in both: the outline
 // has to end exactly where the fill does, and two copies of the same two ramps
 // is precisely the shape that drifts.
-public float vertCoverage(float yLocal, float h, float aaHalf) {
-  return aaRamp(yLocal, 2.0 * aaHalf) - aaRamp(yLocal - h, 2.0 * aaHalf);
+public float vertCoverage(float yLocal, float h, float dpr) {
+  return slabCoverage(yLocal, yLocal - h, dpr);
 }
 
 // ---------------------------------------------------------------------------
