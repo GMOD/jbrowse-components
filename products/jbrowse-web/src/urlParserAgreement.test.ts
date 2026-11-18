@@ -34,6 +34,7 @@ import {
 
 import { createPluginManager } from './createPluginManager.ts'
 import { createSessionLoaderFromUrl } from './createSessionLoader.ts'
+import { hubLaunchInit } from './loadHubSpec.ts'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 
@@ -97,16 +98,14 @@ async function fromJbrowseWeb(): Promise<Resolved> {
     }
   }
   if (source?.type === 'hub') {
-    // Mirrors what loadHubSpec does with this variant, which is where web's hub
-    // session actually takes shape: the connection configs come from the same
-    // hubConnectionSpec app-core uses, and the view launches only with an
-    // assembly to resolve against (`launchInit`), a loc alone being reported
-    // rather than honored.
+    // loadHubSpec is where web's hub session takes shape: the connection
+    // configs come from the same hubConnectionSpec app-core uses, and the view
+    // launches with whatever hubLaunchInit lets through
     const { hubURL } = source.hubSpec
-    const init = source.viewInit
+    const launch = hubLaunchInit(source.viewInit)
     return {
       ...common,
-      views: init?.assembly ? [{ type: 'LinearGenomeView', ...init }] : [],
+      views: launch ? [{ type: 'LinearGenomeView', ...launch }] : [],
       sessionTracks: source.sessionTracks ?? [],
       sessionConnections: hubURL.map(hubConnectionSpec),
     }

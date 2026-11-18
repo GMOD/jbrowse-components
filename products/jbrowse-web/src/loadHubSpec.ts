@@ -75,6 +75,16 @@ async function launchHubView(
   }
 }
 
+// The launcher resolves everything against an assembly, and a hub's assemblies
+// are genome ids only the hub carries, so `&loc=` with no `&assembly=` has
+// nothing to launch against. loadHubSpec says that rather than dropping the
+// navigation silently — and leaves the hub's own defaultPos launch in place,
+// which is the best guess available without a name.
+export function hubLaunchInit(viewInit: Partial<InitState> | undefined) {
+  const { assembly } = viewInit ?? {}
+  return assembly ? { ...viewInit, assembly } : undefined
+}
+
 // load a UCSC hub
 export async function loadHubSpec(
   {
@@ -98,14 +108,7 @@ export async function loadHubSpec(
     return
   }
   const rootModel = pluginManager.rootModel!
-
-  // The launcher resolves everything against an assembly, and a hub's assemblies
-  // are genome ids only the hub carries, so `&loc=` with no `&assembly=` has
-  // nothing to launch against. Say that rather than dropping the navigation
-  // silently — and leave the hub's own defaultPos launch in place, which is the
-  // best guess available without a name.
-  const { assembly } = viewInit ?? {}
-  const launchInit = assembly ? { ...viewInit, assembly } : undefined
+  const launchInit = hubLaunchInit(viewInit)
 
   // set the session synchronously so rootModel.session is defined before the
   // first render (the shortLabel-refined name is applied after the fetch
