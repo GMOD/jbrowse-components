@@ -343,6 +343,63 @@ describe('the declared write mode', () => {
   })
 })
 
+describe('an unset sub-schema reads as a null one', () => {
+  const refusing = ConfigurationSchema(
+    'ResetRefusing',
+    {
+      field: { type: 'string', defaultValue: 'name' },
+      domain: { type: 'stringArray', defaultValue: [] },
+    },
+    {
+      refuses: [
+        {
+          id: 'by-name',
+          when: { field: ['name'] },
+          slots: ['domain'],
+          message: 'under field name there is no domain',
+        },
+      ],
+    },
+  )
+  const bounded = ConfigurationSchema('ResetBounded', {
+    width: { type: 'number', defaultValue: 3, exclusiveMinimum: 1 },
+  })
+  const retiring = ConfigurationSchema(
+    'ResetRetiring',
+    { size: { type: 'number', defaultValue: 2 } },
+    { retired: { diameter: (size: unknown) => ({ size }) } },
+  )
+  const resettable = ConfigurationSchema(
+    'Resettable',
+    { refusing, bounded, retiring },
+    { closed: true },
+  )
+  const written = {
+    refusing: { field: 'source', domain: ['a'] },
+    bounded: { width: 9 },
+    retiring: { size: 7 },
+  }
+
+  test('a bag writing null resets each', () => {
+    const node = resettable.create(written, { pluginManager })
+    const report = applyConfSettings(node, {
+      refusing: null,
+      bounded: null,
+      retiring: null,
+    })
+    expect(report.failed).toEqual([])
+    expect(getSnapshot(node)).toEqual({})
+  })
+
+  test('setConf writing undefined resets each', () => {
+    const node = resettable.create(written, { pluginManager })
+    setConf(node, 'refusing', undefined)
+    setConf(node, 'bounded', undefined)
+    setConf(node, 'retiring', undefined)
+    expect(getSnapshot(node)).toEqual({})
+  })
+})
+
 test('a channel is written whole, a namespace and a slot are not', () => {
   expect(writesWholeAt(display, ['facet'])).toBe(true)
   expect(writesWholeAt(display, ['scales'])).toBe(false)

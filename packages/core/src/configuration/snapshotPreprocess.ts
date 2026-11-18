@@ -568,7 +568,8 @@ export function liftShorthand(
  * What a schema does to every snapshot on its way in, whichever door it
  * arrives by (`create`, `applySnapshot`, `setSubschema`, a settings bag): a
  * bare value lifts into the `shorthand` slot taking its form
- * (`liftShorthand`), and `null` into the empty object that clears it; a
+ * (`liftShorthand`), and `null` or `undefined` into the empty object that
+ * clears it; a
  * `null` member reads as unset; a `retired` spelling becomes the members that
  * replaced it; the schema's own `preProcessSnapshot` runs, which is where a
  * track folds `displayDefaults` into its displays; then a `closed` schema
@@ -592,7 +593,7 @@ export function preProcessSnapshotWith(
   const at = givenAt ?? (explicitlyTyped ? '' : undefined)
   const bare = liftShorthand(schema, snapshot)
   const lifted =
-    snapshot === null
+    snapshot == null
       ? {}
       : bare !== snapshot
         ? (bare as Record<string, unknown>)
