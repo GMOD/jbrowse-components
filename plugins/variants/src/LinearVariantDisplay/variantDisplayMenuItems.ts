@@ -517,7 +517,7 @@ export function variantTrackMenuItems(
     ...(self.drawsGenotypeRows
       ? rowOrderMenuItems(self, {
           arrangement: {
-            ready: self.clusteringReady && !!self.adapterSamples?.length,
+            ready: self.clusteringReady,
           },
           cluster: {
             runItem: {

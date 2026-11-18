@@ -180,38 +180,6 @@ export function cellKeyViews(self: CellKeyHost) {
   return {
     /**
      * #getter
-     * Whether a variant on screen painted a secondary-alt cell, which
-     * keys the "Other alt allele" legend entry. Painted, not possible.
-     */
-    get hasSecondaryAlt() {
-      return self.keyedVariants.hasSecondaryAlt
-    },
-    /**
-     * #getter
-     * Whether phase-set coloring painted an alt cell on screen whose
-     * call names no phase set, which keys that cell's plain hue.
-     */
-    get hasAltWithoutPhaseSet() {
-      return self.keyedVariants.hasAltWithoutPhaseSet
-    },
-    /**
-     * #getter
-     * Whether a variant on screen painted a black unphased cell (drives
-     * the "Unphased" legend entry).
-     */
-    get hasUnphased() {
-      return self.keyedVariants.hasUnphased
-    },
-    /**
-     * #getter
-     * Whether a variant on screen painted a no-call cell (drives the "No
-     * call" legend entry).
-     */
-    get hasNoCall() {
-      return self.keyedVariants.hasNoCall
-    },
-    /**
-     * #getter
      * The cell scale's domain values painted on screen — the impact
      * tiers or SV classes the legend lists: every record's while the
      * records band paints them, which covers each alt cell's, else
@@ -237,10 +205,7 @@ export interface VariantDataKeyHost extends CellHueInputHost {
   cellColorKeyed: boolean
   drawsGenotypeRows: boolean
   rowsField: VariantRowsField
-  hasSecondaryAlt: boolean
-  hasAltWithoutPhaseSet: boolean
-  hasUnphased: boolean
-  hasNoCall: boolean
+  keyedVariants: KeyedVariants
   paintedDomain: string[]
   cellHue: CellHue
 }
@@ -262,10 +227,10 @@ export function variantDataKeyViews(self: VariantDataKeyHost) {
         colorSetting: self.colorSetting,
         cells: () => ({
           rowsField: self.rowsField,
-          hasSecondaryAlt: self.hasSecondaryAlt,
-          hasAltWithoutPhaseSet: self.hasAltWithoutPhaseSet,
-          hasUnphased: self.hasUnphased,
-          hasNoCall: self.hasNoCall,
+          hasSecondaryAlt: self.keyedVariants.hasSecondaryAlt,
+          hasAltWithoutPhaseSet: self.keyedVariants.hasAltWithoutPhaseSet,
+          hasUnphased: self.keyedVariants.hasUnphased,
+          hasNoCall: self.keyedVariants.hasNoCall,
           paintedDomain: self.paintedDomain,
           color: self.colorEncoding,
           colorSlots: heldColorSlots(self, self.colorEncoding),

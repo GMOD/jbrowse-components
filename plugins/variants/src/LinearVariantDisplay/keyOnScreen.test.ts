@@ -29,7 +29,7 @@ function setup() {
     }),
   )
   const dispose = autorun(() => {
-    void display.hasNoCall
+    void display.keyedVariants.hasNoCall
   })
   return { display, dispose }
 }
@@ -39,14 +39,14 @@ test('the key leaves out a no-call painted only in the fetch buffer', () => {
   expect(display.keyWindows).toEqual([
     { regionIndex: 0, refName: 'ctgA', start: 0, end: 800 },
   ])
-  expect(display.hasNoCall).toBe(false)
+  expect(display.keyedVariants.hasNoCall).toBe(false)
   dispose()
 })
 
 test('the key lists the no-call once the view settles over it', () => {
   const { display, dispose } = setup()
   display.view.setNewView(1, 4900)
-  expect(display.hasNoCall).toBe(true)
+  expect(display.keyedVariants.hasNoCall).toBe(true)
   dispose()
 })
 

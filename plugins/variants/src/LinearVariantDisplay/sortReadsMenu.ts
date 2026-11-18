@@ -1,5 +1,6 @@
 import { variantSortColumn } from '@jbrowse/alignments-core'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import SortIcon from '@mui/icons-material/Sort'
 
 import { SORT_READS_MENU_LABEL } from './labels.ts'
@@ -27,8 +28,12 @@ function sortableDisplays(view: ViewWithTracks) {
     .flatMap(track => track.displays)
     .filter(
       (d): d is SortableDisplay =>
-        typeof (d as Partial<SortableDisplay>).setSort === 'function' &&
-        typeof (d as Partial<SortableDisplay>).sortAtCenterLine === 'function',
+        typeof d === 'object' &&
+        d !== null &&
+        'setSort' in d &&
+        typeof d.setSort === 'function' &&
+        'sortAtCenterLine' in d &&
+        typeof d.sortAtCenterLine === 'function',
     )
 }
 
@@ -64,7 +69,7 @@ export function sortReadsMenuItems(
   feature: Feature,
   displayedRegionIndex: number,
 ): MenuItem[] {
-  const view = getContainingView(self) as unknown as ViewWithTracks
+  const view = containingLgv(self)
   return feature.get('type') === 'breakend' ||
     sortableDisplays(view).length === 0
     ? []
