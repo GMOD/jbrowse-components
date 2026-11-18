@@ -124,9 +124,13 @@ export function recordFlank(rec: BatchRecord, flank?: number) {
 const ROW_MAX_WINDOWS = 4
 
 // Overlapping windows merge, or a deletion shorter than the flank would draw
-// the same reads twice.
+// the same reads twice. A junction with no column to count its reads at keeps
+// its two ends as two windows, cut between them, so the split reads joining
+// them are counted and laid out first.
 export function recordRows(rec: BatchRecord, flankOpt?: number) {
   const flank = recordFlank(rec, flankOpt)
+  const [left, right] = rec.loci.toSorted((a, b) => a.start - b.start)
+  const junction = !rec.sort && rec.loci.length === 2
   const byContig = new Map<string, Locus[]>()
   for (const { refName, start, end } of rec.loci) {
     const lo = Math.max(0, start - flank)
@@ -134,7 +138,15 @@ export function recordRows(rec: BatchRecord, flankOpt?: number) {
     const windows = byContig.get(refName) ?? []
     byContig.set(refName, windows)
     const overlapping = windows.find(w => lo <= w.end && w.start <= hi)
-    if (overlapping) {
+    if (overlapping && junction && left && right) {
+      const cut = Math.floor((left.end + right.start) / 2)
+      windows.splice(
+        0,
+        windows.length,
+        { refName, start: Math.min(overlapping.start, lo), end: cut },
+        { refName, start: cut, end: Math.max(overlapping.end, hi) },
+      )
+    } else if (overlapping) {
       overlapping.start = Math.min(overlapping.start, lo)
       overlapping.end = Math.max(overlapping.end, hi)
     } else {

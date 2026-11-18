@@ -169,8 +169,24 @@ describe('recordRows windows', () => {
         { refName: 'chr1', start: 5000, end: 5001 },
         { refName: 'chr1', start: 5172, end: 5173 },
       ],
+      sort: { field: 'base' as const, pos: 5001 },
     }
     expect(windows(del, 600)).toEqual(['chr1:4401-5773'])
+  })
+
+  it('cuts the windows of a junction’s two near ends between them', () => {
+    // COLO829's r_99_0, a breakend whose mate is 1,070 bp downstream: one
+    // window had no two to count a split read joining, and no column to sort
+    const bnd = {
+      loci: [
+        { refName: 'chr3', start: 24524687, end: 24524688 },
+        { refName: 'chr3', start: 24523617, end: 24523618 },
+      ],
+    }
+    expect(windows(bnd, 600)).toEqual([
+      'chr3:24523018-24524152',
+      'chr3:24524153-24525288',
+    ])
   })
 
   it('keeps two windows for ends of one contig further apart than the flank reaches', () => {
