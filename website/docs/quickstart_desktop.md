@@ -79,8 +79,7 @@ accession covers every group (UCSC, GenArk and so on); with the box empty, the
 and star it to add it to **Favorite genomes**. To open several in one session
 for comparative work, turn on **Enable multiple selection** in the ⋮ menu.
 
-A hosted genome comes with [BLAT and in-silico PCR](/docs/user_guides/blat)
-under **Tools**.
+A hosted genome comes with [](/docs/user_guides/blat) under **Tools**.
 
 <Figure src="/img/desktop-available-genomes-steps.png" caption="Browse hosted genomes (1) opens the table, and launch (2) opens a session on that genome."/>
 
