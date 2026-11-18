@@ -101,3 +101,75 @@ describe('a spec session', () => {
     )
   })
 })
+
+const volvoxAssembly = {
+  name: 'volvox',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'volvox_refseq',
+    adapter: {
+      type: 'FromConfigSequenceAdapter',
+      features: [{ refName: 'ctgA', uniqueId: 'ctgA', start: 0, end: 100 }],
+    },
+  },
+}
+
+async function viewTypesFor(
+  sessionSource: SessionSource,
+  configSnapshot: Record<string, unknown>,
+) {
+  const pluginManager = await createPluginManager(
+    {
+      configSnapshot: {
+        configuration: {
+          rpc: { defaultDriver: 'MainThreadRpcDriver' },
+          disableAnalytics: true,
+        },
+        ...configSnapshot,
+      },
+      sessionSource,
+      initialTimestamp: 0,
+    },
+    () => {},
+  )
+  const session = pluginManager.rootModel!.session as unknown as {
+    views: { type: string }[]
+  }
+  return session.views.map(v => v.type)
+}
+
+describe('a new session', () => {
+  test('opens a linear genome view when the config has an assembly', async () => {
+    expect(
+      await viewTypesFor({ type: 'default' }, { assemblies: [volvoxAssembly] }),
+    ).toEqual(['LinearGenomeView'])
+  })
+
+  test('opens no view when the config has no assembly', async () => {
+    expect(await viewTypesFor({ type: 'default' }, {})).toEqual([])
+  })
+
+  test('keeps the views a configured defaultSession names', async () => {
+    expect(
+      await viewTypesFor(
+        { type: 'default' },
+        {
+          assemblies: [volvoxAssembly],
+          defaultSession: {
+            name: 'Curated',
+            views: [{ type: 'SpreadsheetView' }],
+          },
+        },
+      ),
+    ).toEqual(['SpreadsheetView'])
+  })
+
+  test('a spec naming no views stays at zero views', async () => {
+    expect(
+      await viewTypesFor(
+        { type: 'spec', spec: { views: [] } },
+        { assemblies: [volvoxAssembly] },
+      ),
+    ).toEqual([])
+  })
+})

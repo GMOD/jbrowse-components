@@ -251,7 +251,7 @@ function initSession(
       ).catch((e: unknown) => {
         console.error(e)
         if (!rootModel.session) {
-          rootModel.setDefaultSession()
+          rootModel.startNewSession()
         }
         rootModel.session?.notifyError(`${e}`, e)
       })
@@ -265,7 +265,7 @@ function initSession(
         pluginManager,
       )
     } else {
-      rootModel.setDefaultSession()
+      rootModel.startNewSession()
       addSessionTracks(rootModel.session, defaultSessionTracks)
       if (defaultSessionViewInit) {
         applyDefaultSessionViewInit(rootModel.session, defaultSessionViewInit)
@@ -275,7 +275,7 @@ function initSession(
       }
     }
   } catch (e) {
-    rootModel.setDefaultSession()
+    rootModel.startNewSession()
     rootModel.session?.notifyError(
       `${formatSessionError(e)}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
       e,

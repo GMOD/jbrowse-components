@@ -401,6 +401,35 @@ describe('sessions opened from a config template get their own id', () => {
   })
 })
 
+test('File > New session opens a linear genome view on its import form', () => {
+  const root = getRootModel().create({
+    jbrowse: {
+      ...mainThreadConfig.jbrowse,
+      assemblies: [
+        {
+          name: 'volvox',
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: 'volvox_refseq',
+            adapter: {
+              type: 'FromConfigSequenceAdapter',
+              features: [],
+            },
+          },
+        },
+      ],
+    },
+  })
+  root.setDefaultSession()
+  expect(root.session!.views).toHaveLength(0)
+  const file = resolveMenus(root.menus()).find(m => m.label === 'File')!
+  const newSession = file.menuItems.find(
+    i => 'label' in i && i.label === 'New session',
+  ) as { onClick: () => void }
+  newSession.onClick()
+  expect(root.session!.views.map(v => v.type)).toEqual(['LinearGenomeView'])
+})
+
 test('clearing the default session works whatever the open session is named', () => {
   const root = getRootModel().create(mainThreadConfig)
   root.setSession({ name: 'New session' })

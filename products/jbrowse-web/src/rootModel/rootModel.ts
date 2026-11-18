@@ -316,6 +316,22 @@ export default function RootModel({
           },
           /**
            * #action
+           * The config's defaultSession, opened on a linear genome view's
+           * import form when it names no view and there is an assembly to pick
+           */
+          startNewSession() {
+            self.setDefaultSession()
+            const { session } = self
+            if (
+              session &&
+              session.views.length === 0 &&
+              session.assemblyNames.length > 0
+            ) {
+              session.addView('LinearGenomeView', {})
+            }
+          },
+          /**
+           * #action
            */
           async activateSession(id: string) {
             // reloading the open session from IDB can only lose work — the row is
@@ -501,7 +517,11 @@ export default function RootModel({
             {
               label: 'File',
               menuItems: () => [
-                newSessionMenuItem(self),
+                newSessionMenuItem({
+                  setDefaultSession: () => {
+                    self.startNewSession()
+                  },
+                }),
                 importSessionMenuItem(),
                 exportSessionMenuItem(),
                 {
