@@ -24,28 +24,31 @@ function displayWithCells() {
   const genotypeDict = ['0/0', '1/1']
   const codes = (gts: string[]) =>
     new Uint32Array(gts.map(g => genotypeDict.indexOf(g) + 1))
-  display.setCellData({
-    sampleNames: ['S0', 'S1', 'S2'],
-    genotypeDict,
-    simplifiedFeatures: [
-      {
-        id: 'v500',
-        data: { start: 500, end: 501, refName: 'ctgA', name: 'v500' },
+  display.setCellData(
+    {
+      sampleNames: ['S0', 'S1', 'S2'],
+      genotypeDict,
+      simplifiedFeatures: [
+        {
+          id: 'v500',
+          data: { start: 500, end: 501, refName: 'ctgA', name: 'v500' },
+        },
+        {
+          id: 'v700',
+          data: { start: 700, end: 701, refName: 'ctgA', name: 'v700' },
+        },
+      ],
+      perRegionCellData: {
+        0: {
+          featureInfo: [
+            { featureId: 'v500', genotypeCodes: codes(['0/0', '1/1', '0/0']) },
+            { featureId: 'v700', genotypeCodes: codes(['1/1', '0/0', '0/0']) },
+          ],
+        },
       },
-      {
-        id: 'v700',
-        data: { start: 700, end: 701, refName: 'ctgA', name: 'v700' },
-      },
-    ],
-    perRegionCellData: {
-      0: {
-        featureInfo: [
-          { featureId: 'v500', genotypeCodes: codes(['0/0', '1/1', '0/0']) },
-          { featureId: 'v700', genotypeCodes: codes(['1/1', '0/0', '0/0']) },
-        ],
-      },
-    },
-  } as unknown as Parameters<typeof display.setCellData>[0])
+    } as unknown as Parameters<typeof display.setCellData>[0],
+    [0],
+  )
   return display
 }
 
@@ -74,22 +77,25 @@ test('anchors on the shortest record covering the column', () => {
   const genotypeDict = ['0/0', '1/1']
   const codes = (gts: string[]) =>
     new Uint32Array(gts.map(g => genotypeDict.indexOf(g) + 1))
-  display.setCellData({
-    sampleNames: ['S0', 'S1', 'S2'],
-    genotypeDict,
-    simplifiedFeatures: [
-      { id: 'big', data: { start: 0, end: 1000, refName: 'ctgA' } },
-      { id: 'small', data: { start: 450, end: 550, refName: 'ctgA' } },
-    ],
-    perRegionCellData: {
-      0: {
-        featureInfo: [
-          { featureId: 'big', genotypeCodes: codes(['1/1', '0/0', '0/0']) },
-          { featureId: 'small', genotypeCodes: codes(['0/0', '0/0', '1/1']) },
-        ],
+  display.setCellData(
+    {
+      sampleNames: ['S0', 'S1', 'S2'],
+      genotypeDict,
+      simplifiedFeatures: [
+        { id: 'big', data: { start: 0, end: 1000, refName: 'ctgA' } },
+        { id: 'small', data: { start: 450, end: 550, refName: 'ctgA' } },
+      ],
+      perRegionCellData: {
+        0: {
+          featureInfo: [
+            { featureId: 'big', genotypeCodes: codes(['1/1', '0/0', '0/0']) },
+            { featureId: 'small', genotypeCodes: codes(['0/0', '0/0', '1/1']) },
+          ],
+        },
       },
-    },
-  } as unknown as Parameters<typeof display.setCellData>[0])
+    } as unknown as Parameters<typeof display.setCellData>[0],
+    [0],
+  )
   display.sortRowsByGenotypeAt('ctgA', 500)
   expect(display.drawnRows[0]!.name).toBe('S2')
 })
@@ -109,6 +115,15 @@ test('reports whether a record answered the column', () => {
   expect(display.sortRowsByGenotypeAt('ctgA', 500)).toBe(true)
 })
 
+// a later batch's payload replaced the one this region was loaded with, so its
+// `loadedRegions` entry has no data behind it
+test('declines on a loaded region the held payload was not fetched for', () => {
+  const display = displayWithCells()
+  display.setCellData(display.cellData, [1])
+  expect(display.sortRowsByGenotypeAt('ctgA', 500)).toBe(false)
+  expect(display.rowSort).toEqual([])
+})
+
 test('sortRowsBy at a bare column waits for a record there', async () => {
   const display = displayWithCells()
   // A first spec the records answer, awaited so the autorun — installed behind
@@ -123,23 +138,26 @@ test('sortRowsBy at a bare column waits for a record there', async () => {
 
   // the record at 600 arrives with a later fetch; the carrier there is S2
   const genotypeDict = ['0/0', '1/1']
-  display.setCellData({
-    sampleNames: ['S0', 'S1', 'S2'],
-    genotypeDict,
-    simplifiedFeatures: [
-      {
-        id: 'v600',
-        data: { start: 600, end: 601, refName: 'ctgA', name: 'v600' },
+  display.setCellData(
+    {
+      sampleNames: ['S0', 'S1', 'S2'],
+      genotypeDict,
+      simplifiedFeatures: [
+        {
+          id: 'v600',
+          data: { start: 600, end: 601, refName: 'ctgA', name: 'v600' },
+        },
+      ],
+      perRegionCellData: {
+        0: {
+          featureInfo: [
+            { featureId: 'v600', genotypeCodes: new Uint32Array([1, 1, 2]) },
+          ],
+        },
       },
-    ],
-    perRegionCellData: {
-      0: {
-        featureInfo: [
-          { featureId: 'v600', genotypeCodes: new Uint32Array([1, 1, 2]) },
-        ],
-      },
-    },
-  } as unknown as Parameters<typeof display.setCellData>[0])
+    } as unknown as Parameters<typeof display.setCellData>[0],
+    [0],
+  )
   // the commit that lands with it — what the autorun watches, since the action
   // it dispatches into reads `cellData` untracked
   display.setLoadedRegion(
