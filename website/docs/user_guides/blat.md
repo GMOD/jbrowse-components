@@ -45,7 +45,9 @@ until:
   has to be one of them, under its UCSC name or with the
   [database set](#which-database-gets-searched).
 - **A server of your own:** a genome UCSC does not host needs a UCSC Genome
-  Browser mirror of your own that has it, entered in the dialog's server field.
+  Browser mirror that has it, entered in the dialog's server field. The browser
+  calls that server directly, so it has to send CORS headers or share your
+  JBrowse's origin.
 
 ## BLAT search
 
@@ -135,7 +137,10 @@ so a search needs no account, and every user of that server shares its budget:
 - **Quota:** each network gets a share of the budget per hour and per day, and a
   search past it says when the share renews.
 - **Your own server:** **Show advanced settings** has the server field, for
-  pointing the dialogs at a mirror or a server of your own.
+  pointing the dialogs at a mirror or a proxy of your own. The jbrowse.org one
+  is
+  [a small AWS Lambda](https://github.com/GMOD/jbrowse-components/tree/main/products/aws/blat-proxy)
+  that a site with its own UCSC apiKey can deploy, to stop sharing the budget.
 
 ## In-silico PCR
 
