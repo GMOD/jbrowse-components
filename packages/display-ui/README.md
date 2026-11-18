@@ -24,8 +24,8 @@ so importing the seam pulled 45 `@mui/*` modules in behind it — the whole
 Material overlay set, and (through one barrel import) `FileSelector`,
 `FatalErrorDialog` and `PluginManager`. Every check in the repo counted
 _rendered_ elements and stayed green. Here, npm decides instead of a test: the
-Material bindings live in `@jbrowse/plugin-linear-genome-view`, which depends on
-this, never the other way round.
+Material bindings live in `@jbrowse/display-kit`, which depends on this, never
+the other way round.
 
 It also puts the contract somewhere `packages/*` can reach. `tree-sidebar`
 depended on the LGV **plugin** for `TrackOverlayPortal` alone; the comparative
@@ -52,9 +52,9 @@ above them.
 ## What is _not_ here, and cannot be
 
 Redirecting what a stock display **renders** is not the same as keeping a
-toolkit out of its **bundle**. `DisplayChrome` and `TrackControl` live in the
-LGV plugin and import Material UI; a provider only stops them rendering it.
-Dropping the weight means writing your own display component over
+toolkit out of its **bundle**. `DisplayChrome` and `TrackControl` live in
+`@jbrowse/display-kit` and import Material UI; a provider only stops them
+rendering it. Dropping the weight means writing your own display component over
 `DisplayChromeBase`, which takes `overlays` as a prop.
 
 See `agent-docs/reference/DISPLAYCHROME.md` for the seams in full, and

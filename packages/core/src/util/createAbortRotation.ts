@@ -125,24 +125,24 @@ export interface ActiveFetch {
 }
 
 /**
- * Latest-wins abort rotation for a fetch that runs in a bare `autorun`
- * rather than through `FetchMixin.runFetch` (which welds the same mechanics to
- * `fetchGeneration`, so it's only for viewport-driven LGV fetches). Each
- * `begin()` aborts the prior fetch and returns a fresh signal plus an
- * `isCurrent()` guard that captures this run — gate every post-await write on
- * it and a superseded or torn-down fetch can never clobber fresher data. The
- * guard is the return value, so a caller can't forget to compare by hand.
+ * Latest-wins abort rotation for a fetch. Each `begin()` aborts the prior
+ * fetch and returns a fresh signal plus an `isCurrent()` guard that captures
+ * this run — gate every post-await write on it and a superseded or torn-down
+ * fetch can never clobber fresher data. The guard is the return value, so a
+ * caller can't forget to compare by hand.
  *
  * `end()` in the run's `finally` is the other half, and for the same reason —
  * see {@link ActiveFetch.end} for the two things it does together.
  *
  * Owns the controller and the status channel; the caller keeps its own
- * loading/error/commit side-effects. Four holders: `FetchMixin` as a member
- * (so `cancelFetch` can reach it), `CoarseTierMixin` as a member (so
- * navigation and the user's Cancel can reach the summary read without the
- * detail fetch's supersede reaching it), `installFetch` one per installation
- * (every other fetch in the tree runs on that skeleton), and the synteny
- * diagonalize progress wrapper (`withDiagonalizeProgress`) directly.
+ * loading/error/commit side-effects. `FetchMixin` holds one as
+ * `fetchRotation`, so `cancelFetch` can reach it; `runFetch` runs on it and the
+ * fetch installers borrow it. `CoarseTierMixin` holds its own, so navigation
+ * and the user's Cancel can reach the summary read without the detail fetch's
+ * supersede reaching it. `installFetch` creates one for an installation lent
+ * none, and a host with a second operation beside its fetch holds another
+ * directly (`withDiagonalizeProgress`, the mark display's detail and plot
+ * scans).
  *
  * `report` is passed rather than read off `self`, so where the status lands is
  * the caller's decision and not a shape this imposes. A display passes itself —

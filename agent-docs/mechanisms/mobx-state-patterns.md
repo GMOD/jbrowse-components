@@ -12,10 +12,10 @@ anywhere a MobX user would find it. Audience and framing:
 
 ## 1. An autorun's decision and its dependency set fail in opposite ways
 
-`planRegionFetch.ts` (278 lines) answers "given these inputs, what should
-happen" as a value — a region set to fetch, an assembly mismatch, or idle with
-one of five reasons. No tree, no view, no mocked RPC.
-`installPerRegionFetchAutoruns.ts` (228 lines) owns what no pure function can
+`planRegionFetch.ts` answers "given these inputs, what should happen" as a
+value — a region set to fetch, an assembly mismatch, or idle with a reason. No
+tree, no view, no mocked RPC. `installPerRegionFetchAutoruns.ts` owns what no
+pure function can
 state: which reads MobX tracks, which are `untracked` performance guards whose
 observable has a better re-trigger, and which sit behind a thunk so a run that
 bails early never subscribes to the viewport.

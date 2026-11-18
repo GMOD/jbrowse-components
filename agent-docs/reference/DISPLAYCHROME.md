@@ -150,8 +150,8 @@ selector string, `findDisplayPainted` for jest and puppeteer waits.
 ## The bring-your-own seams
 
 Everything lives in `@jbrowse/display-ui`, which declares no `@mui/*` dependency;
-that edge is the guarantee. `@jbrowse/plugin-linear-genome-view` holds the
-Material bindings and re-exports the package. Both seams default to `undefined`,
+that edge is the guarantee. `@jbrowse/display-kit` holds the Material bindings,
+and `@jbrowse/plugin-linear-genome-view` re-exports the package. Both seams default to `undefined`,
 so a display outside any provider (unit tests, SVG export) keeps JBrowse's own
 look.
 

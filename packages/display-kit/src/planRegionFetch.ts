@@ -203,7 +203,7 @@ export function retryOutcomeForPlan(
  * What the per-region fetch autorun should do right now, as a value: fetch this
  * region set, raise this assembly mismatch, or do nothing for this reason.
  *
- * Pure, so the precedence between the five idle reasons and the buffered-region
+ * Pure, so the precedence between the idle reasons and the buffered-region
  * substitution are testable without an MST tree, a view, or a mocked RPC. What
  * it deliberately does **not** decide is the MobX dependency set — which reads
  * are tracked is a property of the autorun body, expressed here only as which

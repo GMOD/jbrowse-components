@@ -158,7 +158,7 @@ export default function FetchMixin() {
        * The latest-wins machine `runFetch` wraps: abort rotation, the
        * `isCurrent` guard, the status slot and the supersede-versus-end rule
        * (ADR-080, ADR-081). A second concurrent fetch on the same display
-       * holds its own rotation (ADR-054 §1). It takes a slot on this
+       * holds its own rotation (ADR-054 §1, which ADR-105 keeps). It takes a slot on this
        * display's `statusWindow` rather than opening a second window.
        */
       fetchRotation: createAbortRotation(self, {
@@ -377,7 +377,7 @@ export default function FetchMixin() {
        * which runs `work`'s synchronous prefix untracked.
        */
       runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
-        // Every family's fetches pass here, so a fetch answers an outstanding
+        // Every per-region fetch passes here, so one answers an outstanding
         // `reload()` wherever that reload reached it from.
         noteFetchStarted(self)
         const active = self.fetchRotation.begin()

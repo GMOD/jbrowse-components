@@ -2,9 +2,8 @@
 //
 // This package has no `@mui/*` dependency, which is the guarantee the whole
 // bring-your-own story rests on and the one thing a rendered-element census
-// cannot check. The Material implementations live in
-// `@jbrowse/plugin-linear-genome-view`, which depends on this — never the
-// reverse. See README.md.
+// cannot check. The Material implementations live in `@jbrowse/display-kit`,
+// which depends on this — never the reverse. See README.md.
 
 // Both seams at once, defaulting to the plain sets: what an embedder mounts.
 // `resolveOverlays` is the partial-over-plain merge on its own, for code
