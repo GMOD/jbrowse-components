@@ -11,14 +11,17 @@ function pack(len: number, op: number) {
   return (len << 4) | op
 }
 
-function collect(cigar: number[], { rev2 = 1 } = {}) {
+function collect(
+  cigar: number[],
+  { rev2 = 1, bpPerPx0 = 10, bpPerPx1 = 10 } = {},
+) {
   const segments: number[][] = []
   visitCigarPairedIndelSegments(
     cigar,
     0,
     0,
-    10,
-    10,
+    bpPerPx0,
+    bpPerPx1,
     1,
     rev2,
     (op, bp1Start, bp1End, bp2Start, bp2End) => {
@@ -54,6 +57,35 @@ describe('visitCigarPairedIndelSegments', () => {
     expect(
       collect([pack(5000, CIGAR_D), pack(3, CIGAR_M), pack(5000, CIGAR_I)]),
     ).toEqual([[CIGAR_UNALIGNED, 0, 5003, 0, 5003]])
+  })
+
+  it('pairs across sub-pixel deletions mixed with a few matched bases', () => {
+    expect(
+      collect(
+        [
+          pack(5000, CIGAR_D),
+          pack(3, CIGAR_M),
+          pack(9, CIGAR_D),
+          pack(3, CIGAR_M),
+          pack(9, CIGAR_D),
+          pack(5000, CIGAR_I),
+        ],
+        {},
+      ),
+    ).toEqual([[CIGAR_UNALIGNED, 0, 5024, 0, 5006]])
+  })
+
+  it('keeps apart a pair whose match is under a pixel only on the coarser axis', () => {
+    expect(
+      collect([pack(5000, CIGAR_D), pack(900, CIGAR_M), pack(5000, CIGAR_I)], {
+        bpPerPx0: 1000,
+        bpPerPx1: 10,
+      }),
+    ).toEqual([
+      [CIGAR_D, 0, 5000, 0, 0],
+      [CIGAR_M, 5000, 5900, 0, 900],
+      [CIGAR_I, 5900, 5900, 900, 5900],
+    ])
   })
 
   it('walks a reverse axis', () => {

@@ -89,9 +89,10 @@ function trimToCount(
 //
 // TAKEN AGAINST THE PIXELS AS WELL AS THE OPS, which is the whole of this
 // function. `visitCigarRenderedSegments` emits at most one segment per packed
-// op, but it also emits only once either axis has advanced past a pixel, so a
-// feature's emissions are bounded by its two on-screen widths no matter how many
-// ops it carries — the same pair of bounds `buildSyntenyGeometry`'s
+// op, but it also emits only once either axis has advanced past a pixel, or for
+// a rendered indel and the sub-pixel matches it closes off ahead of it, so a
+// feature's emissions are bounded by twice its two on-screen widths no matter
+// how many ops it carries — the same pair of bounds `buildSyntenyGeometry`'s
 // `cigarBudget` takes the min of. Counting ops alone reserved a slot per op: one
 // 40Mb block with a 1M-op CIGAR across a 1400px axis asked for 1,000,001 slots
 // (37MB over the six lanes) to emit 1,399 segments, and a liftOver chain block
@@ -133,7 +134,7 @@ export function segmentCapacity(
       const ops = cigarOffsets[i + 1]! - cigarOffsets[i]!
       const wH = Math.abs(p12[i]! - p11[i]!) * bpPerPxHInv
       const wV = Math.abs(p22[i]! - p21[i]!) * bpPerPxVInv
-      capacity += Math.min(ops, Math.ceil(wH + wV) + 4)
+      capacity += Math.min(ops, 2 * Math.ceil(wH + wV) + 4)
     }
   }
   return capacity

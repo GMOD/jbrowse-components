@@ -22,9 +22,14 @@ const MIN_INDEL_PX = 1
  * Walks pre-parsed (packed int) CIGAR ops in bp-space and fires a callback
  * for each rendered segment. Small indels (width < MIN_INDEL_PX) are merged
  * into surrounding context; tiny M segments (both accumulators advance <
- * bpPerPx) are accumulated before emitting. A `CIGAR_RUN` word pair (the
- * coarse tier's fold of a run with its small indels) advances each axis by its
- * own length and is reported as CIGAR_M.
+ * bpPerPx) are accumulated before emitting. An indel wide enough to render is
+ * always a segment of its own: whatever accumulated ahead of it is emitted
+ * first as CIGAR_M, so an indel never absorbs the matches before it. That
+ * extra emission is at most one per rendered indel, so a feature emits at most
+ * twice its two on-screen widths in pixels, and never more than its op count.
+ * Every other segment is reported as CIGAR_M, whichever op closed it. A
+ * `CIGAR_RUN` word pair (the coarse tier's fold of a run with its small indels)
+ * advances each axis by its own length.
  *
  * Used by synteny and dotplot GPU renderers so both stay in sync.
  * Re-exported via @jbrowse/synteny-core for consistent import paths.
@@ -64,6 +69,16 @@ export function visitCigarRenderedSegments(
       segBp2Start = bp2
     }
 
+    const isIndel = op === CIGAR_D || op === CIGAR_N || op === CIGAR_I
+    const rendersIndel =
+      isIndel && len >= (op === CIGAR_I ? bpPerPx1 : bpPerPx0) * MIN_INDEL_PX
+
+    if (rendersIndel && (bp1 !== segBp1Start || bp2 !== segBp2Start)) {
+      callback(CIGAR_M, segBp1Start, bp1, segBp2Start, bp2)
+      segBp1Start = bp1
+      segBp2Start = bp2
+    }
+
     if (op === CIGAR_RUN) {
       bp1 += len * rev1
       bp2 += (cigar[++j]! >>> 4) * rev2
@@ -76,32 +91,22 @@ export function visitCigarRenderedSegments(
       bp2 += len * rev2
     }
 
-    if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
-      const relevantBpPerPx = op === CIGAR_I ? bpPerPx1 : bpPerPx0
-      if (len < relevantBpPerPx * MIN_INDEL_PX) {
-        continuingFlag = true
-        continue
-      }
+    if (isIndel && !rendersIndel) {
+      continuingFlag = true
+      continue
     }
 
     const isNotLast = j < cigar.length - 1
     if (
+      !rendersIndel &&
       Math.abs(bp1 - segBp1Start) <= bpPerPx0 &&
       Math.abs(bp2 - segBp2Start) <= bpPerPx1 &&
       isNotLast
     ) {
       continuingFlag = true
     } else {
-      const span1 = Math.abs(bp1 - segBp1Start)
-      const span2 = Math.abs(bp2 - segBp2Start)
-      const resolvedOp =
-        span1 > bpPerPx0 || span2 > bpPerPx1
-          ? op === CIGAR_RUN
-            ? CIGAR_M
-            : op
-          : CIGAR_M
       continuingFlag = false
-      callback(resolvedOp, segBp1Start, bp1, segBp2Start, bp2)
+      callback(rendersIndel ? op : CIGAR_M, segBp1Start, bp1, segBp2Start, bp2)
     }
   }
 

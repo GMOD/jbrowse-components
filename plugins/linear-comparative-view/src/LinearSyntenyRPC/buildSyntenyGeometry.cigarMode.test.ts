@@ -138,3 +138,57 @@ test('no location marker lands inside a deletion meeting an insertion', () => {
   expect(markerTops.length).toBeGreaterThan(0)
   expect(markerTops.some(bp => bp > 50 && bp < 110)).toBe(false)
 })
+
+test('transparent indels: matches between sub-pixel-spaced deletions are painted', () => {
+  const cigar = Array.from({ length: 200 }, (_, i) =>
+    i % 2 ? packed(150, CIGAR_D) : packed(50, CIGAR_M),
+  )
+  const g = buildSyntenyGeometry({
+    p11_cumBp: new Float64Array([0]),
+    p12_cumBp: new Float64Array([20_000]),
+    p21_cumBp: new Float64Array([0]),
+    p22_cumBp: new Float64Array([5_000]),
+    queryGridAnchors: new Float64Array([0]),
+    strands: new Int8Array([1]),
+    parsedCigars: [cigar],
+    cigarMode: 'matches',
+    bpPerPx0: 100,
+    bpPerPx1: 100,
+    viewOff0: 0,
+    viewOff1: 0,
+    viewWidth: 400,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 400, bpPerPx: 100 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 400, bpPerPx: 100 }),
+  })
+  const tiles = ribbonKinds(g).filter(e => e.k === KIND_BASE_TILE)
+  expect(tiles.length).toBe(100)
+})
+
+test('a feature with more ops than pixels keeps every rendered deletion', () => {
+  const unit = [packed(2, CIGAR_M), packed(1001, CIGAR_D), packed(1, CIGAR_M)]
+  const cigar = Array.from({ length: 900 }, () => unit).flat()
+  const window = viewportWindow({ viewOff: 0, viewWidth: 1000, bpPerPx: 1000 })
+  const geometry = (cigarMode: 'full' | 'matches') =>
+    buildSyntenyGeometry({
+      p11_cumBp: new Float64Array([0]),
+      p12_cumBp: new Float64Array([900 * 1004]),
+      p21_cumBp: new Float64Array([0]),
+      p22_cumBp: new Float64Array([900 * 3]),
+      queryGridAnchors: new Float64Array([0]),
+      strands: new Int8Array([1]),
+      parsedCigars: [cigar],
+      cigarMode,
+      bpPerPx0: 1000,
+      bpPerPx1: 1000,
+      viewOff0: 0,
+      viewOff1: 0,
+      viewWidth: 1000,
+      window0: window,
+      window1: window,
+    })
+
+  const colored = ribbonKinds(geometry('full'))
+  expect(colored.filter(e => e.k === KIND_CIGAR_D)).toHaveLength(900)
+  const transparent = ribbonKinds(geometry('matches'))
+  expect(transparent.filter(e => e.k === KIND_BASE_TILE)).toHaveLength(901)
+})

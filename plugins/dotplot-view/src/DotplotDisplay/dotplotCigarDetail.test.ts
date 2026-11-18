@@ -157,8 +157,9 @@ describe('segmentCigarOp', () => {
 
 // The budget the walk above is allocated against, which is bounded by the two
 // on-screen widths and not only by the op count. `visitCigarRenderedSegments`
-// emits only once an axis has advanced past a pixel, so a fine-grained CIGAR
-// collapses to about as many segments as the feature is wide — counting ops
+// emits only once an axis has advanced past a pixel, or for a rendered indel
+// and the sub-pixel matches ahead of it, so a fine-grained CIGAR collapses to at
+// most twice as many segments as the feature is wide — counting ops
 // alone reserved a slot per op, and a liftOver chain block is millions of them.
 //
 // Read off `segmentCapacity` rather than the returned buffers, because the
@@ -182,14 +183,14 @@ describe('segmentCapacity', () => {
 
   it('budgets a fine-grained CIGAR by its pixels, not its op count', () => {
     const cap = segmentCapacity(wide(), true, 1 / bpPerPx, 1 / bpPerPx)
-    expect(cap).toBeLessThan(4000)
+    expect(cap).toBe(1 + 2 * 2800 + 4)
     // and it is still an upper bound on what the walk actually emits
     const g = buildLineSegments(wide(), true, 0, bpPerPx, bpPerPx, 0, 0)
     expect(g.instanceCount).toBeLessThanOrEqual(cap)
   })
 
   it('budgets a coarse CIGAR by its ops, which is then the smaller', () => {
-    // Same feature, four ops. Pixels would allow ~2800; the ops bound is 4.
+    // Same feature, four ops. Pixels would allow ~5600; the ops bound is 4.
     const coarse = fakeDotplotRpcData({
       p11: new Float64Array([0]),
       p12: new Float64Array([span]),

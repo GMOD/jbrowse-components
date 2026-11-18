@@ -359,8 +359,9 @@ export function buildSyntenyGeometry({
   // Single pre-pass: fill willDrawCigar and wantMarkers, and
   // accumulate the exact upper-bound capacity. visitCigarRenderedSegments emits
   // a segment only when bp1 OR bp2 has advanced > 1 px from the segment start,
-  // so per-feature visitor emissions are bounded by widthPx0 + widthPx1
-  // regardless of CIGAR length. Markers are bounded by how many grid steps fit
+  // or for a rendered indel and the sub-pixel matches it closes off ahead of
+  // it, so per-feature visitor emissions are bounded by 2 * (widthPx0 +
+  // widthPx1) regardless of CIGAR length. Markers are bounded by how many grid steps fit
   // in the feature's QUERY span — a bound that holds whether the grid is asked
   // over one whole-feature span or over every rendered CIGAR segment, since the
   // segments partition that same span (see `markerCapacity` below). These
@@ -384,7 +385,10 @@ export function buildSyntenyGeometry({
       Math.max(widthPx0, widthPx1) >= MIN_CIGAR_PX_WIDTH
     ) {
       willDrawCigarArr[i] = 1
-      cigarBudget = Math.min(cigar.length, Math.ceil(widthPx0 + widthPx1) + 4)
+      cigarBudget = Math.min(
+        cigar.length,
+        2 * Math.ceil(widthPx0 + widthPx1) + 4,
+      )
       maxCigarBudget = Math.max(maxCigarBudget, cigarBudget)
     }
     // Gated on the same whole-feature width the markers emit at, so a
@@ -587,8 +591,9 @@ export function buildSyntenyGeometry({
   //                                  unpainted (see-through)
   // No seam results from tiling matches: KIND_BASE_HIDDEN was dropped because
   // *seamless* coverage needed every quad to tile perfectly (sub-pixel FP gaps
-  // showed as stripes), whereas match segments only ever abut across a real
-  // (>1px) indel — exactly where a gap is wanted.
+  // showed as stripes), whereas two match tiles meet either across a real
+  // indel, exactly where a gap is wanted, or at an edge both take from the same
+  // bp value.
   //
   // A match tile is KIND_BASE_TILE rather than KIND_BASE, which paints the same
   // and fades differently: a tile is one of many packed a perpendicular width

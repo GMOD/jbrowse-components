@@ -1,4 +1,4 @@
-import { CIGAR_D, CIGAR_I, CIGAR_UNALIGNED } from './cigarConstants.ts'
+import { CIGAR_D, CIGAR_I, CIGAR_M, CIGAR_UNALIGNED } from './cigarConstants.ts'
 import { visitCigarRenderedSegments } from './cigarRenderedSegments.ts'
 
 type SegmentCallback = (
@@ -17,7 +17,10 @@ function isPairedIndel(a: number, b: number) {
  * `visitCigarRenderedSegments`, except that a rendered deletion and insertion
  * meeting with no rendered match between them are reported as one
  * `CIGAR_UNALIGNED` segment spanning both: a stretch of each side that aligns
- * to nothing on the other, not two events.
+ * to nothing on the other, not two events. Match segments between them do not
+ * keep them apart while the lesser of their two advances is at most a pixel on
+ * the finer axis: matched bases advance both axes by the same bp, so they then
+ * hold under a pixel of matches on either axis.
  */
 export function visitCigarPairedIndelSegments(
   cigar: ArrayLike<number>,
@@ -29,24 +32,25 @@ export function visitCigarPairedIndelSegments(
   rev2: number,
   callback: SegmentCallback,
 ): void {
-  let hasPending = false
-  let pendingOp = 0
-  let pendingBp1Start = 0
-  let pendingBp1End = 0
-  let pendingBp2Start = 0
-  let pendingBp2End = 0
+  let hasIndel = false
+  let indelOp = 0
+  let indelBp1Start = 0
+  let indelBp1End = 0
+  let indelBp2Start = 0
+  let indelBp2End = 0
+  let hasMatch = false
+  let matchBp1End = 0
+  let matchBp2End = 0
 
   const flushPending = () => {
-    if (hasPending) {
-      hasPending = false
-      callback(
-        pendingOp,
-        pendingBp1Start,
-        pendingBp1End,
-        pendingBp2Start,
-        pendingBp2End,
-      )
+    if (hasIndel) {
+      callback(indelOp, indelBp1Start, indelBp1End, indelBp2Start, indelBp2End)
+      if (hasMatch) {
+        callback(CIGAR_M, indelBp1End, matchBp1End, indelBp2End, matchBp2End)
+      }
     }
+    hasIndel = false
+    hasMatch = false
   }
 
   visitCigarRenderedSegments(
@@ -58,24 +62,30 @@ export function visitCigarPairedIndelSegments(
     rev1,
     rev2,
     (op, bp1Start, bp1End, bp2Start, bp2End) => {
-      if (hasPending && isPairedIndel(pendingOp, op)) {
-        hasPending = false
-        callback(
-          CIGAR_UNALIGNED,
-          pendingBp1Start,
-          bp1End,
-          pendingBp2Start,
-          bp2End,
-        )
+      if (
+        hasIndel &&
+        op === CIGAR_M &&
+        Math.min(
+          Math.abs(bp1End - indelBp1End),
+          Math.abs(bp2End - indelBp2End),
+        ) <= Math.min(bpPerPx0, bpPerPx1)
+      ) {
+        hasMatch = true
+        matchBp1End = bp1End
+        matchBp2End = bp2End
+      } else if (hasIndel && isPairedIndel(indelOp, op)) {
+        hasIndel = false
+        hasMatch = false
+        callback(CIGAR_UNALIGNED, indelBp1Start, bp1End, indelBp2Start, bp2End)
       } else {
         flushPending()
         if (op === CIGAR_D || op === CIGAR_I) {
-          hasPending = true
-          pendingOp = op
-          pendingBp1Start = bp1Start
-          pendingBp1End = bp1End
-          pendingBp2Start = bp2Start
-          pendingBp2End = bp2End
+          hasIndel = true
+          indelOp = op
+          indelBp1Start = bp1Start
+          indelBp1End = bp1End
+          indelBp2Start = bp2Start
+          indelBp2End = bp2End
         } else {
           callback(op, bp1Start, bp1End, bp2Start, bp2End)
         }

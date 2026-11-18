@@ -48,9 +48,9 @@ describe('visitCigarRenderedSegments', () => {
     expect(seg!.op).toBe(CIGAR_N)
   })
 
-  it('emits CIGAR_X for a mismatch on both tracks', () => {
+  it('reports a mismatch run as CIGAR_M', () => {
     const [seg] = collect([pack(10, CIGAR_X)], 2, 20)
-    expect(seg!.op).toBe(CIGAR_X)
+    expect(seg!.op).toBe(CIGAR_M)
   })
 
   // bpPerPx0=20 (ref: 20bp/px), bpPerPx1=2 (query: 2bp/px)
@@ -111,6 +111,37 @@ describe('visitCigarRenderedSegments', () => {
     // Labelled a match: every op merged into it was individually sub-pixel, so
     // the trailing D's kind would misname a span that is 500bp of match.
     expect(segs.at(-1)!.op).toBe(CIGAR_M)
+  })
+
+  it('emits the matches ahead of a rendered indel as their own segment', () => {
+    const segs = collect([pack(300, CIGAR_M), pack(5000, CIGAR_D)], 1000, 1000)
+    expect(segs).toEqual([
+      { op: CIGAR_M, bp1Start: 0, bp1End: 300, bp2End: 300 },
+      { op: CIGAR_D, bp1Start: 300, bp1End: 5300, bp2End: 300 },
+    ])
+  })
+
+  it('keeps every match between sub-pixel-spaced indels', () => {
+    const cigar = Array.from({ length: 6 }, (_, i) =>
+      pack(i % 2 ? 150 : 50, i % 2 ? CIGAR_D : CIGAR_M),
+    )
+    const segs = collect(cigar, 100, 100)
+    expect(segs.map(s => s.op)).toEqual([
+      CIGAR_M,
+      CIGAR_D,
+      CIGAR_M,
+      CIGAR_D,
+      CIGAR_M,
+      CIGAR_D,
+    ])
+  })
+
+  it('gives an indel of exactly one pixel a segment of its own', () => {
+    const segs = collect([pack(100, CIGAR_D), pack(500, CIGAR_M)], 100, 100)
+    expect(segs.map(s => [s.op, s.bp1End])).toEqual([
+      [CIGAR_D, 100],
+      [CIGAR_M, 600],
+    ])
   })
 
   // The segments must partition the query axis for the location-marker grid to
