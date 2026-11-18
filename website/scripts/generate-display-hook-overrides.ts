@@ -219,7 +219,7 @@ const HOOKS: Hook[] = [
     owner:
       'packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx',
     ifNotOverridden:
-      'the generic `BaseFeatureWidget`. An override is a display whose features have a vocabulary of their own, and its `id` decides which displays share one drawer panel',
+      "the widget its track type declares (`TrackType`'s `featureWidget`) when a loaded plugin registers it, else the generic `BaseFeatureWidget`. An override is a display whose features differ in kind from its track's, and its `id` decides which displays share one drawer panel",
   },
 ]
 
