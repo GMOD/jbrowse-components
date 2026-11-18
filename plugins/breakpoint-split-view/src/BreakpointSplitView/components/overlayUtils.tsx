@@ -39,11 +39,6 @@ export interface OverlayProps {
   yOffsetsOverride?: (number | undefined)[]
 }
 
-const VARIANT_FEATURE_WIDGET = {
-  type: 'VariantFeatureWidget',
-  id: 'variantFeature',
-}
-
 // Opened from the row's display, whichever display draws the row, on the
 // record as the adapter holds it, so the widget gets the view, track, header
 // descriptions and the record's samples, and the session its selection.
@@ -64,7 +59,7 @@ export function variantWidgetOpener(
         },
         feat => {
           openFeatureWidget(display, feat.toJSON(), {
-            widget: VARIANT_FEATURE_WIDGET,
+            widget: display.featureWidgetType,
             extra: { descriptions },
             feature: feat,
           })

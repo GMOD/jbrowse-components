@@ -143,13 +143,6 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
     .views(self => ({
       /**
        * #getter
-       * the panel the linear variant displays open for the same record
-       */
-      get featureWidgetType() {
-        return { type: 'VariantFeatureWidget', id: 'variantFeature' }
-      },
-      /**
-       * #getter
        * the linear displays' region-too-large gate, over the whole fetch
        */
       get gateEnabled() {

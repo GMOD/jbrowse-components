@@ -540,15 +540,6 @@ export default function stateModelFactory(
           get keyWindows() {
             return keyWindows.get()
           },
-          /**
-           * #getter
-           */
-          get featureWidgetType() {
-            return {
-              type: 'AlignmentsFeatureWidget',
-              id: 'alignmentFeature',
-            }
-          },
 
           /**
            * #getter

@@ -11,6 +11,7 @@ export default function registerSyntenyTrack(pluginManager: PluginManager) {
     return new TrackType({
       name: 'SyntenyTrack',
       displayName: 'Synteny track',
+      featureWidget: { type: 'SyntenyFeatureWidget', id: 'syntenyFeature' },
       configSchema,
       stateModel: createBaseTrackModel(
         pluginManager,

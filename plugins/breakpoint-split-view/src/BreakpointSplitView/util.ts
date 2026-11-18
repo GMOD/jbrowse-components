@@ -7,7 +7,7 @@ import {
 import type { ReadSource } from './readChains.ts'
 import type { LayoutRecord, OverlayKind, OverlayLevel } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, Region, FeatureWidgetTypeRef } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -35,6 +35,7 @@ export interface RefNameCanonicalizer {
 // OverlayTrack annotation on getMatchedTracks.
 interface OverlayDisplayBase extends Partial<ReadSource>, IStateTreeNode {
   adapterConfig: Record<string, unknown>
+  featureWidgetType: FeatureWidgetTypeRef
   height: number
   scrollTop?: number
   regionTooLarge?: boolean

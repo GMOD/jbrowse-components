@@ -26,6 +26,10 @@ export default function register(pm: PluginManager) {
     const track = new TrackType({
       name: 'AlignmentsTrack',
       displayName: 'Alignments track',
+      featureWidget: {
+        type: 'AlignmentsFeatureWidget',
+        id: 'alignmentFeature',
+      },
       configSchema,
       stateModel: createBaseTrackModel(
         pm,

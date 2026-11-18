@@ -468,15 +468,6 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           : undefined
       },
       /**
-       * #getter
-       * the panel the linear synteny displays open for the same record, so a
-       * ribbon clicked on the circle and a ribbon clicked in a synteny view
-       * share one drawer entry
-       */
-      get featureWidgetType() {
-        return { type: 'SyntenyFeatureWidget', id: 'syntenyFeature' }
-      },
-      /**
        * #method
        * the held alignments joining two assemblies on the circle, in canonical
        * refNames and oriented reference side first, which is what the view's

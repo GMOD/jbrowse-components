@@ -95,17 +95,6 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
       get resolution(): LodMode {
         return getConf(self, ['data', 'resolution'])
       },
-      /**
-       * #getter
-       * synteny features open the SyntenyFeatureWidget; the inherited
-       * `selectFeature` action reads this getter, so no override is needed.
-       */
-      get featureWidgetType() {
-        return {
-          type: 'SyntenyFeatureWidget',
-          id: 'syntenyFeature',
-        }
-      },
 
       /**
        * #getter

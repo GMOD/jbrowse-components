@@ -75,7 +75,7 @@ function openSyntenyFeatureWidget(
     return
   }
   openFeatureWidget(display, syntenyWidgetFeature(feat), {
-    widget: { type: 'SyntenyFeatureWidget', id: 'syntenyFeature' },
+    widget: display.featureWidgetType,
   })
 }
 

@@ -66,7 +66,6 @@ import {
   HAPLOTYPE_ROW_FIELDS,
   INTERNAL_SOURCE_KEYS,
   VARIANT_DISPLAY,
-  VARIANT_FEATURE_WIDGET,
   boundConnectorsBand,
   connectorsBandStack,
   dragConnectorsHeight,
@@ -699,10 +698,6 @@ export function stateModelFactory(
          */
         get colorField(): string {
           return cellHueField(self.colorEncoding) ?? ''
-        },
-
-        get featureWidgetType() {
-          return VARIANT_FEATURE_WIDGET
         },
         /**
          * #getter

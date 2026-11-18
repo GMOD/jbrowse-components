@@ -149,6 +149,12 @@ const record = {
   samples: { S1: { GT: ['0/1'] } },
 }
 
+// what either display answers on a VariantTrack, which declares this widget
+const VARIANT_TRACK_WIDGET = {
+  type: 'VariantFeatureWidget',
+  id: 'variantFeature',
+}
+
 // a variant track's row is drawn by either display, and each one's
 // `selectFeature` takes something different
 const LinearVariantDisplay = types
@@ -156,6 +162,9 @@ const LinearVariantDisplay = types
   .views(() => ({
     get adapterConfig() {
       return { type: 'VcfTabixAdapter' }
+    },
+    get featureWidgetType() {
+      return VARIANT_TRACK_WIDGET
     },
   }))
   .actions(() => ({
@@ -167,6 +176,9 @@ const LinearMarkDisplay = types
   .views(() => ({
     get adapterConfig() {
       return { type: 'VcfTabixAdapter' }
+    },
+    get featureWidgetType() {
+      return VARIANT_TRACK_WIDGET
     },
   }))
   .actions(() => ({

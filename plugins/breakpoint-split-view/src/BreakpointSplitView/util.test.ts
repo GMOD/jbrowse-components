@@ -15,6 +15,11 @@ import {
 import type { LayoutRecord } from './types.ts'
 import type { OverlayDisplay, OverlayTrack } from './util.ts'
 
+const ANY_DISPLAY = {
+  adapterConfig: {},
+  featureWidgetType: { type: 'BaseFeatureWidget', id: 'baseFeature' },
+}
+
 function trackWith(display: OverlayDisplay) {
   return { displays: [display] } as OverlayTrack
 }
@@ -26,7 +31,7 @@ test('declaring searchFeatureByID without layoutReady is a type error', () => {
   // @ts-expect-error searchFeatureByID requires layoutReady alongside it
   const bad: OverlayDisplay = {
     height: 100,
-    adapterConfig: {},
+    ...ANY_DISPLAY,
     searchFeatureByID: () => undefined,
   }
   expect(bad).toBeDefined()
@@ -38,7 +43,7 @@ describe('layoutUnknown', () => {
       layoutUnknown(
         trackWith({
           height: 100,
-          adapterConfig: {},
+          ...ANY_DISPLAY,
           searchFeatureByID: () => undefined,
           layoutReady: true,
         }),
@@ -51,7 +56,7 @@ describe('layoutUnknown', () => {
       layoutUnknown(
         trackWith({
           height: 100,
-          adapterConfig: {},
+          ...ANY_DISPLAY,
           searchFeatureByID: () => undefined,
           layoutReady: false,
         }),
@@ -60,7 +65,7 @@ describe('layoutUnknown', () => {
   })
 
   test('a display that keeps no layout at all keeps the bottom-edge behavior', () => {
-    expect(layoutUnknown(trackWith({ height: 100, adapterConfig: {} }))).toBe(
+    expect(layoutUnknown(trackWith({ height: 100, ...ANY_DISPLAY }))).toBe(
       false,
     )
   })
@@ -69,15 +74,15 @@ describe('layoutUnknown', () => {
 describe('linksOwnReads', () => {
   test('a display drawing its own connectors links every read in the row', () => {
     expect(
-      linksOwnReads({ height: 100, adapterConfig: {}, drawsConnectors: true }),
+      linksOwnReads({ height: 100, ...ANY_DISPLAY, drawsConnectors: true }),
     ).toBe(true)
   })
 
   test('a display drawing no connectors leaves the row to the overlay', () => {
     expect(
-      linksOwnReads({ height: 100, adapterConfig: {}, drawsConnectors: false }),
+      linksOwnReads({ height: 100, ...ANY_DISPLAY, drawsConnectors: false }),
     ).toBe(false)
-    expect(linksOwnReads({ height: 100, adapterConfig: {} })).toBe(false)
+    expect(linksOwnReads({ height: 100, ...ANY_DISPLAY })).toBe(false)
   })
 })
 
@@ -236,7 +241,7 @@ describe('computeOverlayX', () => {
 describe('overlayJexlFilters', () => {
   const display = {
     height: 100,
-    adapterConfig: {},
+    ...ANY_DISPLAY,
     configuredFilters: () => ['jexl:a'],
   }
 
@@ -248,7 +253,7 @@ describe('overlayJexlFilters', () => {
   })
 
   test('a display with no filter contract filters nothing', () => {
-    expect(overlayJexlFilters({ height: 100, adapterConfig: {} })).toEqual([])
+    expect(overlayJexlFilters({ height: 100, ...ANY_DISPLAY })).toEqual([])
     expect(overlayJexlFilters(undefined)).toEqual([])
   })
 })
