@@ -34,6 +34,7 @@ function Harness({ model }: { model: LaneSlideModel }) {
   return (
     <div data-testid="panel" onPointerDown={slide}>
       <canvas data-testid="canvas" />
+      <span data-testid="label">peach</span>
     </div>
   )
 }
@@ -83,5 +84,19 @@ test('a press by a second finger starts no slide', () => {
   pointer('pointermove', { pointerId: 2, clientX: 160 })
   pointer('pointerup', { pointerId: 2, clientX: 160 })
   expect(model.laneDragPx.size).toBe(0)
+  expect(model.ended).toEqual([])
+})
+
+test('a press on a lane label over the canvas starts no slide', () => {
+  const model = SlideModel.create()
+  const { getByTestId } = render(<Harness model={model} />)
+  act(() => {
+    fireEvent.pointerDown(getByTestId('label'), {
+      button: 0,
+      pointerId: 1,
+      clientX: 100,
+    })
+  })
+  pointer('pointerup', { pointerId: 1, clientX: 160 })
   expect(model.ended).toEqual([])
 })

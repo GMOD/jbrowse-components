@@ -59,12 +59,11 @@ export function useLaneSlide(
   }, [model, panel])
 
   return (event: React.PointerEvent<HTMLDivElement>) => {
-    const target = event.target as HTMLElement
     const lane =
       event.isPrimary &&
       event.button === 0 &&
       !event.shiftKey &&
-      target.tagName === 'CANVAS'
+      event.target instanceof HTMLCanvasElement
         ? model.slidableLaneAt(
             event.clientY - event.currentTarget.getBoundingClientRect().top,
           )
