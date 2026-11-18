@@ -125,7 +125,12 @@ export function createEmbeddedController<
       view: hasSession ? undefined : launchFor(wanted, wanted),
     })
     if (!hasSession) {
-      await reconcileTracks(viewState.session, wantedTracks(viewState))
+      try {
+        await reconcileTracks(viewState.session, wantedTracks(viewState))
+      } catch (e) {
+        destroyViewState(viewState)
+        throw e
+      }
     }
     // destroy() can land during any await above, before there was an engine
     // for it to tear down

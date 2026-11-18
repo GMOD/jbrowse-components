@@ -517,6 +517,28 @@ test('destroy while the first tracks open leaves no engine behind', async () => 
   expect(onError).not.toHaveBeenCalled()
 })
 
+test('a build that fails opening its tracks leaves no engine behind', async () => {
+  let built: PluginManager['rootModel']
+  class CaptureRoot extends Plugin {
+    name = 'CaptureRoot'
+    install() {}
+    configure(pluginManager: PluginManager) {
+      built = pluginManager.rootModel
+    }
+  }
+  const onError = jest.fn()
+  const controller = createLinearGenomeView(document.createElement('div'), {
+    assembly,
+    tracks: ['misspelledTrackId'],
+    plugins: [CaptureRoot],
+    onError,
+  })
+
+  await expect(controller.whenReady()).rejects.toThrow(/track type/)
+  expect(onError).toHaveBeenCalledTimes(1)
+  expect(built && isAlive(built)).toBe(false)
+})
+
 // A host swapping genomes now destroys the controller and creates another,
 // which is what setAssembly did internally. What has to hold for that to be a
 // real replacement rather than a leak: the first engine is dead and its worker
