@@ -27,8 +27,8 @@ dpr 1 / 1.5 / 2, against 8 / 11 / 17 for the line alone. The volvox
 ## Decision
 
 - **`BlendState` gains `{ op: 'union' }`.** A union pass's fragments
-  max-blend into a one-sample canvas-sized layer of their own, cleared once a
-  frame, and each of its draws composites that layer premultiplied
+  max-blend into a one-sample canvas-sized layer of their own, cleared at the
+  pass's first draw of a frame, and each of its draws composites that layer premultiplied
   source-over under its scissor, through `layerOver.slang`. Its pipeline is
   built at one sample whatever the display's count (`pipelineRecipe`).
 - **On WebGPU the layer renders before the frame.** Its content never depends
@@ -122,5 +122,20 @@ dpr 1 / 1.5 / 2, against 8 / 11 / 17 for the line alone. The volvox
   2 and the dense one 388 / 942 / 1679.
 - **Stencil first-wins.** Takes the first capsule's edge coverage rather than
   the largest, so joints get nicks.
+- **Every linear line unions in a layer.** One path, but a line-only or
+  line-first display would pay 4 B per device px and a pass for no visible
+  change: the mark display clears transparent, so a first line max-blended
+  into the frame matches its layer composited over nothing.
+- **At the seam, composite each layer once a frame.** It needs a mark-major
+  loop, and `renderBlocks` is block-major: the later blocks' bars would then
+  draw over the line.
+- **At the seam, scissor blocks apart at the source.** Changes
+  `clampBlockScissor` for every display and for Canvas2D, to move one column
+  of one mark.
+- **At the seam, clear the composited column of the layer before the second
+  block draws.** Impossible on WebGPU, whose layer pass ends before the frame
+  reads it; on WebGL2 it blends a translucent line twice in that column.
+- **At the seam, no trimming.** Composites a translucent line twice in one
+  column per seam.
 - **A lint refusing a line after another mark.** It writes a backend bug into
   the config vocabulary and refuses the bar-plus-line plot people want.
