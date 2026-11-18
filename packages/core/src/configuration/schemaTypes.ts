@@ -110,7 +110,7 @@ export function isConfigurationModel(
   return isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
 }
 
-const NUMBER_SLOT_TYPES = new Set<string>([
+export const NUMBER_SLOT_TYPES = new Set<string>([
   'number',
   'integer',
   'maybeNumber',

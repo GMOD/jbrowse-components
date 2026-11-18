@@ -9,6 +9,7 @@ import {
 import { isCssColor } from '../util/cssColorParse.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation, JexlExpressionString } from '../util/types/mst.ts'
+import { NUMBER_SLOT_TYPES } from './schemaTypes.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
@@ -104,8 +105,6 @@ const slotTypes = {
 
 /** the types whose model this module supplies; `SlotValueByType` names the same set */
 export type BuiltinSlotTypeName = keyof typeof slotTypes
-
-const NUMBER_SLOT_TYPES = new Set<string>(['number', 'integer', 'maybeNumber'])
 
 // the author supplies the `types.enumeration` as `model`, and `ConfigSlot`
 // wraps it in `types.maybe` or `types.array`
