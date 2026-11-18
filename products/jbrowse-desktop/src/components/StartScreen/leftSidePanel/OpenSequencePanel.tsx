@@ -29,6 +29,7 @@ const OpenSequencePanel = observer(function OpenSequencePanel() {
       </Button>
       <Button
         variant="contained"
+        color="secondary"
         className={classes.button}
         onClick={() => {
           openDialog('hostedGenomes')
