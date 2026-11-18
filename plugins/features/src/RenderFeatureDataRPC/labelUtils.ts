@@ -84,8 +84,13 @@ export function readFeatureLabels(
   feature: Feature,
   jexl: JexlInstance,
 ): { name: string | undefined; description: string | undefined } {
-  const { name, description } = labelReaders(config, jexl)
-  return { name: name(feature), description: description(feature) }
+  const readers = labelReaders(config, jexl)
+  const name = readers.name(feature)
+  const description = readers.description(feature)
+  return {
+    name,
+    description: description?.trim() === name?.trim() ? undefined : description,
+  }
 }
 
 // Does this glyph's emitter register the feature ITSELF as a labeled

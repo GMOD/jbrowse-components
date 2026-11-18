@@ -89,6 +89,20 @@ describe('readFeatureLabels', () => {
     ).toEqual({ name: 'BRCA1', description: 'A gene' })
   })
 
+  it('drops a description that repeats the name', () => {
+    const enhancer = featureWith({ note: 'H3K4me1 hESC enhancer' })
+    expect(
+      readFeatureLabels(
+        labelled({
+          name: `jexl:get(feature,'name')||get(feature,'note')`,
+          description: FEATURE_DESCRIPTION_FIELD,
+        }),
+        enhancer,
+        jexl,
+      ),
+    ).toEqual({ name: 'H3K4me1 hESC enhancer', description: undefined })
+  })
+
   it('reads a dotted path into a structured field', () => {
     const variant = featureWith({ INFO: { SVTYPE: ['DEL'] } })
     expect(
