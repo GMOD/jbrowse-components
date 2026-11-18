@@ -24,9 +24,9 @@ const EveryChromosome = observer(function EveryChromosome() {
     },
     tracks: [
       {
-        trackId: 'hg38_phylop',
-        name: 'phyloP 100-way conservation',
-        uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+        trackId: 'hg38_alu_density',
+        name: 'Alu per kb',
+        uri: 'https://jbrowse.org/demos/gene_density/Alu.bed.density.bw',
         displayDefaults: {
           height: 120,
           encoding: { color: { value: '#3a7ca5' } },
@@ -35,7 +35,7 @@ const EveryChromosome = observer(function EveryChromosome() {
     ],
     view: {
       loc: chromosomes.join(' '),
-      tracks: ['hg38_phylop'],
+      tracks: ['hg38_alu_density'],
     },
   })
   if (!state) {

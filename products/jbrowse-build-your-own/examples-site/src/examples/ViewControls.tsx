@@ -13,7 +13,7 @@ import { observer } from 'mobx-react'
 import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const catalogue = [
-  { id: 'hg38_phylop', label: 'Conservation' },
+  { id: 'hg38_alu_density', label: 'Alu density' },
   { id: 'hg38_genes', label: 'Genes' },
   { id: 'na12878_exome', label: 'Reads' },
 ]
@@ -84,9 +84,9 @@ const ViewControls = observer(function ViewControls() {
     },
     tracks: [
       {
-        trackId: 'hg38_phylop',
-        name: 'phyloP 100-way conservation',
-        uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+        trackId: 'hg38_alu_density',
+        name: 'Alu per kb',
+        uri: 'https://jbrowse.org/demos/gene_density/Alu.bed.density.bw',
         displayDefaults: {
           height: 100,
           encoding: { color: { value: '#3a7ca5' } },
@@ -108,7 +108,7 @@ const ViewControls = observer(function ViewControls() {
     ],
     view: {
       loc: 'chr17:43,044,295..43,125,364',
-      tracks: ['hg38_phylop', 'hg38_genes'],
+      tracks: ['hg38_alu_density', 'hg38_genes'],
     },
   })
   if (!state) {
