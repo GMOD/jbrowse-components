@@ -11,8 +11,10 @@ export const LABEL_BASELINE_OFFSET = 3
 export const INLINE_CHIP_OPACITY = 0.85
 export const INLINE_CHIP_PAD_PX = 3
 export const LANE_COLOR_SWATCH_PX = LABEL_FONT_SIZE
-export const LANE_COLOR_SWATCH_GAP_PX = 3
 export const LANE_COLOR_TINT = 0.3
+export const HEADER_INSET_PX = 2
+export const HEADER_GAP_PX = 4
+export const BADGE_PAD_PX = 3
 
 // `row.y` is a baseline; a `line-height: 1` box's baseline sits 0.84 em down
 export const LABEL_BASELINE_RATIO = 0.84

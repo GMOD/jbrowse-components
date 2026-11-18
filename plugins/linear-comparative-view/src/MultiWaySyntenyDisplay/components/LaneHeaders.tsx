@@ -11,6 +11,9 @@ import { observer } from 'mobx-react'
 
 import { dropRowAt, laneOrderAfterDrop, pastDragSlop } from '../laneDrag.ts'
 import {
+  BADGE_PAD_PX,
+  HEADER_GAP_PX,
+  HEADER_INSET_PX,
   INLINE_CHIP_OPACITY,
   INLINE_CHIP_PAD_PX,
   LABEL_FONT_SIZE,
@@ -282,13 +285,13 @@ const LaneHeaders = observer(function LaneHeaders({
           key={`header-${row.assemblyName}`}
           style={{
             position: 'absolute',
-            left: 2,
+            left: HEADER_INSET_PX,
             // `row.y` is a baseline, and the box is placed by its top
             top: labelBoxTop(row.y) - scrollTop,
-            width: width - 4,
+            width: width - 2 * HEADER_INSET_PX,
             display: 'flex',
             alignItems: 'center',
-            gap: 4,
+            gap: HEADER_GAP_PX,
             whiteSpace: 'nowrap',
             textShadow: textHalo(bandGroundColor()),
           }}
@@ -305,7 +308,7 @@ const LaneHeaders = observer(function LaneHeaders({
                 color: bandInk().text,
                 border: `1px solid ${bandInk().text}`,
                 fontWeight: 600,
-                padding: '0 3px',
+                padding: `0 ${BADGE_PAD_PX}px`,
                 borderRadius: 2,
                 textShadow: 'none',
                 flex: '0 0 auto',

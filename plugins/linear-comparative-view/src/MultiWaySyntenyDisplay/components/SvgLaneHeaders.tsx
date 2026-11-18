@@ -1,12 +1,14 @@
-import { measureText } from '@jbrowse/core/util/measureText'
+import { measureText, truncateToWidth } from '@jbrowse/core/util/measureText'
 import { SvgHaloText } from '@jbrowse/display-ui'
 import { bandGroundColor, bandInk, bandPalette } from '@jbrowse/synteny-core'
 
 import {
+  BADGE_PAD_PX,
+  HEADER_GAP_PX,
+  HEADER_INSET_PX,
   INLINE_CHIP_OPACITY,
   INLINE_CHIP_PAD_PX,
   LABEL_FONT_SIZE,
-  LANE_COLOR_SWATCH_GAP_PX,
   LANE_COLOR_SWATCH_PX,
   LANE_COLOR_TINT,
   changesChipWidth,
@@ -72,9 +74,6 @@ function SvgColorChip({
   )
 }
 
-const BADGE_PAD_PX = 3
-const CHANGES_GAP_PX = 4
-
 function SvgChangesChip({
   text,
   anchor,
@@ -128,22 +127,39 @@ export function SvgLaneHeaders({
     <>
       {rows.map(row => {
         const badge = row.against ? `vs ${row.against}` : undefined
+        const badgeX = HEADER_INSET_PX + 0.5
         const badgeWidth = badge
           ? measureText(badge, LABEL_FONT_SIZE) + 2 * BADGE_PAD_PX
           : 0
-        const barX = badge ? 2.5 + badgeWidth + 4 : 2
+        const barX = badge
+          ? badgeX + badgeWidth + HEADER_GAP_PX
+          : HEADER_INSET_PX
         const labelX = row.color
-          ? barX +
-            LANE_COLOR_SWATCH_PX +
-            LANE_COLOR_SWATCH_GAP_PX +
-            INLINE_CHIP_PAD_PX
+          ? barX + LANE_COLOR_SWATCH_PX + HEADER_GAP_PX + INLINE_CHIP_PAD_PX
           : barX
+        const scaleRight = width - HEADER_INSET_PX
+        const changesRight = row.scale
+          ? scaleRight - measureText(row.scale, LABEL_FONT_SIZE) - HEADER_GAP_PX
+          : scaleRight
+        const changesWidth = row.changes
+          ? changesChipWidth(row.changes.text)
+          : 0
+        const labelRight = row.changes
+          ? changesRight - changesWidth - HEADER_GAP_PX
+          : changesRight
+        const label = truncateToWidth(
+          row.label,
+          labelRight -
+            labelX -
+            (row.color || row.inline ? INLINE_CHIP_PAD_PX : 0),
+          LABEL_FONT_SIZE,
+        )
         return (
           <g key={`header-${row.assemblyName}`}>
             {badge ? (
               <>
                 <rect
-                  x={2.5}
+                  x={badgeX}
                   y={labelBoxTop(row.y) - 0.5}
                   width={badgeWidth}
                   height={LABEL_FONT_SIZE + 1}
@@ -152,7 +168,7 @@ export function SvgLaneHeaders({
                   stroke={bandInk().text}
                 />
                 <text
-                  x={2.5 + BADGE_PAD_PX}
+                  x={badgeX + BADGE_PAD_PX}
                   y={row.y}
                   fontSize={LABEL_FONT_SIZE}
                   fontWeight={600}
@@ -174,18 +190,13 @@ export function SvgLaneHeaders({
             ) : null}
             {row.color ? (
               <SvgColorChip
-                text={row.label}
+                text={label}
                 x={labelX}
                 y={row.y}
                 color={row.color}
               />
             ) : row.inline ? (
-              <SvgInlineChip
-                text={row.label}
-                x={labelX}
-                y={row.y}
-                anchor="start"
-              />
+              <SvgInlineChip text={label} x={labelX} y={row.y} anchor="start" />
             ) : null}
             <SvgHaloText
               {...text}
@@ -194,20 +205,14 @@ export function SvgLaneHeaders({
               y={row.y}
               fill={bandInk().text}
             >
-              {row.label}
+              {label}
             </SvgHaloText>
             {row.changes ? (
               <SvgChangesChip
                 text={row.changes.text}
                 anchor={row.changes.anchor}
-                right={
-                  width -
-                  2 -
-                  (row.scale
-                    ? measureText(row.scale, LABEL_FONT_SIZE) + CHANGES_GAP_PX
-                    : 0)
-                }
-                width={changesChipWidth(row.changes.text)}
+                right={changesRight}
+                width={changesWidth}
                 y={row.y}
               />
             ) : null}
@@ -216,14 +221,14 @@ export function SvgLaneHeaders({
                 {row.inline ? (
                   <SvgInlineChip
                     text={row.scale}
-                    x={width - 2}
+                    x={scaleRight}
                     y={row.y}
                     anchor="end"
                   />
                 ) : null}
                 <SvgHaloText
                   {...text}
-                  x={width - 2}
+                  x={scaleRight}
                   y={row.y}
                   anchor="end"
                   fill={bandPalette.text.secondary}
