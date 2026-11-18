@@ -27,7 +27,7 @@ import {
 import { getMate, isNamedRecord } from '../syntenyMate.ts'
 import { lanePairKey } from './alignmentOps.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
-import { STRAND_GAP_PX } from './laneStack.ts'
+import { STRAND_GAP_PX, stackReach } from './laneStack.ts'
 import {
   frameOpenings,
   frameReachPx,
@@ -878,9 +878,7 @@ function onCanvas(span: Span, [left, right]: Span) {
 }
 
 function laneReachPx(lane: Lane, width: number): Span {
-  return lane.frame
-    ? frameReachPx(lane.frame, width)
-    : [-width / 2, 1.5 * width]
+  return lane.frame ? frameReachPx(lane.frame, width) : stackReach(width)
 }
 
 export interface LaneCells {

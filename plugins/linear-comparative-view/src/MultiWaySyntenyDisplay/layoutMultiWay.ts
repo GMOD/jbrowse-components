@@ -780,9 +780,10 @@ function frameExtent(frame: RowFrame) {
   return { min, max }
 }
 
+/** a screen either side of the frame, as `stackReach` reaches */
 export function frameReach(frame: RowFrame) {
   const { min, max } = frameExtent(frame)
-  const margin = (max - min) / 2
+  const margin = max - min
   return { min: min - margin, max: max + margin }
 }
 

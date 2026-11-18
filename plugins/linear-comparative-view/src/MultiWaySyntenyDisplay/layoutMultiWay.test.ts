@@ -1283,10 +1283,10 @@ test('a span outside the lane reach has no px pair to draw from', () => {
 
   expect(frameSpan(frame, frame.min + 10, frame.min + 20, 800)).toBeDefined()
   expect(frameSpan(frame, reach.max - 10, reach.max + 10, 800)).toEqual([
-    1192, 1200,
+    1592, 1600,
   ])
   expect(frameSpan(frame, reach.max + 10, reach.max - 10, 800)).toEqual([
-    1200, 1192,
+    1600, 1592,
   ])
   expect(frameSpan(frame, reach.max + 10, region.end, 800)).toBeUndefined()
   expect(frameSpan(frame, region.end, reach.max + 10, 800)).toBeUndefined()

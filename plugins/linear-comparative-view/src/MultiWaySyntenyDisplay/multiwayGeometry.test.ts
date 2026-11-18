@@ -521,30 +521,30 @@ describe('the ribbons', () => {
       'forward',
       1,
       false,
-      [[80, 720, -400, 80]],
+      [[80, 720, -800, 200]],
       [
-        [80, 400, -400, -240],
-        [400, 720, -240, 80],
+        [80, 400, -800, -600],
+        [400, 720, -600, 200],
       ],
     ],
     [
       'reverse',
       -1,
       false,
-      [[80, 720, 80, -400]],
+      [[80, 720, 200, -800]],
       [
-        [80, 400, 80, -240],
-        [400, 720, -240, -400],
+        [80, 400, 200, -600],
+        [400, 720, -600, -800],
       ],
     ],
     [
       'reverse, flipped',
       -1,
       true,
-      [[80, 720, 720, 1200]],
+      [[80, 720, 600, 1600]],
       [
-        [80, 400, 720, 1040],
-        [400, 720, 1040, 1200],
+        [80, 400, 600, 1400],
+        [400, 720, 1400, 1600],
       ],
     ],
   ])(
@@ -569,7 +569,7 @@ describe('the ribbons', () => {
           buildRibbonGeometry({
             stack: stack({
               features: [record],
-              peach: { ...peachFrame, flipped },
+              peach: { ...peachFrame, max: 1400, flipped },
             }),
             anchorOps: new Map([['r1', ops(...cigar)]]),
             laneLinks: undefined,
@@ -1249,7 +1249,8 @@ test('the ticks are zero-width markers in each framed lane’s band', () => {
   expect(layers.map(l => l.key)).toEqual(['ticks:1'])
   const data = ribbonData(cells, 'ticks:1')
   expect([...data.bp1]).toEqual([
-    -320, -160, 0, 160, 320, 480, 640, 800, 960, 1120,
+    -800, -640, -480, -320, -160, 0, 160, 320, 480, 640, 800, 960, 1120, 1280,
+    1440, 1600,
   ])
   expect([...data.bp1]).toEqual([...data.bp3])
   expect([...new Set(data.kinds)]).toEqual([KIND_MARKER])
@@ -1270,7 +1271,7 @@ test('the ticks stop where the lane’s baseline stops, at its contig end', () =
     color: 'rgba(0,0,0,0.12)',
   })
   expect([...ribbonData(cells, 'ticks:1').bp1]).toEqual([
-    -320, -160, 0, 160, 320,
+    -800, -640, -480, -320, -160, 0, 160, 320,
   ])
 })
 
@@ -1504,7 +1505,7 @@ describe('a lane cell', () => {
     ).toBe('g1')
   })
 
-  // in the reach `a` overlaps more (600 to 501 bp); in bp, `b` does (901 to 600)
+  // in the reach `a` overlaps more (1500 to 1001 bp); in bp, `b` does (2001 to 1600)
   test('a gene straddling the reach is claimed by its widest overlap in bp', () => {
     const record = (name: string, anchor: number, start: number, end: number) =>
       new SimpleFeature({
@@ -1517,13 +1518,13 @@ describe('a lane cell', () => {
         mate: { assemblyName: 'peach', refName: 'Pp1', start, end },
       })
     const s = stack({
-      features: [record('a', 100, 1900, 2500), record('b', 300, 1999, 2900)],
+      features: [record('a', 100, 1500, 3100), record('b', 300, 1999, 4000)],
     })
     const clipped = new SimpleFeature({
       uniqueId: 'peachGene',
       refName: 'Pp1',
-      start: 1800,
-      end: 2900,
+      start: 1400,
+      end: 4000,
       strand: 1,
       type: 'gene',
     })
@@ -1547,6 +1548,43 @@ describe('a lane cell', () => {
     expect(glyphs.hits.map(h => h.groupKey)).toEqual(['b'])
     expect(claims).toEqual(['b'])
     expect(boxes.hits).toEqual([])
+  })
+
+  test('draws a gene a screen past the edge, as far as the baseline reaches', () => {
+    const s = stack({ features: [pairFeature('g1', 100, 200)] })
+    const far = (refName: string, start: number) =>
+      new LaneGene(
+        new SimpleFeature({
+          uniqueId: `${refName}-far`,
+          refName,
+          start,
+          end: start + 100,
+          type: 'gene',
+        }),
+      )
+    const anchor = s.lanes[0]!
+    const hits = [
+      buildLaneCells({
+        lane: {
+          ...anchor,
+          spanOf: () => [1300, 1380],
+          spansOf: () => [[1300, 1380]],
+        },
+        genes: [far('chr1', 0)],
+        glyphHeight: s.glyphHeight,
+        width: WIDTH,
+        colors,
+      }),
+      buildLaneCells({
+        lane: s.lanes[1]!,
+        genes: [far('Pp1', 2650)],
+        glyphHeight: s.glyphHeight,
+        width: WIDTH,
+        colors,
+      }),
+    ].map(({ glyphs }) => glyphs.hits.map(h => Math.round(h.x1)))
+    expect(hits).toEqual([[1300], [1320]])
+    expect(s.lanes[1]!.baseline[0]![1]).toBeGreaterThanOrEqual(1400)
   })
 
   describe('with the strands split', () => {

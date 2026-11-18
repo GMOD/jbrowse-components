@@ -138,11 +138,11 @@ describe('the map a lane answers intervals with', () => {
     expect(anchor!.spanOf('Pp1', 100, 200)).toBeUndefined()
   })
 
-  test('clips a mate lane half a screen past its frame, and answers nothing off its contig', () => {
+  test('clips a mate lane a screen past its frame, and answers nothing off its contig', () => {
     const [, peach] = stack().lanes
-    expect(peach!.spanOf('Pp1', 1900, 3000)).toEqual([720, 1.5 * WIDTH])
-    expect(peach!.spanOf('Pp1', 2250, 2500)).toEqual([1000, 1.5 * WIDTH])
-    expect(peach!.spanOf('Pp1', 2600, 4000)).toBeUndefined()
+    expect(peach!.spanOf('Pp1', 1900, 3500)).toEqual([720, 2 * WIDTH])
+    expect(peach!.spanOf('Pp1', 2250, 3500)).toEqual([1000, 2 * WIDTH])
+    expect(peach!.spanOf('Pp1', 3100, 4000)).toBeUndefined()
     expect(peach!.spanOf('Pp2', 1100, 1200)).toBeUndefined()
   })
 
