@@ -245,9 +245,6 @@
 1 no-unsafe-return products/jbrowse-desktop/electron/ipc/quickstartHandlers.ts
 1 no-unsafe-return products/jbrowse-desktop/electron/ipc/sessionHandlers.ts
 1 no-unsafe-return products/jbrowse-desktop/electron/mcp/screenshot.ts
-1 no-unsafe-argument products/jbrowse-desktop/src/components/StartScreen/recentSessions/RecentSessionsDataGrid.tsx
-2 no-unsafe-assignment products/jbrowse-desktop/src/components/StartScreen/recentSessions/RecentSessionsDataGrid.tsx
-1 no-unsafe-member-access products/jbrowse-desktop/src/components/StartScreen/recentSessions/RecentSessionsDataGrid.tsx
 1 no-unsafe-argument products/jbrowse-desktop/src/components/StartScreen/recentSessions/RecentSessionsPanel.tsx
 2 no-unsafe-assignment products/jbrowse-desktop/src/rootModel/rootModel.ts
 1 no-unsafe-argument products/jbrowse-desktop/src/sessionModel/TrackMenu.ts

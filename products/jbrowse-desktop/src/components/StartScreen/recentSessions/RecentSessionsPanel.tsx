@@ -37,7 +37,7 @@ import { useStartScreenLaunch } from '../startScreenLaunch.ts'
 import { useInnerDims } from '../useInnerDims.ts'
 import { loadPluginManager } from '../util.tsx'
 import RecentSessionsCards from './RecentSessionsCards.tsx'
-import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
+import RecentSessionsTable from './RecentSessionsTable.tsx'
 import { useFavoriteSessions } from './useFavoriteSessions.ts'
 
 import type { RecentSessionData } from '../types.ts'
@@ -103,7 +103,9 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
   const compact = useMediaQuery(COMPACT_QUERY, { noSsr: true })
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
-  const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
+  const [selectedPaths, setSelectedPaths] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  )
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
   const [now] = useState(() => Date.now())
   const [showAutosaves, setShowAutosaves] = useLocalStorage(
@@ -170,12 +172,10 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
   const oldAutosaves = sessions.filter(
     f => f.isAutosave && now - f.updated > thirtyDaysMs,
   )
-  // The grid doesn't re-emit its selection when a filter toggle hides rows, so
-  // selectedSessions can outlive the visible list. Intersect before acting so
-  // delete/quickstart never touch a session the user can no longer see.
-  const visiblePaths = new Set(filteredSessions.map(s => s.path))
-  const visibleSelection = selectedSessions.filter(s =>
-    visiblePaths.has(s.path),
+  // a filter toggle can hide a ticked row, so delete and quickstart act only
+  // on the ticked rows still shown
+  const visibleSelection = filteredSessions.filter(s =>
+    selectedPaths.has(s.path),
   )
 
   return (
@@ -223,7 +223,7 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
               </ToggleButtonWithTooltip>
             </ToggleButtonGroup>
           </FormControl>
-          {/* the grid drops its checkbox column at this width, so these two have
+          {/* the list drops its checkbox column at this width, so these two have
           nothing left to act on; the row's own menu carries both actions */}
           {displayMode === 'list' && !narrow && visibleSelection.length ? (
             <div style={{ display: 'flex' }}>
@@ -297,11 +297,13 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
       ) : (
         // both views scroll inside what the window has left below the header
         // rather than pushing the start screen's own page scroll, so the panel
-        // owns the box
+        // owns the box; the list shrinks into it and scrolls under its header
         <div
           style={{
             maxHeight: Math.max(200, innerHeight - (compact ? 283 : 418)),
             overflow: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           {displayMode === 'grid' ? (
@@ -315,9 +317,10 @@ const RecentSessionPanel = observer(function RecentSessionPanel() {
               toggleFavorite={toggleFavorite}
             />
           ) : (
-            <RecentSessionsDataGrid
+            <RecentSessionsTable
               launch={launch}
-              setSelectedSessions={setSelectedSessions}
+              selectedPaths={selectedPaths}
+              setSelectedPaths={setSelectedPaths}
               setSessionToRename={setSessionToRename}
               setSessionsToDelete={setSessionsToDelete}
               sessions={filteredSessions}

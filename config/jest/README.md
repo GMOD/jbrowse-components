@@ -32,7 +32,7 @@ ambiently. A global shim would erase the condition they are pinning — and
 file deletes the shim in its `finally`, so a `-t` run of it alone would fail.
 
 Install one per-test instead and delete it after, which
-`RecentSessionsDataGrid.test.tsx`, `animationAllowed.test.ts` and
+`RecentSessionsTable.test.tsx`, `animationAllowed.test.ts` and
 `PaletteContext.test.tsx` each do. Only `matches` is ever read. The first of
 those is the worked example for a width query, and it fails when the component's
 narrow branch is removed _and_ when its own stub is.

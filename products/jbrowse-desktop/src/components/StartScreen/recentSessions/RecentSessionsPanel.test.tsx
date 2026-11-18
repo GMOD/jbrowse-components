@@ -75,7 +75,7 @@ test('the bulk delete and quickstart icons appear only once a row is ticked', as
   await screen.findByText('Volvox')
   expect(screen.queryByRole('button', { name: 'Delete sessions' })).toBeNull()
 
-  fireEvent.click(screen.getByRole('checkbox', { name: 'Select row' }))
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Select Volvox' }))
 
   expect(
     await screen.findByRole('button', { name: 'Delete sessions' }),

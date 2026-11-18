@@ -27,9 +27,13 @@ const useStyles = makeStyles()(theme => ({
   summary: {
     color: theme.palette.text.secondary,
   },
+  // no height of its own, so the buttons overhang a list row rather than
+  // growing it, and the cell clips them
   icons: {
     display: 'flex',
+    alignItems: 'center',
     flexShrink: 0,
+    height: 0,
   },
 }))
 
