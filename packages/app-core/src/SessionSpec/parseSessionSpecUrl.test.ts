@@ -152,6 +152,22 @@ describe('a track hub link', () => {
     ).toEqual([])
   })
 
+  test('names every param an assembly-less link carried in its notice', () => {
+    expect(
+      parseSessionSpecUrl(
+        `${base}?hubURL=${encodeURIComponent(hub)}&loc=chr1:1-100&regions=chr1`,
+      ).notice,
+    ).toMatch(/^&loc=, &regions= alongside &hubURL= also needs &assembly=/)
+    expect(
+      parseSessionSpecUrl(`${base}?hubURL=${encodeURIComponent(hub)}`).notice,
+    ).toBeUndefined()
+    expect(
+      parseSessionSpecUrl(
+        `${base}?hubURL=${encodeURIComponent(hub)}&assembly=hg38&loc=chr1:1-100`,
+      ).notice,
+    ).toBeUndefined()
+  })
+
   test('navigates inside the hub when the link names one of its genomes', () => {
     const { spec } = parseSessionSpecUrl(
       `${base}?hubURL=${encodeURIComponent(hub)}&assembly=hg38&loc=chr1:1-100&tracks=a,b`,

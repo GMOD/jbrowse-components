@@ -40,6 +40,7 @@ export {
   addSessionTracks,
   buildLgvInit,
   hubConnectionSpec,
+  hubLinkSpec,
   loadSessionSpec,
   parseConfigUrl,
   parseSessionSnapshotUrl,

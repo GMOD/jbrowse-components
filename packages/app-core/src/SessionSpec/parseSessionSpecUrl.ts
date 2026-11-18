@@ -39,6 +39,9 @@ export interface ParsedSessionSpec {
   configUrl?: string
   spec: Omit<SessionSpec, 'sessionName'>
   sessionName?: string
+  // what the link asked for that the spec cannot carry, for the caller to show
+  // on the session it opens
+  notice?: string
 }
 
 // A `jbrowse://open?url=<web link>` wrapper carries a JBrowse Web url for
@@ -103,7 +106,9 @@ function resolveConfig(params: URLSearchParams, url: URL) {
  *    and drops the hub with no diagnostic.
  * 3. the shorthand on its own.
  */
-function shorthandSpec(params: URLSearchParams): ParsedSessionSpec['spec'] {
+function shorthandSpec(
+  params: URLSearchParams,
+): Pick<ParsedSessionSpec, 'spec' | 'notice'> {
   const init = buildLgvInitFromParams(params)
   // what makes a link a jb1-style one, the same test as jbrowse-web's
   // isJb1StyleSession. The rest of the shorthand only modifies a view; none of
@@ -129,22 +134,7 @@ function shorthandSpec(params: URLSearchParams): ParsedSessionSpec['spec'] {
 
   const hubURL = readHubUrlParam(params.get('hubURL') ?? undefined)
   if (hubURL.length) {
-    // A track hub is a session connection, which a spec has carried since
-    // sessionConnections landed. So this is no longer the dead end it was
-    // ("that's a track hub, go add it by hand") — the hub attaches, and
-    // loadSessionSpec waits for it to settle before launching anything, because
-    // the assemblies and tracks the view below names are ones the hub brings.
-    return {
-      sessionConnections: hubURL.map(hubConnectionSpec),
-      sessionTracks: readSessionTracks(params),
-      // Only with an assembly. The launcher resolves everything against one,
-      // and a hub's assemblies are genome ids only the hub carries, so `&loc=`
-      // alone has nothing to launch against. Leaving the list empty is what
-      // makes loadSessionSpec register the connection non-silently, so the hub
-      // opens at its own defaultPos — the best guess available without a name,
-      // and what jbrowse-web does with the same link.
-      views: init.assembly === undefined ? [] : [lgvSpec(init)],
-    }
+    return hubLinkSpec(hubURL, init, readSessionTracks(params))
   }
 
   if (!isJb1Style) {
@@ -153,10 +143,50 @@ function shorthandSpec(params: URLSearchParams): ParsedSessionSpec['spec'] {
     )
   }
   return {
-    // `&sessionTracks=` carries whole track configs the views then reference by
-    // id, exactly as in a spec link
-    sessionTracks: readSessionTracks(params),
-    views: [lgvSpec(init)],
+    spec: {
+      // `&sessionTracks=` carries whole track configs the views then reference
+      // by id, exactly as in a spec link
+      sessionTracks: readSessionTracks(params),
+      views: [lgvSpec(init)],
+    },
+  }
+}
+
+// where an init key is not spelled the way the URL param that set it is
+const URL_PARAM_FOR_INIT_KEY: Record<string, string | undefined> = {
+  displayedRegionNames: 'regions',
+}
+
+/**
+ * The spec a `&hubURL=` link describes, read by both jbrowse-web's loader and
+ * parseSessionSpecUrl. A track hub is a session connection; `&sessionTracks=`
+ * registers beside it, so `&tracks=` can name one.
+ *
+ * The rest of the shorthand becomes a view only with an assembly. The launcher
+ * resolves everything against one, and a hub's assemblies are genome ids only
+ * the hub carries, so `&loc=` alone has nothing to launch against. An empty
+ * `views` is what makes loadSessionSpec register the connection non-silently,
+ * so the hub opens at its own defaultPos — the best guess available without a
+ * name — and the notice says why the link's params were not applied.
+ */
+export function hubLinkSpec(
+  hubURL: string[],
+  init: LgvUrlInit,
+  sessionTracks?: Record<string, unknown>[],
+) {
+  const carried = Object.keys(init).map(
+    key => `&${URL_PARAM_FOR_INIT_KEY[key] ?? key}=`,
+  )
+  return {
+    spec: {
+      sessionConnections: hubURL.map(hubConnectionSpec),
+      sessionTracks,
+      views: init.assembly ? [lgvSpec(init)] : [],
+    },
+    notice:
+      !init.assembly && carried.length
+        ? `${carried.join(', ')} alongside &hubURL= also needs &assembly=, naming one of the hub genomes; the hub was opened at its own default location.`
+        : undefined,
   }
 }
 
@@ -304,7 +334,7 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
   if (!session) {
     return {
       ...resolveConfig(params, url),
-      spec: shorthandSpec(params),
+      ...shorthandSpec(params),
       sessionName: params.get('sessionName') ?? undefined,
     }
   }

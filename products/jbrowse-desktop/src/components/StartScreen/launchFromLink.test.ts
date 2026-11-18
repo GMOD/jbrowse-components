@@ -95,6 +95,29 @@ test('a spec carrying its own assemblies needs no config fetch', async () => {
   expect(mockLoadSessionSpec).toHaveBeenCalledWith(selfContained, pluginManager)
 })
 
+// the hub still opens, at its own default location, and the session says why
+// the link's &loc= was not applied rather than dropping it in silence
+test('a hub link with a loc and no assembly opens the hub and says why it did not navigate', async () => {
+  const notify = jest.fn()
+  const createPluginManager = jest
+    .fn()
+    .mockResolvedValue({ rootModel: { session: { notify } } })
+
+  await launchFromLink(
+    'https://jbrowse.org/code/jb2/main/?config=none&hubURL=https://example.com/hub.txt&loc=chr1:1-100',
+    { fetchConfig: jest.fn(), createPluginManager, trustPlugins },
+  )
+
+  expect(mockLoadSessionSpec).toHaveBeenCalledWith(
+    expect.objectContaining({ views: [] }),
+    expect.anything(),
+  )
+  expect(notify).toHaveBeenCalledWith(
+    '&loc= alongside &hubURL= also needs &assembly=, naming one of the hub genomes; the hub was opened at its own default location.',
+    'warning',
+  )
+})
+
 test('a link only the browser that made it can open fails before anything is built', async () => {
   const fetchConfig = jest.fn()
   const createPluginManager = jest.fn()

@@ -16,6 +16,7 @@ export {
   viewTypeProblem,
 } from './loadSessionSpec.ts'
 export {
+  hubLinkSpec,
   parseConfigUrl,
   parseSessionSnapshotUrl,
   parseSessionSpec,
