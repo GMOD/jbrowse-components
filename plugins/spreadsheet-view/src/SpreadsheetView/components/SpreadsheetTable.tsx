@@ -1,9 +1,9 @@
 import VirtualTable from '@jbrowse/core/ui/VirtualTable'
 import { toLocale } from '@jbrowse/core/util'
+import { cellText, searchHighlightPatterns } from '@jbrowse/core/util/tableText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { cellText } from '../SpreadsheetModel.tsx'
 import LocationCell from './LocationCell.tsx'
 import MateCell from './MateCell.tsx'
 import SpreadsheetToolbar from './SpreadsheetToolbar.tsx'
@@ -26,10 +26,6 @@ const useStyles = makeStyles()({
     minHeight: 0,
   },
 })
-
-function escapeRegExp(text: string) {
-  return text.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
 
 function tableColumn(model: SpreadsheetModel, col: SheetColumn, fill: boolean) {
   const text = (row: GridRow) => cellText(col.value(row))
@@ -115,9 +111,7 @@ const SpreadsheetTable = observer(function SpreadsheetTable({
           onRowClick={row => {
             model.setSelectedFeature(row.feature)
           }}
-          highlightPatterns={searchWords.map(
-            word => new RegExp(escapeRegExp(word), 'giu'),
-          )}
+          highlightPatterns={searchHighlightPatterns(searchWords)}
           emptyMessage={
             rows.length ? 'No rows match the search and filters' : 'No rows'
           }

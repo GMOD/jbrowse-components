@@ -6,6 +6,13 @@ import {
   selectedFeatureIdFor,
   toLocale,
 } from '@jbrowse/core/util'
+import {
+  cellText,
+  compareValues,
+  csvLine,
+  naturalOrder,
+  splitSearchWords,
+} from '@jbrowse/core/util/tableText'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   distinctJunctions,
@@ -110,52 +117,6 @@ export interface SheetColumn {
   width: number
   kind: 'location' | 'mate' | 'number' | 'text'
   value: (row: GridRow) => unknown
-}
-
-const collator = new Intl.Collator(undefined, { numeric: true })
-
-function naturalOrder(a: string, b: string) {
-  return collator.compare(a, b)
-}
-
-/**
- * a cell's value as plain text, which the search, the CSV export and a cell's
- * hover read: a number without separators, and nothing as ''
- */
-export function cellText(value: unknown) {
-  return value == null
-    ? ''
-    : typeof value === 'string'
-      ? value
-      : typeof value === 'number' || typeof value === 'boolean'
-        ? `${value}`
-        : JSON.stringify(value)
-}
-
-function isBlank(value: unknown) {
-  return value == null || value === ''
-}
-
-// a blank sorts last whichever way the column sorts
-function compareValues(a: unknown, b: unknown, direction: number) {
-  return isBlank(a)
-    ? isBlank(b)
-      ? 0
-      : 1
-    : isBlank(b)
-      ? -1
-      : direction *
-        (typeof a === 'number' && typeof b === 'number'
-          ? a - b
-          : naturalOrder(cellText(a), cellText(b)))
-}
-
-function csvLine(fields: string[]) {
-  return fields
-    .map(text =>
-      /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text,
-    )
-    .join(',')
 }
 
 function eventLabel(row: GridRow, field?: string) {
@@ -472,7 +433,7 @@ export default function stateModelFactory() {
        * the words of `filterText`, lowercased
        */
       get searchWords() {
-        return (self.filterText ?? '').toLowerCase().split(' ').filter(Boolean)
+        return splitSearchWords(self.filterText ?? '')
       },
       /**
        * #getter
