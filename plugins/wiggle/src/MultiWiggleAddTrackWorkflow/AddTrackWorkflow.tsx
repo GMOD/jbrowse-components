@@ -1,14 +1,19 @@
 import { useState } from 'react'
 
 import { AssemblySelector, FileDropZone, SanitizedHTML } from '@jbrowse/core/ui'
+import VirtualTable, {
+  EditableTextCell,
+  TableCheckbox,
+} from '@jbrowse/core/ui/VirtualTable'
 import {
   addTrackFromWidget,
+  coarseStripHTML,
   getNotificationSink,
   getSession,
-  resolveSelectedIds,
   workflowForm,
 } from '@jbrowse/core/util'
 import { nanoid } from '@jbrowse/core/util/nanoid'
+import { compareValues } from '@jbrowse/core/util/tableText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
@@ -19,7 +24,6 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material'
-import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import {
@@ -38,8 +42,8 @@ import {
 import { MULTI_ROW_WORKFLOW } from './workflowName.ts'
 
 import type { Member, Refusal, StackKind } from './util.ts'
+import type { VirtualTableColumn } from '@jbrowse/core/ui/VirtualTable'
 import type { AddTrackWorkflowModel } from '@jbrowse/core/util'
-import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -50,7 +54,16 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'flex-start',
     gap: theme.spacing(1.5),
   },
+  tableBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    maxHeight: 300,
+    marginTop: 4,
+  },
 }))
+
+const CHECKBOX_WIDTH = 40
+const KIND_WIDTH = 110
 
 interface TrackRow {
   id: string
@@ -81,6 +94,11 @@ const initialForm: MultiRowForm = {
 const KIND_LABEL: Record<StackKind, string> = {
   quantitative: 'quantitative',
   feature: 'features',
+}
+
+const sortKeys: Record<string, (row: TrackRow) => unknown> = {
+  name: row => coarseStripHTML(row.name),
+  kind: row => KIND_LABEL[row.member.kind],
 }
 
 const PASTE_HELP =
@@ -129,10 +147,9 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
     workflowForm(model, MULTI_ROW_WORKFLOW, initialForm).form
   const currentTracks = () => currentForm().tracks
   const guessers = sessionGuessers(model)
-  const [selection, setSelection] = useState<GridRowSelectionModel>(() => ({
-    type: 'include',
-    ids: new Set(),
-  }))
+  const [ticked, setTicked] = useState<ReadonlySet<string>>(() => new Set())
+  const [sortField, setSortField] = useState('')
+  const [sortAscending, setSortAscending] = useState(true)
 
   function addClassified(classified: (Member | Refusal)[]) {
     const added = partition(classified)
@@ -161,12 +178,45 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
     update({ inputMode: mode })
   }
 
-  // resolve here so the header "select all" (an exclude-type model) counts
-  // every track rather than reading as an empty selection
-  const selectedIds = resolveSelectedIds(
-    selection,
-    tracks.map(t => t.id),
+  const selectedIds = new Set(
+    tracks.filter(t => ticked.has(t.id)).map(t => t.id),
   )
+  const allSelected = tracks.length > 0 && selectedIds.size === tracks.length
+  const sortKey = sortKeys[sortField]
+  const direction = sortAscending ? 1 : -1
+  const sortedTracks = sortKey
+    ? tracks.toSorted((a, b) =>
+        compareValues(sortKey(a), sortKey(b), direction),
+      )
+    : tracks
+  const columns: VirtualTableColumn<TrackRow>[] = [
+    {
+      id: 'name',
+      header: 'Name',
+      fill: true,
+      cell: row => (
+        <EditableTextCell
+          value={row.name}
+          label={`Rename ${coarseStripHTML(row.name)}`}
+          allowBlank
+          onCommit={name => {
+            update({
+              tracks: currentTracks().map(t =>
+                t.id === row.id ? { ...t, name } : t,
+              ),
+            })
+          }}
+        >
+          <SanitizedHTML html={row.name} />
+        </EditableTextCell>
+      ),
+    },
+    {
+      id: 'kind',
+      header: 'Data',
+      cell: row => KIND_LABEL[row.member.kind],
+    },
+  ]
   const pending = partition(
     inputVal.trim()
       ? parseItems(inputVal).map(item => classifyItem(item, guessers))
@@ -245,47 +295,56 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
               update({
                 tracks: currentTracks().filter(t => !selectedIds.has(t.id)),
               })
-              setSelection({ type: 'include', ids: new Set() })
+              setTicked(new Set())
             }}
           >
             Delete selected
           </Button>
-          <div style={{ height: 300, width: '100%', marginTop: 4 }}>
-            <DataGrid
-              rows={tracks}
-              columns={[
-                {
-                  field: 'name',
-                  headerName: 'Name',
-                  flex: 1,
-                  editable: true,
-                  renderCell: ({ row }) => <SanitizedHTML html={row.name} />,
-                },
-                {
-                  field: 'kind',
-                  headerName: 'Data',
-                  width: 110,
-                  valueGetter: (_value, row) => KIND_LABEL[row.member.kind],
-                },
-              ]}
-              rowHeight={25}
-              columnHeaderHeight={33}
-              hideFooter
-              checkboxSelection
-              disableRowSelectionOnClick
-              processRowUpdate={newRow => {
-                update({
-                  tracks: currentTracks().map(t =>
-                    t.id === newRow.id ? { ...t, name: newRow.name } : t,
-                  ),
-                })
-                return newRow
+          <div className={classes.tableBox}>
+            <VirtualTable
+              rows={sortedTracks}
+              columns={columns}
+              widths={() => ({ kind: KIND_WIDTH })}
+              sortField={sortField}
+              sortAscending={sortAscending}
+              onSort={(field, ascending) => {
+                setSortField(field)
+                setSortAscending(ascending)
               }}
-              onProcessRowUpdateError={e => {
-                getNotificationSink(model).notifyError(`${e}`, e)
+              resetKey={JSON.stringify([sortField, sortAscending])}
+              emptyMessage="No tracks"
+              isRowSelected={row => selectedIds.has(row.id)}
+              leading={{
+                width: CHECKBOX_WIDTH,
+                header: (
+                  <TableCheckbox
+                    checked={allSelected}
+                    indeterminate={selectedIds.size > 0 && !allSelected}
+                    label="Select all tracks"
+                    onChange={() => {
+                      setTicked(
+                        new Set(allSelected ? [] : tracks.map(t => t.id)),
+                      )
+                    }}
+                  />
+                ),
+                cell: row => (
+                  <TableCheckbox
+                    checked={selectedIds.has(row.id)}
+                    label={`Select ${coarseStripHTML(row.name)}`}
+                    onChange={() => {
+                      const next = new Set(selectedIds)
+                      if (next.has(row.id)) {
+                        next.delete(row.id)
+                      } else {
+                        next.add(row.id)
+                      }
+                      setTicked(next)
+                    }}
+                  />
+                ),
               }}
-              rowSelectionModel={selection}
-              onRowSelectionModelChange={setSelection}
+              testId="multi-row-track-list"
             />
           </div>
         </div>
