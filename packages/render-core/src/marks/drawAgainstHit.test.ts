@@ -676,19 +676,24 @@ describe('link: every stroked curve answers its own hit, in both orientations', 
 // the last within `gapBp` but the final one, a dot. The painter strokes a run
 // through its instances, so none paints alone, and each wears a color of its
 // own to be told apart in the record.
+const lineColors = Uint32Array.from(
+  { length: 8 },
+  (_, i) => 0xff000000 + i * 0x10101,
+)
+
 const lineInstances: LineChannels = {
   x: Uint32Array.from([5, 20, 30, 60, 75, 10, 40, 70]),
   x2: Uint32Array.from([20, 30, 45, 70, 90, 25, 55, 95]),
   y: Float32Array.from([0.2, 0.8, 0.5, 0.9, 0.1, 0.9, 0.1, 0.6]),
   series: Uint32Array.from([0, 0, 0, 0, 0, 1, 1, 1]),
-  color: Uint32Array.from({ length: 8 }, (_, i) => 0xff000000 + i * 0x10101),
+  color: lineColors,
   gapBp: 32,
   count: 8,
 }
 
-const lineCss = [...lineInstances.color].map(c => abgrToCssRgba(c))
+const lineCss = [...lineColors].map(c => abgrToCssRgba(c))
 const lineInstanceOf = (r: RecordedRect) => {
-  const i = lineCss.indexOf(r.fillStyle)
+  const i = typeof r.fillStyle === 'string' ? lineCss.indexOf(r.fillStyle) : -1
   return i === -1 ? undefined : i
 }
 

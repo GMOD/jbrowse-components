@@ -76,14 +76,14 @@ function hitAt(
 describe('nearestMarkHit', () => {
   test('answers the mark, block, region and instance whose ink is nearest', () => {
     const regions = [{ under: points([100, 500], [5, 5]) }]
-    expect(hitAt(regions, 52, 50)).toEqual({
+    expect(hitAt(regions, 55, 50)).toEqual({
       mark: 0,
       block: left,
       region: regions[0],
       index: 1,
-      x: 50,
+      x: 52,
       y: 50,
-      distSq: 4,
+      distSq: 9,
     })
   })
 
@@ -100,8 +100,12 @@ describe('nearestMarkHit', () => {
   test('on a tie the mark painted on top wins, and a nearer one underneath still does', () => {
     const tied = [{ under: points([500], [5]), over: points([500], [5]) }]
     expect(hitAt(tied, 50, 50)?.mark).toBe(1)
-    const nearerUnder = [
+    const bothUnderCursor = [
       { under: points([500], [5]), over: points([520], [5]) },
+    ]
+    expect(hitAt(bothUnderCursor, 50, 50)?.mark).toBe(1)
+    const nearerUnder = [
+      { under: points([500], [5]), over: points([550], [5]) },
     ]
     expect(hitAt(nearerUnder, 50, 50)?.mark).toBe(0)
   })
@@ -143,7 +147,7 @@ describe('nearestMarkHit', () => {
     ).toBe(0)
   })
 
-  test('the window handed to candidates spans the radius in bp and in value', () => {
+  test('the window handed to candidates spans the radius in bp, and the radius past the glyph in value', () => {
     const windows: HitWindow[] = []
     hitAt([{ under: points([500], [5]) }], 50, 50, (r, mark, reach) => {
       windows.push(reach)
@@ -151,8 +155,8 @@ describe('nearestMarkHit', () => {
     })
     const [reach] = windows
     expect([reach!.bpMin, reach!.bpMax]).toEqual([420, 580])
-    expect(reach!.valueMin).toBeCloseTo(4.2, 9)
-    expect(reach!.valueMax).toBeCloseTo(5.8, 9)
+    expect(reach!.valueMin).toBeCloseTo(4, 9)
+    expect(reach!.valueMax).toBeCloseTo(6, 9)
   })
 })
 
