@@ -3,6 +3,7 @@ import { alpha } from '../palette.ts'
 
 export const ROW_HEIGHT = 25
 export const HEADER_HEIGHT = 35
+export const CELL_PADDING = '0 10px'
 export const DEFAULT_COL_WIDTH = 100
 export const CHECKBOX_WIDTH = 40
 
@@ -46,7 +47,7 @@ export const useVirtualTableStyles = makeStyles()(theme => {
       position: 'relative',
       textAlign: 'left',
       fontWeight: theme.typography.fontWeightMedium,
-      padding: '0 10px',
+      padding: CELL_PADDING,
       borderBottom: border,
       overflow: 'hidden',
       userSelect: 'none',
@@ -76,7 +77,7 @@ export const useVirtualTableStyles = makeStyles()(theme => {
       },
     },
     bodyCell: {
-      padding: '0 10px',
+      padding: CELL_PADDING,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',

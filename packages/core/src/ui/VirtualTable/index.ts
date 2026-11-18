@@ -3,7 +3,13 @@ export { default as CellTextInput } from './CellTextInput.tsx'
 export { default as EditableTextCell } from './EditableTextCell.tsx'
 export { default as TableCheckbox } from './TableCheckbox.tsx'
 export { checkboxLeading } from './checkboxLeading.tsx'
-export { CHECKBOX_WIDTH, DEFAULT_COL_WIDTH } from './tableStyles.ts'
+export {
+  CELL_PADDING,
+  CHECKBOX_WIDTH,
+  DEFAULT_COL_WIDTH,
+  HEADER_HEIGHT,
+  ROW_HEIGHT,
+} from './tableStyles.ts'
 export { useTableSort } from './useTableSort.ts'
 
 export type {
