@@ -520,15 +520,17 @@ export function buildRibbonGeometry({
       targets.push({
         feature: group.feature,
         groupKey: key,
-        label: at
-          ? lines(
-              at.name,
-              anchor && locOn(anchor, at.refName, at.start, at.end),
-            )
-          : lines(
-              group.feature.get('name'),
-              anchor && `not in ${anchor.label}`,
-            ),
+        get label() {
+          return at
+            ? lines(
+                at.name,
+                anchor && locOn(anchor, at.refName, at.start, at.end),
+              )
+            : lines(
+                group.feature.get('name'),
+                anchor && `not in ${anchor.label}`,
+              )
+        },
       })
       groupTarget.set(key, idx)
     }
@@ -630,15 +632,17 @@ export function buildRibbonGeometry({
         targets.push({
           feature: link,
           linkId: link.id(),
-          label: [
-            locOn(
-              upper,
-              link.get('refName'),
-              link.get('start'),
-              link.get('end'),
-            ),
-            locOn(lower, mate.refName, mate.start, mate.end),
-          ].join('\n'),
+          get label() {
+            return [
+              locOn(
+                upper,
+                link.get('refName'),
+                link.get('start'),
+                link.get('end'),
+              ),
+              locOn(lower, mate.refName, mate.start, mate.end),
+            ].join('\n')
+          },
         })
         const tiled =
           fill >>> 24 !== 0 &&
@@ -1101,11 +1105,12 @@ export function buildLaneCells({
     }
     const name = getFeatureName(feature)
     const transcriptName = getFeatureName(gene.drawn)
-    const label = lines(
-      name,
-      transcriptName === name ? undefined : transcriptName,
-      locOn(lane, refName, feature.get('start'), feature.get('end')),
-    )
+    const label = () =>
+      lines(
+        name,
+        transcriptName === name ? undefined : transcriptName,
+        locOn(lane, refName, feature.get('start'), feature.get('end')),
+      )
     const locus = {
       refName,
       start: feature.get('start'),
@@ -1120,7 +1125,9 @@ export function buildLaneCells({
         y2: row.top + row.height,
         feature,
         groupKey: cluster,
-        label,
+        get label() {
+          return label()
+        },
         fill,
         locus,
       })
@@ -1155,10 +1162,12 @@ export function buildLaneCells({
       y2: y + glyphHeight,
       feature,
       groupKey: key,
-      label: lines(
-        name ?? key,
-        locOn(lane, interval.refName, interval.start, interval.end),
-      ),
+      get label() {
+        return lines(
+          name ?? key,
+          locOn(lane, interval.refName, interval.start, interval.end),
+        )
+      },
       fill,
       locus: {
         refName: interval.refName,

@@ -6,7 +6,7 @@ import {
   CIGAR_X,
 } from '@jbrowse/cigar-utils'
 import { categoricalColor } from '@jbrowse/core/ui/colors'
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, assembleLocString } from '@jbrowse/core/util'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import {
   abgrAlpha,
@@ -57,6 +57,14 @@ import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
+
+jest.mock('@jbrowse/core/util', () => {
+  const actual = jest.requireActual('@jbrowse/core/util')
+  return {
+    ...actual,
+    assembleLocString: jest.fn(actual.assembleLocString),
+  }
+})
 
 const WIDTH = 800
 
@@ -1439,6 +1447,34 @@ describe('a lane cell', () => {
     expect(cell.hits.map(h => h.label)).toEqual(['GENE1\ngrape chr1:101..200'])
     expect(glyphHitAt(cell.hits, 100, lane.glyphTop + 1)?.feature).toBe(gene)
     expect(glyphHitAt(cell.hits, 100, lane.glyphTop - 5)).toBeUndefined()
+  })
+
+  test('formats a hover label only when the hover reads it', () => {
+    const s = stack({
+      features: [pairFeature('g1', 100, 200), pairFeature('g2', 500, 600)],
+    })
+    jest.mocked(assembleLocString).mockClear()
+    const { targets } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+    })
+    const { glyphs, boxes } = buildLaneCells({
+      lane: s.lanes[0]!,
+      genes: [new LaneGene(gene)],
+      glyphHeight: s.glyphHeight,
+      width: WIDTH,
+      colors,
+    })
+    expect(assembleLocString).not.toHaveBeenCalled()
+    expect(
+      [targets[0]!, glyphs.hits[0]!, boxes.hits[0]!].map(h => h.label),
+    ).toEqual([
+      'g1\ngrape chr1:101..200',
+      'GENE1\ngrape chr1:101..200',
+      'g2\ngrape chr1:501..600',
+    ])
   })
 
   test('a gene the source names by ID alone is labelled by that ID, and one with neither by its locus', () => {
