@@ -160,4 +160,18 @@ describe('a track with session edits over its base', () => {
     expect(labels(false)).toContain('Reset track settings')
     expect(labels(false)).not.toContain('Delete track')
   })
+
+  test('resets that track', () => {
+    const resetTrackConfiguration = jest.fn()
+    const reset = trackActionItems({
+      session: { ...actionSession(true), resetTrackConfiguration },
+      config: HG38,
+      canEdit: false,
+      makeCopy: () => ({ trackId: 'copy' }),
+    }).find(i => 'label' in i && i.label === 'Reset track settings')
+    if (reset && 'onClick' in reset) {
+      reset.onClick()
+    }
+    expect(resetTrackConfiguration).toHaveBeenCalledWith('my-genes')
+  })
 })
