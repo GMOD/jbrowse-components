@@ -11,6 +11,7 @@ import { getEnv, isUriLocation } from '@jbrowse/core/util'
 import { resolveUriLocation } from '@jbrowse/core/util/io'
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { registerLocalFiles } from '@jbrowse/product-core'
 import { waitFor } from '@testing-library/react'
 
 import { createLinearGenomeView } from './index.ts'
@@ -276,14 +277,23 @@ const peakFiles = {
   'peaks.bed.gz.tbi': new Uint8Array([2]),
 }
 
+const canonicalLocalTrack = {
+  ...featureTrack('local'),
+  adapter: {
+    type: 'BedTabixAdapter',
+    bedGzLocation: { uri: 'peaks.bed.gz' },
+    index: { location: { uri: 'peaks.bed.gz.tbi' } },
+  },
+}
+
 function expectLocalPeaks(session: ViewModel['session']) {
+  const blobs = registerLocalFiles(peakFiles)
   const conf = session.getTrackById('local')
+  expect(shownIds(session.view)).toEqual(['local'])
   expect(isStateTreeNode(conf) ? getSnapshot(conf) : conf).toMatchObject({
     adapter: {
-      bedGzLocation: { locationType: 'BlobLocation', name: 'peaks.bed.gz' },
-      index: {
-        location: { locationType: 'BlobLocation', name: 'peaks.bed.gz.tbi' },
-      },
+      bedGzLocation: blobs['peaks.bed.gz'],
+      index: { location: blobs['peaks.bed.gz.tbi'] },
     },
   })
 }
@@ -314,6 +324,28 @@ test('update() with a shorthand adapter reads its local file, index sibling and 
   expectLocalPeaks(session)
   controller.destroy()
 })
+
+test.each([
+  ['a canonical location', canonicalLocalTrack],
+  ['a { type, uri } shorthand', shorthandLocalTrack],
+])(
+  'an update before the build settles reads its local files, with %s adapter',
+  async (_label, track) => {
+    const controller = createLinearGenomeView(document.createElement('div'), {
+      assembly,
+      tracks: [],
+    })
+    const updated = controller.update({
+      tracks: [track],
+      localFiles: peakFiles,
+    })
+    const { session } = await controller.whenReady()
+    await updated
+
+    expectLocalPeaks(session)
+    controller.destroy()
+  },
+)
 
 class GeneIndexPlugin extends Plugin {
   name = 'GeneIndexPlugin'

@@ -174,7 +174,7 @@ export function createCircularGenomeView(
               : undefined,
           }
         : undefined,
-    build: ({ resolved, tracks, view }) =>
+    build: ({ resolved, tracks, localFiles, view }) =>
       createViewState({
         assembly: resolved.assembly,
         tracks,
@@ -183,7 +183,7 @@ export function createCircularGenomeView(
           opts.aggregateTextSearchAdapters,
           searchIndexKey,
         ),
-        localFiles: opts.localFiles,
+        localFiles,
         internetAccounts: opts.internetAccounts,
         plugins: opts.plugins,
         makeWorkerInstance: opts.makeWorkerInstance,

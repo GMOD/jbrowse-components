@@ -167,7 +167,7 @@ export function createLinearGenomeView(
       stated.location !== undefined && location
         ? { loc: location, showHitTrack: !tracks?.length }
         : undefined,
-    build: ({ resolved, tracks, view }) =>
+    build: ({ resolved, tracks, localFiles, view }) =>
       createViewStateAsync({
         assembly: resolved.assembly,
         tracks,
@@ -176,7 +176,7 @@ export function createLinearGenomeView(
           opts.aggregateTextSearchAdapters,
           searchIndexKey,
         ),
-        localFiles: opts.localFiles,
+        localFiles,
         internetAccounts: opts.internetAccounts,
         plugins: opts.plugins,
         makeWorkerInstance: opts.makeWorkerInstance,

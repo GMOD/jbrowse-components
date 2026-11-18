@@ -42,6 +42,8 @@ export interface EngineSeed<Launch> {
   resolved: ResolvedAssembly
   /** the hub's catalog and the host's full configs, the host's winning an id */
   tracks: TrackConf[]
+  /** the host's files from construction and every update so far, which `tracks` may name */
+  localFiles: LocalFileInput
   /** the view to open, absent when a restored session positions it */
   view: Launch | undefined
 }
@@ -93,7 +95,8 @@ export function createEmbeddedController<
   } = spec
   const hasSession = spec.session !== undefined
   let wanted = spec.state
-  let localFiles = registerLocalFiles(wanted.localFiles ?? {})
+  let files = wanted.localFiles ?? {}
+  let localFiles = registerLocalFiles(files)
   let assemblyName: string | undefined
   let current: VM | undefined
   let stopObserving: (() => void) | undefined
@@ -122,6 +125,7 @@ export function createEmbeddedController<
           .map(track => withAssemblyName(track, assemblyName)),
         'trackId',
       ),
+      localFiles: files,
       view: hasSession ? undefined : launchFor(wanted, wanted),
     })
     if (!hasSession) {
@@ -167,6 +171,7 @@ export function createEmbeddedController<
     },
     async update(stated: State) {
       if (stated.localFiles) {
+        files = { ...stated.localFiles, ...files }
         localFiles = mergeLocalFiles(localFiles, stated.localFiles)
       }
       wanted = restate(wanted, stated)
