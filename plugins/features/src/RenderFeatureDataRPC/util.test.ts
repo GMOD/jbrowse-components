@@ -1,5 +1,3 @@
-import { measureText } from '@jbrowse/core/util'
-
 import { layoutBox } from './glyphs/box.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutMatureProteinRegion } from './glyphs/matureProteinRegion.ts'
@@ -7,7 +5,7 @@ import { layoutProcessedTranscript } from './glyphs/processed.ts'
 import { layoutSegments } from './glyphs/segments.ts'
 import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { mockDisplayConfig } from './testUtils.ts'
-import { isUTR, truncateLabel, truncateToWidth } from './util.ts'
+import { isUTR, truncateLabel } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -258,35 +256,5 @@ describe('truncateLabel', () => {
   it('leaves a label of 50 characters alone even when it is longer in UTF-16 units', () => {
     const label = '😀'.repeat(50)
     expect(truncateLabel(label)).toBe(label)
-  })
-})
-
-describe('truncateToWidth', () => {
-  const FONT = 12
-
-  it('leaves text that already fits alone', () => {
-    expect(truncateToWidth('hello', 1000, FONT)).toBe('hello')
-  })
-
-  it('never returns something wider than its budget', () => {
-    for (const maxWidthPx of [0, 1, 3, 6, 12, 40]) {
-      const result = truncateToWidth('a long description', maxWidthPx, FONT)
-      expect(measureText(result, FONT)).toBeLessThanOrEqual(maxWidthPx)
-    }
-  })
-
-  it('gives up entirely when the ellipsis alone would not fit', () => {
-    expect(truncateToWidth('anything', 1, FONT)).toBe('')
-  })
-
-  it('cuts between characters, not through a surrogate pair', () => {
-    // '𝑥' is two UTF-16 units, so a unit-wise slice can keep half of it — the
-    // orphan renders as the replacement glyph
-    const result = truncateToWidth('𝑥𝑥𝑥𝑥𝑥𝑥𝑥𝑥', 30, FONT)
-    const body = result.slice(0, -1)
-    expect(body.length % 2).toBe(0)
-    expect(body).toBe(
-      Array.from({ length: body.length / 2 }, () => '𝑥').join(''),
-    )
   })
 })

@@ -1,4 +1,4 @@
-import { measureText, measuredFont } from './measureText.ts'
+import { measureText, measuredFont, truncateToWidth } from './measureText.ts'
 
 test('proportional metrics vary per character', () => {
   // Helvetica: `i` is narrow, `m` is wide. This is the whole reason the table
@@ -59,4 +59,34 @@ test('width scales linearly with font size', () => {
   expect(measureText('abc', 26, 'monospace')).toBeCloseTo(
     measureText('abc', 13, 'monospace') * 2,
   )
+})
+
+describe('truncateToWidth', () => {
+  const FONT = 12
+
+  it('leaves text that already fits alone', () => {
+    expect(truncateToWidth('hello', 1000, FONT)).toBe('hello')
+  })
+
+  it('never returns something wider than its budget', () => {
+    for (const maxWidthPx of [0, 1, 3, 6, 12, 40]) {
+      const result = truncateToWidth('a long description', maxWidthPx, FONT)
+      expect(measureText(result, FONT)).toBeLessThanOrEqual(maxWidthPx)
+    }
+  })
+
+  it('gives up entirely when the ellipsis alone would not fit', () => {
+    expect(truncateToWidth('anything', 1, FONT)).toBe('')
+  })
+
+  it('cuts between characters, not through a surrogate pair', () => {
+    // '𝑥' is two UTF-16 units, so a unit-wise slice can keep half of it — the
+    // orphan renders as the replacement glyph
+    const result = truncateToWidth('𝑥𝑥𝑥𝑥𝑥𝑥𝑥𝑥', 30, FONT)
+    const body = result.slice(0, -1)
+    expect(body.length % 2).toBe(0)
+    expect(body).toBe(
+      Array.from({ length: body.length / 2 }, () => '𝑥').join(''),
+    )
+  })
 })

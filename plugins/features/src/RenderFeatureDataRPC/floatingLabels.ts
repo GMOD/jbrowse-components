@@ -1,11 +1,12 @@
 import { measureText } from '@jbrowse/core/util'
+import { truncateToWidth } from '@jbrowse/core/util/measureText'
 
 import {
   LABEL_FONT_SIZE,
   MAX_DESCRIPTION_LABEL_WIDTH_PX,
   MORE_ISOFORMS_FONT_SCALE,
 } from './constants.ts'
-import { hasVisibleText, truncateLabel, truncateToWidth } from './util.ts'
+import { hasVisibleText, truncateLabel } from './util.ts'
 
 import type { SubfeatureLabelPlacement } from './labelUtils.ts'
 import type {
