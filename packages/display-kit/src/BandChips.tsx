@@ -1,6 +1,6 @@
-import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 
+import HideGlyph from './HideGlyph.tsx'
 import { useGroupLabelStyles } from './groupLabelChipStyles.ts'
 import { GROUP_LABEL_INSET_X } from './groupLabelStyle.ts'
 
@@ -54,7 +54,7 @@ export const BandChip = observer(function BandChip({
           onHide()
         }}
       >
-        <CloseIcon className={classes.hideIcon} />
+        <HideGlyph className={classes.hideIcon} />
       </button>
     </div>
   )

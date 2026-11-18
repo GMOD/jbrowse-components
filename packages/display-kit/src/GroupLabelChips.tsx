@@ -1,10 +1,10 @@
 import { Fragment } from 'react'
 
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import CloseIcon from '@mui/icons-material/Close'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { observer } from 'mobx-react'
 
+import HideGlyph from './HideGlyph.tsx'
 import { useGroupLabelStyles } from './groupLabelChipStyles.ts'
 import {
   groupChipTops,
@@ -134,7 +134,7 @@ export const GroupLabelChips = observer(function GroupLabelChips({
                     onClick={onHide}
                     title={`Hide "${label}"`}
                   >
-                    <CloseIcon className={classes.hideIcon} />
+                    <HideGlyph className={classes.hideIcon} />
                   </button>
                 ) : null}
               </div>

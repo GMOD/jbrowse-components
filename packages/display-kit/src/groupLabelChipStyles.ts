@@ -116,7 +116,11 @@ export const useGroupLabelStyles = makeStyles()(theme => {
       fontSize: GROUP_LABEL_ICON_SIZE,
     },
     hideIcon: {
-      fontSize: 12,
+      display: 'inline-block',
+      width: 12,
+      height: 12,
+      flexShrink: 0,
+      fill: 'currentColor',
     },
   }
 })
