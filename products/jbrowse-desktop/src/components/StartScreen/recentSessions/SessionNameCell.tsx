@@ -1,5 +1,6 @@
 import { formatSessionSummary } from '@jbrowse/app-core'
 import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
+import { CellOverhang } from '@jbrowse/core/ui/VirtualTable'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { observer } from 'mobx-react'
@@ -26,14 +27,6 @@ const useStyles = makeStyles()(theme => ({
   },
   summary: {
     color: theme.palette.text.secondary,
-  },
-  // no height of its own, so the buttons overhang a list row rather than
-  // growing it, and the cell clips them
-  icons: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-    height: 0,
   },
 }))
 
@@ -79,7 +72,7 @@ ${summary}`
         </ActionLink>
         {summary ? <span className={classes.summary}> · {summary}</span> : null}
       </div>
-      <div className={classes.icons}>
+      <CellOverhang>
         <StarIcon
           isFavorite={isFavorite}
           onClick={() => {
@@ -102,7 +95,7 @@ ${summary}`
         >
           <MoreHoriz />
         </CascadingMenuButton>
-      </div>
+      </CellOverhang>
     </div>
   )
 })

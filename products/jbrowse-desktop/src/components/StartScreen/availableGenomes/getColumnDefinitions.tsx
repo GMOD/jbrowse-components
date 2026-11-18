@@ -1,5 +1,5 @@
+import { CellOverhang } from '@jbrowse/core/ui/VirtualTable'
 import { cellText } from '@jbrowse/core/util/tableText'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Check from '@mui/icons-material/Check'
 import Close from '@mui/icons-material/Close'
 import { Tooltip } from '@mui/material'
@@ -100,31 +100,6 @@ function textColumn(
   }
 }
 
-const useStyles = makeStyles()({
-  // no height of its own, so the button overhangs a row rather than growing
-  // it, and the cell clips it
-  star: {
-    display: 'flex',
-    alignItems: 'center',
-    height: 0,
-  },
-})
-
-const FavoriteCell = observer(function FavoriteCell({
-  isFavorite,
-  onClick,
-}: {
-  isFavorite: boolean
-  onClick: () => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.star}>
-      <StarIcon isFavorite={isFavorite} onClick={onClick} />
-    </div>
-  )
-})
-
 // genomes.jbrowse.org keys UCSC main genomes by db name and everything else by
 // assembly accession
 function websiteUrl(accession: string, isUcsc: boolean) {
@@ -176,12 +151,14 @@ export function getColumnDefinitions({
     header: 'Favorite',
     sortValue: row => (favs.has(row.accession) ? 0 : 1),
     cell: row => (
-      <FavoriteCell
-        isFavorite={favs.has(row.accession)}
-        onClick={() => {
-          toggleFavorite(row)
-        }}
-      />
+      <CellOverhang>
+        <StarIcon
+          isFavorite={favs.has(row.accession)}
+          onClick={() => {
+            toggleFavorite(row)
+          }}
+        />
+      </CellOverhang>
     ),
   }
 

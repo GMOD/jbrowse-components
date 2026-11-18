@@ -1,4 +1,5 @@
 import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
+import { CellOverhang } from '@jbrowse/core/ui/VirtualTable'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { observer } from 'mobx-react'
@@ -16,14 +17,6 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-  },
-  // no height of its own, so the buttons overhang a row rather than growing
-  // it, and the cell clips them
-  icons: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-    height: 0,
   },
 })
 
@@ -91,7 +84,7 @@ const GenomeNameCell = observer(function GenomeNameCell({
           </>
         ) : null}
       </span>
-      <span className={classes.icons}>
+      <CellOverhang>
         {children}
         <CascadingMenuButton
           menuItems={[
@@ -129,7 +122,7 @@ const GenomeNameCell = observer(function GenomeNameCell({
         >
           <MoreHoriz />
         </CascadingMenuButton>
-      </span>
+      </CellOverhang>
     </div>
   )
 })

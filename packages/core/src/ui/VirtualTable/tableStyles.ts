@@ -87,6 +87,12 @@ export const useVirtualTableStyles = makeStyles()(theme => {
     alignRight: {
       textAlign: 'right',
     },
+    overhang: {
+      display: 'flex',
+      alignItems: 'center',
+      flexShrink: 0,
+      height: 0,
+    },
     headerContent: {
       display: 'flex',
       alignItems: 'center',
