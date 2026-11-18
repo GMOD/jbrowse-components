@@ -47,7 +47,7 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
               key={col.id}
               scope="col"
               className={classes.headerCell}
-              title={col.header}
+              title={col.headerTitle ?? col.header}
               aria-sort={
                 sorted
                   ? sortAscending

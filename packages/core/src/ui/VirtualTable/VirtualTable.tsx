@@ -17,6 +17,8 @@ import { useVirtualRows } from './useVirtualRows.ts'
 export interface VirtualTableColumn<R> {
   id: string
   header: string
+  /** the header's hover text, the header itself when unset */
+  headerTitle?: string
   cell: (row: R) => React.ReactNode
   title?: (row: R) => string
   align?: 'right'

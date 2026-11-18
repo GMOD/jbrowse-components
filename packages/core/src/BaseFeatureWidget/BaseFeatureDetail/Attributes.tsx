@@ -18,10 +18,10 @@ import { accessNested } from './util.ts'
 import type { Descriptors, FeatureFormatter, FieldActions } from '../types.tsx'
 import type { LocateSpan } from './TranslExceptList.tsx'
 
-// Lazy: reaches @mui/x-data-grid, and this module sits on the eager startup
-// path via product-core's ui barrel (AboutDialog -> AboutDialogContents).
-// Only a homogeneous object array actually renders a grid.
-const DataGridDetails = lazy(() => import('./DataGridDetails.tsx'))
+// Lazy: this module sits on the eager startup path via product-core's ui
+// barrel (AboutDialog -> AboutDialogContents), and only a homogeneous object
+// array draws a table, with its search field and CSV export.
+const AttributeTable = lazy(() => import('./AttributeTable.tsx'))
 
 const MAX_FIELD_NAME_WIDTH = 170
 
@@ -31,8 +31,8 @@ const FIELD_NAME_FONT_SIZE = 12
 const FIELD_NAME_PADDING = 10
 
 // Max extra unique columns vs. first row before falling back to per-row field
-// sections instead of the data grid (avoids a mostly-empty, hard-to-read grid)
-const DATAGRID_SCHEMA_TOLERANCE = 5
+// sections instead of a table (avoids a mostly-empty, hard-to-read table)
+const TABLE_SCHEMA_TOLERANCE = 5
 
 function isHomogeneousObjectArray(
   arr: unknown[],
@@ -42,7 +42,7 @@ function isHomogeneousObjectArray(
   }
   const firstKeyCount = Object.keys(arr[0]!).length
   const unionKeyCount = new Set(arr.flatMap(Object.keys)).size
-  return unionKeyCount < firstKeyCount + DATAGRID_SCHEMA_TOLERANCE
+  return unionKeyCount < firstKeyCount + TABLE_SCHEMA_TOLERANCE
 }
 
 // The one place a value is sorted into the shape that decides how it is drawn,
@@ -55,7 +55,7 @@ function classify(key: string, value: unknown) {
     ? ({ kind: 'translExcept', value: exceptions } as const)
     : Array.isArray(value)
       ? isHomogeneousObjectArray(value)
-        ? ({ kind: 'grid', value } as const)
+        ? ({ kind: 'table', value } as const)
         : isObjectArray(value)
           ? ({ kind: 'objectArray', value } as const)
           : ({ kind: 'array', value } as const)
@@ -93,7 +93,7 @@ function isLocation(value: unknown) {
 }
 
 // hideUris prunes the data rather than each render branch checking: an array
-// of objects reaches the data grid and ArrayValue, which print locations too
+// of objects reaches the table and ArrayValue, which print locations too
 export function withoutLocations(
   attributes: Record<string, unknown>,
 ): Record<string, unknown> {
@@ -118,8 +118,8 @@ function valueWithoutLocations(value: unknown): unknown {
  *
  * Follows the same `classify` branches the render below does: a flat array is one
  * labelled row, an array of objects recurses into each element under its own
- * prefix with no label at this level, a data grid heads its own grid rather
- * than sharing a row (its FieldName is a heading above the grid, not a cell
+ * prefix with no label at this level, a table heads its own table rather
+ * than sharing a row (its FieldName is a heading above the table, not a cell
  * beside a value), a `UriLocation` is one field, any other object recurses.
  * `Attributes.test.tsx` fails if the two stop agreeing.
  */
@@ -141,7 +141,7 @@ function measureLabels(
     }
     const classified = classify(key, value)
     switch (classified.kind) {
-      case 'grid':
+      case 'table':
         break
       case 'objectArray':
         classified.value.forEach((element, i, all) => {
@@ -194,7 +194,7 @@ function hasRows(classified: ReturnType<typeof classify>, omit: string[]) {
       return classified.value.some(entry => hasAttributeRows(entry, omit))
     case 'object':
       return hasAttributeRows(classified.value, omit)
-    case 'grid':
+    case 'table':
     case 'translExcept':
     case 'array':
     case 'uri':
@@ -287,10 +287,10 @@ const Attributes = observer(function Attributes(props: {
                 width={width}
               />
             )
-          case 'grid':
+          case 'table':
             return (
               <Suspense key={key} fallback={null}>
-                <DataGridDetails
+                <AttributeTable
                   name={key}
                   prefix={prefix}
                   value={classified.value}

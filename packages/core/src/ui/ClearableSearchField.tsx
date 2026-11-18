@@ -1,6 +1,7 @@
 import { useState, useTransition } from 'react'
 
 import ClearIcon from '@mui/icons-material/Clear'
+import SearchIcon from '@mui/icons-material/Search'
 import {
   IconButton,
   InputAdornment,
@@ -23,6 +24,12 @@ interface SearchFieldProps {
   /** a few words drawn before the clear button, such as a match count */
   status?: string
   inputRef?: Ref<HTMLInputElement>
+  /**
+   * no box, no floating label and no clear button until there is text to
+   * clear, for a search that sits beside what it searches; `label` becomes
+   * the placeholder
+   */
+  quiet?: boolean
 }
 
 /**
@@ -39,45 +46,61 @@ export const SearchField = observer(function SearchField({
   size,
   status,
   inputRef,
+  quiet,
 }: SearchFieldProps) {
   return (
     <TextField
       className={className}
       fullWidth={fullWidth}
-      variant={variant}
+      variant={quiet ? 'standard' : variant}
       size={size}
       inputRef={inputRef}
-      label={label}
+      label={quiet ? undefined : label}
+      placeholder={quiet ? label : undefined}
       value={value}
       onChange={event => {
         onChange(event.target.value)
       }}
       slotProps={{
-        htmlInput: { spellCheck: false },
+        htmlInput: {
+          spellCheck: false,
+          'aria-label': quiet ? label : undefined,
+        },
         input: {
-          endAdornment: (
-            <InputAdornment position="end">
-              {status ? (
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  noWrap
-                  role="status"
+          ...(quiet
+            ? {
+                disableUnderline: true,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" color="action" />
+                  </InputAdornment>
+                ),
+              }
+            : {}),
+          endAdornment:
+            quiet && !value ? undefined : (
+              <InputAdornment position="end">
+                {status ? (
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    noWrap
+                    role="status"
+                  >
+                    {status}
+                  </Typography>
+                ) : null}
+                <IconButton
+                  size={size}
+                  aria-label={`Clear ${label.toLowerCase()}`}
+                  onClick={() => {
+                    onChange('')
+                  }}
                 >
-                  {status}
-                </Typography>
-              ) : null}
-              <IconButton
-                size={size}
-                aria-label={`Clear ${label.toLowerCase()}`}
-                onClick={() => {
-                  onChange('')
-                }}
-              >
-                <ClearIcon fontSize={size} />
-              </IconButton>
-            </InputAdornment>
-          ),
+                  <ClearIcon fontSize={size} />
+                </IconButton>
+              </InputAdornment>
+            ),
         },
       }}
     />

@@ -51,7 +51,7 @@ describe('Attributes', () => {
   // an array of objects renders each element as its own Attributes block, whose
   // labels sit in the card's column like a nested object's
   test("an object array's labels share the card's column", () => {
-    // unlike enough in their fields to stay out of a data grid
+    // unlike enough in their fields to stay out of a table
     const second = { aMuchLongerFieldName: 'z', c: 1, d: 2, e: 3, f: 4 }
     const { container } = renderWithTheme(
       <Attributes attributes={{ a: 'x', list: [{ b: 'y' }, second] }} />,
@@ -178,8 +178,8 @@ describe('Attributes', () => {
     expect(queryByText(/secret/)).toBeNull()
   })
 
-  // same leak through the data grid, which resolves a location to its URL
-  test('hides locations inside a data grid', async () => {
+  // same leak through the attribute table, which resolves a location to its URL
+  test('hides locations inside an attribute table', async () => {
     const { findByText, queryByText } = renderWithTheme(
       <Attributes
         hideUris
@@ -201,13 +201,10 @@ describe('Attributes', () => {
     expect(queryByText(/secret/)).toBeNull()
   }, 20000)
 
-  // DataGridDetails is lazy() behind a null Suspense fallback, so nothing at all
-  // renders — not even the field name — until the chunk resolves. That chunk
-  // pulls @mui/x-data-grid and core's `ui` barrel, which is slower than
-  // findByText's 1s default under a loaded `jest --ci` run: this test was red on
-  // main, and passes at 4s in isolation with no other change. The generous
-  // timeout is the fix; shortening it makes the suite flaky rather than fast.
-  test('homogeneous object array renders via the data grid', async () => {
+  // AttributeTable is lazy() behind a null Suspense fallback, so nothing at all
+  // renders — not even the field name — until the chunk resolves, which can
+  // take longer than findByText's 1s default under a loaded `jest --ci` run
+  test('homogeneous object array renders as a table', async () => {
     const { findByText } = renderWithTheme(
       <Attributes
         attributes={{
