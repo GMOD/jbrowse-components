@@ -6,6 +6,7 @@ import {
   RootAppMenuMixin,
   aboutMenuItem,
   assemblyManagerMenuItem,
+  createAutosaveReporter,
   helpMenuItem,
   onPluginsUpdated,
   pluginStoreMenuItem,
@@ -20,6 +21,7 @@ import {
   addDisposer,
   applySnapshot,
   getSnapshot,
+  isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
@@ -299,6 +301,7 @@ export default function rootModelFactory({
               self.addDetachDisposer(disposer)
               addDisposer(self, disposer)
             }
+            const autosaveReporter = createAutosaveReporter()
             registerTeardown(
               autorun(
                 async () => {
@@ -313,8 +316,14 @@ export default function rootModelFactory({
                     const snap = getSaveSession(self)
                     try {
                       await self.saveSession(snap)
+                      if (isAlive(session)) {
+                        autosaveReporter.saved(session)
+                      }
                     } catch (e) {
-                      reportError(session, e)
+                      console.error(e)
+                      if (isAlive(session)) {
+                        autosaveReporter.failed(session, e)
+                      }
                     }
                   }
                 },

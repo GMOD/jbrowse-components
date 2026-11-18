@@ -112,6 +112,31 @@ test('a save that keeps failing does not feed itself', async () => {
   expect(saveCount()).toBe(1)
 })
 
+test('an autosave that keeps failing reports once, and once more when it works again', async () => {
+  mockInvokeIpc.mockRejectedValue(new Error('EROFS: read-only file system'))
+  const root = createRootModel()
+  const session = root.session!
+  const messages = () =>
+    session.snackbarMessages.map((m: { message: string }) => m.message)
+
+  await jest.advanceTimersByTimeAsync(AUTOSAVE_DELAY_MS)
+  session.setName('panned')
+  await jest.advanceTimersByTimeAsync(AUTOSAVE_DELAY_MS)
+  expect(saveCount()).toBe(2)
+  expect(messages()).toEqual(['Error: EROFS: read-only file system'])
+
+  mockInvokeIpc.mockResolvedValue(undefined)
+  session.setName('zoomed')
+  await jest.advanceTimersByTimeAsync(AUTOSAVE_DELAY_MS)
+  session.setName('panned again')
+  await jest.advanceTimersByTimeAsync(AUTOSAVE_DELAY_MS)
+  expect(saveCount()).toBe(4)
+  expect(messages()).toEqual([
+    'Error: EROFS: read-only file system',
+    'Auto-saving restored',
+  ])
+})
+
 test('flushSession writes without waiting out the debounce', async () => {
   const root = createRootModel()
 

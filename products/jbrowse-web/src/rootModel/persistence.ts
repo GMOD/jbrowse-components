@@ -1,4 +1,8 @@
-import { byLastUsedDesc, sessionLastUsed } from '@jbrowse/app-core'
+import {
+  byLastUsedDesc,
+  createAutosaveReporter,
+  sessionLastUsed,
+} from '@jbrowse/app-core'
 import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -189,14 +193,7 @@ function setupMetadataRefresh(self: WebRootModel) {
 }
 
 function setupIndexedDBAutosave(self: WebRootModel) {
-  // notifyError always pushes a fresh snackbar — its "report" action defeats
-  // the duplicate-message check in pushSnackbarMessage — and this autorun
-  // re-runs every 400ms for as long as the session keeps changing. So a
-  // failure that persists (quota exceeded, a newer JBrowse tab having upgraded
-  // the database) would stack an unbounded pile of identical error toasts.
-  // Report the first, then stay quiet until it works again, exactly as
-  // setupSessionStorageAutosave does below.
-  let savingFailed = false
+  const autosaveReporter = createAutosaveReporter()
   // registerTeardown rather than addDisposer: this writes to IndexedDB, so it
   // has to stop when the React host detaches, a task ahead of the destroy an
   // addDisposer would wait for (rootModel's `detach`).
@@ -219,16 +216,14 @@ function setupIndexedDBAutosave(self: WebRootModel) {
               // in rather than re-reading every session's metadata on each
               // autosave tick (see upsertSessionMetadata)
               self.upsertSessionMetadata(meta)
-              if (savingFailed && isAlive(session)) {
-                savingFailed = false
-                session.notify('Session auto-saving restored', 'info')
+              if (isAlive(session)) {
+                autosaveReporter.saved(session)
               }
             }
           } catch (e) {
             console.error(e)
-            if (!savingFailed && isAlive(session)) {
-              savingFailed = true
-              session.notifyError(`${e}`, e)
+            if (isAlive(session)) {
+              autosaveReporter.failed(session, e)
             }
           }
         }
@@ -344,7 +339,7 @@ function setupUnloadFlush(self: WebRootModel) {
 // the plugin the user just installed never loaded and nothing said why.
 export function setupSessionStorageAutosave(self: WebRootModel) {
   setupUnloadFlush(self)
-  let savingFailed = false
+  const autosaveReporter = createAutosaveReporter()
   // pluginsUpdated latches true and this rootModel lives on until the
   // replacement one mounts, so without this any session edit landing in that
   // window would request a second reload — off a loader that is already being
@@ -363,24 +358,17 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
           const sessionSnap = getSnapshot(s)
           try {
             writeSessionSnapshot(sessionSnap)
-            if (savingFailed) {
-              savingFailed = false
-              s.notify('Auto-saving restored', 'info')
-            }
+            autosaveReporter.saved(s)
           } catch (e) {
             console.error(e)
             const msg = `${e}`
-            if (!savingFailed) {
-              savingFailed = true
-              if (msg.includes('quota')) {
-                s.notifyError(
-                  'Unable to auto-save session, exceeded sessionStorage quota. This may be because a very large feature was stored in session',
-                  e,
-                )
-              } else {
-                s.notifyError(msg, e)
-              }
-            }
+            autosaveReporter.failed(
+              s,
+              e,
+              msg.includes('quota')
+                ? 'Unable to auto-save session, exceeded sessionStorage quota. This may be because a very large feature was stored in session'
+                : msg,
+            )
           }
           if (self.pluginsUpdated && !reloadRequested) {
             reloadRequested = true

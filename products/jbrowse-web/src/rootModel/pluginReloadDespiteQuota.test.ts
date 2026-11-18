@@ -65,3 +65,24 @@ test('a plugin install still reloads when sessionStorage is full', async () => {
   expect(reloads).toHaveLength(1)
   expect(reloads[0]).toEqual(expect.objectContaining({ name: 'testSession' }))
 })
+
+test('a sessionStorage quota that stays exceeded is reported once, by name', async () => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+  jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new Error('exceeded the quota')
+  })
+  const session = makeRoot().session!
+
+  await new Promise(r => {
+    setTimeout(r, 800)
+  })
+  session.setName('panned')
+  await new Promise(r => {
+    setTimeout(r, 800)
+  })
+
+  expect(session.snackbarMessages.map(m => m.message)).toEqual([
+    'Unable to auto-save session, exceeded sessionStorage quota. This may be because a very large feature was stored in session',
+  ])
+})

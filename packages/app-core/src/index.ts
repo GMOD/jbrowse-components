@@ -68,6 +68,7 @@ export {
   useQueryParam,
 } from './queryParams.ts'
 export { processMutableMenuActions, resolveMenus } from './menus.ts'
+export { createAutosaveReporter } from './autosaveReporter.ts'
 export { formatSessionSummary, summarizeSession } from './sessionSummary.ts'
 export type { SessionSummary } from './sessionSummary.ts'
 export type { Menu, MenuAction } from './menus.ts'
