@@ -304,12 +304,20 @@ describe('a malformed link', () => {
     expect(source?.type === 'error' ? `${source.error}` : undefined).toBe(
       expected,
     )
-    expect(await bootSnackbar()).toMatchObject({
+    const session = await bootSnackbar()
+    expect(session).toMatchObject({
       snackbarMessages: [
         expect.objectContaining({
           message: expect.stringContaining(
             expected.replace(/: SyntaxError.*/, ''),
           ),
+        }),
+      ],
+    })
+    expect(session).toMatchObject({
+      snackbarMessages: [
+        expect.objectContaining({
+          message: expect.not.stringContaining('..'),
         }),
       ],
     })

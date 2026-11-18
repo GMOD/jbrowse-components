@@ -4,7 +4,7 @@ import { parseSessionFile } from './parseSessionFile.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-interface SessionWithOpenSessionCopy {
+export interface SessionWithOpenSessionCopy {
   openSessionCopy: (snapshot: Record<string, unknown>) => Promise<void>
 }
 

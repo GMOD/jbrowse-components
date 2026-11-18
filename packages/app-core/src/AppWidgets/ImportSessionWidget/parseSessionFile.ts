@@ -12,7 +12,7 @@ export function parseSessionFile(text: string) {
   if (!isSessionSnapshot(session)) {
     throw new Error(
       isObject(session) && !Array.isArray(session)
-        ? 'The session in this file has no "name", so it is not a JBrowse session export.'
+        ? 'The session in this file needs a "name" written as text.'
         : 'No session found in file. Expected a JBrowse session export (a JSON file with a top-level "session" key).',
     )
   }

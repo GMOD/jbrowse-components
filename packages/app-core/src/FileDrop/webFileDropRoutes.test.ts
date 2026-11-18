@@ -43,7 +43,7 @@ test('a dropped session export with no name is refused and leaves the session al
   )
   await expect(
     webFileDropRoutes(session).openSessionFile(file),
-  ).rejects.toThrow(/no "name"/)
+  ).rejects.toThrow(/needs a "name"/)
   expect(rootModel?.session).toBe(session)
 })
 

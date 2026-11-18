@@ -1,12 +1,12 @@
 import { importSessionFile } from '../AppWidgets/ImportSessionWidget/importSessionFile.ts'
 import { AssemblyManager } from '../AssemblyManager/index.ts'
 
+import type { SessionWithOpenSessionCopy } from '../AppWidgets/ImportSessionWidget/importSessionFile.ts'
 import type { AssemblyManagerSession } from '../AssemblyManager/types.ts'
 import type { FileDropRoutes } from './fileDrop.ts'
 
-interface WebDropSession extends AssemblyManagerSession {
-  openSessionCopy: (snapshot: Record<string, unknown>) => Promise<void>
-}
+interface WebDropSession
+  extends AssemblyManagerSession, SessionWithOpenSessionCopy {}
 
 /**
  * A browser has no path to reopen a file by, so a dropped session export is

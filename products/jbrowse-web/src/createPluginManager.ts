@@ -55,6 +55,7 @@ function formatSessionError(e: unknown) {
   const m = `${e}`
     .replace('[@jbrowse/mobx-state-tree] ', '')
     .replace(/\(.+/, '')
+    .replace(/[\s.]+$/, '')
   const r = m.length > 1000 ? `${m.slice(0, 1000)}...see more in console` : m
   return r.startsWith('Error:') ? r : `Error: ${r}`
 }
