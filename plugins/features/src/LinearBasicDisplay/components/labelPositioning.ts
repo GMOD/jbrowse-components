@@ -213,10 +213,11 @@ export function computeLabelPosition(
   padding: number,
   bounds: FeatureBoundsPx,
   fontSize: number,
+  trailingPx = 0,
 ) {
   return {
     labelX: computeLabelLeftPx(
-      renderedTextWidth(label.textWidth, fontSize),
+      renderedTextWidth(label.textWidth, fontSize) + trailingPx,
       bounds,
     ),
     labelY: bounds.featureBottomPx + padding,
@@ -331,10 +332,17 @@ export function placeFeatureLabels(
     kind: PlainPlacedLabel['kind'],
     size = fontSize,
     offsetY = 0,
+    trailingPx = 0,
   ) => {
     const placed = {
       label,
-      ...computeLabelPosition(label, offsetY + padding, bounds, size),
+      ...computeLabelPosition(
+        label,
+        offsetY + padding,
+        bounds,
+        size,
+        trailingPx,
+      ),
       fontSize: size,
       kind,
       color: colors && plainLabelColor(label, kind, colors),
@@ -343,17 +351,25 @@ export function placeFeatureLabels(
     return placed
   }
   if (nameLabel) {
-    const name = add(nameLabel, LABEL_TOP_GAP_PX, 'name')
+    // The badge reads as the tail of the name, so the two clamp as one row,
+    // the width the packer reserved, and the badge sits off the name's x.
+    const nameWidth = renderedTextWidth(nameLabel.textWidth, fontSize)
+    const badgeWidth = moreIsoformsLabel
+      ? LABEL_PADDING_PX +
+        renderedTextWidth(moreIsoformsLabel.textWidth, fontSize)
+      : 0
+    const name = add(
+      nameLabel,
+      LABEL_TOP_GAP_PX,
+      'name',
+      fontSize,
+      0,
+      badgeWidth,
+    )
     if (moreIsoformsLabel) {
-      // Placed off the name's resolved x rather than through
-      // `computeLabelPosition`, which clamps each label independently: the badge
-      // reads as the tail of the name and has to travel with it.
       out.push({
         label: moreIsoformsLabel,
-        labelX:
-          name.labelX +
-          renderedTextWidth(nameLabel.textWidth, fontSize) +
-          LABEL_PADDING_PX,
+        labelX: name.labelX + nameWidth + LABEL_PADDING_PX,
         labelY: name.labelY,
         kind: 'more',
         color: colors?.more,

@@ -1,7 +1,10 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
 
-import { LABEL_EDGE_GUTTER_PX } from '../../RenderFeatureDataRPC/constants.ts'
+import {
+  LABEL_EDGE_GUTTER_PX,
+  LABEL_PADDING_PX,
+} from '../../RenderFeatureDataRPC/constants.ts'
 import { labelColors } from './labelColors.ts'
 import {
   LABEL_CULL_BUCKET_PX,
@@ -94,6 +97,36 @@ function collect(
   )
   return out
 }
+
+// The packer reserves the name row, name and badge together, from the
+// feature's left edge; a name that slid right on its own width would push the
+// badge past that room and onto the next feature's label.
+test('keeps the isoform badge inside the row the packer reserved when the feature runs off the left edge', () => {
+  const nameWidth = 95
+  const badgeWidth = 38
+  const data = makeData({
+    gene: makeLabelData('gene', {
+      minX: 100,
+      maxX: 220,
+      nameLabel: makeLabel({ textWidth: nameWidth }),
+      moreIsoformsLabel: {
+        ...makeLabel({ text: '+3 more', textWidth: badgeWidth }),
+        hidden: 3,
+        expanded: false,
+      },
+    }),
+  })
+  const [emitted] = collect(
+    data,
+    { start: 150, end: 1150, screenStartPx: 0, screenEndPx: 1000 },
+    { showLabels: true, showDescriptions: false },
+  )
+  const badge = emitted!.labels.find(l => l.kind === 'more')!
+  const featureLeftPx = -50
+  expect(badge.labelX + badgeWidth).toBeLessThanOrEqual(
+    featureLeftPx + nameWidth + LABEL_PADDING_PX + badgeWidth,
+  )
+})
 
 // The slow path and the fast path both emit nothing, so a container that throws
 // when iterated is the only way to tell them apart — and the walk itself is what
