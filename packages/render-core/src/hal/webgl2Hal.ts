@@ -161,6 +161,22 @@ interface GlLayer {
   height: number
 }
 
+interface Clip extends PxRect {
+  on: boolean
+}
+
+function setClip(clip: Clip, x: number, y: number, w: number, h: number) {
+  clip.on = true
+  clip.x = x
+  clip.y = y
+  clip.w = w
+  clip.h = h
+}
+
+function onOrNull(clip: Clip) {
+  return clip.on ? clip : null
+}
+
 // Live-context counts for the debug log: a leaked context evicts the oldest
 // once the browser's cap is reached.
 let totalCreated = 0
@@ -201,10 +217,10 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private layers = new Map<string, GlLayer>()
   private composited = new Map<string, PxRect[]>()
 
-  // The caller's clip in device px, top-left origin, null for the whole
-  // buffer: a composite draws under its own and puts this back.
-  private scissorRect: PxRect | null = null
-  private viewportRect: PxRect | null = null
+  // The caller's clip in device px, top-left origin: a composite draws under
+  // its own and puts this back.
+  private scissor: Clip = { on: false, x: 0, y: 0, w: 0, h: 0 }
+  private viewport: Clip = { on: false, x: 0, y: 0, w: 0, h: 0 }
 
   private contextLostListener: ((e: Event) => void) | null = null
   private contextRestoredListener: (() => void) | null = null
@@ -570,8 +586,8 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
     const gl = this.gl
     gl.disable(gl.SCISSOR_TEST)
-    this.scissorRect = null
-    this.viewportRect = null
+    this.scissor.on = false
+    this.viewport.on = false
     this.composited.clear()
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
@@ -580,22 +596,22 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   }
 
   setScissor(x: number, y: number, w: number, h: number) {
-    this.scissorRect = { x, y, w, h }
-    this.applyScissor(this.scissorRect)
+    setClip(this.scissor, x, y, w, h)
+    this.applyScissor(this.scissor)
   }
 
   clearScissor() {
-    this.scissorRect = null
+    this.scissor.on = false
     this.applyScissor(null)
   }
 
   setViewport(x: number, y: number, w: number, h: number) {
-    this.viewportRect = { x, y, w, h }
-    this.applyViewport(this.viewportRect)
+    setClip(this.viewport, x, y, w, h)
+    this.applyViewport(this.viewport)
   }
 
   clearViewport() {
-    this.viewportRect = null
+    this.viewport.on = false
     this.applyViewport(null)
   }
 
@@ -695,7 +711,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.disable(gl.SCISSOR_TEST)
     gl.clearColor(0, 0, 0, 0)
     gl.clear(gl.COLOR_BUFFER_BIT)
-    this.applyScissor(this.scissorRect)
+    this.applyScissor(onOrNull(this.scissor))
     return done
   }
 
@@ -706,7 +722,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     const gl = this.gl
     const overId = layerOverId(passId)
     const over = uncomposited(
-      this.scissorRect ?? { x: 0, y: 0, w: layer.width, h: layer.height },
+      onOrNull(this.scissor) ?? { x: 0, y: 0, w: layer.width, h: layer.height },
       done,
     )
     const overPass = this.getPass(overId)
@@ -725,8 +741,8 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
         gl.activeTexture(gl.TEXTURE0 + tb.glTextureUnit)
         gl.bindTexture(gl.TEXTURE_2D, null)
       }
-      this.applyScissor(this.scissorRect)
-      this.applyViewport(this.viewportRect)
+      this.applyScissor(onOrNull(this.scissor))
+      this.applyViewport(onOrNull(this.viewport))
     }
   }
 
