@@ -73,6 +73,7 @@ function wiggleFarUniforms(renderingType: number, dpr: number, lineWidth = 1) {
     ...wiggleUniforms(renderingType, dpr, { numRows: ROWS, lineWidth }),
     bpRangeX: [VIEW_HI, VIEW_LO, BP_LEN] as [number, number, number],
     canvasHeight: H,
+    rowHeight: ROW_PX,
     viewportWidth: W,
   }
 }
