@@ -130,13 +130,18 @@ const server = createServer((req, res) => {
     buildDir,
     url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname),
   )
+  const range = /^bytes=(\d+)-(\d*)$/.exec(req.headers.range ?? '')
   if (existsSync(file) && statSync(file).isFile()) {
-    res.writeHead(200, {
+    const size = statSync(file).size
+    const start = range ? Number(range[1]) : 0
+    const end = range?.[2] ? Math.min(Number(range[2]), size - 1) : size - 1
+    res.writeHead(range ? 206 : 200, {
       'content-type':
         mimeTypes[path.extname(file)] ?? 'application/octet-stream',
-      'content-length': statSync(file).size,
+      'content-length': end - start + 1,
+      ...(range ? { 'content-range': `bytes ${start}-${end}/${size}` } : {}),
     })
-    createReadStream(file).pipe(res)
+    createReadStream(file, range ? { start, end } : {}).pipe(res)
   } else {
     res.writeHead(404)
     res.end()

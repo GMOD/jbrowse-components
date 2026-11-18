@@ -186,8 +186,7 @@ jbrowse-web fetches that chunk before app-ready whenever the config names a
 plugin. Declined: deleting the entry (ABI-breaking); per-export shaking, which
 splits Material UI into many small chunks that are all still fetched; raising
 `splitChunks.minSize`, which turns the fragments into duplicates.
-[split-chunks-and-hashless-chunk-names-for-jbrowse-web](../ideas/ready/split-chunks-and-hashless-chunk-names-for-jbrowse-web.md)
-records `chunks: 'all'` failing the same way.
+`splitChunks: { chunks: 'all' }` fails the same way.
 The remaining lever is the component half of the barrel behind `lazy()` with
 **one shared `webpackChunkName`**, an ABI change (every served component becomes
 Suspense-wrapped, the hazard `MuiReExports.ts`'s header describes).
@@ -289,8 +288,19 @@ worker, on a build 288 commits behind main). Declined, each measured:
   recover.
 - **Deferring `mapStackTrace`** (8 KB, plugin pages only) is safe and small.
 
+**`splitChunks: { chunks: 'all' }` is on for jbrowse-web** (web only; desktop
+shares the base config). Measured 2026-11-18 it took 41 KB gzipped off the empty
+volvox page (1128 to 1087 KB) and 42 KB off four tracks (1539 to 1497 KB),
+because the worker had its own copy of the vendor modules. It adds four chunks
+and no measurable time: over HTTP/2 with gzip and immutable caching, with 0 or
+150 ms per response or Chrome on four cores shared with eight busy loops, the
+medians moved within run-to-run spread (two 150 ms runs of 7 and 15 loads each
+put it 118 ms behind and 143 ms ahead on four tracks).
+`measure-web-bundle --time` cannot judge such a change: its server is HTTP/1.1
+and uncompressed, and its CDP throttle may not reach the worker.
+
 What did measure is filed under `ideas/`:
-[split-chunks-and-hashless-chunk-names-for-jbrowse-web](../ideas/ready/split-chunks-and-hashless-chunk-names-for-jbrowse-web.md),
+[hashless-chunk-names-for-jbrowse-web](../ideas/ready/hashless-chunk-names-for-jbrowse-web.md),
 [lazy-rpc-method-bodies](../ideas/ready/lazy-rpc-method-bodies.md),
 [write-uniforms-as-loops-above-sixteen-elements](../ideas/ready/write-uniforms-as-loops-above-sixteen-elements.md),
 [brotli-11-from-the-deploy](../ideas/waiting-on-a-call/brotli-11-from-the-deploy.md)

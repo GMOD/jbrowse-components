@@ -26,11 +26,15 @@ export default function webpackConfig(config: Configuration) {
   genBuildInfo()
   return {
     ...config,
+    optimization: {
+      ...config.optimization,
+      splitChunks: { chunks: 'all' },
+    },
     plugins: [
       ...(config.plugins ?? []),
       new BootChunksPlugin(bootChunkOrigins, {
         'plugin-registry-chunks': pluginRegistryOrigins,
       }),
     ],
-  }
+  } satisfies Configuration
 }
