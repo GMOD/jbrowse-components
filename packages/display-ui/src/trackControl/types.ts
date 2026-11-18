@@ -6,8 +6,7 @@ import type { ComponentType } from 'react'
 // the show-only badge were three components with three copies of the same
 // bordered-button styling before this existed.
 //
-// This module is types only, so it pulls no runtime dependency. That is the
-// point: it lets a display describe its controls without naming a UI toolkit,
+// This module imports nothing at runtime. That is the point: it lets a display describe its controls without naming a UI toolkit,
 // so the same description can be drawn by `MuiTrackControl` (what JBrowse ships)
 // or by `plainTrackControl` (no toolkit at all) — the same split
 // `chromeOverlays.ts` makes for the status states, for the same reason.
@@ -72,3 +71,15 @@ export interface TrackControlProps {
 }
 
 export type TrackControlComponent = ComponentType<TrackControlProps>
+
+/**
+ * The control's handle for a test or a figure spec, per icon, because a
+ * display's corner can hold several and nothing else tells them apart from
+ * outside: class names are hashes and `aria-label` carries prose.
+ */
+export function trackControlTestId(icon: TrackControlIcon) {
+  return `track-control-${icon}`
+}
+
+/** The (×)'s handle, on whichever element each implementation draws it as. */
+export const TRACK_CONTROL_DISMISS_TESTID = 'track-control-dismiss'

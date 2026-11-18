@@ -2,6 +2,7 @@ import { observer } from 'mobx-react'
 import { createPortal } from 'react-dom'
 
 import Tooltip from '../tooltip/Tooltip.tsx'
+import { TRACK_CONTROL_DISMISS_TESTID, trackControlTestId } from './types.ts'
 import { useTrackControlMenu } from './useTrackControlMenu.tsx'
 
 import type { TrackControlIcon, TrackControlProps } from './types.ts'
@@ -137,11 +138,7 @@ const PlainTrackControl = observer(function PlainTrackControl({
         <button
           type="button"
           aria-label={tooltip}
-          // same handle as the Material set's trigger — see MuiTrackControl.
-          // The string is repeated rather than imported, because importing
-          // anything from that module would drag Material UI back into this
-          // one, which is the whole point of this file.
-          data-testid={`track-control-${icon}`}
+          data-testid={trackControlTestId(icon)}
           {...(options ? triggerProps : undefined)}
           style={{
             ...triggerStyle(!!warning),
@@ -170,8 +167,7 @@ const PlainTrackControl = observer(function PlainTrackControl({
         <button
           type="button"
           aria-label="Dismiss"
-          // same handle as the Material set's delete icon — see MuiTrackControl
-          data-testid="track-control-dismiss"
+          data-testid={TRACK_CONTROL_DISMISS_TESTID}
           style={{
             ...triggerStyle(!!warning),
             marginLeft: -1,

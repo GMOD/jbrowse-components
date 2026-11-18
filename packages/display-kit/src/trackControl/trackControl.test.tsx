@@ -111,6 +111,21 @@ describe.each([
     expect(onSelect).not.toHaveBeenCalled()
   })
 
+  // a press reaching the track or view would drag-select or deselect there
+  it.each([
+    ['labelled', '3 selected'],
+    ['icon', undefined],
+  ])('a %s control that acts does not bubble its click', (_form, label) => {
+    const onClick = jest.fn()
+    const outside = jest.fn()
+    renderControl({ icon: 'filter', tooltip: 'tip', label, onClick })
+    document.addEventListener('click', outside)
+    fireEvent.click(screen.getByTestId('track-control-filter'))
+    document.removeEventListener('click', outside)
+    expect(onClick).toHaveBeenCalledTimes(1)
+    expect(outside).not.toHaveBeenCalled()
+  })
+
   it('explains itself with no label to read', () => {
     // The icon-only form is the one an unfamiliar user meets first, and the
     // tooltip is the only thing it says. Reachable as an accessible name in

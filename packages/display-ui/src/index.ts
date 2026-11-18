@@ -38,6 +38,10 @@ export {
 export { default as plainTrackControl } from './trackControl/plainTrackControl.tsx'
 export { useTrackControlMenu } from './trackControl/useTrackControlMenu.tsx'
 export type { TrackControlMenu } from './trackControl/useTrackControlMenu.tsx'
+export {
+  TRACK_CONTROL_DISMISS_TESTID,
+  trackControlTestId,
+} from './trackControl/types.ts'
 export type {
   TrackControlComponent,
   TrackControlIcon,

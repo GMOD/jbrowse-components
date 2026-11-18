@@ -3,6 +3,10 @@ import { useState } from 'react'
 import { CascadingMenu, CascadingMenuButton } from '@jbrowse/core/ui'
 import { emphasize } from '@jbrowse/core/util/color'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import {
+  TRACK_CONTROL_DISMISS_TESTID,
+  trackControlTestId,
+} from '@jbrowse/display-ui'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import CancelIcon from '@mui/icons-material/Cancel'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
@@ -23,22 +27,6 @@ const ICONS = {
   isoform: UnfoldLessIcon,
   filter: FilterAltIcon,
 } satisfies Record<TrackControlIcon, unknown>
-
-// The one selector a test can use to press the (×) on either implementation.
-// MUI draws it as an svg inside the chip and the plain set as a sibling button,
-// so there is no structural handle that finds both.
-const DISMISS_TESTID = 'track-control-dismiss'
-
-// The same for the control itself, per icon, because a display's corner can hold
-// several of these and nothing else tells them apart from outside. The class
-// names are tss-react hashes, and the MUI icon's own `data-testid` is stripped
-// from production builds — so a figure spec pointing at the built app had
-// neither handle. `aria-label` carries the tooltip, which is prose.
-//
-// `plainTrackControl` writes the same string by hand rather than importing this,
-// since importing anything from here would drag Material UI into the module that
-// exists to avoid it.
-const trackControlTestId = (icon: TrackControlIcon) => `track-control-${icon}`
 
 // `action.hover` is a translucent overlay meant to sit on a known surface. These
 // controls sit on the rendered canvas, so taking it as the background let
@@ -191,12 +179,15 @@ const MuiTrackControl = observer(function MuiTrackControl({
                   event.stopPropagation()
                   setAnchorEl(event.currentTarget)
                 }
-              : onClick
+              : event => {
+                  event.stopPropagation()
+                  onClick?.()
+                }
           }
           onDelete={onDelete}
           // Chip's own delete icon, re-passed only to carry the testid both
-          // implementations answer to (see plainTrackControl).
-          deleteIcon={<CancelIcon data-testid={DISMISS_TESTID} />}
+          // implementations answer to.
+          deleteIcon={<CancelIcon data-testid={TRACK_CONTROL_DISMISS_TESTID} />}
         />
       </Tooltip>
       {options ? (
