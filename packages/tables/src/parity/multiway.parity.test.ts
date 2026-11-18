@@ -201,8 +201,8 @@ function multiwayParity(
               : [
                   {
                     alignment: target?.feature.id(),
-                    gutter: row,
-                    upperLane: display.rowsVsAnchor && row > 0 ? 0 : row,
+                    gutter: display.rowsVsAnchor ? toRow - 1 : row,
+                    upperLane: row,
                     lowerLane: toRow,
                     kind: kind === KIND_BASE_TILE ? 'mismatch' : 'match',
                     corners: [
