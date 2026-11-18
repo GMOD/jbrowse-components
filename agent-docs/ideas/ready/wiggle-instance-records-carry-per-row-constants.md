@@ -175,10 +175,10 @@ cost then moves to hidden sources staying in the buffer.
 - A render pass binds two combined samplers, at 2/3 and 4/5 (`55fff2c934`);
   point, bar and link already sample `colorRamp` at unit 0 and `rowTable` at
   unit 1. Fill, line and band bind none, so they take the table at the first.
-- **Density takes the second.** Its ramp LUT holds the first, and it draws off
-  the fill pass's buffer (`bufferOf: fill`), so removing `color` from the fill
-  record removes it from density too; density binds the row table beside its
-  ramp, as point, bar and link do.
+- **Density and scatter take the second.** Their ramp LUT holds the first, and
+  both draw off the fill pass's buffer (`bufferOf: fill`), so removing `color`
+  from the fill record removes it from both; each binds the row table beside
+  its ramp, as point, bar and link do.
 - The WebGPU bind group layout shows each binding to the stages the shader's
   reflected table says read it (`bindGroupLayoutEntries`, `deviceGpuCache.ts`),
   so a vertex-stage lookup needs nothing of the HAL: `barMark` samples its

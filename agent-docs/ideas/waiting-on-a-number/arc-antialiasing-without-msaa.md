@@ -214,9 +214,9 @@ would cost:
   `//! coverage: analytic` on the strength of the sloped edges; the exposure is
   two columns per run rather than per bin, which is why this is a footnote and
   `barMark`'s is not.
-- **`pointMark` (manhattan and the wiggle scatter), and `ruleMark` through
-  it.** The disc, diamond and triangle pad by their own miter reaches
-  (`glyphExpand`, `pointGlyphPad.test.ts`) and substitute to 0. Since
+- **`pointMark` (manhattan), and `ruleMark` through it.** The disc, diamond
+  and triangle pad by their own miter reaches (`glyphExpand`,
+  `pointGlyphPad.test.ts`) and substitute to 0. Since
   2026-10-30 the square inks its box by area, and the rule ramps its y cuts
   and keeps its ends hard, so the pass declares `//! coverage: analytic`.
   `lineStepMark` did the same per quad and was reverted: a joint is up to four
@@ -280,8 +280,10 @@ four.
   this bullet used to say. Its cuts are row boundaries that tile and its datum
   is the color, so it is a refusal rather than a leftover.
 - `wiggle.slang` — the bar's vertical cuts, in the list above.
-  `wiggleScatter.slang`'s small-point square inks its box by area since
-  2026-10-30, through the kernel `pointMark` uses.
+- `wiggleScatter.slang` — declares no directive, though its disc and
+  small-point square ink through `pointMark`'s kernel and could take
+  `//! coverage: analytic`. That changes no sample count while the fill and
+  density passes beside it still need 4.
 - `coverageBar.slang`, `coverageSnp.slang`, `mismatch.slang`, `gap.slang`,
   `insertion.slang`, `coverageInterbase.slang`, `coverageMod.slang` — flat
   fills with **no** pixel snap. `read.slang` was one, and inks its own x
