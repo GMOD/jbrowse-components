@@ -1532,7 +1532,7 @@ describe('sashimi score filter releases the reserved band', () => {
     expect(display.stickyBandHeight).toBe(display.coverageHeight)
   })
 
-  test('down: the strip stays reserved for any surviving junction', () => {
+  test('below: the strip stays reserved for any surviving junction', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
     display.setSashimiPlacement('below')
@@ -1548,7 +1548,7 @@ describe('sashimi score filter releases the reserved band', () => {
     expect(display.sections.sections[0]!.bands.reserved.sashimi).toBe(0)
   })
 
-  test('up: arcs overlay coverage, so the strip is never reserved', () => {
+  test('overlay: arcs draw over coverage, so the strip is never reserved', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
     display.setSashimiPlacement('overlay')
