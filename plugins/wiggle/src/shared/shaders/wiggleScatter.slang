@@ -1,15 +1,9 @@
-// The scatter rendering: a point marker on each bin's bp midpoint, never a bar
-// (unlike manhattan.slang, which bars wide bins). Draws off the fill pass's
-// buffer, as `wiggleDensity.slang` does: the record is `WiggleFillInstance`,
-// declared in wiggleCommon.
+// The scatter rendering: a point marker on each bin's bp midpoint.
 //
 // A point over SMALL_POINT_MAX_DIAMETER is an antialiased disc, and a smaller
 // one the crisp square `pointMark` draws through the same pointGlyph kernel.
 // Which one follows from uniforms alone, so the fragment's branch stays in the
 // uniform control flow WGSL requires around the disc's derivatives.
-//
-// Under a gradient (`u.rampLut`) a point takes the colorRamp LUT's color at its
-// score, as wiggle.slang's bar does.
 //! targets: wgsl, glsl
 
 import antialias;

@@ -10,7 +10,7 @@
 // itself. Same reason the scalars in dotplotCapsulePad.test.ts are imported.
 //
 // SYNC: keep the quad model in step with pointMark.slang's vs_main and
-// wiggle.slang's scatter branch, and the pieces with the SDFs in fs_main.
+// wiggleScatter.slang's vs_main, and the pieces with the SDFs in fs_main.
 import { aaHalfPx, aaRamp } from './antialias.js.generated.ts'
 import { discExpand, glyphExpand } from './pointGlyph.js.generated.ts'
 import {
@@ -107,7 +107,7 @@ function inkedHalfExtentPx(shape: Shape, sdfUnitPx: number, dpr: number) {
 }
 
 // pointMark.slang's `halfPx`, and with a scale and a reach of 1 also
-// wiggle.slang's.
+// wiggleScatter.slang's.
 function quadHalfExtentPx(
   radiusPx: number,
   dpr: number,
@@ -180,7 +180,7 @@ describe('glyphExpand', () => {
     }
   })
 
-  // wiggle.slang's scatter branch calls `discExpand`, which is the one-reach
+  // wiggleScatter.slang's vs_main calls `discExpand`, which is the one-reach
   // case of the same expansion rather than a second rule.
   test.each(DPRS)('discExpand is the one-reach case: dpr %p', dpr => {
     for (const radiusPx of RADII_PX) {
@@ -188,7 +188,7 @@ describe('glyphExpand', () => {
     }
   })
 
-  // The disc is what wiggle's scatter branch and pointMark's GLYPH_DISC draw,
+  // The disc is what wiggleScatter.slang and pointMark's GLYPH_DISC draw,
   // both at `halfPx = radiusPx * expand`. Its ramp is isotropic, so the quad is
   // tight — equals, not merely holds.
   test.each(DPRS)(

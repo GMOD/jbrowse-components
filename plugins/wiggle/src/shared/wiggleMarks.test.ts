@@ -326,8 +326,8 @@ describe('the wiggle mark list', () => {
   })
 
   // Density is the composed rowRect × scoreScale shape (wiggleDensity.slang):
-  // its own pass and pipeline, drawn off PASS_FILL's buffer because the two
-  // entry shaders take the same shader-declared record.
+  // its own pass and pipeline, drawn off the fill pass's buffer because the
+  // three entry shaders take the same shader-declared record.
   it('draws density through the composed pass, off the fill buffer', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)

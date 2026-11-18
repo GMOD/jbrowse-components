@@ -3,8 +3,8 @@
 // density off this same fill buffer, and `wiggleLine.slang` and
 // `wiggleLineCenter.slang` stroke the two line renderings off wider records of
 // their own. All import `wiggleCommon` for the uniform block and the score
-// math. Bound to PASS_FILL, which draws 12 vertices per instance: the bar quad,
-// then its clip strip.
+// math. The `fill` pass draws 12 vertices per instance: the bar quad, then
+// its clip strip.
 //
 // No fill rendering reads a neighbouring feature, which is why the instance
 // record (`WiggleFillInstance`, declared in wiggleCommon so the scatter and
@@ -71,7 +71,7 @@ VsOut slabVertex(WiggleFillInstance inst, uint vid, float topPx, float botPx) {
 
 // The strip quad: CLIP_STRIP_PX of red across the row edge that cut the bar,
 // antialiased at its two horizontal cuts the way the bar is. A bar inside the
-// domain has none, and its six vertices go off clip before converting a bp.
+// domain has none.
 VsOut clipStripVertex(WiggleFillInstance inst, uint vid, float rowTop) {
   int side = clipSide(inst.score, u.domainYMin, u.domainYMax, u.scaleType);
   VsOut o;

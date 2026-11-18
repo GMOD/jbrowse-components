@@ -106,7 +106,7 @@ float boxCoverage(float2 p, float4 box, float dpr, bool hardX) {
 
 // Shape discriminators for the fragment shader. SMALL_POINT_MAX_DIAMETER and
 // the disc SDF come from the shared pointGlyph module so they stay in lockstep
-// with wiggle.slang.
+// with wiggleScatter.slang.
 static const float SHAPE_DISC = 0.0;
 static const float SHAPE_DIAMOND = 1.0;
 static const float SHAPE_TRI = 2.0;
