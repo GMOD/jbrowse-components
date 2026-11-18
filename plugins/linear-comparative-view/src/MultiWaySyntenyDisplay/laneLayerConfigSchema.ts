@@ -4,7 +4,7 @@ import { markListSchema } from '@jbrowse/plugin-marks'
 /**
  * #config MultiWayLaneLayer
  * #category display
- * One row of data drawn in every lane through that lane's own frame, from
+ * One band of data drawn in every lane through that lane's own frame, from
  * each genome's own track, on one value scale shared by every lane.
  *
  * #example

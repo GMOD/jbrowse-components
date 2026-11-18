@@ -189,7 +189,7 @@ export function configSchemaFactory() {
                 ]),
                 defaultValue: 'above',
                 description:
-                  "`above` prints each genome's name and span on a line over its genes; `overlay` prints the name alone over the left end of its gene row, which fits 12 px more per lane",
+                  "`above` prints each genome's header on a line over its genes: its name, loci, badges and span; `overlay` prints it over the gene row instead and leaves out the loci, keeping `[rev]` on a flipped lane, which fits 12 px more per lane",
               },
             },
             { closed: true, plot: true },
@@ -199,7 +199,7 @@ export function configSchemaFactory() {
       ),
       /**
        * #slot laneLayers
-       * Rows of data every lane draws above its genes, each from that genome's
+       * Bands of data every lane draws above its genes, each from that genome's
        * own track: a GC or conservation bigWig per genome as bars, say
        */
       laneLayers: plotList(types.array(laneLayerConfigSchema)),
