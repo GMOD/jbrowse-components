@@ -14,11 +14,11 @@ import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 export type WiggleRenderingType = 0 | 1 | 2 | 3 | 4
 
-// The `renderingType` uniform's vocabulary. These are wiggle.slang's own
+// The `renderingType` uniform's vocabulary. These are wiggleCommon.slang's own
 // numbers, generated in by `pnpm gen:shaders` (adr-051): the Canvas2D path
-// branches on them to pick a draw function while the GPU path branches on them
-// inside vs_main, so a renumbering that reached only one side would quietly
-// draw a different plot type on each backend. Declared here rather than in the
+// branches on them to pick a draw function while the GPU path picks a pass by
+// them and wiggleBand.slang branches on them, so a renumbering that reached
+// only one side would quietly draw a different plot type on each backend. Declared here rather than in the
 // plugin because this is where `WiggleRenderingType` lives, and the annotations
 // are what pin each generated value into that union.
 export const RENDERING_TYPE_XYPLOT: WiggleRenderingType =

@@ -6,9 +6,10 @@
 // autoscale move on pan is one uniform write, never a buffer re-upload
 // (ADR-094's load-bearing cardinality).
 //
-// Draws off PASS_FILL's buffer: the record is `WiggleFillInstance`, declared in
-// wiggleCommon and shared with `wiggle.slang` the way canvas's chevron and line
-// entry points share `LineInstance` (slangPass.ts §"no bufferStride override").
+// Draws off the `fill` pass's buffer: the record is `WiggleFillInstance`,
+// declared in wiggleCommon and shared with `wiggle.slang` and
+// `wiggleScatter.slang` the way canvas's chevron and line entry points share
+// `LineInstance` (slangPass.ts §"no bufferStride override").
 //
 // Row edges are hard on purpose. Density's quad spans the whole row, so its
 // horizontal cuts are row boundaries that TILE with the row above and below —
