@@ -265,6 +265,27 @@ test('a removed row does not resurrect its edited name when re-added', async () 
   expect(getByText('a.bam')).toBeTruthy()
 })
 
+test('an emptied name falls back to the automatic one', () => {
+  const { model } = getSession()
+  const { getByLabelText, getByRole, getByText } = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  pasteUrls(getByLabelText, 'https://x.com/a.bam')
+
+  fireEvent.doubleClick(getByRole('button', { name: 'Rename a.bam' }))
+  const renaming = getByRole('textbox', { name: 'Rename a.bam' })
+  fireEvent.change(renaming, { target: { value: 'renamed' } })
+  fireEvent.keyDown(renaming, { key: 'Enter' })
+  fireEvent.keyDown(getByRole('button', { name: 'Rename renamed' }), {
+    key: 'F2',
+  })
+  const emptying = getByRole('textbox', { name: 'Rename renamed' })
+  fireEvent.change(emptying, { target: { value: '' } })
+  fireEvent.blur(emptying)
+
+  expect(getByText('a.bam')).toBeTruthy()
+})
+
 test('the collected input survives the workflow unmounting', () => {
   const { model } = getSession()
   const first = render(
