@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
-import { getPreparedCanvas2D } from './canvas2dUtils.ts'
+import { getDpr, getPreparedCanvas2D } from './canvas2dUtils.ts'
 
 const RING_STRIP_ATTRIBUTE = 'data-ring-strip'
 const RING_STRIP_SELECTOR = 'canvas[data-ring-strip]'
@@ -22,7 +22,8 @@ export function ringStripCanvas(strip: ParentNode) {
 /**
  * An absolutely-positioned, non-interactive Canvas2D layer that composites over
  * a display's main canvas. Callers pass a `draw` closure capturing their
- * current data; the effect re-runs whenever that closure or the size changes.
+ * current data; the effect re-runs whenever that closure, the size or the
+ * pixel ratio changes.
  *
  * Wrap the caller in `observer` (mobx-react memoizes it) so the component
  * re-renders exactly when its own inputs change — `draw`'s identity then
@@ -62,13 +63,14 @@ const OverlayCanvas = observer(function OverlayCanvas({
   'data-testid'?: string
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const dpr = getDpr()
 
   useEffect(() => {
     const ctx = getPreparedCanvas2D(canvasRef.current, width, height)
     if (ctx) {
       draw(ctx)
     }
-  }, [draw, width, height])
+  }, [draw, width, height, dpr])
 
   return (
     <canvas

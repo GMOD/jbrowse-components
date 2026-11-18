@@ -1,3 +1,5 @@
+import { autorun } from 'mobx'
+
 import {
   MAX_CANVAS_DIM_PX,
   MAX_DPR,
@@ -743,6 +745,90 @@ describe('getDpr', () => {
     syncCanvasSize(canvas, 100, maxCanvasCssPx())
     expect(canvas.height).toBe(MAX_CANVAS_DIM_PX)
     expect(canvas.style.height).toBe(`${maxCanvasCssPx()}px`)
+  })
+
+  test('reads the ratio where the environment has no matchMedia', () => {
+    expect(window.matchMedia).toBeUndefined()
+    setDpr(1.5)
+    const seen: number[] = []
+    const dispose = autorun(() => {
+      seen.push(getDpr())
+    })
+    expect(seen).toEqual([1.5])
+    dispose()
+  })
+})
+
+// A browser fires `change` on a resolution query when the window crosses to a
+// screen of another ratio, often with no CSS resize, so nothing else wakes a
+// render autorun.
+describe('getDpr inside a reaction', () => {
+  const original = globalThis.devicePixelRatio
+
+  class FakeMediaQueryList extends EventTarget implements MediaQueryList {
+    onchange = null
+
+    constructor(
+      readonly media: string,
+      public matches: boolean,
+    ) {
+      super()
+    }
+
+    addListener() {}
+    removeListener() {}
+  }
+
+  const lists: FakeMediaQueryList[] = []
+
+  function moveToScreen(ratio: number) {
+    Object.defineProperty(globalThis, 'devicePixelRatio', {
+      value: ratio,
+      writable: true,
+      configurable: true,
+    })
+    for (const list of lists) {
+      const matches = list.media === `(resolution: ${ratio}dppx)`
+      if (list.matches !== matches) {
+        list.matches = matches
+        list.dispatchEvent(new Event('change'))
+      }
+    }
+  }
+
+  beforeEach(() => {
+    moveToScreen(1)
+    window.matchMedia = (media: string) => {
+      const list = new FakeMediaQueryList(
+        media,
+        media === `(resolution: ${devicePixelRatio}dppx)`,
+      )
+      lists.push(list)
+      return list
+    }
+  })
+
+  afterEach(() => {
+    lists.length = 0
+    Reflect.deleteProperty(window, 'matchMedia')
+    moveToScreen(original)
+  })
+
+  test('re-runs on every move to a screen of another ratio', () => {
+    const seen: number[] = []
+    const dispose = autorun(() => {
+      seen.push(getDpr())
+    })
+    moveToScreen(2)
+    moveToScreen(1.5)
+    moveToScreen(3)
+    expect(seen).toEqual([1, 2, 1.5, MAX_DPR])
+    dispose()
+  })
+
+  test('installs nothing until a reaction reads it', () => {
+    expect(getDpr()).toBe(1)
+    expect(lists).toEqual([])
   })
 })
 

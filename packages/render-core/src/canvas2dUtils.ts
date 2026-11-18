@@ -1,4 +1,7 @@
+import { createAtom } from 'mobx'
+
 import type { BpRegionBounds } from './renderBlock.ts'
+import type { IAtom } from 'mobx'
 
 export interface BlockClip {
   scissorX: number
@@ -16,6 +19,10 @@ export interface BlockClip {
 // CSS px on an axis to clamp now, instead of 2731 at dpr=3.
 export const MAX_DPR = 2
 
+// Each bundled copy of this module keeps its own atom and listener, and two
+// copies each waking their own readers on one screen change is harmless.
+let dprChange: IAtom | undefined
+
 /**
  * The ratio every canvas in the app renders at, capped at {@link MAX_DPR}.
  *
@@ -30,11 +37,43 @@ export const MAX_DPR = 2
  * so explicitly: `createSvgRasterCanvas` rasterizes at 2x because export goes
  * to a file, and the analytics / error-report paths read the raw
  * global because they are reporting the device, not drawing on it.
+ *
+ * A reaction that reads it re-runs when the window moves to a screen of
+ * another ratio, which often comes with no CSS resize to wake it otherwise.
  */
 export function getDpr() {
   return typeof devicePixelRatio === 'undefined'
     ? 1
-    : Math.min(devicePixelRatio, MAX_DPR)
+    : Math.min(observedDevicePixelRatio(), MAX_DPR)
+}
+
+function observedDevicePixelRatio() {
+  if (typeof matchMedia === 'function') {
+    dprChange ??= createDprChangeAtom()
+    dprChange.reportObserved()
+  }
+  return devicePixelRatio
+}
+
+// A resolution query matches one ratio, so each change re-arms a query for the
+// new one. The listener lives only while some reaction observes the atom.
+function createDprChangeAtom() {
+  let query: MediaQueryList | undefined
+  function listen() {
+    query = matchMedia(`(resolution: ${devicePixelRatio}dppx)`)
+    query.addEventListener('change', onChange)
+  }
+  function stop() {
+    query?.removeEventListener('change', onChange)
+    query = undefined
+  }
+  function onChange() {
+    stop()
+    listen()
+    atom.reportChanged()
+  }
+  const atom = createAtom('devicePixelRatio', listen, stop)
+  return atom
 }
 
 // Ceiling on one backing-store dimension. Browsers throw `InvalidStateError:

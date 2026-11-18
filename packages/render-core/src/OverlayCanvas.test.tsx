@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 
 import OverlayCanvas from './OverlayCanvas.tsx'
 
@@ -34,4 +34,56 @@ test('and stays out of the way of the hit test underneath it', () => {
     />,
   )
   expect(getByTestId('overlay').style.pointerEvents).toBe('none')
+})
+
+class FakeMediaQueryList extends EventTarget implements MediaQueryList {
+  onchange = null
+
+  constructor(
+    readonly media: string,
+    public matches: boolean,
+  ) {
+    super()
+  }
+
+  addListener() {}
+  removeListener() {}
+}
+
+// Dragging the window onto a screen of another ratio changes no CSS size, so
+// the draw has to follow the ratio itself or the store stays at the old scale.
+test('redraws when the window moves to a screen of another ratio', () => {
+  const original = globalThis.devicePixelRatio
+  const lists: FakeMediaQueryList[] = []
+  window.matchMedia = (media: string) => {
+    const list = new FakeMediaQueryList(media, true)
+    lists.push(list)
+    return list
+  }
+  try {
+    globalThis.devicePixelRatio = 1
+    const backing: number[] = []
+    const { getByTestId } = render(
+      <OverlayCanvas
+        data-testid="overlay"
+        width={800}
+        height={100}
+        draw={ctx => {
+          backing.push(ctx.canvas.width)
+        }}
+      />,
+    )
+    act(() => {
+      globalThis.devicePixelRatio = 2
+      for (const list of lists.splice(0)) {
+        list.matches = false
+        list.dispatchEvent(new Event('change'))
+      }
+    })
+    expect(backing).toEqual([800, 1600])
+    expect(getByTestId('overlay').style.width).toBe('800px')
+  } finally {
+    Reflect.deleteProperty(window, 'matchMedia')
+    globalThis.devicePixelRatio = original
+  }
 })

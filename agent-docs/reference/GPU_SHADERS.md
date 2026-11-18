@@ -94,6 +94,10 @@ accept. A box past its extent counts as scrollable overflow (seen below dpr 0.9)
 so a canvas ending at a scroll container's content edge needs an ancestor that
 clips (track canvases have `contain: strict`, view roots `overflow: hidden`).
 
+**A reaction reading `getDpr()` re-runs when the ratio changes**, as when the
+window moves to another screen with no CSS resize: a `matchMedia` resolution
+query wakes it while some reaction observes the ratio.
+
 ## Antialiasing ramps: how wide, and where the width comes from
 
 The recurring bug is an **AA ramp whose width was measured with `fwidth`, and/or
