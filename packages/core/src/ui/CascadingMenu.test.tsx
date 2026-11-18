@@ -621,3 +621,59 @@ describe('CascadingMenu click ordering', () => {
     expect(order).toEqual(['close', 'callback'])
   })
 })
+
+describe('CascadingMenu submenu side', () => {
+  const items: MenuItem[] = [
+    { label: 'Colors', subMenu: [{ label: 'Red', onClick: () => {} }] },
+  ]
+
+  function panelLeftWithRowAt(left: number, right: number) {
+    jest
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue(DOMRect.fromRect({ x: left, width: right - left }))
+    jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(250)
+    const { getByTestId, getByText } = renderMenu(items)
+    fireEvent.click(getByTestId('cascading-submenu-colors'))
+    return getByText('Red').closest<HTMLElement>('.MuiPaper-root')!.style.left
+  }
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('opens right of a row with room on the right', () => {
+    expect(panelLeftWithRowAt(100, 300)).toBe('300px')
+  })
+
+  it('opens left of a row at the right edge, clear of the menu', () => {
+    expect(window.innerWidth).toBe(1024)
+    expect(panelLeftWithRowAt(750, 1010)).toBe('500px')
+  })
+
+  it('keeps a cascade that turned left going left', () => {
+    const rows: Record<string, [number, number]> = {
+      'cascading-submenu-colors': [750, 1010],
+      'cascading-submenu-shades': [500, 750],
+    }
+    jest
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        const [left, right] = rows[this.dataset.testid ?? ''] ?? [0, 0]
+        return DOMRect.fromRect({ x: left, width: right - left })
+      })
+    jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(250)
+    const { getByTestId, getByText } = renderMenu([
+      {
+        label: 'Colors',
+        subMenu: [
+          { label: 'Shades', subMenu: [{ label: 'Pale', onClick: () => {} }] },
+        ],
+      },
+    ])
+    fireEvent.click(getByTestId('cascading-submenu-colors'))
+    fireEvent.click(getByTestId('cascading-submenu-shades'))
+    expect(
+      getByText('Pale').closest<HTMLElement>('.MuiPaper-root')!.style.left,
+    ).toBe('250px')
+  })
+})
