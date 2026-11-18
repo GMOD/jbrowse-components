@@ -18,8 +18,8 @@ installer. [GPU_RENDERING.md](GPU_RENDERING.md) is the hub.
   and friends). The backend holds the regions map and owns "did real content
   reach the canvas" (ADR-009). Add a guard only for something the backend cannot
   see (alignments' zero-group fetch, MAF's first-paint gate).
-- On `true` the mixin calls `markCanvasDrawn()`, and `isReady` follows once
-  `isLoading` clears.
+- On `true` the mixin calls `markCanvasDrawn()`, and `painted` follows unless
+  `paintSuperseded` holds.
 
 ## What the mixin owns
 

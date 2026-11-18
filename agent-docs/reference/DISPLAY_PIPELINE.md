@@ -107,7 +107,7 @@ is declared in `STATES_NO_RULES`.
 ### Upload and render
 
 - Don't put upload or render logic in a React effect; it belongs in the autorun
-  pair `attachRenderingBackend` spawns. See [GPU
+  pair `installUpload` installs. See [GPU
   rendering](#gpu-rendering-architecture).
 - Don't destructure model methods, use `useMemo` for observable-dependent
   values, or redefine the slot mixin's volatiles and actions (`canvasDrawn`,
@@ -383,10 +383,12 @@ subtracted, derived region maps, theme inputs, and the `rpcProps()` loop trap:
 ## GPU rendering architecture
 
 A GPU display composes `RenderLifecycleMixin` and calls
-`self.attachRenderingBackend(backend, { upload, render })` in its
-`startRenderingBackend(backend)` action. The mixin spawns two autoruns tied to
-the model's lifetime: `upload(backend)` pushes bytes to the GPU when the data
-changes, `render(backend)` draws a frame when anything visible changes. MobX
+`installUpload(self, backend, { cells, inputs, encode, render })` in its
+`startRenderingBackend(backend)` action. `installUpload` hands the mixin's
+`attachRenderingBackend` its callbacks, and the mixin spawns two autoruns tied
+to the model's lifetime: the upload autorun pushes the cells whose data changed
+to the GPU, and the render autorun draws a frame when anything visible
+changes. MobX
 auto-tracks every observable read inside each callback. React components are
 thin bridges — create a canvas, hand the backend to the model via
 `useRenderingBackend` (called inside `DisplayChrome`), render JSX.

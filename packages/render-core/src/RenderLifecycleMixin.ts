@@ -47,10 +47,11 @@ export interface RenderingBackendCallbacks<B> {
  * Owns the GPU draw lifecycle for any display that paints to a canvas.
  *
  * Plugins compose this mixin (directly or via `MultiRegionDisplayMixin` /
- * `GlobalFetchMixin`) and call
- * `self.attachRenderingBackend(backend, () => ({ upload, render }))` from their
- * own `startRenderingBackend(backend)` action. **The second argument is a thunk
- * because it runs exactly once**, on the first attach: `startRenderingBackend`
+ * `GlobalFetchMixin`) and call `installUpload(self, backend, { cells, render })`
+ * from their own `startRenderingBackend(backend)` action. `installUpload` calls
+ * `self.attachRenderingBackend(backend, setup)`, where `setup` returns
+ * `{ upload, render, releaseTargets }`. **`setup` is a thunk because it runs
+ * exactly once**, on the first attach: `startRenderingBackend`
  * fires again on every context-loss recovery, and the autoruns keep the
  * callbacks they were given first. Anything the callbacks close over — an
  * upload sync's memo of what it last sent — is built inside it, so it lives as

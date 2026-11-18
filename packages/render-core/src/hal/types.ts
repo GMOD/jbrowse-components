@@ -103,9 +103,11 @@ export interface ShaderSource {
 /**
  * A **pipeline state object (PSO)**: shaders, vertex input layout, blend state,
  * primitive topology and texture bindings, baked into one immutable
- * description. One of these compiles to exactly one `GPURenderPipeline`
- * (`webgpuHal`) or one linked program + VAO (`webgl2Hal`), up front at HAL
- * construction — never lazily mid-frame.
+ * description. `webgpuHal` builds a `GPURenderPipeline` for every declared
+ * pass at HAL construction, from the device's pipeline cache, which hands
+ * passes of one recipe the same pipeline. `webgl2Hal` links a program + VAO at
+ * a pass's first draw, shared by every pass with the same GLSL, attribute names
+ * and samplers.
  *
  * `id` is the join key everything else calls a *pass*: `drawPass(id, …)` binds
  * this pipeline and issues one instanced draw, and the HAL's buffer registry is

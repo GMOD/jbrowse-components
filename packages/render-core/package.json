@@ -110,7 +110,7 @@
   "peerDependencies": {
     "react": ">=19.0.0"
   },
-  "//publishConfig": "Generated from `exports` above by scripts/generate-publish-exports.ts (`pnpm autogen`) — edit that map, never this one. The two describe the same subpaths against different trees, and only this one is what an installed consumer resolves, so drift between them is invisible until someone unpacks the tarball. It used to end in a `./*` wildcard, which served every emitted file including the ones src/index.ts withholds as internal.",
+  "//publishConfig": "Generated from `exports` above by scripts/generate-publish-exports.ts (`pnpm autogen`) — edit that map, never this one. The two describe the same subpaths against different trees, and only this one is what an installed consumer resolves, so drift between them is invisible until someone unpacks the tarball. It names each subpath, with no wildcard, so an emitted file no subpath names stays unpublished.",
   "publishConfig": {
     "access": "public",
     "exports": {
