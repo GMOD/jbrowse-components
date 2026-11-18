@@ -291,6 +291,28 @@ describe('pickVariantCell row resolution', () => {
     expect(picked?.cellIndex).toBe(1)
   })
 
+  test('sub-pixel rows: the shorter record wins over the band, as within one row', () => {
+    const snpUnderDeletion = build({
+      refCells: [{ feature: 1, row: 0 }],
+      altCells: [{ feature: 0, row: 2 }],
+      features: [
+        [50, 500],
+        [100, 101],
+      ],
+    })
+    const picked = pickVariantCell({
+      data: snpUnderDeletion,
+      candidateFeatures: [0, 1],
+      mouseX: 100,
+      mouseY: 1.2,
+      rowNearest: 2,
+      rowLowest: 0,
+      ...subPixel,
+    })
+    expect(picked?.featureIndex).toBe(1)
+    expect(picked?.rowIndex).toBe(0)
+  })
+
   test('sub-pixel rows: walks down the band when the nearest row is empty', () => {
     // Row 1 has no cell, so the band continues to row 0 rather than giving up.
     const picked = pickVariantCell({

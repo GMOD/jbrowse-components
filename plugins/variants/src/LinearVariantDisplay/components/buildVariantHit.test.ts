@@ -32,7 +32,6 @@ test('a site with no ALT alleles builds a tooltip instead of throwing', () => {
     genotype: '0|0',
     sampleName: 'HG001',
     name: 'HG001',
-    featureId: 'mono1',
     insertedBp: 0,
   })
   expect(fields.description).toBe('no alternative alleles')
@@ -63,7 +62,6 @@ describe('a genotype hit', () => {
       genotype: '0|1',
       sampleName: 'HG001',
       name: 'HG001',
-      featureId: 'v0',
       insertedBp,
     })
 

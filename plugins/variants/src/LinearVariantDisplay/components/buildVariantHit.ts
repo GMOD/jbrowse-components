@@ -56,7 +56,6 @@ export function buildVariantHit({
   genotype,
   sampleName,
   name,
-  featureId,
   insertedBp,
   displayedRegionIndex,
 }: {
@@ -64,7 +63,6 @@ export function buildVariantHit({
   genotype: string
   sampleName: string
   name: string
-  featureId: string
   // bp of insertion THIS cell reports — the record's count when the sample
   // carries the alt, 0 for a reference cell, which must not claim the
   // insertion its column's record makes (`cellHit`)
@@ -84,7 +82,7 @@ export function buildVariantHit({
     insertion: insertedBp > 0 ? `${insertedBp}bp` : '',
     sampleName,
     name,
-    featureId,
+    featureId: info.featureId,
     displayedRegionIndex,
   }
 }
@@ -127,7 +125,6 @@ export function cellHit({
         genotype,
         sampleName: row.sampleName,
         name: row.name,
-        featureId: info.featureId,
         insertedBp: altDosage ? info.insertedBp : 0,
         displayedRegionIndex,
       })
