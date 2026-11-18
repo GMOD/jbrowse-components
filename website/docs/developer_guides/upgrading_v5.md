@@ -422,11 +422,12 @@ palette.
 ## The multi-row feature display's rows are config too
 
 The multi-row feature display is new in v5. Its rows are the values of a feature
-attribute, and `rows` holds both halves: `rows.field` is the attribute (an empty
-one makes the display pick an attribute from the data), and the other members
-are the arrangement, as on the quantitative display. `rows.colors` pairs row
-values with colors, and holds both a color a config names and a color a reader
-sets in **Edit colors/arrangement...**.
+attribute, and `rows` holds both halves: `rows.field` is the attribute, `type`
+unless written, and an empty one is a single row; where no loaded feature
+carries the field, a **One row per...** chip offers the picker. The other
+members are the arrangement, as on the quantitative display. `rows.colors` pairs
+row values with colors, and holds both a color a config names and a color a
+reader sets in **Edit colors/arrangement...**.
 
 ## The MAF rows are config too
 
@@ -617,6 +618,15 @@ assembly's sequence track or a connection's track. The track selector's
 `AnyTrackConfig` too. `readConfObject` on an entry is a compile error: read
 `trackId` and `type` off it, and its assemblies with
 `getConfAssemblyNamesOrNone`, which returns `[]` for an entry that omits them.
+
+## A track's `aliases` keep a renamed trackId working
+
+A track config takes `aliases`, the trackIds it went by before, so renaming
+`genes` to `genes_v2` with `aliases: ["genes"]` keeps a saved session, a share
+link, a URL `tracks=` entry, a session spec and a search index that name the old
+id opening the track. `getTrackById` resolves an alias too, so the config it
+returns can carry a `trackId` other than the one passed in: compare against the
+returned `trackId` rather than your argument.
 
 ## An embedded view has no title bar
 
@@ -874,6 +884,24 @@ exports:
 The RPC methods `GetCanvasFeatureDetails` and `GetCanvasGroupByCandidates` are
 now `GetBasicFeatureDetails` and `GetBasicGroupByCandidates`.
 
+## `BreakpointAlignmentsWidget` is registered by the alignments plugin
+
+The read-pair detail widget the breakpoint split view opens on a read-curve
+click is registered by `@jbrowse/plugin-alignments`, under the same name, where
+v4 registered it from the breakpoint split view plugin. A host that loads the
+breakpoint split view without the alignments plugin loses that widget. The
+widget holds its two reads as `read1` and `read2`, and a saved one whose
+`featureData` holds `feature1` and `feature2` loads as them.
+
+## A UCSC hub track's stanza is under `metadata.ucsc`
+
+A track a UCSC hub connection builds carries its trackDb stanza (`type`,
+`visibility`, `parent`, `bigDataUrl` ...) under `metadata.ucsc`, where v4 spread
+it across `metadata`, and each `subGroups` entry is a top-level metadata key
+(`{ "Cell Line": "K562" }`). Track ids are unchanged, so saved sessions open,
+but a jexl filter or a column config reading `metadata.<stanza key>` off a hub
+track needs `metadata.ucsc.<stanza key>`.
+
 ## An internet account's `domains` matches a whole host
 
 In v4 a `domains` entry was a substring test against the whole URL. In v5 an
@@ -902,6 +930,20 @@ and `resetUseWorkspaces`, the `configuration.preferences.useWorkspaces` slot,
 and product-core's `workspacesMenuItem` and `bakeSessionCascades` are gone.
 `setUseWorkspaces` remains and does nothing. A session saved with
 `useWorkspaces: false` opens as the stack it showed.
+
+**`getPortableSettings` is no longer called.** v4 asked the outgoing display for
+it on every display-type switch and passed the result to `replaceDisplay`. A
+display that defines it keeps a method nothing calls, so a switch carries no
+settings across; pass them yourself as `replaceDisplay`'s third argument, or
+apply them with `applyDisplaySettings`.
+
+**`CircularView.resizeWidth` was removed.** Nothing in the tree called it; set
+the width with `setWidth`.
+
+**The row displays' `sources` getter is `drawnRows`.** v4's multi-sample variant
+and multi-wiggle displays exposed the rows they drew as `sources`; every row
+display now names them `drawnRows`, and a plugin reading `display.sources` gets
+`undefined`.
 
 **The LD display's `showRecombination` option was removed.** It plotted `1 - r2`
 between adjacent SNPs and called it a recombination rate, which restated the
