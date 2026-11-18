@@ -1,11 +1,11 @@
-import { Suspense } from 'react'
+import { Suspense, lazy } from 'react'
 
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DialogHost } from '@jbrowse/core/util'
+
+const DialogErrorFallback = lazy(() => import('./DialogErrorFallback.tsx'))
 
 interface DialogQueueSession extends Pick<
   DialogHost,
@@ -41,17 +41,14 @@ const DialogQueue = observer(function DialogQueue({
     <ErrorBoundary
       resetKeys={[DialogComponent, DialogProps]}
       FallbackComponent={({ error }) => (
-        <Dialog
-          open
-          title="Error"
-          onClose={() => {
-            session.removeActiveDialog()
-          }}
-        >
-          <DialogContent>
-            <ErrorMessage error={error} />
-          </DialogContent>
-        </Dialog>
+        <Suspense fallback={null}>
+          <DialogErrorFallback
+            error={error}
+            onClose={() => {
+              session.removeActiveDialog()
+            }}
+          />
+        </Suspense>
       )}
     >
       <Suspense fallback={null}>
