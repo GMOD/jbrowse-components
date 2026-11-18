@@ -55,6 +55,7 @@ export type {
   LinearAlignmentsDisplayModel,
 } from './LinearAlignmentsDisplay/model.ts'
 export { isLinearAlignmentsDisplay } from './LinearAlignmentsDisplay/isLinearAlignmentsDisplay.ts'
+export type { BandChipRow } from './LinearAlignmentsDisplay/bandChips.ts'
 export type { ReadHit } from './LinearAlignmentsDisplay/readLookup.ts'
 export type { QualitySpan } from './LinearAlignmentsDisplay/qualitySpans.ts'
 export type { GroupConnectors } from './features/linkedReads/computeOverlay.ts'
