@@ -35,6 +35,7 @@ import { gitCommit } from '../buildInfo.ts'
 import jbrowseWebFactory from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
 import { takeWorker } from '../prewarmedWorker.ts'
+import { getSessionDB } from '../sessionDB.ts'
 import {
   deleteSessionRows,
   renameSessionRows,
@@ -66,7 +67,6 @@ const SetDefaultSession = lazy(
 )
 
 interface SessionDbHost {
-  sessionDB?: SessionDBHandle
   session?: {
     id: string
     notifyError: (message: string, error?: unknown) => void
@@ -122,17 +122,16 @@ async function withErrorNotify(
   }
 }
 
-// The same, for the actions that need the database itself. Skipped entirely
-// until setupSessionDB has opened it — nothing offers these before then, since
-// the menus and the manager widget are both built from savedSessionMetadata,
-// which only exists once it is open.
+// The same, for the actions that need the database itself. Skipped where there
+// is no IndexedDB, and reopens a connection the browser or another tab closed.
 async function withSessionDB(
   self: SessionDbHost,
   fn: (sessionDB: SessionDBHandle) => Promise<void>,
 ) {
   await withErrorNotify(self, async () => {
-    if (self.sessionDB) {
-      await fn(self.sessionDB)
+    const sessionDB = await getSessionDB()
+    if (sessionDB) {
+      await fn(sessionDB)
     }
   })
 }
@@ -198,10 +197,6 @@ export default function RootModel({
         /**
          * #volatile
          */
-        sessionDB: undefined as SessionDBHandle | undefined,
-        /**
-         * #volatile
-         */
         version: packageJSON.version,
         /**
          * #volatile
@@ -246,12 +241,10 @@ export default function RootModel({
            * instead.
            */
           async fetchSessionMetadata() {
-            if (self.sessionDB) {
-              const token = ++latestFetch
-              const ret = await self.sessionDB.getAll('metadata')
-              if (token !== latestFetch) {
-                return
-              }
+            const token = ++latestFetch
+            const sessionDB = await getSessionDB()
+            const ret = await sessionDB?.getAll('metadata')
+            if (ret && token === latestFetch && isAlive(self)) {
               this.setSavedSessionMetadata(
                 ret.filter(m => isListed(self, m)).sort(byLastUsedDesc),
               )
@@ -277,12 +270,6 @@ export default function RootModel({
               )
             }
           },
-          /**
-           * #action
-           */
-          setSessionDB(sessionDB: SessionDBHandle | undefined) {
-            self.sessionDB = sessionDB
-          },
         }
       })
       .actions(self => {
@@ -290,14 +277,10 @@ export default function RootModel({
         // edits may not have landed yet — and once setSession swaps it out, the
         // pending tick reads the *new* session and they are lost for good. A
         // throw here is meant to stop the swap.
-        const flushOutgoingSession = async (sessionDB: SessionDBHandle) => {
+        const flushOutgoingSession = async () => {
           const flushed =
             self.session &&
-            (await saveSessionSnapshot(
-              sessionDB,
-              self.session,
-              self.configPath,
-            ))
+            (await saveSessionSnapshot(self.session, self.configPath))
           if (flushed) {
             self.upsertSessionMetadata(flushed)
           }
@@ -351,7 +334,7 @@ export default function RootModel({
                 self.session?.notifyError('Session not found')
                 return
               }
-              await flushOutgoingSession(sessionDB)
+              await flushOutgoingSession()
               await self.pluginManager.preloadSessionTypes(ret)
               if (latestActivation.get(self) !== activation) {
                 return
@@ -384,9 +367,7 @@ export default function RootModel({
             const activation = {}
             latestActivation.set(self, activation)
             await withErrorNotify(self, async () => {
-              if (self.sessionDB) {
-                await flushOutgoingSession(self.sessionDB)
-              }
+              await flushOutgoingSession()
               await self.pluginManager.preloadSessionTypes(rest)
               if (latestActivation.get(self) === activation) {
                 self.setSession(rest)
@@ -410,9 +391,15 @@ export default function RootModel({
            * mid-export), and the row keeps its previous picture.
            */
           async captureSessionThumbnail() {
-            const { session, sessionDB } = self
+            const { session } = self
+            const sessionDB = await getSessionDB()
             // an export of a session still loading waits on its fetch
-            if (!session || !sessionDB || sessionLoading(session)) {
+            if (
+              !session ||
+              !sessionDB ||
+              !isAlive(session) ||
+              sessionLoading(session)
+            ) {
               return
             }
             const snap = getSnapshot(session)

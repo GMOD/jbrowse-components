@@ -1,14 +1,14 @@
 import { buildLgvInit as buildSharedLgvInit } from '@jbrowse/app-core'
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
-import { indexedDBAvailable, resolveStorePluginRefs } from '@jbrowse/core/util'
+import { resolveStorePluginRefs } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import packageJSON from '../package.json' with { type: 'json' }
-import { openSessionDB } from './openSessionDB.ts'
 import { takePrefetchedConfig } from './prefetchConfig.ts'
 import { hintPrewarmedWorker } from './prewarmedWorker.ts'
 import { configBaseUri } from './resolveConfigPath.ts'
+import { getSessionDB } from './sessionDB.ts'
 import { upsertSessionRows } from './sessionDbOps.ts'
 import { addRelativeUris } from './util.ts'
 
@@ -78,24 +78,12 @@ export function readSessionFromStorage(query: string) {
 }
 
 export async function readSessionFromIDB(query: string) {
-  // no autosave database to read where there is no IndexedDB (jsdom, a locked
-  // down browser profile). The root model gates setupSessionDB on the same
-  // predicate, which is where the reasoning lives.
-  if (!indexedDBAvailable()) {
-    return undefined
-  }
-  let db: Awaited<ReturnType<typeof openSessionDB>> | undefined
   try {
-    db = await openSessionDB()
-    return await db.get('sessions', query)
+    const db = await getSessionDB()
+    return await db?.get('sessions', query)
   } catch (e) {
     console.error(e)
     return undefined
-  } finally {
-    // one-shot read at boot, from a connection the root model does not share.
-    // Left open it lives for the tab, and an open connection at the old version
-    // is what makes another tab's upgrade hang instead of run.
-    db?.close()
   }
 }
 
@@ -118,29 +106,20 @@ export async function readSessionFromIDB(query: string) {
  */
 export async function writeSessionToIDB(snap: Snap, configPath: string) {
   const { id, name } = snap
-  if (
-    !indexedDBAvailable() ||
-    typeof id !== 'string' ||
-    typeof name !== 'string'
-  ) {
-    return false
-  }
-  let db: Awaited<ReturnType<typeof openSessionDB>> | undefined
   try {
-    db = await openSessionDB()
-    await upsertSessionRows(
-      db,
-      { ...snap, id, name },
-      { id, name, configPath, edited: true },
-    )
-    return true
+    const db = await getSessionDB()
+    if (db && typeof id === 'string' && typeof name === 'string') {
+      await upsertSessionRows(
+        db,
+        { ...snap, id, name },
+        { id, name, configPath, edited: true },
+      )
+      return true
+    }
+    return false
   } catch (e) {
     console.error(e)
     return false
-  } finally {
-    // same one-shot discipline as readSessionFromIDB: a connection left open at
-    // the old version is what makes another tab's upgrade hang
-    db?.close()
   }
 }
 

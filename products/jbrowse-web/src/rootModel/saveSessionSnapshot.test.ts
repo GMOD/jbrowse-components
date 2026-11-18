@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from '../corePlugins.ts'
+import { getSessionDB } from '../sessionDB.ts'
 import { upsertSessionRows } from '../sessionDbOps.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
 import { saveSessionSnapshot } from './persistence.ts'
@@ -10,6 +11,9 @@ import rootModelFactory from './rootModel.ts'
 import type { SessionDBHandle, SessionRowIdent } from '../sessionDbOps.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
+jest.mock('../sessionDB.ts', () => ({
+  getSessionDB: jest.fn(),
+}))
 jest.mock('../sessionDbOps.ts', () => ({
   ...jest.requireActual('../sessionDbOps.ts'),
   upsertSessionRows: jest.fn(),
@@ -35,7 +39,7 @@ function makeRoot() {
 }
 
 function save(root: Root) {
-  return saveSessionSnapshot(db, root.session!, 'config.json')
+  return saveSessionSnapshot(root.session!, 'config.json')
 }
 
 function row(ident: SessionRowIdent) {
@@ -49,6 +53,7 @@ function written() {
 }
 
 beforeEach(() => {
+  jest.mocked(getSessionDB).mockResolvedValue(db)
   jest
     .mocked(upsertSessionRows)
     .mockImplementation(async (_db, _snap, ident) => row(ident))

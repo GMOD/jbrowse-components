@@ -3,6 +3,7 @@ import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import corePlugins from '../corePlugins.ts'
+import { getSessionDB } from '../sessionDB.ts'
 import { claimSessionId } from '../sessionLock.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
 import { saveSessionSnapshot } from './persistence.ts'
@@ -14,6 +15,9 @@ jest.mock('../makeWorkerInstance', () => () => {})
 jest.mock('./persistence.ts', () => ({
   ...jest.requireActual('./persistence.ts'),
   saveSessionSnapshot: jest.fn(),
+}))
+jest.mock('../sessionDB.ts', () => ({
+  getSessionDB: jest.fn(),
 }))
 jest.mock('../sessionLock.ts', () => ({
   ...jest.requireActual('../sessionLock.ts'),
@@ -34,7 +38,7 @@ function makeRoot(sessionDB: Partial<SessionDBHandle> = {}) {
     },
   })
   root.setSession({ name: 'open session' })
-  root.setSessionDB(sessionDB as SessionDBHandle)
+  jest.mocked(getSessionDB).mockResolvedValue(sessionDB as SessionDBHandle)
   roots.push(root)
   return root
 }
@@ -63,7 +67,7 @@ afterEach(() => {
 test('opening a copy saves the session it replaces first', async () => {
   const root = makeRoot()
   const savedNames: string[] = []
-  jest.mocked(saveSessionSnapshot).mockImplementation(async (_db, session) => {
+  jest.mocked(saveSessionSnapshot).mockImplementation(async session => {
     savedNames.push(session.name)
     return undefined
   })

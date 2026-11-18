@@ -2,7 +2,7 @@ import { byLastUsedDesc, sessionLastUsed } from '@jbrowse/app-core'
 import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { openSessionDB } from '../openSessionDB.ts'
+import { getSessionDB } from '../sessionDB.ts'
 import { deleteSessionRows, upsertSessionRows } from '../sessionDbOps.ts'
 import {
   claimSessionId,
@@ -104,7 +104,6 @@ const snapshotWrites = new WeakMap<object, SnapshotWrite>()
  * activateSession does on its way out go through it.
  */
 export async function saveSessionSnapshot(
-  db: SessionDBHandle,
   // IStateTreeNode, never IAnyStateTreeNode — the latter resolves to `any` and
   // would stop checking that a caller passed something with an id and a name
   session: IStateTreeNode<IType<any, Session, any>> & {
@@ -122,137 +121,121 @@ export async function saveSessionSnapshot(
   const edited = prev?.snap === snap ? prev.edited : prev !== undefined
   const write = { snap, edited, landed: false }
   snapshotWrites.set(session, write)
-  const meta = await upsertSessionRows(db, snap, {
-    id,
-    name,
-    configPath: configPath ?? '',
-    edited,
-  })
-  write.landed = true
-  return meta
+  const db = await getSessionDB()
+  if (db) {
+    const meta = await upsertSessionRows(db, snap, {
+      id,
+      name,
+      configPath: configPath ?? '',
+      edited,
+    })
+    write.landed = true
+    return meta
+  }
+  return undefined
 }
 
-// Opens the IndexedDB for autosave persistence, then mirrors session changes
-// + metadata into idb on each session edit (throttled to 400ms). Skipped when
-// indexedDB is unavailable (tests, restricted environments).
+// Reads the saved-session list, prunes it, and mirrors session changes and
+// their metadata into IndexedDB on each session edit (throttled to 400ms).
+// Pruning is housekeeping, so its failure is logged and autosave starts anyway.
 export async function setupSessionDB(self: WebRootModel) {
-  try {
-    const sessionDB = await openSessionDB({
-      // The connection is gone: another tab is upgrading the schema and we had
-      // to close so its upgrade could run, or the browser terminated us. Drop
-      // the handle — the autorun below reads it off the model each tick, so it
-      // stops writing rather than throwing an InvalidStateError every 400ms,
-      // and would pick a replacement handle straight back up.
-      onLost: () => {
-        if (isAlive(self)) {
-          self.setSessionDB(undefined)
-          self.session?.notify(
-            'Session auto-save to this browser stopped, likely because another JBrowse tab is updating its storage. Reload this tab to resume.',
-            'warning',
-          )
-        }
-      },
+  const db = await getSessionDB().catch((e: unknown) => {
+    reportListFailure(self, e)
+    return undefined
+  })
+  // a plugin-install rebuild can destroy this root while these awaits are in
+  // flight, and addDisposer on a dead node never fires, so an autorun installed
+  // then would write a destroyed session's snapshot for the life of the tab
+  if (db && isAlive(self)) {
+    await pruneOldSessions(db, self.session?.id).catch((e: unknown) => {
+      console.error(e)
     })
-    // a plugin-install rebuild can destroy this root while the open (and the
-    // two awaits below) are in flight. addDisposer on a dead node never fires,
-    // so the autorun would be installed and never torn down — left writing a
-    // destroyed session's snapshot for the life of the tab.
-    if (!isAlive(self)) {
-      sessionDB.close()
-      return
-    }
-    self.setSessionDB(sessionDB)
-    // a plugin-install rebuild opens its own, so this one would otherwise stay
-    // open for the life of the tab
-    registerTeardown(self, () => {
-      sessionDB.close()
+    await self.fetchSessionMetadata().catch((e: unknown) => {
+      reportListFailure(self, e)
     })
-    await pruneOldSessions(sessionDB, self.session?.id)
-    await self.fetchSessionMetadata()
-    if (!isAlive(self)) {
-      return
-    }
-
-    // the list is read once here and then follows only this tab's own writes,
-    // so re-read it on return from another tab that may have saved sessions
-    const refresh = () => {
-      if (isAlive(self)) {
-        self.fetchSessionMetadata().catch((e: unknown) => {
-          console.error(e)
-        })
-      }
-    }
-    window.addEventListener('focus', refresh)
-    registerTeardown(self, () => {
-      window.removeEventListener('focus', refresh)
-    })
-
-    // notifyError always pushes a fresh snackbar — its "report" action defeats
-    // the duplicate-message check in pushSnackbarMessage — and this autorun
-    // re-runs every 400ms for as long as the session keeps changing. So a
-    // failure that persists (quota exceeded, a connection the browser closed
-    // under us) would stack an unbounded pile of identical error toasts. Report
-    // the first, then stay quiet until it works again, exactly as
-    // setupSessionStorageAutosave does below.
-    let savingFailed = false
-    // registerTeardown rather than addDisposer: this writes to IndexedDB, so it
-    // has to stop when the React host detaches, a task ahead of the destroy an
-    // addDisposer would wait for (rootModel's `detach`).
-    registerTeardown(
-      self,
-      autorun(
-        async () => {
-          // read off the model rather than closing over the handle from the
-          // open above: onLost clears it, and this is what makes that stick
-          const db = self.sessionDB
-          const { session } = self
-          if (session && db) {
-            try {
-              // careful not to access self.savedSessionMetadata in the tracked
-              // head of this autorun, or else it can create an infinite loop —
-              // the list this writes is the list it would be observing.
-              // (upsertSessionMetadata below reads it, but from inside an MST
-              // action past an await, so neither is tracked.) saveSessionSnapshot
-              // does its reads synchronously, which is what keeps them tracked.
-              const meta = await saveSessionSnapshot(
-                db,
-                session,
-                self.configPath,
-              )
-              if (meta && isAlive(self)) {
-                // the one row that changed is the one we just wrote, so merge it
-                // in rather than re-reading every session's metadata on each
-                // autosave tick (see upsertSessionMetadata)
-                self.upsertSessionMetadata(meta)
-                if (savingFailed && isAlive(session)) {
-                  savingFailed = false
-                  session.notify('Session auto-saving restored', 'info')
-                }
-              }
-            } catch (e) {
-              console.error(e)
-              if (!savingFailed && isAlive(session)) {
-                savingFailed = true
-                session.notifyError(`${e}`, e)
-              }
-            }
-          }
-        },
-        { delay: 400 },
-      ),
-    )
-    setupThumbnailCapture(self)
-  } catch (e) {
-    console.error(e)
     if (isAlive(self)) {
-      // the list stays `undefined` on this path otherwise, which every reader
-      // takes to mean "still opening" — the session manager would sit on its
-      // loading message for the life of the tab rather than say there is
-      // nothing to show
-      self.setSavedSessionMetadata([])
-      self.session?.notifyError(`${e}`, e)
+      setupMetadataRefresh(self)
+      setupIndexedDBAutosave(self)
+      setupThumbnailCapture(self)
     }
   }
+}
+
+// The list stays `undefined` otherwise, which every reader takes to mean "still
+// opening", so the session manager would show its loading message for the life
+// of the tab rather than say there is nothing to show
+function reportListFailure(self: WebRootModel, e: unknown) {
+  console.error(e)
+  if (isAlive(self)) {
+    self.setSavedSessionMetadata([])
+    self.session?.notifyError(`${e}`, e)
+  }
+}
+
+// The list is read once and then follows only this tab's own writes, so it is
+// re-read on return from another tab that may have saved sessions
+function setupMetadataRefresh(self: WebRootModel) {
+  const refresh = () => {
+    if (isAlive(self)) {
+      self.fetchSessionMetadata().catch((e: unknown) => {
+        console.error(e)
+      })
+    }
+  }
+  window.addEventListener('focus', refresh)
+  registerTeardown(self, () => {
+    window.removeEventListener('focus', refresh)
+  })
+}
+
+function setupIndexedDBAutosave(self: WebRootModel) {
+  // notifyError always pushes a fresh snackbar — its "report" action defeats
+  // the duplicate-message check in pushSnackbarMessage — and this autorun
+  // re-runs every 400ms for as long as the session keeps changing. So a
+  // failure that persists (quota exceeded, a newer JBrowse tab having upgraded
+  // the database) would stack an unbounded pile of identical error toasts.
+  // Report the first, then stay quiet until it works again, exactly as
+  // setupSessionStorageAutosave does below.
+  let savingFailed = false
+  // registerTeardown rather than addDisposer: this writes to IndexedDB, so it
+  // has to stop when the React host detaches, a task ahead of the destroy an
+  // addDisposer would wait for (rootModel's `detach`).
+  registerTeardown(
+    self,
+    autorun(
+      async () => {
+        const { session } = self
+        if (session) {
+          try {
+            // careful not to access self.savedSessionMetadata in the tracked
+            // head of this autorun, or else it can create an infinite loop —
+            // the list this writes is the list it would be observing.
+            // (upsertSessionMetadata below reads it, but from inside an MST
+            // action past an await, so neither is tracked.) saveSessionSnapshot
+            // does its reads synchronously, which is what keeps them tracked.
+            const meta = await saveSessionSnapshot(session, self.configPath)
+            if (meta && isAlive(self)) {
+              // the one row that changed is the one we just wrote, so merge it
+              // in rather than re-reading every session's metadata on each
+              // autosave tick (see upsertSessionMetadata)
+              self.upsertSessionMetadata(meta)
+              if (savingFailed && isAlive(session)) {
+                savingFailed = false
+                session.notify('Session auto-saving restored', 'info')
+              }
+            }
+          } catch (e) {
+            console.error(e)
+            if (!savingFailed && isAlive(session)) {
+              savingFailed = true
+              session.notifyError(`${e}`, e)
+            }
+          }
+        }
+      },
+      { delay: 400 },
+    ),
+  )
 }
 
 // An export blocks the main thread for hundreds of milliseconds, so a picture is

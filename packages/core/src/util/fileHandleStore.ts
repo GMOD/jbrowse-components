@@ -1,4 +1,4 @@
-import { openDB } from 'idb'
+import { idbConnection } from './idbConnection.ts'
 
 import type { DBSchema, IDBPDatabase } from 'idb'
 
@@ -13,8 +13,6 @@ declare global {
   }
 }
 
-const DB_NAME = 'jbrowse-file-handles'
-const DB_VERSION = 1
 const STORE_NAME = 'handles'
 
 interface FileHandleDB extends DBSchema {
@@ -24,27 +22,9 @@ interface FileHandleDB extends DBSchema {
   }
 }
 
-let dbPromise: Promise<IDBPDatabase<FileHandleDB>> | undefined
-
-function getDB() {
-  dbPromise ??= openDB<FileHandleDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      db.createObjectStore(STORE_NAME)
-    },
-    // the browser closed the connection (site data cleared while the page was
-    // open); without this every later pick reuses the dead handle and throws
-    terminated() {
-      dbPromise = undefined
-    },
-  }).catch((error: unknown) => {
-    // drop the rejected promise, so a transient open failure (a blocked
-    // upgrade, a storage prompt the user has since answered) doesn't make every
-    // later call replay the same error for the life of the page
-    dbPromise = undefined
-    throw error
-  })
-  return dbPromise
-}
+const getDB = idbConnection<FileHandleDB>('jbrowse-file-handles', 1, [
+  STORE_NAME,
+])
 
 export function isFileSystemAccessSupported() {
   return typeof window !== 'undefined' && 'showOpenFilePicker' in window

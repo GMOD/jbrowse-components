@@ -150,10 +150,7 @@ export async function renameSessionRows(
   name: string,
 ) {
   await withBothStores(db, async ({ sessions, metadata }) => {
-    // awaited one at a time, not Promise.all'd: awaiting the transaction's own
-    // requests directly is the one pattern guaranteed to keep it open
-    const snap = await sessions.get(id)
-    const meta = await metadata.get(id)
+    const [snap, meta] = await Promise.all([sessions.get(id), metadata.get(id)])
     if (snap && meta) {
       await Promise.all([
         sessions.put({ ...snap, name }, id),
