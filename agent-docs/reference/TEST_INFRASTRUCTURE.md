@@ -350,14 +350,12 @@ counts, picking a track by name, asserting what is *not* shown): `LGVSynteny`,
 ### `fireEvent`, not `userEvent`
 
 `userEvent.click` replays a whole pointer sequence, each step in `act()` against
-a mounted app, far slower than `fireEvent.click`. Three cases need `userEvent`,
+a mounted app, far slower than `fireEvent.click`. Two cases need `userEvent`,
 and the full-suite run finds them (expect a failure, not a slow test, if you
 convert one back):
 
 - **A focus guard.** `GridBookmarkWidget`'s hotkeys fire only when the view has
   focus, and only a real pointer sequence focuses `tracksContainer`.
-- **A non-input target.** A `<div>` highlight-label cell has no value setter for
-  `fireEvent.change`.
 - **MUI Autocomplete.** It opens its listbox off the focus/pointer sequence.
 
 ## Image snapshots go stale invisibly

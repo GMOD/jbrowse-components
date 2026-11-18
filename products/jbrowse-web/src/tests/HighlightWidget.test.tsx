@@ -140,22 +140,28 @@ test('Navigate to the newest highlight with the hotkey', async () => {
 }, 40000)
 
 test('Edit a highlight label with a single click in the list', async () => {
-  const { session, findByText, findAllByRole } = await createView(config)
+  const { session, findByText, findByRole } = await createView(config)
 
   fireEvent.click(await findByText('Tools'))
   fireEvent.click(await findByText('Highlights'))
   session.addHighlight(region)
 
-  const field = (await findAllByRole('gridcell'))[2]!
-  // userEvent, not fireEvent.change: the grid cell is a <div>, not an input, so
-  // it has no value setter for a change event to drive. Typing goes to whatever
-  // the click focused, which is the editor the grid mounts.
-  await userEvent.setup().type(field, 'new label{Enter}')
+  // typing goes to whatever the click focused, which is the input the cell
+  // opens in place of its text
+  await userEvent
+    .setup()
+    .type(
+      await findByRole('button', { name: 'Edit label of ctgA:201..240' }),
+      'new label{Enter}',
+    )
 
   await waitFor(() => {
     expect(session.highlights[0]!.label).toBe('new label')
   })
-  expect(field.textContent).toContain('new label')
+  expect(
+    (await findByRole('button', { name: 'Edit label of ctgA:201..240' }))
+      .textContent,
+  ).toBe('new label')
 }, 60000)
 
 test('Toggle highlight visibility across all views', async () => {

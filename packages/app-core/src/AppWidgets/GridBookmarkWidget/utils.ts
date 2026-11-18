@@ -15,8 +15,8 @@ interface HighlightNavigableView {
   navToHighlight: (highlight: HighlightType) => Promise<boolean>
 }
 
-// DataGrid column width fitting the wider of the header text and the cell
-// values. Capped at maxWidth so long values ellipsize (via the .cell style)
+// A column width fitting the wider of the header text and the cell values.
+// Capped at maxWidth so long values ellipsize (via the .cell style)
 // instead of overflowing the narrow sidebar widget
 export function colWidth(header: string, values: string[], maxWidth = 200) {
   return Math.min(
