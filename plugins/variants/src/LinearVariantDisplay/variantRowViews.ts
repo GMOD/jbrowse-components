@@ -18,6 +18,7 @@ import {
 } from '../shared/getSources.ts'
 import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
+import { DEFAULT_ROWS_TRACK_HEIGHT } from './variantTopBands.ts'
 
 import type { VariantRowsField } from '../shared/constants.ts'
 import type { ProcessedSource, Source } from '../shared/types.ts'
@@ -142,18 +143,26 @@ export function variantGenotypeRowViews(self: VariantGenotypeRowHost) {
     },
     /**
      * #getter
+     * Whether the VCF has genotype rows to draw or hide, whatever hosts the
+     * display: it lists samples, more than one or one whose row somebody
+     * asked for. True until the sample listing lands.
+     */
+    get hasSampleRows(): boolean {
+      const sampleCount = self.adapterSamples?.length
+      return !(
+        sampleCount === 0 ||
+        (sampleCount === 1 && !self.genotypesShowWritten)
+      )
+    },
+    /**
+     * #getter
      * Whether the records band is the display, every record the filter
      * admits, sized by `heightMode` and lettered as a feature track: a VCF
      * with no samples, a one-sample call set whose row nobody asked for,
      * or a ring, which draws one canvas and so the records alone.
      */
     get recordsOnly(): boolean {
-      const sampleCount = self.adapterSamples?.length
-      return (
-        sampleCount === 0 ||
-        (sampleCount === 1 && !self.genotypesShowWritten) ||
-        this.inRing
-      )
+      return !this.hasSampleRows || this.inRing
     },
     /**
      * #getter
@@ -407,9 +416,9 @@ export function variantFetchViews(self: VariantFetchHost) {
   }
 }
 
-/** What {@link variantHeightViews} reads: the config and whether records alone draw. */
+/** What {@link variantHeightViews} reads: the config and whether the VCF has rows. */
 export interface VariantHeightHost extends VariantRowConfigHost {
-  recordsOnly: boolean
+  hasSampleRows: boolean
   openingHeight?: number
 }
 
@@ -428,16 +437,19 @@ export function variantHeightViews(self: VariantHeightHost) {
     },
     /**
      * #getter
-     * `height` as written, else, with no rows, the height the track
-     * opened at, else the default. Overrides
-     * `TrackHeightMixin.configuredHeight`, so a drag, `fit` and the
-     * grow-exit bake start from the height on screen.
+     * `height` as written. Unset, a VCF with genotype rows takes the
+     * track its rows, chips and records band open at by default, in either
+     * layout, rows hidden or in a ring included, so no toggle moves the
+     * slot; one without takes the height its records opened at, else the
+     * records' default. Overrides `TrackHeightMixin.configuredHeight`, so a
+     * drag, `fit` and the grow-exit bake start from the height on screen.
      */
     get configuredHeight(): number {
       return (
         getConf(self, 'height') ??
-        (self.recordsOnly ? self.openingHeight : undefined) ??
-        DEFAULT_VARIANT_DISPLAY_HEIGHT
+        (self.hasSampleRows
+          ? DEFAULT_ROWS_TRACK_HEIGHT
+          : (self.openingHeight ?? DEFAULT_VARIANT_DISPLAY_HEIGHT))
       )
     },
   }
@@ -460,8 +472,8 @@ export function variantRowsHeightViews(self: VariantRowsHeightHost) {
   return {
     /**
      * #getter
-     * Height left for the rows under the bands above them, floored at 0:
-     * every consumer treats it as a pixel dimension. 0 while no row
+     * Height the track leaves the rows under the bands above them, floored
+     * at 0: every consumer treats it as a pixel dimension. 0 while no row
      * draws.
      */
     get availableHeight() {

@@ -1,4 +1,4 @@
-import { fullConfSnapshot } from '@jbrowse/core/configuration'
+import { fullConfSnapshot, getConf } from '@jbrowse/core/configuration'
 import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   DEFAULT_BYTE_LIMIT,
@@ -6,6 +6,8 @@ import {
 } from '@jbrowse/core/data_adapters/tables'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { isObject } from '@jbrowse/core/util'
+import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
+import { reservedPx } from '@jbrowse/core/util/bandLayout'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -49,6 +51,12 @@ import {
   variantRowHookViews,
   variantRowsHeightViews,
 } from './LinearVariantDisplay/variantRowViews.ts'
+import {
+  BAND_CHIPS_HEIGHT,
+  DEFAULT_RECORDS_HEIGHT,
+  RECORDS_BAND_BOUNDS,
+  boundRecordsBand,
+} from './LinearVariantDisplay/variantTopBands.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import { sourcesAndWarnings } from './VariantRPC/MultiSampleVariantGetSources.ts'
 import { genotypeMatrixOf } from './VariantRPC/buildGenotypeMatrix.ts'
@@ -130,9 +138,11 @@ const base = types
  * the samples the adapter lists, the windows the regions show and the
  * payload the fetch reports, under the row views the display installs, its
  * row hooks, what it fetches, its cell coloring, whether it draws its
- * genotype rows, the height its rows divide and what it keys. No session, no
- * view and no records band, so its `height` is the rows' slot; its env holds
- * the `pluginManager` the jexl filters evaluate through.
+ * genotype rows, the height its rows divide and what it keys. No session and
+ * no view, so no window whose records stack: its `height` is the track, and
+ * its rows take what the chips' strip and a records band at its stated or
+ * default height leave (`rowsHeaderHeight`). Its env holds the
+ * `pluginManager` the jexl filters evaluate through.
  */
 const VariantTablesHost = treeSidebarRowStages<ProcessedSource>()(base)
   .views(self => variantDrawnRowViews(self))
@@ -141,6 +151,34 @@ const VariantTablesHost = treeSidebarRowStages<ProcessedSource>()(base)
   .views(self => variantHeightViews(self))
   .views(self => variantRowsHeightViews(self))
   .views(self => recordsKeyViews(self))
+  .views(self => ({
+    /**
+     * `TreeSidebarMixin`'s hook, as the display answers it while rows draw:
+     * the chips' strip under the records band, both out of `height`. The
+     * band is `records.height`, else its default, bound against the track
+     * as the display binds it, which is the display's band wherever the
+     * records in view stack to the default.
+     */
+    get rowsHeaderHeight() {
+      const written = getConf(self, ['records', 'height'])
+      return self.drawsGenotypeRows
+        ? BAND_CHIPS_HEIGHT +
+            reservedPx(
+              boundRecordsBand({
+                band: {
+                  active: self.showRecords,
+                  height: boundBandHeight(
+                    written ?? DEFAULT_RECORDS_HEIGHT,
+                    RECORDS_BAND_BOUNDS,
+                  ),
+                },
+                written: written !== undefined,
+                trackHeight: self.height,
+              }),
+            )
+        : 0
+    },
+  }))
   .views(self => cellKeyViews(self))
   .views(self => recordColorViews(self))
   .views(self => recordsColorScaleViews(self))
@@ -313,11 +351,15 @@ async function fetchedVariantHost(
  * and stacks them in `facet`'s bands, each with its label and band; `bands`,
  * each band's value and label, in stacking order; `legend`, `legendTitle`
  * and `ramps`, the key the display shows; `rowBackground`, the fill the
- * display paints behind its rows; `height`, the px the rows' slot takes
- * (`height` as written, else the display's default), the records band above
- * it apart; `rowHeight`, the px each row draws at, `rows.step` or the slot
- * divided between the rows, as the display resolves it; and `warnings`, the
- * samples file's. With `genotypes.reference.show` off, the default, a
+ * display paints behind its rows; `height`, the display's `height` slot
+ * resolved (as written, else its default, 390 for a VCF with genotype rows
+ * and 200 for one with none), which while rows draw is the whole track, the
+ * records band and its chips' strip inside it; `rowHeight`, the px each row
+ * draws at, `rows.step` or what the track leaves the rows divided between
+ * them, under a records band at `records.height`, or unset at its default up
+ * to its share of the track, which is the display's band wherever the
+ * records in view stack that high; and `warnings`, the samples file's. With
+ * `genotypes.reference.show` off, the default, a
  * reference call draws no cell, and `rowBackground` is the reference call's
  * color, standing in for every one; on, `rowBackground` is `''`. With
  * `genotypes.show` off, and unset on a one-sample VCF, no row draws, so

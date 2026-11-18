@@ -8,7 +8,11 @@
  */
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
-import { boundBandHeight, clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import {
+  MIN_BAND_HEIGHT,
+  boundBandHeight,
+  clampBandHeight,
+} from '@jbrowse/core/util/bandHeight'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -54,7 +58,11 @@ import { svClassColors, svClassScale } from './recordsSvColors.ts'
 import {
   DEFAULT_RECORDS_HEIGHT,
   RECORDS_BAND_BOUNDS,
+  boundRecordsBand,
+  dragRecordsHeight,
   recordsBandHeightOverRows,
+  recordsBandStack,
+  trackHeightForRows,
   variantTopBandsGeometry,
 } from './variantTopBands.ts'
 
@@ -164,7 +172,7 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     /**
      * #getter
      * Whether the band's height holds: written, or settled at its opening.
-     * Until then the band over rows is its stack, up to the default.
+     * Until then the band beside rows is its stack, up to the default.
      */
     get recordsHeightHeld() {
       return (
@@ -173,9 +181,9 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     },
     /**
      * #getter
-     * `records.height`, else the height the band opened at, else the
+     * `records.height`, else the stack the band opened at, else the
      * default it opens at up to its stack. Raw: what the band spends is
-     * `topBands.reserved.records`.
+     * `topBands.reserved.records`, which the track bounds while rows draw.
      */
     get recordsHeight(): number {
       return (
@@ -274,7 +282,7 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     /**
      * #getter
      * `HeightModeMixin`'s ceiling on `grow`: the slot's with no rows;
-     * over rows none, so `height` holds in every mode.
+     * over rows none, so the track keeps `height` in every mode.
      */
     get growMaxHeight(): number {
       return self.recordsOnly
@@ -310,8 +318,8 @@ export function recordsBandActions(self: RecordsActionsHost) {
   return {
     /**
      * #action
-     * Switch the records band on or off; over rows it adds its height to
-     * the track above them.
+     * Switch the records band on or off; over rows it takes its height
+     * from the track, and off it gives that back to the rows.
      */
     setShowRecords(arg: boolean) {
       setConf(self, ['records', 'show'], arg)
@@ -678,6 +686,7 @@ interface RecordsLayoutHost extends RecordsRenderHost, RecordsRender {
   fitTargetHeight: number
   scrollTop: number
   rowsContentHeight: number
+  rowsTopOffset: number
   availableHeight: number
 }
 
@@ -731,18 +740,30 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
   const fullStackHeight = computed(() =>
     maxBottom(band.baseLaidOutDataMap, self.recordsMeasureIds),
   )
-  // over rows the band's height is added to the display's, so it reads
-  // nothing of the display's height
+  const heldHeight = computed(() =>
+    recordsBandHeightOverRows({
+      recordsHeight: self.recordsHeight,
+      recordsHeightHeld: self.recordsHeightHeld,
+      recordsContentHeight: fullStackHeight.get(),
+    }),
+  )
+  // with the rows hidden the display's `height` reads this band, so only the
+  // records-only branch, whose `height` does not, reads `height` back
+  const recordsBand = computed(() => {
+    const active = self.showRecords
+    return self.recordsOnly
+      ? { active, height: self.height }
+      : self.drawsGenotypeRows
+        ? boundRecordsBand({
+            band: { active, height: heldHeight.get() },
+            written: self.recordsHeightWritten,
+            trackHeight: self.fitTargetHeight,
+          })
+        : { active, height: heldHeight.get() }
+  })
   const bands = computed(() =>
     variantTopBandsGeometry({
-      showRecords: self.showRecords,
-      recordsHeight: self.recordsOnly
-        ? self.height
-        : recordsBandHeightOverRows({
-            recordsHeight: self.recordsHeight,
-            recordsHeightHeld: self.recordsHeightHeld,
-            recordsContentHeight: fullStackHeight.get(),
-          }),
+      records: recordsBand.get(),
       showChips: self.atGenomicPositions && !self.recordsOnly,
       connectors: self.connectorsBand,
     }),
@@ -752,17 +773,41 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * #getter
      * The bands stacked above the rows, resolved once: the layout below
      * and the painters read this instead of summing the bands
-     * (`variantTopBands.ts`). The records band is `records.height` once
-     * written, its `full` rung's stack up to the default before.
+     * (`variantTopBands.ts`). Over drawn rows the records band is
+     * `records.height` once written, its opening stack up to the default
+     * and its share of the track before, and never so tall the rows lose
+     * their floor.
      */
     get topBands() {
       return bands.get()
     },
     /**
      * #getter
+     * The records band folded alone, which its seam drag is clamped
+     * against.
+     */
+    get recordsSeamStack() {
+      return recordsBandStack(recordsBand.get())
+    },
+    /**
+     * #getter
+     * The track at which the genotype rows under the bands show their whole
+     * content, the lines leading them included: what the track handle's
+     * double click grows to at genomic positions.
+     */
+    get rowsContentTrackHeight() {
+      return trackHeightForRows({
+        rowsHeight:
+          self.rowsContentHeight + self.rowsTopOffset - this.topBands.bottom,
+        recordsHeight: self.showRecords ? heldHeight.get() : 0,
+        written: self.recordsHeightWritten,
+      })
+    },
+    /**
+     * #getter
      * `HeightModeMixin`'s hook: with no rows, the records' `full`
      * stack on screen, as LinearBasicDisplay grows to its features;
-     * over rows the slot height, so `grow` keeps the rows' height.
+     * over rows the slot height, so `grow` keeps the track's height.
      */
     get growTargetHeight() {
       return self.recordsOnly && self.cellData !== undefined && self.canRender
@@ -960,8 +1005,8 @@ export function recordsTrackHeightViews(self: RecordsTrackHeightHost) {
     /**
      * #getter
      * Genotype rows hidden on a VCF with samples: the band and its chip
-     * strip are all the track draws, and the slot waits for the rows'
-     * return.
+     * strip are all the track draws, and the slot `height` waits for the
+     * rows' return.
      */
     get rowsHidden() {
       return !self.drawsGenotypeRows && !self.recordsOnly
@@ -980,26 +1025,31 @@ export function recordsTrackHeightViews(self: RecordsTrackHeightHost) {
     },
     /**
      * #getter
-     * Over genotype rows the records band and its chip strip add their
-     * height to the track above them, so the rows keep the slot's height;
-     * with the rows hidden the track is the band and its chip strip.
-     * With no samples, or in a ring, the band is the display, sized by
+     * Over genotype rows the track is the slot's height, which the records
+     * band and its chip strip come out of, the rows taking the rest; with
+     * the rows hidden the track is the band and its chip strip. With no
+     * samples, or in a ring, the band is the display, sized by
      * `heightMode`. Overrides `HeightModeMixin.height`.
      */
     get height(): number {
-      const sized =
-        self.autoHeight && containingHost(self).initialized
+      return this.rowsHidden
+        ? self.topBands.bottom
+        : self.autoHeight && containingHost(self).initialized
           ? self.grownHeight
           : self.fitTargetHeight
-      return self.recordsOnly
-        ? sized
-        : (this.rowsHidden ? 0 : sized) + self.topBands.addedHeight
     },
   }
 }
 
 interface RecordsTrackResizeHost {
   rowsHidden: boolean
+  drawsGenotypeRows: boolean
+  atGenomicPositions: boolean
+  height: number
+  scrollableHeight: number
+  rowsContentTrackHeight: number
+  topBands: RecordsLayout['topBands']
+  setHeight: (height: number) => number
   resizeHeight: (distance: number) => number
   expandToContentHeight: () => number
   resizeRecordsBand: (distance: number) => number
@@ -1007,13 +1057,24 @@ interface RecordsTrackResizeHost {
 }
 
 export function recordsTrackResizeActions(self: RecordsTrackResizeHost) {
+  const superSetHeight = self.setHeight
   const superResizeHeight = self.resizeHeight
   const superExpandToContentHeight = self.expandToContentHeight
   return {
     /**
      * #action
+     * `TrackHeightMixin`'s, floored so the rows under the chips' strip
+     * keep `MIN_BAND_HEIGHT` wherever the strip draws.
+     */
+    setHeight(height: number) {
+      return superSetHeight(
+        Math.max(height, self.topBands.reserved.chips + MIN_BAND_HEIGHT),
+      )
+    },
+    /**
+     * #action
      * With the rows hidden the track's edge resizes the records band;
-     * otherwise `HeightModeMixin`'s, on the slot the rows draw at.
+     * otherwise `HeightModeMixin`'s, on the slot the track draws at.
      */
     resizeHeight(distance: number) {
       return self.rowsHidden
@@ -1023,12 +1084,19 @@ export function recordsTrackResizeActions(self: RecordsTrackResizeHost) {
     /**
      * #action
      * With the rows hidden the handle's double click grows the band
-     * to its whole stack, so no record hides; it never shrinks it.
+     * to its whole stack, so no record hides; it never shrinks it. Over
+     * rows under the records band it grows the track to where the rows
+     * show their whole content, past the px they lack by what the band
+     * takes of the taller track.
      */
     expandToContentHeight() {
       return self.rowsHidden
         ? self.showAllRecordRows()
-        : superExpandToContentHeight()
+        : self.drawsGenotypeRows &&
+            self.atGenomicPositions &&
+            self.scrollableHeight > 0
+          ? self.resizeHeight(self.rowsContentTrackHeight - self.height)
+          : superExpandToContentHeight()
     },
   }
 }
@@ -1036,44 +1104,81 @@ export function recordsTrackResizeActions(self: RecordsTrackResizeHost) {
 interface RecordsLayoutActionsHost extends RecordsLayout {
   configuration: RecordsSettingsHost['configuration']
   openingRecordsHeight: number | undefined
+  recordsOnly: boolean
+  drawsGenotypeRows: boolean
+  rowsHidden: boolean
+  configuredHeight: number
+  fitTargetHeight: number
+  setHeight: (height: number) => number
 }
 
 export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
-  function resizeRecordsBand(distance: number) {
-    const before = self.topBands.reserved.records
-    const after = clampBandHeight(
-      before,
-      before + distance,
-      RECORDS_BAND_BOUNDS,
-    )
+  // A resize the clamp leaves where it is writes nothing, so an empty band
+  // pushed shut stays unwritten; one pulled open opens at least at the floor,
+  // since it is empty for want of records, not set below the floor.
+  function writeRecordsHeight(
+    before: number,
+    after: number,
+    movesTrack: boolean,
+  ) {
     if (after !== before) {
-      setConf(
-        self,
-        ['records', 'height'],
-        before === 0 ? boundBandHeight(after, RECORDS_BAND_BOUNDS) : after,
-      )
+      const written =
+        before === 0 ? boundBandHeight(after, RECORDS_BAND_BOUNDS) : after
+      setConf(self, ['records', 'height'], written)
+      if (movesTrack) {
+        self.setHeight(self.configuredHeight + written - before)
+      }
     }
     return self.topBands.reserved.records - before
+  }
+  function resizeRecordsBand(distance: number) {
+    const before = self.topBands.reserved.records
+    const target = before + distance
+    return self.drawsGenotypeRows
+      ? writeRecordsHeight(
+          before,
+          dragRecordsHeight(
+            self.recordsSeamStack,
+            self.fitTargetHeight,
+            target,
+          ),
+          false,
+        )
+      : writeRecordsHeight(
+          before,
+          clampBandHeight(before, target, RECORDS_BAND_BOUNDS),
+          self.rowsHidden,
+        )
   }
   return {
     /**
      * #action
      * Raise the band to its whole stack, so no record row hides; it never
      * shrinks it. The `+N hidden` chip, and the track handle's double click
-     * with the rows hidden.
+     * with the rows hidden. Beside rows, drawn or hidden, the slot `height`
+     * rises by as much in the same action, so the band grows the track and
+     * the rows keep their px.
      */
     showAllRecordRows() {
-      return resizeRecordsBand(
-        Math.max(0, self.recordsStackHeight - self.topBands.reserved.records),
+      const before = self.topBands.reserved.records
+      return writeRecordsHeight(
+        before,
+        clampBandHeight(
+          before,
+          Math.max(before, self.recordsStackHeight),
+          RECORDS_BAND_BOUNDS,
+        ),
+        !self.recordsOnly,
       )
     },
     /**
      * #action
      * Resize the band by `distance` from what it draws, answering how far
-     * it moved, as `resizeHeight` answers for the track. A resize the
-     * clamp leaves where it is writes nothing, so an empty band pushed
-     * shut stays unwritten; one pulled open opens at least at the floor,
-     * since it is empty for want of records, not set below the floor.
+     * it moved, as `resizeHeight` answers for the track. Over drawn rows it
+     * trades px with them inside the track, down to the records' floor and
+     * up to the rows'. With the rows hidden the band is the track, so it
+     * has no ceiling, and the slot `height` moves with it, so the rows come
+     * back at the px they left.
      */
     resizeRecordsBand,
     /**

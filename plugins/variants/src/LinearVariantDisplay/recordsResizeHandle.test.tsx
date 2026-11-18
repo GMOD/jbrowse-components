@@ -1,3 +1,4 @@
+import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
 import ChromeLegend from '@jbrowse/display-kit/ChromeLegend'
 import { TrackOverlaySlot } from '@jbrowse/display-ui'
 import { act, fireEvent, render, screen } from '@testing-library/react'
@@ -5,7 +6,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import RecordsBandOverlay from './components/RecordsBandOverlay.tsx'
 import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
-import { MIN_RECORDS_HEIGHT } from './variantTopBands.ts'
+import { BAND_CHIPS_HEIGHT, MIN_RECORDS_HEIGHT } from './variantTopBands.ts'
 
 function drag(handle: HTMLElement, dy: number) {
   fireEvent.pointerDown(handle, { clientY: 0, pointerId: 1 })
@@ -44,6 +45,33 @@ test('a drag down on the seam sets the band past its stack', () => {
 
   expect(display.recordsHeight).toBe(natural + 20)
   expect(display.topBands.reserved.records).toBe(natural + 20)
+})
+
+// the seam trades px between the band and the rows inside the track
+test('a drag on the seam leaves the track where it is', () => {
+  const { display } = recordsDisplayAt(KIT, 51)
+  const { height, availableHeight } = display
+  render(<RecordsBandOverlay model={display} />)
+
+  drag(screen.getByTestId('records_band_resize_handle'), 20)
+
+  expect(display.height).toBe(height)
+  expect(display.heightWritten).toBe(false)
+  expect(display.availableHeight).toBe(availableHeight - 20)
+})
+
+test('a band dragged open stops where the rows keep their floor', () => {
+  const { display } = recordsDisplayAt(KIT, 51)
+  const { height } = display
+  render(<RecordsBandOverlay model={display} />)
+
+  drag(screen.getByTestId('records_band_resize_handle'), 5000)
+
+  expect(display.recordsHeight).toBe(
+    height - BAND_CHIPS_HEIGHT - MIN_BAND_HEIGHT,
+  )
+  expect(display.availableHeight).toBe(MIN_BAND_HEIGHT)
+  expect(display.height).toBe(height)
 })
 
 test('a band dragged shut stops at the floor and stays grabbable', () => {

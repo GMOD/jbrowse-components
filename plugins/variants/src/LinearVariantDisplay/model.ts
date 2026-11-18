@@ -775,9 +775,9 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The `connectors` band above the columns, taken from the rows' slot
-         * height so they keep their floor; nothing at genomic positions,
-         * where nothing needs connecting.
+         * The `connectors` band above the columns, taken from the track's
+         * slot height so the rows keep their floor; nothing at genomic
+         * positions, where nothing needs connecting.
          */
         get connectorsBand() {
           return boundConnectorsBand(self.fitTargetHeight, {

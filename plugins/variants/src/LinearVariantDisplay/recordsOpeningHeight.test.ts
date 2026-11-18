@@ -6,7 +6,11 @@ import { MIN_GROW_HEIGHT } from '@jbrowse/plugin-features/band'
 
 import { recordsCellData, recordsDisplayAt } from './recordsBand.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
-import { DEFAULT_RECORDS_HEIGHT } from './variantTopBands.ts'
+import {
+  BAND_CHIPS_HEIGHT,
+  DEFAULT_RECORDS_HEIGHT,
+  DEFAULT_ROWS_TRACK_HEIGHT,
+} from './variantTopBands.ts'
 
 import type { BandRecord } from './recordsBand.fixture.ts'
 
@@ -98,10 +102,10 @@ describe('the first layout keeps the height it has', () => {
     const { display } = recordsDisplayAt(SPARSE, 10)
     display.setSources([{ name: 'S0' }, { name: 'S1' }])
     expect(display.recordsOnly).toBe(false)
-    expect(display.availableHeight).toBe(200)
+    expect(display.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
     display.setShowGenotypes(false)
     expect(display.recordsOnly).toBe(false)
-    expect(display.configuredHeight).toBe(200)
+    expect(display.configuredHeight).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
   })
 
   test('under grow, which follows its records itself', () => {
@@ -210,7 +214,7 @@ test('hiding the rows of a cohort writes false and showing them clears it', () =
 })
 
 describe('a one-sample VCF opening as its records', () => {
-  test('gives its row the default height once the row is asked for', () => {
+  test('gives its row the default track once the row is asked for', () => {
     const { display } = recordsDisplayAt(SPARSE, 10, {}, true, {
       genotypes: {},
     })
@@ -218,7 +222,12 @@ describe('a one-sample VCF opening as its records', () => {
     expect(display.height).toBeLessThan(200)
     display.setShowGenotypes(true)
     expect(display.recordsOnly).toBe(false)
-    expect(display.availableHeight).toBe(200)
+    expect(display.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
+    expect(display.availableHeight).toBe(
+      DEFAULT_ROWS_TRACK_HEIGHT -
+        BAND_CHIPS_HEIGHT -
+        display.topBands.reserved.records,
+    )
   })
 
   test('asking for the row and then not returns to the opening state', () => {

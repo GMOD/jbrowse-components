@@ -227,17 +227,15 @@ test('an SNV-only region draws its records above the rows', () => {
   )
 })
 
-// The band adds its height to the track: the rows under it keep theirs.
-test('the band on leaves the rows where the band off has them', () => {
+// The band comes out of the track: the rows under it give up its height.
+test('the band on takes its height from the rows the band off has', () => {
   const on = recordsDisplayAt(SNVS, 10).display
   const off = recordsDisplayAt(SNVS, 10, { show: false }).display
-  const rows = (d: typeof on) => ({
-    availableHeight: d.availableHeight,
-    rowHeight: d.effectiveRowHeight,
-  })
   expect(off.showRecords).toBe(false)
-  expect(rows(on)).toEqual(rows(off))
-  expect(on.height).toBe(off.height + on.topBands.reserved.records)
+  expect(on.height).toBe(off.height)
+  expect(on.availableHeight).toBe(
+    off.availableHeight - on.topBands.reserved.records,
+  )
 })
 
 // The cells paint the genotype colors, which name no record, so the records

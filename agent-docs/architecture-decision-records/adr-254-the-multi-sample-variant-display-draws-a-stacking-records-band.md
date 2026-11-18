@@ -391,6 +391,63 @@ so do the records' chips over a band shorter than a chip
 | A reserved header strip above the records | Costs a strip's height on every track; Colin: a chip over the first row's marks "doesnt necessarily bother me too much" |
 | Keep the records' chips in the strip when sectioned | Puts `Records ×` beside `Genotypes ×` again, the ambiguity this amendment removes |
 
+## Amendment: `height` is the whole track (2026-11-17)
+
+Colin, on a `height` that sized the rows while the band sized itself: "i am
+almost tempted to only allow 'fit to display height' because choosing separate
+height is just so weird in a way". Reverses "the band adds its height to the
+track" (2026-10-31) and, for the unwritten band only, "no ceiling"
+(2026-10-31). The band, its ladder, the hiding, the chips and `records.height`
+stay.
+
+- **While genotype rows draw, `height` is the whole track**, as on every other
+  display. The records band and the 20 px chip strip come out of it and the
+  rows take the remainder (ADR-232 rule 2), as the alignments and MAF bands
+  come out of theirs. `{ height: 400 }` on a 40-sample VCF drew a track of 420
+  to 590 px, by the window it opened on. It now draws 400.
+- **Unset, the track is 390 px**: the rows' 200, the chips' 20 and the band's
+  170. At any smaller default some window gives the rows less than the 200
+  they had. The default keys on the VCF having rows, so the Layout menu,
+  hiding the rows and a ring all leave an unset track at 390. The track is
+  390 until the sample listing lands, and a sites-only or one-sample VCF
+  shrinks once then, as it did from 220.
+- **An unwritten band is `min(opening stack, 170, room × 170/370)`**, room
+  being the track less the chip strip. The stack settles once, as before. The
+  share is the ceiling the unwritten band gains. It applies at read time, so a
+  track dragged shorter shortens the band and one dragged taller gives it back
+  its stack. `{ height: 290 }` gives a band of at most 124 px and rows of at
+  least 146, 3.65 px each for 40 samples.
+- **A written `records.height` keeps "drag sets the height"**: floored at 8 px
+  and bound so the rows keep 20, with no share. `{ height: 290, records: {
+  height: 170 } }` gives 40 samples 2.5 px each, as a stated choice.
+- **The seam drag trades px between the band and the rows**, and the track
+  holds. It writes `records.height` alone.
+- **`+N hidden` raises `height` with `records.height`, in one action**, by the
+  band it writes less the band drawn. Grown inside the box the band would
+  squeeze the rows, and bound by them it would leave a chip that still counts.
+- **Hiding genotypes still shrinks the track** to the band and the chip strip,
+  on the band's earlier rule for that state: what it holds, with no share and
+  no ceiling. Every `records.height` write made while the rows are hidden moves
+  `height` by the same delta, so the rows come back at the px they left. Both
+  halves of the Rejected row "Keep genotypes off as the sites-only look" hold.
+- **`Records ×` leaves the track where it is**, and the rows take the band's
+  px. It used to shrink the track.
+- **The track no longer moves on a fetch.** Until the band settled, the track
+  followed its stack, so an empty or collapsed opening window resized the
+  track on a later fetch.
+- **Records-only tracks are unchanged**: a sites-only VCF, one sample with
+  `genotypes.show` unset, and a ring.
+- **`variantTables` answers `height` as the track.** Its host has no window to
+  stack records in, so its band is `records.height` or the default, bound as
+  above, and `rowHeight` stays the rows' px.
+- Beta sessions and configs with a written `height` get rows shorter by the
+  band and the chip strip. v4's `height` was the track.
+
+| Alternative | Why not |
+| --- | --- |
+| Keep `height` as the rows, or name it `genotypes.height`, the band extra | A second height to choose apart from the track's, and the track's total still depends on the window on screen |
+| A track box whose band takes what it wants, the rows the rest | `{ height: 290 }` in a dense SV window leaves 40 samples 2.5 px each, the rows' height varies by opening window, and the seam drag and `+N hidden` squeeze the rows unless each also rewrites `height` |
+
 ## Rejected alternatives
 
 | Alternative | Why not |

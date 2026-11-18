@@ -9,7 +9,12 @@ import {
   recordsCellData,
   recordsDisplayAt,
 } from './recordsBand.fixture.ts'
-import { BAND_CHIPS_HEIGHT, MIN_RECORDS_HEIGHT } from './variantTopBands.ts'
+import { createTestEnvironment } from './testEnv.ts'
+import {
+  BAND_CHIPS_HEIGHT,
+  DEFAULT_ROWS_TRACK_HEIGHT,
+  MIN_RECORDS_HEIGHT,
+} from './variantTopBands.ts'
 
 import type { LinearVariantDisplayModel } from './model.ts'
 import type { BandRecord } from './recordsBand.fixture.ts'
@@ -109,19 +114,54 @@ test('in a ring the band is the display, at the ring height', () => {
 })
 
 // hidden rows leave the track the band, as it draws over them, and the strip
-// holding the chip that brings them back; the slot keeps the rows' height
+// holding the chip that brings them back; the slot keeps the track the rows
+// come back in
 test('with genotypes hidden the track is the band and its chip strip', () => {
   const { display } = recordsDisplayAt(FEW, 10, {}, true, {
     genotypes: { show: false },
   })
+  const band = display.topBands.reserved.records
   expect(display.recordsOnly).toBe(false)
   expect(display.recordsDisplayMode).toBe('compact')
-  expect(display.height).toBe(
-    display.topBands.reserved.records + BAND_CHIPS_HEIGHT,
-  )
-  expect(display.configuredHeight).toBe(200)
+  expect(display.height).toBe(band + BAND_CHIPS_HEIGHT)
+  expect(display.configuredHeight).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
   display.setShowGenotypes(true)
-  expect(display.availableHeight).toBe(200)
+  expect(display.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
+  expect(display.availableHeight).toBe(
+    DEFAULT_ROWS_TRACK_HEIGHT - BAND_CHIPS_HEIGHT - band,
+  )
+})
+
+// the default keys on the VCF having rows, so neither the layout, hiding the
+// rows nor a ring moves an unset slot
+describe('an unset height', () => {
+  test('is the default track before the samples are listed', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    expect(display.adapterSamples).toBeUndefined()
+    expect(display.configuredHeight).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
+  })
+
+  test('is the default track over rows, at genomic positions and in columns', () => {
+    const genomic = recordsDisplayAt(FEW, 10).display
+    expect(genomic.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
+    const columns = recordsDisplayAt(FEW, 10, {}, true, {
+      variantLayout: 'columns',
+    }).display
+    expect(columns.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
+    expect(columns.availableHeight).toBe(
+      DEFAULT_ROWS_TRACK_HEIGHT - columns.connectorsHeight,
+    )
+  })
+
+  test('is the records default with no rows to draw', () => {
+    const noSamples = recordsDisplayAt([], 10, {}, false).display
+    expect(noSamples.configuredHeight).toBe(200)
+    const oneSample = recordsDisplayAt([], 10, {}, true, {
+      genotypes: {},
+    }).display
+    expect(oneSample.recordsOnly).toBe(true)
+    expect(oneSample.configuredHeight).toBe(200)
+  })
 })
 
 // v4's `color1` lands as a constant `encoding.color.value`: every record
@@ -205,6 +245,7 @@ describe('heightMode with no rows', () => {
     const { display } = recordsDisplayAt(PILE, 1, {}, true, {
       heightMode: 'grow',
     })
+    expect(display.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
     expect(display.availableHeight).toBe(200)
   })
 })
@@ -215,6 +256,7 @@ test('over genotype rows grow keeps a slot height past growMaxHeight', () => {
     growMaxHeight: 120,
   })
   expect(display.growMaxHeight).toBe(Number.POSITIVE_INFINITY)
+  expect(display.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
   expect(display.availableHeight).toBe(200)
 })
 
@@ -390,14 +432,21 @@ describe('the track edge with genotypes hidden', () => {
     expect(display.recordsHeight).toBe(display.topBands.reserved.records)
   })
 
-  test('leaves the rows the height they come back at', () => {
-    const { display } = recordsDisplayAt(FEW, 10, {}, true, {
-      genotypes: { show: false },
-    })
+  // the band's px come out of the track once the rows are back, so the slot
+  // moves with the band and the rows return at the px they left
+  test('moves the slot with the band, so the rows come back at their px', () => {
+    const { display } = recordsDisplayAt(FEW, 10)
+    const rows = display.availableHeight
+    display.setShowGenotypes(false)
     dragTrackEdge(display, [10, 20, 30])
-    expect(display.configuredHeight).toBe(200)
+    expect(display.configuredHeight).toBe(DEFAULT_ROWS_TRACK_HEIGHT + 30)
     display.setShowGenotypes(true)
-    expect(display.availableHeight).toBe(200)
+    expect(display.availableHeight).toBe(rows)
+    display.setShowGenotypes(false)
+    dragTrackEdge(display, [-25])
+    display.setShowGenotypes(true)
+    expect(display.availableHeight).toBe(rows)
+    expect(display.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT + 5)
   })
 
   test('pushed shut on an empty window writes nothing', () => {
@@ -418,6 +467,9 @@ describe('the track edge with genotypes hidden', () => {
     dragTrackEdge(display, [3])
     expect(display.recordsHeight).toBe(MIN_RECORDS_HEIGHT)
     expect(display.height).toBe(start + MIN_RECORDS_HEIGHT)
+    expect(display.configuredHeight).toBe(
+      DEFAULT_ROWS_TRACK_HEIGHT + MIN_RECORDS_HEIGHT,
+    )
   })
 
   test('a double click never shrinks the band', () => {
@@ -431,21 +483,32 @@ describe('the track edge with genotypes hidden', () => {
     expect(display.topBands.reserved.records).toBe(held)
   })
 
-  test('a double click opens the band to every record', () => {
+  test('a double click opens the band to every record, the slot with it', () => {
     const { display } = recordsDisplayAt(PILE, 1, { height: 20 }, true, {
       genotypes: { show: false },
     })
     expect(display.recordsHiddenCount).toBeGreaterThan(0)
     display.expandToContentHeight()
     expect(display.recordsHiddenCount).toBe(0)
+    const stack = display.recordsStackHeight
+    expect(display.configuredHeight).toBe(
+      DEFAULT_ROWS_TRACK_HEIGHT + stack - 20,
+    )
+    display.setShowGenotypes(true)
+    expect(display.topBands.reserved.records).toBe(stack)
+    expect(display.availableHeight).toBe(
+      DEFAULT_ROWS_TRACK_HEIGHT - BAND_CHIPS_HEIGHT - 20,
+    )
   })
 
-  test('over rows resizes the rows', () => {
+  test('over rows resizes the track, the rows taking the change', () => {
     const { display } = recordsDisplayAt(FEW, 10)
     const band = display.topBands.reserved.records
+    const rows = display.availableHeight
     dragTrackEdge(display, [10, 20, 30])
-    expect(display.configuredHeight).toBe(230)
+    expect(display.configuredHeight).toBe(DEFAULT_ROWS_TRACK_HEIGHT + 30)
     expect(display.topBands.reserved.records).toBe(band)
+    expect(display.availableHeight).toBe(rows + 30)
   })
 })
 

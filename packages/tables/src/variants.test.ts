@@ -7,6 +7,11 @@ import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
 
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from '../../../plugins/variants/src/LinearVariantDisplay/configSchema.ts'
+import {
+  BAND_CHIPS_HEIGHT,
+  DEFAULT_RECORDS_HEIGHT,
+  DEFAULT_ROWS_TRACK_HEIGHT,
+} from '../../../plugins/variants/src/LinearVariantDisplay/variantTopBands.ts'
 import { REFERENCE_COLOR } from '../../../plugins/variants/src/shared/constants.ts'
 import { createTablesEngine } from './index.ts'
 import { DOG_SV, DOG_VCF } from './volvox.fixture.ts'
@@ -775,22 +780,29 @@ test('the rows sit on the reference calls’ grey unless those draw as cells', a
   expect(shown.rowBackground).toBe('')
 })
 
-test('the rows divide the display’s default height, or draw at rows.step', async () => {
+// `height` is the track; the rows divide what the chips' strip and a records
+// band at its stated or default height leave of it
+test('the rows divide what the track leaves them, or draw at rows.step', async () => {
+  const variants = (display: Record<string, unknown>) =>
+    engine.variants({ ...DOG_VCF, display })
   const fit = await engine.variants(DOG_VCF)
-  expect(fit.height).toBe(DEFAULT_VARIANT_DISPLAY_HEIGHT)
-  expect(fit.rowHeight).toBeCloseTo(
-    DEFAULT_VARIANT_DISPLAY_HEIGHT / fit.rows.name.length,
+  const nrow = fit.rows.name.length
+  expect(fit.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
+  expect(fit.rowHeight).toBeCloseTo(DEFAULT_VARIANT_DISPLAY_HEIGHT / nrow)
+  const written = await variants({ height: 300 })
+  expect(written.height).toBe(300)
+  expect(written.rowHeight).toBeCloseTo(151 / nrow)
+  const tall = await variants({ height: 500 })
+  expect(tall.rowHeight).toBeCloseTo(
+    (500 - BAND_CHIPS_HEIGHT - DEFAULT_RECORDS_HEIGHT) / nrow,
   )
-  const written = await engine.variants({
-    ...DOG_VCF,
-    display: { height: 500 },
-  })
-  expect(written.height).toBe(500)
-  expect(written.rowHeight).toBeCloseTo(500 / written.rows.name.length)
-  const stepped = await engine.variants({
-    ...DOG_VCF,
-    display: { rows: { step: 3 } },
-  })
-  expect(stepped.height).toBe(DEFAULT_VARIANT_DISPLAY_HEIGHT)
+  const band = await variants({ height: 300, records: { height: 40 } })
+  expect(band.rowHeight).toBeCloseTo((300 - BAND_CHIPS_HEIGHT - 40) / nrow)
+  const noBand = await variants({ records: { show: false } })
+  expect(noBand.rowHeight).toBeCloseTo(
+    (DEFAULT_ROWS_TRACK_HEIGHT - BAND_CHIPS_HEIGHT) / nrow,
+  )
+  const stepped = await variants({ rows: { step: 3 } })
+  expect(stepped.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
   expect(stepped.rowHeight).toBe(3)
 })

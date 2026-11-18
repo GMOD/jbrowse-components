@@ -291,28 +291,43 @@ filling it and the pointer dispatching on it read that one fold**
 
 - `rowsHeaderHeight` is `topBands.bottom`; `rowsTopOffset` adds the focus chip's
   line and is where rows begin.
-- **The records band and the chips add to the track; the connectors come out of
-  the rows' slot.** `addedHeight` is the first two, which the model's `height`
-  adds to the slot. The order decides it: a band placed before `connectors` in
-  `VARIANT_BAND_ORDER` adds to the track, and one from `connectors` on is
-  taken from the rows and binds against their plot.
+- **Every band comes out of the track, and the rows are the remainder**
+  (ADR-232 rule 2; ADR-254's amendment of 2026-11-17). While rows draw, the
+  model's `height` is the slot `height`, 390 unset
+  (`DEFAULT_ROWS_TRACK_HEIGHT`), and `availableHeight` is
+  `height - rowsTopOffset`. The records band binds against the track under the
+  chips' strip (`boundRecordsBand`, a plot of
+  `{ height: track - 20, floor: MIN_BAND_HEIGHT }`). The connectors bind
+  against the track (`boundConnectorsBand`).
+- **The bands read `fitTargetHeight`, never the model's `height`.** With the
+  rows hidden `height` is `topBands.bottom`, so a band reading it would be a
+  cycle.
 - **A band a layout cannot paint answers 0 there** (`connectorsHeight` at
   genomic positions), whatever the config says.
-- A drag-resized height goes on a config slot, clamped via `clampBandHeight`
-  (`@jbrowse/core/util/bandHeight`; the connectors through `dragBandHeight`,
-  as the alignments and MAF bands are). `boundBandHeight` is its read-time
-  twin: a _stated_ height — config, menu, slider — takes the bounds alone,
-  while a resize additionally leaves a band a config declared below the floor
-  where it is.
-- **A stated height is bound before the fold, never inside it.** The records
-  band is added above the rows, so it takes a floor and no ceiling
-  (`recordsBandHeightOverRows`). Bands taken from a plot they share — the MAF
-  and alignments stacks, and the `connectors` band over the variant columns or
-  the LD triangle (`boundConnectorsBand`) — bind as one stack
-  (`boundStackedBands`, top-down) and drag to the room the others leave
-  (`dragBandHeight`), so a band at its ceiling still leaves the plot its floor.
-- **The records band has one resize path**: its seam handle goes through
-  `resizeRecordsBand`, as the track handle does, from the height it draws.
+- A drag-resized height goes on a config slot through `dragBandHeight`
+  (`@jbrowse/core/util/bandLayout`), as the alignments and MAF bands do: the
+  connectors through `dragConnectorsHeight`, the records through
+  `dragRecordsHeight`. `boundBandHeight` is its read-time twin: a _stated_
+  height (config, menu, slider) takes the bounds alone, while a resize
+  additionally leaves a band a config declared below the floor where it is.
+- **Each of the two drags clamps against a stack of its own band alone**
+  (`connectorsBandStack`, `recordsBandStack`). `dragBandHeight` subtracts
+  every other band in the stack it is given from the plot. The records' plot
+  is already under the chips' strip, so dragging on `topBands` would subtract
+  the strip twice and stop the seam 20 px short.
+- **A stated height is bound before the fold, never inside it.**
+  `records.height` takes its floor first (`recordsBandHeightOverRows`,
+  `MIN_RECORDS_HEIGHT`), then its ceiling from the plot. `boundStackedBands`
+  floors at 0, so it cannot supply the floor. Bands taken from a plot they
+  share (the MAF and alignments stacks, the records band over the rows, and
+  the `connectors` band over the variant columns or the LD triangle) bind
+  through `boundStackedBands`, top-down, and drag to the room the others
+  leave, so a band at its ceiling still leaves the plot its floor.
+- **The records band resizes from the height it draws**
+  (`resizeRecordsBand`), on one of two rules. Over drawn rows the seam handle
+  trades px with the rows and the track holds. With the rows hidden the band
+  is the track, so the track's edge resizes it under `RECORDS_BAND_BOUNDS`,
+  a floor and no ceiling.
 
 **The container the rows are offset into is 0x0**, everything in it being
 absolutely positioned. So it is the right parent for a child placed by
@@ -359,8 +374,8 @@ a `recordsOnly` choice in the model belongs there.
   flush under the records.
   With `genotypes.show` off on a VCF with samples
   (`drawsGenotypeRows` false) the rows take 0 px and the track is the band plus
-  the chips' strip, the slot `height` kept for the rows' return; the band can't
-  hide then (`showRecords`). The worker reads no genotype (an empty
+  the chips' strip, the slot `height` kept for the rows' return and moved by
+  every band write made meanwhile; the band can't hide then (`showRecords`). The worker reads no genotype (an empty
   `sampleFilter`), so no record states carriers. The key sits at the top of the
   display, over the band.
 - **No samples, or one, makes the band the display** (`recordsOnly`: a sample
@@ -424,22 +439,60 @@ a `recordsOnly` choice in the model belongs there.
   (`recordCountMeasurements`). The banner and Force load are
   `RegionTooLargeMixin`'s. There is no pre-fetch sample, so a refused window
   still reads its records once per settled viewport.
-- **Its height over rows holds, and is added.** `records.height` (no default, so
-  a value equal to the default still reads as written) once a drag, `+N hidden`
-  or a config writes it, else the `openingRecordsHeight` volatile the first
-  layout that draws a record holds (`settleRecordsBandHeight`), but not one
-  collapsed past the density budget, whose one row a zoom in would leave the
-  band at, so a pan never resizes the track (`recordsBandHeightOverRows`).
-  Before that, the `full` rung's packed height at compact feature size up to the
-  default (170). With the rows hidden (`rowsHidden`) the track's edge and its
-  double click resize the band. The model's `height` is the rows' slot plus the
-  band, so the rows keep their slot `height` under every `heightMode`
-  (`growMaxHeight` is Infinity over rows). In a circular view's ring (`inRing`)
-  the display is records-only: the ring samples one canvas of its strip, the
-  band's, so no row draws or is fetched there. Taking the band from the rows
-  instead, or compositing every canvas in the ring host, was declined: rows drew
-  in a ring only by accident (`records.show` off, or in columns), and a whole
-  chromosome trips the byte gate on any real cohort.
+- **Over drawn rows its height comes out of the track.** The track getter
+  reads no payload, so no fetch or pan moves the track.
+  - **Written**: `records.height` (no default, so a value equal to the default
+    still reads as written), once a seam drag, `+N hidden` or a config writes
+    it. Floored at `MIN_RECORDS_HEIGHT`, and bound so the rows keep
+    `MIN_BAND_HEIGHT`. The share below does not apply to a stated number.
+  - **Unwritten**: `min(stack, 170, share)`.
+    - The stack is the `openingRecordsHeight` volatile, which the first layout
+      that draws a record holds (`settleRecordsBandHeight`). A layout collapsed
+      past the density budget settles nothing, since a zoom in would leave the
+      band at its one row. Before the settle it is the `full` rung's packed
+      height at compact feature size.
+    - The settle stores `min(recordsStackHeight, 170)`. Storing the reserved px
+      would bake the share in, and a track dragged taller could never give the
+      band back its stack.
+    - The share is `round(room × 170/370)`, with room the track less the chips'
+      strip. It applies at read time, so a track dragged shorter shortens the
+      band with it. At the default track it is 170, and the rows get 200.
+  - **Two writes move `height` with `records.height`, in one action**
+    (`writeRecordsHeight`). `+N hidden` (`showAllRecordRows`) raises the band
+    to its stack, and growing it inside the box would leave a chip that still
+    counts. Every band write made with the rows hidden (`rowsHidden`: the
+    track's edge and its double click) moves the slot too, since the band's px
+    come out of the track once the rows return. The delta is the band written
+    less the band drawn, so the rows keep their px. The seam drag writes
+    `records.height` alone.
+  - The two slots hold different quantities and nothing requires them to
+    agree, which is why ADR-232's "one value in two places" does not apply. A
+    config writing `records.height` alone gets the bound band.
+  - **With the rows hidden the band keeps its own rule**: what it holds,
+    floored, with no share and no ceiling (`RECORDS_BAND_BOUNDS`), and the
+    track is the band plus the chips' strip.
+  - **The track handle's double click solves for the share**
+    (`rowsContentTrackHeight`, `trackHeightForRows`). An unwritten band grows
+    with the track, so growing the track by the px the rows lack falls short.
+  - **A track edge drag stops at the chips' strip plus `MIN_BAND_HEIGHT`**
+    (the model's `setHeight`), so the rows keep their floor.
+  - **The 390 default keys on the VCF having rows** (`hasSampleRows`), in
+    either layout, with the rows hidden and in a ring. A default keyed on the
+    layout would make the Layout menu resize an unset track. Before the sample
+    listing lands the track is 390, and a sites-only or one-sample VCF shrinks
+    once when it lands.
+  - `growMaxHeight` is Infinity over rows, so the track keeps `height` under
+    every `heightMode`.
+  - **The tables host has no window to stack records in**, so its band is
+    `records.height` or the default, bound the same way (`rowsHeaderHeight` in
+    `tables.ts`). Its `height` is the track and its `rowHeight` the rows' px,
+    which is the display's wherever the records in view stack to the default.
+- **In a circular view's ring (`inRing`) the display is records-only**: the
+  ring samples one canvas of its strip, the band's, so no row draws or is
+  fetched there. Taking the band from the rows instead, or compositing every
+  canvas in the ring host, was declined: rows drew in a ring only by accident
+  (`records.show` off, or in columns), and a whole chromosome trips the byte
+  gate on any real cohort.
 - **Past its height the record rows decimate, then hide.** The ladder drops
   descriptions, thins bodies and decimates names, but over rows never scales the
   boxes: `recordsLaidOutDataMap` leaves a record that still ends below
@@ -492,7 +545,8 @@ a `recordsOnly` choice in the model belongs there.
   (`RecordsBandOverlay`, a div over its `OverlayCanvas`) and the seam drag, which
   writes `records.height` as the drawn height at the press plus the pointer's
   whole travel (`RecordsBandOverlay`'s `BandSeamHandle`), past the stack
-  included, so the seam waits at the floor until the pointer comes back to it.
+  included, so the seam waits at the floor until the pointer comes back to it,
+  and at the rows' floor the same way.
 - **Toggling genotype rows remounts the GPU canvas**, since `VariantBody` moves
   in and out of `RowsPanel`: one re-upload per toggle, as a layout switch costs.
 - **Mode branches stay few.** `recordsOnly` is read at nine sites outside

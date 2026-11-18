@@ -12,7 +12,10 @@ import { recordsBandConfigSchema } from './recordsBandConfigSchema.ts'
 import { retiredConfigSpellings } from './retired.ts'
 import { variantRowsConfigSchema } from './variantRowsConfigSchema.ts'
 
-/** The height the rows take, and records alone open up to, with `height` unset. */
+/**
+ * The height records alone open up to with `height` unset, and the rows' part
+ * of the default track (`DEFAULT_ROWS_TRACK_HEIGHT`).
+ */
 export const DEFAULT_VARIANT_DISPLAY_HEIGHT = 200
 
 /**
@@ -111,7 +114,7 @@ export default function configSchemaFactory() {
         type: 'maybeNumber',
         defaultValue: undefined,
         description:
-          "Height in pixels of the genotype rows, which the records band and its chips sit above; drag-resizable, and the rows divide it while row height is on auto-fit. With no rows, the height of the records. Unset, the rows take 200, and with no rows the track opens once at its records' stack, up to 200",
+          "Height in pixels of the whole track, drag-resizable. While genotype rows draw, the bands above them come out of it (the records band and its 20 px chip strip, or in columns the connectors) and the rows take the rest, dividing it while row height is on auto-fit. With `genotypes.show` off the track is the records band and its chip strip, and `height` waits for the rows' return. With no rows to draw (no samples, or one with `genotypes.show` unset) it is the height of the records. Unset, a VCF with genotype rows takes 390, and one with none opens once at its records' stack, up to 200. A circular view's ring sets its own height",
       },
       /**
        * #slot
@@ -301,7 +304,7 @@ export default function configSchemaFactory() {
       ...heightModeConfigSchemaFields({
         defaultHeightMode: 'fit',
         heightMode:
-          'Track-sizing strategy while the records are the display (no samples, or one with `genotypes.show` unset), as on a feature track: `fit` keeps the track height and gives up labels, then squeezes the records; `fixed` keeps the track height at full record size; `grow` sizes the track to its records up to `growMaxHeight`. Otherwise the rows keep the track `height` and the records band adds `records.height`, genotype rows shown or hidden',
+          'Track-sizing strategy while the records are the display (no samples, or one with `genotypes.show` unset), as on a feature track: `fit` keeps the track height and gives up labels, then squeezes the records; `fixed` keeps the track height at full record size; `grow` sizes the track to its records up to `growMaxHeight`. Otherwise it changes nothing: while genotype rows draw the track is `height`, and with them hidden it is the records band and its chip strip',
         growMaxHeight: "Ceiling in pixels for `heightMode: 'grow'`",
       }),
     },

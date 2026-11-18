@@ -11,19 +11,23 @@ const FEW: BandRecord[] = [
   ['sv1', 2000, 9000, '<DEL> 7Kbp', 'DEL'],
 ]
 
-test('the records hide from their chip and come back from the rows', () => {
+test('the records hide from their chip, their px going to the rows, and come back', () => {
   const { display } = recordsDisplayAt(FEW, 10)
   const height = display.height
+  const rows = display.availableHeight
+  const band = display.topBands.reserved.records
   render(<BandChips model={display} />)
 
   fireEvent.click(screen.getByTitle('Hide records'))
   expect(display.showRecords).toBe(false)
-  expect(display.height).toBeLessThan(height)
+  expect(display.height).toBe(height)
+  expect(display.availableHeight).toBe(rows + band)
   expect(screen.queryByTitle('Hide genotypes')).toBeNull()
 
   fireEvent.click(screen.getByTestId('show_records_chip'))
   expect(display.showRecords).toBe(true)
   expect(display.height).toBe(height)
+  expect(display.availableHeight).toBe(rows)
 })
 
 test('the genotypes hide from their chip and come back at their height', () => {
