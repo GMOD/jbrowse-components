@@ -84,7 +84,7 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rend
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-menuitems">**menuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
+| <span id="method-menuitems">**menuItems**</span><br><code>() =&gt; MenuItem[]</code> | empty while the import form is what shows |
 
 ## Actions
 
@@ -93,7 +93,7 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rend
 | --- | --- |
 | <span id="action-setheight">**setHeight**</span><br><code>(newHeight: number) =&gt; number</code> |  |
 | <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> | returns the distance applied, which minHeight can cut short |
-| <span id="action-displayspreadsheet">**displaySpreadsheet**</span><br><code>(spreadsheet?: SpreadsheetSnapshot) =&gt; void</code> | show a parsed sheet. One with the same columns as the sheet it replaces, as a reloaded session's re-fetch is, keeps that sheet's column visibility, filters and search |
+| <span id="action-displayspreadsheet">**displaySpreadsheet**</span><br><code>(spreadsheet?: SpreadsheetSnapshot) =&gt; void</code> | show a parsed sheet. One with the same columns as the sheet it replaces, as a reloaded session's re-fetch is, keeps that sheet's column visibility, filters, search and sort |
 | <span id="action-setlaunch">**setLaunch**</span><br><code>(launch?: LaunchInput&lt;SpreadsheetViewCommands&gt;) =&gt; void</code> |  |
 | <span id="action-seterror">**setError**</span><br><code>(error: unknown) =&gt; void</code> | a failed launch's error, shown in the import form's banner |
 | <span id="action-setdrilldowntracks">**setDrilldownTracks**</span><br><code>(trackIds: string[]) =&gt; void</code> |  |

@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1237)
+# model members with no description (1236)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -873,7 +873,6 @@ LinearSyntenyView.hasSomethingToShow
 LinearSyntenyView.hiddenFeatureCount
 LinearSyntenyView.hideTrack
 LinearSyntenyView.initialized
-LinearSyntenyView.menuItems
 LinearSyntenyView.ownViews
 LinearSyntenyView.rubberBandMenuItems
 LinearSyntenyView.setAxisGrid
@@ -893,6 +892,7 @@ LinearSyntenyView.setWidth
 LinearSyntenyView.takeOutRows
 LinearSyntenyView.toggleTrack
 LinearSyntenyView.width
+LinearSyntenyView.zoomEveryRowTo
 LinearSyntenyViewHelper.height
 LinearSyntenyViewHelper.hideTrack
 LinearSyntenyViewHelper.parentView
@@ -974,6 +974,7 @@ MultiWaySyntenyDisplay.anchorAssemblyName
 MultiWaySyntenyDisplay.anchorFetchRegions
 MultiWaySyntenyDisplay.anchorLocString
 MultiWaySyntenyDisplay.anchorReversed
+MultiWaySyntenyDisplay.anchorRule
 MultiWaySyntenyDisplay.anchorlessGroups
 MultiWaySyntenyDisplay.animating
 MultiWaySyntenyDisplay.awaitingDependentData
@@ -1175,7 +1176,6 @@ SnackbarModel.setErrorDialog
 SnackbarModel.snackbarMessageSet
 SnackbarModel.snackbarMessages
 SpreadsheetView.importWizard
-SpreadsheetView.menuItems
 SpreadsheetView.setDrilldownTracks
 SpreadsheetView.setHeight
 SpreadsheetView.setLaunch
@@ -1193,7 +1193,6 @@ SvInspectorView.circularView
 SvInspectorView.currentAssembly
 SvInspectorView.effectiveSpreadsheetWidthFraction
 SvInspectorView.featuresCircularTrackConfiguration
-SvInspectorView.menuItems
 SvInspectorView.pendingLaunch
 SvInspectorView.resizeHeight
 SvInspectorView.setHeight

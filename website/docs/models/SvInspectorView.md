@@ -80,6 +80,10 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 | <span id="getter-subviewwidths">**subviewWidths**</span><br><code>{ spreadsheet: number; circular: number; }</code> |  |
 | <span id="getter-highlightedchordids">**highlightedChordIds**</span><br><code>string[] &#124; undefined</code> | the records of the selected record's event, which the circle keeps at full strength while it dims the rest |
 | <span id="getter-varianttrackid">**variantTrackId**</span><br><code>string</code> |  |
+| <span id="getter-chorddisplay">**chordDisplay**</span><br><code>(DisplayModel &amp; InspectorChordDisplay) &#124; undefined</code> | the display drawing the sheet's rows as chords, once its track is open |
+| <span id="getter-chordscolorbysvtype">**chordsColorBySvType**</span><br><code>boolean</code> | false while the chords color by something else, when the legend's swatches would name colors the circle does not draw |
+| <span id="getter-drawnsvtypes">**drawnSvTypes**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | the SV classes a chord paints at this zoom, which leaves out a class whose records all end under a pixel apart; undefined until the chords have drawn |
+| <span id="getter-svtypelegend">**svTypeLegend**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ type: string; label: string; count: number &#124; undefined; … }[]</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ type: string; label: string; count: number &#124; undefined; swatch: "filled" &#124; "hollow" &#124; undefined; }[]</code></pre></dialog></span> | the legend's rows, one per SV class in the sheet. `count` is the class's rows on screen, undefined for a class the type filter leaves out; `swatch` is undefined while the chords do not color by SV type, and `hollow` for a shown class the drawn circle has no chord of |
 | <span id="getter-featurescirculartrackconfiguration">**featuresCircularTrackConfiguration**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ type: string; trackId: string; name: string; … } &#124; undefined</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ type: string; trackId: string; name: string; adapter: { type: string; features: SimpleFeatureSerialized[]; } &amp; { adapterId: string; }; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; forceLoad: boolean; encoding: { color: { field: string; }; opacity: number; }; }[]; } &#124; undefined</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
@@ -94,7 +98,7 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rend
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-menuitems">**menuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
+| <span id="method-menuitems">**menuItems**</span><br><code>() =&gt; MenuItem[]</code> | the sheet's own items |
 | <span id="method-circularviewmenuitems">**circularViewMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | the circular pane's own menu: the inspector's setting for it, then the circular view's items |
 
 ## Actions
