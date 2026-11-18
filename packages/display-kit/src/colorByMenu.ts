@@ -66,10 +66,11 @@ export function solidColorItem(checked: boolean, onClick: () => void) {
  * A row a Color by menu offers by name, ticked while it paints: a `field` to
  * paint by, or an `onClick` writing a color object no field names.
  */
-export type ColorPreset = { label: string; checked: boolean } & (
-  | { field: string }
-  | { onClick: () => void }
-)
+export type ColorPreset = {
+  label: string
+  checked: boolean
+  helpText?: string
+} & ({ field: string } | { onClick: () => void })
 
 /**
  * A feature display's fill block: Default, a radio per preset field, a field
@@ -103,6 +104,7 @@ export function colorFieldMenuItems(
       label: preset.label,
       type: 'radio',
       checked: preset.checked,
+      helpText: preset.helpText,
       onClick:
         'field' in preset
           ? () => {

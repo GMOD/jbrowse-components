@@ -1,8 +1,4 @@
-import {
-  radioItems,
-  toggleItem,
-  withSubHeader,
-} from '@jbrowse/core/ui/menuItems'
+import { toggleItem, withSubHeader } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -10,7 +6,7 @@ import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import {
   colorByMenuItem,
-  solidColorItem,
+  colorFieldMenuItems,
 } from '@jbrowse/display-kit/colorByMenu'
 import {
   resetOrderItem,
@@ -37,7 +33,7 @@ import type { Lane } from './laneStack.ts'
 import type { LaneChange } from './layoutMultiWay.ts'
 import type { LaneLocus } from './multiwayRenderTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { RadioOption } from '@jbrowse/core/ui/menuItems'
+import type { ColorPreset } from '@jbrowse/display-kit/colorByMenu'
 import type {
   AttributeRange,
   RibbonInterpolation,
@@ -379,48 +375,41 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
   ]
 }
 
-const GENE_COLOR_FIELDS: RadioOption<string>[] = [
+const GENE_COLOR_FIELDS = [
   {
-    value: CLUSTER_FIELD,
+    field: CLUSTER_FIELD,
     label: 'Cluster',
     helpText:
       'Each gene by the group placing it, its ortholog group or on an alignment source its alignment record, so a group is one color down the stack. A gene no group claims is grey.',
   },
-  {
-    value: FEATURE_NAME_FIELD,
-    label: 'Name',
-  },
-  {
-    value: STRAND_FIELD,
-    label: 'Strand',
-  },
+  { field: FEATURE_NAME_FIELD, label: 'Name' },
+  { field: STRAND_FIELD, label: 'Strand' },
 ]
 
 export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
-  const field = model.geneColorField
+  const painted = model.geneColorField
   const fields =
-    field === undefined || GENE_COLOR_FIELDS.some(mode => mode.value === field)
+    painted === undefined || GENE_COLOR_FIELDS.some(p => p.field === painted)
       ? GENE_COLOR_FIELDS
-      : [...GENE_COLOR_FIELDS, { value: field, label: field }]
-  return [
+      : [...GENE_COLOR_FIELDS, { field: painted, label: painted }]
+  return colorFieldMenuItems(
     {
-      label: 'Default',
-      type: 'radio',
-      checked: field === undefined && model.geneSolidColor === undefined,
-      onClick: () => {
-        model.pickDefaultColor()
-      },
+      colorByMode:
+        painted !== undefined
+          ? 'attribute'
+          : model.geneSolidColor === undefined
+            ? 'default'
+            : 'solid',
+      pickDefaultColor: model.pickDefaultColor,
+      pickSolidColor: model.pickSolidColor,
+      colorByField: model.colorByField,
+      setShowLegend: model.setShowLegend,
     },
-    ...radioItems(fields, field, value => {
-      model.colorByField(value)
-    }),
-    solidColorItem(
-      field === undefined && model.geneSolidColor !== undefined,
-      () => {
-        model.pickSolidColor()
-      },
-    ),
-  ]
+    fields.map((preset): ColorPreset => ({
+      ...preset,
+      checked: preset.field === painted,
+    })),
+  )
 }
 
 export function ribbonColorMenuItems(model: MultiWayMenuModel): MenuItem[] {

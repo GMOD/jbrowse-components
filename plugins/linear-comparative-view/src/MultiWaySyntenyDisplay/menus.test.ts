@@ -282,6 +282,23 @@ test('Name colors genes by the field their label reads, the name else the ID', (
   expect(calls).toEqual([`gene color ${FEATURE_NAME_FIELD}`])
 })
 
+test('picking a gene color preset shows its key again', () => {
+  const { model } = trackModel()
+  const shown: boolean[] = []
+  const genes = geneColorMenuItems({
+    ...model,
+    setShowLegend: (flag: boolean) => {
+      shown.push(flag)
+    },
+  })
+  const cluster = genes[labelsOf(genes).indexOf('Cluster')]
+  expect(cluster && 'helpText' in cluster && cluster.helpText).toMatch(
+    /ortholog group/,
+  )
+  click(cluster)
+  expect(shown).toEqual([true])
+})
+
 // The Genes block of Color by, between its header and the Ribbons one
 function genesOf(model: Parameters<typeof multiWayTrackMenuItems>[0]) {
   const colorBy = subMenuOf(multiWayTrackMenuItems(model)[0])
