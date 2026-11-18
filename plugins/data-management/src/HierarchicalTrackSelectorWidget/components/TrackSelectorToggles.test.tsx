@@ -157,6 +157,34 @@ test('the recent list is flat, newest first, with no category tree or group head
   ).toEqual(['chromatin', 'genes'])
 })
 
+test('the table lists the recent tracks newest first, as the tree does', () => {
+  const { model } = setup()
+  model.addToRecentlyUsed('genes')
+  model.addToRecentlyUsed('chromatin')
+  model.addToRecentlyUsed('genes')
+  model.setTrackList('recent')
+  model.openTable()
+  expect(model.trackTable.sortedRows.map(r => r.id)).toEqual([
+    'genes',
+    'chromatin',
+  ])
+})
+
+test('an empty favorites list says so once in table mode', async () => {
+  const { model } = setup()
+  model.openTable()
+  const { getByTestId, findAllByText, queryByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} />
+    </ThemeProvider>,
+  )
+  fireEvent.click(getByTestId('list-favorites'))
+  expect(
+    await findAllByText('No favorite tracks yet. Add one from a track’s menu.'),
+  ).toHaveLength(1)
+  expect(queryByText('No tracks')).toBeNull()
+})
+
 test('the favorites list narrows the tree and the table to favorite tracks, and says when there are none', async () => {
   const { model } = setup()
   const { getByTestId, findByText } = render(

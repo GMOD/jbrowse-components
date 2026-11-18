@@ -34,6 +34,7 @@ export function measureGridWidth(
       const n = measureText(stripHTML ? coarseStripHTML(str) : str, fontSize)
       return Math.min(Math.max(n + padding, minWidth), maxWidth)
     }),
+    minWidth,
   )
 }
 

@@ -689,12 +689,26 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the track configs the table lists
+       * the favorites in the order they were added, or the recently used
+       * newest first; undefined when listing all
+       */
+      get listedTrackOrder() {
+        return self.trackList === 'favorites'
+          ? self.favorites
+          : self.trackList === 'recent'
+            ? self.recentlyUsed.toReversed()
+            : undefined
+      },
+      /**
+       * #getter
+       * the track configs the tree and the table list, in the list's own order
        */
       get listedTrackConfigurations() {
-        const ids = this.listedTrackIds
-        return ids
-          ? self.allTrackConfigurations.filter(t => ids.has(t.trackId))
+        const order = this.listedTrackOrder
+        return order
+          ? order
+              .map(id => self.allTrackConfigurationMap.get(id))
+              .filter(notEmpty)
           : self.allTrackConfigurations
       },
     }))
@@ -776,15 +790,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * the toggle above already names the list
        */
       get flatList(): TreeNode[] {
-        const { keepTrack, trackList } = self
+        const { keepTrack, trackList, listedTrackOrder = [] } = self
         const sources = new Map(
           self.allTracks.flatMap(s => s.tracks.map(t => [t.conf.trackId, t])),
         )
-        const order =
-          trackList === 'recent'
-            ? self.recentlyUsed.toReversed()
-            : self.favorites
-        const tracks = order
+        const tracks = listedTrackOrder
           .map(id => sources.get(id))
           .filter(notEmpty)
           .filter(t => keepTrack?.(t) ?? true)

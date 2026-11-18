@@ -54,24 +54,27 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   toolbarHeight?: number
 }) {
   const { classes } = useStyles()
+  const emptyMessage =
+    model.trackList !== 'all' && model.listedTrackConfigurations.length === 0
+      ? emptyListMessage[model.trackList]
+      : undefined
   return (
     <div
       className={classes.container}
       style={{ height: `calc(100% - ${toolbarHeight}px)` }}
     >
       <TrackSelectorToggles model={model} />
-      {model.trackList !== 'all' &&
-      model.listedTrackConfigurations.length === 0 ? (
+      {emptyMessage && !model.showTable ? (
         <Typography
           variant="body2"
           color="textSecondary"
           className={classes.empty}
         >
-          {emptyListMessage[model.trackList]}
+          {emptyMessage}
         </Typography>
       ) : null}
       {model.showTable ? (
-        <TrackTable model={model} />
+        <TrackTable model={model} emptyMessage={emptyMessage} />
       ) : (
         <TrackTree model={model} />
       )}

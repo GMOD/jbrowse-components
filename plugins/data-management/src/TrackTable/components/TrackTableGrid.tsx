@@ -40,11 +40,13 @@ const TrackTableGrid = observer(function TrackTableGrid({
   table,
   columns,
   width,
+  emptyMessage = 'No tracks',
 }: {
   model: HierarchicalTrackSelectorModel
   table: TrackTableModel
   columns: TableColumn[]
   width: number
+  emptyMessage?: string
 }) {
   const { classes } = useTableStyles()
   const {
@@ -151,7 +153,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
               <td colSpan={columns.length + 1} className={classes.emptyCell}>
                 {table.allRows.length
                   ? 'No tracks match the current search and filters'
-                  : 'No tracks'}
+                  : emptyMessage}
               </td>
             </tr>
           ) : null}
