@@ -176,7 +176,7 @@ test("in tree mode the chips count what the tree's own search keeps", () => {
 test('the tree and the table count a filter that keeps every track alike', () => {
   const { model } = setup()
   model.setFilterText('-zzz')
-  const tree = model.matchCounts
+  const tree = model.trackTable.matchCounts
   expect(tree?.matched).toBe(tree?.total)
   model.openTable()
   expect(model.trackTable.matchCounts).toEqual(tree)

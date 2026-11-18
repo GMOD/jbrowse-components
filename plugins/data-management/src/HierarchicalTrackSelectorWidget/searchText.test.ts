@@ -80,11 +80,11 @@ test('the tree filter needs every word, in any field and any order', () => {
 
 test('the tree counts the tracks a query keeps, of all it lists', () => {
   const { model } = setup()
-  expect(model.matchCounts).toBeUndefined()
+  expect(model.trackTable.matchCounts).toBeUndefined()
   model.setFilterText('chromatin')
-  expect(model.matchCounts).toEqual({ matched: 1, total: 4 })
+  expect(model.trackTable.matchCounts).toEqual({ matched: 1, total: 4 })
   model.setFilterText('-chromatin')
-  expect(model.matchCounts).toEqual({ matched: 3, total: 4 })
+  expect(model.trackTable.matchCounts).toEqual({ matched: 3, total: 4 })
 })
 
 test('the tree filter still matches a category name', () => {

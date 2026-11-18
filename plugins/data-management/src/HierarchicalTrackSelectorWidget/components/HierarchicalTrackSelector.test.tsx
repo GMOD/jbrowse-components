@@ -1616,7 +1616,7 @@ test('the tree and the table share one filter box and one set of facet filters',
     'H3K27ac',
     'H3K4me3',
   ])
-  expect(model.matchCounts?.matched).toBe(2)
+  expect(model.trackTable.matchCounts?.matched).toBe(2)
 
   model.setFilterText('27ac')
   expect(trackNames(model)).toEqual(['H3K27ac'])
@@ -1624,7 +1624,7 @@ test('the tree and the table share one filter box and one set of facet filters',
 
   table.setFilter('category', [])
   model.clearFilterText()
-  expect(model.matchCounts).toBeUndefined()
+  expect(model.trackTable.matchCounts).toBeUndefined()
   expect(trackNames(model)).toContain('Regular Track')
 })
 

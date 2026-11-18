@@ -501,14 +501,23 @@ export function trackTableModelFactory() {
       },
       /**
        * #getter
-       * the listed trackIds the facet filters keep, which the tree shows
-       * too; undefined while none is set
+       * whether the filter box or a facet filter narrows the list
        */
-      get facetKeptIds() {
-        return self.filters.size
-          ? new Set(
-              filterRowsByFacets(self.allRows, self.filters).map(r => r.id),
-            )
+      get narrowed() {
+        return (
+          self.filters.size > 0 || searchMatcher(self.filterText) !== undefined
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the listed trackIds the filter box and the facet filters keep, which
+       * the tree shows; undefined while neither is set
+       */
+      get keptIds() {
+        return self.narrowed
+          ? new Set(self.filteredRows.map(r => r.id))
           : undefined
       },
       /**
@@ -517,8 +526,8 @@ export function trackTableModelFactory() {
        * how many; undefined while neither is set
        */
       get matchCounts() {
-        return self.filters.size || searchMatcher(self.filterText)
-          ? { matched: this.filteredRows.length, total: self.allRows.length }
+        return self.narrowed
+          ? { matched: self.filteredRows.length, total: self.allRows.length }
           : undefined
       },
     }))

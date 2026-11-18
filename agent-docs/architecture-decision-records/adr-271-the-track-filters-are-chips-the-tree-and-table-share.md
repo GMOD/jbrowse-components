@@ -42,7 +42,7 @@ on the way back, and the tree could not filter by metadata at all.
 - **The tree and the table share one table state.** The track selector
   creates it on attach (`trackTable`) and destroys it with itself. Its search
   text is the selector's `filterText`, so one filter box serves both modes,
-  and the tree keeps a track only when it is in the table's `facetKeptIds`.
+  and the tree keeps a track only when it is in the table's `keptIds`.
   Each mode still matches the text against what it shows: the tree its name,
   categories and description, the table also its kind, adapter and metadata,
   so "N of M" is the open mode's count. Facets, sort and add-to-selection mode

@@ -32,7 +32,6 @@ import type {
   CategoryMode,
   ResolvedCategoryMode,
   TrackGroup,
-  TrackNodeSource,
   TreeNode,
   TreeRow,
   TreeTrackNode,
@@ -618,11 +617,17 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * every track the view can display, in tree order: what the table
-         * selector, favorites and recently-used resolve against
+         * every track the view can display, once each, in tree order: what
+         * the table selector, favorites and recently-used resolve against
          */
         get allTrackConfigurations() {
-          return this.allTracks.flatMap(g => g.tracks.map(s => s.conf))
+          const byId = new Map<string, AnyTrackConfig>()
+          for (const { conf } of this.allTracks.flatMap(g => g.tracks)) {
+            if (!byId.has(conf.trackId)) {
+              byId.set(conf.trackId, conf)
+            }
+          }
+          return [...byId.values()]
         },
         /**
          * #getter
@@ -677,18 +682,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the trackIds the favorites or recent list limits the tree and table
-       * to; undefined when listing all
-       */
-      get listedTrackIds() {
-        return self.trackList === 'favorites'
-          ? self.favoritesSet
-          : self.trackList === 'recent'
-            ? self.recentlyUsedSet
-            : undefined
-      },
-      /**
-       * #getter
        * the favorites in the order they were added, or the recently used
        * newest first; undefined when listing all
        */
@@ -733,27 +726,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * whether a track holds every term in the filter box and passes the
-       * facet filters; undefined while neither narrows the list
-       */
-      get keepTrack() {
-        const { textKeptIds } = self
-        const { facetKeptIds } = self.trackTable
-        return textKeptIds || facetKeptIds
-          ? (t: TrackNodeSource) =>
-              (textKeptIds?.has(t.conf.trackId) ?? true) &&
-              (facetKeptIds?.has(t.conf.trackId) ?? true)
-          : undefined
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * a query or a facet filter narrows the list, which forces categories
-       * open (isFilterForcedOpen)
+       * a query, a facet filter or the favorites or recent list narrows the
+       * tree, which forces categories open (isFilterForcedOpen)
        */
       get filterActive() {
-        return self.keepTrack !== undefined || self.trackList !== 'all'
+        return self.trackTable.narrowed || self.trackList !== 'all'
       },
       /**
        * #getter
@@ -761,7 +738,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * empty connection still shows in the tree
        */
       get hierarchy() {
-        const { keepTrack, trackList } = self
+        const { trackList } = self
+        const { keptIds } = self.trackTable
         return {
           name: 'Root',
           id: 'Root',
@@ -776,7 +754,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                   defaultCollapsed: s.defaultCollapsed,
                   loading: s.loading,
                   children: generateHierarchy(
-                    s.tracks.filter(t => keepTrack?.(t) ?? true),
+                    s.tracks.filter(t => keptIds?.has(t.conf.trackId) ?? true),
                     s.id,
                   ),
                 }))
@@ -790,36 +768,17 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * the toggle above already names the list
        */
       get flatList(): TreeNode[] {
-        const { keepTrack, trackList, listedTrackOrder = [] } = self
+        const { trackList, listedTrackOrder = [] } = self
+        const { keptIds } = self.trackTable
         const sources = new Map(
           self.allTracks.flatMap(s => s.tracks.map(t => [t.conf.trackId, t])),
         )
         const tracks = listedTrackOrder
           .map(id => sources.get(id))
           .filter(notEmpty)
-          .filter(t => keepTrack?.(t) ?? true)
+          .filter(t => keptIds?.has(t.conf.trackId) ?? true)
           .map(t => ({ ...t, categories: [] }))
         return generateHierarchy(tracks, trackList)
-      },
-      /**
-       * #getter
-       * how many of the listed tracks the filter box and the facet filters
-       * keep, of how many; undefined while neither narrows the list
-       */
-      get matchCounts() {
-        const { keepTrack, listedTrackIds } = self
-        const tracks = new Map(
-          self.allTracks
-            .flatMap(s => s.tracks)
-            .filter(t => listedTrackIds?.has(t.conf.trackId) ?? true)
-            .map(t => [t.conf.trackId, t]),
-        )
-        return keepTrack
-          ? {
-              matched: [...tracks.values()].filter(t => keepTrack(t)).length,
-              total: tracks.size,
-            }
-          : undefined
       },
     }))
     .views(self => ({

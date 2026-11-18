@@ -34,9 +34,7 @@ const HierarchicalTrackSelectorHeader = observer(
   }) {
     const { classes } = useStyles()
     const { trackTable } = model
-    const matchCounts = model.showTable
-      ? trackTable.matchCounts
-      : model.matchCounts
+    const { matchCounts } = trackTable
     return (
       <>
         <div

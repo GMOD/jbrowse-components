@@ -164,9 +164,18 @@ test('the favorites list keeps and counts only its own tracks', async () => {
   expect(status()).toBe('2 of 3')
 })
 
-test('a track in two groups is drawn in both and counted once', async () => {
+test('a track in two groups is drawn in both, listed once in the table, and counted once', async () => {
   const { model, status, filter } = await setup({ connectionTracks: [0, 3] })
   filter('even', K562)
   expect(treeTrackIds(model).toSorted()).toEqual(['t0', 't0', 't4'])
+  expect(status()).toBe('2 of 9')
+
+  act(() => {
+    model.openTable()
+  })
+  expect(model.trackTable.sortedRows.map(r => r.id).toSorted()).toEqual([
+    't0',
+    't4',
+  ])
   expect(status()).toBe('2 of 9')
 })
