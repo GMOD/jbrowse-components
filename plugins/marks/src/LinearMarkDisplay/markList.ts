@@ -160,8 +160,12 @@ export interface MarkRenderState extends MarkFrame {
  */
 export interface DisplayMark extends Mark<MarkRegionData, MarkRenderState> {
   markIndex: number
-  /** How the mark answers a hover: its layer's hit index, or its rows. */
-  hitBy: MarkSpec['hit']
+  /**
+   * How the mark answers a hover: its layer's hit index, its rows, or for a
+   * linear line its rows and the segment each instance draws back to the one
+   * before it, which may cross a gap no instance's span meets.
+   */
+  hitBy: MarkSpec['hit'] | 'segments'
 }
 
 /** A `marks` entry's type and zoom range in bp per px, 0 for no bound. */
@@ -344,9 +348,13 @@ export function linkParamsOf(
 function withMarkIndex(
   mark: Mark<MarkRegionData, MarkRenderState>,
   markIndex: number,
-  type: MarkType,
+  { type, interpolate }: MarkEntry,
 ): DisplayMark {
-  return Object.assign(mark, { markIndex, hitBy: MARK_SPECS[type].hit })
+  const hitBy: DisplayMark['hitBy'] =
+    type === 'line' && interpolate === 'linear'
+      ? 'segments'
+      : MARK_SPECS[type].hit
+  return Object.assign(mark, { markIndex, hitBy })
 }
 
 /**
@@ -362,7 +370,7 @@ export function buildMarkList(entries: readonly MarkEntry[]) {
       marks.some(m => !m.spansView),
     )
     if (mark) {
-      marks.push(withMarkIndex(mark, i, entry.type))
+      marks.push(withMarkIndex(mark, i, entry))
     }
   }
   return marks

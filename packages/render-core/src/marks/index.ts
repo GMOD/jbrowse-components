@@ -64,7 +64,12 @@ export {
   rowTableKeys,
   rowTableTextures,
 } from './rowLane.ts'
-export { rowSpanIndex, spansInRow } from './rowSpanIndex.ts'
+export {
+  predecessorReach,
+  rowSpanIndex,
+  segmentsIntoRow,
+  spansInRow,
+} from './rowSpanIndex.ts'
 
 export type { MarkPlan } from './markPlan.ts'
 export type { MarkInstance } from './markInk.ts'

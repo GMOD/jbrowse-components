@@ -177,7 +177,29 @@ export function spansInRow(
     return
   }
   const from = rowStart[key]!
-  let lo = from
+  for (
+    let p = firstAfter(index, x, x2, key, bpMax) - 1;
+    p >= from && reach[p]! >= bpMin;
+    p--
+  ) {
+    const i = order[p]!
+    if (highEnd(x, x2, i) >= bpMin) {
+      out.push(i)
+    }
+  }
+}
+
+// The first position of row `key` whose span starts past `bpMax`, the row's
+// end where none does.
+function firstAfter(
+  index: RowSpanIndex,
+  x: Uint32Array,
+  x2: Uint32Array,
+  key: number,
+  bpMax: number,
+) {
+  const { rowStart, order } = index
+  let lo = rowStart[key]!
   let hi = rowStart[key + 1]!
   while (lo < hi) {
     const mid = (lo + hi) >>> 1
@@ -187,10 +209,73 @@ export function spansInRow(
       hi = mid
     }
   }
-  for (let p = lo - 1; p >= from && reach[p]! >= bpMin; p--) {
-    const i = order[p]!
-    if (highEnd(x, x2, i) >= bpMin) {
-      out.push(i)
+  return lo
+}
+
+const NO_PREDECESSOR = 0xffffffff
+
+// Whether instance `i` follows one in its row, which a path draws from.
+function hasPredecessor(row: Uint32Array | undefined, i: number) {
+  return i > 0 && (row === undefined || row[i - 1] === row[i])
+}
+
+/**
+ * For each position of `index`, the earliest start among the predecessors of
+ * the row's instances from that position on, a predecessor being the instance
+ * just before in the given order where it stands in the same row: how far
+ * back a linear path's segments from those instances reach, which tells
+ * {@link segmentsIntoRow} where to stop.
+ */
+export function predecessorReach(
+  index: RowSpanIndex,
+  x: Uint32Array,
+  x2: Uint32Array,
+  row: Uint32Array | undefined,
+) {
+  const { rowStart, order } = index
+  const back = new Uint32Array(order.length)
+  for (let r = 0; r + 1 < rowStart.length; r++) {
+    let earliest = NO_PREDECESSOR
+    for (let p = rowStart[r + 1]! - 1; p >= rowStart[r]!; p--) {
+      const i = order[p]!
+      if (hasPredecessor(row, i)) {
+        earliest = Math.min(earliest, lowEnd(x, x2, i - 1))
+      }
+      back[p] = earliest
+    }
+  }
+  return back
+}
+
+/**
+ * The instances of row `key` that start past `bpMax` while their predecessor
+ * starts at or before it: those whose segment back to the predecessor, as a
+ * linear path draws it, may cross a window ending at `bpMax` though their own
+ * span starts past it, which {@link spansInRow} leaves out. `back` is the
+ * index's {@link predecessorReach}.
+ */
+export function segmentsIntoRow(
+  index: RowSpanIndex,
+  back: Uint32Array,
+  x: Uint32Array,
+  x2: Uint32Array,
+  row: Uint32Array | undefined,
+  key: number,
+  bpMax: number,
+  out: number[],
+) {
+  const { rowStart, order } = index
+  if (key + 1 < rowStart.length) {
+    const end = rowStart[key + 1]!
+    for (
+      let p = firstAfter(index, x, x2, key, bpMax);
+      p < end && back[p]! <= bpMax;
+      p++
+    ) {
+      const i = order[p]!
+      if (hasPredecessor(row, i) && lowEnd(x, x2, i - 1) <= bpMax) {
+        out.push(i)
+      }
     }
   }
 }

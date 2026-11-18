@@ -332,6 +332,114 @@ test('lines over squashed rows answer what the Flatbush answers', () => {
   expect(hits).toBeGreaterThan(probes / 4)
 })
 
+// 1 bp a px, so a 10 bp feature every 300 bp leaves a linear segment of
+// nearly 300 px between two midpoints, its middle meeting no instance's span.
+const SPARSE_BLOCK: RenderBlock = { ...BLOCK, end: 800 }
+const SPARSE: MarkRenderState = {
+  ...STATE,
+  bpPerPx: 1,
+  rowHeight: STATE.canvasHeight,
+}
+
+function linearLine() {
+  return buildMarkList([{ ...entries('line')[0]!, interpolate: 'linear' }])
+}
+
+test('a linear segment across a gap between sparse instances answers the instance it draws back from', () => {
+  const layer: StoredLayer = {
+    count: 3,
+    skipped: 0,
+    x: Uint32Array.from([0, 300, 600]),
+    x2: Uint32Array.from([10, 310, 610]),
+    y: Float32Array.from([2, 8, 4]),
+    color: 0xff0000ff,
+    yMin: 2,
+    yMax: 8,
+  }
+  const data = new Map([[0, { layers: [layer] }]])
+  for (const reversed of [false, true]) {
+    const block = { ...SPARSE_BLOCK, reversed }
+    const column = (bp: number) =>
+      Array.from({ length: SPARSE.canvasHeight }, (_, y) =>
+        findMarkHit(
+          reversed ? SPARSE.canvasWidth - bp : bp,
+          y,
+          [block],
+          data,
+          linearLine(),
+          SPARSE,
+          REGIONS,
+        ),
+      ).filter(h => h !== undefined)
+    expect(new Set(column(150).map(h => h.instance))).toEqual(new Set([1]))
+    expect(new Set(column(450).map(h => h.instance))).toEqual(new Set([2]))
+  }
+})
+
+// Rows of two series each, sparse, written series by series in start order:
+// the lookup by rows answers what the ink over every instance answers.
+function sparseSeriesLayer(seed: number, rows: number): StoredLayer {
+  const rand = lcg(seed)
+  const x: number[] = []
+  const x2: number[] = []
+  const y: number[] = []
+  const row: number[] = []
+  const series: number[] = []
+  for (let r = 0; r < rows; r++) {
+    for (let s = 0; s < 2; s++) {
+      let at = Math.floor(rand() * 100)
+      while (at < 800) {
+        const length = 5 + Math.floor(rand() * 10)
+        x.push(at)
+        x2.push(at + length)
+        y.push(rand() * 10)
+        row.push(r)
+        series.push(r * 2 + s)
+        at += length + 20 + Math.floor(rand() * 250)
+      }
+    }
+  }
+  const count = x.length
+  return {
+    count,
+    skipped: 0,
+    x: Uint32Array.from(x),
+    x2: Uint32Array.from(x2),
+    y: Float32Array.from(y),
+    row: Uint32Array.from(row),
+    series: Uint32Array.from(series),
+    color: 0xff0000ff,
+    yMin: 0,
+    yMax: 10,
+  }
+}
+
+test('sparse linear series answer what the ink over every instance answers', () => {
+  const layer = sparseSeriesLayer(12, 4)
+  const state = { ...SPARSE, rowHeight: SPARSE.canvasHeight / 4 }
+  const marks = linearLine()
+  const data: MarkRegionData = { layers: [layer] }
+  const regions = new Map([[0, data]])
+  for (const reversed of [false, true]) {
+    const block = { ...SPARSE_BLOCK, reversed }
+    const rand = lcg(5)
+    const differ: [number, number, number?, number?][] = []
+    let hits = 0
+    for (let k = 0; k < 1500; k++) {
+      const x = rand() * state.canvasWidth
+      const y = rand() * state.canvasHeight
+      const got = findMarkHit(x, y, [block], regions, marks, state, REGIONS)
+      const ink = nearestInkOf(marks, data, state, block, x, y)
+      if (got?.instance !== ink?.instance) {
+        differ.push([x, y, got?.instance, ink?.instance])
+      }
+      hits += got ? 1 : 0
+    }
+    expect(differ.slice(0, 3)).toEqual([])
+    expect(hits).toBeGreaterThan(50)
+  }
+})
+
 test('keys the row table places, hides and reorders answer the same', () => {
   const keys = 16
   const slot = new Uint32Array(keys)

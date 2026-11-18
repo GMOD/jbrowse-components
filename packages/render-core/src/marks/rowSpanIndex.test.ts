@@ -1,4 +1,9 @@
-import { rowSpanIndex, spansInRow } from './rowSpanIndex.ts'
+import {
+  predecessorReach,
+  rowSpanIndex,
+  segmentsIntoRow,
+  spansInRow,
+} from './rowSpanIndex.ts'
 import { HIDDEN_ROW } from './rowTable.ts'
 
 function lcg(seed: number) {
@@ -116,4 +121,48 @@ test('an instance on HIDDEN_ROW stands in no row, and the index is sized by the 
   const hidden = rowSpanIndex(x, x2, new Uint32Array(4).fill(HIDDEN_ROW))
   expect(hidden.rowStart).toHaveLength(2)
   expect(hidden.order).toHaveLength(0)
+})
+
+// Each row holds runs written one after another, each in start order, so an
+// instance's predecessor is the one before it in the given order where the
+// row is the same.
+test('a row answers each instance past the window whose predecessor starts inside or before it, as a search over every instance does', () => {
+  const rand = lcg(19)
+  const xs: number[] = []
+  const x2s: number[] = []
+  const rows: number[] = []
+  for (let run = 0; run < 40; run++) {
+    const r = Math.floor(rand() * 6)
+    let at = Math.floor(rand() * 2000)
+    while (at < 10_000) {
+      const length = Math.floor(rand() * 30)
+      xs.push(at)
+      x2s.push(at + length)
+      rows.push(rand() < 0.03 ? HIDDEN_ROW : r)
+      at += length + Math.floor(rand() * 800)
+    }
+  }
+  const x = Uint32Array.from(xs)
+  const x2 = Uint32Array.from(x2s)
+  const row = Uint32Array.from(rows)
+  const index = rowSpanIndex(x, x2, row)
+  const back = predecessorReach(index, x, x2, row)
+  for (let q = 0; q < 2000; q++) {
+    const key = Math.floor(rand() * 7)
+    const bpMax = Math.floor(rand() * 10_000)
+    const got: number[] = []
+    segmentsIntoRow(index, back, x, x2, row, key, bpMax, got)
+    const want: number[] = []
+    for (let i = 1; i < x.length; i++) {
+      if (
+        row[i] === key &&
+        row[i - 1] === key &&
+        x[i]! > bpMax &&
+        x[i - 1]! <= bpMax
+      ) {
+        want.push(i)
+      }
+    }
+    expect(got.sort((a, b) => a - b)).toEqual(want)
+  }
 })

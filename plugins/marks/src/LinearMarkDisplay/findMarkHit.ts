@@ -11,11 +11,12 @@ import {
   RAMP_NO_VALUE_BITS,
   nearestMarkHit,
   rampValueBits,
+  segmentsIntoRow,
   spansInRow,
 } from '@jbrowse/render-core/marks'
 
 import { featureSpan } from './featureInstances.ts'
-import { rowSpanIndexOf } from './rowSpanIndexes.ts'
+import { predecessorReachOf, rowSpanIndexOf } from './rowSpanIndexes.ts'
 
 import type {
   DisplayMark,
@@ -133,18 +134,33 @@ function rowKeysNear(yPx: number, state: MarkRenderState, radiusPx: number) {
 
 // What a Flatbush over every instance's (x..x2, y) answers for the window,
 // less the rows out of reach; the reach widens by the mark's size, the most a
-// rule or line's stroke stands past its band.
+// rule or line's stroke stands past its band. By `segments`, each instance
+// past the window whose segment back to the one before may cross it too.
 function rowCandidates(
   layer: StoredLayer,
   yPx: number,
   state: MarkRenderState,
   sizePx: number,
+  hitBy: 'rows' | 'segments',
   { bpMin, bpMax, valueMin, valueMax }: HitWindow,
 ) {
   const index = rowSpanIndexOf(layer)
+  const back = hitBy === 'segments' ? predecessorReachOf(layer) : undefined
   const out: number[] = []
   for (const key of rowKeysNear(yPx, state, HIT_RADIUS_PX + sizePx)) {
     spansInRow(index, layer.x, layer.x2, key, bpMin, bpMax, out)
+    if (back) {
+      segmentsIntoRow(
+        index,
+        back,
+        layer.x,
+        layer.x2,
+        layer.row,
+        key,
+        bpMax,
+        out,
+      )
+    }
   }
   const { y } = layer
   return y ? out.filter(i => y[i]! >= valueMin && y[i]! <= valueMax) : out
@@ -186,13 +202,15 @@ export function findMarkHit(
           return undefined
         }
         const { bpMin, bpMax, valueMin, valueMax } = reach
+        const { hitBy } = mark
         const found =
-          mark.hitBy === 'rows'
+          hitBy === 'rows' || hitBy === 'segments'
             ? rowCandidates(
                 layer,
                 mouseY,
                 state,
                 state.markSizes[mark.markIndex] ?? 0,
+                hitBy,
                 reach,
               )
             : layer.flatbush?.search(bpMin, valueMin, bpMax, valueMax)
