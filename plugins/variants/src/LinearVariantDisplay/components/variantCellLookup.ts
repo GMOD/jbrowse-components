@@ -79,3 +79,30 @@ export function findCellIndex(
     ? inRef
     : searchBucket(data, refCellCount, numCells, featureIdx, rowIndex)
 }
+
+/**
+ * The cell `featureIdx` paints on top over screen rows `lowest..nearest`, the
+ * band of rows sharing the cursor's pixel when rows are thinner than a cell.
+ * Cells paint in index order — reference bucket first, then each bucket by
+ * (feature, worker row) — so the top one is the largest index, which need not
+ * be on the nearest row. `rowUnmap` takes each screen row to the worker row
+ * the arrays are keyed by.
+ */
+export function topDrawnCell(
+  data: CellLookupData,
+  rowUnmap: Int32Array,
+  featureIdx: number,
+  lowest: number,
+  nearest: number,
+) {
+  let top: { rowIndex: number; cellIndex: number } | undefined
+  for (let rowIndex = lowest; rowIndex <= nearest; rowIndex++) {
+    const workerRow = rowUnmap[rowIndex] ?? -1
+    const cellIndex =
+      workerRow < 0 ? -1 : findCellIndex(data, featureIdx, workerRow)
+    if (cellIndex > (top?.cellIndex ?? -1)) {
+      top = { rowIndex, cellIndex }
+    }
+  }
+  return top
+}

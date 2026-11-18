@@ -8,8 +8,8 @@ import {
  * first — `rowsUnderPointer`'s answer for rows painted on the device grid
  * (`snappedRowTopPx`/`snappedRowBottomPx`, which the Canvas2D and SVG painters
  * draw with; the GPU's fractional row tops sit within half a device px of theirs).
- * `nearest` is the last row painted there and `lowest` the furthest one
- * whose floored band still reaches it.
+ * `nearest` is the row the cursor is in and `lowest` the furthest one whose
+ * floored band still reaches it.
  *
  * `dpr` is the scale the canvas backing store got (`backingScale`), the grid
  * the painters snapped to.

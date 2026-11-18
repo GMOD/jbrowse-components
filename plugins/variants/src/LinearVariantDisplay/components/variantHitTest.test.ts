@@ -89,7 +89,7 @@ describe('computeVariantHitQuery row band', () => {
   test('sub-pixel rows: one cursor pixel spans a band of many rows', () => {
     // rowHeight 0.5 draws at the 2px minimum on whole pixels. Row 51's top,
     // 25.5, snaps down to 26, so rows 47..50 are the drawn cells covering pixel
-    // 25, and row 50, the last painted there, is tried first.
+    // 25, and row 50 is the row the cursor is in.
     const { rowNearest, rowLowest } = computeVariantHitQuery(
       fwd,
       0,

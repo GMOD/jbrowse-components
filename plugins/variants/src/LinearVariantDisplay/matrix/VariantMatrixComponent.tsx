@@ -5,13 +5,12 @@ import { observer } from 'mobx-react'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { buildVariantHit } from '../components/buildVariantHit.ts'
 import { enrichCellHit } from '../components/enrichFeatureFromClick.ts'
-import { findCellIndex } from '../components/variantCellLookup.ts'
+import { topDrawnCell } from '../components/variantCellLookup.ts'
 import { variantSurfaceHandlers } from '../components/variantSurface.ts'
 import { matrixCellAt } from './matrixHitTest.ts'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
 import type { VariantTooltipFields } from '../components/buildVariantHit.ts'
-import type { CellLookupData } from '../components/variantCellLookup.ts'
 import type { VariantSurface } from '../components/variantSurface.ts'
 import type { LinearVariantDisplayModel } from '../model.ts'
 
@@ -26,31 +25,6 @@ export interface MatrixHoveredCell {
   cellIndex: number
 }
 
-// The row whose cell paints on top of the pixel. Rows thinner than a pixel
-// share one, and cells paint in index order, reference bucket first, so the
-// largest index among them is the one the reader sees.
-function topDrawnCell(
-  model: LinearVariantDisplayModel,
-  placed: CellLookupData,
-  featureIdx: number,
-  lowest: number,
-  nearest: number,
-) {
-  const rowUnmap = model.rowUnmap
-  let top: { rowIdx: number; cellIndex: number } | undefined
-  if (rowUnmap) {
-    for (let rowIdx = lowest; rowIdx <= nearest; rowIdx++) {
-      const workerRow = rowUnmap[rowIdx] ?? -1
-      const cellIndex =
-        workerRow < 0 ? -1 : findCellIndex(placed, featureIdx, workerRow)
-      if (cellIndex > (top?.cellIndex ?? -1)) {
-        top = { rowIdx, cellIndex }
-      }
-    }
-  }
-  return top
-}
-
 // `mouseX`/`mouseY` are relative to the matrix canvas, which sits at
 // `columnGeometry.left` / `rowsTopOffset` inside the display — the caller has
 // already subtracted both.
@@ -59,9 +33,9 @@ function getHoveredMatrixCell(
   mouseX: number,
   mouseY: number,
 ): MatrixHit | undefined {
-  const { cellData, drawnRows } = model
+  const { cellData, drawnRows, rowUnmap } = model
   const placed = model.paintedRegionRows.get(0)
-  if (!cellData || !placed || !drawnRows.length) {
+  if (!cellData || !placed || !rowUnmap || !drawnRows.length) {
     return undefined
   }
   const { featureIdx, nearest, lowest } = matrixCellAt(
@@ -78,8 +52,8 @@ function getHoveredMatrixCell(
   if (!feature) {
     return undefined
   }
-  const top = topDrawnCell(model, placed, featureIdx, lowest, nearest)
-  const row = top && drawnRows[top.rowIdx]
+  const top = topDrawnCell(placed, rowUnmap, featureIdx, lowest, nearest)
+  const row = top && drawnRows[top.rowIndex]
   if (!top || !row) {
     return undefined
   }

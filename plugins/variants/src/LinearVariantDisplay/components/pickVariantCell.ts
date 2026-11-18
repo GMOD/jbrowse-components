@@ -1,4 +1,4 @@
-import { findCellIndex } from './variantCellLookup.ts'
+import { topDrawnCell } from './variantCellLookup.ts'
 import { HIT_TOLERANCE_PX } from './variantHitTest.ts'
 import { VARIANT_MARKS } from './variantMarks.ts'
 
@@ -54,23 +54,18 @@ function withinCellTolerance(
 /**
  * Resolve a cursor to the one cell it is over, or undefined.
  *
- * Rows are tried nearest-first (`rowNearest` down to `rowLowest`, equal unless
- * rows are sub-pixel), and the first row holding any cell wins. That is what
- * makes the pick predictable: the row comes from where the cursor is, not from
- * whatever a spatial index happened to return, and the nearest row is also the
- * last one painted there — so the cell that reports is the cell on top.
- *
- * Within a row, candidates are the features overlapping the padded bp window.
- * They are filtered to those whose *drawn* extent is within the click
- * tolerance of the cursor — the window is padded out to the widest insertion
- * marker, so most candidates at a dense locus are not actually under it — and
- * the shortest survivor wins, which keeps a SNP inside a large deletion
- * selectable. Between two as short — a site split into one record per allele —
- * the later cell, painted on top, wins. Where the ink is comes from the cell
- * shape's own hit test.
+ * Each candidate feature — those overlapping the padded bp window — offers
+ * the cell it paints on top over the row band `rowLowest..rowNearest` (one
+ * row unless rows are sub-pixel), which is the largest cell index there, not
+ * the nearest row's: a lower row's alt cell paints over a nearer reference
+ * cell. Candidates whose *drawn* cell is not within the click tolerance of the
+ * cursor are dropped, and the shortest survivor wins, which keeps a SNP inside
+ * a large deletion selectable. Between two as short — a site split into one
+ * record per allele — the later cell, painted on top, wins. Where the ink is
+ * comes from the cell shape's own hit test.
  *
  * Rows are screen rows throughout, in and out; `rowUnmap` converts each to the
- * worker numbering `findCellIndex` searches (see variantCellLookup.ts). A screen
+ * worker numbering the cell arrays are keyed by (see variantCellLookup.ts). A screen
  * row the fetched data has no cells for maps to -1 and is skipped, which is the
  * same outcome as a row that simply holds no cell here.
  */
@@ -98,49 +93,40 @@ export function pickVariantCell({
   // Screen row -> worker row, or -1. See the display model's `rowUnmap`.
   rowUnmap: Int32Array
 }): PickedCell | undefined {
-  for (let rowIndex = rowNearest; rowIndex >= rowLowest; rowIndex--) {
-    const workerRow = rowIndex < rowUnmap.length ? rowUnmap[rowIndex]! : -1
-    if (workerRow < 0) {
-      continue
-    }
-    let best: PickedCell | undefined
-    let bestLen = Infinity
-    for (const featureIndex of candidateFeatures) {
-      const cellIndex = findCellIndex(data, featureIndex, workerRow)
-      if (cellIndex >= 0) {
-        const genomicStart = data.featurePositions[featureIndex * 2]!
-        const genomicEnd = data.featurePositions[featureIndex * 2 + 1]!
-        const len = genomicEnd - genomicStart
-        if (len <= bestLen) {
-          const insertedBp = data.cellAltDosage[cellIndex]
+  let best: PickedCell | undefined
+  let bestLen = Infinity
+  for (const featureIndex of candidateFeatures) {
+    const top = topDrawnCell(
+      data,
+      rowUnmap,
+      featureIndex,
+      rowLowest,
+      rowNearest,
+    )
+    if (top) {
+      const { cellIndex, rowIndex } = top
+      const genomicStart = data.featurePositions[featureIndex * 2]!
+      const genomicEnd = data.featurePositions[featureIndex * 2 + 1]!
+      const len = genomicEnd - genomicStart
+      const onTop =
+        len < bestLen || (len === bestLen && cellIndex > best!.cellIndex)
+      if (
+        onTop &&
+        withinCellTolerance(data, block, state, mouseX, mouseY, cellIndex)
+      ) {
+        bestLen = len
+        best = {
+          cellIndex,
+          featureIndex,
+          rowIndex,
+          genomicStart,
+          genomicEnd,
+          insertedBp: data.cellAltDosage[cellIndex]
             ? data.featureInsertedBp[featureIndex]!
-            : 0
-          const over = withinCellTolerance(
-            data,
-            block,
-            state,
-            mouseX,
-            mouseY,
-            cellIndex,
-          )
-          const onTop = len < bestLen || cellIndex > best!.cellIndex
-          if (over && onTop) {
-            bestLen = len
-            best = {
-              cellIndex,
-              featureIndex,
-              rowIndex,
-              genomicStart,
-              genomicEnd,
-              insertedBp,
-            }
-          }
+            : 0,
         }
       }
     }
-    if (best) {
-      return best
-    }
   }
-  return undefined
+  return best
 }

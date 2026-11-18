@@ -17,8 +17,8 @@ interface VariantHitQuery {
   // Genomic position (absolute bp) under the cursor within this region.
   genomicPos: number
   // Rows whose drawn cell covers the cursor: `rowNearest` is the row the cursor
-  // is actually in (and the last painted there), `rowLowest` the furthest row
-  // still covering it under the 2px floor. Equal unless rows are sub-pixel.
+  // is actually in, `rowLowest` the furthest row still covering it under the
+  // 2px floor. Equal unless rows are sub-pixel.
   rowNearest: number
   rowLowest: number
   // Half-width of the bp search window so thin cells stay clickable.
@@ -35,9 +35,9 @@ export const HIT_TOLERANCE_PX = 5
 //
 // The spatial index is per *feature* (see computeVariantCells), so x and y are
 // resolved separately: x against the index, y arithmetically here. The caller
-// then walks the row band nearest-first, asks `findCellIndex` whether a cell
-// exists at each (feature, row), and among those rejects any the cursor is not
-// actually over — so a small variant atop a large one stays selectable.
+// then takes each feature's top cell over the row band (`topDrawnCell`), and
+// among those rejects any the cursor is not actually over — so a small variant
+// atop a large one stays selectable.
 export function computeVariantHitQuery(
   region: HitRegion,
   mouseX: number,

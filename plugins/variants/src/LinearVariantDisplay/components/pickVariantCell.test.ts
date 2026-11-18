@@ -233,9 +233,8 @@ describe('pickVariantCell row resolution', () => {
   // cursor pixel.
   const subPixel = { ...geom, state: { ...state, rowHeight: 0.5 } }
 
-  test('sub-pixel rows: the nearest occupied row in the band wins', () => {
-    // Row 2 is nearest (and painted last), so it reports — not row 0, which a
-    // spatial index might return first.
+  test('sub-pixel rows: the occupied row painted last in the band wins', () => {
+    // Row 2's alt cell paints after row 0's reference cell, so it reports.
     const picked = pickVariantCell({
       data,
       candidateFeatures: [0],
@@ -246,6 +245,27 @@ describe('pickVariantCell row resolution', () => {
       ...subPixel,
     })
     expect(picked?.rowIndex).toBe(2)
+  })
+
+  test('sub-pixel rows: an alt cell on a lower row paints over the nearest row', () => {
+    // reference on the nearest row, the alt two rows up, both on the cursor's
+    // pixel: the alt bucket paints after the reference one, so it is on top
+    const altBelow = build({
+      refCells: [{ feature: 0, row: 2 }],
+      altCells: [{ feature: 0, row: 0, carriesAlt: true }],
+      features: [[100, 101]],
+    })
+    const picked = pickVariantCell({
+      data: altBelow,
+      candidateFeatures: [0],
+      mouseX: 100,
+      mouseY: 1.2,
+      rowNearest: 2,
+      rowLowest: 0,
+      ...subPixel,
+    })
+    expect(picked?.rowIndex).toBe(0)
+    expect(picked?.cellIndex).toBe(1)
   })
 
   test('sub-pixel rows: walks down the band when the nearest row is empty', () => {
