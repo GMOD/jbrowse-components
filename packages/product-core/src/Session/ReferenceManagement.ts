@@ -1,5 +1,3 @@
-/** MST props, views, actions, etc related to managing connections */
-
 import {
   getContainingView,
   isSessionModelWithWidgets,

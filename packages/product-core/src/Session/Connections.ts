@@ -2,9 +2,8 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { asSession } from '../siblingCast.ts'
 import { isBaseSession } from './BaseSession.ts'
+import { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
 
-import type { BaseSession } from './BaseSession.ts'
-import type { SessionWithReferenceManagementType } from './ReferenceManagement.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfiguration,
@@ -31,27 +30,33 @@ export interface ConnectionTrackConfigEntry {
  */
 export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
   return types
-    .model({
-      /**
-       * #property
-       */
-      connectionInstances: types.stripDefault(
-        types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
-        [],
-      ),
-      /**
-       * #property
-       * Persisted configs of connection tracks the user has opened, keyed by
-       * trackId. Unlike `connectionInstances` (stripped from snapshots, holds
-       * the whole fetched hub), this holds only the tracks in use, so an open
-       * connection track resolves synchronously on session load without
-       * re-establishing the connection.
-       */
-      connectionTrackConfigs: types.stripDefault(
-        types.frozen<Record<string, ConnectionTrackConfigEntry>>(),
-        {},
-      ),
-    })
+    .compose(
+      'ConnectionManagementSessionMixin',
+      ReferenceManagementSessionMixin(pluginManager),
+      types.model({
+        /**
+         * #property
+         */
+        connectionInstances: types.stripDefault(
+          types.array(
+            pluginManager.pluggableMstType('connection', 'stateModel'),
+          ),
+          [],
+        ),
+        /**
+         * #property
+         * Persisted configs of connection tracks the user has opened, keyed by
+         * trackId. Unlike `connectionInstances` (stripped from snapshots, holds
+         * the whole fetched hub), this holds only the tracks in use, so an open
+         * connection track resolves synchronously on session load without
+         * re-establishing the connection.
+         */
+        connectionTrackConfigs: types.stripDefault(
+          types.frozen<Record<string, ConnectionTrackConfigEntry>>(),
+          {},
+        ),
+      }),
+    )
     .views(self => ({
       /**
        * #getter
@@ -62,11 +67,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
       },
     }))
     .actions(self => {
-      // this mixin is always composed onto a base session with a jbrowse config
-      // and reference-management helpers; alias once instead of re-casting self
-      const session = self as typeof self &
-        BaseSession &
-        Instance<SessionWithReferenceManagementType>
+      const session = asSession(self)
       return {
         /**
          * #action
