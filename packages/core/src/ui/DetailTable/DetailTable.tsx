@@ -4,7 +4,6 @@ import { observer } from 'mobx-react'
 
 import { measureGridWidth } from '../../util/dataGridUtils.ts'
 import {
-  cellText,
   compareValues,
   searchHighlightPatterns,
   splitSearchWords,
@@ -12,25 +11,13 @@ import {
 import { makeStyles } from '../../util/tss-react/index.ts'
 import VirtualTable from '../VirtualTable/VirtualTable.tsx'
 import DetailTableToolbar from './DetailTableToolbar.tsx'
+import { columnText } from './detailColumns.ts'
 
 import type {
   VirtualTableColumn,
   VirtualTableLeading,
 } from '../VirtualTable/VirtualTable.tsx'
-
-export interface DetailTableColumn<R> {
-  field: string
-  /** the field when unset */
-  header?: string
-  /** the header's hover text */
-  description?: string
-  /** what the column sorts, searches and exports by */
-  value: (row: R) => unknown
-  /** the value as text when unset */
-  cell?: (row: R) => React.ReactNode
-  /** strip markup from the values before measuring the column */
-  html?: boolean
-}
+import type { DetailTableColumn } from './detailColumns.ts'
 
 const HEADER_PADDING = 46
 
@@ -46,10 +33,7 @@ const useStyles = makeStyles()(theme => ({
 
 function measureColumn<R>(rows: readonly R[], col: DetailTableColumn<R>) {
   return Math.max(
-    measureGridWidth(
-      rows.map(row => cellText(col.value(row))),
-      { stripHTML: col.html },
-    ),
+    measureGridWidth(rows.map(columnText(col))),
     measureGridWidth([col.header ?? col.field], { padding: HEADER_PADDING }),
   )
 }
@@ -96,16 +80,15 @@ const DetailTable = observer(function DetailTable<
       ),
     [rows, columns],
   )
-  const searchTexts = useMemo(
-    () =>
-      rows.map(row =>
-        columns
-          .map(col => cellText(col.value(row)))
-          .join('\u0000')
-          .toLowerCase(),
-      ),
-    [rows, columns],
-  )
+  const searchTexts = useMemo(() => {
+    const texts = columns.map(columnText)
+    return rows.map(row =>
+      texts
+        .map(text => text(row))
+        .join('\u0000')
+        .toLowerCase(),
+    )
+  }, [rows, columns])
   const words = useMemo(() => splitSearchWords(searchText), [searchText])
   const shownRows = useMemo(() => {
     const searched = words.length
@@ -137,14 +120,17 @@ const DetailTable = observer(function DetailTable<
       <div className={classes.tableBox} style={{ maxHeight }}>
         <VirtualTable
           rows={shownRows}
-          columns={columns.map((col, i): VirtualTableColumn<R> => ({
-            id: col.field,
-            header: col.header ?? col.field,
-            headerTitle: col.description,
-            fill: i === columns.length - 1,
-            title: row => cellText(col.value(row)),
-            cell: col.cell ?? (row => cellText(col.value(row))),
-          }))}
+          columns={columns.map((col, i): VirtualTableColumn<R> => {
+            const text = columnText(col)
+            return {
+              id: col.field,
+              header: col.header ?? col.field,
+              headerTitle: col.description,
+              fill: i === columns.length - 1,
+              title: text,
+              cell: col.cell ?? text,
+            }
+          })}
           widths={() => widths}
           leading={leading}
           isRowSelected={isRowSelected}

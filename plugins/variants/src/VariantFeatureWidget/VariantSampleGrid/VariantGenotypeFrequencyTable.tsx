@@ -81,12 +81,12 @@ const VariantGenotypeFrequencyTable = observer(
       {
         field: 'count',
         value: row => row.count,
-        cell: row => `${row.count} / ${total}`,
+        text: row => `${row.count} / ${total}`,
       },
       {
         field: 'frequency',
-        value: row => row.count / total,
-        cell: row => `${((row.count / total) * 100).toPrecision(3)}%`,
+        value: row => row.count,
+        text: row => `${((row.count / total) * 100).toPrecision(3)}%`,
       },
       { field: 'genotype', value: row => row.genotype },
     ]

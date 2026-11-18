@@ -23,7 +23,28 @@ function isBlank(value: unknown) {
   return value == null || value === ''
 }
 
-/** a blank sorts last whichever way the column sorts */
+const plainNumber = /^[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?$/i
+
+function asNumber(value: unknown) {
+  return typeof value === 'number'
+    ? value
+    : typeof value === 'string' && plainNumber.test(value)
+      ? Number(value)
+      : undefined
+}
+
+function compareFilled(a: unknown, b: unknown) {
+  const x = asNumber(a)
+  const y = asNumber(b)
+  return x !== undefined && y !== undefined
+    ? x - y
+    : naturalOrder(cellText(a), cellText(b))
+}
+
+/**
+ * a blank sorts last whichever way the column sorts; two numbers, or two
+ * strings that are plain numbers, compare by value
+ */
 export function compareValues(a: unknown, b: unknown, direction: number) {
   return isBlank(a)
     ? isBlank(b)
@@ -31,17 +52,16 @@ export function compareValues(a: unknown, b: unknown, direction: number) {
       : 1
     : isBlank(b)
       ? -1
-      : direction *
-        (typeof a === 'number' && typeof b === 'number'
-          ? a - b
-          : naturalOrder(cellText(a), cellText(b)))
+      : direction * compareFilled(a, b)
 }
 
-const formulaStart = /^[=+\-@]/
-const plainNumber = /^[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?$/i
+const formulaStart = /^[=+\-@\t\r]/
+const loneSign = /^[-+]$/
 
 function csvField(text: string) {
-  return formulaStart.test(text) && !plainNumber.test(text)
+  return formulaStart.test(text) &&
+    !plainNumber.test(text) &&
+    !loneSign.test(text)
     ? `"'${text.replaceAll('"', '""')}"`
     : /[",\r\n]/.test(text)
       ? `"${text.replaceAll('"', '""')}"`
@@ -54,6 +74,11 @@ function csvField(text: string) {
  */
 export function csvLine(fields: string[]) {
   return fields.map(csvField).join(',')
+}
+
+/** a header line and one line per row, CRLF-separated */
+export function csvText(headers: string[], rows: string[][]) {
+  return [csvLine(headers), ...rows.map(csvLine)].join('\r\n')
 }
 
 /** a search box's words, lowercased; a row matches when it holds each one */

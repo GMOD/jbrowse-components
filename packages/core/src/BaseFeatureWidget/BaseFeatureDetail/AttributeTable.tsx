@@ -2,7 +2,9 @@ import { observer } from 'mobx-react'
 
 import DetailTable from '../../ui/DetailTable/DetailTable.tsx'
 import SanitizedHTML from '../../ui/SanitizedHTML.tsx'
+import { coarseStripHTML } from '../../util/coarseStripHTML.ts'
 import { getStr } from '../../util/getStr.ts'
+import { isObject } from '../../util/objectUtils.ts'
 import FieldName from './FieldName.tsx'
 
 import type { DetailTableColumn } from '../../ui/DetailTable/DetailTable.tsx'
@@ -30,8 +32,11 @@ const AttributeTable = observer(function AttributeTable({
     field =>
       ({
         field,
-        html: true,
-        value: row => row.record[field],
+        value: row => {
+          const value = row.record[field]
+          return isObject(value) ? getStr(value) : value
+        },
+        text: row => coarseStripHTML(getStr(row.record[field] ?? '')),
         cell: row => <SanitizedHTML html={getStr(row.record[field] ?? '')} />,
       }) satisfies DetailTableColumn<AttributeRow>,
   )

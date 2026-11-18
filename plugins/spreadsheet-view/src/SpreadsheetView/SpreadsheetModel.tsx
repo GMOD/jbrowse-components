@@ -9,7 +9,7 @@ import {
 import {
   cellText,
   compareValues,
-  csvLine,
+  csvText,
   naturalOrder,
   splitSearchWords,
 } from '@jbrowse/core/util/tableText'
@@ -608,12 +608,10 @@ export default function stateModelFactory() {
        */
       csvText() {
         const columns = self.shownColumns
-        return [
-          csvLine(columns.map(c => c.header)),
-          ...this.sortedRows.map(row =>
-            csvLine(columns.map(c => cellText(c.value(row)))),
-          ),
-        ].join('\r\n')
+        return csvText(
+          columns.map(c => c.header),
+          this.sortedRows.map(row => columns.map(c => cellText(c.value(row)))),
+        )
       },
     }))
     .actions(self => {

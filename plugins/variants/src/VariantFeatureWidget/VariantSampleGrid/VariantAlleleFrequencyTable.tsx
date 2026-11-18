@@ -7,7 +7,12 @@ import type { DetailTableColumn } from '@jbrowse/core/ui/DetailTable'
 const columns: DetailTableColumn<AlleleFrequency>[] = [
   { field: 'allele', header: 'Allele', value: row => row.allele },
   { field: 'count', header: 'Count', value: row => row.count },
-  { field: 'frequency', header: 'Frequency', value: row => row.frequency },
+  {
+    field: 'frequency',
+    header: 'Frequency',
+    value: row => row.count,
+    text: row => row.frequency,
+  },
 ]
 
 const VariantAlleleFrequencyTable = observer(

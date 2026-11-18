@@ -1,6 +1,7 @@
 import {
   compareValues,
   csvLine,
+  csvText,
   searchHighlightPatterns,
   splitSearchWords,
 } from './tableText.ts'
@@ -23,6 +24,39 @@ describe('csvLine', () => {
       '-100,+5,-1.5e-3,-.5',
     )
   })
+
+  test('a lone strand sign stays as written', () => {
+    expect(csvLine(['+', '-'])).toBe('+,-')
+  })
+
+  test('a leading tab or carriage return is escaped too', () => {
+    expect(csvLine(['\t=1', '\r=1'])).toBe(`"'\t=1","'\r=1"`)
+  })
+})
+
+test('csvText puts the header line first and joins lines with CRLF', () => {
+  expect(
+    csvText(
+      ['a', 'b'],
+      [
+        ['1', '2'],
+        ['=x', ''],
+      ],
+    ),
+  ).toBe(`a,b\r\n1,2\r\n"'=x",`)
+})
+
+test('strings that are plain numbers sort by value', () => {
+  const values = ['0.5', '0.125', '-10', '0.25', '-2', '1e3', '3']
+  expect([...values].sort((a, b) => compareValues(a, b, 1))).toEqual([
+    '-10',
+    '-2',
+    '0.125',
+    '0.25',
+    '0.5',
+    '3',
+    '1e3',
+  ])
 })
 
 test('a blank sorts last in either direction', () => {

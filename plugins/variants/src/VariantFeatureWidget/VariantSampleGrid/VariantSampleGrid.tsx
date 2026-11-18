@@ -85,8 +85,15 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
     'variantSampleGrid-useCounts',
     false,
   )
-  const [selectedGenotypes, setSelectedGenotypes] =
-    useState<Set<string> | null>(null)
+  const [genotypePick, setGenotypePick] = useState<{
+    alt: number | null
+    genotypes: Set<string>
+  } | null>(null)
+  const selectedGenotypes =
+    genotypePick?.alt === selectedAlt ? genotypePick.genotypes : null
+  const setSelectedGenotypes = (genotypes: Set<string> | null) => {
+    setGenotypePick(genotypes ? { alt: selectedAlt, genotypes } : null)
+  }
 
   // These tally over every sample, so memoize — the grid re-renders on each
   // filter keystroke / toggle, and a big VCF can carry thousands of samples.
@@ -178,6 +185,7 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
               checked: showFrequencyTable,
               onClick: () => {
                 setShowFrequencyTable(!showFrequencyTable)
+                setSelectedGenotypes(null)
               },
             },
             {
@@ -230,9 +238,7 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
         <ErrorBoundary FallbackComponent={ErrorBanner}>
           <VariantGenotypeFrequencyTable
             title={
-              <Typography variant="subtitle2">
-                Genotype frequencies (click to filter)
-              </Typography>
+              <Typography variant="subtitle2">Genotype frequencies</Typography>
             }
             rows={allelePicked}
             selectedGenotypes={selectedGenotypes}

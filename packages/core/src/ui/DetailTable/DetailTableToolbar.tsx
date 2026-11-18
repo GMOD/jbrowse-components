@@ -1,14 +1,15 @@
 import GetAppIcon from '@mui/icons-material/GetApp'
-import { IconButton, Tooltip } from '@mui/material'
+import { IconButton, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { saveAs } from '../../util/FileSaver/index.ts'
-import { cellText, csvLine } from '../../util/tableText.ts'
+import { csvText } from '../../util/tableText.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import { SearchField } from '../ClearableSearchField.tsx'
 import ControlRow from '../ControlRow.tsx'
+import { columnText } from './detailColumns.ts'
 
-import type { DetailTableColumn } from './DetailTable.tsx'
+import type { DetailTableColumn } from './detailColumns.ts'
 
 const useStyles = makeStyles()(theme => ({
   row: {
@@ -26,11 +27,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function csvText<R>(rows: readonly R[], columns: DetailTableColumn<R>[]) {
-  return [
-    csvLine(columns.map(col => col.header ?? col.field)),
-    ...rows.map(row => csvLine(columns.map(col => cellText(col.value(row))))),
-  ].join('\r\n')
+function tableCsv<R>(rows: readonly R[], columns: DetailTableColumn<R>[]) {
+  const texts = columns.map(columnText)
+  return csvText(
+    columns.map(col => col.header ?? col.field),
+    rows.map(row => texts.map(text => text(row))),
+  )
 }
 
 const DetailTableToolbar = observer(function DetailTableToolbar<R>({
@@ -54,15 +56,22 @@ const DetailTableToolbar = observer(function DetailTableToolbar<R>({
   return (
     <ControlRow className={classes.row}>
       <div className={classes.title}>{title}</div>
+      {rows.length === total ? null : (
+        <Typography
+          variant="caption"
+          color="textSecondary"
+          noWrap
+          role="status"
+        >
+          {rows.length} of {total}
+        </Typography>
+      )}
       <SearchField
         quiet
         size="small"
         className={classes.search}
         label="Search"
         value={searchText}
-        status={
-          rows.length === total ? undefined : `${rows.length} of ${total}`
-        }
         onChange={onSearch}
       />
       <Tooltip title="Export these rows as CSV">
@@ -71,7 +80,7 @@ const DetailTableToolbar = observer(function DetailTableToolbar<R>({
           aria-label="Export CSV"
           onClick={() => {
             saveAs(
-              new Blob([csvText(rows, columns)], {
+              new Blob([tableCsv(rows, columns)], {
                 type: 'text/csv;charset=utf-8',
               }),
               `${exportName}.csv`,
