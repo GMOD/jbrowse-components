@@ -180,10 +180,10 @@ function makeCtx(
 
 // One shape for both tiers, so a table can run either.
 const fetchAlignment = (self: ReturnType<typeof makeSelf>) =>
-  fetchMafAlignmentData(self.self as any, NEEDED)
+  fetchMafAlignmentData(self.self, NEEDED)
 const fetchSummary = (self: ReturnType<typeof makeSelf>) =>
   fetchMafSummaryData(
-    self.self as any,
+    self.self,
     NEEDED,
     makeCtx(self.reported, self.loadedIndices),
   )
@@ -250,7 +250,7 @@ describe('the byte gate rides in the tier fetch', () => {
   test('a force-loaded display sends no budget, so the worker measures nothing', async () => {
     const { self } = makeSelf()
     self.resolvedByteLimit = () => undefined
-    await fetchMafAlignmentData(self as any, NEEDED)
+    await fetchMafAlignmentData(self, NEEDED)
 
     for (const call of mockRpcCall.mock.calls) {
       expect(call[2].byteLimit).toBeUndefined()
@@ -279,7 +279,7 @@ describe('the byte gate rides in the tier fetch', () => {
       ),
     )
 
-    await fetchMafAlignmentData(self as any, NEEDED)
+    await fetchMafAlignmentData(self, NEEDED)
 
     expect(loadedIndices).toEqual([])
     expect(committedBytes).toEqual([[9e9]])
@@ -306,7 +306,7 @@ describe('the byte gate rides in the tier fetch', () => {
       })
     })
 
-    await fetchMafAlignmentData(self as any, NEEDED)
+    await fetchMafAlignmentData(self, NEEDED)
 
     expect(loadedIndices).toEqual([])
     expect(committedBytes).toEqual([[9e9]])
@@ -464,7 +464,7 @@ describe('the CDS-frame read is measured against its own file', () => {
   test('sends the budget with the read, and no pre-flight probe', async () => {
     const { self } = framesSelf()
     respondWith(false)
-    await fetchMafAlignmentData(self as any, NEEDED)
+    await fetchMafAlignmentData(self, NEEDED)
 
     expect(callsTo('CoreGetRegionByteEstimate')).toHaveLength(0)
     const frames = callsTo('LinearMafGetFramesData')
@@ -476,7 +476,7 @@ describe('the CDS-frame read is measured against its own file', () => {
   test('reads the frames when the region is under the limit', async () => {
     const { self, framesFetched, framesBlocked, stored } = framesSelf()
     respondWith(false)
-    await fetchMafAlignmentData(self as any, NEEDED)
+    await fetchMafAlignmentData(self, NEEDED)
 
     expect(framesFetched()).toEqual([0, 3])
     expect(stored.get(0)?.frames).toEqual([])
@@ -489,7 +489,7 @@ describe('the CDS-frame read is measured against its own file', () => {
   test('declines an over-budget read and says so, without failing the fetch', async () => {
     const { self, framesFetched, framesBlocked } = framesSelf()
     respondWith(true)
-    await fetchMafAlignmentData(self as any, NEEDED)
+    await fetchMafAlignmentData(self, NEEDED)
 
     expect(framesFetched()).toEqual([])
     expect(framesBlocked).toEqual([true])
@@ -508,7 +508,7 @@ describe('the CDS-frame read is measured against its own file', () => {
       resolvedByteLimit: () => undefined,
     })
     respondWith(false)
-    await fetchMafAlignmentData(self as any, NEEDED)
+    await fetchMafAlignmentData(self, NEEDED)
     expect(callsTo('LinearMafGetFramesData')[0]![2].byteLimit).toBeUndefined()
     expect(framesFetched()).toEqual([0, 3])
   })
@@ -531,7 +531,7 @@ describe('the CDS-frame read is measured against its own file', () => {
             },
       ),
     )
-    await fetchMafAlignmentData(self as any, NEEDED)
+    await fetchMafAlignmentData(self, NEEDED)
     expect(framesFetched()).toEqual([])
     expect(framesBlocked).toEqual([true])
   })
@@ -567,7 +567,7 @@ describe('the CDS-frame read is measured against its own file', () => {
   test('the detail tier reads them with every frame consumer off', async () => {
     const { self } = framesSelf({ framesActive: false })
     respondWith(false)
-    await fetchMafAlignmentData(self as any, NEEDED)
+    await fetchMafAlignmentData(self, NEEDED)
     expect(callsTo('LinearMafGetFramesData')).toHaveLength(2)
   })
 
@@ -581,7 +581,7 @@ describe('the CDS-frame read is measured against its own file', () => {
   test('a track with no frames file reads none', async () => {
     const { self } = framesSelf({ framesAdapterConfig: undefined })
     respondWith(false)
-    await fetchMafAlignmentData(self as any, NEEDED)
+    await fetchMafAlignmentData(self, NEEDED)
     expect(callsTo('LinearMafGetFramesData')).toHaveLength(0)
   })
 })
