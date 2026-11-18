@@ -40,6 +40,11 @@ const preservedExports = [
   // both stay published whichever subpath importers come and go.
   '@jbrowse/core/ReExports/registry',
   '@jbrowse/core/ReExports/modules',
+  '@jbrowse/core/ReExports/loaders',
+  '@jbrowse/core/ReExports/workerLoaders',
+  // The published Blat plugin reads it off JBrowseExports; the in-repo data
+  // grids that imported it moved to VirtualTable.
+  '@jbrowse/core/ui/DataGridFlexContainer',
   // `scoresToStats` is what a plugin calls now that the adapter's
   // `getRegionQuantitativeStats` is gone (ADR-124), and BigWigAdapter was the
   // subpath's last in-repo importer.
