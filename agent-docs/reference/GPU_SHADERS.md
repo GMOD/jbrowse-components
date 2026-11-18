@@ -42,7 +42,8 @@ and bind group layout to the validation a browser applies.
 - **Derivatives (`ddx`/`ddy`/`fwidth`) must sit in uniform control flow.**
   Branching on a varying and taking a derivative inside the branch fails. Pick
   only the SDF per branch and run the derivative and ramp once after it
-  (`pointMark.slang`), or compute every alpha before the branch (`wiggle.slang`).
+  (`pointMark.slang`), or branch only on a uniform (`wiggleScatter.slang`'s
+  disc or square).
 - **A `max` blend takes no factors.** `BlendState` makes `{ op: 'max' }` a variant
   with no factor fields.
 
