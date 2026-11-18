@@ -570,20 +570,22 @@ test('a lane flips from its menu, and a flip pin offers its release', () => {
   expect(pinned.calls).toEqual(['unflip peach'])
 })
 
-test('the two hops are dead without a frame, and without the genome in the session', () => {
-  const hops = (items: MenuItem[]) => disabledOf(items).slice(3, 5)
-  expect(hops(laneHeaderMenuItems(headerModel().model, peach))).toEqual([
-    false,
-    false,
-  ])
+test('the two hops show only with a frame and the genome in the session', () => {
+  const hops = (items: MenuItem[]) =>
+    labelsOf(items).filter(
+      label =>
+        label === 'Open peach at the matching region' ||
+        label === 'Re-anchor on peach',
+    )
+  expect(hops(laneHeaderMenuItems(headerModel().model, peach))).toHaveLength(2)
   expect(
     hops(
       laneHeaderMenuItems(headerModel().model, { ...peach, frame: undefined }),
     ),
-  ).toEqual([true, true])
+  ).toEqual([])
   expect(
     hops(laneHeaderMenuItems(headerModel({ held: false }).model, peach)),
-  ).toEqual([true, true])
+  ).toEqual([])
 })
 
 test('a lane with no gene track says so once, as a dead menu line', () => {
@@ -635,13 +637,10 @@ describe('a lane glyph menu', () => {
     ])
   })
 
-  test('an unheld lane cannot be opened', () => {
-    const items = laneLocusMenuItems(
-      withZoom(headerModel({ held: false })),
-      peach,
-      locus,
-    )
-    expect(disabledOf(items)).toEqual([true, true])
+  test('an unheld lane offers no hop', () => {
+    expect(
+      laneLocusMenuItems(withZoom(headerModel({ held: false })), peach, locus),
+    ).toEqual([])
   })
 
   test('an anchor glyph zooms the view to it', () => {

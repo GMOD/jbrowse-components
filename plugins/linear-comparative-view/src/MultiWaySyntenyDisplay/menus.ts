@@ -252,8 +252,8 @@ export function laneLocusMenuItems(
 }
 
 /**
- * A mate lane's Open in a new view and Re-anchor rows at `loc`, disabled with
- * no locus to go to or no assembly in the session to open
+ * A mate lane's Open in a new view and Re-anchor rows at `loc`, shown only
+ * with a locus to go to and the assembly in the session to open
  */
 function mateLaneGoItems(
   model: LaneHeaderModel,
@@ -262,32 +262,26 @@ function mateLaneGoItems(
   labels: { open: string; reanchor: string },
 ): MenuItem[] {
   const name = lane.assemblyName
-  const go = (action: (assemblyName: string, loc: string) => void) =>
-    loc !== undefined && model.holdsAssembly(name)
-      ? {
+  return loc !== undefined && model.holdsAssembly(name)
+    ? [
+        {
+          label: labels.open,
           onClick: () => {
-            action(name, loc)
+            model.openInNewView(name, loc)
           },
-        }
-      : { disabled: true, onClick: () => {} }
-  return [
-    {
-      label: labels.open,
-      ...go((assemblyName, at) => {
-        model.openInNewView(assemblyName, at)
-      }),
-    },
-    ...(model.canReanchor
-      ? [
-          {
-            label: labels.reanchor,
-            ...go((assemblyName, at) => {
-              model.reanchor(assemblyName, at)
-            }),
-          },
-        ]
-      : []),
-  ]
+        },
+        ...(model.canReanchor
+          ? [
+              {
+                label: labels.reanchor,
+                onClick: () => {
+                  model.reanchor(name, loc)
+                },
+              },
+            ]
+          : []),
+      ]
+    : []
 }
 
 function laneContigMenuItems(
