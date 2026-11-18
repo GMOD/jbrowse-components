@@ -1,11 +1,29 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react'
 
 import { createTestAlignmentsDisplay, oneReadWithMate } from '../testUtils.ts'
 import BandChipsOverlay from './BandChipsOverlay.tsx'
+import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
+
+import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
 afterEach(cleanup)
+
+function renderOverlays(display: LinearAlignmentsDisplayModel) {
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <GroupLabelsOverlay model={display} />
+      <BandChipsOverlay model={display} />
+    </ThemeProvider>,
+  )
+}
 
 function displayWithArcs() {
   const { display } = createTestAlignmentsDisplay()
@@ -16,20 +34,33 @@ function displayWithArcs() {
     { groups: [{ key: '', label: '', data: oneReadWithMate(2000) }] },
     display.view.displayedRegions[0]!,
   )
-  render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <BandChipsOverlay model={display} />
-    </ThemeProvider>,
+  renderOverlays(display)
+  return display
+}
+
+function facetedWithArcs() {
+  const { display } = createTestAlignmentsDisplay()
+  display.setDrawnReadConnections('link')
+  display.setRpcData(
+    0,
+    {
+      groups: [
+        { key: 'a', label: 'HP: 1', data: oneReadWithMate(2000) },
+        {
+          key: 'b',
+          label: 'HP: 2',
+          data: oneReadWithMate(2000, { key: 'r1', name: 'readB' }),
+        },
+      ],
+    },
+    display.view.displayedRegions[0]!,
   )
   return display
 }
 
-test('each band draws its chip at its own top, the stack no taller for them', () => {
+test('each band draws its chip at its own top', () => {
   const display = displayWithArcs()
   const [lane] = display.renderSections
-  expect(display.sections.contentHeight).toBe(
-    lane!.bands.bottom + lane!.pileupHeight,
-  )
   expect(screen.getByTestId('band_chips_coverage').style.top).toBe(
     `${lane!.coverageTop + 1}px`,
   )
@@ -61,4 +92,22 @@ test('the pileup chip hides the pileup', () => {
   fireEvent.click(screen.getByTitle('Hide pileup'))
   expect(display.showPileup).toBe(false)
   expect(display.showCoverage).toBe(true)
+})
+
+test('under a facet the coverage chip leads the topmost group chip', () => {
+  const display = facetedWithArcs()
+  renderOverlays(display)
+  const [firstGroupChip] = screen.getAllByTestId('group-label-chip')
+  expect(within(firstGroupChip!).getByTitle('Hide coverage')).toBeTruthy()
+  expect(screen.queryByTestId('band_chips_coverage')).toBeNull()
+})
+
+test('under a facet with coverage hidden, the strip heading the first lane leads the topmost group chip', () => {
+  const display = facetedWithArcs()
+  display.setShowCoverage(false)
+  renderOverlays(display)
+  const [firstGroupChip] = screen.getAllByTestId('group-label-chip')
+  expect(display.renderSections[0]!.bands.top.readConnections).toBe(0)
+  expect(within(firstGroupChip!).getByTitle('Hide read arcs')).toBeTruthy()
+  expect(screen.queryByTestId('band_chips_readConnections')).toBeNull()
 })

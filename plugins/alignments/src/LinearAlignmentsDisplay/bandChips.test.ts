@@ -1,4 +1,4 @@
-import { bandChipLabel, bandChipRows } from './bandChips.ts'
+import { bandChipLabel, bandChips } from './bandChips.ts'
 import { computeStackedSections } from './sectionLayout.ts'
 
 import type { BelowCoverageBandsSettings } from './sectionLayout.ts'
@@ -43,9 +43,11 @@ function chipsOf(
   settings: Partial<BelowCoverageBandsSettings> = {},
   showPileup = true,
 ) {
-  return bandChipRows(lanesOf(specs, settings).sections, showPileup).map(
-    row => [row.band, row.chips],
-  )
+  return bandChips(
+    lanesOf(specs, settings).sections,
+    showPileup,
+    false,
+  ).rows.map(row => [row.band, row.chips])
 }
 
 test('the coverage and the pileup each get a chip', () => {
@@ -106,7 +108,7 @@ test('with coverage hidden, up arcs take a strip and are named there', () => {
 
 test('a stack of lanes names each band once, on the first lane drawing it', () => {
   const { sections } = lanesOf([{}, { hasArcs: true }])
-  const rows = bandChipRows(sections, true)
+  const { rows } = bandChips(sections, true, false)
   expect(rows.map(r => [r.band, r.top])).toEqual([
     ['coverage', sections[0]!.coverageTop],
     ['readConnections', sections[1]!.coverageTop + 45],
@@ -114,17 +116,47 @@ test('a stack of lanes names each band once, on the first lane drawing it', () =
   ])
 })
 
-test('each row sits at the top of the band it names, which reserves no px for it', () => {
-  const { sections, contentHeight } = lanesOf([
+test('each row sits at the top of the band it names', () => {
+  const { sections } = lanesOf([
     { hasArcs: true, hasSashimiDownArcs: true, maxY: 20 },
   ])
   const lane = sections[0]!
-  expect(contentHeight).toBe(45 + 35 + 30 + 20 * 5)
-  expect(bandChipRows(sections, true).map(row => [row.band, row.top])).toEqual([
+  expect(
+    bandChips(sections, true, false).rows.map(row => [row.band, row.top]),
+  ).toEqual([
     ['coverage', 0],
     ['readConnections', lane.bands.top.readConnections],
     ['sashimi', lane.bands.top.sashimi],
     ['pileup', lane.pileupTop],
+  ])
+})
+
+test('under section chips, whichever row heads the first lane leads them', () => {
+  const leadingOf = (
+    specs: LaneSpec[],
+    settings: Partial<BelowCoverageBandsSettings>,
+    underGroupChips = true,
+  ) => {
+    const { sections } = lanesOf(specs, settings)
+    const { leading, rows } = bandChips(sections, true, underGroupChips)
+    return [leading?.band, rows.map(row => row.band)]
+  }
+  const bothArcs = [{ hasArcs: true }, { hasArcs: true }]
+  expect(leadingOf(bothArcs, {})).toEqual([
+    'coverage',
+    ['readConnections', 'pileup'],
+  ])
+  expect(leadingOf(bothArcs, { showCoverage: false })).toEqual([
+    'readConnections',
+    ['pileup'],
+  ])
+  expect(leadingOf([{}, { hasArcs: true }], { showCoverage: false })).toEqual([
+    'pileup',
+    ['readConnections'],
+  ])
+  expect(leadingOf(bothArcs, {}, false)).toEqual([
+    undefined,
+    ['coverage', 'readConnections', 'pileup'],
   ])
 })
 

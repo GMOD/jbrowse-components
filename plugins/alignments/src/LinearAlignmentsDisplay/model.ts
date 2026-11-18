@@ -97,7 +97,7 @@ import {
   readPaletteViews,
 } from './alignmentsColorViews.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
-import { bandChipRows } from './bandChips.ts'
+import { bandChips } from './bandChips.ts'
 import {
   bandStackViews,
   dragStripHeight,
@@ -1600,11 +1600,12 @@ export default function stateModelFactory(
           /**
            * #getter
            * The chips naming each band that draws, in content space, once
-           * for the stack (`bandChipRows`).
+           * for the stack, and the row the topmost section chip carries
+           * (`bandChips`).
            */
-          get bandChipRows() {
+          get bandChips() {
             const junctionSections = this.sashimiJunctionSections
-            return bandChipRows(
+            return bandChips(
               self.renderSections.map((sec, i) => ({
                 ...sec,
                 sashimiOverCoverage:
@@ -1613,6 +1614,7 @@ export default function stateModelFactory(
                   ) ?? false,
               })),
               self.showPileup,
+              self.showsGroupLabels,
             )
           },
 

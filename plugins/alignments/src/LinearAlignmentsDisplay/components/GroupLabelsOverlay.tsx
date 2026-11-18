@@ -75,15 +75,11 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   // Hiding the last drawn lane leaves no chip to carry the restore button.
   const canHideLane = renderSections.length > 1
   const order = sectionOrderOf(model)
-  const coverageChips = model.bandChipRows.find(row => row.band === 'coverage')
+  const { leading } = model.bandChips
   return (
     <GroupLabelChips
       canvasHeight={scroll.canvasHeight}
-      leading={
-        coverageChips ? (
-          <BandRowChips model={model} row={coverageChips} />
-        ) : null
-      }
+      leading={leading ? <BandRowChips model={model} row={leading} /> : null}
       hiddenCount={model.hiddenGroups.size}
       onShowHidden={() => {
         model.showAllGroups()

@@ -55,12 +55,23 @@ function stripRow(
  * The chips naming each band that draws, once for the whole stack: the
  * coverage and anything drawn over it on the first lane's coverage band, and
  * each strip and the pileup on the first lane drawing it. A lone band is not
- * named, so a chip never hides the last thing the track draws.
+ * named, so a chip never hides the last thing the track draws. Under section
+ * chips, the row heading the first lane, whichever band that is, is
+ * `leading`, drawn ahead of the topmost section chip that would cover it.
  */
-export function bandChipRows(
+export function bandChips(
   lanes: readonly BandChipLane[],
   showPileup: boolean,
+  underGroupChips: boolean,
 ) {
+  const rows = bandChipRows(lanes, showPileup)
+  const leading = underGroupChips
+    ? rows.find(row => row.top === lanes[0]?.coverageTop)
+    : undefined
+  return { leading, rows: rows.filter(row => row !== leading) }
+}
+
+function bandChipRows(lanes: readonly BandChipLane[], showPileup: boolean) {
   const first = lanes[0]
   const pileupLane = showPileup
     ? lanes.find(l => l.pileupHeight > 0)

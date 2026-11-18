@@ -43,22 +43,19 @@ export const BandRowChips = observer(function BandRowChips({
 })
 
 /**
- * Each band's chip at its top-left, past a left-side axis's gutter. While
- * section chips draw, the coverage's chips ride ahead of the topmost one
- * (`GroupLabelsOverlay`) instead.
+ * Each band's chip at its top-left, past a left-side axis's gutter, but for
+ * the row the topmost section chip carries (`GroupLabelsOverlay`).
  */
 const BandChipsOverlay = observer(function BandChipsOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { bandChipRows, scrollModel: scroll, showsGroupLabels } = model
+  const { bandChips, scrollModel: scroll } = model
   const left = leftAxisGutterWidth(model.axes) + GROUP_LABEL_INSET_X
-  return bandChipRows.map(row => {
+  return bandChips.rows.map(row => {
     const top = bandScreenTop(row.top, scroll) + 1
-    return (showsGroupLabels && row.band === 'coverage') ||
-      top < 0 ||
-      top + GROUP_LABEL_HEIGHT > scroll.canvasHeight ? null : (
+    return top < 0 || top + GROUP_LABEL_HEIGHT > scroll.canvasHeight ? null : (
       <BandChipRow
         key={row.band}
         top={top}
