@@ -183,10 +183,6 @@ export function useRenderingBackend<
   // single HAL rung at a time, and sharing it stops a display that flaps
   // between the two from spending a fresh allowance on each.
   const budgetRef = useRef<RecoveryBudget | null>(null)
-  // Latched once the budget says stop. The recovery effect below runs on every
-  // render, so it needs a non-mutating way to know it has already given up —
-  // asking the budget again would refresh its window and it would never lapse.
-  const gaveUpRef = useRef(false)
   const recoverTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
@@ -209,7 +205,7 @@ export function useRenderingBackend<
 
   // A DIFFERENT model on the same component is a re-init, so it needs the fresh
   // canvas element every other re-init gets, plus a clean recovery history —
-  // inheriting the old display's `gaveUp` latch would leave the new one unable
+  // inheriting the old display's spent budget would leave the new one unable
   // to recover at all.
   //
   // Re-initializing on the element it was already using is a `dispose()` — which
@@ -236,9 +232,19 @@ export function useRenderingBackend<
   if (lastModelRef.current !== model) {
     lastModelRef.current = model
     contextLostRef.current = false
-    gaveUpRef.current = false
     budgetOf(budgetRef).reset()
     setContextVersion(v => v + 1)
+  }
+
+  // What a genuine `webglcontextrestored` and a manual Retry both mean: the
+  // trouble is over, so cancel what is pending and start a clean budget.
+  function startOver() {
+    clearTimeout(lossReportTimerRef.current)
+    lossReportTimerRef.current = undefined
+    clearTimeout(recoverTimerRef.current)
+    recoverTimerRef.current = undefined
+    contextLostRef.current = false
+    budgetOf(budgetRef).reset()
   }
 
   useEffect(() => {
@@ -257,16 +263,9 @@ export function useRenderingBackend<
         }, CONTEXT_LOST_REPORT_GRACE_MS)
       }
       const onRestored = () => {
-        // browser recovered on its own: cancel pending timers, reset, rebuild
-        // (every GL object from the old context is dead even though
-        // `isContextLost()` now reads false)
-        clearTimeout(lossReportTimerRef.current)
-        lossReportTimerRef.current = undefined
-        clearTimeout(recoverTimerRef.current)
-        recoverTimerRef.current = undefined
-        contextLostRef.current = false
-        gaveUpRef.current = false
-        budgetOf(budgetRef).reset()
+        // browser recovered on its own: rebuild, since every GL object from the
+        // old context is dead even though `isContextLost()` now reads false
+        startOver()
         setContextVersion(v => v + 1)
       }
       canvas.addEventListener('webglcontextlost', onLost)
@@ -303,19 +302,17 @@ export function useRenderingBackend<
   // Runs every render (no dep array) on purpose: the guards make it idempotent,
   // and depending on `model.renderError` is unreliable here (a plain re-render
   // can miss the value transition). The unmount cleanup is the separate effect
-  // below.
+  // below. `exhausted` latches the give-up: recording past it every render
+  // would let a lapsed window auto-recover a display that had given up.
   useEffect(() => {
+    const budget = budgetOf(budgetRef)
     if (
       model.renderError &&
       contextLostRef.current &&
-      !gaveUpRef.current &&
-      recoverTimerRef.current === undefined
+      !budget.exhausted &&
+      recoverTimerRef.current === undefined &&
+      budget.record(performance.now()) === 'recover'
     ) {
-      const budget = budgetOf(budgetRef)
-      if (budget.record(performance.now()) === 'give-up') {
-        gaveUpRef.current = true
-        return
-      }
       const delay = CONTEXT_RECOVER_BASE_MS * 2 ** (budget.attempt - 1)
       recoverTimerRef.current = setTimeout(() => {
         recoverTimerRef.current = undefined
@@ -347,17 +344,14 @@ export function useRenderingBackend<
   useEffect(
     () =>
       onDeviceLost(() => {
-        if (gaveUpRef.current) {
-          return
-        }
-        if (budgetOf(budgetRef).record(performance.now()) === 'give-up') {
-          gaveUpRef.current = true
-          if (nodeAlive(model)) {
+        const budget = budgetOf(budgetRef)
+        if (!budget.exhausted) {
+          if (budget.record(performance.now()) === 'recover') {
+            setContextVersion(v => v + 1)
+          } else if (nodeAlive(model)) {
             model.setRenderError(createGpuDeviceLostError())
           }
-          return
         }
-        setContextVersion(v => v + 1)
       }),
     [model],
   )
@@ -498,14 +492,7 @@ export function useRenderingBackend<
   })
 
   function retry() {
-    // manual retry = fresh start: cancel pending timers and reset the budget
-    clearTimeout(lossReportTimerRef.current)
-    lossReportTimerRef.current = undefined
-    clearTimeout(recoverTimerRef.current)
-    recoverTimerRef.current = undefined
-    contextLostRef.current = false
-    gaveUpRef.current = false
-    budgetOf(budgetRef).reset()
+    startOver()
     if (nodeAlive(model)) {
       model.setRenderError(undefined)
     }

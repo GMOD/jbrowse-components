@@ -44,3 +44,29 @@ test('reset returns a spent budget to a clean slate', () => {
   expect(budget.record(300)).toBe('recover')
   expect(budget.attempt).toBe(1)
 })
+
+// The hook's recovery effect runs every render and asks this before it would
+// record, so asking must not refresh the window or move the count.
+test('exhausted latches at the give-up and reading it changes nothing', () => {
+  const budget = new RecoveryBudget(2, 60_000)
+  expect(budget.exhausted).toBe(false)
+  budget.record(0)
+  budget.record(100)
+  expect(budget.exhausted).toBe(false)
+  expect(budget.record(200)).toBe('give-up')
+  expect(budget.exhausted).toBe(true)
+  expect(budget.exhausted).toBe(true)
+  expect(budget.attempt).toBe(3)
+  budget.reset()
+  expect(budget.exhausted).toBe(false)
+})
+
+test('a lapsed window does not lift a give-up until the next record', () => {
+  const budget = new RecoveryBudget(2, 60_000)
+  budget.record(0)
+  budget.record(100)
+  budget.record(200)
+  expect(budget.exhausted).toBe(true)
+  expect(budget.record(60_201)).toBe('recover')
+  expect(budget.exhausted).toBe(false)
+})

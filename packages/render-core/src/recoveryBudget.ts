@@ -52,6 +52,14 @@ export class RecoveryBudget {
   }
 
   /**
+   * Whether the last `record` said give up. A read, so a caller that runs every
+   * render can ask it freely; only the next `record` or a `reset` lifts it.
+   */
+  get exhausted() {
+    return this.count > this.max
+  }
+
+  /**
    * Back to a clean slate, for the two events that mean the trouble is over: a
    * genuine `webglcontextrestored` and a manual Retry. A successful re-init is
    * deliberately NOT one of them — every flap contains one.
