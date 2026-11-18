@@ -35,9 +35,9 @@ caller-specific `SVTYPE=TRA` used by some tools.
 Single-locus deletions and duplications load into the table like anything else,
 but the circular overview cannot draw them: a chord runs between a record's two
 ends, and at whole-genome scale a deletion's two ends are the same point. The
-legend in the circle's corner counts every class in the rows on screen. A class
-with no chord to draw at the current zoom gets a hollow swatch, so a
-mostly-local callset reads as such.
+legend in the circle's corner lists every class in the file, with its count
+among the rows on screen. A class with no chord to draw at the current zoom gets
+a hollow swatch, so a mostly-local callset reads as such.
 
 Clicking a class in the legend narrows the table and the circle to it, and
 clicking more classes adds them; the classes left out stay listed, dimmed.

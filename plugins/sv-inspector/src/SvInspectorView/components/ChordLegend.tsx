@@ -85,7 +85,7 @@ const ChordLegend = observer(function ChordLegend({
             className={cx(classes.row, !shown && classes.filteredOut)}
             title={
               swatch === 'hollow'
-                ? `${action} (no chord of this type draws at this zoom)`
+                ? `${action} (the circle draws no chord of this type)`
                 : action
             }
             onClick={() => {

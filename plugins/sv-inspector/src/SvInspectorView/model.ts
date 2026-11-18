@@ -51,13 +51,17 @@ interface InspectorChordDisplay {
   setVisibleFeatureIds: (ids: string[] | undefined) => void
   paintedColorField?: { field: string }
   paintedColorValues: ReadonlyMap<string, unknown>
+  displayPhase: string
 }
 
 function isInspectorChordDisplay<D extends object>(
   display: D,
 ): display is D & InspectorChordDisplay {
   return (
-    'setHighlightedFeatureIds' in display && 'setVisibleFeatureIds' in display
+    'setHighlightedFeatureIds' in display &&
+    'setVisibleFeatureIds' in display &&
+    'paintedColorValues' in display &&
+    'displayPhase' in display
   )
 }
 
@@ -313,13 +317,21 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * false while the chords color by something else, when the legend's
+       * swatches would name colors the circle does not draw
+       */
+      get chordsColorBySvType() {
+        return this.chordDisplay?.paintedColorField?.field === SV_TYPE_FIELD
+      },
+      /**
+       * #getter
        * the SV classes a chord paints at this zoom, which leaves out a class
-       * whose records all end under a pixel apart; undefined while the chords
-       * color by something else
+       * whose records all end under a pixel apart; undefined until the chords
+       * have drawn
        */
       get drawnSvTypes() {
         const display = this.chordDisplay
-        return display?.paintedColorField?.field === SV_TYPE_FIELD
+        return this.chordsColorBySvType && display?.displayPhase === 'ready'
           ? new Set(display.paintedColorValues.keys())
           : undefined
       },
@@ -328,11 +340,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * the legend's rows, one per SV class in the sheet. `count` is the
        * class's rows on screen, undefined for a class the type filter leaves
        * out; `swatch` is undefined while the chords do not color by SV type,
-       * and `hollow` for a shown class no chord draws
+       * and `hollow` for a shown class the drawn circle has no chord of
        */
       get svTypeLegend() {
         const sheet = self.spreadsheetView.spreadsheet
-        const filter: readonly string[] = sheet?.svTypeFilter ?? []
+        const filter = sheet?.effectiveSvTypeFilter ?? []
         const counts = new Map(
           sheet?.visibleSvTypes.map(t => [t.type, t.count]),
         )
@@ -343,8 +355,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             type,
             label,
             count: shown ? (counts.get(type) ?? 0) : undefined,
-            swatch: drawn
-              ? shown && !drawn.has(type)
+            swatch: this.chordsColorBySvType
+              ? shown && drawn && !drawn.has(type)
                 ? ('hollow' as const)
                 : ('filled' as const)
               : undefined,

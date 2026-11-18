@@ -6,7 +6,7 @@ import {
   selectedFeatureIdFor,
   toLocale,
 } from '@jbrowse/core/util'
-import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   distinctJunctions,
   junctionFromFeature,
@@ -445,7 +445,8 @@ export default function stateModelFactory() {
        * the community grid's filter model holds only the reader's own filter
        */
       get gridRows() {
-        const { svTypeFilter, svEventFilter } = self
+        const { svEventFilter } = self
+        const svTypeFilter = this.effectiveSvTypeFilter
         const { svEventColumnField } = self
         return self.rows?.filter(
           row =>
@@ -461,6 +462,15 @@ export default function stateModelFactory() {
         return visibleRowFlags
           ? this.gridRows?.filter(row => visibleRowFlags[row.id] !== false)
           : this.gridRows
+      },
+      /**
+       * #getter
+       * the classes of `svTypeFilter` this sheet holds, since a reloaded file
+       * can drop one; none narrows nothing
+       */
+      get effectiveSvTypeFilter() {
+        const present = new Set(this.svTypeOptions.map(o => o.type))
+        return self.svTypeFilter.filter(svType => present.has(svType))
       },
       /**
        * #getter
@@ -490,7 +500,7 @@ export default function stateModelFactory() {
                   id: 'sv-type-filter' as const,
                   label: 'Filter by SV type',
                   multiple: true,
-                  selected: [...self.svTypeFilter],
+                  selected: this.effectiveSvTypeFilter,
                   options: this.svTypeOptions.map(o => ({
                     key: o.type,
                     label: `${o.label} (${o.count})`,
@@ -535,79 +545,91 @@ export default function stateModelFactory() {
           : self.rows?.find(r => r.feature?.uniqueId === id)?.id
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setVisibleRows(arg?: VisibleRowFlags) {
-        // the grid reports an empty lookup when nothing is filtered
-        const next = arg && Object.keys(arg).length ? arg : undefined
-        if (!sameVisibleRowFlags(self.visibleRowFlags, next)) {
-          self.visibleRowFlags = next
-        }
-      },
-      /**
-       * #action
-       * put a row's record on the session selection, which highlights its
-       * chord in the SV inspector
-       */
-      setSelectedFeature(feature?: SimpleFeatureSerialized) {
-        const session = getSession(self)
-        if (feature) {
-          session.setSelection(new SimpleFeature(feature), self.rowsTrackId)
-        } else {
-          session.clearSelection()
-        }
-      },
-      /**
-       * #action
-       */
-      setSvTypeFilter(svTypes: string[]) {
-        self.svTypeFilter = cast(svTypes)
-      },
-      /**
-       * #action
-       * add an SV class to the filter, or take it out; taking the last one
-       * out shows every class again
-       */
-      toggleSvType(svType: string) {
-        self.svTypeFilter = cast(
-          self.svTypeFilter.includes(svType)
-            ? self.svTypeFilter.filter(t => t !== svType)
-            : [...self.svTypeFilter, svType],
+    .actions(self => {
+      // every class selected is no filter
+      const writeSvTypeFilter = (svTypes: string[]) => {
+        const options = self.svTypeOptions
+        self.svTypeFilter.replace(
+          options.length > 0 && options.every(o => svTypes.includes(o.type))
+            ? []
+            : svTypes,
         )
-      },
-      /**
-       * #action
-       */
-      setSvEventFilter(arg?: string) {
-        self.svEventFilter = arg
-      },
-      /**
-       * #action
-       * select options of one of `gridFacets` by their `key`; a facet that
-       * is not `multiple` takes the first
-       */
-      setGridFacet(id: 'sv-type-filter' | 'sv-event-filter', keys: string[]) {
-        if (id === 'sv-type-filter') {
-          self.svTypeFilter = cast(keys)
-        } else {
-          self.svEventFilter = keys[0]
-        }
-      },
-      /**
-       * #action
-       */
-      setFilterText(arg?: string) {
-        self.filterText = arg
-      },
-      /**
-       * #action
-       */
-      setVisibleColumns(arg: Record<string, boolean>) {
-        self.visibleColumns = arg
-      },
-    }))
+      }
+      return {
+        /**
+         * #action
+         */
+        setVisibleRows(arg?: VisibleRowFlags) {
+          // the grid reports an empty lookup when nothing is filtered
+          const next = arg && Object.keys(arg).length ? arg : undefined
+          if (!sameVisibleRowFlags(self.visibleRowFlags, next)) {
+            self.visibleRowFlags = next
+          }
+        },
+        /**
+         * #action
+         * put a row's record on the session selection, which highlights its
+         * chord in the SV inspector
+         */
+        setSelectedFeature(feature?: SimpleFeatureSerialized) {
+          const session = getSession(self)
+          if (feature) {
+            session.setSelection(new SimpleFeature(feature), self.rowsTrackId)
+          } else {
+            session.clearSelection()
+          }
+        },
+        /**
+         * #action
+         */
+        setSvTypeFilter(svTypes: string[]) {
+          writeSvTypeFilter(svTypes)
+        },
+        /**
+         * #action
+         * add an SV class to the filter, or take it out; with none left, or
+         * all of them in, every class shows
+         */
+        toggleSvType(svType: string) {
+          const current = self.effectiveSvTypeFilter
+          writeSvTypeFilter(
+            current.includes(svType)
+              ? current.filter(t => t !== svType)
+              : [...current, svType],
+          )
+        },
+        /**
+         * #action
+         */
+        setSvEventFilter(arg?: string) {
+          self.svEventFilter = arg
+        },
+        /**
+         * #action
+         * select options of one of `gridFacets` by their `key`; a facet that
+         * is not `multiple` takes the first
+         */
+        setGridFacet(id: 'sv-type-filter' | 'sv-event-filter', keys: string[]) {
+          if (id === 'sv-type-filter') {
+            writeSvTypeFilter(keys)
+          } else {
+            self.svEventFilter = keys[0]
+          }
+        },
+        /**
+         * #action
+         */
+        setFilterText(arg?: string) {
+          self.filterText = arg
+        },
+        /**
+         * #action
+         */
+        setVisibleColumns(arg: Record<string, boolean>) {
+          self.visibleColumns = arg
+        },
+      }
+    })
     .preProcessSnapshot(
       (
         snap:
@@ -628,7 +650,6 @@ export default function stateModelFactory() {
         const legacy = rows?.some(r => !!r.cells || !!r.extendedData)
         return {
           ...snap,
-          // one class, as written before the filter took several
           svTypeFilter:
             typeof snap.svTypeFilter === 'string'
               ? [snap.svTypeFilter]

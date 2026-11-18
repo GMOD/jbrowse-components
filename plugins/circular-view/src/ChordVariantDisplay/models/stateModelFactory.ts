@@ -461,7 +461,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * empty while the chords paint no field. A chord whose ends are under a
        * pixel apart draws nothing, so a zoom that opens it adds its value
        */
-      get paintedColorValues(): ReadonlyMap<string, number> {
+      get paintedColorValues() {
         const field = self.paintedColorField
         const painted = new Map<string, number>()
         if (field) {

@@ -4,6 +4,9 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Chip, MenuItem, TextField } from '@mui/material'
 import { DataGrid, useGridApiRef } from '@mui/x-data-grid'
 import {
+  gridExpandedSortedRowIndexLookupSelector,
+  gridFilteredSortedRowIdsSelector,
+  gridPaginationModelSelector,
   gridQuickFilterValuesSelector,
   gridVisibleRowsLookupSelector,
 } from '@mui/x-data-grid/hooks'
@@ -84,13 +87,17 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
           api.setQuickFilterValues(wanted)
         }
       }),
-      // a chord click's row is often far down the virtualized grid
+      // a chord click's row is often far down the virtualized grid, or on
+      // another of its pages
       autorun(() => {
         const { selectedRowId } = model
         if (selectedRowId !== undefined) {
-          const rowIndex = api.getRowIndexRelativeToVisibleRows(selectedRowId)
-          // -1 for a row the filter has since left out
-          if (rowIndex >= 0) {
+          const rowIndex =
+            gridExpandedSortedRowIndexLookupSelector(apiRef)[selectedRowId]
+          // undefined for a row the filter has since left out
+          if (rowIndex !== undefined) {
+            const { pageSize } = gridPaginationModelSelector(apiRef)
+            api.setPage(Math.floor(rowIndex / pageSize))
             api.scrollToIndexes({ rowIndex })
           }
         }
@@ -131,7 +138,14 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
                 sx={{ minWidth: 160, maxWidth: 320 }}
                 slotProps={{
                   htmlInput: { 'data-testid': id },
-                  select: { multiple },
+                  inputLabel: { shrink: true },
+                  select: {
+                    multiple,
+                    displayEmpty: true,
+                    renderValue: multiple
+                      ? () => (known.length ? known.join(', ') : 'All')
+                      : undefined,
+                  },
                 }}
               >
                 {multiple ? null : <MenuItem value="">All</MenuItem>}
@@ -170,6 +184,12 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
           slotProps={{
             toolbar: {
               showQuickFilter: true,
+              // the default exports only the selected rows, and a click on a
+              // row selects it
+              csvOptions: {
+                getRowsToExport: ({ apiRef }) =>
+                  gridFilteredSortedRowIdsSelector(apiRef),
+              },
             },
           }}
           showToolbar

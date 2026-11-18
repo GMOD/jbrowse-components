@@ -130,10 +130,11 @@ describe('the legend', () => {
 
   test('a shown class no chord paints gets a hollow swatch', async () => {
     const view = await inspectorWithClasses()
-    expect(view.drawnSvTypes).toEqual(new Set())
+    // nothing is marked while the chords have yet to draw
+    expect(view.drawnSvTypes).toBeUndefined()
     expect(summary(view).map(([, , swatch]) => swatch)).toEqual([
-      'hollow',
-      'hollow',
+      'filled',
+      'filled',
     ])
 
     chordDisplay(view.circularView.tracks[0]!).setFeatures(
@@ -151,6 +152,21 @@ describe('the legend', () => {
       'filled',
     ])
   })
+})
+
+test('Return to import form is offered once a sheet shows', async () => {
+  const { session, view } = await openInspector()
+  expect(view.menuItems()).toEqual([])
+
+  await session.assemblyManager.waitForAssembly('volvox')
+  view.spreadsheetView.displaySpreadsheet({
+    assemblyName: 'volvox',
+    columns: [{ name: 'INFO.SVTYPE' }],
+    rowSet: { rows },
+  })
+  expect(view.menuItems().map(item => 'label' in item && item.label)).toEqual([
+    'Return to import form',
+  ])
 })
 
 test('a sheet replaced before the chord track opens draws the newer rows', async () => {

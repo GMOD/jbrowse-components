@@ -295,6 +295,24 @@ describe('the SV type filter', () => {
     })
   })
 
+  test('every class selected is no filter', () => {
+    const model = sheet()
+    model.toggleSvType('DEL')
+    model.toggleSvType('DUP')
+    model.toggleSvType('INV')
+    expect([...model.svTypeFilter]).toEqual([])
+    model.setGridFacet('sv-type-filter', ['INV', 'DUP', 'DEL'])
+    expect([...model.svTypeFilter]).toEqual([])
+  })
+
+  test('a class the sheet does not hold narrows nothing', () => {
+    const model = sheet({ svTypeFilter: ['BND'] })
+    expect(model.gridRows?.map(r => r.id)).toEqual([0, 1, 2, 3])
+    expect(model.gridFacets[0]?.selected).toEqual([])
+    model.toggleSvType('DUP')
+    expect([...model.svTypeFilter]).toEqual(['DUP'])
+  })
+
   test('a session saved with one class reads it as the only class', () => {
     const model = sheet({ svTypeFilter: 'DUP' })
     expect([...model.svTypeFilter]).toEqual(['DUP'])
