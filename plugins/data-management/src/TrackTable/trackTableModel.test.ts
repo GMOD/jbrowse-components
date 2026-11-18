@@ -341,6 +341,18 @@ describe('columns and facets', () => {
     expect(table.shownColumns(2)).toEqual(['name', 'kind', 'metadata.url'])
   })
 
+  test('the sorted column stays shown when the table narrows', () => {
+    const { session, table } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
+    const [first, second] = table.defaultColumns
+    table.setSort(second!, true)
+    expect(table.shownColumns(1)).toEqual(['name', second])
+    expect(table.shownColumns(2)).toEqual(['name', first, second])
+    table.setColumnVisible(second!, false)
+    expect(table.sortField).toBe('')
+    expect(table.shownColumns(1)).toEqual(['name', first])
+  })
+
   test('the filter chips keep a facet that is still filtering', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])

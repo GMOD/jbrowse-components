@@ -682,14 +682,20 @@ export function trackTableModelFactory() {
       /**
        * #method
        * The columns to draw when `count` fit beside the name: the leading
-       * default columns that fit, plus every column the user showed.
+       * default columns that fit, plus every column the user showed and the
+       * sorted column, so narrowing the table never hides the order it shows.
        */
       shownColumns(count: number) {
         const { shown, hidden } = self.chosenColumns
+        const pinned = new Set(
+          [...shown, self.sortField].filter(
+            f => f !== 'name' && self.candidateColumns.includes(f),
+          ),
+        )
         const auto = self.defaultColumns
-          .filter(f => !hidden.has(f) && !shown.includes(f))
-          .slice(0, Math.max(0, count - shown.length))
-        const keep = new Set([...auto, ...shown])
+          .filter(f => !hidden.has(f) && !pinned.has(f))
+          .slice(0, Math.max(0, count - pinned.size))
+        const keep = new Set([...auto, ...pinned])
         return [
           'name',
           ...self.candidateColumns.filter(f => f !== 'name' && keep.has(f)),
