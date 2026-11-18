@@ -7,8 +7,9 @@
 const ICON_ROW_PX = 210
 
 // What the two words add: 88 for 'Zoom on scroll' — the same number
-// LinearGenomeView's headerFit sheds it against — and 39 for 'Follow'.
-const LABELS_PX = 127
+// LinearGenomeView's headerFit sheds it against — and 42 for 'Follow', whose
+// labelled checkbox is 73 to its icon button's 31.
+const LABELS_PX = 130
 
 // One row's locate control: a ~180px search box, the assembly name and bp
 // readout beside it, and the 12px gap to the next row's. Counted for the last

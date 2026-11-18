@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
@@ -129,22 +128,6 @@ const DotplotControls = observer(function DotplotControls({
               },
             ])
           }),
-          toggleItem(
-            'Lock aspect ratio (same bp/px)',
-            model.ratio === 1,
-            // no squareView() call: the aspect-lock autorun observes this flag
-            // and squares the axes the moment it goes on. Doing it here too ran
-            // applySquare a second time over already-equal axes, whose centerAt
-            // rounds offsetPx — so turning the lock on could nudge the plot by a
-            // pixel for no reason.
-            flag => {
-              model.setRatio(flag ? 1 : undefined)
-            },
-            {
-              helpText:
-                'When enabled, both axes are kept at the same bp/px so the dotplot stays square as you zoom and pan.',
-            },
-          ),
         ]}
       >
         <MoreVert />

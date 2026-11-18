@@ -24,8 +24,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 /**
  * Every setting that decides what the plot looks like and how much detail feeds
  * it, in the shape the synteny view's settings menu uses: the checkboxes, then
- * the submenus (choices before values). Lock aspect ratio frames
- * the plot rather than draws it, so it stays in the ⋮ menu.
+ * the submenus (choices before values). Lock aspect ratio is the one row
+ * that frames the plot rather than draws it: it is a mode, and the ⋮ menu
+ * holds one-shot actions.
  */
 const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
   model,
@@ -73,6 +74,19 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
             {
               helpText:
                 'Number the ruler ticks along each axis. Off keeps the tick marks and chromosome names.',
+            },
+          ),
+          toggleItem(
+            'Lock aspect ratio (same bp/px)',
+            model.ratio === 1,
+            // no squareView() call: the aspect-lock autorun observes this flag
+            // and squares the axes the moment it goes on
+            flag => {
+              model.setRatio(flag ? 1 : undefined)
+            },
+            {
+              helpText:
+                'When enabled, both axes are kept at the same bp/px so the dotplot stays square as you zoom and pan.',
             },
           ),
           ...(model.hasLegendKey

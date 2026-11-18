@@ -142,6 +142,18 @@ test('one menu holds every setting that decides what the plot looks like', async
   expect(await screen.findByTestId('opacity-slider')).toBeTruthy()
 }, 20000)
 
+test('the aspect lock row reports the model and writes it back', async () => {
+  const view = await openMenu()
+  const row = () =>
+    screen.getByRole('menuitemcheckbox', {
+      name: 'Lock aspect ratio (same bp/px)',
+    })
+  expect(row()).not.toBeChecked()
+
+  fireEvent.click(row())
+  expect(view.ratio).toBe(1)
+}, 20000)
+
 // Gated on the data rather than shown inert: PAFAdapter has one tier, so there
 // is nothing for this row to switch between.
 test('an adapter with no tiers is offered no level of detail', async () => {

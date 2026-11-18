@@ -23,8 +23,9 @@ proposes nothing.
 - **Color by** (`ColorBySelector`, shared with the synteny view): a palette
   button over `colorByMenuItems`.
 - **Settings** (`DotplotSettingsMenu`, a Tune icon, only once a display
-  exists): identity fade, CIGAR indels, gridlines, tick labels, legend, level
-  of detail, opacity, line width, minimum length, minimum identity.
+  exists): identity fade, CIGAR indels, gridlines, tick labels, lock aspect
+  ratio, legend, level of detail, opacity, line width, minimum length, minimum
+  identity.
 - The x and y readout of assembly names and visible bp, a selection width and
   height while dragging, then the track warnings button at the right edge.
 
@@ -36,12 +37,10 @@ In order:
   shown only while the aspect lock is off.
 - **Zoom out fully**: every assembly whole.
 - **Re-order chromosomes...**: opens a dialog; shared with the synteny view.
-- **Lock aspect ratio (same bp/px)**: a checkbox on `model.ratio === 1`. An
-  autorun squares the axes when it goes on.
 
-The menu mixes three things: one-shot zooms (the first three), a one-shot
-data operation (re-order), and a persistent mode (the lock). Two of the zoom
-items appear and disappear with the lock.
+The menu holds one-shot actions: three zooms and a data operation (re-order).
+Two of the zoom items appear and disappear with the aspect lock, which is a
+checkbox in the Settings menu.
 
 ## What overlaps the view menu
 

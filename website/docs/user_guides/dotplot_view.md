@@ -115,9 +115,9 @@ crosshair icon):
   or open a linear synteny view. Hold `Ctrl`/`Cmd` while dragging to pan
   instead.
 
-**Aspect ratio lock:** **Lock aspect ratio (same bp/px)**, in the ⋮ menu in the
-dotplot header, constrains zooming and box-selection to keep both axes at the
-same scale.
+**Aspect ratio lock:** **Lock aspect ratio (same bp/px)**, in the settings menu
+(the sliders icon) in the dotplot header, constrains zooming and box-selection
+to keep both axes at the same scale.
 
 ## Opening a synteny view from a dotplot view
 

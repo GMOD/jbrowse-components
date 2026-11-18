@@ -2,24 +2,38 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { rowLabels } from '@jbrowse/plugin-linear-genome-view'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import SyncProblemIcon from '@mui/icons-material/SyncProblem'
-import { ToggleButton, Tooltip } from '@mui/material'
+import {
+  Checkbox,
+  FormControlLabel,
+  ToggleButton,
+  Tooltip,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { FollowReport } from '../../SyntenyFollow/followHost.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 
-// No height, and `fontSize="small"` on the icons below: this is the same MUI
-// ToggleButton as ScrollZoomToggle beside it, which reaches the 31px height of
-// every other button in the bar from `size="small"` and a small icon. A pinned
-// 44 and a default-size glyph made this the one control standing 13px taller
-// than its neighbours and 6px above their top edge, which reads as a
-// misalignment rather than as emphasis.
+// The labelled form is a checkbox, the same control as ScrollZoomToggle beside
+// it and with its spacing: a toggle button that is off draws grey, which beside
+// a checkbox reads as disabled. The icon-only form is a small ToggleButton with
+// a small glyph, which is what reaches the 31px of every other button in the
+// bar.
 const useStyles = makeStyles()({
   button: {
     border: 'none',
-    textTransform: 'none',
+  },
+  label: {
+    marginLeft: 0,
+    marginRight: 0,
+    paddingRight: 8,
     whiteSpace: 'nowrap',
-    gap: 4,
+  },
+  checkbox: {
+    padding: 6,
+  },
+  stalled: {
+    marginLeft: 4,
+    verticalAlign: 'text-bottom',
   },
 })
 
@@ -116,6 +130,10 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
   // view, and an icon lit most of the time reports nothing
   const stalled =
     followSynteny && (followReport.unaligned || followReport.noSyntenyTrack)
+  const disabled = views.length < 2
+  const flip = () => {
+    model.setFollowSynteny(!followSynteny)
+  }
   return (
     <Tooltip
       describeChild={!iconOnly}
@@ -126,30 +144,56 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
         rows: views.length,
       })}
     >
-      {/* a disabled button fires no pointer events, so the tooltip needs an
+      {/* a disabled control fires no pointer events, so the tooltip needs an
         element around it that does */}
       <span>
-        <ToggleButton
-          // The button's only stable handle: everything else about it is the
-          // tooltip, whose wording is a function of the report.
-          data-testid="follow-synteny-toggle"
-          aria-label="Follow synteny"
-          value="followSynteny"
-          selected={followSynteny}
-          disabled={views.length < 2}
-          onChange={() => {
-            model.setFollowSynteny(!followSynteny)
-          }}
-          className={classes.button}
-          size="small"
-        >
-          {stalled ? (
-            <SyncProblemIcon fontSize="small" />
-          ) : (
-            <SyncAltIcon fontSize="small" />
-          )}
-          {iconOnly ? null : FOLLOW_LABEL}
-        </ToggleButton>
+        {iconOnly ? (
+          <ToggleButton
+            // The control's only stable handle: everything else about it is
+            // the tooltip, whose wording is a function of the report.
+            data-testid="follow-synteny-toggle"
+            aria-label="Follow synteny"
+            value="followSynteny"
+            selected={followSynteny}
+            disabled={disabled}
+            onChange={flip}
+            className={classes.button}
+            size="small"
+          >
+            {stalled ? (
+              <SyncProblemIcon fontSize="small" />
+            ) : (
+              <SyncAltIcon fontSize="small" />
+            )}
+          </ToggleButton>
+        ) : (
+          <FormControlLabel
+            data-testid="follow-synteny-toggle"
+            className={classes.label}
+            disabled={disabled}
+            control={
+              <Checkbox
+                size="small"
+                checked={followSynteny}
+                onChange={flip}
+                className={classes.checkbox}
+              />
+            }
+            label={
+              <>
+                {FOLLOW_LABEL}
+                {stalled ? (
+                  <SyncProblemIcon
+                    fontSize="small"
+                    className={classes.stalled}
+                    data-testid="follow-synteny-stalled"
+                  />
+                ) : null}
+              </>
+            }
+            slotProps={{ typography: { variant: 'body2' } }}
+          />
+        )}
       </span>
     </Tooltip>
   )

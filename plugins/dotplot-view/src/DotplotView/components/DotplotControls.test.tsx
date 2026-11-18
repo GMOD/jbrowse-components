@@ -78,27 +78,17 @@ function openViewMenu() {
   fireEvent.click(screen.getByTestId('MoreVertIcon').closest('button')!)
 }
 
-// Both rows draw the plot, so they are settings now. What is left of the
-// submenu that held them is one row about framing, promoted rather than kept
-// behind a hop of its own.
-test('the ⋮ menu keeps what the view is, not what it looks like', async () => {
+// One-shot actions only: what draws the plot, and the aspect lock, are settings
+test('the ⋮ menu holds actions, not settings', async () => {
   await setup()
   openViewMenu()
-  expect(screen.getByText('Lock aspect ratio (same bp/px)')).toBeInTheDocument()
+  expect(screen.getByText('Zoom out fully')).toBeInTheDocument()
+  expect(
+    screen.queryByText('Lock aspect ratio (same bp/px)'),
+  ).not.toBeInTheDocument()
   expect(screen.queryByText('Show')).not.toBeInTheDocument()
   expect(screen.queryByText('CIGAR indels')).not.toBeInTheDocument()
   expect(screen.queryByText(/^Gridlines/)).not.toBeInTheDocument()
-})
-
-test('the aspect lock row reports the model and writes it back', async () => {
-  const { model } = await setup()
-  openViewMenu()
-  const name = 'Lock aspect ratio (same bp/px)'
-  const row = () => screen.getByRole('menuitemcheckbox', { name })
-  expect(row()).not.toBeChecked()
-
-  fireEvent.click(row())
-  expect(model.ratio).toBe(1)
 })
 
 test('the square and rectangular rows leave the menu while the aspect lock is on', async () => {

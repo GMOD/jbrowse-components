@@ -18,8 +18,8 @@ and:
 - load the diploid assembly, and the chain between the haplotypes as a synteny
   track
 - open a dotplot of the mother's copy of every chromosome against the father's
-- open the 8p23.1 inversion in a linear synteny view, with the follow button
-  keeping the two haplotypes in register
+- open the 8p23.1 inversion in a linear synteny view, with **Follow** keeping
+  the two haplotypes in register
 
 ## Prerequisites
 
@@ -148,11 +148,11 @@ Open **Add → Linear synteny view**, whose **Quick start** offers the two rows
 the chain implies and the chain between them. Press **Launch**, and both panels
 open on the whole assembly.[^from-dotplot]
 
-Click the follow button, the arrows icon in the header. With follow on, the view
-places the panel below on the sequence that aligns to the top panel through the
-chain, so navigate the top panel only. Type `chr8_MATERNAL:5,250,000-14,250,000`
-into its search box, and the view moves the paternal panel to the matching
-stretch of `chr8_PATERNAL`. Then:
+Tick **Follow** in the header. With follow on, the view places the panel below
+on the sequence that aligns to the top panel through the chain, so navigate the
+top panel only. Type `chr8_MATERNAL:5,250,000-14,250,000` into its search box,
+and the view moves the paternal panel to the matching stretch of
+`chr8_PATERNAL`. Then:
 
 - pick **Strand** from the palette icon, matching the plot's coloring: collinear
   red, inverted blue
@@ -202,25 +202,25 @@ color scale) and `filter` (drops records) as text and applies edits live.
 
 <Figure caption="HG002 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
-## Keeping the two haplotypes in register with the follow button
+## Keeping the two haplotypes in register with Follow
 
 At 9 Mb across, a few pixels of offset between the haplotypes are invisible, so
 one window typed into both panels looks lined up. Zoomed in, every upstream
 indel shifts one haplotype against the other and the offset fills the screen.
 
 In the figure below the same 70 kb is typed into both panels with follow off,
-and the follow button fills the paternal panel and closes the ribbon. Turn
+and ticking **Follow** fills the paternal panel and closes the ribbon. Turn
 follow off to pan the paternal panel by hand, or right-click a chain block for
 **Move other panel to the matching region**, which does the follow move once.
 
-<Figure caption="Before and after the follow button, maternal over paternal." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Before and after ticking Follow, maternal over paternal." src="/img/hg002_haplotypes_follow_panel.png" />
 
 **Location markers**, in the header's settings menu, draw a line through each
 ribbon from a point on the top row to where it maps on the bottom. In the clip
 the same coordinates are typed into both panels, 2 Mb into the collinear chain
 past the inversion.
 
-<Video src="/media/synteny/hg002_follow_panels.mp4" caption="The follow button places the paternal panel from the maternal one through the chain, so the location markers stay vertical as the top panel is dragged." />
+<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Follow places the paternal panel from the maternal one through the chain, so the location markers stay vertical as the top panel is dragged." />
 
 ## See also
 
