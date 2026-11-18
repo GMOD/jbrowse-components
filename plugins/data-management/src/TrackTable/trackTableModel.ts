@@ -540,6 +540,16 @@ export function trackTableModelFactory() {
       },
       /**
        * #getter
+       * the field the rows are sorted by, while it can still show as a
+       * column; empty keeps natural order
+       */
+      get activeSortField() {
+        return this.candidateColumns.includes(self.sortField)
+          ? self.sortField
+          : ''
+      },
+      /**
+       * #getter
        * The filter chips' facets, in an order that never changes as filters
        * are set: the default columns that group tracks, the other grouping
        * fields, then any field still filtering that no longer groups.
@@ -658,7 +668,8 @@ export function trackTableModelFactory() {
        * every word first, each group in natural order.
        */
       get sortedRows() {
-        const { sortAscending, sortField, filteredRows, filterText } = self
+        const { sortAscending, filteredRows, filterText } = self
+        const sortField = self.activeSortField
         if (!sortField) {
           const nameMatches = searchMatcher(filterText)
           return nameMatches
@@ -689,9 +700,7 @@ export function trackTableModelFactory() {
       shownColumns(count: number) {
         const { shown, hidden } = self.chosenColumns
         const pinned = new Set(
-          [...shown, self.sortField].filter(
-            f => f !== 'name' && self.candidateColumns.includes(f),
-          ),
+          [...shown, self.activeSortField].filter(f => f && f !== 'name'),
         )
         const auto = self.defaultColumns
           .filter(f => !hidden.has(f) && !pinned.has(f))

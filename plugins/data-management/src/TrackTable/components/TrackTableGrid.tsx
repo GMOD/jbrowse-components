@@ -52,7 +52,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
   const {
     useShoppingCart,
     sortedRows,
-    sortField,
+    activeSortField: sortField,
     sortAscending,
     filterText,
     filters,

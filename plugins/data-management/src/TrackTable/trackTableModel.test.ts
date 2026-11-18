@@ -155,6 +155,7 @@ describe('html-valued metadata', () => {
 
   test('sorting orders by the text, not by the leading angle bracket', () => {
     const table = setupWithMarkup()
+    table.setColumnVisible('metadata.note', true)
     table.setSort('metadata.note', true)
     expect(
       table.sortedRows.filter(r => r.metadata.note).map(r => r.name),
@@ -375,6 +376,21 @@ describe('columns and facets', () => {
     table.setColumnVisible(second!, false)
     expect(table.sortField).toBe('')
     expect(table.shownColumns(1)).toEqual(['name', first])
+  })
+
+  test('a sort on a field no longer offered as a column is dropped', () => {
+    const { session, table } = setup()
+    addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP'])
+    const assayIds = () =>
+      table.sortedRows.map(r => r.id).filter(id => /^a\d$/.test(id))
+    setColumns(session, ['description'])
+    table.setSort('description', false)
+    expect(table.shownColumns(10)).toContain('description')
+    expect(assayIds()).toEqual(['a3', 'a2', 'a1', 'a0'])
+    setColumns(session, [])
+    expect(table.activeSortField).toBe('')
+    expect(table.shownColumns(10)).not.toContain('description')
+    expect(assayIds()).toEqual(['a0', 'a1', 'a2', 'a3'])
   })
 
   test('the filter chips keep a facet that is still filtering', () => {

@@ -73,8 +73,9 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   `[{ field, show }]` per config and assembly in localStorage. A shown column
   shows however narrow the table, and may scroll it; a hidden one never shows,
   and hiding the sorted column drops the sort. The sorted column shows
-  however narrow the table, as a shown one does, so the order is never
-  hidden (2026-11-17).
+  however narrow the table, as a shown one does, and a sort on a field no
+  longer offered as a column is dropped, so the order is never hidden
+  (2026-11-17).
 - **Description is hover text, not a column.** The name cell's title is the
   name and the description, as the tree's tooltip is.
 - **A name shrinks from the middle.** It keeps its end, the longest run of
