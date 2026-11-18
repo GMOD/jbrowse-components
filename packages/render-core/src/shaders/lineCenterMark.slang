@@ -9,7 +9,7 @@
 // accumulating into dark seams under src-over. Max is inexact where lines of
 // different colors cross. Into the frame it also keeps the brighter of line and
 // whatever an earlier mark drew there, so a line declared after another mark
-// draws `union` (ADR-272): the same max in a layer of its own, which the HAL
+// draws `union` (ADR-273): the same max in a layer of its own, which the HAL
 // composites over the frame.
 //
 // The band is the instance's `row`, read through the bound row table as

@@ -222,7 +222,7 @@ would cost:
   `lineStepMark` did the same per quad and was reverted: a joint is up to four
   overlapping quads, so a dense line's edge pixels compound under src-over
   (its header has the numbers), and max is not valid over other marks without
-  a `union` layer (ADR-272), which nobody has measured for the step line.
+  a `union` layer (ADR-273), which nobody has measured for the step line.
 - **`chevronStroke.slang` (the intron chevron and the continuation marker),
   except past Canvas2D's miter limit**, which only a marker on a box under
   1.3 px tall reaches. One triangle per ">" whose sides and base sit the ramp's

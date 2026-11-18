@@ -11,7 +11,7 @@
 // an edge two quads both cover double-blends there, and the step line would
 // gain a lattice of darker joints. The variant that wants an antialiased stroke
 // is `lineCenterMark.slang`, whose capsules union under a max blend; max into
-// the frame is not valid over other marks, and a `union` layer (ADR-272) costs
+// the frame is not valid over other marks, and a `union` layer (ADR-273) costs
 // a canvas-sized target per line, untried here. Inking each quad by area was
 // tried and reverted on 2026-10-30: over 0.7-2.1 px bins, where a joint is up
 // to four quads, the `mark-step-dense-flat` pixel fixture went from 39 / 45 /

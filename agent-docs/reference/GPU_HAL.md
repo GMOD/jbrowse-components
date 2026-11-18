@@ -20,7 +20,7 @@ VAO (`link`, `webgl2Hal.ts`). The identifiers around it still say "pass"
 instanced draw. WebGPU's render pass is the `beginFrame`/`endFrame` bracket, one
 per frame, plus one per `union` pass drawn in it.
 
-**A `union` pass draws into a layer of its own** (ADR-272). Its fragments
+**A `union` pass draws into a layer of its own** (ADR-273). Its fragments
 max-blend into a one-sample canvas-sized target, cleared at the pass's first
 draw of a frame, and each of its draws composites that layer source-over under
 its scissor through `layerOver.slang`. On WebGPU the layer's render pass is

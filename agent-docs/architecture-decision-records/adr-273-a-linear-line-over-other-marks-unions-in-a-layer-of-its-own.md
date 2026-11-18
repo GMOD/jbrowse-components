@@ -3,7 +3,7 @@ status: Accepted
 summary: "A linear line declared after another mark draws `union`: its capsules max-blend into a one-sample layer of their own, which the HAL composites source-over at the line's place in draw order. A line-first display and wiggle keep the max path and allocate nothing"
 ---
 
-# ADR-272: A linear line over other marks unions in a layer of its own
+# ADR-273: A linear line over other marks unions in a layer of its own
 
 ## Status
 

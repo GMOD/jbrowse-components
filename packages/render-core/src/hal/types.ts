@@ -41,7 +41,7 @@ export type BlendFactor = 'one' | 'src-alpha' | 'one-minus-src-alpha' | 'zero'
 // that variant carries none. 'behind' composites a premultiplied fragment under
 // what the target already holds, for a pass drawn after the ink it sits behind.
 // 'union' is 'max' into a layer of the pass's own, which each of its draws
-// composites source-over under its scissor (ADR-272); its draws within a frame
+// composites source-over under its scissor (ADR-273); its draws within a frame
 // must scissor apart.
 export type BlendState =
   | { op?: 'add'; srcFactor: BlendFactor; dstFactor: BlendFactor }
