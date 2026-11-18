@@ -10,8 +10,10 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [d
 The zoomed-out tier a display draws in place of its detail past a threshold
 the display sets: MAF's summary bars. This mixin adds the swap decision, the
 per-region payloads and the read that fills them, through the shared fetch
-skeleton on a separate rotation, so the detail fetch's cancel never reaches
-it.
+skeleton on a rotation of its own, so a detail fetch superseding its
+predecessor or `cancelFetch` resetting the detail store never aborts it.
+Navigation and the loading overlay's Cancel stop it, since both end the
+user's interest in what it would commit.
 While the tier is up the byte gate measures the coarse read, so its refusal
 is the banner and the detail fetch stands down.
 
@@ -36,6 +38,7 @@ the read itself. Composed after `MultiRegionDisplayMixin`, so its
 | <span id="volatile-coarsetier">**coarseTier**</span><br><code>ObservableMap&lt;number, P&gt;</code> | The coarse payload by `displayedRegionIndex`, over the regions the last read was issued for. Cleared on chromosome navigation. |
 | <span id="volatile-coarsetierread">**coarseTierRead**</span><br><code>CoarseTierRead &#124; undefined</code> | What the held payloads were read over — the buffered regions and the read key — so a pan or a zoom inside them re-reads nothing. Undefined until a read lands. |
 | <span id="volatile-coarsetierloading">**coarseTierLoading**</span><br><code>boolean</code> |  |
+| <span id="volatile-coarsetierrotation">**coarseTierRotation**</span><br><code>{ begin(): ActiveFetch; cancel: () =&gt; void; dispose(): void; }</code> | The latest-wins machine the coarse read runs on, with a slot on the display's status window beside the detail fetch's. |
 
 ## Getters
 
@@ -63,4 +66,6 @@ the read itself. Composed after `MultiRegionDisplayMixin`, so its
 | <span id="action-setcoarsetier">**setCoarseTier**</span><br><code>(entries: CoarseTierEntry&lt;P&gt;[], read: CoarseTierRead) =&gt; void</code> |  |
 | <span id="action-clearcoarsetier">**clearCoarseTier**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setcoarsetierloading">**setCoarseTierLoading**</span><br><code>(loading: boolean) =&gt; void</code> |  |
+| <span id="action-cancelcoarsetier">**cancelCoarseTier**</span><br><code>() =&gt; void</code> | Stop the read in flight, if any. Its `onEnd` sees a stale run and leaves the loading flag alone, so this clears it. |
 | <span id="action-fetchcoarsetier">**fetchCoarseTier**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(_read: CoarseTierRead, _ctx: FetchContext) =&gt; Promise&lt;…&gt;</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(_read: CoarseTierRead, _ctx: FetchContext) =&gt; Promise&lt;CoarseTierResult&lt;P&gt;&gt;</code></pre></dialog></span> | Overridable hook (no-op base): the coarse read over `read.regions`, returning one payload per region it covered, or a refusal. `ctx` is the skeleton's — its `callRpc` passes the signal and the status slot, and `isStale` guards any write the read makes for itself before it returns. |
+| <span id="action-cancelfetchbyuser">**cancelFetchByUser**</span><br><code>() =&gt; void</code> | `FetchMixin`'s Cancel, reaching the coarse read too: while the tier stands in, that read is what the overlay is waiting on. |

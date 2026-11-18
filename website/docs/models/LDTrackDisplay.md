@@ -90,7 +90,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-paintedcells">**paintedCells**</span><br><code>ReadonlyMap&lt;number, LDDataResult&gt;</code> | The payload as the painters read it: under a threshold scale each value at its interval's centre (`binnedColorValues`), while the hit test and the tooltip read the file's own. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>96 inherited getters from 12 models</summary>
+<summary>97 inherited getters from 12 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="getter-heightmode">[`heightMode`](../trianglematrixmixin#getter-heightmode)</span>, <span id="getter-canvaswidth">[`canvasWidth`](../trianglematrixmixin#getter-canvaswidth)</span>, <span id="getter-viewtransform">[`viewTransform`](../trianglematrixmixin#getter-viewtransform)</span>, <span id="getter-matrixregions">[`matrixRegions`](../trianglematrixmixin#getter-matrixregions)</span>, <span id="getter-matrixheight">[`matrixHeight`](../trianglematrixmixin#getter-matrixheight)</span>, <span id="getter-matrixblocks">[`matrixBlocks`](../trianglematrixmixin#getter-matrixblocks)</span>, <span id="getter-yscalar">[`yScalar`](../trianglematrixmixin#getter-yscalar)</span>, <span id="getter-triangletransform">[`triangleTransform`](../trianglematrixmixin#getter-triangletransform)</span>, <span id="getter-triangleframe">[`triangleFrame`](../trianglematrixmixin#getter-triangleframe)</span>
 
@@ -106,7 +106,7 @@ From [GlobalFetchMixin](../globalfetchmixin): <span id="getter-host">[`host`](..
 
 From [KeyedFetchMixin](../keyedfetchmixin): <span id="getter-datasuperseded">[`dataSuperseded`](../keyedfetchmixin#getter-datasuperseded)</span>, <span id="getter-currentfetchkey">[`currentFetchKey`](../keyedfetchmixin#getter-currentfetchkey)</span>, <span id="getter-datacurrent">[`dataCurrent`](../keyedfetchmixin#getter-datacurrent)</span>
 
-From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../fetchmixin#getter-isloading)</span>, <span id="getter-isloadingorcanceled">[`isLoadingOrCanceled`](../fetchmixin#getter-isloadingorcanceled)</span>, <span id="getter-fetchinert">[`fetchInert`](../fetchmixin#getter-fetchinert)</span>, <span id="getter-awaitingprerequisite">[`awaitingPrerequisite`](../fetchmixin#getter-awaitingprerequisite)</span>, <span id="getter-awaitingdependentdata">[`awaitingDependentData`](../fetchmixin#getter-awaitingdependentdata)</span>, <span id="getter-settingsfetchinputs">[`settingsFetchInputs`](../fetchmixin#getter-settingsfetchinputs)</span>
+From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../fetchmixin#getter-isloading)</span>, <span id="getter-isloadingorcanceled">[`isLoadingOrCanceled`](../fetchmixin#getter-isloadingorcanceled)</span>, <span id="getter-fetchinert">[`fetchInert`](../fetchmixin#getter-fetchinert)</span>, <span id="getter-awaitingprerequisite">[`awaitingPrerequisite`](../fetchmixin#getter-awaitingprerequisite)</span>, <span id="getter-awaitingdependentdata">[`awaitingDependentData`](../fetchmixin#getter-awaitingdependentdata)</span>, <span id="getter-fetchheld">[`fetchHeld`](../fetchmixin#getter-fetchheld)</span>, <span id="getter-settingsfetchinputs">[`settingsFetchInputs`](../fetchmixin#getter-settingsfetchinputs)</span>
 
 From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="getter-paintsuperseded">[`paintSuperseded`](../renderlifecyclemixin#getter-paintsuperseded)</span>, <span id="getter-painted">[`painted`](../renderlifecyclemixin#getter-painted)</span>
 
@@ -161,9 +161,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: LDRenderingBackend) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>44 inherited actions from 11 models</summary>
+<summary>47 inherited actions from 12 models</summary>
 
-From [TriangleMatrixMixin](../trianglematrixmixin): <span id="action-setrpcdata">[`setRpcData`](../trianglematrixmixin#action-setrpcdata)</span>, <span id="action-setheightmode">[`setHeightMode`](../trianglematrixmixin#action-setheightmode)</span>
+From [TriangleMatrixMixin](../trianglematrixmixin): <span id="action-setrpcdata">[`setRpcData`](../trianglematrixmixin#action-setrpcdata)</span>, <span id="action-cleardisplayspecificdata">[`clearDisplaySpecificData`](../trianglematrixmixin#action-cleardisplayspecificdata)</span>, <span id="action-setheightmode">[`setHeightMode`](../trianglematrixmixin#action-setheightmode)</span>
 
 From [MatrixRampMixin](../matrixrampmixin): <span id="action-setcolorscheme">[`setColorScheme`](../matrixrampmixin#action-setcolorscheme)</span>
 
@@ -173,9 +173,11 @@ From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`park
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 
+From [GlobalFetchMixin](../globalfetchmixin): <span id="action-clearfordisplayedregions">[`clearForDisplayedRegions`](../globalfetchmixin#action-clearfordisplayedregions)</span>
+
 From [KeyedFetchMixin](../keyedfetchmixin): <span id="action-commitfetchresult">[`commitFetchResult`](../keyedfetchmixin#action-commitfetchresult)</span>, <span id="action-reload">[`reload`](../keyedfetchmixin#action-reload)</span>
 
-From [FetchMixin](../fetchmixin): <span id="action-seterror">[`setError`](../fetchmixin#action-seterror)</span>, <span id="action-setstatusmessage">[`setStatusMessage`](../fetchmixin#action-setstatusmessage)</span>, <span id="action-stopactivefetch">[`stopActiveFetch`](../fetchmixin#action-stopactivefetch)</span>, <span id="action-openstatusstream">[`openStatusStream`](../fetchmixin#action-openstatusstream)</span>, <span id="action-cancelfetch">[`cancelFetch`](../fetchmixin#action-cancelfetch)</span>, <span id="action-cancelfetchbyuser">[`cancelFetchByUser`](../fetchmixin#action-cancelfetchbyuser)</span>, <span id="action-beforedestroy">[`beforeDestroy`](../fetchmixin#action-beforedestroy)</span>, <span id="action-beginfetch">[`beginFetch`](../fetchmixin#action-beginfetch)</span>, <span id="action-endfetch">[`endFetch`](../fetchmixin#action-endfetch)</span>, <span id="action-runfetch">[`runFetch`](../fetchmixin#action-runfetch)</span>
+From [FetchMixin](../fetchmixin): <span id="action-seterror">[`setError`](../fetchmixin#action-seterror)</span>, <span id="action-setstatusmessage">[`setStatusMessage`](../fetchmixin#action-setstatusmessage)</span>, <span id="action-stopactivefetch">[`stopActiveFetch`](../fetchmixin#action-stopactivefetch)</span>, <span id="action-openstatusstream">[`openStatusStream`](../fetchmixin#action-openstatusstream)</span>, <span id="action-cancelfetch">[`cancelFetch`](../fetchmixin#action-cancelfetch)</span>, <span id="action-cancelfetchbyuser">[`cancelFetchByUser`](../fetchmixin#action-cancelfetchbyuser)</span>, <span id="action-beforedestroy">[`beforeDestroy`](../fetchmixin#action-beforedestroy)</span>, <span id="action-beginfetch">[`beginFetch`](../fetchmixin#action-beginfetch)</span>, <span id="action-endfetch">[`endFetch`](../fetchmixin#action-endfetch)</span>, <span id="action-lapseheldfetch">[`lapseHeldFetch`](../fetchmixin#action-lapseheldfetch)</span>, <span id="action-runfetch">[`runFetch`](../fetchmixin#action-runfetch)</span>
 
 From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="action-markcanvasdrawn">[`markCanvasDrawn`](../renderlifecyclemixin#action-markcanvasdrawn)</span>, <span id="action-resetcanvasdrawn">[`resetCanvasDrawn`](../renderlifecyclemixin#action-resetcanvasdrawn)</span>, <span id="action-stoprenderingbackend">[`stopRenderingBackend`](../renderlifecyclemixin#action-stoprenderingbackend)</span>, <span id="action-rendernow">[`renderNow`](../renderlifecyclemixin#action-rendernow)</span>, <span id="action-setoffscreen">[`setOffScreen`](../renderlifecyclemixin#action-setoffscreen)</span>, <span id="action-setrendererror">[`setRenderError`](../renderlifecyclemixin#action-setrendererror)</span>, <span id="action-attachrenderingbackend">[`attachRenderingBackend`](../renderlifecyclemixin#action-attachrenderingbackend)</span>
 

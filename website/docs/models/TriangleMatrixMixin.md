@@ -47,4 +47,5 @@ A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payloa
 | Member | Description |
 | --- | --- |
 | <span id="action-setrpcdata">**setRpcData**</span><br><code>(data: D) =&gt; void</code> |  |
+| <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> | `GlobalFetchMixin`'s hook: the matrix is placed from its `originBp`, a position along the displayed regions, so it goes when they change. |
 | <span id="action-setheightmode">**setHeightMode**</span><br><code>(mode: "fit" &#124; "fixed") =&gt; void</code> |  |

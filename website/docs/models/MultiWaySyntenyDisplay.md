@@ -245,7 +245,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-hoveredfeature">**hoveredFeature**</span><br><code>Feature &#124; undefined</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>70 inherited getters from 11 models</summary>
+<summary>71 inherited getters from 11 models</summary>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="getter-adapterheader">[`adapterHeader`](../lodtierinfomixin#getter-adapterheader)</span>, <span id="getter-lodtierinfo">[`lodTierInfo`](../lodtierinfomixin#getter-lodtierinfo)</span>
 
@@ -259,7 +259,7 @@ From [GlobalFetchMixin](../globalfetchmixin): <span id="getter-host">[`host`](..
 
 From [KeyedFetchMixin](../keyedfetchmixin): <span id="getter-currentfetchkey">[`currentFetchKey`](../keyedfetchmixin#getter-currentfetchkey)</span>, <span id="getter-datacurrent">[`dataCurrent`](../keyedfetchmixin#getter-datacurrent)</span>
 
-From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../fetchmixin#getter-isloading)</span>, <span id="getter-isloadingorcanceled">[`isLoadingOrCanceled`](../fetchmixin#getter-isloadingorcanceled)</span>, <span id="getter-fetchinert">[`fetchInert`](../fetchmixin#getter-fetchinert)</span>, <span id="getter-awaitingprerequisite">[`awaitingPrerequisite`](../fetchmixin#getter-awaitingprerequisite)</span>, <span id="getter-settingsfetchinputs">[`settingsFetchInputs`](../fetchmixin#getter-settingsfetchinputs)</span>
+From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../fetchmixin#getter-isloading)</span>, <span id="getter-isloadingorcanceled">[`isLoadingOrCanceled`](../fetchmixin#getter-isloadingorcanceled)</span>, <span id="getter-fetchinert">[`fetchInert`](../fetchmixin#getter-fetchinert)</span>, <span id="getter-awaitingprerequisite">[`awaitingPrerequisite`](../fetchmixin#getter-awaitingprerequisite)</span>, <span id="getter-fetchheld">[`fetchHeld`](../fetchmixin#getter-fetchheld)</span>, <span id="getter-settingsfetchinputs">[`settingsFetchInputs`](../fetchmixin#getter-settingsfetchinputs)</span>
 
 From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="getter-paintsuperseded">[`paintSuperseded`](../renderlifecyclemixin#getter-paintsuperseded)</span>, <span id="getter-painted">[`painted`](../renderlifecyclemixin#getter-painted)</span>
 
@@ -319,6 +319,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | Member | Description |
 | --- | --- |
 | <span id="action-setfeatures">**setFeatures**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(features, anchor?, lanes?, ops?, deletions?) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(features: Feature[], anchor?: string, lanes?: string[], ops?: AlignmentOpsById, deletions?: readonly WindowDeletion[]) =&gt; void</code></pre></dialog></span> |  |
+| <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> | `GlobalFetchMixin`'s hook: the ortholog records were fetched for the old displayed regions. The lane fetches stay, each held under the key its own window stamps. |
 | <span id="action-begindescribinglanes">**beginDescribingLanes**</span><br><code>(names: string[]) =&gt; void</code> |  |
 | <span id="action-enddescribinglanes">**endDescribingLanes**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(names: string[], descriptions: Record&lt;…&gt;) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(names: string[], descriptions: Record&lt;string, AssemblyDescription&gt;) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-forgetundescribedlanes">**forgetUndescribedLanes**</span><br><code>() =&gt; void</code> |  |
@@ -373,7 +374,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-rendersvg">**renderSvg**</span><br><code>(opts?: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>43 inherited actions from 11 models</summary>
+<summary>45 inherited actions from 12 models</summary>
 
 From [ContextMenuMixin](../contextmenumixin): <span id="action-opencontextmenu">[`openContextMenu`](../contextmenumixin#action-opencontextmenu)</span>, <span id="action-closecontextmenu">[`closeContextMenu`](../contextmenumixin#action-closecontextmenu)</span>
 
@@ -385,9 +386,11 @@ From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`park
 
 From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span>
 
+From [GlobalFetchMixin](../globalfetchmixin): <span id="action-clearfordisplayedregions">[`clearForDisplayedRegions`](../globalfetchmixin#action-clearfordisplayedregions)</span>
+
 From [KeyedFetchMixin](../keyedfetchmixin): <span id="action-commitfetchresult">[`commitFetchResult`](../keyedfetchmixin#action-commitfetchresult)</span>, <span id="action-reload">[`reload`](../keyedfetchmixin#action-reload)</span>
 
-From [FetchMixin](../fetchmixin): <span id="action-seterror">[`setError`](../fetchmixin#action-seterror)</span>, <span id="action-setstatusmessage">[`setStatusMessage`](../fetchmixin#action-setstatusmessage)</span>, <span id="action-stopactivefetch">[`stopActiveFetch`](../fetchmixin#action-stopactivefetch)</span>, <span id="action-openstatusstream">[`openStatusStream`](../fetchmixin#action-openstatusstream)</span>, <span id="action-cancelfetch">[`cancelFetch`](../fetchmixin#action-cancelfetch)</span>, <span id="action-cancelfetchbyuser">[`cancelFetchByUser`](../fetchmixin#action-cancelfetchbyuser)</span>, <span id="action-beforedestroy">[`beforeDestroy`](../fetchmixin#action-beforedestroy)</span>, <span id="action-beginfetch">[`beginFetch`](../fetchmixin#action-beginfetch)</span>, <span id="action-endfetch">[`endFetch`](../fetchmixin#action-endfetch)</span>, <span id="action-runfetch">[`runFetch`](../fetchmixin#action-runfetch)</span>
+From [FetchMixin](../fetchmixin): <span id="action-seterror">[`setError`](../fetchmixin#action-seterror)</span>, <span id="action-setstatusmessage">[`setStatusMessage`](../fetchmixin#action-setstatusmessage)</span>, <span id="action-stopactivefetch">[`stopActiveFetch`](../fetchmixin#action-stopactivefetch)</span>, <span id="action-openstatusstream">[`openStatusStream`](../fetchmixin#action-openstatusstream)</span>, <span id="action-cancelfetch">[`cancelFetch`](../fetchmixin#action-cancelfetch)</span>, <span id="action-cancelfetchbyuser">[`cancelFetchByUser`](../fetchmixin#action-cancelfetchbyuser)</span>, <span id="action-beforedestroy">[`beforeDestroy`](../fetchmixin#action-beforedestroy)</span>, <span id="action-beginfetch">[`beginFetch`](../fetchmixin#action-beginfetch)</span>, <span id="action-endfetch">[`endFetch`](../fetchmixin#action-endfetch)</span>, <span id="action-lapseheldfetch">[`lapseHeldFetch`](../fetchmixin#action-lapseheldfetch)</span>, <span id="action-runfetch">[`runFetch`](../fetchmixin#action-runfetch)</span>
 
 From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="action-markcanvasdrawn">[`markCanvasDrawn`](../renderlifecyclemixin#action-markcanvasdrawn)</span>, <span id="action-resetcanvasdrawn">[`resetCanvasDrawn`](../renderlifecyclemixin#action-resetcanvasdrawn)</span>, <span id="action-stoprenderingbackend">[`stopRenderingBackend`](../renderlifecyclemixin#action-stoprenderingbackend)</span>, <span id="action-rendernow">[`renderNow`](../renderlifecyclemixin#action-rendernow)</span>, <span id="action-setoffscreen">[`setOffScreen`](../renderlifecyclemixin#action-setoffscreen)</span>, <span id="action-setrendererror">[`setRenderError`](../renderlifecyclemixin#action-setrendererror)</span>, <span id="action-attachrenderingbackend">[`attachRenderingBackend`](../renderlifecyclemixin#action-attachrenderingbackend)</span>
 

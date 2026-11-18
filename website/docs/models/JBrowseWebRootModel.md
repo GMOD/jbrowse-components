@@ -41,7 +41,6 @@ From [BaseRootModel](../baserootmodel): <span id="property-jbrowse">[`jbrowse`](
 | Member | Description |
 | --- | --- |
 | <span id="volatile-adminmode">**adminMode**</span><br><code>boolean</code> |  |
-| <span id="volatile-sessiondb">**sessionDB**</span><br><code>SessionDBHandle &#124; undefined</code> |  |
 | <span id="volatile-version">**version**</span><br><code>string</code> |  |
 | <span id="volatile-gitcommit">**gitCommit**</span><br><code>string</code> |  |
 | <span id="volatile-savedsessionmetadata">**savedSessionMetadata**</span><br><code>SessionMetadata[] &#124; undefined</code> |  |
@@ -73,7 +72,6 @@ From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcMana
 | <span id="action-setsavedsessionmetadata">**setSavedSessionMetadata**</span><br><code>(sessions: SessionMetadata[]) =&gt; void</code> |  |
 | <span id="action-fetchsessionmetadata">**fetchSessionMetadata**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Re-reads the whole `metadata` store. For anything that changes rows this model didn't just write itself (first load, pruning, favorite, rename, delete) — the autosave path uses `upsertSessionMetadata` instead. |
 | <span id="action-upsertsessionmetadata">**upsertSessionMetadata**</span><br><code>(meta: SessionMetadata) =&gt; void</code> | Merges a row this model has just written into the in-memory list. The autosave autorun writes exactly one row on every throttled session edit — every 400ms for as long as you keep panning — and already holds its contents, so re-reading every session's metadata to learn what it just stored is the expensive way to move one row to the top. |
-| <span id="action-setsessiondb">**setSessionDB**</span><br><code>(sessionDB: SessionDBHandle &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setreloadpluginmanagercallback">**setReloadPluginManagerCallback**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(callback) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(callback: (configSnapshot: Record&lt;string, unknown&gt;, sessionSnapshot: Record&lt;string, unknown&gt;) =&gt; void) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-startnewsession">**startNewSession**</span><br><code>() =&gt; void</code> | The config's defaultSession, opened on a linear genome view's import form when it names no view and there is an assembly to pick |
 | <span id="action-activatesession">**activateSession**</span><br><code>(id: string) =&gt; Promise&lt;void&gt;</code> |  |

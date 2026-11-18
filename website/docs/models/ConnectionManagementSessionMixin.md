@@ -11,6 +11,8 @@ Adds connections to a session: the connection instances it has made, and
 the configs of the connection tracks the user opened, so those tracks load
 on session restore without reconnecting.
 
+Each section ends with the members a composed model contributes, linked to the page that documents them.
+
 ## Properties
 
 <!-- prettier-ignore -->
@@ -25,6 +27,15 @@ on session restore without reconnecting.
 | Member | Description |
 | --- | --- |
 | <span id="getter-connections">**connections**</span><br><code><a href="../../config/baseconnection">BaseConnectionConfig</a>[]</code> |  |
+
+## Methods
+
+<details class="inherited-members" data-pagefind-ignore open>
+<summary>2 inherited methods from one model</summary>
+
+From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="method-getreferringmultiple">[`getReferringMultiple`](../referencemanagementsessionmixin#method-getreferringmultiple)</span>, <span id="method-getreferring">[`getReferring`](../referencemanagementsessionmixin#method-getreferring)</span>
+
+</details>
 
 ## Actions
 
@@ -42,3 +53,10 @@ on session restore without reconnecting.
 | <span id="action-setconnectiontrackconfig">**setConnectionTrackConfig**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackId, connectionId, config) =&gt; void</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackId: string, connectionId: string, config: Record&lt;string, unknown&gt;) =&gt; void</code></pre></dialog></span> | Upsert one opened connection track's persisted config. |
 | <span id="action-pruneconnectiontrackconfig">**pruneConnectionTrackConfig**</span><br><code>(trackId: string) =&gt; void</code> | Drop a connection track's persisted config once no open view still references it, so the session doesn't accumulate closed tracks. |
 | <span id="action-hydrateconnection">**hydrateConnection**</span><br><code>(connectionId: string) =&gt; void</code> | Lazily establish a single connection by id if it isn't already live; the track selector calls it when the connection's category is expanded. Fetches without launching a view or showing a success snackbar; already-open tracks keep rendering from `connectionTrackConfigs` meanwhile. Idempotent. |
+
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited action from one model</summary>
+
+From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="action-dereferencetrack">[`dereferenceTrack`](../referencemanagementsessionmixin#action-dereferencetrack)</span>
+
+</details>

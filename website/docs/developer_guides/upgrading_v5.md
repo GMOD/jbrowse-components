@@ -167,7 +167,7 @@ copy, so the removal breaks the plugin's next build instead:
 | plugin-definition helpers, now in `@jbrowse/core/pluginDefinitions`, so reading a definition does not load the re-export registry | `isESMPluginDefinition`, `isUMDPluginDefinition`, `pluginDescriptionString`, `pluginUrl` |
 | the CJS plugin loader, which wrote a bundle to a temp file and `require`d it in Desktop’s renderer — publish UMD or ESM instead | `isCJSPluginDefinition` |
 | the track and display configuration references, which `ConfigurationReference` picks between | `TrackConfigurationReference` → `ConfigurationReference`, `DisplayConfigurationReference` → `ConfigurationReference` |
-| the color pickers, one default export per subpath: `@jbrowse/core/ui/PopoverPicker` is the popover, and the default of `@jbrowse/core/ui/ColorPicker`, the popover in 4.3.0, is now the inline panel | `PopoverPicker`, `ColorPicker` |
+| the color pickers, one default export per subpath: `@jbrowse/core/ui/PopoverPicker` is the popover, which besides `{ color, onChange }` now takes a required `label` naming what the swatch colors (a screen reader announces it), and the default of `@jbrowse/core/ui/ColorPicker`, the popover in 4.3.0, is now the inline panel | `PopoverPicker`, `ColorPicker` |
 | palettes, still served as members of `paletteColors` | `dark2` → `paletteColors.dark2`, `ggplot2Colors3` → `paletteColors.ggplot2Colors3`, `ggplot2Colors4` → `paletteColors.ggplot2Colors4`, `ggplot2Colors5` → `paletteColors.ggplot2Colors5`, `ggplot2Colors6` → `paletteColors.ggplot2Colors6`, `set2` → `paletteColors.set2`, `tableau10` → `paletteColors.tableau10` |
 | block classes, now interfaces discriminated by `type`, so a block is an object literal | `BaseBlock`, `ContentBlock`, `ElidedBlock`, `InterRegionPaddingBlock` |
 | the config models that were flattened | `isConfigurationSlotType` |
@@ -182,13 +182,12 @@ compatible whatever its state here.
 
 <!-- BEGIN GENERATED ABI_PLUGIN_BREAKS -->
 
-2 of the 15 plugins in the store break against this build.
+1 of the 15 plugins in the store break against this build.
 
 <!-- prettier-ignore -->
 | Plugin | What breaks |
 | --- | --- |
 | Apollo | `worker eval: ReferenceError: Cannot access 'su' before initialization` |
-| Ideogram | `worker eval: ReferenceError: window is not defined` |
 
 <!-- END GENERATED ABI_PLUGIN_BREAKS -->
 

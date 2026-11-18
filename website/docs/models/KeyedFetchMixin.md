@@ -19,7 +19,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-loadedfetchkey">**loadedFetchKey**</span><br><code>FetchKey &#124; undefined</code> | `currentFetchKey` as it stood when the held data was committed. Written only by `commitFetchResult` and cleared by `reload`; the data itself is the display's and stays on screen under the overlay. |
+| <span id="volatile-loadedfetchkey">**loadedFetchKey**</span><br><code>FetchKey &#124; undefined</code> | `currentFetchKey` as it stood when the held data was committed. Written only by `commitFetchResult` and cleared by `reload`, where the data itself is the display's and stays on screen under the overlay, and by `GlobalFetchMixin.clearForDisplayedRegions`. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>9 inherited volatiles from one model</summary>
@@ -39,9 +39,9 @@ From [FetchMixin](../fetchmixin): <span id="volatile-activesignal">[`activeSigna
 | <span id="getter-datacurrent">**dataCurrent**</span><br><code>boolean</code> | The held data was committed for the current key and the display is not about to supersede it. For readers outside the fetch, the export gate above all; the fetch autorun makes the same compare inside `installFetch`, where a reload can override it. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>6 inherited getters from one model</summary>
+<summary>7 inherited getters from one model</summary>
 
-From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../fetchmixin#getter-isloading)</span>, <span id="getter-isloadingorcanceled">[`isLoadingOrCanceled`](../fetchmixin#getter-isloadingorcanceled)</span>, <span id="getter-fetchinert">[`fetchInert`](../fetchmixin#getter-fetchinert)</span>, <span id="getter-awaitingprerequisite">[`awaitingPrerequisite`](../fetchmixin#getter-awaitingprerequisite)</span>, <span id="getter-awaitingdependentdata">[`awaitingDependentData`](../fetchmixin#getter-awaitingdependentdata)</span>, <span id="getter-settingsfetchinputs">[`settingsFetchInputs`](../fetchmixin#getter-settingsfetchinputs)</span>
+From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../fetchmixin#getter-isloading)</span>, <span id="getter-isloadingorcanceled">[`isLoadingOrCanceled`](../fetchmixin#getter-isloadingorcanceled)</span>, <span id="getter-fetchinert">[`fetchInert`](../fetchmixin#getter-fetchinert)</span>, <span id="getter-awaitingprerequisite">[`awaitingPrerequisite`](../fetchmixin#getter-awaitingprerequisite)</span>, <span id="getter-awaitingdependentdata">[`awaitingDependentData`](../fetchmixin#getter-awaitingdependentdata)</span>, <span id="getter-fetchheld">[`fetchHeld`](../fetchmixin#getter-fetchheld)</span>, <span id="getter-settingsfetchinputs">[`settingsFetchInputs`](../fetchmixin#getter-settingsfetchinputs)</span>
 
 </details>
 
@@ -54,8 +54,8 @@ From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../f
 | <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | `FetchMixin.reload`, whose counter bump overrides the skeleton's freshness gate, plus dropping the loaded key so an export started after the click waits for the refetch. The data stays on screen. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>10 inherited actions from one model</summary>
+<summary>11 inherited actions from one model</summary>
 
-From [FetchMixin](../fetchmixin): <span id="action-seterror">[`setError`](../fetchmixin#action-seterror)</span>, <span id="action-setstatusmessage">[`setStatusMessage`](../fetchmixin#action-setstatusmessage)</span>, <span id="action-stopactivefetch">[`stopActiveFetch`](../fetchmixin#action-stopactivefetch)</span>, <span id="action-openstatusstream">[`openStatusStream`](../fetchmixin#action-openstatusstream)</span>, <span id="action-cancelfetch">[`cancelFetch`](../fetchmixin#action-cancelfetch)</span>, <span id="action-cancelfetchbyuser">[`cancelFetchByUser`](../fetchmixin#action-cancelfetchbyuser)</span>, <span id="action-beforedestroy">[`beforeDestroy`](../fetchmixin#action-beforedestroy)</span>, <span id="action-beginfetch">[`beginFetch`](../fetchmixin#action-beginfetch)</span>, <span id="action-endfetch">[`endFetch`](../fetchmixin#action-endfetch)</span>, <span id="action-runfetch">[`runFetch`](../fetchmixin#action-runfetch)</span>
+From [FetchMixin](../fetchmixin): <span id="action-seterror">[`setError`](../fetchmixin#action-seterror)</span>, <span id="action-setstatusmessage">[`setStatusMessage`](../fetchmixin#action-setstatusmessage)</span>, <span id="action-stopactivefetch">[`stopActiveFetch`](../fetchmixin#action-stopactivefetch)</span>, <span id="action-openstatusstream">[`openStatusStream`](../fetchmixin#action-openstatusstream)</span>, <span id="action-cancelfetch">[`cancelFetch`](../fetchmixin#action-cancelfetch)</span>, <span id="action-cancelfetchbyuser">[`cancelFetchByUser`](../fetchmixin#action-cancelfetchbyuser)</span>, <span id="action-beforedestroy">[`beforeDestroy`](../fetchmixin#action-beforedestroy)</span>, <span id="action-beginfetch">[`beginFetch`](../fetchmixin#action-beginfetch)</span>, <span id="action-endfetch">[`endFetch`](../fetchmixin#action-endfetch)</span>, <span id="action-lapseheldfetch">[`lapseHeldFetch`](../fetchmixin#action-lapseheldfetch)</span>, <span id="action-runfetch">[`runFetch`](../fetchmixin#action-runfetch)</span>
 
 </details>

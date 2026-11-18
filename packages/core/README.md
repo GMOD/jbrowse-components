@@ -3220,7 +3220,7 @@ steps made. A second click aborts the first request.
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
 
 function selectEncodedFeature(
-  self: IStateTreeNode<IAnyType>,
+  self: IStateTreeNode & { featureWidgetType: FeatureWidgetTypeRef },
   rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void },
   args: Omit<CoreGetEncodedLayersArgs, 'byteLimit'> & {
     layer: number

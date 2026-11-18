@@ -33,6 +33,15 @@ From [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin): <s
 | --- | --- |
 | <span id="getter-connections">**connections**</span><br><code><a href="../../config/baseconnection">BaseConnectionConfig</a>[]</code> | list of config connections and session connections |
 
+## Methods
+
+<details class="inherited-members" data-pagefind-ignore open>
+<summary>2 inherited methods from one model</summary>
+
+From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="method-getreferringmultiple">[`getReferringMultiple`](../referencemanagementsessionmixin#method-getreferringmultiple)</span>, <span id="method-getreferring">[`getReferring`](../referencemanagementsessionmixin#method-getreferring)</span>
+
+</details>
+
 ## Actions
 
 <!-- prettier-ignore -->
@@ -43,8 +52,10 @@ From [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin): <s
 | <span id="action-deleteconnection">**deleteConnection**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(configuration: AnyConfigurationModel) =&gt; boolean &#124; …</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(configuration: AnyConfigurationModel) =&gt; boolean &#124; (<a href="../../config/baseconnection">BaseConnectionConfig</a> &amp; { readonly [key: string]: unknown; })[] &#124; undefined</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>9 inherited actions from one model</summary>
+<summary>10 inherited actions from 2 models</summary>
 
 From [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin): <span id="action-makeconnection">[`makeConnection`](../connectionmanagementsessionmixin#action-makeconnection)</span>, <span id="action-breakconnection">[`breakConnection`](../connectionmanagementsessionmixin#action-breakconnection)</span>, <span id="action-teardownconnection">[`teardownConnection`](../connectionmanagementsessionmixin#action-teardownconnection)</span>, <span id="action-clearconnections">[`clearConnections`](../connectionmanagementsessionmixin#action-clearconnections)</span>, <span id="action-captureconnectiontrack">[`captureConnectionTrack`](../connectionmanagementsessionmixin#action-captureconnectiontrack)</span>, <span id="action-updateconnectiontrackconfig">[`updateConnectionTrackConfig`](../connectionmanagementsessionmixin#action-updateconnectiontrackconfig)</span>, <span id="action-setconnectiontrackconfig">[`setConnectionTrackConfig`](../connectionmanagementsessionmixin#action-setconnectiontrackconfig)</span>, <span id="action-pruneconnectiontrackconfig">[`pruneConnectionTrackConfig`](../connectionmanagementsessionmixin#action-pruneconnectiontrackconfig)</span>, <span id="action-hydrateconnection">[`hydrateConnection`](../connectionmanagementsessionmixin#action-hydrateconnection)</span>
+
+From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="action-dereferencetrack">[`dereferenceTrack`](../referencemanagementsessionmixin#action-dereferencetrack)</span>
 
 </details>

@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1236)
+# model members with no description (1229)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -470,7 +470,6 @@ HierarchicalTrackSelectorWidget.view
 HierarchicalTrackSelectorWidget.visibleRange
 ImportFormSyntenyMixin.importFormSyntenyTrackSelections
 ImportFormSyntenyMixin.setImportFormSyntenyTrack
-InternetAccountsMixin.createEphemeralInternetAccount
 InternetAccountsMixin.findAppropriateInternetAccount
 InternetAccountsMixin.initializeInternetAccount
 InternetAccountsMixin.internetAccounts
@@ -505,11 +504,9 @@ JBrowseWebRootModel.menus
 JBrowseWebRootModel.reloadPluginManagerCallback
 JBrowseWebRootModel.renameSavedSession
 JBrowseWebRootModel.savedSessionMetadata
-JBrowseWebRootModel.sessionDB
 JBrowseWebRootModel.setReloadPluginManagerCallback
 JBrowseWebRootModel.setSavedSessionFavorite
 JBrowseWebRootModel.setSavedSessionMetadata
-JBrowseWebRootModel.setSessionDB
 JBrowseWebRootModel.version
 JBrowseWebSessionModel.removePermanentPlugin
 LDTrackDisplay.connectorsHeight
@@ -542,7 +539,6 @@ LinearAlignmentsDisplay.coverageScaleType
 LinearAlignmentsDisplay.detectedModificationTypes
 LinearAlignmentsDisplay.fadeLowFrequency
 LinearAlignmentsDisplay.featureIdUnderMouse
-LinearAlignmentsDisplay.featureWidgetType
 LinearAlignmentsDisplay.fetchNeeded
 LinearAlignmentsDisplay.findFeatureInRpcData
 LinearAlignmentsDisplay.getFeatureInfoById
@@ -910,7 +906,6 @@ LinearVariantDisplay.clearSelection
 LinearVariantDisplay.clearSettingsBakedData
 LinearVariantDisplay.connectorsHeight
 LinearVariantDisplay.connectorsStack
-LinearVariantDisplay.featureWidgetType
 LinearVariantDisplay.fetchNeeded
 LinearVariantDisplay.nrow
 LinearVariantDisplay.removeFeatureHighlightsForId
@@ -920,7 +915,6 @@ LinearVariantDisplay.rowsField
 LinearVariantDisplay.rpcProps
 LinearVariantDisplay.scrollViewportHeight
 LinearVariantDisplay.selectFeature
-LinearVariantDisplay.setBackendDrawsColumns
 LinearVariantDisplay.setConnectorsHeight
 LinearVariantDisplay.setFeatureHighlights
 LinearVariantDisplay.setFilter
@@ -1272,7 +1266,6 @@ WebSessionManagementMixin.savedSessionMetadata
 WebSessionManagementMixin.setSavedSessionFavorite
 WorkspaceLayoutMixin.activePanelId
 WorkspaceLayoutMixin.addViewToTab
-WorkspaceLayoutMixin.closePanel
 WorkspaceLayoutMixin.findTab
 WorkspaceLayoutMixin.hasPanel
 WorkspaceLayoutMixin.homeUnassignedViews
