@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 
 import { ContextMenu } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { usePointerDrag } from '@jbrowse/core/util/usePointerDrag'
 import { mergeDomain } from '@jbrowse/display-kit/groupByMenu'
 import { textHalo } from '@jbrowse/display-ui'
@@ -28,6 +29,17 @@ import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 import type { ReactNode } from 'react'
 
 const CHIP_BORDER_PX = 1
+
+const useStyles = makeStyles()(theme => ({
+  textButton: {
+    all: 'unset',
+    cursor: 'pointer',
+    '&:focus-visible': {
+      outline: `2px solid ${theme.palette.accent}`,
+      outlineOffset: 1,
+    },
+  },
+}))
 
 interface LanePress {
   assemblyName: string
@@ -81,6 +93,7 @@ const LoadFailure = observer(function LoadFailure({
   testId: string
   what?: string
 }) {
+  const { classes } = useStyles()
   return (
     <span
       data-testid={testId}
@@ -94,11 +107,8 @@ const LoadFailure = observer(function LoadFailure({
       <button
         type="button"
         data-testid={`${testId}-retry`}
-        style={{
-          all: 'unset',
-          cursor: 'pointer',
-          textDecoration: 'underline',
-        }}
+        className={classes.textButton}
+        style={{ textDecoration: 'underline' }}
         onMouseDown={event => {
           event.stopPropagation()
         }}
@@ -119,6 +129,7 @@ const LaneHeaders = observer(function LaneHeaders({
   model: MultiWaySyntenyDisplayModel
 }) {
   const palette = usePalette()
+  const { classes } = useStyles()
   const { lanes } = model.laneStack
   const {
     canvasWidthPx: width,
@@ -374,11 +385,10 @@ const LaneHeaders = observer(function LaneHeaders({
             type="button"
             aria-label={`${model.laneLabel(row.assemblyName)} lane options`}
             data-testid={`multiway-lane-menu-${row.assemblyName}`}
+            className={classes.textButton}
             style={{
-              all: 'unset',
               color: bandPalette.text.secondary,
               pointerEvents: 'all',
-              cursor: 'pointer',
               flex: '0 0 auto',
             }}
             onMouseDown={event => {

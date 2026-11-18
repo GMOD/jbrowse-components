@@ -148,6 +148,36 @@ test('a lane color draws as a swatch beside the label and tints it, the anchor i
   }
 })
 
+function focusOutlineOf(element: Element) {
+  return [...document.styleSheets]
+    .flatMap(sheet => [...sheet.cssRules])
+    .filter((rule): rule is CSSStyleRule => 'selectorText' in rule)
+    .find(
+      rule =>
+        rule.selectorText.endsWith(':focus-visible') &&
+        element.matches(rule.selectorText.replace(':focus-visible', '')),
+    )?.style.outline
+}
+
+test('the lane menu button and Retry show where keyboard focus is', () => {
+  const display = twoLaneDisplay(['volvox_random', 'volvox_ins'])
+  const [spec] = display.laneGenesFetchSpecs
+  display.setLaneGenes(
+    new Map([
+      [spec!.lane, { key: spec!.key, genes: [], error: new Error('503') }],
+    ]),
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
+  )
+  renderHeaders(display)
+  for (const testId of [
+    `multiway-lane-menu-${spec!.assemblyName}`,
+    `multiway-lane-failed-${spec!.assemblyName}-retry`,
+  ]) {
+    expect(focusOutlineOf(screen.getByTestId(testId))).toMatch(/^2px solid/)
+  }
+})
+
 test('a press on a mate label is claimed from the view pan, and its drag reorders the lanes', () => {
   const display = twoLaneDisplay(['volvox_random', 'volvox_ins'])
   const claims: boolean[] = []
