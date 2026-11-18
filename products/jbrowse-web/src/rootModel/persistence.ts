@@ -4,7 +4,11 @@ import { autorun } from 'mobx'
 
 import { openSessionDB } from '../openSessionDB.ts'
 import { deleteSessionRows, upsertSessionRows } from '../sessionDbOps.ts'
-import { claimSessionId, releaseSessionIdsExcept } from '../sessionLock.ts'
+import {
+  claimSessionId,
+  releaseSessionIdsExcept,
+  sessionIdsHeldElsewhere,
+} from '../sessionLock.ts'
 
 import type { SessionDBHandle } from '../sessionDbOps.ts'
 import type { Session, SessionMetadata } from '../types.ts'
@@ -55,22 +59,42 @@ async function pruneOldSessions(
   activeId: string | undefined,
 ) {
   const metadata = await sessionDB.getAll('metadata')
-  await deleteSessionRows(sessionDB, staleSessionIds(metadata, activeId))
+  const stale = staleSessionIds(metadata, activeId)
+  // another tab's open session, whose local- URL would stop resolving until
+  // that tab next writes it
+  const elsewhere = await sessionIdsHeldElsewhere(stale)
+  await deleteSessionRows(
+    sessionDB,
+    stale.filter(id => !elsewhere.has(id)),
+  )
 }
 
-// Per session node, the snapshot it booted with or last wrote. MST hands back
-// the same snapshot object until something changes, so identity is the test.
-const savedSnapshots = new WeakMap<object, unknown>()
+interface SnapshotWrite {
+  snap: unknown
+  edited: boolean
+  landed: boolean
+}
+
+// Per session node, its latest snapshot write. MST hands back the same snapshot
+// object until something changes, so identity is the test.
+const snapshotWrites = new WeakMap<object, SnapshotWrite>()
 
 /**
  * Writes a session's snapshot and its metadata row to the autosave database,
  * and returns the row that landed — or undefined, writing nothing, when the
- * snapshot is the one last written.
+ * snapshot is the one last written and that write landed.
  *
  * The first write of a session node is of the state it booted in, and marks a
  * new row unedited: the recent lists leave it out and the pruner clears it, but
  * its `local-` URL still resolves in another tab meanwhile. Any later write is
- * of a change, and marks the row edited for good.
+ * of a change, and marks the row edited for good — including a launch that
+ * lands after the first tick, which a "views settled" gate could not exclude
+ * without hiding real edits (ideas/waiting-on-a-call/
+ * a-slow-launch-lists-an-untouched-session.md).
+ *
+ * A snapshot counts as written only once its write lands, so the next attempt
+ * retries a failed one (an exceeded quota) rather than skipping it as saved —
+ * above all the flush a session switch makes, which has to throw to stop it.
  *
  * The point of the helper is the *synchronous head*: id, name and the snapshot
  * are read before anything is awaited. That is what keeps the autosave autorun
@@ -91,17 +115,21 @@ export async function saveSessionSnapshot(
 ) {
   const { id, name } = session
   const snap = getSnapshot<Session>(session)
-  const saved = savedSnapshots.get(session)
-  if (saved === snap) {
+  const prev = snapshotWrites.get(session)
+  if (prev?.snap === snap && prev.landed) {
     return undefined
   }
-  savedSnapshots.set(session, snap)
-  return upsertSessionRows(db, snap, {
+  const edited = prev?.snap === snap ? prev.edited : prev !== undefined
+  const write = { snap, edited, landed: false }
+  snapshotWrites.set(session, write)
+  const meta = await upsertSessionRows(db, snap, {
     id,
     name,
     configPath: configPath ?? '',
-    edited: saved !== undefined,
+    edited,
   })
+  write.landed = true
+  return meta
 }
 
 // Opens the IndexedDB for autosave persistence, then mirrors session changes
