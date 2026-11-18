@@ -122,7 +122,7 @@ is no longer shared with anything.
 | Export | Imported by |
 | --- | --- |
 | `aaHalfPx` | tests only — `arcHull.test.ts`, `barCutCoverage.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts`, `pointGlyphPad.test.ts`, `syntenyFillPad.test.ts` |
-| `aaPx` | tests only — `barCutCoverage.test.ts`, `syntenyFillPad.test.ts` |
+| `aaPx` | tests only — `barCutCoverage.test.ts`, `strokeCoverage.test.ts`, `syntenyFillPad.test.ts` |
 | `aaRamp` | tests only — `barCutCoverage.test.ts`, `pointGlyphPad.test.ts`, `syntenyWedgeInk.test.ts` |
 | `armCoverage` | tests only — `chevronStroke.test.ts` |
 | `armLocalPx` | tests only — `chevronStroke.test.ts` |

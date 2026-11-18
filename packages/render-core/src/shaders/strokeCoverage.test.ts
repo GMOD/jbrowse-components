@@ -1,4 +1,4 @@
-import { edgeCoverage, strokeCoverage } from './antialias.js.generated.ts'
+import { aaPx, edgeCoverage, strokeCoverage } from './antialias.js.generated.ts'
 
 // Exact area of a pixel `[d - aa/2, d + aa/2]` that a stroke `[-h, h]` covers,
 // over the pixel's width.
@@ -9,24 +9,34 @@ function exact(h: number, d: number, dpr: number) {
   return Math.max(0, hi - lo) / aa
 }
 
-test.each([1, 2])('a sub-pixel stroke inks its true width at dpr %d', dpr => {
-  for (const widthPx of [0.1, 0.25, 0.5, 0.75 / dpr]) {
-    for (const d of [0, 0.1, 0.3, 0.6]) {
-      expect(strokeCoverage(widthPx / 2, d, dpr)).toBeCloseTo(
-        exact(widthPx / 2, d, dpr),
-        6,
-      )
+test.each([0.5, 0.8, 1, 2])(
+  'a sub-pixel stroke inks its true width at dpr %d',
+  dpr => {
+    for (const widthPx of [0.1, 0.25, 0.5, 0.75 / dpr]) {
+      for (const d of [0, 0.1, 0.3, 0.6]) {
+        expect(strokeCoverage(widthPx / 2, d, dpr)).toBeCloseTo(
+          exact(widthPx / 2, d, dpr),
+          6,
+        )
+      }
     }
-  }
-  expect(strokeCoverage(0.25, 0, 1)).toBe(0.5)
-})
+    expect(strokeCoverage(0.25, 0, 1)).toBe(0.5)
+  },
+)
 
 test('a stroke a pixel or wider is the single edge ramp', () => {
-  for (const dpr of [1, 2]) {
+  for (const dpr of [0.5, 1, 2]) {
     for (const h of [0.5 / dpr, 1, 3]) {
       for (const d of [0, 0.2, h, h + 0.2, h + 1]) {
         expect(strokeCoverage(h, d, dpr)).toBe(edgeCoverage(h - d, dpr))
       }
     }
+  }
+})
+
+test('a zero or bogus ratio still ramps over a finite, positive width', () => {
+  for (const dpr of [0, -1, Number.NaN]) {
+    expect(aaPx(dpr)).toBeGreaterThan(0)
+    expect(Number.isFinite(aaPx(dpr))).toBe(true)
   }
 })

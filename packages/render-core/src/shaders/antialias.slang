@@ -59,11 +59,12 @@ module antialias;
 
 // Width of a ramp covering exactly one output pixel, in CSS px. THE conversion
 // between the two units in this file: a fragment measuring in CSS px against a
-// device-px grid asks for this and nothing else. `max(dpr, 1.0)` is defensive —
-// getDpr() never returns less — and keeps a bogus uniform from inverting the
-// ramp.
+// device-px grid asks for this and nothing else. getDpr() caps the ratio from
+// above only, so a zoomed-out page asks for a ramp wider than a CSS px. The
+// floor is the lowest a browser zooms to (25% at dpr 1), and keeps a zero or
+// bogus uniform from blowing the ramp up or inverting it.
 public float aaPx(float dpr) {
-  return 1.0 / max(dpr, 1.0);
+  return 1.0 / max(dpr, 0.25);
 }
 
 // Half of it: how far past an edge a ramp reaches, and so exactly how far a
