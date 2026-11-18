@@ -247,6 +247,80 @@ test('an ephemeral id for a registered type still mints an account', () => {
   expect(found?.domains).toEqual(['https://data.mylab.org/dir/'])
 })
 
+const labOrigin = 'HTTPBasicInternetAccount-https://data.mylab.org'
+
+test('an existing origin account is not offered to another host', () => {
+  const root = makeRoot()
+  root.createEphemeralInternetAccount(
+    labOrigin,
+    {},
+    'https://data.mylab.org/dir/reads.bam',
+  )
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const found = root.findAppropriateInternetAccount({
+    locationType: 'UriLocation',
+    uri: 'https://evil.example.com/attacker.bam',
+    internetAccountId: labOrigin,
+  })
+  warn.mockRestore()
+  expect(found).toBe(null)
+  expect(root.internetAccounts.length).toBe(1)
+})
+
+test('an existing origin account answers for its whole origin', () => {
+  const root = makeRoot()
+  root.createEphemeralInternetAccount(
+    labOrigin,
+    {},
+    'https://data.mylab.org/dir/reads.bam',
+  )
+  const found = root.findAppropriateInternetAccount({
+    locationType: 'UriLocation',
+    uri: 'https://data.mylab.org/other/more.bam',
+    internetAccountId: labOrigin,
+  })
+  expect(found).toBe(root.internetAccounts[0])
+  expect(root.internetAccounts.length).toBe(1)
+})
+
+test('an origin account is not created for a location on another host', () => {
+  const root = makeRoot()
+  expect(
+    root.findAppropriateInternetAccount({
+      locationType: 'UriLocation',
+      uri: 'https://evil.example.com/attacker.bam',
+      internetAccountId: labOrigin,
+    }),
+  ).toBe(null)
+  expect(
+    root.findAppropriateInternetAccount({
+      locationType: 'UriLocation',
+      uri: 'attacker.bam',
+      baseUri: 'https://evil.example.com/',
+      internetAccountId: labOrigin,
+    }),
+  ).toBe(null)
+  expect(
+    root.findAppropriateInternetAccount({
+      locationType: 'UriLocation',
+      uri: 'https://data.mylab.org/reads.bam',
+      internetAccountId: 'HTTPBasicInternetAccount-labToken',
+    }),
+  ).toBe(null)
+  expect(root.internetAccounts.length).toBe(0)
+})
+
+test('an origin account is created for a relative uri under its own origin', () => {
+  const root = makeRoot()
+  const found = root.findAppropriateInternetAccount({
+    locationType: 'UriLocation',
+    uri: 'dir/reads.bam',
+    baseUri: 'https://data.mylab.org/',
+    internetAccountId: labOrigin,
+  })
+  expect(found?.internetAccountId).toBe(labOrigin)
+})
+
 test('an id naming no registered type is ignored', () => {
   const root = makeRoot()
   expect(

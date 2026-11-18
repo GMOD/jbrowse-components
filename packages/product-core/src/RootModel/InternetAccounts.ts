@@ -34,21 +34,42 @@ function parseEphemeralId(internetAccountId: string) {
  * a spec cannot pass a relative uri under an off-origin base and read as local.
  */
 function resolvesToAppOrigin(location: UriLocation) {
-  // typed as always present, and absent in node and in some embedded hosts
-  const here = globalThis.location as Location | undefined
+  const here = pageLocation()
   // `null` is what an opaque origin (file:, data:) stringifies to, and two of
   // them are not the same origin
-  if (!here?.origin || here.origin === 'null') {
-    return false
-  }
+  return (
+    !!here?.origin &&
+    here.origin !== 'null' &&
+    resolvedOrigin(location) === here.origin
+  )
+}
+
+function pageLocation() {
+  // typed as always present, and absent in node and in some embedded hosts
+  return globalThis.location as Location | undefined
+}
+
+function resolvedOrigin(location: UriLocation) {
   try {
-    return (
-      new URL(location.uri, location.baseUri ?? here.href).origin ===
-      here.origin
-    )
+    return new URL(location.uri, location.baseUri ?? pageLocation()?.href)
+      .origin
   } catch {
-    return false
+    return undefined
   }
+}
+
+/**
+ * Whether the id is the `<TypeName>-<origin>` an origin account carries, for
+ * the origin this location resolves to. Its stored credential is keyed by the
+ * id, so an origin account answers for its own origin and nowhere else.
+ */
+function namesOwnOrigin(internetAccountId: string, location: UriLocation) {
+  const origin = resolvedOrigin(location)
+  return (
+    !!origin &&
+    origin !== 'null' &&
+    parseEphemeralId(internetAccountId).name === origin
+  )
 }
 
 // An account named by a location it is not scoped for reads as a dead track,
@@ -155,7 +176,8 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           if (selectedAccount) {
             if (
               selectedAccount.handlesLocation(location) ||
-              resolvesToAppOrigin(location)
+              resolvesToAppOrigin(location) ||
+              namesOwnOrigin(selectedId, location)
             ) {
               return selectedAccount
             }
@@ -171,17 +193,19 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           }
         }
 
-        // if still no existing account, create ephemeral config to use — but
-        // only for an id whose leading segment names an account type this
-        // session actually has. Anything else is a location pointing at an
-        // account that is simply gone (a track from a shared session whose
-        // config defined one, a config it was removed from, a host that never
-        // loaded the authentication plugin), and pushing an unknown type into
-        // the array threw a bare MST union error out of whatever was opening
-        // the file. No account instead lets the read go out unauthenticated and
-        // report the 401 it gets, which is the failure the user can act on.
+        // if still no account, recreate the origin account a saved session
+        // names — only for the location's own origin, and only for an id whose
+        // leading segment names an account type this session actually has.
+        // Anything else is a location pointing at an account that is simply
+        // gone (a track from a shared session whose config defined one, a
+        // config it was removed from, a host that never loaded the
+        // authentication plugin), and pushing an unknown type into the array
+        // threw a bare MST union error out of whatever was opening the file. No
+        // account instead lets the read go out unauthenticated and report the
+        // 401 it gets, which is the failure the user can act on.
         if (
           selectedId &&
+          namesOwnOrigin(selectedId, location) &&
           pluginManager
             .getElementTypesInGroup('internet account')
             .some(t => t.name === parseEphemeralId(selectedId).type)
