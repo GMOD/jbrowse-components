@@ -37,10 +37,10 @@ export function layerOverInstance(width: number, height: number) {
 }
 
 /**
- * What of `rect` the frame's earlier composites of one layer, `done`, left:
- * `rect` less the columns at either end that an earlier rect spanning its
- * height covered, undefined where nothing is left. Blocks meeting mid-pixel
- * share a column, and the layer already holds both blocks' ink there.
+ * `rect` less the end columns that an earlier composite of the frame, in
+ * `done`, covered across its height. A column two blocks meeting mid-pixel
+ * share is composited once: holding both blocks' ink on WebGPU, whose layer
+ * renders ahead of the frame, and the first block's alone on WebGL2.
  */
 export function uncomposited(rect: PxRect, done: readonly PxRect[]) {
   let left = rect.x

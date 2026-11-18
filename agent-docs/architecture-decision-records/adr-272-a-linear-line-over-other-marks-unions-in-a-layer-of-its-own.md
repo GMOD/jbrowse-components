@@ -42,8 +42,8 @@ dpr 1 / 1.5 / 2, against 8 / 11 / 17 for the line alone. The volvox
   displayed regions meeting at a fractional px share a column. Because the
   WebGPU layer holds every block's draws before any composite reads it, a
   draw composites only the columns no earlier draw of the pass composited
-  where that draw's scissor spans its height (`uncomposited`). The shared
-  column then holds both blocks' ink, unioned, composited once.
+  where that draw's scissor spans its height (`uncomposited`), so the shared
+  column is composited once.
 - **`lineMarkOf(interpolate, overMarks)` gives the linear line `union` only
   where `buildMarkList` finds a non-text entry before it.** A line-only or
   line-first display, a step line and the whole wiggle display keep the max
@@ -77,6 +77,12 @@ dpr 1 / 1.5 / 2, against 8 / 11 / 17 for the line alone. The volvox
   per channel under max (crossing series, categorical colours, a threshold
   near a joint), and a dense 1 px line still reads light, max being the
   largest capsule's coverage rather than the union's.
+- **The column two blocks share at a seam meeting mid-pixel** is composited
+  with the first block's draw. On WebGPU it holds both blocks' ink, unioned;
+  on WebGL2, which draws in order, it shows the first block's ink alone. On
+  both backends the second block's earlier marks then draw over the line in
+  that column. The defect is bounded to one CSS column where two regions meet
+  mid-pixel.
 - **The contract is only partly enforced.** `uncomposited` trims an end column
   that an earlier rect spans in full height; two draws of one union pass under
   overlapping scissors of any other shape composite the overlap twice.

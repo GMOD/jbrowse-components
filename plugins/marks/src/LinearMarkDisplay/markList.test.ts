@@ -433,8 +433,8 @@ test('a linear line unions over an earlier shape, blends max first, and text cou
   ])
 })
 
-// Two displayed regions meeting mid-pixel share CSS column 400, and the line's
-// layer already holds both regions' ink there.
+// Two displayed regions meeting mid-pixel share CSS column 400, which only the
+// first region's draw composites.
 test('a later linear line composites its layer once across blocks sharing a column', () => {
   const marks = buildMarkList(linear('bar', 'line'))
   const hal = new MockHal(marks.map(m => m.pass))
