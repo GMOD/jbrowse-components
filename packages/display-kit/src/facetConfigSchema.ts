@@ -78,7 +78,7 @@ export const facetConfigSchema = ConfigurationSchema(
     writes: { keyedBy: 'field', keyed: ['sort'] },
     plot: true,
     closed: true,
-    preProcessSnapshot: (snap = {}) => ({
+    preProcessSnapshot: snap => ({
       ...snap,
       ...stringList(snap, 'sort', 'facet'),
       ...stringList(snap, 'hidden', 'facet'),

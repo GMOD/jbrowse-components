@@ -101,7 +101,7 @@ export const markSizeSchema = ConfigurationSchema(
         closed: true,
         // A range is written as numbers, the px it names; the slot holds them
         // as strings the way a threshold domain holds its cuts.
-        preProcessSnapshot: (snap: Record<string, unknown> = {}) =>
+        preProcessSnapshot: (snap: Record<string, unknown>) =>
           Array.isArray(snap.range)
             ? { ...snap, range: snap.range.map(String) }
             : snap,

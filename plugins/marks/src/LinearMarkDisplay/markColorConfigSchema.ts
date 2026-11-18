@@ -23,7 +23,7 @@ import { MARK_COLOR_SCALES } from './markVocabulary.ts'
 /** A mark channel's `legend` options: `values` written as numbers read as strings. */
 export const markLegendOptions = {
   ...colorLegendOptions,
-  preProcessSnapshot: (snap: Record<string, unknown> = {}) =>
+  preProcessSnapshot: (snap: Record<string, unknown>) =>
     Array.isArray(snap.values)
       ? { ...snap, values: snap.values.map(String) }
       : snap,

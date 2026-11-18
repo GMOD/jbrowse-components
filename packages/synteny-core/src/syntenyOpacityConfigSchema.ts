@@ -150,7 +150,7 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
         closed: true,
         // the range is written as the numbers it names and held as strings,
         // the way a threshold domain holds its cuts
-        preProcessSnapshot: (snap: Record<string, unknown> = {}) => {
+        preProcessSnapshot: (snap: Record<string, unknown>) => {
           const out = normalizeChannel(snap, 'encoding.opacity.scale')
           return Array.isArray(out.range)
             ? { ...out, range: out.range.map(String) }

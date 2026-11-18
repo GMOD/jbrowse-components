@@ -620,7 +620,7 @@ export function colorChannelOptions(
     closed: true,
     fieldPresets,
     ...(impliedField ? { impliedField } : {}),
-    preProcessSnapshot: (snap: Record<string, unknown> = {}) =>
+    preProcessSnapshot: (snap: Record<string, unknown>) =>
       refuseConstantAsField(refuseFieldAsConstant(snap, name), name) ?? {},
   }
 }

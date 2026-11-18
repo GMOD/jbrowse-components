@@ -149,7 +149,7 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
     closed: true,
     plot: true,
     misnamed: { treeProvenance: 'tree.provenance' },
-    preProcessSnapshot: (snap = {}) => ({
+    preProcessSnapshot: snap => ({
       ...snap,
       ...stringList(snap, 'sort', 'rows'),
       ...stringList(snap, 'kept', 'rows'),

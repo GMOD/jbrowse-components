@@ -122,7 +122,7 @@ export const pileupMismatchesOpacityConfigSchema = ConfigurationSchema(
         closed: true,
         // the range is written as the numbers it names and held as strings,
         // the way a threshold domain holds its cuts
-        preProcessSnapshot: (snap: Record<string, unknown> = {}) => ({
+        preProcessSnapshot: (snap: Record<string, unknown>) => ({
           ...snap,
           ...(Array.isArray(snap.range)
             ? { range: snap.range.map(String) }
