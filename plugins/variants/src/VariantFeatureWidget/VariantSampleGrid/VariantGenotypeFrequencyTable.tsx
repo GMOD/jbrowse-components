@@ -1,6 +1,5 @@
 import DetailTable from '@jbrowse/core/ui/DetailTable'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Checkbox } from '@mui/material'
+import { TableCheckbox } from '@jbrowse/core/ui/VirtualTable'
 import { observer } from 'mobx-react'
 
 import type { VariantSampleGridRow } from './types.ts'
@@ -12,13 +11,6 @@ interface GenotypeRow {
   genotype: string
   count: number
 }
-
-const useStyles = makeStyles()({
-  checkbox: {
-    padding: 0,
-    '& svg': { width: '1.15rem', height: '1.15rem' },
-  },
-})
 
 function tallyGenotypes(rows: VariantSampleGridRow[]) {
   const tally = new Map<string, GenotypeRow>()
@@ -45,7 +37,6 @@ const VariantGenotypeFrequencyTable = observer(
     selectedGenotypes: Set<string> | null
     setSelectedGenotypes: (v: Set<string> | null) => void
   }) {
-    const { classes } = useStyles()
     const total = rows.length
     const genotypeRows = tallyGenotypes(rows)
     const isSelected = (row: GenotypeRow) =>
@@ -103,13 +94,12 @@ const VariantGenotypeFrequencyTable = observer(
         leading={{
           width: 40,
           header: (
-            <Checkbox
-              size="small"
-              className={classes.checkbox}
+            <TableCheckbox
               checked={selectedCount === genotypeRows.length}
               indeterminate={
                 selectedCount > 0 && selectedCount < genotypeRows.length
               }
+              label="Select all genotypes"
               onChange={() => {
                 select(
                   selectedCount === genotypeRows.length
@@ -117,21 +107,18 @@ const VariantGenotypeFrequencyTable = observer(
                     : new Set(genotypeRows.map(r => r.GT)),
                 )
               }}
-              slotProps={{ input: { 'aria-label': 'Select all genotypes' } }}
             />
           ),
           cell: row => (
-            <Checkbox
-              size="small"
-              className={classes.checkbox}
+            <TableCheckbox
               checked={isSelected(row)}
+              label={`Select ${row.GT}`}
               onClick={event => {
                 event.stopPropagation()
               }}
               onChange={() => {
                 toggle(row)
               }}
-              slotProps={{ input: { 'aria-label': `Select ${row.GT}` } }}
             />
           ),
         }}

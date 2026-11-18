@@ -1,8 +1,7 @@
 import { useState } from 'react'
 
-import VirtualTable from '@jbrowse/core/ui/VirtualTable'
+import VirtualTable, { TableCheckbox } from '@jbrowse/core/ui/VirtualTable'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Checkbox } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { extraColumns } from '../rows/rowFields.ts'
@@ -27,9 +26,6 @@ const useStyles = makeStyles()({
     display: 'flex',
     alignItems: 'center',
     height: 0,
-  },
-  checkbox: {
-    padding: 0,
   },
 })
 
@@ -93,20 +89,19 @@ export default observer(function SourceGrid<S extends { name: string }>({
           leading={{
             width: CHECKBOX_WIDTH,
             header: (
-              <Checkbox
-                className={classes.checkbox}
+              <TableCheckbox
                 checked={allSelected}
                 indeterminate={selected.length > 0 && !allSelected}
+                label="Select all rows"
                 onChange={() => {
                   setTicked(new Set(allSelected ? [] : rows.map(r => r.name)))
                 }}
-                slotProps={{ input: { 'aria-label': 'Select all rows' } }}
               />
             ),
             cell: ({ id }) => (
-              <Checkbox
-                className={classes.checkbox}
+              <TableCheckbox
                 checked={ticked.has(id)}
+                label={`Select ${id}`}
                 onChange={() => {
                   const next = new Set(ticked)
                   if (next.has(id)) {
@@ -116,7 +111,6 @@ export default observer(function SourceGrid<S extends { name: string }>({
                   }
                   setTicked(next)
                 }}
-                slotProps={{ input: { 'aria-label': `Select ${id}` } }}
               />
             ),
           }}

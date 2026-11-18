@@ -1,4 +1,5 @@
 export { default } from './VirtualTable.tsx'
+export { default as TableCheckbox } from './TableCheckbox.tsx'
 export { DEFAULT_COL_WIDTH } from './tableStyles.ts'
 
 export type {

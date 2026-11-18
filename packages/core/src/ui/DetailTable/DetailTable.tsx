@@ -58,19 +58,24 @@ const DetailTable = observer(function DetailTable<
 }: {
   rows: readonly R[]
   columns: DetailTableColumn<R>[]
-  /** drawn at the start of the toolbar row */
-  title?: React.ReactNode
-  /**
-   * the exported file's name, without `.csv`; a table without one has no
-   * search, export or title row
-   */
-  exportName?: string
   maxHeight?: number
   leading?: VirtualTableLeading<R>
   isRowSelected?: (row: R) => boolean
   onRowClick?: (row: R) => void
   testId?: string
-}) {
+} & (
+  | {
+      /** the exported file's name, without `.csv` */
+      exportName: string
+      /** drawn at the start of the toolbar row */
+      title?: React.ReactNode
+    }
+  | {
+      /** without one, the table has no search, export or title row */
+      exportName?: undefined
+      title?: never
+    }
+)) {
   const { classes } = useStyles()
   const [searchText, setSearchText] = useState('')
   const [sortField, setSortField] = useState('')

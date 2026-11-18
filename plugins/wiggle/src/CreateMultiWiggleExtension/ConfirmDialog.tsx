@@ -27,6 +27,12 @@ interface TrackRow {
 }
 
 const useStyles = makeStyles()({
+  nameCell: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   button: {
     padding: 0,
   },
@@ -60,25 +66,21 @@ const ConfirmDialog = observer(function ConfirmDialog({
     {
       field: 'name',
       header: 'Name',
-      value: row => row.name,
-      text: row => coarseStripHTML(row.name),
-      cell: row => <SanitizedHTML html={row.name} />,
-    },
-    {
-      field: 'remove',
-      header: '',
-      value: () => '',
+      value: row => coarseStripHTML(row.name),
       cell: row => (
-        <IconButton
-          size="small"
-          className={classes.button}
-          aria-label={`Remove ${coarseStripHTML(row.name)}`}
-          onClick={() => {
-            setTracks(prev => prev.filter(t => t.trackId !== row.id))
-          }}
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
+        <div className={classes.nameCell}>
+          <SanitizedHTML html={row.name} />
+          <IconButton
+            size="small"
+            className={classes.button}
+            aria-label={`Remove ${coarseStripHTML(row.name)}`}
+            onClick={() => {
+              setTracks(prev => prev.filter(t => t.trackId !== row.id))
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </div>
       ),
     },
   ]

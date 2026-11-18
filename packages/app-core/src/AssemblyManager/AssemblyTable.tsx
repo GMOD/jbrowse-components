@@ -50,11 +50,8 @@ const AssemblyTable = observer(function AssemblyTable({
     { field: 'aliases', value: row => row.aliases.join(', ') },
     {
       field: 'source',
-      value: row => (session.canEditAssembly(row.name) ? '' : 'Built-in'),
-    },
-    {
-      field: 'actions',
-      value: () => '',
+      value: row =>
+        session.canEditAssembly(row.name) ? 'Editable' : 'Built-in',
       cell: ({ assembly, name }) =>
         session.canEditAssembly(name) ? (
           <>
@@ -62,6 +59,7 @@ const AssemblyTable = observer(function AssemblyTable({
               size="small"
               className={classes.button}
               data-testid={`${name}-edit`}
+              aria-label={`Edit ${name}`}
               onClick={() => {
                 onEditAssembly(assembly)
               }}
@@ -72,6 +70,7 @@ const AssemblyTable = observer(function AssemblyTable({
               size="small"
               className={classes.button}
               data-testid={`${name}-delete`}
+              aria-label={`Delete ${name}`}
               onClick={() => {
                 session.removeAssembly(name)
               }}
@@ -79,7 +78,9 @@ const AssemblyTable = observer(function AssemblyTable({
               <DeleteIcon fontSize="small" />
             </IconButton>
           </>
-        ) : null,
+        ) : (
+          'Built-in'
+        ),
     },
   ]
 

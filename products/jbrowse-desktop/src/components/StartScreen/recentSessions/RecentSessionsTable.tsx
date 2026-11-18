@@ -1,10 +1,9 @@
 import { useState } from 'react'
 
-import VirtualTable from '@jbrowse/core/ui/VirtualTable'
+import VirtualTable, { TableCheckbox } from '@jbrowse/core/ui/VirtualTable'
 import { measureGridWidth } from '@jbrowse/core/util'
 import { compareValues } from '@jbrowse/core/util/tableText'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Checkbox, useMediaQuery } from '@mui/material'
+import { useMediaQuery } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { NARROW_QUERY } from '../narrow.ts'
@@ -22,12 +21,6 @@ interface SessionRow extends RecentSessionData {
 }
 
 const CHECKBOX_WIDTH = 50
-
-const useStyles = makeStyles()({
-  checkbox: {
-    padding: 0,
-  },
-})
 
 const sortKeys: Record<string, (row: SessionRow) => unknown> = {
   name: row => row.name,
@@ -58,7 +51,6 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
   toggleFavorite: (sessionPath: string) => void
   addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
-  const { classes } = useStyles()
   const [sortField, setSortField] = useState('')
   const [sortAscending, setSortAscending] = useState(true)
   // The same query the start screen stacks its panels at, so "narrow" here
@@ -162,28 +154,24 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
           : {
               width: CHECKBOX_WIDTH,
               header: (
-                <Checkbox
-                  className={classes.checkbox}
+                <TableCheckbox
                   checked={allSelected}
                   indeterminate={someSelected && !allSelected}
+                  label="Select all sessions"
                   onChange={() => {
                     setSelectedPaths(
                       new Set(allSelected ? [] : rows.map(row => row.path)),
                     )
                   }}
-                  slotProps={{
-                    input: { 'aria-label': 'Select all sessions' },
-                  }}
                 />
               ),
               cell: row => (
-                <Checkbox
-                  className={classes.checkbox}
+                <TableCheckbox
                   checked={selectedPaths.has(row.path)}
+                  label={`Select ${row.name}`}
                   onChange={() => {
                     toggle(row.path)
                   }}
-                  slotProps={{ input: { 'aria-label': `Select ${row.name}` } }}
                 />
               ),
             }
