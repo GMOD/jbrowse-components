@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
 
+import { useSearchHighlight } from '@jbrowse/core/ui/useSearchHighlight'
 import { observer } from 'mobx-react'
 
-import { useSearchHighlight } from '../../../shared/useSearchHighlight.ts'
+import { highlightPatterns } from '../../../shared/searchText.ts'
 import SharedTooltip from './SharedTooltip.tsx'
 import TreeItem from './TreeItem.tsx'
 
@@ -16,7 +17,11 @@ const HierarchicalTree = observer(function HierarchicalTree({
   model: HierarchicalTrackSelectorModel
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  useSearchHighlight(containerRef, model.filterText, 'jbrowse-tree-search')
+  useSearchHighlight(
+    containerRef,
+    highlightPatterns(model.filterText),
+    'jbrowse-tree-search',
+  )
   const [scrollTop, setScrollTop] = useState(0)
   const { rows, treeHeight } = model
   // when the list shrinks (filter/collapse) the browser caps the real scrollTop

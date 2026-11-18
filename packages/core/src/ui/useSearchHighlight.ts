@@ -1,9 +1,7 @@
 import { useLayoutEffect } from 'react'
 
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { alpha } from '@jbrowse/core/ui/palette'
-
-import { highlightPatterns } from './searchText.ts'
+import { usePalette } from './PaletteContext.tsx'
+import { alpha } from './palette.ts'
 
 import type { RefObject } from 'react'
 
@@ -52,9 +50,13 @@ function collectMatchRanges(root: Element, patterns: RegExp[]): Range[] {
   return ranges
 }
 
+/**
+ * Highlights every match of `patterns` in the text under `containerRef`,
+ * through the CSS custom highlight API, so no text node is split
+ */
 export function useSearchHighlight(
   containerRef: RefObject<HTMLElement | null>,
-  query: string,
+  patterns: RegExp[],
   highlightName: string,
 ) {
   const palette = usePalette()
@@ -71,9 +73,6 @@ export function useSearchHighlight(
     }
     setHighlightStyle(highlightName, color)
     const container = containerRef.current
-    // the same parse the filter itself applies, so what is highlighted is
-    // what matched
-    const patterns = highlightPatterns(query)
     if (container && patterns.length) {
       const highlight = new Highlight()
       for (const range of collectMatchRanges(container, patterns)) {

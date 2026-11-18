@@ -1,4 +1,4 @@
-import { DEFAULT_COL_WIDTH } from './tableStyles.ts'
+import { DEFAULT_COL_WIDTH } from '@jbrowse/core/ui/VirtualTable'
 
 const NAME_SHARE = 0.5
 

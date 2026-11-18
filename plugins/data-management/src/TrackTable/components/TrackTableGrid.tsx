@@ -1,39 +1,23 @@
-import { useRef } from 'react'
-
+import VirtualTable, {
+  DEFAULT_COL_WIDTH,
+  useVirtualTableStyles,
+} from '@jbrowse/core/ui/VirtualTable'
+import { coarseStripHTML } from '@jbrowse/core/util'
+import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
 
-import { useSearchHighlight } from '../../shared/useSearchHighlight.ts'
-import { getRowSelectionState } from '../tableSelection.ts'
-import TrackTableHead from './TrackTableHead.tsx'
-import TrackTableRow from './TrackTableRow.tsx'
+import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
+import { isUnsupported } from '../../HierarchicalTrackSelectorWidget/util.ts'
+import { highlightPatterns } from '../../shared/searchText.ts'
+import { getRowSelectionState, setTracksSelected } from '../tableSelection.ts'
 import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
-import {
-  CHECKBOX_WIDTH,
-  DEFAULT_COL_WIDTH,
-  ROW_HEIGHT,
-  useTableStyles,
-} from './tableStyles.ts'
-import { useColumnResize } from './useColumnResize.ts'
-import { useVirtualRows } from './useVirtualRows.ts'
+import { CHECKBOX_WIDTH, checkboxSx, useTableStyles } from './tableStyles.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { TrackTableModel, TrackRow } from '../trackTableModel.ts'
+import type { VirtualTableColumn } from '@jbrowse/core/ui/VirtualTable'
 
-export interface TableColumn {
-  id: string
-  header: string
-  cell: (row: TrackRow) => React.ReactNode
-}
-
-// Empty <tr> used to offset the virtualized window from the top/bottom of the
-// scroll area. Renders nothing when there's no gap to fill.
-const SpacerRow = observer(function SpacerRow({ height }: { height: number }) {
-  return height > 0 ? (
-    <tr style={{ height }}>
-      <td />
-    </tr>
-  ) : null
-})
+export type TableColumn = VirtualTableColumn<TrackRow>
 
 const TrackTableGrid = observer(function TrackTableGrid({
   model,
@@ -49,6 +33,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
   emptyMessage?: string
 }) {
   const { classes } = useTableStyles()
+  const { classes: tableClasses } = useVirtualTableStyles()
   const {
     useShoppingCart,
     sortedRows,
@@ -59,27 +44,6 @@ const TrackTableGrid = observer(function TrackTableGrid({
     initialWidths,
   } = table
 
-  const parentRef = useRef<HTMLDivElement>(null)
-  useSearchHighlight(parentRef, filterText, 'jbrowse-table-search')
-  const { items, leadingGap, trailingGap, clientWidth } = useVirtualRows(
-    parentRef,
-    sortedRows.length,
-    ROW_HEIGHT,
-    JSON.stringify([filterText, sortField, sortAscending, [...filters]]),
-  )
-  const available = (clientWidth || width) - CHECKBOX_WIDTH
-  const { colWidths, onResizeStart } = useColumnResize(
-    fitColumnWidths(
-      Object.fromEntries(
-        columns.map(col => [
-          col.id,
-          initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
-        ]),
-      ),
-      available,
-      id => columnFloor(id, available),
-    ),
-  )
   const { allSelected, someSelected, toggleAll } = getRowSelectionState({
     model,
     useShoppingCart,
@@ -87,78 +51,82 @@ const TrackTableGrid = observer(function TrackTableGrid({
     selectionSet: model.selectionSet,
     filteredRows: sortedRows,
   })
+  const isSelected = (row: TrackRow) =>
+    (table.useShoppingCart ? model.selectionSet : model.shownTrackIds).has(
+      row.id,
+    )
+  const checkboxCell = (row: TrackRow) => {
+    const selected = isSelected(row)
+    return (
+      <CheckboxLite
+        className={classes.rowCheckbox}
+        checked={selected}
+        disabled={isUnsupported(row.name)}
+        label={`Select ${coarseStripHTML(row.name)}`}
+        onChange={() => {
+          setTracksSelected(model, [row.id], !selected, table.useShoppingCart)
+        }}
+      />
+    )
+  }
 
   return (
-    <div ref={parentRef} className={classes.root}>
-      <table
-        className={classes.table}
-        style={{
-          minWidth:
-            CHECKBOX_WIDTH +
-            columns.reduce(
-              (sum, col) => sum + (colWidths[col.id] ?? DEFAULT_COL_WIDTH),
-              0,
-            ),
-        }}
-      >
-        <colgroup>
-          <col style={{ width: CHECKBOX_WIDTH }} />
-          {columns.map(col => (
-            <col
-              key={col.id}
-              style={
-                col.id === 'name'
-                  ? undefined
-                  : { width: colWidths[col.id] ?? DEFAULT_COL_WIDTH }
-              }
-            />
-          ))}
-        </colgroup>
-        <TrackTableHead
-          columns={columns}
-          allSelected={allSelected}
-          someSelected={someSelected}
-          onSelectAll={useShoppingCart ? toggleAll : undefined}
-          onResizeStart={onResizeStart}
-          sortField={sortField}
-          sortAscending={sortAscending}
-          onSort={field => {
-            if (sortField !== field) {
-              table.setSort(field, true)
-            } else if (sortAscending) {
-              table.setSort(field, false)
-            } else {
-              table.setSort('', true)
-            }
-          }}
-        />
-        <tbody>
-          <SpacerRow height={leadingGap} />
-          {items.map(virtualRow => {
-            const row = sortedRows[virtualRow.index]!
-            return (
-              <TrackTableRow
-                key={row.id}
-                model={model}
-                table={table}
-                row={row}
-                columns={columns}
-              />
-            )
-          })}
-          <SpacerRow height={trailingGap} />
-          {sortedRows.length === 0 ? (
-            <tr>
-              <td colSpan={columns.length + 1} className={classes.emptyCell}>
-                {table.allRows.length
-                  ? 'No tracks match the current search and filters'
-                  : emptyMessage}
-              </td>
-            </tr>
-          ) : null}
-        </tbody>
-      </table>
-    </div>
+    <VirtualTable
+      highlight={{
+        name: 'jbrowse-table-search',
+        patterns: highlightPatterns(filterText),
+      }}
+      rows={sortedRows}
+      columns={columns}
+      width={width}
+      widths={available =>
+        fitColumnWidths(
+          Object.fromEntries(
+            columns.map(col => [
+              col.id,
+              initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
+            ]),
+          ),
+          available,
+          id => columnFloor(id, available),
+        )
+      }
+      resetKey={JSON.stringify([
+        filterText,
+        sortField,
+        sortAscending,
+        [...filters],
+      ])}
+      sortField={sortField}
+      sortAscending={sortAscending}
+      onSort={(field, ascending) => {
+        table.setSort(field, ascending)
+      }}
+      leading={{
+        width: CHECKBOX_WIDTH,
+        header: useShoppingCart ? (
+          <Checkbox
+            size="small"
+            checked={allSelected}
+            indeterminate={someSelected}
+            onChange={() => {
+              toggleAll()
+            }}
+            slotProps={{ input: { 'aria-label': 'Select all tracks' } }}
+            sx={checkboxSx}
+          />
+        ) : null,
+        cell: checkboxCell,
+      }}
+      rowClassName={row =>
+        isSelected(row) ? tableClasses.selectedRow : undefined
+      }
+      emptyMessage={
+        table.allRows.length
+          ? 'No tracks match the current search and filters'
+          : emptyMessage
+      }
+    />
   )
 })
 

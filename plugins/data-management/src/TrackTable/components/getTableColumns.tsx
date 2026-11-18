@@ -1,4 +1,5 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { coarseStripHTML } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import OverrideBadge from '../../HierarchicalTrackSelectorWidget/components/tree/OverrideBadge.tsx'
@@ -46,7 +47,12 @@ export function getTableColumns({
     {
       id: 'name',
       header: 'name',
+      fill: true,
       cell: row => <NameCell row={row} model={model} />,
+      title: row =>
+        coarseStripHTML(
+          row.description ? `${row.name}\n${row.description}` : row.name,
+        ),
     },
     ...fields
       .filter(id => id !== 'name')
@@ -58,6 +64,7 @@ export function getTableColumns({
             // any metadata value (or category/description) can carry markup, and
             // SanitizedHTML short-circuits to a plain span when it doesn't
             cell: row => <SanitizedHTML html={getRowStr(id, row)} />,
+            title: row => coarseStripHTML(getRowStr(id, row)),
           }) satisfies TableColumn,
       ),
   ]

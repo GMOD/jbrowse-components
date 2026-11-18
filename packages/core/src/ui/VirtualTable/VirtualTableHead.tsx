@@ -1,51 +1,47 @@
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
-import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
 
-import { checkboxSx, useTableStyles } from './tableStyles.ts'
+import { cx } from '../../util/tss-react/index.ts'
+import { useVirtualTableStyles } from './tableStyles.ts'
 
-import type { TableColumn } from './TrackTableGrid.tsx'
+import type { VirtualTableColumn } from './VirtualTable.tsx'
 
-const TrackTableHead = observer(function TrackTableHead({
+function nextSort(field: string, sortField: string, sortAscending: boolean) {
+  return sortField !== field
+    ? { field, ascending: true }
+    : sortAscending
+      ? { field, ascending: false }
+      : { field: '', ascending: true }
+}
+
+const VirtualTableHead = observer(function VirtualTableHead<R>({
   columns,
-  allSelected,
-  someSelected,
-  onSelectAll,
+  leadingHeader,
+  hasLeading,
   onResizeStart,
   sortField,
   sortAscending,
   onSort,
 }: {
-  columns: TableColumn[]
-  allSelected: boolean
-  someSelected: boolean
-  onSelectAll?: () => void
+  columns: VirtualTableColumn<R>[]
+  leadingHeader: React.ReactNode
+  hasLeading: boolean
   onResizeStart: (colId: string, e: React.MouseEvent<HTMLElement>) => void
   sortField: string
   sortAscending: boolean
-  onSort: (colId: string) => void
+  onSort: (field: string, ascending: boolean) => void
 }) {
-  const { classes } = useTableStyles()
+  const { classes } = useVirtualTableStyles()
   return (
     <thead className={classes.thead}>
       <tr>
-        <th className={classes.checkboxCell}>
-          {onSelectAll ? (
-            <Checkbox
-              size="small"
-              checked={allSelected}
-              indeterminate={someSelected}
-              onChange={() => {
-                onSelectAll()
-              }}
-              slotProps={{ input: { 'aria-label': 'Select all tracks' } }}
-              sx={checkboxSx}
-            />
-          ) : null}
-        </th>
+        {hasLeading ? (
+          <th className={classes.leadingCell}>{leadingHeader}</th>
+        ) : null}
         {columns.map(col => {
           const sorted = sortField === col.id
+          const right = col.align === 'right'
           return (
             <th
               key={col.id}
@@ -62,9 +58,13 @@ const TrackTableHead = observer(function TrackTableHead({
             >
               <button
                 type="button"
-                className={classes.sortButton}
+                className={cx(
+                  classes.sortButton,
+                  right && classes.sortButtonRight,
+                )}
                 onClick={() => {
-                  onSort(col.id)
+                  const next = nextSort(col.id, sortField, sortAscending)
+                  onSort(next.field, next.ascending)
                 }}
               >
                 <span className={classes.headerLabel}>{col.header}</span>
@@ -92,4 +92,4 @@ const TrackTableHead = observer(function TrackTableHead({
   )
 })
 
-export default TrackTableHead
+export default VirtualTableHead

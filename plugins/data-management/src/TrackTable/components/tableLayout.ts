@@ -1,5 +1,7 @@
+import { DEFAULT_COL_WIDTH } from '@jbrowse/core/ui/VirtualTable'
+
 import { columnsThatFit } from './fitColumnWidths.ts'
-import { CHECKBOX_WIDTH, DEFAULT_COL_WIDTH } from './tableStyles.ts'
+import { CHECKBOX_WIDTH } from './tableStyles.ts'
 import { facetLabel } from './util.ts'
 
 import type { TrackTableModel } from '../trackTableModel.ts'

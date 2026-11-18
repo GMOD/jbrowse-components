@@ -1,10 +1,6 @@
-import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-export const ROW_HEIGHT = 25
-export const HEADER_HEIGHT = 35
 export const CHECKBOX_WIDTH = 48
-export const DEFAULT_COL_WIDTH = 100
 
 const CHECKBOX_ICON_SIZE = '1.15rem'
 
@@ -13,138 +9,17 @@ export const checkboxSx = {
   '& .MuiSvgIcon-root': { fontSize: CHECKBOX_ICON_SIZE },
 }
 
-export const useTableStyles = makeStyles()(theme => {
-  const borderColor = theme.palette.tableBorder
-  const border = `1px solid ${borderColor}`
-  return {
-    root: {
-      height: '100%',
-      width: '100%',
-      overflow: 'auto',
-      border,
-      borderRadius: theme.shape.borderRadius,
-      background: theme.palette.background.paper,
-      fontFamily: theme.typography.fontFamily,
-      fontSize: theme.typography.body2.fontSize,
-      lineHeight: theme.typography.body2.lineHeight,
-      color: theme.palette.text.primary,
-    },
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse',
-      tableLayout: 'fixed',
-    },
-    thead: {
-      position: 'sticky',
-      top: 0,
-      zIndex: 1,
-      background: theme.palette.background.paper,
-    },
-    checkboxCell: {
-      padding: 0,
-      textAlign: 'center',
-      verticalAlign: 'middle',
-      lineHeight: 0,
-      borderBottom: border,
-      boxSizing: 'border-box',
-    },
-    rowCheckbox: {
-      '& svg': { width: CHECKBOX_ICON_SIZE, height: CHECKBOX_ICON_SIZE },
-    },
-    headerCell: {
-      height: HEADER_HEIGHT,
-      position: 'relative',
-      textAlign: 'left',
-      fontWeight: theme.typography.fontWeightMedium,
-      padding: '0 10px',
-      borderBottom: border,
-      overflow: 'hidden',
-      userSelect: 'none',
-      lineHeight: `${HEADER_HEIGHT}px`,
-      verticalAlign: 'middle',
-      boxSizing: 'border-box',
-    },
-    bodyRow: {
-      '&:hover': {
-        background: theme.palette.action.hover,
-      },
-    },
-    selectedRow: {
-      background: alpha(
-        theme.palette.accent,
-        theme.palette.action.selectedOpacity,
-      ),
-      '&:hover': {
-        background: alpha(
-          theme.palette.accent,
-          theme.palette.action.selectedOpacity +
-            theme.palette.action.hoverOpacity,
-        ),
-      },
-    },
-    bodyCell: {
-      height: ROW_HEIGHT,
-      padding: '0 10px',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      borderBottom: border,
-      lineHeight: `${ROW_HEIGHT - 1}px`,
-      boxSizing: 'border-box',
-    },
-    nameCell: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: 2,
-      minWidth: 0,
-      '& > :not(:first-child)': {
-        flexShrink: 0,
-      },
-    },
-    sortButton: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: 2,
-      width: '100%',
-      height: '100%',
-      padding: 0,
-      border: 0,
-      background: 'none',
-      font: 'inherit',
-      color: 'inherit',
-      textAlign: 'left',
-      cursor: 'pointer',
-    },
-    headerLabel: {
-      minWidth: 0,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-    },
-    sortIcon: {
+export const useTableStyles = makeStyles()({
+  rowCheckbox: {
+    '& svg': { width: CHECKBOX_ICON_SIZE, height: CHECKBOX_ICON_SIZE },
+  },
+  nameCell: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    minWidth: 0,
+    '& > :not(:first-child)': {
       flexShrink: 0,
-      fontSize: 16,
     },
-    resizeHandle: {
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      height: '100%',
-      width: 10,
-      display: 'flex',
-      justifyContent: 'center',
-      cursor: 'col-resize',
-    },
-    resizeLine: {
-      width: 1,
-      height: '50%',
-      alignSelf: 'center',
-      background: borderColor,
-    },
-    emptyCell: {
-      padding: 20,
-      textAlign: 'left',
-      color: theme.palette.text.secondary,
-    },
-  }
+  },
 })
