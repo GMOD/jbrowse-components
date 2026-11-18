@@ -17,7 +17,6 @@
 
 import antialias;
 import hpmath;
-import colorPack;
 import markColor;
 import pointGlyph;
 import rowTable;

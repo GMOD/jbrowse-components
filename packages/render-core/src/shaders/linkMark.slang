@@ -31,7 +31,6 @@
 //! js-export: linkApexPx, linkApexHeld, linkRadiiPx, linkIsFar, linkStrokeWidthPx, linkValuePx, linkBaseYPx, linkFootLenPx, linkFootDir
 
 import antialias;
-import colorPack;
 import curveDistance;
 import hpmath;
 import markColor;

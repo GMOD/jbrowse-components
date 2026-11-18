@@ -17,7 +17,6 @@
 //! targets: wgsl, glsl
 //! instance-writer
 
-import colorPack;
 import markColor;
 import rowRect;
 import rowTable;

@@ -22,9 +22,7 @@
 // draws `row` as the band.
 //! targets: wgsl, glsl
 
-import antialias;
 import hpmath;
-import colorPack;
 import markColor;
 import rowTable;
 import valueScale;
