@@ -179,6 +179,46 @@ describe('Copy location context menu item', () => {
 })
 
 describe('Feature info (JSON) copy', () => {
+  it('copies the transcript clicked on the piece of a gene past a circular origin', async () => {
+    const writeText = mockClipboard()
+    const { createDisplay } = createTestEnvironment()
+    const { display, mockRpcCall } = createDisplay()
+    const span = { refName: 'ctgA', start: 1050, end: 9000 }
+    mockRpcCall.mockResolvedValue({
+      feature: {
+        ...span,
+        uniqueId: 'gene',
+        type: 'gene',
+        subfeatures: [
+          { ...span, uniqueId: 'gene-0', type: 'mRNA', name: 'first' },
+          { ...span, uniqueId: 'gene-1', type: 'mRNA', name: 'second' },
+        ],
+      },
+    })
+    const tail = { ...gene, featureId: 'gene-origin' }
+    const clicked = {
+      ...transcript,
+      featureId: 'gene-origin-1',
+      parentFeatureId: 'gene-origin',
+      displayLabel: 'second',
+    }
+    display.setRpcData(
+      0,
+      makeFeatureData({ flatbushItems: [tail], subfeatureInfos: [clicked] }),
+      ctgA,
+    )
+    rightClick(display, tail, clicked)
+    clickContextMenuItem(display, 'Copy second attributes (JSON)')
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledTimes(1)
+    })
+    expect(JSON.parse(writeText.mock.calls[0][0])).toMatchObject({
+      type: 'mRNA',
+      name: 'second',
+    })
+  })
+
   it('offers both the subfeature and the whole feature, named individually', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()

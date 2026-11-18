@@ -148,6 +148,41 @@ function transcriptIds(props: Record<string, unknown>) {
 }
 
 describe('collapse introns context menu', () => {
+  // The piece of a gene past a circular origin names itself and its children
+  // off its own id, while the fetched feature is the uncut gene.
+  it('preselects and labels the transcript clicked on the piece past the origin', async () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, session, mockRpcCall } = createDisplay()
+    const mRNA = (uniqueId: string) => ({
+      ...fullGene.subfeatures[0]!,
+      uniqueId,
+    })
+    mockRpcCall.mockResolvedValue({
+      feature: {
+        ...fullGene,
+        uniqueId: 'gene',
+        subfeatures: [mRNA('gene-0'), mRNA('gene-1')],
+      },
+    })
+    const tail = { ...gene, featureId: 'gene-origin' }
+    const clicked = {
+      ...isoform('gene-origin-1', 'mRNA'),
+      parentFeatureId: 'gene-origin',
+      displayLabel: 'second',
+    }
+    display.setRpcData(
+      0,
+      makeFeatureData({ flatbushItems: [tail], subfeatureInfos: [clicked] }),
+      ctgA,
+    )
+    rightClick(display, tail, clicked)
+    clickCollapse(display)
+
+    const props = await queuedDialogProps(session)
+    expect(props.initialTranscriptId).toBe('gene-1')
+    expect(props.transcriptLabels).toEqual(new Map([['gene-1', 'second']]))
+  })
+
   it('is a single row, not a scope submenu', () => {
     const { display } = setup([eden1])
     rightClick(display, gene, eden1)

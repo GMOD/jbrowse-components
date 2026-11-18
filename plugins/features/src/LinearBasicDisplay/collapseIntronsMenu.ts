@@ -6,6 +6,7 @@ import {
   getSession,
   withFeatureDetails,
 } from '@jbrowse/core/util'
+import { wholeSubfeatureId } from '@jbrowse/core/util/originCut'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 
@@ -55,7 +56,10 @@ export function collapseIntronsMenuItem(
   const transcriptLabels = new Map<string, string>()
   for (const s of subfeatureInfos) {
     if (s.parentFeatureId === featureId && s.displayLabel !== undefined) {
-      transcriptLabels.set(s.featureId, s.displayLabel)
+      transcriptLabels.set(
+        wholeSubfeatureId(featureId, s.featureId),
+        s.displayLabel,
+      )
     }
   }
   return {
@@ -95,7 +99,9 @@ export function collapseIntronsMenuItem(
               // from its top-level id, so this stays the gene even when one
               // transcript is picked.
               featureId,
-              initialTranscriptId: subfeature?.featureId,
+              initialTranscriptId:
+                subfeature &&
+                wholeSubfeatureId(featureId, subfeature.featureId),
               transcriptLabels,
               // Titled with the drawn name, the track's `labels.name`
               // expression, so the new view agrees with the glyph the user

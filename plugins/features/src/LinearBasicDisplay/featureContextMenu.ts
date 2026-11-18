@@ -10,6 +10,7 @@ import {
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
+import { wholeSubfeatureId } from '@jbrowse/core/util/originCut'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import BiotechIcon from '@mui/icons-material/Biotech'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
@@ -454,7 +455,10 @@ function copyJsonItem(
         () => self.fetchFullFeature(featureId, displayedRegionIndex),
         parent => {
           const target = subfeature
-            ? findSubfeatureById(parent, subfeature.featureId)
+            ? findSubfeatureById(
+                parent,
+                wholeSubfeatureId(featureId, subfeature.featureId),
+              )
             : parent
           // A miss means the fetched feature disagrees with what was drawn;
           // copy the containing feature and say so rather than claiming the
