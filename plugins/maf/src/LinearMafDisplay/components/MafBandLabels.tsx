@@ -1,7 +1,8 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { alpha } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { BandChip, BandChipRow } from '@jbrowse/display-kit/BandChips'
+import { GROUP_LABEL_INSET_X } from '@jbrowse/display-kit/groupLabelStyle'
+import { leftAxisGutterWidth } from '@jbrowse/display-ui'
 import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -10,27 +11,12 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
 // Just clear of the Y-axis gutter the two bands share.
 const LABEL_X = AXIS_GUTTER_WIDTH_PX + 2
 const FONT_SIZE = 9
-// SVG `<text>` is placed by baseline, so spell out the offset the on-screen
-// label's CSS box implies (1px padding plus a font-size).
+// SVG `<text>` is placed by its baseline, a line and a px under the band top.
 const BASELINE_OFFSET = FONT_SIZE + 1
 
-const useStyles = makeStyles()(theme => ({
-  label: {
-    position: 'absolute',
-    left: LABEL_X,
-    fontSize: FONT_SIZE,
-    lineHeight: 1,
-    padding: '1px 3px',
-    pointerEvents: 'none',
-    whiteSpace: 'nowrap',
-    color: theme.palette.text.secondary,
-    background: alpha(theme.palette.background.paper, 0.7),
-  },
-}))
-
 /**
- * The band titles for the SVG export, beside their on-screen half so the x and
- * the font are spelled once. `model.bandLabels` decides what is titled.
+ * The band titles for the SVG export, which draws no controls, so the on-screen
+ * chips' names without their ×. `model.bandLabels` decides what is titled.
  */
 export function SvgMafBandLabels({
   labels,
@@ -55,21 +41,35 @@ export function SvgMafBandLabels({
   )
 }
 
+/**
+ * Each band's chip at its top-left, past the y-axis gutter the bands share,
+ * whose × hides the band as its Show menu row does.
+ */
 const MafBandLabels = observer(function MafBandLabels({
   model,
 }: {
   model: LinearMafDisplayModel
 }) {
-  const { classes } = useStyles()
-  return (
-    <>
-      {model.bandLabels.map(({ text, top }) => (
-        <div key={text} className={classes.label} style={{ top }}>
-          {text}
-        </div>
-      ))}
-    </>
-  )
+  const left = leftAxisGutterWidth(model.axes) + GROUP_LABEL_INSET_X
+  return model.bandLabels.map(({ band, text, top }) => (
+    <BandChipRow
+      key={band}
+      top={top + 1}
+      left={left}
+      testid={`band_chips_${band}`}
+    >
+      <BandChip
+        label={text}
+        onHide={() => {
+          if (band === 'coverage') {
+            model.setShowCoverage(false)
+          } else {
+            model.setShowConservation(false)
+          }
+        }}
+      />
+    </BandChipRow>
+  ))
 })
 
 export default MafBandLabels

@@ -175,6 +175,13 @@ export interface MafRowHover {
   name: string
 }
 
+/** A stacked band's title, at the y its band starts. */
+export interface MafBandLabel {
+  band: 'coverage' | 'conservation'
+  text: string
+  top: number
+}
+
 // A right-click's reference column plus the hit under it, resolved once so menu
 // items need not re-run the hit test against a closed anchor.
 export interface MafContextMenuInfo extends ContextMenuAnchor {
@@ -1635,18 +1642,19 @@ export default function stateModelFactory(
         /**
          * #getter
          * Titles for the stacked bands, with the y they sit at; empty unless
-         * both bands reserve px. The on-screen labels and the SVG export both read
-         * it.
+         * both bands reserve px, so a band's chip never hides the last band.
+         * The on-screen chips and the SVG export both read it.
          *
          * The conservation title names what the band draws
          * (`codonConservationActive`), not the mode asked for.
          */
-        get bandLabels(): { text: string; top: number }[] {
+        get bandLabels(): MafBandLabel[] {
           const { coverage, conservation } = self.topBands.rects
           return coverage.height > 0 && conservation.height > 0
             ? [
-                { text: 'Coverage', top: coverage.top },
+                { band: 'coverage', text: 'Coverage', top: coverage.top },
                 {
+                  band: 'conservation',
                   text: self.codonConservationActive
                     ? 'Conservation (aa identity)'
                     : 'Conservation (% identity)',

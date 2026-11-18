@@ -27,8 +27,9 @@ describe('band titles', () => {
     const d = display()
     d.setShowConservation(true)
     expect(d.bandLabels).toEqual([
-      { text: 'Coverage', top: 0 },
+      { band: 'coverage', text: 'Coverage', top: 0 },
       {
+        band: 'conservation',
         text: 'Conservation (% identity)',
         top: d.topBands.rects.coverage.height,
       },

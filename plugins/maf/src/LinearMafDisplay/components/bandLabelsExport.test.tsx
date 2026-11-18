@@ -1,5 +1,5 @@
 import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
-import { render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 
 import { createMafTestEnvironment } from '../testEnv.ts'
 import MafBandLabels, { SvgMafBandLabels } from './MafBandLabels.tsx'
@@ -68,31 +68,52 @@ describe('band titles reach the SVG export', () => {
   })
 })
 
-// The on-screen half, which the export half mirrors. A pure refactor — two
-// hardcoded divs became a map over `model.bandLabels` — but the captions are
-// what the export test is comparing itself against, so both ends of the pair
-// are pinned rather than one.
-describe('band titles on screen', () => {
-  function screenLabels(configure: (d: LinearMafDisplayModel) => void) {
+// The on-screen half: the same titles as chips, each at its band's top, whose
+// × hides that band.
+describe('band chips on screen', () => {
+  function screenChips(configure: (d: LinearMafDisplayModel) => void) {
     const { display } = createMafTestEnvironment().createDisplay()
     configure(display)
-    const { container } = render(<MafBandLabels model={display} />)
-    return [...container.querySelectorAll('div')]
+    render(<MafBandLabels model={display} />)
+    return display
   }
 
   it('titles both bands, each at its band top', () => {
-    const divs = screenLabels(d => {
+    screenChips(d => {
       d.setShowConservation(true)
     })
-    expect(divs.map(d => d.textContent)).toEqual([
+    expect(screen.getByTestId('band_chips_coverage').textContent).toBe(
       'Coverage',
+    )
+    expect(screen.getByTestId('band_chips_conservation').textContent).toBe(
       'Conservation (% identity)',
-    ])
-    expect(divs[0]!.style.top).toBe('0px')
-    expect(divs[1]!.style.top).toBe(`${COVERAGE_HEIGHT}px`)
+    )
+    expect(screen.getByTestId('band_chips_coverage').style.top).toBe('1px')
+    expect(screen.getByTestId('band_chips_conservation').style.top).toBe(
+      `${COVERAGE_HEIGHT + 1}px`,
+    )
   })
 
   it('draws nothing with only one band up', () => {
-    expect(screenLabels(() => {})).toEqual([])
+    screenChips(() => {})
+    expect(screen.queryByTestId('band_chips_coverage')).toBeNull()
+  })
+
+  it('hides the coverage from its chip', () => {
+    const display = screenChips(d => {
+      d.setShowConservation(true)
+    })
+    fireEvent.click(screen.getByTitle('Hide coverage'))
+    expect(display.showCoverage).toBe(false)
+    expect(display.showConservation).toBe(true)
+  })
+
+  it('hides the conservation from its chip', () => {
+    const display = screenChips(d => {
+      d.setShowConservation(true)
+    })
+    fireEvent.click(screen.getByTitle('Hide conservation (% identity)'))
+    expect(display.showConservation).toBe(false)
+    expect(display.showCoverage).toBe(true)
   })
 })
