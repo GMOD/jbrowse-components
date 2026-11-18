@@ -205,6 +205,26 @@ test('clearing a leading chip keeps focus on it', () => {
   expect(document.activeElement?.textContent).toBe('lab')
 })
 
+test('a chip opens a dialog named for its facet, and "More filters" one of its own', () => {
+  const { model } = setup()
+  const { container, getByRole, getByText } = renderSelector(model)
+  const biosample = chip(container, 'biosample')
+  expect(biosample.getAttribute('aria-haspopup')).toBe('dialog')
+  fireEvent.click(getByText('biosample'))
+  expect(
+    within(getByRole('dialog', { name: 'biosample' })).getByLabelText('K562'),
+  ).toBeTruthy()
+  closePopover()
+
+  expect(chip(container, 'More filters').getAttribute('aria-haspopup')).toBe(
+    'dialog',
+  )
+  fireEvent.click(getByText('More filters'))
+  expect(
+    within(getByRole('dialog', { name: 'More filters' })).getByText('target'),
+  ).toBeTruthy()
+})
+
 test("in tree mode the chips count what the tree's own search keeps", () => {
   const { model } = setup()
   const table = model.trackTable

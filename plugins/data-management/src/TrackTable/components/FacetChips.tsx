@@ -90,7 +90,7 @@ const FacetChips = observer(function FacetChips({
             size="small"
             variant="outlined"
             className={selected ? classes.active : undefined}
-            aria-haspopup="true"
+            aria-haspopup="dialog"
             aria-expanded={open?.field === field}
             label={
               selected ? (
@@ -129,7 +129,7 @@ const FacetChips = observer(function FacetChips({
           ref={moreRef}
           size="small"
           variant="outlined"
-          aria-haspopup="true"
+          aria-haspopup="dialog"
           aria-expanded={!!open && !open.field}
           label={
             <span className={classes.chipLabel}>
@@ -149,6 +149,14 @@ const FacetChips = observer(function FacetChips({
           setOpen(undefined)
         }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        slotProps={{
+          paper: {
+            role: 'dialog',
+            'aria-label': open?.field
+              ? facetLabel(open.field, nonMetadataFieldSet)
+              : 'More filters',
+          },
+        }}
       >
         <div className={classes.popover}>
           {listed.map(field => (
