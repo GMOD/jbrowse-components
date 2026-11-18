@@ -109,7 +109,6 @@ import {
   recordsKeyViews,
   recordsLayoutActions,
   recordsLayoutViews,
-  recordsOpeningHeightActions,
   recordsRenderViews,
   recordsSettingsViews,
   recordsTrackHeightViews,
@@ -1243,7 +1242,6 @@ export function stateModelFactory(
       .views(recordsTrackHeightViews)
       .actions(recordsLayoutActions)
       .actions(recordsTrackResizeActions)
-      .actions(recordsOpeningHeightActions)
       .views(recordsHighlightViews)
       .actions(featureHighlightListActions)
       .views(self => {

@@ -17,7 +17,6 @@ import { reservedPx } from '@jbrowse/core/util/bandLayout'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
-import { containingHost } from '@jbrowse/display-kit/foundationView'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import {
   sameAsLast,
@@ -78,7 +77,7 @@ import type { RecordsLabels } from './recordsRenderData.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Band } from '@jbrowse/core/util/bandLayout'
 import type { WrittenFacet } from '@jbrowse/display-kit/FacetWritesMixin'
-import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   DisplayMode,
   FeatureBandHost,
@@ -749,6 +748,13 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
       recordsContentHeight: fullStackHeight.get(),
     }),
   )
+  const overRows = computed(() =>
+    boundRecordsBand({
+      band: { active: self.showRecords, height: heldHeight.get() },
+      written: self.recordsHeightWritten,
+      trackHeight: self.fitTargetHeight,
+    }),
+  )
   // with the rows hidden the display's `height` reads this band, so only the
   // records-only branch, whose `height` does not, reads `height` back
   const recordsBand = computed(() => {
@@ -756,11 +762,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     return self.recordsOnly
       ? { active, height: self.height }
       : self.drawsGenotypeRows
-        ? boundRecordsBand({
-            band: { active, height: heldHeight.get() },
-            written: self.recordsHeightWritten,
-            trackHeight: self.fitTargetHeight,
-          })
+        ? overRows.get()
         : { active, height: heldHeight.get() }
   })
   const bands = computed(() =>
@@ -798,13 +800,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * `height` from, so the rows come back at the px they left.
      */
     get recordsBandOverRows() {
-      return reservedPx(
-        boundRecordsBand({
-          band: { active: self.showRecords, height: heldHeight.get() },
-          written: self.recordsHeightWritten,
-          trackHeight: self.fitTargetHeight,
-        }),
-      )
+      return reservedPx(overRows.get())
     },
     /**
      * #getter
@@ -1029,10 +1025,11 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
 
 export type RecordsLayout = ReturnType<typeof recordsLayoutViews>
 
-interface RecordsTrackHeightHost extends IStateTreeNode {
+interface RecordsTrackHeightHost {
   recordsOnly: boolean
   drawsGenotypeRows: boolean
   autoHeight: boolean
+  hostInitialized: boolean
   grownHeight: number
   fitTargetHeight: number
   topBands: RecordsLayout['topBands']
@@ -1072,7 +1069,7 @@ export function recordsTrackHeightViews(self: RecordsTrackHeightHost) {
     get height(): number {
       return this.rowsHidden
         ? self.topBands.bottom
-        : self.autoHeight && containingHost(self).initialized
+        : self.autoHeight && self.hostInitialized
           ? self.grownHeight
           : self.fitTargetHeight
     },
@@ -1141,6 +1138,7 @@ export function recordsTrackResizeActions(self: RecordsTrackResizeHost) {
 
 interface RecordsLayoutActionsHost extends RecordsLayout {
   configuration: RecordsSettingsHost['configuration']
+  openingHeight: number | undefined
   openingRecordsHeight: number | undefined
   recordsOnly: boolean
   drawsGenotypeRows: boolean
@@ -1243,18 +1241,6 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
         DEFAULT_RECORDS_HEIGHT,
       )
     },
-  }
-}
-
-interface RecordsOpeningHeightHost
-  extends RecordsLayoutHost, RecordsLayout, RecordsLayoutActionsHost {
-  openingHeight: number | undefined
-  heightWritten: boolean
-  inRing: boolean
-}
-
-export function recordsOpeningHeightActions(self: RecordsOpeningHeightHost) {
-  return {
     /**
      * #action
      * Hold a records-only track's height from its first layout with a
@@ -1273,6 +1259,12 @@ export function recordsOpeningHeightActions(self: RecordsOpeningHeightHost) {
   }
 }
 
+interface RecordsOpeningHeightHost
+  extends RecordsLayoutHost, RecordsLayoutActionsHost {
+  heightWritten: boolean
+  inRing: boolean
+}
+
 /**
  * Settle the opening heights once: with no rows the track's, at the first
  * layout with a record on screen, unless `grow`, a ring or a written `height`
@@ -1280,9 +1272,7 @@ export function recordsOpeningHeightActions(self: RecordsOpeningHeightHost) {
  * display mode, unless `records.height` is written.
  */
 export function installRecordsOpeningHeight(
-  self: RecordsOpeningHeightHost &
-    ReturnType<typeof recordsOpeningHeightActions> &
-    ReturnType<typeof recordsLayoutActions>,
+  self: RecordsOpeningHeightHost & ReturnType<typeof recordsLayoutActions>,
 ) {
   autorunOnReadyView(
     self,
