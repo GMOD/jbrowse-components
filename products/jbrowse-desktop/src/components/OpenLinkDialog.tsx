@@ -26,12 +26,7 @@ const OpenLinkDialog = observer(function OpenLinkDialog({
     error,
     pending,
     onSubmit: submit,
-  } = useIpcAction(async () => {
-    if (!link.trim()) {
-      throw new Error('Please paste a JBrowse Web link')
-    }
-    await onSubmit(link)
-  }, onClose)
+  } = useIpcAction(() => onSubmit(link), onClose)
   return (
     <ConfirmDialog
       open
@@ -39,7 +34,7 @@ const OpenLinkDialog = observer(function OpenLinkDialog({
       fullWidth
       title="Open JBrowse Web link"
       submitText={pending ? 'Opening...' : 'OK'}
-      submitDisabled={pending}
+      submitDisabled={pending || !link.trim()}
       onSubmit={submit}
       onCancel={onClose}
     >
