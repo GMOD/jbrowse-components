@@ -1,5 +1,7 @@
+import Flatbush from '@jbrowse/core/util/flatbush'
 import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 
+import { MIN_CELL_PX } from './shaders/variant.consts.generated.ts'
 import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
 import { snappedRowsUnderPointer } from './snappedRowsUnderPointer.ts'
 
@@ -21,7 +23,9 @@ interface VariantHitQuery {
   // 2px floor. Equal unless rows are sub-pixel.
   rowNearest: number
   rowLowest: number
-  // Half-width of the bp search window so thin cells stay clickable.
+  // Half-width of the bp search window: the click tolerance past a cell's
+  // drawn extent, which the 2px floor (and a pixel of edge snapping) can carry
+  // past its record's span.
   bpPadding: number
 }
 
@@ -62,6 +66,21 @@ export function computeVariantHitQuery(
     genomicPos,
     rowNearest: nearest,
     rowLowest: lowest,
-    bpPadding: HIT_TOLERANCE_PX * bpPerPx,
+    bpPadding: (HIT_TOLERANCE_PX + MIN_CELL_PX + 1) * bpPerPx,
   }
+}
+
+// The features whose span overlaps the query's bp window, off the payload's
+// per-feature index ([start, 0, end, 1] each), so the row half is left to the
+// row band.
+export function featuresNearCursor(
+  featureIndexData: ArrayBuffer,
+  { genomicPos, bpPadding }: VariantHitQuery,
+) {
+  return Flatbush.from(featureIndexData).search(
+    genomicPos - bpPadding,
+    0,
+    genomicPos + bpPadding,
+    1,
+  )
 }

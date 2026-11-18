@@ -25,8 +25,7 @@ interface VariantCellStyle {
   abgr: number
   isRef: boolean
   isAlt: boolean
-  // 0-255 alt dosage; 0 for ref and no-call. Gates and shades the insertion
-  // marker (see `altDosageByte`).
+  // 0-255 alt dosage; 0 for ref and no-call (see `altDosageByte`)
   altDosage: number
   // a `CELL_*` index; the cell loops OR `1 << category` into the mask the
   // legend lists

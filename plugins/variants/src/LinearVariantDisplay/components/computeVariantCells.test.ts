@@ -862,9 +862,9 @@ describe('featureInfo records every genotype, not only painted ones', () => {
 })
 
 describe('computeVariantCells cellAltDosage', () => {
-  // `cellAltDosage` is what gates the insertion-glyph overlay, so a cell whose
-  // sample has no call at the site must be 0 or the figure claims that haplotype
-  // carries the inserted sequence. It cannot be read back off the resolved cell
+  // `cellAltDosage` is what gates a cell's hover naming its record's inserted
+  // bp, so a cell whose sample has no call at the site must be 0 or the hover
+  // claims that haplotype carries the inserted sequence. It cannot be read back off the resolved cell
   // color: allele-count mode blends its no-call shade through colord and hands
   // back a hex (`#bfaa40`), which is never string-equal to the `hsl(...)`
   // NO_CALL_COLOR literal the test used to be. That mis-flagged every no-call as

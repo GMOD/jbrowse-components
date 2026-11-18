@@ -1,3 +1,4 @@
+import { MIN_CELL_PX } from './shaders/variant.consts.generated.ts'
 import { HIT_TOLERANCE_PX, computeVariantHitQuery } from './variantHitTest.ts'
 
 import type { HitRegion } from './variantHitTest.ts'
@@ -35,9 +36,9 @@ describe('computeVariantHitQuery genomicPos', () => {
     )
   })
 
-  test('bpPadding is the click tolerance in bp', () => {
+  test('bpPadding reaches a click tolerance past the widest a cell draws', () => {
     expect(computeVariantHitQuery(fwd, 0, 0, 0, 10, 1).bpPadding).toBe(
-      HIT_TOLERANCE_PX * 10,
+      (HIT_TOLERANCE_PX + MIN_CELL_PX + 1) * 10,
     )
   })
 })

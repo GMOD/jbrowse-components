@@ -22,7 +22,6 @@ import {
   withLowerBound,
   withUpperBound,
 } from '@jbrowse/core/util/fieldPredicate'
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { readFor } from '@jbrowse/core/util/installPrerequisiteFetch'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 import {
@@ -1760,17 +1759,6 @@ export function stateModelFactory(
          */
         get highlightStyle(): HighlightStyle {
           return this.litRecordId === undefined ? 'box' : 'shade'
-        },
-        /**
-         * #getter
-         * Per-region spatial index over feature intervals, for the hit-test. One
-         * entry per variant, not per cell — see computeVariantCells. Off the
-         * payload alone, since neither a reorder nor a recolor moves a span.
-         */
-        get featureIndices() {
-          return mapPayloadRegions(self.cellData, data =>
-            Flatbush.from(data.featureIndexData),
-          )
         },
       }))
       .views(self => variantDataKeyViews(self))

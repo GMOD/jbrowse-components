@@ -1,5 +1,11 @@
+import Flatbush from '@jbrowse/core/util/flatbush'
+
 import { pickVariantCell } from './pickVariantCell.ts'
-import { HIT_TOLERANCE_PX } from './variantHitTest.ts'
+import {
+  HIT_TOLERANCE_PX,
+  computeVariantHitQuery,
+  featuresNearCursor,
+} from './variantHitTest.ts'
 
 import type { PickCellData } from './pickVariantCell.ts'
 import type {
@@ -144,9 +150,9 @@ describe('pickVariantCell candidate narrowing', () => {
   })
 
   test('rejects a candidate the cursor is not actually over', () => {
-    // The bp window is padded out to the widest insertion marker, so the SNP at
-    // 300 is returned by the index even with the cursor at 150 — it has to be
-    // filtered back out, leaving the deletion.
+    // A candidate is any feature in the padded bp window, so the SNP at 300
+    // can be one with the cursor at 150 — it has to be filtered back out,
+    // leaving the deletion.
     const picked = pickVariantCell({
       data,
       candidateFeatures: [0, 1],
@@ -176,6 +182,29 @@ describe('pickVariantCell candidate narrowing', () => {
     expect(atX(300 - HIT_TOLERANCE_PX - 1)).toBeUndefined()
     expect(atX(drawnRight + HIT_TOLERANCE_PX)).toBeDefined()
     expect(atX(drawnRight + HIT_TOLERANCE_PX + 1)).toBeUndefined()
+  })
+
+  test('the bp window reaches a click tolerance past the drawn edge', () => {
+    // the SNP's span [300, 301) draws over [300, 302) at the 2px floor, inside
+    // the deletion every window here also finds
+    const index = new Flatbush(2, 16, Uint32Array)
+    index.add(100, 0, 500, 1)
+    index.add(300, 0, 301, 1)
+    index.finish()
+    const atX = (mouseX: number) => {
+      const query = computeVariantHitQuery(block, mouseX, rowY(0), 0, 10, 1)
+      return pickVariantCell({
+        data,
+        candidateFeatures: featuresNearCursor(index.data, query),
+        mouseX,
+        mouseY: rowY(0),
+        rowNearest: query.rowNearest,
+        rowLowest: query.rowLowest,
+        ...geom,
+      })
+    }
+    expect(atX(302 + HIT_TOLERANCE_PX)?.featureIndex).toBe(1)
+    expect(atX(300 - HIT_TOLERANCE_PX)?.featureIndex).toBe(1)
   })
 
   test('returns undefined when nothing is under the cursor', () => {

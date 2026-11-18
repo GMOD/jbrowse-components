@@ -6,7 +6,7 @@ import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { buildVariantHit } from './buildVariantHit.ts'
 import { enrichCellHit } from './enrichFeatureFromClick.ts'
 import { pickVariantCell } from './pickVariantCell.ts'
-import { computeVariantHitQuery } from './variantHitTest.ts'
+import { computeVariantHitQuery, featuresNearCursor } from './variantHitTest.ts'
 import { variantSurfaceHandlers } from './variantSurface.ts'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -48,39 +48,31 @@ function getHoveredFeature(
   // indexing perRegionCellData again here — that second path could see a
   // region set the canvas and the glyph overlay did not.
   const regionCellData = model.perRegionCellMap.get(region.displayedRegionIndex)
-  const featureIndex = model.featureIndices.get(region.displayedRegionIndex)
   const { rowUnmap } = model
-  if (!regionCellData || !featureIndex || !rowUnmap) {
+  if (!regionCellData || !rowUnmap) {
     return undefined
   }
 
-  const { genomicPos, rowNearest, rowLowest, bpPadding } =
-    computeVariantHitQuery(
-      region,
-      mouseX,
-      mouseY,
-      model.scrollTop,
-      model.effectiveRowHeight,
-      backingScale(model.renderState.canvasHeight),
-    )
-  // x only: the index holds one interval per feature ([start, 0, end, 1]), so
-  // the row half of the query is resolved arithmetically instead.
-  const candidateFeatures = featureIndex.search(
-    genomicPos - bpPadding,
-    0,
-    genomicPos + bpPadding,
-    1,
+  const query = computeVariantHitQuery(
+    region,
+    mouseX,
+    mouseY,
+    model.scrollTop,
+    model.effectiveRowHeight,
+    backingScale(model.renderState.canvasHeight),
   )
-
   const picked = pickVariantCell({
     data: regionCellData,
     block: { ...region, reversed: region.reversed ?? false },
     state: model.renderState,
-    candidateFeatures,
+    candidateFeatures: featuresNearCursor(
+      regionCellData.featureIndexData,
+      query,
+    ),
     mouseX,
     mouseY,
-    rowNearest,
-    rowLowest,
+    rowNearest: query.rowNearest,
+    rowLowest: query.rowLowest,
     rowUnmap,
   })
   if (!picked) {
