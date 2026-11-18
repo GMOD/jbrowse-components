@@ -122,7 +122,7 @@ export function keyedVariantsFetched(payloads: Iterable<KeyPayload>) {
 const NO_KEYED_VARIANTS = keyedVariantsFetched([])
 
 /** What {@link keyedVariantViews} reads: the payload and where it shows. */
-export interface KeyedVariantHost {
+interface KeyedVariantHost {
   cellData: { perRegionCellData: Record<string, KeyPayload> } | undefined
   atGenomicPositions: boolean
   keyWindows: readonly KeyWindow[]

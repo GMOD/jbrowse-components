@@ -55,9 +55,9 @@ const RECORDS_SHARE =
   (DEFAULT_RECORDS_HEIGHT + DEFAULT_VARIANT_DISPLAY_HEIGHT)
 
 /** The bands above the genotype rows, top to bottom. */
-export const VARIANT_BAND_ORDER = ['records', 'chips', 'connectors'] as const
+const VARIANT_BAND_ORDER = ['records', 'chips', 'connectors'] as const
 
-export type VariantBandKey = (typeof VARIANT_BAND_ORDER)[number]
+type VariantBandKey = (typeof VARIANT_BAND_ORDER)[number]
 
 export type VariantTopBands = BandStack<VariantBandKey>
 
@@ -96,7 +96,7 @@ export function recordsBandHeightOverRows({
  * The plot the records band and the drawn genotype rows share: the track
  * under the chips' strip, of which the rows keep `MIN_BAND_HEIGHT`.
  */
-export function recordsPlot(trackHeight: number) {
+function recordsPlot(trackHeight: number) {
   return {
     height: Math.max(0, trackHeight - BAND_CHIPS_HEIGHT),
     floor: MIN_BAND_HEIGHT,

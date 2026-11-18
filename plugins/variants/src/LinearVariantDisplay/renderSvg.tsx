@@ -69,9 +69,7 @@ function VariantSvgBody({
               width={canvasWidth}
               height={recordsHeight}
               opts={opts}
-              paint={ctx => {
-                paintRecords(ctx)
-              }}
+              paint={paintRecords}
             />
             {/* the record sections' names, the twin of the band's chips */}
             {model.recordsGroupSections.length > 0 ? (

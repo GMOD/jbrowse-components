@@ -26,7 +26,7 @@ import type {
  * per record and never per genotype, so a 3202-sample callset costs the band
  * what a 1-sample one does.
  */
-export interface RecordsSourceData {
+interface RecordsSourceData {
   featurePositions: Uint32Array
   featureColors: Uint32Array
   featureInfo: VariantFeatureInfo[]

@@ -50,7 +50,7 @@ function countRecord(
   return { carriers, nonCarriers, noCall }
 }
 
-export type CountedRecord = Pick<
+type CountedRecord = Pick<
   VariantFeatureInfo,
   'featureId' | 'genotypeCodes' | 'svType' | 'alt' | 'svAlleles'
 >
