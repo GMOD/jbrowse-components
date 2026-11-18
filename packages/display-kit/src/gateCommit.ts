@@ -38,8 +38,7 @@ export function measurementOfEach(
  * `issued` is captured before the fetch, so what comes back is judged against
  * the viewport and tier it was asked for. The commit happens at most once —
  * several regions refusing in one batch is ordinary at whole-genome zoom, and
- * each commit bumps `fetchGeneration`. A refusal commits before it cancels,
- * which is `gateBatch`'s rule since only it has siblings to cancel.
+ * each commit bumps `fetchGeneration`.
  */
 export function openGateCommit(self: GateCommitHost) {
   const issued = self.gateFetchState()

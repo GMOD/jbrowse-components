@@ -61,15 +61,15 @@ digraph region_too_large_gate {
   overExact -> payload [label=" no"]
 
   subgraph cluster_batch {
-    label="  the batch, on the main thread: gateBatch  "
+    label="  the batch, on the main thread: fetchEachRegion  "
     fontname=monospace fontsize=10 style=dashed color=gray50
-    commit [label="commit the verdict\nbytes, then density via onComplete", style=bold]
-    cancel [label="cancelFetch: abort the siblings\nin flight, refuse the undispatched"]
+    cancel [label="refusalScope: abort the siblings\nin flight, refuse the undispatched"]
+    commit [label="commit the verdict once\nbytes, then density via onComplete", style=bold]
     banner [label="tooLarge replaces\nthe display subtree", style=bold]
-    commit -> cancel [label=" and only then\l"]
-    cancel -> banner
+    cancel -> commit
+    commit -> banner
   }
 
-  refuseBytes -> commit [label=" the first refusal\l ends the batch\l" style=dashed]
-  refuseDensity -> commit [style=dashed]
+  refuseBytes -> cancel [label=" the first refusal\l ends the batch\l" style=dashed]
+  refuseDensity -> cancel [style=dashed]
 }

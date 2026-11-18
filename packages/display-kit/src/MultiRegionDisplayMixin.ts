@@ -584,7 +584,7 @@ export default function MultiRegionDisplayMixin() {
                   }
                 },
               })
-              // a refused batch is stale by now but still resets the
+              // a refused batch, even a superseded one, still resets the
               // empty-fetch streak, which counts ungated fetches only
               if (
                 needed.length > 0 &&

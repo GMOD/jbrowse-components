@@ -7,6 +7,7 @@ import { createStatusFanOut, isAbortException } from '@jbrowse/core/util'
 import {
   callEachRegion,
   fetchRegionsBatched,
+  refusalScope,
 } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 
@@ -83,44 +84,16 @@ export function unionSampleSets(
     : undefined
 }
 
-/**
- * A signal for one fan-out under `ctx`, aborted by the parent's or by the first
- * refusal it sees, so siblings abort at the socket instead of downloading
- * payloads the batch will discard. `guard` wraps each region's call: an abort
- * the scope caused reads as "did not land"; a parent cancel still rejects.
- */
-function refusalScope(ctx: FetchContext) {
-  const controller = new AbortController()
-  const stop = () => {
-    controller.abort()
-  }
-  let refused = false
-  return {
-    ctx: { ...ctx, signal: AbortSignal.any([ctx.signal, controller.signal]) },
-    async guard<R>(call: () => Promise<R | RegionTooLargeResult>) {
-      try {
-        const result = await call()
-        if (isRegionRefused(result)) {
-          refused = true
-          stop()
-        }
-        return result
-      } catch (e) {
-        if (refused && isAbortException(e)) {
-          return undefined
-        } else {
-          throw e
-        }
-      }
-    },
-  }
-}
-
 function landed<R>(
-  results: { displayedRegionIndex: number; result: R | undefined }[],
+  results: {
+    displayedRegionIndex: number
+    result: { result: R } | undefined
+  }[],
 ) {
   return results.flatMap(({ displayedRegionIndex, result }) =>
-    result === undefined ? [] : [{ displayedRegionIndex, result }],
+    result === undefined
+      ? []
+      : [{ displayedRegionIndex, result: result.result }],
   )
 }
 

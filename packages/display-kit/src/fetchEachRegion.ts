@@ -1,4 +1,5 @@
 import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
+import { isAbortException } from '@jbrowse/core/util/aborting'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { runInAction } from 'mobx'
 
@@ -29,17 +30,6 @@ export interface FetchEachRegionModel extends IStateTreeNode, GateCommitHost {
     needed: IndexedRegion[],
     work: (ctx: RegionFetchContext) => Promise<void>,
   ) => Promise<void>
-  /**
-   * `FetchMixin`'s, which every display on these helpers composes.
-   *
-   * It carries a contract with `fetchRegions` that the types cannot state:
-   * calling this makes the running work callback's `ctx.isStale()` answer true.
-   * {@link gateBatch} deliberately does not depend on that for its own commit
-   * count, so a cancel that left the guard open would not corrupt the gate —
-   * but the siblings still in flight would go on storing payloads and marking
-   * regions loaded behind a banner that hides them.
-   */
-  cancelFetch: () => void
 }
 
 /**
@@ -75,44 +65,51 @@ export function callEachRegion<R>(
 }
 
 /**
- * {@link openGateCommit} plus what a per-region fan-out adds: `partial` derived
- * from its own landed count, and the cancel a refusal owes.
+ * The first refusal ends a fan-out. `ctx` is the fan-out's: its signal aborts
+ * with the parent's or at the first refused result `guard` sees, so a sibling
+ * still downloading aborts at the socket instead of fetching a payload the
+ * batch discards. The display's rotation is left alone, so the fetch ends the
+ * ordinary way and nothing has to be committed before a cancel.
  *
- * A refusal commits before it cancels. The other order strands the verdict —
- * the aborts reject the batch, nothing commits, `nextGateState` stamps no
- * viewport, and the plan re-issues every region off the cancel's own
- * generation bump, forever. `refuse()` is one call, so there is no order to
- * invert.
+ * `guard` wraps each region's call. It answers `undefined` for a call the
+ * scope stopped, as soon as the scope aborts rather than when the worker
+ * replies, so the fetch ends with the refusal; a parent cancel still rejects.
+ * A call that answered comes back wrapped, so its result may be anything.
+ * Which regions landed before the refusal is the caller's count, taken where
+ * it handles each answer.
  */
-function gateBatch(
-  self: FetchEachRegionModel,
-  size: number,
-  onComplete?: (issued: GateFetchState) => void,
-) {
-  const gate = openGateCommit(self)
-  const bytes: (number | undefined)[] = new Array(size)
-  let landed = 0
-  const finish = (refused: boolean) => {
-    // a copy: a refusal commits while siblings are still landing
-    if (gate.commit({ perRegionBytes: [...bytes], partial: landed < size })) {
-      onComplete?.(gate.issued)
-      if (refused) {
-        self.cancelFetch()
-      }
-    }
-  }
+export function refusalScope(ctx: FetchContext) {
+  const controller = new AbortController()
+  const stopped = new Promise<undefined>(resolve => {
+    controller.signal.addEventListener(
+      'abort',
+      () => {
+        resolve(undefined)
+      },
+      { once: true },
+    )
+  })
+  let refused = false
   return {
-    measured(i: number, result: unknown) {
-      landed++
-      bytes[i] = measuredBytes(result)
-    },
-    /** This region is over budget, so the batch is answered: stop the rest. */
-    refuse: () => {
-      finish(true)
-    },
-    /** Every region landed. */
-    settle: () => {
-      finish(false)
+    ctx: { ...ctx, signal: AbortSignal.any([ctx.signal, controller.signal]) },
+    async guard<R>(call: () => Promise<R | RegionTooLargeResult>) {
+      try {
+        const answer = await Promise.race([
+          call().then(result => ({ result })),
+          stopped,
+        ])
+        if (answer !== undefined && isRegionRefused(answer.result)) {
+          refused = true
+          controller.abort()
+        }
+        return answer
+      } catch (e) {
+        if (refused && isAbortException(e)) {
+          return undefined
+        } else {
+          throw e
+        }
+      }
     },
   }
 }
@@ -139,9 +136,10 @@ function gateBatch(
  * atomic one are different granularities, not different loops.
  *
  * **The first refusal ends the batch** — the gate is a display-wide max, so no
- * sibling can change a refusal or be drawn under the banner it raises. The two
- * rules that makes the batch owe are {@link gateBatch}'s, not this loop's.
- * What they measured is in agent-docs/reference/REGION_TOO_LARGE.md.
+ * sibling can change a refusal or be drawn under the banner it raises. The
+ * refusal commits the measurement at once, once per batch, and
+ * {@link refusalScope} aborts the siblings. What they measured is in
+ * agent-docs/reference/REGION_TOO_LARGE.md.
  */
 export async function fetchEachRegion<R>(
   self: FetchEachRegionModel,
@@ -165,37 +163,57 @@ export async function fetchEachRegion<R>(
     onComplete?: (issued: GateFetchState) => void
   },
 ) {
-  const batch = gateBatch(self, needed.length, opts.onComplete)
+  const gate = openGateCommit(self)
+  const bytes: (number | undefined)[] = new Array(needed.length)
+  let landed = 0
+  let refused = false
   await self.fetchRegions(needed, async ctx => {
-    // per-region guard, not one around the batch: a region that arrives before
-    // the user moves on still commits
-    const perRegion = fanOutStatus(ctx, needed.length)
+    const scope = refusalScope(ctx)
+    // at the first refusal or once every region landed, whichever is first;
+    // `gate.commit` answers true only for the first call
+    const finish = () => {
+      if (
+        gate.commit({
+          // a copy: a refusal commits while siblings are still landing
+          perRegionBytes: [...bytes],
+          partial: landed < needed.length,
+        })
+      ) {
+        opts.onComplete?.(gate.issued)
+      }
+    }
+    const perRegion = fanOutStatus(scope.ctx, needed.length)
     await Promise.all(
       needed.map(async ({ region, displayedRegionIndex }, i) => {
-        const result = await opts.call(
-          region,
-          perRegion[i]!,
-          displayedRegionIndex,
+        const answer = await scope.guard(() =>
+          opts.call(region, perRegion[i]!, displayedRegionIndex),
         )
-        batch.measured(i, result)
-        if (ctx.isStale()) {
-          return
-        }
-        if (isRegionRefused(result)) {
-          // A refused region stored nothing, so neither the display's store nor
-          // `loadedRegions` may claim it — the viewport would read as covered
-          // against a payload nobody received. See RegionFetchContext.
-          batch.refuse()
-        } else {
-          ctx.commitRegion(
-            displayedRegionIndex,
-            opts.onResult(displayedRegionIndex, result, region),
-          )
+        if (answer !== undefined) {
+          const { result } = answer
+          landed++
+          bytes[i] = measuredBytes(result)
+          // per-region guard, not one around the batch: a region that arrives
+          // before the user moves on still commits
+          if (!ctx.isStale()) {
+            if (isRegionRefused(result)) {
+              // A refused region stored nothing, so neither the display's
+              // store nor `loadedRegions` may claim it — the viewport would
+              // read as covered against a payload nobody received. See
+              // RegionFetchContext.
+              refused = true
+              finish()
+            } else if (!refused) {
+              ctx.commitRegion(
+                displayedRegionIndex,
+                opts.onResult(displayedRegionIndex, result, region),
+              )
+            }
+          }
         }
       }),
     )
     if (!ctx.isStale()) {
-      batch.settle()
+      finish()
     }
   })
 }

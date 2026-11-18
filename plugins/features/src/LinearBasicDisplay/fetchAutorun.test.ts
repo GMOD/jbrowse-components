@@ -850,6 +850,55 @@ describe('byte estimate pre-check', () => {
     expect(env.mockRpcCall.mock.calls.length).toBe(callCount)
   })
 
+  // A sibling still downloading when the first region refuses is aborted at
+  // the socket, and the fetch ends at once rather than when the worker gets
+  // round to answering it, so the plan is free to re-measure the next viewport.
+  // The sibling here never answers at all.
+  it('a refusal ends the fetch without waiting for the siblings it aborted', async () => {
+    const env = createTestEnvironment()
+    const { display, view } = env.createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 1_500_000, refName: 'ctgA' },
+      {
+        assemblyName: 'volvox',
+        start: 1_500_000,
+        end: 3_000_000,
+        refName: 'ctgA',
+      },
+    ])
+    view.showAllRegions()
+    const siblingSignals: AbortSignal[] = []
+    env.mockRpcCall.mockImplementation(
+      (
+        _sessionId: string,
+        _method: string,
+        args: { region: { start: number }; signal: AbortSignal },
+      ) => {
+        if (args.region.start === 0) {
+          return Promise.resolve({ regionTooLarge: true as const, bytes: 9e9 })
+        }
+        siblingSignals.push(args.signal)
+        return new Promise(() => {})
+      },
+    )
+
+    await jest.advanceTimersByTimeAsync(800)
+
+    expect(display.regionTooLarge).toBe(true)
+    expect(display.isLoading).toBe(false)
+    expect(siblingSignals.length).toBeGreaterThan(0)
+    expect(siblingSignals.every(s => s.aborted)).toBe(true)
+
+    const callCount = env.mockRpcCall.mock.calls.length
+    await jest.advanceTimersByTimeAsync(5000)
+    expect(env.mockRpcCall.mock.calls.length).toBe(callCount)
+
+    // the banner's re-measure of a new viewport
+    view.zoomTo(view.bpPerPx / 2)
+    await jest.advanceTimersByTimeAsync(800)
+    expect(env.mockRpcCall.mock.calls.length).toBeGreaterThan(callCount)
+  })
+
   it('force load refetches every region a cancelled batch skipped', async () => {
     const env = createTestEnvironment()
     const { display, view } = env.createDisplay()

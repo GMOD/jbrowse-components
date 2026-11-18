@@ -21,10 +21,11 @@ a swing at 20 kb or on force-load would be a full refetch. Raising a budget
 refetches the refused region; lowering one re-banners from the stored
 measurement with no RPC.
 
-**Commit before cancelling.** Cancelling first strands the verdict and loops
-the fetch forever (`gateBatch`'s docstring has the mechanism); the density axis
-has the same trap in `fetchGatedRegions`'s `onComplete`. A linear display
-issues no separate estimate RPC. `CoreGetRegionByteEstimate` serves the track
+**The first refusal ends the batch and leaves the fetch running to its end.**
+`refusalScope` aborts the siblings on a signal of the fan-out's own and stops
+waiting for them, so the fetch ends the ordinary way with the verdict and its
+viewport stamp already committed, and the plan's next run declines on them.
+A linear display issues no separate estimate RPC. `CoreGetRegionByteEstimate` serves the track
 export, `jb.getFeatures`, and the circle's chord variant display, whose
 `CoreGetFeatures` takes no budget (`installChordFetch`).
 

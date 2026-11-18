@@ -213,16 +213,17 @@ display waits out `awaitSvgReady`'s backstop instead of failing.
 - **Don't hand-roll the fetch loop.** `fetchEachRegion` (default),
   `fetchAllRegions` (one RPC per genome, one result per region),
   `fetchRegionsBatched` (one RPC, one payload covering every region),
-  `callEachRegion` (fan-out only, MAF's alone). The first three own the
+  `callEachRegion` (fan-out only, MAF's alone, under `refusalScope`). The first three own the
   `ctx.isStale()` guard; forgetting it is a stale-data write. A batch-wide step
   after the regions land is `fetchEachRegion`'s `onComplete`, handed the gate
   state captured at issue; the two feature displays commit their density
   measurements from it.
 - **The first refusal ends a `fetchEachRegion` batch**, because the gate is a
   display-wide max: no sibling can change a refusal and none is drawn under the
-  banner. The two rules the batch owes, commit at most once and commit before
-  cancelling, are `gateBatch`'s; `refuse()` and `settle()` are the whole
-  surface. The reasons are at `gateBatch` and in
+  banner. The refusal commits the measurement, at most once per batch, and
+  `refusalScope` aborts the siblings on the fan-out's own signal and stops
+  waiting for them, leaving the display's rotation alone; MAF's fan-outs run
+  under the same scope. The reasons are in
   [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md#how-the-verdict-is-built). The other
   two runners are granular in what they asked for, so their refusal is the
   payload and the result set respectively. `fetchAllRegions` has no gated
