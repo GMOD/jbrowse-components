@@ -510,6 +510,82 @@ test('point: overlapping glyphs answer the nearest centre, not the first box', (
   ).toBe(1)
 })
 
+// The grab radius a display asks with is 8 px, a third of this glyph.
+test.each([false, true])(
+  'point: a glyph wider than the grab radius answers out to its rim and past it, reversed %s',
+  reversed => {
+    const one: PointChannels = {
+      x: Uint32Array.of(50),
+      x2: Uint32Array.of(51),
+      y: Float32Array.of(0.5),
+      color: Uint32Array.of(RED),
+      glyph: GLYPH_DISC,
+      count: 1,
+    }
+    const f = { canvasWidth: 60, canvasHeight: 100 }
+    const p = { domain: [0, 1] as [number, number], diameterPx: 24 }
+    const b = { ...block, reversed }
+    const box = pointMark.ink!(one, b, f, p, 0)!
+    const at = (dx: number, dy: number) =>
+      pointMark.hitNearest!(
+        one,
+        b,
+        f,
+        p,
+        box.left + 12 + dx,
+        box.top + 12 + dy,
+        [0],
+        64,
+      )
+    expect(at(10, 0)).toMatchObject({ index: 0, distSq: 0 })
+    expect(at(0, -11)).toMatchObject({ index: 0, distSq: 0 })
+    expect(at(-15, 0)?.distSq).toBeCloseTo(9)
+    expect(at(0, 21)).toBeUndefined()
+  },
+)
+
+// 4 px is the mark display's default diameter. Wherever a disc's centre lay
+// within the grab radius, the nearest centre answers, as when a glyph was
+// measured from its centre alone.
+test.each([false, true])(
+  'point: default-size discs answer the nearest centre, reversed %s',
+  reversed => {
+    const discs: PointChannels = { ...glyphs, glyph: GLYPH_DISC }
+    const f = { canvasWidth: 60, canvasHeight: 100 }
+    const p = { domain: [0, 1] as [number, number], diameterPx: 4 }
+    const b = { ...block, reversed }
+    const order = [4, 3, 2, 1, 0]
+    const centres = order.map(i => {
+      const r = pointMark.ink!(discs, b, f, p, i)!
+      return { i, x: r.left + 2, y: r.top + 2 }
+    })
+    const differ: [number, number, number, number?][] = []
+    let answered = 0
+    for (let y = 0; y <= f.canvasHeight; y += 0.5) {
+      for (let x = 0; x <= f.canvasWidth; x += 0.5) {
+        let want: number | undefined
+        let wantSq = 64
+        for (const c of centres) {
+          const distSq = (x - c.x) ** 2 + (y - c.y) ** 2
+          if (distSq < wantSq) {
+            want = c.i
+            wantSq = distSq
+          }
+        }
+        if (want !== undefined) {
+          answered++
+          const got = pointMark.hitNearest!(discs, b, f, p, x, y, order, 64)
+          if (got?.index !== want) {
+            differ.push([x, y, want, got?.index])
+          }
+        }
+      }
+    }
+    expect(answered).toBeGreaterThan(1000)
+    expect(differ.slice(0, 3)).toEqual([])
+  },
+)
+
 // Links over the whole canvas, which a link spans: a dome, an upstream mate
 // (x2 < x), a stem for a mate on no region, a far pair whose mate sits on a
 // region 8000 px away, so its ellipse degenerates to legs, and a copy another

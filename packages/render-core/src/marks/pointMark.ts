@@ -6,7 +6,7 @@ import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph, glyphBox } from './glyphPaint.ts'
-import { inkAtPoint, nearestInk } from './markHit.ts'
+import { inkOnStroke } from './markHit.ts'
 import {
   colorBits,
   instanceColor,
@@ -28,7 +28,7 @@ import type { BlockClipResult } from '../blockClipUtils.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { ColorChannel } from './markRamp.ts'
 import type { RowChannel, RowParams } from './rowLane.ts'
-import type { MarkFrame, MarkColorScale, MarkShape } from './types.ts'
+import type { MarkFrame, MarkColorScale, MarkHit, MarkShape } from './types.ts'
 import type { MarkValueScale } from './valueScale.ts'
 
 /**
@@ -239,11 +239,17 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
 
   // Its own rather than the one `ink` implies: a dense plot stacks glyphs
   // whose boxes all contain the cursor at distance 0, and the one under the
-  // cursor is the nearest CENTRE, which no box can say.
+  // cursor is the nearest CENTRE, which no box can say. A glyph answers as the
+  // largest disc round its centre that its box holds: anywhere on that disc at
+  // distance 0, the nearest centre winning among the discs under the cursor,
+  // and off it by the distance to its rim, so a glyph wider than the grab
+  // radius answers out to its rim and past it.
   hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
-    const { x, x2, y, row } = channels
+    const { x, x2, y, glyph, row } = channels
     const bpToPx = makeBpMapper(block)
     const {
+      diameterPx,
+      triangleHeightPx,
       domain,
       insetPx = 0,
       rowOffsetPx: top = 0,
@@ -255,20 +261,59 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const band = bandHeightPx(params, frame.canvasHeight)
     const { valueScaleType: st, valueSymlogConstant: c } =
       valueScaleUniforms(params)
-    return nearestInk(candidates, maxDistSq, i => {
+    let best: MarkHit | undefined
+    let bestDistSq = maxDistSq
+    let bestCentreSq = Infinity
+    for (const i of candidates) {
       const slot = rowSlot(row, i, table)
-      if (slot === undefined) {
-        return undefined
+      if (slot !== undefined) {
+        const cx = (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2
+        const cy = pointRowYPx(
+          rowBandTopPx(top, band, slot),
+          band,
+          reverse,
+          pointYPx(y ? y[i]! : 0, domainMin, domainMax, band, st, insetPx, c),
+        )
+        const box = glyphBox(
+          typeof glyph === 'number' ? glyph : glyph[i]!,
+          cx,
+          cy,
+          diameterPx,
+          triangleHeightPx,
+        )
+        const radius = Math.max(
+          0,
+          Math.min(
+            cx - box.left,
+            box.left + box.width - cx,
+            cy - box.top,
+            box.top + box.height - cy,
+          ),
+        )
+        const centreSq = (xPx - cx) ** 2 + (yPx - cy) ** 2
+        const ink = inkOnStroke(
+          xPx,
+          yPx,
+          cx,
+          cy,
+          Math.sqrt(centreSq),
+          2 * radius,
+        )
+        if (
+          ink.distSq < bestDistSq ||
+          (ink.distSq === 0 && best !== undefined && centreSq < bestCentreSq)
+        ) {
+          best = { index: i, x: ink.x, y: ink.y, distSq: ink.distSq }
+          bestDistSq = ink.distSq
+          bestCentreSq = centreSq
+        }
       }
-      const cy = pointRowYPx(
-        rowBandTopPx(top, band, slot),
-        band,
-        reverse,
-        pointYPx(y ? y[i]! : 0, domainMin, domainMax, band, st, insetPx, c),
-      )
-      return inkAtPoint(xPx, yPx, (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2, cy)
-    })
+    }
+    return best
   },
 
-  valueWindow,
+  // Widened by the glyph's radius, as far as its disc reaches past its value.
+  valueWindow(yPx, radiusPx, frame, params) {
+    return valueWindow(yPx, radiusPx + params.diameterPx / 2, frame, params)
+  },
 }

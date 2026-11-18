@@ -132,6 +132,17 @@ function rowKeysNear(yPx: number, state: MarkRenderState, radiusPx: number) {
   return keys
 }
 
+// The window's bp, widened by half the mark's size: the most a point's glyph
+// or a line's square cap stands past its instance's bp.
+function paddedBp(
+  state: MarkRenderState,
+  sizePx: number,
+  { bpMin, bpMax }: HitWindow,
+) {
+  const padBp = (sizePx / 2) * state.bpPerPx
+  return { bpMin: bpMin - padBp, bpMax: bpMax + padBp }
+}
+
 // What a Flatbush over every instance's (x..x2, y) answers for the window,
 // less the rows out of reach; the reach widens by the mark's size, the most a
 // rule or line's stroke stands past its band. By `segments`, each instance
@@ -142,8 +153,10 @@ function rowCandidates(
   state: MarkRenderState,
   sizePx: number,
   hitBy: 'rows' | 'segments',
-  { bpMin, bpMax, valueMin, valueMax }: HitWindow,
+  reach: HitWindow,
 ) {
+  const { valueMin, valueMax } = reach
+  const { bpMin, bpMax } = paddedBp(state, sizePx, reach)
   const index = rowSpanIndexOf(layer)
   const back = hitBy === 'segments' ? predecessorReachOf(layer) : undefined
   const out: number[] = []
@@ -164,6 +177,17 @@ function rowCandidates(
   }
   const { y } = layer
   return y ? out.filter(i => y[i]! >= valueMin && y[i]! <= valueMax) : out
+}
+
+// What the layer's Flatbush answers for the window.
+function indexCandidates(
+  layer: StoredLayer,
+  state: MarkRenderState,
+  sizePx: number,
+  reach: HitWindow,
+) {
+  const { bpMin, bpMax } = paddedBp(state, sizePx, reach)
+  return layer.flatbush?.search(bpMin, reach.valueMin, bpMax, reach.valueMax)
 }
 
 const drawnLastFirst = (a: number, b: number) => b - a
@@ -201,19 +225,12 @@ export function findMarkHit(
         if (!layer) {
           return undefined
         }
-        const { bpMin, bpMax, valueMin, valueMax } = reach
         const { hitBy } = mark
+        const sizePx = state.markSizes[mark.markIndex] ?? 0
         const found =
           hitBy === 'rows' || hitBy === 'segments'
-            ? rowCandidates(
-                layer,
-                mouseY,
-                state,
-                state.markSizes[mark.markIndex] ?? 0,
-                hitBy,
-                reach,
-              )
-            : layer.flatbush?.search(bpMin, valueMin, bpMax, valueMax)
+            ? rowCandidates(layer, mouseY, state, sizePx, hitBy, reach)
+            : indexCandidates(layer, state, sizePx, reach)
         return found?.sort(drawnLastFirst)
       },
     },

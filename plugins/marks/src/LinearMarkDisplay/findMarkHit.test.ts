@@ -1,4 +1,5 @@
 import { NO_ROOT, hitIndexOf } from '@jbrowse/core/util/markEncoding'
+import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
 import {
   HIDDEN_ROW,
   RAMP_NO_VALUE_BITS,
@@ -322,13 +323,11 @@ test('rules over squashed rows answer the same, their strokes reaching past the 
   expect(hits).toBeGreaterThan(probes / 4)
 })
 
-// A line's square caps stand half its width past its bp, where neither lookup
-// reaches, so the ink over every instance can answer one they both miss.
+// A line's square caps stand half its width past its bp, which the window
+// reaches by half the mark's size.
 test('lines over squashed rows answer what the Flatbush answers', () => {
   const layers = [randomLayer(5, 1200, 400), randomLayer(4, 1200, 400)]
-  const { hits, probes } = parity(['line', 'rule'], { layers }, SQUASHED, {
-    truth: false,
-  })
+  const { hits, probes } = parity(['line', 'rule'], { layers }, SQUASHED)
   expect(hits).toBeGreaterThan(probes / 4)
 })
 
@@ -373,6 +372,41 @@ test('a linear segment across a gap between sparse instances answers the instanc
       ).filter(h => h !== undefined)
     expect(new Set(column(150).map(h => h.instance))).toEqual(new Set([1]))
     expect(new Set(column(450).map(h => h.instance))).toEqual(new Set([2]))
+  }
+})
+
+test('a point wider than the grab radius answers from anywhere on it and past its rim', () => {
+  const layer: StoredLayer = {
+    count: 1,
+    skipped: 0,
+    x: Uint32Array.of(400),
+    x2: Uint32Array.of(401),
+    y: Float32Array.of(5),
+    glyph: Uint8Array.of(SHAPE_CODES.circle),
+    color: 0xff0000ff,
+    yMin: 5,
+    yMax: 5,
+  }
+  const region = withFlatbush({ layers: [layer] })
+  const data = new Map([[0, region]])
+  const marks = buildMarkList(entries('point'))
+  const state = { ...SPARSE, markSizes: [24] }
+  for (const reversed of [false, true]) {
+    const block = { ...SPARSE_BLOCK, reversed }
+    const box = marks[0]!.ink!(region, block, state, 0)!
+    const at = (dx: number, dy: number) =>
+      findMarkHit(
+        box.left + 12 + dx,
+        box.top + 12 + dy,
+        [block],
+        data,
+        marks,
+        state,
+        REGIONS,
+      )?.instance
+    expect([at(11, 0), at(-11, 0), at(0, 11), at(0, -11)]).toEqual([0, 0, 0, 0])
+    expect([at(15, 0), at(0, -15)]).toEqual([0, 0])
+    expect(at(21, 0)).toBeUndefined()
   }
 })
 

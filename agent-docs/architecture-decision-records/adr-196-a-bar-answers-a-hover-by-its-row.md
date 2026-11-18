@@ -105,3 +105,12 @@ The bench answered 5000 random hovers identically both ways before timing.
 - A long bar early in a row keeps the walk back going over every bar after it,
   as for a span; a bar layer that overlaps itself heavily pays in hover time,
   never in fetch time.
+
+### Amended 2026-11-18: the bp window widens by half the mark's size
+
+Both lookups now widen the bp window by half the mark's px, so a line's
+square caps and a point's glyph past its bp are reached. A point answers as
+the disc its glyph box holds, at distance 0 anywhere on it and by the distance
+to its rim off it, and its value window widens by its radius, so a glyph wider
+than the eight-pixel radius answers out to its rim. A bar floored at
+`minWidthPx` past its bp stays missed.
