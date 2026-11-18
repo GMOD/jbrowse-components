@@ -203,9 +203,10 @@ describe('runBatch', () => {
     ])
     // every record's adapters stay open for the next
     expect(calls.map(c => c.keepAdapters)).toEqual([true, true, true, true])
-    // a deletion of two windows is still counted at its first deleted base;
-    // the band over a call's bases is for the one window that holds them all
-    expect(calls[3]!.sortAt?.pos).toBe(30000)
+    // a deletion of two windows is counted half a flank into its gap, inside
+    // its first window; the band over a call's bases is for the one window
+    // that holds them all
+    expect(calls[3]!.sortAt?.pos).toBe(30300)
     expect(calls[3]!.highlight).toBeUndefined()
     expect(calls[1]!.highlight).toEqual({
       refName: 'chr1',

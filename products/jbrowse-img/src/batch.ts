@@ -38,7 +38,11 @@ export function recordAllele(rec: BatchRecord): VariantAllele | undefined {
     : carried
 }
 
-// An `anywhere` insertion sorts across the flank, so every counted read lifts
+/**
+ * An `anywhere` insertion sorts across the flank, so every counted read lifts.
+ * A large deletion sorts a quarter of its length into its gap, and within half
+ * a flank of POS: a long read's gap often starts a few bases off the caller's.
+ */
 export function recordSortColumn(
   rec: BatchRecord,
   flank?: number,
@@ -46,7 +50,16 @@ export function recordSortColumn(
   const { sort, carried } = rec
   return sort && carried && 'anywhere' in carried && carried.anywhere
     ? { ...sort, within: recordFlank(rec, flank) }
-    : sort
+    : sort && carried && 'minDeletion' in carried && carried.minDeletion
+      ? {
+          ...sort,
+          pos:
+            sort.pos +
+            Math.floor(
+              Math.min(carried.minDeletion / 2, recordFlank(rec, flank) / 2),
+            ),
+        }
+      : sort
 }
 
 function parseLocus(refName?: string, start?: string, end?: string) {

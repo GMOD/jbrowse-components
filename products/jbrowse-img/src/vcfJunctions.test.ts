@@ -211,9 +211,10 @@ describe('parseVcfJunctions', () => {
       { minInsertion: 174 },
       undefined,
     ])
-    // an SV-sized insertion is counted and sorted across its window
+    // an SV-sized insertion is counted and sorted across its window, and a
+    // deletion inside its gap
     expect(records.map(r => recordSortColumn(r))).toEqual([
-      { field: 'base', pos: 1000 },
+      { field: 'base', pos: 1018 },
       { field: 'insertion', pos: 3000, within: 500 },
       undefined,
     ])
@@ -222,6 +223,22 @@ describe('parseVcfJunctions', () => {
       pos: 3000,
       within: 600,
     })
+  })
+
+  it('sorts a large deletion at a base its carriers cover when their gap starts late', () => {
+    // COLO829's d_163: nanomonsv writes a delins at 105965875, and the three
+    // tumor reads carrying it delete 1,496 bases from 105965878 (0-based)
+    const { records } = parseVcfJunctions(
+      vcf(
+        'chr9	105965875	d_163	A	<DEL>	.	PASS	SVTYPE=DEL;END=105967374;SVLEN=-1499;SVINSLEN=5',
+      ),
+    )
+    const { pos } = recordSortColumn(records[0]!, 600)!
+    expect(pos).toBe(105965875 + 300)
+    expect(pos).toBeGreaterThan(105965878)
+    expect(pos).toBeLessThan(105965878 + 1496)
+    expect(pos).toBeLessThan(105965875 + 600)
+    expect(recordAllele(records[0]!)).toEqual({ base: '*', minDeletion: 750 })
   })
 
   it('reports a record with no SVTYPE and no bases in its ALT', () => {
