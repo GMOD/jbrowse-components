@@ -378,23 +378,22 @@ export const coverageInterbaseShape = layerShape(
       barHeight === 0
         ? undefined
         : readInterbaseSegments(c.interbasePackedBuffer)
-    const bandBottom = p.top + p.height
     const fullScale = interbaseFullScale(p.height)
     return (
       segments &&
       nearestInk(candidates, maxDistSq, i => {
         const left = interbaseBarLeftPx(bpToX(segments.position(i)))
-        const top =
-          p.top + interbaseEdgePx(segments.stackStart(i), barHeight, fullScale)
-        const bottom = Math.min(
-          bandBottom,
-          p.top + interbaseEdgePx(segments.stackEnd(i), barHeight, fullScale),
+        const top = interbaseEdgePx(
+          segments.stackStart(i),
+          barHeight,
+          fullScale,
         )
-        // a stack clipped out of the band, or a segment past the half-band,
-        // has no ink to be near
-        return bottom < top || segments.stackStart(i) * barHeight >= fullScale
-          ? undefined
-          : inkOnRect(xPx, yPx, left, top, 1, bottom - top)
+        const bottom = interbaseEdgePx(
+          segments.stackEnd(i),
+          barHeight,
+          fullScale,
+        )
+        return inkOnRect(xPx, yPx, left, p.top + top, 1, bottom - top)
       })
     )
   },

@@ -7,16 +7,32 @@ import {
   normalizeDepthScalar,
 } from '../../../packages/alignments-core/src/coverageBandLayout.generated.ts'
 import {
+  interbaseBarLeftPx,
+  interbaseCutSegment,
+  interbaseEdgePx,
+  interbaseFullScalePx,
+} from '../../../packages/alignments-core/src/interbaseEdge.generated.ts'
+import {
   expandToMinWidthLeftPx,
   expandToMinWidthRightPx,
 } from '../../../packages/alignments-core/src/spanMinWidth.generated.ts'
+import { CLIP_STRIP_PX } from '../../../packages/render-core/src/shaders/clipStrip.generated.ts'
 import * as coverageBar from '../../../packages/render-core/src/shaders/coverageBar.generated.ts'
+import * as coverageInterbase from '../../../packages/render-core/src/shaders/coverageInterbase.generated.ts'
 import { extendToMinWidthPx } from '../../../packages/render-core/src/shaders/hpmath.js.generated.ts'
 import * as mismatch from '../../../plugins/alignments/src/shaders/slang/mismatch.generated.ts'
 import * as read from '../../../plugins/alignments/src/shaders/slang/read.generated.ts'
 import { CHEVRON_PX } from '../../../plugins/alignments/src/shaders/slang/readChevron.generated.ts'
 import { chevronContains } from '../../../plugins/alignments/src/shaders/slang/readChevron.js.generated.ts'
-import { CLEAR, abgr, box, defineFixture, paintOver, rgba } from '../fixture.ts'
+import {
+  CLEAR,
+  abgr,
+  box,
+  boxShape,
+  defineFixture,
+  paintOver,
+  rgba,
+} from '../fixture.ts'
 
 import type { Shape } from '../fixture.ts'
 
@@ -35,6 +51,10 @@ const BASE: Record<string, Rgb> = {
 const FWD: Rgb = [236, 139, 139]
 const REV: Rgb = [143, 143, 216]
 const COVERAGE: Rgb = [190, 190, 190]
+const INSERTION: Rgb = [128, 0, 128]
+const SOFTCLIP: Rgb = [0, 0, 255]
+const HARDCLIP: Rgb = [255, 0, 0]
+const CLIP_STRIP_RGB: Rgb = [0xc6, 0x28, 0x28]
 
 const vec4 = ([r, g, b]: Rgb): Vec4 => [r / 255, g / 255, b / 255, 1]
 const slots = <T>(n: number, at: (i: number) => T) =>
@@ -131,19 +151,8 @@ function coverageBarShape(position: number, depth: number): Shape {
   }
 }
 
-const coverageBarFixture = defineFixture({
-  name: 'alignments-coverage-bar',
-  slang: 'packages/render-core/src/shaders/coverageBar.slang',
-  about: `abutting ${BIN_BP} bp coverage bins, ${(BIN_BP / COV_BP_PER_PX).toFixed(2)} px wide at fractional edges, varied depths`,
-  mod: coverageBar,
-  width: COV_W,
-  height: COV_H,
-  count: bins.length,
-  instances: {
-    position: bins.map(b => b.position),
-    relDepth: bins.map(b => b.depth / 100),
-  },
-  uniforms: () => ({
+function coverageBandUniforms(interbaseHeight: number) {
+  return {
     bpHi: START,
     bpLo: 0,
     bpLen: COV_W * COV_BP_PER_PX,
@@ -158,7 +167,7 @@ const coverageBarFixture = defineFixture({
     depthDomainMin: 0,
     coverageSymlogConstant: 1,
     binSize: BIN_BP,
-    interbaseHeight: 0,
+    interbaseHeight,
     snpMinFreq: 0,
     reversed: 0,
     coverageScaleType: 0,
@@ -168,11 +177,120 @@ const coverageBarFixture = defineFixture({
     colorBaseG: 0,
     colorBaseT: 0,
     colorBaseN: 0,
-    colorInsertionIndicator: 0,
-    colorSoftclipIndicator: 0,
-    colorHardclipIndicator: 0,
-  }),
+    colorInsertionIndicator: abgr(INSERTION),
+    colorSoftclipIndicator: abgr(SOFTCLIP),
+    colorHardclipIndicator: abgr(HARDCLIP),
+  }
+}
+
+const coverageBarFixture = defineFixture({
+  name: 'alignments-coverage-bar',
+  slang: 'packages/render-core/src/shaders/coverageBar.slang',
+  about: `abutting ${BIN_BP} bp coverage bins, ${(BIN_BP / COV_BP_PER_PX).toFixed(2)} px wide at fractional edges, varied depths`,
+  mod: coverageBar,
+  width: COV_W,
+  height: COV_H,
+  count: bins.length,
+  instances: {
+    position: bins.map(b => b.position),
+    relDepth: bins.map(b => b.depth / 100),
+  },
+  uniforms: () => coverageBandUniforms(0),
   reference: paintOver(bins.map(b => coverageBarShape(b.position, b.depth))),
+})
+
+// --- interbase bars ---
+
+const INTERBASE_DOMAIN_MAX = 100
+const INTERBASE_MAX_COUNT = 400
+const interbaseFullScale = interbaseFullScalePx(
+  covEffectiveHeightPx(COV_H, COV_INSET),
+)
+const interbaseHeight =
+  interbaseFullScale * (INTERBASE_MAX_COUNT / INTERBASE_DOMAIN_MAX)
+const CLIP_KIND_COLOR = [INSERTION, INSERTION, SOFTCLIP, HARDCLIP] as const
+
+// [bp, events of each kind in stack order]: under the axis, on it, one segment
+// over it, and a stack whose second segment starts past it
+const STACKS = [
+  [START + 40, [30, 20, 10]],
+  [START + 180, [100]],
+  [START + 320, [10, 250]],
+  [START + 460, [0, 120, 90]],
+  [START + 600, [60, 0, 240]],
+] as const
+
+const interbaseSegments = STACKS.flatMap(([position, counts]) => {
+  let events = 0
+  return counts.flatMap((count, kind) => {
+    const yOffset = events / INTERBASE_MAX_COUNT
+    events += count
+    return count === 0
+      ? []
+      : [
+          {
+            position,
+            yOffset,
+            segHeight: count / INTERBASE_MAX_COUNT,
+            colorType: kind + 1,
+          },
+        ]
+  })
+})
+
+function interbaseShapes(seg: (typeof interbaseSegments)[number]) {
+  const left = interbaseBarLeftPx(covPx(seg.position))
+  const end = seg.yOffset + seg.segHeight
+  const top = interbaseEdgePx(seg.yOffset, interbaseHeight, interbaseFullScale)
+  const bottom = interbaseEdgePx(end, interbaseHeight, interbaseFullScale)
+  return [
+    boxShape(
+      left,
+      top,
+      left + 1,
+      bottom,
+      rgba(CLIP_KIND_COLOR[seg.colorType]!),
+    ),
+    ...(interbaseCutSegment(
+      seg.yOffset,
+      end,
+      interbaseHeight,
+      interbaseFullScale,
+    ) === 1
+      ? [
+          boxShape(
+            left,
+            bottom - CLIP_STRIP_PX,
+            left + 1,
+            bottom,
+            rgba(CLIP_STRIP_RGB),
+          ),
+        ]
+      : []),
+  ]
+}
+
+const coverageInterbaseFixture = defineFixture({
+  name: 'alignments-coverage-interbase',
+  slang: 'packages/render-core/src/shaders/coverageInterbase.slang',
+  about:
+    'interbase stacks under, on and over the depth axis, the cut ones ending on the half-band in a clip strip',
+  mod: coverageInterbase,
+  width: COV_W,
+  height: COV_H,
+  // a 1 px bar is a whole number of device px at these two, and half-covers a
+  // column at 1.5, which one sample cannot draw
+  dprs: [1, 2],
+  count: interbaseSegments.length,
+  instances: {
+    position: interbaseSegments.map(s => s.position),
+    yOffset: interbaseSegments.map(s => s.yOffset),
+    segHeight: interbaseSegments.map(s => s.segHeight),
+    colorType: interbaseSegments.map(s => s.colorType),
+  },
+  uniforms: () => coverageBandUniforms(interbaseHeight),
+  reference: paintOver(interbaseSegments.flatMap(interbaseShapes)),
+  budget: { max: 0.02 },
 })
 
 // --- reads ---
@@ -341,6 +459,7 @@ function mismatchFixture(name: string, bpPerPx: number, about: string) {
 
 export default [
   coverageBarFixture,
+  coverageInterbaseFixture,
   readFixture,
   mismatchFixture(
     'alignments-mismatch',

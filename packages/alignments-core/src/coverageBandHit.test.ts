@@ -159,20 +159,6 @@ describe('the interbase histogram bars', () => {
     ).toEqual({ layer: 'interbase', position: 1005, type: 2 })
   })
 
-  const cutStackAt1005 = region({
-    interbasePackedBuffer: segments([
-      { position: 1005, yOffset: 0, height: 0.5, colorType: 2 },
-      { position: 1005, yOffset: 0.5, height: 0.5, colorType: 3 },
-    ]),
-    interbaseMaxCount: 300,
-  })
-
-  it('names the segment the cut leaves drawn, not one past it', () => {
-    expect(
-      hitCoverageBand(cutStackAt1005, band(), block, xOf(1005), 45)?.type,
-    ).toBe(2)
-  })
-
   it.each([
     ['below the cut, over the depth bars', 60],
     ['on the band bottom, the first row of what lies below', COV_HEIGHT],

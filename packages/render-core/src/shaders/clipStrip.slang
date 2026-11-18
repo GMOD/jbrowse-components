@@ -14,20 +14,26 @@ public static const float CLIP_STRIP_PX = 2.0;
 // the coverage band's hard-clip triangles, which stand just above the strip.
 public static const uint CLIP_STRIP_COLOR = 0xFF2828C6u;
 
-// Which edge of the axis cut the bar: 1 the top, -1 the bottom, 0 neither. A
-// log scale has no bottom to cut, since a value under its floor stands on the
-// baseline as a bar of no height, which reads as what it is.
-//
 // The cut is measured with a tolerance of a hundred-thousandth of the domain:
 // the coverage band rebuilds a depth as float32 relDepth times the region's
 // peak, and a quantile that lands on an observed depth would otherwise strip
 // on the backend whose rounding came out high and not on the other.
+float clipTolerance(float domainMin, float domainMax) {
+  return (domainMax - domainMin) * 1e-5;
+}
+
+public bool cutAbove(float value, float domainMin, float domainMax) {
+  return value > domainMax + clipTolerance(domainMin, domainMax);
+}
+
+// Which edge of the axis cut the bar: 1 the top, -1 the bottom, 0 neither. A
+// log scale has no bottom to cut, since a value under its floor stands on the
+// baseline as a bar of no height, which reads as what it is.
 public int clipSide(float value, float domainMin, float domainMax, int scaleType) {
-  float tolerance = (domainMax - domainMin) * 1e-5;
-  if (value > domainMax + tolerance) {
+  if (cutAbove(value, domainMin, domainMax)) {
     return 1;
   }
-  if (value < domainMin - tolerance && scaleType != SCALE_TYPE_LOG) {
+  if (value < domainMin - clipTolerance(domainMin, domainMax) && scaleType != SCALE_TYPE_LOG) {
     return -1;
   }
   return 0;

@@ -402,14 +402,12 @@ describe.each([0, 40])('interbase at band top %i', top => {
   )
 })
 
-// The sweep cannot cover this pair: the painter draws the whole bar and leaves
-// the band clip to the backend, so a bar overhanging the band is ink the hit
-// deliberately does not claim.
-test('a bar taller than the band stops at the band bottom, and the band top moves both its edges', () => {
+test('a stack past the half-band stops there, and the band top moves both its edges', () => {
   const channels = interbaseChannels([
     { position: START + 2, yOffset: 0, segHeight: 0.8, colorType: 1 },
   ])
-  // 200/50 of the half-band overruns a band that starts at 40 and is 100 tall.
+  // 200/50 of the half-band, in a band that starts at 40 and is 100 tall: the
+  // half-band is 45 px under the tip row at 4.
   const p = sweepParams({ top: 40, interbaseMaxCount: 200 })
   const hitAt = (yPx: number) =>
     coverageInterbaseShape.hitNearest!(
@@ -422,7 +420,7 @@ test('a bar taller than the band stops at the band bottom, and the band top move
       [0],
       1e6,
     )
-  expect(hitAt(300)).toEqual({ index: 0, x: 4, y: 140, distSq: 160 ** 2 })
+  expect(hitAt(300)).toEqual({ index: 0, x: 4, y: 89, distSq: 211 ** 2 })
   expect(hitAt(0)).toEqual({ index: 0, x: 4, y: 44, distSq: 44 ** 2 })
 })
 

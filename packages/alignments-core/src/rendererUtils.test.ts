@@ -713,15 +713,11 @@ describe('drawInterbaseSegments', () => {
     return buf
   }
 
-  function draw(
-    bpToX: (bp: number) => number,
-    domainMax = DOMAIN_MAX,
-    buffer = oneSegment(),
-  ) {
+  function draw(bpToX: (bp: number) => number, domainMax = DOMAIN_MAX) {
     const { ctx, calls } = makeCtx()
     drawInterbaseSegments(
       ctx,
-      buffer,
+      oneSegment(),
       MAX_COUNT,
       interbaseColors,
       bpToX,
@@ -757,33 +753,62 @@ describe('drawInterbaseSegments', () => {
     expect(draw(bp => bp - 50, 0)).toHaveLength(0)
   })
 
+  // Each rect with the fill it was painted in.
+  function painted(domainMax: number, buffer = oneSegment()) {
+    const { ctx, calls } = makeCtx()
+    drawInterbaseSegments(
+      ctx,
+      buffer,
+      MAX_COUNT,
+      interbaseColors,
+      bp => bp - 50,
+      VIEW,
+      COV_HEIGHT,
+      domainMax,
+    )
+    const rects: unknown[][] = []
+    let fill: unknown
+    for (const c of calls) {
+      if (c.method === 'fillStyle') {
+        fill = c.args[0]
+      } else if (c.method === 'fillRect') {
+        rects.push([fill, ...c.args])
+      }
+    }
+    return rects
+  }
+  const STRIP = abgrToCssRgba(CLIP_STRIP_COLOR)
+
   it('stops a stack at the half-band and strips the cut end', () => {
     // 20 events under a domain of 10 ask for 80 px of the 40 px half-band.
-    expect(draw(bp => bp - 50, 10).map(c => c.args)).toEqual([
-      [50, 4, 1, 40],
-      [50, 42, 1, 2],
+    expect(painted(10)).toEqual([
+      ['purple', 50, 4, 1, 40],
+      [STRIP, 50, 42, 1, 2],
     ])
   })
 
   it('strips the segment that crosses the half-band, and draws no bar past it', () => {
     // Under a domain of 10 the first segment ends on the half-band exactly,
     // so the second crosses it with no height of its own.
-    expect(draw(bp => bp - 50, 10, twoSegments()).map(c => c.args)).toEqual([
-      [50, 4, 1, 40],
-      [50, 44, 1, 0],
-      [50, 42, 1, 2],
+    expect(painted(10, twoSegments())).toEqual([
+      ['purple', 50, 4, 1, 40],
+      ['cyan', 50, 44, 1, 0],
+      [STRIP, 50, 42, 1, 2],
     ])
     // Under a domain of 15 the stack asks for 53 px, so the second segment
     // holds the cut.
-    expect(draw(bp => bp - 50, 15, twoSegments()).map(c => c.args)).toEqual([
-      [50, 4, 1, 27],
-      [50, 31, 1, 13],
-      [50, 42, 1, 2],
+    expect(painted(15, twoSegments())).toEqual([
+      ['purple', 50, 4, 1, 27],
+      ['cyan', 50, 31, 1, 13],
+      [STRIP, 50, 42, 1, 2],
     ])
   })
 
   it('leaves a stack that reaches the half-band exactly unstripped', () => {
-    expect(draw(bp => bp - 50, 20, twoSegments())).toHaveLength(2)
+    expect(painted(20, twoSegments())).toEqual([
+      ['purple', 50, 4, 1, 20],
+      ['cyan', 50, 24, 1, 20],
+    ])
   })
 })
 

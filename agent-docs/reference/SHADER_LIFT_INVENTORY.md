@@ -14,7 +14,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 47 shaders with entry points. 173 functions
+Scanned 47 shaders with entry points. 175 functions
 are inside the emitter's subset, of which **140 are exported**.
 
 ## Candidates
@@ -27,6 +27,8 @@ anyone deciding which.
 | Function | Signature | Shaders |
 | --- | --- | --- |
 | `bitSet` | `(u32, u32) -> f32` | connectorMark |
+| `clipTolerance` | `(f32, f32) -> f32` | barMark, coverageClip, coverageInterbase, wiggle |
+| `cutAbove` | `(f32, f32, f32) -> bool` | barMark, coverageClip, coverageInterbase, wiggle |
 
 ## Declined
 

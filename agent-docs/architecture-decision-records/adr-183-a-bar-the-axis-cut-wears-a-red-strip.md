@@ -20,14 +20,17 @@ half the band's drawing height and wears the strip across its cut end, the
 bottom, since the bars hang from the band's top. Until then nothing cut it: at
 chr5:70,954,910 in NA12878, 661 soft clips at one boundary under an axis the
 0.99 fence put near 120 ran through the depth bars to the band's bottom edge,
-and Colin's rule for the layer is half the band. The
-stack is cut edge by edge (`interbaseEdgePx`), so the segments past the cut
-draw nothing where a rescaled stack would squeeze them back in, and the hover
-still reads each count. The strip is the second quad of each instance, as on
-the wiggle xyplot. This closes the breakend case parked on 2026-08-14, where
-the reads ending and starting at one base outnumber the peak depth; a clamp was
-declined there because a flat end read as "exactly at the peak", which the
-strip now answers.
+and Colin's rule for the layer is half the band. The cut is `cutAbove`, the
+test `clipSide` cuts a depth bar's top by, on the stack's height against the
+half-band, and it picks the one segment whose end is over and whose start is
+not. The stack is cut edge by edge (`interbaseEdgePx`), so the segments past
+the cut draw nothing, and the hover still reads every count at the position.
+The strip is the second quad of each instance, as on the wiggle xyplot. This
+closes the breakend case parked on 2026-08-14, where the reads ending and
+starting at one base outnumber the peak depth; a clamp was declined there
+because a flat end read as "exactly at the peak". The strip marks the cut on
+an insertion or soft-clip segment; on a hard-clip segment it is dark red on
+red, one pixel wide, and reads weakly.
 
 ## Context
 
@@ -90,3 +93,14 @@ is then its ink.
   its own strip would be a second thing for the key to explain.
 - **A whole clipped bar in the strip color.** Louder still, and it hides
   the SNP and modification segments the bar carries.
+- **For the interbase bars, a denominator of the depth at each position.**
+  It gives up a bar of N events standing the same height everywhere in the
+  view, which `interbaseBarHeightPx` scales by the region's peak for.
+- **Rescaling an over-tall interbase stack into the half-band.** The segments
+  past the cut come back squeezed in, painting colors where the bar shows one.
+- **A scale of their own for the interbase bars**, or the fence counting their
+  events. The first loses "N events is half of N reads", and one pile of
+  hundreds flattens every other bar; the second lets clip counts move the
+  depth axis and undoes the fence at the pile it was set for.
+- **Leaving the interbase overflow**, as informative. It overdraws the depth
+  bars it is read against.

@@ -25,7 +25,6 @@ export function coverageLayout(coverageHeight: number) {
   }
 }
 
-/** The tallest an interbase stack draws, half the band's drawing height. */
 export function interbaseFullScale(coverageHeight: number) {
   return interbaseFullScalePx(coverageLayout(coverageHeight).effectiveH)
 }

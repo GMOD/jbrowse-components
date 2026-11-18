@@ -41,11 +41,10 @@ float interbaseFullScalePx(float effectiveH) {
 }
 
 // 1 for the segment the full-scale bar ends short, which wears the clip strip
-// (ADR-183). Compared on snapped rows, so a rounding error strips nothing.
+// (ADR-183): the one whose end the axis cuts and whose start it does not.
 int interbaseCutSegment(float startOffset, float endOffset, float interbaseHeight, float fullScalePx) {
-  float fullRow = floor(fullScalePx + 0.5);
-  if (floor(endOffset * interbaseHeight + 0.5) > fullRow
-      && floor(startOffset * interbaseHeight + 0.5) <= fullRow) {
+  if (cutAbove(endOffset * interbaseHeight, 0.0, fullScalePx)
+      && !cutAbove(startOffset * interbaseHeight, 0.0, fullScalePx)) {
     return 1;
   }
   return 0;
