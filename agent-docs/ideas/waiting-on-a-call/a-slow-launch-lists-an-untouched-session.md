@@ -1,6 +1,6 @@
 ---
 name: a-slow-launch-lists-an-untouched-session
-description: Web autosave counts any snapshot change after the first 400ms tick as an edit, so a launch that lands late (a loc= link on a remote genome, a hub) lists an untouched session in Recent sessions; a "views settled" gate was tried and backed out because unmeasured views never settle.
+description: Web autosave counts any snapshot change after the first 400ms tick as an edit, so a late-landing launch (a loc= link on a remote genome, a hub) lists an untouched session in Recent sessions; a views-settled gate was backed out.
 ---
 
 # A slow launch lists an untouched session

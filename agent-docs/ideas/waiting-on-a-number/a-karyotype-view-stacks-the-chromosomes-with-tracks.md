@@ -1,6 +1,6 @@
 ---
 name: a-karyotype-view-stacks-the-chromosomes-with-tracks
-description: A karyotype view draws each chromosome as a row, banded where the assembly has cytobands, with linear tracks along every row, as a second coordinate stage beside the circular view's ring. The LGV import form reuses its ideogram as a location picker. Waits on whether the strip, about 12x a row's width on hg38, can be split past the 8192 px backing store.
+description: A karyotype view draws each chromosome as a banded row with linear tracks along it, a second coordinate stage beside the circular view, and lends its ideogram to the LGV import form; waits on splitting the strip past the 8192 px backing store.
 ---
 
 # A karyotype view stacks the chromosomes, with tracks
