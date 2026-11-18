@@ -654,7 +654,7 @@ function emitLoaders(
   const lines = [
     ...frameworkKeys.map(
       key =>
-        `  ${q(key)}: () => import(${q(frameworkSpecifier!)}).then(m => m.default[${q(key)}]),`,
+        `  ${q(key)}: () => import(${q(frameworkSpecifier!)}).then(m => m.default${/^[A-Za-z_$][\w$]*$/.test(key) ? `.${key}` : `[${q(key)}]`}),`,
     ),
     ...modules.map(m => {
       const served = servedExpression('ns', m.names)
