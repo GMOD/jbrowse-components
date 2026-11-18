@@ -5257,6 +5257,7 @@
     "FeatureLabels": {
       "title": "FeatureLabels",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "name": {
           "if": {
@@ -7258,6 +7259,7 @@
     "NormalInsertSize": {
       "title": "NormalInsertSize",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "min": {
           "description": "the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from the pairs in that region.",

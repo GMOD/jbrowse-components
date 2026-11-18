@@ -4735,6 +4735,7 @@
       "names": [
         "autorunOnReadyView",
         "installAnimationDeadline",
+        "lapseHeldFetchOnViewportChange",
         "makeSettingsLoopGuard",
         "onDisplayedRegionsChange"
       ],
@@ -4858,7 +4859,8 @@
         "callEachRegion",
         "fetchAllRegions",
         "fetchEachRegion",
-        "fetchRegionsBatched"
+        "fetchRegionsBatched",
+        "refusalScope"
       ],
       "worker": "real"
     },

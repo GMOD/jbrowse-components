@@ -5405,6 +5405,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "FeatureLabels": {
       "title": "FeatureLabels",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "name": {
           "if": {
@@ -7471,6 +7472,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "NormalInsertSize": {
       "title": "NormalInsertSize",
       "type": "object",
+      "x-closed": true,
       "properties": {
         "min": {
           "description": "the shortest insert in bp a pair counts as normal; shorter is short. Pins the band with max; unset, each region's band is sampled from the pairs in that region.",
