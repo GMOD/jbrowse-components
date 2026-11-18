@@ -91,9 +91,9 @@ export const TabStrip = observer(function TabStrip({
 
   // not an attribute selector: a nanoid needs CSS.escape, which jsdom lacks
   function tabElement(tabId: string | undefined) {
-    return [...(stripRef.current?.children ?? [])].find(
-      child => (child as HTMLElement).dataset.tabId === tabId,
-    ) as HTMLElement | undefined
+    return [...(stripRef.current?.children ?? [])]
+      .filter(child => child instanceof HTMLElement)
+      .find(child => child.dataset.tabId === tabId)
   }
 
   function focusTab(tabId: string) {

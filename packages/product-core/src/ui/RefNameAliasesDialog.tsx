@@ -69,7 +69,10 @@ const RefNameAliasesDialog = observer(function RefNameAliasesDialog({
 }) {
   const { classes } = useStyles()
   const [filter, setFilter] = useState('')
-  const assembly = session.assemblyManager.get(assemblyName)
+  const { assemblyManager } = session
+  const assembly = assemblyManager.has(assemblyName)
+    ? assemblyManager.get(assemblyName)
+    : undefined
   // reading this is also what starts the load: assembly.afterAttach kicks
   // load() when refNameAliases is first observed, so the dialog fills in for an
   // assembly nothing has looked at yet instead of showing an empty table

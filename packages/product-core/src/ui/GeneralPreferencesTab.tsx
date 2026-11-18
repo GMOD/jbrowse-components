@@ -75,7 +75,10 @@ const GeneralPreferencesTab = observer(function GeneralPreferencesTab({
             : undefined
         }
         onChange={event => {
-          session.setThemeMode(event.target.value as ThemeModeSelection)
+          const mode = THEME_MODES.find(m => m.value === event.target.value)
+          if (mode) {
+            session.setThemeMode(mode.value)
+          }
         }}
       >
         {THEME_MODES.map(opt => (

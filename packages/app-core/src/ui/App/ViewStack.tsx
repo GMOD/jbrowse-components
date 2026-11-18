@@ -26,11 +26,9 @@ import type {
 // `jb.fitToWindow` the session was 300px taller than it was, and the dotplot
 // absorbing the cut came out a third of the height that fit.
 //
-// Capped, because half a port stops being a courtesy on a tall screen. 300px is
-// the cap the classic stack has always had and it stays the answer there — a
-// full window is comfortably past twice it. What the cap was hiding is the
-// workspace panel, where a 2x2 grid's cell can be shorter than 600px and a flat
-// 300px let a view be dragged nearly clear of its own cell.
+// Capped, because half a port stops being a courtesy on a tall screen. Half the
+// port, not a flat 300px, is what holds in a short cell: a 2x2 grid's cell can
+// be under 600px, and a flat 300px let a view be dragged nearly clear of it.
 const MAX_OVERSCROLL = 300
 
 const useStyles = makeStyles()({
@@ -50,14 +48,9 @@ const useStyles = makeStyles()({
 const ViewStack = observer(function ViewStack({
   views,
   session,
-  className,
 }: {
   views: AbstractViewModel[]
   session: SessionWithFocusedViewAndDrawerWidgets
-  // the wrapper's formatting context belongs to the container this stack is
-  // mounted in — block in the classic stack, flex column in a workspace panel —
-  // and the two space their views differently under it
-  className?: string
 }) {
   const { classes } = useStyles()
   const viewsRef = useRef<HTMLDivElement>(null)
@@ -70,7 +63,7 @@ const ViewStack = observer(function ViewStack({
 
   return (
     <>
-      <div ref={viewsRef} className={className}>
+      <div ref={viewsRef}>
         {views.map(view => (
           <ViewContainer
             key={view.id}

@@ -70,7 +70,7 @@ function measurePairPx(
   horizontal: boolean,
 ) {
   const panes = [...(handle.parentElement?.children ?? [])].filter(
-    el => !Object.hasOwn((el as HTMLElement).dataset, 'splitter'),
+    el => el instanceof HTMLElement && !Object.hasOwn(el.dataset, 'splitter'),
   )
   const before = panes[index - 1]?.getBoundingClientRect()
   const after = panes[index]?.getBoundingClientRect()
