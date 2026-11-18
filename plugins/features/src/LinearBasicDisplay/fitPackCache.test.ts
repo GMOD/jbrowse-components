@@ -13,7 +13,12 @@ import {
   createPackHeightCache,
   createPackHeightProbe,
 } from './layout.ts'
-import { WHOLE_REF } from './layoutTestUtils.ts'
+import { WHOLE_REF, packedContentHeight } from './layoutTestUtils.ts'
+import {
+  PILE_FIRST,
+  PILE_LAST,
+  pileAndLoneData,
+} from './pileAndLone.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -205,6 +210,45 @@ describe('the fit solve across settles of the view', () => {
       )
       cached.dispose()
       uncached.dispose()
+    })
+  }
+
+  for (const [where, layout] of [
+    ['first', PILE_FIRST],
+    ['last', PILE_LAST],
+  ] as const) {
+    it(`commits no decimated layout on a settle that keeps the same names past the factor, the pile ${where}`, () => {
+      const { createDisplay } = createTestEnvironment()
+      const { display, view } = createDisplay()
+      display.setRpcData(
+        0,
+        pileAndLoneData(display.layoutInputs.bpPerPx, layout),
+        ctgA,
+      )
+      const namelessAtFloor = packedContentHeight(display.rpcDataMap, {
+        ...display.decimatedInputsAt(display.fitLabeledBodyFloor),
+        labelRoomFactor: Infinity,
+      })
+      display.setHeight(Math.ceil(namelessAtFloor) + 2)
+      const dispose = autorun(() => void display.renderDataMap)
+      const namesKept = () =>
+        [...display.fitStage.layout.get(0)!.floatingLabelsData.values()]
+          .filter(l => l.nameLabel)
+          .map(l => l.featureId)
+      expect(display.fitStage.level).toBe('decimated')
+      expect(namesKept()).toEqual(['lone'])
+      const before = display.onScreenFeatureIds!
+      const committed = display.fitStage.layout.get(0)
+
+      mockPackCount.value = 0
+      settle(view, 30)
+      void display.fitStage
+
+      expect(display.onScreenFeatureIds).not.toBe(before)
+      expect(namesKept()).toEqual(['lone'])
+      expect(mockPackCount.value).toBe(0)
+      expect(display.fitStage.layout.get(0)).toBe(committed)
+      dispose()
     })
   }
 
