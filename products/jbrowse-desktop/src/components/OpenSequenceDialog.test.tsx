@@ -48,6 +48,13 @@ beforeEach(() => {
   mockInvokeIpc.mockResolvedValue('/profile/fai/hg38.fa.fai')
 })
 
+test('is titled with the label of the button that opens it', () => {
+  setup()
+  expect(
+    screen.getByRole('heading', { name: 'Open your own genome' }),
+  ).toBeInTheDocument()
+})
+
 test('opens a genome whose format needs no index', async () => {
   const { user, onClose } = setup()
   await enterUrls(user, 'https://example.com/hg38.2bit')

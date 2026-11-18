@@ -897,10 +897,13 @@ async function main(): Promise<void> {
   await procedureFrame(driver, 'desktop-available-genomes-steps.png', 0)
   await captureGlobalPluginsSteps(driver)
 
-  // "Open genome(s)" dialog (custom genome from files/URLs)
+  // "Open your own genome" dialog (custom genome from files/URLs)
   console.log('Capturing open-genome dialog...')
   await clickButton(driver, 'Open your own genome')
-  await findByText(driver, 'Open genome(s)')
+  await driver.wait(
+    until.elementLocated(By.css('[data-testid="file-drop-zone"]')),
+    30000,
+  )
   await delay(1000)
   await blurActiveElement(driver)
   await procedureFrame(driver, 'desktop-open-genome-steps.png', 1)

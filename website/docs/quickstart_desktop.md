@@ -37,7 +37,7 @@ chmod a+x jbrowse-desktop-*-linux.AppImage   # once
 - **Recently opened sessions**, on the right, holds saved sessions and
   autosaves. Click one to reopen it.
 - Drop a `.jbrowse` or `config.json` file anywhere on the start screen, or on an
-  open session, to open it. Dropped genome files open the "Open genome(s)"
+  open session, to open it. Dropped genome files open the "Open your own genome"
   dialog with them already added, and track files dropped on a session open the
   "Add a track" form aimed at the view they land on.
 - **Tools → Factory reset...** deletes your autosaves, the recent sessions list,
@@ -47,8 +47,8 @@ chmod a+x jbrowse-desktop-*-linux.AppImage   # once
 
 ## Opening a genome
 
-**Open your own genome** brings up the "Open genome(s)" dialog, and what you
-give it becomes a new session on that assembly.
+**Open your own genome** brings up a dialog of the same name, and what you give
+it becomes a new session on that assembly.
 
 <Figure src="/img/desktop-open-genome-steps.png" caption="Open your own genome (1) brings up the dialog, and the sequence file goes onto its drop area (2)."/>
 

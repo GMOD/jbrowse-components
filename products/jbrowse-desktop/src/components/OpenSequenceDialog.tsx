@@ -140,7 +140,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
           handleCancel()
         }
       }}
-      title="Open genome(s)"
+      title="Open your own genome"
     >
       <DialogContent>
         {assemblyConfs.length ? (

@@ -153,7 +153,7 @@ export const PROCEDURES: Record<string, Procedure> = {
             labelDy: -6,
             // an 'above' label starts at its control's left edge, and the drop
             // zone's left edge is the dialog's, so it would land on the title.
-            // Pushed clear of "Open genome(s)".
+            // Pushed clear of "Open your own genome".
             labelDx: 190,
             maxWidth: 320,
             box: false,
