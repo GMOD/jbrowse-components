@@ -106,6 +106,7 @@ sequence. Each adapter's page opens with a whole track config:
 
 ## See also
 
+- [](/docs/user_guides/blat)
 - [](/docs/user_guides/sequence_track)
 - [](/docs/user_guides/feature_sequence)
 - [](/docs/config_guides/file_types#computed-from-the-reference)
