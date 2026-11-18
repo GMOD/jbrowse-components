@@ -2,6 +2,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { pointInsetPx } from '@jbrowse/render-core/marks'
+import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { SCALE_TYPE_SYMLOG } from '@jbrowse/render-core/scoreScale'
 import * as barShader from '@jbrowse/render-core/shaders/barMarkIface'
 import * as pointShader from '@jbrowse/render-core/shaders/pointMarkIface'
@@ -404,6 +405,71 @@ test('every mark places its value through the display s one domain', () => {
     REGIONS,
   )
   expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 80 })
+})
+
+// Each `line` entry linear, the interpolation whose capsules max-blend.
+function linear(...types: MarkEntry['type'][]): MarkEntry[] {
+  return entries(...types).map(e =>
+    e.type === 'line' ? { ...e, interpolate: 'linear' } : e,
+  )
+}
+
+test('a linear line unions over an earlier shape, blends max first, and text counts for neither', () => {
+  const blends = (list: MarkEntry[]) =>
+    buildMarkList(list).map(m => [m.pass.id, m.pass.blendState.op])
+  expect(blends(linear('line', 'bar', 'line'))).toEqual([
+    ['line-linear#0', 'max'],
+    ['bar#1', undefined],
+    ['line-linear#2', 'union'],
+  ])
+  expect(blends(linear('text', 'line'))).toEqual([['line-linear#1', 'max']])
+  expect(blends(linear('line', 'line'))).toEqual([
+    ['line-linear#0', 'max'],
+    ['line-linear#1', 'union'],
+  ])
+  expect(blends(entries('bar', 'line'))).toEqual([
+    ['bar#0', undefined],
+    ['line-step#1', undefined],
+  ])
+})
+
+// Two displayed regions meeting mid-pixel share CSS column 400, and the line's
+// layer already holds both regions' ink there.
+test('a later linear line composites its layer once across blocks sharing a column', () => {
+  const marks = buildMarkList(linear('bar', 'line'))
+  const hal = new MockHal(marks.map(m => m.pass))
+  const backend = new GpuMarkBackend(hal, marks)
+  const data: MarkRegionData = {
+    layers: [layer([500], [5], [RED]), layer([500, 510], [5, 6], [BLUE, BLUE])],
+  }
+  backend.upload(0, data)
+  backend.upload(1, data)
+  backend.renderBlocks(
+    [
+      { ...block, screenEndPx: 400.5 },
+      { ...block, displayedRegionIndex: 1, screenStartPx: 400.5 },
+    ],
+    new Map([
+      [0, data],
+      [1, data],
+    ]),
+    state,
+  )
+  expect(hal.draws().map(d => [d.passId, d.scissor, d.composite])).toEqual([
+    ['bar#0', { x: 0, y: 0, w: 401, h: 400 }, undefined],
+    [
+      'line-linear#1',
+      { x: 0, y: 0, w: 401, h: 400 },
+      { x: 0, y: 0, w: 401, h: 400 },
+    ],
+    ['bar#0', { x: 400, y: 0, w: 400, h: 400 }, undefined],
+    [
+      'line-linear#1',
+      { x: 400, y: 0, w: 400, h: 400 },
+      { x: 401, y: 0, w: 399, h: 400 },
+    ],
+  ])
+  expect(hal.layerTargets()).toEqual(['line-linear#1'])
 })
 
 test('a mark outside its zoom range neither draws nor answers a hover', () => {

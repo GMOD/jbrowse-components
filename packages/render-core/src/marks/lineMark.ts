@@ -824,7 +824,29 @@ export const lineCenterMark: MarkShape<LineChannels, LineParams> = {
   ink: centerInk,
 }
 
-/** The shape a line's `interpolate` draws with. */
-export function lineMarkOf(interpolate: LineInterpolate) {
-  return interpolate === 'linear' ? lineCenterMark : lineStepMark
+// The linear variant over earlier marks: its capsules union in a layer of
+// their own, which the HAL composites over what is already drawn, where a max
+// blend into the frame keeps the brighter of line and ground.
+const lineCenterOverMark: MarkShape<LineChannels, LineParams> = {
+  ...lineCenterMark,
+  pass: {
+    ...slangPass({
+      id: 'lineCenter',
+      mod: centerShader,
+      blendState: { op: 'union' },
+    }),
+    pack: packCenter,
+  },
+}
+
+/**
+ * The shape a line's `interpolate` draws with, `overMarks` where another
+ * shape draws before it into the same frame.
+ */
+export function lineMarkOf(interpolate: LineInterpolate, overMarks: boolean) {
+  return interpolate === 'linear'
+    ? overMarks
+      ? lineCenterOverMark
+      : lineCenterMark
+    : lineStepMark
 }

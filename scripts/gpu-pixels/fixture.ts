@@ -1,3 +1,4 @@
+import type { BlendState } from '../../packages/render-core/src/hal/types.ts'
 import type { ShaderModule } from '../../packages/render-core/src/slangPass.ts'
 
 /** Premultiplied RGBA, each channel 0..1. */
@@ -45,6 +46,10 @@ export interface PixelFixture {
   about: string
   /** Passes drawn first, in order, into the same target, as earlier marks of a display are. */
   under?: readonly PixelFixture[]
+  /** Passes drawn after, in order, as later marks of a display are. */
+  over?: readonly PixelFixture[]
+  /** The pass's blend where it is not the shader's own, as a mark list sets it. */
+  blendState?: BlendState
 }
 
 interface PassModule<U, I> extends ShaderModule {
@@ -68,6 +73,8 @@ export function defineFixture<U, I>(f: {
   translucent?: number
   budget?: Budget
   under?: readonly PixelFixture[]
+  over?: readonly PixelFixture[]
+  blendState?: BlendState
 }): PixelFixture {
   const { mod } = f
   return {

@@ -355,7 +355,8 @@ function withMarkIndex(
  */
 export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
   return entries.flatMap((entry, i) => {
-    const mark = shapeMark(entry, i)
+    const overMarks = entries.slice(0, i).some(e => e.type !== 'text')
+    const mark = shapeMark(entry, i, overMarks)
     return mark ? [withMarkIndex(mark, i, entry.type)] : []
   })
 }
@@ -381,7 +382,7 @@ function layerMark<C, P>(
   })
 }
 
-function shapeMark(entry: MarkEntry, i: number) {
+function shapeMark(entry: MarkEntry, i: number, overMarks: boolean) {
   const { type } = entry
   const id = `${type}#${i}`
   switch (type) {
@@ -437,7 +438,7 @@ function shapeMark(entry: MarkEntry, i: number) {
       return layerMark(
         entry,
         i,
-        lineMarkOf(interpolate),
+        lineMarkOf(interpolate, overMarks),
         `${type}-${interpolate}#${i}`,
         d => withLanes(d.layers[i], MARK_VALUE_LANES.line),
         (s, d) => ({

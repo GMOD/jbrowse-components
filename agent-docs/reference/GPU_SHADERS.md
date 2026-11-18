@@ -49,13 +49,17 @@ and bind group layout to the validation a browser applies.
 
 ## Scoring a pass's pixels on a real GPU
 
-`node scripts/gpu-pixels/run.ts [fixture…]` draws a pass's generated WGSL at 4
-samples and at 1 and scores both against an ideal scene. It answers whether a
+`node --experimental-transform-types scripts/gpu-pixels/run.ts [fixture…]`
+draws a pass's generated WGSL at 4 samples and at 1 and scores both against an
+ideal scene. It answers whether a
 pass draws at one sample without a visual trade, the question
 `//! coverage: analytic` turns on. The header of `run.ts` lists the flags.
 
 - **How it draws:** on Dawn, through the HAL's own `pipelineRecipe`, so layout,
-  blend and topology are production's.
+  blend and topology are production's. A fixture drawn with others (`under`,
+  `over`) or under a blend of its own goes through `WebGPUHal` itself, which is
+  what a `union` pass's layer and composite need; the HAL's TypeScript is why
+  the run takes `--experimental-transform-types`.
 - **The reference:** each fixture in `scripts/gpu-pixels/fixtures/` states its
   scene as shapes composited in draw order, supersampled 8×8 per device pixel.
   Judge one sample against it, not against the 4-sample render: a pass that

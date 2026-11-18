@@ -35,6 +35,17 @@ const suite: TestSuite = {
       config,
       displayTestId,
     }),
+    // A dark linear line declared after light bars: its capsules union in a
+    // layer of their own, composited over the bars as Canvas2D strokes it,
+    // where a max blend into the frame kept the bars and lost the line.
+    lgvSnapshotTest({
+      name: 'a dark linear line over light bars',
+      snapshot: 'mark-bars-linear-line',
+      loc: 'ctgA:1-50000',
+      tracks: ['marks_bars_linear_line'],
+      config,
+      displayTestId,
+    }),
     // A threshold over the plotted value colors each fragment by the value
     // under it, so a rise across the cut changes color at the axis: the
     // step's flat quads and the linear line's capsules both read it.

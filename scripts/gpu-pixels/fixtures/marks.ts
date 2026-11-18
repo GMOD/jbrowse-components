@@ -28,7 +28,8 @@ import {
   union,
 } from '../fixture.ts'
 
-import type { Budget, PixelFixture, Shape } from '../fixture.ts'
+import type { BlendState } from '../../../packages/render-core/src/hal/types.ts'
+import type { Budget, PixelFixture, Rgba, Shape } from '../fixture.ts'
 
 const SHADERS = 'packages/render-core/src/shaders'
 const W = 200
@@ -526,25 +527,13 @@ function capsule(
   }
 }
 
-function linearLineFixture({
-  name,
-  about,
-  lineWidth,
-  spans = LINE_SPANS,
-  alpha = 1,
-  under = [],
-  underShapes = [],
-  budget,
-}: {
-  name: string
-  about: string
-  lineWidth: number
-  spans?: readonly Span3[]
-  alpha?: number
-  under?: readonly PixelFixture[]
-  underShapes?: readonly Shape[]
-  budget?: Budget
-}) {
+// The line's one color over the union of its capsules, as the reference draws
+// it.
+function lineShape(
+  spans: readonly Span3[],
+  lineWidth: number,
+  color: Rgba,
+): Shape {
   const mid = ([x1, x2]: Span3) => (px(bp(x1)) + px(bp(x2))) / 2
   const pieces = spans.map((s, i) => {
     const prev = spans[i - 1] ?? s
@@ -556,6 +545,36 @@ function linearLineFixture({
       lineWidth / 2,
     )
   })
+  return union(color, pieces)
+}
+
+function linearLineFixture({
+  name,
+  about,
+  lineWidth,
+  spans = LINE_SPANS,
+  ink = LINE_INK,
+  alpha = 1,
+  blendState,
+  under = [],
+  underShapes = [],
+  over = [],
+  overShapes = [],
+  budget,
+}: {
+  name: string
+  about: string
+  lineWidth: number
+  spans?: readonly Span3[]
+  ink?: readonly [number, number, number]
+  alpha?: number
+  blendState?: BlendState
+  under?: readonly PixelFixture[]
+  underShapes?: readonly Shape[]
+  over?: readonly PixelFixture[]
+  overShapes?: readonly Shape[]
+  budget?: Budget
+}) {
   return defineFixture({
     name,
     slang: `${SHADERS}/lineCenterMark.slang`,
@@ -568,7 +587,7 @@ function linearLineFixture({
       x: spans.map(s => bp(s[0])),
       x2: spans.map(s => bp(s[1])),
       y: spans.map(s => s[2]),
-      color: spans.map(() => abgr(LINE_INK, alpha)),
+      color: spans.map(() => abgr(ink, alpha)),
       row: spans.map(() => 0),
       prevX: spans.map((_, i) => (i > 0 ? bp(spans[i - 1]![0]) : NO_PREV_X)),
       prevX2: spans.map((_, i) => (i > 0 ? bp(spans[i - 1]![1]) : 0)),
@@ -593,15 +612,62 @@ function linearLineFixture({
       devicePixelRatio: dpr,
       rowTableKeys: -1,
     }),
-    translucent: alpha < 1 ? alpha : undefined,
+    translucent: alpha < 1 && under.length === 0 ? alpha : undefined,
     reference: paintOver([
       ...underShapes,
-      union(rgba(LINE_INK, alpha), pieces),
+      lineShape(spans, lineWidth, rgba(ink, alpha)),
+      ...overShapes,
     ]),
+    blendState,
     under,
+    over,
     budget,
   })
 }
+
+const UNION: BlendState = { op: 'union' }
+
+// Read at one sample, where the bars' own edges are the largest error, so
+// the gate is the mean: under a max blend the line is missing across every
+// bar and these fixtures score 3-7.5%, unioned in a layer 0.4-0.8%.
+const OVER_MARKS_BUDGET: Budget = { meanErr: 0.015 }
+
+// [x px, x2 px, value]: a second series, lighter, which the first crosses
+const SECOND_SPANS: readonly Span3[] = Array.from({ length: 20 }, (_, i) => {
+  const x = 9.1 + i * 9.3
+  return [x, x + 7.2, 30 + 25 * Math.cos(i * 0.7)] as const
+})
+const SECOND_INK = [70, 130, 180] as const
+
+const secondLine = linearLineFixture({
+  name: 'mark-line-linear-second',
+  about: 'a lighter linear line over the bars, under another',
+  lineWidth: 2,
+  spans: SECOND_SPANS,
+  ink: SECOND_INK,
+  blendState: UNION,
+  under: [underBars],
+})
+
+// Points at the line's own joints, which a later layer draws over it.
+const OVER_POINTS: Point[] = LINE_SPANS.filter((_, i) => i % 3 === 1).map(
+  ([x1, x2, value], i) => ({
+    x: (x1 + x2) / 2,
+    value,
+    glyph: [GLYPH_DISC, GLYPH_SQUARE, GLYPH_DIAMOND][i % 3]!,
+  }),
+)
+const OVER_POINT_RADIUS = 2.6
+const overPoints = pointFixture(
+  'mark-point-over-line',
+  'points a later mark draws over a line',
+  OVER_POINT_RADIUS,
+  OVER_POINTS,
+)
+const overPointShapes = OVER_POINTS.map((p, i) => ({
+  inside: glyphShape(p, OVER_POINT_RADIUS),
+  color: rgba(PALETTE[i % PALETTE.length]!),
+}))
 
 export default [
   pointFixture(
@@ -689,14 +755,44 @@ export default [
     alpha: LINE_ALPHA,
     budget: { meanErr: 0.08, twice: 0, holes: 230 },
   }),
-  // No budget: the max blend keeps the bar wherever it is brighter than the
-  // line, so the line is missing across every bar.
   linearLineFixture({
     name: 'mark-line-linear-over-bars',
     about:
       'mark-line-linear drawn after light bars, as a later marks[] layer is',
     lineWidth: 1.5,
+    blendState: UNION,
+    budget: OVER_MARKS_BUDGET,
     under: [underBars],
     underShapes: barShapes,
+  }),
+  linearLineFixture({
+    name: 'mark-line-linear-translucent-over-bars',
+    about: 'mark-line-linear-over-bars at alpha 0.6',
+    lineWidth: 1.5,
+    alpha: LINE_ALPHA,
+    blendState: UNION,
+    budget: OVER_MARKS_BUDGET,
+    under: [underBars],
+    underShapes: barShapes,
+  }),
+  linearLineFixture({
+    name: 'mark-line-linear-two-layers',
+    about: 'mark-line-linear over a second linear line over the bars',
+    lineWidth: 1.5,
+    blendState: UNION,
+    budget: OVER_MARKS_BUDGET,
+    under: [underBars, secondLine],
+    underShapes: [...barShapes, lineShape(SECOND_SPANS, 2, rgba(SECOND_INK))],
+  }),
+  linearLineFixture({
+    name: 'mark-line-linear-under-points',
+    about: 'mark-line-linear-over-bars with points a later mark draws over it',
+    lineWidth: 1.5,
+    blendState: UNION,
+    budget: OVER_MARKS_BUDGET,
+    under: [underBars],
+    underShapes: barShapes,
+    over: [overPoints],
+    overShapes: overPointShapes,
   }),
 ]

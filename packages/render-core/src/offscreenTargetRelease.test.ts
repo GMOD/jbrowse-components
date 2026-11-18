@@ -6,6 +6,7 @@ import { MockHal } from './hal/mockHal.ts'
 import { installUpload } from './installUpload.ts'
 import { GpuPerRegionRenderingBackend } from './perRegionRenderingBackend.ts'
 
+import type { PipelineDescriptor } from './hal/types.ts'
 import type { FrameDimensions } from './perRegionRenderingBackend.ts'
 import type { RenderBlock } from './renderBlock.ts'
 
@@ -32,6 +33,15 @@ const BLOCK: RenderBlock = {
 class TestBackend extends GpuPerRegionRenderingBackend<Data, FrameDimensions> {
   protected regionPasses = []
   protected drawRegion() {}
+}
+
+// A display whose one pass is a `union` line, which holds a layer target
+// from its first draw.
+class UnionBackend extends GpuPerRegionRenderingBackend<Data, FrameDimensions> {
+  protected regionPasses = []
+  protected drawRegion() {
+    this.hal.drawPass('line', 0)
+  }
 }
 
 const TestModel = types.compose(
@@ -173,4 +183,31 @@ test('a display that has never painted paints once off screen, then releases', (
   expect(hal.callsOf('resize').length).toBeGreaterThan(0)
   expect(hal.callsOf('releaseRenderTargets').length).toBeGreaterThan(0)
   expect(methods(hal).at(-1)).toBe('releaseRenderTargets')
+})
+
+test("going off screen drops a union pass's layer, and coming back draws a new one", () => {
+  const hal = new MockHal([
+    { id: 'line', blendState: { op: 'union' } } as PipelineDescriptor,
+  ])
+  hal.uploadBuffer(0, 'line', new Float32Array([1]), 1)
+  const model = TestModel.create()
+  const cells = observable.map<number, Data>(undefined, { deep: false })
+  installUpload(model, new UnionBackend(hal), {
+    cells: () => cells,
+    render: (b, encoded) => b.renderBlocks([BLOCK], encoded, STATE),
+  })
+  runInAction(() => {
+    cells.set(0, { value: 1 })
+  })
+  expect(hal.layerTargets()).toEqual(['line'])
+
+  runInAction(() => {
+    model.setOffScreen(true)
+  })
+  expect(hal.layerTargets()).toEqual([])
+
+  runInAction(() => {
+    model.setOffScreen(false)
+  })
+  expect(hal.layerTargets()).toEqual(['line'])
 })

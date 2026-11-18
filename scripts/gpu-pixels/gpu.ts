@@ -3,6 +3,7 @@
 import { create, globals } from 'webgpu'
 
 import { pipelineRecipe } from '../../packages/render-core/src/hal/deviceGpuCache.ts'
+import { WebGPUHal } from '../../packages/render-core/src/hal/webgpuHal.ts'
 import { slangPass } from '../../packages/render-core/src/slangPass.ts'
 
 import type { PixelFixture } from './fixture.ts'
@@ -144,13 +145,153 @@ async function passDraw(
   }
 }
 
+/** Rows of `w` px read off a texture, as RGBA whatever its byte order. */
+async function readRows(
+  device: GPUDevice,
+  texture: GPUTexture,
+  w: number,
+  h: number,
+  encoder = device.createCommandEncoder(),
+) {
+  const bytesPerRow = Math.ceil((w * 4) / 256) * 256
+  const readback = device.createBuffer({
+    size: bytesPerRow * h,
+    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+  })
+  encoder.copyTextureToBuffer({ texture }, { buffer: readback, bytesPerRow }, [
+    w,
+    h,
+  ])
+  device.queue.submit([encoder.finish()])
+  await readback.mapAsync(GPUMapMode.READ)
+  const rows = new Uint8Array(readback.getMappedRange())
+  const px = new Uint8Array(w * h * 4)
+  for (let y = 0; y < h; y++) {
+    px.set(rows.subarray(y * bytesPerRow, y * bytesPerRow + w * 4), y * w * 4)
+  }
+  readback.unmap()
+  readback.destroy()
+  if (texture.format === 'bgra8unorm') {
+    for (let k = 0; k < px.length; k += 4) {
+      const b = px[k]!
+      px[k] = px[k + 2]!
+      px[k + 2] = b
+    }
+  }
+  return px
+}
+
 /**
- * The fixture drawn through the pipeline the WebGPU HAL builds for its pass,
- * over its `under` passes, into an RGBA8 target at `samples` resolved to one,
- * read back as premultiplied RGBA8 rows. `wgsl` is the fixture's own pass's;
- * the passes under it draw their current WGSL.
+ * A fixture drawn with others, `under` it and `over` it, through `WebGPUHal`
+ * itself rather than a copy of its sequence: a union pass's layer, its pass
+ * ahead of the frame's and its composite are the HAL's to get right. The HAL
+ * draws into a canvas texture the harness keeps and reads back.
+ */
+async function renderThroughHal(
+  gpu: Gpu,
+  f: PixelFixture,
+  wgsl: string,
+  dpr: number,
+  samples: 1 | 4,
+) {
+  Object.defineProperty(navigator, 'gpu', {
+    configurable: true,
+    value: gpu.parents[0],
+  })
+  Object.assign(globalThis, { devicePixelRatio: dpr })
+  const fixtures = [...(f.under ?? []), f, ...(f.over ?? [])]
+  const passes = await Promise.all(
+    fixtures.map(async d => {
+      const text = d === f ? wgsl : (await d.mod.SOURCE.wgsl()).WGSL_SOURCE
+      const desc = slangPass({
+        id: d.name,
+        mod: d.mod,
+        blendState: d.blendState,
+      })
+      return {
+        ...desc,
+        source: {
+          ...desc.source,
+          wgsl: () => Promise.resolve({ WGSL_SOURCE: text }),
+        },
+      }
+    }),
+  )
+  let configured: GPUCanvasConfiguration | undefined
+  let drawn: GPUTexture | undefined
+  const canvas = {
+    width: 0,
+    height: 0,
+    style: {},
+    getContext: (kind: string) =>
+      kind === 'webgpu'
+        ? {
+            configure: (config: GPUCanvasConfiguration) => {
+              configured = config
+            },
+            unconfigure: () => {},
+            getCurrentTexture: () => {
+              drawn = configured!.device.createTexture({
+                size: [canvas.width, canvas.height],
+                format: configured!.format,
+                usage:
+                  GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+              })
+              return drawn
+            },
+          }
+        : null,
+  }
+  const hal = await WebGPUHal.create(
+    canvas as unknown as HTMLCanvasElement,
+    passes,
+    samples,
+  )
+  if (!hal) {
+    throw new Error('Dawn gave the WebGPU HAL no device')
+  }
+  hal.resize(f.width, f.height)
+  const blank = { data: new Uint8Array(4), width: 1, height: 1 }
+  for (const [i, d] of fixtures.entries()) {
+    const desc = passes[i]!
+    hal.uploadBuffer(0, desc.id, d.instances(), d.count)
+    for (const { name } of desc.textures ?? []) {
+      const t = d.textures?.[name] ?? blank
+      hal.uploadTexture(desc.id, t.data, t.width, t.height, name)
+    }
+  }
+  hal.beginFrame(0, 0, 0, 0)
+  for (const [i, d] of fixtures.entries()) {
+    hal.writeUniforms(d.uniforms(dpr))
+    hal.drawPass(passes[i]!.id, 0)
+  }
+  hal.endFrame()
+  const { width: w, height: h } = canvas
+  const px = await readRows(configured!.device, drawn!, w, h)
+  hal.dispose()
+  drawn!.destroy()
+  return { px, w, h }
+}
+
+/**
+ * The fixture drawn through the pipeline the WebGPU HAL builds for its pass
+ * into an RGBA8 target at `samples` resolved to one, read back as
+ * premultiplied RGBA8 rows; `wgsl` is the pass's. A fixture drawn with others
+ * goes through the HAL itself.
  */
 export async function render(
+  gpu: Gpu,
+  f: PixelFixture,
+  wgsl: string,
+  dpr: number,
+  samples: 1 | 4,
+) {
+  return f.under || f.over || f.blendState
+    ? renderThroughHal(gpu, f, wgsl, dpr, samples)
+    : renderAlone(gpu, f, wgsl, dpr, samples)
+}
+
+async function renderAlone(
   { device }: Gpu,
   f: PixelFixture,
   wgsl: string,
@@ -159,12 +300,7 @@ export async function render(
 ) {
   const w = Math.round(f.width * dpr)
   const h = Math.round(f.height * dpr)
-  const draws = []
-  for (const u of f.under ?? []) {
-    const uWgsl = (await u.mod.SOURCE.wgsl()).WGSL_SOURCE
-    draws.push(await passDraw(device, u, uWgsl, dpr, samples))
-  }
-  draws.push(await passDraw(device, f, wgsl, dpr, samples))
+  const draws = [await passDraw(device, f, wgsl, dpr, samples)]
 
   const target = device.createTexture({
     size: [w, h],
@@ -196,25 +332,8 @@ export async function render(
     d.encode(pass)
   }
   pass.end()
-  const bytesPerRow = Math.ceil((w * 4) / 256) * 256
-  const readback = device.createBuffer({
-    size: bytesPerRow * h,
-    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-  })
-  encoder.copyTextureToBuffer(
-    { texture: target },
-    { buffer: readback, bytesPerRow },
-    [w, h],
-  )
-  device.queue.submit([encoder.finish()])
-  await readback.mapAsync(GPUMapMode.READ)
-  const rows = new Uint8Array(readback.getMappedRange())
-  const px = new Uint8Array(w * h * 4)
-  for (let y = 0; y < h; y++) {
-    px.set(rows.subarray(y * bytesPerRow, y * bytesPerRow + w * 4), y * w * 4)
-  }
-  readback.unmap()
-  for (const r of [readback, target, msaa, ...draws.flatMap(d => d.buffers)]) {
+  const px = await readRows(device, target, w, h, encoder)
+  for (const r of [target, msaa, ...draws.flatMap(d => d.buffers)]) {
     r?.destroy()
   }
   return { px, w, h }

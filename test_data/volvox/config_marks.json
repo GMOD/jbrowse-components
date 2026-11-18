@@ -129,6 +129,42 @@
     },
     {
       "type": "QuantitativeTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "volvox_microarray_posneg.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "trackId": "marks_bars_linear_line",
+      "name": "Mark linear line over bars",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_bars_linear_line-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "bar",
+              "encoding": {
+                "y": "score",
+                "color": { "value": "#d0d0d0" }
+              }
+            },
+            {
+              "mark": { "type": "line", "interpolate": "linear" },
+              "encoding": {
+                "y": "score",
+                "strokeWidth": 4,
+                "color": { "value": "black" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
       "trackId": "marks_line_posneg",
       "name": "Mark step line split at 0",
       "assemblyNames": ["volvox"],

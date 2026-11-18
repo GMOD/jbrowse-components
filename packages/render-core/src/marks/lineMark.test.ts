@@ -239,8 +239,20 @@ test('a row color override paints the row', () => {
 })
 
 test('interpolate picks the variant', () => {
-  expect(lineMarkOf('step')).toBe(lineStepMark)
-  expect(lineMarkOf('linear')).toBe(lineCenterMark)
+  expect(lineMarkOf('step', false)).toBe(lineStepMark)
+  expect(lineMarkOf('linear', false)).toBe(lineCenterMark)
+})
+
+test('a linear line over earlier marks unions in a layer of its own', () => {
+  const over = lineMarkOf('linear', true)
+  expect(lineCenterMark.pass.blendState).toEqual({ op: 'max' })
+  expect(over.pass.blendState).toEqual({ op: 'union' })
+  expect({ ...over.pass, blendState: undefined }).toEqual({
+    ...lineCenterMark.pass,
+    blendState: undefined,
+    pack: over.pass.pack,
+  })
+  expect(lineMarkOf('step', true)).toBe(lineStepMark)
 })
 
 test('under a threshold a step is stroked once per band, a rise across the cut changing color at it', () => {
