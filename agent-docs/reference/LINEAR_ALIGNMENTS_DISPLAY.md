@@ -245,8 +245,8 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   unspliced reads must not rebuild `renderState` per frame for it.
 - **The worker's `junctions` is `coverage.show || sashimi.show`.** With coverage
   shown a sashimi toggle changes no fetch key; without it the arcs draw in their
-  own strip (`effectiveSashimiPlacement` is `down`), so the junctions ride with
-  the arcs.
+  own strip (`effectiveSashimiPlacement` is `below`, or stays `above`), so the
+  junctions ride with the arcs.
 - **A per-block pass cannot join two displayed regions**, since it maps bp
   through its own block. The read-connection band's links do, drawing over the
   whole canvas through the view's region table (ADR-170), and so do the pileup
@@ -285,7 +285,8 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   `laneSlot`, `floor(H / N)` px, H the track's height (capped at
   `growMaxHeight` in grow, which `growTargetHeight` returns) and N the drawn
   lanes or one, so `N * slot <= H` and nothing scrolls. With coverage on, the
-  down-arcs and down-sashimi strips keep their stated heights, bound top-down
+  arcs and sashimi strips, above or below it, keep their stated heights, bound
+  top-down
   against `{ height: slot, floor: MIN_BAND_HEIGHT }`, and the coverage takes
   the rest of the slot (`fittedLaneBandHeights`): 215/35 for coverage 45
   and arcs 35 at 250 px. Every lane draws that one pooled coverage height, so
@@ -296,15 +297,16 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   than letting a tall coverage crowd them out. With coverage off, the stated
   heights are bound against H with no row floor and the strips fill the slot
   in proportion (core `fillStackedBands`); every other band fills 0. Which
-  strips reserve, and whether up arcs overlay the coverage, read those
+  strips reserve, and whether overlay arcs draw on the coverage, read those
   settings (`drawnLaneBandsInput`), never the fitted heights, so the
   fit never moves arcs on or off the histogram. `sections` takes the slot as
   its `minSectionHeight`, so a lane without arcs keeps its whole slot, that
   part blank. The coverage ticks and the export's `coverageScale.heightPx`
   read the drawn height. While the pileup is hidden the coverage band has no
-  handle, and a strip's handle sits on its top seam (`laneBandHandle`),
-  reversed and at gain 1, since slots never move: dragging it up grows the
-  strip, and the coverage gives way down to `MIN_BAND_HEIGHT`
+  handle, and a strip's handle sits on the seam it shares with the coverage
+  (`laneBandHandle`), at gain 1, since slots never move: its top seam below
+  coverage, reversed, so dragging it up grows the strip, and its bottom seam
+  above coverage. Either way the coverage gives way down to `MIN_BAND_HEIGHT`
   (`dragStripHeight`, `dragPileupHiddenStrip`). With coverage off no strip
   gets one. The Track height mode greys out: the track's bottom edge sizes
   the slots, and neither `coverage.height` nor `height` is written. Group chips on lanes
@@ -314,8 +316,13 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   which binds to 0 px before the coverage gives up its floor; changing
   the inset is a shader-twin change of its own.
 - **`laneBands` is the one statement of a lane's band stack**: which strips it
-  reserves, their tops, and where its arcs draw — their own strip, or over the
-  coverage histogram in overlay mode. Each `Section` carries that fold as `bands`,
+  reserves, their order and tops, and where its arcs draw — their own strip, or
+  over the coverage histogram in overlay mode. The order is `laneBandOrder`'s:
+  coverage, read connections, sashimi, with a strip placed `above` moved ahead
+  of coverage and the read connections leading the sashimi strip on either
+  side (ADR-272). `Section.sectionTop` is the section's top, and
+  `coverageBandTop(section)` the coverage band's under whatever stacks before
+  it. Each `Section` carries that fold as `bands`,
   a core `BandStack` keyed `coverage`, `readConnections` and `sashimi`, rather
   than a copy of it in named fields, so a new key fails to compile wherever a
   consumer does not handle it. `computeStackedSections`, the fit budget

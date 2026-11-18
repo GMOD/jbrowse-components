@@ -181,8 +181,10 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ([ADR-231](../architecture-decision-records/adr-231-an-alignments-band-is-one-config-object.md)).
   The alignments `coverage`, `pileup`, `sashimi` and `readConnections`, and
   MAF's `coverage` and `conservation`, each hold `show` and `height`, and
-  `placement` where the band has one (sashimi and `readConnections`), each
-  meaning the same in every band. `show` toggles a band, a layer
+  `placement` where the band has one (sashimi and `readConnections`: `overlay`,
+  `above` or `below` against the coverage band,
+  [ADR-272](../architecture-decision-records/adr-272-an-arc-band-sits-above-over-or-below-coverage.md)),
+  each meaning the same in every band. `show` toggles a band, a layer
   or part of a mark, or the arcs' context pairs, and nothing else.
 - **A predicate lives where what it selects lives**
   ([ADR-232](../architecture-decision-records/adr-232-a-predicate-lives-where-what-it-selects-lives.md)).

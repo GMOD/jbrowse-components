@@ -15,6 +15,29 @@ overlap freely, so which mark a hover resolves to, which one a setting hides and
 which one paints on top are one question asked in three places. The answers have
 to agree.
 
+## Where the band sits
+
+**`readConnections.placement` puts the band `below` the coverage band (the
+default), `above` it, or as an `overlay` on it**
+([ADR-272](../architecture-decision-records/adr-272-an-arc-band-sits-above-over-or-below-coverage.md)).
+
+- `below` and `above` reserve a strip `readConnections.height` px tall.
+  `overlay` reserves nothing and draws in the coverage band, standing on its
+  baseline.
+- `laneBandOrder` orders the strips. Above coverage the read connections lead
+  the sashimi strip, as they do below it.
+- Only `below` hangs its arcs from the strip's top (`ArcBand.down`). `above`
+  and `overlay` rise.
+- With coverage hidden `overlay` has nothing to draw on, so it takes a strip of
+  its own with its arcs still rising (`arcsOverlayCoverage`). The sashimi
+  band's fallback differs: its `overlay` and `auto` arcs hang in the strip
+  below (`effectiveSashimiPlacement`). An `above` strip keeps its place on both
+  bands.
+- The read cloud's TLEN axis draws on the right under `overlay` and on the left
+  in a strip of its own.
+- The alignment tables state the result as `bandStack`, the bands top to bottom
+  with the px each reserves, and `arcScale.band`, `coverage` under an overlay.
+
 ## Which family an interchromosomal connection joins
 
 Decided per connection by whether both feet are in displayed regions. Both: one
@@ -162,7 +185,7 @@ not join into bars that read as links.
 **An arc outranks the band it is painted over, and it says so as a result
 variant.** `runHitTest` returns `arc ?? performHitTest(...)`, so `ArcMarkHit` is a
 member of `MarkHitResult` beside the pileup's five. In overlay mode `laneBands`
-gives the band `top: 0`, which is the coverage band, and `hitTestInterbase`
+gives the band the coverage band's top, and `hitTestInterbase`
 answers over it, so a per-gesture `if` guard let a right-click on an arc open the
 interbase menu while the tooltip said "Read connection".
 

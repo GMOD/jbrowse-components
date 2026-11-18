@@ -19,6 +19,11 @@ Amended by [ADR-255](adr-255-one-variant-display.md) (2026-10-30): the
 one display, `LinearVariantDisplay`, whose `filter` is the multi-sample one's;
 the feature display's record settings sit under its `records`.
 
+Amended by [ADR-272](adr-272-an-arc-band-sits-above-over-or-below-coverage.md)
+(2026-11-17): the placement this ADR calls `down` is spelled `below`, a
+sashimi strip placed `above` keeps its place with coverage hidden, and the
+sashimi placement row of step 5 stays in the menu without coverage.
+
 Colin's steer: the alignments display's settings are linked, a filter applies
 across its parts, and a value that menu actions keep in step is "just
 duplicated in config"; he wants config to be elegant, with a "shared source of

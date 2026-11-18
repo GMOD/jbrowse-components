@@ -44,8 +44,15 @@ once per display that embeds it, so read the trend, not the size.
 surface on one page, its first table each path whose members differ between
 displays or a display's parts, with the ruling on each.
 
-- The last shared-path change is `MultiWaySyntenyDisplay.rows.colors`
-  (2026-11-17, +1 shared, 4298f28b66), a pinned color per lane. Before it,
+- The last shared-path change is the arc bands' `placement` values
+  (2026-11-17, +9 / −6 shared, 9b1a3fe173): `sashimi.placement` and
+  `readConnections.placement` take `overlay`, `above` and `below` where they
+  took `up` and `down`, `above` being new (ADR-272). The old values were
+  beta-only and every in-tree writer moved with them. ggjbrowse writes `up`
+  and `down` in a tutorial page, its gallery script and its connection tests,
+  so it owes a respell and an engine re-pin, and the canary is expected red
+  on push until then. Before it, `MultiWaySyntenyDisplay.rows.colors`
+  (2026-11-17, +1 shared, 4298f28b66), a pinned color per lane. Before that,
   2026-11-16 added +14 and removed −4 shared, all additive for a writer:
   `aliases` on every track type and `config.tracks[]` (5b902ebecf), a
   track's old ids that still open it; `configuration.hierarchical.table`

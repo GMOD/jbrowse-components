@@ -19,9 +19,9 @@ vertical space, and coverage-only fills the track's height with the coverage
 band, split evenly between the sections when the reads are grouped, so it never
 scrolls. A track configured with its pileup hidden opens at 100 px rather than
 250; the toggles keep whatever height the track has. Drag the track's bottom
-edge to resize it. A read-connections or sashimi strip drawn below the coverage
-keeps its own height, and the coverage takes the rest; drag the strip's top edge
-to resize it.
+edge to resize it. A read-connections or sashimi strip drawn above or below the
+coverage keeps its own height, and the coverage takes the rest; drag the edge
+the strip shares with the coverage to resize it.
 
 ## Sorting reads
 
@@ -352,7 +352,18 @@ arcs draw:
   keeps only the **Split-read junctions** that split alignments (SA tag) imply
   beside the N-gap splices, and **Min reads at a junction** drops the junctions
   with fewer reads.
-- **Advanced → Sashimi placement** splits the arcs above/below the coverage row.
+- **Advanced → Sashimi placement** sets where the arcs sit
+  ([`sashimi.placement`](/docs/config/sashimi/#slot-placement)):
+  - **Over coverage** (`overlay`, the default) draws them on the coverage
+    histogram.
+  - **Above coverage** (`above`) and **Below coverage** (`below`) give them a
+    strip of their own, `sashimi.height` px tall, so the histogram stays clear.
+  - **Auto (minimize overlap)** (`auto`) keeps the arcs over coverage and sends
+    a junction below where it would cross another.
+
+  With coverage hidden there is nothing to draw over, so the arcs take a strip
+  of their own.
+
 - **Advanced → Coverage axis... → Scale → Log** keeps the shallower junctions
   visible when one junction peak dominates the coverage histogram.
 
@@ -384,6 +395,11 @@ what each pattern means.
   on a log scale by how many there are, so the arcs rank the evidence. A
   single-read connection draws at
   [`readConnections.encoding.strokeWidth`](/docs/config/readconnectionsencoding/#slot-strokewidth).
+- **Placement:** **Advanced → Read connections placement** puts the band **Below
+  coverage** (the default) or **Above coverage**, in a strip of its own, or
+  **Over coverage**, on the histogram
+  ([`readConnections.placement`](/docs/config/readconnections/#slot-placement):
+  `below`, `above`, `overlay`). The read cloud follows the same setting.
 - **Hover:** the location, the distance between the ends, the supporting read
   count and the color bucket; in read-cloud mode also the insert size. An
   insertion split arc leaves out the distance, since its ends mark where the

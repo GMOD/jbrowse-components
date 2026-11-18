@@ -93,7 +93,7 @@ export const RULINGS: Record<string, Ruling> = {
   },
   placement: {
     variants: 4,
-    why: "one word, two meanings: a band draws `up` over coverage or `down` below it, with `auto` on sashimi alone among the bands, and on read connections the word is also the way the arcs bow, `up` arcs rising in a strip of their own while coverage is hidden, so the labels' `overlay` would be false there (ADR-231); a label sits `above`, `below` or as an `overlay`, or `auto` on a feature's parts, the part labels and the multi-way lane names each listing their own (ADR-238)",
+    why: "one word, one meaning, where a thing sits against its anchor: `above`, `below` or as an `overlay`, each holder listing the positions it draws. An arc band sits against the coverage band, with `auto` on sashimi alone, which sends a junction below where it would cross another (ADR-272); a label sits against its feature, with `auto` on a feature's parts, the part labels and the multi-way lane names each listing their own (ADR-238)",
   },
   rows: {
     variants: 5,

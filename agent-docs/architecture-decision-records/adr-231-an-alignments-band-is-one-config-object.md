@@ -27,6 +27,12 @@ sub-slice B: the multi-sample variant display's `records` is a band object
 too, holding `show`, its cap `maxHeight`, and the record settings a feature
 track holds (`displayMode`, `mark`, `facet`, `labels`, `tooltip.field`).
 
+Amended 2026-11-17 by
+[ADR-272](adr-272-an-arc-band-sits-above-over-or-below-coverage.md): a band's
+`placement` is a position, `overlay`, `above` or `below`, with `auto` on
+sashimi. `overlay` is the `up` and `below` the `down` this record names, and
+the Rejected row that declined those words is superseded.
+
 ## Context
 
 - **`show` meant two things.** On `showCoverage`, `showPileup` and
@@ -56,8 +62,8 @@ track holds (`displayMode`, `mark`, `facet`, `labels`, `tooltip.field`).
   | ----------------- | -------------------------------------------------------------------------------------------------------------- |
   | `coverage`        | `show`, `height`, `showInterbaseIndicators`, `filter.minAlleleFraction`                                        |
   | `pileup`          | `show`, `readHeight`, `maxLayoutHeight`, `showMismatches`, `showSoftClipping`, `showOutline`, `showConnectors`, `fadeLowBaseQuality`, `fadeLowFrequency` |
-  | `sashimi`         | `show`, `height`, `placement` (`up`, `down`, `auto`), `showCounts`, `filter.minReads`, `filter.nonCanonical`   |
-  | `readConnections` | `show`, `mark` (`arc`, `cloud`), `height`, `placement` (`up`, `down`), `lineWidth`, `color`, `showOrdinaryPairs`, `filter.interchrom`, `filter.offscreenMates`, `filter.minInterchromReads` |
+  | `sashimi`         | `show`, `height`, `placement` (`overlay`, `above`, `below`, `auto`), `showCounts`, `filter.minReads`, `filter.nonCanonical`   |
+  | `readConnections` | `show`, `mark` (`arc`, `cloud`), `height`, `placement` (`overlay`, `above`, `below`), `lineWidth`, `color`, `showOrdinaryPairs`, `filter.interchrom`, `filter.offscreenMates`, `filter.minInterchromReads` |
 
 - **`show` is a boolean because the layer set is fixed.** Each one toggles
   a band, a layer in it (`showMismatches`, `showInterbaseIndicators`,
@@ -78,9 +84,9 @@ track holds (`displayMode`, `mark`, `facet`, `labels`, `tooltip.field`).
   unit. A filter member must mean the same under both marks and be unset when
   not filtering; folding it in would have lost drawing the cloud's ordinary
   pairs.
-- **Two placement enums, one word.** Only sashimi has `auto`; `up` draws over
-  the coverage histogram, inside its band, so Vega-Lite's `orient: top|bottom`
-  would mislead.
+- **Two placement enums, one word.** Only sashimi has `auto`; `overlay` draws
+  over the coverage histogram, inside its band, so Vega-Lite's
+  `orient: top|bottom` would mislead.
 - **MAF's coverage band is the same `CoverageBand` object**
   (`@jbrowse/alignments-core/coverageBandConfigSchema`), and its conservation
   band is `conservation: { show, height, unit }`, `unit` being what one bar
@@ -117,7 +123,7 @@ track holds (`displayMode`, `mark`, `facet`, `labels`, `tooltip.field`).
 | `readConnections.color.field` unset in place of `''` | Every color object spells an absent field `''` (display-kit's color schema, `baseColor`), so the arcs keep it |
 | Moving split reads out of `readConnections`, renaming the bands `junctions` and `pairs`, or one merged arc band | Sashimi counts joins per cut point (CIGAR `N` splices and split-read joins), read connections draw one molecule's whole path (mates and supplementary pieces), so one split read belongs in both, as coverage and pileup share reads. With the split arcs staying, the rename lost its reason |
 | Split-read junctions in sashimi for RNA only | A circHIPK3 window holds no spliced read, so the gate hid the back-splices it was for |
-| The labels' words for a band's `placement`, `overlay` and `below` in place of `up` and `down` (2026-11-17) | On read connections the word is also the way the arcs bow. With coverage hidden, LGVSyntenyDisplay's default, `up` arcs rise in a strip of their own and overlay nothing (`arcsOverlayCoverage`, `sectionLayout.ts`), and ggjbrowse draws every arc in its own panel. Sashimi alone could take the words, and would then split one member across two bands |
+| The labels' words for a band's `placement`, `overlay` and `below` in place of `up` and `down` (2026-11-17, superseded the same day by ADR-272, which takes the words once a strip above coverage needs a third position) | On read connections the word is also the way the arcs bow. With coverage hidden, LGVSyntenyDisplay's default, `up` arcs rise in a strip of their own and overlay nothing (`arcsOverlayCoverage`, `sectionLayout.ts`), and ggjbrowse draws every arc in its own panel. Sashimi alone could take the words, and would then split one member across two bands |
 | A jexl expression in place of the `show` booleans | Each toggles a layer for the whole display, so an expression reading no datum is a constant. Where a datum exists, a band's `filter` over junctions or connections, an opt-in expression could join the members at no cost when unnamed, as the canvas and mark displays' `filter` takes jexl; no figure has asked for a predicate the members cannot state |
 
 ## Consequences
