@@ -24,7 +24,7 @@ export function cellGlyphs(data: {
   const { cellFeatureIndices, numCells, featurePositions, featureInfo } = data
   const shapeOf = new Uint8Array(featureInfo.length)
   for (let f = 0; f < featureInfo.length; f++) {
-    shapeOf[f] = shapeTypeOf(featureInfo[f]!.type)
+    shapeOf[f] = shapeTypeOf(featureInfo[f]!.svType)
   }
   const cellPositions = new Uint32Array(numCells * 2)
   const cellShapeTypes = new Uint8Array(numCells)

@@ -10,10 +10,12 @@ import {
 
 export { SHAPE_RECT, SHAPE_TRI_LEFT }
 
-// The glyph a record's cells paint as. An inversion is symmetric — either
-// inverted or not, and VCF never sets a strand on a variant record — so one
-// triangle covers it. Everything else, insertions included, is the plain
-// full-height cell every other genotype draws.
+// The glyph a record's cells paint as, keyed on its SV class (`svClassOf`), so
+// a sequence-resolved or breakend inversion draws it and `<INV:DUP>` (class
+// CPX) does not. An inversion is symmetric — either inverted or not, and VCF
+// never sets a strand on a variant record — so one triangle covers it.
+// Everything else, insertions included, is the plain full-height cell every
+// other genotype draws.
 //
 // Geometry encodes orientation only, so this stays a fixed rule rather than an
 // `encoding.shape` channel. A row-height insertion caret was prototyped and
@@ -21,8 +23,8 @@ export { SHAPE_RECT, SHAPE_TRI_LEFT }
 // as genomic size on x, and common insertions walled every carrier row, as
 // 5c22930ba6's marker had. Type, size and carrier share are the records band's
 // (ADR-254).
-export function shapeTypeOf(featureType: string) {
-  return featureType === 'inversion' ? SHAPE_TRI_LEFT : SHAPE_RECT
+export function shapeTypeOf(svType: string) {
+  return svType === 'INV' ? SHAPE_TRI_LEFT : SHAPE_RECT
 }
 
 // Minimal 2D path sink — both CanvasRenderingContext2D and SvgCanvas match.
