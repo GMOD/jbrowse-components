@@ -127,23 +127,27 @@ export function featureColorKey(
     : []
 }
 
+type KeyedRegions = ReadonlyMap<
+  number,
+  Pick<
+    FeatureDataResult,
+    | 'colorValues'
+    | 'rectColorValues'
+    | 'rectFeatureIndices'
+    | 'flatbushItems'
+    | 'rectPositions'
+  >
+>
+
 /**
- * What the key reads: a feature display's color views, its fetched regions,
- * the features on screen, its facet and the sections the user hid.
+ * What the key reads: a feature display's color views, its fetched regions
+ * and what the layout kept of them, the features on screen, its facet and the
+ * sections the user hid.
  */
 export type FeatureColorScaleHost = FeatureColors &
   Pick<ReturnType<typeof featureColorViews>, 'categoricalColorField'> & {
-    rpcDataMap: ReadonlyMap<
-      number,
-      Pick<
-        FeatureDataResult,
-        | 'colorValues'
-        | 'rectColorValues'
-        | 'rectFeatureIndices'
-        | 'flatbushItems'
-        | 'rectPositions'
-      >
-    >
+    rpcDataMap: KeyedRegions
+    laidOutDataMap: KeyedRegions
     onScreenFeatureIds: ReadonlySet<string> | undefined
     facet: FeatureFacet | undefined
     hiddenGroups: ReadonlySet<string>
@@ -158,21 +162,23 @@ export function featureColorScaleViews(self: FeatureColorScaleHost) {
     /**
      * #getter
      * The key the color channel's scale derives from what the worker
-     * painted, narrowed to the on-screen features where the window is known,
-     * less the values only a hidden section painted, in the sections' order
-     * where the facet reads the same field. An identity scale's key is its
+     * painted, narrowed where the window is known to the boxes the layout
+     * kept of the on-screen features, so an isoform the fit trimmed keys
+     * nothing, less the values only a hidden section painted, in the
+     * sections' order where the facet reads the same field. An identity scale's key is its
      * `domain` colors whole, once anything is drawn.
      */
     get derivedColorScales(): ColorScale[] {
       const { facet, hiddenGroups, onScreenFeatureIds } = self
-      const regions = [...self.rpcDataMap.values()]
       const sectionOf =
         facet && hiddenGroups.size > 0 ? sectionIdsOf(facet) : undefined
       return featureColorKey(
         self,
         onScreenFeatureIds
-          ? regions.map(data => onScreenColorValues(data, onScreenFeatureIds))
-          : regions,
+          ? [...self.laidOutDataMap.values()].map(data =>
+              onScreenColorValues(data, onScreenFeatureIds),
+            )
+          : [...self.rpcDataMap.values()],
         {
           isHidden:
             sectionOf && (section => hiddenGroups.has(sectionOf(section).key)),

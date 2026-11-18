@@ -6,11 +6,16 @@ import {
   NO_CATEGORY_COLOR,
 } from '@jbrowse/core/util/color'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { SimpleFeature } from '@jbrowse/core/util'
+import createJexlInstance from '@jbrowse/core/util/jexl'
 import { autorun } from 'mobx'
 
+import { collectRenderData } from '../RenderFeatureDataRPC/collectRenderData.ts'
+import { layoutSubfeatures } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
 import {
   makeFeatureData,
   makeFlatbushItem,
+  mockDisplayConfig,
   packFixtureRects,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -240,6 +245,51 @@ describe('derived color key', () => {
       'RhoGEF',
       'SH2',
     ])
+  })
+
+  it('leaves out the value of an isoform the fit trimmed', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.applyPlot({ encoding: { color: { field: 'name' } } })
+    const config = mockDisplayConfig({ color: { field: 'name' } })
+    const jexl = createJexlInstance()
+    const span = { refName: 'ctgA', start: 100, end: 1000, strand: 1 }
+    const names = ['a', 'b', 'c', 'd', 'e', 'f']
+    const gene = new SimpleFeature({
+      ...span,
+      uniqueId: 'gene',
+      type: 'gene',
+      subfeatures: names.map(name => ({
+        ...span,
+        uniqueId: name,
+        type: 'mRNA',
+        name,
+        subfeatures: [{ ...span, uniqueId: `${name}-cds`, type: 'CDS' }],
+      })),
+    })
+    const keyAt = (height: number) => {
+      display.setHeight(height)
+      return keyValues(display)
+    }
+    display.setRpcData(
+      0,
+      {
+        ...makeFeatureData(),
+        ...collectRenderData({
+          layouts: [layoutSubfeatures({ feature: gene, config, jexl })],
+          regionStart: 0,
+          regionEnd: 10_000,
+          config,
+          colorByFrame: false,
+          jexl,
+        }),
+      },
+      ctgA,
+    )
+    expect(keyAt(400)).toEqual(names)
+    const trimmed = keyAt(40)
+    expect(display.fitIsoformCount).toBe(trimmed?.length)
+    expect(trimmed?.length).toBeLessThan(names.length)
   })
 
   it('names strand values as strands', () => {
