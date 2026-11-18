@@ -5,7 +5,8 @@
 // rounding a near corner picks up is its own clip x modulo the far one's ulp,
 // which is 0 at a clip x like 0 or 0.5, so the near ends sit at whole px of a
 // 225 px canvas, four per distance and side. Mesa folds quadLocal's 0/1 weight
-// into a select, so llvmpipe shows only the far-end-plus-length rows.
+// into a select, so llvmpipe shows only the far-end-plus-length rows;
+// render-core's guardBand.test.ts models the other two in float32.
 import { valueToYPxUnclamped } from '../../../packages/render-core/src/shaders/valueScale.js.generated.ts'
 import {
   RENDERING_TYPE_LINE,
@@ -51,6 +52,7 @@ export const rows = [true, false]
 const ROWS = rows.length
 const H = ROWS * ROW_PX
 const DPRS = [1, 2]
+const BUDGET = { max: 0.01, meanErr: 0.001 }
 // No `bounds`: paintOver buckets a bounded shape per 4 px, and these run 1e8 px.
 const span = (
   left: number,
@@ -95,6 +97,7 @@ const barFixture = defineFixture({
     rowIndex: rows.map(r => r.row),
   },
   uniforms: (dpr: number) => wiggleFarUniforms(RENDERING_TYPE_XYPLOT, dpr),
+  budget: BUDGET,
   reference: paintOver(
     rows.map(r =>
       span(
@@ -132,6 +135,7 @@ const stepFixture = defineFixture({
   },
   uniforms: (dpr: number) =>
     wiggleFarUniforms(RENDERING_TYPE_LINE, dpr, STEP_LINE_PX),
+  budget: BUDGET,
   reference: paintOver(
     rows.map(r => {
       const y = wiggleY(STEP_SCORE, r.row)
@@ -205,6 +209,7 @@ const readFixture = defineFixture({
     ),
   },
   uniforms: pileupFarUniforms,
+  budget: BUDGET,
   reference: readColorAt,
 })
 
@@ -224,6 +229,7 @@ const gapFixture = defineFixture({
     frequency: rows.map(() => 1),
   },
   uniforms: pileupFarUniforms,
+  budget: BUDGET,
   reference: paintOver(
     rows.map(r =>
       span(r.x1, r.row * ROW_PX, r.x2, r.row * ROW_PX + FEAT_H, rgba(DELETION)),
