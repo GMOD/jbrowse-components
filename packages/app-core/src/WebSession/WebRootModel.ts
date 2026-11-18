@@ -1,14 +1,8 @@
 import type { AppSessionRoot } from '../AppSession/index.ts'
 import type { SessionSummary } from '../sessionSummary.ts'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
-import type {
-  AnyConfiguration,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
-import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
+import type { EditableJBrowseConfigModel } from '@jbrowse/core/util'
 
 export interface SessionMetadata {
   id: string
@@ -49,17 +43,7 @@ export function byLastUsedDesc(a: SessionMetadata, b: SessionMetadata) {
 }
 
 /** Shape of the jbrowse config model as seen from the session */
-export interface AbstractJBrowseModel {
-  readonly configuration: AnyConfigurationModel
-  readonly assemblies: BaseAssemblyConfigModel[]
-  readonly connections: BaseConnectionConfigModel[]
-  readonly tracks: readonly { trackId: string; [key: string]: unknown }[]
-  readonly plugins: PluginDefinition[]
-  addAssemblyConf(conf: AnyConfiguration): unknown
-  removeAssemblyConf(name: string): void
-  addConnectionConf(conf: AnyConfigurationModel): unknown
-  deleteConnectionConf(conf: AnyConfigurationModel): unknown
-}
+export interface AbstractJBrowseModel extends EditableJBrowseConfigModel {}
 
 /**
  * What BaseWebSession requires from its parent root model: the shared
