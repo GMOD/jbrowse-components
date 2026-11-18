@@ -891,6 +891,7 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
  * junction whose motif was never read counts as canonical, as the display
  * counts it. `arcHeight` is the apex as a fraction
  * of the band and `strokeWidth` the stroke in px, the sashimi marks' own.
+ * `band` is the band its arc draws in (`junctionBandOf`).
  * A junction the reads of several regions show is merged once, as the
  * sashimi band merges it, and `startRegion` and `endRegion` name the region
  * holding each foot, -1 where none does.
@@ -900,6 +901,7 @@ function junctions(
   regionInfos: RegionInfo[],
   paint: MarkColors,
   thresholds: MarkThresholds,
+  bandOf: (junction: MergedJunction) => JunctionBand,
 ) {
   const contigOrder = new Map<string, number>()
   for (const { refName } of regionInfos) {
@@ -928,10 +930,29 @@ function junctions(
       sashimiArcHeightFraction(Math.abs(j.end - j.start)),
     ),
     strokeWidth: merged.map(j => sashimiStrokeWidth(j.count)),
+    band: merged.map(j => bandOf(j)),
     refName: merged.map(j => j.refName),
     startRegion: merged.map(j => footRegion(regionInfos, j.refName, j.start)),
     endRegion: merged.map(j => footRegion(regionInfos, j.refName, j.end)),
   }
+}
+
+type JunctionBand = 'coverage' | 'sashimi'
+
+/**
+ * The band a section's junction draws in, as `bandStack` names it:
+ * `sashimi`, the arcs' own strip, where `sashimi.placement` sends the
+ * junction there (`sashimiStripKeysByGroup`), and `coverage`, over the
+ * histogram, otherwise. A junction the display hides is in no lane's set, so
+ * it takes the band its placement gives every junction, and `coverage` under
+ * `auto`.
+ */
+function junctionBandOf(host: AlignmentsTablesHostModel, section: string) {
+  const strip = host.sashimiStripKeysByGroup.get(section) ?? NO_KEYS
+  const placement = host.effectiveSashimiPlacement
+  const everyJunction = placement === 'above' || placement === 'below'
+  return (junction: MergedJunction): JunctionBand =>
+    everyJunction || strip.has(junction.key) ? 'sashimi' : 'coverage'
 }
 
 /** The index of the region holding `bp`, -1 where none does. */
@@ -1279,6 +1300,19 @@ function pooledLaneBands(host: AlignmentsTablesHostModel) {
 }
 
 /**
+ * The bands a section stacks above its pileup, top to bottom as the display
+ * orders them (`laneBandOrder`), each with the px it reserves: 0 for a band
+ * that is hidden, has nothing to draw, or draws over the coverage band.
+ */
+function bandStackOf(host: AlignmentsTablesHostModel) {
+  const { stack } = pooledLaneBands(host)
+  return {
+    key: [...stack.order],
+    heightPx: stack.order.map(key => stack.reserved[key]),
+  }
+}
+
+/**
  * Each section's connectors as the display draws them (`connectorsByGroup`):
  * the straight-line pass's pairs (`linePassInstance`) and the connector
  * mark's (`connectorInstance`), those reaching into a window
@@ -1573,7 +1607,11 @@ function coverageScale(host: AlignmentsTablesHostModel) {
  * names its `region`'s index. `arcScale` is the read-connection band's y
  * scale (`arcBandScale`): the read cloud's log `domain`, or for arcs none,
  * as their linear domain is `[0, reachPx / pxPerBp]` at the host's own
- * scale, and the band they draw in. `warnings` names what the config asked
+ * scale, and the band they draw in. `bandStack` is where each band sits: the
+ * bands a section stacks above its pileup, top to bottom, with the px each
+ * reserves, so a read-connection or sashimi strip listed before `coverage`
+ * sits above it, its arcs rising from its floor, and one after it sits below.
+ * `warnings` names what the config asked
  * for that the tables dropped. For a host that draws them itself, such as R
  * through V8. The adapters must be registered on `pluginManager`
  * (`registerAlignmentsAdapters`).
@@ -1810,6 +1848,7 @@ function laidOutTables(
             regionInfos,
             paint,
             thresholds,
+            junctionBandOf(host, key),
           ),
         },
       })),
@@ -1831,6 +1870,7 @@ function laidOutTables(
     arcLegendTitle: connections.arcLegendTitle,
     arcSpanMax: connections.arcSpanMax,
     arcScale: connections.arcScale,
+    bandStack: bandStackOf(host),
     coverageScale: coverageScale(host),
     glyph: {
       intronAlpha: intronAlpha(featureHeight),

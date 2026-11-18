@@ -47,6 +47,10 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "width": "array",
       "y": "array",
     },
+    "bandStack": {
+      "heightPx": "array",
+      "key": "array",
+    },
     "baseLegend": {
       "color": "array",
       "label": "array",
@@ -174,6 +178,7 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
     "junctionLegendTitle": "string",
     "junctions": {
       "arcHeight": "array",
+      "band": "array",
       "class": "array",
       "color": "array",
       "count": "array",
@@ -322,6 +327,10 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
       "width": "array",
       "y": "array",
     },
+    "bandStack": {
+      "heightPx": "array",
+      "key": "array",
+    },
     "baseLegend": {
       "color": "array",
       "label": "array",
@@ -449,6 +458,7 @@ exports[`each call answers the tables and columns a host reads by name 1`] = `
     "junctionLegendTitle": "string",
     "junctions": {
       "arcHeight": "array",
+      "band": "array",
       "class": "array",
       "color": "array",
       "count": "array",

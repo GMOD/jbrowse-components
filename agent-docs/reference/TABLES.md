@@ -145,6 +145,11 @@ a quiet region.
   (`sashimiStrokeWidth`, in px). `alleleCoverage` has `shown`, true where the
   allele's share of the depth passes `coverage.alleles.filter`, the coverageSnp
   shader's test.
+- `junctions` has `band`, the band the junction's arc draws in: `coverage`, over
+  the histogram, or `sashimi`, the arcs' own strip (`junctionBandOf`, off the
+  display's `sashimiStripKeysByGroup`). Under `sashimi.placement: 'auto'` the two
+  mix. A junction `shown` false names the band its placement gives every
+  junction, and `coverage` under `auto`.
 - `readPitch` gives the read height (`pileup.mark.height`) and the gap below a read
   (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser squeezes the
   pitch to the track's height, which is the host's.
@@ -393,6 +398,16 @@ bounds, nice rounding, a log scale floored at one read), its `type`, the
 at `heightPx`, the px it draws the band at: `coverage.height` bound against the
 track, or with the pileup hidden what the strips leave of a section's slot. Every
 section shares it.
+
+`bandStack` is where each band sits: `key` lists the bands a section stacks above
+its pileup, top to bottom as the display orders them (`laneBandOrder`), and
+`heightPx` the px each reserves, pooled over the sections as `arcScale` is. A
+strip listed before `coverage` sits above it with its arcs rising from its floor
+(`placement: 'above'`). A sashimi strip listed after `coverage` hangs its arcs
+from its top; the read-connection band says which way its arcs go in
+`arcScale.reverse`. A band reserves 0 px where it is hidden, has nothing to draw,
+or draws over the coverage band, which `arcScale.band` and `junctions.band` then
+name.
 
 `glyph` gives the px the band draws in: the triangle's width and height,
 `coverageInset` (the label room the band keeps at both ends, inside which the depth
