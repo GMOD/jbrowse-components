@@ -1,9 +1,14 @@
 import { Dialog } from '@jbrowse/core/ui'
+import DetailTable from '@jbrowse/core/ui/DetailTable'
 import { DialogContent } from '@mui/material'
-import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import { measuredColumns } from '../measuredColumns.ts'
+import type { DetailTableColumn } from '@jbrowse/core/ui/DetailTable'
+
+interface ConsequenceRow {
+  id: number
+  record: Record<string, string>
+}
 
 const VariantConsequenceTableDialog = observer(
   function VariantConsequenceTableDialog({
@@ -17,10 +22,18 @@ const VariantConsequenceTableDialog = observer(
     records: Record<string, string>[]
     onClose: () => void
   }) {
-    const rows = records.map((record, id) => ({ ...record, id }))
+    const rows = records.map((record, id) => ({ id, record }))
+    const columns = fields.map(
+      field =>
+        ({
+          field,
+          value: row => row.record[field],
+        }) satisfies DetailTableColumn<ConsequenceRow>,
+    )
     return (
       <Dialog
         open
+        fullWidth
         maxWidth="xl"
         title={title}
         onClose={() => {
@@ -28,12 +41,11 @@ const VariantConsequenceTableDialog = observer(
         }}
       >
         <DialogContent>
-          <DataGrid
-            rowHeight={25}
-            hideFooter={rows.length < 100}
+          <DetailTable
+            exportName={title}
             rows={rows}
-            showToolbar
-            columns={measuredColumns(rows, fields)}
+            columns={columns}
+            maxHeight={600}
           />
         </DialogContent>
       </Dialog>

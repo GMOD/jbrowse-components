@@ -1,31 +1,30 @@
-import { DataGrid } from '@mui/x-data-grid'
+import DetailTable from '@jbrowse/core/ui/DetailTable'
 import { observer } from 'mobx-react'
 
-import { measuredColumns } from '../measuredColumns.ts'
-
 import type { AlleleFrequency } from './types.ts'
+import type { DetailTableColumn } from '@jbrowse/core/ui/DetailTable'
+
+const columns: DetailTableColumn<AlleleFrequency>[] = [
+  { field: 'allele', header: 'Allele', value: row => row.allele },
+  { field: 'count', header: 'Count', value: row => row.count },
+  { field: 'frequency', header: 'Frequency', value: row => row.frequency },
+]
 
 const VariantAlleleFrequencyTable = observer(
   function VariantAlleleFrequencyTable({
     frequencies,
+    title,
   }: {
     frequencies: AlleleFrequency[]
+    title: React.ReactNode
   }) {
-    const height = 25 + frequencies.length * 25 + 15
     return (
-      <div style={{ height }}>
-        <DataGrid
-          rows={frequencies}
-          hideFooter
-          rowHeight={25}
-          columnHeaderHeight={25}
-          columns={measuredColumns(frequencies, [
-            { field: 'allele', headerName: 'Allele' },
-            { field: 'count', headerName: 'Count' },
-            { field: 'frequency', headerName: 'Frequency' },
-          ])}
-        />
-      </div>
+      <DetailTable
+        title={title}
+        exportName="allele-frequencies"
+        rows={frequencies}
+        columns={columns}
+      />
     )
   },
 )

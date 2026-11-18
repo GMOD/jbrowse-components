@@ -76,3 +76,82 @@ test('"GT+resolved genotype" keeps genotype but drops other FORMAT columns', () 
     screen.queryByRole('columnheader', { name: 'DP' }),
   ).not.toBeInTheDocument()
 })
+
+test('the search narrows the samples and counts what it kept', () => {
+  setup(heterogeneousFeature)
+  fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
+    target: { value: 'hg002' },
+  })
+  expect(screen.getByRole('status')).toHaveTextContent('1 of 2')
+  expect(screen.getByText('HG002')).toBeInTheDocument()
+  expect(screen.queryByText('HG001')).not.toBeInTheDocument()
+})
+
+describe('the genotype table', () => {
+  const cohort = {
+    ...baseFeature,
+    samples: {
+      S1: { GT: ['0/1'] },
+      S2: { GT: ['1/1'] },
+      S3: { GT: ['0/1'] },
+    },
+  }
+
+  beforeEach(() => {
+    localStorage.setItem('variantSampleGrid-showFrequencyTable', 'true')
+  })
+
+  function checkbox(name: string) {
+    return screen.getByRole('checkbox', { name })
+  }
+
+  function genotypeRow(gt: string) {
+    return screen.getAllByRole('row').find(r => r.textContent.startsWith(gt))!
+  }
+
+  test('starts with every genotype checked and no filter', () => {
+    setup(cohort)
+    expect(checkbox('Select all genotypes')).toBeChecked()
+    expect(checkbox('Select 0/1')).toBeChecked()
+    expect(screen.getByText(/Samples\s*\(3\)/)).toBeInTheDocument()
+  })
+
+  test('unchecking a genotype filters it out, and checking it again is no filter', () => {
+    setup(cohort)
+    fireEvent.click(checkbox('Select 1/1'))
+    expect(screen.getByText(/Samples\s*\(2 of 3\)/)).toBeInTheDocument()
+    expect(checkbox('Select all genotypes')).toHaveAttribute(
+      'data-indeterminate',
+      'true',
+    )
+    fireEvent.click(checkbox('Select 1/1'))
+    expect(screen.getByText(/Samples\s*\(3\)/)).toBeInTheDocument()
+  })
+
+  test('re-checking every genotype is no filter, so a genotype that appears later shows', () => {
+    localStorage.setItem('variantSampleGrid-showFilters', 'true')
+    setup({ ...cohort, samples: { ...cohort.samples, S4: { GT: ['0/0'] } } })
+    const sampleFilter = screen.getByRole('textbox', { name: 'Filter sample' })
+    fireEvent.change(sampleFilter, { target: { value: 'S[123]' } })
+    fireEvent.click(checkbox('Select 1/1'))
+    fireEvent.click(checkbox('Select 1/1'))
+    fireEvent.change(sampleFilter, { target: { value: '' } })
+    expect(screen.getByText(/Samples\s*\(4\)/)).toBeInTheDocument()
+  })
+
+  test('select-all clears every genotype, then restores no filter', () => {
+    setup(cohort)
+    fireEvent.click(checkbox('Select all genotypes'))
+    expect(screen.getByText(/Samples\s*\(0 of 3\)/)).toBeInTheDocument()
+    fireEvent.click(checkbox('Select all genotypes'))
+    expect(screen.getByText(/Samples\s*\(3\)/)).toBeInTheDocument()
+  })
+
+  test('clicking a row shows only its genotype, and clicking it again shows all', () => {
+    setup(cohort)
+    fireEvent.click(genotypeRow('1/1'))
+    expect(screen.getByText(/Samples\s*\(1 of 3\)/)).toBeInTheDocument()
+    fireEvent.click(genotypeRow('1/1'))
+    expect(screen.getByText(/Samples\s*\(3\)/)).toBeInTheDocument()
+  })
+})

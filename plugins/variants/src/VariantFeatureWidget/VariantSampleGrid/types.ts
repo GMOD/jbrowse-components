@@ -1,11 +1,3 @@
-interface FrequencyTableEntry {
-  count: number
-  GT: string
-  genotype: string
-}
-
-export type FrequencyTable = Record<string, FrequencyTableEntry>
-
 export interface AlleleFrequency {
   id: string
   allele: string

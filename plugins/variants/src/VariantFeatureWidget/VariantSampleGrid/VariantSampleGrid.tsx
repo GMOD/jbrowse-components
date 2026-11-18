@@ -3,15 +3,14 @@ import { useMemo, useState } from 'react'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { ErrorBanner } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
+import ControlRow from '@jbrowse/core/ui/ControlRow'
+import DetailTable from '@jbrowse/core/ui/DetailTable'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
-import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import { measuredColumns } from '../measuredColumns.ts'
 import VariantAlleleFrequencyTable from './VariantAlleleFrequencyTable.tsx'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable.tsx'
 import SampleFilters from './VariantSampleFilters.tsx'
@@ -23,7 +22,8 @@ import {
 } from './getSampleGridRows.ts'
 
 import type { Descriptions, VCFFeatureSerialized } from '../types.ts'
-import type { Filters, InfoFields } from './types.ts'
+import type { Filters, InfoFields, VariantSampleGridRow } from './types.ts'
+import type { DetailTableColumn } from '@jbrowse/core/ui/DetailTable'
 
 // One entry per mode: its toggle-button label and which columns it shows. Adding
 // a mode here adds its button and its filter, with no third list to update.
@@ -81,10 +81,6 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
     'variantSampleGrid-showAlleleFrequencies',
     true,
   )
-  const [showToolbar, setShowToolbar] = useLocalStorage(
-    'variantSampleGrid-showToolbar',
-    false,
-  )
   const [useCounts, setUseCounts] = useLocalStorage(
     'variantSampleGrid-useCounts',
     false,
@@ -134,8 +130,7 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
   // Columns are the union of FORMAT fields across every sample, not just
   // rows[0]: VCF lets a sample drop trailing fields (a bare "0/1" call yields
   // only GT), so keying off the first row alone would hide columns other
-  // samples populate. measureGridWidth also scans every row per column, so
-  // memoize alongside the row build rather than re-measuring on each keystroke.
+  // samples populate.
   const columns = useMemo(() => {
     const fields = new Set<string>()
     for (const row of rows) {
@@ -145,19 +140,25 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
         }
       }
     }
-    return measuredColumns(
-      rows,
-      ['sample', ...fields].map(field => ({
-        field,
-        description: descriptions?.FORMAT?.[field]?.Description,
-      })),
+    return ['sample', ...fields].map(
+      field =>
+        ({
+          field,
+          description: descriptions?.FORMAT?.[field]?.Description,
+          value: row => row[field],
+        }) satisfies DetailTableColumn<VariantSampleGridRow>,
     )
   }, [rows, descriptions])
+  const shownColumns = useMemo(
+    () =>
+      columns.filter(c => columnDisplayModes[columnDisplayMode].shows(c.field)),
+    [columns, columnDisplayMode],
+  )
 
   return !rows.length ? null : (
     <BaseCard title="Samples">
       {error ? <ErrorBanner error={error} /> : null}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <ControlRow>
         <CascadingMenuButton
           menuItems={[
             {
@@ -195,14 +196,6 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
                 setShowFilters(!showFilters)
               },
             },
-            {
-              label: 'Show toolbar',
-              type: 'checkbox',
-              checked: showToolbar,
-              onClick: () => {
-                setShowToolbar(!showToolbar)
-              },
-            },
           ]}
         >
           <SettingsIcon />
@@ -223,7 +216,7 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
-      </div>
+      </ControlRow>
 
       {showFilters ? (
         <SampleFilters
@@ -234,53 +227,47 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
       ) : null}
 
       {showFrequencyTable ? (
-        <>
-          <Typography variant="subtitle2" style={{ marginTop: 8 }}>
-            Genotype frequencies (click to filter)
-          </Typography>
-          <ErrorBoundary FallbackComponent={ErrorBanner}>
-            <VariantGenotypeFrequencyTable
-              rows={allelePicked}
-              selectedGenotypes={selectedGenotypes}
-              setSelectedGenotypes={setSelectedGenotypes}
-              showToolbar={showToolbar}
-            />
-          </ErrorBoundary>
-        </>
+        <ErrorBoundary FallbackComponent={ErrorBanner}>
+          <VariantGenotypeFrequencyTable
+            title={
+              <Typography variant="subtitle2">
+                Genotype frequencies (click to filter)
+              </Typography>
+            }
+            rows={allelePicked}
+            selectedGenotypes={selectedGenotypes}
+            setSelectedGenotypes={setSelectedGenotypes}
+          />
+        </ErrorBoundary>
       ) : null}
 
       {showAlleleFrequencies && alleleFrequencies.length ? (
-        <>
-          <Typography variant="subtitle2" style={{ marginTop: 8 }}>
-            Allele frequencies
-          </Typography>
-          <ErrorBoundary FallbackComponent={ErrorBanner}>
-            <VariantAlleleFrequencyTable frequencies={alleleFrequencies} />
-          </ErrorBoundary>
-        </>
+        <ErrorBoundary FallbackComponent={ErrorBanner}>
+          <VariantAlleleFrequencyTable
+            title={
+              <Typography variant="subtitle2">Allele frequencies</Typography>
+            }
+            frequencies={alleleFrequencies}
+          />
+        </ErrorBoundary>
       ) : null}
 
-      <Typography variant="subtitle2" style={{ marginTop: 16 }}>
-        Samples{' '}
-        {filteredRows.length === textFilteredRows.length
-          ? `(${textFilteredRows.length})`
-          : `(${filteredRows.length} of ${textFilteredRows.length})`}
-        {selectedAlt === null
-          ? ''
-          : ` carrying ${selectedAlt === 0 ? 'REF' : `ALT ${selectedAlt}`}`}
-      </Typography>
-      <DataGridFlexContainer>
-        <DataGrid
-          rows={filteredRows}
-          hideFooter={filteredRows.length < 100}
-          columns={columns.filter(c =>
-            columnDisplayModes[columnDisplayMode].shows(c.field),
-          )}
-          rowHeight={25}
-          columnHeaderHeight={25}
-          showToolbar={showToolbar}
-        />
-      </DataGridFlexContainer>
+      <DetailTable
+        title={
+          <Typography variant="subtitle2">
+            Samples{' '}
+            {filteredRows.length === textFilteredRows.length
+              ? `(${textFilteredRows.length})`
+              : `(${filteredRows.length} of ${textFilteredRows.length})`}
+            {selectedAlt === null
+              ? ''
+              : ` carrying ${selectedAlt === 0 ? 'REF' : `ALT ${selectedAlt}`}`}
+          </Typography>
+        }
+        exportName="samples"
+        rows={filteredRows}
+        columns={shownColumns}
+      />
     </BaseCard>
   )
 })
