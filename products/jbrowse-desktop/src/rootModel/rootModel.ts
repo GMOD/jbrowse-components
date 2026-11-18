@@ -58,9 +58,12 @@ import type {
   AbstractSessionModel,
   DialogComponentType,
   FileLocation,
+  IsAny,
 } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
+  AssertExtends,
+  AssertNotAny,
   BaseRootModel,
   SessionWithSessionTracks,
 } from '@jbrowse/product-core'
@@ -543,7 +546,10 @@ export type DesktopRootModel = Instance<DesktopRootModelType>
 // Verify DesktopRootModel satisfies AppSessionRoot at compile time. If this
 // errors, the root model is missing something the app session layer
 // (AppSessionMixin) delegates to via self.root.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _checkDesktopRootModel(m: DesktopRootModel): AppSessionRoot {
-  return m
-}
+export type _DesktopRootModelContracts = AssertExtends<
+  DesktopRootModel,
+  AppSessionRoot
+>
+export type _SessionIsTyped = AssertNotAny<
+  IsAny<NonNullable<DesktopRootModel['session']>>
+>

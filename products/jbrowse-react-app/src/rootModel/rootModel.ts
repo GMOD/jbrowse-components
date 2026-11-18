@@ -29,8 +29,13 @@ import type { AbstractWebRootModel } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
+import type { IsAny } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { SessionSnapshot } from '@jbrowse/product-core'
+import type {
+  AssertExtends,
+  AssertNotAny,
+  SessionSnapshot,
+} from '@jbrowse/product-core'
 
 /**
  * What a host needs to rebuild the app after its plugin set changed: the
@@ -186,7 +191,10 @@ export type WebRootModel = Instance<WebRootModelType>
 // the saved-session database (AbstractWebSessionDbRootModel), so it satisfies
 // only the narrow contract its session (BaseWebSession, without the management
 // mixin) requires.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _checkReactAppRootModel(m: WebRootModel): AbstractWebRootModel {
-  return m
-}
+export type _ReactAppRootModelContracts = AssertExtends<
+  WebRootModel,
+  AbstractWebRootModel
+>
+export type _SessionIsTyped = AssertNotAny<
+  IsAny<NonNullable<WebRootModel['session']>>
+>

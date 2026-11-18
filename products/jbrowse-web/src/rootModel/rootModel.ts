@@ -59,7 +59,9 @@ import type {
   AbstractWebSessionDbRootModel,
 } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { IsAny } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { AssertExtends, AssertNotAny } from '@jbrowse/product-core'
 
 // lazies
 const SetDefaultSession = lazy(
@@ -633,9 +635,10 @@ export type WebRootModel = Instance<WebRootModelType>
 // this errors, the root model is missing something BaseWebSession expects
 // (AbstractWebRootModel) or the management mixin expects
 // (AbstractWebSessionDbRootModel).
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _checkWebRootModel(
-  m: WebRootModel,
-): AbstractWebRootModel & AbstractWebSessionDbRootModel {
-  return m
-}
+export type _WebRootModelContracts = AssertExtends<
+  WebRootModel,
+  AbstractWebRootModel & AbstractWebSessionDbRootModel
+>
+export type _SessionIsTyped = AssertNotAny<
+  IsAny<NonNullable<WebRootModel['session']>>
+>
