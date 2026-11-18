@@ -44,7 +44,16 @@ once per display that embeds it, so read the trend, not the size.
 surface on one page, its first table each path whose members differ between
 displays or a display's parts, with the ruling on each.
 
-- The last shared-path change is two beta-only retired keys leaving the
+- The last shared-path change is `MultiWaySyntenyDisplay.rows.colors`
+  (2026-11-17, +1 shared, 4298f28b66), a pinned color per lane. Before it,
+  2026-11-16 added +14 and removed −4 shared, all additive for a writer:
+  `aliases` on every track type and `config.tracks[]` (5b902ebecf), a
+  track's old ids that still open it; `configuration.hierarchical.table`
+  with its `columns` (153e051555), the track table's column ranking; and
+  `LinearWiggleDisplay.rows` and `rows.field` dropping their `source`-only
+  enum (1981371229), since `rows.field` now takes any subtrack attribute.
+  The ggjbrowse canary passed on 4777224ccc, which holds all four.
+- Before those, two beta-only retired keys left the
   schema (2026-11-13, −4 shared, each also leaving its track's
   `displayDefaults`): `LinearMafDisplay.rowHeight` and
   `LinearVariantDisplay.referenceDrawingMode`, which the retired-keys gate
