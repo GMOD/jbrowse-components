@@ -9,7 +9,8 @@ import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 
 /**
  * A table of its own for the lifetime of a dialog, destroyed on unmount. The
- * drawer's table is the track selector's `trackTable`.
+ * drawer's table is the track selector's `trackTable`, whose column choices
+ * this one shows and edits.
  *
  * getTracks is stored once and called from inside MobX computeds, so it must
  * read the live config tree (e.g. a model getter) rather than close over an
@@ -30,6 +31,7 @@ export function useTrackTable(
   const table = useCreateOnce(() => {
     const ret = trackTableModelFactory().create()
     ret.setTrackSource(getTracks, getSession(model), model.assemblyNames)
+    ret.shareColumnChoices(model.trackTable)
     return ret
   })
   useFinalUnmount(() => {

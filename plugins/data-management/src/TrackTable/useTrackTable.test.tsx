@@ -1,7 +1,9 @@
+import { getSession } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { render } from '@testing-library/react'
 
+import { trackTableModelFactory } from './trackTableModel.ts'
 import { useTrackTable } from './useTrackTable.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
@@ -76,4 +78,27 @@ test('a real unmount destroys the model', async () => {
   await Promise.resolve()
 
   expect(isAlive(held!)).toBe(false)
+})
+
+test("a folder table and the drawer's keep each other's column choices", () => {
+  const model = setup()
+  let folder: ReturnType<typeof useTrackTable> | undefined
+  function Probe() {
+    folder = useTrackTable(model, () => model.allTrackConfigurations)
+    return null
+  }
+  render(<Probe />, strict)
+  folder!.setColumnVisible('description', true)
+  model.trackTable.setColumnVisible('adapter', false)
+
+  const reloaded = trackTableModelFactory().create()
+  reloaded.setTrackSource(
+    () => model.allTrackConfigurations,
+    getSession(model),
+    model.assemblyNames,
+  )
+  for (const table of [folder!, model.trackTable, reloaded]) {
+    expect(table.chosenColumns.shown).toEqual(['description'])
+    expect([...table.chosenColumns.hidden]).toEqual(['adapter'])
+  }
 })

@@ -43,6 +43,11 @@ export interface ColumnChoice {
   show: boolean
 }
 
+interface ColumnChoicesOwner {
+  columnChoices: ColumnChoice[]
+  setColumnChoices: (choices: ColumnChoice[]) => void
+}
+
 // Column choices are config+assembly scoped: the metadata columns differ per
 // dataset, so a choice shouldn't carry over to an unrelated config.
 function columnChoicesKey(assemblyNames: string[]) {
@@ -197,6 +202,13 @@ export function trackTableModelFactory() {
       columnChoices: [] as ColumnChoice[],
       /**
        * #volatile
+       * the table holding this one's column choices, when another does: a
+       * folder dialog's table shares the drawer's, so neither overwrites the
+       * other's choice under their common localStorage key
+       */
+      columnChoicesOwner: undefined as ColumnChoicesOwner | undefined,
+      /**
+       * #volatile
        */
       session: undefined as AbstractSessionModel | undefined,
     }))
@@ -215,6 +227,19 @@ export function trackTableModelFactory() {
         self.session = session
         self.assemblyNames = assemblyNames
         self.columnChoices = readColumnChoices(assemblyNames)
+      },
+      /**
+       * #action
+       */
+      shareColumnChoices(owner: ColumnChoicesOwner) {
+        self.columnChoicesOwner = owner
+      },
+      /**
+       * #action
+       */
+      setColumnChoices(choices: ColumnChoice[]) {
+        self.columnChoices = choices
+        localStorageSetJSON(columnChoicesKey(self.assemblyNames), choices)
       },
       /**
        * #action
@@ -251,20 +276,19 @@ export function trackTableModelFactory() {
       setTextKeptIdsSource(getTextKeptIds: () => Set<string> | undefined) {
         self.getTextKeptIds = getTextKeptIds
       },
+    }))
+    .actions(self => ({
       /**
        * #action
        * records the user's Manage columns choice, which beats the default
        * either way; hiding the sorted column drops the sort
        */
       setColumnVisible(field: string, show: boolean) {
-        self.columnChoices = [
-          ...self.columnChoices.filter(c => c.field !== field),
+        const owner = self.columnChoicesOwner ?? self
+        owner.setColumnChoices([
+          ...owner.columnChoices.filter(c => c.field !== field),
           { field, show },
-        ]
-        localStorageSetJSON(
-          columnChoicesKey(self.assemblyNames),
-          self.columnChoices,
-        )
+        ])
         if (!show && self.sortField === field) {
           self.sortField = ''
         }
@@ -485,7 +509,9 @@ export function trackTableModelFactory() {
        */
       get chosenColumns() {
         const known = new Set(self.fields)
-        const choices = self.columnChoices.filter(c => known.has(c.field))
+        const choices = (self.columnChoicesOwner ?? self).columnChoices.filter(
+          c => known.has(c.field),
+        )
         return {
           shown: choices.filter(c => c.show).map(c => c.field),
           hidden: new Set(choices.filter(c => !c.show).map(c => c.field)),
