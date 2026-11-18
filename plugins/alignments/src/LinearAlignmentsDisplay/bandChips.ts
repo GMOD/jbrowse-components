@@ -6,11 +6,9 @@ import type { Section } from './sectionLayout.ts'
 
 export type BandChipKey = 'coverage' | 'sashimi' | 'readConnections' | 'pileup'
 
-// A row of chips heads one band, and the coverage's also names the arcs drawn
-// over the histogram.
 export interface BandChipRow {
   band: BandChipKey
-  // Content space, at the top of the band the row heads.
+  // Content space.
   top: number
   chips: BandChipKey[]
 }
@@ -19,9 +17,12 @@ export type BandChipLane = Pick<
   Section,
   'coverageTop' | 'bands' | 'arcBand' | 'pileupTop' | 'pileupHeight'
 > & {
-  // Whether a splice or split junction draws over this lane's coverage.
   sashimiOverCoverage: boolean
 }
+
+const STRIP_KEYS = ['readConnections', 'sashimi'] as const
+
+const OVER_COVERAGE_KEYS = ['sashimi', 'readConnections'] as const
 
 function arcsOverCoverage(lane: BandChipLane) {
   return (
@@ -31,14 +32,23 @@ function arcsOverCoverage(lane: BandChipLane) {
   )
 }
 
+function drawsOverCoverage(
+  lanes: readonly BandChipLane[],
+  key: (typeof OVER_COVERAGE_KEYS)[number],
+) {
+  return key === 'sashimi'
+    ? lanes.some(l => l.sashimiOverCoverage)
+    : lanes.some(arcsOverCoverage)
+}
+
 function stripRow(
   lanes: readonly BandChipLane[],
-  band: 'readConnections' | 'sashimi',
-) {
+  band: (typeof STRIP_KEYS)[number],
+): BandChipRow | undefined {
   const lane = lanes.find(l => l.bands.reserved[band] > 0)
   return lane
-    ? [{ band, top: lane.coverageTop + lane.bands.top[band], chips: [band] }]
-    : []
+    ? { band, top: lane.coverageTop + lane.bands.top[band], chips: [band] }
+    : undefined
 }
 
 /**
@@ -50,41 +60,30 @@ function stripRow(
 export function bandChipRows(
   lanes: readonly BandChipLane[],
   showPileup: boolean,
-): BandChipRow[] {
+) {
   const first = lanes[0]
-  const coverageShown = first !== undefined && first.bands.reserved.coverage > 0
-  const coverageChips: BandChipKey[] = coverageShown
-    ? [
-        'coverage',
-        ...(lanes.some(l => l.sashimiOverCoverage) ? ['sashimi' as const] : []),
-        ...(lanes.some(arcsOverCoverage) ? ['readConnections' as const] : []),
-      ]
-    : []
   const pileupLane = showPileup
     ? lanes.find(l => l.pileupHeight > 0)
     : undefined
-  const rows: BandChipRow[] = [
-    ...(first && coverageShown
-      ? [
-          {
-            band: 'coverage' as const,
-            top: first.coverageTop,
-            chips: coverageChips,
-          },
-        ]
-      : []),
-    ...stripRow(lanes, 'readConnections'),
-    ...stripRow(lanes, 'sashimi'),
-    ...(pileupLane
-      ? [
-          {
-            band: 'pileup' as const,
-            top: pileupLane.pileupTop,
-            chips: ['pileup' as const],
-          },
-        ]
-      : []),
-  ]
+  const coverageRow: BandChipRow | undefined =
+    first && first.bands.reserved.coverage > 0
+      ? {
+          band: 'coverage',
+          top: first.coverageTop,
+          chips: [
+            'coverage',
+            ...OVER_COVERAGE_KEYS.filter(key => drawsOverCoverage(lanes, key)),
+          ],
+        }
+      : undefined
+  const pileupRow: BandChipRow | undefined = pileupLane
+    ? { band: 'pileup', top: pileupLane.pileupTop, chips: ['pileup'] }
+    : undefined
+  const rows = [
+    coverageRow,
+    ...STRIP_KEYS.map(band => stripRow(lanes, band)),
+    pileupRow,
+  ].filter(row => row !== undefined)
   return rows.reduce((n, row) => n + row.chips.length, 0) > 1 ? rows : []
 }
 
