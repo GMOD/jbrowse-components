@@ -9,8 +9,10 @@ import {
   internGenotype,
 } from '../../shared/genotypeCodec.ts'
 import {
+  CELL_ALT,
   CELL_ALT_NO_PHASE_SET,
   CELL_ALT_SECONDARY,
+  CELL_NO_CALL,
 } from '../../shared/variantCellStyles.ts'
 import { keyedVariantsFetched } from '../keyedVariants.ts'
 import {
@@ -975,6 +977,54 @@ describe('computeVariantCells cellAltDosage', () => {
     expect(byRow.get(1)).toBe(0) // `./0`
   })
 })
+
+// A reference call and a no-call both carry dosage 0, and only the no-call
+// paints with the alts, so the bucket cannot come from the dosage alone.
+test.each([
+  { gt: '0/0', underTheRest: true, category: 0, dosage: 0 },
+  { gt: './.', underTheRest: false, category: CELL_NO_CALL, dosage: 0 },
+  { gt: '0/1', underTheRest: false, category: CELL_ALT, dosage: 128 },
+  { gt: './1', underTheRest: false, category: CELL_ALT, dosage: 255 },
+])(
+  'an allele-count $gt cell takes its bucket, category and fill from the genotype',
+  async ({ gt, underTheRest, category, dosage }) => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const { getAlleleColor } = await import('../../shared/drawAlleleCount.ts')
+    const reference = makeFeature(
+      { genotypes: { S1: '0/0' }, ALT: ['T'], REF: 'A', start: 50, end: 51 },
+      'reference',
+    )
+    const feature = makeFeature({
+      genotypes: { S1: gt },
+      ALT: ['T'],
+      REF: 'A',
+      start: 100,
+      end: 101,
+    })
+    const result = computeVariantCells({
+      filteredVariants: [reference, feature].map(f => ({
+        feature: f,
+        mostFrequentAlt: '1',
+      })),
+      sources: [{ name: 'S1', sampleName: 'S1' }],
+      rowsField: 'sample',
+      showReference: true,
+      ...genotypeArgs([reference, feature]),
+    })
+    const cell = [...result.cellFeatureIndices].indexOf(1)
+    expect({
+      underTheRest: cell < result.refCellCount,
+      category: Math.log2(result.featureCategories[1]!),
+      color: result.cellColors[cell],
+      dosage: result.cellAltDosage[cell],
+    }).toEqual({
+      underTheRest,
+      category,
+      color: getCachedABGR(getAlleleColor(gt)),
+      dosage,
+    })
+  },
+)
 
 describe('phase-set coloring classifies from the allele, not the color', () => {
   // The PS path is the one place left that resolves a color per cell rather

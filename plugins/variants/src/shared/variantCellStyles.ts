@@ -1,5 +1,5 @@
 import { buildSourceSampleIndices } from '../VariantRPC/analyzeVariants.ts'
-import { BLACK_ABGR, NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
+import { BLACK_ABGR, NO_CALL_COLOR } from './constants.ts'
 import { getAlleleColor } from './drawAlleleCount.ts'
 import {
   altDosageByte,
@@ -72,11 +72,7 @@ function styleForAllele(
 /**
  * One genotype's style in allele-count (dosage) mode, the same at every site,
  * so `makeSiteStyler` memoizes it per genotype code for the whole fetch.
- *
- * `altDosage` (and so `isAlt`) comes from the genotype, since the dosage shades
- * are colord output and equal no color constant. `isRef` reads the color
- * because `getAlleleColor` returns `REFERENCE_COLOR` by identity for an
- * all-reference call.
+ * Classified from the genotype, as `getAlleleColor` is.
  */
 function buildAlleleCountStyle(
   genotype: string,
@@ -86,9 +82,9 @@ function buildAlleleCountStyle(
   if (!color) {
     return null
   }
-  const isRef = color === REFERENCE_COLOR
-  const altDosage = isRef ? 0 : altDosageByte(genotype)
+  const altDosage = altDosageByte(genotype)
   const isAlt = altDosage > 0
+  const isRef = !isAlt && !isNoCall(genotype)
   return {
     abgr: getCachedABGR(color),
     isRef,
