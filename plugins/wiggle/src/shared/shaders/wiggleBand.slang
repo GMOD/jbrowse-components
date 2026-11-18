@@ -10,6 +10,7 @@
 import antialias;
 import hpmath;
 import colorPack;
+import colorRampLut;
 import markColor;
 import wiggleCommon;
 
@@ -121,9 +122,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     if (c <= 0.0) {
       discard;
     }
-    float3 ramp = lineColorAt(
-      y, fragIn.rowTop, u.rowHeight, fragIn.cutYsLo,
-      fragIn.cutYsHi, u, fragIn.posColor, fragIn.negColor, colorRamp).rgb;
+    float3 ramp = rampColor(
+      colorRamp,
+      rampMidT(rowYPxToNorm(y, fragIn.rowTop, u.rowHeight), u.rampMidNorm)).rgb;
     float rampAlpha = WHISKER_BAND_OPACITY * c;
     return float4(ramp * rampAlpha, rampAlpha);
   }
