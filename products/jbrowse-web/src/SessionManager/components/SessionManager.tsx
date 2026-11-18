@@ -5,9 +5,10 @@ import { SearchField } from '@jbrowse/core/ui/ClearableSearchField'
 import ControlRow from '@jbrowse/core/ui/ControlRow'
 import VirtualTable, { useTableSort } from '@jbrowse/core/ui/VirtualTable'
 import {
-  searchHighlightPatterns,
-  splitSearchWords,
-} from '@jbrowse/core/util/tableText'
+  buildSearchText,
+  highlightPatterns,
+  searchMatcher,
+} from '@jbrowse/core/util/searchText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -79,12 +80,9 @@ const SessionManager = observer(function SessionManager({
   const [deleteOldOpen, setDeleteOldOpen] = useState(false)
   const [searchText, setSearchText] = useState('')
   const rows = buildRows(session)
-  const words = splitSearchWords(searchText)
-  const searched = words.length
-    ? rows?.filter(row => {
-        const name = row.name.toLowerCase()
-        return words.every(word => name.includes(word))
-      })
+  const matches = searchMatcher(searchText)
+  const searched = matches
+    ? rows?.filter(row => matches(buildSearchText([row.name])))
     : rows
   const { sortedRows, sortProps, sortResetKey } = useTableSort(
     searched ?? [],
@@ -146,9 +144,9 @@ const SessionManager = observer(function SessionManager({
             }}
             {...sortProps}
             resetKey={JSON.stringify([searchText, sortResetKey])}
-            highlightPatterns={searchHighlightPatterns(words)}
+            highlightPatterns={highlightPatterns(searchText)}
             emptyMessage={
-              words.length ? 'No matching sessions' : 'No saved sessions'
+              matches ? 'No matching sessions' : 'No saved sessions'
             }
             testId="session-manager-table"
           />

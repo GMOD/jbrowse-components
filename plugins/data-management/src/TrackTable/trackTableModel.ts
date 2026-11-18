@@ -6,13 +6,14 @@ import {
   localStorageSetJSON,
   measureGridWidth,
 } from '@jbrowse/core/util'
+import { searchMatcher } from '@jbrowse/core/util/searchText'
 import { compareValues } from '@jbrowse/core/util/tableText'
 import { trackCatalogEntry } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
 import { configScopedKey } from '../shared/configScopedKey.ts'
-import { buildSearchText, searchMatcher } from '../shared/searchText.ts'
+import { buildTrackSearchText } from '../shared/searchText.ts'
 import { measureNameColumnWidth } from '../shared/trackGridUtils.ts'
 import {
   facetLabel,
@@ -361,7 +362,7 @@ export function trackTableModelFactory() {
         return self.allRows.map(row => ({
           row,
           text: rowSearchText(row),
-          name: buildSearchText([row.name]),
+          name: buildTrackSearchText([row.name]),
         }))
       },
     }))

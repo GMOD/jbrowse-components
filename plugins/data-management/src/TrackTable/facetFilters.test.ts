@@ -1,4 +1,5 @@
-import { searchMatcher } from '../shared/searchText.ts'
+import { searchMatcher } from '@jbrowse/core/util/searchText'
+
 import {
   countFacetValues,
   filterRowsByFacets,

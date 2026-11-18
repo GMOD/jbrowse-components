@@ -4,9 +4,10 @@ import { observer } from 'mobx-react'
 
 import { measureGridWidth } from '../../util/dataGridUtils.ts'
 import {
-  searchHighlightPatterns,
-  splitSearchWords,
-} from '../../util/tableText.ts'
+  buildSearchText,
+  highlightPatterns,
+  searchMatcher,
+} from '../../util/searchText.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import VirtualTable from '../VirtualTable/VirtualTable.tsx'
 import { useTableSort } from '../VirtualTable/useTableSort.ts'
@@ -88,23 +89,12 @@ const DetailTable = observer(function DetailTable<
   )
   const searchTexts = useMemo(() => {
     const texts = columns.map(columnText)
-    return rows.map(row =>
-      texts
-        .map(text => text(row))
-        .join('\u0000')
-        .toLowerCase(),
-    )
+    return rows.map(row => buildSearchText(texts.map(text => text(row))))
   }, [rows, columns])
-  const words = useMemo(() => splitSearchWords(searchText), [searchText])
-  const searchedRows = useMemo(
-    () =>
-      words.length
-        ? rows.filter((_, i) =>
-            words.every(word => searchTexts[i]!.includes(word)),
-          )
-        : rows,
-    [rows, searchTexts, words],
-  )
+  const searchedRows = useMemo(() => {
+    const matches = searchMatcher(searchText)
+    return matches ? rows.filter((_, i) => matches(searchTexts[i]!)) : rows
+  }, [rows, searchTexts, searchText])
   const {
     sortedRows: shownRows,
     sortProps,
@@ -147,7 +137,7 @@ const DetailTable = observer(function DetailTable<
           onRowClick={onRowClick}
           {...sortProps}
           resetKey={JSON.stringify([searchText, sortResetKey])}
-          highlightPatterns={searchHighlightPatterns(words)}
+          highlightPatterns={highlightPatterns(searchText)}
           emptyMessage={rows.length ? 'No rows match the search' : 'No rows'}
         />
       </div>

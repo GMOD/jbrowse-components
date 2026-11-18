@@ -9,6 +9,7 @@ import {
   localStorageSetJSON,
   notEmpty,
 } from '@jbrowse/core/util'
+import { searchMatcher } from '@jbrowse/core/util/searchText'
 import { filterTracks, offeredTracks } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
@@ -17,7 +18,6 @@ import { autorun, compareShallow, computed, observable, reaction } from 'mobx'
 import { naturalTableWidth } from '../TrackTable/components/tableLayout.ts'
 import { trackTableModelFactory } from '../TrackTable/trackTableModel.ts'
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
-import { searchMatcher } from '../shared/searchText.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
 import { sortSources } from './sortUtils.ts'
 import {

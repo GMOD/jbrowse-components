@@ -80,17 +80,3 @@ export function csvLine(fields: string[]) {
 export function csvText(headers: string[], rows: string[][]) {
   return [csvLine(headers), ...rows.map(csvLine)].join('\r\n')
 }
-
-/** a search box's words, lowercased; a row matches when it holds each one */
-export function splitSearchWords(text: string) {
-  return text.toLowerCase().split(/\s+/).filter(Boolean)
-}
-
-function escapeRegExp(text: string) {
-  return text.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-/** what a table highlights for `splitSearchWords`, case-insensitively */
-export function searchHighlightPatterns(words: string[]) {
-  return words.map(word => new RegExp(escapeRegExp(word), 'giu'))
-}

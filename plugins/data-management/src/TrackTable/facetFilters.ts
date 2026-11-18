@@ -1,4 +1,4 @@
-import { buildSearchText } from '../shared/searchText.ts'
+import { buildTrackSearchText } from '../shared/searchText.ts'
 import { getRowStr } from './components/util.ts'
 import { getRootKeys } from './tableUtil.ts'
 
@@ -7,9 +7,9 @@ import type { Row } from './components/util.ts'
 /**
  * The text a free-text query matches a row against: every column the grid
  * renders — name, category, adapter, description and each metadata column —
- * normalized by buildSearchText, which the tree's rows go through too. Built
- * once per row in searchTexts, only while the table does the search, so a
- * keystroke neither re-reads configs nor re-strips HTML.
+ * normalized by buildTrackSearchText, which the tree's rows go through too.
+ * Built once per row in searchTexts, only while the table does the search, so
+ * a keystroke neither re-reads configs nor re-strips HTML.
  */
 export function rowSearchText(row: {
   name: string
@@ -19,7 +19,7 @@ export function rowSearchText(row: {
   description?: string
   metadata: Record<string, unknown>
 }) {
-  return buildSearchText([
+  return buildTrackSearchText([
     row.name,
     row.kind,
     row.category,

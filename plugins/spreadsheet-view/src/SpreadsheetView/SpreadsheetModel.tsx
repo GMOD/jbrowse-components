@@ -6,12 +6,12 @@ import {
   selectedFeatureIdFor,
   toLocale,
 } from '@jbrowse/core/util'
+import { buildSearchText, searchMatcher } from '@jbrowse/core/util/searchText'
 import {
   cellText,
   compareValues,
   csvText,
   naturalOrder,
-  splitSearchWords,
 } from '@jbrowse/core/util/tableText'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -430,23 +430,21 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
-       * the words of `filterText`, lowercased
+       * whether a row's search text matches `filterText`, undefined while the
+       * search box holds no terms
        */
-      get searchWords() {
-        return splitSearchWords(self.filterText ?? '')
+      get searchMatches() {
+        return searchMatcher(self.filterText ?? '')
       },
       /**
        * #getter
-       * each row's shown cells as one lowercased string, by row id, which the
-       * search reads on every keystroke
+       * each row's shown cells as search text, by row id, which the search
+       * reads on every keystroke
        */
       get searchTexts() {
         const columns = this.shownColumns
         return (self.rows ?? []).map(row =>
-          columns
-            .map(c => cellText(c.value(row)))
-            .join('\u0000')
-            .toLowerCase(),
+          buildSearchText(columns.map(c => cellText(c.value(row)))),
         )
       },
     }))
@@ -473,14 +471,11 @@ export default function stateModelFactory() {
        * the rows the dropdowns and the search leave, in file order
        */
       get visibleRows() {
-        const { searchWords } = self
+        const { searchMatches } = self
         let rows = this.gridRows
-        if (searchWords.length) {
+        if (searchMatches) {
           const { searchTexts } = self
-          rows = rows?.filter(row => {
-            const text = searchTexts[row.id]!
-            return searchWords.every(word => text.includes(word))
-          })
+          rows = rows?.filter(row => searchMatches(searchTexts[row.id]!))
         }
         return rows
       },

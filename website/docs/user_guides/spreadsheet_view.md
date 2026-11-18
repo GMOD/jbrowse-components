@@ -23,7 +23,8 @@ name or its `#FusionName` header.
 - Click a column header to sort by it; a second click reverses the order and a
   third returns to the file's order
 - Type in **Search rows** to keep the rows where every word appears in some
-  shown column, in any case; the count in the box says how many rows are left
+  shown column, in any case; `"quoted words"` must appear together and `-word`
+  drops the rows holding it. The count in the box says how many rows are left
 - The columns button above the table shows and hides columns, and the search
   reads only the shown ones
 - The export button saves the rows on view, in their order and with their shown

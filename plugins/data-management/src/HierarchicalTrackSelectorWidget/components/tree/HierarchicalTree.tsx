@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 
 import { useSearchHighlight } from '@jbrowse/core/ui/useSearchHighlight'
+import { highlightPatterns } from '@jbrowse/core/util/searchText'
 import { observer } from 'mobx-react'
 
-import { highlightPatterns } from '../../../shared/searchText.ts'
 import SharedTooltip from './SharedTooltip.tsx'
 import TreeItem from './TreeItem.tsx'
 

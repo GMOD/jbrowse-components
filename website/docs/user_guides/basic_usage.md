@@ -241,6 +241,10 @@ Two things happen to values on the way in, with no configuration:
 - **HTML renders after passing through a sanitizer.** Text that only looks like
   a tag is left alone, so a VCF `<TRA>` allele still reads as `<TRA>`
 
+A table in the panel, such as a VCF's samples, has a search box that reads words
+as [the track filter box](#filtering-tracks) does, `"quoted words"` and `-word`
+included.
+
 To add, rename or hide fields, see
 [customizing feature details](/docs/config_guides/customizing_feature_details).
 Gene and transcript features also have a sequence panel, covered in

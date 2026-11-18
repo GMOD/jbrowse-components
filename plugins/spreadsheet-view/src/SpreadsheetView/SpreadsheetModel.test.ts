@@ -533,6 +533,30 @@ describe('the search', () => {
     expect(model.visibleRows?.map(r => r.id)).toEqual([0, 1])
   })
 
+  test('a leading minus leaves out the rows holding the word', () => {
+    const model = sheet()
+    model.setFilterText('bnd -lowqual')
+    expect(model.visibleRows?.map(r => r.id)).toEqual([0])
+  })
+
+  test('a quoted phrase must match as typed, within one column', () => {
+    const model = makeModel({
+      rowSet: {
+        rows: [
+          { cellData: { ID: 'a', NOTE: 'low coverage region' } },
+          { cellData: { ID: 'b', NOTE: 'region of low coverage' } },
+        ],
+      },
+      columns: [{ name: 'ID' }, { name: 'NOTE' }],
+    })
+    model.setFilterText('coverage region')
+    expect(model.visibleRows?.map(r => r.id)).toEqual([0, 1])
+    model.setFilterText('"coverage region"')
+    expect(model.visibleRows?.map(r => r.id)).toEqual([0])
+    model.setFilterText('"a low"')
+    expect(model.visibleRows).toEqual([])
+  })
+
   test('a number matches as its plain digits', () => {
     const model = sheet()
     model.setFilterText('342')

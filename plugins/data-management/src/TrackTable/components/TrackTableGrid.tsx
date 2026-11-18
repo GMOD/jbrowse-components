@@ -1,11 +1,11 @@
 import VirtualTable, { DEFAULT_COL_WIDTH } from '@jbrowse/core/ui/VirtualTable'
 import { coarseStripHTML } from '@jbrowse/core/util'
+import { highlightPatterns } from '@jbrowse/core/util/searchText'
 import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
 
 import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
 import { isUnsupported } from '../../HierarchicalTrackSelectorWidget/util.ts'
-import { highlightPatterns } from '../../shared/searchText.ts'
 import { getRowSelectionState, setTracksSelected } from '../tableSelection.ts'
 import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
 import { CHECKBOX_WIDTH, checkboxSx, useTableStyles } from './tableStyles.ts'

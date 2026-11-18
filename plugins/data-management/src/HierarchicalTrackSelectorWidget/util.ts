@@ -1,6 +1,6 @@
 import { trackCatalogEntry } from '@jbrowse/core/util/tracks'
 
-import { buildSearchText } from '../shared/searchText.ts'
+import { buildTrackSearchText } from '../shared/searchText.ts'
 
 import type {
   TrackNodeSource,
@@ -28,9 +28,10 @@ const sessionTracksCategory = ' Session tracks'
 // Everything the tree needs from a track's config, read once into
 // model.allTracks instead of on every filterText keystroke. searchText covers
 // what a tree row shows — its name, the categories it nests under, and the
-// description it carries as a tooltip — and is normalized by buildSearchText,
-// which the track table's rows go through too. Adapter and metadata are
-// left out here because, unlike in the table grid, the tree renders neither.
+// description it carries as a tooltip — and is normalized by
+// buildTrackSearchText, which the track table's rows go through too. Adapter
+// and metadata are left out here because, unlike in the table grid, the tree
+// renders neither.
 // Each is a raw member read, so a frozen entry answers without hydrating, and
 // supplies the slot's default itself since a frozen entry omits it. sortName is the raw name slot rather than getTrackName, so the unnamed
 // reference sequence track still sorts to the top.
@@ -60,7 +61,7 @@ export function trackNodeSourceFor(
     sortName: String(conf.name ?? ''),
     description,
     categories,
-    searchText: buildSearchText([name, description, ...categories]),
+    searchText: buildTrackSearchText([name, description, ...categories]),
   }
 }
 

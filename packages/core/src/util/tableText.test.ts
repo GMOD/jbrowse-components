@@ -1,10 +1,4 @@
-import {
-  compareValues,
-  csvLine,
-  csvText,
-  searchHighlightPatterns,
-  splitSearchWords,
-} from './tableText.ts'
+import { compareValues, csvLine, csvText } from './tableText.ts'
 
 describe('csvLine', () => {
   test('quotes a field holding a comma, a quote or a line break', () => {
@@ -75,12 +69,4 @@ test('a blank sorts last in either direction', () => {
     '',
     undefined,
   ])
-})
-
-test('search words split on any whitespace and highlight literally', () => {
-  const words = splitSearchWords(' Chr1\t a.b ')
-  expect(words).toEqual(['chr1', 'a.b'])
-  expect(
-    searchHighlightPatterns(words).map(p => 'CHR1 axb a.b'.match(p)),
-  ).toEqual([['CHR1'], ['a.b']])
 })

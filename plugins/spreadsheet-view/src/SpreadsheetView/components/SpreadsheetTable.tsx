@@ -1,6 +1,7 @@
 import VirtualTable from '@jbrowse/core/ui/VirtualTable'
 import { toLocale } from '@jbrowse/core/util'
-import { cellText, searchHighlightPatterns } from '@jbrowse/core/util/tableText'
+import { highlightPatterns } from '@jbrowse/core/util/searchText'
+import { cellText } from '@jbrowse/core/util/tableText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -73,7 +74,6 @@ const SpreadsheetTable = observer(function SpreadsheetTable({
     sortedRows,
     sortColumn,
     sortAscending,
-    searchWords,
     filterText,
     svTypeFilter,
     svEventFilter,
@@ -111,7 +111,7 @@ const SpreadsheetTable = observer(function SpreadsheetTable({
           onRowClick={row => {
             model.setSelectedFeature(row.feature)
           }}
-          highlightPatterns={searchHighlightPatterns(searchWords)}
+          highlightPatterns={highlightPatterns(filterText ?? '')}
           emptyMessage={
             rows.length ? 'No rows match the search and filters' : 'No rows'
           }
