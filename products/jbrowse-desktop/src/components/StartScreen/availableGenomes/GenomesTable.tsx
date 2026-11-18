@@ -151,41 +151,42 @@ const GenomesTable = observer(function GenomesTable({
         </tr>
       </thead>
       <tbody ref={bodyRef}>
-        {rows.length ? (
-          rows.map(row => {
-            const isSelected = selected.has(row.accession)
-            return (
-              <tr
-                key={row.accession}
-                className={isSelected ? classes.selectedRow : undefined}
-              >
-                {multipleSelection ? (
-                  <td className={classes.checkboxCell}>
-                    <Checkbox
-                      size="small"
-                      checked={isSelected}
-                      onChange={() => {
-                        const next = new Set(selected)
-                        if (next.has(row.accession)) {
-                          next.delete(row.accession)
-                        } else {
-                          next.add(row.accession)
-                        }
-                        setSelected(next)
-                      }}
-                      sx={checkboxSx}
-                    />
-                  </td>
-                ) : null}
-                {columns.map(col => (
-                  <td key={col.id}>
-                    {col.cell ? col.cell(row) : (col.value?.(row) ?? '')}
-                  </td>
-                ))}
-              </tr>
-            )
-          })
-        ) : (
+        {rows.map(row => {
+          const isSelected = selected.has(row.accession)
+          return (
+            <tr
+              key={row.accession}
+              className={isSelected ? classes.selectedRow : undefined}
+            >
+              {multipleSelection ? (
+                <td className={classes.checkboxCell}>
+                  <Checkbox
+                    size="small"
+                    checked={isSelected}
+                    onChange={() => {
+                      const next = new Set(selected)
+                      if (next.has(row.accession)) {
+                        next.delete(row.accession)
+                      } else {
+                        next.add(row.accession)
+                      }
+                      setSelected(next)
+                    }}
+                    sx={checkboxSx}
+                  />
+                </td>
+              ) : null}
+              {columns.map(col => (
+                <td key={col.id}>
+                  {col.cell ? col.cell(row) : (col.value?.(row) ?? '')}
+                </td>
+              ))}
+            </tr>
+          )
+        })}
+      </tbody>
+      {rows.length ? null : (
+        <tbody>
           <tr>
             <td
               className={classes.empty}
@@ -194,8 +195,8 @@ const GenomesTable = observer(function GenomesTable({
               No genomes match the current search and filters
             </td>
           </tr>
-        )}
-      </tbody>
+        </tbody>
+      )}
     </table>
   )
 })
