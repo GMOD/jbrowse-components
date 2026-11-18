@@ -44,18 +44,21 @@ export const BandRowChips = observer(function BandRowChips({
 
 /**
  * Each band's chip at its top-left, past a left-side axis's gutter, but for
- * the row the topmost section chip carries (`GroupLabelsOverlay`).
+ * the row the topmost section chip carries (`GroupLabelsOverlay`). A row
+ * scrolling under that chip, which pins to the canvas top, is not drawn.
  */
 const BandChipsOverlay = observer(function BandChipsOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { bandChips, scrollModel: scroll } = model
+  const { bandChips, scrollModel: scroll, showsGroupLabels } = model
   const left = leftAxisGutterWidth(model.axes) + GROUP_LABEL_INSET_X
+  const minTop = showsGroupLabels ? GROUP_LABEL_HEIGHT + 1 : 0
   return bandChips.rows.map(row => {
     const top = bandScreenTop(row.top, scroll) + 1
-    return top < 0 || top + GROUP_LABEL_HEIGHT > scroll.canvasHeight ? null : (
+    return top < minTop ||
+      top + GROUP_LABEL_HEIGHT > scroll.canvasHeight ? null : (
       <BandChipRow
         key={row.band}
         top={top}
