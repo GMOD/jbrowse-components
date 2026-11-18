@@ -96,12 +96,10 @@ test.each(Object.entries(weightPath))(
 // exists to keep out, is checked over `display-kit` as a directory rather than
 // per remembered file, so a leaf added there is guarded by default.
 //
-// The five left are Material by design, and each names a barrel export with no
+// The three left are Material by design, and each names a barrel export with no
 // deep subpath published: core's `exports` map is generated from in-repo import
 // sites, so deep-importing them is a change to that map and belongs with one.
 const barrelUsers = new Set([
-  'DisplayContextMenu.tsx',
-  'LegendMixin.ts',
   'PlotDialog.tsx',
   'TrackFilesDialog.tsx',
   'trackControl/MuiTrackControl.tsx',
