@@ -119,9 +119,13 @@ read crossing regions is listed in each, under one `key` and on one `row`, and
 every row names its `region`'s index. `arcScale` is the read-connection band's y
 scale (`arcBandScale`): the read cloud's log `domain`, or for arcs none, as
 their linear domain is `[0, reachPx / pxPerBp]` at the host's own scale, and the
-band they draw in. `warnings` names what the config asked for that the tables
-dropped. For a host that draws them itself, such as R through V8. The adapters
-must be registered on `pluginManager` (`registerAlignmentsAdapters`).
+band they draw in. `bandStack` is where each band sits: the bands a section
+stacks above its pileup, top to bottom, with the px each reserves, so a
+read-connection or sashimi strip listed before `coverage` sits above it, its
+arcs rising from its floor, and one after it sits below. `warnings` names what
+the config asked for that the tables dropped. For a host that draws them itself,
+such as R through V8. The adapters must be registered on `pluginManager`
+(`registerAlignmentsAdapters`).
 
 ```ts
 import { alignmentTables } from '@jbrowse/plugin-alignments/tables'
@@ -167,6 +171,10 @@ function alignmentTables(
         heightPx: number
       }
     | null
+  bandStack: {
+    key: ('coverage' | 'readConnections' | 'sashimi')[]
+    heightPx: number[]
+  }
   coverageScale: {
     domain: [number, number]
     type: 'linear' | 'log' | 'symlog'
@@ -211,6 +219,7 @@ function alignmentTables(
     shown: boolean[]
     arcHeight: number[]
     strokeWidth: number[]
+    band: JunctionBand[]
     refName: string[]
     startRegion: number[]
     endRegion: number[]
