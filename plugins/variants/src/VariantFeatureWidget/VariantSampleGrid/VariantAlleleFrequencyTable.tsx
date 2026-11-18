@@ -5,12 +5,12 @@ import type { AlleleFrequency } from './types.ts'
 import type { DetailTableColumn } from '@jbrowse/core/ui/DetailTable'
 
 const columns: DetailTableColumn<AlleleFrequency>[] = [
-  { field: 'allele', header: 'Allele', sortValue: row => row.allele },
-  { field: 'count', header: 'Count', sortValue: row => row.count },
+  { field: 'allele', header: 'Allele', value: row => row.allele },
+  { field: 'count', header: 'Count', value: row => row.count },
   {
     field: 'frequency',
     header: 'Frequency',
-    sortValue: row => row.count,
+    value: row => row.count,
     text: row => row.frequency,
   },
 ]

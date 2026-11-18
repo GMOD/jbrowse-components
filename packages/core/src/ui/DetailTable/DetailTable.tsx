@@ -106,7 +106,7 @@ const DetailTable = observer(function DetailTable<
       header: col.header ?? col.field,
       headerTitle: col.description,
       fill: i === columns.length - 1,
-      sortValue: col.sortValue,
+      sortValue: col.value,
       title: text,
       cell: col.cell ?? text,
     }

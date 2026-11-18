@@ -8,9 +8,7 @@ const rows = [
   { id: 1, name: 'a' },
   { id: 2, name: 'b' },
 ]
-const columns = [
-  { field: 'name', sortValue: (row: { name: string }) => row.name },
-]
+const columns = [{ field: 'name', value: (row: { name: string }) => row.name }]
 
 test('a table with an export name has a search box and an export button', () => {
   render(
@@ -45,8 +43,8 @@ const samples: Sample[] = [
   { id: 3, name: 'THP-1 RNA', assay: 'RNA-seq' },
 ]
 const sampleColumns = [
-  { field: 'name', sortValue: (row: Sample) => row.name },
-  { field: 'assay', sortValue: (row: Sample) => row.assay },
+  { field: 'name', value: (row: Sample) => row.name },
+  { field: 'assay', value: (row: Sample) => row.assay },
 ]
 
 function searchSamples(query: string) {

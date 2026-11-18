@@ -24,7 +24,7 @@ const rows: Fruit[] = [
   { id: 'banana', name: 'banana' },
 ]
 
-const columns = [{ field: 'name', sortValue: (row: Fruit) => row.name }]
+const columns = [{ field: 'name', value: (row: Fruit) => row.name }]
 
 function setup(initial: string[]) {
   const onChange = jest.fn<void, [Set<string>]>()

@@ -6,8 +6,8 @@ export interface DetailTableColumn<R> {
   header?: string
   /** the header's hover text */
   description?: string
-  /** what the column sorts by */
-  sortValue: (row: R) => unknown
+  /** what the column sorts by, and its text when `text` is unset */
+  value: (row: R) => unknown
   /**
    * the cell as plain text, which sizes the column and which the search, a
    * cell's hover and the CSV read; the value as text when unset
@@ -18,5 +18,5 @@ export interface DetailTableColumn<R> {
 }
 
 export function columnText<R>(col: DetailTableColumn<R>) {
-  return col.text ?? ((row: R) => cellText(col.sortValue(row)))
+  return col.text ?? ((row: R) => cellText(col.value(row)))
 }

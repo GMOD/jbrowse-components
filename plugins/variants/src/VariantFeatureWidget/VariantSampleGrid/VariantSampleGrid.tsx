@@ -152,7 +152,7 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
         ({
           field,
           description: descriptions?.FORMAT?.[field]?.Description,
-          sortValue: row => row[field],
+          value: row => row[field],
         }) satisfies DetailTableColumn<VariantSampleGridRow>,
     )
   }, [rows, descriptions])
