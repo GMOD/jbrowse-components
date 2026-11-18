@@ -28,7 +28,14 @@ the cut draw nothing, and the hover still reads every count at the position.
 The strip is the second quad of each instance, as on the wiggle xyplot. This
 closes the breakend case parked on 2026-08-14, where the reads ending and
 starting at one base outnumber the peak depth; a clamp was declined there
-because a flat end read as "exactly at the peak". The strip marks the cut on
+because a flat end read as "exactly at the peak". That case was measured on
+a synthetic stack and has no instance on real data on record: clips cannot
+outnumber the reads on their own side of a boundary, and 2 Mb of NA12878 at
+30x (chr1:100,000,000-102,000,000) held 47 boundaries with ten or more clips,
+none with clips on both sides and none over the depth beside it. Under the
+default axis, which follows the deepest pile, a stack therefore keeps to its
+half; the cut is for an axis the outlier fence, a pinned `domainMax` or a
+shared scale put below it. The strip marks the cut on
 an insertion or soft-clip segment; on a hard-clip segment it is dark red on
 red, one pixel wide, and reads weakly.
 
