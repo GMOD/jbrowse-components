@@ -1,29 +1,21 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { searchBoxMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
-import type { SearchBoxPrefs } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * The header's one menu, `headerMenuItems()` plus the search-box submenu, whose
- * state is React's rather than the model's.
+ * The header's ⋮ menu: `headerMenuItems()`, what acts on the picture now.
  */
 const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
   model,
-  prefs,
 }: {
   model: LinearSyntenyViewModel
-  prefs: SearchBoxPrefs
 }) {
   return (
     <CascadingMenuButton
-      tooltip="View menu"
-      menuItems={() =>
-        model.headerMenuItems(makeShowSubMenu(searchBoxMenuItems(prefs)))
-      }
+      tooltip="Zoom and layout options"
+      menuItems={() => model.headerMenuItems()}
     >
       <MoreVertIcon />
     </CascadingMenuButton>

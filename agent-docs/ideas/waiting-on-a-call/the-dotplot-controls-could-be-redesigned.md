@@ -35,7 +35,7 @@ In order:
 
 - **Square view - same bp per pixel** and **Rectangular view - same total bp**,
   shown only while the aspect lock is off.
-- **Zoom out fully**: every assembly whole.
+- **Show whole genome**: every assembly whole.
 - **Re-order chromosomes...**: opens a dialog; shared with the synteny view.
 
 The menu holds one-shot actions: three zooms and a data operation (re-order).
@@ -47,14 +47,12 @@ checkbox in the Settings menu.
 The view's own menu (`model.menuItems()`, the title bar's ⋮) holds:
 
 - **Return to import form** and **Export image...**
-- **Open track selector**, which the header button also opens.
 - **Open in circular synteny view**, when the circular view is installed.
 - **Show highlights**, a session-wide checkbox.
 
 Overlaps and neighbours:
 
-- Open track selector is in both places.
-- Zoom in, zoom out and Zoom out fully are three spellings of zoom, split
+- Zoom in, zoom out and Show whole genome are three spellings of zoom, split
   between the header and the ⋮ menu; the wheel and drag-select are a fourth and
   fifth, and the cursor-mode button decides which of drag and select the plain
   drag does.
@@ -70,7 +68,7 @@ Overlaps and neighbours:
   are modes; the zooms and re-order are actions. Today a mode sits in the
   header and another in a menu.
 - **Which controls must be one click?** Zoom and cursor mode are used
-  continuously; the square and rectangular views and Zoom out fully are not.
+  continuously; the square and rectangular views and Show whole genome are not.
 - **Where do per-axis things go?** Every control acts on both axes at once.
   Nothing in the header addresses the x assembly or the y assembly separately,
   though the readout names them.
@@ -83,8 +81,6 @@ Overlaps and neighbours:
 - **How much does it share with the synteny view?** Color by, Re-order and the
   settings items are shared code. A dotplot-only redesign forks them or moves
   both views.
-- **Does the track selector button stay in the header** when the view menu
-  already opens it?
 - **Which tests and docs name today's controls?** `DotplotControls.test.tsx`,
   `DotplotSettingsMenu.test.tsx`, the `dotplot_view_menu` and `color_by_menu`
   test ids that browser tests and captures use, and the user guide's dotplot

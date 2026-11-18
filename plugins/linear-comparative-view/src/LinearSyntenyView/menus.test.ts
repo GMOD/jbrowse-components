@@ -1,241 +1,36 @@
-import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-
-import {
-  displayCanShowCigar,
-  navigationMenuItems,
-  rowMenuItems,
-} from './menus.ts'
-
-import type { MenuItem } from '@jbrowse/core/ui'
-
-const SHOW_ALL_REGIONS_LABELS = [
-  'Show whole genome - each row fit to width',
-  'Show whole genome - same bp per pixel',
-]
+import { displayCanShowCigar, navigationMenuItems } from './menus.ts'
 
 describe('navigationMenuItems', () => {
-  function build(
-    state: Partial<{
-      ratio: 1 | undefined
-      followSynteny: boolean
-      followAnchorIndex: number
-    }> = {},
-  ) {
-    const calls: unknown[] = []
+  function build() {
+    const calls: string[] = []
     const items = navigationMenuItems({
-      views: [{ assemblyNames: ['hg002mat'] }, { assemblyNames: ['hg002pat'] }],
-      ratio: undefined,
-      followSynteny: false,
-      followAnchorIndex: 0,
-      ...state,
+      canSquareView: true,
       squareView: () => calls.push('square'),
-      showAllRegionsAcrossRows: (sameScale: boolean) => {
-        calls.push(sameScale ? 'sameScale' : 'fit')
-      },
-      setFollowSynteny: flag => calls.push(flag),
-      setFollowAnchorIndex: idx => calls.push(idx),
+      showAllRegions: () => calls.push('whole'),
     })
-    return { items, calls, follow: subMenuOf(items, 'Follow') }
+    return { items, calls }
   }
 
-  function subMenuOf(items: MenuItem[], label: string) {
-    const item = items.find(i => 'label' in i && i.label === label)
-    return item && 'subMenu' in item ? resolveSubMenu(item) : []
-  }
-
-  function labelled(items: MenuItem[], label: string) {
-    return items.find(
-      i => 'label' in i && i.label === label && i.type !== 'subHeader',
-    ) as
-      | {
-          type?: string
-          checked?: boolean
-          subLabel?: string
-          onClick?: () => void
-          subMenu?: MenuItem[]
-        }
-      | undefined
-  }
-
-  test('the follow is the one group, and the zoom commands are not in it', () => {
-    const { items } = build({ followSynteny: true })
-    expect(items.flatMap(i => ('subMenu' in i ? [i.label] : []))).toEqual([
-      'Follow',
-    ])
-  })
-
-  test('the anchor picker opens beside the follow checkbox, not a level deeper', () => {
-    const { follow } = build({ followSynteny: true })
-    expect(follow.some(i => 'subMenu' in i)).toBe(false)
-    expect(
-      follow.flatMap(i =>
-        i.type === 'subHeader' && 'label' in i ? [i.label] : [],
-      ),
-    ).toEqual(['Anchor row'])
-  })
-
-  test('the three zoom commands lead the menu, unheaded', () => {
-    const { items, calls } = build()
-    expect(items.slice(0, 3).map(i => ('label' in i ? i.label : ''))).toEqual([
-      'Square view - same bp per pixel',
-      'Show whole genome - each row fit to width',
-      'Show whole genome - same bp per pixel',
-    ])
-    labelled(items, 'Square view - same bp per pixel')?.onClick?.()
-    labelled(items, 'Show whole genome - each row fit to width')?.onClick?.()
-    labelled(items, 'Show whole genome - same bp per pixel')?.onClick?.()
-    expect(calls).toEqual(['square', 'fit', 'sameScale'])
-  })
-
-  test('the two show-all-regions rows carry their shared half in the label', () => {
+  test('one Show whole genome row, then Square view', () => {
     const { items } = build()
-    expect(
-      items.filter(
-        i =>
-          'label' in i &&
-          typeof i.label === 'string' &&
-          i.label.startsWith('Show whole genome - '),
-      ),
-    ).toHaveLength(2)
-  })
-
-  test('squaring is one-shot, where the fit rule is state', () => {
-    // squareView leaves nothing behind to mark: it averages the rows' current
-    // scales and that is the end of it. The other two set which zoom-out limit
-    // the rows are under, which outlives the click and so carries a mark.
-    const { items } = build()
-    expect(
-      labelled(items, 'Square view - same bp per pixel'),
-    ).not.toHaveProperty('type')
-    for (const label of SHOW_ALL_REGIONS_LABELS) {
-      expect(labelled(items, label)?.type).toBe('radio')
-    }
-  })
-
-  test('the mark follows the fit rule in force', () => {
-    for (const [state, expected] of [
-      [{}, 'Show whole genome - each row fit to width'],
-      [{ ratio: 1 }, 'Show whole genome - same bp per pixel'],
-    ] as const) {
-      const { items } = build(state)
-      expect(
-        SHOW_ALL_REGIONS_LABELS.filter(l => labelled(items, l)?.checked),
-      ).toEqual([expected])
-    }
-  })
-
-  test('the anchor rows are only offered while following', () => {
-    expect(labelled(build().follow, 'hg002mat')).toBeUndefined()
-    expect(
-      labelled(build({ followSynteny: true }).follow, 'hg002mat'),
-    ).toBeDefined()
-  })
-
-  test('the anchor rows are named by assembly, with the current one marked', () => {
-    // offered even for a plain two-row view: which haplotype drives and which
-    // follows is the whole choice, and nothing about the pan reveals it
-    const { follow } = build({ followSynteny: true, followAnchorIndex: 1 })
-    expect(labelled(follow, 'hg002mat')?.checked).toBe(false)
-    expect(labelled(follow, 'hg002pat')?.checked).toBe(true)
-  })
-
-  test('the checkbox shows the follow and flips it', () => {
-    const label = 'Other rows track the anchor row through the alignment'
-    const off = build()
-    expect(labelled(off.follow, label)?.checked).toBe(false)
-    labelled(off.follow, label)?.onClick?.()
-    const on = build({ followSynteny: true })
-    expect(labelled(on.follow, label)?.checked).toBe(true)
-    labelled(on.follow, label)?.onClick?.()
-    expect([...off.calls, ...on.calls]).toEqual([true, false])
-  })
-
-  test('picking an anchor row hands back its index, not its label', () => {
-    const { follow, calls } = build({ followSynteny: true })
-    labelled(follow, 'hg002pat')?.onClick?.()
-    expect(calls).toEqual([1])
-  })
-})
-
-// Switching which row drives is otherwise a radio in the Follow submenu, two
-// levels away from the row being looked at.
-describe('rowMenuItems', () => {
-  function build(followSynteny: boolean, followAnchorIndex = 0) {
-    const calls: unknown[] = []
-    const touched: number[] = []
-    const ran: string[] = []
-    const own = (row: string): MenuItem[] => [
-      { label: 'Own', onClick: () => ran.push(`${row} own`) },
-      {
-        label: 'Nested',
-        subMenu: [{ label: 'Deep', onClick: () => ran.push(`${row} deep`) }],
-      },
-    ]
-    const items = rowMenuItems({
-      views: [
-        { assemblyNames: ['hg002mat'], menuItems: () => own('mat') },
-        { assemblyNames: ['hg002pat'], menuItems: () => own('pat') },
-      ],
-      compactAllViews: () => {},
-      expandAllViews: () => {},
-      followSynteny,
-      followAnchorIndex,
-      setFollowAnchorIndex: idx => calls.push(idx),
-      rowTouched: idx => touched.push(idx),
-    })
-    return { items, calls, touched, ran }
-  }
-
-  function subMenu(items: MenuItem[], idx: number) {
-    const item = items[idx]!
-    return 'subMenu' in item ? resolveSubMenu(item) : []
-  }
-
-  test('off, each row is its own menu and nothing more', () => {
-    const { items } = build(false)
     expect(items.map(i => ('label' in i ? i.label : ''))).toEqual([
-      'hg002mat',
-      'hg002pat',
-    ])
-    expect(items.every(i => !('icon' in i && i.icon))).toBe(true)
-    expect(subMenu(items, 0).map(i => ('label' in i ? i.label : ''))).toEqual([
-      'Own',
-      'Nested',
+      'Show whole genome',
+      'Square view - same bp per pixel',
     ])
   })
 
-  // this copy of a row's menu sits outside the row, so no press inside it
-  // reaches the row's own handler
-  test("a pick from a row's own items, at any depth, touches that row first", () => {
-    const { items, touched, ran } = build(true, 0)
-    const [take, own, nested] = subMenu(items, 1)
-    expect(take).toMatchObject({ type: 'radio' })
-    if (own && 'onClick' in own) {
-      own.onClick()
+  // a radio, a checkbox or a submenu here is a mode, and modes live in the
+  // header and the settings menu
+  test('both rows are plain actions', () => {
+    const { items, calls } = build()
+    for (const item of items) {
+      expect(item).not.toHaveProperty('type')
+      expect(item).not.toHaveProperty('subMenu')
+      if ('onClick' in item) {
+        item.onClick()
+      }
     }
-    const deep =
-      nested && 'subMenu' in nested ? resolveSubMenu(nested)[0] : undefined
-    if (deep && 'onClick' in deep) {
-      deep.onClick()
-    }
-    expect(touched).toEqual([1, 1])
-    expect(ran).toEqual(['pat own', 'pat deep'])
-  })
-
-  test('following, the anchor row wears the mark and every row offers the take', () => {
-    const { items, calls } = build(true, 1)
-    expect(items.map(i => 'icon' in i && !!i.icon)).toEqual([false, true])
-    const take = subMenu(items, 0)[0]!
-    expect(take).toMatchObject({
-      type: 'radio',
-      label: 'Anchor the follow on this row',
-      checked: false,
-    })
-    expect(subMenu(items, 1)[0]).toMatchObject({ checked: true })
-    if ('onClick' in take) {
-      take.onClick()
-    }
-    expect(calls).toEqual([0])
+    expect(calls).toEqual(['whole', 'square'])
   })
 })
 

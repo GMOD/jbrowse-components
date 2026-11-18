@@ -281,19 +281,17 @@ test('the header menu offers Add assembly row only once there is a row', async (
 
 // A six-row stack is the case that would grow the top level, so it is the one
 // worth asserting on.
-test('the header menu opens the same six rows at any row count', async () => {
+test('the header menu opens the same four rows at any row count', async () => {
   const { view } = await openStack(6)
   expect(
     view
       .headerMenuItems()
       .map(item => ('label' in item ? item.label : item.type)),
   ).toEqual([
+    'Show whole genome',
     'Square view - same bp per pixel',
-    'Show whole genome - each row fit to width',
-    'Show whole genome - same bp per pixel',
-    'Follow',
+    'Re-order chromosomes...',
     'Rows',
-    'Export image...',
   ])
 })
 
@@ -308,13 +306,13 @@ function subMenuNamed(items: MenuItem[], label: string) {
   return resolveSubMenu(found)
 }
 
-test('the header Tracks menu holds each shown synteny track menu, per row pair', async () => {
+test('the view menu Tracks row holds each shown synteny track menu, per row pair', async () => {
   const { view } = await openStack(3)
-  expect(labelsOf(view.headerMenuItems())).not.toContain('Tracks')
+  expect(labelsOf(view.menuItems())).not.toContain('Tracks')
 
   await view.launchTrack('synteny0', 0)
   await view.launchTrack('synteny1', 1)
-  const tracks = subMenuNamed(view.headerMenuItems(), 'Tracks')
+  const tracks = subMenuNamed(view.menuItems(), 'Tracks')
   expect(labelsOf(tracks)).toEqual([
     'volvox0 → volvox1',
     'synteny0',
@@ -329,7 +327,7 @@ test('the header Tracks menu holds each shown synteny track menu, per row pair',
 test('one row pair lists its tracks with no subheader', async () => {
   const { view } = await openStack(2)
   await view.launchTrack('synteny0', 0)
-  expect(labelsOf(subMenuNamed(view.headerMenuItems(), 'Tracks'))).toEqual([
+  expect(labelsOf(subMenuNamed(view.menuItems(), 'Tracks'))).toEqual([
     'synteny0',
   ])
 })

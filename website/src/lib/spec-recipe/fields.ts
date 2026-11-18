@@ -2079,7 +2079,7 @@ const TRACK_LABELS: Record<string, string> = {
 
 // Both views run the same reorder — runDiagonalize, behind the identical
 // 'Re-order chromosomes...' item — but reach it from different headers: the synteny
-// view's is in headerMenuItems' "Rows" group, under the "View options" button
+// view's is in headerMenuItems, under the "Zoom and layout options" button
 // (ViewOptionsMenuButton), and the dotplot's is in the overflow menu in
 // DotplotControls. The init flag runs it once as the view opens rather than
 // naming a different feature, so the step is the menu item either way.
@@ -2088,7 +2088,7 @@ const TRACK_LABELS: Record<string, string> = {
 // its answer a reader would not predict from the other two.
 const DIAGONALIZE_MENUS: Record<string, { path: string; note: string }> = {
   LinearSyntenyView: {
-    path: 'Synteny view header → View options → Rows → Re-order chromosomes...',
+    path: 'Synteny view header → Zoom and layout options → Re-order chromosomes...',
     note: 'Reorders and flips each row so the best-hit blocks line up on a diagonal.',
   },
   DotplotView: {
@@ -2433,19 +2433,19 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined
   },
   // Only a `true` has a click-path: the rows start each fit to their own width,
-  // so a reader following the recipe does nothing for a `false` — the sibling
-  // row beside it, 'Show whole genome - each row fit to width', is the way back
-  // off. Both are top-level rows in the header menu carrying the name they
-  // share in the label, so a reader picks between them in place.
+  // so a reader following the recipe does nothing for a `false`. In the synteny
+  // view it is two clicks, and 'Show whole genome' alone is the way back off.
   // `{ ratio: 1 }`: every position axis on one bp/px
   coord: (value, { viewType }) =>
     asRecord(value)?.ratio !== 1
       ? undefined
       : viewType === 'DotplotView'
-        ? { path: 'Dotplot header → the ⋮ menu → Lock aspect ratio (same bp/px)' }
+        ? {
+            path: 'Dotplot header → Dotplot display settings → Lock aspect ratio (same bp/px)',
+          }
         : {
-            path: 'Synteny view header → View options → Show whole genome - same bp per pixel',
-            note: 'Row length becomes genome size, which is what makes the rows comparable.',
+            path: 'Synteny view header → Zoom and layout options → Square view - same bp per pixel',
+            note: 'Pick Show whole genome first to see whole genomes to scale: row length becomes genome size, which is what makes the rows comparable.',
           },
   // How a standalone graph view gets its data: it opens on its own import form
   // ("Load a GFA graph"), which reads a whole file.

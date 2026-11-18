@@ -403,12 +403,12 @@ Open the `drosophila` config and stack the flies as simulans, melanogaster,
 yakuba, melanogaster, pseudoobscura, melanogaster, virilis, so every band sets
 one fly against melanogaster, with `drosophila_orthogroups` in each band. Then:
 
-- Pick **Show whole genome - same bp per pixel** in the view menu
-  (`coord: { ratio: 1 }` in a session spec), which puts the rows on one bp/px,
-  so row length on screen matches genome size.
-- Pick **Rows → Re-order chromosomes** (`autoDiagonalize` in a session spec),
-  which sorts each row's chromosomes against its neighbour so the links run
-  along a diagonal.
+- Pick **Show whole genome**, then **Square view - same bp per pixel**, in the
+  header's ⋮ menu (`coord: { ratio: 1 }` in a session spec), which puts the rows
+  on one bp/px, so row length on screen matches genome size.
+- Pick **Re-order chromosomes** in the same menu (`autoDiagonalize` in a session
+  spec), which sorts each row's chromosomes against its neighbour so the links
+  run along a diagonal.
 - Pick **Reference** in the palette button menu to color each ribbon by its
   melanogaster arm.
 

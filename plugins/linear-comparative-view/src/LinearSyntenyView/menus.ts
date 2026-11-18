@@ -1,24 +1,19 @@
-import {
-  radioItems,
-  resolveSubMenu,
-  withSubHeader,
-} from '@jbrowse/core/ui/menuItems'
+import { withSubHeader } from '@jbrowse/core/ui/menuItems'
 import { rowLabels } from '@jbrowse/plugin-linear-genome-view'
 import { trackSubMenuItem } from '@jbrowse/synteny-core'
-import AnchorIcon from '@mui/icons-material/Anchor'
 import CropFreeIcon from '@mui/icons-material/CropFree'
-import LinkIcon from '@mui/icons-material/Link'
+import LineStyleIcon from '@mui/icons-material/LineStyle'
 import RemoveIcon from '@mui/icons-material/Remove'
+import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap'
 
-import type { FollowHost } from '../SyntenyFollow/followHost.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackActionView } from '@jbrowse/core/util/types'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LodTier, MenuTrack } from '@jbrowse/synteny-core'
 
-// The sections of the LinearSyntenyView header menu. Each returns [] when it
-// does not apply, and takes the structural slice it reads rather than the whole
-// view model, so the model chain passes `self` with no cast.
+// The sections of the LinearSyntenyView menus. Each returns [] when it does not
+// apply, and takes the structural slice it reads rather than the whole view
+// model, so the model chain passes `self` with no cast.
 
 interface RemoveRowModel {
   views: { assemblyNames: string[] }[]
@@ -43,77 +38,32 @@ export function removeRowMenuItems(model: RemoveRowModel): MenuItem[] {
     : []
 }
 
-interface NavigationModel extends FollowHost {
-  views: { assemblyNames: string[] }[]
+interface NavigationModel {
+  canSquareView: boolean
   squareView: () => void
-  showAllRegionsAcrossRows: (sameScale: boolean) => void
-  ratio: 1 | undefined
-  setFollowSynteny: (flag: boolean) => void
+  showAllRegions: () => void
 }
 
-// `keepMenuOpen: false`: the click re-frames every row, and a radio would
-// otherwise hold the menu open over the result
-const SHOW_ALL_REGIONS_MODES = [
-  {
-    value: 'fit',
-    label: 'Show whole genome - each row fit to width',
-    keepMenuOpen: false,
-  },
-  {
-    value: 'same',
-    label: 'Show whole genome - same bp per pixel',
-    keepMenuOpen: false,
-  },
-] as const
-
 /**
- * The three zoom commands that act on every row at once, and the follow.
- *
- * The two show-whole-genome rows act on a click and carry a mark: the mark names
- * the fit rule the rows are under (`coord.ratio`), which holds after a zoom back
- * in.
+ * The two zoom commands that act on every row at once. Square view after Show
+ * whole genome draws the genomes to scale.
  */
 export function navigationMenuItems(model: NavigationModel): MenuItem[] {
-  const { ratio, followSynteny, followAnchorIndex } = model
   return [
+    {
+      label: 'Show whole genome',
+      icon: ZoomOutMapIcon,
+      onClick: () => {
+        model.showAllRegions()
+      },
+    },
     {
       label: 'Square view - same bp per pixel',
       icon: CropFreeIcon,
+      disabled: !model.canSquareView,
       onClick: () => {
         model.squareView()
       },
-    },
-    ...radioItems(SHOW_ALL_REGIONS_MODES, ratio === 1 ? 'same' : 'fit', m => {
-      model.showAllRegionsAcrossRows(m === 'same')
-    }),
-    {
-      label: 'Follow',
-      icon: LinkIcon,
-      subMenu: [
-        {
-          type: 'checkbox',
-          label: 'Other rows track the anchor row through the alignment',
-          checked: followSynteny,
-          onClick: () => {
-            model.setFollowSynteny(!followSynteny)
-          },
-        },
-        ...(followSynteny
-          ? ([
-              { type: 'subHeader', label: 'Anchor row' },
-              ...radioItems(
-                rowLabels(model.views).map((label, idx) => ({
-                  value: `${idx}`,
-                  label,
-                })),
-                `${followAnchorIndex}`,
-                idx => {
-                  model.setFollowAnchorIndex(Number(idx))
-                },
-              ),
-            ] satisfies MenuItem[])
-          : []),
-      ],
     },
   ]
 }
@@ -137,33 +87,14 @@ export function autoScaleMenuItems(model: AutoScaleModel): MenuItem[] {
     : []
 }
 
-interface RowMenusModel extends FollowHost {
-  views: { assemblyNames: string[]; menuItems: () => MenuItem[] }[]
+interface CompactViewsModel {
+  views: unknown[]
   compactAllViews: () => void
   expandAllViews: () => void
-  rowTouched: (idx: number) => void
-}
-
-// A pick from a row's menu is the reader driving that row, though this copy of
-// it sits outside the row
-function touchingRow(items: MenuItem[], touch: () => void): MenuItem[] {
-  return items.map(item =>
-    'onClick' in item
-      ? {
-          ...item,
-          onClick: (...args: unknown[]) => {
-            touch()
-            item.onClick(...args)
-          },
-        }
-      : 'subMenu' in item
-        ? { ...item, subMenu: () => touchingRow(resolveSubMenu(item), touch) }
-        : item,
-  )
 }
 
 // with two rows the per-row item does the same in as many clicks
-export function compactViewsMenuItems(model: RowMenusModel): MenuItem[] {
+export function compactViewsMenuItems(model: CompactViewsModel): MenuItem[] {
   return model.views.length > 2
     ? [
         {
@@ -182,36 +113,6 @@ export function compactViewsMenuItems(model: RowMenusModel): MenuItem[] {
     : []
 }
 
-/**
- * The per-row LGV menus: each row's own menu is otherwise only in that row's
- * header, which a compact row doesn't show. While following, each leads with
- * taking the anchor, and the anchor row wears the mark.
- */
-export function rowMenuItems(model: RowMenusModel): MenuItem[] {
-  const { followSynteny, followAnchorIndex } = model
-  return rowLabels(model.views).map((label, idx) => ({
-    label,
-    icon: followSynteny && idx === followAnchorIndex ? AnchorIcon : undefined,
-    subMenu: [
-      ...(followSynteny
-        ? ([
-            {
-              type: 'radio',
-              label: 'Anchor the follow on this row',
-              checked: idx === followAnchorIndex,
-              onClick: () => {
-                model.setFollowAnchorIndex(idx)
-              },
-            },
-          ] satisfies MenuItem[])
-        : []),
-      ...touchingRow(model.views[idx]!.menuItems(), () => {
-        model.rowTouched(idx)
-      }),
-    ],
-  }))
-}
-
 interface TracksMenuModel {
   views: { assemblyNames: string[] }[]
   levels: (TrackActionView & IAnyStateTreeNode & { tracks: MenuTrack[] })[]
@@ -219,7 +120,7 @@ interface TracksMenuModel {
 
 /**
  * Each synteny track's own menu. A ribbon band draws no track label to hang
- * one off, so the header menu lists them, under one subheader per pair of rows
+ * one off, so the view menu lists them, under one subheader per pair of rows
  * once there is more than one pair.
  */
 export function syntenyTracksMenuItems(model: TracksMenuModel): MenuItem[] {
@@ -231,7 +132,9 @@ export function syntenyTracksMenuItems(model: TracksMenuModel): MenuItem[] {
       ? withSubHeader(`${labels[idx]} → ${labels[idx + 1]}`, items)
       : items
   })
-  return subMenu.length > 0 ? [{ label: 'Tracks', subMenu }] : []
+  return subMenu.length > 0
+    ? [{ label: 'Tracks', icon: LineStyleIcon, subMenu }]
+    : []
 }
 
 /**

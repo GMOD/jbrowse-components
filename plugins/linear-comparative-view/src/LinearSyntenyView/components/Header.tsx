@@ -48,12 +48,12 @@ const Header = observer(function Header({
   return (
     <ControlRow className={classes.headerBar} ref={ref}>
       <TrackSelectorMenuButton model={model} />
-      <ViewOptionsMenuButton model={model} prefs={prefs} />
+      <ViewOptionsMenuButton model={model} />
       <ScrollZoomToggle model={model} iconOnly={!labels} />
       <FollowSyntenyToggle model={model} iconOnly={!labels} />
 
       <ColorBySelector model={model} />
-      <SyntenySettingsMenu model={model} />
+      <SyntenySettingsMenu model={model} prefs={prefs} />
 
       {prefs.showSearchBoxes ? (
         <HeaderSearchBoxRow views={model.views} sideBySide={prefs.sideBySide} />

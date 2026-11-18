@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { highlightListMenuItems } from '@jbrowse/core/ui/menuItems'
 import {
   clamp,
@@ -1507,17 +1506,6 @@ export default function stateModelFactory(pm: PluginManager) {
                 ])
               },
             },
-            ...(isSessionModelWithWidgets(session)
-              ? [
-                  {
-                    label: 'Open track selector',
-                    onClick: () => {
-                      self.activateTrackSelector()
-                    },
-                    icon: TrackSelectorIcon,
-                  },
-                ]
-              : []),
             ...(self.assemblyNames.length > 0 &&
             pm.viewTypes.has('CircularView')
               ? [

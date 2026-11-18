@@ -282,9 +282,7 @@ calls the view's `rowTouched` on a pointer press, a key, or a wheel the row zoom
 or pans on (`wheelDrivesView`, the wheel controller's own rule, so scrolling the
 page past a stack takes nothing), in the capture phase so a child that stops
 propagation still counts. React propagates along its own tree, so a menu or dialog
-the row opens in a portal counts as the row. `rowMenuItems`' copy of each row's
-menu sits in the view header instead, so `touchingRow` wraps its items to touch
-the row before running.
+the row opens in a portal counts as the row.
 
 **Navigation never moves the anchor.** The follow's own placements, a launch spec
 placing its rows, an appended row's init and a script calling `navToLocString` all

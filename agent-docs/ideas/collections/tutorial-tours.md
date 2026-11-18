@@ -38,11 +38,10 @@ on a respine, 19 on the frame.
     instruction contradicts the figure it introduces.
 
 18) **`orthofinder_synteny/same_scale`** (`orthofinder_synteny.md`) — the view
-    menu's **Show whole genome - each row fit to width** → **Show whole genome -
-    same bp per pixel**, one radio, the fly stack's rows visibly re-scaling
-    from equal-length to genome-length, which the drosophila section's bullet
-    describes and no figure holds. `keepMenuOpen: false` on both rows, so it
-    is the one radio tour that needs no Escape-and-blur. The fly stack is the
+    menu's **Show whole genome** → **Square view - same bp per pixel**, two
+    actions, the fly stack's rows visibly re-scaling from equal-length to
+    genome-length, which the drosophila section's bullet describes and no
+    figure holds. Both rows are actions, so the tour needs no Escape-and-blur. The fly stack is the
     page's one whole-genome stack, so it is the tour's target.
 
 19. **`local_ancestry/cluster_painting`** (`local_ancestry.md`) — `Clustering →

@@ -92,6 +92,13 @@ const DotplotControls = observer(function DotplotControls({
         data-testid="dotplot_view_menu"
         aria-label="Zoom and layout options"
         menuItems={[
+          {
+            label: 'Show whole genome',
+            onClick: () => {
+              model.showAllRegions()
+            },
+            helpText: 'Zooms out to show every assembly whole.',
+          },
           ...(model.ratio === 1
             ? []
             : [
@@ -112,13 +119,6 @@ const DotplotControls = observer(function DotplotControls({
                     'Zooms both axes to show the same total bp, whatever their widths.',
                 },
               ]),
-          {
-            label: 'Zoom out fully',
-            onClick: () => {
-              model.showAllRegions()
-            },
-            helpText: 'Zooms out to show every assembly whole.',
-          },
           reorderChromosomesMenuItem(() => {
             session.queueDialog(handleClose => [
               ReorderChromosomesDialog,

@@ -284,12 +284,7 @@ function applyLaunchScale(self: LinearSyntenyViewModel, init: SyntenyLaunch) {
     (v, i) => v.initialized && init.views[i]?.loc,
   )
   if (placed.length) {
-    const bpPerPx = Math.max(...placed.map(v => v.bpPerPx))
-    for (const view of self.views) {
-      if (view.initialized) {
-        view.zoomTo(bpPerPx)
-      }
-    }
+    self.zoomEveryRowTo(Math.max(...placed.map(v => v.bpPerPx)))
   } else {
     self.applySharedScale()
   }

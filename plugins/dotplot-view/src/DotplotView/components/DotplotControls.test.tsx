@@ -82,7 +82,7 @@ function openViewMenu() {
 test('the ⋮ menu holds actions, not settings', async () => {
   await setup()
   openViewMenu()
-  expect(screen.getByText('Zoom out fully')).toBeInTheDocument()
+  expect(screen.getByText('Show whole genome')).toBeInTheDocument()
   expect(
     screen.queryByText('Lock aspect ratio (same bp/px)'),
   ).not.toBeInTheDocument()
@@ -112,5 +112,5 @@ test('the square and rectangular rows leave the menu while the aspect lock is on
   expect(
     screen.queryByText('Rectangular view - same total bp'),
   ).not.toBeInTheDocument()
-  expect(screen.getByText('Zoom out fully')).toBeInTheDocument()
+  expect(screen.getByText('Show whole genome')).toBeInTheDocument()
 })

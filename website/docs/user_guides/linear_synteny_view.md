@@ -65,8 +65,8 @@ configured but closed.
   dialog's **synteny dataset** (a select when the view has more than one open).
   This is the route for an [all-vs-all](/docs/tutorials/allvsall_synteny)
   dataset, where a locus aligns to several assemblies.
-- **The whole view:** with nothing to select, the view's hamburger menu has the
-  same **Linear synteny view (visible region)...** under **Launch**.
+- **The whole view:** with nothing to select, the view's ⋮ menu has the same
+  **Linear synteny view (visible region)...** under **Launch**.
 - **Right-click an alignment** in a synteny track and pick **Launch → Linear
   synteny view with \<assembly\>** <!-- menu-path-ok --> to open the pair that
   alignment describes. Worked through in [](/docs/tutorials/genomes_synteny).
@@ -103,22 +103,21 @@ independently:
 
 ### Making the panels move together
 
-**Follow** in the hamburger menu keeps the other panels on whatever aligns to
-one anchor panel, re-resolved through the alignment as you move, so the ribbons
-stay near-vertical however far you pan. It suits two haplotypes or two
-assemblies of the same genome.
+**Follow** in the header keeps the other panels on whatever aligns to one anchor
+panel, re-resolved through the alignment as you move, so the ribbons stay
+near-vertical however far you pan. It suits two haplotypes or two assemblies of
+the same genome.
 
-- **Anchor row:** a section Follow adds to the same menu, naming the panel that
-  drives. Any panel you click, pan, zoom or type in becomes the anchor. In a
-  stack of three or more the others are placed outward from it a level at a
-  time.
+- **Anchor row:** the panel that drives, marked on its row while following. Any
+  panel you click, pan, zoom or type in becomes the anchor. In a stack of three
+  or more the others are placed outward from it a level at a time.
 - **Dragging the ribbons** between two panels pans them together; while
   following, it moves the anchor and the others follow. A panel past a band with
   no synteny track pans with the drag.
-- **Header toggle:** the arrows button turns following on and off and shows
-  whether it is running. It switches to a warning form where nothing aligns to
-  the anchor's window (a haplotype-specific insertion, a centromere, the end of
-  the alignments), and the other panels hold their position.
+- **Header checkbox:** **Follow** turns following on and off. It shows a warning
+  icon where nothing aligns to the anchor's window (a haplotype-specific
+  insertion, a centromere, the end of the alignments), and the other panels hold
+  their position.
 
 Turn following off to move one panel alone.
 
@@ -198,8 +197,8 @@ ribbons whatever the color mode.
 
 The sliders button in the header opens a menu of every setting for how the
 ribbons look. The checkboxes come first, then the rows that open a submenu of
-options or a slider. The hamburger menu next to it sets which genomes the view
-stacks, where they point and what leaves it.
+options or a slider, and **Show** for the header's own search boxes. The ⋮ menu
+beside it zooms and arranges the rows.
 
 - **Identity fade** is described above
 - **Curved lines** draws ribbons as bezier curves, which read better at
@@ -232,21 +231,23 @@ indel:
 
 <Figure caption="A human-specific AluYb8 in PICALM, drawn as an indel in the ribbon." src="/img/synteny_te_picalm_alu.png" />
 
-## View options
+## Zoom and layout
 
-In the view's hamburger menu, the first rows zoom every row at once and **Rows**
-holds what varies with the stack:
+The ⋮ menu in the view's header holds what acts on the rows now:
 
-- **Square view - same bp per pixel** puts every row on the average of the rows'
-  current scales, keeping each row's center
-- **Show whole genome - each row fit to width** zooms every row out to its whole
-  genome (its chromosomes, where the assembly's sequence report names them),
-  each scaled to fill its pane
-- **Show whole genome - same bp per pixel** zooms every row out onto one scale,
-  so a smaller genome draws shorter. Both show-whole-genome rows stay in force
-  once marked: zooming back out from a locus returns to the same scale
-- **Follow** moves the other rows to whatever aligns to the anchor row, and
-  picks which row is the anchor
+- **Show whole genome** zooms every row out to its whole genome (its
+  chromosomes, where the assembly's sequence report names them), each scaled to
+  fill its pane. A row keeps the chromosome order and orientation it is showing,
+  so this does not undo **Re-order chromosomes...**
+- **Square view - same bp per pixel** puts every row on the scale of the row
+  showing the most bp per pixel, keeping each row's center. Picked after **Show
+  whole genome** it draws the genomes to scale, so a smaller genome draws
+  shorter. Afterwards a row zooms out no further than that shared scale, until
+  **Show whole genome** releases it
+- **Re-order chromosomes...** opens the re-order dialog. On three rows or more
+  it asks which row to keep as it is, and sorts every other row against its
+  neighbour nearer it; `diagonalizeAnchorRow` on the view sets that row in a
+  config
 - **Rows**:
   - **Add assembly row** stacks a third or further assembly
   - **Remove row** takes any row of a stack of three or more, with the bands
@@ -254,14 +255,11 @@ holds what varies with the stack:
     view opens it between them
   - **Reverse row order** flips the stack top to bottom, each band keeping its
     tracks
-  - **Re-order chromosomes...** opens the re-order dialog. On three rows or more
-    it asks which row to keep as it is, and sorts every other row against its
-    neighbour nearer it; `diagonalizeAnchorRow` on the view sets that row in a
-    config
-  - one entry per genome opens that row's own view menu, the only route to it
-    for a collapsed row
-- **Show** for the header's own search boxes
-- **Export image...**
+
+Each row's own ⋮ opens that row's menu, a collapsed row's included. The view
+menu in the title bar holds **Tracks**, with each synteny track's own menu,
+**Export image...**, **Open in circular synteny view** and **Return to import
+form**.
 
 ## Off-screen mates
 

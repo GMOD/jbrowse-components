@@ -480,3 +480,65 @@ test('appending a row whose assembly fails leaves the stack on its scale', async
   expect(small!.bpPerPx).toBeCloseTo(shared)
   expect(large!.bpPerPx).toBeCloseTo(shared)
 })
+
+// The menu's one Show whole genome fits each row to its width, and Square view
+// is the second click that draws the genomes to scale.
+test('Square view after Show whole genome draws the genomes to scale', async () => {
+  const view = await launch({ views })
+  const [small, large] = view.views
+
+  view.showAllRegions()
+  view.squareView()
+
+  expect(view.ratio).toBe(1)
+  expect(small!.bpPerPx).toBeCloseTo(large!.fitBpPerPx)
+  expect(large!.bpPerPx).toBeCloseTo(large!.fitBpPerPx)
+  expect(small!.displayedRegionsTotalPx).toBeCloseTo(
+    (800 * 0.9 * SMALL_BP) / LARGE_BP,
+  )
+})
+
+// the coarsest, not the average: no row is zoomed in past what it was showing
+test('Square view at a locus puts every row on the coarsest row scale', async () => {
+  const view = await launch({ views })
+  const [small, large] = view.views
+  small!.zoomTo(2)
+  large!.zoomTo(8)
+
+  view.squareView()
+
+  expect(small!.bpPerPx).toBeCloseTo(8)
+  expect(large!.bpPerPx).toBeCloseTo(8)
+})
+
+test('Show whole genome releases the shared scale Square view latched', async () => {
+  const view = await launch({ views })
+  const [small] = view.views
+
+  view.squareView()
+  view.showAllRegions()
+
+  expect(view.ratio).toBeUndefined()
+  expect(small!.bpPerPx).toBeCloseTo(small!.fitBpPerPx)
+})
+
+test('Show whole genome keeps a re-ordered row in its order and flips', async () => {
+  const view = await launch({ views })
+  const [small] = view.views
+  small!.setDisplayedRegions([
+    { refName: 'ctgB', start: 0, end: SMALL_BP, assemblyName: 'small' },
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: SMALL_BP,
+      assemblyName: 'small',
+      reversed: true,
+    },
+  ])
+
+  view.showAllRegions()
+
+  expect(
+    small!.displayedRegions.map(r => `${r.refName}${r.reversed ? '-' : ''}`),
+  ).toEqual(['ctgB', 'ctgA-'])
+})

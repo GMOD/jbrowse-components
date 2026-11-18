@@ -365,7 +365,7 @@ Each setting in the session has a menu route except `render` and the
 
 - `autoDiagonalize` sorts each row against its neighbour, working outward from
   `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
-  group sits on one chromosome. **Rows → Re-order chromosomes** on the view menu
+  group sits on one chromosome. **Re-order chromosomes** on the header's ⋮ menu
   runs the same sort and asks for that row.
 - `filter` drops the alignments with no `gene_group`, which **Hide unlabelled
   rows** on the palette menu writes.
@@ -377,7 +377,7 @@ Each setting in the session has a menu route except `render` and the
 - `levelHeights` is each band's height, which dragging the bar under a band sets
   for every band.
 - `collapseEmptyRows` draws each genome row that has no track as a bare scale
-  bar. **Rows → Compact all views** on the view menu does the same.
+  bar. **Rows → Compact all views** on the header's ⋮ menu does the same.
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {

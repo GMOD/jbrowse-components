@@ -4,7 +4,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import {
-  avg,
   clamp,
   getDialogHost,
   getSession,
@@ -75,13 +74,13 @@ import {
   displayCanShowCigar,
   navigationMenuItems,
   removeRowMenuItems,
-  rowMenuItems,
   syntenyTracksMenuItems,
 } from './menus.ts'
 import { syntenyNavigationConfigSchema } from './navigationConfigSchema.ts'
 import { syntenyOffscreenConfigSchema } from './offscreenConfigSchema.ts'
 import { sharedFit } from './sharedFit.ts'
 import { liftLegacySyntenyView } from './util/liftViewLevelTracks.ts'
+import { wholeGenomeInShownOrder } from './util/wholeGenomeInShownOrder.ts'
 
 import type { FollowReport } from '../SyntenyFollow/followHost.ts'
 import type {
@@ -348,6 +347,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get scrollZoom() {
         return getSession(self).scrollZoom
+      },
+      /**
+       * #getter
+       * Whether Square view can answer: the shared scale is unanswered while a
+       * row is still loading, and a row squared against its own fit instead
+       * cannot be lifted to the shared one afterwards.
+       */
+      get canSquareView() {
+        return (
+          self.views.length > 1 &&
+          self.views.every(view => view.initialized || !!view.error)
+        )
       },
       /**
        * #getter
@@ -1017,16 +1028,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Every row onto the rows' average bp/px, each keeping its centre.
+       * Every row onto the coarsest row's bp/px, each keeping its centre, so
+       * every row still shows at least what it did. `coord.ratio` latches,
+       * which raises the rows' zoom-out limit to the shared fit: after Show
+       * whole genome this draws the genomes to scale, and a row then zooms out
+       * no further than that scale until Show whole genome releases it.
        */
       squareView() {
         const live = self.views.filter(v => v.initialized)
-        const average = avg(live.map(v => v.bpPerPx))
+        this.setRatio(1)
+        this.zoomEveryRowTo(Math.max(...live.map(v => v.bpPerPx)))
         for (const view of live) {
-          view.zoomTo(average)
           // a discrete jump, so the coarse blocks flush rather than waiting out
           // their throttle
           view.settleCoarseBlocks()
+        }
+      },
+      /**
+       * #action
+       */
+      zoomEveryRowTo(bpPerPx: number) {
+        for (const view of self.views) {
+          if (view.initialized) {
+            view.zoomTo(bpPerPx)
+          }
         }
       },
       /**
@@ -1035,14 +1060,26 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * coarsest row's fit, so the largest genome fills its pane and the others
        * draw shorter in proportion — or each fit to its pane. `coord.ratio`
        * latches, so the shared scale holds across later zooms.
-       * Resetting each row's regions undoes a Re-order chromosomes, but it is
-       * also the way back from a search box that narrowed a row to one contig;
-       * kept that way on purpose (2026-10-31).
+       * A row keeps the chromosome order and flips it shows, so this does not
+       * undo a Re-order chromosomes; a row narrowed to one contig takes the
+       * assembly's order back (`wholeGenomeInShownOrder`). The row's own Show
+       * whole genome is the reset to assembly order.
        */
       showAllRegionsAcrossRows(sameScale: boolean) {
+        const { assemblyManager } = getSession(self)
         this.setRatio(sameScale ? 1 : undefined)
         for (const view of self.views) {
-          view.showAllRegionsInAssembly()
+          const [assemblyName] = view.assemblyNames
+          const whole = assemblyName
+            ? assemblyManager.get(assemblyName)?.wholeGenomeRegions
+            : undefined
+          if (whole?.length) {
+            view.setDisplayedRegions(
+              wholeGenomeInShownOrder(whole, view.displayedRegions),
+            )
+          } else {
+            view.showAllRegionsInAssembly()
+          }
         }
         // second pass: a row's fit moves with its regions, so the ceiling
         // settles only once every row has been reset
@@ -1307,16 +1344,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       return {
         /**
          * #method
-         * The header's view-options menu: the zoom actions, the row coupling,
-         * what varies with the stack under "Rows", each synteny track's menu
-         * under "Tracks", then Export image. Every
-         * render setting is in `SyntenySettingsMenu` instead.
-         * `ViewOptionsMenuButton` passes the "Show" submenu as
-         * `extraSubMenus`, since the search box prefs are React state.
+         * The header's ⋮ menu, what acts on the picture now: the zoom actions,
+         * Re-order chromosomes, and what varies with the stack under "Rows".
+         * Every setting is in `SyntenySettingsMenu`, and what acts on the view
+         * as a whole is in `menuItems`.
          */
-        headerMenuItems(extraSubMenus: MenuItem[] = []): MenuItem[] {
+        headerMenuItems(): MenuItem[] {
           return [
             ...navigationMenuItems(self),
+            reorderChromosomesMenuItem(() => {
+              getDialogHost(self).queueDialog(handleClose => [
+                ReorderChromosomesDialog,
+                {
+                  handleClose,
+                  model: self as LinearSyntenyViewModel,
+                },
+              ])
+            }),
             {
               label: 'Rows',
               icon: ViewStreamIcon,
@@ -1347,23 +1391,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     self.reverseRows()
                   },
                 },
-                reorderChromosomesMenuItem(() => {
-                  getDialogHost(self).queueDialog(handleClose => [
-                    ReorderChromosomesDialog,
-                    {
-                      handleClose,
-                      model: self as LinearSyntenyViewModel,
-                    },
-                  ])
-                }),
                 ...autoScaleMenuItems(self),
                 ...compactViewsMenuItems(self),
-                { type: 'subHeader', label: 'Row menus' },
-                ...rowMenuItems(self),
               ],
             },
-            ...syntenyTracksMenuItems(self),
-            ...extraSubMenus,
             ...(self.hiddenFeatureCount > 0
               ? [
                   {
@@ -1377,15 +1408,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   },
                 ]
               : []),
-            ...circularMenuItems(),
-            exportSvgMenuItem,
           ]
         },
         /**
          * #method
+         * The title bar's view menu: each synteny track's menu under "Tracks",
+         * then what acts on the view as a whole.
          */
         menuItems(): MenuItem[] {
-          return [returnToImportFormMenuItem, exportSvgMenuItem]
+          return [
+            ...syntenyTracksMenuItems(self),
+            exportSvgMenuItem,
+            ...circularMenuItems(),
+            returnToImportFormMenuItem,
+          ]
         },
         /**
          * #method
