@@ -180,11 +180,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
     tracks.filter(t => ticked.has(t.id)).map(t => t.id),
   )
   const allSelected = tracks.length > 0 && selectedIds.size === tracks.length
-  const {
-    sortedRows: sortedTracks,
-    sortProps,
-    sortResetKey,
-  } = useTableSort(tracks, sortKeys)
+  const { sortedRows: sortedTracks, sortProps } = useTableSort(tracks, sortKeys)
   const columns: VirtualTableColumn<TrackRow>[] = [
     {
       id: 'name',
@@ -303,7 +299,6 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
               columns={columns}
               widths={() => ({ kind: KIND_WIDTH })}
               {...sortProps}
-              resetKey={sortResetKey}
               emptyMessage="No tracks"
               isRowSelected={row => selectedIds.has(row.id)}
               leading={{

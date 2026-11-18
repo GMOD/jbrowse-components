@@ -100,8 +100,6 @@ const SpreadsheetTable = observer(function SpreadsheetTable({
           }}
           resetKey={JSON.stringify([
             filterText,
-            sortField,
-            sortAscending,
             [...svTypeFilter],
             svEventFilter,
           ])}

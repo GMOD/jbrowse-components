@@ -82,8 +82,8 @@ const VirtualTable = observer(function VirtualTable<
   sortAscending: boolean
   /** an empty field is unsorted */
   onSort: (field: string, ascending: boolean) => void
-  /** scrolls back to the top when it changes */
-  resetKey: string
+  /** scrolls back to the top when it changes, as a sort change does */
+  resetKey?: string
   /** names the row to bring into view, which happens when it changes */
   scrollToKey?: string | number
   /** where that row is in `rows`, undefined while it is not among them */
@@ -103,7 +103,7 @@ const VirtualTable = observer(function VirtualTable<
     parentRef,
     count: rows.length,
     rowHeight,
-    resetKey,
+    resetKey: JSON.stringify([sortField, sortAscending, resetKey]),
     scrollToKey,
     scrollToIndex,
     stickyTop: HEADER_HEIGHT,

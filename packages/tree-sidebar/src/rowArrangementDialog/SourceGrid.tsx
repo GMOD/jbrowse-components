@@ -75,7 +75,6 @@ export default observer(function SourceGrid<S extends { name: string }>({
           onSort={field => {
             sortBy(field)
           }}
-          resetKey=""
           emptyMessage="No rows"
           isRowSelected={({ id }) => ticked.has(id)}
           leading={{

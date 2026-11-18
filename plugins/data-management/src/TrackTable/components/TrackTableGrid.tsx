@@ -78,12 +78,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
           id => columnFloor(id, available),
         )
       }
-      resetKey={JSON.stringify([
-        filterText,
-        sortField,
-        sortAscending,
-        [...filters],
-      ])}
+      resetKey={JSON.stringify([filterText, [...filters]])}
       sortField={sortField}
       sortAscending={sortAscending}
       onSort={(field, ascending) => {

@@ -84,10 +84,7 @@ const SessionManager = observer(function SessionManager({
   const searched = matches
     ? rows?.filter(row => matches(buildSearchText([row.name, row.summary])))
     : rows
-  const { sortedRows, sortProps, sortResetKey } = useTableSort(
-    searched ?? [],
-    sortKeys,
-  )
+  const { sortedRows, sortProps } = useTableSort(searched ?? [], sortKeys)
 
   const columns: VirtualTableColumn<Row>[] = [
     {
@@ -143,7 +140,7 @@ const SessionManager = observer(function SessionManager({
               cell: row => <ThumbnailCell row={row} session={session} />,
             }}
             {...sortProps}
-            resetKey={JSON.stringify([searchText, sortResetKey])}
+            resetKey={searchText}
             highlightPatterns={highlightPatterns(searchText)}
             emptyMessage={
               matches ? 'No matching sessions' : 'No saved sessions'

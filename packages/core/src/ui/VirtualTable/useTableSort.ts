@@ -30,6 +30,5 @@ export function useTableSort<R>(
         setSort({ field, ascending })
       },
     },
-    sortResetKey: `${sort.field}:${sort.ascending}`,
   }
 }

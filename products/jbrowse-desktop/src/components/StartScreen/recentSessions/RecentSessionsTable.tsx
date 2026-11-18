@@ -66,7 +66,7 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
       lastModifiedTooltip: tooltip,
     }
   })
-  const { sortedRows, sortProps, sortResetKey } = useTableSort(rows, sortKeys)
+  const { sortedRows, sortProps } = useTableSort(rows, sortKeys)
 
   const lastModifiedWidth =
     measureGridWidth(
@@ -131,7 +131,6 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
       columns={columns}
       widths={() => ({ name: 150, path: 200, lastModified: lastModifiedWidth })}
       {...sortProps}
-      resetKey={sortResetKey}
       emptyMessage="No sessions"
       isRowSelected={narrow ? undefined : row => selectedPaths.has(row.path)}
       // 50px of checkbox for a multi-select whose two toolbar buttons the

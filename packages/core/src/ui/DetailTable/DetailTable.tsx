@@ -99,11 +99,7 @@ const DetailTable = observer(function DetailTable<
     () => (matches ? rows.filter((_, i) => matches(searchTexts[i]!)) : rows),
     [rows, searchTexts, matches],
   )
-  const {
-    sortedRows: shownRows,
-    sortProps,
-    sortResetKey,
-  } = useTableSort(
+  const { sortedRows: shownRows, sortProps } = useTableSort(
     searchedRows,
     Object.fromEntries(columns.map(col => [col.field, col.value])),
   )
@@ -140,7 +136,7 @@ const DetailTable = observer(function DetailTable<
           isRowSelected={isRowSelected}
           onRowClick={onRowClick}
           {...sortProps}
-          resetKey={JSON.stringify([searchText, sortResetKey])}
+          resetKey={searchText}
           highlightPatterns={highlightPatterns(searchText)}
           emptyMessage={rows.length ? 'No rows match the search' : 'No rows'}
         />

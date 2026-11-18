@@ -86,7 +86,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
     index: row.indexName ?? '',
     status: row.status,
   }))
-  const { sortedRows, sortProps, sortResetKey } = useTableSort(rows, sortKeys)
+  const { sortedRows, sortProps } = useTableSort(rows, sortKeys)
 
   const columns: VirtualTableColumn<PreviewRow>[] = [
     {
@@ -158,7 +158,6 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
           )
         }
         {...sortProps}
-        resetKey={sortResetKey}
         emptyMessage="No tracks"
         testId="bulk-add-preview"
       />

@@ -48,7 +48,6 @@ function table({
         onSort={onSort}
         onRowClick={onRowClick}
         rowHeight={rowHeight}
-        resetKey=""
         scrollToKey={scrollToKey}
         scrollToIndex={scrollToIndex}
         emptyMessage="none"
@@ -175,7 +174,6 @@ describe('search highlight', () => {
           sortField=""
           sortAscending
           onSort={() => {}}
-          resetKey=""
           emptyMessage="No matching name"
           highlightPatterns={highlightPatterns('name')}
         />

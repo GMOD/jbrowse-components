@@ -24,14 +24,13 @@ const rows: Row[] = [
 const sortKeys = { score: (row: Row) => row.score }
 
 function Table() {
-  const { sortedRows, sortProps, sortResetKey } = useTableSort(rows, sortKeys)
+  const { sortedRows, sortProps } = useTableSort(rows, sortKeys)
   return (
     <VirtualTable
       rows={sortedRows}
       columns={[{ id: 'score', header: 'Score', cell: row => `#${row.id}` }]}
       widths={() => ({})}
       {...sortProps}
-      resetKey={sortResetKey}
       emptyMessage="none"
     />
   )

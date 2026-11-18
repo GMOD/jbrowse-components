@@ -61,7 +61,7 @@ const HighlightGrid = observer(function HighlightGrid({
   const assemblyNames = rows.map(r => r.assemblyName)
   const multipleAssemblies = new Set(assemblyNames).size > 1
 
-  const { sortedRows, sortProps, sortResetKey } = useTableSort(rows, sortKeys)
+  const { sortedRows, sortProps } = useTableSort(rows, sortKeys)
 
   const columns: VirtualTableColumn<HighlightRow>[] = [
     {
@@ -166,7 +166,6 @@ const HighlightGrid = observer(function HighlightGrid({
             color: COLOR_WIDTH,
           })}
           {...sortProps}
-          resetKey={sortResetKey}
           emptyMessage="No highlights yet. Drag across a view to highlight a region, or import from the menu."
           isRowSelected={row => selectedIds.has(row.id)}
           leading={{
