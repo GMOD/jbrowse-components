@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { ContextMenu } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { usePointerDrag } from '@jbrowse/core/util/usePointerDrag'
 import { mergeDomain } from '@jbrowse/display-kit/groupByMenu'
 import { textHalo } from '@jbrowse/display-ui'
 import { bandGroundColor, bandInk, bandPalette } from '@jbrowse/synteny-core'
@@ -25,11 +26,11 @@ import type { ReactNode } from 'react'
 
 const CHIP_BORDER_PX = 1
 
-// fixed per gesture; the moving y is its own state so the listeners bind once
-interface LaneDrag {
+interface LanePress {
   assemblyName: string
   top: number
   startY: number
+  armed: boolean
 }
 
 interface LaneMenu {
@@ -121,7 +122,7 @@ const LaneHeaders = observer(function LaneHeaders({
     laneHeaderRows: rows,
     frozenDecisions: frozen,
   } = model
-  const [drag, setDrag] = useState<LaneDrag>()
+  const [dragLane, setDragLane] = useState<string>()
   const [dragY, setDragY] = useState<number>()
   const [menu, setMenu] = useState<LaneMenu>()
   const menuLane = menu
@@ -149,46 +150,53 @@ const LaneHeaders = observer(function LaneHeaders({
   // a drop on the anchor's band lands the lane first below it
   const dropIndex = dropRow === undefined ? -1 : Math.max(1, dropRow)
   const dropLane = lanes[dropIndex]
-  const dragIndex = lanes.findIndex(
-    lane => lane.assemblyName === drag?.assemblyName,
-  )
+  const dragIndex = lanes.findIndex(lane => lane.assemblyName === dragLane)
 
-  // in an effect, so a display unmounting under a held button drops them
-  useEffect(() => {
-    if (!drag) {
-      return
-    }
-    const { assemblyName, top, startY } = drag
-    const yOf = (e: MouseEvent) => e.clientY - top
-    let armed = false
-    const move = (e: MouseEvent) => {
-      const y = yOf(e)
-      armed ||= pastDragSlop(startY, y)
-      if (armed) {
-        setDragY(y)
+  const pressRef = useRef<LanePress | undefined>(undefined)
+  const pointer = usePointerDrag({
+    onDragStart: event => {
+      const label = event.currentTarget
+      const assemblyName =
+        label instanceof HTMLElement ? label.dataset.laneDrag : undefined
+      const top =
+        label.closest('[data-lane-headers]')?.getBoundingClientRect().top ?? 0
+      pressRef.current =
+        assemblyName === undefined
+          ? undefined
+          : { assemblyName, top, startY: event.clientY - top, armed: false }
+      setDragLane(pressRef.current?.assemblyName)
+    },
+    onDrag: event => {
+      const press = pressRef.current
+      if (press) {
+        const y = event.clientY - press.top
+        press.armed ||= pastDragSlop(press.startY, y)
+        if (press.armed) {
+          setDragY(y)
+        }
       }
-    }
-    const up = (e: MouseEvent) => {
-      setDrag(undefined)
+    },
+    onDragEnd: event => {
+      const press = pressRef.current
+      pressRef.current = undefined
+      setDragLane(undefined)
       setDragY(undefined)
-      const order = armed
-        ? laneOrderAfterDrop(
-            model.rowAssemblies,
-            assemblyName,
-            dropRowAt(model.laneStack.lanes, yOf(e) + model.scrollTop),
-          )
-        : undefined
+      const order =
+        press?.armed && event.type === 'pointerup'
+          ? laneOrderAfterDrop(
+              model.rowAssemblies,
+              press.assemblyName,
+              dropRowAt(
+                model.laneStack.lanes,
+                event.clientY - press.top + model.scrollTop,
+              ),
+            )
+          : undefined
       if (order) {
         model.setDomain(mergeDomain([...model.domain], order))
       }
-    }
-    window.addEventListener('mousemove', move)
-    window.addEventListener('mouseup', up)
-    return () => {
-      window.removeEventListener('mousemove', move)
-      window.removeEventListener('mouseup', up)
-    }
-  }, [drag, model])
+    },
+  })
 
   // text on the gene row reads over the genes it covers
   const inlineChip = {
@@ -203,14 +211,6 @@ const LaneHeaders = observer(function LaneHeaders({
     borderRadius: 2,
     textShadow: 'none',
   })
-
-  const startDrag = (assemblyName: string, event: React.MouseEvent) => {
-    event.stopPropagation()
-    event.preventDefault()
-    const box = event.currentTarget.closest('[data-lane-headers]')
-    const top = box?.getBoundingClientRect().top ?? 0
-    setDrag({ assemblyName, top, startY: event.clientY - top })
-  }
 
   return (
     <div
@@ -330,22 +330,25 @@ const LaneHeaders = observer(function LaneHeaders({
             style={{
               color: bandInk().text,
               pointerEvents: 'all',
-              cursor: row.isAnchor ? undefined : drag ? 'grabbing' : 'grab',
+              cursor: row.isAnchor ? undefined : dragLane ? 'grabbing' : 'grab',
               userSelect: 'none',
+              touchAction: row.isAnchor ? undefined : 'none',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               ...(row.inline ? inlineChip : {}),
               ...(row.color ? colorChip(row.color) : {}),
             }}
-            onMouseDown={
-              row.isAnchor
-                ? undefined
-                : event => {
-                    if (event.button === 0) {
-                      startDrag(row.assemblyName, event)
-                    }
-                  }
-            }
+            {...(row.isAnchor
+              ? {}
+              : {
+                  ...pointer,
+                  'data-lane-drag': row.assemblyName,
+                  'data-gesture-owner': 'true',
+                  onMouseDown: (event: React.MouseEvent) => {
+                    event.stopPropagation()
+                    event.preventDefault()
+                  },
+                })}
             onContextMenu={event => {
               openMenu(row.assemblyName, event)
             }}

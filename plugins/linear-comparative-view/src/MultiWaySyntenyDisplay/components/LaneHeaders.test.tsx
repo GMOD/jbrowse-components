@@ -2,6 +2,7 @@ import '@testing-library/jest-dom'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { isClaimedPress } from '@jbrowse/core/util/pressOwner'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
@@ -145,4 +146,32 @@ test('a lane color draws as a swatch beside the label and tints it, the anchor i
     )
     unmount()
   }
+})
+
+test('a press on a mate label is claimed from the view pan, and its drag reorders the lanes', () => {
+  const display = twoLaneDisplay(['volvox_random', 'volvox_ins'])
+  const claims: boolean[] = []
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <div
+        onPointerDown={event => {
+          claims.push(isClaimedPress(event))
+        }}
+      >
+        <LaneHeaders model={display} />
+      </div>
+    </ThemeProvider>,
+  )
+  const [first, second] = display.rowAssemblies
+  const label = screen.getByTestId(`multiway-lane-label-${first}`)
+  const [, firstLane, secondLane] = display.laneStack.lanes
+  const startY = firstLane!.bandStart + 2
+  const dropY = secondLane!.bandStart + 2
+
+  fireEvent.pointerDown(label, { button: 0, pointerId: 1, clientY: startY })
+  fireEvent.pointerMove(label, { pointerId: 1, clientX: 40, clientY: dropY })
+  fireEvent.pointerUp(label, { pointerId: 1, clientX: 40, clientY: dropY })
+
+  expect(claims).toEqual([true])
+  expect(display.rowAssemblies).toEqual([second, first])
 })
