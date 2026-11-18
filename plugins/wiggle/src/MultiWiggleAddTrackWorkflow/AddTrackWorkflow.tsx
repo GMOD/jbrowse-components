@@ -96,11 +96,6 @@ const KIND_LABEL: Record<StackKind, string> = {
   feature: 'features',
 }
 
-const sortKeys: Record<string, (row: TrackRow) => unknown> = {
-  name: row => coarseStripHTML(row.name),
-  kind: row => KIND_LABEL[row.member.kind],
-}
-
 const PASTE_HELP =
   "One URL per line: BigWig or bedGraph for quantitative rows, BED or BigBed for feature rows. Or a JSON array of subadapter configs, to set each row's color and name."
 
@@ -180,12 +175,12 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
     tracks.filter(t => ticked.has(t.id)).map(t => t.id),
   )
   const allSelected = tracks.length > 0 && selectedIds.size === tracks.length
-  const { sortedRows: sortedTracks, sortProps } = useTableSort(tracks, sortKeys)
   const columns: VirtualTableColumn<TrackRow>[] = [
     {
       id: 'name',
       header: 'Name',
       fill: true,
+      sortValue: row => coarseStripHTML(row.name),
       title: row => coarseStripHTML(row.name),
       cell: row => (
         <EditableTextCell
@@ -207,9 +202,11 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
     {
       id: 'kind',
       header: 'Data',
+      sortValue: row => KIND_LABEL[row.member.kind],
       cell: row => KIND_LABEL[row.member.kind],
     },
   ]
+  const { sortedRows: sortedTracks, sortProps } = useTableSort(tracks, columns)
   const pending = partition(
     inputVal.trim()
       ? parseItems(inputVal).map(item => classifyItem(item, guessers))

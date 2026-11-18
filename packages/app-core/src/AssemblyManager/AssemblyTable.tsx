@@ -45,12 +45,12 @@ const AssemblyTable = observer(function AssemblyTable({
     assembly,
   }))
   const columns: DetailTableColumn<AssemblyRow>[] = [
-    { field: 'name', value: row => row.name },
-    { field: 'displayName', value: row => row.displayName },
-    { field: 'aliases', value: row => row.aliases.join(', ') },
+    { field: 'name', sortValue: row => row.name },
+    { field: 'displayName', sortValue: row => row.displayName },
+    { field: 'aliases', sortValue: row => row.aliases.join(', ') },
     {
       field: 'source',
-      value: row =>
+      sortValue: row =>
         session.canEditAssembly(row.name) ? 'Editable' : 'Built-in',
       cell: ({ assembly, name }) =>
         session.canEditAssembly(name) ? (

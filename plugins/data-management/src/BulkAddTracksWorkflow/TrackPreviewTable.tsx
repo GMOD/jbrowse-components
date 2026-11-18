@@ -62,12 +62,6 @@ function statusColor(status: TrackStatus) {
   return status === 'unknown' ? 'error' : 'warning'
 }
 
-const sortKeys: Record<string, (row: PreviewRow) => unknown> = {
-  name: row => row.name,
-  type: row => row.type,
-  index: row => row.index,
-}
-
 const TrackPreviewTable = observer(function TrackPreviewTable({
   named,
   onRename,
@@ -86,12 +80,11 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
     index: row.indexName ?? '',
     status: row.status,
   }))
-  const { sortedRows, sortProps } = useTableSort(rows, sortKeys)
-
   const columns: VirtualTableColumn<PreviewRow>[] = [
     {
       id: 'name',
       header: 'Track name',
+      sortValue: row => row.name,
       title: row => row.name,
       cell: row => (
         <div className={classes.nameCell}>
@@ -121,6 +114,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
     {
       id: 'type',
       header: 'Type',
+      sortValue: row => row.type,
       title: row => row.type,
       cell: row => (
         <Typography
@@ -137,12 +131,14 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
           {
             id: 'index',
             header: 'Index',
+            sortValue: (row: PreviewRow) => row.index,
             title: (row: PreviewRow) => row.index,
             cell: (row: PreviewRow) => row.index,
           },
         ]
       : []),
   ]
+  const { sortedRows, sortProps } = useTableSort(rows, columns)
 
   return (
     <div className={classes.section}>

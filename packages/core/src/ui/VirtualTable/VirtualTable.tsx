@@ -20,6 +20,8 @@ export interface VirtualTableColumn<R> {
   /** the header's hover text, the header itself when unset */
   headerTitle?: string
   cell: (row: R) => React.ReactNode
+  /** what a header click sorts by; without one the header is a plain label */
+  sortValue?: (row: R) => unknown
   title?: (row: R) => string
   align?: 'right'
   /** takes the room the other columns leave rather than a set width */
@@ -42,7 +44,8 @@ const SpacerRow = observer(function SpacerRow({ height }: { height: number }) {
 
 /**
  * A table of fixed-height rows that draws only the rows in view, under a
- * sticky header whose columns sort on click and resize on drag. It holds no
+ * sticky header whose sortable columns sort on click and whose columns resize
+ * on drag. It holds no
  * row state: the caller hands it the rows in order and the sort to show.
  */
 const VirtualTable = observer(function VirtualTable<

@@ -22,12 +22,6 @@ interface SessionRow extends RecentSessionData {
 
 const CHECKBOX_WIDTH = 50
 
-const sortKeys: Record<string, (row: SessionRow) => unknown> = {
-  name: row => row.name,
-  path: row => row.path,
-  lastModified: row => row.updated,
-}
-
 const RecentSessionsTable = observer(function RecentSessionsTable({
   launch,
   sessions,
@@ -66,8 +60,6 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
       lastModifiedTooltip: tooltip,
     }
   })
-  const { sortedRows, sortProps } = useTableSort(rows, sortKeys)
-
   const lastModifiedWidth =
     measureGridWidth(
       rows.map(r => r.lastModified),
@@ -79,6 +71,7 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
       id: 'name',
       header: 'Session name',
       fill: true,
+      sortValue: row => row.name,
       cell: row => (
         <SessionNameCell
           value={row.name}
@@ -100,6 +93,7 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
           {
             id: 'path',
             header: 'Session path',
+            sortValue: (row: SessionRow) => row.path,
             title: (row: SessionRow) => row.path,
             cell: (row: SessionRow) => row.path,
           },
@@ -108,9 +102,11 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
     {
       id: 'lastModified',
       header: 'Last modified',
+      sortValue: row => row.updated,
       cell: row => <DateSinceLastUsed row={row} />,
     },
   ]
+  const { sortedRows, sortProps } = useTableSort(rows, columns)
 
   const allSelected =
     rows.length > 0 && rows.every(row => selectedPaths.has(row.path))

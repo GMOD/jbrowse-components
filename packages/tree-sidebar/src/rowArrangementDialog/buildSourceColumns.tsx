@@ -55,6 +55,7 @@ export function buildSourceColumns<S extends { name: string }>({
       id: 'name',
       header: 'Name',
       width: measureGridWidth(rows.map(r => r.name)),
+      sortValue: ({ source }) => source.name,
       title: ({ source }) => source.name,
       cell: ({ source }) => source.name,
     },
@@ -63,6 +64,7 @@ export function buildSourceColumns<S extends { name: string }>({
         id: field,
         header: field,
         width: measureGridWidth(rows.map(r => fieldText(r, field))),
+        sortValue: ({ source }) => fieldText(source, field),
         cell: ({ source }) => (
           <div className={cellClassName}>
             <SanitizedHTML html={fieldText(source, field)} />

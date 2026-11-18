@@ -27,7 +27,7 @@ const VariantConsequenceTableDialog = observer(
       field =>
         ({
           field,
-          value: row => row.record[field],
+          sortValue: row => row.record[field],
         }) satisfies DetailTableColumn<ConsequenceRow>,
     )
     return (

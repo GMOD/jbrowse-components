@@ -85,12 +85,14 @@ export const useVirtualTableStyles = makeStyles()(theme => {
     alignRight: {
       textAlign: 'right',
     },
-    sortButton: {
+    headerContent: {
       display: 'flex',
       alignItems: 'center',
       gap: 2,
       width: '100%',
       height: '100%',
+    },
+    sortButton: {
       padding: 0,
       border: 0,
       background: 'none',
@@ -99,7 +101,7 @@ export const useVirtualTableStyles = makeStyles()(theme => {
       textAlign: 'left',
       cursor: 'pointer',
     },
-    sortButtonRight: {
+    headerContentRight: {
       flexDirection: 'row-reverse',
     },
     headerLabel: {

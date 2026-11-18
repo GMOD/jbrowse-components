@@ -68,18 +68,18 @@ const VariantGenotypeFrequencyTable = observer(
     }
 
     const columns: DetailTableColumn<GenotypeRow>[] = [
-      { field: 'GT', value: row => row.GT },
+      { field: 'GT', sortValue: row => row.GT },
       {
         field: 'count',
-        value: row => row.count,
+        sortValue: row => row.count,
         text: row => `${row.count} / ${total}`,
       },
       {
         field: 'frequency',
-        value: row => row.count,
+        sortValue: row => row.count,
         text: row => `${((row.count / total) * 100).toPrecision(3)}%`,
       },
-      { field: 'genotype', value: row => row.genotype },
+      { field: 'genotype', sortValue: row => row.genotype },
     ]
 
     return (

@@ -32,7 +32,7 @@ const AttributeTable = observer(function AttributeTable({
     field =>
       ({
         field,
-        value: row => {
+        sortValue: row => {
           const value = row.record[field]
           return isObject(value) ? getStr(value) : value
         },

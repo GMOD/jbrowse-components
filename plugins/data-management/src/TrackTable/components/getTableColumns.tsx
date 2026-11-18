@@ -59,6 +59,7 @@ export function getTableColumns({
       id: 'name',
       header: 'Name',
       fill: true,
+      sortValue: row => coarseStripHTML(getRowStr('name', row)),
       cell: row => <NameCell row={row} model={model} />,
       title: row =>
         coarseStripHTML(
@@ -72,6 +73,7 @@ export function getTableColumns({
           ({
             id,
             header: facetLabel(id, nonMetadataFieldSet),
+            sortValue: row => coarseStripHTML(getRowStr(id, row)),
             // any metadata value (or category/description) can carry markup, and
             // SanitizedHTML short-circuits to a plain span when it doesn't
             cell: row => <SanitizedHTML html={getRowStr(id, row)} />,

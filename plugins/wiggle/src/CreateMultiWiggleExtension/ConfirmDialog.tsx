@@ -66,7 +66,7 @@ const ConfirmDialog = observer(function ConfirmDialog({
     {
       field: 'name',
       header: 'Name',
-      value: row => coarseStripHTML(row.name),
+      sortValue: row => coarseStripHTML(row.name),
       cell: row => (
         <div className={classes.nameCell}>
           <SanitizedHTML html={row.name} />

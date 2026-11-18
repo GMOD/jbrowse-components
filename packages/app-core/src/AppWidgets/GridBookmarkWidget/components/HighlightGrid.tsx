@@ -40,13 +40,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const sortKeys: Record<string, (row: HighlightRow) => unknown> = {
-  locString: row => row.locString,
-  label: row => row.label,
-  assemblyName: row => row.assemblyName,
-  color: row => row.highlight.color,
-}
-
 const HighlightGrid = observer(function HighlightGrid({
   model,
 }: {
@@ -61,12 +54,11 @@ const HighlightGrid = observer(function HighlightGrid({
   const assemblyNames = rows.map(r => r.assemblyName)
   const multipleAssemblies = new Set(assemblyNames).size > 1
 
-  const { sortedRows, sortProps } = useTableSort(rows, sortKeys)
-
   const columns: VirtualTableColumn<HighlightRow>[] = [
     {
       id: 'locString',
       header: 'Location',
+      sortValue: row => row.locString,
       title: row => row.locString,
       cell: row => (
         <ActionLink
@@ -83,6 +75,7 @@ const HighlightGrid = observer(function HighlightGrid({
       id: 'label',
       header: 'Label',
       fill: true,
+      sortValue: row => row.label,
       title: row => row.label,
       cell: row => (
         <EditableTextCell
@@ -107,6 +100,7 @@ const HighlightGrid = observer(function HighlightGrid({
           {
             id: 'assemblyName',
             header: 'Assembly',
+            sortValue: (row: HighlightRow) => row.assemblyName,
             title: (row: HighlightRow) => row.assemblyName,
             cell: (row: HighlightRow) => row.assemblyName,
           },
@@ -115,6 +109,7 @@ const HighlightGrid = observer(function HighlightGrid({
     {
       id: 'color',
       header: 'Color',
+      sortValue: row => row.highlight.color,
       cell: row => (
         <PopoverPicker
           label={`Color of ${row.locString}`}
@@ -128,6 +123,7 @@ const HighlightGrid = observer(function HighlightGrid({
       ),
     },
   ]
+  const { sortedRows, sortProps } = useTableSort(rows, columns)
 
   const allSelected =
     rows.length > 0 && selectedHighlights.length === rows.length

@@ -35,6 +35,7 @@ function tableColumn(model: SpreadsheetModel, col: SheetColumn, fill: boolean) {
     header: col.header,
     fill,
     align: col.kind === 'number' ? 'right' : undefined,
+    sortValue: col.value,
     title: text,
     cell:
       col.kind === 'location'

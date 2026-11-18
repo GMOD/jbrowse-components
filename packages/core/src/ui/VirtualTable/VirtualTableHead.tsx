@@ -41,7 +41,10 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
         ) : null}
         {columns.map(col => {
           const sorted = sortField === col.id
-          const right = col.align === 'right'
+          const headerClass = cx(
+            classes.headerContent,
+            col.align === 'right' && classes.headerContentRight,
+          )
           return (
             <th
               key={col.id}
@@ -56,26 +59,29 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
                   : undefined
               }
             >
-              <button
-                type="button"
-                className={cx(
-                  classes.sortButton,
-                  right && classes.sortButtonRight,
-                )}
-                onClick={() => {
-                  const next = nextSort(col.id, sortField, sortAscending)
-                  onSort(next.field, next.ascending)
-                }}
-              >
-                <span className={classes.headerLabel}>{col.header}</span>
-                {sorted ? (
-                  sortAscending ? (
-                    <ArrowUpwardIcon className={classes.sortIcon} />
-                  ) : (
-                    <ArrowDownwardIcon className={classes.sortIcon} />
-                  )
-                ) : null}
-              </button>
+              {col.sortValue ? (
+                <button
+                  type="button"
+                  className={cx(headerClass, classes.sortButton)}
+                  onClick={() => {
+                    const next = nextSort(col.id, sortField, sortAscending)
+                    onSort(next.field, next.ascending)
+                  }}
+                >
+                  <span className={classes.headerLabel}>{col.header}</span>
+                  {sorted ? (
+                    sortAscending ? (
+                      <ArrowUpwardIcon className={classes.sortIcon} />
+                    ) : (
+                      <ArrowDownwardIcon className={classes.sortIcon} />
+                    )
+                  ) : null}
+                </button>
+              ) : (
+                <div className={headerClass}>
+                  <span className={classes.headerLabel}>{col.header}</span>
+                </div>
+              )}
               <div
                 className={classes.resizeHandle}
                 onMouseDown={e => {

@@ -99,9 +99,21 @@ const DetailTable = observer(function DetailTable<
     () => (matches ? rows.filter((_, i) => matches(searchTexts[i]!)) : rows),
     [rows, searchTexts, matches],
   )
+  const tableColumns = columns.map((col, i): VirtualTableColumn<R> => {
+    const text = columnText(col)
+    return {
+      id: col.field,
+      header: col.header ?? col.field,
+      headerTitle: col.description,
+      fill: i === columns.length - 1,
+      sortValue: col.sortValue,
+      title: text,
+      cell: col.cell ?? text,
+    }
+  })
   const { sortedRows: shownRows, sortProps } = useTableSort(
     searchedRows,
-    Object.fromEntries(columns.map(col => [col.field, col.value])),
+    tableColumns,
   )
 
   return (
@@ -120,17 +132,7 @@ const DetailTable = observer(function DetailTable<
       <div className={classes.tableBox} style={{ maxHeight }}>
         <VirtualTable
           rows={shownRows}
-          columns={columns.map((col, i): VirtualTableColumn<R> => {
-            const text = columnText(col)
-            return {
-              id: col.field,
-              header: col.header ?? col.field,
-              headerTitle: col.description,
-              fill: i === columns.length - 1,
-              title: text,
-              cell: col.cell ?? text,
-            }
-          })}
+          columns={tableColumns}
           widths={() => widths}
           leading={leading}
           isRowSelected={isRowSelected}

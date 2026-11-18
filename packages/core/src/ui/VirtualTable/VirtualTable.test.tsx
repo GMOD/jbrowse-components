@@ -41,7 +41,14 @@ function table({
     <ThemeProvider theme={theme}>
       <VirtualTable
         rows={rows}
-        columns={[{ id: 'name', header: 'Name', cell: row => row.name }]}
+        columns={[
+          {
+            id: 'name',
+            header: 'Name',
+            sortValue: row => row.name,
+            cell: row => row.name,
+          },
+        ]}
         widths={() => ({ name: 100 })}
         sortField={sortField}
         sortAscending={sortAscending}

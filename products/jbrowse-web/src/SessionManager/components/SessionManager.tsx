@@ -46,8 +46,6 @@ const useStyles = makeStyles()(theme => ({
 
 const ROW_HEIGHT = 72
 
-const sortKeys = { name: (row: Row) => row.name }
-
 /**
  * The saved sessions, favorites first and each group by last use; `undefined`
  * while the database is still opening, which is not the same as empty.
@@ -84,16 +82,16 @@ const SessionManager = observer(function SessionManager({
   const searched = matches
     ? rows?.filter(row => matches(buildSearchText([row.name, row.summary])))
     : rows
-  const { sortedRows, sortProps } = useTableSort(searched ?? [], sortKeys)
-
   const columns: VirtualTableColumn<Row>[] = [
     {
       id: 'name',
       header: 'Name',
       fill: true,
+      sortValue: row => row.name,
       cell: row => <SessionRowCell row={row} session={session} />,
     },
   ]
+  const { sortedRows, sortProps } = useTableSort(searched ?? [], columns)
 
   return (
     <div className={classes.root}>
