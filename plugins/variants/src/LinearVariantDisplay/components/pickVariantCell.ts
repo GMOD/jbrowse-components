@@ -10,9 +10,7 @@ import type {
 } from './variantRenderingBackendTypes.ts'
 
 export interface PickCellData extends CellLookupData, VariantUploadData {
-  cellAltDosage: Uint8Array
   featurePositions: Uint32Array
-  featureInsertedBp: Int32Array
 }
 
 interface PickedCell {
@@ -21,11 +19,6 @@ interface PickedCell {
   // Screen row, so it indexes `model.drawnRows` and positions the hover highlight
   // directly.
   rowIndex: number
-  genomicStart: number
-  genomicEnd: number
-  // bp this record inserts, but only when *this* cell carries the alt, which
-  // the tooltip reports
-  insertedBp: number
 }
 
 const CELL_MARK = VARIANT_MARKS[0]!
@@ -105,9 +98,9 @@ export function pickVariantCell({
     )
     if (top) {
       const { cellIndex, rowIndex } = top
-      const genomicStart = data.featurePositions[featureIndex * 2]!
-      const genomicEnd = data.featurePositions[featureIndex * 2 + 1]!
-      const len = genomicEnd - genomicStart
+      const len =
+        data.featurePositions[featureIndex * 2 + 1]! -
+        data.featurePositions[featureIndex * 2]!
       const onTop =
         len < bestLen || (len === bestLen && cellIndex > best!.cellIndex)
       if (
@@ -115,16 +108,7 @@ export function pickVariantCell({
         withinCellTolerance(data, block, state, mouseX, mouseY, cellIndex)
       ) {
         bestLen = len
-        best = {
-          cellIndex,
-          featureIndex,
-          rowIndex,
-          genomicStart,
-          genomicEnd,
-          insertedBp: data.cellAltDosage[cellIndex]
-            ? data.featureInsertedBp[featureIndex]!
-            : 0,
-        }
+        best = { cellIndex, featureIndex, rowIndex }
       }
     }
   }

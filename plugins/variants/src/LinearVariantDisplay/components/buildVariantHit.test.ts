@@ -1,4 +1,4 @@
-import { buildRecordHit, buildVariantHit } from './buildVariantHit.ts'
+import { buildRecordHit, buildVariantHit, cellHit } from './buildVariantHit.ts'
 import { getTooltipRows } from './getTooltipRows.ts'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -81,6 +81,54 @@ describe('a genotype hit', () => {
   test('an insertion reports the bp this cell carries, none for a reference cell', () => {
     expect(hit({ alt: ['T'], insertedBp: 42 }, 42).insertion).toBe('42bp')
     expect(hit({ alt: ['T'], insertedBp: 42 }, 0).insertion).toBe('')
+  })
+})
+
+describe('a cell hit', () => {
+  // HG001 carries a 42bp insertion, HG002 is reference; HG003 is drawn but
+  // absent from the payload's samples
+  const info: VariantFeatureInfo = {
+    featureId: 'ins1',
+    ref: 'A',
+    alt: ['AT'],
+    name: 'ins1',
+    description: 'insertion',
+    length: 1,
+    insertedBp: 42,
+    type: 'indel',
+    svType: '',
+    svAlleles: [],
+    tooltip: '',
+    groupKey: '',
+    labelName: '',
+    labelDescription: '',
+    genotypeCodes: Uint32Array.from([1, 2]),
+  }
+  const drawnRows = ['HG001', 'HG002', 'HG003'].map(sampleName => ({
+    sampleName,
+    name: sampleName,
+  }))
+  const at = (rowIndex: number, altDosage: number) =>
+    cellHit({
+      drawnRows,
+      genotypeDict: ['0|1', '0|0'],
+      sampleIndex: new Map([
+        ['HG001', 0],
+        ['HG002', 1],
+      ]),
+      info,
+      rowIndex,
+      altDosage,
+    })
+
+  test('an alt cell reports the inserted bp, a reference cell none', () => {
+    expect(at(0, 128)).toMatchObject({ genotype: '0|1', insertion: '42bp' })
+    expect(at(1, 0)).toMatchObject({ genotype: '0|0', insertion: '' })
+  })
+
+  test('a row not drawn, or outside the payload, names no cell', () => {
+    expect(at(3, 0)).toBeUndefined()
+    expect(at(2, 0)).toBeUndefined()
   })
 })
 

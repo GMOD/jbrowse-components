@@ -426,10 +426,10 @@ describe('insertion glyph inputs', () => {
     })
   }
 
-  test('featureInsertedBp is the ALT length over the reference span', () => {
+  test('insertedBp is the ALT length over the reference span', () => {
     // 65481 of ALT against 1bp of REF. This is the number the cell's own width
     // cannot express, since an insertion consumes no reference.
-    expect([...run(insertion).featureInsertedBp]).toEqual([65480])
+    expect(run(insertion).featureInfo[0]!.insertedBp).toBe(65480)
   })
 
   test('a deletion or SNP inserts nothing', () => {
@@ -444,7 +444,7 @@ describe('insertion glyph inputs', () => {
       start: 100,
       end: 600,
     })
-    expect([...run(del).featureInsertedBp]).toEqual([0])
+    expect(run(del).featureInfo[0]!.insertedBp).toBe(0)
   })
 
   test('only the alt-carrying haplotype is flagged', () => {

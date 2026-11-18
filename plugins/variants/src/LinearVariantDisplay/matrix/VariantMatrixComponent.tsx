@@ -2,8 +2,7 @@ import { sidebarCovers } from '@jbrowse/display-ui'
 import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
-import { decodeGenotype } from '../../shared/genotypeCodec.ts'
-import { buildVariantHit } from '../components/buildVariantHit.ts'
+import { cellHit } from '../components/buildVariantHit.ts'
 import { enrichCellHit } from '../components/enrichFeatureFromClick.ts'
 import { topDrawnCell } from '../components/variantCellLookup.ts'
 import { variantSurfaceHandlers } from '../components/variantSurface.ts'
@@ -53,33 +52,19 @@ function getHoveredMatrixCell(
     return undefined
   }
   const top = topDrawnCell(placed, rowUnmap, featureIdx, lowest, nearest)
-  const row = top && drawnRows[top.rowIndex]
-  if (!top || !row) {
-    return undefined
-  }
-  const { sampleName } = row
-  const genotype = decodeGenotype(
-    cellData.genotypeDict,
-    model.genotypeSampleIndex!,
-    feature.genotypeCodes,
-    sampleName,
-  )
-  return genotype === undefined
-    ? undefined
-    : {
-        fields: buildVariantHit({
-          info: feature,
-          genotype,
-          sampleName,
-          name: row.name,
-          featureId: feature.featureId,
-          insertedBp: placed.cellAltDosage[top.cellIndex]
-            ? feature.insertedBp
-            : 0,
-        }),
-        featureInfo: feature,
-        cell: { cellIndex: top.cellIndex },
-      }
+  const fields =
+    top &&
+    cellHit({
+      drawnRows,
+      genotypeDict: cellData.genotypeDict,
+      sampleIndex: model.genotypeSampleIndex!,
+      info: feature,
+      rowIndex: top.rowIndex,
+      altDosage: placed.cellAltDosage[top.cellIndex]!,
+    })
+  return top && fields
+    ? { fields, featureInfo: feature, cell: { cellIndex: top.cellIndex } }
+    : undefined
 }
 
 /**

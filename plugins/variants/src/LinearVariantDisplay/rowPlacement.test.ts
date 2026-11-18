@@ -54,7 +54,6 @@ function regularCellData(rowNames: string[]): CellDataResult {
         featureInfo: [featureInfoOf('v0', { length: 100 })],
         featurePositions: Uint32Array.from([100, 200]),
         featureIndexData: featureIndexData(1),
-        featureInsertedBp: Int32Array.from([0]),
         featureColorValues: new Uint32Array(1),
       },
     },

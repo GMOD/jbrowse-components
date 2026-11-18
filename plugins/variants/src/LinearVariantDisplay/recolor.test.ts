@@ -64,7 +64,6 @@ function cellData(colorRead: CellHueRead): CellDataResult {
         featureInfo: [featureInfoOf('v0', { length: 100, svType: 'DEL' })],
         featurePositions: Uint32Array.from([100, 200]),
         featureIndexData: featureIndexData(),
-        featureInsertedBp: Int32Array.from([0]),
       },
     },
   }
@@ -235,7 +234,6 @@ test('records too short to see that share pixels paint their cells faded, keepin
         ],
         featurePositions: Uint32Array.from([100, 101, 100, 101]),
         featureIndexData: index.data,
-        featureInsertedBp: Int32Array.from([0, 0]),
       },
     },
   })

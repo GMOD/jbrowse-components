@@ -43,11 +43,6 @@ export interface VariantCellData extends CellHueValues {
   // spatial index over `featurePositions`, one interval per feature rather than
   // per cell (variantCellLookup.ts)
   featureIndexData: ArrayBuffer
-  // bp this record inserts relative to the reference, per feature; 0 for SNPs
-  // and deletions. A cell's width cannot express it, since an insertion
-  // consumes ~no reference. Multiallelic records report their longest ALT,
-  // matching `getAlleleLength` and the `alleleLength()` jexl.
-  featureInsertedBp: Int32Array
   // `1 << CELL_*` for every cell-color category each variant painted, which
   // the key reads for the variants on screen (`keyedVariants`)
   featureCategories: Uint8Array
@@ -113,7 +108,6 @@ export function computeVariantCells({
   const altDosage = new Uint8Array(maxCells)
   const featureIndices = new Uint32Array(maxCells)
   const featureInfo: VariantFeatureInfo[] = []
-  const insertedBp = new Int32Array(numFeatures)
   const featurePositions = new Uint32Array(numFeatures * 2)
   const featureColorValues = new Uint32Array(numFeatures)
   const featureCategories = new Uint8Array(numFeatures)
@@ -175,7 +169,6 @@ export function computeVariantCells({
       featureColorValues[featureIdx] = hueValues.add(hueValue(feature))
     }
 
-    const inserted = getInsertedBp(feature)
     const svType = feature.get(SV_TYPE_FIELD)
     const alt = (feature.get('ALT') as string[] | undefined) ?? []
     const ref = feature.get('REF') as string
@@ -188,7 +181,7 @@ export function computeVariantCells({
       name: feature.get('name') ?? '',
       description: (feature.get('description') as string | undefined) ?? '',
       length: end - start,
-      insertedBp: inserted,
+      insertedBp: getInsertedBp(feature),
       type: feature.get('type') ?? '',
       svType: typeof svType === 'string' ? svType : '',
       svAlleles: svType ? svAlleles(alt, ref, feature) : [],
@@ -198,7 +191,6 @@ export function computeVariantCells({
       labelDescription: recordFields.labelDescription(feature),
       genotypeCodes: codes,
     })
-    insertedBp[featureIdx] = inserted
     featurePositions[featureIdx * 2] = start
     featurePositions[featureIdx * 2 + 1] = end
     featureIdx++
@@ -260,7 +252,6 @@ export function computeVariantCells({
     featureInfo,
     featurePositions,
     featureIndexData: featureIndex.data,
-    featureInsertedBp: insertedBp,
     featureCategories,
     featureColorValues,
     ...hueValues.result(),

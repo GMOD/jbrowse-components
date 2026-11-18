@@ -2,8 +2,7 @@ import { sidebarCovers } from '@jbrowse/display-ui'
 import { backingScale, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
-import { decodeGenotype } from '../../shared/genotypeCodec.ts'
-import { buildVariantHit } from './buildVariantHit.ts'
+import { cellHit } from './buildVariantHit.ts'
 import { enrichCellHit } from './enrichFeatureFromClick.ts'
 import { pickVariantCell } from './pickVariantCell.ts'
 import { computeVariantHitQuery, featuresNearCursor } from './variantHitTest.ts'
@@ -16,8 +15,6 @@ import type { VariantSurface } from './variantSurface.ts'
 
 export interface HoveredCell {
   cellIndex: number
-  genomicStart: number
-  genomicEnd: number
   displayedRegionIndex: number
 }
 
@@ -79,44 +76,27 @@ function getHoveredFeature(
     return undefined
   }
 
-  const { rowIndex, cellIndex, genomicStart, genomicEnd, insertedBp } = picked
-  const info = regionCellData.featureInfo[picked.featureIndex]!
-  const { featureId } = info
-  // The cell row index maps directly into model.drawnRows (same effectiveSources
-  // ordering used to compute the cells), so no per-region sourceNameList is
-  // shipped over RPC.
-  const row = model.drawnRows[rowIndex]
-  if (!row) {
-    return undefined
-  }
-  const genotype = decodeGenotype(
-    cellData.genotypeDict,
-    model.genotypeSampleIndex!,
-    info.genotypeCodes,
-    row.sampleName,
+  // The picked row indexes model.drawnRows directly (the order the cells were
+  // placed in), so no per-region sourceNameList is shipped over RPC.
+  const { cellIndex, featureIndex, rowIndex } = picked
+  const { displayedRegionIndex } = region
+  const info = regionCellData.featureInfo[featureIndex]!
+  const fields = cellHit({
+    drawnRows: model.drawnRows,
+    genotypeDict: cellData.genotypeDict,
+    sampleIndex: model.genotypeSampleIndex!,
+    info,
+    rowIndex,
+    altDosage: regionCellData.cellAltDosage[cellIndex]!,
+    displayedRegionIndex,
+  })
+  return (
+    fields && {
+      fields,
+      featureInfo: info,
+      cell: { cellIndex, displayedRegionIndex },
+    }
   )
-  // a row named outside the payload's sample order decodes to nothing
-  if (genotype === undefined) {
-    return undefined
-  }
-  return {
-    fields: buildVariantHit({
-      info,
-      genotype,
-      sampleName: row.sampleName,
-      name: row.name,
-      featureId,
-      insertedBp,
-      displayedRegionIndex: region.displayedRegionIndex,
-    }),
-    featureInfo: info,
-    cell: {
-      cellIndex,
-      genomicStart,
-      genomicEnd,
-      displayedRegionIndex: region.displayedRegionIndex,
-    },
-  }
 }
 
 /**

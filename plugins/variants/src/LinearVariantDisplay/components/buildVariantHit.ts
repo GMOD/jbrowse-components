@@ -1,6 +1,7 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
+import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { carrierSummary } from '../recordCarriers.ts'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -66,8 +67,7 @@ export function buildVariantHit({
   featureId: string
   // bp of insertion THIS cell reports — the record's count when the sample
   // carries the alt, 0 for a reference cell, which must not claim the
-  // insertion its column's record makes. Both layouts zero it by the cell's
-  // `cellAltDosage`.
+  // insertion its column's record makes (`cellHit`)
   insertedBp: number
   displayedRegionIndex?: number
 }): VariantTooltipFields {
@@ -87,6 +87,51 @@ export function buildVariantHit({
     featureId,
     displayedRegionIndex,
   }
+}
+
+/**
+ * The fields for the cell `info` draws on drawn row `rowIndex`, both layouts'
+ * hover past finding the cell. Undefined for a row not drawn, or one named
+ * outside the payload's sample order, which decodes to no genotype. The
+ * record's inserted bp is reported only by a cell carrying the alt.
+ */
+export function cellHit({
+  drawnRows,
+  genotypeDict,
+  sampleIndex,
+  info,
+  rowIndex,
+  altDosage,
+  displayedRegionIndex,
+}: {
+  drawnRows: readonly { sampleName: string; name: string }[]
+  genotypeDict: string[]
+  sampleIndex: Map<string, number>
+  info: VariantFeatureInfo
+  rowIndex: number
+  altDosage: number
+  displayedRegionIndex?: number
+}) {
+  const row = drawnRows[rowIndex]
+  const genotype =
+    row &&
+    decodeGenotype(
+      genotypeDict,
+      sampleIndex,
+      info.genotypeCodes,
+      row.sampleName,
+    )
+  return row && genotype !== undefined
+    ? buildVariantHit({
+        info,
+        genotype,
+        sampleName: row.sampleName,
+        name: row.name,
+        featureId: info.featureId,
+        insertedBp: altDosage ? info.insertedBp : 0,
+        displayedRegionIndex,
+      })
+    : undefined
 }
 
 /**

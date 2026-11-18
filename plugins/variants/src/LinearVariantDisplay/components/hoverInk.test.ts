@@ -65,8 +65,6 @@ test.each([1, 1.25, 1.5, 2])(
         kind: 'cell',
         cell: {
           cellIndex: 2,
-          genomicStart: 1001,
-          genomicEnd: 1002,
           displayedRegionIndex: region.displayedRegionIndex,
         },
       })

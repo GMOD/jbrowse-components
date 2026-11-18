@@ -347,7 +347,6 @@ export async function executeVariantCellData(args: {
     transferables.add(data.cellFeatureIndices.buffer)
     transferables.add(data.featureIndexData)
     transferables.add(data.featurePositions.buffer)
-    transferables.add(data.featureInsertedBp.buffer)
     transferables.add(data.featureColorValues.buffer)
     transferables.add(data.featureCategories.buffer)
   }

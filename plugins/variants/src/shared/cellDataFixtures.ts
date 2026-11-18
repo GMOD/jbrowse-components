@@ -49,7 +49,6 @@ export function cellPayloadOf(
     colorValues: [],
     featureInfo,
     featurePositions: new Uint32Array(featureInfo.length * 2),
-    featureInsertedBp: new Int32Array(featureInfo.length),
     ...overrides,
   }
   const n = featureInfo.length
