@@ -13,15 +13,12 @@ import {
   svMateLocus,
 } from '@jbrowse/sv-core'
 
-import LocationCell from './components/LocationCell.tsx'
-import MateCell from './components/MateCell.tsx'
 import { svSize } from './svSize.ts'
 import { rowSvType, tallySvTypes } from './svTypeTally.ts'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { Junction, SvEvent } from '@jbrowse/sv-core'
-import type { GridColDef } from '@mui/x-data-grid'
 
 export interface Row {
   feature?: SimpleFeatureSerialized
@@ -84,8 +81,6 @@ interface LegacyRow extends Row {
   extendedData?: { vcfFeature?: SimpleFeatureSerialized }
 }
 
-type VisibleRowFlags = Record<number, boolean>
-
 /** VCF 4.4's key for the rearrangement event a record belongs to */
 const SV_EVENT_COLUMN = 'INFO.EVENT'
 
@@ -104,33 +99,63 @@ function sampleRows<T>(rows: T[] | undefined) {
   return out
 }
 
-// The grid rebuilds its visible-rows lookup on filter passes that change
-// nothing, and every new object recomputes what the SV inspector derives from
-// `visibleRows`.
-function sameVisibleRowFlags(a?: VisibleRowFlags, b?: VisibleRowFlags) {
-  if (a === b) {
-    return true
-  }
-  if (!a || !b) {
-    return false
-  }
-  const keys = Object.keys(a)
-  return (
-    keys.length === Object.keys(b).length && keys.every(k => a[+k] === b[+k])
-  )
+/**
+ * A column of the sheet. `value` is what sorting, the search and the CSV
+ * export read; the table draws a `location` or `mate` column as a link and a
+ * `number` column with thousands separators.
+ */
+export interface SheetColumn {
+  field: string
+  header: string
+  width: number
+  kind: 'location' | 'mate' | 'number' | 'text'
+  value: (row: GridRow) => unknown
 }
 
-// The CSV export and a copy write a column's formatted value, so a number
-// formats plain there and only its cell draws the thousands separators.
-const numberColumn = {
-  type: 'number',
-  valueFormatter: (value?: unknown) => (value == null ? '' : `${value}`),
-  renderCell: ({ value }: { value?: unknown }) =>
-    typeof value === 'number' ? toLocale(value) : `${value ?? ''}`,
-} satisfies Partial<GridColDef<GridRow>>
+const collator = new Intl.Collator(undefined, { numeric: true })
 
 function naturalOrder(a: string, b: string) {
-  return a.localeCompare(b, undefined, { numeric: true })
+  return collator.compare(a, b)
+}
+
+/**
+ * a cell's value as plain text, which the search, the CSV export and a cell's
+ * hover read: a number without separators, and nothing as ''
+ */
+export function cellText(value: unknown) {
+  return value == null
+    ? ''
+    : typeof value === 'string'
+      ? value
+      : typeof value === 'number' || typeof value === 'boolean'
+        ? `${value}`
+        : JSON.stringify(value)
+}
+
+function isBlank(value: unknown) {
+  return value == null || value === ''
+}
+
+// a blank sorts last whichever way the column sorts
+function compareValues(a: unknown, b: unknown, direction: number) {
+  return isBlank(a)
+    ? isBlank(b)
+      ? 0
+      : 1
+    : isBlank(b)
+      ? -1
+      : direction *
+        (typeof a === 'number' && typeof b === 'number'
+          ? a - b
+          : naturalOrder(cellText(a), cellText(b)))
+}
+
+function csvLine(fields: string[]) {
+  return fields
+    .map(text =>
+      /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text,
+    )
+    .join(',')
 }
 
 function eventLabel(row: GridRow, field?: string) {
@@ -193,17 +218,22 @@ export default function stateModelFactory() {
       svEventFilter: types.maybe(types.string),
       /**
        * #property
-       * the search box's text (undefined = show all), applied as the grid's
-       * quick filter; the SV inspector's circle draws the rows it leaves
+       * the search box's text (undefined = show all): a row is kept when each
+       * of its words, in any case, is in one of its shown columns; the SV
+       * inspector's circle draws the rows it leaves
        */
       filterText: types.maybe(types.string),
-    })
-    .volatile(() => ({
       /**
-       * #volatile
+       * #property
+       * the field of the column the rows are sorted by (undefined = file
+       * order)
        */
-      visibleRowFlags: undefined as VisibleRowFlags | undefined,
-    }))
+      sortField: types.maybe(types.string),
+      /**
+       * #property
+       */
+      sortAscending: types.stripDefault(types.boolean, true),
+    })
     .views(self => ({
       /**
        * #getter
@@ -368,11 +398,8 @@ export default function stateModelFactory() {
       /**
        * #getter
        */
-      get dataGridColumns(): GridColDef<GridRow>[] | undefined {
-        const { rows } = self
-        if (!rows) {
-          return undefined
-        }
+      get sheetColumns(): SheetColumn[] {
+        const rows = self.rows ?? []
         const isSvSheet = !!self.svTypeColumnField
         // measureGridWidth walks every character it is handed, so widths come
         // off a sample: the whole of a 50k-row sheet blocked for 3.6s
@@ -381,74 +408,91 @@ export default function stateModelFactory() {
         return [
           {
             field: 'Location',
+            header: 'Location',
+            kind: 'location' as const,
             width: measureGridWidth(sample.map(d => d.location ?? 'N/A')) + 40,
-            // the plain string too, or sorting and the CSV export see nothing
-            valueGetter: (_val, row) => row.derived.location,
-            renderCell: ({ row }) =>
-              row.feature ? (
-                <LocationCell model={self} feature={row.feature} />
-              ) : (
-                'N/A'
-              ),
+            value: (row: GridRow) => row.derived.location,
           },
           {
             // one field for both headers, so one saved visibility covers them
             field: 'Length',
-            headerName: isSvSheet ? 'SV size' : 'Length',
-            ...numberColumn,
+            header: isSvSheet ? 'SV size' : 'Length',
+            kind: 'number' as const,
             width: measureGridWidth(
               sample.map(d => (d.size === undefined ? '' : toLocale(d.size))),
             ),
             // undefined for an interchromosomal breakend, which has no size
-            valueGetter: (_val, row) => row.derived.size,
+            value: (row: GridRow) => row.derived.size,
           },
           // without this column the mate's chromosome is only in ALT, where
-          // the quick filter cannot single it out
+          // the search cannot single it out
           ...(isSvSheet
             ? [
                 {
                   field: 'Mate',
+                  header: 'Mate',
+                  kind: 'mate' as const,
                   width: measureGridWidth(
                     sample.map(d => d.mate?.display ?? ''),
                   ),
-                  valueGetter: (_val, row) => row.derived.mate?.display,
-                  renderCell: ({ row }) =>
-                    row.derived.mate ? (
-                      <MateCell
-                        model={self}
-                        locString={row.derived.mate.raw}
-                        display={row.derived.mate.display}
-                      />
-                    ) : null,
-                } satisfies GridColDef<GridRow>,
+                  value: (row: GridRow) => row.derived.mate?.display,
+                },
               ]
             : []),
-          ...self.columns.map(
-            f =>
-              ({
-                field: f.name,
-                // capped, so one multi-kb REF/ALT cannot push every later
-                // column off screen
-                width: measureGridWidth(
-                  [...sampled.map(r => r[f.name]), f.name],
-                  { minWidth: 20, maxWidth: 200 },
-                ),
-                // typed by the first populated cell, off every row: a sample
-                // could miss the only values of a sparse column
-                ...(typeof rows.find(r => r[f.name] != null)?.[f.name] ===
-                'number'
-                  ? numberColumn
-                  : {}),
-              }) satisfies GridColDef<GridRow>,
-          ),
+          ...self.columns.map(f => ({
+            field: f.name,
+            header: f.name,
+            // typed by the first populated cell, off every row: a sample
+            // could miss the only values of a sparse column
+            kind:
+              typeof rows.find(r => r[f.name] != null)?.[f.name] === 'number'
+                ? ('number' as const)
+                : ('text' as const),
+            // capped, so one multi-kb REF/ALT cannot push every later column
+            // off screen
+            width: measureGridWidth([...sampled.map(r => r[f.name]), f.name], {
+              minWidth: 20,
+              maxWidth: 200,
+            }),
+            value: (row: GridRow) => row[f.name],
+          })),
         ]
+      },
+      /**
+       * #getter
+       * the columns `visibleColumns` leaves shown
+       */
+      get shownColumns() {
+        return this.sheetColumns.filter(
+          c => self.visibleColumns[c.field] !== false,
+        )
+      },
+      /**
+       * #getter
+       * the words of `filterText`, lowercased
+       */
+      get searchWords() {
+        return (self.filterText ?? '').toLowerCase().split(' ').filter(Boolean)
+      },
+      /**
+       * #getter
+       * each row's shown cells as one lowercased string, by row id, which the
+       * search reads on every keystroke
+       */
+      get searchTexts() {
+        const columns = this.shownColumns
+        return (self.rows ?? []).map(row =>
+          columns
+            .map(c => cellText(c.value(row)))
+            .join('\u0000')
+            .toLowerCase(),
+        )
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * the rows the grid is handed, narrowed by the dropdowns here because
-       * the community grid's filter model holds only the reader's own filter
+       * the rows the dropdowns leave
        */
       get gridRows() {
         const { svEventFilter } = self
@@ -463,11 +507,43 @@ export default function stateModelFactory() {
               eventLabel(row, svEventColumnField) === svEventFilter),
         )
       },
+      /**
+       * #getter
+       * the rows the dropdowns and the search leave, in file order
+       */
       get visibleRows() {
-        const { visibleRowFlags } = self
-        return visibleRowFlags
-          ? this.gridRows?.filter(row => visibleRowFlags[row.id] !== false)
+        const { searchWords, searchTexts } = self
+        return searchWords.length
+          ? this.gridRows?.filter(row => {
+              const text = searchTexts[row.id]!
+              return searchWords.every(word => text.includes(word))
+            })
           : this.gridRows
+      },
+      /**
+       * #getter
+       * the shown column the rows sort by, if any
+       */
+      get sortColumn() {
+        const { sortField } = self
+        return sortField === undefined
+          ? undefined
+          : self.shownColumns.find(c => c.field === sortField)
+      },
+      /**
+       * #getter
+       * `visibleRows` in the order the table draws them
+       */
+      get sortedRows() {
+        const rows = this.visibleRows ?? []
+        const column = this.sortColumn
+        const direction = self.sortAscending ? 1 : -1
+        return column
+          ? rows
+              .map(row => ({ row, key: column.value(row) }))
+              .sort((a, b) => compareValues(a.key, b.key, direction))
+              .map(({ row }) => row)
+          : rows
       },
       /**
        * #getter
@@ -550,6 +626,31 @@ export default function stateModelFactory() {
           ? undefined
           : self.rows?.find(r => r.feature?.uniqueId === id)?.id
       },
+      /**
+       * #getter
+       * where `selectedRowId` sits in `sortedRows`, which the table scrolls
+       * into view; undefined when the filters leave it out
+       */
+      get selectedRowIndex() {
+        const id = this.selectedRowId
+        const index =
+          id === undefined ? -1 : this.sortedRows.findIndex(r => r.id === id)
+        return index === -1 ? undefined : index
+      },
+      /**
+       * #method
+       * `sortedRows` under the shown columns' headers as CSV, each value
+       * plain, as the search reads it
+       */
+      csvText() {
+        const columns = self.shownColumns
+        return [
+          csvLine(columns.map(c => c.header)),
+          ...this.sortedRows.map(row =>
+            csvLine(columns.map(c => cellText(c.value(row)))),
+          ),
+        ].join('\r\n')
+      },
     }))
     .actions(self => {
       // every class selected is no filter
@@ -562,16 +663,6 @@ export default function stateModelFactory() {
         )
       }
       return {
-        /**
-         * #action
-         */
-        setVisibleRows(arg?: VisibleRowFlags) {
-          // the grid reports an empty lookup when nothing is filtered
-          const next = arg && Object.keys(arg).length ? arg : undefined
-          if (!sameVisibleRowFlags(self.visibleRowFlags, next)) {
-            self.visibleRowFlags = next
-          }
-        },
         /**
          * #action
          * put a row's record on the session selection, which highlights its
@@ -626,13 +717,32 @@ export default function stateModelFactory() {
          * #action
          */
         setFilterText(arg?: string) {
-          self.filterText = arg
+          self.filterText = arg || undefined
+        },
+        /**
+         * #action
+         * sort by the column with this field; an empty field is file order
+         */
+        setSort(field: string, ascending: boolean) {
+          self.sortField = field || undefined
+          self.sortAscending = ascending
         },
         /**
          * #action
          */
         setVisibleColumns(arg: Record<string, boolean>) {
           self.visibleColumns = arg
+        },
+        /**
+         * #action
+         */
+        setColumnVisible(field: string, visible: boolean) {
+          const rest = Object.fromEntries(
+            Object.entries(self.visibleColumns).filter(
+              ([key]) => key !== field,
+            ),
+          )
+          self.visibleColumns = visible ? rest : { ...rest, [field]: false }
         },
       }
     })

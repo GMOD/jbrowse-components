@@ -42,6 +42,8 @@ const FeatureMenu = observer(function FeatureMenu({
 }) {
   return (
     <CascadingMenuButton
+      size="small"
+      sx={{ padding: 0 }}
       menuItems={[
         {
           label: 'Open in linear genome view',

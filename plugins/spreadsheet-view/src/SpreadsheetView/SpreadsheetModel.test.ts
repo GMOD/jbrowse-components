@@ -1,6 +1,6 @@
+import { SimpleFeature } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { walkBreakendChain } from '@jbrowse/sv-core'
-import { autorun } from 'mobx'
 
 import stateModelFactory from './SpreadsheetModel.tsx'
 
@@ -88,65 +88,6 @@ test('rows assigns sequential ids across multiple rows', () => {
   expect(model.rows?.map(r => r.id)).toEqual([0, 1, 2])
 })
 
-test('visibleRows returns all rows when no filter applied', () => {
-  const model = makeModel({
-    rowSet: { rows: [{ cellData: {} }, { cellData: {} }, { cellData: {} }] },
-    columns: [],
-  })
-  expect(model.visibleRows?.length).toBe(3)
-})
-
-test('visibleRows filters rows based on visibleRowFlags', () => {
-  const model = makeModel({
-    rowSet: { rows: [{ cellData: {} }, { cellData: {} }, { cellData: {} }] },
-    columns: [],
-  })
-  model.setVisibleRows({ 0: false, 2: false })
-  expect(model.visibleRows?.map(r => r.id)).toEqual([1])
-})
-
-test('setVisibleRows(undefined) restores full row list', () => {
-  const model = makeModel({
-    rowSet: { rows: [{ cellData: {} }, { cellData: {} }] },
-    columns: [],
-  })
-  model.setVisibleRows({ 0: false })
-  expect(model.visibleRows?.length).toBe(1)
-  model.setVisibleRows(undefined)
-  expect(model.visibleRows?.length).toBe(2)
-})
-
-// Regression: the grid rebuilds its visible-rows lookup on passes that cannot
-// have changed the answer (a rows-set, a column-visibility change while a quick
-// filter is on), and a fresh object each time re-derived visibleRows — which in
-// the SV inspector is a whole new chord track built from every visible feature
-test('re-reporting the same visible rows does not invalidate visibleRows', () => {
-  const model = makeModel({
-    rowSet: { rows: [{ cellData: {} }, { cellData: {} }, { cellData: {} }] },
-    columns: [],
-  })
-  let recomputes = 0
-  const dispose = autorun(() => {
-    void model.visibleRows
-    recomputes++
-  })
-  expect(recomputes).toBe(1)
-
-  model.setVisibleRows({ 0: false, 1: true, 2: true })
-  expect(recomputes).toBe(2)
-  // the same answer in a new object: nothing downstream should hear about it
-  model.setVisibleRows({ 0: false, 1: true, 2: true })
-  expect(recomputes).toBe(2)
-
-  // a lookup that really differs still gets through, in either direction
-  model.setVisibleRows({ 0: false, 1: false, 2: true })
-  expect(recomputes).toBe(3)
-  expect(model.visibleRows?.map(r => r.id)).toEqual([2])
-  model.setVisibleRows({ 0: true, 1: true })
-  expect(model.visibleRows?.map(r => r.id)).toEqual([0, 1, 2])
-  dispose()
-})
-
 // Column widths come off a sample of the rows, since measuring all of them is
 // seconds of blocked main thread on a large sheet. An ordinary file is smaller
 // than the sample, so it must still be measured exactly — that is the part a
@@ -159,7 +100,7 @@ test('a sheet smaller than the width sample is still measured off every row', ()
     },
     columns: [{ name: 'c' }],
   })
-  const narrow = model.dataGridColumns!.find(c => c.field === 'c')!.width!
+  const narrow = model.sheetColumns.find(c => c.field === 'c')!.width
 
   const model2 = makeModel({
     rowSet: {
@@ -167,9 +108,9 @@ test('a sheet smaller than the width sample is still measured off every row', ()
     },
     columns: [{ name: 'c' }],
   })
-  expect(
-    model2.dataGridColumns!.find(c => c.field === 'c')!.width,
-  ).toBeGreaterThan(narrow)
+  expect(model2.sheetColumns.find(c => c.field === 'c')!.width).toBeGreaterThan(
+    narrow,
+  )
 })
 
 test('svType getters are inert without an INFO.SVTYPE column', () => {
@@ -217,12 +158,11 @@ describe('the derived size column', () => {
 
   function sizeColumn(overrides: Record<string, unknown>) {
     const model = makeModel(overrides)
-    const col = model.dataGridColumns!.find(c => c.field === 'Length')!
-    const row = model.rows![0]!
+    const col = model.sheetColumns.find(c => c.field === 'Length')!
     return {
-      headerName: col.headerName,
-      size: col.valueGetter!(undefined as never, row, col, {} as never),
-      valueFormatter: col.valueFormatter as (v?: number) => string,
+      header: col.header,
+      kind: col.kind,
+      size: col.value(model.rows![0]!),
     }
   }
 
@@ -231,7 +171,8 @@ describe('the derived size column', () => {
       rowSet: { rows: [{ feature: insertion, cellData: { c: 'x' } }] },
       columns: [{ name: 'c' }],
     })
-    expect(col.headerName).toBe('Length')
+    expect(col.header).toBe('Length')
+    expect(col.kind).toBe('number')
     expect(col.size).toBe(1)
   })
 
@@ -242,32 +183,16 @@ describe('the derived size column', () => {
       },
       columns: [{ name: 'INFO.SVTYPE' }],
     })
-    expect(col.headerName).toBe('SV size')
+    expect(col.header).toBe('SV size')
     expect(col.size).toBe(2000)
   })
 
-  test('a row with no size to report formats as blank, not "undefined"', () => {
-    const col = sizeColumn({
+  test('a row with no size to report exports as blank, not "undefined"', () => {
+    const model = makeModel({
       rowSet: { rows: [{ cellData: { 'INFO.SVTYPE': 'BND' } }] },
       columns: [{ name: 'INFO.SVTYPE' }],
     })
-    expect(col.valueFormatter(undefined)).toBe('')
-  })
-
-  // the grid's CSV export and copy write the formatted value
-  test('a number exports plain and draws with separators', () => {
-    const model = makeModel({
-      rowSet: { rows: [{ cellData: { POS: 1234567 } }, { cellData: {} }] },
-      columns: [{ name: 'POS' }],
-    })
-    const col = model.dataGridColumns!.find(c => c.field === 'POS')!
-    const format = col.valueFormatter as (v?: number) => string
-    const draw = col.renderCell as (p: { value?: number }) => string
-    expect(col.type).toBe('number')
-    expect(format(1234567)).toBe('1234567')
-    expect(format(undefined)).toBe('')
-    expect(draw({ value: 1234567 })).toBe((1234567).toLocaleString('en-US'))
-    expect(draw({ value: undefined })).toBe('')
+    expect(model.csvText().split('\r\n')[1]).toBe(',,,BND')
   })
 })
 
@@ -407,8 +332,9 @@ describe('the junctions the sheet can walk', () => {
       bnd('a', 'chr1', 100, 'C]chr5:900]'),
       bnd('b', 'chr5', 899, 'C]chr1:101]'),
     ])
-    sheet.setVisibleRows({ 0: true, 1: false })
-    expect(sheet.visibleRows).toHaveLength(1)
+    sheet.setColumnVisible('Mate', false)
+    sheet.setFilterText('chr1')
+    expect(sheet.visibleRows?.map(r => r.id)).toEqual([0])
     // both spellings of the reciprocal pair are here — `b` filed at chr5, and
     // `a` reached through its mate end — and both name the same next locus, so
     // the walk reads one way onward rather than two
@@ -553,7 +479,7 @@ describe('the junctions the sheet can walk', () => {
     expect(sheet.visibleRows?.map(r => r.id)).toEqual([0, 1, 2, 3])
   })
 
-  test('the two dropdowns and the grid filter narrow together', () => {
+  test('the two dropdowns and the search narrow together', () => {
     const del = {
       feature: {
         uniqueId: 'd',
@@ -568,7 +494,7 @@ describe('the junctions the sheet can walk', () => {
     sheet.setGridFacet('sv-event-filter', ['cluster_1'])
     sheet.setGridFacet('sv-type-filter', ['BND'])
     expect(sheet.gridRows?.map(r => r.id)).toEqual([0, 1, 2, 3])
-    sheet.setVisibleRows({ 0: true, 1: false, 2: false, 3: true })
+    sheet.setFilterText('chr13')
     expect(sheet.visibleRows?.map(r => r.id)).toEqual([0, 3])
     expect(sheet.svTypeOptions.map(o => o.count)).toEqual([1, 6])
   })
@@ -583,5 +509,177 @@ describe('the junctions the sheet can walk', () => {
     const sheet = sheetWith(lone)
     expect(sheet.svEvents).toEqual([])
     expect(sheet.gridFacets.map(f => f.id)).toEqual(['sv-type-filter'])
+  })
+})
+
+describe('the search', () => {
+  const sheet = () =>
+    makeModel({
+      rowSet: {
+        rows: [
+          { cellData: { ID: 'bnd_W', FILTER: 'PASS', POS: 1200 } },
+          { cellData: { ID: 'bnd_X', FILTER: 'LowQual', POS: 34200 } },
+          { cellData: { ID: 'del_Y', FILTER: 'PASS', POS: 512 } },
+        ],
+      },
+      columns: [{ name: 'ID' }, { name: 'FILTER' }, { name: 'POS' }],
+    })
+
+  test('every word must match some column, in any case', () => {
+    const model = sheet()
+    model.setFilterText('BND pass')
+    expect(model.visibleRows?.map(r => r.id)).toEqual([0])
+    model.setFilterText('bnd')
+    expect(model.visibleRows?.map(r => r.id)).toEqual([0, 1])
+  })
+
+  test('a number matches as its plain digits', () => {
+    const model = sheet()
+    model.setFilterText('342')
+    expect(model.visibleRows?.map(r => r.id)).toEqual([1])
+  })
+
+  test('a hidden column is not searched', () => {
+    const model = sheet()
+    model.setColumnVisible('FILTER', false)
+    model.setFilterText('lowqual')
+    expect(model.visibleRows).toEqual([])
+    model.setColumnVisible('FILTER', true)
+    expect(model.visibleColumns).toEqual({})
+    expect(model.visibleRows?.map(r => r.id)).toEqual([1])
+  })
+
+  test('clearing the box shows every row and leaves no search behind', () => {
+    const model = sheet()
+    model.setFilterText('bnd')
+    model.setFilterText('')
+    expect(model.filterText).toBeUndefined()
+    expect(model.visibleRows).toHaveLength(3)
+  })
+})
+
+describe('sorting', () => {
+  const sheet = () =>
+    makeModel({
+      rowSet: {
+        rows: [
+          { cellData: { ID: 'a10', POS: 900 } },
+          { cellData: { ID: 'a9', POS: 10000 } },
+          { cellData: { ID: 'a100' } },
+          { cellData: { ID: 'a1', POS: 85 } },
+        ],
+      },
+      columns: [{ name: 'ID' }, { name: 'POS' }],
+    })
+
+  test('numbers sort as numbers, with a blank last either way', () => {
+    const model = sheet()
+    model.setSort('POS', true)
+    expect(model.sortedRows.map(r => r.POS)).toEqual([
+      85,
+      900,
+      10000,
+      undefined,
+    ])
+    model.setSort('POS', false)
+    expect(model.sortedRows.map(r => r.POS)).toEqual([
+      10000,
+      900,
+      85,
+      undefined,
+    ])
+  })
+
+  test('text sorts in natural order', () => {
+    const model = sheet()
+    model.setSort('ID', true)
+    expect(model.sortedRows.map(r => r.ID)).toEqual(['a1', 'a9', 'a10', 'a100'])
+  })
+
+  test('no sort, or a sort on a hidden column, keeps file order', () => {
+    const model = sheet()
+    model.setSort('POS', true)
+    model.setColumnVisible('POS', false)
+    expect(model.sortedRows.map(r => r.id)).toEqual([0, 1, 2, 3])
+    model.setColumnVisible('POS', true)
+    model.setSort('', true)
+    expect(model.sortField).toBeUndefined()
+    expect(model.sortedRows.map(r => r.id)).toEqual([0, 1, 2, 3])
+  })
+})
+
+describe('the CSV export', () => {
+  test('writes the sorted, searched rows under the shown headers, numbers plain and fields quoted', () => {
+    const model = makeModel({
+      rowSet: {
+        rows: [
+          { cellData: { NAME: 'plain', POS: 1234567, NOTE: 'x' } },
+          { cellData: { NAME: 'a, "b"', POS: 12, NOTE: 'y' } },
+          { cellData: { NAME: 'line\nbreak', POS: 5, NOTE: 'z' } },
+          { cellData: { NAME: 'dropped', POS: 7, NOTE: 'q' } },
+        ],
+      },
+      columns: [{ name: 'NAME' }, { name: 'POS' }, { name: 'NOTE' }],
+    })
+    model.setColumnVisible('Location', false)
+    model.setColumnVisible('NOTE', false)
+    model.setFilterText('a')
+    model.setSort('POS', true)
+    expect(model.csvText()).toBe(
+      [
+        'Length,NAME,POS',
+        ',"line\nbreak",5',
+        ',"a, ""b""",12',
+        ',plain,1234567',
+      ].join('\r\n'),
+    )
+  })
+})
+
+describe('the row the table scrolls to', () => {
+  function sheetWithSelection(selectedId?: string) {
+    const Model = stateModelFactory()
+    const rows = ['f0', 'f1', 'f2', 'f3'].map((uniqueId, i) => ({
+      feature: { uniqueId, refName: 'chr1', start: i * 10, end: i * 10 + 5 },
+      cellData: { SCORE: 4 - i },
+    }))
+    const selection = selectedId
+      ? new SimpleFeature({
+          uniqueId: selectedId,
+          refName: 'chr1',
+          start: 0,
+          end: 1,
+        })
+      : undefined
+    const Session = types
+      .model({
+        rpcManager: types.frozen(),
+        configuration: types.frozen(),
+        sheet: types.maybe(Model),
+      })
+      .volatile(() => ({
+        rowsTrackId: 'rows',
+        selection,
+        selectionTrackId: 'rows',
+      }))
+    return Session.create({
+      rpcManager: {},
+      configuration: {},
+      sheet: { columns: [{ name: 'SCORE' }], rowSet: { rows } },
+    }).sheet!
+  }
+
+  test('is where the selected row sits in the sorted rows', () => {
+    const sheet = sheetWithSelection('f1')
+    expect(sheet.selectedRowIndex).toBe(1)
+    sheet.setSort('SCORE', true)
+    expect(sheet.selectedRowIndex).toBe(2)
+  })
+
+  test('is none when the search leaves the selected row out, or nothing is selected', () => {
+    const sheet = sheetWithSelection('f1')
+    sheet.setFilterText('chr1:31')
+    expect(sheet.selectedRowIndex).toBeUndefined()
+    expect(sheetWithSelection().selectedRowIndex).toBeUndefined()
   })
 })

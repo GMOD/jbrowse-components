@@ -2,7 +2,7 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import SpreadsheetDataGrid from './SpreadsheetDataGrid.tsx'
+import SpreadsheetTable from './SpreadsheetTable.tsx'
 
 import type { SpreadsheetViewModel } from '../SpreadsheetViewModel.ts'
 
@@ -25,7 +25,7 @@ const SpreadsheetViewActual = observer(function SpreadsheetViewActual({
   return spreadsheet ? (
     <>
       <div style={{ height }} className={classes.contentArea}>
-        <SpreadsheetDataGrid model={spreadsheet} />
+        <SpreadsheetTable model={spreadsheet} />
       </div>
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle

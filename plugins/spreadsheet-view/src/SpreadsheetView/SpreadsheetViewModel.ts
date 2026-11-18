@@ -139,7 +139,7 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
            * #action
            * show a parsed sheet. One with the same columns as the sheet it
            * replaces, as a reloaded session's re-fetch is, keeps that sheet's
-           * column visibility, filters and search
+           * column visibility, filters, search and sort
            */
           displaySpreadsheet(spreadsheet?: SpreadsheetSnapshot) {
             const prev = self.spreadsheet
@@ -156,6 +156,8 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
                     svTypeFilter: [...prev.svTypeFilter],
                     svEventFilter: prev.svEventFilter,
                     filterText: prev.filterText,
+                    sortField: prev.sortField,
+                    sortAscending: prev.sortAscending,
                   }
                 : spreadsheet,
             )
