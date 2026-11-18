@@ -1,4 +1,10 @@
-import { altDosageByte } from '../shared/getPhasedColor.ts'
+import { buildSourceSampleIndices } from '../VariantRPC/analyzeVariants.ts'
+import {
+  altDosageByte,
+  isNoCall,
+  isPhasedOrHaploid,
+  splitPhasedAlleles,
+} from '../shared/getPhasedColor.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { ProcessedSource } from '../shared/types.ts'
@@ -190,7 +196,7 @@ function buildValueTable({
     // the dosage the cells paint, ranked densely, so `0/0/1` and `0/1/1` part
     // as their two shades do
     const dosages = genotypeDict.map(genotype =>
-      /\d/.test(genotype) ? altDosageByte(genotype) : MISSING_VALUE,
+      isNoCall(genotype) ? MISSING_VALUE : altDosageByte(genotype),
     )
     const ranked = [...new Set(dosages.filter(d => d > 0))].sort(
       (a, b) => a - b,
@@ -204,7 +210,7 @@ function buildValueTable({
   // An unphased call assigns no allele to either haplotype row, so it keeps the
   // MISSING fill rather than claiming one.
   const split = genotypeDict.map(genotype =>
-    genotype.includes('/') ? undefined : genotype.split('|'),
+    isPhasedOrHaploid(genotype) ? splitPhasedAlleles(genotype) : undefined,
   )
   // Rank the alt alleles the window actually uses, densely: the refinement
   // counting-sorts over this range, so it tracks the alts present rather than
@@ -334,20 +340,17 @@ export function sortSourcesAroundVariant({
   if (!featureIds.includes(anchorFeatureId)) {
     return undefined
   }
-  const sampleIndex = new Map<string, number>()
-  for (let i = 0; i < sampleNames.length; i++) {
-    sampleIndex.set(sampleNames[i]!, i)
-  }
-  const sourceSampleIdx = new Int32Array(sources.length)
+  const sourceSampleIdx = buildSourceSampleIndices(sources, sampleNames)
+  // a sample row reads the dosage column, its haplotype 0
   const sourceHp = new Int32Array(sources.length)
   let ploidy = 1
-  for (let i = 0; i < sources.length; i++) {
-    const source = sources[i]!
-    sourceSampleIdx[i] = sampleIndex.get(source.sampleName) ?? -1
-    const hp = source.HP ?? 0
-    sourceHp[i] = hp
-    if (hp + 1 > ploidy) {
-      ploidy = hp + 1
+  if (phased) {
+    for (let i = 0; i < sources.length; i++) {
+      const hp = sources[i]!.HP ?? 0
+      sourceHp[i] = hp
+      if (hp + 1 > ploidy) {
+        ploidy = hp + 1
+      }
     }
   }
   const { table, stride, maxValue } = buildValueTable({
@@ -360,32 +363,18 @@ export function sortSourcesAroundVariant({
     items: sources,
     maxValue,
     sites: anchorFirstRecords(sites, anchorFeatureId, maxFlank),
-    // One `genotypeCodesOf` lookup per site rather than per row, and
-    // separate phased/dosage readers so neither re-tests the mode per row.
+    // one `genotypeCodesOf` lookup per site rather than per row
     readSite: site => {
       const codes = genotypeCodesOf(featureIds[site]!)
-      if (!codes) {
-        return undefined
-      }
-      return phased
+      return codes
         ? sourceIdx => {
             const sampleIdx = sourceSampleIdx[sourceIdx]!
-            if (sampleIdx === -1) {
-              return MISSING_VALUE
-            }
-            const code = codes[sampleIdx]!
+            const code = sampleIdx === -1 ? 0 : codes[sampleIdx]!
             return code === 0
               ? MISSING_VALUE
               : table[code * stride + sourceHp[sourceIdx]!]!
           }
-        : sourceIdx => {
-            const sampleIdx = sourceSampleIdx[sourceIdx]!
-            if (sampleIdx === -1) {
-              return MISSING_VALUE
-            }
-            const code = codes[sampleIdx]!
-            return code === 0 ? MISSING_VALUE : table[code]!
-          }
+        : undefined
     },
   })
 }
