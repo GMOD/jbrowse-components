@@ -294,15 +294,8 @@ export default function rootModelFactory({
             }
           },
           afterCreate() {
-            // on detach AND on destroy: detach is what the Loader performs, and
-            // the destroy that follows it a task later is what a test that builds
-            // a root directly does instead. Running a disposer twice is harmless.
-            const registerTeardown = (disposer: () => void) => {
-              self.addDetachDisposer(disposer)
-              addDisposer(self, disposer)
-            }
             const autosaveReporter = createAutosaveReporter()
-            registerTeardown(
+            self.addDetachDisposer(
               autorun(
                 async () => {
                   // NOT `await this.flushSession()`, tempting as the reuse is: an

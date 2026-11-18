@@ -1,7 +1,12 @@
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { cast, setTypeChecking, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  setTypeChecking,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import { replaceSession } from './replaceSession.ts'
 
@@ -23,6 +28,12 @@ import type {
 // session model, so `rootModel.session` reads as that product's session
 export interface RootSession extends AbstractSessionModel {
   setName(name: string): void
+}
+
+function runAndEmpty(disposers: (() => void)[]) {
+  for (const disposer of disposers.splice(0)) {
+    disposer()
+  }
 }
 
 /**
@@ -124,6 +135,11 @@ export function BaseRootModelFactory<
       detachDisposers: [] as (() => void)[],
     }))
     .actions(self => ({
+      afterCreate() {
+        addDisposer(self, () => {
+          runAndEmpty(self.detachDisposers)
+        })
+      },
       /**
        * #action
        */
@@ -133,6 +149,9 @@ export function BaseRootModelFactory<
       /**
        * #action
        * Register something that must stop when the host detaches this root.
+       * It runs once: at the detach, or at the destroy when nothing detached
+       * the root first (tests destroy a root outright) or it was registered
+       * after the detach.
        */
       addDetachDisposer(disposer: () => void) {
         self.detachDisposers.push(disposer)
@@ -152,11 +171,7 @@ export function BaseRootModelFactory<
         // rpcManager is a plain object on a volatile, so MST teardown never
         // reaches it
         self.rpcManager.destroy()
-        const disposers = self.detachDisposers
-        self.detachDisposers = []
-        for (const disposer of disposers) {
-          disposer()
-        }
+        runAndEmpty(self.detachDisposers)
       },
       /**
        * #action

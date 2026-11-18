@@ -137,6 +137,26 @@ test('an autosave that keeps failing reports once, and once more when it works a
   ])
 })
 
+test('Ctrl+Z stops acting on a root once the host detaches it', async () => {
+  const root = createRootModel()
+  const pressUndo = () => {
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'z', code: 'KeyZ', ctrlKey: true }),
+    )
+  }
+  root.session!.setName('first')
+  await jest.advanceTimersByTimeAsync(AUTOSAVE_DELAY_MS)
+  root.session!.setName('second')
+  await jest.advanceTimersByTimeAsync(AUTOSAVE_DELAY_MS)
+
+  pressUndo()
+  expect(root.session!.name).toBe('first')
+
+  root.detach()
+  pressUndo()
+  expect(root.session!.name).toBe('first')
+})
+
 test('flushSession writes without waiting out the debounce', async () => {
   const root = createRootModel()
 

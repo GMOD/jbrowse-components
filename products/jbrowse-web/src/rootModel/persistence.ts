@@ -3,7 +3,7 @@ import {
   createAutosaveReporter,
   sessionLastUsed,
 } from '@jbrowse/app-core'
-import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { getSessionDB } from '../sessionDB.ts'
@@ -148,8 +148,9 @@ export async function setupSessionDB(self: WebRootModel) {
     return undefined
   })
   // a plugin-install rebuild can destroy this root while these awaits are in
-  // flight, and addDisposer on a dead node never fires, so an autorun installed
-  // then would write a destroyed session's snapshot for the life of the tab
+  // flight, and a disposer added to a dead node never runs, so an autorun
+  // installed then would write a destroyed session's snapshot for the life of
+  // the tab
   if (db && isAlive(self)) {
     await pruneOldSessions(db, self.session?.id).catch((e: unknown) => {
       console.error(e)
@@ -187,18 +188,17 @@ function setupMetadataRefresh(self: WebRootModel) {
     }
   }
   window.addEventListener('focus', refresh)
-  registerTeardown(self, () => {
+  self.addDetachDisposer(() => {
     window.removeEventListener('focus', refresh)
   })
 }
 
 function setupIndexedDBAutosave(self: WebRootModel) {
   const autosaveReporter = createAutosaveReporter()
-  // registerTeardown rather than addDisposer: this writes to IndexedDB, so it
+  // addDetachDisposer rather than addDisposer: this writes to IndexedDB, so it
   // has to stop when the React host detaches, a task ahead of the destroy an
   // addDisposer would wait for (rootModel's `detach`).
-  registerTeardown(
-    self,
+  self.addDetachDisposer(
     autorun(
       async () => {
         const { session } = self
@@ -242,7 +242,7 @@ function setupThumbnailCapture(self: WebRootModel) {
     }
   }
   document.addEventListener('visibilitychange', onHidden)
-  registerTeardown(self, () => {
+  self.addDetachDisposer(() => {
     document.removeEventListener('visibilitychange', onHidden)
   })
 }
@@ -260,24 +260,11 @@ function writeSessionSnapshot(sessionSnap: unknown) {
   )
 }
 
-// Stop this when the React host detaches the root, AND if anything destroys it
-// outright (tests do). Both, because the two teardowns are different events and
-// the detach is the earlier one: it is what the app performs at the swap, while
-// the destroy follows a task later (ADR-069). An `addDisposer` alone would run
-// these late rather than never, and "the moment the host lets go" is the
-// contract anything reaching outside the tree wants. Running a disposer twice is
-// harmless.
-function registerTeardown(self: WebRootModel, disposer: () => void) {
-  self.addDetachDisposer(disposer)
-  addDisposer(self, disposer)
-}
-
 // Holds the tab's lock on whichever session is open (sessionLock.ts). Not
 // released at teardown: a plugin-install rebuild keeps the same session id,
 // and the browser releases every lock when the page goes.
 export function setupSessionLock(self: WebRootModel) {
-  registerTeardown(
-    self,
+  self.addDetachDisposer(
     autorun(() => {
       const id = self.session?.id
       if (id) {
@@ -316,7 +303,7 @@ function setupUnloadFlush(self: WebRootModel) {
     }
   }
   window.addEventListener('beforeunload', flush)
-  registerTeardown(self, () => {
+  self.addDetachDisposer(() => {
     window.removeEventListener('beforeunload', flush)
   })
 }
@@ -346,11 +333,10 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
   // torn down. Kept local rather than clearing pluginsUpdated, which the
   // autorun observes and would re-trigger itself by writing.
   let reloadRequested = false
-  // registerTeardown rather than addDisposer: this writes sessionStorage, and
+  // addDetachDisposer rather than addDisposer: this writes sessionStorage, and
   // a detached root that kept writing would overwrite the session its
   // replacement is restoring.
-  registerTeardown(
-    self,
+  self.addDetachDisposer(
     autorun(
       () => {
         if (self.session) {

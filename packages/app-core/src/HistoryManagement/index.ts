@@ -63,6 +63,9 @@ export function HistoryManagementMixin() {
       return {
         afterCreate() {
           document.addEventListener('keydown', keydownListener)
+          asRoot(self).addDetachDisposer(() => {
+            document.removeEventListener('keydown', keydownListener)
+          })
           addDisposer(
             self,
             autorun(
@@ -79,9 +82,6 @@ export function HistoryManagementMixin() {
               { name: 'HistoryInit' },
             ),
           )
-        },
-        beforeDestroy() {
-          document.removeEventListener('keydown', keydownListener)
         },
       }
     })

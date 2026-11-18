@@ -8,7 +8,7 @@ import {
   ViewType,
 } from '@jbrowse/core/pluggableElementTypes'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { destroy, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { BaseRootModelFactory } from './BaseRootModel.ts'
 
@@ -164,4 +164,32 @@ test('does not destroy the restored session after the reaction flush', async () 
   })
   expect(isAlive(oldSession)).toBe(true)
   expect(root.session).toBe(oldSession)
+})
+
+test('a detach disposer runs at the detach, and not again at the destroy', () => {
+  const root = makeRoot()
+  const disposer = jest.fn()
+  root.addDetachDisposer(disposer)
+  root.detach()
+  expect(disposer).toHaveBeenCalledTimes(1)
+  destroy(root)
+  expect(disposer).toHaveBeenCalledTimes(1)
+})
+
+test('a detach disposer registered after the detach runs at the destroy', () => {
+  const root = makeRoot()
+  root.detach()
+  const disposer = jest.fn()
+  root.addDetachDisposer(disposer)
+  expect(disposer).not.toHaveBeenCalled()
+  destroy(root)
+  expect(disposer).toHaveBeenCalledTimes(1)
+})
+
+test('a detach disposer runs when the root is destroyed without a detach', () => {
+  const root = makeRoot()
+  const disposer = jest.fn()
+  root.addDetachDisposer(disposer)
+  destroy(root)
+  expect(disposer).toHaveBeenCalledTimes(1)
 })
