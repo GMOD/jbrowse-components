@@ -60,7 +60,6 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
             view,
             // desktop is always admin; copies go to the top level
             canEdit: true,
-            isSessionOverride: session.isTrackOverride(trackConfig.trackId),
             makeCopy: () =>
               copyTrackSnapshot(trackConfig, { clearCategory: true }),
           }),

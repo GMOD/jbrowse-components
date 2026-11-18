@@ -12,6 +12,17 @@ const SESSION = {
   assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
 }
 
+function actionSession(overridden = false) {
+  return {
+    ...SESSION,
+    editConfiguration: () => {},
+    publishTrackConf: () => undefined,
+    deleteTrackConfWithUndo: () => {},
+    isTrackOverride: () => overridden,
+    resetTrackConfiguration: () => {},
+  }
+}
+
 const SEGMENTS = {
   trackId: 'derivative-segments-1',
   type: 'FeatureTrack',
@@ -47,12 +58,7 @@ test('the contract check stays quiet on a permanent assembly', () => {
 describe('the copy actions on a temporary-assembly track', () => {
   function items(config: object) {
     return trackActionItems({
-      session: {
-        ...SESSION,
-        editConfiguration: () => {},
-        publishTrackConf: () => undefined,
-        deleteTrackConfWithUndo: () => {},
-      },
+      session: actionSession(),
       config: config as BaseTrackConfig,
       view: { showTrack: () => {}, launchTrack: async () => {} },
       canEdit: true,
@@ -107,12 +113,7 @@ describe('the copy actions on a temporary-assembly track', () => {
 describe('Delete track', () => {
   function deleteRow(config: TrackConfigEntry, canEdit: boolean) {
     return trackActionItems({
-      session: {
-        ...SESSION,
-        editConfiguration: () => {},
-        publishTrackConf: () => undefined,
-        deleteTrackConfWithUndo: () => {},
-      },
+      session: actionSession(),
       config,
       canEdit,
       makeCopy: () => ({ trackId: 'copy' }),
@@ -137,5 +138,26 @@ describe('Delete track', () => {
 
   test('carries no tooltip when it is offered', () => {
     expect(deleteRow(HG38, true)).toHaveProperty('disabledHelpText', undefined)
+  })
+})
+
+describe('a track with session edits over its base', () => {
+  function labels(canEdit: boolean) {
+    return trackActionItems({
+      session: actionSession(true),
+      config: HG38,
+      canEdit,
+      makeCopy: () => ({ trackId: 'copy' }),
+    }).map(i => ('label' in i ? i.label : undefined))
+  }
+
+  test('offers a reset beside Delete to an editor', () => {
+    expect(labels(true)).toContain('Reset track settings')
+    expect(labels(true)).toContain('Delete track')
+  })
+
+  test('offers the reset in place of Delete to anyone else', () => {
+    expect(labels(false)).toContain('Reset track settings')
+    expect(labels(false)).not.toContain('Delete track')
   })
 })

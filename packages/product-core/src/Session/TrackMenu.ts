@@ -34,7 +34,8 @@ interface TrackActionSession<C> {
   ) => void
   publishTrackConf: (conf: C) => unknown
   deleteTrackConfWithUndo: (conf: AnyTrackConfig) => void
-  resetTrackConfiguration?: (trackId: string) => void
+  isTrackOverride: (trackId: string) => boolean
+  resetTrackConfiguration: (trackId: string) => void
   /**
    * Declared here, though only the copy guard below reads it, so a session that
    * loses the list loses the guard *loudly*. `namesTemporaryAssembly` takes an
@@ -55,27 +56,25 @@ interface TrackActionSession<C> {
 /**
  * The shared Settings / Copy / Copy-and-open / Delete track actions. Each
  * product supplies `makeCopy` (its own session-track/category rules) and
- * `canEdit`; reference sequence tracks can't be copied or deleted. When
- * `isSessionOverride` is set the track carries session edits over its base
- * config, so a Reset is offered, and it replaces Delete for a user who cannot
- * delete the base.
+ * `canEdit`; reference sequence tracks can't be copied or deleted. A track
+ * carrying session edits over its base config is offered a Reset, which
+ * replaces Delete for a user who cannot delete the base.
  */
 export function trackActionItems<C extends { trackId: string }>({
   session,
   config,
   view,
   canEdit,
-  isSessionOverride,
   makeCopy,
 }: {
   session: TrackActionSession<C>
   config: AnyTrackConfig
   view?: TrackActionView
   canEdit: boolean
-  isSessionOverride?: boolean
   makeCopy: () => C
 }): MenuItem[] {
   const isRefSeq = config.type === 'ReferenceSequenceTrack'
+  const isSessionOverride = session.isTrackOverride(config.trackId)
   // A copy of a track drawn on an assembly this view synthesized is dead on
   // arrival: the assembly goes back when the view closes, and the copy is left
   // naming one that never existed anywhere else. Both destinations were wrong
@@ -136,7 +135,7 @@ export function trackActionItems<C extends { trackId: string }>({
             label: 'Reset track settings',
             icon: SettingsBackupRestoreIcon,
             onClick: () => {
-              session.resetTrackConfiguration?.(config.trackId)
+              session.resetTrackConfiguration(config.trackId)
             },
           },
         ]

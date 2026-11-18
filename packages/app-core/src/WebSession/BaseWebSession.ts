@@ -168,7 +168,6 @@ export function BaseWebSessionModel({
           config,
           view,
           canEdit: self.canEditTrack(config.trackId),
-          isSessionOverride: self.isTrackOverride(config.trackId),
           // a non-admin's copy is routed to sessionTracks (see addTrackConf) and
           // the selector groups it under "Session tracks" from that membership;
           // clear the original category so it isn't also nested there
