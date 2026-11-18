@@ -151,13 +151,9 @@ describe('search highlight', () => {
   const highlights = new Map<string, FakeHighlight>()
 
   beforeAll(() => {
-    Object.defineProperty(globalThis, 'CSS', {
-      value: { highlights },
-      configurable: true,
-    })
-    Object.defineProperty(globalThis, 'Highlight', {
-      value: FakeHighlight,
-      configurable: true,
+    Object.defineProperties(globalThis, {
+      CSS: { value: { highlights }, configurable: true },
+      Highlight: { value: FakeHighlight, configurable: true },
     })
   })
 
