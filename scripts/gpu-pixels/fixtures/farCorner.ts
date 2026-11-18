@@ -1,12 +1,6 @@
-// Features with one end on screen and the other far off it, at the deepest
-// zoom. A quad corner built as `lerp(far, near, 1)` comes back carrying the far
-// corner's float32 rounding on a backend that computes `a + t * (b - a)`, and a
-// corner built as the far end plus a length carries it on every backend. The
-// rounding a near corner picks up is its own clip x modulo the far one's ulp,
-// which is 0 at a clip x like 0 or 0.5, so the near ends sit at whole px of a
-// 225 px canvas, four per distance and side. Mesa folds quadLocal's 0/1 weight
-// into a select, so llvmpipe shows only the far-end-plus-length rows;
-// render-core's guardBand.test.ts models the other two in float32.
+// One end of each feature on screen at the deepest zoom, the other 1e5 to 1e8
+// px off it. The near ends sit on whole px, where a near edge built from the
+// far end shows only that end's float32 rounding.
 import { valueToYPxUnclamped } from '../../../packages/render-core/src/shaders/valueScale.js.generated.ts'
 import {
   RENDERING_TYPE_LINE,
@@ -16,7 +10,7 @@ import * as gap from '../../../plugins/alignments/src/shaders/slang/gap.generate
 import * as read from '../../../plugins/alignments/src/shaders/slang/read.generated.ts'
 import * as wiggle from '../../../plugins/wiggle/src/shared/shaders/wiggle.generated.ts'
 import * as wiggleLine from '../../../plugins/wiggle/src/shared/shaders/wiggleLine.generated.ts'
-import { abgr, box, defineFixture, paintOver, rgba } from '../fixture.ts'
+import { CLEAR, abgr, box, defineFixture, paintOver, rgba } from '../fixture.ts'
 import { pileupUniforms } from './alignments.ts'
 import { uniforms as wiggleUniforms } from './wiggle.ts'
 
@@ -32,6 +26,7 @@ const VIEW_START = 50_000_000
 const VIEW_HI = Math.floor(VIEW_START / 4096) * 4096
 const VIEW_LO = VIEW_START - VIEW_HI
 const NEAR_BP = [1, 2, 3, 4].map(k => VIEW_START + k)
+const BP_RANGE_X: [number, number, number] = [VIEW_HI, VIEW_LO, BP_LEN]
 
 const px = (bp: number) => (bp - VIEW_START) * PX_PER_BP
 export const rows = [true, false]
@@ -73,7 +68,7 @@ const wiggleY = (score: number, row: number) =>
 function wiggleFarUniforms(renderingType: number, dpr: number, lineWidth = 1) {
   return {
     ...wiggleUniforms(renderingType, dpr, { numRows: ROWS, lineWidth }),
-    bpRangeX: [VIEW_HI, VIEW_LO, BP_LEN] as [number, number, number],
+    bpRangeX: BP_RANGE_X,
     canvasHeight: H,
     rowHeight: ROW_PX,
     viewportWidth: W,
@@ -164,12 +159,8 @@ function pileupFarUniforms(dpr: number) {
 
 // A read off the left is reverse-strand and one off the right forward, so its
 // arrowhead sits on the far end and the near end is the body's own.
-function readColorAt(x: number, y: number): Rgba {
-  const r = rows[Math.floor(y / ROW_PX)]
-  const top = r ? r.row * ROW_PX : 0
-  if (!r || x < r.x1 || x >= r.x2 || y >= top + FEAT_H) {
-    return [0, 0, 0, 0]
-  }
+function readInk(r: (typeof rows)[number], x: number, y: number) {
+  const top = r.row * ROW_PX
   const rgb = r.offLeft ? REV : FWD
   const edge = Math.min(
     r.offLeft ? r.x2 - x : x - r.x1,
@@ -183,6 +174,13 @@ function readColorAt(x: number, y: number): Rgba {
         rgb[2] * read.READ_OUTLINE_SHADE,
       ])
     : rgba(rgb)
+}
+
+function readColorAt(x: number, y: number) {
+  const r = rows[Math.floor(y / ROW_PX)]
+  return r && x >= r.x1 && x < r.x2 && y < r.row * ROW_PX + FEAT_H
+    ? readInk(r, x, y)
+    : CLEAR
 }
 
 const readFixture = defineFixture({

@@ -1,11 +1,7 @@
 import { guardBandClipX } from './hpmath.js.generated.ts'
 
-// Float32 models of the three ways a shader built a span's near edge out of
-// its far end, at the far-corner fixtures' scale
-// (scripts/gpu-pixels/fixtures/farCorner.ts): a 225 px view at 50 px/bp, the
-// near end on screen and the far one 1e5 to 1e8 px off the left. They stand in
-// for the drivers CI does not draw on: llvmpipe computes lerp exactly at its
-// endpoints.
+// Float32 models of the drivers CI does not draw on, at farCorner.ts's scale:
+// llvmpipe computes lerp exactly at its endpoints.
 const f = Math.fround
 const W = 225
 const PX_PER_BP = 50

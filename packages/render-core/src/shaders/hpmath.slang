@@ -266,11 +266,8 @@ public float clipLenToPx(float clipLen, float size) {
   return clipLen * 0.5 * size;
 }
 
-// An end of an axis-aligned span further than this past the edge of a
-// `widthPx` view is drawn this far past it instead, so a span with one end 1e8
-// px off screen is built from small numbers and its near edge keeps float32's
-// precision. Further than any pad, outline or arrowhead reaches back onto the
-// screen from an end.
+// Further past the view than any pad, outline, arrowhead or line half-width
+// reaches back from an end.
 public static const float GUARD_BAND_PX = 1024.0;
 
 public float guardBandClipX(float clipX, float widthPx) {
