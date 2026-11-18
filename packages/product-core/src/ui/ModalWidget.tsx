@@ -12,8 +12,6 @@ import type { SessionWithWidgets } from '@jbrowse/core/util'
 const useStyles = makeStyles()({
   paper: {
     overflow: 'auto',
-    // the track selector's fab positions against this
-    position: 'relative',
     width: 800,
     maxWidth: '100%',
     // matches the drawer's sense of "tall but not full screen", and unlike a
