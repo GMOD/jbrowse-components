@@ -67,7 +67,7 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
       // Kept above the 20px drag floor (clampBandHeight).
       defaultValue: 35,
       description:
-        "height in pixels of the connections' own band, drawn under placement: 'down' or 'above', or under 'up' while the coverage band is hidden; with coverage shown, up arcs draw in its height",
+        "height in pixels of the connections' own band, drawn under placement: 'below' or 'above', or under 'overlay' while the coverage band is hidden; with coverage shown, overlay arcs draw in its height",
     },
     /**
      * #slot
@@ -77,9 +77,9 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
       model: types.enumeration('ReadConnectionsPlacement', [
         ...READ_CONNECTIONS_PLACEMENTS,
       ]),
-      defaultValue: 'down',
+      defaultValue: 'below',
       description:
-        'where the connections draw: up over the coverage band, above in a separate band over it, or down in a separate band below it',
+        'where the connections sit against the coverage band: overlay on its histogram, above in a band of their own over it, or below in a band under it. With coverage hidden there is nothing to overlay, and overlay draws them rising in a band of their own',
     },
     /**
      * #slot encoding

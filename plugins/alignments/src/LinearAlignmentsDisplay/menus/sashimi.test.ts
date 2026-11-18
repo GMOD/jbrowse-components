@@ -94,7 +94,7 @@ describe('sashimi placement row', () => {
       subMenuByLabel(getSashimiPlacementItems(model), 'Sashimi placement'),
       'Below coverage',
     )
-    expect(model.sashimiPlacement).toBe('down')
+    expect(model.sashimiPlacement).toBe('below')
   })
 
   test('names the overlay and the strip above coverage apart', () => {

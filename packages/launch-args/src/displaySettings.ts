@@ -378,11 +378,11 @@ export interface DisplaySnapshot {
   readConnections?: {
     show?: boolean
     mark?: 'link' | 'rule'
-    placement?: 'up' | 'above' | 'down'
+    placement?: 'overlay' | 'above' | 'below'
   }
   sashimi?: {
     show?: boolean
-    placement?: 'up' | 'above' | 'down' | 'auto'
+    placement?: 'overlay' | 'above' | 'below' | 'auto'
   }
   filter?: FilterEntry[]
   encoding?: { color?: ColorChannel }
@@ -636,9 +636,9 @@ const modifiers: Record<string, Modifier> = {
     apply: (r, v) => {
       const mode = parseEnum('arcs', v, [
         'off',
-        'up',
+        'overlay',
         'above',
-        'down',
+        'below',
         'cloud',
       ] as const)
       mergeSettings(settingsOf(r), {
@@ -656,9 +656,9 @@ const modifiers: Record<string, Modifier> = {
     apply: (r, v) => {
       const mode = parseEnum('sashimi', v, [
         'off',
-        'up',
+        'overlay',
         'above',
-        'down',
+        'below',
         'auto',
       ])
       mergeSettings(settingsOf(r), {

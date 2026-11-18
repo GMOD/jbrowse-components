@@ -499,7 +499,7 @@ const crossing: [number, number, number][] = [
 function downKeys(
   rpcDataMap: Parameters<typeof buildSashimiDownKeys>[0],
   minReads: number,
-  placement: 'up' | 'down' | 'auto',
+  placement: 'overlay' | 'below' | 'auto',
 ) {
   return buildSashimiDownKeys(rpcDataMap, {
     filter: { minReads },
@@ -575,9 +575,9 @@ test('buildSashimiDownKeys: names only the lanes needing the strip', () => {
       ]),
     ],
   ])
-  expect(lanes(m, 2, 'down')).toEqual(['has'])
-  expect(lanes(m, 0, 'down')).toEqual(['has', 'filtered'])
-  expect(lanes(m, 0, 'up')).toEqual([])
+  expect(lanes(m, 2, 'below')).toEqual(['has'])
+  expect(lanes(m, 0, 'below')).toEqual(['has', 'filtered'])
+  expect(lanes(m, 0, 'overlay')).toEqual([])
 })
 
 test('buildSashimiDownKeys: auto names only the lane whose junctions cross', () => {
@@ -619,7 +619,7 @@ test('buildSashimiDownKeys: a hidden lane is never named', () => {
   ])
   const keys = buildSashimiDownKeys(m, {
     filter: { minReads: 0 },
-    placement: 'down',
+    placement: 'below',
     refNameFor: () => 'chr1',
     hidden: new Set(['self']),
   })

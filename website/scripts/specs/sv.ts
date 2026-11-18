@@ -577,7 +577,7 @@ export const svSpecs: ScreenshotSpec[] = [
               unit: 'chain',
               readConnections: {
                 show: true,
-                placement: 'down',
+                placement: 'below',
                 // An arc's apex height is its genomic span in px, clamped to
                 // the band. At 40 every concordant arc hit the ceiling and the
                 // band was one solid mass.
@@ -653,7 +653,7 @@ export const svSpecs: ScreenshotSpec[] = [
               readConnections: {
                 show: true,
                 mark: 'link',
-                placement: 'down',
+                placement: 'below',
                 ordinaryPairs: { show: false },
                 height: 90,
               },

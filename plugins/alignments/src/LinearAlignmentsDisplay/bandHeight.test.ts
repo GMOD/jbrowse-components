@@ -142,7 +142,7 @@ describe('two bands at their ceilings', () => {
     }
     view.setDisplayedRegions([region])
     display.setDrawnReadConnections('link')
-    display.setReadConnectionsPlacement('down')
+    display.setReadConnectionsPlacement('below')
     display.setRpcData(
       0,
       { groups: [{ key: '', label: '', data: oneReadWithMate(2000) }] },

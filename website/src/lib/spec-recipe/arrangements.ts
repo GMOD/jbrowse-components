@@ -17,8 +17,8 @@ import type { FieldStep } from './fields.ts'
 //
 // The predicate is the plugin's own, never a copy. Which slots define the
 // arrangement and which are framing is the arrangement's definition —
-// `matchesSvChannels` leaves `readConnections.placement` out because the side the
-// arcs hang on is a framing choice — and a second answer here would drift in
+// `matchesSvChannels` leaves `readConnections.placement` out because where the
+// arcs sit against coverage is a framing choice — and a second answer here would drift in
 // silence, a figure one slot off emitting five steps with nothing to say why.
 //
 // Presence is this module's half: the predicate answers what the values mean,

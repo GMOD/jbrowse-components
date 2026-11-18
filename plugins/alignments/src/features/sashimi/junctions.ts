@@ -35,10 +35,10 @@ import type { JunctionFilter } from '../../shared/types.ts'
 import type { SashimiSplitClass } from './junctionClass.ts'
 
 // Sashimi placement, owned here because it selects the assignment algorithm
-// below (the display imports it via constants.ts): 'up' draws every arc over the
-// coverage band, 'above' in a reserved strip above it, 'down' in the reserved
-// strip below it, 'auto' splits each junction to minimize crossings.
-export const SASHIMI_PLACEMENTS = ['up', 'above', 'down', 'auto'] as const
+// below (the display imports it via constants.ts): 'overlay' draws every arc
+// over the coverage band, 'above' in a reserved strip above it, 'below' in the
+// reserved strip below it, 'auto' splits each junction to minimize crossings.
+export const SASHIMI_PLACEMENTS = ['overlay', 'above', 'below', 'auto'] as const
 export type SashimiPlacement = (typeof SASHIMI_PLACEMENTS)[number]
 
 // A junction's identity, and the ONE spelling of it. The layout's side
@@ -335,19 +335,19 @@ function byRefName(junctions: Iterable<MergedJunction>) {
 const NO_DOWN_KEYS: ReadonlySet<string> = new Set()
 
 // Which of these junctions the placement sends to the sashimi strip, as a set
-// of `junctionKey`s. 'up' sends none (and allocates nothing — it is the
-// default), 'down' and 'above' send all, to the strip below coverage and the
+// of `junctionKey`s. 'overlay' sends none (and allocates nothing — it is the
+// default), 'below' and 'above' send all, to the strip below coverage and the
 // one above it, 'auto' runs the greedy 2-coloring per chromosome. The set being
 // non-empty is exactly "this lane needs the strip reserved".
 export function downJunctionKeys(
   junctions: Iterable<MergedJunction>,
   placement: SashimiPlacement,
 ): ReadonlySet<string> {
-  if (placement === 'up') {
+  if (placement === 'overlay') {
     return NO_DOWN_KEYS
   }
   const out = new Set<string>()
-  if (placement === 'down' || placement === 'above') {
+  if (placement === 'below' || placement === 'above') {
     for (const j of junctions) {
       out.add(j.key)
     }

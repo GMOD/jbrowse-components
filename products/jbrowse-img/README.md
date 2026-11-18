@@ -316,10 +316,11 @@ jb2export --genome hg19 --track hg19-ncbiRefSeqCurated height:90 \
 Three modifiers draw the ~1.2 kb chr1 inversion in the 1000 Genomes ONT sample
 HG00151 (long reads streamed from the 1000G-ONT S3):
 
-- **`arcs:up` / `arcs:down`** draws a read-connection arc for every split
-  (supplementary) read, linking its two alignment segments and colored by the
-  junction's orientation. Here **green inversion-junction arcs** join the two
-  breakpoints, where a read's two halves map in opposite orientations.
+- **`arcs:overlay` / `arcs:above` / `arcs:below`** draws a read-connection arc
+  for every split (supplementary) read, linking its two alignment segments and
+  colored by the junction's orientation. Here **green inversion-junction arcs**
+  join the two breakpoints, where a read's two halves map in opposite
+  orientations.
 - **`unit=chain`** chains each read's split segments, so the inversion shows in
   the pileup itself as a **blue inverted middle between red flanks**, spanning
   breakpoint to breakpoint.
@@ -330,7 +331,7 @@ HG00151 (long reads streamed from the 1000G-ONT S3):
 
 ```bash
 jb2export --genome hg38 \
-  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain encoding.color.field=insertSizeAndOrientation facet=split coverage.height=80 height:560 \
+  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:below unit=chain encoding.color.field=insertSizeAndOrientation facet=split coverage.height=80 height:560 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
@@ -440,7 +441,7 @@ jb2export --fasta ref.fa --bam reads.bam encoding.color.field=tags.HP encoding.c
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
 
 ## read-cloud SV view — the cloud draws in its own band below the coverage band,
-## sized by readConnections.height. With readConnections.placement=up it overlays
+## sized by readConnections.height. With readConnections.placement=overlay it overlays
 ## the coverage band instead, sized by coverage.height.
 jb2export --fasta ref.fa --bam reads.bam arcs:cloud readConnections.height=300 \
   readConnections.encoding.strokeWidth.value=2 height:600 --loc chr1:1-50000
@@ -617,11 +618,11 @@ the slot.
 Modifiers are grouped below by the track types they apply to. A modifier applies
 only where the display the track opens as has the setting it writes; anywhere
 else it prints a warning naming the display and the setting it lacks, as
-`sashimi:up` does on a BigWig and `heightMode:fit` on a multi-row feature track.
-`force:` is the exception: a display that never gates a large region, such as a
-BigWig's or a Hi-C map's, ignores it and prints no warning. A track whose
-display none of these target (GWAS, MAF, LD, marks, synteny, sequence) takes
-only the all-tracks modifiers and
+`sashimi:overlay` does on a BigWig and `heightMode:fit` on a multi-row feature
+track. `force:` is the exception: a display that never gates a large region,
+such as a BigWig's or a Hi-C map's, ignores it and prints no warning. A track
+whose display none of these target (GWAS, MAF, LD, marks, synteny, sequence)
+takes only the all-tracks modifiers and
 [slot writes](#any-display-setting-slotpathvalue).
 
 A modifier **value** the modifier can't use, such as `arcs:upp`, `height:8o` or
@@ -702,10 +703,10 @@ a script pass a category through from a variable that may be empty.
 
 Overlays & subtracks:
 
-| Modifier       | Example      | Description                                                            |
-| -------------- | ------------ | ---------------------------------------------------------------------- |
-| `arcs:mode`    | `arcs:cloud` | Read-connection arcs / read-cloud panel (`off`, `up`, `down`, `cloud`) |
-| `sashimi:mode` | `sashimi:up` | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)             |
+| Modifier       | Example           | Description                                                                           |
+| -------------- | ----------------- | ------------------------------------------------------------------------------------- |
+| `arcs:mode`    | `arcs:cloud`      | Read-connection arcs / read-cloud panel (`off`, `overlay`, `above`, `below`, `cloud`) |
+| `sashimi:mode` | `sashimi:overlay` | Sashimi splice-junction arcs (`off`, `overlay`, `above`, `below`, `auto`)             |
 
 Layout & sizing:
 
@@ -723,10 +724,10 @@ Settings written as slots, spelled as the display spells them:
 | `pileup.softClips.show=true`                   | Show soft-clipped bases                                                                                                                                  |
 | `coverage.show=false`                          | Hide the coverage subtrack                                                                                                                               |
 | `pileup.show=false`                            | Hide the pileup; the bands above it fill the track height                                                                                                |
-| `coverage.height=200`                          | Height of the coverage subtrack, and of `arcs:up` arcs drawn over it                                                                                     |
-| `readConnections.height=120`                   | Height of the arcs' or read cloud's band, under `arcs:down` and `arcs:cloud`, or `arcs:up` with `coverage.show=false`                                    |
+| `coverage.height=200`                          | Height of the coverage subtrack, and of `arcs:overlay` arcs drawn over it                                                                                |
+| `readConnections.height=120`                   | Height of the arcs' or read cloud's band, under `arcs:above`, `arcs:below` and `arcs:cloud`, or `arcs:overlay` with `coverage.show=false`                |
 | `readConnections.encoding.strokeWidth.value=2` | Stroke width for read-connection arcs and lines                                                                                                          |
-| `sashimi.height=120`                           | Height of the sashimi arc band                                                                                                                           |
+| `sashimi.height=120`                           | Height of the sashimi arcs' own strip, under `sashimi:above`, `sashimi:below` and `sashimi:auto`                                                         |
 | `pileup.maxLayoutHeight=4000`                  | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                        |
 
 A filter field takes no `key=value` write, since `filter` is one list: write the

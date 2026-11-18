@@ -446,7 +446,7 @@ describe('volvox pairs across an inversion', () => {
       config: {
         ...TALL,
         facet: 'strand',
-        readConnections: { show: true, placement: 'down' },
+        readConnections: { show: true, placement: 'below' },
         pileup: { mark: { height: 3 }, connectors: { show: true } },
       },
     },

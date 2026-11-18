@@ -8,8 +8,8 @@ import { sashimiLabelsConfigSchema } from './sashimiLabelsConfigSchema.ts'
  * #config Sashimi
  * #category display
  * The alignments display's `sashimi` setting: the junction arcs, over the
- * coverage band or in a strip below it, and in that strip alone while
- * `coverage.show` is off. The band counts each splice junction from the reads'
+ * coverage band or in a strip above or below it, and in a strip of their own
+ * while `coverage.show` is off. The band counts each splice junction from the reads'
  * N gaps and each same-reference join of a split read's segments by its class
  * (`junction.class`: `deletion`, `duplication`, which a circRNA back-splice
  * is, or `inversion`), once per pair of read-adjacent segments as the read
@@ -48,7 +48,7 @@ export const sashimiConfigSchema = ConfigurationSchema(
       type: 'number',
       defaultValue: 40,
       description:
-        'height of the strip the arcs draw in under placement above, and of the strip below coverage that down arcs draw in, in pixels',
+        'height in pixels of the strip the arcs draw in above or below the coverage band',
     },
     /**
      * #slot
@@ -56,9 +56,9 @@ export const sashimiConfigSchema = ConfigurationSchema(
     placement: {
       type: 'stringEnum',
       model: types.enumeration('SashimiPlacement', [...SASHIMI_PLACEMENTS]),
-      defaultValue: 'up',
+      defaultValue: 'overlay',
       description:
-        'where the arcs draw: up over the coverage histogram, above in a strip of their own above it, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down, or up from the floor of its strip under above',
+        'where the arcs sit against the coverage band: overlay on its histogram, above in a strip of their own over it, below in a strip under it, or auto, which sends a junction below where it would cross another. With coverage hidden there is nothing to overlay: overlay and auto draw every arc hanging in the strip below, and above keeps its strip, arcs rising',
     },
     /**
      * #slot labels

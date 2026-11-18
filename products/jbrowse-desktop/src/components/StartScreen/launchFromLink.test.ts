@@ -580,7 +580,7 @@ describe('a command-line plan', () => {
         show: [
           { trackId: 'reads.bam', modifiers: ['height:200', 'sort:base'] },
           // jb2export's --track shorthand: the assembly prefix left off
-          { trackId: 'genes', modifiers: ['color.field=type', 'arcs:up'] },
+          { trackId: 'genes', modifiers: ['color.field=type', 'arcs:overlay'] },
           { trackId: 'genes', modifiers: ['height:80'] },
         ],
         unapplied: [],
@@ -603,7 +603,7 @@ describe('a command-line plan', () => {
               { trackId: 'reads.bam', modifiers: ['height:200', 'sort:base'] },
               {
                 trackId: 'volvox-genes',
-                modifiers: ['color.field=type', 'arcs:up'],
+                modifiers: ['color.field=type', 'arcs:overlay'],
               },
               { trackId: 'volvox-genes', modifiers: ['height:80'] },
             ],

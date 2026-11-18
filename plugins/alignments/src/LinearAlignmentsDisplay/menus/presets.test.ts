@@ -128,11 +128,11 @@ test('applying it again changes nothing', () => {
 test('it leaves the read color and the arc placement alone', () => {
   const display = createDisplay({
     encoding: { color: { field: 'tags.HP' } },
-    readConnections: { placement: 'up' },
+    readConnections: { placement: 'overlay' },
   })
   applySvChannels(display)
   expect(getConf(display, ['encoding', 'color', 'field'])).toBe('tags.HP')
-  expect(display.readConnectionsPlacement).toBe('up')
+  expect(display.readConnectionsPlacement).toBe('overlay')
 })
 
 test('a regrouping keeps the order already set on the SV kind sections', () => {

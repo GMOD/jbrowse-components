@@ -48,14 +48,14 @@ describe('alignments modifiers', () => {
     expect(snap.height).toBe(400)
   })
 
-  test('arcs:cloud and arcs:down map to readConnections fields', () => {
+  test('arcs:cloud and arcs:below map to readConnections fields', () => {
     expect(
       buildDisplaySnapshot('LinearAlignmentsDisplay', ['arcs:cloud']).snap,
     ).toMatchObject({ readConnections: { show: true, mark: 'rule' } })
     expect(
-      buildDisplaySnapshot('LinearAlignmentsDisplay', ['arcs:down']).snap,
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['arcs:below']).snap,
     ).toMatchObject({
-      readConnections: { show: true, mark: 'link', placement: 'down' },
+      readConnections: { show: true, mark: 'link', placement: 'below' },
     })
   })
 
@@ -74,13 +74,13 @@ describe('alignments modifiers', () => {
     expect(snap).toEqual({})
   })
 
-  test('sashimi:off hides arcs; sashimi:down sets the placement', () => {
+  test('sashimi:off hides arcs; sashimi:below sets the placement', () => {
     expect(
       buildDisplaySnapshot('LinearAlignmentsDisplay', ['sashimi:off']).snap,
     ).toMatchObject({ sashimi: { show: false } })
     expect(
-      buildDisplaySnapshot('LinearAlignmentsDisplay', ['sashimi:down']).snap,
-    ).toMatchObject({ sashimi: { show: true, placement: 'down' } })
+      buildDisplaySnapshot('LinearAlignmentsDisplay', ['sashimi:below']).snap,
+    ).toMatchObject({ sashimi: { show: true, placement: 'below' } })
   })
 
   test('sort is returned as an intent (resolved against the view)', () => {
@@ -138,7 +138,7 @@ describe('alignments modifiers', () => {
     const { snap } = buildDisplaySnapshot('LinearAlignmentsDisplay', [
       '{"pileup":{"softClips":{"show":true}},"readConnections":{"height":100},"sashimi":{"labels":{"show":true}}}',
       'featureHeight:4',
-      'arcs:down',
+      'arcs:below',
       'sashimi:auto',
     ])
     expect(snap).toMatchObject({
@@ -147,7 +147,7 @@ describe('alignments modifiers', () => {
         height: 100,
         show: true,
         mark: 'link',
-        placement: 'down',
+        placement: 'below',
       },
       sashimi: { labels: { show: true }, show: true, placement: 'auto' },
     })
@@ -218,12 +218,12 @@ describe('feature modifiers', () => {
   })
 
   // A modifier aimed at the wrong track type used to be dropped in silence, so
-  // `--gff genes.gff.gz sashimi:down` looked like it had worked.
+  // `--gff genes.gff.gz sashimi:below` looked like it had worked.
   test('alignment-only modifiers warn on a feature track', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const { snap } = buildDisplaySnapshot('LinearBasicDisplay', [
-      'arcs:up',
-      'sashimi:down',
+      'arcs:overlay',
+      'sashimi:below',
     ])
     expect(snap.readConnections).toBeUndefined()
     expect(snap.sashimi).toBeUndefined()
@@ -571,7 +571,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
   test('the new alignments modifiers warn on a wiggle track', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const { snap } = buildDisplaySnapshot('LinearWiggleDisplay', [
-      'sashimi:up',
+      'sashimi:overlay',
       'flags:2:1540',
     ])
     expect(snap.sashimi).toBeUndefined()
@@ -945,7 +945,7 @@ test('checkModifiers refuses only what no kind of track takes', () => {
       'sort:base',
       'filterTag:RG',
       'encoding.color.field=type',
-      'arcs:up',
+      'arcs:overlay',
       'name:x',
     ])
   }).not.toThrow()

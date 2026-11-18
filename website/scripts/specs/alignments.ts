@@ -241,7 +241,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               readConnections: {
                 show: true,
                 mark: 'rule',
-                placement: 'down',
+                placement: 'below',
                 height: 100,
               },
               coverage: { height: 100 },

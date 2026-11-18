@@ -219,7 +219,7 @@ const suite: TestSuite = {
     }),
     lgvSnapshotTest({
       // THE DEFAULT, and it sets nothing so that it stays the default:
-      // `readConnections.placement` defaults to `down`
+      // `readConnections.placement` defaults to `below`
       // (readConnectionsConfigSchema.ts), so arcs draw below the coverage band
       // unless a track says otherwise. This case is what a user gets, and the
       // one below is the opt-out.
@@ -254,7 +254,7 @@ const suite: TestSuite = {
           trackId: 'volvox_sv_cram',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            readConnections: { show: true, mark: 'rule', placement: 'up' },
+            readConnections: { show: true, mark: 'rule', placement: 'overlay' },
           },
         },
       ],

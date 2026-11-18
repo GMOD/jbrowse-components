@@ -118,7 +118,7 @@ function createEnv(displayConfig?: Record<string, unknown>) {
 function twoLanes() {
   const { view, display } = createEnv()
   display.setDrawnReadConnections('link')
-  display.setReadConnectionsPlacement('down')
+  display.setReadConnectionsPlacement('below')
   display.setRpcData(
     0,
     {
@@ -222,7 +222,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
   function twoCloudLanes() {
     const { view, display } = createEnv()
     display.setDrawnReadConnections('rule')
-    display.setReadConnectionsPlacement('down')
+    display.setReadConnectionsPlacement('below')
     display.setRpcData(
       0,
       {
@@ -280,7 +280,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
     // nothing to label. Lane A pairs, lane B does not.
     const { display } = createEnv()
     display.setDrawnReadConnections('rule')
-    display.setReadConnectionsPlacement('down')
+    display.setReadConnectionsPlacement('below')
     display.setRpcData(
       0,
       {
@@ -314,7 +314,7 @@ describe('the sticky band and the fit budget follow the lanes', () => {
   function ungrouped(mateBp?: number) {
     const { display } = createEnv()
     display.setDrawnReadConnections('link')
-    display.setReadConnectionsPlacement('down')
+    display.setReadConnectionsPlacement('below')
     display.setRpcData(
       0,
       {
@@ -354,7 +354,7 @@ describe('the sticky band and the fit budget follow the lanes', () => {
       const { display } = createEnv()
       display.setHeightMode('fit')
       display.setDrawnReadConnections(connections)
-      display.setReadConnectionsPlacement('down')
+      display.setReadConnectionsPlacement('below')
       display.facetByField('strand')
       display.setRpcData(
         0,
@@ -395,7 +395,7 @@ describe('the sticky band and the fit budget follow the lanes', () => {
       const { display } = createEnv()
       display.setHeightMode('fit')
       display.setDrawnReadConnections('link')
-      display.setReadConnectionsPlacement('down')
+      display.setReadConnectionsPlacement('below')
       display.facetByField('strand')
       display.setRpcData(
         0,
@@ -460,7 +460,7 @@ function withCoverage(data: WorkerPileupData): WorkerPileupData {
 test('up-mode read cloud beside the lane chips draws its axis beside the coverage axis', () => {
   const { display } = createEnv()
   display.setDrawnReadConnections('rule')
-  display.setReadConnectionsPlacement('up')
+  display.setReadConnectionsPlacement('overlay')
   display.setRpcData(
     0,
     {
@@ -496,7 +496,7 @@ describe('the read cloud rules the normal insert range', () => {
   // The one pair's |TLEN| is 500, so each band leaves it outside, where the
   // cloud draws it rather than hiding it as an ordinary pair.
   function cloud(
-    placement: 'up' | 'down',
+    placement: 'overlay' | 'below',
     band?: { lower: number; upper: number },
     displayConfig?: Record<string, unknown>,
   ) {
@@ -523,17 +523,17 @@ describe('the read cloud rules the normal insert range', () => {
     display.axes.find(a => a.caption === 'TLEN')
 
   test('a line at each end of the sampled band', () => {
-    const display = cloud('down', { lower: 100, upper: 400 })
+    const display = cloud('below', { lower: 100, upper: 400 })
     expect(tlenAxis(display)?.rules?.map(r => r.value)).toEqual([100, 400])
   })
 
   test('no band, no lines', () => {
-    expect(tlenAxis(cloud('down'))?.rules ?? []).toEqual([])
+    expect(tlenAxis(cloud('below'))?.rules ?? []).toEqual([])
   })
 
   test('a pinned band wins over the sampled one', () => {
     const display = cloud(
-      'down',
+      'below',
       { lower: 100, upper: 400 },
       { normalInsertSize: { min: 120, max: 450 } },
     )
@@ -541,19 +541,19 @@ describe('the read cloud rules the normal insert range', () => {
   })
 
   test('a band end past the tallest bar draws no line', () => {
-    const display = cloud('down', { lower: 600, upper: 5000 })
+    const display = cloud('below', { lower: 600, upper: 5000 })
     expect(tlenAxis(display)?.ruleMarks?.map(m => m.value)).toEqual([600])
   })
 
   // The chrome's line against the bar the point mark plots at the same
   // |TLEN|, through the band scale the renderer reads.
-  test.each(['up', 'down'] as const)(
+  test.each(['overlay', 'below'] as const)(
     '%s: each line lies on the bars at its |TLEN|',
     placement => {
       const display = cloud(placement, { lower: 100, upper: 400 })
       const axis = tlenAxis(display)!
       const scale = arcBandScale(
-        { height: axis.height, down: placement === 'down' },
+        { height: axis.height, down: placement === 'below' },
         1,
         display.arcsYDomainBp,
       )

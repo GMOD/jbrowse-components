@@ -30,8 +30,8 @@ export const SV_CHANNELS_LABEL = 'SV channels'
 // `encoding.color` is deliberately NOT among them: the evidence reads keep
 // whatever the reader colors them by.
 //
-// `readConnections.placement` is not among them: which side of the coverage
-// the arcs hang on is a framing choice the arrangement has no opinion about, so
+// `readConnections.placement` is not among them: where the arcs sit against
+// the coverage is a framing choice the arrangement has no opinion about, so
 // applying the preset leaves it as it was and `matchesSvChannels` ignores it.
 export const SV_CHANNELS_SETTINGS = {
   pileup: { show: true },

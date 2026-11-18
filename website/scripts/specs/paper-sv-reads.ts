@@ -48,7 +48,7 @@ const connections = {
 
 const illuminaPairs = {
   ...connections,
-  readConnections: { placement: 'down' },
+  readConnections: { placement: 'below' },
   encoding: { color: 'insertSizeAndOrientation' },
 }
 

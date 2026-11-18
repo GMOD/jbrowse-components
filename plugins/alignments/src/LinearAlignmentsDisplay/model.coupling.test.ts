@@ -153,12 +153,12 @@ describe('alignments display cross-feature coupling', () => {
   // placement returns with the band.
   test('sashimi draws down while coverage is off, and its placement returns with it', () => {
     const display = createDisplay()
-    display.setSashimiPlacement('up')
+    display.setSashimiPlacement('overlay')
     display.setShowCoverage(false)
     expect(display.showSashimi).toBe(true)
-    expect(display.effectiveSashimiPlacement).toBe('down')
+    expect(display.effectiveSashimiPlacement).toBe('below')
     display.setShowCoverage(true)
-    expect(display.effectiveSashimiPlacement).toBe('up')
+    expect(display.effectiveSashimiPlacement).toBe('overlay')
   })
 
   // The junctions ride with coverage, so a sashimi toggle under the band
@@ -180,14 +180,14 @@ describe('alignments display cross-feature coupling', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
 
-    display.setReadConnectionsPlacement('down')
+    display.setReadConnectionsPlacement('below')
     expect(display.showSashimi).toBe(true)
-    expect(display.readConnectionsPlacement).toBe('down')
+    expect(display.readConnectionsPlacement).toBe('below')
 
     display.setShowSashimi(false)
-    display.setReadConnectionsPlacement('up')
+    display.setReadConnectionsPlacement('overlay')
     expect(display.showSashimi).toBe(false)
-    expect(display.readConnectionsPlacement).toBe('up')
+    expect(display.readConnectionsPlacement).toBe('overlay')
   })
 
   // One slot for both overlays: unset, each keeps its own default, and a
@@ -1523,7 +1523,7 @@ describe('sashimi score filter releases the reserved band', () => {
   test('down: the strip stays reserved for any surviving junction', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
-    display.setSashimiPlacement('down')
+    display.setSashimiPlacement('below')
     display.setJunctionFilter({ minReads: 5 })
     seedCrossingJunctions(display)
 
@@ -1539,7 +1539,7 @@ describe('sashimi score filter releases the reserved band', () => {
   test('up: arcs overlay coverage, so the strip is never reserved', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
-    display.setSashimiPlacement('up')
+    display.setSashimiPlacement('overlay')
     display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 

@@ -7316,7 +7316,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "height": {
-          "description": "height in pixels of the connections' own band, drawn under placement: 'down', or under 'up' while the coverage band is hidden; with coverage shown, up arcs draw in its height.",
+          "description": "height in pixels of the connections' own band, drawn under placement: 'below' or 'above', or under 'overlay' while the coverage band is hidden; with coverage shown, overlay arcs draw in its height.",
           "default": 35,
           "if": {
             "type": "null"
@@ -7326,15 +7326,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "placement": {
-          "description": "where the connections draw: up over the coverage band, or down in a separate band below it.",
-          "default": "down",
+          "description": "where the connections sit against the coverage band: overlay on its histogram, above in a band of their own over it, or below in a band under it. With coverage hidden there is nothing to overlay, and overlay draws them rising in a band of their own.",
+          "default": "below",
           "if": {
             "type": "null"
           },
           "else": {
             "enum": [
-              "up",
-              "down"
+              "overlay",
+              "above",
+              "below"
             ]
           }
         },
@@ -7429,7 +7430,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "height": {
-          "description": "height of the strip below coverage that down arcs draw in, in pixels.",
+          "description": "height in pixels of the strip the arcs draw in above or below the coverage band.",
           "default": 40,
           "if": {
             "type": "null"
@@ -7439,15 +7440,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "placement": {
-          "description": "where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down.",
-          "default": "up",
+          "description": "where the arcs sit against the coverage band: overlay on its histogram, above in a strip of their own over it, below in a strip under it, or auto, which sends a junction below where it would cross another. With coverage hidden there is nothing to overlay: overlay and auto draw every arc hanging in the strip below, and above keeps its strip, arcs rising.",
+          "default": "overlay",
           "if": {
             "type": "null"
           },
           "else": {
             "enum": [
-              "up",
-              "down",
+              "overlay",
+              "above",
+              "below",
               "auto"
             ]
           }

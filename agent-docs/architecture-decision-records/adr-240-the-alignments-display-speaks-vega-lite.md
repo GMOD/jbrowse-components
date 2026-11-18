@@ -143,10 +143,10 @@ hand, and Colin's rulings on the calls they split.
     }
   },
 
-  "sashimi": { "show": true, "height": 40, "placement": "up", "labels": { "show": false } },
+  "sashimi": { "show": true, "height": 40, "placement": "overlay", "labels": { "show": false } },
 
   "readConnections": {
-    "show": false, "height": 35, "placement": "down",
+    "show": false, "height": 35, "placement": "below",
     "mark": { "type": "link" },     // a dome; or { "type": "rule" }: the read cloud
     "encoding": {
       "strokeWidth": { "field": "reads", "scale": { "type": "log", "range": [1, 4] } }

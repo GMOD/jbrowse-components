@@ -46,11 +46,11 @@ test.each(flatSettings(SV_CHANNELS_SETTINGS).map(([field]) => field))(
 // row by hand, which means it may not be swallowed.
 test('arcs on the other side of the band stay in the arrangement, and keep a step', () => {
   const { step, rest } = takeArrangement(
-    entries({ readConnections: { placement: 'up' } }),
+    entries({ readConnections: { placement: 'overlay' } }),
     ALIGNMENTS,
   )
   expect(step).toBeDefined()
-  expect(rest).toEqual([['readConnections.placement', 'up']])
+  expect(rest).toEqual([['readConnections.placement', 'overlay']])
 })
 
 test('another display type spelling the same settings is not the arrangement', () => {

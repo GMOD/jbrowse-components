@@ -403,7 +403,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'hg38',
     '--bam',
     HG00151_ONT_1000G_BAM,
-    'arcs:down',
+    'arcs:below',
     'unit=chain',
     // the chain's segment colors live under the orientation fields
     'encoding.color.field=insertSizeAndOrientation',

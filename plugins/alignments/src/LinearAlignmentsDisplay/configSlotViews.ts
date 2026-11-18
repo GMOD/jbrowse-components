@@ -304,18 +304,18 @@ export function configSlotViews(
     /** #getter */
     get sashimiPlacement(): SashimiPlacement {
       const conf = readsConfOf(self.configuration)
-      return conf ? readConfObject(conf, ['sashimi', 'placement']) : 'up'
+      return conf ? readConfObject(conf, ['sashimi', 'placement']) : 'overlay'
     },
     /**
      * #getter
-     * Where the arcs draw: `sashimi.placement` over the coverage band, and
-     * `down`, in a separate strip, while the band is hidden. `above` already
+     * Where the arcs draw: `sashimi.placement` while the coverage band shows,
+     * and `below`, in a strip of their own, while it is hidden. `above` already
      * draws in a strip of its own, so it keeps it, arcs rising, either way.
      */
     get effectiveSashimiPlacement(): SashimiPlacement {
       return self.showCoverage || this.sashimiPlacement === 'above'
         ? this.sashimiPlacement
-        : 'down'
+        : 'below'
     },
     /** #getter */
     get showSashimiLabels(): boolean {

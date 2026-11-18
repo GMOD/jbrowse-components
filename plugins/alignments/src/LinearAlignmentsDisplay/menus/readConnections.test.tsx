@@ -31,7 +31,7 @@ function makeModel() {
     get readConnectionsMark(): ReadConnectionsMark {
       return this.drawnReadConnections === 'rule' ? 'rule' : 'link'
     },
-    readConnectionsPlacement: 'down' as ReadConnectionsPlacement,
+    readConnectionsPlacement: 'below' as ReadConnectionsPlacement,
     setReadConnectionsPlacement(placement: ReadConnectionsPlacement) {
       this.readConnectionsPlacement = placement
     },
@@ -183,7 +183,7 @@ describe('band rows for Advanced', () => {
     )
     const rows = 'subMenu' in item ? resolveSubMenu(item) : []
     click(rows, 'Over coverage')
-    expect(model.readConnectionsPlacement).toBe('up')
+    expect(model.readConnectionsPlacement).toBe('overlay')
     click(rows, 'Above coverage')
     expect(model.readConnectionsPlacement).toBe('above')
   })

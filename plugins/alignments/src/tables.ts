@@ -1165,7 +1165,7 @@ function readConnectionTables(
 /**
  * The read-connection band's y scale as the display draws it
  * (`arcBandScale`), and where: `band` 'arcs', a band of its own, or under
- * placement 'up' with coverage shown 'coverage', whose top `heightPx` of
+ * placement 'overlay' with coverage shown 'coverage', whose top `heightPx` of
  * the coverage band's height, above the depth axis' baseline, the
  * connections draw in. Null while the band is off.
  */

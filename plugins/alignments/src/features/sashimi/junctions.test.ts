@@ -286,17 +286,20 @@ describe('split junctions', () => {
         [300, 700, 2, { split: 'splitBack' }],
       ]),
     ]
-    expect(down(regions, 'up').size).toBe(0)
+    expect(down(regions, 'overlay').size).toBe(0)
     expect([...down(regions, 'auto')]).toEqual(['chr1:300:700:splitBack'])
-    expect(down(regions, 'down').size).toBe(2)
+    expect(down(regions, 'below').size).toBe(2)
   })
 })
 
 describe('downJunctionKeys', () => {
   test('up sends nothing down, down sends everything', () => {
     const regions = [region('chr1', CROSSING)]
-    expect(down(regions, 'up').size).toBe(0)
-    expect([...down(regions, 'down')]).toEqual(['chr1:100:500', 'chr1:300:700'])
+    expect(down(regions, 'overlay').size).toBe(0)
+    expect([...down(regions, 'below')]).toEqual([
+      'chr1:100:500',
+      'chr1:300:700',
+    ])
   })
 
   test('auto splits a crossing pair, dropping the lighter one', () => {

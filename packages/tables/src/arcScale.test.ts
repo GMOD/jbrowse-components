@@ -9,7 +9,7 @@ const scaleUnder = async (readConnections: Record<string, unknown>) =>
     display: { readConnections: { show: true, ...readConnections } },
   })
 
-test('arcs hang from their own band under placement down, short of half the widest stroke', async () => {
+test('arcs hang from their own band under placement below, short of half the widest stroke', async () => {
   const { arcScale } = await scaleUnder({
     height: 40,
     encoding: { strokeWidth: { field: 'reads', scale: { range: [2, 8] } } },
@@ -26,12 +26,12 @@ test('arcs hang from their own band under placement down, short of half the wide
   })
 })
 
-test('arcs rise inside the coverage band under placement up, above its baseline', async () => {
+test('arcs rise inside the coverage band under placement overlay, above its baseline', async () => {
   const t = await engine.alignments({
     ...PAIRED_INVERSION,
     display: {
       coverage: { height: 60 },
-      readConnections: { show: true, placement: 'up' },
+      readConnections: { show: true, placement: 'overlay' },
     },
   })
   expect(t.arcScale).toMatchObject({
@@ -44,7 +44,7 @@ test('arcs rise inside the coverage band under placement up, above its baseline'
     ...PAIRED_INVERSION,
     display: {
       coverage: { show: false },
-      readConnections: { show: true, placement: 'up', height: 30 },
+      readConnections: { show: true, placement: 'overlay', height: 30 },
     },
   })
   expect(bare.arcScale).toMatchObject({

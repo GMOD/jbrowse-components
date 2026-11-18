@@ -103,7 +103,7 @@ export function bandStackViews(self: BandStackHost) {
         showCoverage: self.showCoverage,
         coverageHeight: self.coverageHeight,
         drawnReadConnections: self.drawnReadConnections,
-        readConnectionsDown: self.readConnectionsPlacement === 'down',
+        readConnectionsDown: self.readConnectionsPlacement === 'below',
         readConnectionsAbove: self.readConnectionsPlacement === 'above',
         readConnectionsHeight: self.readConnectionsHeight,
         showSashimi: self.showSashimi,

@@ -985,8 +985,9 @@ const DISPLAY_MODES: Record<string, string> = Object.fromEntries(
 
 const SASHIMI_PLACEMENT: Record<string, string> = {
   auto: 'Auto (minimize overlap)',
-  up: 'Above coverage',
-  down: 'Below coverage',
+  overlay: 'Over coverage',
+  above: 'Above coverage',
+  below: 'Below coverage',
 }
 
 // the Connection band radios in getReadConnectionsMenuItem
@@ -998,8 +999,9 @@ const READ_CONNECTIONS: Record<string, string> = {
 }
 
 const READ_CONNECTIONS_PLACEMENT: Record<string, string> = {
-  up: 'Above coverage',
-  down: 'Below coverage',
+  overlay: 'Over coverage',
+  above: 'Above coverage',
+  below: 'Below coverage',
 }
 
 // The feature displays' `mark.height` and the alignments `pileup.mark.height`

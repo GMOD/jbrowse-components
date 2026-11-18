@@ -85,7 +85,7 @@ function setup({ down }: { down: boolean }) {
     createTestAlignmentsDisplay()
   applyView(view, 10, 0)
   display.setDrawnReadConnections('link')
-  display.setReadConnectionsPlacement(down ? 'down' : 'up')
+  display.setReadConnectionsPlacement(down ? 'below' : 'overlay')
   display.setRpcData(
     0,
     {

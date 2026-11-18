@@ -96,7 +96,7 @@ function seed(laneCount: number, depth = 5) {
 function arcsDown(height: number) {
   const display = createEnv()
   display.setDrawnReadConnections('link')
-  display.setReadConnectionsPlacement('down')
+  display.setReadConnectionsPlacement('below')
   display.setHeight(height)
   display.setRpcData(
     0,
@@ -156,7 +156,7 @@ describe('a display with the pileup hidden', () => {
   test('gives lanes with and without arcs the same slot', () => {
     const display = createEnv()
     display.setDrawnReadConnections('link')
-    display.setReadConnectionsPlacement('down')
+    display.setReadConnectionsPlacement('below')
     display.setRpcData(
       0,
       {
