@@ -320,17 +320,15 @@ function phasedCells(samples: string[], lines: string[]) {
     rowsField: 'haplotype',
     showReference: false,
   })
-  const colorAt = (featureIndex: number, row: number) => {
-    for (let i = 0; i < cells.numCells; i++) {
-      if (
-        cells.cellFeatureIndices[i] === featureIndex &&
-        cells.cellRowIndices[i] === row
-      ) {
-        return cells.cellColors[i]
-      }
-    }
-    return undefined
-  }
+  const colorAt = (featureIndex: number, row: number) =>
+    cells.cellColors[
+      cells.cellFeatureIndices.findIndex(
+        (feature, i) =>
+          i < cells.numCells &&
+          feature === featureIndex &&
+          cells.cellRowIndices[i] === row,
+      )
+    ]
   return { rowNames: sources.map(s => s.name), colorAt }
 }
 

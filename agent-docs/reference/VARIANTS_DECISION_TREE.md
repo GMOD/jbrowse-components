@@ -61,9 +61,10 @@ packed colors it produces.
   where it is on and the sample has a PS; otherwise the allele on that haplotype
   picks the fill — reference, no-call, or an alt, which takes the override if
   one resolved, else the alt hue for the site's most frequent alt (never `*`,
-  the spanning deletion) and the secondary fill for any other. A genotype written with `/` paints one fill
-  across every haplotype row of that sample, `1/1` included: phased mode draws
-  what the file phased, not what its alleles imply.
+  the spanning deletion) and the secondary fill for any other. A genotype
+  written with `/` paints one fill across every haplotype row of that sample,
+  `1/1` included: phased mode draws what the file phased, not what its alleles
+  imply.
 - **Allele-count mode**: a row is one sample. A call with nothing called takes
   the no-call fill and an all-reference call the reference fill; anything else
   is `shade(hue, dosage)`, the hue being the override or the alt hue and the
