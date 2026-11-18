@@ -151,7 +151,7 @@ const HighlightGrid = observer(function HighlightGrid({
           {...sortProps}
           emptyMessage="No highlights yet. Drag across a view to highlight a region, or import from the menu."
           isRowSelected={row => selectedIds.has(row.id)}
-          leading={checkboxLeading({
+          leading={checkboxLeading<HighlightRow>({
             selected: selectedIds,
             onChange: next => {
               model.setSelectedIds(next)

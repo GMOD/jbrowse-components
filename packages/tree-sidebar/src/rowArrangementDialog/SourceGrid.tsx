@@ -10,7 +10,7 @@ import SelectionMoveButtons from './SelectionMoveButtons.tsx'
 import { buildSourceColumns } from './buildSourceColumns.tsx'
 import { useSourceSort } from './useSourceSort.ts'
 
-import type { EachRowPicks } from './buildSourceColumns.tsx'
+import type { EachRowPicks, SourceRow } from './buildSourceColumns.tsx'
 
 const useStyles = makeStyles()({
   cell: {
@@ -74,7 +74,7 @@ export default observer(function SourceGrid<S extends { name: string }>({
           }}
           emptyMessage="No rows"
           isRowSelected={({ id }) => ticked.has(id)}
-          leading={checkboxLeading({
+          leading={checkboxLeading<SourceRow<S>>({
             selected: ticked,
             onChange: setTicked,
             label: ({ id }) => `Select ${id}`,

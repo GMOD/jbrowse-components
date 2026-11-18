@@ -296,7 +296,7 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
               {...sortProps}
               emptyMessage="No tracks"
               isRowSelected={row => selectedIds.has(row.id)}
-              leading={checkboxLeading({
+              leading={checkboxLeading<TrackRow>({
                 selected: selectedIds,
                 onChange: setTicked,
                 label: row => `Select ${coarseStripHTML(row.name)}`,

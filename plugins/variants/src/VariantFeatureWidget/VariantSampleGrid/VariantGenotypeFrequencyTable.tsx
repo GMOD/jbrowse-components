@@ -80,7 +80,7 @@ const VariantGenotypeFrequencyTable = observer(
         columns={columns}
         isRowSelected={row => selectedGenotypes !== null && isSelected(row)}
         onRowClick={showOnly}
-        leading={checkboxLeading({
+        leading={checkboxLeading<GenotypeRow>({
           selected: new Set(genotypeRows.filter(isSelected).map(r => r.id)),
           onChange: select,
           label: row => `Select ${row.GT}`,

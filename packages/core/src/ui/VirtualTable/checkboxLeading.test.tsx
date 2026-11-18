@@ -13,15 +13,18 @@ beforeAll(() => {
   jest.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(500)
 })
 
-const rows = [
+interface Fruit {
+  id: string
+  name: string
+}
+
+const rows: Fruit[] = [
   { id: 'apple', name: 'apple' },
   { id: 'apricot', name: 'apricot' },
   { id: 'banana', name: 'banana' },
 ]
 
-const columns = [
-  { field: 'name', sortValue: (row: { name: string }) => row.name },
-]
+const columns = [{ field: 'name', sortValue: (row: Fruit) => row.name }]
 
 function setup(initial: string[]) {
   const onChange = jest.fn<void, [Set<string>]>()
@@ -36,7 +39,7 @@ function setup(initial: string[]) {
         columns={columns}
         exportName="fruits"
         onRowClick={onRowClick}
-        leading={checkboxLeading({
+        leading={checkboxLeading<Fruit>({
           selected,
           onChange: next => {
             onChange(next)

@@ -120,7 +120,7 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
       leading={
         narrow
           ? undefined
-          : checkboxLeading({
+          : checkboxLeading<SessionRow>({
               selected: selectedPaths,
               onChange: setSelectedPaths,
               label: row => `Select ${row.name}`,
