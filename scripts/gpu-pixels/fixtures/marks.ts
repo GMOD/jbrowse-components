@@ -459,6 +459,14 @@ const LINE_SPANS: readonly Span3[] = Array.from({ length: 24 }, (_, i) => {
   return [x, x + 6.1, 50 + 38 * Math.sin(i * 0.9)] as const
 })
 
+const LINE_ALPHA = 0.6
+
+// [x px, x2 px, value]: spans 0.7-2.1 px wide, a joint in nearly every pixel
+// column, the value swinging every few
+const DENSE_LINE_SPANS: readonly Span3[] = denseSteps(0).map(
+  ([x, x2], i) => [x, x2, 50 + 35 * Math.sin(i * 1.7)] as const,
+)
+
 const barShapes = UNDER_BARS.map(([x1, x2, v]) =>
   boxShape(px(bp(x1)), valueYPx(v), px(bp(x2)), H, rgba(BAR_FILL)),
 )
@@ -518,16 +526,28 @@ function capsule(
   }
 }
 
-function linearLineFixture(
-  name: string,
-  about: string,
-  lineWidth: number,
-  under: readonly PixelFixture[],
-  underShapes: readonly Shape[],
-) {
+function linearLineFixture({
+  name,
+  about,
+  lineWidth,
+  spans = LINE_SPANS,
+  alpha = 1,
+  under = [],
+  underShapes = [],
+  budget,
+}: {
+  name: string
+  about: string
+  lineWidth: number
+  spans?: readonly Span3[]
+  alpha?: number
+  under?: readonly PixelFixture[]
+  underShapes?: readonly Shape[]
+  budget?: Budget
+}) {
   const mid = ([x1, x2]: Span3) => (px(bp(x1)) + px(bp(x2))) / 2
-  const pieces = LINE_SPANS.map((s, i) => {
-    const prev = LINE_SPANS[i - 1] ?? s
+  const pieces = spans.map((s, i) => {
+    const prev = spans[i - 1] ?? s
     return capsule(
       mid(prev),
       valueYPx(prev[2]),
@@ -543,18 +563,16 @@ function linearLineFixture(
     mod: lineCenter,
     width: W,
     height: H,
-    count: LINE_SPANS.length,
+    count: spans.length,
     instances: {
-      x: LINE_SPANS.map(s => bp(s[0])),
-      x2: LINE_SPANS.map(s => bp(s[1])),
-      y: LINE_SPANS.map(s => s[2]),
-      color: LINE_SPANS.map(() => abgr(LINE_INK)),
-      row: LINE_SPANS.map(() => 0),
-      prevX: LINE_SPANS.map((_, i) =>
-        i > 0 ? bp(LINE_SPANS[i - 1]![0]) : NO_PREV_X,
-      ),
-      prevX2: LINE_SPANS.map((_, i) => (i > 0 ? bp(LINE_SPANS[i - 1]![1]) : 0)),
-      prevY: LINE_SPANS.map((_, i) => (i > 0 ? LINE_SPANS[i - 1]![2] : 0)),
+      x: spans.map(s => bp(s[0])),
+      x2: spans.map(s => bp(s[1])),
+      y: spans.map(s => s[2]),
+      color: spans.map(() => abgr(LINE_INK, alpha)),
+      row: spans.map(() => 0),
+      prevX: spans.map((_, i) => (i > 0 ? bp(spans[i - 1]![0]) : NO_PREV_X)),
+      prevX2: spans.map((_, i) => (i > 0 ? bp(spans[i - 1]![1]) : 0)),
+      prevY: spans.map((_, i) => (i > 0 ? spans[i - 1]![2] : 0)),
     },
     uniforms: dpr => ({
       bpRangeX: BP_RANGE,
@@ -575,8 +593,13 @@ function linearLineFixture(
       devicePixelRatio: dpr,
       rowTableKeys: -1,
     }),
-    reference: paintOver([...underShapes, union(rgba(LINE_INK), pieces)]),
+    translucent: alpha < 1 ? alpha : undefined,
+    reference: paintOver([
+      ...underShapes,
+      union(rgba(LINE_INK, alpha), pieces),
+    ]),
     under,
+    budget,
   })
 }
 
@@ -642,18 +665,38 @@ export default [
   stepFixture(1, {}),
   stepFixture(2, {}),
   stepFixture(1, {}, denseSteps(40.37), 'mark-step-dense-flat'),
-  linearLineFixture(
-    'mark-line-linear',
-    'a dark 1.5 px linear line alone, its capsules joined at each midpoint',
-    1.5,
-    [],
-    [],
-  ),
-  linearLineFixture(
-    'mark-line-linear-over-bars',
-    'mark-line-linear drawn after light bars, as a later marks[] layer is',
-    1.5,
-    [underBars],
-    barShapes,
-  ),
+  linearLineFixture({
+    name: 'mark-line-linear',
+    about:
+      'a dark 1.5 px linear line alone, its capsules joined at each midpoint',
+    lineWidth: 1.5,
+    budget: { max: 0.25, meanErr: 0.04 },
+  }),
+  linearLineFixture({
+    name: 'mark-line-linear-translucent',
+    about: 'mark-line-linear at alpha 0.6, where a joint blended twice shows',
+    lineWidth: 1.5,
+    alpha: LINE_ALPHA,
+    budget: { max: 0.15, meanErr: 0.04, twice: 0 },
+  }),
+  // Its holes are max's: where no one capsule covers a pixel as the union
+  // does, the pixel takes the largest share rather than the union's.
+  linearLineFixture({
+    name: 'mark-line-linear-dense',
+    about: 'a 1 px linear line through spans 0.7-2.1 px wide, at alpha 0.6',
+    lineWidth: 1,
+    spans: DENSE_LINE_SPANS,
+    alpha: LINE_ALPHA,
+    budget: { meanErr: 0.08, twice: 0, holes: 230 },
+  }),
+  // No budget: the max blend keeps the bar wherever it is brighter than the
+  // line, so the line is missing across every bar.
+  linearLineFixture({
+    name: 'mark-line-linear-over-bars',
+    about:
+      'mark-line-linear drawn after light bars, as a later marks[] layer is',
+    lineWidth: 1.5,
+    under: [underBars],
+    underShapes: barShapes,
+  }),
 ]
