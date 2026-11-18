@@ -1,11 +1,11 @@
 import { DEFAULT_COL_WIDTH } from '@jbrowse/core/ui/VirtualTable'
 
-const NAME_SHARE = 0.5
+const NAME_SHARE = 2 / 3
 
 /**
  * The least of its natural width a column keeps when columns are fitted: the
- * name keeps up to half the room, since it is what tells tracks apart, and
- * every other column up to {@link DEFAULT_COL_WIDTH}.
+ * name keeps up to two thirds of the room, since it is what tells tracks
+ * apart, and every other column up to {@link DEFAULT_COL_WIDTH}.
  */
 export function columnFloor(id: string, available: number) {
   return id === 'name'

@@ -11,6 +11,7 @@ import {
   showAddConnectionWidget,
   showAddTrackWidget,
 } from '../../showAddWidget.ts'
+import { getAllSubcategories } from '../../util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -47,6 +48,38 @@ function clearListMenuItems(model: HierarchicalTrackSelectorModel) {
       : []
 }
 
+function categoryIds(model: HierarchicalTrackSelectorModel) {
+  return model.hierarchy.children.flatMap(group =>
+    group.type === 'category' ? getAllSubcategories(group) : [],
+  )
+}
+
+// with no group row to carry them, the tree's own collapse rows sit here
+function collapseMenuItems(model: HierarchicalTrackSelectorModel) {
+  return model.trackList === 'all' &&
+    !model.groupRowsDrawn &&
+    model.allTracks.some(g => g.tracks.some(t => t.categories.length > 0))
+    ? [
+        {
+          label: 'Collapse all categories',
+          onClick: () => {
+            for (const id of categoryIds(model)) {
+              model.setCategoryCollapsed(id, true)
+            }
+          },
+        },
+        {
+          label: 'Expand all categories',
+          onClick: () => {
+            for (const id of categoryIds(model)) {
+              model.setCategoryCollapsed(id, false)
+            }
+          },
+        },
+      ]
+    : []
+}
+
 const HamburgerMenu = observer(function HamburgerMenu({
   model,
   tableMenuItems,
@@ -81,7 +114,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
         ]
       : []),
     ...clearListMenuItems(model),
-    ...(tableMenuItems?.() ?? []),
+    ...(tableMenuItems ? tableMenuItems() : collapseMenuItems(model)),
   ]
   return menuItems.length > 0 ? (
     <CascadingMenuButton

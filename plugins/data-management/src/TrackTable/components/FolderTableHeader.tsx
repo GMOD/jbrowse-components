@@ -43,7 +43,7 @@ const FolderTableHeader = observer(function FolderTableHeader({
       <CascadingMenuButton
         data-testid="track-table-menu"
         tooltip="Table options"
-        menuItems={() => tableMenuItems(table, shown)}
+        menuItems={() => tableMenuItems(model, table, shown)}
       >
         <ViewColumnIcon />
       </CascadingMenuButton>

@@ -48,17 +48,17 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const NestingMarkers = observer(function NestingMarkers({
-  nestingLevel,
+  depth,
   height,
   className,
 }: {
-  nestingLevel: number
+  depth: number
   height: number
   className: string
 }) {
   return (
     <>
-      {Array.from({ length: nestingLevel }, (_, idx) => (
+      {Array.from({ length: depth }, (_, idx) => (
         <div
           key={idx}
           style={{ left: idx * levelWidth + 4, height }}
@@ -77,15 +77,14 @@ const TreeItem = observer(function TreeItem({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes, cx } = useStyles()
-  const { item, mode, accordion, height, top } = row
-  const { nestingLevel } = item
+  const { item, mode, accordion, height, top, depth } = row
   const marginLeft =
-    nestingLevel * levelWidth + (item.type === 'category' ? 0 : levelWidth)
+    depth * levelWidth + (item.type === 'category' ? 0 : levelWidth)
 
   return (
     <div className={classes.row} style={{ height, top }}>
       <NestingMarkers
-        nestingLevel={nestingLevel}
+        depth={depth}
         height={height}
         className={classes.nestingLevelMarker}
       />

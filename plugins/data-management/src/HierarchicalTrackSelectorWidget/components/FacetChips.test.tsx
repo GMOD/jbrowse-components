@@ -25,7 +25,7 @@ afterEach(() => {
 const BIOSAMPLE = ['K562', 'K562', 'HepG2', 'HepG2']
 const TARGET = ['t1', 't1', 't2', 't2', 't2', 't2', 't1', 't1']
 
-function setup({ metadata = true } = {}) {
+function setup({ metadata = true, category = false } = {}) {
   const session = createTestSession()
   session.addAssemblyConf({
     name: 'volMyt1',
@@ -47,6 +47,7 @@ function setup({ metadata = true } = {}) {
       assemblyNames: ['volMyt1'],
       type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
+      ...(category ? { category: [i % 2 ? 'Odd' : 'Even'] } : {}),
       ...(metadata
         ? {
             metadata: {
@@ -82,6 +83,10 @@ function chipLabels(container: HTMLElement) {
   )
 }
 
+function closeMenu() {
+  fireEvent.keyDown(document.activeElement!, { key: 'Escape' })
+}
+
 function closePopover() {
   fireEvent.click(document.querySelector('.MuiBackdrop-root')!)
 }
@@ -96,9 +101,9 @@ test('the leading facets get a chip and the rest wait behind "More filters"', ()
   const { model } = setup()
   const { container } = renderSelector(model)
   expect(chipLabels(container)).toEqual([
-    'assay',
-    'biosample',
-    'lab',
+    'Assay',
+    'Biosample',
+    'Lab',
     'More filters',
   ])
 })
@@ -112,12 +117,12 @@ test('a list with no field that groups tracks gets no chip row', () => {
 test('an active chip names its selection, filters the tree, and clears with its ×', () => {
   const { model } = setup()
   const { container, getByText, getByLabelText } = renderSelector(model)
-  fireEvent.click(getByText('biosample'))
+  fireEvent.click(getByText('Biosample'))
   fireEvent.click(getByLabelText('K562'))
   fireEvent.click(getByLabelText('HepG2'))
   closePopover()
 
-  const chip = getByText('biosample: K562 +1').closest('.MuiChip-root')!
+  const chip = getByText('Biosample: K562 +1').closest('.MuiChip-root')!
   expect(model.trackTable.filters.get('metadata.biosample')).toEqual([
     'K562',
     'HepG2',
@@ -125,7 +130,7 @@ test('an active chip names its selection, filters the tree, and clears with its 
 
   fireEvent.click(within(chip as HTMLElement).getByTestId('CancelIcon'))
   expect(model.trackTable.filters.size).toBe(0)
-  expect(chipLabels(container)).toContain('biosample')
+  expect(chipLabels(container)).toContain('Biosample')
 })
 
 test('the chips stay put while the filter box matches nothing', () => {
@@ -143,21 +148,21 @@ test('a chip keeps its popover anchored while its last value is unchecked', () =
   const { model } = setup()
   const { container, getByText, getByLabelText } = renderSelector(model)
   fireEvent.click(getByText('More filters'))
-  fireEvent.click(getByText('target'))
+  fireEvent.click(getByText('Target'))
   fireEvent.click(getByLabelText('t1'))
   closePopover()
-  expect(chipLabels(container)).toContain('target: t1')
+  expect(chipLabels(container)).toContain('Target: t1')
 
-  fireEvent.click(getByText('target: t1'))
+  fireEvent.click(getByText('Target: t1'))
   fireEvent.click(getByLabelText('t1'))
   const chip = [...container.querySelectorAll('.MuiChip-root')].find(
-    c => c.textContent === 'target',
+    c => c.textContent === 'Target',
   )
   expect(chip?.getAttribute('aria-expanded')).toBe('true')
   expect(chip?.isConnected).toBe(true)
 
   closePopover()
-  expect(chipLabels(container)).not.toContain('target')
+  expect(chipLabels(container)).not.toContain('Target')
 })
 
 function chip(container: HTMLElement, label: string) {
@@ -178,8 +183,8 @@ test('clearing a "More filters" chip from the keyboard hands focus to "More filt
   act(() => {
     model.trackTable.setFilter('metadata.target', ['t1'])
   })
-  clearByKeyboard(chip(container, 'target: t1'))
-  expect(chipLabels(container)).not.toContain('target: t1')
+  clearByKeyboard(chip(container, 'Target: t1'))
+  expect(chipLabels(container)).not.toContain('Target: t1')
   expect(document.activeElement?.textContent).toBe('More filters')
 })
 
@@ -190,7 +195,7 @@ test('clearing the last chip behind "More filters" hands focus to the filter box
     model.trackTable.setColumnVisible('metadata.target', true)
     model.trackTable.setFilter('metadata.flag', ['on'])
   })
-  clearByKeyboard(chip(container, 'flag: on'))
+  clearByKeyboard(chip(container, 'Flag: on'))
   expect(chipLabels(container)).not.toContain('More filters')
   expect(document.activeElement === getByLabelText('Filter tracks')).toBe(true)
 })
@@ -201,18 +206,18 @@ test('clearing a leading chip keeps focus on it', () => {
   act(() => {
     model.trackTable.setFilter('metadata.lab', ['lab x'])
   })
-  clearByKeyboard(chip(container, 'lab: lab x'))
-  expect(document.activeElement?.textContent).toBe('lab')
+  clearByKeyboard(chip(container, 'Lab: lab x'))
+  expect(document.activeElement?.textContent).toBe('Lab')
 })
 
 test('a chip opens a dialog named for its facet, and "More filters" one of its own', () => {
   const { model } = setup()
   const { container, getByRole, getByText } = renderSelector(model)
-  const biosample = chip(container, 'biosample')
+  const biosample = chip(container, 'Biosample')
   expect(biosample.getAttribute('aria-haspopup')).toBe('dialog')
-  fireEvent.click(getByText('biosample'))
+  fireEvent.click(getByText('Biosample'))
   expect(
-    within(getByRole('dialog', { name: 'biosample' })).getByLabelText('K562'),
+    within(getByRole('dialog', { name: 'Biosample' })).getByLabelText('K562'),
   ).toBeTruthy()
   closePopover()
 
@@ -221,7 +226,7 @@ test('a chip opens a dialog named for its facet, and "More filters" one of its o
   )
   fireEvent.click(getByText('More filters'))
   expect(
-    within(getByRole('dialog', { name: 'More filters' })).getByText('target'),
+    within(getByRole('dialog', { name: 'More filters' })).getByText('Target'),
   ).toBeTruthy()
 })
 
@@ -247,27 +252,25 @@ test('the tree and the table count a filter that keeps every track alike', () =>
   expect(model.trackTable.matchCounts).toEqual(tree)
 })
 
-test('the facets, sort and add-to-selection mode survive Tree → Table → Tree', () => {
+test('the facets and sort survive Tree → Table → Tree', () => {
   const { model } = setup()
   const table = model.trackTable
   const { getByTestId, getByText } = renderSelector(model)
   act(() => {
     table.setFilter('metadata.biosample', ['K562'])
     table.setSort('name', false)
-    table.setUseShoppingCart(true)
   })
   expect(treeTrackIds(model).toSorted()).toEqual(['t0', 't1', 't4', 't5'])
-  expect(getByText('biosample: K562')).toBeTruthy()
+  expect(getByText('Biosample: K562')).toBeTruthy()
 
   fireEvent.click(getByTestId('show-as-table'))
-  expect(getByText('biosample: K562')).toBeTruthy()
+  expect(getByText('Biosample: K562')).toBeTruthy()
   expect(table.sortedRows.map(r => r.id)).toEqual(['t5', 't4', 't1', 't0'])
 
   fireEvent.click(getByTestId('show-as-tree'))
   expect(model.trackTable).toBe(table)
-  expect(getByText('biosample: K562')).toBeTruthy()
+  expect(getByText('Biosample: K562')).toBeTruthy()
   expect(table.sortField).toBe('name')
-  expect(table.useShoppingCart).toBe(true)
   expect(treeTrackIds(model).toSorted()).toEqual(['t0', 't1', 't4', 't5'])
 })
 
@@ -292,10 +295,48 @@ test("the ☰ menu holds the table's rows in table mode only", async () => {
   const { findByTestId, findByText, queryByTestId } = renderSelector(model)
   expect(queryByTestId('track-table-menu')).toBeNull()
   fireEvent.click(await findByTestId('track-selector-hamburger'))
-  expect(
-    await findByText('Add tracks to selection instead of turning them on/off'),
-  ).toBeTruthy()
   expect(await findByText('Manage columns')).toBeTruthy()
+})
+
+test("the table's ☰ menu adds what a filter kept to the selection, and only while one narrows the list", async () => {
+  const { model } = setup()
+  model.openTable()
+  const { findByTestId, findByText, queryByText } = renderSelector(model)
+  fireEvent.click(await findByTestId('track-selector-hamburger'))
+  await findByText('Manage columns')
+  expect(queryByText('Add matching tracks to selection')).toBeNull()
+  closeMenu()
+
+  act(() => {
+    model.trackTable.setFilter('metadata.biosample', ['K562'])
+  })
+  fireEvent.click(await findByTestId('track-selector-hamburger'))
+  fireEvent.click(await findByText('Add matching tracks to selection'))
+  expect(model.selection.map(c => c.trackId).toSorted()).toEqual([
+    't0',
+    't1',
+    't4',
+    't5',
+  ])
+  expect(model.shownTrackIds.size).toBe(0)
+})
+
+test('the tree has no category chip, since its headings filter by category, until a category filter is set', () => {
+  const { model } = setup({ metadata: false, category: true })
+  const tree = renderSelector(model)
+  expect(chipLabels(tree.container)).not.toContain('Category')
+  act(() => {
+    model.trackTable.setFilter('category', ['Odd'])
+  })
+  expect(chipLabels(tree.container)).toContain('Category: Odd')
+  act(() => {
+    model.trackTable.setFilter('category', [])
+  })
+  tree.unmount()
+
+  model.openTable()
+  const table = renderSelector(model)
+  expect(chipLabels(table.container)).toContain('Category')
 })
 
 test("destroying the session destroys its selector's table", () => {

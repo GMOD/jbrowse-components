@@ -72,10 +72,10 @@ test('unchecking a value removes only that value', () => {
 test('each value shows its count, and clearing appears once one is checked', () => {
   const { table, getByLabelText, queryByLabelText } = renderFilter()
   expect(getByLabelText('DNA').closest('label')!.textContent).toBe('DNA2')
-  expect(queryByLabelText('Clear assay filter')).toBeNull()
+  expect(queryByLabelText('Clear Assay filter')).toBeNull()
 
   fireEvent.click(getByLabelText('DNA'))
-  fireEvent.click(getByLabelText('Clear assay filter'))
+  fireEvent.click(getByLabelText('Clear Assay filter'))
 
   expect(table.filters.has('metadata.assay')).toBe(false)
 })
@@ -114,7 +114,7 @@ test('a longer facet lists its 10 most common values, any checked one, and a way
 test('a collapsed facet shows its heading, and opens on a click', () => {
   const { getByRole, queryByLabelText, getByLabelText } = renderValues(3, false)
   expect(queryByLabelText('c0')).toBeNull()
-  fireEvent.click(getByRole('button', { name: 'cell' }))
+  fireEvent.click(getByRole('button', { name: 'Cell' }))
   expect(getByLabelText('c0')).toBeTruthy()
 })
 
@@ -137,7 +137,7 @@ test('a collapsed facet lists its counts once opened, after a filter changed', (
   act(() => {
     table.setFilter('metadata.lab', ['x'])
   })
-  fireEvent.click(getByRole('button', { name: 'assay' }))
+  fireEvent.click(getByRole('button', { name: 'Assay' }))
   expect(getByLabelText('DNA').closest('label')!.textContent).toBe('DNA1')
   expect(queryByLabelText('RNA')).toBeNull()
 })

@@ -1,4 +1,4 @@
-import { getRowSelectionState, setTracksSelected } from './tableSelection.ts'
+import { getShowAllState, setTracksShown } from './tableSelection.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 
@@ -8,10 +8,16 @@ const rows = [
   { id: 't3', name: 'three' },
 ]
 
-// Minimal stand-ins for the bits of the track-selector model the selection
-// helpers touch; cast at the boundary so the tests stay readable.
-function nonCartModel() {
-  const shown = new Set<string>()
+const withPlaceholders = [
+  ...rows,
+  { id: 'ucsc', name: 'bigInteract track (Unsupported)' },
+  { id: 'jb1', name: 'mystery (Unknown)' },
+]
+
+// Minimal stand-ins for the bits of the track-selector model the helpers
+// touch; cast at the boundary so the tests stay readable.
+function fakeModel(shownIds: string[] = []) {
+  const shown = new Set(shownIds)
   const recent: string[] = []
   const model = {
     trackContainer: {
@@ -23,141 +29,72 @@ function nonCartModel() {
   return { model, shown, recent }
 }
 
-function cartModel(selectionIds: string[]) {
-  const selectionSet = new Set(selectionIds)
-  const added: string[][] = []
-  const removed: string[][] = []
-  const model = {
-    selectionSet,
-    addToSelection: (ids: string[]) => added.push(ids),
-    removeFromSelection: (ids: string[]) => removed.push(ids),
-  } as unknown as HierarchicalTrackSelectorModel
-  return { model, selectionSet, added, removed }
-}
+const settle = () => new Promise(resolve => setTimeout(resolve, 0))
 
-describe('derived selection state (shown-tracks mode)', () => {
-  test('partial selection is indeterminate', () => {
-    const { allSelected, someSelected } = getRowSelectionState({
-      model: nonCartModel().model,
-      useShoppingCart: false,
-      shownTrackIds: new Set(['t1']),
-      selectionSet: new Set<string>(),
-      filteredRows: rows,
-    })
-    expect(allSelected).toBe(false)
-    expect(someSelected).toBe(true)
+describe('show-all state', () => {
+  test('some shown is indeterminate', () => {
+    const { model, shown } = fakeModel(['t1'])
+    const state = getShowAllState({ model, shownTrackIds: shown, rows })
+    expect(state.allShown).toBe(false)
+    expect(state.someShown).toBe(true)
   })
 
-  test('all rows selected', () => {
-    const { allSelected, someSelected } = getRowSelectionState({
-      model: nonCartModel().model,
-      useShoppingCart: false,
-      shownTrackIds: new Set(['t1', 't2', 't3']),
-      selectionSet: new Set<string>(),
-      filteredRows: rows,
-    })
-    expect(allSelected).toBe(true)
-    expect(someSelected).toBe(false)
+  test('every row shown', () => {
+    const { model, shown } = fakeModel(['t1', 't2', 't3'])
+    const state = getShowAllState({ model, shownTrackIds: shown, rows })
+    expect(state.allShown).toBe(true)
+    expect(state.someShown).toBe(false)
   })
 
-  test('nothing selected', () => {
-    const { allSelected, someSelected } = getRowSelectionState({
-      model: nonCartModel().model,
-      useShoppingCart: false,
-      shownTrackIds: new Set(),
-      selectionSet: new Set<string>(),
-      filteredRows: rows,
-    })
-    expect(allSelected).toBe(false)
-    expect(someSelected).toBe(false)
+  test('nothing shown', () => {
+    const { model, shown } = fakeModel()
+    const state = getShowAllState({ model, shownTrackIds: shown, rows })
+    expect(state.allShown).toBe(false)
+    expect(state.someShown).toBe(false)
+  })
+
+  test('a placeholder track never counts as hidden', () => {
+    const { model, shown } = fakeModel(['t1', 't2', 't3'])
+    expect(
+      getShowAllState({ model, shownTrackIds: shown, rows: withPlaceholders })
+        .allShown,
+    ).toBe(true)
   })
 })
 
-describe('derived selection state (shopping-cart mode)', () => {
-  test('the selection set, not the shown tracks, drives the state', () => {
-    const { model, selectionSet } = cartModel(['t2'])
-    const { allSelected, someSelected } = getRowSelectionState({
-      model,
-      useShoppingCart: true,
-      shownTrackIds: new Set(['t1', 't2', 't3']),
-      selectionSet,
-      filteredRows: rows,
-    })
-    expect(allSelected).toBe(false)
-    expect(someSelected).toBe(true)
-  })
-
-  test('select-all skips a placeholder track, which never counts as unselected', () => {
-    const withPlaceholders = [
-      ...rows,
-      { id: 'ucsc', name: 'bigInteract track (Unsupported)' },
-      { id: 'jb1', name: 'mystery (Unknown)' },
-    ]
-    const some = cartModel(['t1'])
-    getRowSelectionState({
-      model: some.model,
-      useShoppingCart: true,
-      shownTrackIds: new Set(),
-      selectionSet: some.selectionSet,
-      filteredRows: withPlaceholders,
-    }).toggleAll()
-    expect(some.added).toEqual([['t2', 't3']])
-
-    const all = cartModel(['t1', 't2', 't3'])
-    const state = getRowSelectionState({
-      model: all.model,
-      useShoppingCart: true,
-      shownTrackIds: new Set(),
-      selectionSet: all.selectionSet,
-      filteredRows: withPlaceholders,
-    })
-    expect(state.allSelected).toBe(true)
-    state.toggleAll()
-    expect(all.removed).toEqual([['t1', 't2', 't3']])
-  })
-})
-
-describe('toggle handlers (shown-tracks mode)', () => {
-  test('selecting a track shows it and records recent use', async () => {
-    const { model, shown, recent } = nonCartModel()
-    setTracksSelected(model, ['t2'], true, false)
-    // the show goes through the async launchTrack path now
-    await new Promise(resolve => setTimeout(resolve, 0))
+describe('toggles', () => {
+  test('showing a track records recent use', async () => {
+    const { model, shown, recent } = fakeModel()
+    setTracksShown(model, ['t2'], true)
+    await settle()
     expect(shown.has('t2')).toBe(true)
     expect(recent).toEqual(['t2'])
   })
 
-  test('deselecting a track hides it', () => {
-    const { model, shown } = nonCartModel()
-    shown.add('t2')
-    setTracksSelected(model, ['t2'], false, false)
+  test('hiding a track', () => {
+    const { model, shown } = fakeModel(['t2'])
+    setTracksShown(model, ['t2'], false)
     expect(shown.has('t2')).toBe(false)
   })
 
-  test('toggleAll shows the rows not yet selected', async () => {
-    const { model, shown } = nonCartModel()
-    getRowSelectionState({
+  test('toggleAll shows the rows not yet shown and skips placeholders', async () => {
+    const { model, shown } = fakeModel(['t1'])
+    getShowAllState({
       model,
-      useShoppingCart: false,
-      shownTrackIds: new Set(['t1']),
-      selectionSet: new Set<string>(),
-      filteredRows: rows,
+      shownTrackIds: new Set(shown),
+      rows: withPlaceholders,
     }).toggleAll()
-    await new Promise(resolve => setTimeout(resolve, 0))
-    expect([...shown].sort()).toEqual(['t2', 't3'])
-  })
-})
-
-describe('toggle handlers (shopping-cart mode)', () => {
-  test('selecting a track adds it to the selection', () => {
-    const { model, added } = cartModel([])
-    setTracksSelected(model, ['t1'], true, true)
-    expect(added).toEqual([['t1']])
+    await settle()
+    expect([...shown].sort()).toEqual(['t1', 't2', 't3'])
   })
 
-  test('deselecting a track removes it from the selection', () => {
-    const { model, removed } = cartModel(['t1'])
-    setTracksSelected(model, ['t1'], false, true)
-    expect(removed).toEqual([['t1']])
+  test('toggleAll hides every row once all are shown', () => {
+    const { model, shown } = fakeModel(['t1', 't2', 't3'])
+    getShowAllState({
+      model,
+      shownTrackIds: new Set(shown),
+      rows,
+    }).toggleAll()
+    expect(shown.size).toBe(0)
   })
 })

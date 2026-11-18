@@ -21,7 +21,18 @@ const NameCell = observer(function NameCell({
 }) {
   const { classes } = useTableStyles()
   return (
-    <div className={classes.nameCell}>
+    <div
+      className={classes.nameCell}
+      onClick={event => {
+        if (event.ctrlKey || event.metaKey) {
+          if (model.isSelected(row.id)) {
+            model.removeFromSelection([row.id])
+          } else {
+            model.addToSelection([row.id])
+          }
+        }
+      }}
+    >
       <TrackNameText name={row.name} />
       <OverrideBadge model={model} trackId={row.id} name={row.name} />
       <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
@@ -46,7 +57,7 @@ export function getTableColumns({
   return [
     {
       id: 'name',
-      header: 'name',
+      header: 'Name',
       fill: true,
       cell: row => <NameCell row={row} model={model} />,
       title: row =>

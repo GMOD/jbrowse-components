@@ -1,9 +1,11 @@
 import { DEFAULT_COL_WIDTH } from '@jbrowse/core/ui/VirtualTable'
 
+import { isUnsupported } from '../../HierarchicalTrackSelectorWidget/util.ts'
 import { columnsThatFit } from './fitColumnWidths.ts'
 import { CHECKBOX_WIDTH } from './tableStyles.ts'
 import { facetLabel } from './util.ts'
 
+import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { TrackTableModel } from '../trackTableModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -41,22 +43,30 @@ export function naturalTableWidth(table: TrackTableModel) {
 }
 
 /**
- * the table's own menu rows: add-to-selection mode and Manage columns
+ * the table's own menu rows: adding what a filter kept to the selection, and
+ * Manage columns
  */
 export function tableMenuItems(
+  model: HierarchicalTrackSelectorModel,
   table: TrackTableModel,
   shown: string[],
 ): MenuItem[] {
-  const { useShoppingCart, fields, nonMetadataFieldSet } = table
+  const { narrowed, sortedRows, fields, nonMetadataFieldSet } = table
   return [
-    {
-      label: 'Add tracks to selection instead of turning them on/off',
-      type: 'checkbox',
-      checked: useShoppingCart,
-      onClick: () => {
-        table.setUseShoppingCart(!useShoppingCart)
-      },
-    },
+    ...(narrowed
+      ? [
+          {
+            label: 'Add matching tracks to selection',
+            onClick: () => {
+              model.addToSelection(
+                sortedRows
+                  .filter(row => !isUnsupported(row.name))
+                  .map(row => row.id),
+              )
+            },
+          },
+        ]
+      : []),
     {
       label: 'Manage columns',
       type: 'subMenu',

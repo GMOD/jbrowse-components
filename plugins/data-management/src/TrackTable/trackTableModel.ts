@@ -158,10 +158,6 @@ export function trackTableModelFactory() {
       assemblyNames: [] as string[],
       /**
        * #volatile
-       */
-      useShoppingCart: false,
-      /**
-       * #volatile
        * the trackIds the tree's text search keeps while the drawer shows the
        * tree, which matches only what a tree row shows; the facet counts
        * follow it. Undefined while the table does the search
@@ -258,12 +254,6 @@ export function trackTableModelFactory() {
       setSort(field: string, ascending: boolean) {
         self.sortField = field
         self.sortAscending = ascending
-      },
-      /**
-       * #action
-       */
-      setUseShoppingCart(f: boolean) {
-        self.useShoppingCart = f
       },
       /**
        * #action

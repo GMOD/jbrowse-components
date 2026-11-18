@@ -216,7 +216,15 @@ shows how many tracks are kept, of how many, such as "6 of 800".
 Under the filter box, a chip for each of the first few fields that group tracks
 (and "More filters" for the rest) lists that field's values with their track
 counts. Checking values keeps only the tracks with one of them, in the tree and
-the table alike. An active chip names what it keeps, and its × clears it.
+the table alike. An active chip names what it keeps, and its × clears it. The
+tree's category headings already sort tracks by category, so its category chip
+shows only in the table.
+
+While a search or chip narrows the table, the checkbox in its header turns on
+every track that matched, or turns them all off again. To gather tracks into a
+selection instead, for example to combine them into a multi-row track,
+`Ctrl`/`Cmd`+click their names, or choose "Add matching tracks to selection"
+from the ☰ menu.
 
 ## Favorite and recently used tracks
 

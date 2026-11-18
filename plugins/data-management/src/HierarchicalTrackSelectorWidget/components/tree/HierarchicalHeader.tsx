@@ -24,7 +24,8 @@ const useStyles = makeStyles()(theme => ({
 
 /**
  * The ☰ menu, cart, filter box and filter chips the tree and the table share.
- * The table adds its rows to the ☰ menu, which depend on the columns that fit
+ * The table adds its rows to the ☰ menu, which depend on the columns that fit.
+ * The tree's own headings are its category filter, so it has no category chip
  */
 const HierarchicalTrackSelectorHeader = observer(
   function HierarchicalTrackSelectorHeader({
@@ -51,7 +52,11 @@ const HierarchicalTrackSelectorHeader = observer(
             inputRef={filterBoxRef}
           />
         </div>
-        <FacetChips table={trackTable} filterBoxRef={filterBoxRef} />
+        <FacetChips
+          table={trackTable}
+          filterBoxRef={filterBoxRef}
+          omit={tableMenuItems ? [] : ['category']}
+        />
       </>
     )
   },

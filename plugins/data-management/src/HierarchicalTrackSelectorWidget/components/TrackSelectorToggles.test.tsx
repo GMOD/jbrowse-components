@@ -85,7 +85,7 @@ test('the toggle swaps the tree for a table seeded with its query, with select-a
   const search = await findByLabelText('Filter tracks')
   expect((search as HTMLInputElement).value).toBe(' chrom ')
   expect(table.getAttribute('aria-pressed')).toBe('true')
-  expect(queryByLabelText('Select all tracks')).toBeNull()
+  expect(queryByLabelText('Show all matching tracks')).toBeTruthy()
 
   fireEvent.change(search, { target: { value: 'genes' } })
   fireEvent.click(tree)

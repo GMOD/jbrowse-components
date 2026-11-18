@@ -145,17 +145,29 @@ test('clicking a row checkbox shows then hides the track on the view', async () 
   })
 })
 
-test('select-all adds every filtered track to the selection, and only in add-to-selection mode', () => {
+test('show-all appears only while a filter narrows the list, and shows what it kept', async () => {
   const { view, model, table } = setup()
   const { queryByLabelText, getByLabelText } = renderGrid(model, table)
-  expect(queryByLabelText('Select all tracks')).toBeNull()
+  expect(queryByLabelText('Show all matching tracks')).toBeNull()
 
   act(() => {
-    table.setUseShoppingCart(true)
+    table.setFilterText('fooC')
   })
-  fireEvent.click(getByLabelText('Select all tracks'))
-  expect(model.selection.length).toBe(table.filteredRows.length)
+  fireEvent.click(getByLabelText('Show all matching tracks'))
+  await waitFor(() => {
+    expect(view.tracks.map(t => t.configuration.trackId)).toEqual(['fooC'])
+  })
+  expect(model.selection.length).toBe(0)
+})
+
+test('ctrl-click on a name adds the track to the selection without showing it', () => {
+  const { view, model, table } = setup()
+  const { getByText } = renderGrid(model, table)
+  fireEvent.click(getByText('fooC'), { ctrlKey: true })
+  expect(model.selection.map(c => c.trackId)).toEqual(['fooC'])
   expect(view.tracks.length).toBe(0)
+  fireEvent.click(getByText('fooC'), { metaKey: true })
+  expect(model.selection.length).toBe(0)
 })
 
 test('shows an empty message when nothing matches the filter', () => {
@@ -171,8 +183,8 @@ test('shows an empty message when nothing matches the filter', () => {
 test('a header names its column in full on hover, and a click cycles ascending, descending, unsorted', () => {
   const { model, table } = setup()
   const { getByRole } = renderGrid(model, table)
-  const header = () => getByRole('columnheader', { name: 'name' })
-  expect(header().getAttribute('title')).toBe('name')
+  const header = () => getByRole('columnheader', { name: 'Name' })
+  expect(header().getAttribute('title')).toBe('Name')
   expect(header().getAttribute('aria-sort')).toBeNull()
 
   const click = () => {
@@ -192,15 +204,15 @@ test('a column the user hid is not rendered, and one they showed is', () => {
   table.setColumnVisible('kind', false)
   table.setColumnVisible('adapter', true)
   const { queryByRole } = renderGrid(model, table)
-  expect(queryByRole('columnheader', { name: 'kind' })).toBeNull()
-  expect(queryByRole('columnheader', { name: 'adapter' })).toBeTruthy()
+  expect(queryByRole('columnheader', { name: 'Kind' })).toBeNull()
+  expect(queryByRole('columnheader', { name: 'Adapter' })).toBeTruthy()
 })
 
-test('the name column keeps half the measured width before the others share', () => {
+test('the name column keeps two thirds of the measured width before the others share', () => {
   const { session, model, table } = setup()
   session.addSessionTrackConf({
     trackId: 'long',
-    name: 'A track name long enough to want far more than half of the grid',
+    name: 'A track name long enough to want far more than two thirds of the grid, and then some',
     description: 'A description long enough to want the whole grid to itself',
     assemblyNames: ['volMyt1'],
     type: 'FeatureTrack',
@@ -221,7 +233,7 @@ test('the name column keeps half the measured width before the others share', ()
   clientWidth.mockRestore()
   expect(
     tableMinWidth - checkbox - rest.reduce((a, b) => a + b, 0),
-  ).toBeGreaterThanOrEqual((448 - checkbox) / 2)
+  ).toBeGreaterThan((448 - checkbox) * 0.6)
 })
 
 test('the name column takes the room the other columns leave', () => {
@@ -276,8 +288,8 @@ test('a change while the grid is already at the top scrolls nothing', () => {
   expect(scrollTo).not.toHaveBeenCalled()
 })
 
-test('a placeholder track cannot be turned on, and select-all leaves it out', () => {
-  const { session, view, model, table } = setup()
+test('a placeholder track cannot be turned on, and show-all leaves it out', async () => {
+  const { session, model, table } = setup()
   session.addSessionTrackConf({
     trackId: 'placeholder',
     name: '<i>legacy</i> track (Unsupported)',
@@ -286,25 +298,24 @@ test('a placeholder track cannot be turned on, and select-all leaves it out', ()
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
   const { getByLabelText } = renderGrid(model, table)
-  const placeholder = getByLabelText('Select legacy track (Unsupported)')
+  const placeholder = getByLabelText('Show legacy track (Unsupported)')
   expect(placeholder).toBeDisabled()
-  expect(getByLabelText('Select fooC')).toBeEnabled()
-  fireEvent.click(placeholder)
-  expect(view.tracks.length).toBe(0)
+  expect(getByLabelText('Show fooC')).toBeEnabled()
 
   act(() => {
-    table.setUseShoppingCart(true)
+    table.setFilterText('C')
   })
-  fireEvent.click(getByLabelText('Select all tracks'))
-  expect(model.selectionSet.has('fooC')).toBe(true)
-  expect(model.selectionSet.has('placeholder')).toBe(false)
-  expect(getByLabelText('Select all tracks')).toBeChecked()
+  fireEvent.click(getByLabelText('Show all matching tracks'))
+  await waitFor(() => {
+    expect(getByLabelText('Show all matching tracks')).toBeChecked()
+  })
+  expect(model.shownTrackIds.has('placeholder')).toBe(false)
 })
 
 test('a scroll re-renders no row checkbox, and a toggle re-renders its own', async () => {
   const { model, table } = setup()
   const { container, getByLabelText } = renderGrid(model, table)
-  const labels = ['Select fooC', 'Select barC']
+  const labels = ['Show fooC', 'Show barC']
   const mounted = labels.map(checkboxRenders)
   expect(mounted.every(n => n > 0)).toBe(true)
 
@@ -315,9 +326,9 @@ test('a scroll re-renders no row checkbox, and a toggle re-renders its own', asy
   }
   expect(labels.map(checkboxRenders)).toEqual(mounted)
 
-  fireEvent.click(getByLabelText('Select fooC'))
+  fireEvent.click(getByLabelText('Show fooC'))
   await waitFor(() => {
-    expect(getByLabelText('Select fooC')).toBeChecked()
+    expect(getByLabelText('Show fooC')).toBeChecked()
   })
-  expect(checkboxRenders('Select fooC')).toBeGreaterThan(mounted[0]!)
+  expect(checkboxRenders('Show fooC')).toBeGreaterThan(mounted[0]!)
 })

@@ -60,7 +60,8 @@ function selectionText(label: string, selected: string[]) {
 
 /**
  * The facet filters as a row of chips: one for each leading facet and each
- * facet still filtering, and "More filters" for the rest. A chip opens its
+ * facet still filtering, and "More filters" for the rest. An `omit` field gets
+ * a chip only while it filters, so a filter is never hidden. A chip opens its
  * facet's values; an active chip names its selection and clears with its ×.
  * A cleared chip that goes away hands focus to "More filters", or to the
  * filter box when that goes too.
@@ -68,18 +69,21 @@ function selectionText(label: string, selected: string[]) {
 const FacetChips = observer(function FacetChips({
   table,
   filterBoxRef,
+  omit = [],
 }: {
   table: TrackTableModel
   filterBoxRef: RefObject<HTMLInputElement | null>
+  omit?: string[]
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState<{ el: HTMLElement; field?: string }>()
   const moreRef = useRef<HTMLDivElement>(null)
-  const { filterFacets, chipFacets, moreFacets, filters, nonMetadataFieldSet } =
-    table
-  const chips = filterFacets.filter(
-    f => chipFacets.includes(f) || f === open?.field,
-  )
+  const { filters, nonMetadataFieldSet } = table
+  const kept = (field: string) => !omit.includes(field) || filters.has(field)
+  const filterFacets = table.filterFacets.filter(kept)
+  const chipFacets = new Set(table.chipFacets.filter(kept))
+  const moreFacets = table.moreFacets.filter(kept)
+  const chips = filterFacets.filter(f => chipFacets.has(f) || f === open?.field)
   const listed = open ? (open.field ? [open.field] : moreFacets) : []
   return chips.length || moreFacets.length ? (
     <div className={classes.row}>
@@ -112,7 +116,7 @@ const FacetChips = observer(function FacetChips({
                 ? () => {
                     table.setFilter(field, [])
                     if (!table.leadingFacets.has(field)) {
-                      if (table.moreFacets.length) {
+                      if (table.moreFacets.some(kept)) {
                         moreRef.current?.focus()
                       } else {
                         filterBoxRef.current?.focus()

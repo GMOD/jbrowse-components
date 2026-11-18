@@ -130,7 +130,7 @@ function buildRows(
 ) {
   const rows: TreeRow[] = []
   let top = 0
-  function walk(items: TreeNode[]) {
+  function walk(items: TreeNode[], depth: number) {
     for (const { item, mode } of sortedTreeChildren(
       items,
       modes,
@@ -138,14 +138,14 @@ function buildRows(
     )) {
       const accordion = item.type === 'category' && mode !== 'folder'
       const height = accordion ? categoryItemHeight : defaultItemHeight
-      rows.push({ item, mode, accordion, height, top })
+      rows.push({ item, mode, accordion, height, top, depth })
       top += height
       if (mode === 'expanded' && item.children.length > 0) {
-        walk(item.children)
+        walk(item.children, depth + 1)
       }
     }
   }
-  walk(children)
+  walk(children, 0)
   return rows
 }
 
@@ -735,6 +735,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * whether the All list draws a row for each group: only once a
+       * connection adds a group beside the config's own tracks
+       */
+      get groupRowsDrawn() {
+        return self.allTracks.length > 1
+      },
+      /**
+       * #getter
        * a group is kept even when no track in it survives the filter, so an
        * empty connection still shows in the tree
        */
@@ -788,8 +796,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * every rendered row, in order, with its height and scroll offset
        */
       get rows() {
+        const { children } = self.hierarchy
         return buildRows(
-          self.hierarchy.children,
+          self.trackList === 'all' && !self.groupRowsDrawn
+            ? children[0]!.children
+            : children,
           self.categoryMode,
           self.filterActive,
         )

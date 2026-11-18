@@ -45,6 +45,8 @@ export interface TreeRow {
   accordion: boolean
   height: number
   top: number
+  /** how many drawn rows this one sits under, which sets its indent */
+  depth: number
 }
 
 // a top-level group of the tree: the config's own tracks, or one connection's

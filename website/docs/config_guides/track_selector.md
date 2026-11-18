@@ -40,21 +40,22 @@ Tracks appear in config.json order unless the `hierarchical` settings change it.
 
 The tree's order comes from `sort` alone; to sort tracks by any field, switch to
 the table and click a column header. Users collapse or expand everything with
-"Collapse all categories" / "Expand all categories" on the menu of the Tracks
-row, or of a connection's row.
+"Collapse all categories" / "Expand all categories" in the ☰ menu at the left
+of the filter box. Once a connection adds a group of its own, each group gets a
+row, and these two items move to that row's menu.
 
-<Figure caption="Every category collapsed from the Tracks row's menu." src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
+<Figure caption="Every category collapsed from the ☰ menu." src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
 
-<Figure caption="Collapse all categories and Expand all categories on the Tracks row's menu." src="/img/hierarchical/hierarchical_user_menu-fs8.png"/>
+<Figure caption="Collapse all categories and Expand all categories in the ☰ menu." src="/img/hierarchical/hierarchical_user_menu-fs8.png"/>
 
 ## Folder categories (supertracks)
 
 A folder category replaces the whole category with one row showing how many of
 its tracks are on; clicking it opens a table of that category's tracks. Users
 switch any category between folder and list from its context menu ("Show as
-folder" / "Show as list"). Top-level group rows (the config's own tracks, and
-each connection) cannot become folders, since clicking a connection's row loads
-it. Plugins replace the folder dialog through
+folder" / "Show as list"). Group rows (the config's own tracks and each
+connection, drawn once a connection is added) cannot become folders, since
+clicking a connection's row loads it. Plugins replace the folder dialog through
 [`TrackSelector-folderDialog`](/docs/developer_guides/extension_points#trackselector-folderdialog).
 
 ## Track table

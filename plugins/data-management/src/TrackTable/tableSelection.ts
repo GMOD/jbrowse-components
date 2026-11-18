@@ -5,23 +5,15 @@ import { isUnsupported } from '../HierarchicalTrackSelectorWidget/util.ts'
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 
 /**
- * Select or deselect a set of tracks by id. In shopping-cart mode this mutates
- * the track-selector selection set; otherwise it shows/hides tracks on the
- * view. Single source of truth for both the per-row and select-all checkboxes.
+ * Shows or hides a set of tracks by id, for the per-row and show-all
+ * checkboxes alike.
  */
-export function setTracksSelected(
+export function setTracksShown(
   model: HierarchicalTrackSelectorModel,
   ids: string[],
-  selected: boolean,
-  useShoppingCart: boolean,
+  shown: boolean,
 ) {
-  if (useShoppingCart) {
-    if (selected) {
-      model.addToSelection(ids)
-    } else {
-      model.removeFromSelection(ids)
-    }
-  } else if (selected) {
+  if (shown) {
     // A display's state model may still be a dynamic import away, so the shows
     // cannot sit inside a transaction — they are awaited one at a time, which
     // also keeps the tracks in the order the caller listed them. Only the
@@ -47,41 +39,33 @@ export function setTracksSelected(
 }
 
 /**
- * Derives the select-all checkbox's state and toggle. In shopping-cart mode
- * "selected" means present in the selection set; otherwise it means the track
- * is shown on the view. A placeholder track that cannot be shown is never
- * selected.
+ * The show-all checkbox's state and toggle over the rows a filter kept. A
+ * placeholder track that cannot be shown is never counted.
  */
-export function getRowSelectionState({
+export function getShowAllState({
   model,
-  useShoppingCart,
   shownTrackIds,
-  selectionSet,
-  filteredRows,
+  rows,
 }: {
   model: HierarchicalTrackSelectorModel
-  useShoppingCart: boolean
   shownTrackIds: Set<string>
-  selectionSet: Set<string>
-  filteredRows: { id: string; name: string }[]
+  rows: { id: string; name: string }[]
 }) {
-  const selectedIds = useShoppingCart ? selectionSet : shownTrackIds
-  const rows = filteredRows.filter(row => !isUnsupported(row.name))
-  const allSelected =
-    rows.length > 0 && rows.every(row => selectedIds.has(row.id))
-  const someSelected = !allSelected && rows.some(row => selectedIds.has(row.id))
+  const showable = rows.filter(row => !isUnsupported(row.name))
+  const allShown =
+    showable.length > 0 && showable.every(row => shownTrackIds.has(row.id))
+  const someShown = !allShown && showable.some(row => shownTrackIds.has(row.id))
 
   return {
-    allSelected,
-    someSelected,
+    allShown,
+    someShown,
     toggleAll: () => {
-      setTracksSelected(
+      setTracksShown(
         model,
-        rows
-          .filter(row => allSelected || !selectedIds.has(row.id))
+        showable
+          .filter(row => allShown || !shownTrackIds.has(row.id))
           .map(row => row.id),
-        !allSelected,
-        useShoppingCart,
+        !allShown,
       )
     },
   }

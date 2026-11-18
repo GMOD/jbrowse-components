@@ -5,7 +5,6 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { setTracksSelected } from '../../TrackTable/tableSelection.ts'
 import ShoppingCart from './ShoppingCart.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
@@ -48,7 +47,7 @@ function openCart() {
     ],
   })
   const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
-  setTracksSelected(model, ['fooC', 'barC'], true, true)
+  model.addToSelection(['fooC', 'barC'])
   return { model, pluginManager: getEnv(model).pluginManager }
 }
 

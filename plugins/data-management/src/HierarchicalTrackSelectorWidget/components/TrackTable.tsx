@@ -35,7 +35,7 @@ const TrackTable = observer(function TrackTable({
     <>
       <HierarchicalHeader
         model={model}
-        tableMenuItems={() => tableMenuItems(table, shown)}
+        tableMenuItems={() => tableMenuItems(model, table, shown)}
       />
       <div ref={ref} className={classes.body}>
         {width ? (

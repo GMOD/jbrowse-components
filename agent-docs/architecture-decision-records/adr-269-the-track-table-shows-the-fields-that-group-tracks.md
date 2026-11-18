@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The drawer's track table shows, beside the name, as many columns as fit: `hierarchical.table.columns` first, then the fields that group tracks, then kind and category if they vary. Manage columns wins. Names shrink from the middle; the filter box needs every word"
+summary: "The drawer's track table shows, beside the name, as many columns as fit, the name keeping up to two thirds: `hierarchical.table.columns` first, then the fields that group tracks, then kind and category if they vary. Manage columns wins. Names shrink from the middle; the filter box needs every word"
 ---
 
 # ADR-269: The track table shows the fields that group tracks
@@ -10,7 +10,8 @@ summary: "The drawer's track table shows, beside the name, as many columns as fi
 Accepted (2026-11-16); ADR-271 turns its facet panel into filter chips that the
 tree shares; amended 2026-11-17 by ADR-271, which moves Manage columns to the
 track selector's ☰ menu in the drawer and a columns button in the folder
-dialog. Built over five commits
+dialog; amended 2026-11-18, when the name's share went from half the table
+to two thirds (The width decides how many show). Built over five commits
 after a code review, a product review and a scale review at 5,000 and 20,000
 tracks, judged on the jb2hubs human configs (hg38 799 tracks, hs1 627, hg19
 528). Colin asked that the narrow drawer show "a subset of the total metadata
@@ -53,10 +54,11 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   one exception, and gets no column. They get no filter chip. (2026-11-17,
   after a review over the repo's test configs and the hosted hubs, where the
   hubs were unchanged and 61 of 97 name-only lists gained a column.)
-- **The width decides how many show.** The name keeps up to half the table,
-  every other column at least 100 px, and the table shows as many default
-  columns as fit beside the name, with no sideways scroll. On hg38 that is
-  name, kind, category. The name takes whatever room the others leave, and
+- **The width decides how many show.** The name keeps up to two thirds of the
+  table, every other column at least 100 px, and the table shows as many
+  default columns as fit beside the name, with no sideways scroll. On hg38 in
+  the usual drawer that is name and kind, and a wider drawer adds category.
+  Column labels start with a capital, as a hub's metadata keys mostly do. The name takes whatever room the others leave, and
   opening the table widens the drawer only to the table's natural width, up to
   45% of the room.
 - **`configuration.hierarchical.table.columns` ranks columns first** for a
@@ -115,6 +117,7 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
 | --- | --- |
 | uFuzzy or another typo-tolerant search | Hub names differ by one character on purpose (H3K27ac/H3K27me3, mm10/mm39, sample ids); a fuzzy match brings in the neighbours and the filter stops being predictable. Every-word matching covers what fuzzy search is mostly wanted for |
 | A hint or popover for the query syntax | The common path needs no syntax; a placeholder vanishes when typing starts, and a hint line is sub-label clutter |
+| The name keeping half the table (2026-11-16 to 11-18) | On hg38 it cut 13 of the first 23 names twice, in the middle and at the end ("Basewise Co… - 30-way vertebrate alignme…"), to make room for a category column whose values were also cut |
 | Description as a default column | It is per-track prose that duplicates the name on UCSC hubs (`longLabel`), and it took the width the name needs |
 | A pinned (sticky) name column | The default no longer scrolls sideways; only a user's own shown columns can |
 | The "Show sparse metadata columns" toggle | The grouping rule replaces the 5-track threshold, and Manage columns lists every field |

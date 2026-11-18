@@ -1,4 +1,4 @@
-import { coarseStripHTML } from '@jbrowse/core/util'
+import { capitalizeFirst, coarseStripHTML } from '@jbrowse/core/util'
 
 export interface RowFields {
   metadata?: Record<string, unknown>
@@ -36,13 +36,15 @@ export function getRowStr(facet: string, row: RowFields) {
 }
 
 // Display label for a facet, shared by the grid column headers, the filter
-// chips and the Manage-columns menu. Strips the metadata prefix,
+// chips and the Manage-columns menu. Strips the metadata prefix and
+// capitalizes the first letter, so built-in fields read like a hub's keys,
 // disambiguating a metadata key that collides with a non-metadata column as
 // "x (from metadata)". Markup is stripped rather than rendered: every consumer
 // is a text-only context (a menu item label, a truncating header cell).
 export function facetLabel(facet: string, nonMetadataFieldSet: Set<string>) {
-  const bare = coarseStripHTML(bareFacet(facet))
-  return isMetadataFacet(facet) && nonMetadataFieldSet.has(bare)
+  const bare = capitalizeFirst(coarseStripHTML(bareFacet(facet)))
+  return isMetadataFacet(facet) &&
+    nonMetadataFieldSet.has(coarseStripHTML(bareFacet(facet)))
     ? `${bare} (from metadata)`
     : bare
 }

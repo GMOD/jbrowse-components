@@ -1366,7 +1366,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     readySelector: TRACK_SELECTOR,
     actions: [
-      { type: 'click', selector: '[data-testid="htsCategoryMenu-Tracks"]' },
+      { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
       ...menuCascade(['Collapse all categories']),
     ],
     annotations: [
@@ -1597,7 +1597,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     readySelector: TRACK_SELECTOR,
     actions: [
-      { type: 'click', selector: '[data-testid="htsCategoryMenu-Tracks"]' },
+      { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
       ...menuCascade(['Collapse all categories']),
       { type: 'click', text: 'Collapse all categories' },
     ],

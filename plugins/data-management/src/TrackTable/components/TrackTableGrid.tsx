@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
 import { isUnsupported } from '../../HierarchicalTrackSelectorWidget/util.ts'
-import { getRowSelectionState, setTracksSelected } from '../tableSelection.ts'
+import { getShowAllState, setTracksShown } from '../tableSelection.ts'
 import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
 import { CHECKBOX_WIDTH, checkboxSx, useTableStyles } from './tableStyles.ts'
 
@@ -31,7 +31,7 @@ const TrackTableGrid = observer(function TrackTableGrid({
 }) {
   const { classes } = useTableStyles()
   const {
-    useShoppingCart,
+    narrowed,
     sortedRows,
     activeSortField: sortField,
     sortAscending,
@@ -40,27 +40,21 @@ const TrackTableGrid = observer(function TrackTableGrid({
     initialWidths,
   } = table
 
-  const { allSelected, someSelected, toggleAll } = getRowSelectionState({
+  const { allShown, someShown, toggleAll } = getShowAllState({
     model,
-    useShoppingCart,
     shownTrackIds: model.shownTrackIds,
-    selectionSet: model.selectionSet,
-    filteredRows: sortedRows,
+    rows: sortedRows,
   })
-  const isSelected = (row: TrackRow) =>
-    (table.useShoppingCart ? model.selectionSet : model.shownTrackIds).has(
-      row.id,
-    )
   const checkboxCell = (row: TrackRow) => {
-    const selected = isSelected(row)
+    const shown = model.shownTrackIds.has(row.id)
     return (
       <CheckboxLite
         className={classes.rowCheckbox}
-        checked={selected}
+        checked={shown}
         disabled={isUnsupported(row.name)}
-        label={`Select ${coarseStripHTML(row.name)}`}
+        label={`Show ${coarseStripHTML(row.name)}`}
         onChange={() => {
-          setTracksSelected(model, [row.id], !selected, table.useShoppingCart)
+          setTracksShown(model, [row.id], !shown)
         }}
       />
     )
@@ -97,21 +91,21 @@ const TrackTableGrid = observer(function TrackTableGrid({
       }}
       leading={{
         width: CHECKBOX_WIDTH,
-        header: useShoppingCart ? (
+        header: narrowed ? (
           <Checkbox
             size="small"
-            checked={allSelected}
-            indeterminate={someSelected}
+            checked={allShown}
+            indeterminate={someShown}
             onChange={() => {
               toggleAll()
             }}
-            slotProps={{ input: { 'aria-label': 'Select all tracks' } }}
+            slotProps={{ input: { 'aria-label': 'Show all matching tracks' } }}
             sx={checkboxSx}
           />
         ) : null,
         cell: checkboxCell,
       }}
-      isRowSelected={isSelected}
+      isRowSelected={row => model.selectionSet.has(row.id)}
       emptyMessage={
         table.allRows.length
           ? 'No tracks match the current search and filters'

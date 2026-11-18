@@ -8,7 +8,7 @@ import { autorun } from 'mobx'
 
 import conf from '../../../../../test_data/test_order/config.json' with { type: 'json' }
 import { getRowStr } from '../../TrackTable/components/util.ts'
-import { setTracksSelected } from '../../TrackTable/tableSelection.ts'
+import { setTracksShown } from '../../TrackTable/tableSelection.ts'
 import { getRootKeys } from '../../TrackTable/tableUtil.ts'
 import { trackTableModelFactory } from '../../TrackTable/trackTableModel.ts'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
@@ -342,7 +342,7 @@ test('a stored sort choice does not override the config', async () => {
   const categories = (await findAllByTestId(/htsCategory-/)).map(
     e => e.textContent,
   )
-  expect(categories).toEqual(['Tracks', ...categories.slice(1).sort()])
+  expect(categories).toEqual(categories.toSorted())
 })
 
 test('ctrl+click toggles track selection', async () => {
@@ -918,33 +918,6 @@ test('table model column filters', () => {
   expect(table.filteredRows.length).toBe(initialRowCount)
 })
 
-test('table model toggle options', () => {
-  const session = addTestData(createTestSession())
-  const firstView = session.addView('LinearGenomeView', {
-    displayedRegions: [
-      {
-        assemblyName: 'volMyt1',
-        refName: 'ctgA',
-        start: 0,
-        end: 1000,
-      },
-    ],
-  })
-  const model =
-    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-  const table = trackTableModelFactory().create({})
-  table.setTrackSource(
-    () => model.allTrackConfigurations,
-    getSession(model),
-    model.assemblyNames,
-  )
-
-  // test useShoppingCart toggle
-  expect(table.useShoppingCart).toBe(false)
-  table.setUseShoppingCart(true)
-  expect(table.useShoppingCart).toBe(true)
-})
-
 // the table model is created per-dialog and destroyed on close; verify
 // destroy tears it down without cascading into the shared session track configs
 test('table model destroy is safe', () => {
@@ -977,7 +950,7 @@ test('table model destroy is safe', () => {
   expect(model.allTrackConfigurations.length).toBeGreaterThan(0)
 })
 
-test('setTracksSelected toggles tracks on the view', async () => {
+test('setTracksShown toggles tracks on the view', async () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -987,41 +960,15 @@ test('setTracksSelected toggles tracks on the view', async () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
-  setTracksSelected(model, ['fooC', 'barC'], true, false)
+  setTracksShown(model, ['fooC', 'barC'], true)
   await waitFor(() => {
     expect([...model.shownTrackIds].toSorted()).toEqual(['barC', 'fooC'])
   })
 
-  setTracksSelected(model, ['fooC'], false, false)
+  setTracksShown(model, ['fooC'], false)
   await waitFor(() => {
     expect([...model.shownTrackIds]).toEqual(['barC'])
   })
-})
-
-test('setTracksSelected updates the selection in shopping-cart mode', () => {
-  const session = addTestData(createTestSession())
-  const firstView = session.addView('LinearGenomeView', {
-    displayedRegions: [
-      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
-    ],
-  })
-  const model =
-    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
-
-  setTracksSelected(model, ['fooC', 'barC'], true, true)
-  expect(model.selection.map(s => s.trackId).toSorted()).toEqual([
-    'barC',
-    'fooC',
-  ])
-  // re-adding already-selected ids doesn't duplicate
-  setTracksSelected(model, ['fooC'], true, true)
-  expect(model.selection.length).toBe(2)
-
-  setTracksSelected(model, ['fooC'], false, true)
-  expect(model.selection.map(s => s.trackId)).toEqual(['barC'])
-
-  // view is untouched in shopping-cart mode
-  expect(model.shownTrackIds.size).toBe(0)
 })
 
 test('table model rows contain expected data', () => {
@@ -1942,9 +1889,20 @@ test('a filter leaves a dormant connection shut', () => {
 // the group holding the config's own tracks is collapsible like any other, so
 // exempting every top-level row from the filter's forced-open left a search
 // over a collapsed "Tracks" group rendering nothing at all
+const withConnection = {
+  connections: [
+    {
+      connectionId: 'conn1',
+      type: 'JBrowse1Connection',
+      name: 'Conn',
+      assemblyNames: ['volMyt1'],
+    },
+  ],
+}
+
 test('filtering reaches tracks inside a collapsed top-level group', () => {
   const session = addTestDataWithDeepCategories(
-    createTestSession({ adminMode: true }),
+    createTestSession({ adminMode: true, jbrowseConfig: withConnection }),
   )
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -1968,19 +1926,7 @@ test('filtering reaches tracks inside a collapsed top-level group', () => {
 // delete it
 test('a group row collapses all, and a connection row deletes its connection', async () => {
   const session = addTestDataWithDeepCategories(
-    createTestSession({
-      adminMode: true,
-      jbrowseConfig: {
-        connections: [
-          {
-            connectionId: 'conn1',
-            type: 'JBrowse1Connection',
-            name: 'Conn',
-            assemblyNames: ['volMyt1'],
-          },
-        ],
-      },
-    }),
+    createTestSession({ adminMode: true, jbrowseConfig: withConnection }),
   )
   const view = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -2005,6 +1951,32 @@ test('a group row collapses all, and a connection row deletes its connection', a
   expect(session.DialogProps).toMatchObject({
     deleteDialogDetails: { name: 'Conn' },
   })
+})
+
+// with no connection the config's own tracks are the only group, so the tree
+// draws no row for it and its collapse pair moves to the ☰ menu
+test('a lone group gets no row, and the ☰ menu collapses its categories', async () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+  expect(model.rows.some(r => r.item.id === 'Tracks')).toBe(false)
+  expect(model.rows[0]!.depth).toBe(0)
+
+  const { findByTestId, findByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+  fireEvent.click(await findByTestId('track-selector-hamburger'))
+  fireEvent.click(await findByText('Collapse all categories'))
+  expect(model.categoryMode.get('Tracks-Epigenomics')).toBe('collapsed')
+  expect(trackNames(model)).toEqual(['Reference sequence (volMyt1)'])
 })
 
 // the names of the track rows the tree is currently drawing
