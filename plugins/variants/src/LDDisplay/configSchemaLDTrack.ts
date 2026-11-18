@@ -148,6 +148,8 @@ export default function ldTrackDisplayConfigSchema() {
         type: 'stringEnum',
         model: types.enumeration('VariantLayout', ['genomic', 'columns']),
         defaultValue: 'columns',
+        description:
+          "'columns' draws every SNP one equal-width column; 'genomic' sizes the cells by the genomic distance between SNPs",
         advanced: true,
       },
     },

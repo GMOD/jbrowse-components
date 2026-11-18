@@ -132,3 +132,11 @@ for that per-lane lookup:
 - **A templated `adapter.uri`.** `adapter` is a template that reads the lane's
   sequence, and a file path spells the host's name for a genome, not the
   lane's.
+
+Declined for the slot's name (2026-11-17):
+
+- **`laneLayers` as `layers`.** An entry stacks in its own `height` px of each
+  lane, and its `marks` are what superimpose, which is Vega-Lite's `layer`, so
+  the bare word names the level below. A cold read wanted `bands` for that
+  reason. Any respell goes with stage 2's fold of `laneGeneTracks`, which owes
+  a lift for jb2hubs' hosted star tracks either way.

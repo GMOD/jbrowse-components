@@ -41,8 +41,8 @@ has it. One row per variant.
   `encoding` they already compare, and outside one they either do not differ
   or name another thing (`rows.axis` beside the multi-way `axis`, a row
   annotation's `legend` beside the display's).
-- Why is the path's entry in `scripts/configSpellingRulings.ts`, on its first
-  row.
+- The Why column is the `why` of the path's entry in
+  `scripts/configSpellingRulings.ts`, printed on the path's first row.
 - `pnpm autogen` refuses to write the table, and
   `scripts/configSpellingRulings.test.ts` fails, on a differing path with no
   entry, on a path that gains or loses a variant, and on an entry whose path

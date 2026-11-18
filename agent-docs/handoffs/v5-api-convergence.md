@@ -157,8 +157,8 @@ displays or a display's parts, with the ruling on each.
 - CONFIG_SPELLINGS.md's "Open differences" list is empty, each entry ruled
   as kept or respelled, and the first table's rows are re-read against their
   whys since the last read: `git diff <sha> --
-  agent-docs/reference/CONFIG_SPELLINGS.md` (read through 4e00334d6b,
-  2026-11-13; whoever re-reads moves the sha). The count pin passes a
+  agent-docs/reference/CONFIG_SPELLINGS.md` (read through a4e6dfeb4a,
+  2026-11-17; whoever re-reads moves the sha). The count pin passes a
   display that moves between two existing variants and a variant whose
   members change in place.
 - The meter shows no shared-path change, respell, addition or removal, past

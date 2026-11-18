@@ -19,7 +19,7 @@ export const RULINGS: Record<string, Ruling> = {
   },
   encoding: {
     variants: 4,
-    why: 'a display declares the channels it draws, and no channel adds a lane (ADR-238)',
+    why: "a display declares the channels it draws (ADR-238): `y` where it has a value axis, `opacity` on a chord, wiggle's `size` and `strokeWidth`",
   },
   'encoding.color': {
     variants: 4,
@@ -31,7 +31,7 @@ export const RULINGS: Record<string, Ruling> = {
   },
   'encoding.color.scale': {
     variants: 7,
-    why: "each color object declares the scale members its painter reads (colorConfigSchema.ts): a chord paints only discrete scales (chordColorConfigSchema.ts); Hi-C's and LD's ramp is built from `scheme` and `reverse` alone (hicColorConfigSchema.ts, ldColorConfigSchema.ts); wiggle's ramp spans the y domain (wiggleColorConfigSchema.ts); each MAF field has one scale (mafColorConfigSchema.ts); ribbons take the synteny views' scale, whose open end is a widening span with no values to rank, so no `domainQuantile` (syntenyColorConfigSchema.ts, ADR-179)",
+    why: "each color object declares the scale members its painter reads (colorConfigSchema.ts): a chord paints only discrete scales (chordColorConfigSchema.ts); Hi-C's ramp takes its colors from `scheme` and `reverse` alone, its open top following `domainQuantile` (hicColorConfigSchema.ts); LD's spans the statistic's fixed 0 to 1, so no `domainQuantile`, and a threshold adds `domain` cuts and `range` colors (ldColorConfigSchema.ts); wiggle's ramp spans the y domain (wiggleColorConfigSchema.ts); each MAF field has one scale (mafColorConfigSchema.ts); ribbons take the synteny views' scale, whose open end is a widening span with no values to rank, so no `domainQuantile` (syntenyColorConfigSchema.ts, ADR-179)",
   },
   'encoding.color.scale.type': {
     variants: 7,
@@ -49,7 +49,7 @@ export const RULINGS: Record<string, Ruling> = {
   'encoding.strokeWidth': { variants: 2, why: VALUE_ONLY_WIDTH },
   'encoding.strokeWidth.scale': {
     variants: 2,
-    why: 'read connections map one read to 44 on a fixed domain (readConnectionsStrokeWidthConfigSchema.ts, ADR-240)',
+    why: 'read connections map `reads` over a fixed domain, one read to 44, past which more reads add no width, so no `domainMin` or `domainMax` (readConnectionsStrokeWidthConfigSchema.ts, arcLineWidth.ts, ADR-240)',
   },
   'encoding.y': {
     variants: 4,
@@ -57,7 +57,7 @@ export const RULINGS: Record<string, Ruling> = {
   },
   facet: {
     variants: 3,
-    why: "`transform`, steps run per section, is the mark display's MarkFacet (markFacetConfigSchema.ts); the variant display's top-level facet is the sample facet (ADR-254, ADR-255), and a row display's facet reads no hidden band (sectionFacetConfigSchema.ts)",
+    why: "`transform`, steps run per section, is the mark display's MarkFacet (markFacetConfigSchema.ts); the variant display's top-level facet is the sample facet, which bands its rows with no chip to hide one, so no `hidden` (facetConfigSchema.ts, ADR-254, ADR-255)",
   },
   heightMode: {
     variants: 2,
@@ -93,11 +93,11 @@ export const RULINGS: Record<string, Ruling> = {
   },
   placement: {
     variants: 4,
-    why: "one word, two meanings: a band draws `up` over coverage or `down` below it, with `auto` on sashimi alone among the bands (ADR-231); a label sits `above`, `below` or as an `overlay`, or `auto` on a feature's parts, the part labels and the multi-way lane names each listing their own (ADR-238)",
+    why: "one word, two meanings: a band draws `up` over coverage or `down` below it, with `auto` on sashimi alone among the bands, and on read connections the word is also the way the arcs bow, `up` arcs rising in a strip of their own while coverage is hidden, so the labels' `overlay` would be false there (ADR-231); a label sits `above`, `below` or as an `overlay`, or `auto` on a feature's parts, the part labels and the multi-way lane names each listing their own (ADR-238)",
   },
   rows: {
     variants: 5,
-    why: "`step` where rows scroll, `groups` on the mark family, `filter` and `field` where rows carry attributes, so not MAF or the lanes (ADR-257); `annotations` on `Rows` (ADR-260); multi-way's rows are its lanes, which keep `kept`, `labels` and `sort` alone (ADR-257)",
+    why: "`step` where rows scroll, `groups` on the mark family, `filter` and `field` where rows carry attributes, so not MAF or the lanes (ADR-257); `annotations` on `Rows` (ADR-260); multi-way's rows are its lanes, whose `kept` selects and can add a lane where a row display's narrows, beside `labels`, `sort` and a `colors` pin (ADR-257, laneRowsConfigSchema.ts)",
   },
   'rows.axis': {
     variants: 2,
