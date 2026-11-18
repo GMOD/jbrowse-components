@@ -1720,29 +1720,29 @@ export function stateModelFactory(
       },
       /**
        * #method
-       * for the viewport at `originPx` and `bpPerPx`: which group is the
+       * at the settled view, as `fitGroups` are cut to it: which group is the
        * pivot and what the hold test counts are judged in it. A lane in
        * `frozen` keeps its frozen decision
        */
-      laneDecisionsAt({
-        originPx,
-        bpPerPx,
+      settledLaneDecisions({
         previous,
         frozen,
       }: {
-        originPx: number
-        bpPerPx: number
         previous: ReadonlyMap<string, LaneDecision | undefined>
         frozen: ReadonlyMap<string, LaneDecision>
       }) {
-        return decideLanesOn(self.anchorStageAt(originPx, bpPerPx), {
-          groups: self.fitGroups,
-          assemblyNames: self.rowAssemblies,
-          previous,
-          frozen,
-          pins: self.pinsInForce,
-          openingsOf: self.laneOpenings,
-        })
+        const { coarseOffsetPx, coarseBpPerPx } = self.lgv
+        return decideLanesOn(
+          self.anchorStageAt(coarseOffsetPx, coarseBpPerPx),
+          {
+            groups: self.fitGroups,
+            assemblyNames: self.rowAssemblies,
+            previous,
+            frozen,
+            pins: self.pinsInForce,
+            openingsOf: self.laneOpenings,
+          },
+        )
       },
     }))
     .actions(self => {
@@ -1810,14 +1810,7 @@ export function stateModelFactory(
           frozen.delete(assemblyName)
           setFrozenDecision(
             assemblyName,
-            self
-              .laneDecisionsAt({
-                originPx: self.lgv.offsetPx,
-                bpPerPx: self.lgv.bpPerPx,
-                previous,
-                frozen,
-              })
-              .get(assemblyName),
+            self.settledLaneDecisions({ previous, frozen }).get(assemblyName),
           )
         }
       }

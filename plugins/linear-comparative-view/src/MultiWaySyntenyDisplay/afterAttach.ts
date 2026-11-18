@@ -292,9 +292,7 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
         const previous = untracked(() => self.laneDecisions)
         self.setLaneFrames(
           view.coarseOffsetPx,
-          self.laneDecisionsAt({
-            originPx: view.coarseOffsetPx,
-            bpPerPx: view.coarseBpPerPx,
+          self.settledLaneDecisions({
             previous,
             frozen: self.frozenDecisions,
           }),

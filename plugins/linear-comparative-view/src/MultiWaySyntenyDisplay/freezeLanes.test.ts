@@ -142,6 +142,23 @@ test('Re-align lane fits a frozen lane to the window it shows now', async () => 
   expect(slipOf(display).every(d => d === 0)).toBe(true)
 })
 
+test('Re-align lane mid-pan fits the lane at the settled view, as the lanes decide', async () => {
+  const realigned = async (scrollPx: number) => {
+    const display = await setup()
+    const view = display.lgv
+    display.setLanesFrozen(true)
+    display.setFeatures(pairs(300))
+    view.scrollTo(view.offsetPx + scrollPx)
+    expect(view.coarseOffsetPx).toBe(view.offsetPx - scrollPx)
+    display.realignLane(C)
+    expect(display.lanesFrozen).toBe(true)
+    return display.frozenDecisions.get(C)
+  }
+  const settled = await realigned(0)
+  expect(settled).toBeDefined()
+  expect(await realigned(150)).toEqual(settled)
+})
+
 test('the frozen frames are session state, stated against their anchor', async () => {
   const display = await setup()
   display.setLanesFrozen(true)
