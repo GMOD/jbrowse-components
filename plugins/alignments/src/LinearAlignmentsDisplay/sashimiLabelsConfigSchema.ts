@@ -3,7 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config SashimiLabels
  * #category display
- * The sashimi band's `labels` layer: each junction's supporting-read count,
+ * The junctions band's `labels` layer: each junction's supporting-read count,
  * drawn at its arc's apex.
  *
  * #example

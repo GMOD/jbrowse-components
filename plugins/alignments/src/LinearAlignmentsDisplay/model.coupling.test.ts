@@ -2213,7 +2213,7 @@ describe('rows the layer menus hand to other menus', () => {
       'Track height',
       'Read connections placement',
       'Read connections line width',
-      'Sashimi placement',
+      'Junction placement',
     ])
   })
 
@@ -2221,9 +2221,9 @@ describe('rows the layer menus hand to other menus', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
     expect(labelsUnder(display, 'Show')).toEqual(
-      expect.arrayContaining(['Show sashimi arcs', 'Show sashimi read counts']),
+      expect.arrayContaining(['Show junctions', 'Show junction read counts']),
     )
-    expect(hasMenuItem(display.trackMenuItems(), 'Sashimi placement')).toBe(
+    expect(hasMenuItem(display.trackMenuItems(), 'Junction placement')).toBe(
       true,
     )
   })
@@ -2235,7 +2235,7 @@ describe('rows the layer menus hand to other menus', () => {
     display.setShowSashimi(true)
     display.setSashimiPlacement('above')
     display.setShowCoverage(false)
-    expect(hasMenuItem(display.trackMenuItems(), 'Sashimi placement')).toBe(
+    expect(hasMenuItem(display.trackMenuItems(), 'Junction placement')).toBe(
       true,
     )
   })

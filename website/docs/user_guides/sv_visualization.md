@@ -177,7 +177,7 @@ an inversion, so the arc is evidence from one molecule.
 Every scheme above paints one pileup, so an event's evidence is mixed into the
 rows around it. **Presets → SV channels** takes the same reads apart into one
 band per kind of SV evidence, each with a coverage curve, its evidence reads and
-their arcs, and drops the sashimi arcs over coverage:
+their arcs, and drops the junction arcs over coverage:
 
 - **Bands:** deletion-type, duplication-type, inversion, a partner on another
   chromosome or unmapped, an SV-size insertion, and no SV evidence. A band
@@ -299,7 +299,7 @@ junction:
 - **Tandem duplication:** a teal arc, the color of the pairs that span it, and a
   teal loop under the row where the read maps back over itself.
 - **Insertion the aligner left out of the CIGAR:** a pink arc, the color of the
-  pairs too close across it, and no sashimi arc.
+  pairs too close across it, and no junction arc.
 - **Parts aligned outside the view:** a connector joining two segments across
   parts of the read that align outside the view is no junction of the read, so
   it draws grey, in the breakpoint split view too, keyed **Split read (skips

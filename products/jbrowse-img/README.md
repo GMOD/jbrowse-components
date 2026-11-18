@@ -294,14 +294,14 @@ jb2export https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz aliases:htt
 ![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://jbrowse.org/jb2-figures/jbrowse-img/methylation.6d394654f846.png)
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
-number of reads spanning each junction. `coverage.height=` makes the
-coverage/sashimi band tall so the arcs are legible, and
-`coverage.encoding.y.scale.type=log` puts every exon on the plot, because
-RNA-seq depth here spans three orders of magnitude, so on a linear axis the
-tallest exon is the only one with any height and the arcs sit over a flat line.
-This strand-specific paired-end RNA-seq (hg19, public) over `B2M` shows the long
-first intron as one big arc and the closely-spaced downstream exons as smaller
-arcs, with the spliced read pairs (green mate lines) below:
+number of reads spanning each junction. `coverage.height=` makes the coverage
+band tall so the arcs are legible, and `coverage.encoding.y.scale.type=log` puts
+every exon on the plot, because RNA-seq depth here spans three orders of
+magnitude, so on a linear axis the tallest exon is the only one with any height
+and the arcs sit over a flat line. This strand-specific paired-end RNA-seq
+(hg19, public) over `B2M` shows the long first intron as one big arc and the
+closely-spaced downstream exons as smaller arcs, with the spliced read pairs
+(green mate lines) below:
 
 <!-- jb2export: sashimi_junctions -->
 
@@ -706,7 +706,7 @@ Overlays & subtracks:
 | Modifier       | Example           | Description                                                                           |
 | -------------- | ----------------- | ------------------------------------------------------------------------------------- |
 | `arcs:mode`    | `arcs:cloud`      | Read-connection arcs / read-cloud panel (`off`, `overlay`, `above`, `below`, `cloud`) |
-| `sashimi:mode` | `sashimi:overlay` | Sashimi splice-junction arcs (`off`, `overlay`, `above`, `below`, `auto`)             |
+| `sashimi:mode` | `sashimi:overlay` | Splice and split-read junction arcs (`off`, `overlay`, `above`, `below`, `auto`)      |
 
 Layout & sizing:
 
@@ -727,7 +727,7 @@ Settings written as slots, spelled as the display spells them:
 | `coverage.height=200`                          | Height of the coverage subtrack, and of `arcs:overlay` arcs drawn over it                                                                                |
 | `readConnections.height=120`                   | Height of the arcs' or read cloud's band, under `arcs:above`, `arcs:below` and `arcs:cloud`, or `arcs:overlay` with `coverage.show=false`                |
 | `readConnections.encoding.strokeWidth.value=2` | Stroke width for read-connection arcs and lines                                                                                                          |
-| `sashimi.height=120`                           | Height of the sashimi arcs' own strip, under `sashimi:above`, `sashimi:below` and `sashimi:auto`                                                         |
+| `sashimi.height=120`                           | Height of the junction arcs' own strip, under `sashimi:above`, `sashimi:below` and `sashimi:auto`                                                        |
 | `pileup.maxLayoutHeight=4000`                  | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                        |
 
 A filter field takes no `key=value` write, since `filter` is one list: write the

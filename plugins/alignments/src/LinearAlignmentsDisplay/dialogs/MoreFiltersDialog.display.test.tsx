@@ -49,7 +49,7 @@ test('Reset keeps each drawn layer, and Submit writes its declared floor', () =>
   const display = drawingBothLayers()
   openOn(display)
   fireEvent.click(screen.getByText('Reset defaults'))
-  expect(screen.getByText('Sashimi arcs')).toBeTruthy()
+  expect(screen.getByText('Junctions')).toBeTruthy()
   expect(screen.getByText('Read connections')).toBeTruthy()
   fireEvent.click(screen.getByText('Submit'))
   expect(display.junctionFilter.minReads).toBe(DEFAULT_MIN_SASHIMI_READS)

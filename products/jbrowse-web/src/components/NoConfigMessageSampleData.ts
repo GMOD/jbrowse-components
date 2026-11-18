@@ -203,7 +203,7 @@ export const volvoxAlignmentsLinks: readonly SampleLink[] = [
       sort: 'spliced',
       sashimi: { labels: { show: true } },
     }),
-    label: 'Volvox RNA-seq: sashimi labels, spliced reads first',
+    label: 'Volvox RNA-seq: junction read counts, spliced reads first',
   },
   {
     href: volvoxView('ctgA:1-11300', {

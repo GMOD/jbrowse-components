@@ -8,7 +8,7 @@ import type { LayerFilterState } from './layerFilters.ts'
 
 /**
  * The dialog's sections over what a layer draws from the reads: each layer
- * drawing — Sashimi arcs, read connections, modifications — with its own
+ * drawing — junctions, read connections, modifications — with its own
  * filters.
  */
 const LayerFilterSections = observer(function LayerFilterSections({
@@ -23,7 +23,7 @@ const LayerFilterSections = observer(function LayerFilterSections({
     <>
       {junctions ? (
         <>
-          <FormHeading>Sashimi arcs</FormHeading>
+          <FormHeading>Junctions</FormHeading>
           <CategoryRow
             label="Split-read junctions"
             all="All junctions"

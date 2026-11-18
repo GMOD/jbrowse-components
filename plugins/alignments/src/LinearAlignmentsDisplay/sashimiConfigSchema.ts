@@ -39,7 +39,7 @@ export const sashimiConfigSchema = ConfigurationSchema(
     show: {
       type: 'boolean',
       defaultValue: true,
-      description: 'draw the sashimi arcs',
+      description: 'draw the junction arcs',
     },
     /**
      * #slot

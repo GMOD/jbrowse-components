@@ -14,7 +14,7 @@ import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
  * #config LGVSyntenyDisplay
  * Draws a `SyntenyTrack`'s alignments in a linear genome view, stacked and
  * colored the way an alignments display draws reads. It has the alignments
- * display's bands and settings but the sashimi band, the `junction` filter
+ * display's bands and settings but the junctions band, the `junction` filter
  * fields, `pileup.bases` and `modifications`: a synteny block has no introns,
  * basecaller tags or qualities.
  *

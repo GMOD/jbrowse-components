@@ -187,5 +187,5 @@ test('under section chips, whichever row heads the first lane leads them', () =>
 test('the read connections chip is named by the mark the band draws', () => {
   expect(bandChipLabel('readConnections', 'link')).toBe('Read arcs')
   expect(bandChipLabel('readConnections', 'rule')).toBe('Read cloud')
-  expect(bandChipLabel('sashimi', 'link')).toBe('Sashimi arcs')
+  expect(bandChipLabel('sashimi', 'link')).toBe('Junctions')
 })

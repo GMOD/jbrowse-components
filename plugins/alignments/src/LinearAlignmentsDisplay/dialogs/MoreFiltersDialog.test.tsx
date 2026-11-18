@@ -266,7 +266,7 @@ test('unticking a default exclusion writes the field that removes it', () => {
 })
 
 // The layers' own filters sit in the dialog while the layer draws
-test('the Sashimi arcs section shows while the arcs draw, and writes its floor', () => {
+test('the Junctions section shows while the arcs draw, and writes its floor', () => {
   const setFilterFields = jest.fn()
   const model = {
     filterPredicates: mergeFilter([]),
@@ -280,7 +280,7 @@ test('the Sashimi arcs section shows while the arcs draw, and writes its floor',
       <MoreFiltersDialog model={model} handleClose={() => {}} />
     </ThemeProvider>,
   )
-  expect(screen.getByText('Sashimi arcs')).toBeTruthy()
+  expect(screen.getByText('Junctions')).toBeTruthy()
   expect(screen.queryByText('Read connections')).toBeNull()
   fireEvent.change(screen.getByLabelText('Min reads at a junction'), {
     target: { value: '5' },

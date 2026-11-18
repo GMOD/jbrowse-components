@@ -61,10 +61,10 @@ displayed regions with that gene's exons side by side.
   ruler and choose its **Show the whole span** row. The **1 feature** chip on
   the gene track brings back the other genes
 
-With an [RNA-seq track](/docs/tutorials/rnaseq), the spliced reads' **sashimi
+With an [RNA-seq track](/docs/tutorials/rnaseq), the spliced reads' **junction
 arcs** then span directly between adjacent exons.
 
-<Figure caption="Collapsing introns on PTEN. Top: the right-click menu. Bottom: the exons side by side, the sashimi arcs spanning between them." src="/img/gene_track_collapse_introns.png" />
+<Figure caption="Collapsing introns on PTEN. Top: the right-click menu. Bottom: the exons side by side, the junction arcs spanning between them." src="/img/gene_track_collapse_introns.png" />
 
 ## Display density and labels
 

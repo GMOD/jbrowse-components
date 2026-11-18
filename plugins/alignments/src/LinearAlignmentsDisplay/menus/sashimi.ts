@@ -65,13 +65,13 @@ export function getJunctionFilterItems(model: JunctionFilterModel): MenuItem[] {
 /** The arcs' rows in "Show": the arcs, and while they draw their counts. */
 export function sashimiShowItems(model: SashimiModel): MenuItem[] {
   return [
-    toggleItem('Show sashimi arcs', model.showSashimi, show => {
+    toggleItem('Show junctions', model.showSashimi, show => {
       model.setShowSashimi(show)
     }),
     ...(model.showSashimi
       ? [
           toggleItem(
-            'Show sashimi read counts',
+            'Show junction read counts',
             model.showSashimiLabels,
             show => {
               model.setShowSashimiLabels(show)
@@ -93,7 +93,7 @@ export function getSashimiPlacementItems(
   return model.showSashimi
     ? [
         {
-          label: 'Sashimi placement',
+          label: 'Junction placement',
           type: 'subMenu' as const,
           subMenu: radioItems(
             SASHIMI_PLACEMENT_OPTIONS,

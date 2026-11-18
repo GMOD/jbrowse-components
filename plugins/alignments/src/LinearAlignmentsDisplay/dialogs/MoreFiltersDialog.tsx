@@ -368,7 +368,7 @@ const TagFilterRows = observer(function TagFilterRows(props: {
 // (SV evidence, split and spliced reads), mapping quality presets and, while
 // the arcs draw, non-canonical junctions; this holds the rest — a read name,
 // an exact mapping quality floor, the reads with no mate in view, tags, the
-// filters of each layer drawing (Sashimi arcs, read connections,
+// filters of each layer drawing (junctions, read connections,
 // modifications) and the flag masks. Each filter has one home, so a choice
 // never applies on click in one place and on Submit in another.
 //

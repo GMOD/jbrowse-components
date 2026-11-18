@@ -83,8 +83,8 @@ For the complete track-to-display mapping, see the
   subfeatures, collapse-introns, and automatic `itemRgb` / bigBed coloring
 - **Alignments** - [BAM, CRAM, and htsget](/docs/user_guides/alignments_track)
   in pileup, coverage, and paired/arc modes, with sorting, grouping by
-  sample/tag/chain, tag coloring, per-base quality, sashimi junction arcs, and a
-  discordant-pairs SAMplot mode
+  sample/tag/chain, tag coloring, per-base quality, junction arcs (the sashimi
+  plot on RNA-seq), and a discordant-pairs SAMplot mode
 - **Base modifications and methylation** - per-modification-type toggles,
   two-color and "show only" modes, bisulfite / EM-seq mode, and CpG/CHG/CHH
   context

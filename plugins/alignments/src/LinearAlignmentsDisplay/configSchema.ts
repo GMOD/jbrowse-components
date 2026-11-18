@@ -12,7 +12,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config LinearAlignmentsDisplay
  * #category display
  * Draws the reads of an `AlignmentsTrack` as a stack of bands: the coverage
- * histogram with the sashimi arcs over it, the read connections, and the
+ * histogram with the junction arcs over it, the read connections, and the
  * pileup. Each band is one object, `coverage`, `sashimi`, `readConnections`
  * and `pileup`, holding whether it draws and its height; the settings every
  * band shares sit beside them: `filter`, one list of the read, junction and
@@ -77,7 +77,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example
- * RNA-seq — sashimi arcs placed to avoid crossings, labelled with their read
+ * RNA-seq — junction arcs placed to avoid crossings, labelled with their read
  * counts, dropping junctions under five reads, the non-canonical ones and the
  * split-read joins:
  * ```js

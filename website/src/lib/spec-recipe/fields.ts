@@ -1255,7 +1255,7 @@ function filterFieldStep(
   const reads = fixed(gte)
   if (field === 'junction.reads' && alignments && reads !== undefined) {
     return {
-      path: `${MORE_FILTERS} → Sashimi arcs → Min reads at a junction → ${reads}`,
+      path: `${MORE_FILTERS} → Junctions → Min reads at a junction → ${reads}`,
       note: 'Hides splice junctions supported by fewer reads than this.',
     }
   }

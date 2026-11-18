@@ -418,8 +418,8 @@ For that reason the view publishes its content's right edge as a scalar, and the
 alignments display compares the region set structurally before merging junctions
 against it.
 
-The sashimi overlay is the worked example. Its splice-junction merge depends on
-loaded data, the region set on screen and two filter settings; only the
+The junctions overlay is the worked example. Its splice-junction merge depends
+on loaded data, the region set on screen and two filter settings; only the
 projection to screen x depends on the pan. In one computed, a gesture recomputed
 both although only the projection changed. With the merge and the projection in
 separate computeds, at real RNA-seq junction counts:

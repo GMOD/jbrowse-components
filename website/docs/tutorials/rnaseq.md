@@ -249,7 +249,7 @@ On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
 Every junction so far joins an exon to a downstream one. A circular RNA joins
 the end of an exon back to the start of an upstream one. A short read across
 that joint aligns in two pieces, and the aligner writes the second piece into
-the read's `SA` tag. The sashimi band counts split-read junctions beside the
+the read's `SA` tag. The junctions band counts split-read junctions beside the
 N-gap splices, one arc per junction, and colors each by its class. A back-splice
 is a duplication-type split, drawn in the teal JBrowse uses for an RL pair
 (mates pointing away from each other). **Split-read junctions → Hide split-read
@@ -294,7 +294,7 @@ The
 [circRNA demo](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/circrna/config.json)
 holds HeLa RNA-seq treated with RNase R, which digests linear RNA and leaves the
 circles, aligned that way on hg38, and STAR's own back-splice table beside it.
-The reads load as an alignments track with sashimi counts shown:
+The reads load as an alignments track with junction read counts shown:
 
 ```json addtrack
 {
@@ -390,7 +390,7 @@ laps. The demo holds HEK293 isoCirc reads aligned with `minimap2 -ax splice`:
 }
 ```
 
-CDR1as is a single-exon circle antisense to _CDR1_. The sashimi band counts
+CDR1as is a single-exon circle antisense to _CDR1_. The junctions band counts
 every lap of every read as a crossing of the back-splice, and the pileup shows
 the pieces of each read stacked over the one exon:
 
@@ -398,12 +398,12 @@ the pieces of each read stacked over the one exon:
 
 ## Loading STAR, regtools and portcullis junction tables
 
-The sashimi arcs on a reads track count the reads in view. A junction table from
-an RNA-seq pipeline adds whole-library read counts, an annotated-or-novel flag
-and portcullis's filtering verdict. One `awk` line converts each table to BED,
-with the intron as the interval, the read count as the score, then the strand
-and the tool's own columns, and the BED draws as arcs on a feature track. Sort
-and index all three the same way:
+The junction arcs on a reads track count the reads in view. A junction table
+from an RNA-seq pipeline adds whole-library read counts, an annotated-or-novel
+flag and portcullis's filtering verdict. One `awk` line converts each table to
+BED, with the intron as the interval, the read count as the score, then the
+strand and the tool's own columns, and the BED draws as arcs on a feature track.
+Sort and index all three the same way:
 
 ```bash
 sort -k1,1 -k2,2n junctions.bed | bgzip > junctions.bed.gz
@@ -523,11 +523,11 @@ can read them:
 }
 ```
 
-The `filter` applies the sashimi menu's read-support floor to the whole-library
-counts in the file and keeps the canonical motifs, which drops the duplicate
-that wrong-strand reads give a junction on the opposite strand. The color's
-`scale.domain` lists the `known_junction` values as strings because the adapter
-reads extra columns as text.
+The `filter` applies the junctions menu's read-support floor to the
+whole-library counts in the file and keeps the canonical motifs, which drops the
+duplicate that wrong-strand reads give a junction on the opposite strand. The
+color's `scale.domain` lists the `known_junction` values as strings because the
+adapter reads extra columns as text.
 
 **Advanced → Edit plot...** in the track menu edits the same marks, colors and
 filter on an open track.

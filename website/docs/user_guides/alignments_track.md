@@ -19,9 +19,9 @@ vertical space, and coverage-only fills the track's height with the coverage
 band, split evenly between the sections when the reads are grouped, so it never
 scrolls. A track configured with its pileup hidden opens at 100 px rather than
 250; the toggles keep whatever height the track has. Drag the track's bottom
-edge to resize it. A read-connections or sashimi strip drawn above or below the
-coverage keeps its own height, and the coverage takes the rest; drag the edge
-the strip shares with the coverage to resize it.
+edge to resize it. A read-connections or junctions strip drawn above or below
+the coverage keeps its own height, and the coverage takes the rest; drag the
+edge the strip shares with the coverage to resize it.
 
 ## Sorting reads
 
@@ -231,8 +231,8 @@ which makes grouping a check on the reads:
 <Figure caption="GIAB HG002 nanopore reads grouped by strand, each band's coverage from that strand's reads alone. The left box disagrees in the reverse band only, the right box in both." src="/img/alignments/strand_split_coverage.png" />
 
 **Presets → SV channels** in the track menu groups by **SV kind**, draws only
-the evidence reads, and swaps the sashimi arcs for read arcs, so each kind of SV
-evidence gets its own coverage band, reads and arcs.
+the evidence reads, and swaps the junction arcs for read arcs, so each kind of
+SV evidence gets its own coverage band, reads and arcs.
 [SV channels](/docs/user_guides/sv_visualization#sv-channels) says how to read
 it.
 
@@ -308,7 +308,7 @@ The track menu's **Filter by** has two kinds of filter.
 - **Which reads count**: SAM flags (drop duplicates and secondaries, or keep
   only properly-paired reads), a tag value (`HP:1` for one haplotype, `HP:*` for
   any read with the tag), and **Mapping quality**, which hides reads under a
-  minimum MAPQ as `samtools view -q` does. The coverage histogram, the sashimi
+  minimum MAPQ as `samtools view -q` does. The coverage histogram, the junction
   arcs and the insert-size colors count only the reads these keep.
 - **Which reads are drawn**: the read name, the splicing radios (only spliced
   reads, with a reference skip `N` in the CIGAR, or only unspliced ones), split
@@ -324,12 +324,12 @@ for this haplotype (HP:n)_ and _Filter for this read group (RG:x)_ read their
 value off that read. They combine, and **Clear read/tag filters** appears once
 any is active.
 
-## Sashimi arcs
+## Junctions
 
-Sashimi-style arcs draw automatically over spliced alignments (`N` in the
-CIGAR), so RNA-seq and Iso-Seq junctions appear with no setup; the
-[RNA-seq tutorial](/docs/tutorials/rnaseq) works them on real data. Each arc has
-a strand and a splice motif:
+Junction arcs draw automatically over spliced alignments (`N` in the CIGAR), so
+RNA-seq and Iso-Seq junctions appear with no setup; on RNA-seq this layer is the
+sashimi plot. The [RNA-seq tutorial](/docs/tutorials/rnaseq) works them on real
+data. Each arc has a strand and a splice motif:
 
 - **Strand:** from the aligner's strand tag. `XS` or `TS` give the transcript
   strand, and minimap2's `ts` is relative to the read and combined with the
@@ -340,19 +340,19 @@ a strand and a splice motif:
   strand, or non-canonical, shown in the arc's tooltip. This needs a sequence
   adapter on the assembly.
 
-**Show → Show sashimi arcs** turns them on and off, and **Show → Show sashimi
-read counts** prints each junction's supporting-read count on its arc. While the
-arcs draw:
+**Show → Show junctions** turns them on and off, and **Show → Show junction read
+counts** prints each junction's supporting-read count on its arc. While the arcs
+draw:
 
 - **Filter by → Non-canonical junctions → Hide non-canonical junctions** drops
   junctions whose motif is none of the three canonical pairs. On deep RNA-seq
   the thin arcs are mostly these, so it is the filter to reach for first. **Only
   non-canonical junctions** keeps just those, for checking an aligner's output.
-- The Sashimi arcs section of **Filter by → More filters...** shows, hides or
-  keeps only the **Split-read junctions** that split alignments (SA tag) imply
-  beside the N-gap splices, and **Min reads at a junction** drops the junctions
-  with fewer reads.
-- **Advanced → Sashimi placement** sets where the arcs sit
+- The Junctions section of **Filter by → More filters...** shows, hides or keeps
+  only the **Split-read junctions** that split alignments (SA tag) imply beside
+  the N-gap splices, and **Min reads at a junction** drops the junctions with
+  fewer reads.
+- **Advanced → Junction placement** sets where the arcs sit
   ([`sashimi.placement`](/docs/config/sashimi/#slot-placement)):
   - **Over coverage** (`overlay`, the default) draws them on the coverage
     histogram.
@@ -367,7 +367,7 @@ arcs draw:
 - **Advanced → Coverage axis... → Scale → Log** keeps the shallower junctions
   visible when one junction peak dominates the coverage histogram.
 
-<Figure caption="Sashimi arcs over B2M RNA-seq with read-support labels on and coverage on a log scale." src="/img/alignments_track_arcs.png" />
+<Figure caption="Junction arcs over B2M RNA-seq with read-support labels on and coverage on a log scale." src="/img/alignments_track_arcs.png" />
 
 ## Read connections
 

@@ -33,6 +33,14 @@ Amended 2026-11-17 by
 sashimi. `overlay` is the `up` and `below` the `down` this record names, and
 the Rejected row that declined those words is superseded.
 
+Amended 2026-11-18, Colin's call: the `sashimi` band is `junctions`, in its
+slot, chip, legend, menus and code. He read "Sashimi arcs" over a DNA track's
+split-read junctions as an RNA-seq-only layer and took them for read-pair arcs.
+The Rejected row's band rename to `junctions` is taken; split reads still draw
+in both bands, `readConnections` keeps its name, and splice and split junctions
+stay one layer, told apart by the `junction.source` and `junction.class`
+filter.
+
 ## Context
 
 - **`show` meant two things.** On `showCoverage`, `showPileup` and
@@ -121,7 +129,7 @@ the Rejected row that declined those words is superseded.
 | `facet.collapse` for `collapseSections` | `facet` has a string shorthand, so a share link writing `facet: 'HP'` replaces it whole and would reset the collapse |
 | `pileup.sort` | The top level holds the read-level grammar, `filter`, `unit`, `facet`, `sort` and `color`; `sort` orders the reads the pileup stacks as `unit` decides what one of its rows is, and the two stay together |
 | `readConnections.color.field` unset in place of `''` | Every color object spells an absent field `''` (display-kit's color schema, `baseColor`), so the arcs keep it |
-| Moving split reads out of `readConnections`, renaming the bands `junctions` and `pairs`, or one merged arc band | Sashimi counts joins per cut point (CIGAR `N` splices and split-read joins), read connections draw one molecule's whole path (mates and supplementary pieces), so one split read belongs in both, as coverage and pileup share reads. With the split arcs staying, the rename lost its reason |
+| Moving split reads out of `readConnections`, renaming the read connections `pairs`, or one merged arc band (renaming sashimi `junctions` was declined in the same row, and taken 2026-11-18) | The junctions band counts joins per cut point (CIGAR `N` splices and split-read joins), read connections draw one molecule's whole path (mates and supplementary pieces), so one split read belongs in both, as coverage and pileup share reads. With the split arcs staying, `pairs` would misname them |
 | Split-read junctions in sashimi for RNA only | A circHIPK3 window holds no spliced read, so the gate hid the back-splices it was for |
 | The labels' words for a band's `placement`, `overlay` and `below` in place of `up` and `down` (2026-11-17, superseded the same day by ADR-272, which takes the words once a strip above coverage needs a third position) | On read connections the word is also the way the arcs bow. With coverage hidden, LGVSyntenyDisplay's default, `up` arcs rise in a strip of their own and overlay nothing (`arcsOverlayCoverage`, `sectionLayout.ts`), and ggjbrowse draws every arc in its own panel. Sashimi alone could take the words, and would then split one member across two bands |
 | A jexl expression in place of the `show` booleans | Each toggles a layer for the whole display, so an expression reading no datum is a constant. Where a datum exists, a band's `filter` over junctions or connections, an opt-in expression could join the members at no cost when unnamed, as the canvas and mark displays' `filter` takes jexl; no figure has asked for a predicate the members cannot state |

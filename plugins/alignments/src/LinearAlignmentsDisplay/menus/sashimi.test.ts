@@ -64,11 +64,11 @@ function click(items: MenuItem[], label: string) {
 describe('sashimi rows in Show', () => {
   test('the counts appear only while the arcs draw', () => {
     const model = makeModel()
-    expect(labelsOf(sashimiShowItems(model))).toEqual(['Show sashimi arcs'])
+    expect(labelsOf(sashimiShowItems(model))).toEqual(['Show junctions'])
     model.showSashimi = true
     expect(labelsOf(sashimiShowItems(model))).toEqual([
-      'Show sashimi arcs',
-      'Show sashimi read counts',
+      'Show junctions',
+      'Show junction read counts',
     ])
   })
 })
@@ -79,7 +79,7 @@ describe('sashimi placement row', () => {
     expect(getSashimiPlacementItems(model)).toEqual([])
     model.showSashimi = true
     expect(labelsOf(getSashimiPlacementItems(model))).toEqual([
-      'Sashimi placement',
+      'Junction placement',
     ])
   })
 
@@ -89,7 +89,7 @@ describe('sashimi placement row', () => {
     const model = { ...makeModel(), showSashimi: true }
     model.sashimiPlacement = 'above'
     click(
-      subMenuByLabel(getSashimiPlacementItems(model), 'Sashimi placement'),
+      subMenuByLabel(getSashimiPlacementItems(model), 'Junction placement'),
       'Over coverage',
     )
     expect(model.sashimiPlacement).toBe('overlay')
@@ -99,7 +99,7 @@ describe('sashimi placement row', () => {
     const model = makeModel()
     model.showSashimi = true
     click(
-      subMenuByLabel(getSashimiPlacementItems(model), 'Sashimi placement'),
+      subMenuByLabel(getSashimiPlacementItems(model), 'Junction placement'),
       'Below coverage',
     )
     expect(model.sashimiPlacement).toBe('below')
@@ -110,7 +110,7 @@ describe('sashimi placement row', () => {
     model.showSashimi = true
     const rows = subMenuByLabel(
       getSashimiPlacementItems(model),
-      'Sashimi placement',
+      'Junction placement',
     )
     expect(labelsOf(rows)).toEqual([
       'Auto (minimize overlap)',

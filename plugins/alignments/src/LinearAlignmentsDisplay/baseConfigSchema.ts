@@ -27,7 +27,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * The slots LinearAlignmentsDisplay and LGVSyntenyDisplay share: the coverage,
  * pileup and read connection bands, and the `filter`, `unit`, `facet`, `sort`,
  * `encoding` and `legend` every band reads. LinearAlignmentsDisplay adds the
- * sashimi band, the `junction` filter fields and `pileup.bases`, which
+ * junctions band, the `junction` filter fields and `pileup.bases`, which
  * apply only to reads; a synteny block has no introns,
  * basecaller tags or qualities.
  */
@@ -67,7 +67,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * #slot
      * The alignments drawn, a list of [](/docs/config/fieldpredicate) entries
      * every one of which must hold. The flags, `mapq` and tags decide which
-     * reads count, so coverage, the sashimi junctions and the insert-size
+     * reads count, so coverage, the junction arcs and the insert-size
      * colors count only the reads they pass: `flags.UNMAP` and the other
      * samtools flag names, `mapq` (MAPQ 255, none reported, passes a floor),
      * and `tags.HP` and any other tag. `name` and the read categories pick
@@ -89,7 +89,7 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * `junction.canonical` (a split junction reads no motif and counts as
      * canonical, so `equal: false` hides it), `junction.class` (`splice` for an N gap, or a
      * split read's `deletion`, `duplication` or `inversion`) and
-     * `junction.source` (`gap` or `split`) test the sashimi junctions, and
+     * `junction.source` (`gap` or `split`) test the junctions band's arcs, and
      * `connection.interchrom`, `connection.offscreen` and `breakpoint.reads`
      * the connections the arcs, the read cloud and the connectors draw.
      *

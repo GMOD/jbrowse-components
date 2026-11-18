@@ -327,7 +327,7 @@ const SASHIMI_STRAND_LABELS = [
 ] as const
 
 /** The sashimi band's key heading, as its menu names it. */
-export const SASHIMI_LEGEND_TITLE = 'Sashimi arcs'
+export const SASHIMI_LEGEND_TITLE = 'Junctions'
 
 /**
  * The junction strands and the split classes the sashimi band draws, each

@@ -1434,7 +1434,7 @@ describe('the sashimi section', () => {
   }
 
   test('is headed as the menu names the band, with or without split junctions', () => {
-    expect(scalesWith([]).at(-1)?.title).toBe('Sashimi arcs')
+    expect(scalesWith([]).at(-1)?.title).toBe('Junctions')
     const strandsOnly = getAlignmentsColorScales({
       legendItems: () => [],
       arcLegendTitle: 'Arc colors',
@@ -1443,7 +1443,7 @@ describe('the sashimi section', () => {
     })
     expect(strandsOnly.at(-1)).toMatchObject({
       id: 'sashimi',
-      title: 'Sashimi arcs',
+      title: 'Junctions',
       entries: [{ label: 'Reverse transcript strand' }],
     })
   })

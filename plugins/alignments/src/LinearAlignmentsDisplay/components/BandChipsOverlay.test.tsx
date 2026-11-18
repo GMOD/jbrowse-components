@@ -150,17 +150,17 @@ test('the coverage chip hides the coverage band', () => {
 test('junctions split by auto placement get one chip, on their strip', () => {
   const display = displayWithSplitJunctions()
   expect(display.renderSections[0]!.bands.reserved.sashimi).toBeGreaterThan(0)
-  expect(screen.getAllByTestId('band_chip_Sashimi arcs')).toHaveLength(1)
+  expect(screen.getAllByTestId('band_chip_Junctions')).toHaveLength(1)
   expect(
     within(screen.getByTestId('band_chips_sashimi')).getByTitle(
-      'Hide sashimi arcs',
+      'Hide junctions',
     ),
   ).toBeTruthy()
 })
 
-test('the sashimi chip hides the sashimi arcs', () => {
+test('the junctions chip hides the junctions', () => {
   const display = displayWithSplitJunctions()
-  fireEvent.click(screen.getByTitle('Hide sashimi arcs'))
+  fireEvent.click(screen.getByTitle('Hide junctions'))
   expect(display.showSashimi).toBe(false)
   expect(display.showCoverage).toBe(true)
   expect(display.showPileup).toBe(true)
