@@ -414,6 +414,21 @@ export function trackTableModelFactory() {
     .views(self => ({
       /**
        * #getter
+       * the fields a column or a chip can group tracks by (category, kind and
+       * each metadata key), each with its value on every column row
+       */
+      get groupableFieldValues() {
+        const rows = self.columnRows
+        return new Map(
+          ['category', 'kind', ...self.metadataKeys.map(metadataFacet)].map(
+            field => [field, rows.map(row => getRowStr(field, row))] as const,
+          ),
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Every field a column can show, in column order: the ones that say most
        * about a track first, `metadata.<key>` ids next, the adapter last.
        */
@@ -434,16 +449,8 @@ export function trackTableModelFactory() {
        * config names no columns, and what the filter chips offer.
        */
       get groupingFields() {
-        const rows = self.columnRows
-        const ranked = [
-          'category',
-          'kind',
-          ...self.metadataKeys.map(metadataFacet),
-        ]
-          .map(field => ({
-            field,
-            values: rows.map(row => getRowStr(field, row)),
-          }))
+        const ranked = [...self.groupableFieldValues]
+          .map(([field, values]) => ({ field, values }))
           .filter(({ values }) => groupsTracks(values))
           .map(entry => ({
             ...entry,
@@ -468,7 +475,7 @@ export function trackTableModelFactory() {
        */
       get fallbackColumns() {
         const valuesOf = (field: string) =>
-          self.columnRows.map(row => getRowStr(field, row))
+          self.groupableFieldValues.get(field) ?? []
         const chosen = self.groupingFields.map(valuesOf)
         const fallback: string[] = []
         for (const field of ['kind', 'category']) {
