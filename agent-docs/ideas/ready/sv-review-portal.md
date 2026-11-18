@@ -310,8 +310,6 @@ the page is for the subset a filter leaves.
 3. **The cohort card**, for a multi-sample callset.
 4. **Read vs ref as a launch input**, above. `jb2export synteny` renders it, and
    the page gains the allele row.
-5. **Tutorial**: a "review queue" section on `sv_callset_review`, the shortest
-   on the page, and the HG008 portal deployed with `scripts/deploy-demo.sh`.
 
 4 is the one with a design in it.
 

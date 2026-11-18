@@ -14,15 +14,18 @@ browser is slow, so we render every junction in the COLO829 callset to an image
 of the tumor reads, with the matched normal beside it, and triage the images.
 We:
 
-- render every junction as a breakpoint image with `jb2export batch`
-- render the matched normal the same way, as the control
+- render every junction as a breakpoint image with `jb2export batch`, from the
+  tumor reads and from the matched normal's
 - sort the calls by split-read support in the batch manifest
+- review the calls as a queue of cards, with a verdict on each
 - render a three-chromosome rearrangement with `jb2export breakpoint`
 - open a call in JBrowse from its manifest row
 
 ## Prerequisites
 
 - [`@jbrowse/img`](/docs/jbrowse-img), which puts `jb2export` on your PATH
+- [variant-review-portal](https://github.com/cmdcolin/variant-review-portal),
+  cloned and installed with `pnpm install`, for the review page
 - a JBrowse for [the last section](#opening-a-call-in-the-browser)
   ([Web](/docs/quickstart_web) or [Desktop](/docs/quickstart_desktop))
 
@@ -123,6 +126,38 @@ Each `manifest.tsv` row describes one image:
 
 A dense fan in a region of ragged coverage is usually a repeat, since a read
 mismapped there draws a curve like any other.
+
+## Reviewing the calls as a queue
+
+Next we'll build a review page from the two directories with
+variant-review-portal. Each call becomes a card with its tumor and normal
+images, the record's VCF columns, the manifest's counts and a link that opens
+the same windows in JBrowse:
+
+```bash
+# --images: a name for the reads in a directory's images, then the directory;
+#   the first is the sample under review and the rest are its controls
+# --jbrowse, --config: the JBrowse and config each card's link opens
+node variant-review-portal/bin/make-portal.mjs \
+  --vcf COLO829.somatic-sv.vcf.gz \
+  --images tumor=tumor --images normal=normal \
+  --jbrowse https://jbrowse.org/code/jb2/main/ \
+  --config https://jbrowse.org/demos/cancer_sv/config.json \
+  --out portal
+npx serve portal
+```
+
+The support filter splits the queue into calls with no supporting read, calls
+whose normal has supporting reads too, and calls with supporting reads in the
+tumor alone. <kbd>j</kbd> and <kbd>k</kbd> move between cards, <kbd>1</kbd>,
+<kbd>2</kbd> and <kbd>3</kbd> mark one real, needing a look or an artifact, and
+**Export** writes the verdicts to a TSV with each record's position and ID. A
+caller that counts its supporting reads per sample, as nanomonsv does in `AD`
+and `NAD`, can group the queue on those counts instead with `--support AD,NAD`.
+
+The [COLO829 review page](https://jbrowse.org/demos/colo829_review/) is this
+callset built the same way, from one `batch` run that draws the genes, the
+callset, both samples' reads and the repeats into each image.
 
 ## Rendering a three-chromosome rearrangement
 
