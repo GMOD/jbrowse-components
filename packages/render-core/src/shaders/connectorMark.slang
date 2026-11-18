@@ -218,9 +218,7 @@ StripVertex armCorner(Cubic c, uint a, uint corner, float hw, float strand2, boo
   return v;
 }
 
-[shader("vertex")]
-VsOut vs_main(ConnectorInstance inst, uint vid : SV_VertexID) {
-  bool placed = inst.x2Region < u.regionCount;
+VsOut placedVertex(ConnectorInstance inst, uint vid) {
   float4 entry2 = u.regionTable[min(inst.x2Region, VIEW_REGION_MAX - 1u)];
   Cubic c = placeCubic(inst, entry2);
   float halfWidth = 0.5 * flooredStrokeWidthPx(inst.width, u.devicePixelRatio);
@@ -251,13 +249,24 @@ VsOut vs_main(ConnectorInstance inst, uint vid : SV_VertexID) {
   }
 
   VsOut o;
-  o.position = placed
-    ? float4(v.screen.x / u.canvasWidth * 2.0 - 1.0,
-             yPxToClipY(v.screen.y, u.canvasHeight), 0.0, 1.0)
-    : float4(-2.0, -2.0, 0.0, 1.0);
+  o.position = float4(v.screen.x / u.canvasWidth * 2.0 - 1.0,
+                      yPxToClipY(v.screen.y, u.canvasHeight), 0.0, 1.0);
   o.color = unpackRGBA(inst.color);
   o.across = v.across;
   o.halfWidthPx = halfWidth;
+  return o;
+}
+
+[shader("vertex")]
+VsOut vs_main(ConnectorInstance inst, uint vid : SV_VertexID) {
+  VsOut o;
+  o.position = float4(-2.0, -2.0, 0.0, 1.0);
+  o.color = float4(0.0);
+  o.across = 0.0;
+  o.halfWidthPx = 0.0;
+  if (inst.x2Region < u.regionCount) {
+    o = placedVertex(inst, vid);
+  }
   return o;
 }
 

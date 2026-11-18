@@ -91,11 +91,12 @@ noticing in a diff.
 | type 'RibbonCurves' is outside the supported scalar subset | 8 | `bandNormal`, `bandWidthAt`, `curvesCross`, `curvesMeet`, `firstCurve`, `refineCrossing`, … |
 | type 'vec3' is outside the supported scalar subset | 7 | `baseColor`, `bpRange`, `buttSegmentCoverage`, `capsuleDist`, `categoryPaletteColor`, `getReadColor`, … |
 | type 'Cubic' is outside the supported scalar subset | 5 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex` |
-| type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
+| type 'LinkInstance' is outside the supported scalar subset | 5 | `curveVertex`, `drawnVertex`, `footBlockStart`, `footCorner`, `footVertex` |
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markScaleColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
 | type 'VsOut' is outside the supported scalar subset | 4 | `culled`, `linkDash`, `linkDashAlong`, `linkDistance` |
 | type 'Instance' is outside the supported scalar subset | 3 | `computeCorners`, `fillVsBegin`, `isClickedSilhouette` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
+| type 'ConnectorInstance' is outside the supported scalar subset | 2 | `placeCubic`, `placedVertex` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
 | type 'RibbonInstance' is outside the supported scalar subset | 2 | `footAngles`, `ribbonAngles` |
 | type 'RowRectUniforms' is outside the supported scalar subset | 2 | `rowRectClipPos`, `rowRectCorner` |
@@ -104,7 +105,6 @@ noticing in a diff.
 | type 'ChevronCorner' is outside the supported scalar subset | 1 | `chevronCorner` |
 | type 'ClipXCorner' is outside the supported scalar subset | 1 | `clipXCapsuleCorner` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
-| type 'ConnectorInstance' is outside the supported scalar subset | 1 | `placeCubic` |
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
 | type 'WiggleFillInstance' is outside the supported scalar subset | 1 | `clipStripVertex` |

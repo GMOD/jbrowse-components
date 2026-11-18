@@ -104,47 +104,40 @@ float bpToClipX(uint bp, Uniforms u) {
 [shader("vertex")]
 VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   VsOut o;
-  RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
-    markScaleColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm, u.colorCutCount, u.colorCuts[0], u.colorCuts[1], u.colorBands));
-  if (place.hidden) {
-    o.position = float4(2.0, 2.0, 0.0, 1.0);
-    o.color = float4(0.0);
-    o.barInkPx = float2(0.0);
-    return o;
-  }
-  float sx1 = bpToClipX(inst.x, u);
-  float sx2 = bpToClipX(inst.x2, u);
-  sx2 = extendToMinWidthX(sx1, sx2, u.minWidthPx, u.minCellDenomPx);
-  float2 q = quadLocal(vid);
-
-  float bandTop = rowBandTopPx(u.rowOffsetPx, u.rowHeight, place.slot);
-
-  if (vid >= 6u) {
-    int side = clipSide(inst.y, u.domainMin, u.domainMax, u.valueScaleType);
-    if (side == 0) {
-      o.position = float4(2.0, 2.0, 0.0, 1.0);
-      o.color = float4(0.0);
-      o.barInkPx = float2(0.0);
-      return o;
+  o.position = float4(2.0, 2.0, 0.0, 1.0);
+  o.color = float4(0.0);
+  o.barInkPx = float2(0.0);
+  bool strip = vid >= 6u;
+  int side = strip ? clipSide(inst.y, u.domainMin, u.domainMax, u.valueScaleType) : 0;
+  if (!strip || side != 0) {
+    RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys, float4(0.0));
+    if (!place.hidden) {
+      float sx1 = bpToClipX(inst.x, u);
+      float sx2 = extendToMinWidthX(sx1, bpToClipX(inst.x2, u), u.minWidthPx, u.minCellDenomPx);
+      float2 q = quadLocal(vid);
+      float bandTop = rowBandTopPx(u.rowOffsetPx, u.rowHeight, place.slot);
+      float topPx;
+      float botPx;
+      float4 color = place.color;
+      if (strip) {
+        topPx = clipStripTopPx(side, bandTop, u.rowBandPx);
+        botPx = topPx + CLIP_STRIP_PX;
+        color = float4(unpackRGBA(CLIP_STRIP_COLOR).rgb, 1.0);
+      } else {
+        float valueY = bandTop + valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
+        float originY = bandTop + u.originYPx;
+        topPx = min(valueY, originY);
+        botPx = max(valueY, originY);
+        if (!place.overridden) {
+          color = markScaleColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm, u.colorCutCount, u.colorCuts[0], u.colorCuts[1], u.colorBands);
+        }
+      }
+      float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
+      o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(vy, u.canvasHeight), 0.0, 1.0);
+      o.color = color;
+      o.barInkPx = float2(vy - topPx, vy - botPx);
     }
-    float stripTop = clipStripTopPx(side, bandTop, u.rowBandPx);
-    float stripBot = stripTop + CLIP_STRIP_PX;
-    float sy = slabVertexYPx(stripTop, stripBot, q.y, u.devicePixelRatio);
-    o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(sy, u.canvasHeight), 0.0, 1.0);
-    o.color = float4(unpackRGBA(CLIP_STRIP_COLOR).rgb, 1.0);
-    o.barInkPx = float2(sy - stripTop, sy - stripBot);
-    return o;
   }
-
-  float valueY = bandTop + valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
-  float originY = bandTop + u.originYPx;
-  float topPx = min(valueY, originY);
-  float botPx = max(valueY, originY);
-  float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
-
-  o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(vy, u.canvasHeight), 0.0, 1.0);
-  o.color = place.color;
-  o.barInkPx = float2(vy - topPx, vy - botPx);
   return o;
 }
 

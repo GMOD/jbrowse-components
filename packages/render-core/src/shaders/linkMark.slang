@@ -396,16 +396,13 @@ LinkVertex footVertex(LinkInstance inst, LinkEnv e, uint f, uint k) {
   return present ? v : start;
 }
 
-[shader("vertex")]
-VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
-  RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
-    markScaleColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm, u.colorCutCount, u.colorCuts[0], u.colorCuts[1], u.colorBands));
+VsOut drawnVertex(LinkInstance inst, uint vid, uint slot) {
   LinkEnv e;
   e.strokeHalf = 0.5 * linkStrokeWidthPx(
     inst.size, u.sizeMode, u.sizeConstantPx, u.sizeDomainMin, u.sizeDomainMax,
     u.sizeScaleType, u.sizeRangeMin, u.sizeRangeMax, u.devicePixelRatio);
   e.hw = e.strokeHalf + aaHalfPx(u.devicePixelRatio);
-  e.baseY = linkBaseYPx(u.rowOffsetPx, u.rowHeight, place.slot, u.reverse);
+  e.baseY = linkBaseYPx(u.rowOffsetPx, u.rowHeight, slot, u.reverse);
   e.ySign = u.reverse != 0 ? -1.0 : 1.0;
   e.reach = max(u.rowHeight - u.insetPx, 0.0);
   e.xPx = viewRegionPx(inst.x, u.ownEntry, u.zero);
@@ -422,18 +419,39 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   }
 
   VsOut o;
-  o.position = inst.x2Region == LINK_ELSEWHERE || place.hidden
-    ? float4(-2.0, -2.0, 0.0, 1.0)
-    : float4(
-      v.screen.x / u.canvasWidth * 2.0 - 1.0,
-      yPxToClipY(v.screen.y, u.canvasHeight),
-      0.0, 1.0);
-  o.color = place.color;
+  o.position = float4(
+    v.screen.x / u.canvasWidth * 2.0 - 1.0,
+    yPxToClipY(v.screen.y, u.canvasHeight),
+    0.0, 1.0);
+  o.color = float4(0.0);
   o.local = v.local;
   o.radii = v.radii;
   o.kind = v.kind;
   o.halfWidthPx = e.strokeHalf;
   o.legSide = v.legSide;
+  return o;
+}
+
+[shader("vertex")]
+VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
+  VsOut o;
+  o.position = float4(-2.0, -2.0, 0.0, 1.0);
+  o.color = float4(0.0);
+  o.local = float2(0.0);
+  o.radii = float2(0.0);
+  o.kind = KIND_ELLIPSE;
+  o.halfWidthPx = 0.0;
+  o.legSide = 1.0;
+  if (inst.x2Region != LINK_ELSEWHERE) {
+    RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys, float4(0.0));
+    if (!place.hidden) {
+      o = drawnVertex(inst, vid, place.slot);
+      o.color = place.color;
+      if (!place.overridden) {
+        o.color = markScaleColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm, u.colorCutCount, u.colorCuts[0], u.colorCuts[1], u.colorBands);
+      }
+    }
+  }
   return o;
 }
 
