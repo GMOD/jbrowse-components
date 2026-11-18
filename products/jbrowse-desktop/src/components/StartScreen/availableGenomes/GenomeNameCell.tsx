@@ -1,8 +1,31 @@
 import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { observer } from 'mobx-react'
 
 import type { LaunchCallback } from '../types.ts'
+
+const useStyles = makeStyles()({
+  cell: {
+    display: 'flex',
+    alignItems: 'center',
+    minWidth: 0,
+  },
+  name: {
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  // no height of its own, so the buttons overhang a row rather than growing
+  // it, and the cell clips them
+  icons: {
+    display: 'flex',
+    alignItems: 'center',
+    flexShrink: 0,
+    height: 0,
+  },
+})
 
 /**
  * Shared cell renderer for the name column in both UCSC and non-UCSC genome tables.
@@ -29,6 +52,7 @@ const GenomeNameCell = observer(function GenomeNameCell({
   toggleFavorite: () => void
   children?: React.ReactNode
 }) {
+  const { classes } = useStyles()
   const handleLaunch = () => {
     launch([jbrowseConfig])
     onClose()
@@ -42,65 +66,70 @@ const GenomeNameCell = observer(function GenomeNameCell({
     : undefined
 
   return (
-    <div>
-      {displayName} (
-      <ActionLink
-        onClick={() => {
-          handleLaunch()
-        }}
-      >
-        launch
-      </ActionLink>
-      ){' '}
-      {handleMinimalLaunch ? (
-        <>
-          (
-          <ActionLink
-            onClick={() => {
-              handleMinimalLaunch()
-            }}
-          >
-            minimal
-          </ActionLink>
-          ){' '}
-        </>
-      ) : null}
-      {children}
-      <CascadingMenuButton
-        menuItems={[
-          {
-            label: 'More info',
-            helpText: 'Opens external browser with more info about this genome',
-            onClick: () => {
-              window.open(websiteUrl, '_blank')
+    <div className={classes.cell}>
+      <span className={classes.name}>
+        {displayName} (
+        <ActionLink
+          onClick={() => {
+            handleLaunch()
+          }}
+        >
+          launch
+        </ActionLink>
+        ){' '}
+        {handleMinimalLaunch ? (
+          <>
+            (
+            <ActionLink
+              onClick={() => {
+                handleMinimalLaunch()
+              }}
+            >
+              minimal
+            </ActionLink>
+            ){' '}
+          </>
+        ) : null}
+      </span>
+      <span className={classes.icons}>
+        {children}
+        <CascadingMenuButton
+          menuItems={[
+            {
+              label: 'More info',
+              helpText:
+                'Opens external browser with more info about this genome',
+              onClick: () => {
+                window.open(websiteUrl, '_blank')
+              },
             },
-          },
-          {
-            label: 'Launch',
-            onClick: () => {
-              handleLaunch()
+            {
+              label: 'Launch',
+              onClick: () => {
+                handleLaunch()
+              },
             },
-          },
-          ...(handleMinimalLaunch
-            ? [
-                {
-                  label: 'Launch (minimal config)',
-                  onClick: () => {
-                    handleMinimalLaunch()
+            ...(handleMinimalLaunch
+              ? [
+                  {
+                    label: 'Launch (minimal config)',
+                    onClick: () => {
+                      handleMinimalLaunch()
+                    },
                   },
-                },
-              ]
-            : []),
-          {
-            label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-            onClick: () => {
-              toggleFavorite()
+                ]
+              : []),
+            {
+              label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+              onClick: () => {
+                toggleFavorite()
+              },
             },
-          },
-        ]}
-      >
-        <MoreHoriz />
-      </CascadingMenuButton>
+          ]}
+        >
+          <MoreHoriz />
+        </CascadingMenuButton>
+      </span>
     </div>
   )
 })

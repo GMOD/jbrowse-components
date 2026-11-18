@@ -1,6 +1,12 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 
 import GenomesDataTable from './GenomesDataTable.tsx'
 import { SEARCH_INDEX_URL } from './searchIndex.ts'
@@ -67,17 +73,21 @@ const searchIndex = [
 
 let fetched: string[] = []
 let failing = new Set<string>()
+let groupRows: unknown[] = ucscRows
+let indexRows: unknown[] = searchIndex
 
 const bodyFor = (url: string) =>
   url === UCSC_URL
-    ? ucscRows
+    ? groupRows
     : url === SEARCH_INDEX_URL
-      ? searchIndex
+      ? indexRows
       : categories
 
 beforeEach(() => {
   fetched = []
   failing = new Set()
+  groupRows = ucscRows
+  indexRows = searchIndex
   globalThis.fetch = jest.fn((url: string) => {
     fetched.push(url)
     return Promise.resolve({
@@ -90,6 +100,26 @@ beforeEach(() => {
   }) as unknown as typeof fetch
   localStorage.clear()
 })
+
+function manyRows(count: number) {
+  return Array.from({ length: count }, (_, i) => ({
+    accession: `db${i}`,
+    name: `db${i}`,
+    organism: 'Human',
+    description: `release ${i}`,
+    scientificName: 'Homo sapiens',
+    commonName: 'Human',
+    orderKey: i,
+    jbrowseConfig: `https://jbrowse.org/ucsc/db${i}/config.json`,
+  }))
+}
+
+async function enableMultipleSelection() {
+  const settings = await screen.findByRole('button', { name: 'Table settings' })
+  fireEvent.click(settings)
+  fireEvent.click(await screen.findByText('Enable multiple selection'))
+  fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
+}
 
 function setup(favorites: Fav[] = []) {
   const launch = jest.fn()
@@ -113,7 +143,7 @@ test('lists the genomes of the selected group', async () => {
   setup()
   expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
   expect(screen.getByText('Jun. 2020 (GRCm39/mm39)')).toBeTruthy()
-  expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
+  expect(screen.getByText('2 genomes in this group')).toBeTruthy()
 })
 
 test('launching passes the config url and closes the dialog', async () => {
@@ -138,9 +168,7 @@ test('a search covers every group, and the index waits for the first query', asy
   expect(await screen.findByText('Ailuropoda melanoleuca')).toBeTruthy()
   expect(screen.getByText('UCSC GenArk - Primates')).toBeTruthy()
   expect(screen.getByText('GCF_000004335.4')).toBeTruthy()
-  expect(
-    screen.getByText('Showing 1–1 of 1 matching (2 across all groups)'),
-  ).toBeTruthy()
+  expect(screen.getByText('1 of 2 genomes across all groups')).toBeTruthy()
   expect(screen.getByText('All groups')).toBeTruthy()
 
   // launchable via a config url rebuilt from the accession alone
@@ -156,7 +184,7 @@ test('a lone minus or quote, on the way to a term, keeps browsing the group', as
   for (const value of ['-', '"', ' - "']) {
     fireEvent.change(search, { target: { value } })
     expect(screen.getByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
-    expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
+    expect(screen.getByText('2 genomes in this group')).toBeTruthy()
   }
   expect(fetched).not.toContain(SEARCH_INDEX_URL)
 })
@@ -168,9 +196,7 @@ test('a search that matches nothing says so instead of showing a blank table', a
   expect(
     await screen.findByText('No genomes match the current search and filters'),
   ).toBeTruthy()
-  expect(
-    screen.getByText('Showing 0 matching (2 across all groups)'),
-  ).toBeTruthy()
+  expect(screen.getByText('0 of 2 genomes across all groups')).toBeTruthy()
 })
 
 test('clearing the query returns to browsing the selected group', async () => {
@@ -181,7 +207,7 @@ test('clearing the query returns to browsing the selected group', async () => {
 
   fireEvent.change(search, { target: { value: '' } })
   expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
-  expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
+  expect(screen.getByText('2 genomes in this group')).toBeTruthy()
 })
 
 // a selection is keyed by accession and deliberately outlives the query that
@@ -271,7 +297,7 @@ test('a failed search index does not block browsing the selected group', async (
 
   fireEvent.change(search, { target: { value: '' } })
   expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
-  expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
+  expect(screen.getByText('2 genomes in this group')).toBeTruthy()
 })
 
 // The NCBI status filter is only offered where its fields exist, and must not
@@ -290,7 +316,7 @@ test('an NCBI filter left over from a search is not applied where it cannot matc
 
   fireEvent.change(search, { target: { value: '' } })
   expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
-  expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
+  expect(screen.getByText('2 genomes in this group')).toBeTruthy()
 })
 
 test('sort headers are buttons and expose their direction', async () => {
@@ -314,4 +340,114 @@ test('sort headers are buttons and expose their direction', async () => {
         .getAttribute('aria-sort'),
     ).toBe('descending')
   })
+})
+
+test('a long group scrolls rather than pages, and the count covers every row', async () => {
+  groupRows = manyRows(300)
+  setup()
+  expect(await screen.findByText('release 0')).toBeTruthy()
+  expect(screen.getByText('300 genomes in this group')).toBeTruthy()
+  expect(screen.queryByText('release 299')).toBeNull()
+
+  const table = screen.getByTestId('genomes-table')
+  table.scrollTop = 299 * 25
+  fireEvent.scroll(table)
+  expect(await screen.findByText('release 299')).toBeTruthy()
+  expect(screen.queryByText('release 0')).toBeNull()
+})
+
+test('select-all takes every row the search leaves, drawn or not, and keeps the rest', async () => {
+  groupRows = manyRows(300)
+  setup()
+  await screen.findByText('release 0')
+  await enableMultipleSelection()
+
+  fireEvent.click(
+    screen.getByRole('checkbox', { name: 'Select all genomes shown' }),
+  )
+  expect(screen.getByText('Open 300 selected')).toBeTruthy()
+
+  const search = screen.getByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'panda' } })
+  await screen.findByText('Ailuropoda melanoleuca')
+  fireEvent.click(
+    screen.getByRole('checkbox', { name: 'Select all genomes shown' }),
+  )
+  expect(screen.getByText('Open 301 selected')).toBeTruthy()
+
+  fireEvent.click(
+    screen.getByRole('checkbox', { name: 'Select all genomes shown' }),
+  )
+  expect(screen.getByText('Open 300 selected')).toBeTruthy()
+})
+
+test('a sort undone returns the hits to relevance order', async () => {
+  // hg38 ranks first for being a UCSC db, then the designated reference, then
+  // the newer of the rest; accession order is none of those
+  indexRows = [
+    [
+      'GCA_018472565.1',
+      'human (HG00438 2021)',
+      'Homo sapiens',
+      'HG00438',
+      'Chromosome',
+      'HPRC',
+      9606,
+      0,
+      2021,
+      0,
+      '',
+    ],
+    [
+      'hg38',
+      'Human',
+      'Homo sapiens',
+      'GRCh38',
+      '',
+      'ucsc',
+      9606,
+      0,
+      2013,
+      2,
+      '',
+    ],
+    [
+      'GCA_009914755.4',
+      'human (T2T-CHM13v2.0 2022)',
+      'Homo sapiens',
+      'T2T-CHM13v2.0',
+      'Complete Genome',
+      'primates',
+      9606,
+      1,
+      2022,
+      0,
+      '',
+    ],
+  ]
+  setup()
+  const search = await screen.findByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'human' } })
+  await screen.findByText('hg38')
+
+  const table = screen.getByTestId('genomes-table')
+  const order = () =>
+    within(table)
+      .getAllByText(/^(hg38|GCA_\d+\.\d)$/)
+      .map(cell => cell.textContent)
+  const relevance = ['hg38', 'GCA_009914755.4', 'GCA_018472565.1']
+  expect(order()).toEqual(relevance)
+
+  const accession = () => screen.getByRole('button', { name: 'Accession' })
+  fireEvent.click(accession())
+  expect(order()).toEqual(['GCA_009914755.4', 'GCA_018472565.1', 'hg38'])
+  fireEvent.click(accession())
+  expect(order()).toEqual(['hg38', 'GCA_018472565.1', 'GCA_009914755.4'])
+  fireEvent.click(accession())
+  expect(order()).toEqual(relevance)
+  expect(
+    screen
+      .getByRole('columnheader', { name: /Accession/ })
+      .getAttribute('aria-sort'),
+  ).toBeNull()
 })

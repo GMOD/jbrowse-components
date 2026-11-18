@@ -1,17 +1,16 @@
-import { useRef } from 'react'
-
-import { useSearchHighlight } from '@jbrowse/core/ui/useSearchHighlight'
+import VirtualTable, {
+  checkboxLeading,
+  useTableSort,
+} from '@jbrowse/core/ui/VirtualTable'
 import { highlightPatterns } from '@jbrowse/core/util/searchText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import NetworkErrorMessage from '../NetworkErrorMessage.tsx'
-import GenomesTable from './GenomesTable.tsx'
 import GenomesTableToolbar from './GenomesTableToolbar.tsx'
 import SkeletonLoader from './SkeletonLoader.tsx'
-import TablePagination from './TablePagination.tsx'
-import { getColumnDefinitions } from './getColumnDefinitions.tsx'
-import { sortAndPaginate } from './sortAndPaginate.ts'
+import { columnWidths, getColumnDefinitions } from './getColumnDefinitions.tsx'
 import useCategories from './useCategories.ts'
 import { ncbiFilterApplies } from './useGenomesData.ts'
 import { useGenomesTableState } from './useGenomesTableState.ts'
@@ -20,13 +19,32 @@ import { useResultSet } from './useResultSet.ts'
 import type { Fav, LaunchCallback } from '../types.ts'
 import type { Entry } from './getColumnDefinitions.tsx'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   panel: {
-    minWidth: 1000,
-    minHeight: 500,
-    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    minHeight: 0,
   },
-})
+  table: {
+    flex: 1,
+    minHeight: 0,
+  },
+  count: {
+    marginTop: theme.spacing(1),
+  },
+}))
+
+interface GenomeRow extends Entry {
+  id: string
+}
+
+// what the counts are scoped to: the selected group while browsing, every
+// group while searching
+function countText(shown: number, scopeTotal: number, scopeLabel: string) {
+  const scope = `${scopeTotal.toLocaleString()} ${scopeTotal === 1 ? 'genome' : 'genomes'} ${scopeLabel}`
+  return shown === scopeTotal ? scope : `${shown.toLocaleString()} of ${scope}`
+}
 
 function rowToFav(row: Entry): Fav {
   return {
@@ -57,24 +75,11 @@ const GenomesDataTable = observer(function GenomesDataTable({
     searchQuery,
     hasSearched,
     filterOption,
-    sorting,
-    toggleSort,
     selected,
     setSelected,
     multipleSelection,
     showAllColumns,
-    pageIndex,
-    setPageIndex,
-    pageSize,
-    setPageSize,
   } = state
-
-  const bodyRef = useRef<HTMLTableSectionElement>(null)
-  useSearchHighlight(
-    bodyRef,
-    highlightPatterns(searchQuery),
-    'jbrowse-genome-search',
-  )
 
   const {
     categories,
@@ -129,13 +134,11 @@ const GenomesDataTable = observer(function GenomesDataTable({
     groupTitles: results.isGlobal ? groupTitles : undefined,
   })
 
-  const { pageRows, currentPage, totalRows } = sortAndPaginate({
-    data: results.rows,
-    columns,
-    sorting,
-    pageIndex,
-    pageSize,
-  })
+  const rows: GenomeRow[] = results.rows.map(row => ({
+    ...row,
+    id: row.accession,
+  }))
+  const { sortedRows, sortProps } = useTableSort(rows, columns)
 
   return (
     <div className={classes.panel}>
@@ -157,26 +160,45 @@ const GenomesDataTable = observer(function GenomesDataTable({
         <SkeletonLoader columnCount={columns.length} />
       ) : (
         <>
-          <GenomesTable
-            bodyRef={bodyRef}
-            columns={columns}
-            rows={pageRows}
-            multipleSelection={multipleSelection}
-            selected={selected}
-            setSelected={setSelected}
-            sorting={sorting}
-            toggleSort={toggleSort}
-          />
-
-          <TablePagination
-            pageIndex={currentPage}
-            pageSize={pageSize}
-            totalRows={totalRows}
-            scopeTotal={results.scopeTotal}
-            scopeLabel={results.scopeLabel}
-            onPageChange={setPageIndex}
-            onPageSizeChange={setPageSize}
-          />
+          <div className={classes.table}>
+            <VirtualTable
+              rows={sortedRows}
+              columns={columns}
+              widths={() => columnWidths}
+              {...sortProps}
+              resetKey={JSON.stringify([
+                activeTypeOption,
+                searchQuery,
+                filterOption,
+              ])}
+              highlightPatterns={highlightPatterns(searchQuery)}
+              isRowSelected={row => selected.has(row.id)}
+              leading={
+                multipleSelection
+                  ? checkboxLeading<GenomeRow>({
+                      selected,
+                      onChange: setSelected,
+                      label: row => `Select ${row.commonName} ${row.accession}`,
+                      allLabel: 'Select all genomes shown',
+                    })
+                  : undefined
+              }
+              emptyMessage="No genomes match the current search and filters"
+              testId="genomes-table"
+            />
+          </div>
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            className={classes.count}
+            role="status"
+          >
+            {countText(
+              sortedRows.length,
+              results.scopeTotal,
+              results.scopeLabel,
+            )}
+          </Typography>
         </>
       )}
     </div>

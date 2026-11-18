@@ -1,3 +1,5 @@
+import { cellText } from '@jbrowse/core/util/tableText'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Check from '@mui/icons-material/Check'
 import Close from '@mui/icons-material/Close'
 import { Tooltip } from '@mui/material'
@@ -7,6 +9,7 @@ import StarIcon from '../StarIcon.tsx'
 import GenomeNameCell from './GenomeNameCell.tsx'
 
 import type { LaunchCallback } from '../types.ts'
+import type { VirtualTableColumn } from '@jbrowse/core/ui/VirtualTable'
 
 // ISO datetime -> YYYY-MM-DD (first 10 chars); empty for missing or
 // unparsable values (guards against `toISOString()` throwing RangeError)
@@ -56,15 +59,66 @@ export interface Entry {
   suppressed?: boolean
 }
 
-export interface GenomeColumn {
-  id: string
-  header: string
-  // plain-text accessor used for the default cell and for default sorting;
-  // columns with a custom `cell` (favorite) omit it
-  value?: (row: Entry) => string | undefined
-  cell?: (row: Entry) => React.ReactNode
-  sortFn?: (a: Entry, b: Entry) => number
+export type GenomeColumn = VirtualTableColumn<Entry>
+
+// each column's starting width; the column naming the row takes what the rest
+// leave
+export const columnWidths: Record<string, number> = {
+  favorite: 96,
+  name: 260,
+  commonName: 260,
+  scientificName: 200,
+  organism: 130,
+  description: 220,
+  sourceName: 260,
+  taxonId: 110,
+  source: 200,
+  ncbiAssemblyName: 170,
+  accession: 150,
+  assemblyStatus: 140,
+  seqReleaseDate: 120,
+  pairedAccession: 150,
+  submitterOrg: 220,
 }
+
+function textColumn(
+  id: string,
+  header: string,
+  value: (row: Entry) => string | number | undefined,
+) {
+  return {
+    id,
+    header,
+    sortValue: value,
+    cell: value,
+    title: (row: Entry) => cellText(value(row)),
+  }
+}
+
+const useStyles = makeStyles()({
+  // no height of its own, so the button overhangs a row rather than growing
+  // it, and the cell clips it
+  star: {
+    display: 'flex',
+    alignItems: 'center',
+    height: 0,
+  },
+})
+
+const FavoriteCell = observer(function FavoriteCell({
+  isFavorite,
+  onClick,
+}: {
+  isFavorite: boolean
+  onClick: () => void
+}) {
+  const { classes } = useStyles()
+  return (
+    <div className={classes.star}>
+      <StarIcon isFavorite={isFavorite} onClick={onClick} />
+    </div>
+  )
+})
 
 // genomes.jbrowse.org keys UCSC main genomes by db name and everything else by
 // assembly accession
@@ -111,17 +165,13 @@ export function getColumnDefinitions({
   // set only for cross-group results, where rows come from several groups and
   // the group each one belongs to becomes a column
   groupTitles?: Map<string, string>
-}): GenomeColumn[] {
+}) {
   const favoriteColumn: GenomeColumn = {
     id: 'favorite',
     header: 'Favorite',
-    sortFn: (a, b) => {
-      const aIsFav = favs.has(a.accession)
-      const bIsFav = favs.has(b.accession)
-      return aIsFav === bIsFav ? 0 : aIsFav ? -1 : 1
-    },
+    sortValue: row => (favs.has(row.accession) ? 0 : 1),
     cell: row => (
-      <StarIcon
+      <FavoriteCell
         isFavorite={favs.has(row.accession)}
         onClick={() => {
           toggleFavorite(row)
@@ -130,11 +180,7 @@ export function getColumnDefinitions({
     ),
   }
 
-  const taxonIdColumn: GenomeColumn = {
-    id: 'taxonId',
-    header: 'Taxonomy ID',
-    value: r => r.taxonId?.toString(),
-  }
+  const taxonIdColumn = textColumn('taxonId', 'Taxonomy ID', r => r.taxonId)
 
   // The column that names a row is also the one that launches it, and it is the
   // same cell in all three shapes below. Only three things vary: which field
@@ -153,11 +199,13 @@ export function getColumnDefinitions({
     value: (row: Entry) => string | undefined
     isUcsc: (row: Entry) => boolean
     badges?: boolean
-  }): GenomeColumn => ({
+  }) => ({
     id,
     header,
-    value,
-    cell: row => (
+    fill: true,
+    sortValue: value,
+    title: (row: Entry) => cellText(value(row)),
+    cell: (row: Entry) => (
       <GenomeNameCell
         displayName={value(row)}
         jbrowseConfig={row.jbrowseConfig}
@@ -198,29 +246,15 @@ export function getColumnDefinitions({
       [
         favoriteColumn,
         commonNameColumn(row => row.source === 'ucsc'),
-        {
-          id: 'source',
-          header: 'Group',
-          value: r => (r.source ? groupTitles.get(r.source) : undefined),
-        },
-        {
-          id: 'scientificName',
-          header: 'Scientific name',
-          value: r => r.scientificName,
-        },
-        {
-          id: 'ncbiAssemblyName',
-          header: 'Assembly',
-          value: r => r.ncbiAssemblyName,
-        },
-        { id: 'accession', header: 'Accession', value: r => r.accession },
+        textColumn('source', 'Group', r =>
+          r.source ? groupTitles.get(r.source) : undefined,
+        ),
+        textColumn('scientificName', 'Scientific name', r => r.scientificName),
+        textColumn('ncbiAssemblyName', 'Assembly', r => r.ncbiAssemblyName),
+        textColumn('accession', 'Accession', r => r.accession),
       ],
       [
-        {
-          id: 'assemblyStatus',
-          header: 'Assembly status',
-          value: r => r.assemblyStatus,
-        },
+        textColumn('assemblyStatus', 'Assembly status', r => r.assemblyStatus),
         taxonIdColumn,
       ],
     )
@@ -234,54 +268,37 @@ export function getColumnDefinitions({
           value: r => r.name,
           isUcsc: () => true,
         }),
-        {
-          id: 'scientificName',
-          header: 'Scientific name',
-          value: r => r.scientificName,
-        },
-        { id: 'organism', header: 'Organism', value: r => r.organism },
-        { id: 'description', header: 'Description', value: r => r.description },
+        textColumn('scientificName', 'Scientific name', r => r.scientificName),
+        textColumn('organism', 'Organism', r => r.organism),
+        textColumn('description', 'Description', r => r.description),
       ],
-      [
-        { id: 'sourceName', header: 'Source', value: r => r.sourceName },
-        taxonIdColumn,
-      ],
+      [textColumn('sourceName', 'Source', r => r.sourceName), taxonIdColumn],
     )
   } else {
     return visible(
       [
         favoriteColumn,
         commonNameColumn(() => false),
-        {
-          id: 'assemblyStatus',
-          header: 'Assembly status',
-          value: r => r.assemblyStatus,
-        },
-        {
-          id: 'seqReleaseDate',
-          header: 'Release date',
-          value: r => formatReleaseDate(r.seqReleaseDate),
-        },
-        {
-          id: 'scientificName',
-          header: 'Scientific name',
-          value: r => r.scientificName,
-        },
-        {
-          id: 'ncbiAssemblyName',
-          header: 'NCBI assembly name',
-          value: r => r.ncbiAssemblyName,
-        },
+        textColumn('assemblyStatus', 'Assembly status', r => r.assemblyStatus),
+        textColumn('seqReleaseDate', 'Release date', r =>
+          formatReleaseDate(r.seqReleaseDate),
+        ),
+        textColumn('scientificName', 'Scientific name', r => r.scientificName),
+        textColumn(
+          'ncbiAssemblyName',
+          'NCBI assembly name',
+          r => r.ncbiAssemblyName,
+        ),
       ],
       [
-        { id: 'accession', header: 'Accession', value: r => r.accession },
-        {
-          id: 'pairedAccession',
-          header: 'Paired accession',
-          value: r => r.pairedAccession,
-        },
+        textColumn('accession', 'Accession', r => r.accession),
+        textColumn(
+          'pairedAccession',
+          'Paired accession',
+          r => r.pairedAccession,
+        ),
         taxonIdColumn,
-        { id: 'submitterOrg', header: 'Submitter', value: r => r.submitterOrg },
+        textColumn('submitterOrg', 'Submitter', r => r.submitterOrg),
       ],
     )
   }
