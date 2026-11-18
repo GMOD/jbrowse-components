@@ -77,8 +77,8 @@ struct Uniforms {
   float  rowBandPx;
   float  rowOffsetPx;
   float  zero;
-  // The CSS width `minWidthPx` is measured against; see rowRect's
-  // `minCellDenomPx` for why it has to be a CSS width.
+  // The CSS width `minWidthPx` and the guard band are measured against; see
+  // rowRect's `minCellDenomPx` for why it has to be a CSS width.
   float  minCellDenomPx;
   float  minWidthPx;
   float  devicePixelRatio;
@@ -133,7 +133,9 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
         }
       }
       float vy = slabVertexYPx(topPx, botPx, q.y, u.devicePixelRatio);
-      o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(vy, u.canvasHeight), 0.0, 1.0);
+      o.position = float4(
+        lerp(guardBandClipX(sx1, u.minCellDenomPx), guardBandClipX(sx2, u.minCellDenomPx), q.x),
+        yPxToClipY(vy, u.canvasHeight), 0.0, 1.0);
       o.color = color;
       o.barInkPx = float2(vy - topPx, vy - botPx);
     }

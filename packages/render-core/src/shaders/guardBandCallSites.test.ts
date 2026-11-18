@@ -5,6 +5,8 @@ import path from 'node:path'
 const root = path.resolve(__dirname, '../../../..')
 
 const CALLS_PER_SHADER = {
+  'packages/render-core/src/shaders/barMark': 2,
+  'packages/render-core/src/shaders/lineStepMark': 2,
   'packages/render-core/src/shaders/spanMark': 2,
   'plugins/alignments/src/shaders/slang/clip': 2,
   'plugins/alignments/src/shaders/slang/gap': 2,

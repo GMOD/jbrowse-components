@@ -81,8 +81,8 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
     o.bandTop = 0.0;
     return o;
   }
-  float sx1 = lineBpToClipX(inst.x, u);
-  float sx2 = lineBpToClipX(inst.x2, u);
+  float sx1 = guardBandClipX(lineBpToClipX(inst.x, u), u.viewportWidth);
+  float sx2 = guardBandClipX(lineBpToClipX(inst.x2, u), u.viewportWidth);
   float bandTop = rowBandTopPx(u.rowOffsetPx, u.rowHeight, place.slot);
   float yPx = lineValueYPx(inst.y, bandTop, u);
   float prevPx = neighbourYPx(inst.prevY, bandTop);
