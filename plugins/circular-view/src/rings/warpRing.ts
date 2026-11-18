@@ -72,9 +72,8 @@ export function warpRing(out: Pixels, strip: Pixels, ring: Annulus) {
       }
       const dx = x + 0.5 - cx
       const r = Math.sqrt(dx * dx + dy2)
-      const outerFade = outer - r + 0.5
-      const innerFade = r - inner + 0.5
-      if (outerFade <= 0 || innerFade <= 0) {
+      const coverage = rimCoverage(outer - r) - rimCoverage(inner - r)
+      if (coverage <= 0) {
         continue
       }
       const u = turnAt(dx, dy, ring.offsetRadians) * uScale - 0.5
@@ -117,10 +116,18 @@ export function warpRing(out: Pixels, strip: Pixels, ring: Annulus) {
             w01 * src[p01 + 2]! +
             w11 * src[p11 + 2]!) *
           inv
-        dst[o + 3] = alpha * Math.min(1, outerFade) * Math.min(1, innerFade)
+        dst[o + 3] = alpha * coverage
       }
     }
   }
+}
+
+/**
+ * Coverage of a disc for a pixel whose centre is `signedInkPx` inside its rim,
+ * over the one-pixel ramp the shader's `edgeCoverage` takes.
+ */
+function rimCoverage(signedInkPx: number) {
+  return Math.min(1, Math.max(0, signedInkPx + 0.5))
 }
 
 /** An axis-aligned run of a `Pixels`, in its px. */

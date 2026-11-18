@@ -234,3 +234,23 @@ test('a thin ring on a wide canvas puts a sliver of its bounding square', () => 
   expect(area / annulus).toBeLessThan(2)
   expect(area / 4000 ** 2).toBeLessThan(0.12)
 })
+
+// A half-pixel band straddling a pixel centre covers half that pixel. The
+// product of the two rims' ramps put 0.75 * 0.75 = 0.5625 of it there.
+test('a ring under a pixel wide inks its own width', () => {
+  const strip = {
+    data: new Uint8ClampedArray(64 * 8 * 4).fill(255),
+    width: 64,
+    height: 8,
+  }
+  const out = { data: new Uint8ClampedArray(24 * 2 * 4), width: 24, height: 2 }
+  warpRing(out, strip, {
+    centerX: 0.5,
+    centerY: 0.5,
+    innerPx: 9.75,
+    outerPx: 10.25,
+    offsetRadians: 0,
+  })
+  const alphaAt = (x: number) => out.data[x * 4 + 3]
+  expect([alphaAt(9), alphaAt(10), alphaAt(11)]).toEqual([0, 128, 0])
+})

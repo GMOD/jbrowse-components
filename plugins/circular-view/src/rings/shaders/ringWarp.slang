@@ -21,6 +21,7 @@
 //! coverage: analytic
 //! texture-filter: linear
 
+import antialias;
 import hpmath;
 
 public static const uint RING_SEGMENTS = 64u;
@@ -48,10 +49,10 @@ struct Uniforms {
 
 struct VsOut {
   float4 position     : SV_Position;
-  // device px from the centre, y down — carried from the vertex stage rather
+  // CSS px from the centre, y down — carried from the vertex stage rather
   // than read off the framebuffer position, whose y runs the other way on GLSL
   float2 fromCenterPx : TEXCOORD0;
-  // device px: inner and outer rim
+  // CSS px: inner and outer rim
   float2 radiiPx      : TEXCOORD1;
 };
 
@@ -61,18 +62,16 @@ VsOut vs_main(RingInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
   float step = TWO_PI / float(RING_SEGMENTS);
   float a = (float(seg) + q.x) * step;
-  float dpr = u.devicePixelRatio;
-  float inner = inst.innerPx * dpr;
-  float outer = inst.outerPx * dpr;
-  float rOut = (outer + 1.0) / cos(step * 0.5);
-  float rIn = max(inner - 1.0, 0.0);
+  float pad = aaPx(u.devicePixelRatio);
+  float rOut = (inst.outerPx + pad) / cos(step * 0.5);
+  float rIn = max(inst.innerPx - pad, 0.0);
   float2 p = lerp(rIn, rOut, q.y) * float2(cos(a), sin(a));
-  float2 css = float2(u.centerX, u.centerY) + p / dpr;
 
   VsOut o;
-  o.position = screenToClip(css, float2(u.canvasWidth, u.canvasHeight));
+  o.position = screenToClip(float2(u.centerX, u.centerY) + p,
+                            float2(u.canvasWidth, u.canvasHeight));
   o.fromCenterPx = p;
-  o.radiiPx = float2(inner, outer);
+  o.radiiPx = float2(inst.innerPx, inst.outerPx);
   return o;
 }
 
@@ -82,9 +81,9 @@ float4 fs_main(VsOut v) : SV_Target {
   float inner = v.radiiPx.x;
   float outer = v.radiiPx.y;
   float band = outer - inner;
-  float cov = clamp(outer - r + 0.5, 0.0, 1.0) * clamp(r - inner + 0.5, 0.0, 1.0);
-  // a band the layout collapsed draws nothing, as the Canvas2D twin does; the
-  // rim coverage above is still non-zero over it, and the sample would be NaN
+  float cov = slabCoverage(outer - r, inner - r, u.devicePixelRatio);
+  // a band the layout collapsed draws nothing, as the Canvas2D twin does, and
+  // its sample would be NaN
   if (cov <= 0.0 || band <= 0.0) discard;
   float a = atan2(v.fromCenterPx.y, v.fromCenterPx.x) - u.offsetRadians;
   a -= floor(a / TWO_PI) * TWO_PI;
