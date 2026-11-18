@@ -160,6 +160,51 @@ test('a chip keeps its popover anchored while its last value is unchecked', () =
   expect(chipLabels(container)).not.toContain('target')
 })
 
+function chip(container: HTMLElement, label: string) {
+  return [...container.querySelectorAll<HTMLElement>('.MuiChip-root')].find(
+    c => c.textContent === label,
+  )!
+}
+
+function clearByKeyboard(el: HTMLElement) {
+  el.focus()
+  fireEvent.keyDown(el, { key: 'Backspace' })
+  fireEvent.keyUp(el, { key: 'Backspace' })
+}
+
+test('clearing a "More filters" chip from the keyboard hands focus to "More filters"', () => {
+  const { model } = setup()
+  const { container } = renderSelector(model)
+  act(() => {
+    model.trackTable.setFilter('metadata.target', ['t1'])
+  })
+  clearByKeyboard(chip(container, 'target: t1'))
+  expect(chipLabels(container)).not.toContain('target: t1')
+  expect(document.activeElement?.textContent).toBe('More filters')
+})
+
+test('clearing the last chip behind "More filters" hands focus to the filter box', () => {
+  const { model } = setup()
+  const { container, getByLabelText } = renderSelector(model)
+  act(() => {
+    model.trackTable.setColumnVisible('metadata.target', true)
+    model.trackTable.setFilter('metadata.flag', ['on'])
+  })
+  clearByKeyboard(chip(container, 'flag: on'))
+  expect(chipLabels(container)).not.toContain('More filters')
+  expect(document.activeElement === getByLabelText('Filter tracks')).toBe(true)
+})
+
+test('clearing a leading chip keeps focus on it', () => {
+  const { model } = setup()
+  const { container } = renderSelector(model)
+  act(() => {
+    model.trackTable.setFilter('metadata.lab', ['lab x'])
+  })
+  clearByKeyboard(chip(container, 'lab: lab x'))
+  expect(document.activeElement?.textContent).toBe('lab')
+})
+
 test("in tree mode the chips count what the tree's own search keeps", () => {
   const { model } = setup()
   const table = model.trackTable
