@@ -4,6 +4,7 @@ import { alpha } from '../palette.ts'
 export const ROW_HEIGHT = 25
 export const HEADER_HEIGHT = 35
 export const DEFAULT_COL_WIDTH = 100
+export const CHECKBOX_WIDTH = 40
 
 export const useVirtualTableStyles = makeStyles()(theme => {
   const borderColor = theme.palette.tableBorder

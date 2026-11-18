@@ -30,7 +30,8 @@ export interface VirtualTableColumn<R> {
 
 export interface VirtualTableLeading<R> {
   width: number
-  header: React.ReactNode
+  /** given the rows on show, which a select-all acts on */
+  header: (rows: readonly R[]) => React.ReactNode
   cell: (row: R) => React.ReactNode
 }
 
@@ -144,7 +145,7 @@ const VirtualTable = observer(function VirtualTable<
         <VirtualTableHead
           columns={columns}
           hasLeading={!!leading}
-          leadingHeader={leading?.header}
+          leadingHeader={leading?.header(rows)}
           onResizeStart={onResizeStart}
           sortField={sortField}
           sortAscending={sortAscending}

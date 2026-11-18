@@ -3,7 +3,7 @@ import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import VirtualTable, {
   EditableTextCell,
-  TableCheckbox,
+  checkboxLeading,
   useTableSort,
 } from '@jbrowse/core/ui/VirtualTable'
 import { getSession } from '@jbrowse/core/util'
@@ -20,7 +20,6 @@ import SelectionActions from './SelectionActions.tsx'
 import type { GridBookmarkModel, HighlightRow } from '../model.ts'
 import type { VirtualTableColumn } from '@jbrowse/core/ui/VirtualTable'
 
-const CHECKBOX_WIDTH = 40
 const COLOR_WIDTH = 60
 
 const useStyles = makeStyles()(theme => ({
@@ -125,18 +124,6 @@ const HighlightGrid = observer(function HighlightGrid({
   ]
   const { sortedRows, sortProps } = useTableSort(rows, columns)
 
-  const allSelected =
-    rows.length > 0 && selectedHighlights.length === rows.length
-  const toggle = (id: string) => {
-    const next = new Set(selectedIds)
-    if (next.has(id)) {
-      next.delete(id)
-    } else {
-      next.add(id)
-    }
-    model.setSelectedIds(next)
-  }
-
   return (
     <div>
       <SelectionActions
@@ -164,30 +151,14 @@ const HighlightGrid = observer(function HighlightGrid({
           {...sortProps}
           emptyMessage="No highlights yet. Drag across a view to highlight a region, or import from the menu."
           isRowSelected={row => selectedIds.has(row.id)}
-          leading={{
-            width: CHECKBOX_WIDTH,
-            header: (
-              <TableCheckbox
-                checked={allSelected}
-                indeterminate={selectedHighlights.length > 0 && !allSelected}
-                label="Select all highlights"
-                onChange={() => {
-                  model.setSelectedIds(
-                    new Set(allSelected ? [] : rows.map(r => r.id)),
-                  )
-                }}
-              />
-            ),
-            cell: row => (
-              <TableCheckbox
-                checked={selectedIds.has(row.id)}
-                label={`Select ${row.locString}`}
-                onChange={() => {
-                  toggle(row.id)
-                }}
-              />
-            ),
-          }}
+          leading={checkboxLeading({
+            selected: selectedIds,
+            onChange: next => {
+              model.setSelectedIds(next)
+            },
+            label: row => `Select ${row.locString}`,
+            allLabel: 'Select all highlights',
+          })}
           testId="highlight-table"
         />
       </div>

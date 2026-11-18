@@ -134,7 +134,7 @@ const SessionManager = observer(function SessionManager({
             rowHeight={ROW_HEIGHT}
             leading={{
               width: THUMBNAIL_WIDTH + 16,
-              header: null,
+              header: () => null,
               cell: row => <ThumbnailCell row={row} session={session} />,
             }}
             {...sortProps}

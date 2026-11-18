@@ -1,5 +1,5 @@
 import VirtualTable, {
-  TableCheckbox,
+  checkboxLeading,
   useTableSort,
 } from '@jbrowse/core/ui/VirtualTable'
 import { measureGridWidth } from '@jbrowse/core/util'
@@ -19,8 +19,6 @@ interface SessionRow extends RecentSessionData {
   lastModified: string
   lastModifiedTooltip?: string
 }
-
-const CHECKBOX_WIDTH = 50
 
 const RecentSessionsTable = observer(function RecentSessionsTable({
   launch,
@@ -108,19 +106,6 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
   ]
   const { sortedRows, sortProps } = useTableSort(rows, columns)
 
-  const allSelected =
-    rows.length > 0 && rows.every(row => selectedPaths.has(row.path))
-  const someSelected = rows.some(row => selectedPaths.has(row.path))
-  const toggle = (path: string) => {
-    const next = new Set(selectedPaths)
-    if (next.has(path)) {
-      next.delete(path)
-    } else {
-      next.add(path)
-    }
-    setSelectedPaths(next)
-  }
-
   return (
     <VirtualTable
       rows={sortedRows}
@@ -129,36 +114,18 @@ const RecentSessionsTable = observer(function RecentSessionsTable({
       {...sortProps}
       emptyMessage="No sessions"
       isRowSelected={narrow ? undefined : row => selectedPaths.has(row.path)}
-      // 50px of checkbox for a multi-select whose two toolbar buttons the
+      // a checkbox column for a multi-select whose two toolbar buttons the
       // panel hides at this width: every one of their actions is in the
       // row's own menu, and the name needs the space more
       leading={
         narrow
           ? undefined
-          : {
-              width: CHECKBOX_WIDTH,
-              header: (
-                <TableCheckbox
-                  checked={allSelected}
-                  indeterminate={someSelected && !allSelected}
-                  label="Select all sessions"
-                  onChange={() => {
-                    setSelectedPaths(
-                      new Set(allSelected ? [] : rows.map(row => row.path)),
-                    )
-                  }}
-                />
-              ),
-              cell: row => (
-                <TableCheckbox
-                  checked={selectedPaths.has(row.path)}
-                  label={`Select ${row.name}`}
-                  onChange={() => {
-                    toggle(row.path)
-                  }}
-                />
-              ),
-            }
+          : checkboxLeading({
+              selected: selectedPaths,
+              onChange: setSelectedPaths,
+              label: row => `Select ${row.name}`,
+              allLabel: 'Select all sessions',
+            })
       }
       testId="recent-sessions-table"
     />

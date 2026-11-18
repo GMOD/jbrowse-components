@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { AssemblySelector, FileDropZone, SanitizedHTML } from '@jbrowse/core/ui'
 import VirtualTable, {
   EditableTextCell,
-  TableCheckbox,
+  checkboxLeading,
   useTableSort,
 } from '@jbrowse/core/ui/VirtualTable'
 import {
@@ -62,7 +62,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const CHECKBOX_WIDTH = 40
 const KIND_WIDTH = 110
 
 interface TrackRow {
@@ -174,7 +173,6 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
   const selectedIds = new Set(
     tracks.filter(t => ticked.has(t.id)).map(t => t.id),
   )
-  const allSelected = tracks.length > 0 && selectedIds.size === tracks.length
   const columns: VirtualTableColumn<TrackRow>[] = [
     {
       id: 'name',
@@ -298,36 +296,12 @@ const MultiRowAddTrackWorkflow = observer(function MultiRowAddTrackWorkflow({
               {...sortProps}
               emptyMessage="No tracks"
               isRowSelected={row => selectedIds.has(row.id)}
-              leading={{
-                width: CHECKBOX_WIDTH,
-                header: (
-                  <TableCheckbox
-                    checked={allSelected}
-                    indeterminate={selectedIds.size > 0 && !allSelected}
-                    label="Select all tracks"
-                    onChange={() => {
-                      setTicked(
-                        new Set(allSelected ? [] : tracks.map(t => t.id)),
-                      )
-                    }}
-                  />
-                ),
-                cell: row => (
-                  <TableCheckbox
-                    checked={selectedIds.has(row.id)}
-                    label={`Select ${coarseStripHTML(row.name)}`}
-                    onChange={() => {
-                      const next = new Set(selectedIds)
-                      if (next.has(row.id)) {
-                        next.delete(row.id)
-                      } else {
-                        next.add(row.id)
-                      }
-                      setTicked(next)
-                    }}
-                  />
-                ),
-              }}
+              leading={checkboxLeading({
+                selected: selectedIds,
+                onChange: setTicked,
+                label: row => `Select ${coarseStripHTML(row.name)}`,
+                allLabel: 'Select all tracks',
+              })}
               testId="multi-row-track-list"
             />
           </div>

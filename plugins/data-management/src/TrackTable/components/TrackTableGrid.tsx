@@ -1,14 +1,17 @@
-import VirtualTable, { DEFAULT_COL_WIDTH } from '@jbrowse/core/ui/VirtualTable'
+import VirtualTable, {
+  CHECKBOX_WIDTH,
+  DEFAULT_COL_WIDTH,
+  TableCheckbox,
+} from '@jbrowse/core/ui/VirtualTable'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { highlightPatterns } from '@jbrowse/core/util/searchText'
-import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react'
 
 import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
 import { isUnsupported } from '../../HierarchicalTrackSelectorWidget/util.ts'
 import { getShowAllState, setTracksShown } from '../tableSelection.ts'
 import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
-import { CHECKBOX_WIDTH, checkboxSx, useTableStyles } from './tableStyles.ts'
+import { useTableStyles } from './tableStyles.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { TrackTableModel, TrackRow } from '../trackTableModel.ts'
@@ -86,18 +89,15 @@ const TrackTableGrid = observer(function TrackTableGrid({
       }}
       leading={{
         width: CHECKBOX_WIDTH,
-        header: narrowed ? (
-          <Checkbox
-            size="small"
-            checked={allShown}
-            indeterminate={someShown}
-            onChange={() => {
-              toggleAll()
-            }}
-            slotProps={{ input: { 'aria-label': 'Show all matching tracks' } }}
-            sx={checkboxSx}
-          />
-        ) : null,
+        header: () =>
+          narrowed ? (
+            <TableCheckbox
+              checked={allShown}
+              indeterminate={someShown}
+              label="Show all matching tracks"
+              onChange={toggleAll}
+            />
+          ) : null,
         cell: checkboxCell,
       }}
       isRowSelected={row => model.selectionSet.has(row.id)}

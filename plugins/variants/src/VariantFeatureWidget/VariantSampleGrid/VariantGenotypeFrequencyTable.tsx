@@ -1,5 +1,5 @@
 import DetailTable from '@jbrowse/core/ui/DetailTable'
-import { TableCheckbox } from '@jbrowse/core/ui/VirtualTable'
+import { checkboxLeading } from '@jbrowse/core/ui/VirtualTable'
 import { observer } from 'mobx-react'
 
 import type { VariantSampleGridRow } from './types.ts'
@@ -41,23 +41,12 @@ const VariantGenotypeFrequencyTable = observer(
     const genotypeRows = tallyGenotypes(rows)
     const isSelected = (row: GenotypeRow) =>
       selectedGenotypes === null || selectedGenotypes.has(row.GT)
-    const selectedCount = genotypeRows.filter(isSelected).length
-
     // every genotype selected is the same view as none filtered, so it
     // collapses to "no filter" rather than a count of n of n
     const select = (genotypes: Set<string>) => {
       setSelectedGenotypes(
         genotypes.size === genotypeRows.length ? null : genotypes,
       )
-    }
-    const toggle = (row: GenotypeRow) => {
-      const next = new Set(genotypeRows.filter(isSelected).map(r => r.GT))
-      if (next.has(row.GT)) {
-        next.delete(row.GT)
-      } else {
-        next.add(row.GT)
-      }
-      select(next)
     }
     const showOnly = (row: GenotypeRow) => {
       select(
@@ -91,37 +80,12 @@ const VariantGenotypeFrequencyTable = observer(
         columns={columns}
         isRowSelected={row => selectedGenotypes !== null && isSelected(row)}
         onRowClick={showOnly}
-        leading={{
-          width: 40,
-          header: (
-            <TableCheckbox
-              checked={selectedCount === genotypeRows.length}
-              indeterminate={
-                selectedCount > 0 && selectedCount < genotypeRows.length
-              }
-              label="Select all genotypes"
-              onChange={() => {
-                select(
-                  selectedCount === genotypeRows.length
-                    ? new Set()
-                    : new Set(genotypeRows.map(r => r.GT)),
-                )
-              }}
-            />
-          ),
-          cell: row => (
-            <TableCheckbox
-              checked={isSelected(row)}
-              label={`Select ${row.GT}`}
-              onClick={event => {
-                event.stopPropagation()
-              }}
-              onChange={() => {
-                toggle(row)
-              }}
-            />
-          ),
-        }}
+        leading={checkboxLeading({
+          selected: new Set(genotypeRows.filter(isSelected).map(r => r.id)),
+          onChange: select,
+          label: row => `Select ${row.GT}`,
+          allLabel: 'Select all genotypes',
+        })}
       />
     )
   },

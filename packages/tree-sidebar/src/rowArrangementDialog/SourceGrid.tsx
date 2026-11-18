@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import VirtualTable, { TableCheckbox } from '@jbrowse/core/ui/VirtualTable'
+import VirtualTable, { checkboxLeading } from '@jbrowse/core/ui/VirtualTable'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -11,8 +11,6 @@ import { buildSourceColumns } from './buildSourceColumns.tsx'
 import { useSourceSort } from './useSourceSort.ts'
 
 import type { EachRowPicks } from './buildSourceColumns.tsx'
-
-const CHECKBOX_WIDTH = 50
 
 const useStyles = makeStyles()({
   cell: {
@@ -53,7 +51,6 @@ export default observer(function SourceGrid<S extends { name: string }>({
   })
   const widths = Object.fromEntries(columns.map(col => [col.id, col.width]))
   const selected = rows.filter(r => ticked.has(r.name)).map(r => r.name)
-  const allSelected = rows.length > 0 && selected.length === rows.length
 
   return (
     <div>
@@ -77,34 +74,12 @@ export default observer(function SourceGrid<S extends { name: string }>({
           }}
           emptyMessage="No rows"
           isRowSelected={({ id }) => ticked.has(id)}
-          leading={{
-            width: CHECKBOX_WIDTH,
-            header: (
-              <TableCheckbox
-                checked={allSelected}
-                indeterminate={selected.length > 0 && !allSelected}
-                label="Select all rows"
-                onChange={() => {
-                  setTicked(new Set(allSelected ? [] : rows.map(r => r.name)))
-                }}
-              />
-            ),
-            cell: ({ id }) => (
-              <TableCheckbox
-                checked={ticked.has(id)}
-                label={`Select ${id}`}
-                onChange={() => {
-                  const next = new Set(ticked)
-                  if (next.has(id)) {
-                    next.delete(id)
-                  } else {
-                    next.add(id)
-                  }
-                  setTicked(next)
-                }}
-              />
-            ),
-          }}
+          leading={checkboxLeading({
+            selected: ticked,
+            onChange: setTicked,
+            label: ({ id }) => `Select ${id}`,
+            allLabel: 'Select all rows',
+          })}
           testId="row-arrangement-rows"
         />
       </div>

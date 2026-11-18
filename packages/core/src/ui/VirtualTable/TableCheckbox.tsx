@@ -10,19 +10,20 @@ const useStyles = makeStyles()({
   },
 })
 
-/** a checkbox sized for a table row's leading column */
+/**
+ * a checkbox sized for a table row's leading column, whose click stops short
+ * of the row's own
+ */
 const TableCheckbox = observer(function TableCheckbox({
   checked,
   indeterminate,
   label,
   onChange,
-  onClick,
 }: {
   checked: boolean
   indeterminate?: boolean
   label: string
   onChange: () => void
-  onClick?: (event: React.MouseEvent) => void
 }) {
   const { classes } = useStyles()
   return (
@@ -31,7 +32,9 @@ const TableCheckbox = observer(function TableCheckbox({
       className={classes.checkbox}
       checked={checked}
       indeterminate={indeterminate}
-      onClick={onClick}
+      onClick={event => {
+        event.stopPropagation()
+      }}
       onChange={() => {
         onChange()
       }}
