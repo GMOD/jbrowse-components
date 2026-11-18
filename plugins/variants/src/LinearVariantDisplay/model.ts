@@ -1181,7 +1181,6 @@ export function stateModelFactory(
       .views(self => cellKeyViews(self))
       .views(self => recordColorViews(self))
       .views(recordsRenderViews)
-      .views(recordsColorScaleViews)
       .views(self => {
         // the last placement handed out, so a change that moves no row (a
         // relabel, a tint) returns the same array and re-places nothing
@@ -1239,6 +1238,7 @@ export function stateModelFactory(
       })
       .views(self => variantRowsHeightViews(self))
       .views(recordsLayoutViews)
+      .views(recordsColorScaleViews)
       .views(self => variantHeightViews(self))
       .views(recordsTrackHeightViews)
       .actions(recordsLayoutActions)

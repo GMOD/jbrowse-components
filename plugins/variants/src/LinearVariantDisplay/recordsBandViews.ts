@@ -34,6 +34,7 @@ import {
   featureIdsTouchingBlocks,
   hiddenSectionFeatureIds,
   hostFeatureBand,
+  isPlacedRow,
   labelFontSize,
   labelVisibility,
   maxBottom,
@@ -70,9 +71,8 @@ import {
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { CellHue, cellColorEncodingOf } from '../shared/cellHue.ts'
 import type { RecordFieldReads } from '../shared/recordFields.ts'
-import type { ProcessedSource } from '../shared/types.ts'
+import type { ProcessedSource, VariantFeatureInfo } from '../shared/types.ts'
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
-import type { KeyedVariants } from './keyedVariants.ts'
 import type { RecordCarrierCounter } from './recordCarriers.ts'
 import type { RecordsLabels } from './recordsRenderData.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -657,7 +657,7 @@ export type RecordsRender = ReturnType<typeof recordsRenderViews>
 export interface RecordsColorScaleHost {
   showRecords: boolean
   recordsColorBySvClass: boolean
-  keyedVariants: KeyedVariants
+  recordsSvTypes: Iterable<string>
 }
 
 /** The records band's key, which the display and a static export install alike. */
@@ -670,7 +670,7 @@ export function recordsColorScaleViews(self: RecordsColorScaleHost) {
      */
     get recordsColorScales(): ColorScale[] {
       return self.showRecords && self.recordsColorBySvClass
-        ? [svClassScale(self.keyedVariants.svTypes)].filter(
+        ? [svClassScale(self.recordsSvTypes)].filter(
             scale => scale.entries.length > 0,
           )
         : []
@@ -689,6 +689,7 @@ interface RecordsLayoutHost extends RecordsRenderHost, RecordsRender {
   rowsContentHeight: number
   rowsTopOffset: number
   availableHeight: number
+  featureInfoById: (featureId: string) => VariantFeatureInfo | undefined
 }
 
 export function recordsLayoutViews(self: RecordsLayoutHost) {
@@ -860,6 +861,27 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
         this.recordsLaidOutDataMap,
         self.recordsOnScreenIds,
       )
+    },
+    /**
+     * #getter
+     * The SV classes of the records the band placed on screen, which its
+     * key lists: none of a hidden section's, nor of one past the band's
+     * height.
+     */
+    get recordsSvTypes() {
+      const onScreen = self.recordsOnScreenIds
+      const svTypes = new Set<string>()
+      for (const data of this.recordsLaidOutDataMap.values()) {
+        for (const { featureId, topPx } of data.flatbushItems) {
+          if (isPlacedRow(topPx) && onScreen.has(featureId)) {
+            const svType = self.featureInfoById(featureId)?.svType
+            if (svType) {
+              svTypes.add(svType)
+            }
+          }
+        }
+      }
+      return svTypes
     },
     /**
      * #getter

@@ -155,6 +155,28 @@ describe('records.facet', () => {
     expect(display.recordsHiddenCount).toBe(0)
   })
 
+  test("the SV type key leaves out a hidden section's classes", () => {
+    const { display } = recordsDisplayAt(
+      [
+        ['ins', 1000, 1001, '', 'INS', { groupKey: 'Benign' }],
+        ['del', 2000, 6000, '', 'DEL', { groupKey: 'Pathogenic' }],
+      ],
+      10,
+      { facet: 'INFO.CLNSIG' },
+      false,
+    )
+    const keyLabels = () =>
+      display.colorScales.flatMap(s =>
+        s.id === 'records' && s.kind === 'categorical'
+          ? s.entries.map(e => e.label)
+          : [],
+      )
+    expect(keyLabels()).toContain('Deletion')
+    display.hideRecordsGroup('Pathogenic')
+    expect(keyLabels()).not.toContain('Deletion')
+    expect(keyLabels()).toContain('Insertion')
+  })
+
   test('is not the sample facet', () => {
     const { display } = recordsDisplayAt(SECTIONED, 10, {}, false)
     display.recordsFacetByField('INFO.CLNSIG')

@@ -155,7 +155,9 @@ the view's settled window (ADR-093), since the view fetches wider than it shows:
 site is multiallelic" is not the same claim as "a secondary-alt cell is on
 screen", and the legend makes the second one. The columns layout fetches only
 the visible span, and the tables their own regions, so both read every variant
-fetched.
+fetched. The records band's "SV type" key reads the records the band placed on
+screen (`recordsSvTypes`), so a hidden `records.facet` section or a record
+behind "+N hidden" keys nothing; the tables, with no layout, key every record.
 
 ## Mixed ploidy: five consumers, one contract
 

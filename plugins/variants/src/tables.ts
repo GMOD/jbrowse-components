@@ -181,6 +181,15 @@ const VariantTablesHost = treeSidebarRowStages<ProcessedSource>()(base)
   }))
   .views(self => cellKeyViews(self))
   .views(self => recordColorViews(self))
+  .views(self => ({
+    /**
+     * The SV classes the records band keys: with no layout, every keyed
+     * record's.
+     */
+    get recordsSvTypes() {
+      return self.keyedVariants.svTypes
+    },
+  }))
   .views(self => recordsColorScaleViews(self))
   .views(self => regionCellColorViews(self))
   .views(self => variantDataKeyViews(self))
