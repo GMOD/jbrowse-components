@@ -1,9 +1,9 @@
-import { buildSashimiDownKeys } from './groupedDataMaps.ts'
+import { buildSashimiStripKeys } from './groupedDataMaps.ts'
 import {
-  boundBelowCoverageHeights,
-  dragBelowCoverageBand,
+  boundLaneBandHeights,
+  dragLaneBand,
   dragPileupHiddenStrip,
-  fittedBelowCoverageHeights,
+  fittedLaneBandHeights,
   laneSlotHeight,
   pileupHiddenBands,
   pileupHiddenHeight,
@@ -16,11 +16,11 @@ import type {
   ReadConnectionsPlacement,
   SashimiPlacement,
 } from './constants.ts'
-import type { BelowCoverageBandsInput, StripKey } from './sectionLayout.ts'
+import type { LaneBandsInput, StripKey } from './sectionLayout.ts'
 import type { BandPlot } from '@jbrowse/core/util/bandLayout'
 
-/** What {@link sashimiDownViews} reads: the fetch and the junction settings. */
-export interface SashimiDownHost {
+/** What {@link sashimiStripViews} reads: the fetch and the junction settings. */
+export interface SashimiStripHost {
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>
   junctionFilter: JunctionFilter
   effectiveSashimiPlacement: SashimiPlacement
@@ -28,21 +28,21 @@ export interface SashimiDownHost {
   hiddenGroups: ReadonlySet<string>
 }
 
-/** Which junctions draw in the strip below coverage, per lane. */
-export function sashimiDownViews(self: SashimiDownHost) {
+/** Which junctions draw in the sashimi strip, per lane. */
+export function sashimiStripViews(self: SashimiStripHost) {
   return {
     /**
      * #getter
-     * Per group, which junctions draw in the strip below coverage (by
+     * Per group, which junctions draw in the sashimi strip (by
      * `junctionKey`): the one sashimi side decision, read by
-     * `sashimiDownArcLanes` to reserve the strip and `themed`'s sashimi
+     * `sashimiStripLanes` to reserve the strip and `themed`'s sashimi
      * feeds to place each arc. refNames come from `loadedRegions`, keeping this
      * a tier-1 (fetch) derivation. A region not yet loaded gets a unique
      * key, so regions not proven to share a chromosome never pool onto
      * one bp line.
      */
-    get sashimiDownKeysByGroup() {
-      return buildSashimiDownKeys(self.rpcDataMap, {
+    get sashimiStripKeysByGroup() {
+      return buildSashimiStripKeys(self.rpcDataMap, {
         filter: self.junctionFilter,
         placement: self.effectiveSashimiPlacement,
         refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
@@ -52,12 +52,12 @@ export function sashimiDownViews(self: SashimiDownHost) {
 
     /**
      * #getter
-     * Group keys whose junctions draw in the strip below coverage, i.e.
+     * Group keys whose junctions draw in the sashimi strip, i.e.
      * the lanes that strip is reserved for.
      */
-    get sashimiDownArcLanes(): ReadonlySet<string> {
+    get sashimiStripLanes(): ReadonlySet<string> {
       return new Set(
-        [...this.sashimiDownKeysByGroup]
+        [...this.sashimiStripKeysByGroup]
           .filter(([, down]) => down.size > 0)
           .map(([key]) => key),
       )
@@ -76,7 +76,7 @@ export interface BandStackHost {
   sashimiHeight: number
   effectiveSashimiPlacement: SashimiPlacement
   arcsResult: { inkGroupKeys: ReadonlySet<string> }
-  sashimiDownArcLanes: ReadonlySet<string>
+  sashimiStripLanes: ReadonlySet<string>
   bandPlot: BandPlot
   showPileup: boolean
   autoHeight: boolean
@@ -94,11 +94,11 @@ export function bandStackViews(self: BandStackHost) {
   return {
     /**
      * #getter
-     * The below-coverage bands as stated: the height slots, the settings
+     * A lane's bands as stated: the height slots, the settings
      * and whether any lane has arcs or a sashimi junction bound for its
      * strip.
      */
-    get statedBelowCoverageBands() {
+    get statedLaneBands() {
       return {
         showCoverage: self.showCoverage,
         coverageHeight: self.coverageHeight,
@@ -110,7 +110,7 @@ export function bandStackViews(self: BandStackHost) {
         sashimiHeight: self.sashimiHeight,
         sashimiAbove: self.effectiveSashimiPlacement === 'above',
         hasArcs: self.arcsResult.inkGroupKeys.size > 0,
-        hasSashimiDownArcs: self.sashimiDownArcLanes.size > 0,
+        hasSashimiStripArcs: self.sashimiStripLanes.size > 0,
       }
     },
 
@@ -121,10 +121,7 @@ export function bandStackViews(self: BandStackHost) {
      * height no drag clamped. The same whether or not the pileup shows.
      */
     get statedBandHeights() {
-      return boundBelowCoverageHeights(
-        this.statedBelowCoverageBands,
-        self.bandPlot,
-      )
+      return boundLaneBandHeights(this.statedLaneBands, self.bandPlot)
     },
 
     /**
@@ -134,8 +131,8 @@ export function bandStackViews(self: BandStackHost) {
      * The row budget and the band drags read it, never the fitted stack, so
      * hiding the pileup moves no row pitch and no stated height.
      */
-    get belowCoverageBandsInput() {
-      return { ...this.statedBelowCoverageBands, ...this.statedBandHeights }
+    get laneBandsInput() {
+      return { ...this.statedLaneBands, ...this.statedBandHeights }
     },
 
     /**
@@ -158,36 +155,31 @@ export function bandStackViews(self: BandStackHost) {
      * rows.
      */
     get pileupHiddenBandsInput() {
-      return pileupHiddenBands(
-        this.statedBelowCoverageBands,
-        pileupHiddenHeight(self),
-      )
+      return pileupHiddenBands(this.statedLaneBands, pileupHiddenHeight(self))
     },
 
     /**
      * #getter
      * The band settings each lane reserves its strips from:
-     * `belowCoverageBandsInput` while the pileup shows,
+     * `laneBandsInput` while the pileup shows,
      * `pileupHiddenBandsInput` while it is hidden.
      */
-    get drawnBelowCoverageBandsInput() {
-      return self.showPileup
-        ? this.belowCoverageBandsInput
-        : this.pileupHiddenBandsInput
+    get drawnLaneBandsInput() {
+      return self.showPileup ? this.laneBandsInput : this.pileupHiddenBandsInput
     },
 
     /**
      * #getter
      * The three band heights as every consumer draws them: the stated
      * heights while the pileup shows, and while it is hidden the pooled
-     * stack fitted to fill `laneSlot` (`fittedBelowCoverageHeights`): the
+     * stack fitted to fill `laneSlot` (`fittedLaneBandHeights`): the
      * strips at their stated heights and the coverage taking the rest, or
      * with coverage off, the strips in proportion to their stated heights.
      */
     get bandHeights() {
       return self.showPileup
         ? this.statedBandHeights
-        : fittedBelowCoverageHeights(this.pileupHiddenBandsInput, this.laneSlot)
+        : fittedLaneBandHeights(this.pileupHiddenBandsInput, this.laneSlot)
     },
   }
 }
@@ -195,15 +187,15 @@ export function bandStackViews(self: BandStackHost) {
 /** What {@link dragStripHeight} reads: both stacks and which one draws. */
 export interface StripDragHost {
   showPileup: boolean
-  belowCoverageBandsInput: BelowCoverageBandsInput
+  laneBandsInput: LaneBandsInput
   bandPlot: BandPlot
-  pileupHiddenBandsInput: BelowCoverageBandsInput
+  pileupHiddenBandsInput: LaneBandsInput
   laneSlot: number
 }
 
 /**
  * The stated height one drag of strip `key` writes: clamped against the
- * pileup's plot while it shows (`dragBelowCoverageBand`), and while it is
+ * pileup's plot while it shows (`dragLaneBand`), and while it is
  * hidden to the room that leaves each lane's coverage its floor
  * (`dragPileupHiddenStrip`).
  */
@@ -213,12 +205,7 @@ export function dragStripHeight(
   target: number,
 ) {
   return self.showPileup
-    ? dragBelowCoverageBand(
-        self.belowCoverageBandsInput,
-        key,
-        self.bandPlot,
-        target,
-      )
+    ? dragLaneBand(self.laneBandsInput, key, self.bandPlot, target)
     : dragPileupHiddenStrip(
         self.pileupHiddenBandsInput,
         key,

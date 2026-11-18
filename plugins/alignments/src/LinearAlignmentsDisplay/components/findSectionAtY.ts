@@ -8,7 +8,7 @@
 // loop only needs each section's top and the strip it owns); pure so it can be
 // unit-tested without a model.
 export function findSectionAtY<
-  T extends { coverageTop: number; height: number },
+  T extends { sectionTop: number; height: number },
 >(
   sections: T[],
   canvasY: number,
@@ -23,7 +23,7 @@ export function findSectionAtY<
   }
   const { scrollTop } = opts
   for (const [index, section] of sections.entries()) {
-    const top = section.coverageTop - scrollTop
+    const top = section.sectionTop - scrollTop
     if (canvasY >= top && canvasY < top + section.height) {
       return { section, index, coverageTopOffset: top }
     }

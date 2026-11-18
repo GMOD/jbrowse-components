@@ -10,7 +10,7 @@ import {
 } from './sectionLayout.ts'
 
 import type {
-  BelowCoverageBandsSettings,
+  LaneBandsSettings,
   SectionLaneInput,
   SectionStackOpts,
   SectionsLayout,
@@ -27,13 +27,13 @@ function lane(o: Partial<TestLane> & { key: string; maxY: number }): TestLane {
   return {
     label: o.key,
     hasArcs: true,
-    hasSashimiDownArcs: false,
+    hasSashimiStripArcs: false,
     heightOverridePx: undefined,
     ...o,
   }
 }
 
-type StackOpts = Partial<BelowCoverageBandsSettings> &
+type StackOpts = Partial<LaneBandsSettings> &
   Partial<SectionStackOpts> & {
     coverageHeight: number
     rowHeight: number
@@ -49,11 +49,11 @@ function stack(lanes: TestLane[], o: StackOpts) {
       coverageHeight: o.coverageHeight,
       drawnReadConnections: o.drawnReadConnections ?? 'off',
       readConnectionsDown: o.readConnectionsDown ?? false,
+      readConnectionsAbove: o.readConnectionsAbove ?? false,
       readConnectionsHeight: o.readConnectionsHeight ?? 0,
       showSashimi: o.showSashimi ?? false,
+      sashimiAbove: o.sashimiAbove ?? false,
       sashimiHeight: o.sashimiHeight ?? 0,
-      readConnectionsAbove: o.readConnectionsAbove,
-      sashimiAbove: o.sashimiAbove,
     },
     {
       rowHeight: o.rowHeight,
@@ -72,13 +72,13 @@ function renders(
   )
 }
 
-type BandsInput = BelowCoverageBandsSettings & {
+type BandsInput = LaneBandsSettings & {
   hasArcs: boolean
-  hasSashimiDownArcs: boolean
+  hasSashimiStripArcs: boolean
 }
 
-function bandsOf({ hasArcs, hasSashimiDownArcs, ...settings }: BandsInput) {
-  return laneBands(settings, { hasArcs, hasSashimiDownArcs })
+function bandsOf({ hasArcs, hasSashimiStripArcs, ...settings }: BandsInput) {
+  return laneBands(settings, { hasArcs, hasSashimiStripArcs })
 }
 
 // Defaults to having arcs, like `lane` above, so a case only names the data
@@ -88,11 +88,13 @@ const baseBands: BandsInput = {
   coverageHeight: 45,
   drawnReadConnections: 'off',
   readConnectionsDown: false,
+  readConnectionsAbove: false,
   readConnectionsHeight: 40,
   showSashimi: false,
+  sashimiAbove: false,
   sashimiHeight: 40,
   hasArcs: true,
-  hasSashimiDownArcs: false,
+  hasSashimiStripArcs: false,
 }
 
 test('laneBands: coverage only => pileup right below coverage', () => {
@@ -105,7 +107,7 @@ test('laneBands: coverage only => pileup right below coverage', () => {
   expect(arcBand).toBeUndefined()
 })
 
-test('laneBands: down-mode arcs reserve their own band', () => {
+test('laneBands: below-mode arcs reserve their own band', () => {
   const r = bandsOf({
     ...baseBands,
     drawnReadConnections: 'link',
@@ -158,7 +160,7 @@ test.each([true, false])(
   },
 )
 
-test('laneBands: up-mode arcs overlay coverage (no reserved band)', () => {
+test('laneBands: overlay-mode arcs overlay coverage (no reserved band)', () => {
   const r = bandsOf({
     ...baseBands,
     drawnReadConnections: 'link',
@@ -172,7 +174,7 @@ test('laneBands: sashimi band needs coverage + a down-bound arc', () => {
   const on = bandsOf({
     ...baseBands,
     showSashimi: true,
-    hasSashimiDownArcs: true,
+    hasSashimiStripArcs: true,
   })
   expect(on.stack.reserved.sashimi).toBe(40)
   expect(on.stack.bottom).toBe(45 + 40)
@@ -180,7 +182,7 @@ test('laneBands: sashimi band needs coverage + a down-bound arc', () => {
   const off = bandsOf({
     ...baseBands,
     showSashimi: true,
-    hasSashimiDownArcs: false,
+    hasSashimiStripArcs: false,
   })
   expect(off.stack.reserved.sashimi).toBe(0)
   expect(off.stack.bottom).toBe(45)
@@ -203,7 +205,7 @@ describe('where the arcs draw', () => {
 
   // Overlaying the histogram means anchoring on its baseline, the scalebar
   // inset up from the band bottom.
-  test('up mode overlays coverage, anchored on its baseline', () => {
+  test('overlay mode overlays coverage, anchored on its baseline', () => {
     expect(bandsOf({ ...arcs, coverageHeight: 80 }).arcBand).toEqual({
       top: 0,
       height: 75,
@@ -213,11 +215,11 @@ describe('where the arcs draw', () => {
 
   // A coverage height below the inset is an honored state, and a negative
   // height would slip the band marks' `height > 0` gate.
-  test('up mode over a coverage band shorter than the inset draws nothing', () => {
+  test('overlay mode over a coverage band shorter than the inset draws nothing', () => {
     expect(bandsOf({ ...arcs, coverageHeight: 3 }).arcBand?.height).toBe(0)
   })
 
-  test('up mode with coverage hidden takes its whole own strip', () => {
+  test('overlay mode with coverage hidden takes its whole own strip', () => {
     const bands = bandsOf({ ...arcs, showCoverage: false })
     expect(bands.arcBand).toEqual({ top: 0, height: 60, down: false })
     expect(bands.stack.bottom).toBe(60)
@@ -225,20 +227,20 @@ describe('where the arcs draw', () => {
 
   // A shown band of 0 px leaves nothing to overlay, so the arcs reserve their
   // strip rather than drawing over the pileup.
-  test('up mode over a zero-height coverage band reserves its own strip', () => {
+  test('overlay mode over a zero-height coverage band reserves its own strip', () => {
     const bands = bandsOf({ ...arcs, coverageHeight: 0 })
     expect(bands.stack.reserved.readConnections).toBe(60)
     expect(bands.arcBand).toEqual({ top: 0, height: 60, down: false })
   })
 
-  test('down mode sits below coverage', () => {
+  test('below mode sits below coverage', () => {
     expect(
       bandsOf({ ...arcs, readConnectionsDown: true, coverageHeight: 80 })
         .arcBand,
     ).toEqual({ top: 80, height: 60, down: true })
   })
 
-  test('down mode heads the stack with coverage hidden', () => {
+  test('below mode heads the stack with coverage hidden', () => {
     expect(
       bandsOf({ ...arcs, readConnectionsDown: true, showCoverage: false })
         .arcBand,
@@ -295,7 +297,7 @@ test('arc band then sashimi band stack below coverage', () => {
       readConnectionsHeight: 200,
       showSashimi: true,
       sashimiHeight: 100,
-      hasSashimiDownArcs: true,
+      hasSashimiStripArcs: true,
     }),
   ).toMatchObject({
     stack: {
@@ -307,7 +309,7 @@ test('arc band then sashimi band stack below coverage', () => {
   })
 })
 
-test('down-mode arcs reserve a band per section, pushing pileups down', () => {
+test('below-mode arcs reserve a band per section, pushing pileups down', () => {
   const { sections, contentHeight } = stack(
     [lane({ key: 'a', maxY: 2 }), lane({ key: 'b', maxY: 3 })],
     {
@@ -320,7 +322,7 @@ test('down-mode arcs reserve a band per section, pushing pileups down', () => {
   )
   // Each section: coverage 40 + arc band 100, then pileup.
   expect(
-    sections.map(s => [s.coverageTop, s.arcBand?.top, s.pileupTop, s.maxY]),
+    sections.map(s => [s.sectionTop, s.arcBand?.top, s.pileupTop, s.maxY]),
   ).toEqual([
     [0, 40, 140, 2],
     [160, 200, 300, 3],
@@ -345,7 +347,7 @@ test('an arc-less lane reserves no arc band, so the ones with arcs shift up', ()
   )
   // Lane 1 has no arcs: pileup right under its coverage (40), bottom 60. Lane 2
   // still reserves its 100px band, so 100px of dead strip is gone from the stack.
-  expect(sections.map(s => [s.coverageTop, s.pileupTop])).toEqual([
+  expect(sections.map(s => [s.sectionTop, s.pileupTop])).toEqual([
     [0, 40],
     [60, 200],
   ])
@@ -353,7 +355,7 @@ test('an arc-less lane reserves no arc band, so the ones with arcs shift up', ()
   expect(contentHeight).toBe(230)
 })
 
-test('an arc-less lane drops its up-mode draw band too', () => {
+test('an arc-less lane drops its overlay-mode draw band too', () => {
   const { sections } = stack(
     [lane({ key: 'a', maxY: 2, hasArcs: false }), lane({ key: 'b', maxY: 2 })],
     {
@@ -364,7 +366,7 @@ test('an arc-less lane drops its up-mode draw band too', () => {
       readConnectionsHeight: 100,
     },
   )
-  // Up mode reserves nothing either way, so only the draw band differs.
+  // Overlay mode reserves nothing either way, so only the draw band differs.
   expect(sections.map(s => s.pileupTop)).toEqual([40, 100])
   expect(sections.map(s => s.arcBand?.height)).toEqual([undefined, 35])
 })
@@ -373,7 +375,7 @@ test('the sashimi strip is reserved per lane too', () => {
   const { sections } = stack(
     [
       lane({ key: 'a', maxY: 2, hasArcs: false }),
-      lane({ key: 'b', maxY: 2, hasArcs: false, hasSashimiDownArcs: true }),
+      lane({ key: 'b', maxY: 2, hasArcs: false, hasSashimiStripArcs: true }),
     ],
     {
       coverageHeight: 40,
@@ -392,7 +394,7 @@ test('the sashimi strip is reserved per lane too', () => {
 
 test('both strips stack for a lane that has arcs and sashimi', () => {
   const { sections } = stack(
-    [lane({ key: 'a', maxY: 2, hasSashimiDownArcs: true })],
+    [lane({ key: 'a', maxY: 2, hasSashimiStripArcs: true })],
     {
       coverageHeight: 40,
       rowHeight: 10,
@@ -417,7 +419,7 @@ test('both strips stack for a lane that has arcs and sashimi', () => {
 // the stack
 test('the sashimi strip stands on its own with coverage hidden', () => {
   const { sections } = stack(
-    [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true })],
+    [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiStripArcs: true })],
     {
       coverageHeight: 40,
       showCoverage: false,
@@ -443,11 +445,11 @@ describe('the sashimi strip above coverage', () => {
 
   test('heads the stack, and the coverage band starts under it', () => {
     const layout = stack(
-      [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true })],
+      [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiStripArcs: true })],
       above,
     )
     expect(layout.sections[0]).toMatchObject({
-      coverageTop: 0,
+      sectionTop: 0,
       bands: {
         order: ['sashimi', 'coverage', 'readConnections'],
         top: { sashimi: 0, coverage: 30, readConnections: 70 },
@@ -472,7 +474,7 @@ describe('the sashimi strip above coverage', () => {
       pileupTop: 40,
     })
     const below = stack(
-      [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true })],
+      [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiStripArcs: true })],
       { ...above, sashimiAbove: false },
     )
     expect(below.sections[0]).toMatchObject({
@@ -489,13 +491,13 @@ describe('the sashimi strip above coverage', () => {
   test('each grouped lane stacks its own strip over its own coverage', () => {
     const layout = stack(
       [
-        lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true }),
-        lane({ key: 'b', maxY: 2, hasArcs: false, hasSashimiDownArcs: true }),
+        lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiStripArcs: true }),
+        lane({ key: 'b', maxY: 2, hasArcs: false, hasSashimiStripArcs: true }),
       ],
       above,
     )
     expect(
-      layout.sections.map(s => [s.coverageTop, coverageBandTop(s)]),
+      layout.sections.map(s => [s.sectionTop, coverageBandTop(s)]),
     ).toEqual([
       [0, 30],
       [90, 120],
@@ -514,8 +516,8 @@ describe('the sashimi strip above coverage', () => {
   test('the strip resizes from its seam with the coverage band', () => {
     const { sections } = stack(
       [
-        lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true }),
-        lane({ key: 'b', maxY: 2, hasArcs: false, hasSashimiDownArcs: true }),
+        lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiStripArcs: true }),
+        lane({ key: 'b', maxY: 2, hasArcs: false, hasSashimiStripArcs: true }),
       ],
       above,
     )
@@ -533,7 +535,7 @@ describe('the sashimi strip above coverage', () => {
 
   test('keeps its place and its arcs rising with coverage hidden', () => {
     const layout = stack(
-      [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true })],
+      [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiStripArcs: true })],
       { ...above, showCoverage: false },
     )
     expect(layout.sections[0]).toMatchObject({
@@ -582,9 +584,24 @@ describe('the read connections strip above coverage', () => {
     })
   })
 
+  test('keeps its place and its arcs rising with coverage hidden', () => {
+    const layout = stack([lane({ key: 'a', maxY: 2 })], {
+      ...above,
+      showCoverage: false,
+    })
+    expect(layout.sections[0]).toMatchObject({
+      bands: {
+        order: ['readConnections', 'coverage', 'sashimi'],
+        reserved: { readConnections: 50, coverage: 0 },
+      },
+      arcBand: { top: 0, height: 50, down: false },
+      pileupTop: 50,
+    })
+  })
+
   test('with both strips above, read connections lead as they do below', () => {
     const layout = stack(
-      [lane({ key: 'a', maxY: 2, hasSashimiDownArcs: true })],
+      [lane({ key: 'a', maxY: 2, hasSashimiStripArcs: true })],
       { ...above, showSashimi: true, sashimiHeight: 30, sashimiAbove: true },
     )
     expect(layout.sections[0]).toMatchObject({
@@ -604,7 +621,7 @@ describe('the read connections strip above coverage', () => {
   })
 })
 
-test('up-mode arcs overlay coverage: no reserved band, draw band at coverage top', () => {
+test('overlay-mode arcs overlay coverage: no reserved band, draw band at coverage top', () => {
   const { sections } = stack(
     [lane({ key: 'a', maxY: 2 }), lane({ key: 'b', maxY: 2 })],
     {
@@ -617,7 +634,7 @@ test('up-mode arcs overlay coverage: no reserved band, draw band at coverage top
   )
   // No reserved arc band: pileup sits right under coverage (40), section 2
   // starts at 40 + 20 = 60. Arc draw band overlays the coverage band.
-  expect(sections.map(s => [s.coverageTop, s.pileupTop])).toEqual([
+  expect(sections.map(s => [s.sectionTop, s.pileupTop])).toEqual([
     [0, 40],
     [60, 100],
   ])
@@ -632,7 +649,7 @@ test('single section stacks coverage then pileup from the top', () => {
   })
   expect(sections).toHaveLength(1)
   expect(sections[0]).toMatchObject({
-    coverageTop: 0,
+    sectionTop: 0,
     bands: { reserved: { coverage: 45 } },
     pileupTop: 45,
     pileupHeight: 40,
@@ -673,7 +690,7 @@ test('a drag-set height pads the band past its rows, and stacks the rest below',
   // 30px of rows in a 120px band: the surplus draws blank, and section 2 starts
   // below the padded band rather than below the rows.
   expect(
-    sections.map(s => [s.coverageTop, s.pileupTop, s.pileupHeight]),
+    sections.map(s => [s.sectionTop, s.pileupTop, s.pileupHeight]),
   ).toEqual([
     [0, 20, 120],
     [140, 160, 50],
@@ -701,7 +718,7 @@ test('multiple sections stack with each coverage above its own pileup', () => {
     { coverageHeight: 20, rowHeight: 10 },
   )
   expect(
-    sections.map(s => [s.coverageTop, s.pileupTop, s.pileupHeight]),
+    sections.map(s => [s.sectionTop, s.pileupTop, s.pileupHeight]),
   ).toEqual([
     [0, 20, 30],
     [50, 70, 50],
@@ -732,7 +749,7 @@ test('laneBands: coverage off spends 0px', () => {
 // The arcs draw in the strip the section reserves for them, off one number. A
 // draw band sized from the raw slot while the strip was reserved at the bound
 // one drew over the sashimi strip and the pileup below it.
-test('the down-mode arc draw band is the strip the section reserves', () => {
+test('the below-mode arc draw band is the strip the section reserves', () => {
   const { sections } = stack([lane({ key: '', maxY: 4 })], {
     coverageHeight: 45,
     rowHeight: 10,
@@ -741,7 +758,7 @@ test('the down-mode arc draw band is the strip the section reserves', () => {
     readConnectionsHeight: 35,
   })
   const s = sections[0]!
-  expect(s.arcBand!.top).toBe(s.coverageTop + s.bands.reserved.coverage)
+  expect(s.arcBand!.top).toBe(s.sectionTop + s.bands.reserved.coverage)
   expect(s.arcBand!.top + s.arcBand!.height).toBe(s.pileupTop)
 })
 
@@ -842,7 +859,7 @@ test('buildSectionRenders: grouped pileupTopOffset is content-space (scroll via 
   expect(a.map(s => s.pileupTopOffset)).toEqual(b.map(s => s.pileupTopOffset))
 })
 
-// Down-mode arc layouts for the arcBand screen-geometry tests.
+// Below-mode arc layouts for the arcBand screen-geometry tests.
 const ungroupedArcs: SectionsLayout = stack([lane({ key: '', maxY: 4 })], {
   coverageHeight: 40,
   rowHeight: 10,

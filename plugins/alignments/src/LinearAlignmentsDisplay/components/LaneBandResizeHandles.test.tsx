@@ -36,7 +36,7 @@ function renderHandles(
     setSashimiHeight: jest.fn(),
     renderSections: [0, 1].map(i => ({
       groupKey: `g${i}`,
-      coverageTop: i * 200,
+      sectionTop: i * 200,
       bands,
     })),
   } as unknown as LinearAlignmentsDisplayModel

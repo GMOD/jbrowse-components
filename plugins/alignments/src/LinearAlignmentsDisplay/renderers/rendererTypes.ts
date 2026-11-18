@@ -101,7 +101,7 @@ export interface SectionRender {
   // junctions, at its reserved height, undefined where it reserved none.
   // `above` where it stacks over the coverage band and its arcs rise from its
   // floor; otherwise it sits below and they hang from its top.
-  sashimiBand?: { top: number; height: number; above?: boolean }
+  sashimiBand?: { top: number; height: number; above: boolean }
 }
 
 // HAL/region key namespacing: section 0 keys equal the raw displayedRegionIndex
@@ -156,7 +156,7 @@ export type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Vertical placement of the read-connections arc band, computed once so the
 // GPU, Canvas2D, and SVG paths can't drift. Arcs anchor at insert-size 0: the
-// band bottom in up mode (`down: false`), the band top in down mode.
+// band bottom in overlay mode (`down: false`), the band top in below mode.
 export interface ArcBand {
   top: number
   height: number

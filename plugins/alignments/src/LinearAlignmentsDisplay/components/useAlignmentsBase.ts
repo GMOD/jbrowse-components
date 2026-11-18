@@ -82,7 +82,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     // The arc band OUTRANKS the pileup, so it answers as the result rather than
     // beside it — one value with one discriminant, which is what makes every
     // gesture's switch state what it does about an arc (see `ArcMarkHit`).
-    // Arcs are painted after coverage by both backends, so in up mode an arc is
+    // Arcs are painted after coverage by both backends, so in overlay mode an arc is
     // the ink on top of the histogram it overlays, and the ink under the cursor
     // is what a gesture should be about. Safe to let it win because the arc test
     // is a STROKE test, not a band test: it only answers within a few px of a
@@ -329,7 +329,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     // rather than calling `preventDefault` — which is what a mark with nothing
     // to offer should do. Before that was true, right-clicking an arc that
     // crossed an indicator column opened the interbase menu for that column
-    // while the tooltip said "Read connection": in up mode the arc band IS the
+    // while the tooltip said "Read connection": in overlay mode the arc band IS the
     // coverage band (`laneBands` gives it top 0), and `hitTestInterbase`
     // answers over the indicator strip and the bar stack inside it.
     const target = contextMenuTargetForHit(result, e.nativeEvent.offsetX)
@@ -515,9 +515,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     switch (result.type) {
       // An arc has nothing to open, so this is a no-op — but an EXPLICIT one:
       // falling through to the pileup's answer named whatever the arc happens
-      // to overlay. In down mode that is nothing, and `case 'none'` CLEARS THE
+      // to overlay. In below mode that is nothing, and `case 'none'` CLEARS THE
       // SELECTION, so clicking the arc you were hovering threw away the read
-      // you had selected. In up mode the arc band IS the coverage band
+      // you had selected. In overlay mode the arc band IS the coverage band
       // (`laneBands` gives it top 0), so the click opened the coverage bin
       // widget for the column while the tooltip said "Read connection".
       case 'arc':

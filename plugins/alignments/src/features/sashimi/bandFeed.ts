@@ -11,8 +11,9 @@ export const SASHIMI_SIDES = ['up', 'down'] as const
 export type SashimiSide = (typeof SASHIMI_SIDES)[number]
 
 /**
- * One region's junctions as the two sashimi marks read them: `up` over the
- * coverage histogram and `down` in the strip below it, each ascending by
+ * One region's junctions as the two sashimi marks read them: `up` rising,
+ * over the coverage histogram or in the strip above it, and `down` hanging in
+ * the strip below it, each ascending by
  * count so a heavy junction paints over, and takes the hover from, a light one
  * near it. `upHits[i]` and `downHits[i]` are the junctions instance `i` draws.
  */
@@ -135,7 +136,7 @@ export function junctionColor(
 
 export interface SashimiBandFeedInput {
   junctions: readonly MergedJunction[]
-  /** By `junctionKey`: the junctions the layout sent to the strip below coverage. */
+  /** By `junctionKey`: the junctions that hang in the strip below coverage, on the `down` mark. */
   downJunctionKeys: ReadonlySet<string>
   /** The view's displayed regions, which each foot resolves against. */
   displayed: readonly RegionInfo[]

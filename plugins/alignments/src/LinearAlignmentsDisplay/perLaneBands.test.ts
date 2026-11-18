@@ -113,7 +113,7 @@ function createEnv(displayConfig?: Record<string, unknown>) {
   return { view, display }
 }
 
-// Two lanes, only the second holding a pair, with down-mode arcs on so the band
+// Two lanes, only the second holding a pair, with below-mode arcs on so the band
 // is a reserved strip rather than a coverage overlay.
 function twoLanes() {
   const { view, display } = createEnv()
@@ -150,10 +150,10 @@ test('only the lane with arcs reserves the arc band', () => {
   // The arc-less lane's pileup starts right at its coverage bottom; the lane
   // with arcs is pushed down by the whole band.
   const [notsplit, split] = sections
-  expect(notsplit!.pileupTop - notsplit!.coverageTop).toBe(
+  expect(notsplit!.pileupTop - notsplit!.sectionTop).toBe(
     display.coverageHeight,
   )
-  expect(split!.pileupTop - split!.coverageTop).toBe(
+  expect(split!.pileupTop - split!.sectionTop).toBe(
     display.coverageHeight + display.readConnectionsHeight,
   )
 })
@@ -259,7 +259,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
     const { display } = twoCloudLanes()
     const bands = display.renderSections
     const scale = tlen(display)!
-    // Down mode hangs the band from its top, so the baseline tick (value 1,
+    // Below mode hangs the band from its top, so the baseline tick (value 1,
     // log fraction 0) lands an inset below it — where the bars plotting it
     // sit — and each band's top is its lane's own.
     expect(scale.ticks!.items[0]!.value).toBe(1)
@@ -455,9 +455,9 @@ function withCoverage(data: WorkerPileupData): WorkerPileupData {
   }
 }
 
-// Up mode draws the read cloud over the coverage histogram, so its TLEN axis
+// Overlay mode draws the read cloud over the coverage histogram, so its TLEN axis
 // rules the coverage axis's rows, and the lane chips put both on the right.
-test('up-mode read cloud beside the lane chips draws its axis beside the coverage axis', () => {
+test('overlay-mode read cloud beside the lane chips draws its axis beside the coverage axis', () => {
   const { display } = createEnv()
   display.setDrawnReadConnections('rule')
   display.setReadConnectionsPlacement('overlay')

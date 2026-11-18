@@ -1,5 +1,5 @@
 import { splitClassCode } from './junctionClass.ts'
-import { downJunctionKeys, junctionKey, mergeJunctions } from './junctions.ts'
+import { junctionKey, mergeJunctions, stripJunctionKeys } from './junctions.ts'
 import {
   DINUCLEOTIDE_UNKNOWN,
   encodeDinucleotide,
@@ -53,7 +53,7 @@ function region(refName: string, junctions: Spec[]): RegionJunctions {
 }
 
 function down(regions: RegionJunctions[], mode: SashimiPlacement, min = 0) {
-  return downJunctionKeys(mergeJunctions(regions, keep(min)).values(), mode)
+  return stripJunctionKeys(mergeJunctions(regions, keep(min)).values(), mode)
 }
 
 // Two interleaving junctions, the second thinly supported.
@@ -292,7 +292,7 @@ describe('split junctions', () => {
   })
 })
 
-describe('downJunctionKeys', () => {
+describe('stripJunctionKeys', () => {
   test('up sends nothing down, down sends everything', () => {
     const regions = [region('chr1', CROSSING)]
     expect(down(regions, 'overlay').size).toBe(0)

@@ -3,14 +3,14 @@ import { GROW_MAX_HEIGHT } from '@jbrowse/display-kit/heightMode'
 
 import {
   computeStackedSections,
-  fittedBelowCoverageHeights,
+  fittedLaneBandHeights,
   laneSlotHeight,
   pileupHiddenBands,
   pileupHiddenHeight,
 } from './sectionLayout.ts'
 
 import type { ReadConnectionsMode } from './constants.ts'
-import type { BelowCoverageBandsSettings } from './sectionLayout.ts'
+import type { LaneBandsSettings } from './sectionLayout.ts'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 
 // A seeded generator, so a failing case names the same lanes on every run.
@@ -61,7 +61,7 @@ function* settingsCases(random: () => number) {
           showSashimi: sashimi.show,
           sashimiAbove: sashimi.above,
           sashimiHeight: pick(),
-        } satisfies BelowCoverageBandsSettings
+        } satisfies LaneBandsSettings
       }
     }
   }
@@ -72,15 +72,15 @@ function* settingsCases(random: () => number) {
 // height with no row floor, filling it. The booted model's own composition is
 // pileupHiddenModel.test.ts's.
 function hiddenPileupLayout(
-  settings: BelowCoverageBandsSettings,
-  lanes: { hasArcs: boolean; hasSashimiDownArcs: boolean }[],
+  settings: LaneBandsSettings,
+  lanes: { hasArcs: boolean; hasSashimiStripArcs: boolean }[],
   height: number,
   mode: HeightMode,
 ) {
   const stated = {
     ...settings,
     hasArcs: lanes.some(l => l.hasArcs),
-    hasSashimiDownArcs: lanes.some(l => l.hasSashimiDownArcs),
+    hasSashimiStripArcs: lanes.some(l => l.hasSashimiStripArcs),
   }
   const autoHeight = mode === 'grow'
   const budget = pileupHiddenHeight({
@@ -101,7 +101,7 @@ function hiddenPileupLayout(
     {
       rowHeight: 10,
       minSectionHeight: slot,
-      bandHeights: fittedBelowCoverageHeights(input, slot),
+      bandHeights: fittedLaneBandHeights(input, slot),
     },
   )
   const displayHeight = autoHeight ? Math.min(budget, GROW_MAX_HEIGHT) : height
@@ -112,22 +112,22 @@ function hiddenPileupLayout(
 // at its stated height, top-down, in the room that leaves the coverage
 // `MIN_BAND_HEIGHT` of the slot, and the coverage the rest.
 function remainderSplit(
-  stated: BelowCoverageBandsSettings & {
+  stated: LaneBandsSettings & {
     hasArcs: boolean
-    hasSashimiDownArcs: boolean
+    hasSashimiStripArcs: boolean
   },
   slot: number,
 ) {
   const room = Math.max(0, slot - MIN_BAND_HEIGHT)
   const arcsStrip =
     stated.drawnReadConnections !== 'off' &&
-    (stated.readConnectionsDown || stated.readConnectionsAbove === true) &&
+    (stated.readConnectionsDown || stated.readConnectionsAbove) &&
     stated.hasArcs
   const readConnections = arcsStrip
     ? Math.min(stated.readConnectionsHeight, room)
     : 0
   const sashimi =
-    stated.showSashimi && stated.hasSashimiDownArcs
+    stated.showSashimi && stated.hasSashimiStripArcs
       ? Math.min(stated.sashimiHeight, room - readConnections)
       : 0
   return {
@@ -137,7 +137,7 @@ function remainderSplit(
   }
 }
 
-function coverageShown(s: BelowCoverageBandsSettings) {
+function coverageShown(s: LaneBandsSettings) {
   return s.showCoverage && s.coverageHeight > 0
 }
 
@@ -151,7 +151,7 @@ describe('with the pileup hidden the band stack fits the display', () => {
           for (const settings of settingsCases(random)) {
             const lanes = Array.from({ length: laneCount }, () => ({
               hasArcs: random() < 0.6,
-              hasSashimiDownArcs: random() < 0.4,
+              hasSashimiStripArcs: random() < 0.4,
             }))
             const { slot, layout, displayHeight, stated } = hiddenPileupLayout(
               settings,
@@ -188,20 +188,22 @@ describe('with the pileup hidden the band stack fits the display', () => {
 })
 
 describe('each lane gets a whole-px slot, its coverage taking what the strips leave', () => {
-  const settings: BelowCoverageBandsSettings = {
+  const settings: LaneBandsSettings = {
     showCoverage: true,
     coverageHeight: 45,
     drawnReadConnections: 'link',
     readConnectionsDown: true,
+    readConnectionsAbove: false,
     readConnectionsHeight: 35,
     showSashimi: false,
+    sashimiAbove: false,
     sashimiHeight: 40,
   }
 
   it('splits one lane of 250 px 215/35 between coverage and its arcs', () => {
     const { layout } = hiddenPileupLayout(
       settings,
-      [{ hasArcs: true, hasSashimiDownArcs: false }],
+      [{ hasArcs: true, hasSashimiStripArcs: false }],
       250,
       'fixed',
     )
@@ -215,7 +217,7 @@ describe('each lane gets a whole-px slot, its coverage taking what the strips le
   it('keeps both strips their stated heights under the coverage', () => {
     const { layout } = hiddenPileupLayout(
       { ...settings, showSashimi: true },
-      [{ hasArcs: true, hasSashimiDownArcs: true }],
+      [{ hasArcs: true, hasSashimiStripArcs: true }],
       250,
       'fixed',
     )
@@ -229,7 +231,7 @@ describe('each lane gets a whole-px slot, its coverage taking what the strips le
   it('gives the coverage no say in the split, however tall it is stated', () => {
     const { layout } = hiddenPileupLayout(
       { ...settings, coverageHeight: 5000 },
-      [{ hasArcs: true, hasSashimiDownArcs: false }],
+      [{ hasArcs: true, hasSashimiStripArcs: false }],
       250,
       'fixed',
     )
@@ -243,7 +245,7 @@ describe('each lane gets a whole-px slot, its coverage taking what the strips le
   it('fills the slot in proportion with the coverage off', () => {
     const { layout } = hiddenPileupLayout(
       { ...settings, showCoverage: false, showSashimi: true },
-      [{ hasArcs: true, hasSashimiDownArcs: true }],
+      [{ hasArcs: true, hasSashimiStripArcs: true }],
       250,
       'fixed',
     )
@@ -258,13 +260,13 @@ describe('each lane gets a whole-px slot, its coverage taking what the strips le
     const { layout } = hiddenPileupLayout(
       settings,
       [
-        { hasArcs: true, hasSashimiDownArcs: false },
-        { hasArcs: false, hasSashimiDownArcs: false },
+        { hasArcs: true, hasSashimiStripArcs: false },
+        { hasArcs: false, hasSashimiStripArcs: false },
       ],
       250,
       'fixed',
     )
-    expect(layout.sections.map(s => [s.coverageTop, s.height])).toEqual([
+    expect(layout.sections.map(s => [s.sectionTop, s.height])).toEqual([
       [0, 125],
       [125, 125],
     ])
@@ -277,7 +279,7 @@ describe('each lane gets a whole-px slot, its coverage taking what the strips le
   it('overlays up arcs on the stretched coverage, reserving no strip', () => {
     const { layout } = hiddenPileupLayout(
       { ...settings, readConnectionsDown: false },
-      [{ hasArcs: true, hasSashimiDownArcs: false }],
+      [{ hasArcs: true, hasSashimiStripArcs: false }],
       250,
       'fixed',
     )
@@ -308,7 +310,7 @@ describe('each lane gets a whole-px slot, its coverage taking what the strips le
   it('keeps a short track its strips, leaving the coverage its floor', () => {
     const short = hiddenPileupLayout(
       settings,
-      [{ hasArcs: true, hasSashimiDownArcs: false }],
+      [{ hasArcs: true, hasSashimiStripArcs: false }],
       60,
       'fixed',
     )
@@ -319,7 +321,7 @@ describe('each lane gets a whole-px slot, its coverage taking what the strips le
     })
     const shorter = hiddenPileupLayout(
       settings,
-      [{ hasArcs: true, hasSashimiDownArcs: false }],
+      [{ hasArcs: true, hasSashimiStripArcs: false }],
       40,
       'fixed',
     )
@@ -330,7 +332,7 @@ describe('each lane gets a whole-px slot, its coverage taking what the strips le
     })
     const coverageOnly = hiddenPileupLayout(
       { ...settings, drawnReadConnections: 'off' },
-      [{ hasArcs: false, hasSashimiDownArcs: false }],
+      [{ hasArcs: false, hasSashimiStripArcs: false }],
       20,
       'fixed',
     )

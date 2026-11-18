@@ -1,5 +1,5 @@
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { downJunctionKeys, mergeJunctions } from './junctions.ts'
+import { mergeJunctions, stripJunctionKeys } from './junctions.ts'
 import { encodeDinucleotide, spliceMotifLabel } from './motif.ts'
 import { computeSashimiArcs } from './sashimiArcs.fixture.ts'
 
@@ -96,10 +96,10 @@ function collapsedOpts(
 }
 
 // The side assignment the display would hand these regions in 'auto': merged in
-// genomic bp over every loaded region, exactly as `buildSashimiDownKeys` does it
+// genomic bp over every loaded region, exactly as `buildSashimiStripKeys` does it
 // for the layout. Used where a test is about the two agreeing.
 function autoDownKeys(perRegion: PileupDataResult[]) {
-  return downJunctionKeys(
+  return stripJunctionKeys(
     mergeJunctions(
       perRegion.map(data => ({ refName: 'chr1', data })),
       { minReads: 0 },

@@ -148,8 +148,8 @@ export type {
   SectionSource,
 } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 export type {
-  BelowCoverageBandsSettings,
   LaneBandHeights,
+  LaneBandsSettings,
   Section,
   SectionsLayout,
 } from './LinearAlignmentsDisplay/sectionLayout.ts'

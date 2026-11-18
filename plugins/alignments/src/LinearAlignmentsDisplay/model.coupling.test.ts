@@ -151,14 +151,26 @@ describe('alignments display cross-feature coupling', () => {
 
   // Without the band the arcs draw in their own strip, and the configured
   // placement returns with the band.
-  test('sashimi draws down while coverage is off, and its placement returns with it', () => {
+  test.each(['overlay', 'auto'] as const)(
+    'sashimi %s draws below while coverage is off, and its placement returns with it',
+    placement => {
+      const display = createDisplay()
+      display.setSashimiPlacement(placement)
+      display.setShowCoverage(false)
+      expect(display.showSashimi).toBe(true)
+      expect(display.effectiveSashimiPlacement).toBe('below')
+      display.setShowCoverage(true)
+      expect(display.effectiveSashimiPlacement).toBe(placement)
+    },
+  )
+
+  // The strip above coverage is already the arcs' own, so hiding the band
+  // moves nothing.
+  test('sashimi above keeps its strip while coverage is off', () => {
     const display = createDisplay()
-    display.setSashimiPlacement('overlay')
+    display.setSashimiPlacement('above')
     display.setShowCoverage(false)
-    expect(display.showSashimi).toBe(true)
-    expect(display.effectiveSashimiPlacement).toBe('below')
-    display.setShowCoverage(true)
-    expect(display.effectiveSashimiPlacement).toBe('overlay')
+    expect(display.effectiveSashimiPlacement).toBe('above')
   })
 
   // The junctions ride with coverage, so a sashimi toggle under the band
@@ -1548,7 +1560,7 @@ describe('sashimi score filter releases the reserved band', () => {
   })
 
   // The reserved strip and the arcs drawn into it come off one set of junction
-  // keys (`sashimiDownKeysByGroup`), so the lane naming the strip has to name
+  // keys (`sashimiStripKeysByGroup`), so the lane naming the strip has to name
   // WHICH junction claimed it — the overlay places each arc by looking itself up
   // in that same set.
   test('auto: the lane names the junction the overlay will draw below', () => {
@@ -1558,9 +1570,9 @@ describe('sashimi score filter releases the reserved band', () => {
     display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
-    expect([...display.sashimiDownArcLanes]).toEqual([''])
+    expect([...display.sashimiStripLanes]).toEqual([''])
     // heaviest-first: the 20-read junction claims 'up', the 2-read one drops
-    expect([...display.sashimiDownKeysByGroup.get('')!]).toEqual([
+    expect([...display.sashimiStripKeysByGroup.get('')!]).toEqual([
       'ctgA:300:700',
     ])
   })

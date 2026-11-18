@@ -86,7 +86,7 @@ try {
       const data = display.laidOutByGroup.get(s.groupKey).get(0)
       return {
         groupKey: s.groupKey,
-        coverageTop: s.coverageTop,
+        coverageTop: s.sectionTop + s.bands.top.coverage,
         coverageHeight: s.bands.reserved.coverage,
         pileupTop: s.pileupTop,
         depths: bps.map(bp => {

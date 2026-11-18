@@ -415,7 +415,7 @@ describe('an unplaced connection resolves to a minimum-width mark on the anchor'
     const ink = ARC_LINK_MARKS[1]!.ink!(feed, block, state, 0)!
     // Not the screen-wide extent the uncollapsed pair would have drawn.
     expect(ink.width - LINK_LINE_MIN_PX).toBeCloseTo(ink.height)
-    // Up mode: the zero anchor is the band's bottom edge, less the inset.
+    // Overlay mode: the zero anchor is the band's bottom edge, less the inset.
     expect(ink.top + ink.height / 2).toBeCloseTo(
       arcBand.top + arcBand.height - ARC_BAND_INSET_PX,
     )

@@ -9,7 +9,7 @@ import {
   sectionOrder,
 } from '../shared/groupFeatures.ts'
 import {
-  buildSashimiDownKeys,
+  buildSashimiStripKeys,
   buildRawDataByGroup,
   buildReadIdIndex,
   hasNamedGroups,
@@ -497,11 +497,11 @@ const crossing: [number, number, number][] = [
 // Every region of these fixtures is on one chromosome; the per-refName partition
 // itself is covered in features/sashimi/junctions.test.ts.
 function downKeys(
-  rpcDataMap: Parameters<typeof buildSashimiDownKeys>[0],
+  rpcDataMap: Parameters<typeof buildSashimiStripKeys>[0],
   minReads: number,
   placement: 'overlay' | 'below' | 'auto',
 ) {
-  return buildSashimiDownKeys(rpcDataMap, {
+  return buildSashimiStripKeys(rpcDataMap, {
     filter: { minReads },
     placement,
     refNameFor: () => 'chr1',
@@ -509,7 +509,7 @@ function downKeys(
 }
 
 // The lanes the strip is reserved for: the keys whose set is non-empty, which is
-// how `model.sashimiDownArcLanes` reads this for `totalBandOverhead`.
+// how `model.sashimiStripLanes` reads this for `totalBandOverhead`.
 function lanes(...args: Parameters<typeof downKeys>) {
   return [...downKeys(...args)]
     .filter(([, down]) => down.size > 0)
@@ -564,7 +564,7 @@ test('auto pools a group across regions, but not across groups', () => {
 
 // A lane with no junction must be named as not needing the
 // strip, so `computeStackedSections` can drop it rather than leaving dead space.
-test('buildSashimiDownKeys: names only the lanes needing the strip', () => {
+test('buildSashimiStripKeys: names only the lanes needing the strip', () => {
   const m = new Map([
     [
       0,
@@ -580,7 +580,7 @@ test('buildSashimiDownKeys: names only the lanes needing the strip', () => {
   expect(lanes(m, 0, 'overlay')).toEqual([])
 })
 
-test('buildSashimiDownKeys: auto names only the lane whose junctions cross', () => {
+test('buildSashimiStripKeys: auto names only the lane whose junctions cross', () => {
   const m = new Map([
     [
       0,
@@ -599,7 +599,7 @@ test('buildSashimiDownKeys: auto names only the lane whose junctions cross', () 
   expect(lanes(m, 0, 'auto')).toEqual(['crossing'])
 })
 
-test('buildSashimiDownKeys: the keys name the junctions the overlay will look up', () => {
+test('buildSashimiStripKeys: the keys name the junctions the overlay will look up', () => {
   // The set is the whole sashimi side decision — the layout reserves off its
   // size and `projectSashimiArcs` places each arc off its membership, so a lane
   // has to name WHICH junction goes down, not just that one does.
@@ -607,7 +607,7 @@ test('buildSashimiDownKeys: the keys name the junctions the overlay will look up
   expect([...downKeys(m, 0, 'auto').get('')!]).toEqual(['chr1:300:700'])
 })
 
-test('buildSashimiDownKeys: a hidden lane is never named', () => {
+test('buildSashimiStripKeys: a hidden lane is never named', () => {
   const m = new Map([
     [
       0,
@@ -617,7 +617,7 @@ test('buildSashimiDownKeys: a hidden lane is never named', () => {
       ]),
     ],
   ])
-  const keys = buildSashimiDownKeys(m, {
+  const keys = buildSashimiStripKeys(m, {
     filter: { minReads: 0 },
     placement: 'below',
     refNameFor: () => 'chr1',

@@ -3,9 +3,9 @@ import { findSectionAtY } from './findSectionAtY.ts'
 // Three stacked groups, each owning a 100px strip, content tops at 0 / 100 /
 // 200 and total content height 300.
 const sections = [
-  { groupKey: 'a', coverageTop: 0, height: 100 },
-  { groupKey: 'b', coverageTop: 100, height: 100 },
-  { groupKey: 'c', coverageTop: 200, height: 100 },
+  { groupKey: 'a', sectionTop: 0, height: 100 },
+  { groupKey: 'b', sectionTop: 100, height: 100 },
+  { groupKey: 'c', sectionTop: 200, height: 100 },
 ]
 const grouped = { isGrouped: true, scrollTop: 0 }
 

@@ -50,6 +50,22 @@ const readIdIndex = {
   ]),
 }
 
+// The render state over these sections, each drawing its rows from its own
+// pileup top.
+function stateOf(sections: HighlightSection[], scrollTop = 0) {
+  return {
+    ...state,
+    scrollTop,
+    sections: sections.map(s => ({
+      pileupTopOffset: s.pileupTop,
+      coverageTopOffset: 0,
+      pileupClipTop: 0,
+      pileupClipHeight: 0,
+      connectorClipHeight: 0,
+    })),
+  }
+}
+
 function run(
   ids: string[],
   section: HighlightSection,
@@ -67,7 +83,7 @@ function run(
     blocks,
     sections,
     slots: slotsOfIds(ids, readIdIndex),
-    state: { ...state, scrollTop },
+    state: stateOf(sections, scrollTop),
     scroll: { isGrouped: sections.length > 1, scrollTop, canvasHeight: 1000 },
     strong,
   })
@@ -76,7 +92,6 @@ function run(
 const open: HighlightSection = {
   groupKey: 'g',
   laidOutPileupMap: { get: () => rpcData },
-  coverageTop: 0,
   pileupTop: 100,
   pileupHeight: 500,
 }
@@ -98,7 +113,7 @@ test('two hovered reads on different rows get a box each', () => {
     blocks,
     sections: [{ ...open, laidOutPileupMap: { get: () => twoRows } }],
     slots: slotsOfIds(['read0', 'read1'], readIdIndex),
-    state,
+    state: stateOf([open]),
     scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 1000 },
     strong: false,
   })
@@ -135,7 +150,6 @@ test('a grouped section near the top of its band stays lit after scrolling', () 
   const empty: HighlightSection = {
     groupKey: 'empty',
     laidOutPileupMap: { get: () => undefined },
-    coverageTop: 0,
     pileupTop: 0,
     pileupHeight: 0,
   }
@@ -196,7 +210,7 @@ test('each region a read reaches lights its own copy', () => {
       byId: new Map([['read0', second]]),
       copies: new Map([['read0', [first, second]]]),
     }),
-    state,
+    state: stateOf([open]),
     scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 1000 },
     strong: false,
   })

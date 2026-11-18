@@ -207,7 +207,7 @@ test('an arc over an interbase bar: the hover names the arc, and so do the other
 })
 
 test('clicking an arc with nothing under it keeps the selection', () => {
-  // Down mode, where the arc band is its own strip below coverage and the
+  // Below mode, where the arc band is its own strip below coverage and the
   // pileup hit test answers `none` inside it. `none` is not inert — it is the
   // branch that CLEARS THE SELECTION — so an unguarded click on an arc threw
   // away the read the user had selected, and this is the half that hides,

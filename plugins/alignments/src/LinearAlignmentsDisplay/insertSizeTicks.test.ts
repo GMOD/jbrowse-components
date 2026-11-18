@@ -41,7 +41,7 @@ describe('computeInsertSizeTicks', () => {
       arcsYDomainBp,
       band: { top: 45, height: 40, down: true },
     })!
-    // down mode: baseline at the band top (45), the domain max below it
+    // below mode: baseline at the band top (45), the domain max below it
     expect(down.items[0]!.value).toBe(1)
     expect(down.items[0]!.y).toBeCloseTo(45 + INSET)
     expect(down.items.at(-1)!.value).toBe(arcsYDomainBp)
@@ -53,13 +53,13 @@ describe('computeInsertSizeTicks', () => {
       arcsYDomainBp,
       band: { top: 0, height: 45, down: false },
     })!
-    // up mode: baseline at the band bottom (45), the domain max above it
+    // overlay mode: baseline at the band bottom (45), the domain max above it
     expect(up.items[0]!.y).toBeCloseTo(45 - INSET)
     expect(up.yBottom).toBeCloseTo(45 - INSET)
     expect(up.yTop).toBeCloseTo(INSET)
   })
 
-  it('carries the domain reversed in down mode', () => {
+  it('carries the domain reversed in below mode', () => {
     const arcsYDomainBp = 1000
     const availH = plotH(40)
     const down = computeInsertSizeTicks({

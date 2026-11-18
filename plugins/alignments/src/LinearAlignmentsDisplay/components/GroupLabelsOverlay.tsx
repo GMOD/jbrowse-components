@@ -97,7 +97,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         return {
           key: groupKey,
           label: model.groupChipLabel(label),
-          top: bandScreenTop(section.coverageTop, scroll),
+          top: bandScreenTop(section.sectionTop, scroll),
           height: section.height,
           toggle:
             showPileup && (collapsed || laneDrawsReads(section))

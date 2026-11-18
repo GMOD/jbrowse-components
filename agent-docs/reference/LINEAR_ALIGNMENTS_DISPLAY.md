@@ -253,7 +253,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   connectors (ADR-225). Whether those draw is `drawsConnectors` (always in chain
   layout); read that, never `showConnectors`.
 - **Which sub-band a sashimi arc draws in is decided once**, in genomic bp, by
-  `sashimiDownKeysByGroup`, read by both the layout reserving the strip and the
+  `sashimiStripKeysByGroup`, read by both the layout reserving the strip and the
   geometry filling it. Junction identity is `junctionKey`, refName included.
 - **A band's height MINUS its reserved margin is floored at 0** where the
   expression is declared, not per consumer. If a shader computes it too, the
@@ -261,22 +261,22 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 - **The scalebar inset is `YSCALEBAR_LABEL_OFFSET` on both backends and must stay
   a constant.** The band marks write it into the `covYOffset` uniform
   themselves, and `coverageLayout` supplies it to the same generated twin for
-  every painter and the y-axis ticks, and `laneBands` anchors up-mode arcs on the
+  every painter and the y-axis ticks, and `laneBands` anchors overlay-mode arcs on the
   same constant; a different value there moves the bars while
   `interbaseBarHeightPx` and the ticks beside them do not, splitting the band
   against itself inside one frame.
 - **The three band heights are bound as one stack** (`statedBandHeights`,
-  `boundBelowCoverageHeights`): top-down against `fitTargetHeight` less the
+  `boundLaneBandHeights`): top-down against `fitTargetHeight` less the
   pileup's floor, over the pooled answer of which strips draw. A lane reserves a
   subset of that stack, so each grouped lane's stack stays inside the plot too;
   the fit budget still charges every lane's stack. A drag clamps to the room the
-  other bands leave (`dragBelowCoverageBand`), and a strip bound to 0 px is not
+  other bands leave (`dragLaneBand`), and a strip bound to 0 px is not
   reserved (`section.bands.reserved[key]` 0), so it gets no handle on top of
   the one above it. `LaneBandResizeHandles` maps over `LANE_BAND_ORDER`
   through `laneBandHandle`, so every band gets its handle, gate, seam and
   `gain` by the same rule.
 - **Two stacks: stated and drawn** (`bandStackViews.ts`, composed by the model
-  and the tables host). The stated stack (`belowCoverageBandsInput`) feeds the
+  and the tables host). The stated stack (`laneBandsInput`) feeds the
   row budget (`laneBandOverheads`), the fit pitch and the three band setters,
   and `bandPlot` keeps the pileup's floor whether or not it shows, so hiding
   the pileup rebinds nothing and relays no lane. The drawn stack
@@ -287,7 +287,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   lanes or one, so `N * slot <= H` and nothing scrolls. With coverage on, the
   down-arcs and down-sashimi strips keep their stated heights, bound top-down
   against `{ height: slot, floor: MIN_BAND_HEIGHT }`, and the coverage takes
-  the rest of the slot (`fittedBelowCoverageHeights`): 215/35 for coverage 45
+  the rest of the slot (`fittedLaneBandHeights`): 215/35 for coverage 45
   and arcs 35 at 250 px. Every lane draws that one pooled coverage height, so
   `coverageBandHeight` and the tick ladder stay one value, and a lane without
   a strip leaves its part of the slot blank. The coverage's stated height has
@@ -297,7 +297,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   heights are bound against H with no row floor and the strips fill the slot
   in proportion (core `fillStackedBands`); every other band fills 0. Which
   strips reserve, and whether up arcs overlay the coverage, read those
-  settings (`drawnBelowCoverageBandsInput`), never the fitted heights, so the
+  settings (`drawnLaneBandsInput`), never the fitted heights, so the
   fit never moves arcs on or off the histogram. `sections` takes the slot as
   its `minSectionHeight`, so a lane without arcs keeps its whole slot, that
   part blank. The coverage ticks and the export's `coverageScale.heightPx`
@@ -315,7 +315,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   the inset is a shader-twin change of its own.
 - **`laneBands` is the one statement of a lane's band stack**: which strips it
   reserves, their tops, and where its arcs draw — their own strip, or over the
-  coverage histogram in up mode. Each `Section` carries that fold as `bands`,
+  coverage histogram in overlay mode. Each `Section` carries that fold as `bands`,
   a core `BandStack` keyed `coverage`, `readConnections` and `sashimi`, rather
   than a copy of it in named fields, so a new key fails to compile wherever a
   consumer does not handle it. `computeStackedSections`, the fit budget

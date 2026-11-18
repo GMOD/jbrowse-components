@@ -92,7 +92,7 @@ import {
 import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import {
   bandStackViews,
-  sashimiDownViews,
+  sashimiStripViews,
 } from './LinearAlignmentsDisplay/bandStackViews.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
@@ -641,7 +641,7 @@ const AlignmentsTablesHost = types
   .views(self => pileupLayoutViews(self))
   .views(self => connectorViews(self))
   .views(self => bandPlotViews(self))
-  .views(self => sashimiDownViews(self))
+  .views(self => sashimiStripViews(self))
   .views(self => bandStackViews(self))
   .views(self => coverageStatsViews(self))
   .views(self => coverageAutoscaleViews(self))
@@ -1174,7 +1174,7 @@ function arcScaleOf(host: AlignmentsTablesHostModel, maxFlatArcSpanBp: number) {
   const { arcBand } = pooledLaneBands(host)
   return arcBand
     ? {
-        band: arcsOverlayCoverage(host.drawnBelowCoverageBandsInput)
+        band: arcsOverlayCoverage(host.drawnLaneBandsInput)
           ? 'coverage'
           : 'arcs',
         heightPx: arcBand.height,
@@ -1255,10 +1255,10 @@ function stackedSections(host: AlignmentsTablesHostModel, readPitch: number) {
         ? groupMaxY(host.laidOutByGroupFramed.get(key) ?? new Map())
         : 0,
       hasArcs: host.arcsResult.inkGroupKeys.has(key),
-      hasSashimiDownArcs: host.sashimiDownArcLanes.has(key),
+      hasSashimiStripArcs: host.sashimiStripLanes.has(key),
       heightOverridePx: undefined,
     })),
-    host.drawnBelowCoverageBandsInput,
+    host.drawnLaneBandsInput,
     {
       rowHeight: readPitch,
       minSectionHeight: host.showPileup
@@ -1274,7 +1274,7 @@ function stackedSections(host: AlignmentsTablesHostModel, readPitch: number) {
 // The pooled band stack as the display draws it, one lane holding every
 // strip any lane reserves.
 function pooledLaneBands(host: AlignmentsTablesHostModel) {
-  const s = host.drawnBelowCoverageBandsInput
+  const s = host.drawnLaneBandsInput
   return laneBands(s, s, host.bandHeights)
 }
 

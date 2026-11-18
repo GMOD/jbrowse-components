@@ -35,7 +35,7 @@ function renderRule(
     renderSections: [0, 1].map(i => ({
       groupKey: `g${i}`,
       label: `HP: ${i + 1}`,
-      coverageTop: i * SECTION_HEIGHT,
+      sectionTop: i * SECTION_HEIGHT,
       coverageHeight: 40,
       pileupTop: i * SECTION_HEIGHT + 40,
       pileupHeight: 80,
@@ -81,7 +81,7 @@ test('a boundary below the viewport is not drawn until scrolled to', () => {
         groupKey: 'g0',
         pileupTop: 40,
         pileupHeight: 400,
-        coverageTop: 0,
+        sectionTop: 0,
         coverageHeight: 40,
         height: 440,
         // clipped, so the culling below is what keeps it off screen

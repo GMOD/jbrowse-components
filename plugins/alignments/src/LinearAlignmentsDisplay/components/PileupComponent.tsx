@@ -244,7 +244,7 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
         if (section.collapsed) {
           return null
         }
-        const sectionBottom = section.coverageTop + section.height
+        const sectionBottom = section.sectionTop + section.height
         const bottom = contentScreenY(sectionBottom, scroll)
         // from the height the lane was given, which can sit between two row
         // boundaries or past its rows, rather than the row-snapped band it

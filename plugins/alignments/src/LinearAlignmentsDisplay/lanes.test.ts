@@ -18,7 +18,7 @@ function input(overrides: Partial<BuildLanesInput> = {}): BuildLanesInput {
     rawByGroup: new Map(),
     laidOutByGroup: new Map([['a', laidOut(4)]]),
     arcInkKeys: new Set(),
-    sashimiDownKeysByGroup: new Map(),
+    sashimiStripKeysByGroup: new Map(),
     collapsedKeys: new Set(),
     sizes: new Map(),
     showPileup: true,
@@ -30,7 +30,7 @@ function input(overrides: Partial<BuildLanesInput> = {}): BuildLanesInput {
 test('a lane key with no entry in a collection gets the shared empty, not undefined', () => {
   const [lane] = buildLanes(input())
   expect(lane!.rawPileupMap.size).toBe(0)
-  expect(lane!.sashimiDownKeys.size).toBe(0)
+  expect(lane!.sashimiStripKeys.size).toBe(0)
 })
 
 // The band is reserved for INK, cross-region arcs included. A lane whose every
@@ -109,8 +109,10 @@ test('a section is emitted per lane, carrying that lane', () => {
       coverageHeight: 0,
       drawnReadConnections: 'off',
       readConnectionsDown: false,
+      readConnectionsAbove: false,
       readConnectionsHeight: 0,
       showSashimi: false,
+      sashimiAbove: false,
       sashimiHeight: 0,
     },
     { rowHeight: 10, minSectionHeight: 0 },

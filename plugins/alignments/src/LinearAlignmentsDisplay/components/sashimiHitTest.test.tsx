@@ -67,7 +67,7 @@ function scene(
         pileupClipTop: 140,
         pileupClipHeight: 160,
         connectorClipHeight: 0,
-        sashimiBand: { top: 100, height: 40 },
+        sashimiBand: { top: 100, height: 40, above: false },
       },
     ],
   })
@@ -119,7 +119,7 @@ describe('sashimiBandsOf', () => {
     expect(
       sashimiBandsOf(base, {
         ...base.sections[0]!,
-        sashimiBand: { top: 10, height: 3 },
+        sashimiBand: { top: 10, height: 3, above: false },
       }),
     ).toEqual({ up: undefined, down: undefined })
   })

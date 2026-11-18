@@ -2,8 +2,8 @@
 // in. Both questions are answered here, in genomic bp, from the worker's
 // `rpcDataMap` alone:
 //
-//   - the LAYOUT asks whether a lane needs the strip below coverage reserved
-//     (`sashimiDownKeysByGroup` -> non-empty set), and must not depend on
+//   - the LAYOUT asks whether a lane needs the sashimi strip reserved
+//     (`sashimiStripKeysByGroup` -> non-empty set), and must not depend on
 //     pan/zoom or the pileup would re-lay-out on every frame;
 //   - the OVERLAY/EXPORT asks which side to draw each arc on
 //     (`projectSashimiArcs`, which looks its arcs up in the same set).
@@ -332,19 +332,19 @@ function byRefName(junctions: Iterable<MergedJunction>) {
   return out
 }
 
-const NO_DOWN_KEYS: ReadonlySet<string> = new Set()
+const NO_STRIP_KEYS: ReadonlySet<string> = new Set()
 
 // Which of these junctions the placement sends to the sashimi strip, as a set
 // of `junctionKey`s. 'overlay' sends none (and allocates nothing — it is the
 // default), 'below' and 'above' send all, to the strip below coverage and the
 // one above it, 'auto' runs the greedy 2-coloring per chromosome. The set being
 // non-empty is exactly "this lane needs the strip reserved".
-export function downJunctionKeys(
+export function stripJunctionKeys(
   junctions: Iterable<MergedJunction>,
   placement: SashimiPlacement,
 ): ReadonlySet<string> {
   if (placement === 'overlay') {
-    return NO_DOWN_KEYS
+    return NO_STRIP_KEYS
   }
   const out = new Set<string>()
   if (placement === 'below' || placement === 'above') {

@@ -100,7 +100,7 @@ import { sortOf } from './alignmentsSortConfigSchema.ts'
 import {
   bandStackViews,
   dragStripHeight,
-  sashimiDownViews,
+  sashimiStripViews,
 } from './bandStackViews.ts'
 import { buildReadIdsByChainName } from './chainFields.ts'
 import { rgb255 } from './colorUtils.ts'
@@ -188,7 +188,7 @@ import {
   buildSectionRenders,
   computeStackedSections,
   coverageBandTop,
-  dragBelowCoverageBand,
+  dragLaneBand,
   laneBandOverheads,
   pileupHiddenHeight,
   sectionDipFloor,
@@ -267,7 +267,7 @@ const NO_SASHIMI_FEEDS_BY_GROUP: ReadonlyMap<
   ReadonlyMap<number, SashimiBandFeed>
 > = new Map()
 const NO_SASHIMI_FEEDS: ReadonlyMap<number, SashimiBandFeed> = new Map()
-const NO_DOWN_JUNCTION_KEYS: ReadonlySet<string> = new Set()
+const NO_HANGING_JUNCTION_KEYS: ReadonlySet<string> = new Set()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 const NO_ARC_FEEDS: ReadonlyMap<number, ArcBandFeed> = new Map()
 const NO_CONNECTOR_FEEDS: ReadonlyMap<number, ConnectorFeed> = new Map()
@@ -716,7 +716,7 @@ export default function stateModelFactory(
         },
       }))
       .views(self => arcViews(self))
-      .views(self => sashimiDownViews(self))
+      .views(self => sashimiStripViews(self))
       .views(self => bandStackViews(self))
       .views(self => {
         let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
@@ -826,10 +826,10 @@ export default function stateModelFactory(
            */
           get laneBandOverheads(): number[] {
             return laneBandOverheads(
-              self.belowCoverageBandsInput,
+              self.laneBandsInput,
               self.groupOrder.map(g => g.key),
               self.arcsResult.inkGroupKeys,
-              self.sashimiDownArcLanes,
+              self.sashimiStripLanes,
             )
           },
 
@@ -1128,7 +1128,7 @@ export default function stateModelFactory(
             rawByGroup: self.rawDataByGroup,
             laidOutByGroup: self.laidOutByGroup,
             arcInkKeys: self.arcsResult.inkGroupKeys,
-            sashimiDownKeysByGroup: self.sashimiDownKeysByGroup,
+            sashimiStripKeysByGroup: self.sashimiStripKeysByGroup,
             collapsedKeys: self.collapsedGroups,
             sizes: self.groupSizesInEffect,
             showPileup: self.showPileup,
@@ -1176,7 +1176,7 @@ export default function stateModelFactory(
         get sections() {
           return computeStackedSections(
             this.drawnLanes,
-            self.drawnBelowCoverageBandsInput,
+            self.drawnLaneBandsInput,
             {
               rowHeight: self.rowHeight,
               minSectionHeight: self.showPileup
@@ -1574,7 +1574,7 @@ export default function stateModelFactory(
             const regions = junctionRegions.get()
             return self.renderSections.map(sec => ({
               groupKey: sec.groupKey,
-              sashimiDownKeys: sec.sashimiDownKeys,
+              sashimiStripKeys: sec.sashimiStripKeys,
               junctions: [
                 ...mergeJunctions(
                   visibleRegionJunctions(sec.rawPileupMap, regions),
@@ -1681,8 +1681,8 @@ export default function stateModelFactory(
                   junctions: sec.junctions,
                   downJunctionKeys:
                     self.effectiveSashimiPlacement === 'above'
-                      ? NO_DOWN_JUNCTION_KEYS
-                      : sec.sashimiDownKeys,
+                      ? NO_HANGING_JUNCTION_KEYS
+                      : sec.sashimiStripKeys,
                   displayed,
                   colors: colors.get(),
                 }),
@@ -2579,7 +2579,7 @@ export default function stateModelFactory(
           setGroupHeight(key: string, height: number) {
             const section = self.renderSections.find(s => s.groupKey === key)
             if (section) {
-              const bandsAbove = section.pileupTop - section.coverageTop
+              const bandsAbove = section.pileupTop - section.sectionTop
               self.groupSizes.set(
                 key,
                 Math.max(
@@ -2649,8 +2649,8 @@ export default function stateModelFactory(
             setConf(
               self,
               ['coverage', 'height'],
-              dragBelowCoverageBand(
-                self.belowCoverageBandsInput,
+              dragLaneBand(
+                self.laneBandsInput,
                 'coverage',
                 self.bandPlot,
                 height,

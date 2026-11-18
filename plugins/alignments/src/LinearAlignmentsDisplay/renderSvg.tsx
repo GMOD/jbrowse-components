@@ -30,7 +30,7 @@ import type React from 'react'
 interface AlignmentsSvgModel extends LgvSvgExportable {
   renderSections: readonly Pick<
     AlignmentLane & Section,
-    'groupKey' | 'label' | 'coverageTop' | 'height'
+    'groupKey' | 'label' | 'sectionTop' | 'height'
   >[]
   scrollModel: ScrollModel
   themedIn: (palette: JBrowsePalette) => {
@@ -87,7 +87,7 @@ function AlignmentsSvgBody({
   // no component below needs to know scroll exists.
   const screenSections = renderSections.map(s => ({
     ...s,
-    coverageTop: bandScreenTop(s.coverageTop, scroll),
+    sectionTop: bandScreenTop(s.sectionTop, scroll),
   }))
   // The on-screen render state and labels, which already carry the scroll and
   // the display's height; only the width and the export theme's colors differ.
@@ -131,7 +131,7 @@ function AlignmentsSvgBody({
           sections={screenSections.map(s => ({
             key: s.groupKey,
             label: model.groupChipLabel(s.label),
-            top: s.coverageTop,
+            top: s.sectionTop,
             height: s.height,
           }))}
           left={contentLeft}

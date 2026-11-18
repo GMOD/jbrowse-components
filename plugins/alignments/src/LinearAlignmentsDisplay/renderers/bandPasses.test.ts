@@ -27,7 +27,7 @@ const SECTION: SectionRender = {
   pileupClipHeight: 200,
   connectorClipHeight: 220,
   arcBand: { top: 60, height: 40, down: true },
-  sashimiBand: { top: 300, height: 40 },
+  sashimiBand: { top: 300, height: 40, above: false },
 }
 
 function source(over: Partial<SectionSource> = {}): SectionSource {

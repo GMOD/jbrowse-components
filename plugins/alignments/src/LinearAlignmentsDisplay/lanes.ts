@@ -30,8 +30,8 @@ export interface AlignmentLane {
   rawPileupMap: ReadonlyMap<number, WorkerPileupData>
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
   hasArcs: boolean
-  sashimiDownKeys: ReadonlySet<string>
-  hasSashimiDownArcs: boolean
+  sashimiStripKeys: ReadonlySet<string>
+  hasSashimiStripArcs: boolean
   maxY: number
   collapsed: boolean
   // The height (px) a drag pinned this lane's pileup band at, or `undefined`
@@ -80,8 +80,8 @@ const SYNTHETIC_LANE: AlignmentLane = {
   rawPileupMap: EMPTY_RAW,
   laidOutPileupMap: EMPTY_LAID_OUT,
   hasArcs: false,
-  sashimiDownKeys: EMPTY_KEYS,
-  hasSashimiDownArcs: false,
+  sashimiStripKeys: EMPTY_KEYS,
+  hasSashimiStripArcs: false,
   maxY: 0,
   collapsed: false,
   heightOverridePx: undefined,
@@ -99,7 +99,7 @@ export interface BuildLanesInput {
   laidOutByGroup: ReadonlyMap<string, ReadonlyMap<number, PileupDataResult>>
   // The lanes with arc-band ink (`inkGroupKeys`), cross-region arcs included.
   arcInkKeys: ReadonlySet<string>
-  sashimiDownKeysByGroup: ReadonlyMap<string, ReadonlySet<string>>
+  sashimiStripKeysByGroup: ReadonlyMap<string, ReadonlySet<string>>
   collapsedKeys: ReadonlySet<string>
   // The lane sizes IN EFFECT (`groupSizesInEffect`), which fit mode empties.
   sizes: ReadonlyMap<string, GroupSize>
@@ -123,7 +123,7 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
     rawByGroup,
     laidOutByGroup,
     arcInkKeys,
-    sashimiDownKeysByGroup,
+    sashimiStripKeysByGroup,
     collapsedKeys,
     sizes,
     showPileup,
@@ -136,7 +136,7 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
   const drawsCeilingNotice = showPileup && !fitHeightToDisplay
   return order.map(({ key, label }) => {
     const laidOutPileupMap = laidOutByGroup.get(key) ?? EMPTY_LAID_OUT
-    const sashimiDownKeys = sashimiDownKeysByGroup.get(key) ?? EMPTY_KEYS
+    const sashimiStripKeys = sashimiStripKeysByGroup.get(key) ?? EMPTY_KEYS
     const collapsed = collapsedKeys.has(key)
     const clippedBy = groupClipSource(laidOutPileupMap)
     const size = sizes.get(key)
@@ -146,8 +146,8 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
       rawPileupMap: rawByGroup.get(key) ?? EMPTY_RAW,
       laidOutPileupMap,
       hasArcs: arcInkKeys.has(key),
-      sashimiDownKeys,
-      hasSashimiDownArcs: sashimiDownKeys.size > 0,
+      sashimiStripKeys,
+      hasSashimiStripArcs: sashimiStripKeys.size > 0,
       // showPileup off collapses every pileup band to zero height (coverage +
       // arcs only), the same height-0 path a collapsed lane takes.
       maxY: drawsPileupRows(showPileup, collapsed)

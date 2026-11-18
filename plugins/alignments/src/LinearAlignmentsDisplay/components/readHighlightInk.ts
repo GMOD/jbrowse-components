@@ -2,7 +2,7 @@ import { inkOfInstances } from '@jbrowse/render-core/marks'
 
 import { segmentsOfRead } from '../../features/read/hitTest.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
-import { pileupRowY } from '../renderers/rendererTypes.ts'
+import { pileupRowY, sectionRenderState } from '../renderers/rendererTypes.ts'
 import { bandScreenTop, sectionBandBottom } from './sectionScreen.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -19,14 +19,14 @@ import type { MarkInstance } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 /**
- * One stacked group and its pileup band's content-space top; the ungrouped
- * display is one section keyed `''`. A collapsed group's `pileupHeight` is 0,
- * so its rows clip to nothing rather than bleeding into the next section.
+ * One stacked group and its pileup band's content-space top, in the order of
+ * the render state's `sections`; the ungrouped display is one section keyed
+ * `''`. A collapsed group's `pileupHeight` is 0, so its rows clip to nothing
+ * rather than bleeding into the next section.
  */
 export interface HighlightSection {
   groupKey: string
   laidOutPileupMap: { get(idx: number): PileupDataResult | undefined }
-  coverageTop: number
   pileupTop: number
   pileupHeight: number
 }
@@ -120,15 +120,11 @@ export function readHighlightInk({
   strong: boolean
 }): HighlightRect[] {
   const sectionByGroup = new Map(
-    sections.map(s => [
+    sections.map((s, i) => [
       s.groupKey,
       {
         section: s,
-        frame: {
-          ...state,
-          pileupTopOffset: s.pileupTop,
-          coverageTopOffset: bandScreenTop(s.coverageTop, scroll),
-        },
+        frame: sectionRenderState(state, state.sections[i]!),
         bandTop: bandScreenTop(s.pileupTop, scroll),
         bandBottom: sectionBandBottom(s.pileupTop, s.pileupHeight, scroll),
       },

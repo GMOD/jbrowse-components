@@ -91,7 +91,11 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
         pileupClipTop: 200,
         pileupClipHeight: 200,
         connectorClipHeight: 0,
-        sashimiBand: { top: opts.coverageHeight, height: opts.sashimiHeight },
+        sashimiBand: {
+          top: opts.coverageHeight,
+          height: opts.sashimiHeight,
+          above: false,
+        },
       },
     ],
   })

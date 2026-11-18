@@ -352,7 +352,7 @@ test("a drag past a fully-shown lane's content pads its band", () => {
     { key: '2', label: 'HP: 2', n: 4 },
   ])
   const band = () => display.sections.sections[0]!.pileupHeight
-  const below = () => display.sections.sections[1]!.coverageTop
+  const below = () => display.sections.sections[1]!.sectionTop
   expect(clippedBy(display, '1')).toBeUndefined()
   const [content, top] = [band(), below()]
 

@@ -92,7 +92,7 @@ function seed(laneCount: number, depth = 5) {
   return display
 }
 
-// One lane whose pair draws in a down-mode arcs strip, `height` px tall.
+// One lane whose pair draws in a below-mode arcs strip, `height` px tall.
 function arcsDown(height: number) {
   const display = createEnv()
   display.setDrawnReadConnections('link')

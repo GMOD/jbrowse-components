@@ -3,8 +3,8 @@ import { OVERFLOW_GROUP_KEY, overflowLabel } from '@jbrowse/core/util/groupKeys'
 import { NO_HIDDEN_GROUPS } from '@jbrowse/display-kit/HiddenGroupsMixin'
 
 import {
-  downJunctionKeys,
   mergeJunctions,
+  stripJunctionKeys,
 } from '../features/sashimi/junctions.ts'
 import { getOrCreate } from '../shared/util.ts'
 
@@ -54,18 +54,18 @@ export interface SashimiSidesOpts {
   hidden?: ReadonlySet<string>
 }
 
-// Per group, which of its junctions land in the strip below coverage, keyed by
+// Per group, which of its junctions land in the sashimi strip, keyed by
 // `junctionKey`. Two questions come off this one scan, and sharing the set is
 // what makes them agree: the LAYOUT asks whether a lane needs the strip reserved
 // at all (a non-empty set), and the OVERLAY asks which side to draw each arc on.
-// The down sub-band draws only in a strip the layout reserved, so any
+// A strip-bound arc draws only in a strip the layout reserved, so any
 // under-reserving disagreement drops those arcs.
 //
 // Genomic-bp over every *loaded* region, so the layout keeps depending only on
 // `rpcDataMap`: projecting to screen px would re-lay-out the pileup on every pan
 // frame and flip an arc between bands as regions scroll in and out of view.
 // Interleaving survives any monotonic projection, so the answer is the same.
-export function buildSashimiDownKeys(
+export function buildSashimiStripKeys(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   opts: SashimiSidesOpts,
 ) {
@@ -80,7 +80,7 @@ export function buildSashimiDownKeys(
     // sides, so the merge pools the same way — a pair interleaving across two
     // collapsed-intron regions of one group still reserves the strip.
     const merged = mergeJunctions(regions, filter)
-    out.set(key, downJunctionKeys(merged.values(), placement))
+    out.set(key, stripJunctionKeys(merged.values(), placement))
   }
   return out
 }

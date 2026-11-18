@@ -41,7 +41,7 @@ function renderOverlay(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
     renderSections: [0, 1].map(i => ({
       groupKey: `g${i}`,
       label: `HP: ${i + 1}`,
-      coverageTop: i * SECTION_HEIGHT,
+      sectionTop: i * SECTION_HEIGHT,
       coverageHeight: 40,
       pileupTop: i * SECTION_HEIGHT + 40,
       pileupHeight: 80,
@@ -150,7 +150,7 @@ test('a group drawing no reads offers no collapse', () => {
   const noReads = (collapsed: boolean) => ({
     groupKey: 'none',
     label: 'No SV evidence',
-    coverageTop: 0,
+    sectionTop: 0,
     coverageHeight: 40,
     pileupTop: 40,
     pileupHeight: 0,
