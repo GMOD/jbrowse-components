@@ -141,6 +141,19 @@ test('pinned lanes lead and the rest keep the structure order', async () => {
   expect(display.rowAssemblies).toEqual(['l3', 'l2', 'l4', 'l1'])
 })
 
+test('a fetch landing after the selection changed holds the lanes it asked for', async () => {
+  const display = await displayFor('GbzBaseSyntenyAdapter')
+  const all = interleaved.map(([lane]) => lane)
+  const first = records(interleaved.slice(0, 2))
+  const second = records(interleaved)
+  display.setSelectedLanes(all)
+  display.setFeatures(first.features, 'volvox', ['l1', 'l2'], first.ops)
+  display.holdLaneOrder([region(0, 12_000)])
+  display.setFeatures(second.features, 'volvox', all, second.ops)
+  display.holdLaneOrder([region(0, 12_000)])
+  expect(display.rowAssemblies).toEqual(['l2', 'l4', 'l1', 'l3'])
+})
+
 test.each(['PairwiseIndexedPAFAdapter', 'MCScanBlocksAdapter'])(
   '%s keeps densest first',
   async type => {

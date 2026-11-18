@@ -1348,8 +1348,8 @@ export function stateModelFactory(
        * #action
        * runs when the anchor fetch for `regions` completes. Haplotype lanes read
        * off a graph stack by structure while no order is pinned, worked out
-       * again only once a fetch leaves the window it was worked out on or the
-       * lane selection changes, so panning never reshuffles the stack
+       * again only once a fetch leaves the window it was worked out on or asks
+       * for other lanes, so panning never reshuffles the stack
        */
       holdLaneOrder(regions: FetchRegion[]) {
         if (
@@ -1360,7 +1360,9 @@ export function stateModelFactory(
           return
         }
         const anchor = self.laneKey(self.anchorAssemblyName)
-        const drawn = (self.laneSelection ?? []).map(self.laneKey).sort()
+        const drawn = [
+          ...new Set((self.fetchedFeatures?.lanes ?? []).map(self.laneKey)),
+        ].sort()
         const held = self.heldLaneOrder
         const onWindow = regions.some(r =>
           held?.window.some(
