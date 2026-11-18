@@ -262,6 +262,60 @@ test('an undeclared typed id is created for a file on the app origin only', () =
   expect(root.internetAccounts.length).toBe(1)
 })
 
+// An id naming another origin holds that origin's credential, so a file on the
+// app's own origin cannot ask for it.
+test('an id naming another origin is not created for a file on the app origin', () => {
+  const root = makeRoot()
+  expect(
+    root.findAppropriateInternetAccount({
+      locationType: 'UriLocation',
+      uri: 'volvox_microarray.bw',
+      internetAccountId: 'HTTPBasicInternetAccount-https://data.mylab.org',
+    }),
+  ).toBe(null)
+  expect(root.internetAccounts.length).toBe(0)
+})
+
+// jsdom serves the suite from http://localhost: another port or scheme of
+// that host is another origin.
+test.each(['http://localhost:8080/x.bw', 'https://localhost/x.bw'])(
+  'an undeclared typed id is not created for %s',
+  uri => {
+    const root = makeRoot()
+    expect(
+      root.findAppropriateInternetAccount({
+        locationType: 'UriLocation',
+        uri,
+        internetAccountId: 'HTTPBasicInternetAccount-HTTPBasicTest',
+      }),
+    ).toBe(null)
+    expect(root.internetAccounts.length).toBe(0)
+  },
+)
+
+test.each([
+  'data:text/plain,x',
+  'file:///home/user/x.bam',
+  'blob:https://data.mylab.org/0f0f0f0f-0000-4000-8000-000000000000',
+])('no account is created for %s, which has no origin of its own', uri => {
+  const root = makeRoot()
+  expect(
+    root.findAppropriateInternetAccount({
+      locationType: 'UriLocation',
+      uri,
+      internetAccountId: 'HTTPBasicInternetAccount-https://data.mylab.org',
+    }),
+  ).toBe(null)
+  expect(
+    root.findAppropriateInternetAccount({
+      locationType: 'UriLocation',
+      uri,
+      internetAccountId: 'HTTPBasicInternetAccount-null',
+    }),
+  ).toBe(null)
+  expect(root.internetAccounts.length).toBe(0)
+})
+
 // A location carries a `<TypeName>-<origin>` id when the file selector's
 // account picker chose an origin account, or a saved session held one; the
 // account is recreated, scoped to that origin.

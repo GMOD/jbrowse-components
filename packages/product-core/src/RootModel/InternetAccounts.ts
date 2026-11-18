@@ -36,13 +36,8 @@ function parseEphemeralId(internetAccountId: string) {
  */
 function resolvesToAppOrigin(location: UriLocation) {
   const here = pageLocation()
-  // `null` is what an opaque origin (file:, data:) stringifies to, and two of
-  // them are not the same origin
-  return (
-    !!here?.origin &&
-    here.origin !== 'null' &&
-    resolvedOrigin(location) === here.origin
-  )
+  const appOrigin = here ? webOrigin(here.href) : undefined
+  return !!appOrigin && resolvedOrigin(location) === appOrigin
 }
 
 function pageLocation() {
@@ -50,13 +45,21 @@ function pageLocation() {
   return globalThis.location as Location | undefined
 }
 
-function resolvedOrigin(location: UriLocation) {
+// Only an http(s) URL has an origin a request goes to: `file:` and `data:`
+// stringify theirs as `null`, and a `blob:` URL borrows its creator's.
+function webOrigin(uri: string, base?: string) {
   try {
-    return new URL(location.uri, location.baseUri ?? pageLocation()?.href)
-      .origin
+    const url = new URL(uri, base)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+      ? url.origin
+      : undefined
   } catch {
     return undefined
   }
+}
+
+function resolvedOrigin(location: UriLocation) {
+  return webOrigin(location.uri, location.baseUri ?? pageLocation()?.href)
 }
 
 /**
@@ -66,11 +69,7 @@ function resolvedOrigin(location: UriLocation) {
  */
 function namesOwnOrigin(internetAccountId: string, location: UriLocation) {
   const origin = resolvedOrigin(location)
-  return (
-    !!origin &&
-    origin !== 'null' &&
-    parseEphemeralId(internetAccountId).name === origin
-  )
+  return !!origin && parseEphemeralId(internetAccountId).name === origin
 }
 
 // An account named by a location it is not scoped for reads as a dead track,
@@ -131,14 +130,14 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         initialSnapshot: Record<string, unknown>,
         url: string,
       ) {
-        const origin = URL.canParse(url) ? new URL(url).origin : 'null'
+        const origin = webOrigin(url)
         const { type, name } = parseEphemeralId(internetAccountId)
         const configuration = {
           type,
           internetAccountId,
           name,
           description: '',
-          domains: origin === 'null' ? [] : [`${origin}/`],
+          domains: origin ? [`${origin}/`] : [],
         }
         self.internetAccounts.push({
           ...initialSnapshot,
@@ -190,9 +189,10 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         }
 
         // if still no account, create the one the location names — only when
-        // no account holds that id, only for a file on the app's own origin or
-        // on the origin the id names, and only for an id whose leading segment
-        // names an account type this session actually has. Anything else is a location pointing at an account that is simply
+        // no account holds that id, only for a file on the origin the id names
+        // or, for an id naming no origin, on the app's own, and only for an id
+        // whose leading segment names an account type this session actually
+        // has. Anything else is a location pointing at an account that is simply
         // gone (a track from a shared session whose config defined one, a
         // config it was removed from, a host that never loaded the
         // authentication plugin), and pushing an unknown type into the array
@@ -202,8 +202,9 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         if (
           selectedId &&
           !selectedAccount &&
-          (resolvesToAppOrigin(location) ||
-            namesOwnOrigin(selectedId, location)) &&
+          (namesOwnOrigin(selectedId, location) ||
+            (resolvesToAppOrigin(location) &&
+              !webOrigin(parseEphemeralId(selectedId).name))) &&
           pluginManager
             .getElementTypesInGroup('internet account')
             .some(t => t.name === parseEphemeralId(selectedId).type)
