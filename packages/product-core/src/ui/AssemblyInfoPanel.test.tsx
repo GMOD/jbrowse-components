@@ -74,7 +74,7 @@ interface FakeAssembly {
 
 function makeSession(assembly: FakeAssembly | undefined) {
   return {
-    assemblyManager: { get: () => assembly },
+    assemblyManager: { has: () => !!assembly, get: () => assembly },
   } as unknown as AbstractSessionModel
 }
 
