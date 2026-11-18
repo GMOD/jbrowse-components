@@ -9881,7 +9881,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "placement": {
-          "description": "\`above\` prints each genome's name and span on a line over its genes; \`overlay\` prints the name alone over the left end of its gene row, which fits 12 px more per lane.",
+          "description": "\`above\` prints each genome's header on a line over its genes: its name, loci, badges and span; \`overlay\` prints it over the gene row instead and leaves out the loci, keeping \`[rev]\` on a flipped lane, which fits 12 px more per lane.",
           "default": "above",
           "if": {
             "type": "null"
@@ -30212,13 +30212,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "visibleColumns": {},
             "svTypeFilter": {
-              "type": "string"
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             },
             "svEventFilter": {
               "type": "string"
             },
             "filterText": {
               "type": "string"
+            },
+            "sortField": {
+              "type": "string"
+            },
+            "sortAscending": {
+              "type": "boolean"
             }
           },
           "patternProperties": {

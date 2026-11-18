@@ -1291,6 +1291,7 @@
       "names": [
         "default",
         "pluginLoadUrl",
+        "preloadPluginTexts",
         "preloadUMDBundles",
         "workerScriptLoadMessage"
       ],

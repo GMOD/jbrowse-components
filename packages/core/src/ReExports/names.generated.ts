@@ -177,7 +177,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/pluggableElementTypes/WidgetType': ['default'],
   '@jbrowse/core/Plugin': ['default'],
   '@jbrowse/core/pluginDefinitions': ['dedupePlugins', 'desktopVendoredPluginNames', 'dropVendoredPlugins', 'holdsPlugin', 'holdsPluginVersion', 'isESMPluginDefinition', 'isPluginUrl', 'isStorePluginDefinition', 'isUMDPluginDefinition', 'maybePluginUrl', 'pluginDefinitionMetadata', 'pluginDescriptionString', 'pluginLabel', 'pluginName', 'pluginUrl', 'pluginUrlSource', 'pluginsNotIn', 'resolvedPluginUrl', 'samePlugin', 'storePluginName', 'vendoredPluginNames'],
-  '@jbrowse/core/PluginLoader': ['default', 'pluginLoadUrl', 'preloadUMDBundles', 'workerScriptLoadMessage'],
+  '@jbrowse/core/PluginLoader': ['default', 'pluginLoadUrl', 'preloadPluginTexts', 'preloadUMDBundles', 'workerScriptLoadMessage'],
   '@jbrowse/core/PluginManager': ['corePluginRecords', 'default', 'pluggableElementTypeGroups', 'pluggableStateModelGroup', 'runtimePluginRecords', 'wrappedComponent'],
   '@jbrowse/core/rpc/byteBudget': ['adapterByteLimit', 'isRegionRefused', 'isRegionTooLargeError', 'largestRegionBytes', 'measureRegionBytes', 'measuredBytes', 'measurementPartial', 'overByteBudget', 'perRegionBytes', 'totalRegionBytes'],
   '@jbrowse/core/rpc/RpcManager': ['default'],
