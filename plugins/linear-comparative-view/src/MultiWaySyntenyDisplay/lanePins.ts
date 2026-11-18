@@ -36,11 +36,6 @@ function pinHolds(pin: LanePin, lane: string, anchor: string, keyOf: KeyOf) {
   )
 }
 
-/** A session's pin list, or none for anything else a beta session held. */
-export function pinListOf(pins: unknown): readonly LanePin[] {
-  return Array.isArray(pins) ? (pins as LanePin[]) : []
-}
-
 /**
  * The row `pin` belongs to: the one spelled as the pin is, else one the pin
  * names by another spelling, since two spellings of an assembly can both be

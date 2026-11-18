@@ -1,10 +1,4 @@
-import { pinListOf, pinsInForceOf } from './lanePins.ts'
-
-// a beta session held a map from lane to pin, which no pin is read out of
-test('a session holding the old pin map pins nothing', () => {
-  expect(pinListOf({ volvox_del: { refName: 'ctgA' } })).toEqual([])
-  expect(pinListOf(undefined)).toEqual([])
-})
+import { pinsInForceOf } from './lanePins.ts'
 
 // two spellings of one assembly can both be rows, and each keeps its own pin
 test('a pin goes to the row spelled as the pin is, before an alias of it', () => {
