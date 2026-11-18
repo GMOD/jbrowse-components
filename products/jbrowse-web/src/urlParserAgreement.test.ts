@@ -18,23 +18,18 @@
 //
 // What it does NOT prove, so that nobody reads a green run as more than it is:
 // the two share `buildLgvInit`, `readHubUrlParam`, `readNavParam`,
-// `readTracklistParam` and `hubConnectionSpec`, so a shorthand field's decoding
-// is one implementation and cannot drift. What can, and what these cases
-// exercise, is everything around that — which branch wins when a link carries
-// several things at once, which params each side bothers to read, and what each
-// gates a view launch on. The `&sessionTracks=` bug was the second of those,
-// and re-introducing it fails the hub-with-sessionTracks case; re-ordering the
-// hub and shorthand branches fails fourteen of these.
+// `readTracklistParam` and `hubLinkSpec`, so a shorthand field's decoding and a
+// hub link's spec are one implementation each and cannot drift. What can, and
+// what these cases exercise, is everything around that — which branch wins
+// when a link carries several things at once, and which params each side
+// bothers to read. The `&sessionTracks=` bug was the second of those, and
+// re-introducing it fails the hub-with-sessionTracks case; re-ordering the hub
+// and shorthand branches fails fourteen of these.
 
-import {
-  hubConnectionSpec,
-  parseSessionSpecUrl,
-  type ParsedSessionSpec,
-} from '@jbrowse/app-core'
+import { parseSessionSpecUrl, type ParsedSessionSpec } from '@jbrowse/app-core'
 
 import { createPluginManager } from './createPluginManager.ts'
 import { createSessionLoaderFromUrl } from './createSessionLoader.ts'
-import { hubLaunchInit } from './loadHubSpec.ts'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 
@@ -46,6 +41,7 @@ interface Resolved {
   sessionTracks: unknown[]
   sessionConnections: unknown[]
   sessionName: string | undefined
+  notice: string | undefined
 }
 
 function setUrl(url: string) {
@@ -66,10 +62,11 @@ function resolveConfigUrl(config: string | undefined) {
 }
 
 function fromAppCore(url: string): Resolved {
-  const { configUrl, spec, sessionName }: ParsedSessionSpec =
+  const { configUrl, spec, sessionName, notice }: ParsedSessionSpec =
     parseSessionSpecUrl(url)
   return {
     configUrl,
+    notice,
     views: spec.views,
     sessionTracks: spec.sessionTracks ?? [],
     sessionConnections: spec.sessionConnections ?? [],
@@ -89,25 +86,13 @@ async function fromJbrowseWeb(): Promise<Resolved> {
     sessionName: loader.sessionName,
   }
   if (source?.type === 'spec') {
-    const { spec } = source
+    const { spec, notice } = source
     return {
       ...common,
+      notice,
       views: spec.views,
       sessionTracks: spec.sessionTracks ?? [],
       sessionConnections: spec.sessionConnections ?? [],
-    }
-  }
-  if (source?.type === 'hub') {
-    // loadHubSpec is where web's hub session takes shape: the connection
-    // configs come from the same hubConnectionSpec app-core uses, and the view
-    // launches with whatever hubLaunchInit lets through
-    const { hubURL } = source.hubSpec
-    const launch = hubLaunchInit(source.viewInit)
-    return {
-      ...common,
-      views: launch ? [{ type: 'LinearGenomeView', ...launch }] : [],
-      sessionTracks: source.sessionTracks ?? [],
-      sessionConnections: hubURL.map(hubConnectionSpec),
     }
   }
   throw new Error(`jbrowse-web resolved this to "${source?.type}"`)

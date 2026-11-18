@@ -13,7 +13,6 @@ import { notifyPluginLoadFailures } from '@jbrowse/product-core'
 
 import { applyDefaultSessionViewInit } from './applyDefaultSessionViewInit.ts'
 import corePlugins from './corePlugins.ts'
-import { loadHubSpec } from './loadHubSpec.ts'
 import {
   markPermanentPluginLoadFinished,
   permanentPluginSafeMode,
@@ -181,11 +180,9 @@ function preloadSessionAssemblies(
       ? viewsOf(sessionSource.snapshot)
       : sessionSource?.type === 'spec'
         ? viewsOf(sessionSource.spec)
-        : sessionSource?.type === 'hub'
-          ? undefined
-          : defaultSessionViewInit?.assembly
-            ? defaultSessionViewInit
-            : viewsOf(configSnapshot?.defaultSession)
+        : defaultSessionViewInit?.assembly
+          ? defaultSessionViewInit
+          : viewsOf(configSnapshot?.defaultSession)
   const { assemblyManager } = rootModel
   for (const name of assemblyNamesIn(source)) {
     if (assemblyManager.has(name)) {
@@ -239,22 +236,6 @@ function initSession(
       throw sessionSource.error
     } else if (sessionSource?.type === 'snapshot') {
       rootModel.setSession(sessionSource.snapshot)
-    } else if (sessionSource?.type === 'hub') {
-      void loadHubSpec(
-        {
-          ...sessionSource.hubSpec,
-          sessionName,
-          viewInit: sessionSource.viewInit,
-          sessionTracks: sessionSource.sessionTracks,
-        },
-        pluginManager,
-      ).catch((e: unknown) => {
-        console.error(e)
-        if (!rootModel.session) {
-          rootModel.startNewSession()
-        }
-        rootModel.session?.notifyError(`${e}`, e)
-      })
     } else if (sessionSource?.type === 'spec') {
       void loadSessionSpec(
         sessionName
@@ -262,6 +243,9 @@ function initSession(
           : sessionSource.spec,
         pluginManager,
       )
+      if (sessionSource.notice) {
+        rootModel.session?.notify(sessionSource.notice, 'warning')
+      }
     } else {
       const defaultSessionTracks = model.defaultSessionTracks ?? []
       rootModel.startNewSession()

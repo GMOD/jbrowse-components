@@ -1,3 +1,4 @@
+import { hubConnectionSpec } from '@jbrowse/app-core'
 import { aesEncrypt, toUrlSafeB64 } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
@@ -189,7 +190,6 @@ describe('SessionLoader', () => {
       }
       expect(isLoaded({ type: 'snapshot', snapshot: { id: 'x' } })).toBe(true)
       expect(isLoaded({ type: 'spec', spec: { views: [] } })).toBe(true)
-      expect(isLoaded({ type: 'hub', hubSpec: { hubURL: [] } })).toBe(true)
       expect(isLoaded({ type: 'default' })).toBe(true)
       expect(isLoaded({ type: 'error', error: new Error('x') })).toBe(true)
     })
@@ -450,22 +450,21 @@ describe('SessionLoader', () => {
   })
 
   describe('decodeHubSpec', () => {
-    it('creates a hub sessionSource from hubURL', () => {
+    const hub = hubConnectionSpec('https://example.com/hub.txt')
+
+    it('creates a spec sessionSource attaching the hub', () => {
       const loader = SessionLoader.create({
         hubURL: ['https://example.com/hub.txt'],
         initialTimestamp: Date.now(),
       })
       loader.decodeHubSpec()
-      expect(loader.sessionSource).toMatchObject({
-        type: 'hub',
-        hubSpec: { hubURL: ['https://example.com/hub.txt'] },
+      expect(loader.sessionSource).toEqual({
+        type: 'spec',
+        spec: { sessionConnections: [hub], sessionTracks: [], views: [] },
       })
-      expect(
-        (loader.sessionSource as { viewInit?: unknown }).viewInit,
-      ).toBeUndefined()
     })
 
-    it('carries the loc/assembly shorthand along as a view init', () => {
+    it('carries the loc/assembly shorthand along as the spec view', () => {
       const loader = SessionLoader.create({
         hubURL: ['https://example.com/hub.txt'],
         loc: 'chr1:1-1000',
@@ -475,12 +474,17 @@ describe('SessionLoader', () => {
       })
       loader.decodeHubSpec()
       expect(loader.sessionSource).toMatchObject({
-        type: 'hub',
-        hubSpec: { hubURL: ['https://example.com/hub.txt'] },
-        viewInit: {
-          loc: 'chr1:1-1000',
-          assembly: 'hg38',
-          tracks: ['track1'],
+        type: 'spec',
+        spec: {
+          sessionConnections: [hub],
+          views: [
+            {
+              type: 'LinearGenomeView',
+              loc: 'chr1:1-1000',
+              assembly: 'hg38',
+              tracks: ['track1'],
+            },
+          ],
         },
       })
     })
@@ -488,7 +492,7 @@ describe('SessionLoader', () => {
     // `&tracklist=1`, `&regions=` and `&highlight=` beside a hub used to be
     // gated on loc/assembly, so they were stripped from the address bar and
     // applied nowhere, with nothing saying so
-    it('carries an init with no loc or assembly, so loadHubSpec can report it', () => {
+    it('reports an init with no loc or assembly rather than dropping it', () => {
       const loader = SessionLoader.create({
         hubURL: ['https://example.com/hub.txt'],
         tracklist: true,
@@ -496,8 +500,9 @@ describe('SessionLoader', () => {
       })
       loader.decodeHubSpec()
       expect(loader.sessionSource).toMatchObject({
-        type: 'hub',
-        viewInit: { tracklist: true },
+        type: 'spec',
+        spec: { views: [] },
+        notice: expect.stringMatching(/^&tracklist= alongside &hubURL=/),
       })
     })
 
@@ -512,8 +517,11 @@ describe('SessionLoader', () => {
       })
       await loader.loadSessionByType()
       expect(loader.sessionSource).toMatchObject({
-        type: 'hub',
-        viewInit: { loc: 'chr1:1-1000', assembly: 'hg38' },
+        type: 'spec',
+        spec: {
+          sessionConnections: [hub],
+          views: [{ loc: 'chr1:1-1000', assembly: 'hg38' }],
+        },
       })
     })
 
@@ -922,15 +930,19 @@ describe('SessionLoader', () => {
       })
     })
 
-    it('dispatches hub session — sets a hub sessionSource', async () => {
+    it('dispatches hub session — sets a spec sessionSource attaching it', async () => {
       const loader = createAndInit({
         hubURL: ['https://example.com/hub.txt'],
         initialTimestamp: Date.now(),
       })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
       expect(loader.sessionSource).toMatchObject({
-        type: 'hub',
-        hubSpec: { hubURL: ['https://example.com/hub.txt'] },
+        type: 'spec',
+        spec: {
+          sessionConnections: [
+            hubConnectionSpec('https://example.com/hub.txt'),
+          ],
+        },
       })
     })
 
@@ -1150,9 +1162,8 @@ describe('SessionLoader', () => {
       expect(loader.defaultSessionViewInit).toEqual({ loc: 'chr1:1-100' })
     })
 
-    // &hubURL= with an empty value parses to [], which is truthy: it used to
-    // route to loadHubSpec, which has no hub to connect to and returns without
-    // setting any session at all
+    // &hubURL= with an empty value parses to [], which is truthy: routing on
+    // it opened a session with no hub to connect to
     it('treats an empty hubURL as no hub', () => {
       setSearch('?hubURL=')
       expect(createSessionLoaderFromUrl(0).isHubSession).toBe(false)

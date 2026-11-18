@@ -7,7 +7,6 @@ import {
   readHubUrlParam,
 } from './lgvUrlInit.ts'
 
-import type { LgvUrlInit } from './lgvUrlInit.ts'
 import type { SessionSpec } from './loadSessionSpec.ts'
 import type { ViewSpec } from './types.ts'
 
@@ -171,7 +170,7 @@ const URL_PARAM_FOR_INIT_KEY: Record<string, string | undefined> = {
  */
 export function hubLinkSpec(
   hubURL: string[],
-  init: LgvUrlInit,
+  init: Omit<ViewSpec, 'type'>,
   sessionTracks?: Record<string, unknown>[],
 ) {
   const carried = Object.keys(init).map(
@@ -193,7 +192,7 @@ export function hubLinkSpec(
 // The init keys are LGV `InitState` ones the LaunchView-LinearGenomeView
 // extension point partitions for itself; ViewSpec carries only what every view
 // type has, which is why this spreads rather than naming them.
-function lgvSpec(init: LgvUrlInit): ViewSpec {
+function lgvSpec(init: Omit<ViewSpec, 'type'>): ViewSpec {
   return { type: 'LinearGenomeView', ...init }
 }
 

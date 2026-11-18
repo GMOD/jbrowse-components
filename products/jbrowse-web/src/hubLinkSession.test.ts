@@ -1,8 +1,15 @@
+// A `&hubURL=` link is the spec hubLinkSpec builds, loaded by loadSessionSpec
+// — the same two calls Desktop's "Open JBrowse Web link..." makes. These drive
+// them against jbrowse-web's real session model; the link-level cases go
+// through the whole loader.
 // we use mainthread rpc so we mock the makeWorkerInstance to an empty file
+import { hubLinkSpec, loadSessionSpec } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { when } from 'mobx'
 
 import corePlugins from './corePlugins.ts'
-import { loadHubSpec, parseHubShortLabel } from './loadHubSpec.ts'
+import { createPluginManager } from './createPluginManager.ts'
+import { createSessionLoaderFromUrl } from './createSessionLoader.ts'
 import rootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
@@ -10,8 +17,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 
-// the connection's hub.txt read (loadHubSpec's own shortLabel read goes through
-// global fetch instead), so a test can hold a connection in flight or fail it
+// the connection's hub.txt read (the session name's read goes through global
+// fetch instead), so a test can hold a connection in flight or fail it
 const mockReadFile = jest.fn()
 jest.mock('@jbrowse/core/util/io', () => ({
   ...jest.requireActual('@jbrowse/core/util/io'),
@@ -41,6 +48,54 @@ function setup({ adminMode = false } = {}) {
   return { pluginManager, rootModel }
 }
 
+function loadHubLink(
+  {
+    hubURL,
+    viewInit = {},
+    sessionTracks,
+  }: {
+    hubURL: string[]
+    viewInit?: Parameters<typeof hubLinkSpec>[1]
+    sessionTracks?: Record<string, unknown>[]
+  },
+  pluginManager: PluginManager,
+) {
+  return loadSessionSpec(
+    hubLinkSpec(hubURL, viewInit, sessionTracks).spec,
+    pluginManager,
+  )
+}
+
+// the whole web route: address bar, loader, plugin manager, session
+async function openWebLink(query: string) {
+  window.history.replaceState(null, '', `/?config=none&${query}`)
+  const loader = createSessionLoaderFromUrl(0)
+  loader.setConfigAndPlugins(
+    {
+      configuration: {
+        rpc: { defaultDriver: 'MainThreadRpcDriver' },
+        disableAnalytics: true,
+      },
+    },
+    [],
+  )
+  await loader.loadSessionByType()
+  const pluginManager = await createPluginManager(loader, () => {})
+  return pluginManager.rootModel?.session
+}
+
+function pendingFetch() {
+  jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
+}
+
+function resolvingFetch() {
+  jest
+    .spyOn(global, 'fetch')
+    .mockResolvedValue(
+      new Response('hub myHub\nshortLabel My Cool Hub\nlongLabel x'),
+    )
+}
+
 beforeEach(() => {
   // connections stay in flight by default, so a test that isn't about the
   // connection gets no failure noise out of one
@@ -51,56 +106,35 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-describe('parseHubShortLabel', () => {
-  it('extracts the shortLabel value', () => {
-    expect(
-      parseHubShortLabel('hub myHub\nshortLabel My Cool Hub\nlongLabel x'),
-    ).toBe('My Cool Hub')
-  })
-
-  it('returns undefined when there is no shortLabel line', () => {
-    expect(parseHubShortLabel('hub myHub\nlongLabel x')).toBeUndefined()
-  })
-})
-
-describe('loadHubSpec', () => {
-  // regression: loadHubSpec used to await the hub.txt fetch *before* calling
-  // setSession, leaving rootModel.session undefined while JBrowse rendered
-  // (xref ?hubURL=...&config=none "session is undefined")
+describe('a hub link', () => {
+  // regression: the hub loader used to await the hub.txt fetch *before*
+  // calling setSession, leaving rootModel.session undefined while JBrowse
+  // rendered (xref ?hubURL=...&config=none "session is undefined")
   it('sets the session synchronously, before the hub.txt fetch resolves', () => {
     const { pluginManager, rootModel } = setup()
-    // a pending fetch never resolves, so only the synchronous portion runs
-    jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
+    pendingFetch()
 
-    void loadHubSpec({ hubURL: ['https://example.com/hub.txt'] }, pluginManager)
+    void loadHubLink({ hubURL: ['https://example.com/hub.txt'] }, pluginManager)
 
     expect(rootModel.session).toBeTruthy()
     expect(rootModel.session?.name).toBe('https://example.com/hub.txt')
   })
 
-  it('uses an explicit sessionName for the initial name', () => {
-    const { pluginManager, rootModel } = setup()
-    jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
+  it('uses an explicit &sessionName= for the session name', async () => {
+    pendingFetch()
 
-    void loadHubSpec(
-      { hubURL: ['https://example.com/hub.txt'], sessionName: 'My Session' },
-      pluginManager,
+    const session = await openWebLink(
+      'hubURL=https://example.com/hub.txt&sessionName=My%20Session',
     )
 
-    expect(rootModel.session?.name).toBe('My Session')
-  })
-
-  it('does nothing when hubURL is empty', async () => {
-    const { pluginManager, rootModel } = setup()
-    await loadHubSpec({ hubURL: [] }, pluginManager)
-    expect(rootModel.session).toBeUndefined()
+    expect(session?.name).toBe('My Session')
   })
 
   it('creates a connection instance for each hub URL', () => {
     const { pluginManager, rootModel } = setup()
-    jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
+    pendingFetch()
 
-    void loadHubSpec(
+    void loadHubLink(
       {
         hubURL: [
           'https://example.com/hub1.txt',
@@ -117,9 +151,9 @@ describe('loadHubSpec', () => {
   // track selector, so a raw hub.txt URL was unreadably long there
   it('names the connection with a short label, not the full hub.txt URL', () => {
     const { pluginManager, rootModel } = setup()
-    jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
+    pendingFetch()
 
-    void loadHubSpec(
+    void loadHubLink(
       { hubURL: ['https://example.com/hubs/my-hub/hub.txt'] },
       pluginManager,
     )
@@ -128,40 +162,28 @@ describe('loadHubSpec', () => {
     expect(session.sessionConnections[0]!.name).toBe('my-hub')
   })
 
-  it('renames the connection once hub.txt resolves with a shortLabel', async () => {
+  it('renames the session and the connection once hub.txt resolves with a shortLabel', async () => {
     const { pluginManager, rootModel } = setup()
-    jest.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      text: async () => 'hub myHub\nshortLabel My Cool Hub\nlongLabel x',
-    } as Response)
-    // the rename comes from loadHubSpec's own fetch, not the connection's
+    resolvingFetch()
+
+    // the rename comes from its own hub.txt read, not the connection's
     // doConnect, whose own read is held in flight by mockReadFile
-    await loadHubSpec(
+    await loadHubLink(
       { hubURL: ['https://example.com/hubs/my-hub/hub.txt'] },
       pluginManager,
     )
 
     const session = rootModel.session!
+    await when(() => session.name === 'My Cool Hub')
     expect(session.sessionConnections[0]!.name).toBe('My Cool Hub')
   })
 })
 
 // a hand-written ?hubURL=...&loc=... used to lose the hub entirely: the loader
 // ranked the loc/assembly shorthand first and built a bare LGV. The hub now
-// wins and the shorthand rides along as a view init.
-describe('loadHubSpec with a view init', () => {
+// wins and the shorthand rides along as the spec's view.
+describe('a hub link with a view init', () => {
   const hubURL = ['https://example.com/hubs/my-hub/hub.txt']
-
-  function pendingFetch() {
-    jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
-  }
-
-  function resolvingFetch() {
-    jest.spyOn(global, 'fetch').mockResolvedValue({
-      ok: true,
-      text: async () => 'hub myHub\nshortLabel My Cool Hub',
-    } as Response)
-  }
 
   const flush = () => new Promise(resolve => setTimeout(resolve, 0))
 
@@ -172,14 +194,14 @@ describe('loadHubSpec with a view init', () => {
     // launch is the assembly appearing
     mockReadFile.mockReturnValue(new Promise(() => {}))
 
-    const p = loadHubSpec(
+    const p = loadHubLink(
       { hubURL, viewInit: { loc: 'chr1:1-100', assembly: 'hubAsm' } },
       pluginManager,
     )
     const session = rootModel.session!
-    // let the hub.txt fetch and rename settle; the launch is now parked on an
-    // assembly the hub's connect() has not produced. An LGV created here would
-    // report "Assembly hubAsm not found" until it arrived
+    // the launch is now parked on an assembly the hub's connect() has not
+    // produced. An LGV created here would report "Assembly hubAsm not found"
+    // until it arrived
     await flush()
     expect(session.views).toHaveLength(0)
 
@@ -212,7 +234,7 @@ describe('loadHubSpec with a view init', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {})
     mockReadFile.mockRejectedValue(new Error('hub is unreachable'))
 
-    await loadHubSpec(
+    await loadHubLink(
       { hubURL, viewInit: { loc: 'chr1:1-100', assembly: 'notInThisHub' } },
       pluginManager,
     )
@@ -230,7 +252,7 @@ describe('loadHubSpec with a view init', () => {
     const { pluginManager, rootModel } = setup()
     pendingFetch()
 
-    void loadHubSpec(
+    void loadHubLink(
       { hubURL, viewInit: { loc: 'chr1:1-100', assembly: 'hubAsm' } },
       pluginManager,
     )
@@ -242,7 +264,7 @@ describe('loadHubSpec with a view init', () => {
     const { pluginManager, rootModel } = setup()
     pendingFetch()
 
-    void loadHubSpec({ hubURL }, pluginManager)
+    void loadHubLink({ hubURL }, pluginManager)
 
     expect(rootModel.session!.connectionInstances[0]!.silent).toBe(false)
   })
@@ -250,40 +272,38 @@ describe('loadHubSpec with a view init', () => {
   // the launcher resolves against an assembly name, and a hub's genome ids are
   // only known to the hub — so this one can't be honored, and must say so
   it('reports a loc with no assembly instead of dropping it silently', async () => {
-    const { pluginManager, rootModel } = setup()
     resolvingFetch()
 
-    await loadHubSpec(
-      { hubURL, viewInit: { loc: 'chr1:1-100' } },
-      pluginManager,
-    )
+    const session = await openWebLink(`hubURL=${hubURL[0]}&loc=chr1:1-100`)
 
-    const session = rootModel.session!
-    expect(
-      session.snackbarMessages.some(
-        (s: { message: string }) =>
-          s.message.includes('&loc=') && s.message.includes('&assembly='),
-      ),
-    ).toBe(true)
-    // the hub itself still loaded, non-silently, so its own defaultPos launch
-    // remains the best guess available
-    expect(session.connectionInstances[0]!.silent).toBe(false)
+    expect(session).toMatchObject({
+      snackbarMessages: expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringMatching(/&loc=.*&assembly=/),
+        }),
+      ]),
+      // the hub itself still loaded, non-silently, so its own defaultPos
+      // launch remains the best guess available
+      connectionInstances: [expect.objectContaining({ silent: false })],
+    })
   })
 
-  it('names whichever params an assembly-less init carried', async () => {
-    const { pluginManager, rootModel } = setup()
+  it('names whichever params an assembly-less link carried', async () => {
     resolvingFetch()
 
-    await loadHubSpec(
-      { hubURL, viewInit: { tracklist: true, displayedRegionNames: ['chr1'] } },
-      pluginManager,
+    const session = await openWebLink(
+      `hubURL=${hubURL[0]}&tracklist=true&regions=chr1`,
     )
 
-    expect(
-      rootModel.session!.snackbarMessages.some((s: { message: string }) =>
-        s.message.startsWith('&tracklist=, &regions= alongside &hubURL='),
-      ),
-    ).toBe(true)
+    expect(session).toMatchObject({
+      snackbarMessages: expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringMatching(
+            /^&tracklist=, &regions= alongside &hubURL=/,
+          ),
+        }),
+      ]),
+    })
   })
 })
 
@@ -291,7 +311,7 @@ describe('loadHubSpec with a view init', () => {
 // dropped, while the SAME url handed to app-core's parseSessionSpecUrl — which
 // is what Desktop's "Open JBrowse Web link…" and the jbrowse:// handler use —
 // carried them through. One link, two answers, neither of them announced.
-describe('loadHubSpec with sessionTracks', () => {
+describe('a hub link with sessionTracks', () => {
   const hubURL = ['https://example.com/hubs/my-hub/hub.txt']
   const TRACK = {
     trackId: 'url_track',
@@ -301,15 +321,11 @@ describe('loadHubSpec with sessionTracks', () => {
     adapter: { type: 'FromConfigAdapter', features: [] },
   }
 
-  function pendingFetch() {
-    jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
-  }
-
   it('registers them as session tracks alongside the hub', () => {
     const { pluginManager, rootModel } = setup()
     pendingFetch()
 
-    void loadHubSpec({ hubURL, sessionTracks: [TRACK] }, pluginManager)
+    void loadHubLink({ hubURL, sessionTracks: [TRACK] }, pluginManager)
 
     const session = rootModel.session!
     expect(session.sessionTracks.map(t => t.trackId)).toEqual(['url_track'])
@@ -318,15 +334,14 @@ describe('loadHubSpec with sessionTracks', () => {
     expect(session.connectionInstances).toHaveLength(1)
   })
 
-  // the reason addSessionTracks is shared with loadSessionSpec rather than
-  // reimplemented here: a hub's tracks belong to the session whoever is
-  // looking, and `publishTrackConf` next door would write an admin's into
-  // jbrowse.tracks — the config.json served to every visitor
+  // a hub's tracks belong to the session whoever is looking, and
+  // `publishTrackConf` next door would write an admin's into jbrowse.tracks —
+  // the config.json served to every visitor
   it('keeps them out of jbrowse.tracks for an admin', () => {
     const { pluginManager, rootModel } = setup({ adminMode: true })
     pendingFetch()
 
-    void loadHubSpec({ hubURL, sessionTracks: [TRACK] }, pluginManager)
+    void loadHubLink({ hubURL, sessionTracks: [TRACK] }, pluginManager)
 
     const session = rootModel.session!
     expect(session.sessionTracks).toHaveLength(1)
@@ -337,7 +352,7 @@ describe('loadHubSpec with sessionTracks', () => {
     const { pluginManager, rootModel } = setup()
     pendingFetch()
 
-    void loadHubSpec({ hubURL }, pluginManager)
+    void loadHubLink({ hubURL }, pluginManager)
 
     expect(rootModel.session!.sessionTracks).toHaveLength(0)
   })

@@ -1,6 +1,5 @@
 import type { SessionMetadata, SessionSpec } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
-import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 import type { DBSchema } from 'idb'
 
 // JSON-shaped snapshot used for configs and session payloads as they cross the
@@ -46,26 +45,16 @@ export type SessionTriagedInfo =
  * loader's job is to turn whatever the URL/HMR/storage provided into exactly
  * one of these variants; initSession then applies it. One discriminated value
  * replaces the former scattered sessionSnapshot/sessionSpec/hubSpec/
- * blankSession/sessionError flags.
+ * blankSession/sessionError flags. A `&hubURL=` link is a spec too.
  */
 export type SessionSource =
   | { type: 'snapshot'; snapshot: Snap }
-  | { type: 'spec'; spec: SessionSpec }
   | {
-      type: 'hub'
-      // a plain string[], not the loader's own `hubURL` MST array: this whole
-      // value lives in a `types.frozen` prop, which contractually holds
-      // detached JSON. Storing the live node there instead reads as a dead
-      // node once the loader is destroyed, and nothing catches it — MST's
-      // deepFreeze deliberately skips observable arrays.
-      hubSpec: { hubURL: string[] }
-      // the loc/assembly/tracks URL shorthand, when the link carried it
-      // alongside &hubURL=; applied on top of the hub session
-      viewInit?: Partial<InitState>
-      // `&sessionTracks=`, when the link carried it alongside &hubURL=. Added
-      // to the hub session the same way a spec's `sessionTracks` is added
-      // beside its `sessionConnections`, so `&tracks=` can name one.
-      sessionTracks?: Record<string, unknown>[]
+      type: 'spec'
+      spec: SessionSpec
+      // what the link asked for that the spec cannot carry, shown on the
+      // session it opens (see hubLinkSpec)
+      notice?: string
     }
   | { type: 'default' }
   | { type: 'error'; error: unknown }

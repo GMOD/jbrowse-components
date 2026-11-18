@@ -1,5 +1,6 @@
 import {
   deleteQueryParams,
+  hubLinkSpec,
   parseSessionSpec,
   parseSessionTracks,
   resolveShareUrl,
@@ -249,10 +250,9 @@ const SessionLoader = types
      */
     get isHubSession() {
       // length, not presence: `&hubURL=` (or `&hubURL=,,`) parses to an empty
-      // array, which is still truthy. That routed the load to loadHubSpec, which
-      // has no first URL to connect to and returns without ever calling
-      // setSession — a JBrowse with no session at all and no diagnostic. An
-      // empty list is no hub, so fall through to the normal default session.
+      // array, which is still truthy, and routing on it opened a session with
+      // no hub in it and no diagnostic. An empty list is no hub, so fall
+      // through to the normal default session.
       return !!self.hubURL?.length
     },
     /**
@@ -726,29 +726,16 @@ const SessionLoader = types
      * #action
      */
     decodeHubSpec() {
-      self.setSessionSource({
-        type: 'hub',
-        // detached copy: sessionSource is a types.frozen prop, so handing it
-        // self.hubURL would park a live node from this loader's own tree
-        // inside a value that is supposed to be plain JSON
-        hubSpec: { hubURL: [...(self.hubURL ?? [])] },
-        // a hand-written link may carry the loc/assembly/tracks shorthand too;
-        // loadHubSpec applies it on top of the hub session. Gated on the init
-        // being non-empty, as the defaultSession path is, rather than on
-        // loc/assembly: an init naming no assembly still cannot launch against a
-        // hub genome, but handing it on is what lets loadHubSpec say so instead
-        // of the params being stripped from the address bar in silence.
-        viewInit: Object.keys(self.urlViewInit).length
-          ? self.urlViewInit
-          : undefined,
-        // ungated, unlike viewInit: a `&sessionTracks=` is worth registering
-        // whether or not the link also says where to look. Dropping it here is
-        // what made `?hubURL=…&sessionTracks=…&tracks=my_track` open the hub
-        // with `my_track` unresolvable and no diagnostic, while the same URL
-        // handed to parseSessionSpecUrl (Desktop's "Open JBrowse Web link…")
-        // carried the track — one link, two answers.
-        sessionTracks: self.sessionTracksParsed,
-      })
+      // the spec parseSessionSpecUrl builds for the same link, so a hub link
+      // opens the same session here as in Desktop. The hubURL copy is
+      // detached: sessionSource is a types.frozen prop, and self.hubURL a live
+      // node of this loader's own tree
+      const { spec, notice } = hubLinkSpec(
+        [...(self.hubURL ?? [])],
+        self.urlViewInit,
+        self.sessionTracksParsed,
+      )
+      self.setSessionSource({ type: 'spec', spec, notice })
     },
   }))
   .actions(self => ({

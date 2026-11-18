@@ -1,3 +1,4 @@
+import { hubLinkSpec } from '@jbrowse/app-core'
 import Plugin from '@jbrowse/core/Plugin'
 
 import { createPluginManager } from './createPluginManager.ts'
@@ -6,9 +7,6 @@ import type { SessionSource } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 jest.mock('./makeWorkerInstance', () => () => {})
-jest.mock('./loadHubSpec', () => ({
-  loadHubSpec: jest.fn().mockRejectedValue(new Error('hub broke')),
-}))
 
 async function sessionNameFor(
   sessionSource: SessionSource,
@@ -63,8 +61,9 @@ test('a default session gets the link’s sessionTracks', async () => {
   expect(session.sessionTracks.map(t => t.trackId)).toEqual(['url_track'])
 })
 
-test('a hub that fails to set up falls back to a session that says so', async () => {
+test('a hub link whose hub.txt cannot be read opens a session that says so', async () => {
   const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+  jest.spyOn(global, 'fetch').mockRejectedValue(new Error('hub broke'))
   const pluginManager = await createPluginManager(
     {
       configSnapshot: {
@@ -74,21 +73,20 @@ test('a hub that fails to set up falls back to a session that says so', async ()
         },
       },
       sessionSource: {
-        type: 'hub',
-        hubSpec: { hubURL: ['https://example.com/hub.txt'] },
+        type: 'spec',
+        ...hubLinkSpec(['https://example.com/hub.txt'], {}),
       },
       initialTimestamp: 0,
     },
     () => {},
   )
-  const session = pluginManager.rootModel!.session as unknown as {
-    snackbarMessages: { message: string }[]
-  }
-  expect(session.snackbarMessages.map(m => m.message)).toEqual([
-    'Error: hub broke',
-  ])
+  expect(pluginManager.rootModel?.session).toMatchObject({
+    snackbarMessages: expect.arrayContaining([
+      expect.objectContaining({ message: 'Error: hub broke' }),
+    ]),
+  })
   expect(error).toHaveBeenCalledWith(new Error('hub broke'))
-  error.mockRestore()
+  jest.restoreAllMocks()
 })
 
 test('a runtime plugin whose install() throws is reported on the session', async () => {
