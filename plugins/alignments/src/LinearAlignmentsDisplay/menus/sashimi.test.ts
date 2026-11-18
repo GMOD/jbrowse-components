@@ -96,6 +96,23 @@ describe('sashimi placement row', () => {
     )
     expect(model.sashimiPlacement).toBe('down')
   })
+
+  test('names the overlay and the strip above coverage apart', () => {
+    const model = makeModel()
+    model.showSashimi = true
+    const rows = subMenuByLabel(
+      getSashimiPlacementItems(model),
+      'Sashimi placement',
+    )
+    expect(labelsOf(rows)).toEqual([
+      'Auto (minimize overlap)',
+      'Over coverage',
+      'Above coverage',
+      'Below coverage',
+    ])
+    click(rows, 'Above coverage')
+    expect(model.sashimiPlacement).toBe('above')
+  })
 })
 
 describe('junction filter row', () => {

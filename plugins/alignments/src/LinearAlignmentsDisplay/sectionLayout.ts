@@ -24,6 +24,55 @@ export const LANE_BAND_ORDER = [
 ] as const
 export type LaneBandKey = (typeof LANE_BAND_ORDER)[number]
 
+const SASHIMI_ABOVE_BAND_ORDER: readonly LaneBandKey[] = [
+  'sashimi',
+  'coverage',
+  'readConnections',
+]
+const READ_CONNECTIONS_ABOVE_BAND_ORDER: readonly LaneBandKey[] = [
+  'readConnections',
+  'coverage',
+  'sashimi',
+]
+const BOTH_ABOVE_BAND_ORDER: readonly LaneBandKey[] = [
+  'readConnections',
+  'sashimi',
+  'coverage',
+]
+
+/**
+ * A lane's bands top to bottom. A strip placed `above` stacks before the
+ * coverage band; with both there the read connections lead, as they do below
+ * it, which leaves the junctions' feet on the coverage they explain.
+ */
+export function laneBandOrder(s: {
+  readConnectionsAbove?: boolean
+  sashimiAbove?: boolean
+}) {
+  return s.readConnectionsAbove
+    ? s.sashimiAbove
+      ? BOTH_ABOVE_BAND_ORDER
+      : READ_CONNECTIONS_ABOVE_BAND_ORDER
+    : s.sashimiAbove
+      ? SASHIMI_ABOVE_BAND_ORDER
+      : LANE_BAND_ORDER
+}
+
+/** Whether band `key` stacks before the coverage band. */
+export function bandAboveCoverage(
+  stack: BandStack<LaneBandKey>,
+  key: LaneBandKey,
+) {
+  return stack.order.indexOf(key) < stack.order.indexOf('coverage')
+}
+
+/** Content-space y of a section's coverage band, below any band stacked before it. */
+export function coverageBandTop(
+  section: Pick<Section, 'coverageTop' | 'bands'>,
+) {
+  return section.coverageTop + section.bands.top.coverage
+}
+
 // The strips under the coverage histogram, which keep their stated heights
 // while the pileup is hidden, the coverage taking the rest of the slot.
 const STRIP_ORDER = ['readConnections', 'sashimi'] as const
@@ -126,7 +175,9 @@ export function laneBandHandle(
           reverse: false,
         }
       : key !== 'coverage' && reserved.coverage > 0
-        ? { seam: section.coverageTop + top[key], gain: 1, reverse: true }
+        ? bandAboveCoverage(section.bands, key)
+          ? { seam: laneBandBottom(section, key), gain: 1, reverse: false }
+          : { seam: section.coverageTop + top[key], gain: 1, reverse: true }
         : undefined
     : undefined
 }
@@ -141,6 +192,10 @@ export interface BelowCoverageBandsSettings {
   readConnectionsHeight: number
   showSashimi: boolean
   sashimiHeight: number
+  // Either strip stacks above the coverage band, its arcs rising from its
+  // floor (`placement: 'above'`).
+  readConnectionsAbove?: boolean
+  sashimiAbove?: boolean
 }
 
 // What a lane's data says about its strips, the half of the reserve rule the
@@ -179,12 +234,14 @@ function coverageOverlayBand(stack: BandStack<LaneBandKey>) {
   }
 }
 
-// Arcs pointing down always take a strip of their own; arcs pointing up
-// overlay the coverage histogram when there is one to overlay, and take a
-// strip of their own otherwise. Either strip is active only for a lane with
-// something to put in it.
+// Arcs pointing down, or placed above the coverage, always take a strip of
+// their own; arcs pointing up overlay the coverage histogram when there is one
+// to overlay, and take a strip of their own otherwise. Either strip is active
+// only for a lane with something to put in it.
 export function arcsOverlayCoverage(s: BelowCoverageBandsSettings) {
-  return !s.readConnectionsDown && coverageReserves(s)
+  return (
+    !s.readConnectionsDown && !s.readConnectionsAbove && coverageReserves(s)
+  )
 }
 
 function coverageReserves(s: BelowCoverageBandsSettings) {
@@ -226,7 +283,7 @@ export function laneBands(
   heights: LaneBandHeights = s,
 ): LaneBands {
   const bands = bandStackOf(s, lane, heights)
-  const stack = stackBands(LANE_BAND_ORDER, bands)
+  const stack = stackBands(laneBandOrder(s), bands)
   return {
     stack,
     arcBand: bands.readConnections.active
@@ -250,7 +307,7 @@ export function boundBelowCoverageHeights(
   plot: BandPlot,
 ) {
   const { coverage, readConnections, sashimi } = boundStackedBands(
-    LANE_BAND_ORDER,
+    laneBandOrder(s),
     bandStackOf(s, s),
     plot,
   )
@@ -314,7 +371,7 @@ function proportionalHeights(
   s: BelowCoverageBandsInput,
   slot: number,
 ): LaneBandHeights {
-  const filled = fillStackedBands(LANE_BAND_ORDER, bandStackOf(s, s), slot)
+  const filled = fillStackedBands(laneBandOrder(s), bandStackOf(s, s), slot)
   return {
     coverageHeight: filled('coverage'),
     readConnectionsHeight: filled('readConnections'),
@@ -375,7 +432,7 @@ export function dragBelowCoverageBand(
   target: number,
 ) {
   return dragBandHeight(
-    stackBands(LANE_BAND_ORDER, bandStackOf(s, s)),
+    stackBands(laneBandOrder(s), bandStackOf(s, s)),
     key,
     plot,
     target,
@@ -476,7 +533,7 @@ export function buildSectionRenders(
           pileupClipTop,
       )
     const pileupBottom = sec.pileupTop + sec.pileupHeight
-    const coverageTop = bandScreenTop(sec.coverageTop, scroll)
+    const coverageTop = bandScreenTop(coverageBandTop(sec), scroll)
     return {
       pileupTopOffset: sec.pileupTop,
       coverageTopOffset: coverageTop,
@@ -495,6 +552,7 @@ export function buildSectionRenders(
                 scroll,
               ),
               height: sec.bands.reserved.sashimi,
+              above: bandAboveCoverage(sec.bands, 'sashimi'),
             }
           : undefined,
     }

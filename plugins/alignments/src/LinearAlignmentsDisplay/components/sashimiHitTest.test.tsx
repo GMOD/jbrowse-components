@@ -130,6 +130,73 @@ describe('sashimiBandsOf', () => {
   })
 })
 
+// A 40px strip stacked over the 100px coverage band, which then starts at 40.
+describe('a strip above coverage', () => {
+  function aboveScene(junctions: MergedJunction[]) {
+    const feeds = buildSashimiBandFeeds({
+      junctions,
+      downJunctionKeys: new Set(),
+      displayed: FORWARD.displayed.map((r, displayedRegionIndex) => ({
+        refName: 'chr1',
+        ...r,
+        displayedRegionIndex,
+      })),
+      colors: makeTestPalette(),
+    })
+    const base = makeTestRenderState({
+      canvasWidth: 1000,
+      canvasHeight: 300,
+      coverage: { height: 100 },
+      linkRegions: FORWARD.linkRegions,
+      sections: [
+        {
+          pileupTopOffset: 140,
+          coverageTopOffset: 40,
+          pileupClipTop: 140,
+          pileupClipHeight: 160,
+          connectorClipHeight: 0,
+          sashimiBand: { top: 0, height: 40, above: true },
+        },
+      ],
+    })
+    const state = { ...base, sashimi: sashimiBandsOf(base, base.sections[0]!) }
+    return { feeds, state }
+  }
+  const apexY = (spanBp: number) => 40 - apexFraction(spanBp) * DOWN_HEIGHT
+
+  it('stands the up arcs on the strip floor and draws none down', () => {
+    expect(aboveScene([junction(100, 300)]).state.sashimi).toEqual({
+      up: {
+        top: SASHIMI_APEX_CLEARANCE_PX,
+        height: DOWN_HEIGHT,
+        clipTop: 0,
+        clipHeight: 40,
+      },
+      down: undefined,
+    })
+  })
+
+  it('answers on the apex in the strip, not where the overlay drew it', () => {
+    const { feeds, state } = aboveScene([junction(100, 300)])
+    expect(
+      resolveSashimiHover(200, apexY(200), feeds, state)?.junction,
+    ).toMatchObject({ start: 100, end: 300 })
+    expect(
+      resolveSashimiHover(200, 40 + upApexY(200), feeds, state),
+    ).toBeUndefined()
+    expect(
+      resolveSashimiHover(200, apexY(200), feeds, state)!.highlight.clip,
+    ).toEqual({ x: 0, y: 0, width: 1000, height: 40 })
+  })
+
+  it('labels each count at its apex in the strip', () => {
+    const { feeds, state } = aboveScene([junction(100, 300, 42)])
+    const [label] = sashimiLabels(state, [feeds])
+    expect(label).toMatchObject({ x: 200, count: 42 })
+    expect(label!.y).toBeCloseTo(apexY(200))
+  })
+})
+
 describe('resolveSashimiHover', () => {
   it('answers on the apex of an up arc and nowhere under it', () => {
     const { hit } = scene([junction(100, 300)])

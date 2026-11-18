@@ -97,9 +97,11 @@ export interface SectionRender {
   // are off / this section reserves none. Ungrouped is sticky (not scrolled);
   // grouped scrolls with its section, matching coverage.
   arcBand?: ArcBand
-  // Screen-space strip this section reserved for its down-bound splice
+  // Screen-space strip this section reserved for its strip-bound splice
   // junctions, at its reserved height, undefined where it reserved none.
-  sashimiBand?: { top: number; height: number }
+  // `above` where it stacks over the coverage band and its arcs rise from its
+  // floor; otherwise it sits below and they hang from its top.
+  sashimiBand?: { top: number; height: number; above?: boolean }
 }
 
 // HAL/region key namespacing: section 0 keys equal the raw displayedRegionIndex

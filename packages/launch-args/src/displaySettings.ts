@@ -378,9 +378,12 @@ export interface DisplaySnapshot {
   readConnections?: {
     show?: boolean
     mark?: 'link' | 'rule'
-    placement?: 'up' | 'down'
+    placement?: 'up' | 'above' | 'down'
   }
-  sashimi?: { show?: boolean; placement?: 'up' | 'down' | 'auto' }
+  sashimi?: {
+    show?: boolean
+    placement?: 'up' | 'above' | 'down' | 'auto'
+  }
   filter?: FilterEntry[]
   encoding?: { color?: ColorChannel }
   legend?: { show?: boolean }
@@ -631,7 +634,13 @@ const modifiers: Record<string, Modifier> = {
   arcs: {
     on: ['alignments'],
     apply: (r, v) => {
-      const mode = parseEnum('arcs', v, ['off', 'up', 'down', 'cloud'] as const)
+      const mode = parseEnum('arcs', v, [
+        'off',
+        'up',
+        'above',
+        'down',
+        'cloud',
+      ] as const)
       mergeSettings(settingsOf(r), {
         readConnections:
           mode === 'off'
@@ -645,7 +654,13 @@ const modifiers: Record<string, Modifier> = {
   sashimi: {
     on: ['alignments'],
     apply: (r, v) => {
-      const mode = parseEnum('sashimi', v, ['off', 'up', 'down', 'auto'])
+      const mode = parseEnum('sashimi', v, [
+        'off',
+        'up',
+        'above',
+        'down',
+        'auto',
+      ])
       mergeSettings(settingsOf(r), {
         sashimi:
           mode === 'off' ? { show: false } : { show: true, placement: mode },

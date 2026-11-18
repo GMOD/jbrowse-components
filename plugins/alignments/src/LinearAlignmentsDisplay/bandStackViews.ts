@@ -74,6 +74,7 @@ export interface BandStackHost {
   readConnectionsHeight: number
   showSashimi: boolean
   sashimiHeight: number
+  effectiveSashimiPlacement: SashimiPlacement
   arcsResult: { inkGroupKeys: ReadonlySet<string> }
   sashimiDownArcLanes: ReadonlySet<string>
   bandPlot: BandPlot
@@ -103,9 +104,11 @@ export function bandStackViews(self: BandStackHost) {
         coverageHeight: self.coverageHeight,
         drawnReadConnections: self.drawnReadConnections,
         readConnectionsDown: self.readConnectionsPlacement === 'down',
+        readConnectionsAbove: self.readConnectionsPlacement === 'above',
         readConnectionsHeight: self.readConnectionsHeight,
         showSashimi: self.showSashimi,
         sashimiHeight: self.sashimiHeight,
+        sashimiAbove: self.effectiveSashimiPlacement === 'above',
         hasArcs: self.arcsResult.inkGroupKeys.size > 0,
         hasSashimiDownArcs: self.sashimiDownArcLanes.size > 0,
       }

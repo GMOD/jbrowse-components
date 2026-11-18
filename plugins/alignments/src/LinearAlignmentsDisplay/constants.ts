@@ -54,12 +54,13 @@ export type ReadConnectionsWidthScale =
   (typeof READ_CONNECTIONS_WIDTH_SCALES)[number]
 
 // Which side of the coverage band a layer draws on (`sashimi.placement`,
-// `readConnections.placement`): up over it, or down in a band below it. Each
+// `readConnections.placement`): up over it, above in a band over it, or down
+// in a band below it. Each
 // layer holds its own setting, and only sashimi has 'auto',
 // which sends a junction down where it would cross another; arcs have no such
 // side assignment, so one shared enum would offer them a value that means
 // nothing. Sashimi's list sits beside the side-assignment algorithm it selects.
-export const READ_CONNECTIONS_PLACEMENTS = ['up', 'down'] as const
+export const READ_CONNECTIONS_PLACEMENTS = ['up', 'above', 'down'] as const
 export type ReadConnectionsPlacement =
   (typeof READ_CONNECTIONS_PLACEMENTS)[number]
 export {

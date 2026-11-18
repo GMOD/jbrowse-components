@@ -39,7 +39,8 @@ const DEFAULT_READ_CONNECTIONS_STROKE_WIDTH = 1
 
 const PLACEMENT_OPTIONS: { value: ReadConnectionsPlacement; label: string }[] =
   [
-    { value: 'up', label: 'Above coverage' },
+    { value: 'up', label: 'Over coverage' },
+    { value: 'above', label: 'Above coverage' },
     { value: 'down', label: 'Below coverage' },
   ]
 

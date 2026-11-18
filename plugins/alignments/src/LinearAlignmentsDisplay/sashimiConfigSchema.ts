@@ -48,7 +48,7 @@ export const sashimiConfigSchema = ConfigurationSchema(
       type: 'number',
       defaultValue: 40,
       description:
-        'height of the strip below coverage that down arcs draw in, in pixels',
+        'height of the strip the arcs draw in under placement above, and of the strip below coverage that down arcs draw in, in pixels',
     },
     /**
      * #slot
@@ -58,7 +58,7 @@ export const sashimiConfigSchema = ConfigurationSchema(
       model: types.enumeration('SashimiPlacement', [...SASHIMI_PLACEMENTS]),
       defaultValue: 'up',
       description:
-        'where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down',
+        'where the arcs draw: up over the coverage histogram, above in a strip of their own above it, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down, or up from the floor of its strip under above',
     },
     /**
      * #slot labels

@@ -187,6 +187,7 @@ import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
   buildSectionRenders,
   computeStackedSections,
+  coverageBandTop,
   dragBelowCoverageBand,
   laneBandOverheads,
   pileupHiddenHeight,
@@ -266,6 +267,7 @@ const NO_SASHIMI_FEEDS_BY_GROUP: ReadonlyMap<
   ReadonlyMap<number, SashimiBandFeed>
 > = new Map()
 const NO_SASHIMI_FEEDS: ReadonlyMap<number, SashimiBandFeed> = new Map()
+const NO_DOWN_JUNCTION_KEYS: ReadonlySet<string> = new Set()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 const NO_ARC_FEEDS: ReadonlyMap<number, ArcBandFeed> = new Map()
 const NO_CONNECTOR_FEEDS: ReadonlyMap<number, ConnectorFeed> = new Map()
@@ -1677,7 +1679,10 @@ export default function stateModelFactory(
                 sec.groupKey,
                 buildSashimiBandFeeds({
                   junctions: sec.junctions,
-                  downJunctionKeys: sec.sashimiDownKeys,
+                  downJunctionKeys:
+                    self.effectiveSashimiPlacement === 'above'
+                      ? NO_DOWN_JUNCTION_KEYS
+                      : sec.sashimiDownKeys,
                   displayed,
                   colors: colors.get(),
                 }),
@@ -2071,7 +2076,7 @@ export default function stateModelFactory(
               symlogConstant: self.symlogConstant,
               ...self.axisGuide,
               bandTops: renderSections.map(section =>
-                bandScreenTop(section.coverageTop, scroll),
+                bandScreenTop(coverageBandTop(section), scroll),
               ),
             })
           }
@@ -2093,7 +2098,7 @@ export default function stateModelFactory(
                 scaleType: 'log',
                 height: band.height,
                 ticks,
-                side: down ? 'left' : 'right',
+                side: self.readConnectionsPlacement === 'up' ? 'right' : 'left',
                 caption: 'TLEN',
                 rules: normalBand
                   ? [{ value: normalBand.lower }, { value: normalBand.upper }]

@@ -181,8 +181,11 @@ describe('band rows for Advanced', () => {
       getReadConnectionsBandItems(model),
       'Read connections placement',
     )
-    click('subMenu' in item ? resolveSubMenu(item) : [], 'Above coverage')
+    const rows = 'subMenu' in item ? resolveSubMenu(item) : []
+    click(rows, 'Over coverage')
     expect(model.readConnectionsPlacement).toBe('up')
+    click(rows, 'Above coverage')
+    expect(model.readConnectionsPlacement).toBe('above')
   })
 
   // `findBy*`, not `getBy*`: makeSizeMenu draws the row through `lazy()`, so the

@@ -11,7 +11,8 @@ import type { FieldsPatch } from '@jbrowse/core/util/fieldPredicate'
 const SASHIMI_PLACEMENT_OPTIONS: { value: SashimiPlacement; label: string }[] =
   [
     { value: 'auto', label: 'Auto (minimize overlap)' },
-    { value: 'up', label: 'Above coverage' },
+    { value: 'up', label: 'Over coverage' },
+    { value: 'above', label: 'Above coverage' },
     { value: 'down', label: 'Below coverage' },
   ]
 

@@ -67,7 +67,7 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
       // Kept above the 20px drag floor (clampBandHeight).
       defaultValue: 35,
       description:
-        "height in pixels of the connections' own band, drawn under placement: 'down', or under 'up' while the coverage band is hidden; with coverage shown, up arcs draw in its height",
+        "height in pixels of the connections' own band, drawn under placement: 'down' or 'above', or under 'up' while the coverage band is hidden; with coverage shown, up arcs draw in its height",
     },
     /**
      * #slot
@@ -79,7 +79,7 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
       ]),
       defaultValue: 'down',
       description:
-        'where the connections draw: up over the coverage band, or down in a separate band below it',
+        'where the connections draw: up over the coverage band, above in a separate band over it, or down in a separate band below it',
     },
     /**
      * #slot encoding

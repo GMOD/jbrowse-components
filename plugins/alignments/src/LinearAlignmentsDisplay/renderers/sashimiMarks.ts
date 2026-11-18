@@ -57,6 +57,9 @@ export function sashimiBandState(
  * line, one scalebar offset above the coverage band's bottom, and may rise
  * into its top margin; down arcs hang from the top of the strip the layout
  * reserved, short of its bottom by the room a count label needs past an apex.
+ * A strip stacked above the coverage band takes the up arcs instead: they
+ * stand on its floor, short of its top by the same label room, and nothing
+ * draws down.
  */
 export function sashimiBandsOf(
   state: DisplayRenderState,
@@ -64,27 +67,37 @@ export function sashimiBandsOf(
 ): SashimiBandState['sashimi'] {
   const upHeight = state.coverage.height - 2 * YSCALEBAR_LABEL_OFFSET
   const { sashimiBand } = sec
-  const downHeight = (sashimiBand?.height ?? 0) - SASHIMI_APEX_CLEARANCE_PX
-  return {
-    up:
-      upHeight > 0
-        ? {
-            top: sec.coverageTopOffset + YSCALEBAR_LABEL_OFFSET,
-            height: upHeight,
-            clipTop: sec.coverageTopOffset,
-            clipHeight: state.coverage.height,
-          }
-        : undefined,
-    down:
-      sashimiBand && downHeight > 0
-        ? {
-            top: sashimiBand.top,
-            height: downHeight,
-            clipTop: sashimiBand.top,
-            clipHeight: sashimiBand.height,
-          }
-        : undefined,
-  }
+  const stripHeight = (sashimiBand?.height ?? 0) - SASHIMI_APEX_CLEARANCE_PX
+  const strip = sashimiBand && stripHeight > 0 ? sashimiBand : undefined
+  return strip?.above
+    ? {
+        up: {
+          top: strip.top + SASHIMI_APEX_CLEARANCE_PX,
+          height: stripHeight,
+          clipTop: strip.top,
+          clipHeight: strip.height,
+        },
+        down: undefined,
+      }
+    : {
+        up:
+          upHeight > 0
+            ? {
+                top: sec.coverageTopOffset + YSCALEBAR_LABEL_OFFSET,
+                height: upHeight,
+                clipTop: sec.coverageTopOffset,
+                clipHeight: state.coverage.height,
+              }
+            : undefined,
+        down: strip
+          ? {
+              top: strip.top,
+              height: stripHeight,
+              clipTop: strip.top,
+              clipHeight: strip.height,
+            }
+          : undefined,
+      }
 }
 
 function sideParams(band: SashimiBand, state: RenderState, down: boolean) {

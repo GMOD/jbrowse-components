@@ -501,7 +501,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       // always the top one. Written once, for every branch at once.
       hoverCoverageBand: picked
         ? {
-            topOffset: picked.coverageTopOffset,
+            topOffset:
+              picked.coverageTopOffset + picked.section.bands.top.coverage,
             coverageHeight: picked.section.bands.reserved.coverage,
           }
         : undefined,

@@ -309,10 +309,13 @@ export function configSlotViews(
     /**
      * #getter
      * Where the arcs draw: `sashimi.placement` over the coverage band, and
-     * `down`, in a separate strip, while the band is hidden.
+     * `down`, in a separate strip, while the band is hidden. `above` already
+     * draws in a strip of its own, so it keeps it, arcs rising, either way.
      */
     get effectiveSashimiPlacement(): SashimiPlacement {
-      return self.showCoverage ? this.sashimiPlacement : 'down'
+      return self.showCoverage || this.sashimiPlacement === 'above'
+        ? this.sashimiPlacement
+        : 'down'
     },
     /** #getter */
     get showSashimiLabels(): boolean {

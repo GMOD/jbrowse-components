@@ -3,6 +3,8 @@ import { sectionRegionKey } from './renderers/rendererTypes.ts'
 import {
   buildSectionRenders,
   computeStackedSections,
+  coverageBandTop,
+  laneBandHandle,
   laneBands,
   stackedBandGain,
 } from './sectionLayout.ts'
@@ -50,6 +52,8 @@ function stack(lanes: TestLane[], o: StackOpts) {
       readConnectionsHeight: o.readConnectionsHeight ?? 0,
       showSashimi: o.showSashimi ?? false,
       sashimiHeight: o.sashimiHeight ?? 0,
+      readConnectionsAbove: o.readConnectionsAbove,
+      sashimiAbove: o.sashimiAbove,
     },
     {
       rowHeight: o.rowHeight,
@@ -425,6 +429,178 @@ test('the sashimi strip stands on its own with coverage hidden', () => {
   expect(sections[0]).toMatchObject({
     bands: { top: { sashimi: 0 }, reserved: { sashimi: 30 } },
     pileupTop: 30,
+  })
+})
+
+describe('the sashimi strip above coverage', () => {
+  const above = {
+    coverageHeight: 40,
+    rowHeight: 10,
+    showSashimi: true,
+    sashimiHeight: 30,
+    sashimiAbove: true,
+  }
+
+  test('heads the stack, and the coverage band starts under it', () => {
+    const layout = stack(
+      [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true })],
+      above,
+    )
+    expect(layout.sections[0]).toMatchObject({
+      coverageTop: 0,
+      bands: {
+        order: ['sashimi', 'coverage', 'readConnections'],
+        top: { sashimi: 0, coverage: 30, readConnections: 70 },
+        reserved: { sashimi: 30, coverage: 40, readConnections: 0 },
+      },
+      pileupTop: 70,
+    })
+    expect(coverageBandTop(layout.sections[0]!)).toBe(30)
+    expect(
+      renders(layout, { scrollTop: 0, canvasHeight: 200 })[0],
+    ).toMatchObject({
+      coverageTopOffset: 30,
+      sashimiBand: { top: 0, height: 30, above: true },
+      pileupClipTop: 70,
+    })
+  })
+
+  test('takes no px for a lane with no junction, or under another placement', () => {
+    const empty = stack([lane({ key: 'a', maxY: 2, hasArcs: false })], above)
+    expect(empty.sections[0]).toMatchObject({
+      bands: { top: { coverage: 0 }, reserved: { sashimi: 0 } },
+      pileupTop: 40,
+    })
+    const below = stack(
+      [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true })],
+      { ...above, sashimiAbove: false },
+    )
+    expect(below.sections[0]).toMatchObject({
+      bands: { top: { coverage: 0, sashimi: 40 }, reserved: { sashimi: 30 } },
+    })
+    expect(
+      renders(below, { scrollTop: 0, canvasHeight: 200 })[0],
+    ).toMatchObject({
+      coverageTopOffset: 0,
+      sashimiBand: { top: 40, height: 30, above: false },
+    })
+  })
+
+  test('each grouped lane stacks its own strip over its own coverage', () => {
+    const layout = stack(
+      [
+        lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true }),
+        lane({ key: 'b', maxY: 2, hasArcs: false, hasSashimiDownArcs: true }),
+      ],
+      above,
+    )
+    expect(
+      layout.sections.map(s => [s.coverageTop, coverageBandTop(s)]),
+    ).toEqual([
+      [0, 30],
+      [90, 120],
+    ])
+    expect(
+      renders(layout, { scrollTop: 10, canvasHeight: 400 }).map(r => [
+        r.sashimiBand?.top,
+        r.coverageTopOffset,
+      ]),
+    ).toEqual([
+      [-10, 20],
+      [80, 110],
+    ])
+  })
+
+  test('the strip resizes from its seam with the coverage band', () => {
+    const { sections } = stack(
+      [
+        lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true }),
+        lane({ key: 'b', maxY: 2, hasArcs: false, hasSashimiDownArcs: true }),
+      ],
+      above,
+    )
+    expect(laneBandHandle(sections, 1, 'sashimi', true)).toEqual({
+      seam: 120,
+      gain: 2,
+      reverse: false,
+    })
+    expect(laneBandHandle(sections, 1, 'sashimi', false)).toEqual({
+      seam: 120,
+      gain: 1,
+      reverse: false,
+    })
+  })
+
+  test('keeps its place and its arcs rising with coverage hidden', () => {
+    const layout = stack(
+      [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true })],
+      { ...above, showCoverage: false },
+    )
+    expect(layout.sections[0]).toMatchObject({
+      bands: { top: { sashimi: 0 }, reserved: { sashimi: 30, coverage: 0 } },
+      pileupTop: 30,
+    })
+    expect(
+      renders(layout, { scrollTop: 0, canvasHeight: 200 })[0]!.sashimiBand,
+    ).toEqual({ top: 0, height: 30, above: true })
+  })
+})
+
+describe('the read connections strip above coverage', () => {
+  const above = {
+    coverageHeight: 40,
+    rowHeight: 10,
+    drawnReadConnections: 'link' as const,
+    readConnectionsHeight: 50,
+    readConnectionsAbove: true,
+  }
+
+  test('heads the stack with its arcs rising, and overlays nothing', () => {
+    const layout = stack([lane({ key: 'a', maxY: 2 })], above)
+    expect(layout.sections[0]).toMatchObject({
+      bands: {
+        top: { readConnections: 0, coverage: 50, sashimi: 90 },
+        reserved: { readConnections: 50, coverage: 40, sashimi: 0 },
+      },
+      arcBand: { top: 0, height: 50, down: false },
+      pileupTop: 90,
+    })
+    expect(
+      renders(layout, { scrollTop: 0, canvasHeight: 200 })[0],
+    ).toMatchObject({
+      coverageTopOffset: 50,
+      arcBand: { top: 0, height: 50, down: false },
+    })
+  })
+
+  test('takes no px for a lane with no arcs', () => {
+    const layout = stack([lane({ key: 'a', maxY: 2, hasArcs: false })], above)
+    expect(layout.sections[0]).toMatchObject({
+      bands: { top: { coverage: 0 }, reserved: { readConnections: 0 } },
+      arcBand: undefined,
+      pileupTop: 40,
+    })
+  })
+
+  test('with both strips above, read connections lead as they do below', () => {
+    const layout = stack(
+      [lane({ key: 'a', maxY: 2, hasSashimiDownArcs: true })],
+      { ...above, showSashimi: true, sashimiHeight: 30, sashimiAbove: true },
+    )
+    expect(layout.sections[0]).toMatchObject({
+      bands: {
+        order: ['readConnections', 'sashimi', 'coverage'],
+        top: { readConnections: 0, sashimi: 50, coverage: 80 },
+      },
+      arcBand: { top: 0, height: 50, down: false },
+      pileupTop: 120,
+    })
+    expect(
+      renders(layout, { scrollTop: 0, canvasHeight: 200 })[0],
+    ).toMatchObject({
+      coverageTopOffset: 80,
+      sashimiBand: { top: 50, height: 30, above: true },
+    })
   })
 })
 
