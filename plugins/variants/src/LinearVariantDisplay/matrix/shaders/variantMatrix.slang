@@ -46,7 +46,10 @@ struct Uniforms {
   float canvasHeight;
   float rowHeight;
   float scrollTop;
-  float backingWidthPx;
+  // The device px span the HAL set as its viewport (`pxX`, `pxW`), which the
+  // columns divide.
+  float viewportDeviceLeft;
+  float viewportDeviceWidth;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -62,10 +65,10 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
   float lx = q.x, ly = q.y;
 
-  // Column edges in framebuffer pixels, the space gl_FragCoord /
-  // @builtin(position) report. The HAL supplies the backing width, because a
-  // clamped or browser-shrunk store is narrower than canvasWidth * dpr.
-  float widthPx = u.backingWidthPx;
+  // Column edges in device px from the viewport's left. The HAL supplies the
+  // viewport's device span, because a clamped or browser-shrunk store is
+  // narrower than canvasWidth * dpr.
+  float widthPx = u.viewportDeviceWidth;
   // No mirror: the worker hands the features back in screen order
   // (orderByScreenPosition), so a data column index IS its screen column.
   float col = float(inst.featureIndex);
@@ -109,8 +112,10 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
 float4 fs_main(VsOut fragIn) : SV_Target {
   // Crisp opaque columns: this pixel is painted only if its center falls inside
   // the column's span, so each pixel is a single pure cell color (no neighbor
-  // blending). The floor+0.5 names the pixel centre whatever the sample count.
-  float center = floor(fragIn.position.x) + 0.5;
+  // blending). The floor+0.5 names the pixel centre whatever the sample count,
+  // and the viewport's left takes it from the framebuffer's frame into the
+  // span's; both are whole device px, so the difference is exact.
+  float center = floor(fragIn.position.x) - u.viewportDeviceLeft + 0.5;
   float inside = (center >= fragIn.xspan.x && center < fragIn.xspan.y) ? 1.0 : 0.0;
   // Sub-pixel columns contribute proportional coverage so dense regions blend
   // lighter (matches canvas2d AA); >=1px columns stay fully opaque.

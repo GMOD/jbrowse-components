@@ -53,7 +53,8 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
       canvasHeight: frame.canvasHeight,
       rowHeight: params.rowHeight,
       scrollTop: params.scrollTop,
-      backingWidthPx: clip.pxW,
+      viewportDeviceLeft: clip.pxX,
+      viewportDeviceWidth: clip.pxW,
     })
   },
 

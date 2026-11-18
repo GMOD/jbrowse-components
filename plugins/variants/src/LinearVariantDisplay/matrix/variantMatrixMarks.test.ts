@@ -133,7 +133,7 @@ test('the uniforms carry the payload column count beside the frame', () => {
   MARK.drawRegion(hal, scratch, b, clip, data, state, b.displayedRegionIndex)
   const f32 = hal.getLastUniformsF32()!
   expect(f32[shader.UNIFORM_OFFSET_F32.numFeatures]).toBe(4)
-  expect(f32[shader.UNIFORM_OFFSET_F32.backingWidthPx]).toBe(400)
+  expect(f32[shader.UNIFORM_OFFSET_F32.viewportDeviceWidth]).toBe(400)
   expect(f32[shader.UNIFORM_OFFSET_F32.canvasHeight]).toBe(300)
   expect(f32[shader.UNIFORM_OFFSET_F32.rowHeight]).toBe(10)
   expect(f32[shader.UNIFORM_OFFSET_F32.scrollTop]).toBe(50)
@@ -284,7 +284,7 @@ test('the backing width is the scale the HAL reported, not the dpr', () => {
   })!
   MARK.drawRegion(hal, scratch, b, clip, data, STATE, b.displayedRegionIndex)
   expect(
-    hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.backingWidthPx],
+    hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.viewportDeviceWidth],
   ).toBe(600)
 })
 
@@ -302,6 +302,24 @@ test('the backing width is the store the viewport spans at a fractional dpr', ()
   })!
   MARK.drawRegion(hal, scratch, b, clip, data, state, b.displayedRegionIndex)
   expect(
-    hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.backingWidthPx],
+    hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.viewportDeviceWidth],
   ).toBe(1583)
+})
+
+// The fragment reads its pixel off the framebuffer and the columns off the
+// viewport, so a viewport not at the canvas's left edge has to say where it
+// starts.
+test('the uniforms carry where the viewport starts in device px', () => {
+  const data = makeData()
+  const hal = new MockHal([MARK.pass])
+  const scratch = new ArrayBuffer(MARK.pass.uniformByteSize)
+  const b = { ...block(data, STATE), screenStartPx: 100 }
+  const clip = clipBlock(b, STATE.canvasWidth, STATE.canvasHeight, {
+    x: 1.5,
+    y: 1.5,
+  })!
+  MARK.drawRegion(hal, scratch, b, clip, data, STATE, b.displayedRegionIndex)
+  const f32 = hal.getLastUniformsF32()!
+  expect(f32[shader.UNIFORM_OFFSET_F32.viewportDeviceLeft]).toBe(150)
+  expect(f32[shader.UNIFORM_OFFSET_F32.viewportDeviceWidth]).toBe(450)
 })
