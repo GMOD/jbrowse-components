@@ -113,50 +113,91 @@ than they made it look:
 
 ## Apollo3 decides what can break, and when
 
-`jbrowse-plugin-apollo` (`~/src/Apollo3`) is a 593-line `ApolloInternetAccount`
-— the largest implementation outside this repo, and it pins
-`@jbrowse/core: ^4.3.0`, a **caret range**, so anything landing in 4.x reaches
-it at the next install. None of the 16 entries in `website/plugins.json`
-registers an account type, which is how this went unnoticed for so long;
-`internetAccountApi.test.ts` now pins the members it reaches for.
+Rechecked 2026-11-18 against Apollo3 `main` and its `v2` branch.
+
+`jbrowse-plugin-apollo` (`~/src/Apollo3`) carries a ~980-line
+`ApolloInternetAccount`, the largest implementation outside this repo. Its
+`main` is the 1.x line on `@jbrowse/core: ^4.3.0`; its v5 port is the `v2`
+branch (PR #863, which took #846), on `^5.0.0-beta.22`. Both are caret ranges,
+so every later beta and 5.0.0 itself reach it at the next install. None of the
+16 entries in `website/plugins.json` registers an account type, which is how
+this went unnoticed for so long.
 
 It **overrides** `getToken`, `removeToken`, `getTokenFromUser` and
 super-captures `getFetcher`; **calls** `retrieveToken`, `storeToken`,
-`tokenKey`; reads `domains` (its server emits `[urlObj.host]`) and `tokenType`;
-and uses jbrowse-desktop's `openAuthWindow` IPC directly, including its
-resolves-`undefined`-on-close contract. It touches **none** of
-`handlesLocation`, `addAuthHeaderToInit`, `validateToken`,
-`getPreAuthorizationInformation`, `authHeader`, or any FileSelector getter — so
-moves 2 and 3 are invisible to it. The negatives were re-grepped 2026-08-19,
-all eight at zero across their `src/`, and the positives re-confirmed; `domains`
-is the one they never name in the plugin, because their *server* emits it
-(`apollo-collaboration-server/src/jbrowse/jbrowse.service.ts:145`).
+`tokenKey`; reads `domains` (its server emits `[urlObj.host]`, in
+`apollo-collaboration-server/src/jbrowse/jbrowse.service.ts`) and `tokenType`;
+and uses jbrowse-desktop's `openAuthWindow` IPC directly, through
+`globalThis.require('electron')`, including its resolves-`undefined`-on-close
+contract. It touches **none** of `handlesLocation`, `addAuthHeaderToInit`,
+`validateToken`, `getPreAuthorizationInformation`, `authHeader`, or any
+FileSelector getter, so moves 2 and 3 are invisible to it. Still all zero on
+2026-11-18, on both branches.
 
-**Move 1 is the one it constrains**, because its `getToken` override reads
-`location?.internetAccountPreAuthorization?.authInfo?.token` verbatim.
+**Move 1 is the one it constrains.** Its `getToken` reads
+`location?.internetAccountPreAuthorization?.authInfo?.token`, and in a worker,
+with that missing, throws `Did not get internet account pre-authorization info
+in worker`; there is no fallback. So move 1 has three shapes:
+
+| what we do | Apollo |
+| --- | --- |
+| fill the slot as today, and add the envelope credential beside it | unaffected |
+| keep the slot in the type but stop filling it | compiles, then its worker-side fetches throw |
+| remove the slot from the type | fails to compile at that read, and the same at runtime |
+
+The middle one is the trap, because no typecheck catches it. #846 left the fork
+in place on `v2`.
+
+**Decided 2026-11-18: the slot stays, filled as today, through 5.x.** Move 1 is
+additive at most until Apollo drops its fork, and the slot removal waits for the
+next major. Also frozen for 5.x, because Apollo reaches them without going
+through core: the `openAuthWindow` channel, its params and its
+resolve-`undefined`-on-close, and the main window's `nodeIntegration` and
+`contextIsolation: false`, which its `globalThis.require('electron')` needs.
+
+**`internetAccountApi.test.ts` does not pin the read that matters.** It pins
+model members only. Add a case that a worker-side location still carries
+`internetAccountPreAuthorization.authInfo.token` after serialization, which is
+the middle shape above. Its header's counts (593 lines, 5 `retrieveToken`
+sites) are from August.
 
 ### The constraint dissolves, and Apollo should want it to
 
 Their `getToken` and `removeToken` are our v4 implementations, forked and
 drifted. `tokenPromise` is read **only** inside those two, and `setRole()` is
-called from three places independent of both — so deleting all three is a no-op
-for the rest of their code, and a strict bugfix, since ours has since gained:
-`isWebWorker()` in place of a `typeof sessionStorage` probe that is also true
-where storage is merely *blocked*; a `.catch` that clears the cache when
-`getTokenFromUser` throws on the way in (theirs wedges the account for the
-session, and their async `getTokenFromUser` reaching `getRoot(self).session`
-makes it reachable); and guarded storage.
+called from places independent of both, so deleting all three is a bugfix for
+them: `isWebWorker()` in place of a `typeof sessionStorage` probe that is also
+true where storage is merely *blocked*, and guarded storage in place of raw
+`sessionStorage`. The third bug an August read listed, a throwing
+`getTokenFromUser` wedging the account, they fixed themselves with a try/catch
+inside it.
+
+It is no longer a pure delete. Their `getToken` wraps failures in a
+`LoginFailedError` that their session branches on to offer a login, so that
+wrapping moves into `getTokenFromUser`'s reject calls first.
 
 So the sequence, whenever it is picked up:
 
-1. **Apollo deletes the two overrides.** Ships against 4.x, needs nothing from
-   us. This is the gate, and it is a bugfix for them regardless.
-2. **Move 1 lands clean** — no deprecated read path, no shim.
-3. **Moves 2 and 3** land alongside, being invisible to Apollo either way.
+- **Apollo moves the `LoginFailedError` wrapping and deletes the two overrides
+  and `tokenPromise`.** Needs nothing from us; nobody has proposed it upstream
+  (searched 2026-11-18).
+- **Move 1 lands clean** in the next major: no deprecated read path, no shim.
+- **Moves 2 and 3** land whenever, being invisible to Apollo either way.
 
-If step 1 does not happen first, move 1 needs the slot kept as a deprecated read
-path and the whole saving is the ordering. Confirm with whoever owns the Apollo
-bump before committing to the unphased version.
+### Worth telling Apollo regardless
+
+Their bugs, independent of any move here:
+
+- `finishOAuthWindow` takes popup `message` events without checking
+  `event.origin`, and the flow sends no `state`, so another page could hand the
+  account a token for a login the user never made. `state` needs their server to
+  echo it back.
+- On desktop, closing the login window resolves the IPC call with `undefined`,
+  which `finishOAuthWindow` then calls `replace` on. The TypeError surfaces as a
+  login failure rather than a cancel. Map `undefined` to `LoginCancelledError`,
+  or call through `invokeElectronMain` from `@jbrowse/core/util/electron`.
+- Already fixed on their side: a popup closed by the user now rejects
+  (`watchForPopupClosed`, #840).
 
 ## Two things wrong with the current code that no move here fixes
 
