@@ -1,6 +1,6 @@
 ---
 name: near-edges-still-built-from-a-far-end-off-screen
-description: Where a mark's visible edge still carries the float32 rounding of an end 1e7 px or more off screen after the guard band — variant cells, sloped segments (the whiskers band, linked-read and centre lines) and the Canvas2D/SVG painters — and why each needs something other than `guardBandClipX`.
+description: Where a visible edge still carries the float32 rounding of an end 1e7 px off screen past the guard band — variant cells, sloped segments (whiskers band, linked-read and centre lines), the Canvas2D/SVG painters — and why each needs more than `guardBandClipX`.
 ---
 
 # Near edges still built from a far end off screen
