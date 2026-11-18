@@ -41,7 +41,10 @@ In rough order of simplicity:
 
 Data on a different origin than the app also needs
 [CORS](/docs/config_guides/serving_data#cors-errors-on-remote-files), including
-the auth header in `Access-Control-Allow-Headers`.
+the auth header in `Access-Control-Allow-Headers`. For JBrowse to offer its HTTP
+Basic prompt, the server's `401` response must itself carry those CORS headers,
+send `WWW-Authenticate: Basic`, and list `WWW-Authenticate` in
+`Access-Control-Expose-Headers`.
 
 ## Internet accounts
 
@@ -85,7 +88,8 @@ JBrowse picks an account for a file in two steps.
 
 **First, the location's own `internetAccountId`.** A file location can name its
 account outright, beside `uri`, which picks that account ahead of the `domains`
-walk below. This is also what the Add Track form's account picker writes:
+walk below when more than one account covers the URL. This is also what the Add
+Track form's account picker writes:
 
 ```json addtrack
 {
@@ -96,13 +100,13 @@ walk below. This is also what the Add Track form's account picker writes:
   "adapter": {
     "type": "BamAdapter",
     "bamLocation": {
-      "uri": "https://cdn.example.com/x.bam",
+      "uri": "https://data.mylab.org/x.bam",
       "locationType": "UriLocation",
       "internetAccountId": "myLab"
     },
     "index": {
       "location": {
-        "uri": "https://cdn.example.com/x.bam.bai",
+        "uri": "https://data.mylab.org/x.bam.bai",
         "locationType": "UriLocation",
         "internetAccountId": "myLab"
       }
@@ -112,22 +116,28 @@ walk below. This is also what the Add Track form's account picker writes:
 ```
 
 - **The named account still has to be scoped for the URL.** Naming chooses
-  between accounts; it does not widen the one it names. A location naming an
-  account whose `domains` do not cover its host is read unauthenticated, and
-  JBrowse logs which account and which URL to the console.
-- **Same-origin files are the exception.** A config written with relative paths
-  (`"uri": "data/x.bam"`) resolves against wherever the app is deployed, so
-  there is no host to write in `domains`, and an account named on such a
-  location is used whatever its `domains` say. A link cannot move a same-origin
-  file anywhere but the server already serving the page.
-- **An id the config does not declare** is honoured only when its leading
-  segment is an account type and the file is one of two kinds. A file on the
-  app's own origin takes any such id (`HTTPBasicInternetAccount-myserver` on a
-  relative path). A file elsewhere takes only the id naming its own origin
+  between accounts; it does not widen the one it names. When the named account's
+  `domains` do not cover the URL, JBrowse logs which account and which URL to
+  the console and falls back to the `domains` walk, so the file is read with
+  whichever account covers it, or unauthenticated.
+- **Files on the app's own origin are the exception.** An account named on a
+  location that resolves to the origin serving JBrowse is used whatever its
+  `domains` say, since a config written with relative paths
+  (`"uri": "data/x.bam"`) has no host to write there. A relative path resolves
+  against the config file's own URL, so in a config loaded from another origin
+  (`?config=https://other.org/config.json`) it resolves to that origin and this
+  exception does not apply. A link cannot move a same-origin file anywhere but
+  the server already serving the page.
+- **An id the config does not declare** is split at its first `-`, and is
+  honoured only when the part before it is an account type, no account's
+  `domains` cover the file, and the file is one of two kinds. A file on the
+  app's own origin takes such an id when the rest names no http(s) origin
+  (`HTTPBasicInternetAccount-myserver` on a relative path). A file elsewhere
+  takes only the id naming its own origin
   (`HTTPBasicInternetAccount-https://data.mylab.org`, the form JBrowse mints
-  when a server answers 401), and that account then covers the whole origin. Any
-  other unknown id is ignored and the file is read unauthenticated, so the user
-  sees the server's 401.
+  when a server answers 401), and that account then covers the whole origin:
+  scheme, host and port. Any other undeclared id is ignored, and the file is
+  read as if its location named no account.
 
 **Otherwise, the `domains` walk.** JBrowse goes through `internetAccounts` in
 order and picks the **first** whose `domains` matches, so put the most specific
@@ -169,12 +179,13 @@ to a same-origin file whose location names it; for any other file, including one
 the user assigns in the Add Track form, list the file's host in `domains`.
 
 A `domains` entry names a whole host or a path, so `domains: ["dropbox"]` does
-not match `dropbox.com`; write `dropbox.com`. A location's `internetAccountId`
-orders the choice among accounts already scoped for the URL and never overrides
-`domains`. Both rules matter because jbrowse-web builds tracks from
-`sessionTracks` in the URL, and a crafted link could otherwise aim a user's
-token at a server of its choosing. An account that authenticates an off-origin
-file needs that file's host in its `domains`.
+not match `dropbox.com`; write `dropbox.com`. Off the app's own origin, a
+location's `internetAccountId` only chooses among accounts whose `domains`
+already cover the URL, or names the origin account for that URL's own origin.
+Both rules matter because jbrowse-web builds tracks from `sessionTracks` in the
+URL, and a crafted link could otherwise aim a user's token at a server of its
+choosing. An account that authenticates an off-origin file needs that file's
+host in its `domains`.
 
 ## OAuth
 
@@ -289,10 +300,12 @@ goes in, which also covers plain API-key headers:
 
 ## Where tokens are stored
 
-A token obtained during a session is stored in the browser's `sessionStorage`,
-keyed by `internetAccountId`, and is never written into a saved or shared
+An access token is stored in the browser's `sessionStorage`, keyed by
+`internetAccountId`, so closing the tab discards it. An OAuth refresh token is
+kept in `localStorage`, so it outlives the tab and a new tab renews the access
+token from it without a login window. Neither is written into a saved or shared
 session: sharing a session shares the view, and the recipient is prompted for
-credentials. Closing the tab discards the token.
+credentials.
 
 ## Private files in S3
 
@@ -385,8 +398,9 @@ before the component mounts cannot renew itself.
 
 Authenticated requests are still cross-origin requests, so the data server must
 allow the `Authorization` header (or whatever `authHeader` names) in
-`Access-Control-Allow-Headers`, and must allow credentials; a wildcard origin
-does not. See [](/docs/config_guides/serving_data).
+`Access-Control-Allow-Headers`. The token travels in that header, not a cookie,
+so the server need not allow credentials, and `Access-Control-Allow-Origin: *`
+works. See [](/docs/config_guides/serving_data).
 
 ## See also
 
