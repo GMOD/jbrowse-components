@@ -18,7 +18,6 @@
 import antialias;
 import capsule;
 import hpmath;
-import colorPack;
 import markColor;
 import rowTable;
 import valueScale;
