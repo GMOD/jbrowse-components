@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Chip, Stack, TextField } from '@mui/material'
+import { Chip, Stack, TextField, chipClasses } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { isValidTag } from '../util/tags.ts'
@@ -85,8 +85,17 @@ const TagTextField = observer(function TagTextField(props: Props) {
               key={tag}
               size="small"
               label={label ? `${tag} — ${label}` : tag}
-              color={text === tag ? 'primary' : 'default'}
               variant={text === tag ? 'filled' : 'outlined'}
+              sx={
+                text === tag
+                  ? {
+                      [`&, &:hover, &.${chipClasses.focusVisible}`]: {
+                        bgcolor: 'accent',
+                        color: 'background.paper',
+                      },
+                    }
+                  : undefined
+              }
               onClick={() => {
                 setValue(tag)
               }}

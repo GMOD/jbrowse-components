@@ -1,6 +1,8 @@
+import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import TagTextField from './TagTextField.tsx'
+import { createJBrowseTheme } from './theme.ts'
 
 test('emits the tag once it is a valid 2-char tag, undefined otherwise', () => {
   const onValueChange = jest.fn()
@@ -18,6 +20,23 @@ test('emits the tag once it is a valid 2-char tag, undefined otherwise', () => {
   // leading digit is invalid
   fireEvent.change(input, { target: { value: '1P' } })
   expect(onValueChange).toHaveBeenLastCalledWith(undefined)
+})
+
+test('the picked chip is filled with the accent color', () => {
+  const theme = createJBrowseTheme({}, undefined, 'default', 'dark')
+  const { getByText } = render(
+    <ThemeProvider theme={theme}>
+      <TagTextField
+        onValueChange={() => {}}
+        defaultValue="HP"
+        quickPicks={[{ tag: 'HP' }]}
+      />
+    </ThemeProvider>,
+  )
+  const chip = getByText('HP').parentElement
+  expect(chip && getComputedStyle(chip).backgroundColor).toBe(
+    theme.palette.accent,
+  )
 })
 
 test('caps input at two characters', () => {
