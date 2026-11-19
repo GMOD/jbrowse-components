@@ -17,6 +17,33 @@ test('a control spelling chromosomes differently still pairs them', () => {
   )
 })
 
+// TAIR and rice spell their chromosomes `Chr1` and the organelles `Mt`
+test('a chromosome pairs whatever the case of its spelling', () => {
+  expect(
+    controlChromosomes(
+      [chr('Chr1', 100), chr('Mt', 16)],
+      [chr('Chr1', 100), chr('Mt', 16)],
+    ),
+  ).toEqual(
+    new Map([
+      ['Chr1', 'Chr1'],
+      ['Mt', 'Mt'],
+    ]),
+  )
+  expect(
+    controlChromosomes(
+      [chr('chr1', 100), chr('MT', 16), chr('chrM', 16)],
+      [chr('Chr1', 100), chr('Mt', 16)],
+    ),
+  ).toEqual(
+    new Map([
+      ['chr1', 'Chr1'],
+      ['MT', 'Mt'],
+      ['chrM', 'Mt'],
+    ]),
+  )
+})
+
 test('a chromosome only the map holds is left unpaired', () => {
   expect(
     controlChromosomes([chr('1', 100), chr('Y', 60)], [chr('1', 100)]),

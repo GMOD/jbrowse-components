@@ -24,6 +24,7 @@ function maxLabel(display: {
 const DATA: HicDataResult = {
   instances: new Float32Array(INSTANCE_STRIDE_WORDS),
   numContacts: 1,
+  minScore: 0,
   maxScore: 400,
   quantileScore: 40,
   quantile: 0.95,
@@ -86,6 +87,7 @@ test('a new percentile reselects the loaded counts and refetches nothing', () =>
       counts,
     ),
     numContacts: counts.length,
+    minScore: 0,
     maxScore: 100,
     quantileScore: 95,
     pairRuns: [{ region1Idx: 0, region2Idx: 0, start: 0, end: counts.length }],

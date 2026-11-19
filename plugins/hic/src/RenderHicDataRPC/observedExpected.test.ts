@@ -110,6 +110,17 @@ test('a file with no expected values at the binsize paints its counts', async ()
   expect(data.pairRuns.every(run => run.expected === undefined)).toBe(true)
 })
 
+// Between chromosomes the expected count is the map's average, which every
+// matrix has; read as the file having expected values, it kept the ratio and
+// blanked both chromosomes' own triangles.
+test('a file with expected values only between chromosomes paints its counts', async () => {
+  const contacts = threePairs()
+  contacts.pairs[1]!.expected = INTER
+  const data = await render(contacts)
+  expect(data.appliedField).toBe('observed')
+  expect(values(data)).toEqual([16, 3, 2, 9])
+})
+
 test('a zero expected count makes no ratio', async () => {
   const contacts = threePairs()
   contacts.pairs[0]!.expected = {

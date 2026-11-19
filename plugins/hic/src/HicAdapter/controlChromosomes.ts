@@ -1,11 +1,11 @@
 import type { Chromosome } from '@gmod/hic'
 
-// The spellings one chromosome goes by across pipelines: `chr1` and `1`,
-// `chrM` and `MT`.
+// The spellings one chromosome goes by across pipelines, upper-cased: `chr1`,
+// `Chr1` and `1`; `chrM`, `Mt` and `MT`.
 function spellings(name: string) {
-  const bare = name.replace(/^chr/i, '')
-  const mito = /^(M|MT)$/i.test(bare) ? ['M', 'MT'] : [bare]
-  return mito.flatMap(b => [b, `chr${b}`])
+  const bare = name.toUpperCase().replace(/^CHR/, '')
+  const mito = /^(M|MT)$/.test(bare) ? ['M', 'MT'] : [bare]
+  return mito.flatMap(b => [b, `CHR${b}`])
 }
 
 /**
@@ -16,7 +16,7 @@ function spellings(name: string) {
  * hg19's chrM does from b37's MT, goes unpaired.
  */
 export function controlChromosomes(mine: Chromosome[], theirs: Chromosome[]) {
-  const byName = new Map(theirs.map(chr => [chr.name, chr]))
+  const byName = new Map(theirs.map(chr => [chr.name.toUpperCase(), chr]))
   const names = new Map<string, string>()
   const mismatched: string[] = []
   for (const chr of mine) {

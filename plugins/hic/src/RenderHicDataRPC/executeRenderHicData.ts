@@ -8,10 +8,11 @@ import {
   setInstanceCount,
   setInstancePosition,
 } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
-import { buildResultRegions } from '../regionOffsets.ts'
+import { buildResultRegions, mirrorCellBase } from '../regionOffsets.ts'
 import { computeCountStats } from './countStats.ts'
 
 import type HicAdapter from '../HicAdapter/HicAdapter.ts'
+import type { RegionPairContacts } from '../HicAdapter/HicAdapter.ts'
 import type { HicDataResult, RegionPairRun } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -61,10 +62,17 @@ export async function executeRenderHicData({
   // matrix, paints its counts and says so; one missing it for some pairs
   // leaves those pairs out, since a count on a ratio ramp would read as
   // enrichment.
-  const hasBaseline = (pair: (typeof pairs)[number]) =>
+  const hasBaseline = (pair: RegionPairContacts) =>
     field === 'observed/expected' ? !!pair.expected : !!pair.control
+  const withinChromosome = (pair: RegionPairContacts) =>
+    regions[pair.region1Idx]!.refName === regions[pair.region2Idx]!.refName
+  const deciding =
+    field === 'observed/expected' && pairs.some(withinChromosome)
+      ? pairs.filter(withinChromosome)
+      : pairs
   const appliedField =
-    field !== 'observed' && (pairs.length === 0 || pairs.some(hasBaseline))
+    field !== 'observed' &&
+    (deciding.length === 0 || deciding.some(hasBaseline))
       ? field
       : 'observed'
   const overExpected = appliedField === 'observed/expected'
@@ -94,22 +102,15 @@ export async function executeRenderHicData({
       signal,
     },
     report => {
-      let read = 0
-      for (const pair of pairs) {
-        const {
-          region1Idx,
-          region2Idx,
-          bin1,
-          bin2,
-          counts,
-          expected,
-          control,
-        } = pair
-        if (appliedField !== 'observed' && !hasBaseline(pair)) {
-          read += bin1.length
-          report(read)
-          continue
-        }
+      const pack = ({
+        region1Idx,
+        region2Idx,
+        bin1,
+        bin2,
+        counts,
+        expected,
+        control,
+      }: RegionPairContacts) => {
         // Hoisted so the loop reads one array or one number: within a
         // chromosome the expected count indexes by distance, between
         // chromosomes it is the map's average.
@@ -137,13 +138,10 @@ export async function executeRenderHicData({
         const r2 = resultRegions[region2Idx]!
         const off1 = r1.combinedOffset
         const off2 = r2.combinedOffset
-        // a cell spans `[u, u+w]`, so its reflection's min corner is
-        // `start + end - w - u`
-        const mirror1 = r1.reversed ? r1.dataXStart + r1.dataXEnd - w : 0
-        const mirror2 = r2.reversed ? r2.dataXStart + r2.dataXEnd - w : 0
-        const n = bin1.length
+        const mirror1 = mirrorCellBase(r1, w)
+        const mirror2 = mirrorCellBase(r2, w)
         const start = at
-        for (let k = 0; k < n; k++) {
+        for (let k = 0; k < bin1.length; k++) {
           const count = counts[k]!
           // NaN is the .hic no-value marker, which `@gmod/hic` filters only on
           // its dense path
@@ -196,14 +194,24 @@ export async function executeRenderHicData({
             expected: overExpected ? expected : undefined,
           })
         }
-        read += n
+      }
+      let read = 0
+      for (const pair of pairs) {
+        if (appliedField === 'observed' || hasBaseline(pair)) {
+          pack(pair)
+        }
+        read += pair.bin1.length
         report(read)
       }
     },
   )
 
   const instances = packed.subarray(0, at * INSTANCE_STRIDE_WORDS)
-  const { maxScore, quantileScore } = computeCountStats(instances, at, quantile)
+  const { minScore, maxScore, quantileScore } = computeCountStats(
+    instances,
+    at,
+    quantile,
+  )
   const operands =
     observedOut && controlOut
       ? {
@@ -216,6 +224,7 @@ export async function executeRenderHicData({
     {
       instances,
       numContacts: at,
+      minScore,
       maxScore,
       quantileScore,
       quantile,
@@ -231,10 +240,8 @@ export async function executeRenderHicData({
     [
       instances.buffer,
       ...(operands ? [operands.observed.buffer, operands.control.buffer] : []),
-      ...new Set(
-        pairRuns.flatMap(run =>
-          run.expected?.kind === 'intra' ? [run.expected.values.buffer] : [],
-        ),
+      ...pairRuns.flatMap(run =>
+        run.expected?.kind === 'intra' ? [run.expected.values.buffer] : [],
       ),
     ],
   )

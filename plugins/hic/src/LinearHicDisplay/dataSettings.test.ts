@@ -69,3 +69,32 @@ test("the stepper's Finer writes one step finer, Coarser one coarser, Reset 0", 
   stepper.opts!.onReset()
   expect(display.resolution).toBe(0)
 })
+
+// a hand-written 0.5 indexed no binsize, so the display never fetched and
+// its SVG export waited forever
+test('a fractional data.resolution steps a whole binsize', async () => {
+  const display = await displayWithLadder()
+  const auto = display.binSizeIdx
+  setConf(display, ['data', 'resolution'], 0.6)
+  expect(display.binSizeIdx).toBe(auto - 1)
+  expect(display.binSize).toBeDefined()
+})
+
+test("observed/control offers what the control shares, the counts the map's own", async () => {
+  const { createDisplay, mockRpcCall } = createTestEnvironment()
+  mockRpcCall.mockResolvedValue({
+    norms: ['KR', 'VC'],
+    resolutions: [10, 100, 1000],
+    control: { norms: ['VC'], resolutions: [100, 1000] },
+  })
+  const { display, view } = createDisplay()
+  view.setNewView(5000, 0)
+  await flush()
+  expect(display.availableNormalizations).toEqual(['KR', 'VC'])
+  expect(display.availableBinSizes).toEqual([10, 100, 1000])
+
+  setConf(display, ['encoding', 'color', 'field'], 'observed/control')
+  expect(display.availableNormalizations).toEqual(['VC'])
+  expect(display.availableBinSizes).toEqual([100, 1000])
+  expect(display.activeNormalization).toBe('VC')
+})

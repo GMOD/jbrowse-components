@@ -82,6 +82,13 @@ uploads zero-copy, the Canvas2D and SVG paths read one cache line per contact
 instead of two streams, and a field added to the struct is a compile error at
 the packer rather than a silently mis-strided buffer.
 
+**A block between two regions of one chromosome draws a contact in both its
+cells.** A region's own triangle draws each contact once, but where two
+displayed regions overlap, a contact inside the overlap belongs at `(x, y)`
+and at `(y, x)` of the block between them. The file stores it once, so the
+adapter asks `@gmod/hic` for both orientations (`bothOrientations`) for a pair
+of different regions and for the triangle for a region with itself.
+
 **No bin columns ride along.** They were shipped on the reasoning that a
 chromosome-absolute index cannot survive float32 — true of the index, false of
 what is actually stored, because the region offset cancels the large term before
@@ -113,7 +120,11 @@ and binsize, and a chromosome can lack a normalization the rest of the file
 has, so dividing by the requested one's vector draws a plausible, wrong ratio.
 The worker leaves out a pair with no expected values rather than painting its
 counts on the ratio ramp, where they would read as enrichment; a binsize with
-none at all paints counts and names them in the key. The worker attaches each
+none at all paints counts and names them in the key. Which of the two happens
+is decided by the pairs within a chromosome where the view has any: between
+chromosomes the expected count is the map's average, which every matrix has,
+so a view across chromosomes would otherwise keep the ratio and blank every
+block along the diagonal. The worker attaches each
 pair's expected values to its run, so the hover prints the count and the expected
 count beside the ratio. `@gmod/hic`'s `getExpectedValues` is checked against straw's own O/E,
 and `realFileObservedExpected.test.ts` runs the same cells through the adapter,
@@ -143,9 +154,14 @@ Juicebox adds the 1 to each map's average contact
 instead, `(obs + 1) / (avg + 1)`: at any binsize under one contact per bin
 pair the 1 swamps the average, the depth drops out, and K562 over the deeper
 GM12878 drew depleted everywhere but its amplicons. The two files must carry one normalization for
-a pair, so a pair where they fall back apart reads both raw. Two builds share
-chromosome names and differ in coordinates, so `controlChromosomes.ts` refuses
-a control whose shared chromosome differs in length.
+a pair, so a pair where they fall back apart reads both raw, and the menus
+offer observed/control only the normalizations and binsizes both files have;
+the other fields keep the map's own. A control that cannot be opened — another
+assembly, no binsize in common, an unreachable file — fails the track whatever
+its field. Two builds share chromosome names and
+differ in coordinates, so `controlChromosomes.ts` refuses a control whose
+shared chromosomes mostly differ in length, and leaves one that differs alone
+unpaired, as hg19's chrM does from b37's MT: its blocks draw no ratio.
 
 **The `filter` is floors, applied before the ratio.** A ratio of two
 near-empty bins is noise, so `filter` takes `gte` or `gt` on `observed` and

@@ -17,6 +17,7 @@ function makeHicResult(args: RenderHicDataArgs): HicDataResult {
   return {
     instances: new Float32Array(0),
     numContacts: 0,
+    minScore: 0,
     maxScore: 0,
     quantileScore: 0,
     quantile: args.quantile,

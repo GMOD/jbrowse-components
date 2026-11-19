@@ -33,3 +33,8 @@ export function buildResultRegions(
 export function mirrorU(region: HicResultRegion, u: number) {
   return region.dataXStart + region.dataXEnd - u
 }
+
+/** A cell spans `[u, u + w]`, so its reflection's min corner is this minus `u`. */
+export function mirrorCellBase(region: HicResultRegion, w: number) {
+  return region.dataXStart + region.dataXEnd - w
+}

@@ -17,6 +17,7 @@ function baseSelf() {
     colorField: 'observed' as HicColorField,
     paintedColorField: 'observed' as HicColorField,
     hasControl: false,
+    dataCurrent: true,
     colorByField: jest.fn(),
     colorScaleType: 'linear' as const,
     colorDomainQuantile: 0.95,

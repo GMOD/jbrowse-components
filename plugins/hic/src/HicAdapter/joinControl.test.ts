@@ -1,4 +1,4 @@
-import { joinControl } from './joinControl.ts'
+import { binExtent, joinControl } from './joinControl.ts'
 
 import type { AxisMasks } from './joinControl.ts'
 
@@ -20,12 +20,17 @@ function join(
     y0?: number
   } = {},
 ) {
-  const out = joinControl(records(observed), records(control), {
-    observed: masks.observed ?? {},
-    control: masks.control ?? {},
-    x0: masks.x0 ?? 0,
-    y0: masks.y0 ?? 0,
-  })
+  const o = records(observed)
+  const c = records(control)
+  const [, xHi] = binExtent(o.bin1, c.bin1)
+  const [, yHi] = binExtent(o.bin2, c.bin2)
+  const out = joinControl(
+    o,
+    c,
+    { observed: masks.observed ?? {}, control: masks.control ?? {} },
+    [masks.x0 ?? 0, xHi],
+    [masks.y0 ?? 0, yHi],
+  )
   return Array.from(out.bin1, (b1, i) => [
     b1,
     out.bin2[i],

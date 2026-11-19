@@ -20,6 +20,7 @@ interface HicMenuSelf extends IStateTreeNode {
   colorField: HicColorField
   paintedColorField: HicColorField
   hasControl: boolean
+  dataCurrent: boolean
   colorByField: (field: string) => void
   colorScaleType: HicColorScale
   colorDomainQuantile: number
@@ -147,13 +148,13 @@ const FALLBACK_HELP: Record<HicColorField, string> = {
   'observed/expected':
     'This file has no expected values at the current resolution, so the cells show counts.',
   'observed/control':
-    'The control has no matrix at the current resolution, so the cells show counts.',
+    'The control holds none of the chromosomes in view at the current resolution, so the cells show counts.',
 }
 
 // Ticks the field the loaded cells are; a file with no expected values at the
 // binsize paints counts, and the row asked for says why.
 function fieldMenuItem(self: HicMenuSelf): MenuItem {
-  const { colorField, paintedColorField } = self
+  const { colorField, paintedColorField, dataCurrent } = self
   return {
     label: 'Values',
     icon: InsightsIcon,
@@ -163,7 +164,9 @@ function fieldMenuItem(self: HicMenuSelf): MenuItem {
       ).map(item => ({
         ...item,
         helpText:
-          item.value === colorField && paintedColorField !== colorField
+          dataCurrent &&
+          item.value === colorField &&
+          paintedColorField !== colorField
             ? FALLBACK_HELP[item.value]
             : item.helpText,
       })),
@@ -180,7 +183,7 @@ function fieldMenuItem(self: HicMenuSelf): MenuItem {
 // chromosome and not another.
 function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
   const avail = self.availableNormalizations
-  const { activeNormalization, appliedNormalizations } = self
+  const { activeNormalization, appliedNormalizations, dataCurrent } = self
   const fallbacks = appliedNormalizations.filter(n => n !== activeNormalization)
   const ticked = appliedNormalizations.includes(activeNormalization)
     ? activeNormalization
@@ -195,7 +198,9 @@ function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
               value: norm,
               label: norm,
               helpText:
-                norm !== activeNormalization || fallbacks.length === 0
+                !dataCurrent ||
+                norm !== activeNormalization ||
+                fallbacks.length === 0
                   ? (NORM_HELP[norm] ??
                     'Matrix normalization scheme provided by this .hic file.')
                   : ticked === activeNormalization

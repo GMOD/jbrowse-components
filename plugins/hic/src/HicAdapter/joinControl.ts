@@ -66,10 +66,10 @@ const valid = (mask: Uint8Array | undefined, i: number) =>
 export function joinControl(
   observed: ContactRecords,
   control: ContactRecords,
-  masks: { observed: AxisMasks; control: AxisMasks; x0: number; y0: number },
+  masks: { observed: AxisMasks; control: AxisMasks },
+  [xLo, xHi]: readonly [number, number],
+  [yLo, yHi]: readonly [number, number],
 ): JoinedCounts {
-  const [xLo, xHi] = binExtent(observed.bin1, control.bin1)
-  const [yLo, yHi] = binExtent(observed.bin2, control.bin2)
   const nx = xHi - xLo
   const ny = yHi - yLo
   const capacity = observed.bin1.length + control.bin1.length
@@ -93,7 +93,6 @@ export function joinControl(
   // index into `control` of the cell at each column, -1 for none, -2 once
   // an observed record has taken it
   const scratch = new Int32Array(ny).fill(-1)
-  const { x0, y0 } = masks
   const oMask = masks.observed
   const cMask = masks.control
 
@@ -111,7 +110,7 @@ export function joinControl(
       if (j >= 0) {
         emit(b1, b2, observed.counts[i]!, control.counts[j]!)
         scratch[col] = -2
-      } else if (valid(cMask.x, b1 - x0) && valid(cMask.y, b2 - y0)) {
+      } else if (valid(cMask.x, r) && valid(cMask.y, col)) {
         emit(b1, b2, observed.counts[i]!, 0)
       }
     }
@@ -119,11 +118,7 @@ export function joinControl(
       const j = c.order[k]!
       const b2 = control.bin2[j]!
       const col = b2 - yLo
-      if (
-        scratch[col] !== -2 &&
-        valid(oMask.x, b1 - x0) &&
-        valid(oMask.y, b2 - y0)
-      ) {
+      if (scratch[col] !== -2 && valid(oMask.x, r) && valid(oMask.y, col)) {
         emit(b1, b2, 0, control.counts[j]!)
       }
       scratch[col] = -1

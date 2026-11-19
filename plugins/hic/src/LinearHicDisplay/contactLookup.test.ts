@@ -68,6 +68,7 @@ function makeData(
   return {
     instances,
     numContacts: n,
+    minScore: 0,
     maxScore: n,
     quantileScore: n,
     quantile: 0.95,

@@ -1,10 +1,27 @@
 import { binExtent, joinControl } from './joinControl.ts'
-import { readPair, toHicRegion } from './readPair.ts'
 
 import type { AxisMasks } from './joinControl.ts'
-import type { PairRead, PairReadOptions } from './readPair.ts'
-import type { Chromosome, HicFile, HicRegion } from '@gmod/hic'
+import type {
+  Chromosome,
+  ContactRecordOpts,
+  ContactRecords,
+  HicFile,
+  HicRegion,
+} from '@gmod/hic'
 import type { Region } from '@jbrowse/core/util/types'
+
+/**
+ * One region pair's contacts as `@gmod/hic` reads them, `bin1` along the first
+ * region, and the normalization the file applied, which falls back per pair.
+ */
+export interface PairRead {
+  records: ContactRecords
+  appliedNormalization: string
+}
+
+export function toHicRegion(region: Region): HicRegion {
+  return { chr: region.refName, start: region.start, end: region.end }
+}
 
 /** One of the two files a comparison reads. */
 export interface HicSide {
@@ -135,21 +152,19 @@ async function binMask(
   resolution: number,
   signal?: AbortSignal,
 ) {
-  const readValues = async () => {
+  const readMask = async () => {
     const vector = await hic.getNormalizationVector(
       normalization,
       chr,
       resolution,
       { signal },
     )
-    return vector?.getValues(start, end, { signal })
+    const values = await vector?.getValues(start, end, { signal })
+    return Uint8Array.from({ length: end - start }, (_, i) =>
+      usable(values?.[i]) ? 1 : 0,
+    )
   }
-  const values = normalization === 'NONE' ? undefined : await readValues()
-  return normalization === 'NONE'
-    ? undefined
-    : Uint8Array.from({ length: end - start }, (_, i) =>
-        usable(values?.[i]) ? 1 : 0,
-      )
+  return normalization === 'NONE' ? undefined : readMask()
 }
 
 interface PairQuery {
@@ -164,7 +179,7 @@ interface PairQuery {
   theirSum: number
   normalization: string
   resolution: number
-  opts: PairReadOptions
+  opts: ContactRecordOpts
 }
 
 /**
@@ -185,20 +200,20 @@ async function readBoth({
 }: PairQuery) {
   const read = (norm: string) =>
     Promise.all([
-      readPair(mine.hic, r1, r2, norm, resolution, opts),
-      readPair(theirs.hic, c1, c2, norm, resolution, { signal: opts.signal }),
+      mine.hic.getContactRecords(norm, r1, r2, resolution, opts),
+      theirs.hic.getContactRecords(norm, c1, c2, resolution, {
+        signal: opts.signal,
+        bothOrientations: opts.bothOrientations,
+      }),
     ])
-  const [a, b] = await read(normalization)
-  return a && b && a.appliedNormalization !== b.appliedNormalization
+  const both = await read(normalization)
+  return both[0].appliedNormalization !== both[1].appliedNormalization
     ? read('NONE')
-    : ([a, b] as const)
+    : both
 }
 
-async function joinPair(
-  query: PairQuery,
-  observed: PairRead,
-  control: PairRead,
-): Promise<ControlledPairRead> {
+async function readJoined(query: PairQuery): Promise<ControlledPairRead> {
+  const [observed, control] = await readBoth(query)
   const { mine, theirs, r1, r2, c1, c2, mySum, theirSum, resolution } = query
   const { signal } = query.opts
   const norm = observed.appliedNormalization
@@ -236,12 +251,13 @@ async function joinPair(
     theirTotal >= theirSum
       ? [myTotal, theirTotal]
       : [mySum, theirSum]
-  const joined = joinControl(observed.records, control.records, {
-    observed: myMasks,
-    control: theirMasks,
-    x0: x[0],
-    y0: y[0],
-  })
+  const joined = joinControl(
+    observed.records,
+    control.records,
+    { observed: myMasks, control: theirMasks },
+    x,
+    y,
+  )
   return {
     records: { bin1: joined.bin1, bin2: joined.bin2, counts: joined.counts },
     appliedNormalization: norm,
@@ -278,43 +294,35 @@ export async function readPairWithControl({
   region2: Region
   normalization: string
   resolution: number
-  opts: PairReadOptions
+  opts: ContactRecordOpts
 }): Promise<ControlledPairRead | undefined> {
   const r1 = toHicRegion(region1)
   const r2 = toHicRegion(region2)
   const name1 = names.get(r1.chr)
   const name2 = names.get(r2.chr)
+  const theirRegions =
+    name1 !== undefined && name2 !== undefined
+      ? { c1: { ...r1, chr: name1 }, c2: { ...r2, chr: name2 } }
+      : undefined
   const [mySum, theirSum] = await Promise.all([
     pairSum(mine, r1.chr, r2.chr, resolution),
-    name1 !== undefined && name2 !== undefined
-      ? pairSum(theirs, name1, name2, resolution)
-      : undefined,
+    theirRegions &&
+      pairSum(theirs, theirRegions.c1.chr, theirRegions.c2.chr, resolution),
   ])
-  const query =
-    mySum && theirSum && name1 !== undefined && name2 !== undefined
-      ? {
-          mine,
-          theirs,
-          r1,
-          r2,
-          c1: { ...r1, chr: name1 },
-          c2: { ...r2, chr: name2 },
-          mySum,
-          theirSum,
-          normalization,
-          resolution,
-          opts,
-        }
+  return theirRegions && mySum && theirSum
+    ? readJoined({
+        mine,
+        theirs,
+        r1,
+        r2,
+        ...theirRegions,
+        mySum,
+        theirSum,
+        normalization,
+        resolution,
+        opts,
+      })
+    : mySum
+      ? mine.hic.getContactRecords(normalization, r1, r2, resolution, opts)
       : undefined
-  const [observed, control] = query
-    ? await readBoth(query)
-    : [
-        mySum
-          ? await readPair(mine.hic, r1, r2, normalization, resolution, opts)
-          : undefined,
-        undefined,
-      ]
-  return query && observed && control
-    ? joinPair(query, observed, control)
-    : observed
 }

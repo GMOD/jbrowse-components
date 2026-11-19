@@ -8,22 +8,21 @@ import {
   downloadStatus,
   updateStatus,
 } from '@jbrowse/core/util'
-import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
+import { mapWithConcurrency } from '@jbrowse/core/util/mapWithConcurrency'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { controlChromosomes } from './controlChromosomes.ts'
-import { readPairWithControl } from './controlPair.ts'
-import { readPair, toHicRegion } from './readPair.ts'
+import { readPairWithControl, toHicRegion } from './controlPair.ts'
 
 import type { HicAdapterConfig } from './configSchema.ts'
+import type { ControlCounts, HicSide, PairRead } from './controlPair.ts'
 import type {
-  ControlCounts,
-  ControlledPairRead,
-  HicSide,
-} from './controlPair.ts'
-import type { ContactRecords, ExpectedValues } from '@gmod/hic'
+  ContactRecordOpts,
+  ContactRecords,
+  ExpectedValues,
+} from '@gmod/hic'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -74,10 +73,18 @@ interface HicContactOptions extends BaseOptions {
   control?: boolean
 }
 
-/** What the display reads before any fetch: the choices the file offers. */
-export interface HicHeader {
+/** The normalizations and binsizes a file offers. */
+export interface HicChoices {
   norms: string[]
   resolutions: number[]
+}
+
+/**
+ * What the display reads before any fetch: the choices the file offers, and
+ * the control's where one is configured, which observed/control is limited to.
+ */
+export interface HicHeader extends HicChoices {
+  control?: HicChoices
 }
 
 interface Control {
@@ -132,22 +139,9 @@ export default class HicAdapter extends BaseFeatureDataAdapter<HicAdapterConfig>
       signal,
     )
     const control = await this.controlSetup(opts)
-    if (!control) {
-      return { norms, resolutions }
-    }
-    // A ratio compares the two at one binsize under one normalization, so
-    // only what both files offer is offered.
-    const theirs = await control.adapter.getHeader(opts)
-    const shared = resolutions.filter(r => theirs.resolutions.includes(r))
-    if (!shared.length) {
-      throw new Error(
-        `The map and its control share no binsize (map: ${resolutions.join(', ')}; control: ${theirs.resolutions.join(', ')})`,
-      )
-    }
-    return {
-      norms: norms.filter(n => theirs.norms.includes(n)),
-      resolutions: shared,
-    }
+    return control
+      ? { norms, resolutions, control: await control.adapter.getHeader(opts) }
+      : { norms, resolutions }
   }
 
   /** The parsed header: chromosomes and binsizes. */
@@ -173,10 +167,16 @@ export default class HicAdapter extends BaseFeatureDataAdapter<HicAdapterConfig>
         `A Hi-C control must be a HicAdapter, not ${String(config.type)}`,
       )
     }
-    const [mine, side] = await Promise.all([
+    const [mine, side, theirs] = await Promise.all([
       this.setup(opts),
       dataAdapter.side(opts),
+      dataAdapter.getMetadata(opts),
     ])
+    if (!mine.resolutions.some(r => theirs.resolutions.includes(r))) {
+      throw new Error(
+        `The map and its control share no binsize (map: ${mine.resolutions.join(', ')}; control: ${theirs.resolutions.join(', ')})`,
+      )
+    }
     return {
       adapter: dataAdapter,
       side,
@@ -227,15 +227,12 @@ export default class HicAdapter extends BaseFeatureDataAdapter<HicAdapterConfig>
       }
     }
     const mine = { hic: this.hic, chromosomes: metadata.chromosomes }
-    const fetched = new Array<
-      (ControlledPairRead & { expected?: ExpectedValues }) | undefined
-    >(pairIndices.length)
 
     const downloadPhase = 'Downloading data'
-    await updateStatus(
+    const fetched = await updateStatus(
       downloadPhase,
       statusCallback,
-      async () => {
+      () => {
         // Pairs are the denominator, the one total known before any read; a
         // pair's own blocks move it within its share.
         const report = createProgressReporter({
@@ -250,43 +247,44 @@ export default class HicAdapter extends BaseFeatureDataAdapter<HicAdapterConfig>
           pairShare[at] = share
           report(progress)
         }
-        let next = 0
-        const worker = async () => {
-          while (next < pairIndices.length) {
-            const at = next++
-            const [i, j] = pairIndices[at]!
-            checkAbortSignal(signal)
-            const onProgress = (current: number, total: number) => {
-              advance(at, current / total)
+        return mapWithConcurrency(
+          pairIndices.map(([i, j], at) => ({ i, j, at })),
+          PAIR_CONCURRENCY,
+          async (
+            { i, j, at },
+            pairSignal,
+          ): Promise<
+            | (PairRead & {
+                expected?: ExpectedValues
+                control?: ControlCounts
+              })
+            | undefined
+          > => {
+            const query = {
+              region1: regions[i]!,
+              region2: regions[j]!,
+              normalization,
+              resolution,
+              opts: {
+                signal: pairSignal,
+                onProgress: (current: number, total: number) => {
+                  advance(at, current / total)
+                },
+                bothOrientations: i !== j,
+              },
             }
-            fetched[at] = control
+            const pair = control
               ? await readPairWithControl({
+                  ...query,
                   mine,
                   theirs: control.side,
                   names: control.names,
-                  region1: regions[i]!,
-                  region2: regions[j]!,
-                  normalization,
-                  resolution,
-                  opts: { signal, onProgress },
                 })
-              : await this.fetchRegionPairRecords({
-                  region1: regions[i]!,
-                  region2: regions[j]!,
-                  normalization,
-                  resolution,
-                  expected,
-                  signal,
-                  onProgress,
-                })
+              : await this.fetchRegionPairRecords({ ...query, expected })
             advance(at, 1)
-          }
-        }
-        await Promise.all(
-          Array.from(
-            { length: Math.min(PAIR_CONCURRENCY, pairIndices.length) },
-            () => worker(),
-          ),
+            return pair
+          },
+          signal,
         )
       },
       signal,
@@ -316,7 +314,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter<HicAdapterConfig>
 
     const appliedNormalizations =
       applied.size === 0 || applied.has(normalization)
-        ? [normalization, ...[...applied].filter(n => n !== normalization)]
+        ? [...new Set([normalization, ...applied])]
         : [...applied]
     return { pairs, numContacts, resolution, appliedNormalizations }
   }
@@ -327,40 +325,39 @@ export default class HicAdapter extends BaseFeatureDataAdapter<HicAdapterConfig>
     normalization,
     resolution,
     expected,
-    signal,
-    onProgress,
+    opts,
   }: {
     region1: Region
     region2: Region
     normalization: string
     resolution: number
     expected: boolean
-    signal?: AbortSignal
-    onProgress: (current: number, total: number) => void
+    opts: ContactRecordOpts
   }) {
     const r1 = toHicRegion(region1)
     const r2 = toHicRegion(region2)
-    const read = await readPair(this.hic, r1, r2, normalization, resolution, {
-      onProgress,
-      signal,
-    })
+    const read = await this.hic.getContactRecords(
+      normalization,
+      r1,
+      r2,
+      resolution,
+      opts,
+    )
     // Under the normalization the pair's counts carry, since each has its
-    // own expected vector; symmetric in the two regions, so the transpose
-    // needs no undoing.
-    return read
-      ? {
-          ...read,
-          expected:
-            expected && read.records.bin1.length > 0
-              ? await this.hic.getExpectedValues(
-                  read.appliedNormalization,
-                  r1,
-                  r2,
-                  resolution,
-                  { signal },
-                )
-              : undefined,
-        }
-      : undefined
+    // own expected vector; symmetric in the two regions and in a contact's
+    // two ends, so a contact placed either way round reads the same one.
+    return {
+      ...read,
+      expected:
+        expected && read.records.bin1.length > 0
+          ? await this.hic.getExpectedValues(
+              read.appliedNormalization,
+              r1,
+              r2,
+              resolution,
+              { signal: opts.signal },
+            )
+          : undefined,
+    }
   }
 }

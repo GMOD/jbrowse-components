@@ -53,6 +53,18 @@ import type React from 'react'
 // The fallback order when the selected normalization is not in the file.
 const NORMALIZATION_PREFERENCE = ['KR', 'SCALE', 'VC_SQRT', 'VC']
 
+function fetchableChoices(header: HicHeader | undefined, field: HicColorField) {
+  const control = field === 'observed/control' ? header?.control : undefined
+  return header && control
+    ? {
+        norms: header.norms.filter(n => control.norms.includes(n)),
+        resolutions: header.resolutions.filter(r =>
+          control.resolutions.includes(r),
+        ),
+      }
+    : header
+}
+
 // The key's and the tooltip's name for a value: the field's own title, its
 // normalization and, for a count, a scale other than linear. A ratio is always
 // log.
@@ -143,14 +155,16 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        */
       get availableNormalizations(): string[] | undefined {
-        return readFor(self, self.fileInfo)?.norms
+        return fetchableChoices(readFor(self, self.fileInfo), this.colorField)
+          ?.norms
       },
       /**
        * #getter
        * Smallest first, so a positive `data.resolution` is always finer.
        */
       get availableBinSizes(): number[] | undefined {
-        return readFor(self, self.fileInfo)?.resolutions
+        return fetchableChoices(readFor(self, self.fileInfo), this.colorField)
+          ?.resolutions
       },
       /**
        * #getter
@@ -164,7 +178,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * `data.resolution`: binsizes finer than the zoom's pick.
        */
       get resolution(): number {
-        return getConf(self, ['data', 'resolution'])
+        return Math.round(getConf(self, ['data', 'resolution']))
       },
       /**
        * #getter
@@ -351,12 +365,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           title: rpcData
             ? `${label} · ${getBpDisplayStr(rpcData.binSize)}`
             : label,
-          // the counts start at the key's bottom; a ratio's smallest value
-          // is not scored, and one below a fixed domain's bottom is usual
-          extent: {
-            min: self.paintedColorField === 'observed' ? undefined : 0,
-            max: rpcData?.maxScore ?? 0,
-          },
+          extent: { min: rpcData?.minScore ?? 0, max: rpcData?.maxScore ?? 0 },
         })
       },
       /**
@@ -612,6 +621,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
                 value: {
                   norms: value?.norms ?? [],
                   resolutions: [...resolutions].sort((a, b) => a - b),
+                  control: value?.control,
                 },
               })
             } else {

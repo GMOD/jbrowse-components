@@ -1,4 +1,3 @@
-import { NO_DATA_FOR_RESOLUTION } from '@gmod/hic'
 import { isAbortException } from '@jbrowse/core/util'
 
 import HicAdapter from './HicAdapter.ts'
@@ -16,17 +15,13 @@ const metadata = {
   resolutions: [100000],
 }
 
-// `@gmod/hic` hands back struct-of-arrays plus the two things only it can answer:
-// which normalization it actually applied, and whether it transposed the query.
-// Spell one contact out readably.
+// `@gmod/hic` hands back struct-of-arrays, `bin1` along the first region, plus
+// the normalization it actually applied. Spell one contact out readably.
 function oneContact(
   bin1: number,
   bin2: number,
   counts: number,
-  {
-    appliedNormalization = 'NONE',
-    transposed = false,
-  }: { appliedNormalization?: string; transposed?: boolean } = {},
+  { appliedNormalization = 'NONE' }: { appliedNormalization?: string } = {},
 ) {
   return {
     records: {
@@ -35,7 +30,6 @@ function oneContact(
       counts: Float32Array.of(counts),
     },
     appliedNormalization,
-    transposed,
   }
 }
 
@@ -47,13 +41,11 @@ function noContacts({ appliedNormalization = 'NONE' } = {}) {
       counts: new Float32Array(0),
     },
     appliedNormalization,
-    transposed: false,
   }
 }
 
-// Mock parser whose inter-chromosomal query throws (mirrors `@gmod/hic` throwing
-// when a chr-pair matrix lacks the requested resolution), while intra-chrom
-// queries succeed.
+// Mock parser with no inter-chromosomal matrix at the binsize, which
+// `@gmod/hic` answers with no records, while intra-chrom queries succeed.
 function makeMockParser() {
   return {
     getMetaData: () => Promise.resolve(metadata),
@@ -62,12 +54,10 @@ function makeMockParser() {
       _norm: string,
       ref: { chr: string },
       ref2: { chr: string },
-    ) => {
-      if (ref.chr !== ref2.chr) {
-        throw new Error(`${NO_DATA_FOR_RESOLUTION}: map ${ref.chr}-${ref2.chr}`)
-      }
-      return Promise.resolve(oneContact(0, 0, 5))
-    },
+    ) =>
+      Promise.resolve(
+        ref.chr === ref2.chr ? oneContact(0, 0, 5) : noContacts(),
+      ),
   }
 }
 
@@ -83,7 +73,10 @@ interface MockParser {
     ref: { chr: string },
     ref2: { chr: string },
     binsize?: number,
-    opts?: { onProgress?: (current: number, total: number) => void },
+    opts?: {
+      onProgress?: (current: number, total: number) => void
+      bothOrientations?: boolean
+    },
   ) => Promise<ReturnType<typeof oneContact>>
   getExpectedValues?: (
     norm: string,
@@ -102,7 +95,7 @@ function makeAdapter(hic: MockParser) {
   return adapter
 }
 
-test('a missing inter-chromosomal pair does not fail the whole multi-region fetch', async () => {
+test('a pair with no matrix at the binsize contributes nothing', async () => {
   const adapter = makeAdapter(makeMockParser())
   const regions: Region[] = [
     { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
@@ -114,8 +107,8 @@ test('a missing inter-chromosomal pair does not fail the whole multi-region fetc
     { resolution: 100000, normalization: 'NONE' },
   )
 
-  // both intra-chromosomal pairs (0,0) and (1,1) survive; the throwing inter
-  // pair (0,1) contributes nothing instead of aborting the fetch
+  // both intra-chromosomal pairs (0,0) and (1,1) survive; the empty inter pair
+  // (0,1) is left out
   expect(numContacts).toBe(2)
   expect(pairs.map(p => [p.region1Idx, p.region2Idx, p.bin1.length])).toEqual([
     [0, 0, 1],
@@ -262,31 +255,37 @@ test('an already-aborted signal aborts the multi-region fetch', async () => {
   expect(isAbortException(err)).toBe(true)
 })
 
-test('un-swaps bin1/bin2 when the parser transposed the query', async () => {
-  // region1 is the higher-index chromosome, so the parser transposes and returns
-  // bins along the swapped axis, saying so in `transposed`; the adapter must
-  // un-swap so bin1 maps back to region1.
+// Two overlapping regions of one chromosome: the block between them draws a
+// contact inside both windows at both its cells, where a region's own
+// triangle draws it once.
+test('the block between two regions asks for both orientations, a region with itself for one', async () => {
+  const asked: string[] = []
   const adapter = makeAdapter({
     getMetaData: () => Promise.resolve(metadata),
     getNormalizationOptions: () => Promise.resolve(['NONE']),
-    getContactRecords: () =>
-      Promise.resolve(oneContact(7, 3, 9, { transposed: true })),
+    getContactRecords: (_norm, ref, ref2, _binsize, opts) => {
+      asked.push(
+        `${JSON.stringify(ref)} ${JSON.stringify(ref2)} ${opts?.bothOrientations}`,
+      )
+      return Promise.resolve(oneContact(0, 0, 5))
+    },
   })
-  const regions: Region[] = [
-    { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
-    { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
-  ]
-
-  const { pairs } = await adapter.getMultiRegionContactRecords(regions, {
-    resolution: 100000,
-    normalization: 'NONE',
-  })
-
-  const interPair = pairs.find(p => p.region1Idx === 0 && p.region2Idx === 1)
-  expect(interPair).toBeDefined()
-  const { bin1, bin2, counts } = interPair!
-  // bin1 maps back to region1 ('2', the higher-index chr) despite the transpose
-  expect([bin1[0], bin2[0], counts[0]]).toEqual([3, 7, 9])
+  const a = { chr: '1', start: 0, end: 600000 }
+  const b = { chr: '1', start: 400000, end: 1000000 }
+  await adapter.getMultiRegionContactRecords(
+    [
+      { assemblyName: 'test', refName: '1', start: 0, end: 600000 },
+      { assemblyName: 'test', refName: '1', start: 400000, end: 1000000 },
+    ],
+    { resolution: 100000, normalization: 'NONE' },
+  )
+  expect(asked.sort()).toEqual(
+    [
+      `${JSON.stringify(a)} ${JSON.stringify(a)} false`,
+      `${JSON.stringify(a)} ${JSON.stringify(b)} true`,
+      `${JSON.stringify(b)} ${JSON.stringify(b)} false`,
+    ].sort(),
+  )
 })
 
 // Normalization vectors are stored per (type, chr, unit, binsize), so a pair

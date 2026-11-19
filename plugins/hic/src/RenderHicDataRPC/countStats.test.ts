@@ -117,16 +117,17 @@ function asInstances(counts: ArrayLike<number>) {
   return out
 }
 
-// The two statistics used to come off a full sort of the finite subset. That is
+// The statistics used to come off a full sort of the finite subset. That is
 // still the clearest definition of the right answer, so it stays here as a
 // differential oracle for the selection that replaced it.
 function reference(counts: Float32Array) {
   const finite = counts.filter(c => Number.isFinite(c))
   if (finite.length === 0) {
-    return { maxScore: 0, quantileScore: 0 }
+    return { minScore: 0, maxScore: 0, quantileScore: 0 }
   }
   finite.sort()
   return {
+    minScore: finite[0]!,
     maxScore: finite[finite.length - 1]!,
     quantileScore: finite[Math.max(0, Math.ceil(0.95 * finite.length) - 1)]!,
   }

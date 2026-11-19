@@ -79,9 +79,10 @@ export interface HicDataResult {
   instances: Float32Array
   numContacts: number
   /**
-   * Maximum and `quantile` of the finite counts, so an Infinity bin cannot
-   * poison the color domain. 0 for an empty matrix.
+   * Minimum, maximum and `quantile` of the finite counts, so an Infinity bin
+   * cannot poison the color domain. 0 for an empty matrix.
    */
+  minScore: number
   maxScore: number
   quantileScore: number
   /** the quantile `quantileScore` answers, echoed from the args */

@@ -13,6 +13,7 @@ import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 const DATA: HicDataResult = {
   instances: new Float32Array(INSTANCE_STRIDE_WORDS),
   numContacts: 1,
+  minScore: 0,
   maxScore: 400,
   quantileScore: 40,
   quantile: 0.95,

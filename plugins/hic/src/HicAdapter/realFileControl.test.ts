@@ -27,10 +27,12 @@ const REGIONS: Region[] = [
   { assemblyName: 'hg19', refName: '2', start: 0, end: 243_199_373 },
 ]
 
-test('the header offers what both files hold', async () => {
+test("the header carries the control's choices beside the map's", async () => {
   const header = await selfControlled().getHeader()
   expect(header.resolutions).toEqual([2_500_000, 100_000])
   expect(header.norms).toContain('KR')
+  expect(header.control?.resolutions).toEqual([2_500_000, 100_000])
+  expect(header.control?.norms).toContain('KR')
 })
 
 test('a map against itself joins every cell to its own copy', async () => {

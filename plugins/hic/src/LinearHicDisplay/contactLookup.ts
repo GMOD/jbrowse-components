@@ -1,4 +1,4 @@
-import { mirrorU } from '../regionOffsets.ts'
+import { mirrorCellBase, mirrorU } from '../regionOffsets.ts'
 import {
   getInstanceCount,
   getInstancePosition,
@@ -158,8 +158,8 @@ function probe(
   const ry = regions[regionY]!
   const sameRegion = regionX === regionY
   const invBinWidth = 1 / binWidth
-  const mirrorBaseX = rx.dataXStart + rx.dataXEnd - binWidth
-  const mirrorBaseY = ry.dataXStart + ry.dataXEnd - binWidth
+  const mirrorBaseX = mirrorCellBase(rx, binWidth)
+  const mirrorBaseY = mirrorCellBase(ry, binWidth)
   const tx = ((ux - originX) * invSpanX) | 0
   const ty = ((uy - originY) * invSpanY) | 0
   const x0 = Math.max(0, Math.min(tx - 1, tilesX - 1))

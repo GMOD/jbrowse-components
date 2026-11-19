@@ -17,6 +17,7 @@ function payload(appliedField: HicColorField): HicDataResult {
   return {
     instances: new Float32Array(INSTANCE_STRIDE_WORDS),
     numContacts: 1,
+    minScore: 0,
     maxScore: 6,
     quantileScore: 3,
     quantile: 0.95,
@@ -97,11 +98,9 @@ test('the key and menu follow the field the file could serve', () => {
   expect(display.colorScheme).toBe('juicebox')
   expect(display.colorScales[0]?.title).toBe('Contacts (KR) · 1Kbp')
 
+  // the row's reason is `menuFollowsTheFetch.test.ts`'s, which commits a
+  // fetch for the current key
   const values = subMenu(buildHicTrackMenuItems(display), 'Values')
-  const asked = values.find(i => labelOf(i) === 'Observed/expected')
-  expect(asked && 'helpText' in asked ? asked.helpText : '').toMatch(
-    /no expected values/,
-  )
   expect(values.filter(i => 'checked' in i && i.checked).map(labelOf)).toEqual([
     'Observed',
   ])

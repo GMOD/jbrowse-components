@@ -9,6 +9,7 @@ import type { HicDataResult } from '../RenderHicDataRPC/types.ts'
 const DATA: HicDataResult = {
   instances: new Float32Array(INSTANCE_STRIDE_WORDS),
   numContacts: 1,
+  minScore: 0,
   maxScore: 400,
   quantileScore: 40,
   quantile: 0.95,
@@ -57,6 +58,9 @@ test('the key is one ramp over the color domain, its two ends labelled', () => {
   ])
 })
 
+// a log scale paints every count at or below 1 as its bottom, so with a
+// loaded count below it the key reads `≤1`, as it reads `≥` at a top below the
+// loaded maximum
 test('the key follows the encoding: log floor, pinned top and scheme', () => {
   const display = loaded()
   setConf(display, ['encoding', 'color', 'scale', 'type'], 'log')
@@ -70,10 +74,22 @@ test('the key follows the encoding: log floor, pinned top and scheme', () => {
         rampLutOf({ scheme: 'viridis', reverse: true }),
         11,
       ),
-      minLabel: '1',
+      minLabel: '≤1',
       maxLabel: '1000',
     },
   })
+})
+
+test('a pinned bottom reads `≤` only where a loaded count is below it', () => {
+  const display = loaded()
+  setConf(display, ['encoding', 'color', 'scale', 'domainMin'], 10)
+  const minLabel = () => {
+    const [item] = display.legendSpec.sections[0]!.items
+    return item && 'gradient' in item ? item.gradient?.minLabel : undefined
+  }
+  expect(minLabel()).toBe('≤10')
+  display.setRpcData({ ...DATA, minScore: 50 })
+  expect(minLabel()).toBe('10')
 })
 
 test('legend.title replaces the heading, and "" draws none', () => {

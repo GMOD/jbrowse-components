@@ -55,7 +55,6 @@ function fakeHic(file: FakeFile) {
           counts: Float32Array.from(cells, c => c[2]),
         },
         appliedNormalization: applied(norm, r1.chr, r2.chr),
-        transposed: false,
       })
     },
     getNormalizationVector: (type: string, chr: string) => {
