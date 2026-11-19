@@ -1,6 +1,6 @@
 /* eslint-disable */
 // @ts-nocheck
-// vendored (e.g. copied into our source tree) because the tooling picks up "import" statements that confuse jest, could confuse other consumers of our modules
+// A copy rather than a dependency: only RgbaStringColorPicker is used, and the package rarely changes
 // copy of react-colorful/dist/index.esmodule.js
 
 import e, {

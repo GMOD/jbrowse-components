@@ -11,10 +11,6 @@ import { swatchStyle } from './colorSwatchStyle.ts'
 import { paletteColors } from './colors.ts'
 import { RgbaStringColorPicker } from './react-colorful.ts'
 
-// note: we are using a vendored copy of react-colorful because the default
-// uses pure-ESM which is difficult to make pass with jest e.g.
-// https://stackoverflow.com/questions/58613492/how-to-resolve-cannot-use-import-statement-outside-a-module-in-jest
-
 const useStyles = makeStyles()({
   root: {
     display: 'flex',
