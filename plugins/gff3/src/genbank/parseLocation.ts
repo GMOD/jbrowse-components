@@ -61,35 +61,53 @@ export function parseLocation(location: string) {
   return expression()
 }
 
-/**
- * Spans placed on a sequence `length` long. On a circular one, a span that
- * starts before the one written ahead of it, as `join(a..L,1..b)` does, and a
- * span whose end comes before its start, as `L^1` does, continue past the
- * origin in "virtual" coordinates, the form GFF3 writes such a feature in and
- * `cutAtOrigin` cuts; the two spans meeting at the origin become one. Mixed-
- * strand joins (trans-splicing) are left as written.
- */
-export function placeSpans(spans: Span[], length: number, circular: boolean) {
-  const minus = spans.every(s => s.strand === -1)
-  const sameStrand = minus || spans.every(s => s.strand === 1)
-  if (!circular || !sameStrand) {
-    return spans
-  }
-  const written = minus ? spans.toReversed() : spans
-  const placed: Span[] = []
-  let offset = 0
-  for (const s of written) {
-    const previous = placed.at(-1)
-    if (previous && s.start + offset < previous.start) {
-      offset += length
-    }
-    const start = s.start + offset
-    const end = s.end + offset
-    if (previous?.end === start) {
-      previous.end = end
+function extent(spans: Span[]) {
+  return (
+    Math.max(...spans.map(s => s.end)) - Math.min(...spans.map(s => s.start))
+  )
+}
+
+function merged(spans: Span[]) {
+  const out: Span[] = []
+  for (const s of spans) {
+    const last = out.at(-1)
+    if (last?.end === s.start) {
+      last.end = s.end
     } else {
-      placed.push({ ...s, start, end: end <= start ? end + length : end })
+      out.push({ ...s })
     }
   }
-  return minus ? placed.toReversed() : placed
+  return out
+}
+
+function wrappedOnce(written: Span[], length: number) {
+  const closed = written.map(s =>
+    s.end <= s.start ? { ...s, end: s.end + length } : s,
+  )
+  const descent = closed.findIndex(
+    (s, i) => s.start < (closed[i - 1]?.start ?? -Infinity),
+  )
+  const shifted = closed.map((s, i) =>
+    descent > 0 && i >= descent
+      ? { ...s, start: s.start + length, end: s.end + length }
+      : s,
+  )
+  return extent(shifted) < extent(closed) ? shifted : closed
+}
+
+/**
+ * Same-strand spans with abutting ones merged. When `wraps`, a span starting
+ * before the one ahead of it crosses the origin into virtual coordinates
+ * (`join(a..L,1..b)` is one span a..L+b), once, and only if that shortens the
+ * feature.
+ */
+export function placeSpans(spans: Span[], length: number, wraps: boolean) {
+  const minus = spans.every(s => s.strand === -1)
+  const written = minus ? spans.toReversed() : spans
+  const placed = merged(wraps ? wrappedOnce(written, length) : written)
+  return !minus && !spans.every(s => s.strand === 1)
+    ? spans
+    : minus
+      ? placed.toReversed()
+      : placed
 }

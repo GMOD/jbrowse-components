@@ -76,6 +76,34 @@ describe('placeSpans', () => {
     expect(placeSpans(spans, 60, false)).toEqual(spans)
   })
 
+  test('descending spans wrap only when that shortens the feature', () => {
+    const spans = parseLocation(
+      'join(complement(300..320),complement(700..720),complement(650..660))',
+    )
+    expect(placeSpans(spans, 1000, true)).toEqual(spans)
+  })
+
+  test('a feature that may not wrap keeps descending spans as written', () => {
+    const spans = parseLocation('order(100..200,50..60,10..20)')
+    expect(placeSpans(spans, 1000, false)).toEqual(spans)
+  })
+
+  test('a join wraps the origin once, however many spans follow', () => {
+    expect(
+      placeSpans(
+        parseLocation('join(900..950,970..1000,1..20,40..60)'),
+        1000,
+        true,
+      ),
+    ).toEqual([plus(899, 950), plus(969, 1020), plus(1039, 1060)])
+  })
+
+  test('abutting spans merge on a linear sequence too', () => {
+    expect(placeSpans(parseLocation('join(1..10,11..20)'), 50, false)).toEqual([
+      plus(0, 20),
+    ])
+  })
+
   test('a mixed-strand join is left as written', () => {
     const spans = parseLocation('join(complement(30..40),50..60,1..5)')
     expect(placeSpans(spans, 60, true)).toEqual(spans)

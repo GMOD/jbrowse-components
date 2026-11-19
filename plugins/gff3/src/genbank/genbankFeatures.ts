@@ -158,7 +158,13 @@ export function genbankFeatures(
   const genes = new Map<string, LazyGffFeature[]>()
   const transcripts = new Map<LazyGffFeature, LazyGffFeature[]>()
   for (const entry of parseFeatureTable(lines)) {
-    const spans = placeSpans(parseLocation(entry.location), length, circular)
+    const spans = placeSpans(
+      parseLocation(entry.location),
+      length,
+      circular &&
+        !entry.location.includes('order(') &&
+        !entry.qualifiers.has('trans_splicing'),
+    )
     if (spans.length > 0) {
       const start = Math.min(...spans.map(s => s.start))
       const end = Math.max(...spans.map(s => s.end))

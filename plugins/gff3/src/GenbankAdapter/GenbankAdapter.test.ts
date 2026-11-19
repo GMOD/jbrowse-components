@@ -234,6 +234,22 @@ describe('edge cases on a circle and two same-named exports', () => {
     const found = await fetch(features, 'x.1', 0, 1000)
     expect(found.find(f => f.get('locus_tag') === 'X_minus')).toBeDefined()
   })
+
+  test('spans wrap the origin only for a join that crosses it', async () => {
+    const found = await fetch(features, 'x.1', 0, 1000, true)
+    const byNote = (note: string) =>
+      shape(found.find(f => f.get('note') === note)!)
+    expect(byNote('ordered').slice(0, 3)).toEqual(['misc_feature', 804, 860])
+    expect(byNote('trans-spliced').slice(0, 3)).toEqual(['misc_RNA', 299, 720])
+    expect(byNote('descending, no trans_splicing').slice(0, 3)).toEqual([
+      'misc_feature',
+      299,
+      720,
+    ])
+    expect(byNote('abutting')).toEqual(['misc_feature', 9, 30, 1])
+    const [abutting] = await fetch(features, 'Exported', 0, 50)
+    expect(shape(abutting!)).toEqual(['misc_feature', 0, 20, 1])
+  })
 })
 
 describe('a record with no ORIGIN sequence', () => {
