@@ -35,8 +35,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     setup: opts => this.setupPre(opts),
   })
 
-  private rawSectionLevels = cachedSetup({
-    setup: opts => this.rawSectionLevelsPre(opts),
+  private sampledLadder = cachedSetup({
+    setup: opts => this.sampledLadderPre(opts),
   })
 
   public static capabilities = ['hasResolution']
@@ -71,7 +71,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     }
   }
 
-  private async rawSectionLevelsPre(opts: BaseOptions) {
+  private async sampledLadderPre(opts: BaseOptions) {
     const source = await this.setup(opts)
     return source.finestCandidate === Infinity
       ? source.fileLevels
@@ -86,10 +86,11 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
 
   /**
    * The reduction levels this file answers in, finest first: the synthetic
-   * tiers its raw sample keeps, then the file's own. Reads the sample.
+   * tiers its raw sample keeps, then the file's own. Reads the sample when
+   * the file has a synthetic candidate.
    */
   public async getReductionLevels(opts: BaseOptions = {}) {
-    return this.rawSectionLevels(opts)
+    return this.sampledLadder(opts)
   }
 
   // Only a zoom some synthetic bin could serve, from half the finest candidate
@@ -102,7 +103,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
       await this.setup(opts)
     const basesPerSpan = this.basesPerSpan(opts)
     return basesPerSpan >= finestCandidate / 2 && basesPerSpan < firstLevel / 2
-      ? this.rawSectionLevels(opts)
+      ? this.sampledLadder(opts)
       : candidateLadder
   }
 
@@ -124,7 +125,17 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
     const { signal } = opts
     return ObservableCreate<Feature>(async observer => {
-      const view = await this.getArrayFeatureView(region, opts)
+      const { starts, ends, scores, summary } = await this.regionArrays(
+        region,
+        opts,
+      )
+      const view = new ArrayFeatureView(
+        summary
+          ? { starts, ends, scores, ...summary, isSummary: true }
+          : { starts, ends, scores, isSummary: false },
+        this.getConf('source'),
+        region.refName,
+      )
       for (let i = 0; i < view.length; i++) {
         observer.next(new BigWigFeature(view, i))
       }
@@ -133,7 +144,11 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
   }
 
   override async getFeatureTable(region: Region, opts: WiggleOptions = {}) {
-    return bigWigFeatureTable(await this.getArrayFeatureView(region, opts))
+    return bigWigFeatureTable(
+      await this.regionArrays(region, opts),
+      this.getConf('source'),
+      region.refName,
+    )
   }
 
   // A config naming 0 or less would declare a zoom range no zoom falls in.
@@ -162,19 +177,9 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     }
   }
 
-  private async getArrayFeatureView(
-    region: Region,
-    opts: WiggleOptions = {},
-  ): Promise<ArrayFeatureView> {
+  private async regionArrays(region: Region, opts: WiggleOptions) {
     const [arrays] = await this.getFeatureArrays([region], opts)
-    const { starts, ends, scores, summary } = arrays!
-    return new ArrayFeatureView(
-      summary
-        ? { starts, ends, scores, ...summary, isSummary: true }
-        : { starts, ends, scores, isSummary: false },
-      this.getConf('source'),
-      region.refName,
-    )
+    return arrays!
   }
 
   // One bbi pass over all regions, coalescing adjacent on-disk blocks across

@@ -16,6 +16,9 @@ declares, through the mechanism that ADR set up.
 Revised the same day after an adversarial review: the sample, the rows outside
 a region, which zooms pay for the sample, and what writers do.
 
+Amended (2026-11-19): records that overlap or run out of order are binned as
+given, no longer answered raw. See the paragraph under Decision.
+
 ## Context
 
 bbi picks the highest level whose reduction fits twice into a span, so a
@@ -143,9 +146,11 @@ fetched over `binAlignedExtent`, so an edge bin sees every record it covers:
   y-domain nor `nearestMarkHit` clips.
 - **NaN** records cover nothing, and a bin with no data emits nothing.
 
-**Records that overlap or run out of order answer raw**, trimmed to the region.
-The format forbids both, so this is a safety net and the only region-level
-fallback left.
+**Records that overlap or run out of order are binned as given.** The format
+forbids both, and UCSC's `bedGraphToBigWig` and pyBigWig's validating
+`addEntries` refuse to write them, so `binRawRegion` keeps no check. A file
+written past those checks gets bins that blend its overlapping records, as its
+raw rows draw over each other at the raw zoom.
 
 **The fetch hands bbi a span from the middle of the picked tier**, never the
 view's, which rounds through `1 / (1 / span)` in bbi and can land one ulp under

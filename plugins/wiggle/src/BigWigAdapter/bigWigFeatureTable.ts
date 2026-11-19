@@ -1,7 +1,6 @@
 import { ColumnTable, readerOf } from '@jbrowse/core/util/featureTable'
 
 import type { RawFeatureArrays, RawSummary } from '../util.ts'
-import type { ArrayFeatureView } from '@gmod/bbi'
 import type { Column, NumberLane } from '@jbrowse/core/util/featureTable'
 
 interface SummarizedRows
@@ -41,22 +40,27 @@ export function wiggleRowsTable(
 }
 
 /**
- * A region's rows over bbi's own arrays. The lanes are `subarray`s of the
- * buffer bbi read, so they are read and never transferred.
+ * A region's rows over the adapter's arrays: bbi's buffer for raw and file-tier
+ * rows, `binRawRegion`'s for a synthetic tier. The lanes are read and never
+ * transferred.
  */
-export function bigWigFeatureTable(view: ArrayFeatureView) {
-  const { source, isSummary } = view
+export function bigWigFeatureTable(
+  rows: RawFeatureArrays,
+  source: string,
+  refName: string,
+) {
+  const { starts, ends, scores, summary, count } = rows
   return wiggleRowsTable(
     {
-      starts: view.starts,
-      ends: view.ends,
-      scores: view.scores,
-      minScores: view.minScores,
-      maxScores: view.maxScores,
-      count: view.length,
+      starts,
+      ends,
+      scores,
+      minScores: summary?.minScores ?? scores,
+      maxScores: summary?.maxScores ?? scores,
+      count,
     },
-    view.refName,
+    refName,
     { kind: 'value', read: () => source },
-    { kind: 'value', read: () => isSummary },
+    { kind: 'value', read: () => summary !== undefined },
   )
 }

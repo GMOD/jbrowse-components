@@ -242,8 +242,6 @@ export function sliceRows(
  * bases all fall outside the region is dropped: an edge bin's data can sit
  * wholly in the bin-aligned margin.
  *
- * The region's raw records come back instead, with no min/max, only when the
- * records overlap or run out of order, which a BigWig's raw section forbids.
  * Whether a zoom bins at all is the file's call (`syntheticReductionLevels`),
  * never the region's, so a base reads the same value at a zoom however it is
  * fetched. A merged row's bounds do follow the fetch: the extent's edge cuts a
@@ -259,14 +257,6 @@ export function binRawRegion(
   regionEnd: number,
   binBp: number,
 ): BigWigRegionArrays {
-  let rawLo = lo
-  while (rawLo < hi && ends[rawLo]! <= regionStart) {
-    rawLo++
-  }
-  let rawHi = hi
-  while (rawHi > rawLo && starts[rawHi - 1]! >= regionEnd) {
-    rawHi--
-  }
   const { start: extentStart, end: extentEnd } = binAlignedExtent(
     regionStart,
     regionEnd,
@@ -276,10 +266,6 @@ export function binRawRegion(
   // the bin its tail shares with the next record. Each row also covers bins no
   // other row does, so neither bound can be passed.
   const capacity = Math.min(3 * (hi - lo), (extentEnd - extentStart) / binBp)
-  if (capacity <= 0) {
-    return sliceRows({ starts, ends, scores }, rawLo, rawHi)
-  }
-
   const positions = new Int32Array(capacity * 2)
   const values = new Float32Array(capacity * 3)
   const outStarts = positions.subarray(0, capacity)
@@ -334,19 +320,15 @@ export function binRawRegion(
   let max = 0
   let coveredStart = 0
   let coveredEnd = 0
-  let previousEnd = -Infinity
   for (let i = lo; i < hi; i++) {
     const score = scores[i]!
     if (score !== score) {
       continue
     }
     const recordStart = starts[i]!
-    if (recordStart < previousEnd) {
-      return sliceRows({ starts, ends, scores }, rawLo, rawHi)
-    }
-    previousEnd = ends[i]!
+    const recordEnd = ends[i]!
     let s = recordStart > extentStart ? recordStart : extentStart
-    const e = previousEnd < extentEnd ? previousEnd : extentEnd
+    const e = recordEnd < extentEnd ? recordEnd : extentEnd
     while (s < e) {
       if (s >= windowEnd) {
         if (windowEnd >= 0) {

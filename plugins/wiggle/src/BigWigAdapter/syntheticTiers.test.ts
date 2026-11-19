@@ -348,29 +348,6 @@ describe('binRawRegion', () => {
     expect(bin(records, 6, 12, 16)).toEqual([])
   })
 
-  test('records overlapping or out of order come back raw', () => {
-    const overlapping = [
-      { start: 0, end: 10, score: 1 },
-      { start: 5, end: 6, score: 2 },
-      { start: 6, end: 7, score: 2 },
-      { start: 7, end: 8, score: 2 },
-    ]
-    expect(bin(overlapping, 0, 64, 32).every(r => r.min === undefined)).toBe(
-      true,
-    )
-  })
-
-  test('the fallback keeps only the records overlapping the region, not the bin-aligned margin', () => {
-    const records = Array.from({ length: 10 }, (_, i) => ({
-      start: i * 10,
-      end: i * 10 + (i === 4 ? 15 : 10),
-      score: i,
-    }))
-    expect(bin(records, 25, 75, 32)).toEqual(
-      records.slice(2, 8).map(r => ({ ...r, min: undefined, max: undefined })),
-    )
-  })
-
   test('matches a per-base oracle on random records of mixed spans', () => {
     let binned = 0
     for (let seed = 1; seed < 60; seed++) {

@@ -84,6 +84,7 @@ describe('adapter can fetch features from volvox.bw', () => {
   it.each([
     ['raw records', {}],
     ['a summary tier', { bpPerPx: 1000, resolution: 1 }],
+    ['a synthetic tier', { bpPerPx: 5, resolution: 1 }],
   ])(
     'answers a table whose rows are its features, over %s',
     async (_, opts) => {

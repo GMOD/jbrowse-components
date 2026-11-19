@@ -35,10 +35,11 @@ them an identity `featureIndex`.
 - **The MAF adapters** answer blocks over the packer's arena
   (`mafFeatureTable`, `plugins/maf/src/util/mafFeatureTable.ts`), with
   `alignments` and `empties` as keyed lists over the species rows. **The BigWig
-  adapter** answers a `ColumnTable` over bbi's arrays
+  adapter** answers a `ColumnTable` over the arrays `getFeatureArrays` returns
   (`bigWigFeatureTable`), whose ids and hover JSON are `BigWigFeature`'s. Its
-  lanes are `subarray`s of bbi's buffer, and the encoder copies every lane it
-  ships, so none of them reaches a transfer list.
+  lanes are `subarray`s of bbi's buffer, or `binRawRegion`'s at a synthetic
+  tier, and the encoder copies every lane it ships, so none of them reaches a
+  transfer list.
 - **The encoder fills a lane at a time.** One pass admits the rows over `x`,
   `x2` and `y` alone, straight off the lanes where all three are lanes with no
   index, and no pass runs where all three hold whole numbers, which are never
