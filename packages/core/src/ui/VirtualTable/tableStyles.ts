@@ -131,6 +131,7 @@ export const useVirtualTableStyles = makeStyles()(theme => {
       display: 'flex',
       justifyContent: 'center',
       cursor: 'col-resize',
+      touchAction: 'none',
     },
     resizeLine: {
       width: 1,

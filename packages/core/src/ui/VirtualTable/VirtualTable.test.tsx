@@ -218,7 +218,7 @@ describe('search highlight', () => {
   })
 })
 
-test('dragging a fill column gives it its width, and the table stops stretching', () => {
+test('dragging a fill column gives it its width, the table stops stretching, and a double-click hands the room back', () => {
   const { container } = render(
     <ThemeProvider theme={theme}>
       <VirtualTable
@@ -241,11 +241,18 @@ test('dragging a fill column gives it its width, and the table stops stretching'
   expect(tableEl.style.width).toBe('')
   expect(tableEl.style.minWidth).toBe('400px')
 
-  const handle = container.querySelector('th')!.lastElementChild!
-  fireEvent.mouseDown(handle, { clientX: 300 })
-  fireEvent.mouseMove(document, { clientX: 150 })
-  fireEvent.mouseUp(document)
+  // jsdom implements no pointer capture
+  const handle = container.querySelector<HTMLElement>('[data-resize-handle]')!
+  handle.setPointerCapture = () => {}
+  fireEvent.pointerDown(handle, { clientX: 300, pointerId: 1, button: 0 })
+  fireEvent.pointerMove(handle, { clientX: 150, pointerId: 1 })
+  fireEvent.pointerUp(handle, { clientX: 150, pointerId: 1 })
 
   expect(nameCol.style.width).toBe('150px')
   expect(tableEl.style.width).toBe('250px')
+
+  fireEvent.doubleClick(handle)
+  expect(nameCol.style.width).toBe('')
+  expect(tableEl.style.width).toBe('')
+  expect(tableEl.style.minWidth).toBe('400px')
 })

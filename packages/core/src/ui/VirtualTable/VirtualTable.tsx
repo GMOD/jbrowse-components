@@ -25,7 +25,7 @@ export interface VirtualTableColumn<R> {
   align?: 'right'
   /**
    * takes the room the other columns leave rather than a set width, until a
-   * drag gives it one
+   * drag gives it one; a double-click on its edge hands the room back
    */
   fill?: boolean
 }
@@ -113,7 +113,7 @@ const VirtualTable = observer(function VirtualTable<
       resetKey: JSON.stringify([sortField, sortAscending, resetKey]),
       scrollToId: scrollToRowId,
     })
-  const { colWidths, resized, onResizeStart } = useColumnResize(
+  const { colWidths, resized, resize, reset } = useColumnResize(
     widths((clientWidth || width) - leadingWidth),
   )
   const fills = (col: VirtualTableColumn<R>) =>
@@ -152,7 +152,9 @@ const VirtualTable = observer(function VirtualTable<
           columns={columns}
           hasLeading={!!leading}
           leadingHeader={leading?.header(rows)}
-          onResizeStart={onResizeStart}
+          colWidths={colWidths}
+          onResize={resize}
+          onResetWidth={reset}
           sortField={sortField}
           sortAscending={sortAscending}
           onSort={onSort}

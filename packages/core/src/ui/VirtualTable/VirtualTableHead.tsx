@@ -3,7 +3,8 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import { observer } from 'mobx-react'
 
 import { cx } from '../../util/tss-react/index.ts'
-import { useVirtualTableStyles } from './tableStyles.ts'
+import ColumnResizeHandle from './ColumnResizeHandle.tsx'
+import { DEFAULT_COL_WIDTH, useVirtualTableStyles } from './tableStyles.ts'
 
 import type { VirtualTableColumn } from './VirtualTable.tsx'
 
@@ -19,7 +20,9 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
   columns,
   leadingHeader,
   hasLeading,
-  onResizeStart,
+  colWidths,
+  onResize,
+  onResetWidth,
   sortField,
   sortAscending,
   onSort,
@@ -27,7 +30,9 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
   columns: VirtualTableColumn<R>[]
   leadingHeader: React.ReactNode
   hasLeading: boolean
-  onResizeStart: (colId: string, e: React.MouseEvent<HTMLElement>) => void
+  colWidths: Record<string, number>
+  onResize: (colId: string, width: number) => void
+  onResetWidth: (colId: string) => void
   sortField: string
   sortAscending: boolean
   onSort: (field: string, ascending: boolean) => void
@@ -84,14 +89,15 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
                   <span className={classes.headerLabel}>{col.header}</span>
                 </div>
               )}
-              <div
-                className={classes.resizeHandle}
-                onMouseDown={e => {
-                  onResizeStart(col.id, e)
+              <ColumnResizeHandle
+                width={colWidths[col.id] ?? DEFAULT_COL_WIDTH}
+                onResize={width => {
+                  onResize(col.id, width)
                 }}
-              >
-                <div className={classes.resizeLine} />
-              </div>
+                onReset={() => {
+                  onResetWidth(col.id)
+                }}
+              />
             </th>
           )
         })}

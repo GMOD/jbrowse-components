@@ -1,43 +1,26 @@
-import { useEffect, useRef, useState } from 'react'
-
-import { DEFAULT_COL_WIDTH } from './tableStyles.ts'
+import { useState } from 'react'
 
 const MIN_COL_WIDTH = 50
 
-// Tracks per-column width overrides driven by dragging the header resize
-// handles, layered over the measured initial widths.
+/**
+ * Per-column widths the user dragged a header edge to, layered over the
+ * fitted widths; resetting a column drops its own width
+ */
 export function useColumnResize(initialWidths: Record<string, number>) {
   const [overrides, setOverrides] = useState<Record<string, number>>({})
-  const colWidths = { ...initialWidths, ...overrides }
-  // a drag listens on the document, so it outlives the header cell it started
-  // from; held here so closing the dialog mid-drag detaches it rather than
-  // leaving a listener resizing a column nobody is looking at
-  const endDragRef = useRef<() => void>(undefined)
-  useEffect(() => () => endDragRef.current?.(), [])
-
-  function onResizeStart(colId: string, e: React.MouseEvent<HTMLElement>) {
-    e.preventDefault()
-    const startX = e.clientX
-    const startWidth =
-      e.currentTarget.parentElement?.offsetWidth ||
-      (colWidths[colId] ?? DEFAULT_COL_WIDTH)
-
-    function onMouseMove(ev: MouseEvent) {
-      const newWidth = Math.max(MIN_COL_WIDTH, startWidth + ev.clientX - startX)
-      setOverrides(prev => ({ ...prev, [colId]: newWidth }))
-    }
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-      endDragRef.current = undefined
-    }
-    // a second mousedown without an intervening mouseup would otherwise strand
-    // the first drag's listeners
-    endDragRef.current?.()
-    endDragRef.current = onMouseUp
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
+  return {
+    colWidths: { ...initialWidths, ...overrides },
+    resized: overrides,
+    resize(colId: string, width: number) {
+      setOverrides(prev => ({
+        ...prev,
+        [colId]: Math.max(MIN_COL_WIDTH, width),
+      }))
+    },
+    reset(colId: string) {
+      setOverrides(prev =>
+        Object.fromEntries(Object.entries(prev).filter(([id]) => id !== colId)),
+      )
+    },
   }
-
-  return { colWidths, resized: overrides, onResizeStart }
 }
