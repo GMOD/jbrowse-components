@@ -34,8 +34,8 @@
   "dependencies": {
     "@gmod/trix": "^3.2.3",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.10.1",
-    "mobx": "^7.1.7"
+    "@jbrowse/mobx-state-tree": "catalog:",
+    "mobx": "catalog:"
   },
   "publishConfig": {
     "access": "public",

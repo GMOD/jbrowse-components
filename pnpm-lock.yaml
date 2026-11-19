@@ -4,6 +4,27 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@jbrowse/mobx-state-tree':
+      specifier: ^6.10.1
+      version: 6.10.1
+    '@mui/icons-material':
+      specifier: ^9.5.0
+      version: 9.5.0
+    '@mui/material':
+      specifier: ^9.5.0
+      version: 9.5.0
+    mobx:
+      specifier: ^7.1.7
+      version: 7.1.7
+    mobx-react:
+      specifier: ^10.0.4
+      version: 10.0.4
+    rxjs:
+      specifier: ^7.8.2
+      version: 7.8.2
+
 importers:
 
   .:
@@ -39,7 +60,7 @@ importers:
         specifier: ^12.2.0
         version: 12.2.0
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/web':
         specifier: workspace:^
@@ -48,7 +69,7 @@ importers:
         specifier: 30.5.2
         version: 30.5.2(@types/jsdom@30.0.0)(canvas@3.2.3)(jsdom@31.0.1(@napi-rs/canvas@1.1.1)(@noble/hashes@1.8.0))
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@mui/system':
         specifier: ^9.5.0
@@ -192,10 +213,10 @@ importers:
         specifier: ^2.10.2
         version: 2.10.2(webpack@5.112.2)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       oxfmt:
         specifier: ^0.79.0
@@ -228,7 +249,7 @@ importers:
         specifier: ^6.1.4
         version: 6.1.4
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
       serve-handler:
         specifier: ^6.1.8
@@ -320,10 +341,10 @@ importers:
         specifier: workspace:^
         version: link:../wiggle-core
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -338,7 +359,7 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/product-core':
         specifier: workspace:^
@@ -347,19 +368,19 @@ importers:
         specifier: workspace:^
         version: link:../render-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@mui/system':
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -377,10 +398,10 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       puppeteer:
         specifier: ^25.17.0
@@ -443,7 +464,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/quick-lru':
         specifier: ^8.0.0
@@ -455,10 +476,10 @@ importers:
         specifier: ^1.0.19
         version: 1.0.19
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@mui/system':
         specifier: ^9.5.0
@@ -482,10 +503,10 @@ importers:
         specifier: ^8.0.4
         version: 8.0.4
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -494,7 +515,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
       source-map-js:
         specifier: ^1.2.2
@@ -509,22 +530,22 @@ importers:
         specifier: workspace:^
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -542,7 +563,7 @@ importers:
         specifier: workspace:^
         version: link:../display-kit
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/render-core':
         specifier: workspace:^
@@ -551,7 +572,7 @@ importers:
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       react:
         specifier: '>=19.0.0'
@@ -566,13 +587,13 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -617,22 +638,22 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -644,13 +665,13 @@ importers:
   packages/render-core:
     dependencies:
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -671,19 +692,19 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -707,22 +728,22 @@ importers:
         specifier: workspace:^
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -792,7 +813,7 @@ importers:
         specifier: workspace:^
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
@@ -831,7 +852,7 @@ importers:
         specifier: workspace:^
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
@@ -840,19 +861,19 @@ importers:
         specifier: workspace:^
         version: link:../render-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@mui/system':
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -873,22 +894,22 @@ importers:
         specifier: workspace:^
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -921,7 +942,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/modifications-utils':
         specifier: workspace:^
@@ -942,19 +963,19 @@ importers:
         specifier: workspace:^
         version: link:../../packages/wiggle-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       generic-filehandle2:
         specifier: ^2.5.1
         version: 2.5.1
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -963,7 +984,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
     devDependencies:
       '@jbrowse/display-test-utils':
@@ -976,19 +997,19 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       generic-filehandle2:
         specifier: ^2.5.1
         version: 2.5.1
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1015,10 +1036,10 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       react:
         specifier: '>=19.0.0'
@@ -1027,7 +1048,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
 
   plugins/breakpoint-split-view:
@@ -1039,7 +1060,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
@@ -1048,16 +1069,16 @@ importers:
         specifier: workspace:^
         version: link:../../packages/sv-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1082,7 +1103,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/render-core':
         specifier: workspace:^
@@ -1094,16 +1115,16 @@ importers:
         specifier: workspace:^
         version: link:../../packages/synteny-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1124,22 +1145,22 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/synteny-core':
         specifier: workspace:^
         version: link:../../packages/synteny-core
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       generic-filehandle2:
         specifier: ^2.5.1
         version: 2.5.1
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1148,7 +1169,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
 
   plugins/config:
@@ -1157,19 +1178,19 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1178,7 +1199,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
 
   plugins/data-management:
@@ -1190,25 +1211,25 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-config':
         specifier: workspace:^
         version: link:../config
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@mui/system':
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1248,7 +1269,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
@@ -1260,16 +1281,16 @@ importers:
         specifier: workspace:^
         version: link:../../packages/synteny-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1290,7 +1311,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
@@ -1302,16 +1323,16 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tree-sidebar
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1320,7 +1341,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
     devDependencies:
       '@jbrowse/display-test-utils':
@@ -1333,7 +1354,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
@@ -1342,13 +1363,13 @@ importers:
         specifier: workspace:^
         version: link:../wiggle
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       react:
         specifier: '>=19.0.0'
@@ -1357,7 +1378,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
 
   plugins/gff3:
@@ -1372,10 +1393,10 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       react:
         specifier: '>=19.0.0'
@@ -1384,7 +1405,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
 
   plugins/gtf:
@@ -1396,10 +1417,10 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       react:
         specifier: '>=19.0.0'
@@ -1408,7 +1429,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
 
   plugins/gwas:
@@ -1429,7 +1450,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-bed':
         specifier: workspace:^
@@ -1441,13 +1462,13 @@ importers:
         specifier: workspace:^
         version: link:../../packages/render-core
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1456,7 +1477,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
     devDependencies:
       '@jbrowse/display-test-utils':
@@ -1481,7 +1502,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/render-core':
         specifier: workspace:^
@@ -1490,16 +1511,16 @@ importers:
         specifier: workspace:^
         version: link:../../packages/wiggle-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1527,13 +1548,13 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       generic-filehandle2:
         specifier: ^2.5.1
         version: 2.5.1
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       react:
         specifier: '>=19.0.0'
@@ -1542,7 +1563,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
 
   plugins/linear-comparative-view:
@@ -1563,7 +1584,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
@@ -1587,16 +1608,16 @@ importers:
         specifier: workspace:^
         version: link:../../packages/synteny-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1605,7 +1626,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
     devDependencies:
       '@jbrowse/display-test-utils':
@@ -1630,22 +1651,22 @@ importers:
         specifier: workspace:^
         version: link:../../packages/launch-args
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1679,7 +1700,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
@@ -1694,16 +1715,16 @@ importers:
         specifier: workspace:^
         version: link:../../packages/wiggle-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1712,7 +1733,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
     devDependencies:
       '@jbrowse/display-test-utils':
@@ -1734,7 +1755,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
@@ -1749,16 +1770,16 @@ importers:
         specifier: workspace:^
         version: link:../../packages/wiggle-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1780,10 +1801,10 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       react:
         specifier: '>=19.0.0'
@@ -1792,7 +1813,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
 
   plugins/sequence:
@@ -1813,7 +1834,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
@@ -1822,13 +1843,13 @@ importers:
         specifier: workspace:^
         version: link:../../packages/render-core
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1837,7 +1858,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
     devDependencies:
       '@jbrowse/display-test-utils':
@@ -1853,7 +1874,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
@@ -1865,19 +1886,19 @@ importers:
         specifier: workspace:^
         version: link:../../packages/sv-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@mui/system':
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1892,7 +1913,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
@@ -1907,16 +1928,16 @@ importers:
         specifier: workspace:^
         version: link:../../packages/synteny-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -1934,10 +1955,10 @@ importers:
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       react:
         specifier: '>=19.0.0'
@@ -1973,7 +1994,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-features':
         specifier: workspace:^
@@ -1991,19 +2012,19 @@ importers:
         specifier: workspace:^
         version: link:../../packages/tree-sidebar
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@mui/system':
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -2012,7 +2033,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
     devDependencies:
       '@jbrowse/display-test-utils':
@@ -2037,7 +2058,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
@@ -2052,19 +2073,19 @@ importers:
         specifier: workspace:^
         version: link:../../packages/wiggle-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@mui/system':
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -2073,7 +2094,7 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
       rxjs:
-        specifier: ^7.8.2
+        specifier: 'catalog:'
         version: 7.8.2
     devDependencies:
       '@jbrowse/display-test-utils':
@@ -2116,16 +2137,16 @@ importers:
         specifier: workspace:*
         version: link:../../jbrowse-react-linear-genome-view
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       astro:
         specifier: ^7.4.12
         version: 7.4.12(@astrojs/markdown-remark@7.3.9(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: ^19.3.1
@@ -2210,7 +2231,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/launch-args
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
@@ -2303,10 +2324,10 @@ importers:
         specifier: workspace:^
         version: link:../../packages/text-indexing-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@mui/system':
         specifier: ^9.5.0
@@ -2315,10 +2336,10 @@ importers:
         specifier: ^6.8.11
         version: 6.8.11(supports-color@8.1.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: ^19.3.1
@@ -2376,7 +2397,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/launch-args
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-breakpoint-split-view':
         specifier: workspace:^
@@ -2403,10 +2424,10 @@ importers:
         specifier: ^31.0.1
         version: 31.0.1(@napi-rs/canvas@1.1.1)(@noble/hashes@1.8.0)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: ^19.3.1
@@ -2458,7 +2479,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
@@ -2548,13 +2569,13 @@ importers:
         specifier: workspace:^
         version: link:../../packages/render-core
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -2579,7 +2600,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/react-app2':
         specifier: workspace:*
@@ -2588,10 +2609,10 @@ importers:
         specifier: ^7.4.12
         version: 7.4.12(@astrojs/markdown-remark@7.3.9(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: ^19.3.1
@@ -2631,7 +2652,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
@@ -2670,13 +2691,13 @@ importers:
         specifier: workspace:^
         version: link:../../packages/synteny-core
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -2707,10 +2728,10 @@ importers:
         specifier: ^7.4.12
         version: 7.4.12(@astrojs/markdown-remark@7.3.9(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: ^19.3.1
@@ -2750,7 +2771,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
@@ -2813,13 +2834,13 @@ importers:
         specifier: workspace:^
         version: link:../../packages/render-core
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
@@ -2850,7 +2871,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-wiggle':
         specifier: workspace:*
@@ -2865,10 +2886,10 @@ importers:
         specifier: ^7.4.12
         version: 7.4.12(@astrojs/markdown-remark@7.3.9(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: ^19.3.1
@@ -2905,7 +2926,7 @@ importers:
         specifier: workspace:^
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.1
+        specifier: 'catalog:'
         version: 6.10.1(mobx@7.1.7)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
@@ -2995,10 +3016,10 @@ importers:
         specifier: workspace:^
         version: link:../../packages/render-core
       '@mui/icons-material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
       '@mui/material':
-        specifier: ^9.5.0
+        specifier: 'catalog:'
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@mui/system':
         specifier: ^9.5.0
@@ -3007,10 +3028,10 @@ importers:
         specifier: ^8.0.4
         version: 8.0.4
       mobx:
-        specifier: ^7.1.7
+        specifier: 'catalog:'
         version: 7.1.7
       mobx-react:
-        specifier: ^10.0.4
+        specifier: 'catalog:'
         version: 10.0.4(mobx@7.1.7)(react@19.3.1)
       react:
         specifier: ^19.3.1

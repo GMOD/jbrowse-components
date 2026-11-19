@@ -8,6 +8,16 @@ packages:
   # third-party plugin actually resolves @jbrowse/* packages.
   - 'example-plugins/*'
   - 'website'
+# Ranges most workspace manifests share, so a bump edits one line. Published
+# manifests get the literal range: `pnpm pack` and `pnpm publish` substitute it.
+# example-plugins/score-example keeps literals, since plugin authors copy it.
+catalog:
+  '@jbrowse/mobx-state-tree': ^6.10.1
+  '@mui/icons-material': ^9.5.0
+  '@mui/material': ^9.5.0
+  mobx: ^7.1.7
+  mobx-react: ^10.0.4
+  rxjs: ^7.8.2
 blockExoticSubdeps: true
 # A workspace cycle is a warning by default, and the tree carried 127 of them
 # unread. They all came from two edges that had a way out: three plugins taking

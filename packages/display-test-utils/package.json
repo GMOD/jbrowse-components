@@ -14,9 +14,9 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.10.1",
+    "@jbrowse/mobx-state-tree": "catalog:",
     "@jbrowse/render-core": "workspace:^",
-    "mobx": "^7.1.7"
+    "mobx": "catalog:"
   },
   "peerDependencies": {
     "@testing-library/react": "^16.3.3",

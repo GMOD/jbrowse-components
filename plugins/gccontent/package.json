@@ -29,13 +29,13 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.10.1",
+    "@jbrowse/mobx-state-tree": "catalog:",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
-    "@mui/icons-material": "^9.5.0",
-    "@mui/material": "^9.5.0",
-    "mobx": "^7.1.7",
-    "rxjs": "^7.8.2"
+    "@mui/icons-material": "catalog:",
+    "@mui/material": "catalog:",
+    "mobx": "catalog:",
+    "rxjs": "catalog:"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

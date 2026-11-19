@@ -46,7 +46,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.10.1",
+    "@jbrowse/mobx-state-tree": "catalog:",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",
     "@jbrowse/plugin-bed": "workspace:^",
@@ -76,9 +76,9 @@
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
-    "@mui/material": "^9.5.0",
-    "mobx": "^7.1.7",
-    "mobx-react": "^10.0.4"
+    "@mui/material": "catalog:",
+    "mobx": "catalog:",
+    "mobx-react": "catalog:"
   },
   "devDependencies": {
     "@jbrowse/display-test-utils": "workspace:^"
