@@ -33,6 +33,24 @@ display's own `laneStackOn` callbacks. Its labels (`rows.labels`) and a kept
 lane the window aligns nothing to run the display's `laneLabelOf` and
 `unalignedChosenLanesOf`.
 
+A VCF read through `features` paints its records as a `LinearBasicDisplay`
+paints features (`featureStaticHost.ts` creates that type), where a
+`VariantTrack` now draws them with the records band (ADR-255), which colors
+each record by its SV class (`recordColorViews`, `svClassColors`) and keys
+the classes (`recordsColorScaleViews`). So an SV VCF comes back in one color
+with an empty `legend`, and a display entry copied from a `VariantTrack`
+(`records.displayMode`, `records.mark`) does not apply. The fix is to run the
+records band's own color and key views on a variant host for
+`VCF_ADAPTER_TYPES`, or to serve those files from `variants` with
+`genotypes.show: false`; "A VCF read as features" in TABLES.md and
+ggjbrowse's `R/features.R` describe the removed display until then.
+
+The synteny tables' thin-ribbon width (`fadeThin`, `linear-comparative-view/
+src/tables.ts`) restates `LinearSyntenyView.autoFadeWidthPx` less its
+`filter(px => px > 0)`: with ten or more zero-span blocks the export fades
+where the view does not. One `autoFadeWidthOf(numFeats, cappedMeanPx)` both
+call closes it.
+
 ## Equivalent today, by hand
 
 - Wiggle's range, domain, color and mark sources run the model's own
@@ -46,6 +64,19 @@ lane the window aligns nothing to run the display's `laneLabelOf` and
   key, its title, its color bars and each read's color agree across strand,
   tag, MAPQ, insert size, modifications and base quality, a written title
   and `descending`.
+- Alignments' worker args (`tables.ts`, the RPC `args`) restate the display's
+  `rpcProps` and already differ in what they send (`colorField` raw rather
+  than `workerColorField`; no `showCoverage`, `junctions` or
+  `tooltipField`), with no column wrong today; and `stackedSections` restates
+  `buildLanes` plus the model's `sections` getter. Each closes by moving the
+  model's getter into a views function the static host installs.
+- Features' fetch args (`featureStaticHost.ts`: `geneGlyphMode`, the
+  `peptides` gate, `displayConfig`) restate `zoomFetchArgs()`/`rpcProps()`
+  in `baseModel`'s inline views; the parity suite does not compare
+  `aminoAcids`, so a change to the peptide gate would pass it.
+- The synteny tables' `offscreenRows` restates `forEachMark`'s test in
+  `drawOffscreenMates.ts`, which calls itself the one place a mark's x is
+  decided; an exported predicate both call closes it.
 
 ## Closed
 
