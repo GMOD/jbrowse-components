@@ -7,6 +7,7 @@ import http from 'node:http'
 import os from 'node:os'
 import path from 'node:path'
 
+import { defaultIndexingPolicy } from '../util.ts'
 import { indexGff3 } from './gff3Adapter.ts'
 
 const testDataDir = path.join(
@@ -193,7 +194,11 @@ describe('indexGff3', () => {
   })
 
   describe('each value is indexed on the feature that owns it', () => {
-    async function records(lines: string[], attributesToIndex: string[]) {
+    async function records(
+      lines: string[],
+      attributesToIndex: string[],
+      featureTypesToExclude = ['exon'],
+    ) {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gff3-own-'))
       const file = path.join(tmpDir, 'genes.gff3')
       fs.writeFileSync(file, [...lines, ''].join('\n'))
@@ -203,7 +208,7 @@ describe('indexGff3', () => {
         attributesToIndex,
         inLocation: file,
         outDir: tmpDir,
-        featureTypesToExclude: ['exon'],
+        featureTypesToExclude,
         onStart: () => {},
         onUpdate: () => {},
       })) {
@@ -256,6 +261,53 @@ describe('indexGff3', () => {
         },
         { fields: ['NM_1', 'rna-NM_1'], words: ['NM_1', 'rna-NM_1'] },
       ])
+    })
+
+    describe('the default attributes', () => {
+      const { attributes, exclude } = defaultIndexingPolicy
+
+      test('find a bacterial gene by its locus tag, once', async () => {
+        expect(
+          await records(
+            [
+              'chr\tRefSeq\tgene\t337\t2799\t.\t+\t.\tID=gene-b0002;Name=thrA;gene=thrA;locus_tag=b0002',
+              'chr\tRefSeq\tCDS\t337\t2799\t.\t+\t0\tID=cds-NP_414543.1;Parent=gene-b0002;Name=NP_414543.1;gene=thrA;locus_tag=b0002',
+              'chr\tRefSeq\tgene\t225381\t225457\t.\t+\t.\tID=gene-b0202;Name=ileV;gene=ileV;locus_tag=b0202',
+              'chr\tRefSeq\ttRNA\t225381\t225457\t.\t+\t.\tID=rna-b0202;Parent=gene-b0202;gene=ileV;locus_tag=b0202',
+            ],
+            attributes,
+            exclude,
+          ),
+        ).toEqual([
+          {
+            fields: ['thrA', 'gene-b0002', 'thrA', 'b0002'],
+            words: ['thrA', 'gene-b0002', 'b0002'],
+          },
+          {
+            fields: ['ileV', 'gene-b0202', 'ileV', 'b0202'],
+            words: ['ileV', 'gene-b0202', 'b0202'],
+          },
+          { fields: ['rna-b0202'], words: ['rna-b0202'] },
+        ])
+      })
+
+      test('keep one hit for a gene whose transcripts repeat its gene=', async () => {
+        const out = await records(
+          [
+            'chr17\tRefSeq\tgene\t43044295\t43125483\t.\t-\t.\tID=gene15876;Name=BRCA1;gene=BRCA1',
+            'chr17\tRefSeq\tmRNA\t43044295\t43125370\t.\t-\t.\tID=mRNA46760;Parent=gene15876;Name=NM_007298.3;gene=BRCA1',
+            'chr17\tRefSeq\tmRNA\t43044295\t43125483\t.\t-\t.\tID=mRNA46763;Parent=gene15876;Name=NM_007294.3;gene=BRCA1',
+          ],
+          attributes,
+          exclude,
+        )
+        expect(out.filter(r => r.words.includes('BRCA1'))).toHaveLength(1)
+        expect(out.map(r => r.words)).toEqual([
+          ['BRCA1', 'gene15876'],
+          ['NM_007298.3', 'mRNA46760'],
+          ['NM_007294.3', 'mRNA46763'],
+        ])
+      })
     })
 
     test('an only child keeps its own name and ID', async () => {

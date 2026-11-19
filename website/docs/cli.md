@@ -491,7 +491,7 @@ Options:
       --out                  Synonym for target
 
       --attributes           Comma separated list of attributes to index
-                             [default: Name,ID,symbol]
+                             [default: Name,ID,symbol,gene,locus_tag]
 
   -a, --assemblies           Specify the assembl(ies) to create an index for. If
                              unspecified, creates an index for each assembly in

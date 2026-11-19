@@ -98,10 +98,13 @@ as the one gene.
   files from an interrupted run; `jbrowse text-index --force` overwrites them.
 - **Out of disk space while indexing.** `text-index` writes temporary data to
   `/tmp`; `TMPDIR=~/alt_tmp_dir jbrowse text-index` moves it.
-- **Only some genes are searchable.** The default attributes are `Name`, `ID`
-  and `symbol`; add others with `--attributes=Name,ID,symbol,gene_name`, and
-  check that the feature type with the name is not in
-  [`--exclude`](/docs/cli#jbrowse-text-index).
+- **Only some genes are searchable.** The default attributes are `Name`, `ID`,
+  `symbol`, `gene` and `locus_tag`; add others with
+  `--attributes=Name,ID,symbol,gene,locus_tag,gene_synonym`, and check that the
+  feature type with the name is not in
+  [`--exclude`](/docs/cli#jbrowse-text-index). A Prokka GFF3 made without
+  `--addgenes` names its genes only on `CDS` rows, which the default `--exclude`
+  skips.
 
 ## The trix index format
 

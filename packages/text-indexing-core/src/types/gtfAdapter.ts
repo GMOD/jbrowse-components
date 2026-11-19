@@ -13,6 +13,10 @@ const gtfAttributeAliases: Record<string, string[]> = {
   symbol: ['gene_name'],
 }
 
+function describesGene(attributeName: string) {
+  return attributeName.startsWith('gene') || attributeName === 'locus_tag'
+}
+
 function expandAttributeNames(attributesToIndex: string[]) {
   return [
     ...new Set(
@@ -147,14 +151,15 @@ export async function* indexGtf({
         const s = Number(start)
         const e = Number(end)
 
-        // `gene_*` names describe the gene, everything else the transcript, so
-        // a gene entry is labeled by its gene_name rather than by whichever
-        // transcript happened to come first
+        // `gene`, `gene_*` and `locus_tag` describe the gene, everything else
+        // the transcript, so a gene entry is labeled by its gene_name rather
+        // than by whichever transcript happened to come first, and a locus tag
+        // NCBI repeats on every transcript row is one hit, not one per isoform
         const geneValues: string[] = []
         const otherValues: string[] = []
         for (const name of attributeNames) {
           for (const value of parsed[name] ?? []) {
-            ;(name.startsWith('gene') ? geneValues : otherValues).push(value)
+            ;(describesGene(name) ? geneValues : otherValues).push(value)
           }
         }
 

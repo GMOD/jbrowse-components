@@ -245,7 +245,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           type: 'stringArray',
           description:
             'list of which feature attributes to index for text searching',
-          defaultValue: ['Name', 'ID', 'symbol'],
+          defaultValue: ['Name', 'ID', 'symbol', 'gene', 'locus_tag'],
           advanced: true,
         },
         /**

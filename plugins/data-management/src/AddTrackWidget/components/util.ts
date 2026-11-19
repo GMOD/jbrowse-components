@@ -4,7 +4,7 @@ import type { IndexingAttr } from '../model.ts'
 import type { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
 export const defaultIndexingConf: IndexingAttr = {
-  attributes: ['Name', 'ID', 'symbol'],
+  attributes: ['Name', 'ID', 'symbol', 'gene', 'locus_tag'],
   exclude: ['CDS', 'exon'],
 }
 

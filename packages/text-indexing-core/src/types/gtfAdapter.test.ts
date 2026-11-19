@@ -120,6 +120,21 @@ describe('indexGtf', () => {
     expect(results.map(r => words(r))).toEqual([['alpha;', 'beta', 'g1']])
   })
 
+  // NCBI's GTF repeats the gene's `gene` and `locus_tag` on every row of every
+  // isoform
+  test('gene and locus_tag index once, on the gene', async () => {
+    const gene = 'gene_id "AT1G01020"; gene "ARV1"; locus_tag "AT1G01020";'
+    const results = await index([
+      `chr1\tRefSeq\texon\t6788\t7069\t.\t-\t.\t${gene} transcript_id "NM_099984.5";`,
+      `chr1\tRefSeq\texon\t6788\t7069\t.\t-\t.\t${gene} transcript_id "NM_001331241.1";`,
+    ])
+    expect(results.map(r => words(r))).toEqual([
+      ['NM_099984.5'],
+      ['AT1G01020', 'ARV1'],
+      ['NM_001331241.1'],
+    ])
+  })
+
   test('same-named genes on different refs stay separate entries', async () => {
     const results = await index([
       'chr1\t.\texon\t1\t9\t.\t+\t.\tgene_id "dup";',

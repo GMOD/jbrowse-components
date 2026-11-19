@@ -57,7 +57,13 @@ export interface Track {
   description?: string
 }
 
-export const defaultAttributesToIndex = ['Name', 'ID', 'symbol']
+export const defaultAttributesToIndex = [
+  'Name',
+  'ID',
+  'symbol',
+  'gene',
+  'locus_tag',
+]
 export const defaultFeatureTypesToExclude = ['exon', 'CDS']
 
 /** What an index reads out of a track's features. */
