@@ -82,10 +82,10 @@ export function circularLegendSpec(
   palette?: JBrowsePalette,
 ): LegendSpec {
   const session = getSession(view)
-  const keys = view.tracks.flatMap((track, idx) => {
+  const keys = view.tracks.flatMap(track => {
     const display = track.displays[0]
     const name = coarseStripHTML(getTrackName(track.configuration, session))
-    return display ? [keyFor(display, name, `track${idx}`, palette)] : []
+    return display ? [keyFor(display, name, display.id, palette)] : []
   })
   const rows = keys.flatMap(k => (k.row ? [k.row] : []))
   return {

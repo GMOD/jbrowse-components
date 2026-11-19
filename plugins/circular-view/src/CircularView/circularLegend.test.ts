@@ -9,7 +9,7 @@ function viewWith(tracks: { name: string; display: CircularLegendSource }[]) {
   const View = types.model('View', {}).volatile(() => ({
     tracks: tracks.map(({ name, display }) => ({
       configuration: { name, trackId: name, type: 'FeatureTrack' },
-      displays: [display],
+      displays: [{ id: `${name}-display`, ...display }],
     })),
   }))
   const Session = types.model('Session', { view: View }).volatile(() => ({
@@ -84,7 +84,7 @@ test('a ring coloring by a field keys its colors under the track name', () => {
   expect(spec.sections).toEqual([
     { id: 'tracks', items: [{ label: 'translocations', color: '#ff8500' }] },
     {
-      id: 'track1-color',
+      id: 'genes-display-color',
       title: 'genes',
       items: [
         { label: 'protein_coding', color: '#1b9e77' },
@@ -92,6 +92,32 @@ test('a ring coloring by a field keys its colors under the track name', () => {
       ],
     },
   ])
+})
+
+test("a track's section keeps its id when a track before it is hidden", () => {
+  const byField = (name: string) => ({
+    name,
+    display: {
+      legendSpec: {
+        sections: [
+          {
+            id: 'color',
+            items: [
+              { label: 'DEL', color: '#1b9e77' },
+              { label: 'DUP', color: '#d95f02' },
+            ],
+          },
+        ],
+      },
+    },
+  })
+  const both = circularLegendSpec(viewWith([byField('a'), byField('b')]))
+  const alone = circularLegendSpec(viewWith([byField('b')]))
+  expect(both.sections.map(s => s.id)).toEqual([
+    'a-display-color',
+    'b-display-color',
+  ])
+  expect(alone.sections.map(s => s.id)).toEqual(['b-display-color'])
 })
 
 test('a track with no single color, such as a jexl stroke, is left out', () => {
