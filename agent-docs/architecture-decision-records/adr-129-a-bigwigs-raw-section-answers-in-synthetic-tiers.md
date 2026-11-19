@@ -148,9 +148,9 @@ fetched over `binAlignedExtent`, so an edge bin sees every record it covers:
 
 **Records that overlap or run out of order are binned as given.** The format
 forbids both, and UCSC's `bedGraphToBigWig` and pyBigWig's validating
-`addEntries` refuse to write them, so `binRawRegion` keeps no check. A file
-written past those checks gets bins that blend its overlapping records, as its
-raw rows draw over each other at the raw zoom.
+`addEntries` refuse to write them, so `binRawRegion` keeps no check. In a file
+written past those checks, a record that steps back counts in whichever bin is
+open when it arrives, and that row's end can fall before its start.
 
 **The fetch hands bbi a span from the middle of the picked tier**, never the
 view's, which rounds through `1 / (1 / span)` in bbi and can land one ulp under

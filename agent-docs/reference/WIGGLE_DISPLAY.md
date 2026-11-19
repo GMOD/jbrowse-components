@@ -158,9 +158,8 @@ list, so the two cannot drift apart. A synthetic fetch reads the raw section
 over bin-aligned extents and bins each region with `binRawRegion`. **Whether a
 zoom bins is the file's call, never the region's**: a bin under twice the mean
 record span, sampled once per file, leaves the ladder. A per-region test let a
-pan flip one locus between bins and raw at one zoom. Only overlapping or
-out-of-order records, which the format forbids, still answer raw at a synthetic
-zoom.
+pan flip one locus between bins and raw at one zoom. Overlapping or
+out-of-order records, which the format forbids, are binned as given.
 
 ## The rows are a getter over `rpcDataMap`
 
