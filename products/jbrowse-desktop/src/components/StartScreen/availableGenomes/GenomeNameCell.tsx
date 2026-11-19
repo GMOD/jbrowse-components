@@ -90,8 +90,6 @@ const GenomeNameCell = observer(function GenomeNameCell({
           menuItems={[
             {
               label: 'More info',
-              helpText:
-                'Opens external browser with more info about this genome',
               onClick: () => {
                 window.open(websiteUrl, '_blank')
               },

@@ -385,8 +385,6 @@ export function buildRubberBandMenuItems(
           {
             label: 'Linear genome view',
             icon: OpenInNewIcon,
-            helpText:
-              'A new view of this span, with the same tracks. It scrolls and zooms on its own.',
             onClick: () => {
               openSpanInNewView(self, leftOffset, rightOffset)
             },

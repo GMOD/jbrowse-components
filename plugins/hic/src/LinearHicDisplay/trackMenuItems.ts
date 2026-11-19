@@ -46,14 +46,6 @@ interface HicMenuSelf extends IStateTreeNode {
   setResolution: (steps: number) => void
 }
 
-const NORM_HELP: Record<string, string> = {
-  KR: 'Knight-Ruiz matrix balancing — the recommended normalization for most files.',
-  SCALE: 'Fast matrix-balancing normalization that approximates KR.',
-  VC: 'Vanilla coverage: divide each cell by its row and column contact sums.',
-  VC_SQRT: 'Vanilla coverage using the square root of the row/column sums.',
-  NONE: 'Raw observed contact counts, with no normalization applied.',
-}
-
 function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
   return self.hasBinSizes
     ? [
@@ -116,32 +108,17 @@ function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
         self.setColorDomainQuantile(on ? self.clipColorDomainQuantile : 1)
       },
       {
-        helpText: `Saturate the color scale at the ${percentileName(self.clipColorDomainQuantile)} percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A domainMax set in Edit plot overrides both.`,
+        helpText: 'A domainMax set in Edit plot overrides this.',
       },
     ),
   ]
 }
 
-const FIELD_ITEMS: { value: HicColorField; label: string; helpText: string }[] =
-  [
-    {
-      value: 'observed',
-      label: 'Observed',
-      helpText: 'Each bin colored by its contact count.',
-    },
-    {
-      value: 'observed/expected',
-      label: 'Observed/expected',
-      helpText:
-        "Each count over the file's expected count at that distance, so compartments and loops show above the decay of contact with distance. Red is enriched, blue depleted.",
-    },
-    {
-      value: 'observed/control',
-      label: 'Observed/control',
-      helpText:
-        "Each count over the control condition's, both scaled to their files' depth, so gained contacts show red and lost ones blue.",
-    },
-  ]
+const FIELD_ITEMS: { value: HicColorField; label: string }[] = [
+  { value: 'observed', label: 'Observed' },
+  { value: 'observed/expected', label: 'Observed/expected' },
+  { value: 'observed/control', label: 'Observed/control' },
+]
 
 const FALLBACK_HELP: Record<HicColorField, string> = {
   observed: '',
@@ -168,7 +145,7 @@ function fieldMenuItem(self: HicMenuSelf): MenuItem {
           item.value === colorField &&
           paintedColorField !== colorField
             ? FALLBACK_HELP[item.value]
-            : item.helpText,
+            : undefined,
       })),
       paintedColorField,
       field => {
@@ -201,8 +178,7 @@ function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
                 !dataCurrent ||
                 norm !== activeNormalization ||
                 fallbacks.length === 0
-                  ? (NORM_HELP[norm] ??
-                    'Matrix normalization scheme provided by this .hic file.')
+                  ? undefined
                   : ticked === activeNormalization
                     ? `Some chromosome pairs in view have no ${norm} at the current resolution in this file and show ${fallbacks.join(', ')}.`
                     : `Not available at the current resolution in this file — showing ${fallbacks.join(', ')}. Zoom to a finer binsize to use it.`,

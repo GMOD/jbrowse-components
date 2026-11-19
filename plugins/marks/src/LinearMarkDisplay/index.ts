@@ -17,8 +17,6 @@ export default function LinearMarkDisplayF(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearMarkDisplay',
       displayName: 'Marks',
-      helpText:
-        'A plot of the features: bars, points, spans, labels or links, each mapping fields to position and color; Edit marks... picks them',
       configSchema,
       retiredTypes,
       stateModel: () =>

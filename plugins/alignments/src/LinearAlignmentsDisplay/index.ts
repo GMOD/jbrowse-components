@@ -17,8 +17,6 @@ export default function register(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearAlignmentsDisplay',
       displayName: 'Alignments display',
-      helpText:
-        'Each read placed on the reference with its mismatches, insertions, deletions and splices, under the coverage it adds up to.',
       configSchema,
       // lazily loaded: the model subgraph is the largest chunk in the plugin,
       // and it is fetched only when an alignments track is shown or a session

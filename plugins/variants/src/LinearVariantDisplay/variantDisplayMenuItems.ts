@@ -74,14 +74,6 @@ function needs(label: string, what: string, present: boolean, loaded: boolean) {
       }
 }
 
-// A Color by field row's help: over rows it paints the alt cells, with none
-// the records.
-function fieldColorHelp(self: LinearVariantDisplayModel, by: string) {
-  return self.drawsGenotypeRows
-    ? `Color every alt-carrying cell by ${by}; ref and no-call cells keep their normal coloring`
-    : `Color every record by ${by}`
-}
-
 // The rows' color, as the arrangement dialog offers it: None and the
 // attributes, and Each row while it is the choice, since its colors are
 // picked in the dialog.
@@ -113,7 +105,7 @@ function genotypeRowShowItems(self: LinearVariantDisplayModel): MenuItem[] {
           {
             label: 'Show reference alleles',
             helpText:
-              'When this setting is off, the background is colored solid grey and only ALT alleles are colored on top of it. This makes it easier to see potentially overlapping structural variants',
+              'Off greys the background and colors only ALT alleles, so overlapping structural variants are easier to see',
             type: 'checkbox' as const,
             checked: self.showReference,
             onClick: () => {
@@ -122,8 +114,6 @@ function genotypeRowShowItems(self: LinearVariantDisplayModel): MenuItem[] {
           },
           {
             label: 'Show records',
-            helpText:
-              'Draw every record above the genotype rows at its genomic position, stacked as a variant track stacks them, colored by SV type and labelled with the share of samples carrying it. The band takes its height from the track, above the genotype rows: it opens as tall as its records need, up to a share of the track, and keeps that height as you pan. Dragging its lower edge trades height with the rows. Records that do not fit hide, counted beside the band, and clicking the count grows the band and the track to show them',
             type: 'checkbox' as const,
             checked: self.showRecords,
             onClick: () => {
@@ -230,7 +220,7 @@ function variantShowSubmenuItems(self: LinearVariantDisplayModel): MenuItem[] {
           {
             label: 'Show genotype rows',
             helpText:
-              'Draw a row per sample. Off, the display reads no genotypes and the track is the records band alone; the rows come back at the height they had',
+              'Off, the display reads no genotypes and shows the records alone',
             type: 'checkbox' as const,
             checked: self.showGenotypes,
             onClick: () => {
@@ -262,7 +252,7 @@ function layoutMenuItem(self: LinearVariantDisplayModel): MenuItem {
       {
         label: 'Genotype matrix',
         helpText:
-          'Draw one equal-width column per variant in view, tied to its position by a line, so the genotype pattern across variants a few bases apart stays readable at any zoom. Off, each variant is drawn across the bases it covers, so a deletion reads as long as it is',
+          'One equal-width column per variant, so variants a few bases apart stay readable at any zoom',
         type: 'checkbox',
         checked: !self.atGenomicPositions,
         onClick: () => {
@@ -304,16 +294,8 @@ export function variantTrackMenuItems(
           rows: [
             {
               ...(self.drawsGenotypeRows
-                ? {
-                    label: 'Genotype',
-                    helpText:
-                      'Default coloring: allele dosage with a row per sample, the allele each haplotype carries with a row per haplotype',
-                  }
-                : {
-                    label: 'Default',
-                    helpText:
-                      'Each structural variant in the color of its SV type, keyed, and every other record in the feature track default',
-                  }),
+                ? { label: 'Genotype' }
+                : { label: 'Default' }),
               type: 'radio' as const,
               // with no rows a phase set, which no record holds, paints the
               // records as the default does
@@ -328,8 +310,6 @@ export function variantTrackMenuItems(
               ? [
                   {
                     ...phaseSet,
-                    helpText:
-                      'Color every alt-carrying cell by the phase set (FORMAT PS) its call belongs to, so one phasing block reads as a single hue along a haplotype row; ref and no-call cells keep their normal coloring',
                     type: 'radio' as const,
                     checked: self.colorField === PHASE_SET_FIELD,
                     disabled:
@@ -371,10 +351,6 @@ export function variantTrackMenuItems(
             },
             {
               label: recordField ? `Field (${recordField})...` : 'Field...',
-              helpText: fieldColorHelp(
-                self,
-                'a field of its record — an INFO field such as CLNSIG, QUAL, FILTER, or a computed value such as maf — one color per value, or per range between cut points for a number',
-              ),
               type: 'radio',
               checked: !!recordField,
               keepMenuOpen: false,
@@ -488,8 +464,6 @@ export function variantTrackMenuItems(
               {
                 value: 'sample',
                 label: 'Per sample',
-                helpText:
-                  'One row per sample. The color darkens with each copy of the allele the sample carries, so a homozygous call reads darker than a heterozygous one, at any ploidy',
               },
               {
                 value: 'haplotype',
@@ -502,7 +476,7 @@ export function variantTrackMenuItems(
                   loaded,
                 ),
                 helpText:
-                  'One row per haplotype, which needs phased genotypes: a diploid SAMPLE1 becomes rows SAMPLE1 HP1 and SAMPLE1 HP2, and a 1|0 call draws in the first row only. A row holds one allele, so there is no dosage shading. A haploid sample keeps one row, under its own name',
+                  'Needs phased genotypes. Each row holds one allele, so there is no dosage shading',
               },
             ],
           }),

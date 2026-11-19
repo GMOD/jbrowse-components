@@ -134,11 +134,10 @@ test('each surface gets its own help text where the mode reads differently there
     const item = colorByMenuItems(target({ surface }))[index]!
     return 'helpText' in item ? item.helpText : undefined
   }
-  expect(helpOf('ribbons', 0)).toContain('red')
-  expect(helpOf('points', 0)).toContain('black')
-  expect(helpOf('lanes', 0)).toContain("track's ribbon color")
   expect(helpOf('lanes', 1)).toContain('lane above')
-  expect(helpOf('points', 1)).toBe(helpOf('ribbons', 1))
+  expect(helpOf('ribbons', 1)).toBeUndefined()
+  expect(helpOf('points', 3)).toContain('X-axis')
+  expect(helpOf('ribbons', 3)).toContain('this side')
 })
 
 // Each label takes a color of its own as it arrives, so there is nothing to pin
@@ -191,7 +190,7 @@ test('a value mode is disabled until the data has carried it', () => {
   })
   const dnds = rows.find(r => 'label' in r && r.label === 'dN/dS')!
   expect('disabledHelpText' in dnds && dnds.disabledHelpText).toBe(
-    'The loaded alignments carry no dN/dS',
+    'The loaded alignments carry no dN/dS, which needs dn and ds columns',
   )
 })
 

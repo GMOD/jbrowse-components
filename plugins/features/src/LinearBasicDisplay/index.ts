@@ -17,8 +17,6 @@ export default function register(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearBasicDisplay',
       displayName: 'Feature display',
-      helpText:
-        'Each feature as a box with its label, a gene as its transcripts with their exons and coding parts, stacked so none overlap.',
       configSchema,
       // Nothing eager may hold a static edge into './model.ts' or
       // './baseModel.ts'; the subpath exports in package.json are how a

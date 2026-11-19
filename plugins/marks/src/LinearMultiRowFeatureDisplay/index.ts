@@ -18,8 +18,6 @@ export default function LinearMultiRowFeatureDisplayF(
     return new DisplayType({
       name: 'LinearMultiRowFeatureDisplay',
       displayName: 'Multi-row display',
-      helpText:
-        "Each feature a block in its file's own color, one row per feature type, or per the attribute One row per... picks, such as sample, cell type or repeat class: chromatin states, copy number, chromosome and ancestry paintings.",
       configSchema,
       stateModel: () =>
         import('./model.ts').then(f =>

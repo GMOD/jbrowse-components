@@ -15,8 +15,6 @@ export default function LDDisplayF(pluginManager: PluginManager) {
       new DisplayType({
         name: 'LDTrackDisplay',
         displayName: 'LD heatmap display',
-        helpText:
-          'Displays a linkage disequilibrium (LD) heatmap from pre-computed LD data (e.g., PLINK --r2 output)',
         configSchema,
         stateModel: () =>
           import('./model.ts').then(f => f.default(configSchema)),

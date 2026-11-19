@@ -10,7 +10,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 interface ModeEntry {
   value: string | undefined
   label: string
-  helpText: string
+  helpText?: string
   disabledHelpText?: string
 }
 
@@ -59,18 +59,16 @@ function valueModes({
     ...presets.map(m => ({
       value: m.field,
       label: m.label,
-      helpText: m.helpText,
       disabledHelpText:
         attributeOf(m.field) in attributeRanges
           ? undefined
-          : `The loaded alignments carry no ${m.label[0]!.toLowerCase()}${m.label.slice(1)}`,
+          : `The loaded alignments carry no ${m.label[0]!.toLowerCase()}${m.label.slice(1)}${m.needs ? `, which needs ${m.needs}` : ''}`,
     })),
     ...attributes
       .filter(attribute => !named.has(attribute))
       .map(attribute => ({
         label: attribute,
         value: attribute,
-        helpText: `The ${attribute} column: a ramp over the values seen for numbers, a color per label for text.`,
       })),
   ]
 }
@@ -98,8 +96,6 @@ function categoricalItems(target: ColorByMenuTarget): MenuItem[] {
       label: 'Hide unlabelled rows',
       type: 'checkbox',
       checked: target.hideUnlabelled,
-      helpText:
-        'Draw only the rows the text column labels, so the groups carry the picture on their own.',
       onClick: () => {
         target.setHideUnlabelled(!target.hideUnlabelled)
       },
@@ -117,8 +113,6 @@ function trackColorItems({
   return [
     {
       label: 'Track colors',
-      helpText:
-        'Pin the color a track draws in under Distinct color per track.',
       subMenu: [
         ...tracks.map(track => ({
           label: track.name,

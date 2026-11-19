@@ -6,10 +6,8 @@ import ShuffleIcon from '@mui/icons-material/Shuffle'
 import {
   DEFAULT_MIN_ALIGNMENT_LENGTH,
   MAX_MIN_LENGTH_BP,
-  MIN_LENGTH_HELP,
 } from './minLengthHelp.ts'
 
-import type { SyntenyColorSurface } from './colorModes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 /**
@@ -21,12 +19,10 @@ export function opacityMenuItem(model: {
   opacityLevel: number
   defaultOpacity: number
   setOpacity: (value: number) => void
-  colorSurface: () => SyntenyColorSurface
 }): MenuItem {
   return makeSizeSubMenu({
     label: 'opacity',
     title: 'Opacity',
-    help: `Lower lets overlapping ${model.colorSurface()} show through each other.`,
     min: 0,
     max: 1,
     step: 0.01,
@@ -53,17 +49,9 @@ export function identityFadeMenuItem(model: {
   opacityField: string | undefined
   setOpacityField: (field: string | undefined) => void
 }): MenuItem {
-  return toggleItem(
-    'Identity fade',
-    model.opacityField === 'identity',
-    v => {
-      model.setOpacityField(v ? 'identity' : undefined)
-    },
-    {
-      helpText:
-        'Fade each ribbon by its sequence identity, whatever the color mode.',
-    },
-  )
+  return toggleItem('Identity fade', model.opacityField === 'identity', v => {
+    model.setOpacityField(v ? 'identity' : undefined)
+  })
 }
 
 /**
@@ -76,8 +64,6 @@ export function reorderChromosomesMenuItem(open: () => void): MenuItem {
     label: 'Re-order chromosomes...',
     icon: ShuffleIcon,
     onClick: open,
-    helpText:
-      'Reorders and reorients chromosomes so the alignments fall along the diagonal, making rearrangements, inversions and translocations stand out.',
   }
 }
 
@@ -97,7 +83,6 @@ export function minLengthMenuItem(model: FilterRowModel): MenuItem {
   return makeSizeSubMenu({
     label: 'min length',
     title: 'Min length',
-    help: MIN_LENGTH_HELP,
     min: DEFAULT_MIN_ALIGNMENT_LENGTH,
     max: MAX_MIN_LENGTH_BP,
     step: 1,
@@ -130,7 +115,7 @@ export function minIdentityMenuItem(
     ...makeSizeSubMenu({
       label: 'min identity',
       title: 'Min identity',
-      help: 'Hide alignments below this sequence identity, and those that report none.',
+      help: 'Also hides alignments that report no identity.',
       min: 0,
       max: 1,
       step: 0.01,

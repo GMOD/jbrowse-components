@@ -151,8 +151,6 @@ export function laneHeaderMenuItems(
       ? [
           {
             label: 'Re-align lane',
-            helpText:
-              'Fit this frozen lane to what the anchor shows now, and keep it frozen there.',
             onClick: () => {
               model.realignLane(name)
             },
@@ -187,8 +185,6 @@ function laneColorMenuItems(
       ? [
           {
             label: 'Clear lane color',
-            helpText:
-              "Drop the color picked for this lane, so it shows its source's color, or none.",
             onClick: () => {
               model.setLaneColor(assemblyName, undefined)
             },
@@ -308,7 +304,6 @@ function laneContigMenuItems(
       : [
           {
             label: `Unpin ${lane.canon(pinned.refName)}`,
-            helpText: 'Let the lane choose where it draws again.',
             onClick: () => {
               model.pinLane(name, undefined)
             },
@@ -339,7 +334,6 @@ function laneFlipMenuItems(
       : [
           {
             label: 'Unpin orientation',
-            helpText: `Let the lane choose its orientation again; it is pinned on ${lane.canon(pin.refName)}.`,
             onClick: () => {
               model.unpinLaneFlip(name)
             },
@@ -360,10 +354,6 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
       'Show lane names on the gene row',
       model.inlineLaneNames,
       model.setInlineLaneNames,
-      {
-        helpText:
-          "Print each genome's name over the left end of its genes instead of on a line above them, so more lanes fit.",
-      },
     ),
     toggleItem('Show curved lines', model.interpolate === 'bump', v => {
       model.setInterpolate(v ? 'bump' : 'linear')
@@ -380,7 +370,7 @@ const GENE_COLOR_FIELDS = [
     field: CLUSTER_FIELD,
     label: 'Cluster',
     helpText:
-      'Each gene by the group placing it, its ortholog group or on an alignment source its alignment record, so a group is one color down the stack. A gene no group claims is grey.',
+      'Each gene by its ortholog group, or on an alignment source by its alignment record. A gene in no group is grey.',
   },
   { field: FEATURE_NAME_FIELD, label: 'Name' },
   { field: STRAND_FIELD, label: 'Strand' },
@@ -464,8 +454,6 @@ export function lanesMenuItem(model: MultiWayMenuModel) {
       ? [
           {
             label: 'Order lanes by structure',
-            helpText:
-              'Stack each lane beside the one whose deletions and insertions against the anchor are most alike, starting from the lane most like the anchor, so a structure its lanes share shows as one block. The order stays until you reset it.',
             onClick: () => {
               model.setDomain([...model.laneStructureOrder])
             },
@@ -476,8 +464,7 @@ export function lanesMenuItem(model: MultiWayMenuModel) {
     // Freeze lanes stays by Colin's call (2026-11-03): a menu review may tidy
     // this row but not cut it.
     toggleItem('Freeze lanes', model.lanesFrozen, model.setLanesFrozen, {
-      helpText:
-        'Keep every lane where it is as you pan and zoom, instead of re-fitting it to each new window. While frozen, drag or side-scroll a lane to slide it. The lanes unfreeze once the view leaves the window they froze on.',
+      helpText: 'While frozen, drag or side-scroll a lane to slide it.',
     }),
     ...withSubHeader(
       'Lane menus',
@@ -502,7 +489,6 @@ export function multiWayTrackMenuItems(model: MultiWayMenuModel): MenuItem[] {
       opacityLevel: model.opacityLevel,
       defaultOpacity: model.defaultOpacity,
       setOpacity: model.setOpacity,
-      colorSurface: () => 'ribbons',
     }),
     ...makeShowSubMenu(showSubMenuItems(model)),
     lanesMenuItem(model),

@@ -97,7 +97,6 @@ const DotplotControls = observer(function DotplotControls({
             onClick: () => {
               model.showAllRegions()
             },
-            helpText: 'Zooms out to show every assembly whole.',
           },
           ...(model.ratio === 1
             ? []
@@ -107,16 +106,12 @@ const DotplotControls = observer(function DotplotControls({
                   onClick: () => {
                     model.squareView()
                   },
-                  helpText:
-                    'Puts both axes on the same bp per pixel, the average of the two.',
                 },
                 {
                   label: 'Rectangular view - same total bp',
                   onClick: () => {
                     model.squareViewProportional()
                   },
-                  helpText:
-                    'Zooms both axes to show the same total bp, whatever their widths.',
                 },
               ]),
           reorderChromosomesMenuItem(() => {

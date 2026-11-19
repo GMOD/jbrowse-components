@@ -50,13 +50,6 @@ export function collapseSectionsItems(model: CollapseSectionsModel) {
             'Show groups as one row',
             model.collapseSections,
             model.setCollapseSections,
-            {
-              helpText:
-                'Draw each group as a single row instead of a stack, with ' +
-                'overlap depth shown as darker shading — the compact reading ' +
-                'for a track with many groups. Expanding one group from its ' +
-                'label chip opts that group back out to a true stack.',
-            },
           ),
         ]
       : []

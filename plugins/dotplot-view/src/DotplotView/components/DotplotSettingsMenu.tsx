@@ -39,16 +39,9 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
       menuItems={() =>
         [
           identityFadeMenuItem(model),
-          toggleItem(
-            'CIGAR indels',
-            model.drawCigar,
-            flag => {
-              model.setDrawCigar(flag)
-            },
-            {
-              helpText: 'Off draws each alignment as one straight segment.',
-            },
-          ),
+          toggleItem('CIGAR indels', model.drawCigar, flag => {
+            model.setDrawCigar(flag)
+          }),
           toggleItem(
             // a plot with no room for a ruler on either axis has no gridlines to
             // draw, and the box stays ticked through it
@@ -60,22 +53,10 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
             flag => {
               model.setAxisGrid(flag)
             },
-            {
-              helpText:
-                "Carry each axis' ruler ticks across the plot. An axis with no room to number itself draws none.",
-            },
           ),
-          toggleItem(
-            'Tick labels',
-            model.axisLabels,
-            flag => {
-              model.setAxisLabels(flag)
-            },
-            {
-              helpText:
-                'Number the ruler ticks along each axis. Off keeps the tick marks and chromosome names.',
-            },
-          ),
+          toggleItem('Tick labels', model.axisLabels, flag => {
+            model.setAxisLabels(flag)
+          }),
           toggleItem(
             'Lock aspect ratio (same bp/px)',
             model.ratio === 1,
@@ -83,10 +64,6 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
             // and squares the axes the moment it goes on
             flag => {
               model.setRatio(flag ? 1 : undefined)
-            },
-            {
-              helpText:
-                'When enabled, both axes are kept at the same bp/px so the dotplot stays square as you zoom and pan.',
             },
           ),
           ...(model.hasLegendKey
@@ -101,7 +78,6 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
           makeSizeSubMenu({
             label: 'line width',
             title: 'Line width',
-            help: 'Thickness of each alignment in pixels. Wider makes a sparse plot legible, narrower keeps a dense one from filling in.',
             min: 0.5,
             max: 10,
             step: 0.5,

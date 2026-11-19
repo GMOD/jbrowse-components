@@ -65,10 +65,8 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
               model.setSelfLaneHidden,
               {
                 helpText:
-                  "Drop the mate-assembly lane for the view's own assembly. " +
-                  "An aligner skips each sequence's own diagonal, so that " +
-                  "lane holds no self-alignment line — only the assembly's " +
-                  'internal repeats.',
+                  "That lane holds only the assembly's internal repeats, " +
+                  "since an aligner skips each sequence's own diagonal.",
               },
             ),
           ]
@@ -127,21 +125,11 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
             'Show coverage alleles',
             model.showCoverageAlleles,
             model.setShowCoverageAlleles,
-            {
-              helpText:
-                'Color the share of each coverage bar whose base differs ' +
-                'between the two assemblies.',
-            },
           ),
           toggleItem(
             'Show interbase indicators',
             model.showInterbase,
             model.setShowInterbase,
-            {
-              helpText:
-                'Mark insertions in the other assembly, which occupy no ' +
-                'reference base, with a between-base tick in the coverage band.',
-            },
           ),
         ]
       : []),

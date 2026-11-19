@@ -141,7 +141,7 @@ export default function GCContentTrackF(pm: PluginManager) {
                       },
                       {
                         helpText:
-                          'One score per pixel, on a 1, 2, 5, 10 bp ladder; a window narrower than the step widens to it',
+                          'One score per pixel; a window narrower than the step widens to it',
                       },
                     ),
                     ...(step === AUTO_STEP

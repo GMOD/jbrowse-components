@@ -171,7 +171,7 @@ const VariantSampleGrid = observer(function VariantSampleGrid({
             {
               label: 'Show allele counts ("dosage")',
               helpText:
-                'This converts a genotype like 1/1 into 1:2 which says there were two occurrences of the ALT allele 1 in the genotype',
+                'Shows a genotype like 1/1 as 1:2, two copies of ALT allele 1',
               type: 'checkbox',
               checked: useCounts,
               onClick: () => {

@@ -54,7 +54,7 @@ export function syntenySettingsMenuItems(
       },
       {
         helpText:
-          'Mark alignments whose other end is off screen or on a contig the facing panel is not showing. Costs a second query per panel pair on an indexed file.',
+          'Marks alignments whose other end is off screen. Costs a second query per panel pair on an indexed file.',
       },
     ),
     ...(model.hasLegendKey
@@ -68,8 +68,6 @@ export function syntenySettingsMenuItems(
       ? [
           {
             label: 'CIGAR indels',
-            helpText:
-              'How insertions and deletions inside an alignment are drawn.',
             subMenu: CIGAR_MODE_OPTIONS.map(({ value, label, ...rest }) => ({
               label,
               ...rest,

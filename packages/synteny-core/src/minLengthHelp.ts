@@ -1,19 +1,5 @@
-// What the "Min length" row says in both comparative views, so the two cannot
-// describe the same control differently. A leaf, so `SyntenyViewMixin` reads
-// the default without pulling in the menu builder.
-//
-// The help's second sentence is the one that earns its place:
-// `buildSyntenyGeometry` filters each drawn block by its OWN span and
-// deliberately cannot group blocks that share a name — a BAM read's QNAME is shared across its supplementary
-// alignments, and summing those would keep a read whose pieces are each tiny
-// while hiding a substantial single block. The visible consequence is on the
-// coarse LOD tier, where make-pif has split a long alignment on its large
-// indels: the pieces are filtered as the separate blocks they are, so crossing
-// the tier threshold with this set can hide an alignment the fine tier shows.
-export const MIN_LENGTH_HELP =
-  'Hide alignments shorter than this. Each drawn block is measured on its ' +
-  'own, so a tier that splits an alignment on its large indels is filtered ' +
-  'piece by piece.'
+// The Min length row's range in both comparative views. A leaf, so
+// `SyntenyViewMixin` reads the default without pulling in the menu builder.
 
 // Where the log-scaled Min length slider tops out, in bp. Shared so the synteny
 // view and the dotplot cannot offer different ranges over the same setting.

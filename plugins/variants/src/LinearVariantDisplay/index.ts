@@ -17,8 +17,6 @@ export default function LinearVariantDisplayF(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearVariantDisplay',
       displayName: 'Variant display',
-      helpText:
-        'The records stacked as on a feature track, over one row per sample (or haplotype) with each variant drawn at its genomic position or as one of a row of equal-width columns',
       configSchema,
       // lazily loaded: the model, its genotype machinery and the records
       // band's feature pipeline are fetched when a variant track opens
