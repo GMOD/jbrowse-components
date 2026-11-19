@@ -27,6 +27,7 @@ const JobProgress = observer(function JobProgress({ job }: { job: JobModel }) {
           real page finds a display's loading overlay just as readily */}
       <Box sx={{ width: '100%' }} data-testid="job-progress">
         <StatusProgressBar
+          label={job.name}
           fraction={progressPct === undefined ? undefined : progressPct / 100}
         />
       </Box>

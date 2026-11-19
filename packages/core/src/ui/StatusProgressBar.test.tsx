@@ -9,7 +9,9 @@ import StatusProgressBar from './StatusProgressBar.tsx'
 // a well-meaning "just use LinearProgress" would break.
 
 test('renders no Material UI', () => {
-  const { container } = render(<StatusProgressBar fraction={0.42} />)
+  const { container } = render(
+    <StatusProgressBar label="Loading" fraction={0.42} />,
+  )
 
   expect(container.querySelector('[class*="Mui"]')).toBeNull()
 })
@@ -22,7 +24,9 @@ test('names the bar with its label', () => {
 })
 
 test('a fraction fills that much of the track, and says so', () => {
-  const { getByRole } = render(<StatusProgressBar fraction={0.42} />)
+  const { getByRole } = render(
+    <StatusProgressBar label="Loading" fraction={0.42} />,
+  )
   const track = getByRole('progressbar')
 
   expect(track.getAttribute('aria-valuenow')).toBe('42')
@@ -40,7 +44,9 @@ test('a fraction fills that much of the track, and says so', () => {
 // while `aria-valuenow` sits outside the min/max declared beside it is the
 // worse half of the bug, since only the screen reader sees it.
 test('a fraction over 1 is clamped rather than overflowing the track', () => {
-  const { getByRole } = render(<StatusProgressBar fraction={1.4} />)
+  const { getByRole } = render(
+    <StatusProgressBar label="Loading" fraction={1.4} />,
+  )
   const track = getByRole('progressbar')
 
   expect(track.getAttribute('aria-valuenow')).toBe('100')
@@ -50,7 +56,9 @@ test('a fraction over 1 is clamped rather than overflowing the track', () => {
 })
 
 test('a fraction under 0 is clamped rather than inverting the bar', () => {
-  const { getByRole } = render(<StatusProgressBar fraction={-0.5} />)
+  const { getByRole } = render(
+    <StatusProgressBar label="Loading" fraction={-0.5} />,
+  )
   const track = getByRole('progressbar')
 
   expect(track.getAttribute('aria-valuemin')).toBe('0')
@@ -61,7 +69,7 @@ test('a fraction under 0 is clamped rather than inverting the bar', () => {
 })
 
 test('no fraction is the indeterminate sweep, and claims no value', () => {
-  const { getByRole } = render(<StatusProgressBar />)
+  const { getByRole } = render(<StatusProgressBar label="Loading" />)
   const track = getByRole('progressbar')
 
   // a progressbar with no `aria-valuenow` is how the platform spells

@@ -193,7 +193,10 @@ const DiscoveryStatus = observer(function DiscoveryStatus({
           </Typography>
         </div>
         {statusFraction(status) !== undefined ? (
-          <StatusProgressBar fraction={statusFraction(status)} />
+          <StatusProgressBar
+            label="Finding assemblies that align to this region"
+            fraction={statusFraction(status)}
+          />
         ) : null}
       </>
     )

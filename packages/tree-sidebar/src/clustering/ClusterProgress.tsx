@@ -60,7 +60,10 @@ const ClusterProgress = observer(function ClusterProgress({
           </Button>
         ) : null}
       </div>
-      <StatusProgressBar fraction={fraction ?? 0} />
+      <StatusProgressBar
+        label={label ?? 'Clustering'}
+        fraction={fraction ?? 0}
+      />
     </div>
   )
 })

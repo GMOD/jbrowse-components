@@ -203,6 +203,7 @@ const DiagonalizeDialog = observer(function DiagonalizeDialog({
           <>
             <Typography>{statusProgressLabel(state.status)}</Typography>
             <StatusProgressBar
+              label="Reordering regions"
               fraction={statusFraction(state.status)}
               className={classes.progress}
             />

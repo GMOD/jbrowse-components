@@ -41,12 +41,12 @@ const useStyles = makeStyles()(theme => ({
  */
 const StatusProgressBar = observer(function StatusProgressBar({
   fraction,
-  label = 'Loading',
+  label,
   className,
   style,
 }: {
   fraction?: number
-  label?: string
+  label: string
   className?: string
   style?: React.CSSProperties
 }) {

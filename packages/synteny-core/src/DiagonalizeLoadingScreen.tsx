@@ -43,7 +43,11 @@ const DiagonalizeLoadingScreen = observer(function DiagonalizeLoadingScreen({
   return (
     <div className={classes.root}>
       <LoadingEllipses variant="h6" message={label} />
-      <StatusProgressBar fraction={fraction} className={classes.bar} />
+      <StatusProgressBar
+        label={message || 'Reordering chromosomes'}
+        fraction={fraction}
+        className={classes.bar}
+      />
       {onCancel ? (
         <Button
           variant="contained"
