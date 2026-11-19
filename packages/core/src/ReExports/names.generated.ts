@@ -360,6 +360,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/localStorage': ['localStorageAvailable', 'localStorageGetBoolean', 'localStorageGetItem', 'localStorageGetJSON', 'localStorageGetNumber', 'localStorageGetStringArray', 'localStorageRemoveItem', 'localStorageSetBoolean', 'localStorageSetItem', 'localStorageSetJSON', 'localStorageSetNumber', 'notifyLocalStorageKey', 'subscribeToLocalStorageKey'],
   '@jbrowse/core/util/locString': ['SearchResultsNotFoundError', 'UnknownRefNameError', 'assembleLocString', 'assembleLocStringRaw', 'assembleLocStrings', 'compareLocStrings', 'compareLocs', 'parseLocString', 'parseLocStringOneBased', 'stringify'],
   '@jbrowse/core/util/makeAssembly': ['assemblyNameFromUri', 'isSequenceUri', 'makeAssembly'],
+  '@jbrowse/core/util/mapWithConcurrency': ['mapWithConcurrency'],
   '@jbrowse/core/util/markEncoding': ['COLOR_SCHEMES', 'DEFAULT_MARK_COLOR', 'DEFAULT_SIZE_RANGE_PX', 'MISCONFIGURED_ABGR', 'NO_ROOT', 'NO_VALUE_ABGR', 'NO_VALUE_LABEL', 'colorAt', 'colorEntryReader', 'colorEvaluator', 'continuousColorScale', 'encodeFeatures', 'encodedChannelTransferables', 'featureIndexAt', 'hitIndexOf', 'rampOverExtent', 'withHitIndex'],
   '@jbrowse/core/util/measureText': ['measureText', 'measuredFont', 'truncateToWidth'],
   '@jbrowse/core/util/mst-reflection': ['getEnumerationValues'],

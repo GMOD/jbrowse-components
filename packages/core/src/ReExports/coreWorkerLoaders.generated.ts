@@ -362,6 +362,7 @@ const loaders: ReExportLoaders = {
   '@jbrowse/core/util/localStorage': () => import('../util/localStorage.ts'),
   '@jbrowse/core/util/locString': () => import('../util/locString.ts'),
   '@jbrowse/core/util/makeAssembly': () => import('../util/makeAssembly.ts'),
+  '@jbrowse/core/util/mapWithConcurrency': () => import('../util/mapWithConcurrency.ts'),
   '@jbrowse/core/util/markEncoding': () => import('../util/markEncoding.ts'),
   '@jbrowse/core/util/measureText': () => import('../util/measureText.ts'),
   '@jbrowse/core/util/mst-reflection': () => import('../util/mst-reflection.ts'),

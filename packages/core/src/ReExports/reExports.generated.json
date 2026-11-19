@@ -3681,6 +3681,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/mapWithConcurrency": {
+      "package": "@jbrowse/core",
+      "names": [
+        "mapWithConcurrency"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/markEncoding": {
       "package": "@jbrowse/core",
       "names": [

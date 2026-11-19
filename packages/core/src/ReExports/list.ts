@@ -360,6 +360,7 @@ export default [
   '@jbrowse/core/util/localStorage',
   '@jbrowse/core/util/locString',
   '@jbrowse/core/util/makeAssembly',
+  '@jbrowse/core/util/mapWithConcurrency',
   '@jbrowse/core/util/markEncoding',
   '@jbrowse/core/util/measureText',
   '@jbrowse/core/util/mst-reflection',
