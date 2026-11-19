@@ -42,7 +42,6 @@
     "@jbrowse/mobx-state-tree": "catalog:",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
-    "@jbrowse/tree-sidebar": "workspace:^",
     "@mui/icons-material": "catalog:",
     "@mui/material": "catalog:",
     "mobx": "catalog:",
