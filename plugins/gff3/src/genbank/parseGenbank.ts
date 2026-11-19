@@ -18,11 +18,22 @@ function readLocus(line: string): GenbankRecord {
   }
 }
 
+function uniquelyNamed(records: GenbankRecord[]) {
+  const taken = new Set<string>()
+  for (const record of records) {
+    let name = record.refName
+    for (let n = 2; taken.has(name); n++) {
+      name = `${record.refName}_${n}`
+    }
+    taken.add(name)
+    record.refName = name
+  }
+  return records
+}
+
 /**
- * The records of a GenBank flat file, one per `LOCUS` line, each named by its
- * `VERSION` accession or, with none, by its `LOCUS` name (Prokka writes contig
- * ids there). Topology is read off the `LOCUS` line by token rather than by
- * column, since writers disagree on the columns.
+ * One record per `LOCUS` line, named by its `VERSION` accession, else its
+ * `LOCUS` name; a repeated name takes `_2`, `_3` in file order.
  */
 export function parseRecords(text: string) {
   const records: GenbankRecord[] = []
@@ -54,7 +65,7 @@ export function parseRecords(text: string) {
       }
     }
   }
-  return records
+  return uniquelyNamed(records)
 }
 
 export function recordSequence(record: GenbankRecord) {

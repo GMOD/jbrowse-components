@@ -216,6 +216,21 @@ describe('human mitochondrion NC_012920.1', () => {
   )
 })
 
+describe('edge cases on a circle and two same-named exports', () => {
+  const { features, sequence } = adapters('edge_cases.gbk')
+
+  test('a repeated record name takes a suffix, the same in both adapters', async () => {
+    const names = ['x.1', 'Exported', 'Exported_2']
+    expect(await features.getRefNames()).toEqual(names)
+    expect(await sequence.getRefNames()).toEqual(names)
+    expect((await sequence.getRegions()).map(r => r.end)).toEqual([
+      1000, 50, 40,
+    ])
+    const [second] = await fetch(features, 'Exported_2', 0, 40)
+    expect(second?.get('name')).toBe('second')
+  })
+})
+
 describe('a record with no ORIGIN sequence', () => {
   const { features, sequence } = adapters('contig_only.gb')
 
