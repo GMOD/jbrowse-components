@@ -139,7 +139,6 @@ is no longer shared with anything.
 | `glyphExpand` | tests only — `pointGlyphPad.test.ts` |
 | `guardBandClipX` | tests only — `guardBand.test.ts` |
 | `inversionCoverage` | nothing |
-| `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `lineValueAtColorYPx` | tests only — `lineRampAlongY.test.ts` |
 | `pinchedParam` | tests only — `ribbonBand.test.ts` |
 | `polarPoint` | tests only — `ribbonBand.test.ts` |
