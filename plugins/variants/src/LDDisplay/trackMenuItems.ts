@@ -46,17 +46,13 @@ function metricMenuItem(self: LDMenuSelf): MenuItem {
         value: 'r2',
         label: 'R² (squared correlation)',
         disabled: !self.r2Available,
-        helpText: self.r2Available
-          ? 'Squared correlation between the two variants (0-1), read from the LD file.'
-          : 'This LD file has no r² (R2) column',
+        disabledHelpText: 'This LD file has no r² (R2) column',
       },
       {
         value: 'dprime',
         label: "D' (normalized D)",
         disabled: !self.dprimeAvailable,
-        helpText: self.dprimeAvailable
-          ? "Lewontin's normalized D (0-1), read from the LD file."
-          : "This LD file has no D' (DP) column",
+        disabledHelpText: "This LD file has no D' (DP) column",
       },
     ],
   })
@@ -83,10 +79,6 @@ function layoutMenuItem(self: LDMenuSelf): MenuItem {
               self.variantLayout === 'genomic',
               on => {
                 self.setVariantLayout(on ? 'genomic' : 'columns')
-              },
-              {
-                helpText:
-                  'Off, every SNP takes one equal-width column. On, each cell is as wide as the genomic distance between its SNPs, so the triangle lines up with the genome.',
               },
             ),
           ]),

@@ -77,12 +77,22 @@ describe('makeRadioSubMenu', () => {
       onChange: () => {},
       options: [
         ['a', 'A'],
-        { value: 'b', label: 'B', disabled: true, helpText: 'no B here' },
+        {
+          value: 'b',
+          label: 'B',
+          disabled: true,
+          disabledHelpText: 'no B here',
+        },
       ],
     })
     expect('subMenu' in item ? resolveSubMenu(item) : []).toMatchObject([
       { label: 'A', checked: true },
-      { label: 'B', checked: false, disabled: true, helpText: 'no B here' },
+      {
+        label: 'B',
+        checked: false,
+        disabled: true,
+        disabledHelpText: 'no B here',
+      },
     ])
   })
 })

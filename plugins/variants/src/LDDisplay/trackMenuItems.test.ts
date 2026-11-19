@@ -87,7 +87,7 @@ test('a file with no DP column offers D-prime disabled, and says why', () => {
   const dprime = metric.find(i => labelOf(i) === "D' (normalized D)")!
 
   expect('disabled' in dprime && dprime.disabled).toBe(true)
-  expect('helpText' in dprime && dprime.helpText).toBe(
+  expect('disabledHelpText' in dprime && dprime.disabledHelpText).toBe(
     "This LD file has no D' (DP) column",
   )
 })
@@ -104,20 +104,9 @@ test('a file with no R2 column offers r-squared disabled, and says why', () => {
   const r2 = metric.find(i => labelOf(i) === 'R² (squared correlation)')!
 
   expect('disabled' in r2 && r2.disabled).toBe(true)
-  expect('helpText' in r2 && r2.helpText).toBe(
+  expect('disabledHelpText' in r2 && r2.disabledHelpText).toBe(
     'This LD file has no r² (R2) column',
   )
-})
-
-// The help says the number was read, not computed. JBrowse does not estimate LD
-// from genotypes, and a row implying it did is a claim about provenance.
-test('the metric help says the values are read from the file', () => {
-  const metric = subMenuOf(buildLDTrackMenuItems(makeSelf()), 'LD metric')!
-  const help = metric.map(i => ('helpText' in i ? i.helpText! : ''))
-
-  expect(help[0]).toContain('read from the LD file')
-  expect(help[1]).toContain('read from the LD file')
-  expect(help.join(' ')).not.toMatch(/composite|estimated|Weir/i)
 })
 
 test('Show carries the visibility toggles, legend last, and Layout the rest', () => {
