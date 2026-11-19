@@ -14,14 +14,15 @@ Each record's alpha factor where records too short to see share pixels at
 `bpPerPx`, as the variant display fades a zoomed-out row
 (`recordDensityAlpha`) at the power of two `bpPerPx` rounds to: 1 where a
 record covers its pixels alone. For a host that draws the cells at its own
-scale.
+scale. A column may be a number, read as one record, as R's jsonlite
+unboxes a one-row table.
 
 ```ts
 import { variantDensityAlpha } from '@jbrowse/plugin-variants/tables'
 
 function variantDensityAlpha(opts: {
-  start: readonly number[]
-  end: readonly number[]
+  start: number | readonly number[]
+  end: number | readonly number[]
   bpPerPx: number
 }): number[]
 ```
