@@ -17,3 +17,10 @@ measure each on a fresh build before moving it.
   own module, so a caller wanting only it stops pulling the transforms.
 - Split `plugins/wiggle/src/util.ts` so its constants stop importing
   `markEncoding`.
+
+Declined: taking `markEncoding` off the boot chunk by moving
+`DEFAULT_MARK_COLOR`, the one value `plugins/wiggle/src/colorDefaults.ts` reads
+from it, into `util/color`. Measured 2026-11-19 with `measure-web-bundle
+--worker`, it took 11 KB gzipped off the empty volvox page and added 31 KB to
+four tracks: the re-partitioned chunks carried `@jbrowse/jexl` and core helpers
+twice.
