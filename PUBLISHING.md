@@ -63,8 +63,8 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    **If a package is publishing for the first time**, grep the docs for the
    sentence that says it isn't. Nothing else catches this: the manifests are
    already correct — every non-private package ships on the tag, since
-   `publish.yml` runs a bare `pnpm publish -r` — so the only thing that goes
-   stale is prose telling authors to work around the absence.
+   `publish.yml` runs `pnpm publish -r` over the whole workspace — so the only
+   thing that goes stale is prose telling authors to work around the absence.
 
    ```bash
    git grep -n 'not on npm yet' -- website agent-docs
@@ -181,30 +181,37 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    which matters when several people or agents share one.
 
    The commit you're releasing has to be pushed and have a **finished** run.
-   `push.yml` uses `cancel-in-progress`, so pushing again cancels the previous
-   run's jobs, and a cancelled job is not a green one. On a busy day, push and
-   then leave `main` alone until the run completes.
+   `push.yml` does not cancel a run on `main`, but GitHub keeps one pending run
+   per branch and cancels the older pending one when another push arrives, and a
+   cancelled run is not a green one. On a busy day, push and then leave `main`
+   alone until the run completes.
 
    Everything that can fail is checked before the first file is written — the
    tag is free locally and on origin, the draft exists and validates, `gh` can
    generate the changelog — because the write half runs straight into a commit,
    tag and push with no chance to intervene. If the **push** at the end fails
-   anyway (someone landed on `main` during the install), the commit and tag are
-   local: follow the recovery it prints, don't re-run, which would cut a second
-   release commit on top of the first.
+   anyway (someone landed on `main` during the install), the commit is local and
+   untagged: follow the recovery it prints, don't re-run, which would cut a
+   second release commit on top of the first. A push that failed only because
+   the pre-push hook pushed an autofix commit on top has landed; the release
+   sees that, waits for Push on the autofix commit and tags it.
 
 4. **CI runs off the `v*` tag**, unattended: `publish.yml` → npm (`next` for
-   prereleases, else `latest`), and `release.yml` → draft GitHub release with
-   the notes already filled in, plus the web artifact and desktop binaries.
+   prereleases, else `latest`), building every package once with
+   `scripts/build-published.ts`, as Push does for the tarballs it tests, and
+   `release.yml` → draft GitHub release with the notes already filled in, plus
+   the web artifact and desktop binaries.
 
-   Both start by running `scripts/check-tag-version.ts`, which fails the run if
-   the tag disagrees with **any** package version in the tree it points at.
-   Neither workflow can recover from getting this wrong — npm only allows
-   unpublishing for 72 hours, and the desktop jobs derive their upload target
-   from `package.json`, so a mismatched tag clobbers another release's assets.
-   Each desktop job then requires every artifact it is supposed to have built to
-   be on disk before it uploads any of them, so a packaging step that quietly
-   produced nothing fails its job instead of leaving a short release.
+   Both first wait for Push to go green on the tagged commit
+   (`.github/actions/require-push-ci`), then run `scripts/check-tag-version.ts`,
+   which fails the run if the tag disagrees with **any** package version in the
+   tree it points at. Neither workflow can recover from getting this wrong — npm
+   only allows unpublishing for 72 hours, and the desktop jobs derive their
+   upload target from `package.json`, so a mismatched tag clobbers another
+   release's assets. Each desktop job then requires every artifact it is
+   supposed to have built to be on disk before it uploads any of them, so a
+   packaging step that quietly produced nothing fails its job instead of leaving
+   a short release.
 
 5. **Publish the draft** once the desktop binaries have landed in it. That click
    is the go/no-go gate: it fires both the announcements below and the website
