@@ -626,8 +626,8 @@ public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
 
 // Only the clicked feature's BASE silhouette is outlined — never the indel
 // tiles (kind >= KIND_CIGAR_MIN) nor KIND_MARKER context ticks (interior lines,
-// not part of the silhouette). Match tiles are outlined; see the parked
-// the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode.
+// not part of the silhouette). A feature drawn as match tiles reaches here as
+// one hull record, which `packClickedOutlineInstances` packs for its tiles.
 public bool isClickedSilhouette(Instance inst, Uniforms u) {
   return u.clickedFeatureId > 0.0
     && abs(inst.featureId - u.clickedFeatureId) < 0.5

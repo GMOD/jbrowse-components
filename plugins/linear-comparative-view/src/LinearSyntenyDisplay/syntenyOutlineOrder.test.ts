@@ -1,3 +1,4 @@
+import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 import { createCanvas } from '@napi-rs/canvas'
 
 import { buildSyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -33,8 +34,10 @@ function twoOverlappingFeatures() {
   })
 }
 
-test('the clicked outline strokes after every fill, so no later ribbon covers it', () => {
-  const g = twoOverlappingFeatures()
+function drawnOps(
+  g: ReturnType<typeof buildSyntenyGeometry>,
+  clickedFeatureId: number,
+) {
   const ctx = createCanvas(VIEW_W, HEIGHT).getContext('2d')
   const ops: string[] = []
   const recording = new Proxy(ctx, {
@@ -59,7 +62,7 @@ test('the clicked outline strokes after every fill, so no later ribbon covers it
       height: HEIGHT,
       alpha: 0.5,
       hoveredFeatureId: 0,
-      clickedFeatureId: 1,
+      clickedFeatureId,
       offsetPx0: 0,
       offsetPx1: 0,
       bpPerPx0: BP_PER_PX,
@@ -71,6 +74,57 @@ test('the clicked outline strokes after every fill, so no later ribbon covers it
     300,
     '#fff',
   )
+  return ops
+}
+
+const packed = (len: number, op: number) => (len << 4) | op
+
+// M100px D20px M100px D20px M100px in transparent-indel mode: three match tiles
+function threeTiles() {
+  const window = viewportWindow({
+    viewOff: 0,
+    viewWidth: VIEW_W,
+    bpPerPx: 1000,
+  })
+  return buildSyntenyGeometry({
+    p11_cumBp: Float64Array.from([100_000]),
+    p12_cumBp: Float64Array.from([440_000]),
+    p21_cumBp: Float64Array.from([100_000]),
+    p22_cumBp: Float64Array.from([400_000]),
+    queryGridAnchors: Float64Array.from([0]),
+    strands: Int8Array.from([1]),
+    parsedCigars: [
+      [
+        packed(100_000, CIGAR_M),
+        packed(20_000, CIGAR_D),
+        packed(100_000, CIGAR_M),
+        packed(20_000, CIGAR_D),
+        packed(100_000, CIGAR_M),
+      ],
+    ],
+    cigarMode: 'matches',
+    bpPerPx0: BP_PER_PX,
+    bpPerPx1: BP_PER_PX,
+    viewOff0: 0,
+    viewOff1: 0,
+    viewWidth: VIEW_W,
+    window0: window,
+    window1: window,
+  })
+}
+
+test('a clicked feature drawn as match tiles is outlined once, not per tile', () => {
+  const clicked = drawnOps(threeTiles(), 1)
+  expect(clicked.filter(op => op.startsWith('fill'))).toHaveLength(3)
+  // the red strokes are the location ticks, which are not the outline's ink
+  const outline = (op: string) => op.startsWith('stroke rgba(0, 0, 0')
+  expect(clicked.filter(outline)).toHaveLength(1)
+  expect(drawnOps(threeTiles(), 0).filter(outline)).toHaveLength(0)
+})
+
+test('the clicked outline strokes after every fill, so no later ribbon covers it', () => {
+  const g = twoOverlappingFeatures()
+  const ops = drawnOps(g, 1)
   const fills = ops.filter(op => op.startsWith('fill'))
   const lastFill = ops.lastIndexOf(fills.at(-1)!)
   const outlineStrokes = ops

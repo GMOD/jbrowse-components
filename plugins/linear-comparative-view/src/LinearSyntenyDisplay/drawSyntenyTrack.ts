@@ -8,12 +8,14 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { isInstanceInvisible } from '@jbrowse/synteny-core'
 
+import { clickedTileHull } from './instanceInterleave.ts'
 import { STROKE_ALPHA } from './shaders/syntenyTypes.generated.ts'
 import {
   fillShade,
   hoverDarken,
   isCigarKind,
   isMarkerKind,
+  isTileKind,
 } from './shaders/syntenyTypes.js.generated.ts'
 import {
   buildFeaturePath,
@@ -21,6 +23,8 @@ import {
   isRibbonCulled,
   makeCornerScratch,
   projectCorners,
+  projectSpanCorners,
+  ribbonMaxPerpWidth,
   ribbonThinFade,
   strokeCenterline,
   strokeFeatureSideEdges,
@@ -267,7 +271,7 @@ export function drawSyntenyTrack(
       style.fill(ctx, r, g, b, fa)
       buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
-      if (isClicked && !isCigar) {
+      if (isClicked && !isCigar && !isTileKind(kind)) {
         outlined.push(i)
       }
     }
@@ -278,6 +282,24 @@ export function drawSyntenyTrack(
     style.strokeLiteral(ctx, outlineInk)
     for (const i of outlined) {
       const c = projectCorners(data, i, transform, scratch)
+      strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
+    }
+  }
+  const hull =
+    clickedFeatureId > 0 ? clickedTileHull(data, clickedFeatureId) : undefined
+  if (hull) {
+    const c = projectSpanCorners(
+      data,
+      hull.first,
+      hull.last,
+      transform,
+      scratch,
+    )
+    if (
+      !isRibbonCulled(c, logicalW, overdrawPx, false) &&
+      ribbonMaxPerpWidth(c, height, drawCurves) >= 1
+    ) {
+      style.strokeLiteral(ctx, outlineInk)
       strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
     }
   }

@@ -2,6 +2,7 @@ import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
 
 import {
   KIND_BASE,
+  KIND_BASE_TILE,
   KIND_CIGAR_I,
   KIND_MARKER,
 } from '../LinearSyntenyRPC/syntenyKinds.ts'
@@ -10,7 +11,10 @@ import {
   interleaveInstances,
   packClickedOutlineInstances,
 } from './instanceInterleave.ts'
-import { INSTANCE_STRIDE_BYTES } from './shaders/syntenyFillStraight.iface.generated.ts'
+import {
+  INSTANCE_OFFSET_F32,
+  INSTANCE_STRIDE_BYTES,
+} from './shaders/syntenyFillStraight.iface.generated.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
@@ -141,5 +145,49 @@ describe('packClickedOutlineInstances', () => {
 
     expect(count).toBe(0)
     expect(buf.byteLength).toBe(0)
+  })
+
+  // A feature drawn as match tiles is outlined as one ribbon: its first tile's
+  // start edge and its last tile's end edge, whatever is drawn between them.
+  test('packs a tiled feature as one record spanning its tiles', () => {
+    const kinds = Uint8Array.from([
+      KIND_BASE_TILE,
+      KIND_CIGAR_I,
+      KIND_BASE_TILE,
+      KIND_BASE_TILE,
+      KIND_BASE,
+    ])
+    const n = kinds.length
+    const seq = (base: number) =>
+      Float32Array.from({ length: n }, (_, i) => base + i)
+    const data: SyntenyInstanceData = {
+      bp1: seq(1000),
+      bp2: seq(2000),
+      bp3: seq(3000),
+      bp4: seq(4000),
+      base0: 0,
+      base1: 0,
+      colors: new Uint32Array(n).fill(0x11111111),
+      kinds,
+      instanceFeatureIdx: Uint32Array.from([0, 0, 0, 0, 1]),
+      instanceCount: n,
+    }
+
+    const { buf, count } = packClickedOutlineInstances(
+      data,
+      1,
+      interleaveInstances(data),
+    )
+
+    expect(count).toBe(1)
+    const f = new Float32Array(buf)
+    expect([
+      f[INSTANCE_OFFSET_F32.bp1],
+      f[INSTANCE_OFFSET_F32.bp2],
+      f[INSTANCE_OFFSET_F32.bp3],
+      f[INSTANCE_OFFSET_F32.bp4],
+      f[INSTANCE_OFFSET_F32.featureId],
+      f[INSTANCE_OFFSET_F32.kind],
+    ]).toEqual([1000, 2003, 3003, 4000, 1, KIND_BASE_TILE])
   })
 })

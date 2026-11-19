@@ -9,6 +9,7 @@ import {
 import {
   isCigarKind,
   isMarkerKind,
+  isTileKind,
 } from './shaders/syntenyTypes.js.generated.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -103,13 +104,12 @@ export const syntenyInstanceCache = createInstanceCache(SYNTENY_INSTANCE_CACHE)
 // one early-outed to a degenerate vertex: on a 500k-instance whole-genome view,
 // 3M wasted vertex invocations per frame in straight mode and 24M in curve mode
 // (48 verts/instance), for one outline, for as long as the selection is live.
-// A base feature is one instance per region, so this makes the pass ~1 — in
-// COLORED-indels mode. Transparent-indels mode tiles a CIGAR feature's matches
-// as `KIND_BASE_TILE` quads (see `cigarSegmentKind`), so the selected feature
-// contributes one per match segment and the pass is tens or hundreds. That is
-// correct, not a leak: `isClickedSilhouette` selects the same set, so the two
-// backends agree, and the saving over drawing the whole region stands either
-// way.
+// A base feature is one instance per region, so this makes the pass ~1.
+//
+// A feature drawn as match tiles (`KIND_BASE_TILE`, see `cigarSegmentKind`) is
+// outlined once, as the hull `clickedTileHull` spans: its first tile's record
+// with the end edge of its last. Stroking each tile's own side edges put two
+// hairlines on every drawn indel, hundreds across a divergent alignment.
 //
 // The predicate is `isClickedSilhouette` in syntenyTypes.slang — the kind tests
 // here are that shader's own, generated (adr-051), so this is not a second
@@ -130,21 +130,54 @@ export function packClickedOutlineInstances(
     if (
       instanceFeatureIdx[i]! + 1 === clickedFeatureId &&
       !isCigarKind(kind) &&
-      !isMarkerKind(kind)
+      !isMarkerKind(kind) &&
+      !isTileKind(kind)
     ) {
       matches.push(i)
     }
   }
-  const count = matches.length
+  const hull = clickedTileHull(data, clickedFeatureId)
+  const count = matches.length + (hull ? 1 : 0)
   const buf = new ArrayBuffer(count * INSTANCE_STRIDE_BYTES)
   const dst = new Uint8Array(buf)
   const src = new Uint8Array(interleaved)
-  for (let m = 0; m < count; m++) {
-    const off = matches[m]! * INSTANCE_STRIDE_BYTES
+  const copy = (from: number, to: number) => {
+    const off = from * INSTANCE_STRIDE_BYTES
     dst.set(
       src.subarray(off, off + INSTANCE_STRIDE_BYTES),
-      m * INSTANCE_STRIDE_BYTES,
+      to * INSTANCE_STRIDE_BYTES,
     )
   }
+  for (let m = 0; m < matches.length; m++) {
+    copy(matches[m]!, m)
+  }
+  if (hull) {
+    copy(hull.first, matches.length)
+    const f = new Float32Array(buf)
+    const off = matches.length * INSTANCE_STRIDE_WORDS
+    f[off + INSTANCE_OFFSET_F32.bp2] = data.bp2[hull.last]!
+    f[off + INSTANCE_OFFSET_F32.bp3] = data.bp3[hull.last]!
+  }
   return { buf, count }
+}
+
+// The first and last match tile of the clicked feature, whose start and end
+// edges are its outline, or undefined where it is not drawn as tiles.
+export function clickedTileHull(
+  data: SyntenyInstanceData,
+  clickedFeatureId: number,
+) {
+  const { instanceFeatureIdx, kinds, instanceCount } = data
+  let first = -1
+  let last = -1
+  for (let i = 0; i < instanceCount; i++) {
+    if (
+      instanceFeatureIdx[i]! + 1 === clickedFeatureId &&
+      isTileKind(kinds[i]!)
+    ) {
+      first = first < 0 ? i : first
+      last = i
+    }
+  }
+  return first < 0 ? undefined : { first, last }
 }
