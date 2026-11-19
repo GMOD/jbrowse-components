@@ -697,7 +697,9 @@ same args to both.
   blocks a listed segment draws: the worker trims a block crossing a frame
   region's edge before it reaches the tables, so `xStart`/`xEnd` and
   `yStart`/`yEnd` stop there, while `length` stays the block's whole query span.
-  `segments` are those crossing both axes' windows.
+  `segments` are those the plot draws: crossing both axes' windows, or within
+  `lineWidth` px of them, where a line's round cap still shows
+  (`isSegmentOffscreen`).
 - `offscreen` lists the blocks touching the row's window, and `offscreenStrip`
   paints from the window's place in its frame.
 - `ribbons` leaves out what the band culls (`isRibbonCulled`): a ribbon with

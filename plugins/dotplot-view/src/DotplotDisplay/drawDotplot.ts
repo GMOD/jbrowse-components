@@ -26,6 +26,23 @@ export interface DotplotDrawParams {
   alpha: number
 }
 
+export function isSegmentOffscreen(
+  sx1: number,
+  sy1: number,
+  sx2: number,
+  sy2: number,
+  viewWidth: number,
+  viewHeight: number,
+  lineWidth: number,
+) {
+  return (
+    Math.max(sx1, sx2) < -lineWidth ||
+    Math.min(sx1, sx2) > viewWidth + lineWidth ||
+    Math.max(sy1, sy2) < -lineWidth ||
+    Math.min(sy1, sy2) > viewHeight + lineWidth
+  )
+}
+
 export function drawDotplotInstances(
   ctx: MarkContext2D,
   geometry: DotplotGeometryData,
@@ -80,13 +97,19 @@ export function drawDotplotInstances(
     const sy1 = cumBpToPxV(y1[i]!, viewBpV, bpPerPxVInv, viewHeight)
     const sx2 = cumBpToPxH(x2[i]!, viewBpH, bpPerPxHInv)
     const sy2 = cumBpToPxV(y2[i]!, viewBpV, bpPerPxVInv, viewHeight)
-    const offscreen =
-      Math.max(sx1, sx2) < -lineWidth ||
-      Math.min(sx1, sx2) > viewWidth + lineWidth ||
-      Math.max(sy1, sy2) < -lineWidth ||
-      Math.min(sy1, sy2) > viewHeight + lineWidth
     const abgr = colors[i]!
-    if (!offscreen && !isInstanceInvisible(abgr, alpha)) {
+    if (
+      !isSegmentOffscreen(
+        sx1,
+        sy1,
+        sx2,
+        sy2,
+        viewWidth,
+        viewHeight,
+        lineWidth,
+      ) &&
+      !isInstanceInvisible(abgr, alpha)
+    ) {
       if (abgr !== currentAbgr) {
         path.flush()
         currentAbgr = abgr

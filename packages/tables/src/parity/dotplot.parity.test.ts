@@ -1,7 +1,13 @@
+import {
+  cumBpToPxH,
+  cumBpToPxV,
+} from '../../../../plugins/dotplot-view/src/DotplotDisplay/dotplotProject.ts'
+import { isSegmentOffscreen } from '../../../../plugins/dotplot-view/src/DotplotDisplay/drawDotplot.ts'
 import { createTablesEngine } from '../index.ts'
 import {
   CONTIGS,
   INVERSIONS,
+  INVERSIONS_EDGE,
   INVERSIONS_WIDE,
   INVERSIONS_ZOOMED,
 } from './comparative.fixture.ts'
@@ -57,17 +63,19 @@ function dotplotParity(
     modelDecisions: ({ view, display }) => {
       const { geometry } = display
       const [x, y] = [fixture.query, fixture.target]
-      const inWindow = (
-        axis: { offsetPx: number; bpPerPx: number },
-        width: number,
-        a = 0,
-        b = 0,
-      ) =>
-        Math.max(a, b) / axis.bpPerPx > axis.offsetPx &&
-        Math.min(a, b) / axis.bpPerPx < axis.offsetPx + width
+      const p = view.dotplotRenderState
+      const h = (bp = 0) => cumBpToPxH(bp, p.viewBpH, p.bpPerPxHInv)
+      const v = (bp = 0) => cumBpToPxV(bp, p.viewBpV, p.bpPerPxVInv, y.width)
       const shown = (i: number) =>
-        inWindow(view.hview, x.width, geometry?.x1[i], geometry?.x2[i]) &&
-        inWindow(view.vview, y.width, geometry?.y1[i], geometry?.y2[i])
+        !isSegmentOffscreen(
+          h(geometry?.x1[i]),
+          v(geometry?.y1[i]),
+          h(geometry?.x2[i]),
+          v(geometry?.y2[i]),
+          x.width,
+          y.width,
+          p.lineWidth,
+        )
       const features = Object.keys(
         drawnColors(geometry, view.opacityLevel, String, shown),
       )
@@ -214,5 +222,12 @@ describe('3 kb of each axis, inside the contigs', () => {
       name: 'filter by length',
       config: { filter: [{ field: 'length', gte: 2000 }] },
     },
+  ])
+})
+
+describe("3.2 kb of each contig at 800 px, a block's last segment 1 px left of the plot", () => {
+  parityCases(dotplotParity(INVERSIONS_EDGE), [
+    { name: 'defaults', config: {} },
+    { name: 'indels hidden', config: { indels: { show: false } } },
   ])
 })

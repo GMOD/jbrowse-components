@@ -88,6 +88,24 @@ export const INVERSIONS_ZOOMED: ComparativeFixture = {
 }
 
 /**
+ * 3.2 kb of each at 800 px, the second block ending at query 15925, 1 px
+ * left of the horizontal window, inside the round cap a dotplot line keeps.
+ */
+export const INVERSIONS_EDGE: ComparativeFixture = {
+  ...INVERSIONS,
+  query: {
+    assembly: VOLVOX_INV,
+    regions: [{ refName: 'ctgA', start: 15929, end: 19129 }],
+    width: 800,
+  },
+  target: {
+    assembly: VOLVOX,
+    regions: [{ refName: 'ctgA', start: 15000, end: 18200 }],
+    width: 800,
+  },
+}
+
+/**
  * 3 kb of each, the upper row inside the first block and the lower inside
  * the second, so each row's ribbons run to mates past the other row's
  * overdraw: the band culls them and its strips mark them.

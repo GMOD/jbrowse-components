@@ -20,6 +20,8 @@ import {
   createDotplotColorFunction,
 } from './DotplotDisplay/dotplotColors.ts'
 import { buildLineSegments } from './DotplotDisplay/dotplotGeometry.ts'
+import { cumBpToPxH, cumBpToPxV } from './DotplotDisplay/dotplotProject.ts'
+import { isSegmentOffscreen } from './DotplotDisplay/drawDotplot.ts'
 import { executeDotplotFeaturesAndPositions } from './DotplotDisplay/executeDotplotFeaturesAndPositions.ts'
 import { DEFAULT_ALPHA, DEFAULT_LINE_WIDTH } from './DotplotView/consts.ts'
 
@@ -169,14 +171,10 @@ export async function dotplotTables(
     color: [] as string[],
     alpha: [] as number[],
   }
-  const inWindow = (
-    { offsetPx, window }: typeof hFrame,
-    widthPx: number,
-    a: number,
-    b: number,
-  ) =>
-    Math.max(a, b) / window.bpPerPx > offsetPx &&
-    Math.min(a, b) / window.bpPerPx < offsetPx + widthPx
+  const viewBpH = hFrame.offsetPx * hFrame.window.bpPerPx
+  const viewBpV = vFrame.offsetPx * vFrame.window.bpPerPx
+  const bpPerPxHInv = 1 / hFrame.window.bpPerPx
+  const bpPerPxVInv = 1 / vFrame.window.bpPerPx
   const drawn = new Set<number>()
   for (let i = 0; i < instanceData.instanceCount; i++) {
     const packed = colors[i]!
@@ -185,8 +183,15 @@ export async function dotplotTables(
     const y1 = instanceData.y1[i]!
     const y2 = instanceData.y2[i]!
     if (
-      !inWindow(hFrame, x.width, x1, x2) ||
-      !inWindow(vFrame, y.width, y1, y2)
+      isSegmentOffscreen(
+        cumBpToPxH(x1, viewBpH, bpPerPxHInv),
+        cumBpToPxV(y1, viewBpV, bpPerPxVInv, y.width),
+        cumBpToPxH(x2, viewBpH, bpPerPxHInv),
+        cumBpToPxV(y2, viewBpV, bpPerPxVInv, y.width),
+        x.width,
+        y.width,
+        view.lineWidth,
+      )
     ) {
       continue
     }
