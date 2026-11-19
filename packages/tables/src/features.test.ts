@@ -105,16 +105,22 @@ test('a feature listed off the margin keeps the fields its file writes, and a VC
   expect(t.attributes.Name![snp]).toBe('FakeSNP')
   expect(t.attributes.source![snp]).toBe('example')
 
-  const { features, vcf } = await engine.features({
-    adapterConfig: DOG_VCF.adapterConfig,
-    region: { refName: 'chr30', start: 38258003, end: 38258203 },
-    bpPerPx: 0.14,
-    display: GROW,
-  })
+  const { features, vcf, attributes, subfeatureAttributes, attributeFields } =
+    await engine.features({
+      adapterConfig: DOG_VCF.adapterConfig,
+      region: { refName: 'chr30', start: 38258003, end: 38258203 },
+      bpPerPx: 0.14,
+      display: GROW,
+    })
   const margin = features.start.indexOf(38258001)
   expect(margin).toBeGreaterThanOrEqual(0)
   expect(vcf!.records.ref[margin]).toBe('T')
   expect(vcf!.records.alt[margin]).toBe('G')
+  expect({ attributes, subfeatureAttributes, attributeFields }).toEqual({
+    attributes: {},
+    subfeatureAttributes: {},
+    attributeFields: { key: [], type: [], number: [], description: [] },
+  })
 })
 
 test("the display filter's gene category splits the features", async () => {

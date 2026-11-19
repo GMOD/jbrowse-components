@@ -771,6 +771,12 @@ interface AutoSqlField {
   size?: number | string
 }
 
+function declaresAutoSql(
+  adapter: object,
+): adapter is { getAutoSqlFields: () => Promise<AutoSqlField[]> } {
+  return 'getAutoSqlFields' in adapter
+}
+
 function autoSqlDeclaration(field: AutoSqlField): FieldDeclaration {
   return {
     type: AUTOSQL_INTEGERS.has(field.type)
@@ -932,11 +938,14 @@ export async function featureAttributeTables(
     subfeatureIds: readonly string[]
   },
 ) {
-  const adapter = await tablesFeatureAdapter(
-    pluginManager,
-    adapterConfig,
-    sequenceAdapter,
-  )
+  const adapter =
+    ids.length || subfeatureIds.length
+      ? await tablesFeatureAdapter(
+          pluginManager,
+          adapterConfig,
+          sequenceAdapter,
+        )
+      : undefined
   const byId = new Map<string, Feature>()
   const walk = (feature: Feature) => {
     byId.set(feature.id(), feature)
@@ -944,26 +953,21 @@ export async function featureAttributeTables(
       walk(child)
     }
   }
-  const features =
-    ids.length || subfeatureIds.length
-      ? await adapter.getFeaturesInMultipleRegionsArray(
-          regions.map(r => ({ assemblyName: '', ...r })),
-          {},
-        )
-      : []
+  const features = adapter
+    ? await adapter.getFeaturesInMultipleRegionsArray(
+        regions.map(r => ({ assemblyName: '', ...r })),
+        {},
+      )
+    : []
   for (const feature of features) {
     walk(feature)
   }
-  const autoSql = adapter as {
-    getAutoSqlFields?: () => Promise<AutoSqlField[]>
-  }
+  const autoSqlFields =
+    adapter && declaresAutoSql(adapter) ? await adapter.getAutoSqlFields() : []
   const declared: Record<string, FieldDeclaration> = {
     ...(features.some(isGff3) ? GFF3_COLUMNS : {}),
     ...Object.fromEntries(
-      ((await autoSql.getAutoSqlFields?.()) ?? []).map(f => [
-        f.name,
-        autoSqlDeclaration(f),
-      ]),
+      autoSqlFields.map(f => [f.name, autoSqlDeclaration(f)]),
     ),
   }
   const fieldsOf = (id: string) => {
