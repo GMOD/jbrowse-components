@@ -1,6 +1,6 @@
 ---
 name: a-headless-agent-gets-the-desktop-mcp-tools
-description: An agent with no display (a cloud session, CI) can hold a JBrowse Web page through a generic browser MCP (Playwright MCP headless) and drive window.jb, or script @jbrowse/capture. `jb2capture mcp` would serve Desktop's four tools instead. Waits on running the eval tasks over the generic route to see whether it falls short.
+description: A `jb2capture mcp` serving Desktop's four MCP tools to an agent with no display (cloud, CI), against today's routes of a headless browser MCP driving window.jb or a @jbrowse/capture script. Waits on eval runs of the generic route.
 ---
 
 # A headless agent gets the Desktop MCP tools
