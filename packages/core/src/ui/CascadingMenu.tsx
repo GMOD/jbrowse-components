@@ -11,6 +11,11 @@ import {
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+import {
+  CascadingMenuContext,
+  useAboveMenuZIndex,
+  useCascadingMenu,
+} from './CascadingMenuContext.ts'
 import HoverMenu from './HoverMenu.tsx'
 import MaybeTooltip from './MaybeTooltip.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
@@ -59,46 +64,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-/**
- * What every level of one cascading menu shares. A context rather than props
- * because a menu nests to any depth: each level threaded all four down to the
- * next, and a row three levels in needed them only to hand them on again.
- */
-interface CascadingMenuShared {
-  /** whether clicking a row dismisses the whole menu; see `staysOpenOnClick` */
-  closeAfterItemClick: boolean
-  /**
-   * How a row's onClick is invoked, at every depth — the menu itself never
-   * calls it. A caller whose items expect a context argument supplies it here
-   * (`cb => { cb(session) }`) rather than rewriting the items to close over it.
-   */
-  onMenuItemClick: (callback: MenuItemClickHandler) => void
-  /** dismisses the root menu, from any depth */
-  onCloseRoot: () => void
-  /**
-   * The root menu's stacking level, carried down to every submenu portal. Each
-   * level is its own MUI Menu, so a submenu left on MUI's default modal z-index
-   * sits UNDER a root that was raised off that scale (ContextMenu clears the
-   * tooltip layer) — and the root's modal spans the viewport, so its backdrop
-   * takes every click and hover the submenu rows never see. Undefined leaves
-   * MUI's default, which is what a menu opened from a button wants.
-   */
-  zIndex?: React.CSSProperties['zIndex']
-}
-
-const CascadingMenuContext = createContext<CascadingMenuShared | undefined>(
-  undefined,
-)
-
 const SubmenuSideContext = createContext<SubmenuSide>('right')
-
-function useCascadingMenu() {
-  const shared = use(CascadingMenuContext)
-  if (!shared) {
-    throw new Error('menu row rendered outside a CascadingMenu')
-  }
-  return shared
-}
 
 /**
  * How long a change deferred by the aim cone waits before it happens anyway.
@@ -462,11 +428,13 @@ const DisabledTooltip = observer(function DisabledTooltip({
   item: Pick<BaseMenuItem, 'disabled' | 'disabledHelpText'>
   children: React.ReactElement
 }) {
+  const zIndex = useAboveMenuZIndex()
   return (
     <MaybeTooltip
       title={item.disabled ? item.disabledHelpText : undefined}
       disabled={item.disabled}
       placement="left"
+      zIndex={zIndex}
     >
       {children}
     </MaybeTooltip>

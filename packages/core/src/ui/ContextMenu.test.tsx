@@ -99,3 +99,50 @@ test('a submenu stacks at the level its root menu was raised to', () => {
   // the panel doesn't swallow a pointer crossing into it
   expect(levels[1]!.style.pointerEvents).toBe('none')
 })
+
+// jsdom computes no stacking, so the levels are compared as numbers
+test("a row's help dialog stacks above the menu it was opened from", () => {
+  const { getByLabelText } = renderMenu({
+    anchor: { clientX: 10, clientY: 20 },
+    menuItems: [
+      {
+        type: 'checkbox',
+        label: 'Pin',
+        checked: false,
+        helpText: 'what pinning does',
+        onClick: () => {},
+      },
+    ],
+    onClose: () => {},
+  })
+  fireEvent.click(getByLabelText('Help for Pin'))
+  const menu = document.querySelector<HTMLElement>('.MuiPopover-root')
+  const dialog = document.querySelector<HTMLElement>('.MuiDialog-root')
+  expect(Number(dialog?.style.zIndex)).toBeGreaterThan(
+    Number(menu?.style.zIndex),
+  )
+})
+
+test("a disabled row's tooltip stacks above the menu", async () => {
+  const { getByText, findByRole } = renderMenu({
+    anchor: { clientX: 10, clientY: 20 },
+    menuItems: [
+      {
+        label: 'Show/hide',
+        subMenu: [
+          {
+            label: 'Pin to top',
+            disabled: true,
+            disabledHelpText: 'nothing to pin',
+            onClick: () => {},
+          },
+        ],
+      },
+    ],
+    onClose: () => {},
+  })
+  fireEvent.mouseOver(getByText('Show/hide'))
+  fireEvent.mouseOver(getByText('Pin to top'))
+  const tooltip = await findByRole('tooltip')
+  expect(Number(tooltip.style.zIndex)).toBeGreaterThan(CONTEXT_MENU_Z_INDEX)
+})

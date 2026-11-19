@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react'
 
+import { useAboveMenuZIndex } from './CascadingMenuContext.ts'
 import InfoDialog from './InfoDialog.tsx'
 
 const CascadingMenuHelpDialog = observer(function CascadingMenuHelpDialog({
@@ -11,10 +12,12 @@ const CascadingMenuHelpDialog = observer(function CascadingMenuHelpDialog({
   helpText: React.ReactNode
   label?: React.ReactNode
 }) {
+  const zIndex = useAboveMenuZIndex()
   return (
     <InfoDialog
       open
       onClose={onClose}
+      style={{ zIndex }}
       title="Help"
       titleNode={label ? <>Help: {label}</> : undefined}
       onClick={e => {

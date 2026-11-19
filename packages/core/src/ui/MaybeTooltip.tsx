@@ -10,15 +10,21 @@ const MaybeTooltip = observer(function MaybeTooltip({
   title,
   disabled,
   placement,
+  zIndex,
   children,
 }: {
   title?: string
   disabled?: boolean
   placement?: TooltipProps['placement']
+  zIndex?: React.CSSProperties['zIndex']
   children: React.ReactElement
 }) {
   return title ? (
-    <Tooltip title={title} placement={placement}>
+    <Tooltip
+      title={title}
+      placement={placement}
+      slotProps={{ popper: { style: { zIndex } } }}
+    >
       {disabled ? <span>{children}</span> : children}
     </Tooltip>
   ) : (
