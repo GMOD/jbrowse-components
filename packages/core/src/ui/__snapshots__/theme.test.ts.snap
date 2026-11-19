@@ -1,0 +1,314 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`darkMinimal resolves the same component style overrides 1`] = `
+{
+  "MuiAccordion": {},
+  "MuiAccordionSummary": {
+    "content": {
+      "color": "#fff",
+    },
+    "expandIconWrapper": {
+      "color": "#fff",
+    },
+    "root": {
+      "backgroundColor": "#212121",
+    },
+  },
+  "MuiAppBar": {},
+  "MuiAutocomplete": {},
+  "MuiButton": {
+    "root": {
+      "color": "#fff",
+    },
+  },
+  "MuiButtonGroup": {},
+  "MuiCheckbox": {
+    "root": {
+      "&.Mui-checked": {
+        "color": "rgba(255, 255, 255, 0.7)",
+      },
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiCircularProgress": {
+    "colorPrimary": {
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiFab": {
+    "secondary": {
+      "backgroundColor": "#FFB11D",
+    },
+  },
+  "MuiFilledInput": {},
+  "MuiFormControl": {},
+  "MuiFormHelperText": {},
+  "MuiFormLabel": {
+    "root": {
+      "&.Mui-focused": {
+        "color": "rgba(255, 255, 255, 0.7)",
+      },
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiIconButton": {
+    "colorPrimary": {
+      "color": "#fff",
+    },
+  },
+  "MuiInputBase": {},
+  "MuiInputLabel": {},
+  "MuiLinearProgress": {
+    "bar": {
+      "backgroundColor": "rgba(255, 255, 255, 0.7)",
+    },
+    "root": {
+      "backgroundColor": "rgba(255, 255, 255, 0.24)",
+    },
+  },
+  "MuiLink": {
+    "root": {
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiListItem": {},
+  "MuiMenuItem": {},
+  "MuiOutlinedInput": {},
+  "MuiRadio": {
+    "root": {
+      "&.Mui-checked": {
+        "color": "rgba(255, 255, 255, 0.7)",
+      },
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiSlider": {
+    "root": {
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiSvgIcon": {
+    "colorPrimary": {
+      "color": "#fff",
+    },
+  },
+  "MuiTab": {
+    "textColorPrimary": {
+      "&.Mui-selected": {
+        "color": "rgba(255, 255, 255, 0.7)",
+      },
+    },
+  },
+  "MuiTable": {},
+  "MuiTabs": {
+    "indicator": {
+      "backgroundColor": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiTextField": {},
+  "MuiToggleButtonGroup": {},
+  "MuiToolbar": {},
+  "MuiTooltip": {
+    "tooltip": {
+      "fontSize": 12,
+    },
+  },
+}
+`;
+
+exports[`darkStock resolves the same component style overrides 1`] = `
+{
+  "MuiAccordion": {},
+  "MuiAccordionSummary": {
+    "content": {
+      "color": "#fff",
+    },
+    "expandIconWrapper": {
+      "color": "#fff",
+    },
+    "root": {
+      "backgroundColor": "#135560",
+    },
+  },
+  "MuiAppBar": {},
+  "MuiAutocomplete": {},
+  "MuiButton": {
+    "root": {
+      "color": "#fff",
+    },
+  },
+  "MuiButtonGroup": {},
+  "MuiCheckbox": {
+    "root": {
+      "&.Mui-checked": {
+        "color": "rgba(255, 255, 255, 0.7)",
+      },
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiCircularProgress": {
+    "colorPrimary": {
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiFab": {
+    "secondary": {
+      "backgroundColor": "#FFB11D",
+    },
+  },
+  "MuiFilledInput": {},
+  "MuiFormControl": {},
+  "MuiFormHelperText": {},
+  "MuiFormLabel": {
+    "root": {
+      "&.Mui-focused": {
+        "color": "rgba(255, 255, 255, 0.7)",
+      },
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiIconButton": {
+    "colorPrimary": {
+      "color": "#fff",
+    },
+  },
+  "MuiInputBase": {},
+  "MuiInputLabel": {},
+  "MuiLinearProgress": {
+    "bar": {
+      "backgroundColor": "rgba(255, 255, 255, 0.7)",
+    },
+    "root": {
+      "backgroundColor": "rgba(255, 255, 255, 0.24)",
+    },
+  },
+  "MuiLink": {
+    "root": {
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiListItem": {},
+  "MuiMenuItem": {},
+  "MuiOutlinedInput": {},
+  "MuiRadio": {
+    "root": {
+      "&.Mui-checked": {
+        "color": "rgba(255, 255, 255, 0.7)",
+      },
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiSlider": {
+    "root": {
+      "color": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiSvgIcon": {
+    "colorPrimary": {
+      "color": "#fff",
+    },
+  },
+  "MuiTab": {
+    "textColorPrimary": {
+      "&.Mui-selected": {
+        "color": "rgba(255, 255, 255, 0.7)",
+      },
+    },
+  },
+  "MuiTable": {},
+  "MuiTabs": {
+    "indicator": {
+      "backgroundColor": "rgba(255, 255, 255, 0.7)",
+    },
+  },
+  "MuiTextField": {},
+  "MuiToggleButtonGroup": {},
+  "MuiToolbar": {},
+  "MuiTooltip": {
+    "tooltip": {
+      "fontSize": 12,
+    },
+  },
+}
+`;
+
+exports[`lightStock resolves the same component style overrides 1`] = `
+{
+  "MuiAccordion": {},
+  "MuiAccordionSummary": {
+    "content": {
+      "color": "#fff",
+    },
+    "expandIconWrapper": {
+      "color": "#fff",
+    },
+    "root": {
+      "backgroundColor": "#135560",
+    },
+  },
+  "MuiAppBar": {},
+  "MuiAutocomplete": {},
+  "MuiButton": {
+    "root": undefined,
+  },
+  "MuiButtonGroup": {},
+  "MuiCheckbox": {
+    "root": undefined,
+  },
+  "MuiCircularProgress": {
+    "colorPrimary": undefined,
+  },
+  "MuiFab": {
+    "secondary": {
+      "backgroundColor": "#FFB11D",
+    },
+  },
+  "MuiFilledInput": {},
+  "MuiFormControl": {},
+  "MuiFormHelperText": {},
+  "MuiFormLabel": {
+    "root": undefined,
+  },
+  "MuiIconButton": {
+    "colorPrimary": undefined,
+  },
+  "MuiInputBase": {},
+  "MuiInputLabel": {},
+  "MuiLinearProgress": {
+    "bar": undefined,
+    "root": undefined,
+  },
+  "MuiLink": {
+    "root": {
+      "color": "#135560",
+    },
+  },
+  "MuiListItem": {},
+  "MuiMenuItem": {},
+  "MuiOutlinedInput": {},
+  "MuiRadio": {
+    "root": undefined,
+  },
+  "MuiSlider": {
+    "root": undefined,
+  },
+  "MuiSvgIcon": {
+    "colorPrimary": undefined,
+  },
+  "MuiTab": {
+    "textColorPrimary": undefined,
+  },
+  "MuiTable": {},
+  "MuiTabs": {
+    "indicator": undefined,
+  },
+  "MuiTextField": {},
+  "MuiToggleButtonGroup": {},
+  "MuiToolbar": {},
+  "MuiTooltip": {
+    "tooltip": {
+      "fontSize": 12,
+    },
+  },
+}
+`;

@@ -294,3 +294,34 @@ describe('createJBrowseThemeFromArgs', () => {
     expect(theme.palette.primary.main).toBe('#abcdef')
   })
 })
+
+function entriesOf(value: unknown) {
+  return typeof value === 'object' && value !== null
+    ? Object.entries(value)
+    : []
+}
+
+function resolvedStyleOverrides(themeName: string) {
+  const theme = createJBrowseThemeFromArgs({ themeName })
+  const ownerState = { color: 'primary', indicatorColor: 'primary' }
+  return Object.fromEntries(
+    entriesOf(theme.components).map(([name, component]) => [
+      name,
+      Object.fromEntries(
+        entriesOf(
+          entriesOf(component).find(([key]) => key === 'styleOverrides')?.[1],
+        ).map(([slot, value]) => [
+          slot,
+          typeof value === 'function' ? value({ theme, ownerState }) : value,
+        ]),
+      ),
+    ]),
+  )
+}
+
+test.each(['lightStock', 'darkStock', 'darkMinimal'])(
+  '%s resolves the same component style overrides',
+  themeName => {
+    expect(resolvedStyleOverrides(themeName)).toMatchSnapshot()
+  },
+)

@@ -65,16 +65,6 @@ export interface JBrowseTypography {
 }
 
 /**
- * What a `makeStyles` block is handed.
- *
- * Deliberately a subset of Material UI's `Theme` rather than a copy of it: it
- * carries what the 268 call sites read and nothing else, so anything reaching
- * further is a compile error naming the file rather than a silent dependency on
- * a component library. `transitions`, `zIndex` and `shadows` are the three that
- * used to be reached for; a literal reads better at each of those five sites,
- * and `ui/zIndexes.ts` already owns the layering that matters.
- */
-/**
  * Where a portaled overlay is mounted. An element, a function returning one
  * (which is what a shadow-DOM host writes, since its root does not exist when
  * the config is built), or absent for `document.body`.
@@ -85,6 +75,12 @@ export type PortalContainer =
   | null
   | undefined
 
+/**
+ * What a `makeStyles` block is handed: the subset of Material UI's `Theme` the
+ * call sites read, so reaching further is a compile error naming the file
+ * rather than a silent dependency on a component library. Layering is
+ * `ui/zIndexes.ts`'s.
+ */
 export interface JBrowseStyleTheme {
   palette: JBrowsePalette
   spacing: (...args: number[]) => string

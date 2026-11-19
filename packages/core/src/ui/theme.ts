@@ -160,53 +160,42 @@ export type ThemeSelectionName =
   | keyof typeof defaultThemes
   | keyof typeof legacyThemeNames
 
-// The default primary (midnight) has poor contrast as a control color in dark
-// mode, so a control takes `accent` there, the token JBrowse's own non-Material
-// controls read. The extra selectors recolor checked/focused states too.
+// A style applied in dark mode only, where Material's default
+// `color="primary"` paints midnight and vanishes on the ground
+function inDarkMode<O>(
+  style: (palette: Theme['palette'], ownerState: O) => CSSObject | undefined,
+) {
+  return ({ theme, ownerState }: { theme: Theme; ownerState: O }) =>
+    theme.palette.mode === 'dark' ? style(theme.palette, ownerState) : undefined
+}
+
+// A control takes `accent`, the token JBrowse's own non-Material controls
+// read, on its root and on the state selectors that recolor it.
 // xref https://stackoverflow.com/a/72546130/2129219
 function darkModeContrastOverride(
   extraSelectors: string[] = [],
   colorOf: (palette: Theme['palette']) => string = p => p.accent,
 ) {
   return {
-    root: ({ theme }: { theme: Theme }) => {
-      if (theme.palette.mode !== 'dark') {
-        return undefined
-      }
-      const color = colorOf(theme.palette)
+    root: inDarkMode(palette => {
+      const color = colorOf(palette)
       return {
         color,
         ...Object.fromEntries(extraSelectors.map(s => [s, { color }])),
       }
-    },
+    }),
   }
 }
 
-// midnight primary is nearly invisible as an icon color on the dark header/
-// toolbars, so swap color="primary" icons and icon buttons to a text color in
-// dark mode. Targets the colorPrimary slot only, leaving default/secondary/
-// error icons untouched.
+// color="primary" icons and icon buttons take a text color; default,
+// secondary and error icons are untouched
 const darkModePrimaryIconOverride = {
-  colorPrimary: ({ theme }: { theme: Theme }) =>
-    theme.palette.mode === 'dark'
-      ? { color: theme.palette.text.primary }
-      : undefined,
+  colorPrimary: inDarkMode(palette => ({ color: palette.text.primary })),
 }
 
 // the static half of a JBrowse theme: sizing plus the MUI component defaults
 // and style overrides every theme shares. No palette — that is the caller's,
 // merged over this by createJBrowseBaseTheme.
-// A Material control left on its default `color="primary"` paints midnight,
-// which vanishes on the dark ground; in dark mode it takes `accent` instead
-function darkModeAccent<O>(
-  style: (accent: string, ownerState: O) => CSSObject | undefined,
-) {
-  return ({ theme, ownerState }: { theme: Theme; ownerState: O }) =>
-    theme.palette.mode === 'dark'
-      ? style(theme.palette.accent, ownerState)
-      : undefined
-}
-
 const baseThemeOptions: ThemeOptions = {
   typography: {
     fontSize: DEFAULT_FONT_SIZE,
@@ -394,35 +383,35 @@ const baseThemeOptions: ThemeOptions = {
     },
     MuiCircularProgress: {
       styleOverrides: {
-        colorPrimary: darkModeAccent(accent => ({ color: accent })),
+        colorPrimary: inDarkMode(palette => ({ color: palette.accent })),
       },
     },
     MuiLinearProgress: {
       styleOverrides: {
-        root: darkModeAccent<{ color?: string }>((accent, { color }) =>
+        root: inDarkMode<{ color?: string }>((palette, { color }) =>
           color === 'primary'
-            ? { backgroundColor: alpha(accent, 0.24) }
+            ? { backgroundColor: alpha(palette.accent, 0.24) }
             : undefined,
         ),
-        bar: darkModeAccent<{ color?: string }>((accent, { color }) =>
-          color === 'primary' ? { backgroundColor: accent } : undefined,
+        bar: inDarkMode<{ color?: string }>((palette, { color }) =>
+          color === 'primary' ? { backgroundColor: palette.accent } : undefined,
         ),
       },
     },
     MuiTabs: {
       styleOverrides: {
-        indicator: darkModeAccent<{ indicatorColor?: string }>(
-          (accent, { indicatorColor }) =>
+        indicator: inDarkMode<{ indicatorColor?: string }>(
+          (palette, { indicatorColor }) =>
             indicatorColor === 'primary'
-              ? { backgroundColor: accent }
+              ? { backgroundColor: palette.accent }
               : undefined,
         ),
       },
     },
     MuiTab: {
       styleOverrides: {
-        textColorPrimary: darkModeAccent(accent => ({
-          '&.Mui-selected': { color: accent },
+        textColorPrimary: inDarkMode(palette => ({
+          '&.Mui-selected': { color: palette.accent },
         })),
       },
     },
