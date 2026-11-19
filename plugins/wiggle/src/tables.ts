@@ -36,6 +36,7 @@ import { matrixScale } from './WiggleRPC/matrixScale.ts'
 import { buildSourceRenderData } from './shared/buildSourceRenderData.ts'
 import { scoreRampFill } from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
+import { layerRampBands } from './shared/wiggleDrawFunctions.ts'
 import {
   createWiggleStaticHost,
   wiggleTrackTypeOf,
@@ -259,9 +260,22 @@ export async function wiggleTables(
   regionLayers.forEach((layers, regionIndex) => {
     layers.forEach(({ layer, source, row }, index) => {
       const own = normalizedRgbToHex(layer.color)
-      const bandColors = layer.negColor
-        ? [normalizedRgbToHex(layer.negColor), ...innerColors, own]
-        : undefined
+      const rampBands =
+        scoreRamp && layer.band
+          ? layerRampBands({
+              source: layer,
+              domainY: domain,
+              scaleType: scaleCode,
+              symlogConstant,
+              ...scoreRamp,
+            })
+          : undefined
+      const bandCuts = rampBands ? rampBands.cuts : cuts
+      const bandColors = rampBands
+        ? rampBands.bandColors.map(c => abgrToHex(c))
+        : layer.negColor
+          ? [normalizedRgbToHex(layer.negColor), ...innerColors, own]
+          : undefined
       const colorAt = (score: number, i: number) =>
         rampFill
           ? cssColorToHex(rampFill(score))
@@ -306,7 +320,7 @@ export async function wiggleTables(
             const min = layer.band.minScores[i]!
             const edges = [
               min,
-              ...cuts
+              ...bandCuts
                 .map(cut => Math.fround(cut))
                 .filter(c => c > min && c < score),
               score,
@@ -316,7 +330,7 @@ export async function wiggleTables(
                 i,
                 edges[k - 1]!,
                 edges[k]!,
-                bandColors[thresholdBandOf(edges[k - 1]!, cuts)]!,
+                bandColors[thresholdBandOf(edges[k - 1]!, bandCuts)]!,
               )
             }
           } else {

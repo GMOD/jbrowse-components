@@ -279,6 +279,34 @@ test('a min-max band splits at a cut no float32 holds, each piece in its own ban
   expect(pieces.some(i => low[i] === Math.fround(0.1))).toBe(true)
 })
 
+test("a min-max band under a gradient comes back in pieces in the ramp's colors", async () => {
+  const read = (display: Record<string, unknown>) =>
+    engine.wiggle({ ...SIGNED_BIGWIG, bpPerPx: 1000, display })
+  const bandPieces = ({ marks }: Awaited<ReturnType<typeof read>>) =>
+    marks.band.map((b, i) => i).filter(i => marks.band[i])
+  const plain = await read({ mark: 'line' })
+  const plainColors = new Set(bandPieces(plain).map(i => plain.marks.color[i]))
+  const t = await read({
+    mark: 'line',
+    encoding: { color: { scale: { type: 'linear', scheme: 'viridis' } } },
+  })
+  const { low, score, color, start } = t.marks
+  const pieces = bandPieces(t)
+  expect(pieces.length).toBeGreaterThan(t.bins.score.length)
+  const colors = new Set(pieces.map(i => color[i]))
+  expect(colors.size).toBeGreaterThan(8)
+  for (const c of colors) {
+    expect(plainColors.has(c)).toBe(false)
+  }
+  for (let k = 1; k < pieces.length; k++) {
+    const [prev, i] = [pieces[k - 1]!, pieces[k]!]
+    if (start[i] === start[prev]) {
+      expect(low[i]).toBe(score[prev])
+      expect(color[i]).not.toBe(color[prev])
+    }
+  }
+})
+
 test('a samples file leaving out a subtrack warns, as the display does', async () => {
   const tsv = path.join(mkdtempSync(path.join(tmpdir(), 'samples-')), 's.tsv')
   writeFileSync(tsv, 'name\tgroup\nposneg_rw1\ta\nposneg_rw2\tb\n')

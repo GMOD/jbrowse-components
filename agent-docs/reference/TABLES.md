@@ -548,10 +548,12 @@ autoscale (`wiggleAutoscaleRange`, `getNiceDomain`), and runs its layer encoder
   (`color`, `px` tall) across the row's edge there.
 - Each mark's `color` is the display's. A bar takes its value's color; a line takes
   the color of the band between the cuts its score is in (`thresholdBandOf`); a
-  min-max band comes back in pieces split at the cuts, each in its band's color, as
-  the display fills it. Under a gradient, a heatmap's unset pair included, the color
-  is the shared ramp's (`scoreRampFill`, which the key's bar samples too) over the
-  resolved domain.
+  min-max band comes back in pieces split at the cuts, as float32 places them, each
+  in its band's color, as the display fills it. Under a gradient, a heatmap's unset
+  pair included, a mark's color is the shared ramp's at its score (`scoreRampFill`,
+  which the key's bar samples too) over the resolved domain, and a min-max band's
+  pieces split at the threshold Canvas2D fills it in (`layerRampBands`), each in
+  that threshold's color.
 - `run` numbers the layers' stretches, one per layer, since the display draws an
   interpolated line across every hole.
 - The sources stack in the order `rows.sort` gives them (`arrangeRows`, the

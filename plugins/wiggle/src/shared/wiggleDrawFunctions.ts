@@ -310,15 +310,22 @@ function scaleNameOf(scaleType: ScaleTypeCode): MarkValueScaleType {
 }
 
 /**
- * A line row under a gradient as the threshold the line painters already
- * stroke: render-core's `rampAsThreshold` over the scores the row reaches,
- * the origin a step line drops to included. Any other row passes through.
+ * A layer under a gradient as the threshold Canvas2D and the SVG export
+ * stroke its line and fill its band in: render-core's `rampAsThreshold` over
+ * the scores the layer reaches, its band's minimums and the origin a step
+ * line drops to included, as `cuts` and each band's ABGR `bandColors`.
  */
-export function rampAsBands<R extends RowDraw>(row: R): R {
-  const { rampLut, rampMid, domainY, scaleType, symlogConstant, source } = row
-  if (!rampLut) {
-    return row
-  }
+export function layerRampBands({
+  source,
+  domainY,
+  scaleType,
+  symlogConstant,
+  rampLut,
+  rampMid,
+}: Pick<
+  RowDraw,
+  'source' | 'domainY' | 'scaleType' | 'symlogConstant' | 'rampMid'
+> & { rampLut: Uint8Array }) {
   const { numFeatures, band, gapScore } = source
   let low = Number.POSITIVE_INFINITY
   let high = Number.NEGATIVE_INFINITY
@@ -348,11 +355,16 @@ export function rampAsBands<R extends RowDraw>(row: R): R {
     high,
     symlogConstant,
   )
-  return {
-    ...row,
-    cuts: [...cuts],
-    bandColors: Array.from(colors),
-  }
+  return { cuts: [...cuts], bandColors: Array.from(colors) }
+}
+
+/**
+ * A line row under a gradient as the threshold the line painters already
+ * stroke (`layerRampBands`). Any other row passes through.
+ */
+export function rampAsBands<R extends RowDraw>(row: R): R {
+  const { rampLut } = row
+  return rampLut ? { ...row, ...layerRampBands({ ...row, rampLut }) } : row
 }
 
 // A layer's spans are one row and one series, so render-core's step breaks
@@ -459,7 +471,7 @@ export function drawMinMaxBand(row: RowDraw & { interpolated: boolean }) {
     path.flush()
   }
 
-  // Not rampAsBands' scan: that one spans the line's scores, its band and gap
+  // Not layerRampBands' scan: that one spans the line's scores, its band and gap
   // score, skipping non-finite ones; this is the band's own extremes.
   let low = Number.POSITIVE_INFINITY
   let high = Number.NEGATIVE_INFINITY
