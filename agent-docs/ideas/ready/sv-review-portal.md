@@ -235,9 +235,11 @@ The page is built:
 repo of its own beside gene-review-portal and carrying that page's keyboard,
 verdicts and TSV round trip. It takes the VCF and one `--images` directory
 whose images hold every alignments track (`--images tumor,normal=reads`), joins
-the two on `line`, and needs no JBrowse dependency. The manifest's `links` is
-one count per track, so a single image still gives the tumor and the normal a
-count each. The whole COLO829 callset is its first portal, at
+the two on `line`, and needs no JBrowse dependency. The queue groups on the
+caller's own read counts, named with a required `--support` (`AD,NAD` for
+nanomonsv), and the manifest's counts stay on each card beside them. The
+manifest's `links` is one count per track, so a single image still gives the
+tumor and the normal a count each. The whole COLO829 callset is its first portal, at
 https://jbrowse.org/demos/colo829_review/.
 
 A card also prints what the VCF holds beyond the SV columns: the sample's
