@@ -624,3 +624,34 @@ test('the key keys the unlabelled alignments as the view does: hidden with them,
   const noValue = blue.legend.label.indexOf(NO_VALUE_LABEL)
   expect(blue.legend.color[noValue]).toBe(cssColorToHex('blue'))
 })
+
+test('blocks of no span leave the auto fade off, as the view leaves it', async () => {
+  const lines = Array.from({ length: 10 }, (_, i) => {
+    const at = 1000 + i * 2000
+    return `ctgA\t49186\t${at}\t${at}\t+\tctgA\t50001\t${at}\t${at}\t10\t10\t60`
+  })
+  const paf = path.join(mkdtempSync(path.join(tmpdir(), 'paf-')), 'zero.paf')
+  writeFileSync(paf, `${lines.join('\n')}\n`)
+  const args = {
+    ...INV_INDELS,
+    adapterConfig: {
+      ...INV_INDELS.adapterConfig,
+      pafLocation: {
+        uri: pathToFileURL(paf).href,
+        locationType: 'UriLocation',
+      },
+    },
+  }
+  const auto = await engine.synteny(args)
+  const off = await engine.synteny({
+    ...args,
+    view: { render: { antialias: false } },
+  })
+  const on = await engine.synteny({
+    ...args,
+    view: { render: { antialias: true } },
+  })
+  expect(auto.alignments.length.length).toBeGreaterThanOrEqual(10)
+  expect(on.ribbons.alpha).not.toEqual(off.ribbons.alpha)
+  expect(auto.ribbons.alpha).toEqual(off.ribbons.alpha)
+})

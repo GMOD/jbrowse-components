@@ -10,8 +10,8 @@ import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  FADE_AUTO_MIN_FEATURES,
   axesNamePositionFor,
+  autoFadeWidthOf,
   axisNamePosition,
   bandGroundColor,
   cappedMeanWidthPx,
@@ -554,9 +554,16 @@ export async function syntenyTables(
   const fadeThin =
     mode === undefined
       ? fadesThinAt(
-          n >= FADE_AUTO_MIN_FEATURES
-            ? cappedMeanWidthPx(featureData.starts, featureData.ends, q.bpPerPx)
-            : Infinity,
+          autoFadeWidthOf([
+            {
+              count: n,
+              meanPx: cappedMeanWidthPx(
+                featureData.starts,
+                featureData.ends,
+                q.bpPerPx,
+              ),
+            },
+          ]),
           false,
         )
       : mode

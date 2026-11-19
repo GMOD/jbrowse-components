@@ -46,10 +46,10 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
-  FADE_AUTO_MIN_FEATURES,
   SyntenyColorsMixin,
   SyntenyFadeMixin,
   WIDTH_FADE_FLOOR,
+  autoFadeWidthOf,
   carriedSyntenySettings,
   colorByMenuItems,
   colorByMenuTargetFor,
@@ -1019,11 +1019,11 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!self.initialized) {
           return Infinity
         }
-        return Math.min(
-          ...self.chordSyntenyDisplays
-            .filter(d => d.ribbonLanes.count >= FADE_AUTO_MIN_FEATURES)
-            .map(d => d.cappedMeanSpanPx)
-            .filter(px => px > 0),
+        return autoFadeWidthOf(
+          self.chordSyntenyDisplays.map(d => ({
+            count: d.ribbonLanes.count,
+            meanPx: d.cappedMeanSpanPx,
+          })),
         )
       },
       /**

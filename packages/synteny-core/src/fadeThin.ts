@@ -67,6 +67,21 @@ export function cappedMeanWidthPx(
 }
 
 /**
+ * The width 'auto' judges: the narrowest capped mean of any display with at
+ * least `FADE_AUTO_MIN_FEATURES` blocks that measured one above 0, or
+ * `Infinity` with none.
+ */
+export function autoFadeWidthOf(
+  displays: readonly { count: number; meanPx: number }[],
+) {
+  return Math.min(
+    ...displays
+      .filter(d => d.count >= FADE_AUTO_MIN_FEATURES && d.meanPx > 0)
+      .map(d => d.meanPx),
+  )
+}
+
+/**
  * Whether 'auto' fades, given the narrowest capped mean any loaded display
  * reports and whether the fade is latched on. `Infinity` — a view with nothing
  * thin enough to judge — never fades.

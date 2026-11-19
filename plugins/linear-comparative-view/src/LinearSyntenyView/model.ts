@@ -34,11 +34,11 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   DiagonalizeProgressMixin,
-  FADE_AUTO_MIN_FEATURES,
   ImportFormSyntenyMixin,
   SyntenyFadeMixin,
   SyntenyViewMixin,
   allSessionTracks,
+  autoFadeWidthOf,
   carriedSyntenySettings,
   collectTrackWarnings,
   getSyntenyTracks,
@@ -611,11 +611,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * `FADE_AUTO_MIN_FEATURES` blocks, or `Infinity` with none.
        */
       get autoFadeWidthPx(): number {
-        return Math.min(
-          ...self.allSyntenyDisplays
-            .filter(d => d.numFeats >= FADE_AUTO_MIN_FEATURES)
-            .map(d => d.cappedMeanAlignmentPx)
-            .filter(px => px > 0),
+        return autoFadeWidthOf(
+          self.allSyntenyDisplays.map(d => ({
+            count: d.numFeats,
+            meanPx: d.cappedMeanAlignmentPx,
+          })),
         )
       },
       /**

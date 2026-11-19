@@ -1,4 +1,4 @@
-import { cappedMeanWidthPx, fadesThinAt } from './fadeThin.ts'
+import { autoFadeWidthOf, cappedMeanWidthPx, fadesThinAt } from './fadeThin.ts'
 
 // What `installAutoFadeLatch` does to a sequence of means: feed each one in and
 // carry the latch forward, exactly as the autorun does over successive fetches.
@@ -102,4 +102,16 @@ test('the cap leaves a view of ordinary blocks alone', () => {
 
 test('an empty display reports no width to judge by', () => {
   expect(cappedMeanWidthPx(new Uint32Array(0), new Uint32Array(0), 100)).toBe(0)
+})
+
+test('auto judges the narrowest display that has enough blocks and measured a width', () => {
+  expect(
+    autoFadeWidthOf([
+      { count: 9, meanPx: 0.2 },
+      { count: 10, meanPx: 0 },
+      { count: 10, meanPx: 1.5 },
+      { count: 400, meanPx: 0.8 },
+    ]),
+  ).toBe(0.8)
+  expect(autoFadeWidthOf([{ count: 10, meanPx: 0 }])).toBe(Infinity)
 })

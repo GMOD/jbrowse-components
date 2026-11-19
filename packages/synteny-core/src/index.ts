@@ -163,6 +163,7 @@ export {
   FADE_AUTO_MIN_FEATURES,
   FADE_WIDE_BLOCK_PX,
   WIDTH_FADE_FLOOR,
+  autoFadeWidthOf,
   cappedMeanWidthPx,
   fadesThinAt,
 } from './fadeThin.ts'
