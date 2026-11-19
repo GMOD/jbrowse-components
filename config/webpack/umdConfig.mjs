@@ -2,10 +2,10 @@ import path from 'path'
 
 import webpack from 'webpack'
 
+import { resolveExtensions, sharedRules } from './sharedRules.ts'
+
 // Shared config factory for the standalone UMD product builds
 // (react-circular-genome-view, react-linear-genome-view, react-app).
-// Keeping these in one place ensures fixes like the .mjs fullySpecified rule
-// below stay in sync across all products.
 export default function umdConfig({ filename, library }) {
   const mode = process.env.NODE_ENV || 'production'
   return {
@@ -23,30 +23,10 @@ export default function umdConfig({ filename, library }) {
     performance: false,
     plugins: [new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 })],
     resolve: {
-      extensions: ['.mjs', '.js', '.ts', '.tsx', '.jsx', '.json'],
+      extensions: resolveExtensions,
     },
     module: {
-      rules: [
-        {
-          // MUI v9 and other ESM deps ship .mjs files with extensionless
-          // subpath imports (e.g. react-transition-group/TransitionGroupContext);
-          // webpack 5 treats .mjs as fully specified and rejects them otherwise
-          test: /\.m?js$/,
-          resolve: { fullySpecified: false },
-        },
-        {
-          test: /\.m?[tj]sx?$/,
-          exclude: /node_modules/,
-          loader: 'babel-loader',
-          // Babel's own envName defaults independently of webpack's `mode`
-          // (falls back to 'development' when NODE_ENV is unset, even though
-          // `mode` above falls back to 'production') — pin it to `mode` so
-          // @babel/preset-react's automatic runtime can't pick the dev jsxDEV
-          // transform while webpack bundles the production react runtime
-          // (which has no jsxDEV export), a mismatch that crashes at runtime.
-          options: { rootMode: 'upward', envName: mode },
-        },
-      ],
+      rules: sharedRules(mode),
     },
   }
 }
