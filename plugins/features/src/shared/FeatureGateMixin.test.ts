@@ -32,8 +32,8 @@ function gatedDisplay() {
   return { display, view, track }
 }
 
-// 5,000 features over the 406px the region occupies — twelve per pixel against
-// the default budget of one.
+// 5,000 features over the 406px the region occupies — twelve per pixel, over
+// the default budget of ten.
 const DENSE: RegionGateMeasurement[] = [
   {
     displayedRegionIndex: 0,

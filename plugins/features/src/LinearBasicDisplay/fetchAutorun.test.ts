@@ -6,10 +6,21 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { createTestEnvironment as createFeatureTestEnvironment } from './testEnv.ts'
 
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// The gate fixtures count features against a budget of 1/px: 5,000 over the
+// 800 px of 50 kb at 62.5 bp/px is over it.
+function createTestEnvironment(
+  options: Parameters<typeof createFeatureTestEnvironment>[0] = {},
+) {
+  return createFeatureTestEnvironment({
+    ...options,
+    displayConfig: { maxFeatureScreenDensity: 1 },
+  })
+}
 
 // Canvas makes no other RPC call, so this responder is the whole mock.
 function makeByteGatedRender(bytesPerBp: number) {

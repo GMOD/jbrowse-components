@@ -184,7 +184,10 @@ the message can appear at any zoom and offers only **Force load**.
 ### Raising the feature limit
 
 [`maxFeatureScreenDensity`](/docs/config/linearbasicdisplay/#slot-maxfeaturescreendensity)
-is features per pixel of track width, so the budget grows with the window:
+is features per pixel of track width, so the budget grows with the window. Only
+top-level features count (a gene, not its transcripts and exons), and the
+default of 10 draws a whole bacterial genome. A variant track's budget is
+`records.maxFeatureScreenDensity`, 1 by default.
 
 ```json addtrack
 {
@@ -193,7 +196,7 @@ is features per pixel of track width, so the budget grows with the window:
   "name": "Genes",
   "assemblyNames": ["volvox"],
   "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": { "maxFeatureScreenDensity": 5 }
+  "displayDefaults": { "maxFeatureScreenDensity": 50 }
 }
 ```
 

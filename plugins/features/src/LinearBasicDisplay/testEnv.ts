@@ -15,9 +15,11 @@ import type { MenuItem } from '@jbrowse/core/ui'
 export function createTestEnvironment({
   adapterFetchSizeLimit,
   extraAssemblyNames,
+  displayConfig,
 }: {
   adapterFetchSizeLimit?: number
   extraAssemblyNames?: string[]
+  displayConfig?: Record<string, unknown>
 } = {}) {
   const adapterConfig =
     adapterFetchSizeLimit === undefined
@@ -41,6 +43,7 @@ export function createTestEnvironment({
     viewModel: linearGenomeViewStateModelFactory,
     viewRegionEnd: 10_000,
     extraAssemblyNames,
+    displayConfig,
   })
 
   return {

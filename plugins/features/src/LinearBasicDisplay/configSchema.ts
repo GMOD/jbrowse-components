@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { featureUtrsConfigSchema } from '@jbrowse/display-kit/featureUtrsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { featureGateConfigSchemaFields } from '../shared/featureGateConfigSchemaFields.ts'
 import baseConfigSchemaFactory from './baseConfigSchema.ts'
 import { featureContainersConfigSchema } from './featureContainersConfigSchema.ts'
 import { featureDescriptionLabelConfigSchema } from './featureDescriptionLabelConfigSchema.ts'
@@ -57,6 +58,16 @@ export default function configSchemaFactory(pluginManager?: PluginManager) {
        * a single gene can trip a tighter gate.
        */
       fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
+      /**
+       * #slot
+       * Only top-level features count, so a whole bacterial genome (~4,700
+       * genes over 4.6 Mb, about 3 per pixel) draws without a click. The
+       * variant display's records band keeps 1.
+       */
+      maxFeatureScreenDensity: {
+        ...featureGateConfigSchemaFields.maxFeatureScreenDensity,
+        defaultValue: 10,
+      },
       /**
        * #slot
        * The UTR boxes, a [](/docs/config/featureutrs) object. Unset, a UTR

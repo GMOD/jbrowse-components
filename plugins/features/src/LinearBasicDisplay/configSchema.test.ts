@@ -35,6 +35,7 @@ describe('LinearBasicDisplay configSchema', () => {
     expect(readConfObject(config, ['mark', 'height'])).toBe(10)
     expect(readConfObject(config, 'displayMode')).toBe('normal')
     expect(readConfObject(config, 'geneGlyphMode')).toBe('auto')
+    expect(readConfObject(config, 'maxFeatureScreenDensity')).toBe(10)
     expect(readConfObject(config, ['transcripts', 'types'])).toEqual([
       'mRNA',
       'transcript',

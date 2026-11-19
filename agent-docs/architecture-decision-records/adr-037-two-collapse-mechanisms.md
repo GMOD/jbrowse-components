@@ -113,12 +113,15 @@ action.
 different questions in different units: the fade's 3 is an occlusion count in
 painted pixels, the collapse's 25 is a track height in rows. Measured on a 1000
 Genomes phase-3 slice of chr1 through the real layout at a 900px pane: 46 SNVs
-over 2 kb stack 2 rows, and 932 SNVs over 33 kb — the most
-`maxFeatureScreenDensity`'s default of 1 feature/px admits — stack 11. So nothing
-the display agrees to draw ever collapses, and every allele in an ordinary variant
-track keeps a row, stays visible and stays hoverable. What the bar catches is the
-pileup no gate saw: 900 marks inside 1.3 kb pile ~147 deep, and 2900px of
-one-mark-per-row conveys less than a single faded band.
+over 2 kb stack 2 rows, and 932 SNVs over 33 kb — the most the variant display's
+`records.maxFeatureScreenDensity` default of 1 record/px admits — stack 11. So
+nothing a variant display agrees to draw ever collapses, and every allele in an
+ordinary variant track keeps a row, stays visible and stays hoverable.
+`LinearBasicDisplay` admits 10 features/px, so that a whole bacterial genome
+draws; the same SNVs as a BED under it reach the bar, which is the case the bar
+is for. What the bar catches is the pileup no gate saw: 900 marks inside 1.3 kb
+pile ~147 deep, and 2900px of one-mark-per-row conveys less than a single faded
+band.
 
 Setting it at the fade's 3 was tried and rejected in the same pass: it fires on
 ordinary dense variant views, where a 3-tall stack is strictly more informative

@@ -149,7 +149,7 @@ describe('a region refused for size over data already held', () => {
   })
 
   it('covers the viewport once density stops gating', async () => {
-    const { display, view } = await warmedThenRefused(densityGatedRender(0.002))
+    const { display, view } = await warmedThenRefused(densityGatedRender(0.02))
 
     view.zoomTo(RELEASED_BP_PER_PX)
     await settle()
