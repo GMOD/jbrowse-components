@@ -47,7 +47,9 @@ export async function sequenceRegions(
   const adapter = sequenceAdapter
     ? await tablesAdapter(pluginManager, sequenceAdapter, undefined)
     : undefined
-  return adapter && isRegionsAdapter(adapter) ? adapter.getRegions({}) : []
+  return adapter && isRegionsAdapter(adapter)
+    ? (await adapter.getRegions({})).map(({ circular, ...region }) => region)
+    : []
 }
 
 function aliasAdapterOf(sidecar: unknown) {
