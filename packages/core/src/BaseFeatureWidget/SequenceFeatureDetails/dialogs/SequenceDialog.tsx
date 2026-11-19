@@ -12,9 +12,11 @@ const useStyles = makeStyles()({
 })
 
 const SequenceDialog = observer(function SequenceDialog({
+  title,
   handleClose,
   children,
 }: {
+  title: string
   handleClose: () => void
   children: ReactNode
 }) {
@@ -23,7 +25,7 @@ const SequenceDialog = observer(function SequenceDialog({
     <InfoDialog
       maxWidth="xl"
       open
-      title="Sequence view"
+      title={title}
       onClose={() => {
         handleClose()
       }}

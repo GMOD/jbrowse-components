@@ -2,11 +2,11 @@ import { useState } from 'react'
 
 import { observer } from 'mobx-react'
 
-import { ErrorBanner, InfoDialog, LoadingEllipses } from '../../../ui/index.ts'
-import { makeStyles } from '../../../util/tss-react/index.ts'
+import { ErrorBanner, LoadingEllipses } from '../../../ui/index.ts'
 import SequenceFeatureDetails from '../SequenceFeatureDetails.tsx'
 import { SequenceFeatureDetailsF } from '../model.ts'
 import { useTranscriptPick } from '../useTranscriptPick.ts'
+import SequenceDialog from './SequenceDialog.tsx'
 
 import type {
   AbstractSessionModel,
@@ -17,12 +17,6 @@ import type {
   SequenceFeatureDetailsModel,
   SequenceHoverTarget,
 } from '../model.ts'
-
-const useStyles = makeStyles()({
-  content: {
-    width: '80em',
-  },
-})
 
 const PickedSequence = observer(function PickedSequence({
   canonicalTranscripts,
@@ -69,39 +63,32 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
   canonicalTranscripts?: CanonicalTranscripts
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   const [model] = useState(() => SequenceFeatureDetailsF().create())
 
   return (
-    <InfoDialog
-      maxWidth="xl"
-      open
+    <SequenceDialog
       title={
         feature
           ? `Feature sequence - ${feature.name || feature.id || feature.type}`
           : 'Feature sequence'
       }
-      onClose={() => {
-        handleClose()
-      }}
+      handleClose={handleClose}
     >
-      <div className={classes.content}>
-        {error ? (
-          <ErrorBanner error={error} />
-        ) : feature ? (
-          <PickedSequence
-            model={model}
-            session={session}
-            assemblyName={assemblyName}
-            feature={feature}
-            hoverTarget={hoverTarget}
-            canonicalTranscripts={canonicalTranscripts}
-          />
-        ) : (
-          <LoadingEllipses message="Loading feature" />
-        )}
-      </div>
-    </InfoDialog>
+      {error ? (
+        <ErrorBanner error={error} />
+      ) : feature ? (
+        <PickedSequence
+          model={model}
+          session={session}
+          assemblyName={assemblyName}
+          feature={feature}
+          hoverTarget={hoverTarget}
+          canonicalTranscripts={canonicalTranscripts}
+        />
+      ) : (
+        <LoadingEllipses message="Loading feature" />
+      )}
+    </SequenceDialog>
   )
 })
 
