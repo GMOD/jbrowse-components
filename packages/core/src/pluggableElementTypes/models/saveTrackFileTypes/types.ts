@@ -36,12 +36,7 @@ export interface FileTypeExporter {
   helpText?: string
   /** `drawn` when unset */
   featureSet?: ExportedFeatureSet
-  /**
-   * Fetch a feature crossing a circular sequence's origin whole, its end past
-   * the sequence's length, rather than as the two pieces the display draws.
-   * For a format that can write one feature across the origin; BED cannot, as
-   * bedToBigBed refuses an end past the sequence.
-   */
+  /** BED leaves it unset: bedToBigBed refuses an end past the sequence */
   wholeAcrossOrigin?: boolean
   /**
    * The signal and status callback are the pair every RPC on the export
@@ -49,10 +44,12 @@ export interface FileTypeExporter {
    * GenBank fetches the ORIGIN sequence, and without them closing the dialog
    * left a whole-gene read running with nothing waiting on it. `regions` are
    * what was exported, in the assembly's names, for a writer whose rows are
-   * positions rather than features (a coverage depth).
+   * positions rather than features (a coverage depth). `circularLengths`
+   * are the sequences the fetched data declares circular.
    */
   callback: (arg: {
     features: Feature[]
+    circularLengths: Map<string, number>
     session: AbstractSessionModel
     assemblyName: string
     regions: Region[]

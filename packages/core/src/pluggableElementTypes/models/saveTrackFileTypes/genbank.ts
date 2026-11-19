@@ -1,14 +1,11 @@
 import { fetchSeq } from '../../../util/fetchSeq.ts'
 import { createStatusFanOut, groupBy, max, min } from '../../../util/index.ts'
-import {
-  coreFeatureFields,
-  formatAttributeValue,
-  originCrossingLengths,
-} from './util.ts'
+import { coreFeatureFields, formatAttributeValue } from './util.ts'
 
 import type {
   AbstractSessionModel,
   Feature,
+  Region,
   StatusCallback,
 } from '../../../util/index.ts'
 
@@ -27,18 +24,13 @@ function qualifier(key: string, value: string) {
   return `${QUALIFIER_INDENT}/${key}="${value.replaceAll('"', '""')}"`
 }
 
-/**
- * Where a record's coordinates start, and the length of its sequence when it
- * is circular and a feature on it runs past the origin. Such a record covers
- * the whole sequence, so `minPos` is 0.
- */
+// `circularLength` is set on a circular record, whose span past the origin is
+// written join(a..L,1..b)
 interface RecordFrame {
   minPos: number
   circularLength?: number
 }
 
-// A span past a circular sequence's origin is written as the part before it
-// and the part after, as NCBI writes NC_012920's join(16024..16569,1..576)
 function spans(f: Feature, { minPos, circularLength }: RecordFrame) {
   const start = f.get('start') - minPos
   const end = f.get('end') - minPos
@@ -207,15 +199,18 @@ function formatTags({
   return tags
 }
 
-// /codon_start is 1-based where GFF3's phase is 0-based, and belongs to the
-// CDS segment translation starts in, the 5'-most one
+// the phase of the 5'-most CDS segment, 1-based
 function codonStart(feats: Feature[], strand: number) {
-  const first = feats.toSorted((a, b) =>
+  const first = feats.reduce((a, b) =>
     strand === -1
-      ? b.get('end') - a.get('end')
-      : a.get('start') - b.get('start'),
-  )[0]
-  return (first?.get('phase') ?? 0) + 1
+      ? b.get('end') > a.get('end')
+        ? b
+        : a
+      : b.get('start') < a.get('start')
+        ? b
+        : a,
+  )
+  return (first.get('phase') ?? 0) + 1
 }
 
 function formatCDS({
@@ -375,14 +370,60 @@ function formatHeader({
   ]
 }
 
+interface Arc {
+  start: number
+  end: number
+}
+
+// from the end of the widest gap between `arcs` round to its start, or the
+// whole circular sequence when they leave none
+function spanAcrossOrigin(arcs: Arc[], length: number) {
+  const firstStart = min(arcs.map(arc => arc.start))
+  let reach = firstStart
+  let widest = { gap: 0, start: 0, end: length, circular: true }
+  for (const arc of arcs.toSorted((a, b) => a.start - b.start)) {
+    if (arc.start - reach > widest.gap) {
+      widest = {
+        gap: arc.start - reach,
+        start: arc.start,
+        end: reach + length,
+        circular: false,
+      }
+    }
+    reach = Math.max(reach, arc.end)
+  }
+  return firstStart + length - reach > widest.gap
+    ? { start: firstStart, end: reach, circular: false }
+    : widest
+}
+
+function recordSpan({
+  features,
+  regions,
+  circularLength,
+}: {
+  features: Feature[]
+  regions: Arc[]
+  circularLength?: number
+}) {
+  const arcs = features.map(f => ({ start: f.get('start'), end: f.get('end') }))
+  return circularLength !== undefined &&
+    arcs.some(arc => arc.end > circularLength)
+    ? spanAcrossOrigin([...arcs, ...regions], circularLength)
+    : {
+        start: min(arcs.map(arc => arc.start)),
+        end: max(arcs.map(arc => arc.end)),
+        circular: false,
+      }
+}
+
 // One LOCUS..ORIGIN..// record, spanning the features on a single reference
 // sequence. GenBank has no way to express a span that crosses one, which is why
-// this takes a refName rather than deriving it. A record with a feature
-// running past a circular sequence's origin covers the whole sequence, since
-// the span after the origin is written from its position 1.
+// this takes a refName rather than deriving it.
 async function formatRecord({
   refName,
   features,
+  regions,
   circularLength,
   assemblyName,
   session,
@@ -391,43 +432,61 @@ async function formatRecord({
 }: {
   refName: string
   features: Feature[]
+  regions: Arc[]
   circularLength?: number
   assemblyName: string
   session: AbstractSessionModel
   signal?: AbortSignal
   statusCallback?: StatusCallback
 }) {
-  const minPos =
-    circularLength === undefined ? min(features.map(f => f.get('start'))) : 0
-  const maxPos = circularLength ?? max(features.map(f => f.get('end')))
-  const length = maxPos - minPos
-  const region = `${refName}:${minPos + 1}..${maxPos}`
+  const span = recordSpan({ features, regions, circularLength })
+  const stretches =
+    circularLength !== undefined && !span.circular && span.end > circularLength
+      ? [
+          { start: span.start, end: circularLength },
+          { start: 0, end: span.end - circularLength },
+        ]
+      : [span]
+  const region = `${refName}:${stretches.map(({ start, end }) => `${start + 1}..${end}`).join(',')}`
 
-  const contig = await fetchSeq({
-    session,
-    assemblyName,
-    start: minPos,
-    end: maxPos,
-    refName,
-    signal,
-    statusCallback,
-  })
+  const contig = await Promise.all(
+    stretches.map(({ start, end }) =>
+      fetchSeq({
+        session,
+        assemblyName,
+        start,
+        end,
+        refName,
+        signal,
+        statusCallback,
+      }),
+    ),
+  )
 
   const header = formatHeader({
     refName,
     region,
     assemblyName,
-    length,
-    circular: circularLength !== undefined,
+    length: span.end - span.start,
+    circular: span.circular,
   })
-  const body = features.map(feat =>
-    formatFeatWithSubfeatures({ feature: feat, minPos, circularLength }),
+  const body = features.map(feature =>
+    formatFeatWithSubfeatures({
+      feature,
+      minPos:
+        circularLength !== undefined && feature.get('start') < span.start
+          ? span.start - circularLength
+          : span.start,
+      circularLength: span.circular ? circularLength : undefined,
+    }),
   )
-  return [...header, ...body, ...formatOrigin(contig)].join('\n')
+  return [...header, ...body, ...formatOrigin(contig.join(''))].join('\n')
 }
 
 export async function stringifyGBK({
   features,
+  circularLengths,
+  regions,
   assemblyName,
   session,
   signal,
@@ -436,6 +495,8 @@ export async function stringifyGBK({
   assemblyName: string
   session: AbstractSessionModel
   features: Feature[]
+  circularLengths: Map<string, number>
+  regions: Region[]
   signal?: AbortSignal
   statusCallback?: StatusCallback
 }) {
@@ -445,11 +506,6 @@ export async function stringifyGBK({
   // record spanning a stretch of sequence that does not exist, with an ORIGIN
   // fetched over it.
   const byRefName = groupBy(features, f => f.get('refName'))
-  const circularLengths = originCrossingLengths({
-    features,
-    session,
-    assemblyName,
-  })
   // the records fetch their ORIGIN concurrently and all report the same phase,
   // so each gets its own fan-out slot rather than the caller's raw callback —
   // otherwise the first contig to finish blanks the label for the rest
@@ -459,6 +515,7 @@ export async function stringifyGBK({
       formatRecord({
         refName,
         features: feats,
+        regions: regions.filter(region => region.refName === refName),
         circularLength: circularLengths.get(refName),
         assemblyName,
         session,

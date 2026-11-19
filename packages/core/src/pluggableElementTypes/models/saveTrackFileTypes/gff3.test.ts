@@ -1,7 +1,6 @@
 import SimpleFeature from '../../../util/simpleFeature.ts'
 import { formatMultiLevelFeat, stringifyGFF3 } from './gff3.ts'
 
-import type { AbstractSessionModel } from '../../../util/index.ts'
 import type { Feature } from '../../../util/simpleFeature.ts'
 
 // Helper function to create a feature, ensuring a unique ID is set
@@ -13,28 +12,11 @@ function createFeature(data: Record<string, any>): SimpleFeature {
   return new SimpleFeature({ id: `${data.id}-unique`, data })
 }
 
-function sessionWithLengths(lengths: Record<string, number>) {
-  return {
-    assemblyManager: {
-      get: () => ({
-        getCanonicalRefName2: (refName: string) => refName,
-        getRegionForRefName: (refName: string) =>
-          lengths[refName] === undefined
-            ? undefined
-            : { refName, start: 0, end: lengths[refName] },
-      }),
-    },
-  } as unknown as AbstractSessionModel
-}
-
-const onLinearSequences = {
-  session: sessionWithLengths({}),
-  assemblyName: 'volvox',
-}
+const noCircular = { circularLengths: new Map<string, number>() }
 
 // Helper function to check GFF3 output using snapshot testing.
 function expectGff3Snapshot(features: Feature[]) {
-  expect(stringifyGFF3({ ...onLinearSequences, features })).toMatchSnapshot()
+  expect(stringifyGFF3({ ...noCircular, features })).toMatchSnapshot()
 }
 
 describe('GFF3 export', () => {
@@ -149,7 +131,7 @@ describe('GFF3 export', () => {
       note: 'contains;semicolon=equals,comma&ampersand%percent',
       description: 'has\ttab\nnewline\rcarriage',
     })
-    const result = stringifyGFF3({ ...onLinearSequences, features: [f] })
+    const result = stringifyGFF3({ ...noCircular, features: [f] })
     // Check that special characters are encoded
     expect(result).toContain('%3B') // semicolon
     expect(result).toContain('%3D') // equals
@@ -188,9 +170,9 @@ describe('GFF3 export', () => {
       name: 'NG_1.1',
       target: 'NG_1.1 1 100 +',
     })
-    expect(
-      stringifyGFF3({ ...onLinearSequences, features: [f] }),
-    ).not.toContain('Name=')
+    expect(stringifyGFF3({ ...noCircular, features: [f] })).not.toContain(
+      'Name=',
+    )
   })
 
   it('writes a Name that differs from the Target accession', () => {
@@ -203,13 +185,13 @@ describe('GFF3 export', () => {
       name: 'aln2',
       target: 'NG_1.1 1 100 +',
     })
-    expect(stringifyGFF3({ ...onLinearSequences, features: [f] })).toContain(
+    expect(stringifyGFF3({ ...noCircular, features: [f] })).toContain(
       'Name=aln2',
     )
   })
 
   it('returns just header for empty features array', () => {
-    const result = stringifyGFF3({ ...onLinearSequences, features: [] })
+    const result = stringifyGFF3({ ...noCircular, features: [] })
     expect(result).toBe('##gff-version 3')
   })
 
@@ -222,7 +204,7 @@ describe('GFF3 export', () => {
       type: 'CDS',
       phase: 0,
     })
-    const result = stringifyGFF3({ ...onLinearSequences, features: [f] })
+    const result = stringifyGFF3({ ...noCircular, features: [f] })
     // Phase of 0 should be output, not replaced with '.'
     expect(result).toContain('\t0\t')
   })
@@ -236,7 +218,7 @@ describe('GFF3 export', () => {
       type: 'match',
       score: 0,
     })
-    const result = stringifyGFF3({ ...onLinearSequences, features: [f] })
+    const result = stringifyGFF3({ ...noCircular, features: [f] })
     // Score of 0 should be output, not replaced with '.'
     const fields = result.split('\n', 2)[1]!.split('\t')
     expect(fields[5]).toBe('0')
@@ -252,7 +234,7 @@ describe('GFF3 export', () => {
       note: 'this is the note',
       description: 'this is the description',
     })
-    const result = stringifyGFF3({ ...onLinearSequences, features: [f] })
+    const result = stringifyGFF3({ ...noCircular, features: [f] })
     // description becomes Note, note becomes note2 to avoid collision
     expect(result).toContain('Note=this is the description')
     expect(result).toContain('note2=this is the note')
@@ -270,7 +252,7 @@ describe('GFF3 export', () => {
       null_attr: null,
       undefined_attr: undefined,
     })
-    const result = stringifyGFF3({ ...onLinearSequences, features: [f] })
+    const result = stringifyGFF3({ ...noCircular, features: [f] })
     expect(result).toContain('valid_attr=valid')
     expect(result).not.toContain('null_attr')
     expect(result).not.toContain('undefined_attr')
@@ -297,7 +279,7 @@ describe('GFF3 export', () => {
         ],
       },
     })
-    const result = stringifyGFF3({ ...onLinearSequences, features: [f] })
+    const result = stringifyGFF3({ ...noCircular, features: [f] })
     // parent gets ID from its uniqueId, child references the same value
     expect(result).toContain('ID=synth-parent')
     expect(result).toContain('Parent=synth-parent')
@@ -314,7 +296,7 @@ describe('GFF3 export', () => {
         name: 'gene1',
       },
     })
-    const result = stringifyGFF3({ ...onLinearSequences, features: [f] })
+    const result = stringifyGFF3({ ...noCircular, features: [f] })
     expect(result).not.toContain('ID=')
     expect(result).toContain('Name=gene1')
   })
@@ -334,7 +316,7 @@ describe('GFF3 export', () => {
         { id: 'cds2', start: 200, end: 280, type: 'CDS' },
       ],
     })
-    const result = stringifyGFF3({ ...onLinearSequences, features: [f] })
+    const result = stringifyGFF3({ ...noCircular, features: [f] })
     const cdsLines = result.split('\n').filter(l => l.includes('\tCDS\t'))
     expect(cdsLines[0]).toContain('\t0\tID=cds1')
     expect(cdsLines[1]).toContain('\t2\tID=cds2')
@@ -354,7 +336,7 @@ describe('GFF3 export', () => {
         { id: 'cds2', start: 200, end: 300, type: 'CDS' },
       ],
     })
-    const result = stringifyGFF3({ ...onLinearSequences, features: [f] })
+    const result = stringifyGFF3({ ...noCircular, features: [f] })
     const byId = (id: string) =>
       result.split('\n').find(l => l.includes(`ID=${id}`))!
     // cds2 (100bp) translates first → phase 0; cds1 → (3 - 100%3)%3 = 2
@@ -375,7 +357,7 @@ describe('GFF3 export', () => {
         { id: 'cds2', start: 200, end: 280, type: 'CDS' },
       ],
     })
-    const result = stringifyGFF3({ ...onLinearSequences, features: [f] })
+    const result = stringifyGFF3({ ...noCircular, features: [f] })
     const byId = (id: string) =>
       result.split('\n').find(l => l.includes(`ID=${id}`))!
     // present phase preserved, missing one still filled
@@ -432,13 +414,8 @@ describe('GFF3 export', () => {
 })
 
 describe('GFF3 export across a circular origin', () => {
-  const onChrM = {
-    session: sessionWithLengths({ chrM: 16569 }),
-    assemblyName: 'hg38',
-  }
+  const onChrM = { circularLengths: new Map([['chrM', 16569]]) }
 
-  // a gene written 16001..17169 on a 16,569 bp sequence, its second CDS
-  // crossing the origin
   const gene = () =>
     createFeature({
       id: 'gene1',
@@ -472,7 +449,6 @@ describe('GFF3 export across a circular origin', () => {
       stringifyGFF3({ ...onChrM, features: [gene()] }).split('\n'),
     ).toEqual([
       '##gff-version 3',
-      '##sequence-region chrM 1 16569',
       'chrM\t.\tregion\t1\t16569\t.\t.\t.\tID=chrM;Is_circular=true',
       'chrM\t.\tgene\t16001\t17169\t.\t+\t.\tID=gene1',
       'chrM\t.\tCDS\t16051\t16400\t.\t+\t0\tID=cds1;Parent=gene1',
@@ -491,7 +467,12 @@ describe('GFF3 export across a circular origin', () => {
     })
     const result = stringifyGFF3({ ...onChrM, features: [region, gene()] })
     expect(result.match(/Is_circular/g)).toHaveLength(1)
-    expect(result).not.toContain('##sequence-region')
+  })
+
+  it('declares nothing for a feature past the end of a sequence the data does not declare circular', () => {
+    expect(stringifyGFF3({ ...noCircular, features: [gene()] })).not.toContain(
+      'Is_circular',
+    )
   })
 
   it('declares nothing for a sequence no feature runs past the end of', () => {

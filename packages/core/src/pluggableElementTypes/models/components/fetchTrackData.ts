@@ -2,7 +2,10 @@ import { getConf } from '../../../configuration/index.ts'
 import { dedupe } from '../../../util/dedupe.ts'
 import { getSession } from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
-import { byPosition } from '../saveTrackFileTypes/util.ts'
+import {
+  byPosition,
+  declaredCircularLengths,
+} from '../saveTrackFileTypes/util.ts'
 
 import type { Region } from '../../../util/index.ts'
 import type { StatusCallback } from '../../../util/progress.ts'
@@ -147,7 +150,7 @@ async function fetchedThenFiltered({
   wholeAcrossOrigin?: boolean
   signal?: AbortSignal
   statusCallback?: StatusCallback
-}): Promise<ExportedFeatures> {
+}) {
   // A feature crossing from one region into the next comes back once per
   // region; a collapsed-introns view is one region per exon of the same gene.
   const fetched = dedupe(
@@ -165,7 +168,11 @@ async function fetchedThenFiltered({
     f => f.id(),
   )
   const features = model.activeDisplay.exportedFeatures(fetched)
-  return { features, filteredOut: fetched.length - features.length }
+  return {
+    features,
+    filteredOut: fetched.length - features.length,
+    circularLengths: declaredCircularLengths(fetched),
+  }
 }
 
 /**
@@ -241,24 +248,29 @@ export async function fetchTrackData({
 
   const exporter = options[type]!
   const display = model.activeDisplay
-  const { features, filteredOut } = display.fetchExportedFeatures
-    ? await display.fetchExportedFeatures({
-        regions,
-        featureSet: exporter.featureSet ?? 'drawn',
-        ...opts,
-      })
-    : await fetchedThenFiltered({
-        model,
-        regions,
-        adapterConfig,
-        wholeAcrossOrigin: exporter.wholeAcrossOrigin,
-        ...opts,
-      })
+  const { features, filteredOut, circularLengths } =
+    display.fetchExportedFeatures
+      ? {
+          ...(await display.fetchExportedFeatures({
+            regions,
+            featureSet: exporter.featureSet ?? 'drawn',
+            ...opts,
+          })),
+          circularLengths: new Map<string, number>(),
+        }
+      : await fetchedThenFiltered({
+          model,
+          regions,
+          adapterConfig,
+          wholeAcrossOrigin: exporter.wholeAcrossOrigin,
+          ...opts,
+        })
   // Empty rather than a header with no records under it, so the dialog can
   // say the region holds nothing instead of offering that file for download.
   const str = features.length
     ? await exporter.callback({
         features: byPosition(features),
+        circularLengths,
         session,
         assemblyName: regions[0]!.assemblyName,
         regions,

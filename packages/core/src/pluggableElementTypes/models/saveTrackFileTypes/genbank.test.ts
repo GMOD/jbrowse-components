@@ -23,21 +23,9 @@ function createFeature(data: Record<string, any>): SimpleFeature {
   return new SimpleFeature({ id: `${data.id}-unique`, data })
 }
 
-function sessionWithLengths(lengths: Record<string, number>) {
-  return {
-    assemblyManager: {
-      get: () => ({
-        getCanonicalRefName2: (refName: string) => refName,
-        getRegionForRefName: (refName: string) =>
-          lengths[refName] === undefined
-            ? undefined
-            : { refName, start: 0, end: lengths[refName] },
-      }),
-    },
-  } as unknown as AbstractSessionModel
-}
+const mockSession = {} as AbstractSessionModel
 
-const mockSession = sessionWithLengths({})
+const noCircular = { regions: [], circularLengths: new Map<string, number>() }
 
 describe('GenBank export', () => {
   beforeEach(() => {
@@ -59,6 +47,7 @@ describe('GenBank export', () => {
       features: [f],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toMatchSnapshot()
     expect(fetchSeq).toHaveBeenCalledTimes(1)
@@ -110,6 +99,7 @@ describe('GenBank export', () => {
       features: [f],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toMatchSnapshot()
     expect(fetchSeq).toHaveBeenCalledTimes(1)
@@ -134,6 +124,7 @@ describe('GenBank export', () => {
       features: [f1, f2],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toMatchSnapshot()
     expect(fetchSeq).toHaveBeenCalledTimes(1)
@@ -144,6 +135,7 @@ describe('GenBank export', () => {
       features: [],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toBe('')
     expect(fetchSeq).not.toHaveBeenCalled()
@@ -180,6 +172,7 @@ describe('GenBank export', () => {
       features: [f],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toMatchSnapshot()
     expect(fetchSeq).toHaveBeenCalledTimes(1)
@@ -203,6 +196,7 @@ describe('GenBank export', () => {
       features: [f],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toMatchSnapshot()
     expect(fetchSeq).toHaveBeenCalledTimes(1)
@@ -233,6 +227,7 @@ describe('GenBank export', () => {
       features: [f],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toMatchSnapshot()
     // Verify ORIGIN section has multiple lines
@@ -270,6 +265,7 @@ describe('GenBank export', () => {
       features: [f],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toMatchSnapshot()
     // Single CDS should not have join()
@@ -289,6 +285,7 @@ describe('GenBank export', () => {
       features: [f],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toMatchSnapshot()
     expect(result).toContain('     misc_feature    1..100')
@@ -307,6 +304,7 @@ describe('GenBank export', () => {
       features: [f],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     // Should not have complement() wrapper
     expect(result).toContain('gene            1..100')
@@ -347,6 +345,7 @@ describe('GenBank export', () => {
       features: [f],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toMatchSnapshot()
     // Gene spans the whole locus; the mRNA is a spliced join of its exons
@@ -370,6 +369,7 @@ describe('GenBank export', () => {
       features: [f],
       assemblyName: 'testAssembly',
       session: mockSession,
+      ...noCircular,
     })
     expect(result).toContain('/valid_attr="valid_value"')
     expect(result).not.toContain('null_attr')
@@ -402,6 +402,7 @@ describe('GenBank export', () => {
       ],
       assemblyName: 'volvox',
       session: mockSession,
+      ...noCircular,
     })
 
     expect(result.split('\n').filter(l => l.startsWith('LOCUS'))).toHaveLength(
@@ -425,6 +426,7 @@ describe('GenBank export', () => {
         features: [],
         assemblyName: 'volvox',
         session: mockSession,
+        ...noCircular,
       }),
     ).toBe('')
   })
@@ -445,6 +447,7 @@ describe('GenBank export', () => {
       ],
       assemblyName: 'hg38',
       session: mockSession,
+      ...noCircular,
     })
 
     const locus = result.split('\n')[0]!
@@ -474,6 +477,7 @@ describe('GenBank export', () => {
       ],
       assemblyName: 'volvox',
       session: mockSession,
+      ...noCircular,
       signal,
       statusCallback,
     })
@@ -721,6 +725,7 @@ describe('GenBank LOCUS line', () => {
         ],
         assemblyName: 'testAssembly',
         session: mockSession,
+        ...noCircular,
       })
     ).split('\n')[0]!
 
@@ -738,14 +743,10 @@ describe('GenBank LOCUS line', () => {
 })
 
 describe('GenBank export across a circular origin', () => {
-  const session = sessionWithLengths({ chrM: 16569, pTest: 1000 })
-
   beforeEach(() => {
     jest.mocked(fetchSeq).mockClear()
   })
 
-  // a gene written 16001..17169 on a 16,569 bp sequence, its second CDS
-  // crossing the origin
   const chrMGene = () =>
     createFeature({
       id: 'gene1',
@@ -774,11 +775,17 @@ describe('GenBank export across a circular origin', () => {
       ],
     })
 
-  it('writes the whole circular sequence, joining each span across the origin', async () => {
+  const wholeChrM = {
+    regions: [{ assemblyName: 'hg38', refName: 'chrM', start: 0, end: 16569 }],
+    circularLengths: new Map([['chrM', 16569]]),
+  }
+
+  it('writes a whole circular sequence as one circular record, joining each span across the origin', async () => {
     const result = await stringifyGBK({
+      ...wholeChrM,
       features: [chrMGene()],
       assemblyName: 'hg38',
-      session,
+      session: mockSession,
     })
     const locus = result.split('\n')[0]!
     expect(locus.slice(29, 40).trim()).toBe('16569')
@@ -788,11 +795,70 @@ describe('GenBank export across a circular origin', () => {
     expect(result).toContain(
       'CDS             join(16051..16400,16451..16569,1..531)',
     )
-    expect(result).toContain('/codon_start=1')
     expect(result.match(/^ {5}gene /gm)).toHaveLength(1)
-    expect(fetchSeq).toHaveBeenCalledWith(
-      expect.objectContaining({ refName: 'chrM', start: 0, end: 16569 }),
-    )
+    expect(
+      jest.mocked(fetchSeq).mock.calls.map(([a]) => [a.start, a.end]),
+    ).toEqual([[0, 16569]])
+  })
+
+  it('writes a small window across the origin as a linear record over just that window', async () => {
+    const length = 5_000_000
+    const result = await stringifyGBK({
+      regions: [
+        {
+          assemblyName: 'b',
+          refName: 'chr',
+          start: length - 1000,
+          end: length,
+        },
+        { assemblyName: 'b', refName: 'chr', start: 0, end: 1000 },
+      ],
+      circularLengths: new Map([['chr', length]]),
+      features: [
+        createFeature({
+          id: 'head',
+          refName: 'chr',
+          start: 100,
+          end: 300,
+          type: 'gene',
+        }),
+        createFeature({
+          id: 'crossing',
+          refName: 'chr',
+          start: length - 500,
+          end: length + 400,
+          type: 'gene',
+        }),
+      ],
+      assemblyName: 'b',
+      session: mockSession,
+    })
+    const locus = result.split('\n')[0]!
+    expect(locus.slice(29, 40).trim()).toBe('2000')
+    expect(locus.slice(55, 63).trimEnd()).toBe('linear')
+    expect(result).toContain('DEFINITION  chr:4999001..5000000,1..1000 from b.')
+    expect(result).toContain('gene            501..1400')
+    expect(result).toContain('gene            1101..1300')
+    expect(
+      jest.mocked(fetchSeq).mock.calls.map(([a]) => [a.start, a.end]),
+    ).toEqual([
+      [length - 1000, length],
+      [0, 1000],
+    ])
+  })
+
+  it('reads a feature past the end of a sequence the data does not declare circular as linear', async () => {
+    const result = await stringifyGBK({
+      ...noCircular,
+      features: [chrMGene()],
+      assemblyName: 'hg38',
+      session: mockSession,
+    })
+    expect(result.split('\n')[0]!.slice(55, 63).trimEnd()).toBe('linear')
+    expect(result).toContain('gene            1..1169')
+    expect(
+      jest.mocked(fetchSeq).mock.calls.map(([a]) => [a.start, a.end]),
+    ).toEqual([[16000, 17169]])
   })
 
   it('writes a minus-strand transcript across the origin as the complement of the join', () => {
@@ -841,6 +907,7 @@ describe('GenBank export across a circular origin', () => {
 
   it('keeps a record no feature crosses the origin of numbered from its first feature', async () => {
     const result = await stringifyGBK({
+      ...wholeChrM,
       features: [
         chrMGene(),
         createFeature({
@@ -852,7 +919,7 @@ describe('GenBank export across a circular origin', () => {
         }),
       ],
       assemblyName: 'hg38',
-      session,
+      session: mockSession,
     })
     const chr1Record = result
       .split(/^\/\/$/m)
@@ -863,21 +930,26 @@ describe('GenBank export across a circular origin', () => {
 })
 
 describe('GenBank CDS reading frame', () => {
-  it('starts the codon count at the phase of the 5′-most CDS segment', () => {
-    const f = createFeature({
+  const mrna = (strand: number) =>
+    createFeature({
       id: 'mrna1',
       refName: 'chr1',
       start: 0,
       end: 1000,
-      strand: -1,
+      strand,
       type: 'mRNA',
       subfeatures: [
-        { id: 'cds1', type: 'CDS', start: 100, end: 200, phase: 0 },
+        { id: 'cds1', type: 'CDS', start: 100, end: 200, phase: 1 },
         { id: 'cds2', type: 'CDS', start: 700, end: 900, phase: 2 },
       ],
     })
-    expect(formatFeatWithSubfeatures({ feature: f, minPos: 0 })).toContain(
-      '/codon_start=3',
-    )
+
+  it('starts the codon count at the phase of the 5′-most CDS segment', () => {
+    expect(
+      formatFeatWithSubfeatures({ feature: mrna(1), minPos: 0 }),
+    ).toContain('/codon_start=2')
+    expect(
+      formatFeatWithSubfeatures({ feature: mrna(-1), minPos: 0 }),
+    ).toContain('/codon_start=3')
   })
 })

@@ -231,6 +231,32 @@ test('a format that writes a feature across a circular origin fetches it whole',
   ])
 })
 
+test('a circular declaration the display filters out still reaches the writer', async () => {
+  setup({
+    exportedFeatures: features =>
+      features.filter(f => f.get('type') !== 'region'),
+  })
+  respond({
+    CoreGetFeatures: [
+      new SimpleFeature({
+        uniqueId: 'source',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        type: 'region',
+        is_circular: 'true',
+      }),
+      feature('gene1'),
+    ],
+  })
+
+  await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(writer.mock.calls[0]![0]).toMatchObject({
+    circularLengths: new Map([['ctgA', 1000]]),
+  })
+})
+
 test('the signal and status callback reach every RPC', async () => {
   setup({ exportsData: true })
   respond({ CoreGetExportData: undefined, CoreGetFeatures: [] })

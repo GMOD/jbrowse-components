@@ -1,11 +1,11 @@
 import {
   coreFeatureFields,
   formatAttributeValue,
+  declaresCircular,
   formatStrand,
-  originCrossingLengths,
 } from './util.ts'
 
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 
 const retitle: Record<string, string> = {
   name: 'Name',
@@ -162,64 +162,52 @@ export function formatMultiLevelFeat({
   ].join('\n')
 }
 
-function declaresCircular(feature: Feature) {
-  return [feature.get('is_circular')].flat().includes('true')
-}
-
-/**
- * A feature crossing a circular sequence's origin is written once, its end
- * past the sequence's length, which a reader cuts at the origin only when a
- * whole-sequence line says the sequence is circular. NCBI's own such line is
- * the `gbkey=Src` region a display leaves out of its export, so one is
- * written here, unless the export already holds one.
- */
+// a reader cuts a feature at the origin only by this line, which a display can
+// leave out of the export (NCBI's gbkey=Src region)
 function circularDeclarations({
   features,
-  session,
-  assemblyName,
+  circularLengths,
 }: {
   features: Feature[]
-  session: AbstractSessionModel
-  assemblyName: string
+  circularLengths: Map<string, number>
 }) {
   const declared = new Set(
     features.filter(declaresCircular).map(f => f.get('refName')),
   )
-  const undeclared = [
-    ...originCrossingLengths({ features, session, assemblyName }),
-  ].filter(([refName]) => !declared.has(refName))
-  return [
-    ...undeclared.map(
-      ([refName, length]) => `##sequence-region ${refName} 1 ${length}`,
-    ),
-    ...undeclared.map(([refName, length]) =>
+  const crossing = new Set(
+    features
+      .filter(
+        f => f.get('end') > (circularLengths.get(f.get('refName')) ?? Infinity),
+      )
+      .map(f => f.get('refName')),
+  )
+  return [...crossing]
+    .filter(refName => !declared.has(refName))
+    .map(refName =>
       [
         refName,
         '.',
         'region',
         1,
-        length,
+        circularLengths.get(refName),
         '.',
         '.',
         '.',
         `ID=${encodeGFF3Value(refName)};Is_circular=true`,
       ].join('\t'),
-    ),
-  ]
+    )
 }
 
 export function stringifyGFF3({
   features,
-  session,
-  assemblyName,
+  circularLengths,
 }: {
   features: Feature[]
-  session: AbstractSessionModel
-  assemblyName: string
+  circularLengths: Map<string, number>
 }) {
   return [
     '##gff-version 3',
-    ...circularDeclarations({ features, session, assemblyName }),
+    ...circularDeclarations({ features, circularLengths }),
     ...features.map(f => formatMultiLevelFeat({ feature: f })),
   ].join('\n')
 }
