@@ -62,7 +62,7 @@
     "**/config/jest/",
     "**/component_tests/",
     "**/examples-site/",
-    // `pnpm typecheck:web` runs this project, so a website/ edit it never
+    // `pnpm typecheck web` runs this project, so a website/ edit it never
     // opened still exits 0 -- appending `const x: number = "s"` to
     // `website/scripts/` proves it. The whole workspace has its own
     // `website/tsconfig.json` (astro's strict preset plus

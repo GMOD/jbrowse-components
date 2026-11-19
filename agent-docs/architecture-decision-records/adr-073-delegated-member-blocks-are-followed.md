@@ -44,7 +44,7 @@ reason had nothing to do with MST or TypeScript.
 
 The measurement that fixed the diagnosis: the spike moved one
 `.views(self => ({…}))` block of config-slot getters to `configSlotViews.ts`,
-reduced the chain to `.views(configSlotViews)`, and `pnpm typecheck:web` was
+reduced the chain to `.views(configSlotViews)`, and `pnpm typecheck web` was
 green. `pnpm autogen` then deleted 33 rows from `LinearAlignmentsDisplay.md` and
 `LGVSyntenyDisplay.md`. TypeScript and MST were both content; only the docs
 generator objected, and only by omission.
