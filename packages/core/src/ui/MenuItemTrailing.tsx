@@ -5,7 +5,7 @@ import CascadingMenuHelpIconButton, {
 } from './CascadingMenuHelpIconButton.tsx'
 import { MenuItemChevron } from './MenuItemChevron.tsx'
 import { MenuItemEndDecoration } from './MenuItemEndDecoration.tsx'
-import { menuItemAdornment } from './menuItemAdornment.tsx'
+import { menuItemAdornment } from './menuItemAdornment.ts'
 
 import type { ClickableMenuItem, SubMenuItem } from './MenuTypes.ts'
 
