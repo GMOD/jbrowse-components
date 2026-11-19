@@ -434,12 +434,12 @@ Types registered by plugins are not known to this command, so they come through
 as warnings rather than errors. A plugin manifest (--plugin-manifest) lists the
 types one plugin registers and their slots, and the top-level keys its
 rootConfigurationSchema adds, and a config's use of those is then checked as
-core's is. jbrowse-components' scripts/generateConfigManifest.ts writes one from
-the plugin's built ESM bundle (--umd-plugin for a UMD one), a path or the url a
-config's plugins entry names:
+core's is. generateConfigManifest.ts, in a jbrowse-components checkout, writes
+one from the plugin's built ESM bundle (--umd-plugin for a UMD one), a path or
+the url a config's plugins entry names:
 
-  node scripts/generateConfigManifest.ts \     --plugin dist/my-plugin.esm.js
---out my-plugin.manifest.json
+  node jbrowse-components/scripts/generateConfigManifest.ts \     --plugin
+dist/my-plugin.esm.js --out my-plugin.manifest.json
 
 The same checks are published as a JSON Schema at
 https://jbrowse.org/jb2/schema/v5/config.json: a "$schema" line naming it at the
