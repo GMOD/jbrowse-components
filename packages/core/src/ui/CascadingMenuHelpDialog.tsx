@@ -20,9 +20,8 @@ const useStyles = makeStyles()({
   },
 })
 
-// Opened from a menu level's Help row, and a React child of that level, so its
-// clicks and keys are stopped at the root: a click would reach the row that
-// opened it, and an arrow key the MenuList's own focus handling.
+// Events stop at the root so they cannot travel up the React tree into the
+// menu and view behind it
 const CascadingMenuHelpDialog = observer(function CascadingMenuHelpDialog({
   onClose,
   title,

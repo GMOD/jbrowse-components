@@ -24,7 +24,7 @@ import { resolveSubMenu, staysOpenOnClick } from './MenuTypes.ts'
 import { hasMenuItemAdornment } from './menuItemAdornment.ts'
 import { isAimedAtPanel } from './submenuAim.ts'
 import { submenuOrigins, submenuSide } from './submenuSide.ts'
-import { usePlacedMenuFocus } from './usePlacedMenuFocus.ts'
+import { HELP_ROW_TESTID, usePlacedMenuFocus } from './usePlacedMenuFocus.ts'
 
 import type { MenuHelpEntry } from './CascadingMenuHelpDialog.tsx'
 import type {
@@ -613,7 +613,7 @@ const CascadingMenuHelpRow = observer(function CascadingMenuHelpRow({
   return (
     <>
       <MenuItem
-        data-testid="cascading-menu-help"
+        data-testid={HELP_ROW_TESTID}
         aria-haspopup="dialog"
         onClick={() => {
           setOpen(true)

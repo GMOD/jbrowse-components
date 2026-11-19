@@ -2,7 +2,10 @@ import { useRef } from 'react'
 
 import type { PopoverActions } from '@mui/material'
 
-const FIRST_ROW = '[role^="menuitem"]:not(.Mui-disabled)'
+export const HELP_ROW_TESTID = 'cascading-menu-help'
+
+const HELP_ROW = `[data-testid="${HELP_ROW_TESTID}"]`
+const FIRST_ROW = `[role^="menuitem"]:not(.Mui-disabled):not(${HELP_ROW})`
 const FIRST_FIELD = 'input:not(:disabled)'
 
 /**
@@ -16,7 +19,8 @@ const FIRST_FIELD = 'input:not(:disabled)'
  *
  * The `onEntering` returned here places the paper through Popover's
  * `updatePosition`, then focuses the first row without scrolling anything —
- * or, in a panel of `type: 'custom'` rows only, its first field.
+ * or, in a panel of `type: 'custom'` rows only, its first field. The Help row
+ * comes last, so a slider panel with help still opens on its slider.
  */
 export function usePlacedMenuFocus() {
   const action = useRef<PopoverActions>(null)
@@ -28,7 +32,8 @@ export function usePlacedMenuFocus() {
       action.current?.updatePosition()
       const target =
         paper.querySelector<HTMLElement>(FIRST_ROW) ??
-        paper.querySelector<HTMLElement>(FIRST_FIELD)
+        paper.querySelector<HTMLElement>(FIRST_FIELD) ??
+        paper.querySelector<HTMLElement>(HELP_ROW)
       target?.focus({ preventScroll: true })
     },
   }

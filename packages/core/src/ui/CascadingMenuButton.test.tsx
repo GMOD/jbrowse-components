@@ -91,6 +91,7 @@ describe('CascadingMenuButton', () => {
     const user = await setup([
       {
         label: 'Size',
+        helpText: 'how wide',
         subMenu: [
           {
             label: 'Width',
