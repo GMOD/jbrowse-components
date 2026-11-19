@@ -104,6 +104,10 @@ explicit location slot, and derive the index location from it.
   shorthands: uri, baseUri, csi
 - [Gff3Adapter](https://jbrowse.org/jb2/docs/config/gff3adapter.md) —
   shorthands: uri, baseUri
+- [GenbankAdapter](https://jbrowse.org/jb2/docs/config/genbankadapter.md) —
+  shorthands: uri, baseUri
+- [GenbankSequenceAdapter](https://jbrowse.org/jb2/docs/config/genbanksequenceadapter.md)
+  — shorthands: uri, baseUri
 - [NCListAdapter](https://jbrowse.org/jb2/docs/config/nclistadapter.md)
 - [SPARQLAdapter](https://jbrowse.org/jb2/docs/config/sparqladapter.md)
 - [TwoBitAdapter](https://jbrowse.org/jb2/docs/config/twobitadapter.md) —

@@ -500,6 +500,7 @@ restores natively:
 | [`trackSelectorType`](/docs/models/lineargenomeview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared so that saved sessions and share links include it. |
 | [`windowStartBp`](/docs/models/lineargenomeview#property-windowstartbp) | Left edge of the viewport, in linearized bp — the concatenated `displayedRegions` space that `offsetPx` indexes, which has no inter-region padding, so the two differ only by `bpPerPx`. May be negative when the view is scrolled past the left end.<br><br>The view stores the genomic window it frames. Pixels mean nothing without the width they were measured at, and a snapshot does not include one. A session authored in a 1000px window therefore shows the same region when opened at 500px, as the same location given as a `&loc=` does: both ways to share a view store intent. |
 | [`windowWidthBp`](/docs/models/lineargenomeview#property-windowwidthbp) | Width of the viewport in bp. Zero means "not established yet": no width has been measured, so there is nothing to divide by. The first measure fills it in, and `bpPerPx` is `windowWidthBp / width` from then on. |
+| [`zoomOf`](/docs/models/lineargenomeview#property-zoomof) | id of another LinearGenomeView in the session that this view is a close-up of: the source marks this view's extent, and this view draws a connector strip from that mark down to its own width |
 
 <!-- END GENERATED SPEC_KEYS LinearGenomeView -->
 

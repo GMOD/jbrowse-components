@@ -28,6 +28,150 @@ function variantDensityAlpha(opts: {
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
 
+### variantFeatureTables
+
+A VCF's records over `regions` as the variant display draws them with no sample
+rows, its records band the whole track, in the tables `featureTables` gives a
+feature track: `display` is the `LinearVariantDisplay`'s config as a
+VariantTrack's `displays` entry writes it, its record settings under `records`
+(`displayMode`, `mark`, `labels`, `facet`, `tooltip.field`), `encoding.color`,
+`filter`, `heightMode`, `height` and `growMaxHeight` top-level. Each record
+takes the band's color, its SV class's or `featureDefaultColor` under no picked
+`encoding.color`, and the key lists the classes the placed records hold, as the
+browser's does. The display's own views lay the band out, run on a static host
+over the payload the display fetches, which reads no genotype, so every record
+the filter admits is listed, a record calling none included. The band packs
+`regions` and the view's margin around each (`fetchRegions`). No density gate
+refuses a dense window. The adapters must be registered on `pluginManager`
+(`registerVariantAdapters`).
+
+```ts
+import { variantFeatureTables } from '@jbrowse/plugin-variants/tables'
+
+function variantFeatureTables(
+  pluginManager: PluginManager,
+  opts: VariantTablesArgs & Pick<FeatureTablesArgs, 'bpPerPx'>,
+): Promise<{
+  bpPerPx: number
+  config: Record<string, unknown>
+  fetchRegions: {
+    refName: string
+    start: number
+    end: number
+    originalRefName?: string
+    assemblyName: string
+  }[]
+  truncated: number
+  sections: { key: string[]; label: string[]; top: number[]; height: number[] }
+  legend: { label: string[]; color: string[] }
+  legendTitle: string
+  ramps: {
+    offset: number[]
+    color: string[]
+    opacity: number[]
+    minLabel: string
+    maxLabel: string
+    id: string
+    title: string
+  }[]
+  glyph: {
+    fontSize: number
+    arrowLength: number
+    arrowStemHalfHeight: number
+    chevronWidth: number
+    chevronHeight: number
+    aminoAcidHalo: string
+    sectionLabelHeight: number
+  }
+  height: number
+  features: {
+    id: string[]
+    name: string[]
+    type: string[]
+    start: number[]
+    end: number[]
+    strand: number[]
+    top: number[]
+    bottom: number[]
+    gene: boolean[]
+    section: string[]
+  } & { region: number[] }
+  subfeatures: {
+    id: string[]
+    name: string[]
+    type: string[]
+    start: number[]
+    end: number[]
+    top: number[]
+    bottom: number[]
+    feature: number[]
+  } & { region: number[] }
+  rects: {
+    start: number[]
+    end: number[]
+    top: number[]
+    height: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+  lines: {
+    start: number[]
+    end: number[]
+    y: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+  chevrons: {
+    position: number[]
+    y: number[]
+    halfHeight: number[]
+    direction: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+  arrows: {
+    position: number[]
+    y: number[]
+    direction: number[]
+    headHalfHeight: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+  aminoAcids: {
+    start: number[]
+    end: number[]
+    aminoAcid: string[]
+    proteinIndex: number[]
+    top: number[]
+    height: number[]
+    stopOrNonTriplet: boolean[]
+    translExcept: boolean[]
+    text: string[]
+    fontSize: number[]
+    y: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+  labels: {
+    text: string[]
+    kind: string[]
+    position: number[]
+    y: number[]
+    fontSize: number[]
+    color: string[]
+    feature: number[]
+    subfeature: number[]
+  } & { region: number[] }
+}>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
+
 ### variantGenotypeMatrix
 
 The matrix the variant display's "Cluster rows by genotype" clusters, over the
@@ -59,8 +203,8 @@ function variantGenotypeMatrix(
 ### variantRecordTables
 
 The VCF columns of the records a feature table lists, by its `features.id`, for
-a host drawing a VCF as the plain variant display does, which draws every
-record, a record calling no genotype included:
+a host drawing a VCF's records as the variant display's records band does
+(`variantFeatureTables`), every record, one calling no genotype included:
 
 - `records`: each one's `ref`, `alt` (its alleles joined by `,`) and `filter`,
   aligned to `ids`.

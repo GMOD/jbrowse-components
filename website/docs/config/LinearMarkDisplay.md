@@ -61,6 +61,7 @@ per px:
 - **Adapter:** [BigBedAdapter](../bigbedadapter)
 - **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
 - **Adapter:** [FromConfigAdapter](../fromconfigadapter)
+- **Adapter:** [GenbankAdapter](../genbankadapter)
 - **Adapter:** [Gff3Adapter](../gff3adapter)
 - **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
 - **Adapter:** [GtfAdapter](../gtfadapter)

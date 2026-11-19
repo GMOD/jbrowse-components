@@ -46,6 +46,78 @@ npx @jbrowse/capture --genome hg38 --loc EGFR \
   a file on disk to its browser, so a bare `reads.bam` or a `--bam` fails naming
   jb2export and Desktop.
 
+## For an AI agent
+
+There are two routes: the command line for one picture, and the library for a
+view the agent looks at and changes in turn.
+
+**One picture:** add `--json`. Stdout is then one object, with the image path,
+the URL, what did not settle, and `session`, which is what `jb.sessionSummary()`
+answered before the screenshot:
+
+```json
+{
+  "out": "brca1.png",
+  "url": "https://jbrowse.org/code/jb2/…",
+  "session": {
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "visibleRegion": "chr17:43,019,059..43,195,504",
+        "tracks": [
+          {
+            "trackId": "hg38-ncbiRefSeqCurated",
+            "display": "LinearBasicDisplay",
+            "height": 100
+          }
+        ]
+      }
+    ]
+  },
+  "pending": [],
+  "tooLarge": [],
+  "unsettled": []
+}
+```
+
+- Read `session` before the image. `visibleRegion` says where a gene name
+  landed, and a track with a problem lists its `phase`, `error` or `notices`.
+- Still read the image. A region with no features settles cleanly and draws an
+  empty track.
+- `batch --json` prints an array with one object per image, in manifest order. A
+  failed image has `ok: false` and its `error`. Progress goes to stderr.
+
+**Look, change, look again:** `openJBrowse` keeps the page open, and the page
+publishes `window.jb`. That is the same helper library JBrowse Desktop's MCP
+`run_javascript` and Claude in Chrome use, so
+[its reference](https://jbrowse.org/jb2/docs/agents_live_model/) and
+[recipes](https://jbrowse.org/jb2/docs/agents_recipes/) apply as written:
+
+```js
+import { openJBrowse, waitForAppSettled } from '@jbrowse/capture'
+
+const { browser, page } = await openJBrowse({
+  genome: 'hg38',
+  loc: 'BRCA1',
+  tracks: ['hg38-ncbiRefSeqCurated'],
+})
+// the data behind the picture, over the visible region
+const genes = await page.evaluate(
+  async () =>
+    (await jb.getFeatures({ trackId: 'hg38-ncbiRefSeqCurated' })).length,
+)
+// { applied, unapplied, failed }: an unapplied key is not an error
+const report = await page.evaluate(() =>
+  jb.trackModel('hg38-ncbiRefSeqCurated').applyDisplaySettings({ height: 250 }),
+)
+await waitForAppSettled(page)
+await page.screenshot({ path: 'taller.png' })
+await browser.close()
+```
+
+Each change costs a page evaluate rather than a new browser. `jb.help` on the
+page lists the helpers.
+
 ## Knowing when JBrowse has finished rendering
 
 JBrowse loads its config, builds a session, resolves an assembly, fetches each
@@ -116,9 +188,7 @@ const { pending, unsettled } = await captureJBrowse({
 
 // or keep the page, to click things, read state back, or shoot one element
 const { browser, page } = await openJBrowse({ genome: 'mm39', loc: 'Sox2' })
-const tracks = await page.evaluate(
-  () => window.JBrowseSession.views[0].tracks.length,
-)
+const summary = await page.evaluate(() => jb.sessionSummary())
 const view = await page.$('[data-testid^="view-container-"]')
 await view.screenshot({ path: 'view-only.png' })
 await browser.close()
@@ -180,7 +250,12 @@ the thing you asked to capture.
 
 ## Reading the result
 
-Three fields on a successful capture:
+Four fields on a successful capture, printed by `--json`:
+
+- **`session`** — what `jb.sessionSummary()` answered before the screenshot:
+  each view with its visible region and height, and each track with its display,
+  height and any phase, error or notice. Undefined on a page that publishes no
+  `window.jb`.
 
 - **`unsettled`** — what did not settle: a wait that timed out, a display
   unpainted, canceled or showing an error, or an error on screen. Empty unless

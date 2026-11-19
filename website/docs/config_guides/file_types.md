@@ -90,6 +90,7 @@ track.
 | --- | --- | --- | --- |
 | Bgzipped FASTA (.fa.gz + .fai + .gzi) | [](/docs/config/bgzipfastaadapter) | assembly `sequence` |  |
 | chrom.sizes | [](/docs/config/chromsizesadapter) | assembly `sequence` | Names and lengths only, no sequence |
+| GenBank (.gb, .gbk, .gbff) | [](/docs/config/genbanksequenceadapter) | assembly `sequence` | Read entirely into memory; for small genomes |
 | Indexed FASTA (.fa + .fai) | [](/docs/config/indexedfastaadapter) | assembly `sequence` |  |
 | Plain FASTA (.fa, no index) | [](/docs/config/unindexedfastaadapter) | assembly `sequence` | Read entirely into memory; prefer an indexed form for large genomes |
 | UCSC 2bit | [](/docs/config/twobitadapter) | assembly `sequence` |  |
@@ -138,6 +139,7 @@ prefer the tabix or BigBed forms past small files.
 | BED (plain) | [](/docs/config/bedadapter) | [](/docs/config/featuretrack) | Loaded entirely into memory; for small files |
 | BED (tabix) | [](/docs/config/bedtabixadapter) | [](/docs/config/featuretrack) |  |
 | BigBed | [](/docs/config/bigbedadapter) | [](/docs/config/featuretrack) |  |
+| GenBank (.gb, .gbk, .gbff) | [](/docs/config/genbankadapter) | [](/docs/config/featuretrack) | Loaded entirely into memory; for small genomes |
 | GFF3 (plain) | [](/docs/config/gff3adapter) | [](/docs/config/featuretrack) | Loaded entirely into memory; for small files |
 | GFF3 (tabix) | [](/docs/config/gff3tabixadapter) | [](/docs/config/featuretrack) |  |
 | GTF (plain) | [](/docs/config/gtfadapter) | [](/docs/config/featuretrack) | Loaded entirely into memory; for small files |

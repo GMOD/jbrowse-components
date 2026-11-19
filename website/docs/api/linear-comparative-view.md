@@ -244,8 +244,10 @@ color the view's `encoding.color` paints it; `ribbons`, what the band draws betw
 the rows in paint order, each a trapezoid from a span on the query row to
 a span on the target row (`match` for the block, `insertion`, `deletion`
 and `skip` for the CIGAR ops wide enough to draw, `marker` for a location
-tick), with its color and the alpha it composites at, and whether it draws
-as a centerline, less those the band culls past its overdraw;
+tick), with its color and the alpha it composites at, an indel already
+blended over the band's ground and opaque as the band paints it, and
+whether it draws as a centerline, less those the band culls past its
+overdraw;
 `offscreen`, the blocks whose mate lies on a contig the other row is not
 showing or past its window and overdraw, in the color the strip along
 that row's edge paints them, `offscreenContigs`, the count and aligned bp

@@ -72,7 +72,7 @@ import {
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
-import { circularLength, cutAtOrigin } from '../originSpanning.ts'
+import { circularLength, searchAcrossOrigin } from '../originSpanning.ts'
 
 import type { Gff3AdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -138,23 +138,14 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
     // no try/catch: ObservableCreate forwards a rejected callback to
     // observer.error itself
     return ObservableCreate<Feature>(async observer => {
-      const { start, end, refName } = query
       const { intervalTreeMap } = await this.loadData(opts)
-      const tree = intervalTreeMap[refName]?.(opts.statusCallback)
+      const tree = intervalTreeMap[query.refName]?.(opts.statusCallback)
       if (tree) {
-        // a feature crossing a circular sequence's origin is stored from its
-        // start near the end, so a query short of the end looks there too
         const length = circularLength(
           tree.search([0, 1]).map(({ feature }) => feature),
         )
-        const candidates = [
-          ...tree.search([start, end]),
-          ...(length !== undefined && end < length
-            ? tree.search([length - 1, length])
-            : []),
-        ]
-        for (const { feature, uniqueId } of cutAtOrigin(
-          candidates,
+        for (const { feature, uniqueId } of searchAcrossOrigin(
+          tree,
           query,
           length,
           opts.wholeAcrossOrigin,
@@ -369,7 +360,8 @@ export interface BaseOptions {
   // "I read one feature whole", so an adapter that cuts a feature crossing a
   // circular sequence's origin into two drawable pieces (`originCut`) answers
   // it uncut instead, in the file's coordinates, when either piece overlaps
-  // the query. Set by the feature details fetch.
+  // the query. Set by the feature details fetch, and by "Save track data" for
+  // a format that writes such a feature whole (GFF3, GenBank).
   wholeAcrossOrigin?: boolean
 }
 ```

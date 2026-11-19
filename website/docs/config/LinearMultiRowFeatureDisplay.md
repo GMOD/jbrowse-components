@@ -99,6 +99,7 @@ One row, written so the `type` default does not split the features:
 - **Adapter:** [BigBedAdapter](../bigbedadapter)
 - **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
 - **Adapter:** [FromConfigAdapter](../fromconfigadapter)
+- **Adapter:** [GenbankAdapter](../genbankadapter)
 - **Adapter:** [Gff3Adapter](../gff3adapter)
 - **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
 - **Adapter:** [GtfAdapter](../gtfadapter)

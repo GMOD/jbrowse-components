@@ -91,6 +91,15 @@ function featureTables(
   pluginManager: PluginManager,
   opts: FeatureTablesArgs,
 ): Promise<{
+  bpPerPx: number
+  config: Record<string, unknown>
+  fetchRegions: {
+    refName: string
+    start: number
+    end: number
+    originalRefName?: string
+    assemblyName: string
+  }[]
   truncated: number
   sections: { key: string[]; label: string[]; top: number[]; height: number[] }
   legend: { label: string[]; color: string[] }
@@ -113,15 +122,6 @@ function featureTables(
     aminoAcidHalo: string
     sectionLabelHeight: number
   }
-  bpPerPx: number
-  config: Record<string, unknown>
-  fetchRegions: {
-    refName: string
-    start: number
-    end: number
-    originalRefName?: string
-    assemblyName: string
-  }[]
   height: number
   features: {
     id: string[]

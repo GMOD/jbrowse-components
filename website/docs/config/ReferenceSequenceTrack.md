@@ -39,6 +39,7 @@ Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field 
 - **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
 - **Adapter:** [FromConfigRegionsAdapter](../fromconfigregionsadapter)
 - **Adapter:** [FromConfigSequenceAdapter](../fromconfigsequenceadapter)
+- **Adapter:** [GenbankSequenceAdapter](../genbanksequenceadapter)
 - **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
 - **Adapter:** [TwoBitAdapter](../twobitadapter)
 - **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)

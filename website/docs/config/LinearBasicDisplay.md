@@ -46,6 +46,7 @@ A `FeatureTrack` with compact features. `displayMode` is `normal`,
 - **Adapter:** [BigBedAdapter](../bigbedadapter)
 - **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
 - **Adapter:** [FromConfigAdapter](../fromconfigadapter)
+- **Adapter:** [GenbankAdapter](../genbankadapter)
 - **Adapter:** [Gff3Adapter](../gff3adapter)
 - **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
 - **Adapter:** [GtfAdapter](../gtfadapter)
@@ -71,6 +72,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearBasicDisplay
 | Slot | Description |
 | --- | --- |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5000000</code> | Feature (GFF/BED) tracks are light text, and the tabix byte estimate is block-granular (a small region still pulls whole BGZF blocks), so a single gene can trip a tighter gate.<br>_advanced_ |
+| <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10</code> | Only top-level features count, so a whole bacterial genome (~4,700 genes over 4.6 Mb, about 3 per pixel) draws without a click. The variant display's records band keeps 1.<br>_advanced_ |
 | <span id="slot-utrs">**utrs**</span><br>[FeatureUtrs](../featureutrs) | The UTR boxes, a [](/docs/config/featureutrs) object. Unset, a UTR takes its transcript's fill, a feature's own BED itemRgb included (matching UCSC's whole-item coloring), else a contrasting blue. |
 | <span id="slot-geneglyphmode">**geneGlyphMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('auto', 'all', 'representative') = <code>'auto'</code> | Gene glyph display mode: "auto" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, "all" draws every transcript and scrolls the surplus instead of trimming, "representative" shows one transcript per gene — the first by `transcripts.sort`, else the longest coding |
 | <span id="slot-labels">**labels**</span><br>[FeatureLabels sub-schema](#slot-labelsname) | The text drawn beside each feature: the base's name and description, and the names of its parts. |
@@ -81,7 +83,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearBasicDisplay
 | <span id="slot-chevronsshow">**chevrons.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw chevrons on intron lines pointing the way the feature reads |
 | <span id="slot-transcripts">**transcripts**</span><br>[FeatureTranscripts](../featuretranscripts) | How a gene's isoforms are read and ranked, a [](/docs/config/featuretranscripts) object. |
 | <span id="slot-containers">**containers**</span><br>[FeatureContainers](../featurecontainers) | The top-level types whose children each stack on a separate row, a [](/docs/config/featurecontainers) object. |
-| <span class="slot-group">Inherited from [LinearFeatureBaseDisplay](../linearfeaturebasedisplay)</span> | <span class="slot-group-count">10 slots</span> |
+| <span class="slot-group">Inherited from [LinearFeatureBaseDisplay](../linearfeaturebasedisplay)</span> | <span class="slot-group-count">9 slots</span> |
 | <span id="slot-filter">**filter**</span><br>[FieldPredicate](../fieldpredicate) | The features the display draws, a list of [](/docs/config/fieldpredicate) entries a feature must all pass: a field of the feature's own (`{ field: "score", gte: 100 }`), a `jexl:` expression that must hold (`"jexl:feature.type == 'gene'"`), or `geneLike`, true for every gene, transcript and RNA type, the `transcripts.types` and `containers.types`, and a top-level CDS. |
 | <span id="slot-tooltip">**tooltip**</span><br>[FeatureTooltip](../featuretooltip) | The box hovering a feature opens, a [](/docs/config/featuretooltip) object. |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The display's color key, when it has one: the key an `encoding.color` field derives, or a variant track's consequence-impact / SV-type presets. |
@@ -91,7 +93,6 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearBasicDisplay
 | <span id="slot-facet">**facet**</span><br>[SectionFacet](../sectionfacet) | One labelled section of the track per value of a field: `"strand"`, or `{ field, sort }` with the order its sections stack in. |
 | <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ('fixed', 'grow', 'fit') = <code>'fit'</code> | Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed under "Feature height → When features overflow"). `fit` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; `fixed` keeps a scrollable fixed height; `grow` expands the track to show all features. Orthogonal to the per-feature size set by `displayMode`, which fit never enlarges. |
 | <span id="slot-growmaxheight">**growMaxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>800</code> | Ceiling in pixels for the "Grow the track" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes<br>_advanced_ |
-| <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message<br>_advanced_ |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">2 slots</span> |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view with no user interaction, such as an embedded or notebook view or a screenshot, where the region is known and should draw without a click.<br>_advanced_ |

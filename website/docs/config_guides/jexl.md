@@ -93,6 +93,12 @@ tags from both BAM and CRAM features.
 jexl: getInherited(feature, 'gene_biotype') // the attribute from the feature, or from its nearest ancestor that has it, so a CDS reads its gene's value
 ```
 
+**Feature operations - getUnbranched**
+
+```jexl
+jexl: getUnbranched(feature, 'product') // the attribute from the feature, else from its only child, and on down while each level has one child, so a bacterial gene reads its one CDS's value
+```
+
 **Math functions**
 
 ```jexl
