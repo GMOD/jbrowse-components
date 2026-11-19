@@ -6,21 +6,34 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-// Deliberately not pnpm-workspace.yaml's list. That one also carries
-// products/*/examples-site and website, neither of which is versioned with the
-// release. example-plugins/* is: it is private and never published, but its
-// manifest is an example a plugin author copies, and left out of the bump it
-// sat at 4.3.0 through a major.
-export const WORKSPACES = ['packages', 'products', 'plugins', 'example-plugins']
+export function workspaceGlobs(root: string) {
+  const yaml = fs.readFileSync(path.join(root, 'pnpm-workspace.yaml'), 'utf8')
+  return (/^packages:\n((?:[ #].*\n|\n)*)/m.exec(yaml)?.[1] ?? '')
+    .split('\n')
+    .map(line => /^\s+-\s+'(.+)'\s*$/.exec(line)?.[1])
+    .filter(pattern => pattern !== undefined)
+}
+
+// pnpm-workspace.yaml's `<folder>/*` entries, the folders every child of which
+// is a package. Its other entries, products/*/examples-site and website, are
+// not versioned with the release. example-plugins/* is: it is private and
+// never published, but its manifest is an example a plugin author copies, and
+// left out of the bump it sat at 4.3.0 through a major.
+export function workspaceFolders(root: string) {
+  return workspaceGlobs(root)
+    .map(pattern => /^([^/*]+)\/\*$/.exec(pattern)?.[1])
+    .filter(folder => folder !== undefined)
+}
 
 export function workspaceManifests(root: string) {
-  return WORKSPACES.filter(ws => fs.existsSync(path.join(root, ws))).flatMap(
-    ws =>
+  return workspaceFolders(root)
+    .filter(ws => fs.existsSync(path.join(root, ws)))
+    .flatMap(ws =>
       fs
         .readdirSync(path.join(root, ws))
         .map(dir => path.join(ws, dir, 'package.json'))
         .filter(manifest => fs.existsSync(path.join(root, manifest))),
-  )
+    )
 }
 
 // Every manifest whose version is not `version`, as `path\tversion` pairs.

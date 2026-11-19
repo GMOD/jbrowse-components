@@ -2,10 +2,30 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
-import { versionMismatches, workspaceManifests } from './releaseWorkspaces.ts'
+import {
+  versionMismatches,
+  workspaceFolders,
+  workspaceManifests,
+} from './releaseWorkspaces.ts'
 
 const fixture = (pkgs: Record<string, unknown>) => {
   const root = mkdtempSync(path.join(tmpdir(), 'release-workspaces-'))
+  writeFileSync(
+    path.join(root, 'pnpm-workspace.yaml'),
+    [
+      'packages:',
+      "  - 'packages/*'",
+      "  - 'products/*'",
+      "  - 'products/*/examples-site'",
+      "  - 'plugins/*'",
+      '  # a comment line',
+      "  - 'example-plugins/*'",
+      "  - 'website'",
+      'minimumReleaseAgeExclude:',
+      "  - '@gmod/*'",
+      '',
+    ].join('\n'),
+  )
   for (const [rel, manifest] of Object.entries(pkgs)) {
     mkdirSync(path.join(root, rel), { recursive: true })
     writeFileSync(
@@ -26,6 +46,12 @@ test('workspaceManifests finds one level under each workspace, and no deeper', (
     'products/jbrowse-web/examples-site': { version: '0.0.0' },
     website: { version: '0.0.0' },
   })
+  expect(workspaceFolders(root)).toEqual([
+    'packages',
+    'products',
+    'plugins',
+    'example-plugins',
+  ])
   expect(workspaceManifests(root).sort()).toEqual([
     'example-plugins/score-example/package.json',
     'packages/core/package.json',
