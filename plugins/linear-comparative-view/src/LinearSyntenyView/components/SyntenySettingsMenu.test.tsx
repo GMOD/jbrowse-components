@@ -158,7 +158,7 @@ test('one menu holds every render setting', async () => {
   for (const label of [
     'Identity fade',
     'Curved lines',
-    'Location markers',
+    'Gridlines',
     'Opacity',
     'CIGAR indels',
     'Off-screen mates',
@@ -250,7 +250,7 @@ test('a checkbox row writes its boolean and leaves the menu up', async () => {
   expect(view.interpolate).toBe('linear')
   fireEvent.click(screen.getByText('Curved lines'))
   expect(view.interpolate).toBe('bump')
-  expect(screen.getByText('Location markers')).toBeTruthy()
+  expect(screen.getByText('Gridlines')).toBeTruthy()
 })
 
 // The half the click test cannot see. It asserts false -> click -> true, which

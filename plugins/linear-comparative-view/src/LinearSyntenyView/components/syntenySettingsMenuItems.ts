@@ -35,17 +35,9 @@ export function syntenySettingsMenuItems(
     toggleItem('Curved lines', model.interpolate === 'bump', v => {
       model.setInterpolate(v ? 'bump' : 'linear')
     }),
-    toggleItem(
-      'Location markers',
-      model.axisGrid,
-      v => {
-        model.setAxisGrid(v)
-      },
-      {
-        helpText:
-          "Carry the upper row's scalebar ticks down through the ribbons to the coordinates they pair with.",
-      },
-    ),
+    toggleItem('Gridlines', model.axisGrid, v => {
+      model.setAxisGrid(v)
+    }),
     toggleItem(
       'Off-screen mates',
       model.offscreenDrawn,
@@ -53,8 +45,7 @@ export function syntenySettingsMenuItems(
         model.setOffscreenDrawn(v)
       },
       {
-        helpText:
-          'Marks alignments whose other end is off screen. Costs a second query per panel pair on an indexed file.',
+        helpText: 'Costs a second query per panel pair on an indexed file.',
       },
     ),
     ...(model.hasLegendKey

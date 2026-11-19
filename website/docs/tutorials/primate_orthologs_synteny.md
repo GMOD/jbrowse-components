@@ -306,8 +306,8 @@ Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
   `primate_orthologs` between them
 - Navigate the human row to `chr2` and the chimpanzee row to `chr12` and
   `chr13`, the two chromosomes that hold its halves
-- Pick **Target** in the palette button menu, which colors each ribbon by the
-  chimpanzee chromosome it maps to
+- Pick **Target sequence** in the palette button menu, which colors each ribbon
+  by the chimpanzee chromosome it maps to
 
 <Figure caption="Human chr2 over chimpanzee chr12 and chr13, ribbons colored by chimpanzee chromosome." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 

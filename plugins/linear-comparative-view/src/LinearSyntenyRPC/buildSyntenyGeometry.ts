@@ -70,7 +70,7 @@ export type SyntenyInstanceData = SyntenyGeometry & { colors: Uint32Array }
 // interesting" frission this view is meant to preserve.
 export const MIN_CIGAR_PX_WIDTH = 2
 
-// Location markers are the TOP PANEL'S RULER, continued down through the
+// Gridlines are the TOP PANEL'S RULER, continued down through the
 // ribbons. A tick is drawn wherever a round genomic coordinate of the query
 // axis falls inside an alignment, joining it to the coordinate the alignment
 // pairs it with on the target axis — so a tick's top end sits on a labelled

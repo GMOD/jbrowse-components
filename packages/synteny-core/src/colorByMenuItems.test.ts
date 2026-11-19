@@ -129,6 +129,21 @@ test('a view offers Track once two tracks overlay, and Reference across a stack'
   ])
 })
 
+test('the dotplot names its sequences by axis', () => {
+  const labelOf = (surface: ColorByMenuTarget['surface'], index: number) => {
+    const item = colorByMenuItems(target({ surface }))[index]!
+    return 'label' in item ? item.label : undefined
+  }
+  expect([labelOf('points', 3), labelOf('points', 4)]).toEqual([
+    'X-axis sequence',
+    'Y-axis sequence',
+  ])
+  expect([labelOf('ribbons', 3), labelOf('ribbons', 4)]).toEqual([
+    'Query sequence',
+    'Target sequence',
+  ])
+})
+
 test('each surface gets its own help text where the mode reads differently there', () => {
   const helpOf = (surface: ColorByMenuTarget['surface'], index: number) => {
     const item = colorByMenuItems(target({ surface }))[index]!
@@ -136,8 +151,6 @@ test('each surface gets its own help text where the mode reads differently there
   }
   expect(helpOf('lanes', 1)).toContain('lane above')
   expect(helpOf('ribbons', 1)).toBeUndefined()
-  expect(helpOf('points', 3)).toContain('X-axis')
-  expect(helpOf('ribbons', 3)).toContain('this side')
 })
 
 // Each label takes a color of its own as it arrives, so there is nothing to pin

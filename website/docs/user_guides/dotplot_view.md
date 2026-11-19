@@ -40,8 +40,8 @@ too divergent for whole-genome scale; zoom to a smaller window.
 
 The palette button's **Color by** menu sets what the color means:
 
-- **Query** colors each sequence on the horizontal axis differently, and
-  **Strand** colors by strand
+- **X-axis sequence** colors each sequence on the horizontal axis differently,
+  and **Strand** colors by strand
 - **Color by value** holds the numbers an alignment has, identity and mapping
   quality among them. A text column there paints one color per label (worked in
   [](/docs/tutorials/odp_linkage_groups_synteny)), and the view's

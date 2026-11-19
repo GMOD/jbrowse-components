@@ -6,7 +6,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle'
 import {
   DEFAULT_MIN_ALIGNMENT_LENGTH,
   MAX_MIN_LENGTH_BP,
-} from './minLengthHelp.ts'
+} from './minLengthRange.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 

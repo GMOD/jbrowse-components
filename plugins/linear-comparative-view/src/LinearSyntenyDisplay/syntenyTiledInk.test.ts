@@ -73,7 +73,7 @@ function render(
   g: ReturnType<typeof buildSyntenyGeometry>,
   fadeThinAlignments: boolean,
 ) {
-  // Location markers painted to nothing: they are the ruler continued through
+  // Gridlines painted to nothing: they are the ruler continued through
   // the ribbon, drawn at their own fixed alpha, and both modes emit the same
   // ones. Counting them would just add a constant to both sides.
   const colors = Uint32Array.from(g.kinds, k =>

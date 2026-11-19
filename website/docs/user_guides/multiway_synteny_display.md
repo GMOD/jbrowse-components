@@ -100,7 +100,7 @@ offers it:
   whose blocks split about evenly between the two orientations.
 - **Unpin ⟨chromosome⟩** undoes either **Show** item, so the lane chooses where
   it draws again.
-- **Unpin orientation** undoes a flip.
+- **Unpin orientation on ⟨chromosome⟩** undoes a flip.
 
 ## The lane header menu
 

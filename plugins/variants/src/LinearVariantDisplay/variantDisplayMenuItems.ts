@@ -476,7 +476,7 @@ export function variantTrackMenuItems(
                   loaded,
                 ),
                 helpText:
-                  'Needs phased genotypes. Each row holds one allele, so there is no dosage shading',
+                  'Each row holds one allele, so there is no dosage shading',
               },
             ],
           }),

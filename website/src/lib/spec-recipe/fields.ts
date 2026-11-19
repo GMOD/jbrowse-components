@@ -337,12 +337,17 @@ function alignmentsFacetStep(value: unknown): FieldStep | undefined {
 // imported. Note the neighbouring `colorByShortLabel` in the same package looks
 // like the same table and is not: it titles the floating legend, where these
 // read 'Query name' and 'Reference name'.
-const SYNTENY_COLOR_MODES = new Map(
-  COLOR_MODES.map(m => [
-    m.field,
-    m.kind === 'value' ? `${VALUE_MODES_LABEL} → ${m.label}` : m.label,
-  ]),
-)
+const SYNTENY_COLOR_MODES = new Map(COLOR_MODES.map(m => [m.field, m]))
+
+function syntenyModeLabel(field: string | undefined, points: boolean) {
+  const mode = SYNTENY_COLOR_MODES.get(field)
+  const label = mode
+    ? ((points ? mode.surfaceLabel?.points : undefined) ?? mode.label)
+    : field
+  return mode?.kind === 'structural'
+    ? label
+    : `${VALUE_MODES_LABEL} → ${label ?? ''}`
+}
 
 const SOLID_COLOR = 'Solid color...'
 
@@ -351,7 +356,7 @@ const SOLID_COLOR = 'Solid color...'
 // color... for a `value` with no field, else the radio of the field it names,
 // Default for none. A declared column has no fixed label but its own name,
 // under Color by value.
-function syntenyColorMode(value: unknown) {
+function syntenyColorMode(value: unknown, points = false) {
   const color = channelOf(value)
   if (!color) {
     return undefined
@@ -362,9 +367,7 @@ function syntenyColorMode(value: unknown) {
   const field = paintedField({ field: asString(color.field) })
   return {
     field,
-    label:
-      SYNTENY_COLOR_MODES.get(field) ??
-      `${VALUE_MODES_LABEL} → ${field ?? ''}`,
+    label: syntenyModeLabel(field, points),
   }
 }
 
@@ -2261,7 +2264,7 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined
   },
   'encoding.color': (value, { viewType }) => {
-    const mode = syntenyColorMode(value)
+    const mode = syntenyColorMode(value, viewType === 'DotplotView')
     const label = mode?.label
     const menu = colorMenuPath(viewType)
     return label && menu
@@ -2292,9 +2295,7 @@ export const viewFields: Record<string, FieldRecipe> = {
     const gridPath =
       viewType === 'LinearGenomeView'
         ? 'View menu → Show → Show guidelines'
-        : viewType === 'LinearSyntenyView'
-          ? settingsPath(viewType, 'Location markers')
-          : settingsPath(viewType, 'Gridlines')
+        : settingsPath(viewType, 'Gridlines')
     const labelsPath =
       viewType === 'DotplotView' ? settingsPath(viewType, 'Tick labels') : undefined
     return [

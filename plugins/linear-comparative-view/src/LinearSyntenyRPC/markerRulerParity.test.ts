@@ -2,7 +2,7 @@ import { makeTicks } from '@jbrowse/plugin-linear-genome-view'
 
 import { RULER_GRID_ORIGIN, markerGridPitch } from './buildSyntenyGeometry.ts'
 
-// Location markers claim to be the query panel's ruler continued down through
+// Gridlines claim to be the query panel's ruler continued down through
 // the ribbons. That claim has two halves — a pitch and a PHASE — and it is
 // checked here against the ruler's own `makeTicks` rather than asserted in a
 // comment, because the second half was wrong for as long as it was only a

@@ -233,9 +233,9 @@ dialog. Then:
 - Navigate the wheat row to
   `1A 1B 1D 2A 2B 2D 3A 3B 3D 4A 4B 4D 5A 5B 5D 6A 6B 6D 7A 7B 7D`, the seven
   homoeologous groups side by side, with the unplaced `Un` left out.
-- Pick **Query** in the palette button menu. The palette sets the view's
-  `encoding.color`, a color scale from a field to colors, and **Query** colors
-  each link by its tauschii chromosome.
+- Pick **Query sequence** in the palette button menu. The palette sets the
+  view's `encoding.color`, a color scale from a field to colors, and **Query
+  sequence** colors each link by its tauschii chromosome.
 
 The same view as a session over the hosted wheat config:
 
@@ -272,9 +272,9 @@ the three wheat chromosomes of its group.
 
 ### Wheat 4A against the D genome
 
-Navigate the wheat row to `4A` alone, keeping **Query**:
+Navigate the wheat row to `4A` alone, keeping **Query sequence**:
 
-<Figure caption="Aegilops tauschii's D-genome chromosomes over wheat 4A. Color by → Query colors each chromosome differently." src="/img/orthofinder_synteny/wheat_4a.png" />
+<Figure caption="Aegilops tauschii's D-genome chromosomes over wheat 4A. Color by → Query sequence colors each chromosome differently." src="/img/orthofinder_synteny/wheat_4a.png" />
 
 Other chromosomes appear on 4A only as single genes. The runs from tauschii 5
 and 7 are the 4AL/5AL and 4AL/7BS translocations (Devos et al. 1995; Dvorak et
@@ -298,7 +298,7 @@ Open the `grasses` config and stack sorghum over rice over maize, with
 - Turn on **sorghum genes**, **rice genes** and **maize genes**.
 - Navigate the rows to `1:5,934,000-6,126,000[rev]`, `3:31,590,000-31,775,000`
   and `1:286,676,000-287,665,000 5:6,261,000-6,790,000[rev]`.
-- Pick **Target** in the palette button menu to color each link by the
+- Pick **Target sequence** in the palette button menu to color each link by the
   chromosome of its target gene.
 
 Sorghum shares the ancestry and lacks the duplication, so it is the control.
@@ -353,8 +353,8 @@ config and stack gar over zebrafish, with `vertebrates_orthogroups` in the band.
 Then:
 
 - Navigate the gar row to `LG11` and leave zebrafish whole.
-- Pick **Target** in the palette button menu to color each link by its zebrafish
-  chromosome.
+- Pick **Target sequence** in the palette button menu to color each link by its
+  zebrafish chromosome.
 - Uncheck **Off-screen mates** in the settings menu, which otherwise labels the
   zebrafish genes whose gar partners sit on other gar chromosomes.
 

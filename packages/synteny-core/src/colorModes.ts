@@ -17,6 +17,7 @@ export interface ColorModeEntry {
   field: string | undefined
   kind: 'structural' | 'value'
   label: string
+  surfaceLabel?: Partial<Record<ColorModeSurface, string>>
   helpText?: string
   surfaceHelpText?: Partial<Record<ColorModeSurface, string>>
   /** what the alignments need to carry the field, said on its disabled row */
@@ -48,20 +49,14 @@ export const COLOR_MODES: ColorModeEntry[] = [
   {
     field: 'query',
     kind: 'structural',
-    label: 'Query',
-    helpText: 'One color per sequence on this side.',
-    surfaceHelpText: {
-      points: 'One color per X-axis sequence.',
-    },
+    label: 'Query sequence',
+    surfaceLabel: { points: 'X-axis sequence' },
   },
   {
     field: 'target',
     kind: 'structural',
-    label: 'Target',
-    helpText: 'One color per sequence on the other side.',
-    surfaceHelpText: {
-      points: 'One color per Y-axis sequence.',
-    },
+    label: 'Target sequence',
+    surfaceLabel: { points: 'Y-axis sequence' },
   },
   {
     field: 'reference',

@@ -250,7 +250,7 @@ test('Color by heads the gene modes and the ribbon modes', () => {
   expect(labelsOf(colorBy)).toEqual([
     'Genes',
     'Default',
-    'Cluster',
+    'Ortholog group',
     'Name',
     'Strand',
     'Solid color...',
@@ -291,11 +291,7 @@ test('picking a gene color preset shows its key again', () => {
       shown.push(flag)
     },
   })
-  const cluster = genes[labelsOf(genes).indexOf('Cluster')]
-  expect(cluster && 'helpText' in cluster && cluster.helpText).toMatch(
-    /ortholog group/,
-  )
-  click(cluster)
+  click(genes[labelsOf(genes).indexOf('Ortholog group')])
   expect(shown).toEqual([true])
 })
 
@@ -310,7 +306,7 @@ test('the gene modes name a configured field, with no pin under it', () => {
   const genes = genesOf(model)
   expect(labelsOf(genes)).toEqual([
     'Default',
-    'Cluster',
+    'Ortholog group',
     'Name',
     'Strand',
     'biotype',
@@ -580,7 +576,7 @@ test('a lane flips from its menu, and a flip pin offers its release', () => {
   const items = laneHeaderMenuItems(pinned.model, peach)
   expect(labelsOf(items).slice(5)).toEqual([
     'Flip lane',
-    'Unpin orientation',
+    'Unpin orientation on Pp1',
     'Color...',
   ])
   click(items[6])

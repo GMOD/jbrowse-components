@@ -26,7 +26,7 @@ function structuralRadios({
       ? [
           {
             value,
-            label: mode.label,
+            label: mode.surfaceLabel?.[surface] ?? mode.label,
             helpText: mode.surfaceHelpText?.[surface] ?? mode.helpText,
           },
         ]

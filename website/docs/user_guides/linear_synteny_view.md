@@ -154,8 +154,8 @@ mode.
   that twists reads as an inversion
 - **Distinct color per track:** a separate palette color for each overlaid
   synteny track. Offered once a view has more than one track
-- **Query / Target:** color by the refName on this side or on the other side,
-  for telling contigs apart when one maps across several
+- **Query sequence / Target sequence:** color by the refName on this side or on
+  the other side, for telling contigs apart when one maps across several
 - **Reference:** color every level of a stacked view by the shared reference's
   chromosome names, so a region keeps one color down the stack
 - **Color by value:** a submenu of the numbers an alignment can have, each
@@ -203,7 +203,7 @@ beside it zooms and arranges the rows.
 - **Identity fade** is described above
 - **Curved lines** draws ribbons as bezier curves, which read better at
   whole-genome scale where straight crossings stack into noise
-- **Location markers** continues the top panel's scalebar grid down through the
+- **Gridlines** continues the top panel's scalebar grid down through the
   ribbons, so each tick shows where a round coordinate lands below
 - **Off-screen mates** marks the alignments this view cannot draw
   ([below](#off-screen-mates))

@@ -386,8 +386,8 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     tooltip: 'hide',
     actions: [
       { type: 'click', selector: '[aria-label="Synteny display settings"]' },
-      { type: 'waitForText', text: 'Location markers' },
-      { type: 'click', text: 'Location markers' },
+      { type: 'waitForText', text: 'Gridlines' },
+      { type: 'click', text: 'Gridlines' },
     ],
     annotations: [
       {
@@ -396,7 +396,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'box',
-        anchor: { text: 'Location markers' },
+        anchor: { text: 'Gridlines' },
         strokeWidth: 3,
       },
       {

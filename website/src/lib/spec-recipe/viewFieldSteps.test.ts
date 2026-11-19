@@ -92,7 +92,7 @@ test('an axis grid names the menu each view keeps it in', () => {
     'Dotplot display settings (the sliders button in the view header) → Tick labels (unchecked)',
   ])
   expect(stepPaths('axis', { grid: true }, 'LinearSyntenyView')).toEqual([
-    'Synteny display settings (the sliders button in the view header) → Location markers (checked)',
+    'Synteny display settings (the sliders button in the view header) → Gridlines (checked)',
   ])
 })
 

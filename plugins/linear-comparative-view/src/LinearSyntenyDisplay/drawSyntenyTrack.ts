@@ -189,7 +189,7 @@ export function drawSyntenyTrack(
       continue
     }
 
-    // Location markers: zero-width context ticks. Drawn as a fixed 1px line at
+    // Gridlines: zero-width context ticks. Drawn as a fixed 1px line at
     // the packed color's own alpha (~0.25), bypassing hover/global-alpha and
     // the sub-pixel width fade that would zero a zero-width quad. Mirrors the
     // isMarker path in syntenyTypes.slang's fillFs/shadeFill — and the

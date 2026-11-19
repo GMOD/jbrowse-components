@@ -215,10 +215,10 @@ follow off to pan the paternal panel by hand, or right-click a chain block for
 
 <Figure caption="Before and after ticking Follow, maternal over paternal." src="/img/hg002_haplotypes_follow_panel.png" />
 
-**Location markers**, in the header's settings menu, draw a line through each
-ribbon from a point on the top row to where it maps on the bottom. In the clip
-the same coordinates are typed into both panels, 2 Mb into the collinear chain
-past the inversion.
+**Gridlines**, in the header's settings menu, draw a line through each ribbon
+from a point on the top row to where it maps on the bottom. In the clip the same
+coordinates are typed into both panels, 2 Mb into the collinear chain past the
+inversion.
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="Follow places the paternal panel from the maternal one through the chain, so the location markers stay vertical as the top panel is dragged." />
 

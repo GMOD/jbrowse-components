@@ -439,7 +439,7 @@ export type {
 } from './SelectorTypes.ts'
 export { getMate, getRecordName } from './syntenyMate.ts'
 export type { SyntenyMate } from './syntenyMate.ts'
-export { DEFAULT_MIN_ALIGNMENT_LENGTH } from './minLengthHelp.ts'
+export { DEFAULT_MIN_ALIGNMENT_LENGTH } from './minLengthRange.ts'
 export {
   axesNamePositionFor,
   axisNamePosition,

@@ -277,7 +277,7 @@ misses some of what the alignment places. The lane header menu sets the frame:
   stretch its header names after `also at`.
 - **Flip lane** turns the lane the other way on the same contig, for a lane
   whose blocks split about evenly between the two orientations.
-- **Unpin orientation** restores the automatic orientation.
+- **Unpin orientation on ⟨contig⟩** restores the automatic orientation.
 
 <Figure caption="The same lanes near the PMP22 duplications. A flipped lane, marked reversed in its header, draws its ribbons straight and still blue." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
 

@@ -333,7 +333,7 @@ function laneFlipMenuItems(
       ? []
       : [
           {
-            label: 'Unpin orientation',
+            label: `Unpin orientation on ${lane.canon(pin.refName)}`,
             onClick: () => {
               model.unpinLaneFlip(name)
             },
@@ -368,9 +368,7 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
 const GENE_COLOR_FIELDS = [
   {
     field: CLUSTER_FIELD,
-    label: 'Cluster',
-    helpText:
-      'Each gene by its ortholog group, or on an alignment source by its alignment record. A gene in no group is grey.',
+    label: 'Ortholog group',
   },
   { field: FEATURE_NAME_FIELD, label: 'Name' },
   { field: STRAND_FIELD, label: 'Strand' },
@@ -464,7 +462,8 @@ export function lanesMenuItem(model: MultiWayMenuModel) {
     // Freeze lanes stays by Colin's call (2026-11-03): a menu review may tidy
     // this row but not cut it.
     toggleItem('Freeze lanes', model.lanesFrozen, model.setLanesFrozen, {
-      helpText: 'While frozen, drag or side-scroll a lane to slide it.',
+      helpText:
+        'The lanes unfreeze once the view leaves the window they froze on.',
     }),
     ...withSubHeader(
       'Lane menus',
