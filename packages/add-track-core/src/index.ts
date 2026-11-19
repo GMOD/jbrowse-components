@@ -4,6 +4,7 @@ export {
   type Sidecar,
   fileNameOf,
   formats,
+  genbankExtension,
   matchFormat,
   trackTypeForAdapter,
 } from './formats.ts'

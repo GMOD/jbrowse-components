@@ -1,6 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { genbankExtension } from '@jbrowse/add-track-core'
+
 import { isURL } from '../../types/common.ts'
 import {
   STDIN_ARG,
@@ -88,8 +90,6 @@ const fastaRegex = new RegExp(`\\.(${fastaExts})$`, 'i')
 const bgzipFastaRegex = new RegExp(`\\.(${fastaExts})\\.gz$`, 'i')
 const fastaExtRegex = new RegExp(`\\.(${fastaExts})(\\.gz)?$`, 'i')
 
-const genbankRegex = /\.(gb|gbk|gbff)(\.gz)?$/i
-
 function basenameWithoutFastaExt(p: string) {
   return path.basename(p).replace(fastaExtRegex, '')
 }
@@ -101,7 +101,7 @@ const seqTypeByExtension: [RegExp, SequenceType][] = [
   [bgzipFastaRegex, 'bgzipFasta'],
   [/\.2bit$/i, 'twoBit'],
   [/\.chrom\.sizes$/i, 'chromSizes'],
-  [genbankRegex, 'genbank'],
+  [genbankExtension, 'genbank'],
   [/\.json$/i, 'custom'],
 ]
 
@@ -171,7 +171,7 @@ const seqSpecs: Record<Exclude<SequenceType, 'custom'>, SeqSpec> = {
     adapterType: 'GenbankSequenceAdapter',
     locField: 'genbankLocation',
     sidecars: [],
-    defaultName: p => path.basename(p).replace(genbankRegex, ''),
+    defaultName: p => path.basename(p).replace(genbankExtension, ''),
   },
 }
 

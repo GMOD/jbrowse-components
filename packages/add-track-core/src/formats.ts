@@ -62,6 +62,9 @@ export interface FormatEntry {
   sequence?: { adapterType: string; locField: string }
 }
 
+/** A GenBank flat file, which is a genome and a feature track at once */
+export const genbankExtension = /\.(gb|gbk|gbff)(\.gz)?$/i
+
 /**
  * Every file format the "Add track" flow knows, in first-match order.
  *
@@ -124,7 +127,7 @@ export const formats: FormatEntry[] = [
     },
   },
   {
-    regex: /\.(gb|gbk|gbff)(\.gz)?$/i,
+    regex: genbankExtension,
     spec: {
       kind: 'single',
       adapterType: 'GenbankAdapter',

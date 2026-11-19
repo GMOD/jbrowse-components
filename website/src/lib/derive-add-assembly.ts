@@ -9,6 +9,7 @@
 // merges into the generated assembly, so `geneticCodes`/`cytobands`-style slots
 // are still derivable.
 
+import { genbankExtension } from '../../../packages/add-track-core/src/index.ts'
 import {
   asRecord,
   commaList,
@@ -38,7 +39,7 @@ const EXT_SEQUENCE_TYPE: [RegExp, string][] = [
   [/\.(fa|fna|fasta|mfa)$/i, 'indexedFasta'],
   [/\.2bit$/i, 'twoBit'],
   [/\.chrom\.sizes$/i, 'chromSizes'],
-  [/\.(gb|gbk|gbff)(\.gz)?$/i, 'genbank'],
+  [genbankExtension, 'genbank'],
 ]
 
 function inferredSequenceType(uri: string) {
