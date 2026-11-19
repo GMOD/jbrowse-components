@@ -265,7 +265,8 @@ so a key row names every type on screen in its color.
 
 The config opens on every accession stacked, each band drawing the SyRI run
 between the two genomes it joins. Like plotsr, `filter` hides regions under 10
-kb; regions joining two chromosomes, which plotsr hides unless given `--itx`,
+kb, though plotsr keeps a short syntenic region and the filter cannot single one
+out. Regions joining two chromosomes, which plotsr hides unless given `--itx`,
 stay as the long ribbons:
 
 ```json session config=test_data/syri/config.json
