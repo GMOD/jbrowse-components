@@ -441,6 +441,35 @@ test('the strip names a mate contig in its ribbon color only where the ribbons k
   expect(kept.offscreen.drawn).toEqual([true])
 })
 
+test('a mate contig with too little sequence for the zoom is listed but not drawn until the zoom reaches it', async () => {
+  const paf = path.join(mkdtempSync(path.join(tmpdir(), 'paf-')), 'stray.paf')
+  writeFileSync(
+    paf,
+    'ctgA\t50001\t1000\t1100\t+\tctgB\t6079\t0\t100\t100\t100\t60\n',
+  )
+  const args = {
+    ...CONTIG_SWAP,
+    adapterConfig: {
+      ...CONTIG_SWAP.adapterConfig,
+      pafLocation: {
+        uri: pathToFileURL(paf).href,
+        locationType: 'UriLocation',
+      },
+    },
+    target: { regions: [{ refName: 'ctgC', start: 0, end: 1000 }], width: 800 },
+  }
+  const wide = await engine.synteny(args)
+  expect(wide.offscreen.mateChrom).toEqual(['ctgB'])
+  expect(wide.offscreen.drawn).toEqual([false])
+  expect(wide.offscreenStrip.marks.x).toHaveLength(0)
+  const near = await engine.synteny({
+    ...args,
+    query: { regions: [{ refName: 'ctgA', start: 0, end: 2000 }], width: 800 },
+  })
+  expect(near.offscreen.drawn).toEqual([true])
+  expect(near.offscreenStrip.marks.x).toHaveLength(1)
+})
+
 test('identity keys as a ramp from 0% to 100%, and mapq as chips', async () => {
   const t = await engine.synteny({
     ...INV_INDELS,

@@ -23,7 +23,7 @@ export const MIN_OFFSCREEN_MATE_WIDTH_PX = 1.5
 // on: the floor lifts as the window widens and falls as it narrows, so the
 // scattered contigs a wide view cannot use appear on the way in, which is where
 // there is room for them.
-export const MIN_CONTIG_MARK_PX = 4
+const MIN_CONTIG_MARK_PX = 4
 
 const MAX_BAND_FRACTION = 1 / 3
 
@@ -145,11 +145,7 @@ export function datasetMayHide(
     : band !== undefined && (mateAxis.lo < band.lo || mateAxis.hi > band.hi)
 }
 
-export function ribbonDrawn(
-  mateAxis: MateAxisPlacement,
-  i: number,
-  band: MateBand,
-) {
+function ribbonDrawn(mateAxis: MateAxisPlacement, i: number, band: MateBand) {
   return mateAxis.ends[i]! >= band.lo && mateAxis.starts[i]! <= band.hi
 }
 
@@ -188,7 +184,7 @@ function stripGeometry({
 // the whole lane: one contig split over two tracks, or over the worker's marks
 // and the band's, is one contig to a reader, and the floor is a question about
 // it.
-export function laneContigBpByName(datasets: readonly OffscreenMateData[]) {
+function laneContigBpByName(datasets: readonly OffscreenMateData[]) {
   const byName = new Map<string, number>()
   for (const { mateRefNameDict, alignedBp } of datasets) {
     for (const [id, name] of mateRefNameDict.entries()) {
@@ -198,17 +194,63 @@ export function laneContigBpByName(datasets: readonly OffscreenMateData[]) {
   return byName
 }
 
-function laneContigBp(datasets: OffscreenMateDataset[]) {
+export function laneContigBp(datasets: readonly OffscreenMateData[]) {
   const byName = laneContigBpByName(datasets)
-  return datasets.map(({ mateRefNameDict }) =>
-    Float64Array.from(mateRefNameDict, name => byName.get(name)!),
-  )
+  return (data: OffscreenMateData) =>
+    Float64Array.from(
+      data.mateRefNameDict,
+      name => byName.get(name) ?? Infinity,
+    )
 }
 
-// The one place a mark's x is decided, so the draw and the hit test cannot
-// disagree. Entries whose instances all fell off screen keep a sentinel
-// span (`starts` above `ends`) that the x test drops before `mateAxis` is
-// read, since reading that sentinel as a position would call it hidden.
+type MarkRuler = Pick<
+  OffscreenMateLane,
+  'datasets' | 'mateBand' | 'bpPerPx' | 'offsetPx' | 'width'
+>
+
+// The one place a mark's x is decided, so the draw, the hit test and the
+// table cannot disagree. Entries whose instances all fell off screen keep a
+// sentinel span (`starts` above `ends`) that the x test drops before
+// `mateAxis` is read, since reading that sentinel as a position would call it
+// hidden. A mark on a contig under the floor is placed but not drawn.
+export function forEachPlacedMark(
+  lane: MarkRuler,
+  contigBpOf: (data: OffscreenMateData) => Float64Array,
+  visit: (
+    data: OffscreenMateDataset,
+    datasetIndex: number,
+    i: number,
+    x: number,
+    w: number,
+    clearsContigFloor: boolean,
+  ) => void,
+) {
+  const { bpPerPx, offsetPx, width, mateBand } = lane
+  const contigFloor = MIN_CONTIG_MARK_PX * bpPerPx
+  for (const [d, data] of lane.datasets.entries()) {
+    const { starts, ends, mateRefNameIds, mateAxis } = data
+    const bpOfContig = contigBpOf(data)
+    for (let i = 0; i < starts.length; i++) {
+      const x1 = starts[i]! / bpPerPx - offsetPx
+      const x2 = ends[i]! / bpPerPx - offsetPx
+      if (
+        x2 >= 0 &&
+        x1 <= width &&
+        !(mateAxis && ribbonDrawn(mateAxis, i, mateBand))
+      ) {
+        visit(
+          data,
+          d,
+          i,
+          x1,
+          Math.max(MIN_OFFSCREEN_MATE_WIDTH_PX, x2 - x1),
+          bpOfContig[mateRefNameIds[i]!]! >= contigFloor,
+        )
+      }
+    }
+  }
+}
+
 function forEachMark(
   lane: OffscreenMateLane,
   visit: (
@@ -219,25 +261,15 @@ function forEachMark(
     w: number,
   ) => void,
 ) {
-  const { bpPerPx, offsetPx, width, mateBand } = lane
-  const contigFloor = MIN_CONTIG_MARK_PX * bpPerPx
-  const contigBp = laneContigBp(lane.datasets)
-  for (const [d, data] of lane.datasets.entries()) {
-    const { starts, ends, mateRefNameIds, mateAxis } = data
-    const bpOfContig = contigBp[d]!
-    for (let i = 0; i < starts.length; i++) {
-      const x1 = starts[i]! / bpPerPx - offsetPx
-      const x2 = ends[i]! / bpPerPx - offsetPx
-      if (
-        bpOfContig[mateRefNameIds[i]!]! >= contigFloor &&
-        x2 >= 0 &&
-        x1 <= width &&
-        !(mateAxis && ribbonDrawn(mateAxis, i, mateBand))
-      ) {
-        visit(data, d, i, x1, Math.max(MIN_OFFSCREEN_MATE_WIDTH_PX, x2 - x1))
+  forEachPlacedMark(
+    lane,
+    laneContigBp(lane.datasets),
+    (data, d, i, x, w, clearsContigFloor) => {
+      if (clearsContigFloor) {
+        visit(data, d, i, x, w)
       }
-    }
-  }
+    },
+  )
 }
 
 function pointerOnStrip(strip: StripGeometry, y: number) {

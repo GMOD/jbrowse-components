@@ -31,12 +31,11 @@ import {
 
 import { culledRibbonMateData } from './LinearSyntenyDisplay/culledRibbonMates.ts'
 import {
-  MIN_CONTIG_MARK_PX,
   datasetMayHide,
   drawOffscreenMates,
-  laneContigBpByName,
+  forEachPlacedMark,
+  laneContigBp,
   offscreenMateColors,
-  ribbonDrawn,
 } from './LinearSyntenyDisplay/drawOffscreenMates.ts'
 import { resolveInstanceFill } from './LinearSyntenyDisplay/drawSyntenyTrack.ts'
 import { isCigarKind } from './LinearSyntenyDisplay/shaders/syntenyTypes.js.generated.ts'
@@ -341,51 +340,37 @@ export function recordedOffscreenStrips(
 // the strip paints it and whether it clears the strip's floors
 function offscreenRows(lane: OffscreenLane) {
   const { fetched, data: admitted, passes, culled, mateBand } = lane
-  const contigFloor = MIN_CONTIG_MARK_PX * lane.on.bpPerPx
-  const contigBp = laneContigBpByName([admitted, ...(culled ? [culled] : [])])
-  const inView = (start: number, end: number) =>
-    end / lane.on.bpPerPx - lane.offsetPx >= 0 &&
-    start / lane.on.bpPerPx - lane.offsetPx <= lane.width
-  const workerRows = markRows(
-    lane,
-    fetched,
-    Array.from(fetched.starts, (_, i) => i).filter(i =>
-      inView(
-        Math.min(fetched.starts[i]!, fetched.ends[i]!),
-        Math.max(fetched.starts[i]!, fetched.ends[i]!),
-      ),
-    ),
-    i => passes?.(i) ?? true,
-    contigBp,
-    contigFloor,
-  )
-  return culled
-    ? concatColumns(
-        workerRows,
-        markRows(
-          lane,
-          culled,
-          Array.from(culled.starts, (_, i) => i).filter(
-            i =>
-              culled.starts[i]! <= culled.ends[i]! &&
-              inView(culled.starts[i]!, culled.ends[i]!) &&
-              !ribbonDrawn(culled.mateAxis, i, mateBand),
-          ),
-          () => true,
-          contigBp,
-          contigFloor,
-        ),
+  const datasets = [fetched, ...(culled ? [culled] : [])]
+  const placed = datasets.map(() => ({
+    rows: [] as number[],
+    drawn: [] as boolean[],
+  }))
+  forEachPlacedMark(
+    {
+      datasets,
+      mateBand,
+      bpPerPx: lane.on.bpPerPx,
+      offsetPx: lane.offsetPx,
+      width: lane.width,
+    },
+    laneContigBp([admitted, ...(culled ? [culled] : [])]),
+    (data, d, i, _x, _w, clearsContigFloor) => {
+      placed[d]!.rows.push(i)
+      placed[d]!.drawn.push(
+        clearsContigFloor && (data === culled || (passes?.(i) ?? true)),
       )
-    : workerRows
+    },
+  )
+  return datasets
+    .map((data, d) => markRows(lane, data, placed[d]!.rows, placed[d]!.drawn))
+    .reduce(concatColumns)
 }
 
 function markRows(
   { axis, on, colorOf }: OffscreenLane,
   data: OffscreenMateData,
   rows: number[],
-  passes: (index: number) => boolean,
-  contigBp: ReadonlyMap<string, number>,
-  contigFloor: number,
+  drawn: boolean[],
 ) {
   const spans = rows.map(i => locateSpan(on, data.starts[i]!, data.ends[i]!))
   const mateChrom = rows.map(
@@ -404,10 +389,7 @@ function markRows(
     length: rows.map(i => data.lengths[i]!),
     color: paint.map(p => p.color),
     alpha: paint.map(p => p.alpha),
-    drawn: rows.map(
-      (i, k) =>
-        passes(i) && (contigBp.get(mateChrom[k]!) ?? Infinity) >= contigFloor,
-    ),
+    drawn,
   }
 }
 
