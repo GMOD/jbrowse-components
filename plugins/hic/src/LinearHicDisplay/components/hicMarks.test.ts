@@ -8,7 +8,7 @@ import {
   SCALE_TYPE_LOG,
 } from '@jbrowse/render-core/scoreScale'
 
-import { packTestInstances } from '../../testInstances.ts'
+import { packTestInstances } from '../../instances.fixture.ts'
 import { HIC_MARKS } from './hicMarks.ts'
 import { GLSL_FRAGMENT } from './shaders/hic.glsl.generated.ts'
 import {

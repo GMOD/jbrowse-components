@@ -4,7 +4,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { runCommand, runInTmpDir } from '../testUtil.ts'
+import { runCommand, runInTmpDir } from '../testUtils.ts'
 
 const config = {
   assemblies: [{ name: 'volvox', uri: 'volvox.2bit' }],

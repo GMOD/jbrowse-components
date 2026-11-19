@@ -11,12 +11,12 @@ import {
   DEFAULT_BASES_FILTER,
   basesFilterOf,
 } from '../../shared/basesFilter.ts'
-import { layerForTest } from '../../shared/splitFieldForTest.ts'
+import { layerForTest } from '../../shared/splitField.fixture.ts'
 import { isMethylationView } from '../../shared/types.ts'
 import { getColorForModification } from '../../util.ts'
 import { extractMethylation, extractModifications } from './extract.ts'
 
-import type { LayerSpec } from '../../shared/splitFieldForTest.ts'
+import type { LayerSpec } from '../../shared/splitField.fixture.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { ModificationType } from '@jbrowse/modifications-utils'

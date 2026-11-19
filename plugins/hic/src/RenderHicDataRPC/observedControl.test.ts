@@ -1,8 +1,8 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 import { getInstanceCount } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
+import { toContacts } from './contacts.fixture.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
-import { toContacts } from './testContacts.ts'
 
 import type { MultiRegionContacts } from '../HicAdapter/HicAdapter.ts'
 import type { HicDataResult, RenderHicDataArgs } from './types.ts'

@@ -11,10 +11,10 @@ import {
   getReadDisplayLegendItems,
 } from './legendUtils.ts'
 import { modificationData } from './modificationData.ts'
-import { splitFieldForTest } from './splitFieldForTest.ts'
+import { splitFieldForTest } from './splitField.fixture.ts'
 
 import type { OverlapLegendRow } from './legendUtils.ts'
-import type { LayerSpec } from './splitFieldForTest.ts'
+import type { LayerSpec } from './splitField.fixture.ts'
 
 type LayerSettings = Omit<LayerSpec, 'field'>
 

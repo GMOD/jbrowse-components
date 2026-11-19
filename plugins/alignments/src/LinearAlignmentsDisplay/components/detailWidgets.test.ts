@@ -1,6 +1,6 @@
 import { openFeatureWidget } from '@jbrowse/core/util'
 
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { INTERBASE_SOFTCLIP } from '../../shared/types.ts'
 import { openCigarWidget, openIndicatorWidget } from './detailWidgets.ts'
 

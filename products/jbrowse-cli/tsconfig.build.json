@@ -6,5 +6,5 @@
     "types": ["node"],
     "noEmit": false
   },
-  "exclude": ["**/*.test.ts", "**/testUtil.ts", "dist"]
+  "exclude": ["**/*.test.ts", "**/testUtils.ts", "dist"]
 }

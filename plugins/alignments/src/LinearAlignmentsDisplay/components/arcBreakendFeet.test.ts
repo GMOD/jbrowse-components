@@ -8,7 +8,7 @@ import {
   ARC_TICK_FOOT_PX,
   arcBandState,
 } from '../renderers/arcMarks.ts'
-import { pileupDataFromSamRecords } from '../samRecordFixture.ts'
+import { pileupDataFromSamRecords } from '../samRecord.fixture.ts'
 import {
   applyView,
   createTestAlignmentsDisplay,

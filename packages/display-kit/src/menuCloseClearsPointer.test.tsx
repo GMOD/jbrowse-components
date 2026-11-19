@@ -9,7 +9,7 @@ import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import DisplayChrome from './DisplayChrome.tsx'
-import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
+import { TestChromeModel, stubFactory } from './chromeModel.fixture.ts'
 
 import type { ContextMenuAnchor, MouseTracker } from '@jbrowse/core/ui'
 

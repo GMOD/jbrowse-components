@@ -2,6 +2,10 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { builtinModules } from 'node:module'
 import { join } from 'node:path'
 
+import ts from 'typescript'
+
+import { workspaceFolders } from './releaseWorkspaces.ts'
+
 // The sibling of workspaceLayering.test.ts, one axis over: that file pins
 // which WORKSPACE packages may depend on which, this one pins that an external
 // import is declared at all. Both exist for the same reason — pnpm links every
@@ -13,21 +17,14 @@ import { join } from 'node:path'
 //
 // The rule: a runtime import in a package's `src/` must be in its
 // `dependencies` or `peerDependencies`. A type-only import may also live in
-// `devDependencies` (it costs a consumer nothing at runtime). Test files and
-// the test-support modules only they import are exempt — their tier is
-// `devDependencies`, and jest resolves those from the root.
-
-const ROOTS = ['packages', 'plugins', 'example-plugins']
+// `devDependencies` (it costs a consumer nothing at runtime). A file the
+// package's build leaves out is exempt — its tier is `devDependencies`, and
+// jest resolves those from the root. Which files that is comes from the build
+// config itself (`tsconfig.base.esm.json`'s `exclude`, the one definition of
+// test-only source), and a package with no build of its own is held to that
+// base config's rule.
 
 const builtins = new Set(builtinModules)
-
-// test-support modules by convention: imported only by *.test.* files, so
-// their imports are dev-tier like the tests themselves; a *.fixture.* file is one. A new name joins by
-// matching, which is the cost of the convention — a test-only helper named
-// like production code is checked at production strictness, which only ever
-// fails toward declaring too much. The optional hyphen admits the two private
-// harness packages, `display-test-utils` and `browser-test-utils`.
-const TEST_SUPPORT = /\.(test|fixture)\.|\/test\/|test-?(env|utils|harness)/i
 
 interface Manifest {
   name?: string
@@ -55,6 +52,22 @@ function* walk(dir: string): Generator<string> {
   }
 }
 
+function builtFiles(root: string, pkgDir: string) {
+  const buildConfig =
+    ['tsconfig.build.esm.json', 'tsconfig.build.json']
+      .map(name => join(pkgDir, name))
+      .find(existsSync) ?? join(root, 'tsconfig.base.esm.json')
+  return new Set(
+    ts.parseJsonConfigFileContent(
+      { extends: buildConfig },
+      ts.sys,
+      pkgDir,
+      undefined,
+      join(pkgDir, 'tsconfig.declaredDependencies.json'),
+    ).fileNames,
+  )
+}
+
 // Comments first, so a JSDoc line quoting `import('x')` is not an import
 // (display-ui's importGraph.node.ts has exactly that). Crude — a template
 // literal holding comment-like text loses its imports too — but a checker may
@@ -63,8 +76,11 @@ function stripComments(text: string) {
   return text.replaceAll(/\/\*[\s\S]*?\*\//g, '').replaceAll(/\/\/.*/g, '')
 }
 
+// The clause between `import` and `from` is spelled out rather than matched
+// as "anything up to from" so a multi-line `{ … }` list is read without letting
+// the match run on through code to some later `from '…'`.
 const importRe =
-  /(?:^|\n)\s*(?:import|export)\s+(type\s+)?[^'"\n]*?from\s+['"]([^'"]+)['"]|(?:^|\n)\s*import\s+['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)/g
+  /(?:^|\n)\s*(?:import|export)\s+(type\s+)?(?:[\w$]+\s*,\s*)?(?:\{[^}]*\}|\*(?:\s+as\s+[\w$]+)?|[\w$]+)\s*from\s+['"]([^'"]+)['"]|(?:^|\n)\s*import\s+['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)/g
 
 interface Violation {
   pkg: string
@@ -75,7 +91,7 @@ interface Violation {
 
 function scan(root: string) {
   const violations: Violation[] = []
-  for (const r of ROOTS) {
+  for (const r of workspaceFolders(root)) {
     const tierDir = join(root, r)
     if (!existsSync(tierDir)) {
       continue
@@ -96,8 +112,9 @@ function scan(root: string) {
         manifest.name,
       ])
       const devTier = new Set(Object.keys(manifest.devDependencies ?? {}))
+      const built = builtFiles(root, join(tierDir, dir))
       for (const file of walk(srcPath)) {
-        if (TEST_SUPPORT.test(file)) {
+        if (!built.has(file)) {
           continue
         }
         const text = stripComments(readFileSync(file, 'utf8'))

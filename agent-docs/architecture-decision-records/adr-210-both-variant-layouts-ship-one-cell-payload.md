@@ -60,7 +60,7 @@ matrix to its backend as region 0.
   span and glyph it repeated per cell. The main thread's peak is unchanged:
   the dealt arrays replace the shipped ones.
 - `computeVariantMatrixCells` and its tests go; one loop's tests cover both
-  layouts. Tests build payloads through `shared/cellDataFixtures.ts`.
+  layouts. Tests build payloads through `shared/cellData.fixture.ts`.
 - A layout switch drops the held payload at once (`SettingsInvalidate`), so
   no consumer needs the payload to say which layout fetched it.
 

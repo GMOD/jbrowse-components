@@ -6,7 +6,7 @@ import {
   resolvePalette,
 } from '@jbrowse/core/ui/palette'
 
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
   JUNCTION_APEX_CLEARANCE_PX,
   junctionArcColor,

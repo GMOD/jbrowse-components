@@ -8,7 +8,7 @@ import {
   ReferenceSequenceTrackConf,
   aboutTestPluginManager,
   makeTrackConf,
-} from './aboutTestUtils.ts'
+} from './testUtils.ts'
 
 import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

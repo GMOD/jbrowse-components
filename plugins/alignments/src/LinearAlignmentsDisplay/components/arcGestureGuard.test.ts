@@ -1,7 +1,7 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { renderHook } from '@testing-library/react'
 
-import { packedInterbaseSegments } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { packedInterbaseSegments } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
   applyView,
   createTestAlignmentsDisplay,

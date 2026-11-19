@@ -1,10 +1,10 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 import { getInstancePosition } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
+import { toContacts } from './contacts.fixture.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
-import { toContacts } from './testContacts.ts'
 
-import type { TestContact } from './testContacts.ts'
+import type { TestContact } from './contacts.fixture.ts'
 import type { HicDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'

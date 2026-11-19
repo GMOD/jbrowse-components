@@ -8,7 +8,7 @@ import {
 import PluggableComponents from '@jbrowse/core/ui/PluggableComponents'
 import { render } from '@testing-library/react'
 
-import { makeTrackConf } from './aboutTestUtils.ts'
+import { makeTrackConf } from './testUtils.ts'
 
 import type { AboutPanelProps } from './util.ts'
 import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'

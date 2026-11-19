@@ -11,7 +11,7 @@ import {
   readConf,
   runCommand,
   runInTmpDir,
-} from '../testUtil.ts'
+} from '../testUtils.ts'
 
 const { copyFile, rename } = fs.promises
 

@@ -10,7 +10,7 @@ import {
   declaredReadLabels,
   isBakedField,
 } from './alignmentsColor.ts'
-import { colorSettingOf } from './colorSettingFixture.ts'
+import { colorSettingOf } from './colorSetting.fixture.ts'
 import {
   arcColorCategoryLabel,
   colorRampScales,

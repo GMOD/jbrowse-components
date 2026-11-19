@@ -1,7 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
+import { toContacts } from './contacts.fixture.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
-import { toContacts } from './testContacts.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region, RpcStatus } from '@jbrowse/core/util'

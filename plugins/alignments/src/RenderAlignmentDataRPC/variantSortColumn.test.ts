@@ -2,8 +2,8 @@ import { variantCall, variantSortColumn } from '@jbrowse/alignments-core'
 
 import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
 import { INTERBASE_INSERTION } from '../shared/types.ts'
+import { baseWorkerPileupData } from './pileupData.fixture.ts'
 import { computeSortedLayout } from './sortLayout.ts'
-import { baseWorkerPileupData } from './testPileupData.ts'
 
 import type { SortColumn } from '../shared/types.ts'
 import type { WorkerPileupData } from './types.ts'

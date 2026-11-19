@@ -18,13 +18,13 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../shared/types.ts'
+import { baseWorkerPileupData } from './pileupData.fixture.ts'
 import {
   buildLaidOutPileupMap,
   computeLayout,
   computeMultiRegionLayout,
   computeSortedLayout,
 } from './sortLayout.ts'
-import { baseWorkerPileupData } from './testPileupData.ts'
 
 import type { ColumnSortField, SortColumn } from '../shared/types.ts'
 import type { WorkerPileupData } from './types.ts'

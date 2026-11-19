@@ -6,7 +6,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 
-import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { basePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import { computeArcsFromPileupData } from '../arcs/compute.ts'
 import { splitClassCode } from './junctionClass.ts'

@@ -11,7 +11,7 @@ import { mockDisplayConfig } from '../RenderFeatureDataRPC/testUtils.ts'
 import { labelColors } from './components/labelColors.ts'
 import { forEachRenderedLabel } from './components/labelPositioning.ts'
 import { computeLaidOutData } from './layout.ts'
-import { WHOLE_REF } from './layoutTestUtils.ts'
+import { WHOLE_REF } from './testUtils.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'

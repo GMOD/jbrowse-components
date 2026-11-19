@@ -6,7 +6,7 @@ import {
 import { packStackedGenes } from '../RenderFeatureDataRPC/testUtils.ts'
 import { isoformGapExtrasPx, isoformGapSpreadPx } from './isoformGapFloor.ts'
 import { computeLaidOutData } from './layout.ts'
-import { WHOLE_REF } from './layoutTestUtils.ts'
+import { WHOLE_REF } from './testUtils.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'

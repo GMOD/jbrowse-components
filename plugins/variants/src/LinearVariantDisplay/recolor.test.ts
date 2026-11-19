@@ -2,7 +2,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { onPatch } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { featureInfoOf } from '../shared/cellDataFixtures.ts'
+import { featureInfoOf } from '../shared/cellData.fixture.ts'
 import { ALT_HUE, cellFill } from '../shared/cellFill.ts'
 import { CELL_ALT } from '../shared/variantCellStyles.ts'
 import { getCachedABGR } from '../shared/variantWebglUtils.ts'

@@ -5,17 +5,24 @@
 {
   "extends": "./tsconfig.json",
   "include": ["${configDir}/src/**/*.ts*"],
-  // Test-only files stay out of the published package. `*.node.ts` also has to:
-  // it imports `node:*`, and this build has no node types.
+  // The one definition of test-only source: these stay out of the published
+  // package, and scripts/declaredDependencies.test.ts reads this list to hold
+  // them to devDependencies. A helper only tests import is `*.fixture.ts`,
+  // `testEnv.ts` or `testUtils.ts`. `*.node.ts` is excluded too: it imports
+  // `node:*`, and this build has no node types.
   "exclude": [
     "${configDir}/src/**/*.test.ts*",
-    "${configDir}/src/**/*.node.ts",
+    "${configDir}/src/**/*.fixture.ts*",
     "${configDir}/src/**/testEnv.ts*",
     "${configDir}/src/**/testUtils.ts*",
-    "${configDir}/src/**/*.fixture.ts",
-    "${configDir}/src/**/test_data/**"
+    "${configDir}/src/**/test_data/**",
+    "${configDir}/src/tests/**",
+    "${configDir}/src/**/*.node.ts"
   ],
   "compilerOptions": {
+    // No jest globals, so a shipped file that reaches for `expect` or `jest.fn`
+    // fails the build instead of publishing a test helper.
+    "types": [],
     "declaration": true,
     "outDir": "${configDir}/esm",
     "rootDir": "${configDir}/src",

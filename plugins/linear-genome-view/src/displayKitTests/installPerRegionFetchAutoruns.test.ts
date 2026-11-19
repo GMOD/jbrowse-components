@@ -2,10 +2,10 @@ import { stageByteEstimate } from '@jbrowse/display-test-utils'
 import { reactionDependencies } from '@jbrowse/render-core/namedReactions'
 import { waitFor } from '@testing-library/react'
 
-import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
+import { createPerRegionTestEnvironment } from './testEnv.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
-import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
+import type { PerRegionTestDisplay } from './testEnv.ts'
 
 // The half `planRegionFetch` cannot express: which reads MobX tracks.
 //
@@ -19,7 +19,7 @@ import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 // A real display in a real view, not a mock, for the reason the shared harness
 // exists — `afterAttach` runs, so these test the installer that shipped rather
 // than a transcription of it. The display is the smallest one that composes the
-// foundation (`perRegionTestEnv`), so nothing here is a plugin's behavior.
+// foundation (`testEnv.ts`), so nothing here is a plugin's behavior.
 
 jest.setTimeout(30_000)
 

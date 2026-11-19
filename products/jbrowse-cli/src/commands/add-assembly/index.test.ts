@@ -13,7 +13,7 @@ import {
   readConfAlt,
   runCommand,
   runInTmpDir,
-} from '../../testUtil.ts'
+} from '../../testUtils.ts'
 
 jest.mock('../../cliFetch')
 

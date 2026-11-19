@@ -13,7 +13,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { adapterRefNameText } from '@jbrowse/core/util'
 
-import { basePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { basePileupDataResult } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 

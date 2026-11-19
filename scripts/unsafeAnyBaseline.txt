@@ -82,7 +82,7 @@
 1 no-unsafe-member-access packages/core/src/util/tss-react/tools/getDependencyArrayRef.ts
 3 no-unsafe-argument packages/core/src/util/withLaunchInput.ts
 1 no-unsafe-assignment packages/core/src/util/withLaunchInput.ts
-1 no-unsafe-assignment packages/display-kit/src/chromeTestModel.ts
+1 no-unsafe-assignment packages/display-kit/src/chromeModel.fixture.ts
 1 no-unsafe-return packages/display-kit/src/CoarseTierMixin.ts
 2 no-unsafe-assignment packages/display-kit/src/colorConfigSchema.ts
 5 no-unsafe-assignment packages/display-kit/src/conformance/displayTestEnvironment.ts

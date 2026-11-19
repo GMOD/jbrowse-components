@@ -3,7 +3,7 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { defineMark, paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { sweepMarkAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 
-import { featureInfoOf } from '../../shared/cellDataFixtures.ts'
+import { featureInfoOf } from '../../shared/cellData.fixture.ts'
 import { matrixCellMark } from './matrixCellMark.ts'
 import * as shader from './shaders/variantMatrix.iface.generated.ts'
 import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'

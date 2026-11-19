@@ -14,9 +14,9 @@ import {
 } from './alignmentsColor.ts'
 import { basesFilterOf } from './basesFilter.ts'
 import { colorFieldKindOf } from './colorFieldDefs.ts'
-import { colorSettingOf } from './colorSettingFixture.ts'
+import { colorSettingOf } from './colorSetting.fixture.ts'
 import { FACET_LABELS } from './facetLabels.ts'
-import { layerForTest } from './splitFieldForTest.ts'
+import { layerForTest } from './splitField.fixture.ts'
 
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 

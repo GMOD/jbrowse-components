@@ -1,6 +1,6 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
 
-import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { basePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import { formatReadTooltip } from './tooltipUtils.ts'
 

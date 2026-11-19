@@ -11,7 +11,7 @@ import { act, render } from '@testing-library/react'
 
 import DisplayChrome from './DisplayChrome.tsx'
 import DisplayChromeBase from './DisplayChromeBase.tsx'
-import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
+import { TestChromeModel, stubFactory } from './chromeModel.fixture.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

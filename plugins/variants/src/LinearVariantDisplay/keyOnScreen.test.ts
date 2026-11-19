@@ -4,7 +4,7 @@ import {
   cellDataOf,
   cellPayloadOf,
   featureInfoOf,
-} from '../shared/cellDataFixtures.ts'
+} from '../shared/cellData.fixture.ts'
 import { CELL_ALT, CELL_NO_CALL } from '../shared/variantCellStyles.ts'
 import { createTestEnvironment } from './testEnv.ts'
 

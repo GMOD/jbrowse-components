@@ -1,7 +1,7 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorun } from 'mobx'
 
-import { featureInfoOf } from '../shared/cellDataFixtures.ts'
+import { featureInfoOf } from '../shared/cellData.fixture.ts'
 import { HIDDEN_ROW } from '../shared/constants.ts'
 import { createTestEnvironment } from './testEnv.ts'
 

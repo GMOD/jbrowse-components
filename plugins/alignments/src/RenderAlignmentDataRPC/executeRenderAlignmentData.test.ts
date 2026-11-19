@@ -12,7 +12,7 @@ import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import { classifyInsertSize } from '../shared/insertSizeStats.ts'
-import { layerForTest } from '../shared/splitFieldForTest.ts'
+import { layerForTest } from '../shared/splitField.fixture.ts'
 import { executeRenderAlignmentData } from './executeRenderAlignmentData.ts'
 
 import type * as ReadBaseCounts from '../features/modCoverage/readBaseCounts.ts'

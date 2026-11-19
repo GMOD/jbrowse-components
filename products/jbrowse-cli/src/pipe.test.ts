@@ -7,7 +7,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { diedOfSigpipe } from './commands/process-utils.ts'
-import { ctxDir, dataDir, readConf, runInTmpDir } from './testUtil.ts'
+import { ctxDir, dataDir, readConf, runInTmpDir } from './testUtils.ts'
 
 // These spawn the CLI as a real child process. What is under test is how our
 // process behaves when a pipe peer appears or goes away, and an in-process

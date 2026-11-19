@@ -20,7 +20,7 @@ What runs in the worker and what on the main thread, and the invalidation tiers:
 
 - Type a function by the narrowest tier it reads; the worker never ships
   placeholders for fields a later tier produces.
-- **Build fixtures on `testPileupData` (`baseWorkerPileupData`,
+- **Build fixtures on `pileupData.fixture.ts` (`baseWorkerPileupData`,
   `basePileupDataResult`), not `as unknown as`.** The optional fields are left
   out on purpose: `isChainData` narrows on them.
 

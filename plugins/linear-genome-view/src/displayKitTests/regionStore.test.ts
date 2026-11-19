@@ -1,9 +1,9 @@
 import { MAX_STORED_REGIONS } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 
-import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
+import { createPerRegionTestEnvironment } from './testEnv.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
-import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
+import type { PerRegionTestDisplay } from './testEnv.ts'
 
 jest.setTimeout(30_000)
 

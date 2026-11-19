@@ -5,9 +5,9 @@ import {
   setInstanceCount,
   setInstancePosition,
 } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
+import { toContacts } from './contacts.fixture.ts'
 import { computeCountStats } from './countStats.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
-import { toContacts } from './testContacts.ts'
 
 import type { HicDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/render-core/coverageBand'
 import { MockHal } from '@jbrowse/render-core/hal'
 
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
   ALIGNMENTS_PASSES,
   GpuAlignmentsRenderer,

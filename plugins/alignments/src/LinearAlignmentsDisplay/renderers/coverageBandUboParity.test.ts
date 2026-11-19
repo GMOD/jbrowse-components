@@ -6,7 +6,7 @@ import {
   UNIFORM_OFFSET_U32,
 } from '@jbrowse/render-core/shaders/coverageBar'
 
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
 import {
   ALIGNMENTS_PASSES,

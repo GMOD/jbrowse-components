@@ -1,8 +1,8 @@
 import { waitFor } from '@testing-library/react'
 
-import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
+import { createPerRegionTestEnvironment } from './testEnv.ts'
 
-import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
+import type { PerRegionTestDisplay } from './testEnv.ts'
 import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'
 
 // `fetchRegions` carries one rule: a region is marked loaded by whoever stores

@@ -1,6 +1,6 @@
 import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 
-import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { applyChainStrandFrames } from './groupLayout.ts'
 

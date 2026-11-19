@@ -1,7 +1,7 @@
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 import { MockHal } from '@jbrowse/render-core/hal'
 
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { buildBaseCssMap } from '../../features/mismatch/baseColors.ts'
 import { UNIFORM_OFFSET_U32 } from '../../shaders/slang/read.iface.generated.ts'
 import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'

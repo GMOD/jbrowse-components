@@ -4,7 +4,7 @@ import {
   cellDataOf,
   cellPayloadOf,
   featureInfoOf,
-} from '../shared/cellDataFixtures.ts'
+} from '../shared/cellData.fixture.ts'
 import { buildRecordHit } from './components/buildVariantHit.ts'
 import { getTooltipRows } from './components/getTooltipRows.ts'
 import {

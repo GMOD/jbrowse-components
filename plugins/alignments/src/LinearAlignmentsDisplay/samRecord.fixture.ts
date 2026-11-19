@@ -5,7 +5,7 @@ import {
   getLengthSansClipping,
 } from '@jbrowse/cigar-utils'
 
-import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 

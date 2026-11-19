@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { adapterRefNameText } from '@jbrowse/core/util'
 
-import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { basePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import {
@@ -23,13 +23,13 @@ import {
   arcPaintRank,
 } from './arcColors.ts'
 import { arcsToRegionResult, groupArcsByRef } from './arcRegions.ts'
+import { computeArcsByGroup } from './arcs.fixture.ts'
 import { collectArcs, computeArcsFromPileupData } from './compute.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
 } from './shapes.ts'
-import { computeArcsByGroup } from './testArcs.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcSettings, ComputedLine, ComputedArc } from './arcTypes.ts'

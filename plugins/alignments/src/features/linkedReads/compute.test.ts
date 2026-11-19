@@ -18,7 +18,7 @@ import { max } from '@jbrowse/core/util'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { buildColorPaletteFromPalette } from '../../LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { classifyPair, groupReadsByName, iterLinkedPairs } from './compute.ts'

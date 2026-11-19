@@ -6,7 +6,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import fetch from '../../cliFetch.ts'
-import { dataDir, readConf, runCommand, runInTmpDir } from '../../testUtil.ts'
+import { dataDir, readConf, runCommand, runInTmpDir } from '../../testUtils.ts'
 
 const { copyFile, rename, chmod } = fs.promises
 

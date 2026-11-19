@@ -6,7 +6,7 @@ import {
 import { MockHal } from '@jbrowse/render-core/hal'
 import { UNIFORM_OFFSET_F32 } from '@jbrowse/render-core/shaders/coverageSnp'
 
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
 import {
   ALIGNMENTS_PASSES,

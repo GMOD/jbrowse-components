@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { aboutTestPluginManager, makeTrackConf } from './aboutTestUtils.ts'
+import { aboutTestPluginManager, makeTrackConf } from './testUtils.ts'
 import { getAboutDialogConfig } from './util.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'

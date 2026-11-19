@@ -35,7 +35,7 @@ const PALETTE = makeTestPalette({
   colorSplitInversion: [0.6, 0.6, 0.6],
   colorThroughHidden: [0.7, 0.7, 0.7],
 })
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { arcCategoryColor } from '../../shaders/palettes.ts'
 import { getArcLegendItems } from '../../shared/legendUtils.ts'
 import {

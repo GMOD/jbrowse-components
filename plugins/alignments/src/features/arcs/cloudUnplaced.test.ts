@@ -10,9 +10,10 @@ import {
   makeTestPalette,
   makeTestRenderState,
 } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { basePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import { arcsToRegionMap } from './arcRegions.ts'
+import { computeArcsByGroup } from './arcs.fixture.ts'
 import { buildArcBandFeeds } from './bandFeed.ts'
 import { computeArcsFromPileupData } from './compute.ts'
 import {
@@ -20,7 +21,6 @@ import {
   ARC_SHAPE_FLAT_SPLIT,
   ARC_SHAPE_FLAT_UNPLACED,
 } from './shapes.ts'
-import { computeArcsByGroup } from './testArcs.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcSettings, RegionInfo } from './arcTypes.ts'

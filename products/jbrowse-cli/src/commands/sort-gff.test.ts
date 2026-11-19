@@ -4,7 +4,7 @@
 
 import path from 'node:path'
 
-import { runCommand } from '../testUtil.ts'
+import { runCommand } from '../testUtils.ts'
 import { validateFileArgument } from './shared/validators.ts'
 
 const dataDir = path.join(__dirname, '..', '..', 'test', 'data')

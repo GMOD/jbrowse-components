@@ -2,7 +2,7 @@ import {
   cellDataOf,
   cellPayloadOf,
   featureInfoOf,
-} from '../shared/cellDataFixtures.ts'
+} from '../shared/cellData.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'

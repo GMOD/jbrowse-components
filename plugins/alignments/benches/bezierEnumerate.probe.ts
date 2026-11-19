@@ -25,7 +25,7 @@ import {
   SAM_FLAG_SECOND_IN_PAIR,
 } from '@jbrowse/cigar-utils'
 
-import { makePileupDataResult } from '../src/RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../src/RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { iterLinkedPairs } from '../src/features/linkedReads/compute.ts'
 
 const arg = (name: string, dflt: string) =>

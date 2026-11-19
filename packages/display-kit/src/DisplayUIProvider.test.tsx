@@ -2,7 +2,7 @@ import { DisplayUIProvider, plainChromeOverlays } from '@jbrowse/display-ui'
 import { render } from '@testing-library/react'
 
 import DisplayChrome from './DisplayChrome.tsx'
-import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
+import { TestChromeModel, stubFactory } from './chromeModel.fixture.ts'
 import TrackControl from './trackControl/TrackControl.tsx'
 
 import type { DisplayChromeOverlays } from '@jbrowse/display-ui'

@@ -12,7 +12,7 @@ import {
   openWebStream,
   runCommand,
   runInTmpDir,
-} from '../../testUtil.ts'
+} from '../../testUtils.ts'
 
 afterEach(() => {
   jest.restoreAllMocks()

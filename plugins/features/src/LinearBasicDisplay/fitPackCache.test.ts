@@ -13,13 +13,13 @@ import {
   createPackHeightCache,
   createPackHeightProbe,
 } from './layout.ts'
-import { WHOLE_REF, packedContentHeight } from './layoutTestUtils.ts'
 import {
   PILE_FIRST,
   PILE_LAST,
   pileAndLoneData,
 } from './pileAndLone.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
+import { WHOLE_REF, packedContentHeight } from './testUtils.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FitStage } from './fitLadder.ts'

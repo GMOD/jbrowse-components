@@ -1,4 +1,4 @@
-import { featureInfoOf } from '../../shared/cellDataFixtures.ts'
+import { featureInfoOf } from '../../shared/cellData.fixture.ts'
 import { cellGlyphs } from './cellGlyphs.ts'
 import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 

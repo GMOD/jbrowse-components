@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { SimpleFeature, adapterRefNameText } from '@jbrowse/core/util'
 
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { buildBaseFeatureData } from '../../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../../shared/buildBaseReadArrays.ts'
 import { extractFeatureArrays } from '../../shared/extractFeatureArrays.ts'

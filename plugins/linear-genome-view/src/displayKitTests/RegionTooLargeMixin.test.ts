@@ -4,10 +4,10 @@ import {
 } from '@jbrowse/display-kit/regionTooLargeUtils'
 import { stageByteEstimate } from '@jbrowse/display-test-utils'
 
-import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
+import { createPerRegionTestEnvironment } from './testEnv.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
-import type { GateOptIns, PerRegionTestDisplay } from './perRegionTestEnv.ts'
+import type { GateOptIns, PerRegionTestDisplay } from './testEnv.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 import type { RegionTooLargeHost } from '@jbrowse/display-kit/RegionTooLargeMixin'
 

@@ -1,9 +1,9 @@
 import { autorun } from 'mobx'
 
-import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
+import { createPerRegionTestEnvironment } from './testEnv.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
-import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
+import type { PerRegionTestDisplay } from './testEnv.ts'
 
 // A user cancel on a real per-region display, observed the way the chrome and
 // the app marker observe it: through an autorun on `displayPhase`. `canceled`

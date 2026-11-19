@@ -2,7 +2,7 @@ import { refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 import { waitFor } from '@testing-library/react'
 
-import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { bootAlignmentsDisplay } from './testUtils.ts'
 
 import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts'

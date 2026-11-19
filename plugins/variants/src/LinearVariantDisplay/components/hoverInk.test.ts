@@ -4,7 +4,7 @@ import {
   cellDataOf,
   cellPayloadOf,
   featureInfoOf,
-} from '../../shared/cellDataFixtures.ts'
+} from '../../shared/cellData.fixture.ts'
 import { createTestEnvironment } from '../testEnv.ts'
 
 const SAMPLES = ['S0', 'S1', 'S2']

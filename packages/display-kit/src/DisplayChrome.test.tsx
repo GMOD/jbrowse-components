@@ -12,7 +12,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react'
 
 import BottomRightIndicators from './BottomRightIndicators.tsx'
 import DisplayChrome from './DisplayChrome.tsx'
-import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
+import { TestChromeModel, stubFactory } from './chromeModel.fixture.ts'
 
 import type {
   MouseState,

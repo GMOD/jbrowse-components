@@ -1,6 +1,6 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
 
-import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { basePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { clusteredInterchromSupport } from './arcClustering.ts'
 import { computeArcsFromPileupData } from './compute.ts'
 

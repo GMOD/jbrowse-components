@@ -10,7 +10,7 @@ import {
   readConf,
   runCommand,
   runInTmpDir,
-} from '../testUtil.ts'
+} from '../testUtils.ts'
 
 test('remove track', async () => {
   await runInTmpDir(async ctx => {

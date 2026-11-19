@@ -1,4 +1,4 @@
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 import { OPAQUE_MISMATCHES } from '../../features/mismatch/qualityOpacity.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'

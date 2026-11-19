@@ -3,7 +3,7 @@ import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { triangleDataToScreen } from '@jbrowse/display-kit/triangleTransform'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/render-core/scoreScale'
 
-import { packTestInstances } from '../../testInstances.ts'
+import { packTestInstances } from '../../instances.fixture.ts'
 import { drawHicBlocks } from './drawHicBlocks.ts'
 
 // `triangleDataToScreen` is hic.slang's vs_main, which the GPU and (via

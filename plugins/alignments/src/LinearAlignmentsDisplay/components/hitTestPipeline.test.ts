@@ -1,6 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { indicatorFields } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { indicatorFields } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
   DEFAULT_QUALITY_FADE,
   qualityOpacityOf,

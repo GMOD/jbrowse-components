@@ -8,7 +8,7 @@ import { ThemeProvider } from '@mui/material'
 import { cleanup, fireEvent, render, within } from '@testing-library/react'
 
 import AboutDialogContents from './AboutDialogContents.tsx'
-import { aboutTestPluginManager, makeTrackConf } from './aboutTestUtils.ts'
+import { aboutTestPluginManager, makeTrackConf } from './testUtils.ts'
 
 import type { TrackConfigModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

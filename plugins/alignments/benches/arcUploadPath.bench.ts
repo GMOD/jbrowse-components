@@ -56,7 +56,7 @@ import {
   ALIGNMENTS_PASSES,
   GpuAlignmentsRenderer,
 } from '../src/LinearAlignmentsDisplay/renderers/GpuAlignmentsRenderer.ts'
-import { makePileupDataResult } from '../src/RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../src/RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { buildArcBandFeeds } from '../src/features/arcs/bandFeed.ts'
 import { ARC_SHAPE_ARC } from '../src/features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../src/features/arcs/types.ts'

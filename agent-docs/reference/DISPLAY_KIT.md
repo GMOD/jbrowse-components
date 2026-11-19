@@ -272,7 +272,7 @@ display waits out `awaitSvgReady`'s backstop instead of failing.
   the decision (given these inputs, fetch this region set) and needs no tree.
   `installPerRegionFetchAutoruns.test.ts` and `fetchRegions.test.ts`, in
   `plugins/linear-genome-view/src/displayKitTests/`, are the wiring, on a real
-  display in a real view (`perRegionTestEnv.ts`), because which reads MobX tracks
+  display in a real view (`testEnv.ts`), because which reads MobX tracks
   is not something a pure function can state. The wiring file's last block pins
   the whole dependency set per state through
   `reactionDependencies(display, 'FetchVisibleRegions')`

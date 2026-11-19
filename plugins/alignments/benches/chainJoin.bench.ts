@@ -55,7 +55,7 @@ import {
   buildReadIdsByChainName,
 } from '../src/LinearAlignmentsDisplay/chainFields.ts'
 import { buildLaidOutChainMap } from '../src/LinearAlignmentsDisplay/computeChainLayout.ts'
-import { baseWorkerPileupData } from '../src/RenderAlignmentDataRPC/testPileupData.ts'
+import { baseWorkerPileupData } from '../src/RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
   CHAIN_FRAME_REV,
   CHAIN_SPLIT_MASK,

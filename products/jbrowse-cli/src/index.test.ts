@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-import { runCommand } from './testUtil.ts'
+import { runCommand } from './testUtils.ts'
 
 test('lists every command in the global help', async () => {
   const { stdout } = await runCommand(['--help'])

@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,

@@ -3,7 +3,7 @@ import { fireEvent, render } from '@testing-library/react'
 import { createPortal } from 'react-dom'
 
 import DisplayChrome from './DisplayChrome.tsx'
-import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
+import { TestChromeModel, stubFactory } from './chromeModel.fixture.ts'
 
 import type { MouseState } from '@jbrowse/core/ui/useMouseTracking'
 

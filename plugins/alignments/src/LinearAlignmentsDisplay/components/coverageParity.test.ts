@@ -11,7 +11,7 @@ import {
   makePileupDataResult,
   indicatorFields,
   packedInterbaseSegments,
-} from '../../RenderAlignmentDataRPC/testPileupData.ts'
+} from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 import { OPAQUE_MISMATCHES } from '../../features/mismatch/qualityOpacity.ts'
 import { Canvas2DAlignmentsRenderer } from '../renderers/Canvas2DAlignmentsRenderer.ts'

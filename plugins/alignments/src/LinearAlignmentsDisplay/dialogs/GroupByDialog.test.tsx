@@ -3,7 +3,7 @@ import { ThemeProvider } from '@mui/material'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 import { MAX_GROUPS } from '../../shared/groupFeatures.ts'
-import { layerForTest } from '../../shared/splitFieldForTest.ts'
+import { layerForTest } from '../../shared/splitField.fixture.ts'
 import GroupByDialog from './GroupByDialog.tsx'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 

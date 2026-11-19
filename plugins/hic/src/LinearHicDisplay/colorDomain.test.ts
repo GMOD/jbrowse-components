@@ -7,7 +7,7 @@ import {
   makeScoreNormalizer,
 } from '@jbrowse/render-core/scoreScale'
 
-import { packTestInstances } from '../testInstances.ts'
+import { packTestInstances } from '../instances.fixture.ts'
 import { MIN_VISIBLE_ALPHA } from './components/shaders/hic.consts.generated.ts'
 import { INSTANCE_STRIDE_WORDS } from './components/shaders/hic.iface.generated.ts'
 import { createTestEnvironment } from './testEnv.ts'

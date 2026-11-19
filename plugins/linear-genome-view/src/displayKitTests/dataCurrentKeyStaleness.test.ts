@@ -1,8 +1,8 @@
 import { waitFor } from '@testing-library/react'
 
-import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
+import { createPerRegionTestEnvironment } from './testEnv.ts'
 
-import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
+import type { PerRegionTestDisplay } from './testEnv.ts'
 
 // `dataCurrent` conjoins `isCacheValid`, and the two halves of that decision
 // fail in opposite directions.

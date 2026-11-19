@@ -2,7 +2,7 @@ import {
   cellDataOf,
   cellPayloadOf,
   featureInfoOf,
-} from '../shared/cellDataFixtures.ts'
+} from '../shared/cellData.fixture.ts'
 import { variantRowsSurface } from './components/VariantComponent.tsx'
 import { variantMatrixSurface } from './matrix/VariantMatrixComponent.tsx'
 import { createTestEnvironment } from './testEnv.ts'

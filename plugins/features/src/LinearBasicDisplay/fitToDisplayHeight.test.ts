@@ -13,13 +13,13 @@ import {
 } from './components/sharedRendererConstants.ts'
 import { computeLaidOutData } from './layout.ts'
 import { maxBottom } from './layoutQueries.ts'
-import { packedContentHeight } from './layoutTestUtils.ts'
 import {
   PILE_FIRST,
   PILE_LAST,
   pileAndLoneData,
 } from './pileAndLone.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
+import { packedContentHeight } from './testUtils.ts'
 import { rowGeometrySignature } from './yMorph.ts'
 
 import type {

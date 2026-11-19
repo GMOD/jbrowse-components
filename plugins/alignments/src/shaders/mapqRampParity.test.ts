@@ -8,10 +8,10 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { buildReadFillColors } from '../LinearAlignmentsDisplay/readFillColors.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
-import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { packReadSegments } from '../features/read/mark.ts'
 import { alignmentsColorEncoding } from '../shared/alignmentsColor.ts'
-import { colorSettingOf } from '../shared/colorSettingFixture.ts'
+import { colorSettingOf } from '../shared/colorSetting.fixture.ts'
 import {
   RC_MAPQ,
   RC_MAPQ_UNAVAILABLE,

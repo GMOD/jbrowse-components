@@ -1,7 +1,7 @@
 import { waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
-import { cellDataOf } from '../../shared/cellDataFixtures.ts'
+import { cellDataOf } from '../../shared/cellData.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // Matrix columns are the features of exactly the span on screen, so a zoom that

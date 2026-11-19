@@ -1,4 +1,4 @@
-import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { buildLanes, drawnLanesOf, laneExpandable } from './lanes.ts'
 import { computeStackedSections } from './sectionLayout.ts'
 

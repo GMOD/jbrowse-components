@@ -1,7 +1,7 @@
 import { packCoverageBinsForGpu } from '@jbrowse/alignments-core'
 import { MockHal } from '@jbrowse/render-core/hal'
 
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { makeTestRenderState } from '../testUtils.ts'
 import {
   ALIGNMENTS_PASSES,

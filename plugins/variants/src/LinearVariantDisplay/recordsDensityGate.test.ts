@@ -1,7 +1,7 @@
 import { TOO_MANY_FEATURES_REASON } from '@jbrowse/display-kit/regionTooLargeUtils'
 import { waitFor } from '@testing-library/react'
 
-import { cellDataOf } from '../shared/cellDataFixtures.ts'
+import { cellDataOf } from '../shared/cellData.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { GetCellDataArgs } from '../VariantRPC/types.ts'

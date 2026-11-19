@@ -1,4 +1,4 @@
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { computeJunctionArcs } from './junctionArcs.fixture.ts'
 import { mergeJunctions, stripJunctionKeys } from './junctions.ts'
 import { encodeDinucleotide, spliceMotifLabel } from './motif.ts'

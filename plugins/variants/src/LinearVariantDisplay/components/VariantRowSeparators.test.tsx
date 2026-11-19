@@ -2,7 +2,7 @@ import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
 import { snappedRowTopPx } from '@jbrowse/render-core/shaders/rowSnap'
 import { render } from '@testing-library/react'
 
-import { cellDataOf } from '../../shared/cellDataFixtures.ts'
+import { cellDataOf } from '../../shared/cellData.fixture.ts'
 import { createTestEnvironment } from '../testEnv.ts'
 import SvgVariantOverlay from './SvgVariantOverlay.tsx'
 import VariantRowSeparators from './VariantRowSeparators.tsx'

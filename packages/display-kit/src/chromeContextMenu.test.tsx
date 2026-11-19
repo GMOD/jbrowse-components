@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 
 import { ContextMenuMixin } from './ContextMenuMixin.ts'
 import DisplayChrome from './DisplayChrome.tsx'
-import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
+import { TestChromeModel, stubFactory } from './chromeModel.fixture.ts'
 
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'

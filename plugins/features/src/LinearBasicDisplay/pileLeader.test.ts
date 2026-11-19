@@ -4,8 +4,8 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { hoverTooltipRows } from './components/hoverReadout.ts'
 import { computeLaidOutData } from './layout.ts'
-import { WHOLE_REF } from './layoutTestUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
+import { WHOLE_REF } from './testUtils.ts'
 
 import type { FloatingLabelsDataMap } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LayoutRegionData } from './layoutInputs.ts'

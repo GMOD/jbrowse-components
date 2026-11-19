@@ -2,7 +2,7 @@ import { namesToBlock } from '@jbrowse/alignments-core'
 import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 import { max } from '@jbrowse/core/util'
 
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { enumerateConnectorPairs } from '../../features/linkedReads/computeOverlay.ts'
 import { buildConnectorFeeds } from '../../features/linkedReads/connectorFeed.ts'
 import { connectorParamsOf } from '../renderers/connectorMarks.ts'

@@ -19,7 +19,7 @@ import { autorun } from 'mobx'
 import {
   baseWorkerPileupData,
   makePileupDataResult,
-} from '../RenderAlignmentDataRPC/testPileupData.ts'
+} from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { arcSplitJunction } from '../features/junctions/supportingReads.ts'
 import { LINKED_READ_LINE_MARK } from '../features/linkedReads/mark.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
@@ -29,7 +29,7 @@ import {
   DEFAULT_MIN_JUNCTION_READS,
   mergeFilter,
 } from '../shared/alignmentsFilter.ts'
-import { layerForTest } from '../shared/splitFieldForTest.ts'
+import { layerForTest } from '../shared/splitField.fixture.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import { declaredLayerFilterState } from './dialogs/layerFilters.ts'

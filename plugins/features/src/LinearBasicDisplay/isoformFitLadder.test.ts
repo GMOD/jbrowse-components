@@ -7,8 +7,8 @@ import {
   createIsoformCountProbe,
 } from './layout.ts'
 import { maxBottom } from './layoutQueries.ts'
-import { WHOLE_REF } from './layoutTestUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
+import { WHOLE_REF } from './testUtils.ts'
 
 import type { LayoutInputs, LayoutRegionData } from './layoutInputs.ts'
 

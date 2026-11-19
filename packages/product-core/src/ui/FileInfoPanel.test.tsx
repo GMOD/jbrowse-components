@@ -3,7 +3,7 @@ import { ThemeProvider } from '@mui/material'
 import { render, waitForElementToBeRemoved } from '@testing-library/react'
 
 import FileInfoPanel from './FileInfoPanel.tsx'
-import { makeTrackConf } from './aboutTestUtils.ts'
+import { makeTrackConf } from './testUtils.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 

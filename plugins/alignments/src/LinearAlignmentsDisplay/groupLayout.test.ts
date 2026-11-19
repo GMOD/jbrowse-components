@@ -1,4 +1,4 @@
-import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
   MIN_FIT_ROWS,
   buildLaidOutByGroup,

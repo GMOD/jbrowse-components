@@ -8,7 +8,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 
-import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
   CHAIN_FRAME_REV,
   CHAIN_SPLIT_SAME_STRAND,

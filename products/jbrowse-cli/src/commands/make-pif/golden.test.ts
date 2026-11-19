@@ -6,7 +6,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { gunzipSync } from 'node:zlib'
 
-import { runCommand, runInTmpDir } from '../../testUtil.ts'
+import { runCommand, runInTmpDir } from '../../testUtils.ts'
 import { PIF_FORMAT_VERSION } from './pif-generator.ts'
 
 // These goldens pin the uncompressed bytes make-pif hands to bgzip: the

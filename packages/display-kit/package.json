@@ -19,8 +19,7 @@
   },
   "author": "JBrowse Team",
   "files": [
-    "esm",
-    "!esm/chromeTestModel.*"
+    "esm"
   ],
   "exports": {
     "./AttributeFieldInput": "./src/AttributeFieldInput.tsx",

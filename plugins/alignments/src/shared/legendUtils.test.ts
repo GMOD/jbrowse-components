@@ -16,7 +16,7 @@ import {
 } from '../shaders/slang/overlap.consts.generated.ts'
 import { alignmentsColorEncoding } from './alignmentsColor.ts'
 import { basesFilterOf } from './basesFilter.ts'
-import { colorSettingOf } from './colorSettingFixture.ts'
+import { colorSettingOf } from './colorSetting.fixture.ts'
 import { sectionOrder } from './groupFeatures.ts'
 import {
   arcColorCategoryLabel,
@@ -30,7 +30,7 @@ import {
   junctionLegend,
   junctionLegendItems,
 } from './legendUtils.ts'
-import { splitFieldForTest } from './splitFieldForTest.ts'
+import { splitFieldForTest } from './splitField.fixture.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 
 import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
@@ -38,7 +38,7 @@ import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.t
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { OverlapLegendRow } from './legendUtils.ts'
-import type { LayerSpec } from './splitFieldForTest.ts'
+import type { LayerSpec } from './splitField.fixture.ts'
 import type { BaseLayer } from './types.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { ColorScale, RampScale } from '@jbrowse/core/ui/colorScale'

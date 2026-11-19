@@ -4,7 +4,7 @@ import { fireEvent, render } from '@testing-library/react'
 
 import { createTestEnvironment } from '../LinearVariantDisplay/matrix/testEnv.ts'
 import { ConnectorLineOverlay, SvgConnectorField } from './ConnectorLines.tsx'
-import { cellDataOf, cellPayloadOf, featureInfoOf } from './cellDataFixtures.ts'
+import { cellDataOf, cellPayloadOf, featureInfoOf } from './cellData.fixture.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 

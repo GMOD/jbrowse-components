@@ -1,6 +1,6 @@
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 
-import { cellPayloadOf, featureInfoOf } from '../shared/cellDataFixtures.ts'
+import { cellPayloadOf, featureInfoOf } from '../shared/cellData.fixture.ts'
 import {
   CELL_ALT,
   CELL_ALT_SECONDARY,

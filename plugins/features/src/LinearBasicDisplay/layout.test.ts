@@ -25,8 +25,8 @@ import {
 } from './layout.ts'
 import { displayModeMetrics } from './layoutInputs.ts'
 import { featureIdsTouchingBlocks, maxBottom } from './layoutQueries.ts'
-import { WHOLE_REF, packedContentHeight } from './layoutTestUtils.ts'
 import { prepareRefPack } from './packRef.ts'
+import { WHOLE_REF, packedContentHeight } from './testUtils.ts'
 
 import type {
   FeatureDataResult,

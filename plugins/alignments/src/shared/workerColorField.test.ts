@@ -3,7 +3,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { COLOR_FIELD_DEFS, workerColorField } from './colorFieldDefs.ts'
 import { extractFeatureArrays } from './extractFeatureArrays.ts'
-import { splitFieldForTest } from './splitFieldForTest.ts'
+import { splitFieldForTest } from './splitField.fixture.ts'
 
 import type { ColorFieldKind } from './types.ts'
 import type { FeatureData } from './webglRpcTypes.ts'

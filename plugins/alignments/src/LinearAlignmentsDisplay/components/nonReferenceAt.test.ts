@@ -1,4 +1,4 @@
-import { baseWorkerPileupData } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { baseWorkerPileupData } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { GAP_DELETION } from '../../shaders/slang/gap.consts.generated.ts'
 import { INTERBASE_INSERTION } from '../../shared/types.ts'
 import { nonReferenceAt } from './positionStats.ts'

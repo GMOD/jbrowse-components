@@ -263,7 +263,7 @@ asserted against `any`.
   `getSnapshot(display.configuration)` first.
 - **A counter for `isCacheValid`** lives in a closure the model factory
   captures, since a view may not write a volatile (`PerRegionTestControl` in
-  `perRegionTestEnv.ts`).
+  `displayKitTests/testEnv.ts`).
 - **A fixed sleep after `createDisplay()` rides the first fetch's late
   settle**, which bumps `fetchGeneration` and reruns the fetch autorun, so the
   assertion passes on that run rather than the one the action provoked, and a

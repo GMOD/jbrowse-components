@@ -7,7 +7,7 @@ import path from 'node:path'
 import { Writable } from 'node:stream'
 import { gunzipSync, gzipSync } from 'node:zlib'
 
-import { runCommand, runInTmpDir } from '../../testUtil.ts'
+import { runCommand, runInTmpDir } from '../../testUtils.ts'
 import { PIF_FORMAT_VERSION, createPIF, pifHeader } from './pif-generator.ts'
 
 const base = path.join(__dirname, '..', '..', '..', 'test', 'data')

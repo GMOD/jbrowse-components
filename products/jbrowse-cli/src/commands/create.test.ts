@@ -5,7 +5,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { mockFetch, runCommand, runInTmpDir } from '../testUtil.ts'
+import { mockFetch, runCommand, runInTmpDir } from '../testUtils.ts'
 import { version } from '../version.ts'
 
 jest.mock('../cliFetch')

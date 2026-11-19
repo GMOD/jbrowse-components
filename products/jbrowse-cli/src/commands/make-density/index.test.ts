@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { runCommand, runInTmpDir } from '../../testUtil.ts'
+import { runCommand, runInTmpDir } from '../../testUtils.ts'
 import {
   bedGraphLines,
   countFeatureStarts,

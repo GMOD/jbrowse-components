@@ -4,7 +4,7 @@ import {
   makePileupDataResult,
   indicatorFields,
   packedInterbaseSegments,
-} from '../../RenderAlignmentDataRPC/testPileupData.ts'
+} from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { makeTestRenderState } from '../testUtils.ts'
 import { drawAlignmentsToCtx } from './Canvas2DAlignmentsRenderer.ts'
 

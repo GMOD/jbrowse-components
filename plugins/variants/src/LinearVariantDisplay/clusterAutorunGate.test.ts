@@ -1,6 +1,6 @@
 import { waitFor } from '@testing-library/react'
 
-import { cellDataOf } from '../shared/cellDataFixtures.ts'
+import { cellDataOf } from '../shared/cellData.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // The declarative `runClustering: true` path, which a session spec and a figure

@@ -1,4 +1,4 @@
-import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { fitLaneRows, fittedReadPitch } from './groupLayout.ts'
 import { NORMAL_PITCH } from './menus/compactnessPresets.ts'
 

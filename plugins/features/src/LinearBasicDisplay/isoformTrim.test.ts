@@ -9,7 +9,7 @@ import {
   trimIsoformStack,
 } from './isoformTrim.ts'
 import { computeLaidOutData } from './layout.ts'
-import { WHOLE_REF } from './layoutTestUtils.ts'
+import { WHOLE_REF } from './testUtils.ts'
 
 import type { IsoformStack } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LayoutInputs, LayoutRegionData } from './layoutInputs.ts'

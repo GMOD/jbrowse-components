@@ -1,7 +1,7 @@
 import { SimpleFeature, adapterRefNameText } from '@jbrowse/core/util'
 
-import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { pileupDataFromSamRecords } from '../../LinearAlignmentsDisplay/samRecord.fixture.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { piecesOf, splitReadKind } from '../../shared/splitReadJunctions.ts'
 import { iterLinkedPairs } from '../linkedReads/compute.ts'
@@ -16,7 +16,7 @@ import {
   splitJunctionSlot,
 } from './arcColors.ts'
 
-import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/samRecordFixture.ts'
+import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/samRecord.fixture.ts'
 import type { SvKind } from '../../shared/readFieldLevels.ts'
 
 // A same-strand junction by the reference it skips in the read's direction

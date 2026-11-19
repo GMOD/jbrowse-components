@@ -1,4 +1,4 @@
-import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
+import { createPerRegionTestEnvironment } from './testEnv.ts'
 
 import type { Region } from '@jbrowse/core/util'
 

@@ -4,7 +4,7 @@ import {
   cellDataOf,
   cellPayloadOf,
   featureInfoOf,
-} from '../../shared/cellDataFixtures.ts'
+} from '../../shared/cellData.fixture.ts'
 import { variantMatrixSurface } from './VariantMatrixComponent.tsx'
 import { matrixCellAt } from './matrixHitTest.ts'
 import { createTestEnvironment } from './testEnv.ts'

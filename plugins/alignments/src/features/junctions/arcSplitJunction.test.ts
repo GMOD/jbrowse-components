@@ -2,15 +2,15 @@ import { namesToBlock } from '@jbrowse/alignments-core'
 import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import {
   ARC_COLOR_DEFAULT,
   ARC_COLOR_SPLIT_FORWARD,
 } from '../arcs/arcColors.ts'
+import { computeArcsByGroup } from '../arcs/arcs.fixture.ts'
 import { buildArcBandFeeds } from '../arcs/bandFeed.ts'
 import { ARC_SHAPE_ARC } from '../arcs/shapes.ts'
-import { computeArcsByGroup } from '../arcs/testArcs.ts'
 import {
   arcSplitJunction,
   junctionSupportingReadSlots,

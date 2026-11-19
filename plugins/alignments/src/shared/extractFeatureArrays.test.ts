@@ -4,7 +4,7 @@ import {
   MOD_TYPE_SAMPLE_READS,
   extractFeatureArrays,
 } from './extractFeatureArrays.ts'
-import { layerForTest } from './splitFieldForTest.ts'
+import { layerForTest } from './splitField.fixture.ts'
 import { piecesOf } from './splitReadJunctions.ts'
 
 import type { FeatureData } from './webglRpcTypes.ts'

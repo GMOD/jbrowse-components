@@ -10,7 +10,7 @@ import {
   readColorFieldOf,
   writtenReadCategoryColors,
 } from '../shared/alignmentsColor.ts'
-import { colorSettingOf } from '../shared/colorSettingFixture.ts'
+import { colorSettingOf } from '../shared/colorSetting.fixture.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   READ_COLOR_CATEGORY,

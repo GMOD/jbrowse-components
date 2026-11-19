@@ -14,7 +14,7 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
-import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { arcStrokeScale } from '../features/arcs/arcLineWidth.ts'
 import { OPAQUE_MISMATCHES } from '../features/mismatch/qualityOpacity.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'

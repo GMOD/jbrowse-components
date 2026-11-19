@@ -2,7 +2,7 @@ import {
   cellDataOf,
   cellPayloadOf,
   featureInfoOf,
-} from '../../shared/cellDataFixtures.ts'
+} from '../../shared/cellData.fixture.ts'
 import { f2 } from '../../shared/constants.ts'
 import { findCellIndex } from '../components/variantCellLookup.ts'
 import { variantMatrixSurface } from './VariantMatrixComponent.tsx'

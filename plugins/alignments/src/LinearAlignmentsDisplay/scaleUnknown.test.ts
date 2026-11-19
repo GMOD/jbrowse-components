@@ -3,13 +3,13 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
-import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import {
   alignmentsColorEncoding,
   alignmentsColorProblems,
   alignmentsColorSettingOf,
 } from '../shared/alignmentsColor.ts'
-import { colorSettingOf } from '../shared/colorSettingFixture.ts'
+import { colorSettingOf } from '../shared/colorSetting.fixture.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { bakedColorScale } from './bakedColorScale.ts'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
