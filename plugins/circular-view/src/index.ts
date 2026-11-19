@@ -47,7 +47,7 @@ export {
   type RingHostView,
   type RingPassModel,
 } from './rings/ringHost.ts'
-export { type RingCell } from './rings/ringMarks.ts'
+export { type RingCell, type RingFrame } from './rings/ringMarks.ts'
 export { renderToSvg } from './CircularView/svgcomponents/SVGCircularView.tsx'
 export type { CircularViewCommands } from './CircularView/types.ts'
 export type { FitInput, FitLayout } from './CircularView/fitLayout.ts'
