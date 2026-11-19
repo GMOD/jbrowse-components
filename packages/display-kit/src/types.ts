@@ -81,6 +81,14 @@ export interface ExportSvgOptions extends ViewExportSvgOptions {
   showGridlines?: boolean
   /** The pixels to lay the view out across, the on-screen width when absent. */
   viewWidth?: number
+  /**
+   * The whole figure's width with its unit, `183mm` or `7in`: the view is laid
+   * out to fill it and the file states that size. Takes the place of
+   * `viewWidth`.
+   */
+  pageWidth?: string
+  /** The pt its track labels print at on a `pageWidth` figure, 7 when absent. */
+  textSize?: number
 }
 
 /** The text an export's labels draw in, and so the text they measure in. */

@@ -47,9 +47,10 @@ import {
   everyRegionMenuItems,
   showWholeGenomeLabel,
 } from './showWholeGenome.ts'
+import { exportChrome, pageLayout } from './svgcomponents/pageLayout.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
-import type { BpOffset } from './types.ts'
+import type { BpOffset, ExportSvgOptions } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const TRACK_LABEL_OPTIONS = [
@@ -156,6 +157,11 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             model: self,
             handleClose,
             chooseWidth: true,
+            figureLayout: {
+              chromePx: (opts: ExportSvgOptions) =>
+                exportChrome(self, opts).widthPx,
+              pageLayout: (opts: ExportSvgOptions) => pageLayout(self, opts),
+            },
             exportR: async (filename: string) => {
               const { saveRScript } =
                 await import('./rExport/exportLinearView.ts')

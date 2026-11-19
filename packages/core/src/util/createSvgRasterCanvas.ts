@@ -23,6 +23,11 @@ export interface SvgRasterCanvasOpts {
    * vectors only, so markup headed for it carries no rasterized layers.
    */
   decodeSvg?: (markup: string) => Promise<CanvasImageSource>
+  /**
+   * backing px per CSS px a layer asks for, in place of 2×: an export sized
+   * for a page asks for what prints at its dpi
+   */
+  rasterScale?: number
 }
 
 /**
@@ -38,7 +43,7 @@ export function createSvgRasterCanvas(
   maxAreaPx = MAX_SVG_RASTER_AREA_PX,
 ) {
   const scale = Math.min(
-    SVG_RASTER_DPR,
+    opts?.rasterScale ?? SVG_RASTER_DPR,
     MAX_SVG_RASTER_DIM_PX / width,
     MAX_SVG_RASTER_DIM_PX / height,
     Math.sqrt(maxAreaPx / (width * height)),

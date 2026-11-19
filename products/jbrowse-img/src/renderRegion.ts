@@ -26,6 +26,8 @@ import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
 import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-comparative-view'
 import {
   fetchResults,
+  MIN_PAGE_PLOT_PX,
+  settledPageLayout,
   renderToSvg as renderLinearToSvg,
   openedDisplayType,
   writeFilter,
@@ -458,10 +460,27 @@ const renderLinear: ModeRenderer = async ctx => {
     )
   }
 
-  const svg = await renderLinearToSvg(view, {
+  const svgOpts = {
     ...baseSvgOpts(opts),
     showGridlines,
     trackLabels,
+    pageWidth: opts.pageWidth,
+    textSize: opts.textSize,
+  }
+  const page = await settledPageLayout(view, svgOpts)
+  if (page) {
+    if (page.plotPx < MIN_PAGE_PLOT_PX) {
+      throw new Error(
+        `a ${opts.pageWidth} figure at ${page.textPt} pt leaves the tracks ${Math.max(page.plotPx, 0)} px wide: widen the figure or lower the text size`,
+      )
+    }
+    view.setWidth(page.plotPx)
+    view.settleCoarseBlocks()
+    await whenViewReady(view, model.session)
+  }
+  const svg = await renderLinearToSvg(view, {
+    ...svgOpts,
+    rasterScale: page?.rasterScale,
   })
   return {
     svg,

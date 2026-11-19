@@ -76,6 +76,17 @@ describe('convert', () => {
       { input: '<svg/>' },
     )
   })
+
+  test('a figure sized for a page converts at its own size, at 300 dpi', () => {
+    mockSpawnSync.mockReturnValue(result({ status: 0 }))
+    const page = '<svg width="183mm" height="60mm" viewBox="0 0 963 316"/>'
+    convert(page, { out: 'out.pdf', width: '1500' }, ['-f', 'pdf'])
+    expect(mockSpawnSync).toHaveBeenCalledWith(
+      'rsvg-convert',
+      ['-d', '300', '-p', '300', '-o', 'out.pdf', '-f', 'pdf'],
+      { input: page },
+    )
+  })
 })
 
 describe('isFile', () => {

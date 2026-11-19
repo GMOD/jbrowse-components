@@ -1,6 +1,11 @@
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 
+import {
+  EXPORT_RASTER_DPI,
+  svgRootIsPhysical,
+} from '@jbrowse/core/svg/figureSize'
+
 import { DEFAULT_WIDTH } from './options.ts'
 
 export const STDIN_ARG = '-'
@@ -67,7 +72,10 @@ export function convert(
   spawnArgs: string[] = [],
 ) {
   const { width = String(DEFAULT_WIDTH), out } = args
-  const ls = spawnSync('rsvg-convert', ['-w', width, '-o', out, ...spawnArgs], {
+  const size = svgRootIsPhysical(result)
+    ? ['-d', String(EXPORT_RASTER_DPI), '-p', String(EXPORT_RASTER_DPI)]
+    : ['-w', width]
+  const ls = spawnSync('rsvg-convert', [...size, '-o', out, ...spawnArgs], {
     input: result,
   })
   // a failed spawn leaves stdout and stderr unset

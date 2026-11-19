@@ -37,6 +37,10 @@ export interface Opts {
   // 0-based half-open
   highlight?: { refName: string; start: number; end: number }
   width?: number
+  /** the whole figure's width with its unit, `183mm`; replaces `width` */
+  pageWidth?: string
+  /** the pt a `pageWidth` figure's track labels print at */
+  textSize?: number
   session?: string
   assembly?: string
   config?: string

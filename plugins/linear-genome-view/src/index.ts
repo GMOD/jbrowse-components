@@ -234,6 +234,10 @@ export {
 // resolve it here.
 export { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 export { renderViewTracks } from './LinearGenomeView/svgcomponents/renderViewTracks.ts'
+export {
+  MIN_PAGE_PLOT_PX,
+  settledPageLayout,
+} from './LinearGenomeView/svgcomponents/pageLayout.ts'
 export type {
   SvgExportTrack,
   ViewTracksSvg,

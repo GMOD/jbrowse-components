@@ -691,6 +691,80 @@ test('an export at another width lays the view out there, then puts the screen b
   expect(model.bpPerPx).toBe(5)
 })
 
+function exportPageView(id: string) {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({ configuration: {} }).setView(
+    LinearGenomeModel.create({
+      id,
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(1600)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 16000, refName: 'ctgA' },
+  ])
+  model.setNewView(10, 0)
+  return model
+}
+
+test('an export at a page width lays the plot out to fill the page at the text size', async () => {
+  const model = exportPageView('exportPage')
+  const seen: { width: number; rasterScale: unknown }[] = []
+  jest.mocked(exportViewSvg).mockImplementation(async (_view, opts) => {
+    seen.push({
+      width: model.width,
+      rasterScale: (opts as { rasterScale?: number }).rasterScale,
+    })
+    return '<svg/>'
+  })
+  await model.exportSvg({ pageWidth: '183mm' })
+  await model.exportSvg({ pageWidth: '183mm', textSize: 9.75 })
+  await model.exportSvg({ pageWidth: '13.33in', textSize: 18 })
+  expect(seen.map(s => s.width)).toEqual([947, 675, 677])
+  expect(seen[1]!.rasterScale).toBeCloseTo(3.125)
+  expect(seen[2]!.rasterScale).toBeCloseTo(3.125 * (18 / 9.75))
+  expect(model.width).toBe(1600)
+  expect(model.bpPerPx).toBe(10)
+})
+
+test('a page too narrow for its text is refused before the view is resized', async () => {
+  const model = exportPageView('exportNarrowPage')
+  jest.mocked(exportViewSvg).mockClear()
+  await expect(model.exportSvg({ pageWidth: '40mm' })).rejects.toThrow(
+    'leaves the tracks 194 px wide',
+  )
+  expect(exportViewSvg).not.toHaveBeenCalled()
+  expect(model.width).toBe(1600)
+})
+
+test('an export started during another waits for it, and the screen width comes back', async () => {
+  const model = exportPageView('exportOverlap')
+  const seen: number[] = []
+  const releases: (() => void)[] = []
+  jest.mocked(exportViewSvg).mockImplementation(async () => {
+    seen.push(model.width)
+    await new Promise<void>(resolve => {
+      releases.push(resolve)
+    })
+    seen.push(model.width)
+    return '<svg/>'
+  })
+  const first = model.exportSvg({ viewWidth: 2000 })
+  const second = model.exportSvg({ viewWidth: 1000 })
+  await waitFor(() => {
+    expect(releases).toHaveLength(1)
+  })
+  releases[0]!()
+  await waitFor(() => {
+    expect(releases).toHaveLength(2)
+  })
+  releases[1]!()
+  await Promise.all([first, second])
+  expect(seen).toEqual([2000, 2000, 1000, 1000])
+  expect(model.width).toBe(1600)
+})
+
 test('can instantiate a model that tests navTo/moveTo', async () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({

@@ -1366,6 +1366,22 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/svg/figureSize": {
+      "package": "@jbrowse/core",
+      "names": [
+        "CSS_PX_PER_INCH",
+        "DEFAULT_FIGURE_TEXT_PT",
+        "EXPORT_RASTER_DPI",
+        "parsePhysicalWidth",
+        "physicalRootSize",
+        "physicalWidthInches",
+        "pxToPt",
+        "resolveFigureSize",
+        "sizeSvgForRaster",
+        "svgRootIsPhysical"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/svg/saveSvgAsImage": {
       "package": "@jbrowse/core",
       "names": [

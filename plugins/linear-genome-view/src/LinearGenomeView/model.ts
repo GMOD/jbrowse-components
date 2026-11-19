@@ -105,6 +105,10 @@ import {
 import { sharedScaleContainerOf } from './sharedScaleContainer.ts'
 import { showFiles } from './showFiles.ts'
 import {
+  MIN_PAGE_PLOT_PX,
+  settledPageLayout,
+} from './svgcomponents/pageLayout.ts'
+import {
   calculateVisibleLocStrings,
   cytobandLabelGutterWidth,
   expandRegion,
@@ -2732,37 +2736,50 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.setWidth(width)
         self.settleCoarseBlocks()
       }
+      let exportQueue: Promise<unknown> = Promise.resolve()
+      async function exportAt(opts: ExportSvgOptions) {
+        const page = await settledPageLayout(self, opts)
+        const { width } = self
+        if (page && page.plotPx < MIN_PAGE_PLOT_PX) {
+          throw new Error(
+            `A ${opts.pageWidth} figure at ${page.textPt} pt leaves the tracks ${Math.max(page.plotPx, 0)} px wide: widen the figure or lower the text size`,
+          )
+        }
+        const viewWidth = page?.plotPx ?? opts.viewWidth ?? width
+        // The on-screen tracks redraw at `viewWidth` until the export ends. A
+        // hidden copy of the view would keep them still, but it needs a
+        // session slot that autosave and undo skip, and new ids for the view,
+        // its tracks and displays, since widgets find them by id.
+        if (viewWidth !== width) {
+          layOutAt(viewWidth)
+        }
+        try {
+          return await exportViewSvg(
+            self as LinearGenomeViewModel,
+            page ? { ...opts, rasterScale: page.rasterScale } : opts,
+            () => import('./svgcomponents/SVGLinearGenomeView.tsx'),
+          )
+        } finally {
+          if (viewWidth !== width) {
+            layOutAt(width)
+          }
+        }
+      }
       return {
         /**
          * #method
          * renders the view to SVG markup, which it returns; saves it through
          * FileSaver unless `save: false`. A `viewWidth` lays the view out at
          * that many pixels for the export, as a window that wide would, and
-         * puts the on-screen width back after.
+         * puts the on-screen width back after; a `pageWidth` lays it out to
+         * fill a figure that wide. One export runs at a time.
          */
         // Promise<string> is stated: renderToSvg is typed against this very
         // model, so an inferred return makes the type reference itself (TS2456)
         async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
-          const { width } = self
-          const { viewWidth = width } = opts
-          // The on-screen tracks redraw at `viewWidth` until the export ends. A
-          // hidden copy of the view would keep them still, but it needs a
-          // session slot that autosave and undo skip, and new ids for the view,
-          // its tracks and displays, since widgets find them by id.
-          if (viewWidth !== width) {
-            layOutAt(viewWidth)
-          }
-          try {
-            return await exportViewSvg(
-              self as LinearGenomeViewModel,
-              opts,
-              () => import('./svgcomponents/SVGLinearGenomeView.tsx'),
-            )
-          } finally {
-            if (viewWidth !== width) {
-              layOutAt(width)
-            }
-          }
+          const run = exportQueue.then(() => exportAt(opts))
+          exportQueue = run.catch(() => undefined)
+          return run
         },
       }
     })

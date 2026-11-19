@@ -75,3 +75,21 @@ test('layers of one document still get distinct clip ids', () => {
     expect(svg).toContain(`url(#${id})`)
   }
 })
+
+test('a physical width goes on the root with its height, over the px viewBox', () => {
+  const root = (physicalWidth?: { value: number; unit: 'mm' }) =>
+    /<svg[^>]*>/.exec(
+      wrapSvgExport({
+        theme: undefined,
+        width: 592,
+        height: 256,
+        physicalWidth,
+        children: <rect width={10} height={10} />,
+      }),
+    )?.[0]
+  expect(root({ value: 183, unit: 'mm' })).toContain(
+    'width="183mm" height="67.7mm"',
+  )
+  expect(root({ value: 183, unit: 'mm' })).toContain('viewBox="0 0 692 256"')
+  expect(root()).toContain('width="692" height="256"')
+})

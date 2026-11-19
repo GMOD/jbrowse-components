@@ -1,3 +1,8 @@
+import {
+  DEFAULT_FIGURE_TEXT_PT,
+  parsePhysicalWidth,
+} from '@jbrowse/core/svg/figureSize'
+
 import { modeDescriptors, viewModes } from './modes.ts'
 
 import type { ViewMode } from './modes.ts'
@@ -100,6 +105,19 @@ const optionDefs: OptionDef[] = [
     description:
       'Width of the view in pixels. An SVG adds its margins and label gutter to it; a PNG or PDF is the SVG scaled down to this width',
     default: DEFAULT_WIDTH,
+  },
+  {
+    name: 'pageWidth',
+    description:
+      'Width of the whole figure with its unit, such as 183mm or 7in, in place of --width: the view is laid out to fill it, the SVG states that size, and a PNG or PDF is written at it (PNG at 300 dpi)',
+    modes: ['linear'],
+  },
+  {
+    name: 'textSize',
+    description:
+      'Point size the track labels print at in a --pageWidth figure; the ruler, axes and features scale with it',
+    default: DEFAULT_FIGURE_TEXT_PT,
+    modes: ['linear'],
   },
   {
     name: 'noRasterize',
@@ -229,6 +247,16 @@ const breakpointExamples: [string, string][] = [
 export function getString(rest: Record<string, unknown>, key: string) {
   const v = rest[key]
   return typeof v === 'string' ? v : undefined
+}
+
+export function getPageWidth(rest: Record<string, unknown>) {
+  const value = getString(rest, 'pageWidth')
+  if (value !== undefined && !parsePhysicalWidth(value)) {
+    throw new Error(
+      `--pageWidth needs a width with its unit, such as 183mm or 7in, got "${value}"`,
+    )
+  }
+  return value
 }
 
 export function getBoolean(rest: Record<string, unknown>, key: string) {

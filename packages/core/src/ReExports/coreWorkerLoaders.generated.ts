@@ -188,6 +188,7 @@ const loaders: ReExportLoaders = {
   '@jbrowse/core/rpc/WebWorkerRpcDriver': () => import('../rpc/WebWorkerRpcDriver.ts').then(ns => ns.default),
   '@jbrowse/core/svg/constants': () => import('../svg/constants.ts'),
   '@jbrowse/core/svg/exportViewSvg': () => import('../svg/exportViewSvg.ts'),
+  '@jbrowse/core/svg/figureSize': () => import('../svg/figureSize.ts'),
   '@jbrowse/core/svg/saveSvgAsImage': () => import('../svg/saveSvgAsImage.ts'),
   '@jbrowse/core/svg/serializeSvg': () => Promise.resolve(uiNamespace(['normalizeSvgMarkup', 'serializeSvg'])),
   '@jbrowse/core/svg/SvgExport': () => import('../svg/SvgExport.tsx'),

@@ -14,6 +14,7 @@ import {
   getNumber,
   getOptionalCount,
   getOptionalNumber,
+  getPageWidth,
   getString,
   getThemeName,
   getTrackLabels,
@@ -48,6 +49,14 @@ test('applies fallbacks when options are absent', () => {
   expect(getNumber(rest, 'width', 1500)).toBe(1500)
   expect(getBoolean(rest, 'refseq')).toBe(false)
   expect(getString(rest, 'fasta')).toBeUndefined()
+})
+
+test('a page width needs its unit', () => {
+  expect(getPageWidth(parse('--pageWidth 183mm'))).toBe('183mm')
+  expect(getPageWidth(parse('--loc chr1'))).toBeUndefined()
+  expect(() => getPageWidth(parse('--pageWidth 183'))).toThrow(
+    '--pageWidth needs a width with its unit, such as 183mm or 7in, got "183"',
+  )
 })
 
 test('an enum flag takes one of its values and refuses any other', () => {

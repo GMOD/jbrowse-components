@@ -4,9 +4,9 @@ import { getSession } from '@jbrowse/core/util'
 
 import { CytobandOverview } from './SVGHeader.tsx'
 import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
-import { lgvSvgDocument, lgvSvgLayoutOptions } from './lgvSvgDocument.tsx'
+import { lgvSvgDocument } from './lgvSvgDocument.tsx'
 import { renderViewTracks } from './renderViewTracks.ts'
-import { sessionTrackRows } from './util.ts'
+import { lgvSvgLayoutOptions, sessionTrackRows } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ExportSvgOptions } from '../types.ts'

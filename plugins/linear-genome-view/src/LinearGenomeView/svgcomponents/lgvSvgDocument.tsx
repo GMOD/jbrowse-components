@@ -1,11 +1,12 @@
-import { exportMargin } from '@jbrowse/core/svg/constants'
+import { parsePhysicalWidth } from '@jbrowse/core/svg/figureSize'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 
 import SVGHeader from './SVGHeader.tsx'
 import { SVGViewChrome } from './SVGView.tsx'
+import { exportMargins } from './pageLayout.ts'
 import {
-  defaultTextHeight,
   getHeaderLayout,
+  lgvSvgLayoutOptions,
   trackLabelGutterWidth,
 } from './util.ts'
 
@@ -14,24 +15,6 @@ import type { ExportSvgOptions } from '../types.ts'
 import type { LgvSvgChromeView, SvgTrackRow } from './util.ts'
 import type { ThemeOptions } from '@mui/material'
 import type { ReactNode } from 'react'
-
-/**
- * The text and layout settings of an LGV export with the view's defaults
- * filled in. The displays draw in the same `fontSize`, so a caller hands each
- * display's export these too.
- */
-export function lgvSvgLayoutOptions(opts: ExportSvgOptions) {
-  const {
-    fontSize = 13,
-    // the label band scales with the font it holds; destructured after
-    // fontSize so the default can read it
-    textHeight = defaultTextHeight(fontSize),
-    rulerHeight = 34,
-    trackLabels = 'offset',
-    showGridlines = false,
-  } = opts
-  return { fontSize, textHeight, rulerHeight, trackLabels, showGridlines }
-}
 
 /**
  * One LGV's whole export document around its rendered rows: the header
@@ -74,14 +57,26 @@ export function lgvSvgDocument({
     fontSize,
     fontFamily,
   })
+  const physicalWidth = parsePhysicalWidth(opts.pageWidth ?? '')
+  const margins = exportMargins(
+    rows.map(row => row.track.displays[0]!),
+    physicalWidth !== undefined,
+  )
   return wrapSvgExport({
     theme,
-    width: view.width + trackLabelOffset + legendWidth,
-    height: tracksTop + tracksHeight + exportMargin,
+    width:
+      margins.left +
+      view.width +
+      trackLabelOffset +
+      legendWidth +
+      margins.right,
+    height: tracksTop + tracksHeight + margins.bottom,
+    margin: 0,
     fontFamily,
+    physicalWidth,
     Wrapper,
     children: (
-      <g transform={`translate(${exportMargin} 0)`}>
+      <g transform={`translate(${margins.left} 0)`}>
         <SVGViewChrome
           view={view}
           rows={rows}
@@ -106,7 +101,7 @@ export function lgvSvgDocument({
           contentTop={tracksTop}
           tracksHeight={tracksHeight}
           showGridlines={showGridlines}
-          leftBuffer={exportMargin}
+          leftBuffer={margins.left}
         />
       </g>
     ),

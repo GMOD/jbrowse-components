@@ -8,6 +8,7 @@ import type { ExportSvgOptions, TrackLabelMode } from '../types.ts'
 import type { SvgRowTrack } from './util.ts'
 import type { LgvSvgExportable } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
+import type { YAxis } from '@jbrowse/display-ui'
 import type { ThemeOptions } from '@mui/material'
 import type { ReactNode } from 'react'
 
@@ -22,6 +23,7 @@ export interface SvgExportTrack {
   minimized: boolean
   displays: {
     height: number
+    axes?: YAxis[]
     regionTooLarge?: boolean
     svgSidebarWidth?: LgvSvgExportable['svgSidebarWidth']
     /**

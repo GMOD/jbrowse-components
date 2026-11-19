@@ -9,13 +9,14 @@ import {
 } from '../consts.ts'
 import { REF_NAME_LABEL_FONT_SIZE } from '../util.ts'
 
-import type { TrackLabelMode } from '../types.ts'
+import type { ExportSvgOptions, TrackLabelMode } from '../types.ts'
 import type { PaddingSpan, RegionsOrientation } from '../util.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 import type { LgvSvgExportable } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
+import type { YAxis } from '@jbrowse/display-ui'
 import type { ReactNode } from 'react'
 
 /**
@@ -55,6 +56,7 @@ interface TrackHeights {
  */
 type SvgRowDisplay = {
   height: number
+  axes?: YAxis[]
   regionTooLarge?: boolean
   drawsGenomicCoordinates?: boolean
   prefersOffset?: boolean
@@ -492,4 +494,22 @@ export function totalHeight(
   textHeight: number,
 ) {
   return sum(tracks.map(t => trackBoxHeight(t, trackLabels, textHeight)))
+}
+
+/**
+ * The text and layout settings of an LGV export with the view's defaults
+ * filled in. The displays draw in the same `fontSize`, so a caller hands each
+ * display's export these too.
+ */
+export function lgvSvgLayoutOptions(opts: ExportSvgOptions) {
+  const {
+    fontSize = 13,
+    // the label band scales with the font it holds; destructured after
+    // fontSize so the default can read it
+    textHeight = defaultTextHeight(fontSize),
+    rulerHeight = 34,
+    trackLabels = 'offset',
+    showGridlines = false,
+  } = opts
+  return { fontSize, textHeight, rulerHeight, trackLabels, showGridlines }
 }

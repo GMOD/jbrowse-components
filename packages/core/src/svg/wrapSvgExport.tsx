@@ -2,6 +2,7 @@ import { SVGExportRoot } from './SvgExport.tsx'
 import { SvgThemeProviders } from './SvgThemeProviders.tsx'
 import { serializeSvg } from './serializeSvg.ts'
 
+import type { PhysicalWidth } from './figureSize.ts'
 import type { ThemeOptions } from '@mui/material'
 
 // The identical tail every view's `renderToSvg` ends in: the export theme's
@@ -13,6 +14,7 @@ export function wrapSvgExport({
   height,
   margin,
   fontFamily,
+  physicalWidth,
   Wrapper = ({ children }) => children,
   children,
 }: {
@@ -21,6 +23,7 @@ export function wrapSvgExport({
   height: number
   margin?: number
   fontFamily?: string
+  physicalWidth?: PhysicalWidth
   Wrapper?: React.FC<{ children: React.ReactNode }>
   children: React.ReactNode
 }) {
@@ -32,6 +35,7 @@ export function wrapSvgExport({
           height={height}
           margin={margin}
           fontFamily={fontFamily}
+          physicalWidth={physicalWidth}
         >
           {children}
         </SVGExportRoot>

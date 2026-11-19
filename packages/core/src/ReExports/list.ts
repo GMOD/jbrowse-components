@@ -186,6 +186,7 @@ export default [
   '@jbrowse/core/rpc/WebWorkerRpcDriver',
   '@jbrowse/core/svg/constants',
   '@jbrowse/core/svg/exportViewSvg',
+  '@jbrowse/core/svg/figureSize',
   '@jbrowse/core/svg/saveSvgAsImage',
   '@jbrowse/core/svg/serializeSvg',
   '@jbrowse/core/svg/SvgExport',

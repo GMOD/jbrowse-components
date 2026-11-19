@@ -104,3 +104,68 @@ test('a width out of range does not export', () => {
 test('a view that does not opt in shows no width field and sends none', async () => {
   expect(await exportedViewWidth(false)).toBeUndefined()
 })
+
+function renderWithLayout(plotPx: number) {
+  const model = stubView('offset', 1600)
+  const pageLayout = jest.fn((opts: { textSize?: number }) => ({
+    pageWidth: { value: 183, unit: 'mm' as const },
+    textPt: opts.textSize ?? 7,
+    pageHeight: 145,
+    scale: 1,
+    documentPx: plotPx + 100,
+    plotPx,
+    rasterScale: 3.125,
+  }))
+  const rendered = render(
+    <ExportSvgDialog
+      model={model}
+      handleClose={() => {}}
+      chooseWidth
+      figureLayout={{ chromePx: () => 100, pageLayout }}
+    />,
+  )
+  return { model, ...rendered }
+}
+
+test('a px width says what its labels print at in a journal column', () => {
+  const { getByText } = renderWithLayout(800)
+  expect(
+    getByText(/In a 183 mm column its labels print at 4 pt; type 183mm/),
+  ).toBeInTheDocument()
+})
+
+test('a width with a unit exports a page width at the text size', async () => {
+  const { model, getByLabelText, getByRole, getByText, queryByLabelText } =
+    renderWithLayout(800)
+  expect(queryByLabelText('Text size (pt)')).toBeNull()
+  fireEvent.change(getByLabelText('Width'), { target: { value: '183mm' } })
+  expect(
+    getByText(
+      "183 x 145 mm. Labels 7 pt, ruler 5.9 pt, axes 5.4 pt. Tracks drawn 800 px wide, 2x the screen's bp per px.",
+    ),
+  ).toBeInTheDocument()
+  fireEvent.change(getByLabelText('Text size (pt)'), {
+    target: { value: '8' },
+  })
+  fireEvent.click(getByRole('button', { name: 'Submit' }))
+  await waitFor(() => {
+    expect(model.exportSvg).toHaveBeenCalled()
+  })
+  expect(model.exportSvg.mock.calls[0][0]).toMatchObject({
+    pageWidth: '183mm',
+    textSize: 8,
+    viewWidth: undefined,
+  })
+})
+
+test('a page too narrow for its text says so and does not export', () => {
+  const { model, getByLabelText, getByRole, getByText } = renderWithLayout(110)
+  fireEvent.change(getByLabelText('Width'), { target: { value: '40mm' } })
+  expect(
+    getByText(
+      'Too narrow at 7 pt: the tracks would be 110 px wide. Widen the figure or lower the text size.',
+    ),
+  ).toBeInTheDocument()
+  expect(getByRole('button', { name: 'Submit' })).toBeDisabled()
+  expect(model.exportSvg).not.toHaveBeenCalled()
+})

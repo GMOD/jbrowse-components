@@ -1,4 +1,5 @@
 import { saveAs } from '../util/FileSaver/index.ts'
+import { sizeSvgForRaster } from './figureSize.ts'
 
 export interface SaveSvgAsImageOptions {
   format?: string
@@ -14,25 +15,6 @@ export interface SaveSvgAsImageOptions {
 // limits.
 const PNG_SCALE = 2
 
-// Bump the root <svg> width/height by `scale` while leaving viewBox alone, so
-// the browser re-rasterizes the *vector* content natively at the higher
-// resolution. Drawing the unscaled <img> with drawImage(...,w*scale,h*scale)
-// instead would only stretch the 1×-rasterized bitmap (blurry text, resample
-// artifacts on the embedded rasters).
-function scaleSvgMarkup(html: string, scale: number) {
-  return html.replace(/<svg\b[^>]*>/, tag =>
-    tag
-      .replace(
-        /(\bwidth=")([\d.]+)(")/,
-        (_m, p, n, s) => `${p}${+n * scale}${s}`,
-      )
-      .replace(
-        /(\bheight=")([\d.]+)(")/,
-        (_m, p, n, s) => `${p}${+n * scale}${s}`,
-      ),
-  )
-}
-
 // Rasterizes an SVG string to a PNG Blob by routing through a hidden <img>
 // + Canvas2D. Rejects with the actual underlying cause so bug reports
 // distinguish "SVG failed to load" (usually malformed markup) from
@@ -43,7 +25,7 @@ export function svgHtmlToPngBlob(
 ): Promise<Blob> {
   return new Promise<Blob>((resolve, reject) => {
     const img = new Image()
-    const svgBlob = new Blob([scaleSvgMarkup(html, scale)], {
+    const svgBlob = new Blob([sizeSvgForRaster(html, { pxScale: scale })], {
       type: 'image/svg+xml',
     })
     const url = URL.createObjectURL(svgBlob)

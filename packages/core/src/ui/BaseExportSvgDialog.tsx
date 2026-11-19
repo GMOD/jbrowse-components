@@ -60,6 +60,7 @@ export default observer(function BaseExportSvgDialog({
   exportR,
   children,
   checkboxes,
+  submitDisabled = false,
 }: {
   model: IAnyStateTreeNode
   handleClose: () => void
@@ -67,6 +68,7 @@ export default observer(function BaseExportSvgDialog({
   exportR?: (filename: string) => Promise<unknown>
   children?: React.ReactNode
   checkboxes?: React.ReactNode
+  submitDisabled?: boolean
 }) {
   const session = getSession(model)
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
@@ -117,7 +119,7 @@ export default observer(function BaseExportSvgDialog({
     <SubmitDialog
       open
       title="Export image"
-      submitDisabled={loading}
+      submitDisabled={loading || submitDisabled}
       onCancel={handleClose}
       onSubmit={async () => {
         setLoading(true)

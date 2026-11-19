@@ -6,7 +6,10 @@
 import { usePalette } from '../ui/PaletteContext.tsx'
 import { stripAlpha } from '../util/svgColorProps.ts'
 import { exportMargin } from './constants.ts'
+import { physicalRootSize } from './figureSize.ts'
 import { svgSafeId } from './svgId.ts'
+
+import type { PhysicalWidth } from './figureSize.ts'
 
 // Full-bleed background rect. `width`/`height` are the *total* SVG dimensions.
 export function SVGBackground({
@@ -36,11 +39,13 @@ export function SVGExportRoot({
   height,
   margin = exportMargin,
   fontFamily,
+  physicalWidth,
   children,
 }: {
   width: number
   height: number
   margin?: number
+  physicalWidth?: PhysicalWidth
   // Font for the whole export, inherited by every <text> so raw-JSX labels
   // (ruler, scalebar, axes) and SvgCanvas feature labels stay consistent.
   // Empty/undefined emits no font-family, leaving the renderer default; a
@@ -50,10 +55,13 @@ export function SVGExportRoot({
   children: React.ReactNode
 }) {
   const totalWidth = width + margin * 2
+  const size = physicalWidth
+    ? physicalRootSize(physicalWidth, totalWidth, height)
+    : { width: totalWidth, height }
   return (
     <svg
-      width={totalWidth}
-      height={height}
+      width={size.width}
+      height={size.height}
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox={`0 0 ${totalWidth} ${height}`}
