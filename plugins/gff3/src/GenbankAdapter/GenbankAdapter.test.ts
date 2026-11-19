@@ -216,6 +216,20 @@ describe('human mitochondrion NC_012920.1', () => {
   )
 })
 
+describe('a record with no ORIGIN sequence', () => {
+  const { features, sequence } = adapters('contig_only.gb')
+
+  test('still gives its features', async () => {
+    expect(await features.getRefNames()).toEqual(['NZ_CP000001.1'])
+  })
+
+  test('fails the sequence, naming the record and the format to download', async () => {
+    await expect(sequence.getRegions()).rejects.toThrow(
+      /NZ_CP000001\.1.*no ORIGIN sequence.*rettype=gbwithparts/,
+    )
+  })
+})
+
 describe('phage phiX174 NC_001422.1', () => {
   const { features, sequence } = adapters('phiX174_NC_001422.1.gb')
   const refName = 'NC_001422.1'

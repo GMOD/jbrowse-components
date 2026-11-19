@@ -58,10 +58,16 @@ export function parseRecords(text: string) {
 }
 
 export function recordSequence(record: GenbankRecord) {
-  return record.sequenceLines
+  const sequence = record.sequenceLines
     .join('')
     .replaceAll(/[^A-Za-z]/g, '')
     .toUpperCase()
+  if (!sequence) {
+    throw new Error(
+      `GenBank record "${record.refName}" has no ORIGIN sequence. A record that lists CONTIG pieces in its place needs downloading with its sequence: NCBI's "GenBank (full)" format, rettype=gbwithparts`,
+    )
+  }
+  return sequence
 }
 
 export interface FeatureEntry {

@@ -1,0 +1,81 @@
+LOCUS       x                       1000 bp    DNA     circular SYN 01-JAN-2024
+DEFINITION  Edge cases on a 1000 bp circle.
+ACCESSION   x
+VERSION     x.1
+FEATURES             Location/Qualifiers
+     source          1..1000
+                     /organism="synthetic construct"
+     gene            join(901..1000,1..200)
+                     /locus_tag="X_wrap"
+     CDS             10..200
+                     /locus_tag="X_wrap"
+                     /codon_start=1
+
+     gene            300..700
+                     /locus_tag="X_iso"
+                     /gene="iso"
+     mRNA            join(300..400,600..700)
+                     /gene="iso"
+                     /product="short isoform"
+     mRNA            join(300..400,450..500,600..700)
+                     /gene="iso"
+                     /product="long isoform"
+     CDS             join(350..400,600..650)
+                     /gene="iso"
+                     /product="short protein"
+     CDS             join(350..400,450..500,600..650)
+                     /gene="iso"
+                     /product="long protein"
+     gene            complement(720..800)
+                     /locus_tag="X_minus"
+     CDS             complement(join(720..740,760..800))
+                     /locus_tag="X_minus"
+                     /codon_start=3
+     misc_feature    join(x.1:810..820,x.1:830..840)
+                     /note="own accession"
+     misc_feature    order(850..860,820..825,805..808)
+                     /note="ordered"
+     misc_RNA        join(complement(300..320),complement(700..720),
+                     complement(650..660))
+                     /trans_splicing
+                     /note="trans-spliced"
+     misc_feature    join(complement(300..320),complement(700..720),
+                     complement(650..660))
+                     /note="descending, no trans_splicing"
+     misc_feature    join(10..20,21..30)
+                     /note="abutting"
+ORIGIN
+        1 tttcctcatg caattcaaaa ccatgtccgt aatgtaggcg aaatagtaaa ccattttacg
+       61 gaggatacca aattcctcct tattcaggac ctaacctgag gtaaaccagg tctctccgcc
+      121 cccttataaa agctgttgca cctagccaag ttcaacggca gctgcaatgg aaataggcaa
+      181 tgacggatat atattaaaaa gtgttttaag atacattgag gcccgttcgt gctcctcgcc
+      241 ctgaagcatt gctttgtgaa gagggacttc agccaataga cctgcatacc ggctcattct
+      301 tcatgtgcaa cctagggaga atgtgtacat acgctcttac tgcggtcgcg tctaataata
+      361 tacatttgct tcgttgacta gcaacccagg gctatagcta ttccccccgc ggcccaccca
+      421 gtattcctaa cggagcataa atcccacccg aactaagttt gtcgaacctt ggtccaagat
+      481 cgggactcgg tctccaggta agacgggctc attcataaac gttactaagg ggtataatct
+      541 tctatttgtg ggtgggaaca cttagtagac ttgcaatcca attacagcag tcttgtgcgc
+      601 ctaggggcgc cccaaaggta aacgaaccgt tgcggtcaat cttgtcgcgg ctgatgaatt
+      661 tgaagcagtg gccgggagtg tgtgctcagg agttcgtccc atgacacgat agagagagaa
+      721 catcctgttg ggcttaatga tatagaattc cctcgcttgg atgagccata tagaccgcct
+      781 ctcgtcgtgt tgatctacct gacatgtctc tcgcgcgacc acccaggatt agactcatca
+      841 ttcgggtagt agacattata ttcgataccg tggtagccta gggtgttaac acccctataa
+      901 cacattagtc ccttgtatgc aggcggtatc ggacggcgcc cacaccttgg aggtatccag
+      961 cgcaaggcgc catatccgta ccttactatc gcgcgaactt
+//
+LOCUS       Exported                  50 bp    DNA     linear       01-JAN-2024
+DEFINITION  First SnapGene export.
+FEATURES             Location/Qualifiers
+     misc_feature    join(1..10,11..20)
+                     /label="abutting"
+ORIGIN
+        1 atgttgtttt aagttagagt tggacatcta tacgtcagtc ctaaacatag
+//
+LOCUS       Exported                  40 bp    DNA     linear       01-JAN-2024
+DEFINITION  Second SnapGene export.
+FEATURES             Location/Qualifiers
+     misc_feature    1..5
+                     /label="second"
+ORIGIN
+        1 cgagcatttc gcagatgggt ctccgacggt accccaaggg
+//

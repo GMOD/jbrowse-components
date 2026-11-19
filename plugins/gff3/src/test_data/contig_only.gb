@@ -1,0 +1,11 @@
+LOCUS       NZ_CP000001             1000 bp    DNA     circular CON 01-JAN-2024
+DEFINITION  A RefSeq record downloaded without its sequence.
+ACCESSION   NZ_CP000001
+VERSION     NZ_CP000001.1
+FEATURES             Location/Qualifiers
+     source          1..1000
+                     /organism="synthetic construct"
+     gene            100..400
+                     /locus_tag="CON_0001"
+CONTIG      join(CP000001.1:1..1000)
+//
