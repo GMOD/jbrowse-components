@@ -254,6 +254,7 @@ export {
   bytesForRegions,
   featureSpanPx,
   getBpDisplayStr,
+  getBpRangeDisplayStr,
   getTickDisplayStr,
   parseBpString,
 } from './bpUtils.ts'

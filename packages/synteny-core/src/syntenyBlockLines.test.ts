@@ -19,10 +19,23 @@ test('a one-to-one pair says nothing about its syntenic depth', () => {
       attributes: { syntenicDepth: 1 },
     }),
   ).toEqual([
-    'grape chr1:93,400-107,732 (14,333 bp)',
-    'peach Prupe.1G290900.1 Pp01:28,942,282-28,949,086 (6,805 bp)',
+    'grape chr1:93,400-107,732 (14.3Kbp)',
+    'peach Prupe.1G290900.1 Pp01:28,942,282-28,949,086 (6.8Kbp)',
     'Inverted',
   ])
+})
+
+test('a chromosome-scale block reads in Mbp', () => {
+  expect(
+    syntenyBlockLines({
+      sides: [
+        { refName: 'chr2', start: 66_123_456, end: 98_234_567 },
+        { refName: 'chr7', start: 1_200_000, end: 31_800_000 },
+      ],
+      inverted: false,
+      attributes: {},
+    }),
+  ).toEqual(['chr2:66Mbp-98Mbp (32.1Mbp)', 'chr7:1Mbp-32Mbp (30.6Mbp)'])
 })
 
 test('a gene with more than one partner says how many', () => {

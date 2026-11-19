@@ -168,8 +168,8 @@ test('getTooltipLines names each side of an ortholog pair on its own line', () =
     attributes: { syntenicDepth: 2 },
   }
   expect(getTooltipLines(feat)).toEqual([
-    'hg38 FGFR2 chr10:121,478,001-121,598,000 (120,000 bp)',
-    'mm39 Fgfr2 chr7:129,764,001-129,868,000 (104,000 bp)',
+    'hg38 FGFR2 chr10:121.48Mbp-121.60Mbp (120Kbp)',
+    'mm39 Fgfr2 chr7:129.76Mbp-129.87Mbp (104Kbp)',
     'Inverted',
     'Shared by 2 genes',
   ])

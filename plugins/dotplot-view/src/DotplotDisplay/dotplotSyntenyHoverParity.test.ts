@@ -111,8 +111,8 @@ async function syntenyHover(id: string, mouseAxis: Region) {
 test('a dotplot hover over an ortholog row reads as the synteny hover does', async () => {
   const dotplot = await dotplotHover('Fgfr2', mouse)
   expect(dotplot).toEqual([
-    'hg38 FGFR2 chr10:1,001-2,000 (1,000 bp)',
-    'mm39 Fgfr2 chr7:5,001-6,000 (1,000 bp)',
+    'hg38 FGFR2 chr10:1,001-2,000 (1Kbp)',
+    'mm39 Fgfr2 chr7:5,001-6,000 (1Kbp)',
     'Shared by 3 genes: Fgfr2c, Fgfr2, Fgfr2b',
   ])
   expect(dotplot).toEqual(await syntenyHover('fgfr2', mouse))

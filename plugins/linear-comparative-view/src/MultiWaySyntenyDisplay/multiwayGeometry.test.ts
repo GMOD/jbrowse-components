@@ -856,8 +856,8 @@ describe('the ribbons', () => {
       'peach',
     ])
     expect(ribbonTooltip('unused', sides, record, ranges).split('\n')).toEqual([
-      'grape g1 chr1:101-200 (100 bp)',
-      'peach Pp1:1,101-1,200 (100 bp)',
+      'grape g1 chr1:101-200 (100bp)',
+      'peach Pp1:1,101-1,200 (100bp)',
       'Inverted',
       ...attributeTooltipLines({ identity: 0.98712, mappingQual: 60 }),
     ])

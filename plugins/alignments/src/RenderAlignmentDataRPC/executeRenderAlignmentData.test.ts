@@ -246,7 +246,7 @@ test("a synteny block's hover lines come from its mate", async () => {
   const [group] = result.value.groups
   expect(group?.data.readTooltipValues).toEqual(['orthoA'])
   expect(group?.data.readBlockLines).toEqual([
-    'ctgA:21-120 (100 bp)\nmouse orthoA ctgB:501-600 (100 bp)',
+    'ctgA:21-120 (100bp)\nmouse orthoA ctgB:501-600 (100bp)',
   ])
 })
 

@@ -107,8 +107,8 @@ test("a numeric 0 is the read's value, not an empty one", () => {
 
 test('an ortholog pair names the other gene, both spans and its depth', () => {
   expect(buildReadBlockLines([anchor])?.[0]?.split('\n')).toEqual([
-    'hg38 chr10:121,478,001-121,598,000 (120,000 bp)',
-    'mm39 Fgfr2 chr7:129,764,001-129,868,000 (104,000 bp)',
+    'hg38 chr10:121.48Mbp-121.60Mbp (120Kbp)',
+    'mm39 Fgfr2 chr7:129.76Mbp-129.87Mbp (104Kbp)',
     'Inverted',
     'Shared by 2 genes',
   ])
@@ -116,8 +116,8 @@ test('an ortholog pair names the other gene, both spans and its depth', () => {
 
 test('a PAF block names both spans, its identity and its mapping quality', () => {
   expect(buildReadBlockLines([pafBlock])?.[0]?.split('\n')).toEqual([
-    'hg38 chr1:1-1,000 (1,000 bp)',
-    'mm39 chr2:5,001-6,000 (1,000 bp)',
+    'hg38 chr1:1-1,000 (1Kbp)',
+    'mm39 chr2:5,001-6,000 (1Kbp)',
     'Identity: 98.2%',
     'Mapping quality: 60',
   ])

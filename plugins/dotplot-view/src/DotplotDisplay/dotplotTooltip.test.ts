@@ -59,8 +59,8 @@ function lines(
 
 test('names both axes and their spans', () => {
   expect(lines().slice(0, 3)).toEqual([
-    'hg38 chr1:101-200 (100 bp)',
-    'mm10 chr5:301-450 (150 bp)',
+    'hg38 chr1:101-200 (100bp)',
+    'mm10 chr5:301-450 (150bp)',
     'Identity: 98.8%',
   ])
 })
@@ -74,8 +74,8 @@ test('reports reverse strand as inverted', () => {
     p12: new Float64Array([100]),
   })
   expect(lines(data).slice(0, 3)).toEqual([
-    'hg38 chr1:101-200 (100 bp)',
-    'mm10 chr5:301-450 (150 bp)',
+    'hg38 chr1:101-200 (100bp)',
+    'mm10 chr5:301-450 (150bp)',
     'Inverted',
   ])
 })
@@ -100,14 +100,14 @@ test('a reversed region reports the mirrored coordinates', () => {
   // cumBp 300..450 measured leftward from the right-hand edge of a 0..1000
   // region
   expect(lines(fakeRpcData(), undefined, vview)[1]).toBe(
-    'mm10 chr5:551-700 (150 bp)',
+    'mm10 chr5:551-700 (150bp)',
   )
 })
 
 // The span is where it is on the axis, not where the axis is scrolled to.
 test('a pan does not move the reported span', () => {
   const hview = axis({ assemblyName: 'hg38', refName: 'chr1', offsetPx: 137 })
-  expect(lines(fakeRpcData(), hview)[0]).toBe('hg38 chr1:101-200 (100 bp)')
+  expect(lines(fakeRpcData(), hview)[0]).toBe('hg38 chr1:101-200 (100bp)')
 })
 
 // An alignment reaching its chromosome's end has an endpoint exactly on the
@@ -135,7 +135,7 @@ test.each([false, true])(
       p12: new Float64Array([1000]),
     })
     expect(lines(data, hview)[0]).toBe(
-      reversed ? 'hg38 chr1:1-100 (100 bp)' : 'hg38 chr1:901-1,000 (100 bp)',
+      reversed ? 'hg38 chr1:1-100 (100bp)' : 'hg38 chr1:901-1,000 (100bp)',
     )
   },
 )
@@ -168,7 +168,7 @@ test.each([
     p11: new Float64Array([10_182_444]),
     p12: new Float64Array([10_182_970]),
   })
-  expect(lines(data, hview)[0]).toBe('hg38 chr1:10,182,445-10,182,970 (526 bp)')
+  expect(lines(data, hview)[0]).toBe('hg38 chr1:10,182,445-10,182,970 (526bp)')
 })
 
 describe('the lines a track may not have', () => {
@@ -177,13 +177,13 @@ describe('the lines a track may not have', () => {
       nameDict: ['BRCA1'],
       nameIds: new Uint32Array([0]),
     })
-    expect(lines(data)[0]).toBe('hg38 BRCA1 chr1:101-200 (100 bp)')
+    expect(lines(data)[0]).toBe('hg38 BRCA1 chr1:101-200 (100bp)')
   })
 
   // A PAF sets no name on any feature, so the dictionary the worker ships holds
   // one empty string — which is not a name and gets no line.
   test('says nothing when the name is empty', () => {
-    expect(lines()[0]).toBe('hg38 chr1:101-200 (100 bp)')
+    expect(lines()[0]).toBe('hg38 chr1:101-200 (100bp)')
   })
 
   test('names the CIGAR operator under the cursor', () => {

@@ -54,6 +54,20 @@ export function getBpDisplayStr(total: number) {
       : `${Math.floor(total)}bp`
 }
 
+/**
+ * An interbase range as a hover reads it: in Mbp, to two significant digits
+ * of its own length ("66Mbp-98Mbp", "28.94Mbp-29.06Mbp"), wherever that is
+ * shorter than the exact 1-based coordinates it otherwise prints. Either form
+ * parses back as a locString's range.
+ */
+export function getBpRangeDisplayStr(start: number, end: number) {
+  const decimals = Math.max(0, 7 - Math.floor(Math.log10(end - start)))
+  const mbp = (bp: number) => `${(bp / 1_000_000).toFixed(decimals)}Mbp`
+  return end >= 1_000_000 && decimals <= 2
+    ? `${mbp(start)}-${mbp(end)}`
+    : `${toLocale(start + 1)}-${toLocale(end)}`
+}
+
 const BP_UNITS: Record<string, number> = {
   k: 1_000,
   m: 1_000_000,

@@ -1,4 +1,9 @@
-import { getBpDisplayStr, getTickDisplayStr, parseBpString } from './bpUtils.ts'
+import {
+  getBpDisplayStr,
+  getBpRangeDisplayStr,
+  getTickDisplayStr,
+  parseBpString,
+} from './bpUtils.ts'
 
 describe('getBpDisplayStr', () => {
   test.each([
@@ -16,6 +21,18 @@ describe('getBpDisplayStr', () => {
     [3_088_269_832, '3,090Mbp'],
   ])('%p -> %p', (total, expected) => {
     expect(getBpDisplayStr(total)).toBe(expected)
+  })
+})
+
+describe('getBpRangeDisplayStr', () => {
+  test.each([
+    [66_123_456, 98_234_567, '66Mbp-98Mbp'],
+    [66_123_456, 67_734_567, '66.1Mbp-67.7Mbp'],
+    [28_942_281, 29_061_086, '28.94Mbp-29.06Mbp'],
+    [28_942_281, 28_949_086, '28,942,282-28,949,086'],
+    [93_399, 107_732, '93,400-107,732'],
+  ])('%i-%i reads %s', (start, end, expected) => {
+    expect(getBpRangeDisplayStr(start, end)).toBe(expected)
   })
 })
 

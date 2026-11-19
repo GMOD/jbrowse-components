@@ -1,4 +1,8 @@
-import { toLocale } from '@jbrowse/core/util'
+import {
+  getBpDisplayStr,
+  getBpRangeDisplayStr,
+  toLocale,
+} from '@jbrowse/core/util'
 
 import { PRESET_ATTRIBUTES, readChannelValue } from './attributeChannels.ts'
 import { attributeTooltipLines } from './attributeTooltipLines.ts'
@@ -28,8 +32,8 @@ function sideLine({
   return [
     assemblyName,
     name,
-    `${refName}:${toLocale(start + 1)}-${toLocale(end)}`,
-    `(${toLocale(end - start)} bp)`,
+    `${refName}:${getBpRangeDisplayStr(start, end)}`,
+    `(${getBpDisplayStr(end - start)})`,
   ]
     .filter(part => part !== undefined && part !== '')
     .join(' ')
