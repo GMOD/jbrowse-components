@@ -107,3 +107,13 @@ test('exportByteLimit falls back where the adapter declares none', () => {
 test('exportByteLimit ignores a non-positive declared limit', () => {
   expect(setup()('ZeroLimitAdapter').exportByteLimit).toBe(5_000_000)
 })
+
+test('GFF3 and GenBank fetch a feature across a circular origin whole, BED as pieces', () => {
+  const { gff3, genbank, bed } =
+    setup()('PlainAdapter').saveTrackFileFormatOptions()
+  expect([
+    gff3?.wholeAcrossOrigin,
+    genbank?.wholeAcrossOrigin,
+    bed?.wholeAcrossOrigin,
+  ]).toEqual([true, true, undefined])
+})
