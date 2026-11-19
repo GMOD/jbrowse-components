@@ -15,5 +15,16 @@ printf 'chr17\t83257441\n' > chrom.sizes
 bedGraphToBigWig brca1.bedGraph chrom.sizes hg38.phyloP100way.brca1.bw
 ```
 
+`hg38.phyloP100way.shh.bw` is chr7:155,700,000-155,900,000 (200kb around SHH),
+for the `jbrowse-react-app` examples-site's human demos:
+
+```
+bigWigToBedGraph -chrom=chr7 -start=155700000 -end=155900000 \
+  https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw \
+  shh.bedGraph
+printf 'chr7\t159345973\n' > chrom.sizes
+bedGraphToBigWig shh.bedGraph chrom.sizes hg38.phyloP100way.shh.bw
+```
+
 `EveryChromosome.tsx` still points at the live UCSC file — it genuinely needs
 whole-genome coverage, which this subset can't stand in for.

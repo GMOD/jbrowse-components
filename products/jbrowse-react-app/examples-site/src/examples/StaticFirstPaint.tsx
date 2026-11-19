@@ -41,7 +41,7 @@ export default function StaticFirstPaint() {
             {
               trackId: 'hg38-phylop100way',
               name: 'phyloP 100-way',
-              uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+              uri: 'https://jbrowse.org/demos/phylop/hg38.phyloP100way.shh.bw',
             },
           ]}
           views={[

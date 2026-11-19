@@ -44,7 +44,7 @@ const tracks = [
   {
     trackId: 'hg38.100way.phyloP100way',
     name: 'hg38.100way.phyloP100way',
-    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+    uri: 'https://jbrowse.org/demos/phylop/hg38.phyloP100way.shh.bw',
     category: ['Conservation'],
   },
 ]
