@@ -221,7 +221,12 @@ beside it zooms and arranges the rows.
 - **Level of detail** picks which stored tier is fetched
 - **Opacity** is how much dense overlapping alignments show through each other
 - **Min length** hides alignments shorter than it, clearing short spurious
-  chains at whole-genome zoom
+  chains at whole-genome zoom. It measures each drawn block separately, and the
+  coarse tier of a tiered file splits a long alignment at its large indels, so
+  zooming out past the tier threshold can hide an alignment whose pieces are
+  each shorter than the setting
+- **Min identity** hides alignments below that sequence identity, along with
+  alignments that report no identity
 
 CIGAR indels appears only where the data has indels to draw, and Level of detail
 only where it has more than one stored tier. Ribbons thinner than a pixel fade

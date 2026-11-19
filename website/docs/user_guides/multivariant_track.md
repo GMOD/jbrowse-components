@@ -14,7 +14,18 @@ chooses how the variants run across it:
   a heatmap
 
 A VCF with one sample, such as a call set, opens as its records alone; **Show →
-Show genotype rows** in the track menu draws its row.
+Show genotype rows** in the track menu draws its row. With genotype rows off,
+the display reads no genotypes.
+
+At genomic positions, **Show → Show records** draws the records above the
+genotype rows, stacked as on a variant track, colored by SV type and labelled
+with the share of samples that have each one.
+
+- **Height:** the band opens as tall as its records need, up to a share of the
+  track, and keeps that height as you pan. Drag its lower edge to trade height
+  with the rows.
+- **Hidden records:** records that do not fit are hidden and counted beside the
+  band. Clicking the count grows the band and the track to show them.
 
 ## At genomic positions: structural variants at their real span {#regular-best-for-full-sv-detail}
 

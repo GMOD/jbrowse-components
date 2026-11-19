@@ -202,6 +202,28 @@ label); basics like "About track" are always available from the track selector.
 
 <Figure caption="Opening the track menu from the track selector and from the track label." src="/img/track_menu.png" />
 
+**Display types**, on a track that has more than one display, switches how the
+track draws its data:
+
+- **Alignments display:** each read on the reference with its mismatches,
+  insertions, deletions and splices, under the coverage they add up to
+  ([alignments track](/docs/user_guides/alignments_track))
+- **Feature display:** each feature as a box with its label, and a gene as its
+  transcripts with their exons and coding parts, stacked so none overlap
+  ([gene track](/docs/user_guides/gene_track))
+- **Variant display:** the records over one row per sample or haplotype
+  ([variant track](/docs/user_guides/variant_track))
+- **Manhattan plot display:** a point per feature at its score, such as a GWAS
+  variant at its -log10 p-value ([GWAS track](/docs/user_guides/gwas_track))
+- **LD heatmap display:** a linkage disequilibrium heatmap from precomputed LD
+  data such as PLINK `--r2` output ([LD tutorial](/docs/tutorials/ld_human))
+- **Multi-row display:** each feature as a block in its file's color, one row
+  per feature type or per an attribute such as sample, cell type or repeat class
+  ([multi-row feature track](/docs/user_guides/multirow_feature_track))
+- **Marks:** bars, points, spans, labels or links drawn from the features'
+  fields, picked in **Edit marks...**
+  ([mark display](/docs/config_guides/mark_display))
+
 ## Filtering tracks
 
 The filter box at the top of Available tracks keeps the tracks that contain

@@ -91,7 +91,9 @@ the file actually contains:
 
 - **KR** - Knight-Ruiz, the recommended default
 - **SCALE** - a faster approximation to KR
-- **VC** and **VC_SQRT** - vanilla coverage
+- **VC** - vanilla coverage, each cell divided by its row and column contact
+  sums
+- **VC_SQRT** - vanilla coverage with the square roots of those sums
 - **NONE** - raw observed counts
 
 A file can list a scheme that is missing at the binsize on screen. The menu then

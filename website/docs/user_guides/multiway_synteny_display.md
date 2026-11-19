@@ -72,10 +72,13 @@ The **Lanes** submenu in the track menu holds the stack's controls:
 
 - **Choose lanes...** picks which genomes draw, with a filter box for long
   lists.
-- **Order lanes by structure** stacks each lane beside the one whose insertions
-  and deletions against the anchor are most alike.
+- **Order lanes by structure** starts from the lane most like the anchor and
+  stacks each lane beside the one whose insertions and deletions against the
+  anchor are most alike, so a structure several lanes share draws as one block.
+  The order stays until you reset it.
 - **Freeze lanes** keeps every lane where it is as you pan and zoom. While
-  frozen, drag a lane to slide it.
+  frozen, drag or side-scroll a lane to slide it. The lanes unfreeze once the
+  view leaves the window they froze on.
 
 Drag a lane label to move that lane. To fix the order across a pan, the display
 config's `rows.sort` pins the lanes it names to the top, in that order, and the
@@ -108,6 +111,8 @@ same items.
 - **Open ⟨genome⟩ at the matching region** opens that genome in a separate
   linear genome view, with its gene track.
 - **Re-anchor on ⟨genome⟩** turns the track around so that genome is the anchor.
+- **Re-align lane**, offered while the lanes are frozen, fits the lane to what
+  the anchor shows now and keeps it frozen there.
 - **Color...** picks a color for the lane, drawn as a bar beside its name, over
   any color the data source gives it; **Clear lane color** returns to the
   source's. The display config's `rows.colors` sets these by assembly name.

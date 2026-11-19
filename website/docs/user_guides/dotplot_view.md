@@ -38,8 +38,7 @@ too divergent for whole-genome scale; zoom to a smaller window.
 
 <Figure caption="Grape (y) against peach (x) with a minimum alignment length applied." src="/img/dotplot.png" />
 
-The palette button's **Color by** menu sets what the color means; each option
-has a description:
+The palette button's **Color by** menu sets what the color means:
 
 - **Query** colors each sequence on the horizontal axis differently, and
   **Strand** colors by strand
