@@ -117,13 +117,12 @@ export default function SnackbarModel() {
           level?: NotificationLevel,
           actions?: SnackAction[],
         ) {
-          if (actions?.length || !self.snackbarMessageSet.has(message)) {
-            self.snackbarMessages.push({
-              message,
-              level,
-              actions,
-            })
-          }
+          this.removeSnackbarMessage(message)
+          self.snackbarMessages.push({
+            message,
+            level,
+            actions,
+          })
         },
         /**
          * #action

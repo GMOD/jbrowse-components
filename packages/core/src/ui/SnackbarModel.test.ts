@@ -47,3 +47,21 @@ test('a toast dismissed and notified again lasts its own five seconds', () => {
     jest.useRealTimers()
   }
 })
+
+test('a repeated error replaces its snackbar and reports the latest error', () => {
+  const model = SnackbarModel().create()
+  const second = new Error('second')
+  model.notifyError('Failed to load', new Error('first'))
+  model.notifyError('Failed to load', second)
+  expect(model.snackbarMessages).toHaveLength(1)
+  model.snackbarMessages[0]?.actions?.[0]?.onClick()
+  expect(model.errorDialog?.error).toBe(second)
+})
+
+test('a repeated message moves to the top of the stack', () => {
+  const model = SnackbarModel().create()
+  model.notify('one', 'warning')
+  model.notify('two', 'warning')
+  model.notify('one', 'warning')
+  expect(model.snackbarMessages.map(m => m.message)).toEqual(['two', 'one'])
+})
