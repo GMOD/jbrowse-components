@@ -929,13 +929,24 @@ function resolveFrames(
   fallback: FrameTuple<ShadeInput>,
 ): FrameTuple<ColorQuad> {
   const source = entry ?? fallback
-  return [
-    null,
-    ...([1, 2, 3, 4, 5, 6] as const).map(i => {
-      const value = source[i] ?? fallback[i]
-      return value === undefined ? undefined : augmentColor(value)
-    }),
-  ] as FrameTuple<ColorQuad>
+  const frame = (i: 1 | 2 | 3 | 4 | 5 | 6) => {
+    const value = source[i] ?? fallback[i]
+    return value === undefined ? undefined : augmentColor(value)
+  }
+  return [null, frame(1), frame(2), frame(3), frame(4), frame(5), frame(6)]
+}
+
+// `base` with each of its keys `input` defines replaced; a key set to
+// undefined keeps the base value
+function overlayDefined<T extends object>(base: T, input: Partial<T>) {
+  const out = { ...base }
+  for (const key in base) {
+    const value = input[key]
+    if (value !== undefined) {
+      out[key] = value
+    }
+  }
+  return out
 }
 
 /**
@@ -974,16 +985,12 @@ export function resolvePalette(args: PaletteArgs = {}): JBrowsePalette {
   const neutrals = isDark ? darkNeutrals : lightNeutrals
   const brandFallback = isDark ? darkBrandFallback : lightBrandFallback
   const semantics = isDark ? darkSemantics : lightSemantics
-  const strings: StringColors = {
-    ...lightStringColors,
-    ...(isDark ? darkStringColors : {}),
-  }
-  for (const key of Object.keys(strings) as (keyof StringColors)[]) {
-    const override = input[key]
-    if (override !== undefined) {
-      strings[key] = override
-    }
-  }
+  const strings = overlayDefined<StringColors>(
+    { ...lightStringColors, ...(isDark ? darkStringColors : {}) },
+    input,
+  )
+  const base = (key: BaseKey) =>
+    augmentColor(input.bases?.[key] ?? defaultBases[key])
 
   const text = { ...neutrals.text, ...input.text }
   const primary = augmentColor(input.primary ?? brandFallback.primary)
@@ -1009,12 +1016,13 @@ export function resolvePalette(args: PaletteArgs = {}): JBrowsePalette {
     textHighlight: augmentColor(
       input.textHighlight ?? { main: textHighlightYellow },
     ),
-    bases: Object.fromEntries(
-      (['A', 'C', 'G', 'T', 'N'] as const).map(key => [
-        key,
-        augmentColor(input.bases?.[key] ?? defaultBases[key]),
-      ]),
-    ) as Record<BaseKey, ColorQuad>,
+    bases: {
+      A: base('A'),
+      C: base('C'),
+      G: base('G'),
+      T: base('T'),
+      N: base('N'),
+    },
     frames: resolveFrames(
       input.frames,
       isDark ? defaultFramesDark : defaultFrames,
