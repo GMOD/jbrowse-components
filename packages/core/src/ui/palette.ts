@@ -806,6 +806,9 @@ const darkStringColors: Partial<StringColors> = {
   // the scale goes: #f0f0f0 was L* 4 from it, too near to tell the two rows
   // of the key apart
   readThroughHidden: '#ffffff',
+  // the pale yellow glares across whole MAF rows; this keeps its hue and its
+  // place between the ground and the match cells, as the light value does
+  missingData: '#2c2a10',
   // the deep green sinks into the dark ground
   variantCall: green[400],
 }

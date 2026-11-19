@@ -18,6 +18,7 @@ import { createTheme } from '@mui/material'
 
 import {
   augmentColor,
+  getContrastRatio,
   methylated5hmC,
   methylated5mC,
   resolvePalette,
@@ -270,6 +271,15 @@ test('an extraThemes entry with brand colors of its own', () => {
       },
     },
   })
+})
+
+test('the MAF missing-data fill sits near the ground in both modes', () => {
+  for (const mode of ['light', 'dark'] as const) {
+    const palette = resolvePalette({ mode })
+    expect(
+      getContrastRatio(palette.missingData, palette.background.default),
+    ).toBeLessThan(1.5)
+  }
 })
 
 // The methylation colors are deliberately not palette members. The alignments
