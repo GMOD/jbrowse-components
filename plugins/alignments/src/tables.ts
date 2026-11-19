@@ -115,6 +115,7 @@ import { hasNamedGroups } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import {
   arcSlotsInWindows,
   connectorKeyInWindows,
+  junctionInWindows,
 } from './LinearAlignmentsDisplay/keyWindows.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
@@ -1867,7 +1868,7 @@ function laidOutTables(
   })
   return {
     ...tables,
-    ...markLegends(tables, paint, host.theme),
+    ...markLegends(tables, paint, host.theme, host.keyWindows),
     sections: {
       key: order.map(g => g.key),
       label: order.map(g => g.label),
@@ -1993,8 +1994,8 @@ function layoutWarnings({
  * The keys of the marks the reads' own `legend` leaves out, each over what the
  * tables paint: the bases (none while a modifications layer mutes them, and
  * no allele segment under the band's floor), the
- * splice junction strands and split junction classes shown, as the junctions
- * band keys them, and the interbase histogram's events.
+ * splice junction strands and split junction classes shown in the window, as
+ * the junctions band keys them, and the interbase histogram's events.
  */
 function markLegends(
   tables: {
@@ -2006,14 +2007,28 @@ function markLegends(
       class: string[]
       level: string[]
       shown: boolean[]
+      refName: string[]
+      start: number[]
+      end: number[]
     }
     interbaseCoverage: { type: InterbaseTypeName[] }
     indicators: { type: InterbaseTypeName[] }
   },
   paint: MarkColors,
   theme: JBrowsePalette,
+  keyWindows: readonly KeyWindow[],
 ) {
-  const shownJunction = (i: number) => tables.junctions.shown[i] === true
+  const { junctions } = tables
+  const shownJunction = (i: number) =>
+    junctions.shown[i] === true &&
+    junctionInWindows(
+      {
+        refName: junctions.refName[i]!,
+        start: junctions.start[i]!,
+        end: junctions.end[i]!,
+      },
+      keyWindows,
+    )
   const bases = new Set([
     ...tables.mismatches.base,
     ...tables.alleleCoverage.base.filter(

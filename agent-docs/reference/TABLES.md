@@ -136,8 +136,8 @@ a quiet region.
   `indicators` and `junctions`. It resolves a base through `effectiveBaseColors`,
   so under a `modifications` or `bisulfite` layer every base is the muted grey.
 - `baseLegend` (empty while the bases are muted), `junctionLegend` (the junctions
-  band's own strand and split-class key, over the junctions shown, empty while the
-  band is hidden) and `interbaseLegend` come back as `legend` does, each with its
+  band's own strand and split-class key, over the junctions shown that touch the
+  window, as `junctionInWindows` tests them, empty while the band is hidden) and `interbaseLegend` come back as `legend` does, each with its
   title, keying only what the tables paint.
 - `junctions` has `level`, the `insertSizeAndOrientation` level a split junction's
   color paints, as the arcs table names it (`splitSameStrand`, `RL`, `LL`, `RR`;
@@ -282,7 +282,9 @@ what touches the window:
   to them, which the display draws partly off screen, with their marks, so
   every `key`, `mateKey` and `read` names a listed read; the connectors,
   overlaps, arcs and ticks reaching into it. Connectors and arcs are placed
-  in the contig, the arcs over the reads fetched.
+  in the contig, the arcs over the reads fetched. `junctions` lists every
+  junction the reads fetched give, the margin's included, while
+  `junctionLegend` keys only those touching the window.
 - A refusal names the regions asked for: `byteLimit` counts the bytes fetched,
   the margin's included, and `spanLimit` the span asked for.
 

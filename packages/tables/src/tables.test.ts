@@ -1478,6 +1478,21 @@ test('the junction key lists the split classes shown, and nothing while the junc
   expect(hidden.junctionLegend).toEqual({ label: [], color: [] })
 })
 
+test('the junction key keys the junctions touching the window, not those only in the margin fetched around it', async () => {
+  const region = { refName: 'ctgA', start: 20500, end: 23100 }
+  const t = await engine.alignments({ ...SPLICED, region })
+  const inMargin = t.junctions.start.map(
+    (start, i) => start >= region.end || t.junctions.end[i]! <= region.start,
+  )
+  expect(
+    t.junctions.strand.filter((strand, i) => inMargin[i] && strand === -1),
+  ).not.toEqual([])
+  expect(
+    t.junctions.strand.filter((strand, i) => !inMargin[i] && strand === 1),
+  ).not.toEqual([])
+  expect(t.junctionLegend.label).toEqual(['Forward transcript strand'])
+})
+
 test('an allele segment is shown where its share of the depth passes coverage.alleles.filter', async () => {
   const all = await engine.alignments(BAM)
   expect(all.alleleCoverage.shown.every(Boolean)).toBe(true)
