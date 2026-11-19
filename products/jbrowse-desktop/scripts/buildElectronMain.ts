@@ -26,7 +26,6 @@ await esbuild.build({
     js: `import { createRequire } from 'module'; const require = createRequire(import.meta.url);`,
   },
   sourcemap: false,
-  minify: process.env.NODE_ENV === 'production',
 })
 
 // The MCP stdio server as a plain-node entry (no electron import anywhere in
@@ -41,7 +40,6 @@ await esbuild.build({
   outfile: path.join(rootDir, 'build/mcpServer.js'),
   loader: { '.md': 'text' },
   sourcemap: false,
-  minify: process.env.NODE_ENV === 'production',
 })
 
 console.log('Electron main process bundled successfully')
