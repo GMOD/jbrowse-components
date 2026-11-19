@@ -107,7 +107,7 @@ interface RegionArgs {
  */
 type HostArgs<A extends RegionArgs> = Omit<
   A,
-  'regions' | 'displayedRegions' | 'refNamePosition'
+  'regions' | 'displayedRegions' | 'refNamePosition' | 'assemblyGeneticCodeId'
 > & {
   region?: TablesRegion
   regions?: TablesRegion[]
@@ -665,7 +665,15 @@ export function createTablesEngine() {
         return { ...tables, warnings: [...tables.warnings, ...undecodable] }
       },
     ),
-    features: regionRead('features', FEATURES_ARGS, featureAndRecordTables),
+    features: regionRead(
+      'features',
+      FEATURES_ARGS,
+      (pm, args: FeatureReadArgs, assembly) =>
+        featureAndRecordTables(pm, {
+          ...args,
+          assemblyGeneticCodeId: assembly?.geneticCodeId,
+        }),
+    ),
     wiggle: regionRead('wiggle', WIGGLE_ARGS, wiggleTables),
     variants: regionRead('variants', VARIANTS_ARGS, variantTables),
     /**

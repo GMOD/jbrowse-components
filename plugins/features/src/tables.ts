@@ -102,8 +102,16 @@ export interface FeatureTablesArgs {
    * `rects`, and each residue in `aminoAcids`. On by default, as in the view.
    */
   aminoAcids?: boolean
-  /** The genetic code for a CDS whose feature names no `transl_table`. */
+  /**
+   * The genetic code for a CDS whose feature names no `transl_table`, over
+   * the assembly's code for its contig.
+   */
   geneticCodeId?: number
+  /**
+   * The assembly's genetic code for a contig, which the display reads per
+   * region.
+   */
+  assemblyGeneticCodeId?: (refName: string) => number
   /**
    * The most compressed bytes the regions may need together, refused off the
    * index before any feature is fetched. 200 MB by default.
@@ -363,6 +371,7 @@ export async function featureTables(
     colorByFrame,
     aminoAcids,
     geneticCodeId,
+    assemblyGeneticCodeId,
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: FeatureTablesArgs,
 ) {
@@ -392,7 +401,14 @@ export async function featureTables(
     pluginManager,
     host,
     fetchRegions.map((region, index) => ({ region, index })),
-    { adapterConfig, sequenceAdapter, colorByFrame, aminoAcids, geneticCodeId },
+    {
+      adapterConfig,
+      sequenceAdapter,
+      colorByFrame,
+      aminoAcids,
+      geneticCodeId,
+      assemblyGeneticCodeId,
+    },
     tooLarge,
   )
   // One batch, so every read shares one fit solve.

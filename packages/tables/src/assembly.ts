@@ -4,6 +4,10 @@ import {
   refNameAliasAdapterType,
 } from '@jbrowse/core/assemblyManager/expandAssemblyConfigShorthand'
 import {
+  getGeneticCodesFromFile,
+  lookupGeneticCodeId,
+} from '@jbrowse/core/assemblyManager/geneticCodes'
+import {
   buildRefNameMaps,
   canonicalRefNameIn,
   refNameIndexOf,
@@ -17,6 +21,7 @@ import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 /**
  * An assembly as a JBrowse config's `assemblies` entry writes it, shorthand
@@ -31,6 +36,8 @@ export interface ResolvedAssembly {
   canonical: (name: string) => string
   /** where a contig name sits in the assembly's order, as the browser's assembly answers it */
   refNamePosition: (name: string) => number | undefined
+  /** the NCBI genetic code of a contig, as the browser's assembly answers it */
+  geneticCodeId: (name: string) => number
 }
 
 export async function sequenceRegions(
@@ -63,16 +70,22 @@ async function resolveAssembly(
   const expanded = expandAssemblyShorthand(config, pluginManager) as {
     sequence?: { adapter?: Record<string, unknown> }
     refNameAliases?: unknown
+    geneticCodes?: Record<string, number>
+    geneticCodesLocation?: FileLocation
   }
   const sequenceAdapter = expanded.sequence?.adapter
   const aliasAdapter = aliasAdapterOf(expanded.refNameAliases)
-  const [regions, aliases] = await Promise.all([
+  const [regions, aliases, geneticCodesFromFile] = await Promise.all([
     sequenceRegions(pluginManager, sequenceAdapter),
     aliasAdapter
       ? tablesAdapter(pluginManager, aliasAdapter, undefined).then(a =>
           isRefNameAliasAdapter(a) ? a.getRefNameAliases({}) : [],
         )
       : [],
+    getGeneticCodesFromFile({
+      location: expanded.geneticCodesLocation,
+      pluginManager,
+    }),
   ])
   const { refNameAliases, lowerCaseRefNameAliases } = buildRefNameMaps(
     regions,
@@ -86,6 +99,11 @@ async function resolveAssembly(
     regions,
     canonical,
     refNamePosition: name => refNamePositionIn(index, canonical, name),
+    geneticCodeId: name =>
+      lookupGeneticCodeId(name, refNameAliases, [
+        expanded.geneticCodes ?? {},
+        geneticCodesFromFile,
+      ]),
   }
 }
 

@@ -237,6 +237,10 @@ assembly config as a config's `assemblies` entry writes it, shorthand included
   unless given, to the sequence file's.
 - The assembly's sequence stands in for `sequenceAdapter` where the call names
   none, so a CRAM decodes against it.
+- `features` translates a CDS naming no `transl_table` by its contig's code in
+  the assembly's `geneticCodes` or `geneticCodesLocation`, through core's
+  `lookupGeneticCodeId` as the display does per region; a call's
+  `geneticCodeId` overrides it.
 - Each table returns `readAs` (`refName`, `originalRefName`, one per region), the
   names it read under. A host labels the rows with the name it asked for.
 - `regions` lists the assembly's contigs as its sequence file names them.

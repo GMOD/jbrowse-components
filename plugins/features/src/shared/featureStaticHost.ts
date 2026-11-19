@@ -159,8 +159,12 @@ export interface FeatureFetchArgs {
   colorByFrame?: boolean
   /** Translate each CDS once the zoom reaches a base a px, as the view does. */
   aminoAcids?: boolean
-  /** The genetic code for a CDS whose feature names no `transl_table`. */
+  /**
+   * The genetic code for a CDS whose feature names no `transl_table`, over
+   * the assembly's code for its contig.
+   */
   geneticCodeId?: number
+  assemblyGeneticCodeId?: (refName: string) => number
 }
 
 /**
@@ -180,6 +184,7 @@ export async function fetchFeatureRegions(
     colorByFrame = false,
     aminoAcids = true,
     geneticCodeId,
+    assemblyGeneticCodeId,
   }: FeatureFetchArgs,
   tooLarge: (bytes: number | undefined) => Error,
 ) {
@@ -208,7 +213,8 @@ export async function fetchFeatureRegions(
             bpPerPx,
             colorByFrame,
             peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
-            geneticCodeId,
+            geneticCodeId:
+              geneticCodeId ?? assemblyGeneticCodeId?.(region.refName),
             statusCallback: () => {},
           } satisfies RpcExecuteArgs<'RenderFeatureData'>,
         })

@@ -6,6 +6,8 @@ import { pathToFileURL } from 'node:url'
 import { createTablesEngine } from './index.ts'
 import { BAM, CRAM, GFF3 } from './volvox.fixture.ts'
 
+import type { FeatureTablesArgs } from './index.ts'
+
 const engine = createTablesEngine()
 
 const volvox = (file: string) => ({
@@ -158,6 +160,37 @@ test('features and the sequence read under an alias, and the regions list the se
     start: [0, 0],
     end: [50001, 6079],
   })
+})
+
+test('a CDS naming no transl_table translates by its contig’s genetic code in the assembly, unless the call names one', async () => {
+  const zoomed = {
+    ...GFF3,
+    region: { refName: 'ctgA', start: 1150, end: 1350 },
+    bpPerPx: 0.1,
+    display: { heightMode: 'grow' },
+  }
+  const residues = async (args: Partial<FeatureTablesArgs>) =>
+    (await engine.features({ ...zoomed, ...args })).aminoAcids.aminoAcid
+  const standard = await residues({})
+  const mito = await residues({ geneticCodeId: 2 })
+  expect(mito).not.toEqual(standard)
+  const codesFile = path.join(dir, 'volvox.genetic_codes.tsv')
+  writeFileSync(codesFile, '# refName\tcode\nA\t2\n')
+  for (const codes of [
+    { geneticCodes: { ctgA: 2 } },
+    { geneticCodes: { contigA: 2 } },
+    { geneticCodesLocation: { uri: pathToFileURL(codesFile).href } },
+  ]) {
+    expect(await residues({ assembly: { ...assembly, ...codes } })).toEqual(
+      mito,
+    )
+  }
+  expect(
+    await residues({
+      assembly: { ...assembly, geneticCodes: { ctgA: 2 } },
+      geneticCodeId: 1,
+    }),
+  ).toEqual(standard)
 })
 
 test('an assembly whose sequence is a chrom.sizes or a plain FASTA lists its contigs', async () => {
