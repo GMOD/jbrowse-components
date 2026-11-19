@@ -190,9 +190,6 @@ it would let its page delete, since a tour that only adds is the weaker kind.
 8. **`ui/circular_chords`** — `user_guides/circular_view.md`. Three sequential
    claims, one still: an empty ring, chords appearing when a track is ticked, and
    a chord click opening a second view.
-9. **`ui/plugin_store_install`** — `user_guides/plugin_store.md`, 40 lines with
-   **no menu path anywhere on it**. The tour supplies the missing route and shows
-   the consequence: a menu that was not there a second earlier.
 
 ### Machinery gaps
 
@@ -207,8 +204,7 @@ it would let its page delete, since a tour that only adds is the weaker kind.
    `ScreenshotSpec` has both, and a no-config tour needs both.
 3. **`scrollTo` cannot scroll a drawer or a dialog.** `scrollPage` walks up from
    `[data-testid^="view-container-"]` (`video-overlay.ts`), so on a tour
-   whose subject IS the drawer it scrolls the views instead. Blocks proposal 9;
-   today the only lever is a taller viewport.
+   whose subject IS the drawer it scrolls the views instead. Today the only lever is a taller viewport.
 4. **`ResizeHandle` publishes no selector** (`packages/core/src/ui/ResizeHandle.tsx`)
    — a bare `<div>` with emotion classes. A track-height drag is therefore
    measured pixels, which is the one thing this corpus refuses, so

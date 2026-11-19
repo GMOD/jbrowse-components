@@ -70,5 +70,5 @@ yardstick and a fix only a weak model needs is not wanted. When the dev set
 saturates on sonnet, add harder tasks rather than a weaker model. A workaround
 in `jb` that exists because an agent stumbled is evidence to test, not a
 fixture: hide it and compare pass rate, turns and dollars on opus and sonnet.
-`agent-docs/ideas/ready/ablate-the-jb-spellings-agents-stumbled-on.md` lists
+`agent-docs/ideas/waiting-on-a-number/ablate-the-jb-spellings-agents-stumbled-on.md` lists
 the two to try first.

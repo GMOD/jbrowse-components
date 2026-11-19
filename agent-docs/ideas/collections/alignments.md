@@ -65,9 +65,6 @@ as a bedGraph; the packed SNP buffer beside it decodes through
 `readSnpSegments`, and a VCF-ish allele-count download beside the bedGraph is
 the other half.
 
-**Typed-array refactor.** Worker return is flat parallel arrays — could regroup into
-sub-objects (mods, junctions, coverage). Flat is simple but long; just an idea.
-
 **Per-record allocation may be the CRAM lever.** The slice workers are starved
 and the RPC worker spends 12% (724 ms) in GC on a 1000x short-read render
 ([CRAM_STACK_INTEGRATION.md](../../reference/CRAM_STACK_INTEGRATION.md)
@@ -77,8 +74,7 @@ needs an allocation profile before anyone acts on it — is that we allocate one
 serialize the lot out of the worker. That is the same problem `@gmod/cram`
 already solved *inside* itself with the read-feature arena and the tag/quality
 columns, stopping one layer short of us. If it holds, the fix is columnar all
-the way to the renderer rather than a wrapper per read, which is the same
-direction as the typed-array item above.
+the way to the renderer rather than a wrapper per read.
 
 **Read downsampling for a force-loaded dense region.** Past the byte gate a
 BAM shows the banner

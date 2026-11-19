@@ -25,7 +25,7 @@ Filed from the 2026-11-11 MCP and `jb` audit.
 - **`jb.showTrack(trackId, { settings?, viewId? })` for catalog tracks**,
   leaving `jb.addTrack` to files. A concrete alternative for the first
   candidate in
-  [ablate-the-jb-spellings-agents-stumbled-on](../ready/ablate-the-jb-spellings-agents-stumbled-on.md).
+  [ablate-the-jb-spellings-agents-stumbled-on](../waiting-on-a-number/ablate-the-jb-spellings-agents-stumbled-on.md).
 - **Skipping the trailing settle on a call that changed nothing.** Every
   `run_javascript` call waits on it (`SETTLE_AFTER_CODE_MS` in
   `products/jbrowse-desktop/src/mcp/handleMcpRequest.ts`), pure reads and calls

@@ -302,7 +302,7 @@ put it 118 ms behind and 143 ms ahead on four tracks).
 and uncompressed, and its CDP throttle may not reach the worker.
 
 What did measure is filed under `ideas/`:
-[hashless-chunk-names-for-jbrowse-web](../ideas/ready/hashless-chunk-names-for-jbrowse-web.md),
+[hashless-chunk-names-for-jbrowse-web](../ideas/waiting-on-a-call/hashless-chunk-names-for-jbrowse-web.md),
 [lazy-rpc-method-bodies](../ideas/ready/lazy-rpc-method-bodies.md),
 [write-uniforms-as-loops-above-sixteen-elements](../ideas/ready/write-uniforms-as-loops-above-sixteen-elements.md)
 and

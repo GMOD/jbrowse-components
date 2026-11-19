@@ -11,54 +11,10 @@ description: `syntenyGroupId`, PIF limits, the `featureId` instance ceiling, pol
 linear synteny view has Reverse row order, but an open dotplot cannot trade its
 axes.
 
-**Better defaults for human vs mouse.** Tune color schemes and default display options
-for common interspecies comparisons.
-
-**Barycenter / layer-sweep chromosome diagonalization (upgrade over single-pass greedy
-best-hit).** `diagonalizeRegions` (packages/core) assigns each query chromosome to its
-single **best** reference (max aligned bases) and sorts by position within that one ref —
-a single-pass greedy best-hit, the same tier as D-GENIES / RaGOO / mummerplot `--layout`.
-`runDiagonalize` now cascades this top-down across a stacked N-way view (each level
-diagonalizes against the row the level above just reordered — a one-sided Sugiyama
-layer-sweep, top row pinned). Two research-backed upgrades remain, both aimed at fewer
-ribbon crossings for polyploid / multi-mapping genomes (e.g. grape's ancestral
-triplication in the grape/peach/cacao demo, where one grape chromosome maps to ~3 others):
-
-- **Soft (barycenter) positioning instead of winner-take-all.** Place each query
-  chromosome at the aligned-base-weighted mean of *all* its partners' positions on a
-  global reference axis (cumulative ref-length offsets), rather than snapping to one best
-  hit and discarding the other 2/3 of the mapping. D-GENIES's squared-length "gravity"
-  weighting is a good noise-suppressor variant. Contained rewrite of `diagonalizeRegions`
-  (per-query accumulation of a global weighted position + strand sum, sort by that
-  scalar) — and *also* a simplification (drops the nested per-(query,ref) `PairStats` map).
-- **Iterative up/down sweeps** (Sugiyama median heuristic — a 3-approximation, Eades &
-  Wormald 1994) for the no-pinned-focus case, and/or an optional simulated-annealing
-  polish on the true crossing count (AccuSyn) seeded from the barycenter layout.
-
-[ADR-034](../../architecture-decision-records/adr-034-dotplot-diagonalize-stays-single-axis.md)
-rejected both-axis seriation; this stays single-axis and changes only how one axis is
-ordered. Why deferred, not done: it **changes documented tie-breaking semantics**, not just adds.
-The `base-count tie` test in `diagonalize.test.ts` pins `[qY, qX, qZ]` (a tied qX snapped
-to the alphabetically first of the tied refs); a barycenter places qX at the centroid of
-both refs → `[qY, qZ, qX]`. The determinism invariant (result independent of input order) still holds, but the
-specific expected order changes, and whether the new layout is *visually* cleaner needs
-A/B validation across several real datasets (rebuild jbrowse-web + regenerate synteny
-screenshots), not just this one demo — where the dominant messiness is the *transitive*
-peach↔cacao band, which no reordering can fix. A deliberate, separately-scoped pass with
-browser verification. Sources: Sugiyama-Tagawa-Toda 1981; Eades & Wormald 1994 (median
-3-approx); D-GENIES `paf.py` gravity; AccuSyn (crossing-count SA); ChromSyn / GENESPACE
-(focal-propagation barycenter). Orthogonal to the "phylogeny-aware row ordering" note
-below (that orders *rows* by relatedness; this orders *chromosomes within a row*).
-
-One measured data point, the six-genome linkage-group stack (2026-10-03, a Python
-re-layout counting ribbon crossings, plus a blind visual ranking): with the
-significance-filtered tables, every ordering variant tried landed within ~10% of
-main's 1.01M crossings — free-anchor sweeps 0.77M, orienting each chromosome by
-covariance with *all* partners' displayed positions 0.90M. The blind ranking
-preferred main's ordering by half a point. The filter itself took 2.88M to 1.01M.
-Gating reversal on within-best-pair rank correlation was worse: it misses fused
-chromosomes, whose arms go to different partners. The same run found that
-`diagonalizeRegions` ignored a reversed reference chromosome, since fixed.
+Barycenter, layer-sweep and covariance orderings of chromosomes within a row
+were measured on the six-genome linkage-group stack (2026-10-03): every variant
+landed within ~10% of main's 1.01M ribbon crossings and a blind ranking
+preferred main's greedy best-hit, so `diagonalizeRegions` keeps it (ADR-034).
 
 **A location-marker tick can't be read, only seen.** A tick states "this query
 coordinate maps to that target coordinate" and there is no way to get the two numbers:

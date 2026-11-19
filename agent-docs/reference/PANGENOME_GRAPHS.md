@@ -84,7 +84,7 @@ the rule.
   into (a five-strain E. coli pangenome is 30x over; whole chrM draws as a
   rope). The file is read whole on the main thread, so one past V8's ~512 MB
   string limit cannot load. A worker adapter that cuts by region is parked as
-  `waiting-on-a-call/a-file-loaded-gfa-becomes-a-worker-track.md`.
+  `waiting-on-someone-else/a-file-loaded-gfa-becomes-a-worker-track.md`.
 
 ### A whole-cohort cut, and what decides whether walk rows can draw it
 

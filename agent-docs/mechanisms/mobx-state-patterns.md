@@ -8,7 +8,7 @@ description: Two genomics-free MobX patterns built here, splitting an autorun in
 Two shapes this repo arrived at the hard way. Both are framework-level rather
 than genomic, both are already load-bearing in the tree, and neither is written
 anywhere a MobX user would find it. Audience and framing:
-[upstreamable-ideas](../ideas/waiting-on-a-call/upstreamable-ideas.md).
+[upstreamable-ideas](../ideas/collections/upstreamable-ideas.md).
 
 ## 1. An autorun's decision and its dependency set fail in opposite ways
 

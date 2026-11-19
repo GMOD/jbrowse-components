@@ -1,6 +1,6 @@
 ---
 name: show-flatten-once-in-the-mark-display-examples
-description: No tutorial or figure uses the mark display's flatten step. A new section of mark_display_examples.md on dtu's per-transcript statistic — flatten to transcripts, a point each, a threshold color, a reference line at significance — would show it once.
+description: The mark display examples page never shows the flatten step (only the protein_domains tutorial does). A new section of mark_display_examples.md on dtu's per-transcript statistic — flatten to transcripts, a point each, a threshold color, a reference line at significance — would show it once.
 ---
 
 # Show `flatten` once in the mark display examples
