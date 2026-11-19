@@ -1,6 +1,6 @@
 ---
 name: straighten-an-inversion-by-reversing-its-span
-description: In a linear synteny view, flipping a whole row turns an inversion's flanking ribbons into an X; splitting the row at the breakpoints and reversing only the inverted span would keep them straight.
+description: Right-clicking an inverted synteny band could reverse just that span of the mate panel rather than flip the whole panel, which only moves the crossing to the flanks as an X; splitting the row at the breakpoints keeps every ribbon straight.
 ---
 
 # Straighten an inversion by reversing its span
@@ -9,6 +9,34 @@ MultiWaySyntenyDisplay drew its lanes this way as 9b652a0199 and reverted it on
 2026-10-19 (Colin): a straightened span shows the lane in an order its assembly
 does not have, and the crossing is what the records state. Weigh that before
 building the row version below.
+
+The case for the row version anyway is that the reader asks for it. The lane
+layout straightened every inversion on its own, while this is a right-click on
+one inverted band. The reversed piece also says what was done: its scalebar
+reads right to left, and "Reverse region" on it undoes the change.
+
+## The entry point is the inverted band's menu
+
+On a right-clicked band with strand −1, the menu offers "Reverse the matching
+region in the bottom panel", beside the "Move top/bottom panel to the matching
+region" items in `LinearSyntenyDisplay/bandMoveTargets.ts`. Flipping the whole
+panel stays where it already is, as "Horizontally flip" in the LGV's own menu.
+A band-menu copy of that would add an item that turns the crossing into the X
+below.
+
+When the inverted block covers the mate's whole visible window, as with a fully
+inverted contig or a view zoomed inside the inversion, splitting makes pieces
+off screen. The same item then reverses the region whole, so the menu still
+has one item.
+
+Questions for the build:
+
+- Whether to offer only the bottom (mate) panel, which matches "Horizontally
+  flip inverted targets" in the launch dialog, or name top and bottom as the
+  move items do. Reversing either side straightens the band.
+- Whether the item belongs on the LGV-embedded synteny track's feature menu
+  (`LGVSyntenyDisplay/contextMenuItems.ts`) too, where the mate is a separate
+  view.
 
 A whole-row flip turns an inversion's flanks anti-parallel, so the ribbons
 either side cross in an X. Reversing only the inverted span keeps every ribbon
