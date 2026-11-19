@@ -276,7 +276,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           getColorByMenuItem(self, {
             colorOptions: colorFieldOptions('strand', 'mapq', {
               field: 'mateRefName',
-              label: 'Query',
+              label: 'Query sequence',
             }),
           }),
           ...editPlotMenuItems(self, getTrackSizingItems(self, pileupGate)),

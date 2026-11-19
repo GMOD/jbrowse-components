@@ -24,7 +24,7 @@ function colorRows(display: ReturnType<typeof createDisplay>) {
 test('the curated color schemes are the four synteny ones', () => {
   expect(
     colorRows(createDisplay()).map(i => ('label' in i ? i.label : undefined)),
-  ).toEqual(['Strand', 'Mapping quality', 'Query', 'Solid color...'])
+  ).toEqual(['Strand', 'Mapping quality', 'Query sequence', 'Solid color...'])
 })
 
 function featureHeightDisabled(display: ReturnType<typeof createDisplay>) {

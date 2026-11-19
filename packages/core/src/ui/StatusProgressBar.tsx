@@ -46,7 +46,7 @@ const StatusProgressBar = observer(function StatusProgressBar({
   style,
 }: {
   fraction?: number
-  label: string
+  label?: string
   className?: string
   style?: React.CSSProperties
 }) {
