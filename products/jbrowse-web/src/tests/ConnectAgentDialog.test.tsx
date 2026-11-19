@@ -1,6 +1,6 @@
 import { fireEvent } from '@testing-library/react'
 
-import { STARTER_PROMPT } from '../components/ConnectAgentDialog.tsx'
+import { routes } from '../components/ConnectAgentDialog.tsx'
 import {
   createView,
   doBeforeEach,
@@ -16,20 +16,25 @@ beforeEach(() => {
 
 const delay = { timeout: 10000 }
 
-test('Help offers the Claude in Chrome route and copies its starter prompt', async () => {
+test('Help copies the in-page prompt, and the command-line one from its tab', async () => {
   const writeText = jest.fn().mockResolvedValue(undefined)
   Object.assign(navigator, { clipboard: { writeText } })
   Object.defineProperty(window, 'isSecureContext', { value: true })
-  const { findByText, findAllByText } = await createView(
+  const [page, commandLine] = routes
+  const { findByText, findAllByText, findByRole } = await createView(
     volvoxConfigWithTracks([]),
   )
 
   fireEvent.click(await findByText('Help', {}, delay))
   fireEvent.click(await findByText('Connect an AI agent...', {}, delay))
-  await findByText(/Claude in Chrome side panel/, {}, delay)
-  fireEvent.click(await findByText('Copy starter prompt', {}, delay))
+  fireEvent.click(await findByText('Copy prompt', {}, delay))
+  await findAllByText('Copied prompt to clipboard', {}, delay)
+  expect(writeText).toHaveBeenLastCalledWith(page!.prompt)
 
-  await findByText('Copied starter prompt to clipboard', {}, delay)
-  expect(writeText).toHaveBeenCalledWith(STARTER_PROMPT)
+  fireEvent.click(await findByRole('tab', { name: 'Command line' }, delay))
+  fireEvent.click(await findByText('Copy prompt', {}, delay))
+  await findAllByText('Copied prompt to clipboard', {}, delay)
+  expect(writeText).toHaveBeenLastCalledWith(commandLine!.prompt)
+  expect(commandLine!.prompt).toContain('.claude/skills')
   await findAllByText('ctgA', {}, delay)
 }, 30000)
