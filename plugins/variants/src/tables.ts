@@ -8,14 +8,24 @@ import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { isObject } from '@jbrowse/core/util'
 import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
+import {
+  fitTargetHeightViews,
+  grownHeightViews,
+  heightModeViews,
+} from '@jbrowse/display-kit/HeightModeMixin'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { touchesAny } from '@jbrowse/display-kit/keyWindows'
 import { byteGatedFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
+import {
+  featureBandTables,
+  tablesBlocks,
+} from '@jbrowse/plugin-features/tables'
 import { RowHeightMixin } from '@jbrowse/tree-sidebar/RowHeightMixin'
 import { ROW_COLOR_SCALE_ID } from '@jbrowse/tree-sidebar/rowColorKey'
 import {
+  rowsContentHeightViews,
   treeSidebarRowsConfigViews,
   treeSidebarRowStages,
 } from '@jbrowse/tree-sidebar/treeSidebarRowViews'
@@ -34,11 +44,18 @@ import {
   densityRung,
   recordDensityAlpha,
 } from './LinearVariantDisplay/densityFade.ts'
-import { keyedVariantViews } from './LinearVariantDisplay/keyedVariants.ts'
+import {
+  keyedRecordViews,
+  keyedVariantViews,
+} from './LinearVariantDisplay/keyedVariants.ts'
 import {
   recordColorViews,
   recordsColorScaleViews,
   recordsKeyViews,
+  recordsLayoutViews,
+  recordsRenderViews,
+  recordsSettingsViews,
+  recordsTrackHeightViews,
 } from './LinearVariantDisplay/recordsBandViews.ts'
 import {
   variantColorSettingViews,
@@ -72,6 +89,7 @@ import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
 
+import type { RecordsView } from './LinearVariantDisplay/recordsBandViews.ts'
 import type { CellDataResult } from './VariantRPC/executeVariantCellData.ts'
 import type { ProcessedSource, Source } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -80,6 +98,7 @@ import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature } from '@jbrowse/core/util'
 import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
+import type { FeatureTablesArgs } from '@jbrowse/plugin-features/tables'
 
 const base = types
   .compose(
@@ -133,6 +152,14 @@ const base = types
   .views(self => keyedVariantViews(self))
   .views(self => treeSidebarRowsConfigViews(self))
 
+const variantHostRows = treeSidebarRowStages<ProcessedSource>()(base)
+  .views(self => variantDrawnRowViews(self))
+  .views(self => variantFetchViews(self))
+  .views(self => variantRowHookViews(self))
+  .views(self => variantHeightViews(self))
+  .views(self => variantRowsHeightViews(self))
+  .views(self => recordsKeyViews(self))
+
 /**
  * The variant display reduced to what its tables read: the display's config,
  * the samples the adapter lists, the windows the regions show and the
@@ -144,13 +171,7 @@ const base = types
  * default height leave (`rowsHeaderHeight`). Its env holds the
  * `pluginManager` the jexl filters evaluate through.
  */
-const VariantTablesHost = treeSidebarRowStages<ProcessedSource>()(base)
-  .views(self => variantDrawnRowViews(self))
-  .views(self => variantFetchViews(self))
-  .views(self => variantRowHookViews(self))
-  .views(self => variantHeightViews(self))
-  .views(self => variantRowsHeightViews(self))
-  .views(self => recordsKeyViews(self))
+const VariantTablesHost = variantHostRows
   .views(self => ({
     /**
      * `TreeSidebarMixin`'s hook, as the display answers it while rows draw:
@@ -191,6 +212,67 @@ const VariantTablesHost = treeSidebarRowStages<ProcessedSource>()(base)
   .views(self => recordColorViews(self))
   .views(self => recordsColorScaleViews(self))
   .views(self => regionCellColorViews(self))
+  .views(self => variantDataKeyViews(self))
+
+const NO_RECORDS_VIEW: RecordsView = {
+  coarseBpPerPx: 1,
+  displayedRegions: [],
+  settledDynamicBlocks: [],
+}
+
+const NO_HOST = {}
+
+/**
+ * The variant display with no sample rows, as a VCF read as sites: its
+ * records band is the whole track, laid out, lettered, colored, keyed and
+ * sized by the display's own views over the view frame and payload set on
+ * it. As the feature static host, nothing is pinned, scrolled or gated on
+ * density, and it never sits in a ring.
+ */
+const VariantRecordsTablesHost = variantHostRows
+  .volatile(() => ({
+    view: NO_RECORDS_VIEW,
+  }))
+  .actions(self => ({
+    setView(view: RecordsView) {
+      self.view = view
+    },
+  }))
+  .views(self => heightModeViews(self))
+  .views(self => fitTargetHeightViews(self))
+  .views(() => ({
+    get host() {
+      return NO_HOST
+    },
+    get canRender() {
+      return true
+    },
+    get hostInitialized() {
+      return true
+    },
+    get gateActive() {
+      return false
+    },
+    get aboveForceLoadFloor() {
+      return false
+    },
+    get openingRecordsHeight() {
+      return undefined
+    },
+    get connectorsBand() {
+      return { active: false, height: 0 }
+    },
+  }))
+  .views(self => rowsContentHeightViews(self))
+  .views(self => recordsSettingsViews(self))
+  .views(self => recordColorViews(self))
+  .views(self => recordsRenderViews(self))
+  .views(self => recordsLayoutViews(self))
+  .views(self => keyedRecordViews(self))
+  .views(self => cellKeyViews(self))
+  .views(self => recordsColorScaleViews(self))
+  .views(self => grownHeightViews(self))
+  .views(self => recordsTrackHeightViews(self))
   .views(self => variantDataKeyViews(self))
 
 /** Registers the adapters `variantTables` reads through: VCF, tabixed or not. */
@@ -768,9 +850,117 @@ export const VCF_ADAPTER_TYPES = [
 
 /**
  * #api
+ * A VCF's records over `regions` as the variant display draws them with no
+ * sample rows, its records band the whole track, in the tables
+ * `featureTables` gives a feature track: `display` is the
+ * `LinearVariantDisplay`'s config as a VariantTrack's `displays` entry writes
+ * it, its record settings under `records` (`displayMode`, `mark`, `labels`,
+ * `facet`, `tooltip.field`), `encoding.color`, `filter`, `heightMode`,
+ * `height` and `growMaxHeight` top-level. Each record takes the band's color,
+ * its SV class's or `featureDefaultColor` under no picked `encoding.color`,
+ * and the key lists the classes the placed records hold, as the browser's
+ * does. The display's own views lay the band out, run on a static host over
+ * the payload the display fetches, which reads no genotype, so every record
+ * the filter admits is listed, a record calling none included. The band
+ * packs `regions` and the view's margin around each (`fetchRegions`). No
+ * density gate refuses a dense window. The adapters must be registered on
+ * `pluginManager` (`registerVariantAdapters`).
+ */
+export async function variantFeatureTables(
+  pluginManager: PluginManager,
+  {
+    adapterConfig,
+    sequenceAdapter,
+    regions,
+    displayedRegions,
+    display = {},
+    bpPerPx,
+    byteLimit = DEFAULT_BYTE_LIMIT,
+  }: VariantTablesArgs & Pick<FeatureTablesArgs, 'bpPerPx'>,
+) {
+  const host = VariantRecordsTablesHost.create(
+    {
+      configuration: {
+        ...display,
+        type: 'LinearVariantDisplay',
+        displayId: 'tables',
+      },
+    },
+    { pluginManager },
+  )
+  const adapter = await tablesFeatureAdapter(
+    pluginManager,
+    adapterConfig,
+    sequenceAdapter,
+  )
+  const { fetchRegions, tooLarge } = await byteGatedFetchRegions({
+    adapter,
+    regions,
+    displayedRegions,
+    byteLimit,
+    what: 'features',
+  })
+  host.setAdapterSamples([])
+  host.setKeyWindows(
+    regions.map(({ refName, start, end }, i) => ({
+      regionIndex: i,
+      refName,
+      start,
+      end,
+    })),
+  )
+  host.setView({
+    coarseBpPerPx: bpPerPx,
+    displayedRegions: fetchRegions,
+    settledDynamicBlocks: tablesBlocks(regions, bpPerPx),
+  })
+  const result = await variantCellData({
+    pluginManager,
+    args: runInAction(() => ({
+      sessionId: 'tables',
+      adapterConfig,
+      regions: fetchRegions,
+      layout: host.variantLayout,
+      rowsField: host.rowsField,
+      color: host.cellHueRead,
+      sampleFilter: host.sampleFilter,
+      showReference: host.showReference,
+      siteFilter: host.siteFilter,
+      filters: host.filters,
+      recordFields: host.recordFieldReads,
+      statusCallback: () => {},
+    })),
+  })
+  if ('regionTooLarge' in result) {
+    throw tooLarge(result.bytes)
+  }
+  host.setCellData(result.value)
+  const band = runInAction(() => ({
+    rpcDataMap: host.recordsRenderDataMap,
+    laid: host.recordsLaidOutDataMap,
+    renderedLabels: host.recordsRenderedLabels,
+    groupSections: host.recordsGroupSections,
+    facet: host.recordsFacet,
+    hiddenGroupFeatureIds: host.recordsHiddenGroupIds,
+    scales: host.dataColorScales,
+    showChevrons: true,
+    fontSize: host.recordsFontSize,
+    onScreen: host.recordsOnScreenIds,
+  }))
+  return {
+    ...featureBandTables(band, regions, bpPerPx),
+    bpPerPx,
+    config: fullConfSnapshot(host.configuration),
+    fetchRegions,
+  }
+}
+
+/**
+ * #api
  * The VCF columns of the records a feature table lists, by its `features.id`,
- * for a host drawing a VCF as the plain variant display does, which draws
- * every record, a record calling no genotype included:
+ * for a host drawing a VCF's records as the variant display's records band
+ * does (`variantFeatureTables`), every record, one calling no genotype
+ * included:
  * - `records`: each one's `ref`, `alt` (its alleles joined by `,`) and
  *   `filter`, aligned to `ids`.
  * - `info` and `infoFields`: its INFO, as `variantTables` gives them.

@@ -259,16 +259,22 @@ test('a one-sample calls VCF with no GT lists the records the display draws, wit
     region,
     bpPerPx: 50,
   })
-  expect(features.name).toEqual(['r_0_0', 'd_1'])
-  expect(vcf?.records).toEqual({
-    ref: ['A', 'C'],
-    alt: ['A[ctgB:200[', '<DEL>'],
-    filter: ['PASS', 'Too_low_VAF'],
-  })
-  expect(vcf?.info.SVTYPE).toEqual(['BND', 'DEL'])
-  expect(vcf?.info.MATEID).toEqual(['r_0_1', null])
-  expect(vcf?.samples).toEqual({ feature: [0, 1], sample: ['TUMOR', 'TUMOR'] })
-  expect(vcf?.format).toEqual({ DP: [40, 35], AD: [12, 2], NAD: [0, 0] })
+  const byStart = features.start
+    .map((_, i) => i)
+    .sort((a, b) => features.start[a]! - features.start[b]!)
+  const inStartOrder = <T>(column: readonly T[] | undefined) =>
+    byStart.map(i => column?.[i])
+  expect(inStartOrder(features.name)).toEqual(['r_0_0', 'd_1'])
+  expect(inStartOrder(vcf?.records.ref)).toEqual(['A', 'C'])
+  expect(inStartOrder(vcf?.records.alt)).toEqual(['A[ctgB:200[', '<DEL>'])
+  expect(inStartOrder(vcf?.records.filter)).toEqual(['PASS', 'Too_low_VAF'])
+  expect(inStartOrder(vcf?.info.SVTYPE)).toEqual(['BND', 'DEL'])
+  expect(inStartOrder(vcf?.info.MATEID)).toEqual(['r_0_1', null])
+  expect(vcf?.samples.sample).toEqual(['TUMOR', 'TUMOR'])
+  expect(inStartOrder(vcf?.samples.feature)).toEqual(byStart)
+  expect(inStartOrder(vcf?.format.DP)).toEqual([40, 35])
+  expect(inStartOrder(vcf?.format.AD)).toEqual([12, 2])
+  expect(vcf?.format.NAD).toEqual([0, 0])
   expect(vcf?.formatFields.type).toEqual(['Float', 'Float', 'Float'])
 })
 

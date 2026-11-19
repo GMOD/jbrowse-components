@@ -89,7 +89,6 @@ import type {
   LabelPlacementContext,
   LayoutRegionData,
 } from '@jbrowse/plugin-features/band'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const NO_RECORD_LABELS: RecordsLabels = { name: '', description: '' }
 
@@ -410,6 +409,25 @@ export function recordColorViews(self: RecordColorHost) {
   }
 }
 
+/** What the records band reads off the view it lays its records out in. */
+export interface RecordsView {
+  coarseBpPerPx: number
+  displayedRegions: readonly {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+    reversed?: boolean
+  }[]
+  settledDynamicBlocks: readonly {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+    widthPx: number
+  }[]
+}
+
 interface RecordsRenderHost
   extends
     RecordsSettings,
@@ -417,7 +435,7 @@ interface RecordsRenderHost
   cellData: CellDataResult | undefined
   regionRecordColors: ReadonlyMap<number, Uint32Array>
   drawnRows: ProcessedSource[]
-  view: LinearGenomeViewModel
+  view: RecordsView
   host: { showsCanvasOnly?: boolean }
   canRender: boolean
 }

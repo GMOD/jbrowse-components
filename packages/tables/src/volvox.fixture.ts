@@ -224,6 +224,20 @@ export const GTF = {
   bpPerPx: 10,
 } satisfies FeatureTablesArgs
 
+/**
+ * Inversions, an inverted duplication and a deletion-inversion, with no
+ * samples: the variant display draws its records band alone.
+ */
+export const SITES_SVS = {
+  adapterConfig: {
+    type: 'VcfTabixAdapter',
+    vcfGzLocation: uri('volvox.inv.vcf.gz'),
+    index: { location: uri('volvox.inv.vcf.gz.tbi'), indexType: 'TBI' },
+  },
+  region: { refName: 'ctgA', start: 0, end: 35_000 },
+  bpPerPx: 35,
+} satisfies FeatureTablesArgs
+
 /** A signed microarray track over the whole contig, at 50 bp/px. */
 export const SIGNED_BIGWIG = {
   adapterConfig: {

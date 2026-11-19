@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url'
 
 import { MAX_LABEL_FEATURE_DENSITY } from '../../../plugins/features/src/RenderFeatureDataRPC/zoomThresholds.ts'
 import { createTablesEngine } from './index.ts'
-import { BIGBED, DOG_VCF, GFF3 } from './volvox.fixture.ts'
+import { BIGBED, DOG_SV, DOG_VCF, GFF3 } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -121,6 +121,29 @@ test('a feature listed off the margin keeps the fields its file writes, and a VC
     subfeatureAttributes: {},
     attributeFields: { key: [], type: [], number: [], description: [] },
   })
+})
+
+test('a VCF read as features is the variant display with no sample rows: each record in its SV class color, the classes keyed and records.* applied', async () => {
+  const sites = await engine.variants({
+    ...DOG_SV,
+    display: { genotypes: { show: false } },
+  })
+  const read = { ...DOG_SV, bpPerPx: 80 }
+  const t = await engine.features({ ...read, display: {} })
+  expect(t.features.id).toEqual(sites.variants.id)
+  expect(t.rects.color).toEqual(sites.variants.color)
+  expect(t.rects.color).toEqual(['#377eb8'])
+  expect({ legend: t.legend, title: t.legendTitle }).toEqual({
+    legend: { label: sites.legend.label, color: sites.legend.color },
+    title: sites.legendTitle,
+  })
+  expect(t.legend.label).toHaveLength(1)
+
+  const compact = await engine.features({
+    ...read,
+    display: { records: { displayMode: 'compact' } },
+  })
+  expect(compact.rects.height[0]).toBeLessThan(t.rects.height[0]!)
 })
 
 test("the display filter's gene category splits the features", async () => {

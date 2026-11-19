@@ -30,6 +30,7 @@ import {
   VCF_ADAPTER_TYPES,
   registerVariantAdapters,
   variantDensityAlpha,
+  variantFeatureTables,
   variantRecordTables,
   variantGenotypeMatrix,
   variantTables,
@@ -435,22 +436,23 @@ async function missingContigs(
 }
 
 /**
- * A feature table, and for a VCF, as `vcf`, the plain variant display's
- * records under it: their alleles, FILTER, INFO and each sample's FORMAT
- * values, as `variantRecordTables` gives them, so a calls VCF whose FORMAT has no GT
- * reads with its columns, which the genotype matrix has no row for. The
- * file's fields are read over the regions `featureTables` fetched, the view's
- * margin included, so a feature listed from the margin has them too.
+ * A feature table: for a VCF the variant display's records band with no
+ * sample rows (`variantFeatureTables`), `display` its `LinearVariantDisplay`
+ * config, and as `vcf` its records' alleles, FILTER, INFO and each sample's
+ * FORMAT values, as `variantRecordTables` gives them, so a calls VCF whose
+ * FORMAT has no GT reads with its columns; for any other file the feature
+ * display's (`featureTables`). The file's fields are read over the regions
+ * the table fetched, the view's margin included, so a feature listed from
+ * the margin has them too.
  */
 async function featureAndRecordTables(
   pluginManager: PluginManager,
   args: FeatureReadArgs,
 ) {
-  const { fetchRegions: regions, ...features } = await featureTables(
-    pluginManager,
-    args,
-  )
   const vcf = VCF_ADAPTER_TYPES.includes(String(args.adapterConfig.type))
+  const { fetchRegions: regions, ...features } = vcf
+    ? await variantFeatureTables(pluginManager, args)
+    : await featureTables(pluginManager, args)
   return {
     ...features,
     warnings:

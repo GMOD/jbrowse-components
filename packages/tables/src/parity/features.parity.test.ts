@@ -1,20 +1,25 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
+import { abgrToHex } from '@jbrowse/core/util/colorBits'
 import BedPlugin from '@jbrowse/plugin-bed'
 import FeaturesPlugin, { isLinearBasicDisplay } from '@jbrowse/plugin-features'
 import { isPlacedRow } from '@jbrowse/plugin-features/band'
+import { displayLabels } from '@jbrowse/plugin-features/tables'
 import GFF3Plugin from '@jbrowse/plugin-gff3'
 import GtfPlugin from '@jbrowse/plugin-gtf'
+import VariantsPlugin from '@jbrowse/plugin-variants'
 
+import { labelColors } from '../../../../plugins/features/src/LinearBasicDisplay/components/labelColors.ts'
 import { createTablesEngine } from '../index.ts'
-import { BED_TABIX, BIGBED, GFF3, GTF } from '../volvox.fixture.ts'
-import { VOLVOX_CONTIGS, standUpDisplay } from './testEnv.ts'
+import { BED_TABIX, BIGBED, GFF3, GTF, SITES_SVS } from '../volvox.fixture.ts'
+import { VOLVOX_CONTIGS, hasDisplayType, standUpDisplay } from './testEnv.ts'
 import { parityCases } from './testUtils.ts'
 
 import type { FeatureTables } from '../index.ts'
 import type { ParityAdapter } from './testUtils.ts'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-features'
+import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 
 const FEATURE_DECISIONS = [
   'rows',
@@ -395,6 +400,186 @@ describe("volvox's EDEN gene as a GTF", () => {
       },
     },
   ])
+})
+
+const RECORDS_DECISIONS = [
+  'rows',
+  'colors',
+  'truncated',
+  'labels',
+  'sections',
+  'legend',
+] as const
+
+type RecordsDecision = (typeof RECORDS_DECISIONS)[number]
+
+/**
+ * The variant display's records band, the whole track for a VCF with no
+ * samples, beside `engine.features` over the same VCF: each placed record's
+ * row span and color, the records the packer could not place, the labels its
+ * layout lets the band letter, the record sections and the color key.
+ */
+function recordsParity({
+  adapterConfig,
+  regions,
+  bpPerPx,
+}: FeatureFixture): ParityAdapter<
+  Record<string, unknown>,
+  LinearVariantDisplayModel,
+  FeatureTables,
+  RecordsDecision
+> {
+  const labelsOf = (spans: Map<string, Span>, labels: Label[]) =>
+    labels.filter(l => spans.has(l.id)).sort(byIdAndText)
+  return {
+    decisionNames: RECORDS_DECISIONS,
+    buildModel: async display => {
+      const { display: model, dispose } =
+        await standUpDisplay<LinearVariantDisplayModel>({
+          plugins: [new VariantsPlugin()],
+          track: { type: 'VariantTrack', adapter: adapterConfig },
+          displayType: 'LinearVariantDisplay',
+          isDisplay: (d): d is LinearVariantDisplayModel =>
+            hasDisplayType(d, 'LinearVariantDisplay'),
+          displayConfig: display,
+          regions,
+          contigLengths: VOLVOX_CONTIGS,
+          bpPerPx,
+        })
+      return { model, dispose }
+    },
+    buildExport: display =>
+      engine.features({ adapterConfig, regions, bpPerPx, display }),
+    modelDecisions: m => {
+      const onScreen = m.recordsOnScreenIds
+      const laid = m.recordsLaidOutDataMap
+      const rows = new Map<string, Span>()
+      for (const data of laid.values()) {
+        for (const item of data.flatbushItems) {
+          if (isPlacedRow(item.topPx) && onScreen.has(item.featureId)) {
+            rows.set(item.featureId, {
+              id: item.featureId,
+              top: item.topPx,
+              bottom: item.bottomPx,
+            })
+          }
+        }
+      }
+      const colors = new Map<string, string>()
+      for (const [k, data] of Object.entries(
+        m.cellData?.perRegionCellData ?? {},
+      )) {
+        const painted = m.regionRecordColors.get(Number(k))!
+        data.featureInfo.forEach((info, f) => {
+          if (rows.has(info.featureId)) {
+            colors.set(info.featureId, abgrToHex(painted[f]!))
+          }
+        })
+      }
+      const [drawn = []] = displayLabels(
+        regions,
+        laid,
+        { ...m.recordsRenderedLabels, colors: labelColors(resolvePalette()) },
+        bpPerPx,
+      )
+      const key = colorKeyTables(m.colorScales)
+      return {
+        rows: [...rows.values()].sort(byId),
+        colors: [...colors].sort(([a], [b]) => a.localeCompare(b)),
+        truncated: m.recordsHiddenCount,
+        labels: labelsOf(
+          rows,
+          drawn.map(l => ({ id: l.featureId, text: l.text, y: l.y })),
+        ),
+        sections: m.recordsFacet
+          ? m.recordsGroupSections.map(s => ({ key: s.key, label: s.label }))
+          : [{ key: '', label: '' }],
+        legend: {
+          label: key.legend.label,
+          color: key.legend.color,
+          title: key.legendTitle,
+          ramps: key.ramps,
+        },
+      }
+    },
+    exportDecisions: t => {
+      const rows = new Map(
+        uniqueSpans(
+          t.features.id.map((id, i) => ({
+            id,
+            top: t.features.top[i]!,
+            bottom: t.features.bottom[i]!,
+          })),
+        ).map(s => [s.id, s]),
+      )
+      return {
+        rows: [...rows.values()],
+        colors: [
+          ...new Map(
+            t.rects.feature.map((f, i) => [
+              t.features.id[f]!,
+              t.rects.color[i]!,
+            ]),
+          ),
+        ].sort(([a], [b]) => a.localeCompare(b)),
+        truncated: t.truncated,
+        labels: labelsOf(
+          rows,
+          t.labels.text.map((text, i) => ({
+            id: t.features.id[t.labels.feature[i]!]!,
+            text,
+            y: t.labels.y[i]!,
+          })),
+        ),
+        sections: t.sections.key.map((key, i) => ({
+          key,
+          label: t.sections.label[i],
+        })),
+        legend: {
+          ...t.legend,
+          title: t.legendTitle,
+          ramps: t.ramps,
+        },
+      }
+    },
+  }
+}
+
+describe('SVs with no samples, read as features, beside the variant display', () => {
+  parityCases(recordsParity({ ...SITES_SVS, regions: [SITES_SVS.region] }), [
+    { name: 'defaults', config: {} },
+    { name: 'grow', config: GROW },
+    { name: 'a short fit track', config: { height: 40 } },
+    {
+      name: 'records compact',
+      config: { ...GROW, records: { displayMode: 'compact' } },
+    },
+    {
+      name: 'records mark height',
+      config: { ...GROW, records: { mark: { height: 20 } } },
+    },
+    {
+      name: 'record names off',
+      config: { ...GROW, records: { labels: { name: { show: false } } } },
+    },
+    {
+      name: 'records faceted by type',
+      config: { ...GROW, records: { facet: 'type' } },
+    },
+    {
+      name: 'encoding.color by type',
+      config: { ...GROW, encoding: { color: { field: 'type' } } },
+    },
+  ])
+})
+
+test('the SV cases key more than one SV class', async () => {
+  const t = await engine.features({
+    ...SITES_SVS,
+    regions: [SITES_SVS.region],
+  })
+  expect(t.legend.label.length).toBeGreaterThan(1)
+  expect(new Set(t.rects.color).size).toBeGreaterThan(1)
 })
 
 test('the new cases decide over features in each of their regions', async () => {

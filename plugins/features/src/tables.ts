@@ -52,7 +52,15 @@ import {
   fetchFeatureRegions,
 } from './shared/featureStaticHost.ts'
 
-import type { LabelRenderContext } from './LinearBasicDisplay/components/labelPositioning.ts'
+import type {
+  LabelPlacementContext,
+  LabelRenderContext,
+} from './LinearBasicDisplay/components/labelPositioning.ts'
+import type {
+  FeatureFacet,
+  FeatureGroupSection,
+} from './LinearBasicDisplay/facet.ts'
+import type { FieldPalette } from './RenderFeatureDataRPC/colorClasses.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
@@ -60,6 +68,7 @@ import type {
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface FeatureTablesArgs {
@@ -376,15 +385,10 @@ export async function featureTables(
   }: FeatureTablesArgs,
 ) {
   const host = createFeatureStaticHost({ id: 'tables', display, pluginManager })
-  const blocks = regionBlocks(regions).map(b => ({
-    ...b,
-    assemblyName: TABLES_ASSEMBLY,
-    widthPx: (b.end - b.start) / bpPerPx,
-  }))
   host.setFrame({
     bpPerPx,
     coarseBpPerPx: bpPerPx,
-    settledDynamicBlocks: blocks,
+    settledDynamicBlocks: tablesBlocks(regions, bpPerPx),
   })
   const { fetchRegions } = await byteGatedFetchRegions({
     adapter: await tablesFeatureAdapter(
@@ -411,18 +415,8 @@ export async function featureTables(
     },
   )
   // One batch, so every read shares one fit solve.
-  const {
-    laid,
-    renderedLabels,
-    groupSections,
-    facet,
-    hiddenGroupFeatureIds,
-    fieldPalette,
-    scales,
-    showChevrons,
-    fontSize,
-    onScreen,
-  } = runInAction(() => ({
+  const band = runInAction(() => ({
+    rpcDataMap: host.rpcDataMap,
     laid: host.laidOutDataMap,
     renderedLabels: host.renderedLabels,
     groupSections: host.groupSections,
@@ -434,7 +428,67 @@ export async function featureTables(
     fontSize: host.labelFontSize,
     onScreen: host.onScreenFeatureIds,
   }))
-  const items = [...host.rpcDataMap.values()].flatMap(raw => raw.flatbushItems)
+  return {
+    ...featureBandTables(band, regions, bpPerPx),
+    bpPerPx,
+    config,
+    fetchRegions,
+  }
+}
+
+/**
+ * The blocks a tables read lays `regions` out in at `bpPerPx`, end to end, as
+ * a static host's `settledDynamicBlocks`.
+ */
+export function tablesBlocks(
+  regions: readonly { refName: string; start: number; end: number }[],
+  bpPerPx: number,
+) {
+  return regionBlocks(regions).map(b => ({
+    ...b,
+    assemblyName: TABLES_ASSEMBLY,
+    widthPx: (b.end - b.start) / bpPerPx,
+  }))
+}
+
+/** What a laid-out feature band hands its tables, read in one batch. */
+export interface FeatureBandRead {
+  rpcDataMap: ReadonlyMap<number, { flatbushItems: readonly FlatbushItem[] }>
+  laid: ReadonlyMap<number, FeatureDataResult>
+  renderedLabels: LabelPlacementContext
+  groupSections: readonly FeatureGroupSection[]
+  facet: FeatureFacet | undefined
+  hiddenGroupFeatureIds: ReadonlySet<string> | undefined
+  fieldPalette?: FieldPalette
+  scales: ColorScale[]
+  showChevrons: boolean
+  fontSize: number
+  onScreen: ReadonlySet<string>
+}
+
+/**
+ * A feature band laid out over `regions` (`tablesBlocks`) as the tables
+ * `featureTables` gives: LinearBasicDisplay's, or the records band the variant
+ * display lays out with the same pipeline.
+ */
+export function featureBandTables(
+  {
+    rpcDataMap,
+    laid,
+    renderedLabels,
+    groupSections,
+    facet,
+    hiddenGroupFeatureIds,
+    fieldPalette,
+    scales,
+    showChevrons,
+    fontSize,
+    onScreen,
+  }: FeatureBandRead,
+  regions: readonly TablesRegion[],
+  bpPerPx: number,
+) {
+  const items = [...rpcDataMap.values()].flatMap(raw => raw.flatbushItems)
   const sectionOf = facet ? sectionIdsOf(facet) : undefined
   const isHidden = (item: FlatbushItem) =>
     !!hiddenGroupFeatureIds?.has(item.featureId)
@@ -451,7 +505,7 @@ export async function featureTables(
       laidOutTables(resolved.get(i)!, {
         isShown: shownIn(onScreen, regionLabels[i]!, resolved.get(i)!),
         region: r,
-        widthPx: blocks[i]!.widthPx,
+        widthPx: (r.end - r.start) / bpPerPx,
         bpPerPx,
         hideChevrons: !showChevrons,
         labels: regionLabels[i]!,
@@ -493,9 +547,6 @@ export async function featureTables(
       aminoAcidHalo: cssColorToHex(PEPTIDE_HALO_COLOR),
       sectionLabelHeight: facet ? GROUP_LABEL_HEIGHT : 0,
     },
-    bpPerPx,
-    config,
-    fetchRegions,
   }
 }
 

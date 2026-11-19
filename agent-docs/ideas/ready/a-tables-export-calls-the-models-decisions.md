@@ -33,17 +33,6 @@ display's own `laneStackOn` callbacks. Its labels (`rows.labels`) and a kept
 lane the window aligns nothing to run the display's `laneLabelOf` and
 `unalignedChosenLanesOf`.
 
-A VCF read through `features` paints its records as a `LinearBasicDisplay`
-paints features (`featureStaticHost.ts` creates that type), where a
-`VariantTrack` now draws them with the records band (ADR-255), which colors
-each record by its SV class (`recordColorViews`, `svClassColors`) and keys
-the classes (`recordsColorScaleViews`). So an SV VCF comes back in one color
-with an empty `legend`, and a display entry copied from a `VariantTrack`
-(`records.displayMode`, `records.mark`) does not apply. The fix is to run the
-records band's own color and key views on a variant host for
-`VCF_ADAPTER_TYPES`, or to serve those files from `variants` with
-`genotypes.show: false`; "A VCF read as features" in TABLES.md and
-ggjbrowse's `R/features.R` describe the removed display until then.
 
 ## Equivalent today, by hand
 
@@ -67,6 +56,10 @@ ggjbrowse's `R/features.R` describe the removed display until then.
 
 - Alignments' worker args spread the display's `rpcProps` and its sections
   stack through its lane views (`rpcPropsViews.ts`, `laneViews.ts`).
+- A VCF read through `features` runs the variant display's records band
+  (`variantFeatureTables` on `VariantRecordsTablesHost`), not a
+  `LinearBasicDisplay`: SV class colors, their key and `records.*` apply, and
+  the SV parity cases stand a records-only `LinearVariantDisplay` beside it.
 
 - Variants' cell colors and the export's `variants.color` run the display's
   `cellColorViews` and `recordColorViews`. The record color was a drift:

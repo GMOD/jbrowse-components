@@ -528,13 +528,35 @@ and nothing else, and registers `FromConfigAdapter`
 (`@jbrowse/plugin-config/adapters`), so a track that writes its features inline in
 its config reads as a file does.
 
-**A VCF read as features is the plain variant display's table.** A `VariantTrack`
-draws its records with `LinearVariantDisplay`, whose config is the feature
-display's, and that display draws every record. The genotype matrix
-(`variantTables`) drops a site with no called allele (`passesSiteThresholds`), so a
-calls VCF whose FORMAT has no GT, such as a somatic SV caller's, has no row in it.
-For a VCF adapter the engine's `features` adds `vcf`, which `variantRecordTables`
-fills, aligned to `features`:
+**A VCF read as features is the variant display's records band.** A
+`VariantTrack` draws its records with `LinearVariantDisplay` (ADR-255), whose
+records band, with no sample rows, is the whole track, packed and lettered by
+plugin-features's pipeline and colored by SV class. For a VCF adapter
+(`VCF_ADAPTER_TYPES`) the engine's `features` runs `variantFeatureTables`, which
+takes `display` as that display's config, the record settings under `records`
+(`displayMode`, `mark`, `labels`, `facet`, `tooltip.field`) and `encoding`,
+`filter`, `heightMode`, `height` and `growMaxHeight` top-level. A feature
+display's top-level `displayMode`, `labels`, `mark`, `geneGlyphMode` or
+`chevrons` is not this display's, so it loads with the console line and does
+nothing, as in the browser, and a top-level `facet` is the sample facet, which
+draws nothing here.
+
+The tables are a feature track's (`featureBandTables`, which `featureTables`
+runs too), laid out by the display's own views on a static host
+(`VariantRecordsTablesHost`: `recordsSettingsViews`, `recordColorViews`,
+`recordsRenderViews`, `recordsLayoutViews`, `recordsColorScaleViews`,
+`variantDataKeyViews`), its samples listed as none so the band is the
+display, over the display's own fetch (`variantCellData`), which then reads no
+genotype. Each record's box takes the band's color, its SV class's or
+`featureDefaultColor` under no picked `encoding.color`, and `legend` keys the
+classes the placed records hold. Every record the `filter` admits is listed, one
+calling no genotype included, so a calls VCF whose FORMAT has no GT, such as a
+somatic SV caller's, reads here with its columns. Features come in the order the
+band lays them out, which need not be by start. As on the feature host,
+no density gate refuses a dense window. The parity suite stands a records-only
+`LinearVariantDisplay` beside it (`features.parity.test.ts`, the SV cases).
+
+`features` adds `vcf`, which `variantRecordTables` fills, aligned to `features`:
 
 - `records`: `ref`, `alt` and `filter`.
 - `info` and `infoFields`, as `variantTables` gives them.
@@ -751,7 +773,8 @@ them, which is what the downstream canary is for.
 A table runs the display's own decisions, not a copy of them, on a static host:
 a minimal MST model per display with no session, view or autoruns
 (`wiggleStaticHost.ts` and `featureStaticHost.ts` in each plugin's `shared/`,
-`VariantTablesHost` and `AlignmentsTablesHost` in their `tables.ts`).
+`VariantTablesHost`, `VariantRecordsTablesHost` and `AlignmentsTablesHost` in
+their `tables.ts`).
 
 - **The display's chain is views functions** over a duck-typed host, each
   returning an object of getters. The display model installs each with
