@@ -24,7 +24,7 @@
     "esm"
   ],
   "scripts": {
-    "build": "pnpm run /^build:/",
+    "build": "pnpm build:esm",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",

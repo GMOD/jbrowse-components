@@ -34,7 +34,7 @@
     "build:css": "node ../../scripts/flattenCss.ts src/styles.css esm/styles.css",
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
-    "clean": "rimraf esm *.tsbuildinfo",
+    "clean": "rimraf esm dist *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build"
   },

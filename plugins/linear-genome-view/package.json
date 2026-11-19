@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "prebuild": "pnpm clean",
-    "build": "pnpm run /^build:/",
+    "build": "pnpm build:esm",
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo",
     "prepack": "pnpm build"

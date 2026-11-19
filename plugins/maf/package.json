@@ -21,7 +21,7 @@
     "esm"
   ],
   "scripts": {
-    "build": "pnpm run /^build:/",
+    "build": "pnpm build:esm",
     "bench:maf-coverage": "cd ../..; node --expose-gc plugins/maf/benches/mafCoverage.bench.ts",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
