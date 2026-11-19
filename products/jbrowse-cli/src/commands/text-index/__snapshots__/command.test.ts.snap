@@ -11,6 +11,7 @@ agt767.3 ["ctgA%3A8000..9000"|"gff3tabix_genes"|"agt767.3"|"Match6"],1
 agt767.5 ["ctgA%3A1150..7200"|"gff3tabix_genes"|"agt767.5"|"Match5"],1
 agt830.3 ["ctgA%3A5410..7503"|"gff3tabix_genes"|"agt830.3"|"Match2"],1
 agt830.5 ["ctgA%3A1050..3202"|"gff3tabix_genes"|"agt830.5"|"Match1"],1
+apple1 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple1"],1
 apple2 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"],1
 apple3 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"],1
 b101.2 ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"],1
@@ -18,8 +19,7 @@ cds-apple2 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"],1
 ctga ["ctgA%3A1..50001"|"gff3tabix_genes"|"ctgA"],1
 ctgb ["ctgB%3A1..6079"|"gff3tabix_genes"|"ctgB"],1
 eden ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN"|"EDEN"],1
-eden.1 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.1"|"EDEN.1"],1
-eden.2 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN."
+eden.1 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.1"|"EDE"
 `;
 
 exports[`indexes a local gz gff3 file 2`] = `
@@ -28,7 +28,7 @@ seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"],1 ["ctgA%3A39753..40034"
 "
 `;
 
-exports[`indexes a local gz gff3 file 3`] = `11962`;
+exports[`indexes a local gz gff3 file 3`] = `12022`;
 
 exports[`indexes a local gz gff3 file 4`] = `
 "agt220000000000
@@ -83,13 +83,13 @@ agt767.3 ["ctgA%3A8000..9000"|"gff3tabix_genes"|"agt767.3"|"Match6"],1
 agt767.5 ["ctgA%3A1150..7200"|"gff3tabix_genes"|"agt767.5"|"Match5"],1
 agt830.3 ["ctgA%3A5410..7503"|"gff3tabix_genes"|"agt830.3"|"Match2"],1
 agt830.5 ["ctgA%3A1050..3202"|"gff3tabix_genes"|"agt830.5"|"Match1"],1
+apple1 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple1"],1
 apple2 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"],1
 apple3 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"],1
 au9.g1000 ["Group1.36%3A168255..173951"|"online_au9_scaffold"|"au9.g1000"|"au9.g1000"],1
 au9.g1000.t1 ["Group1.36%3A168255..173951"|"online_au9_scaffold"|"au9.g1000.t1"|"au9.g1000.t1"],1
 au9.g1001 ["Group1.36%3A174364..176304"|"online_au9_scaffold"|"au9.g1001"|"au9.g1001"],1
-au9.g1001.t1 ["Group1.36%3A174364..176304"|"online_au9_scaffold"|"au9.g1001.t1"|"au9.g1001.t1"],1
-au9.g1002 ["Group1.36%3A176975..180744"|"online_au9_sc"
+au9.g1001.t1 ["Group1.36%3A174364..176304"|"online_au9_scaffold"|"au9.g1001.t1"|"au9.g1001.t"
 `;
 
 exports[`indexes a remote and a local file 2`] = `
@@ -98,13 +98,13 @@ seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"],1 ["ctgA%3A39753..40034"
 "
 `;
 
-exports[`indexes a remote and a local file 3`] = `251818`;
+exports[`indexes a remote and a local file 3`] = `251878`;
 
 exports[`indexes a remote and a local file 4`] = `
 "agt220000000000
-au9.g000000023C
-g29350000020086
-g8871000003004E
+au9.g0000000278
+g2934000002000F
+g8871000003008A
 "
 `;
 
@@ -115,14 +115,14 @@ agt767.3 ["ctgA%3A8000..9000"|"online_gff3tabix_genes"|"agt767.3"|"Match6"],1
 agt767.5 ["ctgA%3A1150..7200"|"online_gff3tabix_genes"|"agt767.5"|"Match5"],1
 agt830.3 ["ctgA%3A5410..7503"|"online_gff3tabix_genes"|"agt830.3"|"Match2"],1
 agt830.5 ["ctgA%3A1050..3202"|"online_gff3tabix_genes"|"agt830.5"|"Match1"],1
+apple1 ["ctgA%3A10000..11500"|"online_gff3tabix_genes"|"Apple1"],1
 apple2 ["ctgA%3A13000..17200"|"online_gff3tabix_genes"|"Apple2"|"cds-Apple2"],1
 apple3 ["ctgA%3A17400..23000"|"online_gff3tabix_genes"|"Apple3"|"rna-Apple3"],1
 b101.2 ["ctgA%3A1000..20000"|"online_gff3tabix_genes"|"b101.2"|"b101.2"],1
 cds-apple2 ["ctgA%3A13000..17200"|"online_gff3tabix_genes"|"Apple2"|"cds-Apple2"],1
 ctga ["ctgA%3A1..50001"|"online_gff3tabix_genes"|"ctgA"],1
 ctgb ["ctgB%3A1..6079"|"online_gff3tabix_genes"|"ctgB"],1
-eden ["ctgA%3A1050..9000"|"online_gff3tabix_genes"|"EDEN"|"EDEN"],1
-eden.1 ["ctgA%3A1050..9000"|"
+eden ["ctgA%3A1050..9000"|"on"
 `;
 
 exports[`indexes a remote gz gff3 file 2`] = `
@@ -130,7 +130,7 @@ exports[`indexes a remote gz gff3 file 2`] = `
 "
 `;
 
-exports[`indexes a remote gz gff3 file 3`] = `13481`;
+exports[`indexes a remote gz gff3 file 3`] = `13548`;
 
 exports[`indexes a remote gz gff3 file 4`] = `
 "agt220000000000
@@ -230,6 +230,7 @@ agt767.3 ["ctgA%3A8000..9000"|"noAttributes"|"agt767.3"|"Match6"],1
 agt767.5 ["ctgA%3A1150..7200"|"noAttributes"|"agt767.5"|"Match5"],1
 agt830.3 ["ctgA%3A5410..7503"|"noAttributes"|"agt830.3"|"Match2"],1
 agt830.5 ["ctgA%3A1050..3202"|"noAttributes"|"agt830.5"|"Match1"],1
+apple1 ["ctgA%3A10000..11500"|"noAttributes"|"Apple1"],1
 apple2 ["ctgA%3A13000..17200"|"noAttributes"|"Apple2"|"cds-Apple2"],1
 apple3 ["ctgA%3A17400..23000"|"noAttributes"|"Apple3"|"rna-Apple3"],1
 b101.2 ["ctgA%3A1000..20000"|"noAttributes"|"b101.2"|"b101.2"],1
@@ -238,8 +239,7 @@ ctga ["ctgA%3A1..50001"|"noAttributes"|"ctgA"],1
 ctgb ["ctgB%3A1..6079"|"noAttributes"|"ctgB"],1
 eden ["ctgA%3A1050..9000"|"noAttributes"|"EDEN"|"EDEN"],1
 eden.1 ["ctgA%3A1050..9000"|"noAttributes"|"EDEN.1"|"EDEN.1"],1
-eden.2 ["ctgA%3A1050..9000"|"noAttributes"|"EDEN.2"|"EDEN.2"],1
-eden.3 ["ctgA%3A1300..9000"|"n"
+eden.2 ["ctgA%3A1050..9000"|"noAttrib"
 `;
 
 exports[`indexes a track with no attributes in the config 2`] = `
@@ -248,7 +248,7 @@ seg15 ["ctgA%3A39265..39361"|"noAttributes"|"seg15"],1 ["ctgA%3A39753..40034"|"n
 "
 `;
 
-exports[`indexes a track with no attributes in the config 3`] = `11311`;
+exports[`indexes a track with no attributes in the config 3`] = `11368`;
 
 exports[`indexes a track with no attributes in the config 4`] = `
 "agt220000000000
@@ -262,14 +262,14 @@ agt767.3 ["ctgA%3A8000..9000"|"gff3tabix_genes"|"agt767.3"|"Match6"],1
 agt767.5 ["ctgA%3A1150..7200"|"gff3tabix_genes"|"agt767.5"|"Match5"],1
 agt830.3 ["ctgA%3A5410..7503"|"gff3tabix_genes"|"agt830.3"|"Match2"],1
 agt830.5 ["ctgA%3A1050..3202"|"gff3tabix_genes"|"agt830.5"|"Match1"],1
+apple1 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple1"],1
 apple2 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"],1
 apple3 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"],1
 au9.g1000 ["Group1.36%3A168255..173951"|"au9_scaffold"|"au9.g1000"|"au9.g1000"],1
 au9.g1000.t1 ["Group1.36%3A168255..173951"|"au9_scaffold"|"au9.g1000.t1"|"au9.g1000.t1"],1
 au9.g1001 ["Group1.36%3A174364..176304"|"au9_scaffold"|"au9.g1001"|"au9.g1001"],1
 au9.g1001.t1 ["Group1.36%3A174364..176304"|"au9_scaffold"|"au9.g1001.t1"|"au9.g1001.t1"],1
-au9.g1002 ["Group1.36%3A176975..180744"|"au9_scaffold"|"au9.g1002"|"au9.g1002"],1
-"
+au9.g1002 ["Group1.36%"
 `;
 
 exports[`indexes multiple local gff3 files 2`] = `
@@ -278,13 +278,13 @@ seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"],1 ["ctgA%3A39753..40034"
 "
 `;
 
-exports[`indexes multiple local gff3 files 3`] = `233674`;
+exports[`indexes multiple local gff3 files 3`] = `233734`;
 
 exports[`indexes multiple local gff3 files 4`] = `
 "agt220000000000
-au9.g000000023C
-g3608000001FFF1
-g89460000030027
+au9.g0000000278
+g3608000002002D
+g89460000030063
 "
 `;
 
@@ -295,12 +295,13 @@ agt767.3 ["ctgA%3A8000..9000"|"online_gff3tabix_genes"|"agt767.3"|"Match6"],1
 agt767.5 ["ctgA%3A1150..7200"|"online_gff3tabix_genes"|"agt767.5"|"Match5"],1
 agt830.3 ["ctgA%3A5410..7503"|"online_gff3tabix_genes"|"agt830.3"|"Match2"],1
 agt830.5 ["ctgA%3A1050..3202"|"online_gff3tabix_genes"|"agt830.5"|"Match1"],1
+apple1 ["ctgA%3A10000..11500"|"online_gff3tabix_genes"|"Apple1"],1
 apple2 ["ctgA%3A13000..17200"|"online_gff3tabix_genes"|"Apple2"|"cds-Apple2"],1
 apple3 ["ctgA%3A17400..23000"|"online_gff3tabix_genes"|"Apple3"|"rna-Apple3"],1
 au9.g1000 ["Group1.36%3A168255..173951"|"online_au9_scaffold"|"au9.g1000"|"au9.g1000"],1
 au9.g1000.t1 ["Group1.36%3A168255..173951"|"online_au9_scaffold"|"au9.g1000.t1"|"au9.g1000.t1"],1
 au9.g1001 ["Group1.36%3A174364..176304"|"online_au9_scaffold"|"au9.g1001"|"au9.g1001"],1
-au9.g1001.t1 ["Group1.36%3A174364..176304"|"online_au9_scaffold"|"au9.g1001.t1"|"au9.g1001.t1"],"
+au9.g1001.t1 ["Group1.36%3A17"
 `;
 
 exports[`indexes multiple remote gff3 file 2`] = `
@@ -308,13 +309,13 @@ exports[`indexes multiple remote gff3 file 2`] = `
 "
 `;
 
-exports[`indexes multiple remote gff3 file 3`] = `253337`;
+exports[`indexes multiple remote gff3 file 3`] = `253404`;
 
 exports[`indexes multiple remote gff3 file 4`] = `
 "agt220000000000
-au9.g0000000274
-g2933000002001C
-g88700000030091
+au9.g00000002B7
+g2933000002005F
+g8869000003001B
 "
 `;
 
@@ -325,14 +326,13 @@ agt767.3 ["ctgA%3A8000..9000"|"volvox.sort.gff3.gz"|"agt767.3"|"Match6"],1
 agt767.5 ["ctgA%3A1150..7200"|"volvox.sort.gff3.gz"|"agt767.5"|"Match5"],1
 agt830.3 ["ctgA%3A5410..7503"|"volvox.sort.gff3.gz"|"agt830.3"|"Match2"],1
 agt830.5 ["ctgA%3A1050..3202"|"volvox.sort.gff3.gz"|"agt830.5"|"Match1"],1
+apple1 ["ctgA%3A10000..11500"|"volvox.sort.gff3.gz"|"Apple1"],1
 apple2 ["ctgA%3A13000..17200"|"volvox.sort.gff3.gz"|"Apple2"|"cds-Apple2"],1
 apple3 ["ctgA%3A17400..23000"|"volvox.sort.gff3.gz"|"Apple3"|"rna-Apple3"],1
 apple4 ["ctgA%3A10000..11500"|"volvox.sort.gff3.gz"|"Apple4"],1
 b101.2 ["ctgA%3A1000..20000"|"volvox.sort.gff3.gz"|"b101.2"|"b101.2"],1 ["ctgB%3A1000..2000"|"volvox.sort.gff3.gz"|"b101.2"|"b101.2"],2
 cds-apple2 ["ctgA%3A13000..17200"|"volvox.sort.gff3.gz"|"Apple2"|"cds-Apple2"],1
-ctga ["ctgA%3A1..50001"|"volvox.sort.gff3.gz"|"ctgA"],1
-ctgb ["ctgB%3A1..6079"|"volvox.sort.gff3.gz"|"ctgB"],1
-eden"
+ctga ["ctgA%3A1..50001"|"volvox.sort.gff3.gz"|"ctgA"
 `;
 
 exports[`indexes with  single per-file arg 2`] = `
@@ -341,7 +341,7 @@ seg15 ["ctgA%3A39265..39361"|"volvox.sort.gff3.gz"|"seg15"],1 ["ctgA%3A39753..40
 "
 `;
 
-exports[`indexes with  single per-file arg 3`] = `12958`;
+exports[`indexes with  single per-file arg 3`] = `13022`;
 
 exports[`indexes with  single per-file arg 4`] = `
 "agt220000000000
@@ -355,14 +355,13 @@ agt767.3 ["ctgA%3A8000..9000"|"volvox.sort.gff3.gz"|"agt767.3"|"Match6"],1
 agt767.5 ["ctgA%3A1150..7200"|"volvox.sort.gff3.gz"|"agt767.5"|"Match5"],1
 agt830.3 ["ctgA%3A5410..7503"|"volvox.sort.gff3.gz"|"agt830.3"|"Match2"],1
 agt830.5 ["ctgA%3A1050..3202"|"volvox.sort.gff3.gz"|"agt830.5"|"Match1"],1
+apple1 ["ctgA%3A10000..11500"|"volvox.sort.gff3.gz"|"Apple1"],1
 apple2 ["ctgA%3A13000..17200"|"volvox.sort.gff3.gz"|"Apple2"|"cds-Apple2"],1
 apple3 ["ctgA%3A17400..23000"|"volvox.sort.gff3.gz"|"Apple3"|"rna-Apple3"],1
 apple4 ["ctgA%3A10000..11500"|"volvox.sort.gff3.gz"|"Apple4"],1
 b101.2 ["ctgA%3A1000..20000"|"volvox.sort.gff3.gz"|"b101.2"|"b101.2"],1 ["ctgB%3A1000..2000"|"volvox.sort.gff3.gz"|"b101.2"|"b101.2"],2
 cds-apple2 ["ctgA%3A13000..17200"|"volvox.sort.gff3.gz"|"Apple2"|"cds-Apple2"],1
-ctga ["ctgA%3A1..50001"|"volvox.sort.gff3.gz"|"ctgA"],1
-ctgb ["ctgB%3A1..6079"|"volvox.sort.gff3.gz"|"ctgB"],1
-eden"
+ctga ["ctgA%3A1..50001"|"volvox.sort.gff3.gz"|"ctgA"
 `;
 
 exports[`indexes with multiple per-file args 2`] = `
@@ -371,7 +370,7 @@ seg15 ["ctgA%3A39265..39361"|"volvox.sort.gff3.gz"|"seg15"],1 ["ctgA%3A39753..40
 "
 `;
 
-exports[`indexes with multiple per-file args 3`] = `12958`;
+exports[`indexes with multiple per-file args 3`] = `13022`;
 
 exports[`indexes with multiple per-file args 4`] = `
 "agt220000000000
@@ -385,6 +384,7 @@ agt767.3 ["ctgA%3A8000..9000"|"remote_gff3_gz"|"agt767.3"|"Match6"],1
 agt767.5 ["ctgA%3A1150..7200"|"remote_gff3_gz"|"agt767.5"|"Match5"],1
 agt830.3 ["ctgA%3A5410..7503"|"remote_gff3_gz"|"agt830.3"|"Match2"],1
 agt830.5 ["ctgA%3A1050..3202"|"remote_gff3_gz"|"agt830.5"|"Match1"],1
+apple1 ["ctgA%3A10000..11500"|"remote_gff3_gz"|"Apple1"],1
 apple2 ["ctgA%3A13000..17200"|"remote_gff3_gz"|"Apple2"|"cds-Apple2"],1
 apple3 ["ctgA%3A17400..23000"|"remote_gff3_gz"|"Apple3"|"rna-Apple3"],1
 b101.2 ["ctgA%3A1000..20000"|"remote_gff3_gz"|"b101.2"|"b101.2"],1
@@ -393,8 +393,7 @@ ctga ["ctgA%3A1..50001"|"remote_gff3_gz"|"ctgA"],1
 ctgb ["ctgB%3A1..6079"|"remote_gff3_gz"|"ctgB"],1
 eden ["ctgA%3A1050..9000"|"remote_gff3_gz"|"EDEN"|"EDEN"],1
 eden.1 ["ctgA%3A1050..9000"|"remote_gff3_gz"|"EDEN.1"|"EDEN.1"],1
-eden.2 ["ctgA%3A1050..9000"|"remote_gff3_gz"|"EDEN.2"|"EDEN.2"],1
-"
+eden.2 "
 `;
 
 exports[`real HTTP server integration indexes a remote gz gff3 file from real HTTP server 2`] = `
@@ -403,7 +402,7 @@ seg15 ["ctgA%3A39265..39361"|"remote_gff3_gz"|"seg15"],1 ["ctgA%3A39753..40034"|
 "
 `;
 
-exports[`real HTTP server integration indexes a remote gz gff3 file from real HTTP server 3`] = `11745`;
+exports[`real HTTP server integration indexes a remote gz gff3 file from real HTTP server 3`] = `11804`;
 
 exports[`real HTTP server integration indexes a remote gz gff3 file from real HTTP server 4`] = `
 "agt220000000000

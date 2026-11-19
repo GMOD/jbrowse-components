@@ -38,6 +38,14 @@ function ownName(attrs: Record<string, string[]>) {
         : undefined
 }
 
+const PART_TYPES = new Set(['CDS', 'exon'])
+
+const PARENT_ATTRIBUTE = /(?:^|;)\s*Parent=/
+
+function isTopLevelPart(type: string, col9: string) {
+  return PART_TYPES.has(type) && !PARENT_ATTRIBUTE.test(col9)
+}
+
 interface IndexedFeature {
   id?: string
   parents: string[]
@@ -121,7 +129,9 @@ function* ownedRecords(features: IndexedFeature[], trackId: string) {
  * The allow list for that file is ~33 names — gene, pseudogene, and the
  * transcript-level types — and does not grow.
  *
- * Both apply when both are given: include admits, exclude then narrows.
+ * Both apply when both are given: include admits, exclude then narrows. A
+ * `CDS` or `exon` with no parent is never excluded: it is the gene itself, as
+ * in a Prokka GFF3 written without `--addgenes`, not a second copy of one.
  */
 export async function* indexGff3({
   config,
@@ -186,7 +196,7 @@ export async function* indexGff3({
     }
 
     if (
-      !excludeSet.has(type) &&
+      (!excludeSet.has(type) || isTopLevelPart(type, col9)) &&
       (includeSet === undefined || includeSet.has(type))
     ) {
       if (seq_id !== runSeq) {

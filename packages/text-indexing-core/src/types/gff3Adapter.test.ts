@@ -291,6 +291,29 @@ describe('indexGff3', () => {
         ])
       })
 
+      // Prokka without --addgenes: each CDS is top-level and is the gene
+      test('index a CDS with no parent, by name and locus tag', async () => {
+        expect(
+          await records(
+            [
+              'contig_1\tProdigal:002006\tCDS\t337\t2799\t.\t+\t0\tID=PROKKA_00002;eC_number=2.7.2.4;Name=thrA;gene=thrA;locus_tag=PROKKA_00002;product=Bifunctional aspartokinase/homoserine dehydrogenase 1',
+              'contig_1\tProdigal:002006\tCDS\t2801\t3733\t.\t+\t0\tID=PROKKA_00003;inference=ab initio prediction:Prodigal:002006;locus_tag=PROKKA_00003;product=hypothetical protein',
+            ],
+            attributes,
+            exclude,
+          ),
+        ).toEqual([
+          {
+            fields: ['thrA', 'PROKKA_00002', 'thrA', 'PROKKA_00002'],
+            words: ['thrA', 'PROKKA_00002'],
+          },
+          {
+            fields: ['PROKKA_00003', 'PROKKA_00003'],
+            words: ['PROKKA_00003'],
+          },
+        ])
+      })
+
       test('keep one hit for a gene whose transcripts repeat its gene=', async () => {
         const out = await records(
           [

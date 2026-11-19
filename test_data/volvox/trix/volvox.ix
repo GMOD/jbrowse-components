@@ -14,6 +14,7 @@ an ["ctgA%3A1659..1984"|"gff3tabix_genes"|"f07"|"This%20is%20an%20example"],1 ["
 and ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],1
 another ["ctgA%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],1 ["ctgB%3A3014..6130"|"gff3tabix_genes"|"f06"|"This%20is%20another%20example"],2
 appear ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+apple1 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple1"|"CDS%20with%20no%20parent"],1
 apple2 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],1
 apple3 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],1
 apple4 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],1
@@ -31,6 +32,7 @@ bnd_z ["B%3A1983..1983"|"volvox_sv_test_renamed"|"bnd_Z"],1 ["ctgB%3A1983..1983"
 both ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],1
 box ["ctgA%3A17667..17690"|"gff3tabix_genes"|"m13"|"DEAD%20box"],1 ["ctgA%3A28342..28447"|"gff3tabix_genes"|"m10"|"DEAD%20box"],2
 but ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],1
+cds ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple1"|"CDS%20with%20no%20parent"],1
 cds-apple2 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],1
 cdss ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],1 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],2
 ctga ["ctgA%3A1..50001"|"gff3tabix_genes"|"ctgA"],1
@@ -148,8 +150,9 @@ nm_000001.1 ["ctgA%3A1000..9000"|"gff3tabix_canonical_tags"|"NM_000001.1"|"rna-N
 nm_000002.1 ["ctgA%3A1000..9000"|"gff3tabix_canonical_tags"|"NM_000002.1"|"rna-NM_000002.1"],1
 nm_000003.1 ["ctgA%3A31000..39000"|"gff3tabix_canonical_tags"|"NM_000003.1"|"rna-NM_000003.1"],1
 nm_000004.1 ["ctgA%3A31000..39000"|"gff3tabix_canonical_tags"|"NM_000004.1"|"rna-NM_000004.1"],1
-no ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],1 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],2
+no ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple1"|"CDS%20with%20no%20parent"],1 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],2 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],3
 ok! ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
+parent ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple1"|"CDS%20with%20no%20parent"],1
 plaing ["ctgA%3A31000..39000"|"gff3tabix_canonical_tags"|"PLAING"|"gene-PLAING"],1
 protein ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN"|"EDEN"|"protein%20kinase"],1
 protein:hga ["ctgA%3A1200..1900"|"gff3tabix_genes"|"Protein%3AHGA"],1
@@ -265,7 +268,7 @@ this ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%
 transmembrane ["ctgA%3A17023..17675"|"gff3tabix_genes"|"m08"|"7-transmembrane"],1 ["ctgA%3A18048..18552"|"gff3tabix_genes"|"m07"|"7-transmembrane"],2 ["ctgA%3A37497..40559"|"gff3tabix_genes"|"m15"|"7-transmembrane"],3
 utrs ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],1 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],2
 wd40 ["ctgA%3A48253..48366"|"gff3tabix_genes"|"m01"|"WD40"],1
-with ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],2 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],3 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],4 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],5 ["ctgB%3A1000..2000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],6
+with ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],2 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple1"|"CDS%20with%20no%20parent"],3 ["ctgA%3A10000..11500"|"gff3tabix_genes"|"Apple4"|"Gene%20with%20no%20subfeatures"],4 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"|"mRNA%20with%20CDSs%20but%20no%20UTRs"],5 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"|"mRNA%20with%20both%20CDSs%20and%20UTRs"],6 ["ctgB%3A1000..2000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],7
 zinc ["ctgA%3A15396..16159"|"gff3tabix_genes"|"m03"|"zinc%20finger"],1
 ああ、この機能は、世界中を旅しています！ ["ctgB%3A4715..5968"|"gff3tabix_genes"|"f05"|"%E3%81%82%E3%81%82%E3%80%81%E3%81%93%E3%81%AE%E6%A9%9F%E8%83%BD%E3%81%AF%E3%80%81%E4%B8%96%E7%95%8C%E4%B8%AD%E3%82%92%E6%97%85%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%EF%BC%81"],1
 この機能は、世界中を旅しています！ ["ctgB%3A4715..5968"|"gff3tabix_genes"|"f05"|"%E3%81%82%E3%81%82%E3%80%81%E3%81%93%E3%81%AE%E6%A9%9F%E8%83%BD%E3%81%AF%E3%80%81%E4%B8%96%E7%95%8C%E4%B8%AD%E3%82%92%E6%97%85%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%EF%BC%81"],1
