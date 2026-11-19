@@ -27,9 +27,9 @@ import {
   openTrackMenuItem,
   preferencesMenuItem,
 } from '@jbrowse/product-core'
+import AssistantIcon from '@mui/icons-material/Assistant'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import SmartToyIcon from '@mui/icons-material/SmartToy'
 
 import packageJSON from '../../package.json' with { type: 'json' }
 import { gitCommit } from '../buildInfo.ts'
@@ -607,7 +607,7 @@ export default function RootModel({
                 helpMenuItem(),
                 {
                   label: 'Connect an AI agent...',
-                  icon: SmartToyIcon,
+                  icon: AssistantIcon,
                   onClick: () => {
                     const { session } = self
                     session?.queueDialog((onClose: () => void) => [

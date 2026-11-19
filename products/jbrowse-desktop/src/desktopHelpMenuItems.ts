@@ -1,4 +1,4 @@
-import SmartToyIcon from '@mui/icons-material/SmartToy'
+import AssistantIcon from '@mui/icons-material/Assistant'
 import UpdateIcon from '@mui/icons-material/Update'
 
 import { invokeIpc } from './ipc.ts'
@@ -20,7 +20,7 @@ export function desktopHelpMenuItems(onError: (e: unknown) => void) {
     },
     {
       label: 'Connect an AI agent...',
-      icon: SmartToyIcon,
+      icon: AssistantIcon,
       onClick: () => {
         invokeIpc('showConnectAgent').catch(onError)
       },
