@@ -71,11 +71,9 @@ const NumberTextField = observer(function NumberTextField(props: Props) {
 export default NumberTextField
 
 function parseInBounds(text: string, min?: number, max?: number) {
-  if (text === '') {
-    return undefined
-  }
   const n = Number(text)
   const ok =
+    text.trim() !== '' &&
     Number.isFinite(n) &&
     (min === undefined || n >= min) &&
     (max === undefined || n <= max)
