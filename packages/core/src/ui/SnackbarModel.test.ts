@@ -58,6 +58,19 @@ test('a repeated error replaces its snackbar and reports the latest error', () =
   expect(model.errorDialog?.error).toBe(second)
 })
 
+test('two same-text Undo toasts each keep their own Undo', () => {
+  const model = SnackbarModel().create()
+  const firstUndo = jest.fn()
+  const secondUndo = jest.fn()
+  model.notify('Filter added', 'info', { name: 'Undo', onClick: firstUndo })
+  model.notify('Filter added', 'info', { name: 'Undo', onClick: secondUndo })
+  expect(model.snackbarMessages).toHaveLength(2)
+  model.snackbarMessages[0]?.actions?.[0]?.onClick()
+  model.snackbarMessages[1]?.actions?.[0]?.onClick()
+  expect(firstUndo).toHaveBeenCalledTimes(1)
+  expect(secondUndo).toHaveBeenCalledTimes(1)
+})
+
 test('a repeated message moves to the top of the stack', () => {
   const model = SnackbarModel().create()
   model.notify('one', 'warning')

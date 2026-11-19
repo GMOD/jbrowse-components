@@ -117,7 +117,11 @@ export default function SnackbarModel() {
           level?: NotificationLevel,
           actions?: SnackAction[],
         ) {
-          this.removeSnackbarMessage(message)
+          // an actionable toast (Undo) stacks, so each repeat keeps its own
+          // action; an error's Report action shows the latest error instead
+          if (level === 'error' || !actions?.length) {
+            this.removeSnackbarMessage(message)
+          }
           self.snackbarMessages.push({
             message,
             level,
