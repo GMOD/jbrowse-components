@@ -154,6 +154,33 @@ transcripts sharing a `gene_id` under a gene.
 attribute that labels the gene, and `jbrowse sort-gff` sorts a GTF for tabix too
 ([quickstart](/docs/quickstart_web#gff3-and-gtf)).
 
+### GenBank
+
+A GenBank flat file (`.gb`, `.gbk` or `.gbff`, plain or gzipped) holds a genome
+and its annotation, so one file is both the assembly and its feature track:
+
+```json addassembly
+{
+  "name": "phiX174",
+  "uri": "https://example.com/phiX174.gbk"
+}
+```
+
+```json addtrack
+{
+  "trackId": "phiX174_genes",
+  "uri": "https://example.com/phiX174.gbk",
+  "assemblyNames": ["phiX174"]
+}
+```
+
+Each `LOCUS` record is one sequence, named by its `VERSION` accession or, with
+none, by its `LOCUS` name, and a record whose `LOCUS` line says `circular` is a
+circular sequence. A `gene` holds the transcripts and CDS that share its
+`/locus_tag` (else its `/gene`), and each feature's qualifiers are its
+attributes. The add-genome form takes no GenBank file, so add the assembly from
+its config or with `jbrowse add-assembly`.
+
 ## Quantitative / signal
 
 Coverage and other numeric signals are a `QuantitativeTrack`, or a
