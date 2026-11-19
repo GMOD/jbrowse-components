@@ -171,8 +171,8 @@ export interface FeatureFetchArgs {
  * The display's fetch over `regions` at the frame's zoom, run in-process, its
  * results set on `host` keyed by each region's `index`: the inputs the worker
  * reads off the display in one batch, then one `RenderFeatureData` per
- * region, ungated: the caller measures the regions first, and a refusal
- * throws `tooLarge`. Returns the config the fetch read.
+ * region, ungated: the caller measures the regions first. Returns the config
+ * the fetch read.
  */
 export async function fetchFeatureRegions(
   pluginManager: PluginManager,
@@ -186,7 +186,6 @@ export async function fetchFeatureRegions(
     geneticCodeId,
     assemblyGeneticCodeId,
   }: FeatureFetchArgs,
-  tooLarge: (bytes: number | undefined) => Error,
 ) {
   const { config, displayConfig, geneGlyphMode, bpPerPx } = runInAction(() => {
     return {
@@ -219,7 +218,9 @@ export async function fetchFeatureRegions(
           } satisfies RpcExecuteArgs<'RenderFeatureData'>,
         })
         if ('regionTooLarge' in result) {
-          throw tooLarge(result.bytes)
+          throw new Error(
+            'RenderFeatureData refused a region it was given no budget for',
+          )
         }
         return [
           index,

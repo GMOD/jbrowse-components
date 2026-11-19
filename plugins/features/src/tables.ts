@@ -386,7 +386,7 @@ export async function featureTables(
     coarseBpPerPx: bpPerPx,
     settledDynamicBlocks: blocks,
   })
-  const { fetchRegions, tooLarge } = await byteGatedFetchRegions({
+  const { fetchRegions } = await byteGatedFetchRegions({
     adapter: await tablesFeatureAdapter(
       pluginManager,
       adapterConfig,
@@ -409,7 +409,6 @@ export async function featureTables(
       geneticCodeId,
       assemblyGeneticCodeId,
     },
-    tooLarge,
   )
   // One batch, so every read shares one fit solve.
   const {
