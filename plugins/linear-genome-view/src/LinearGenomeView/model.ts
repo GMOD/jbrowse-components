@@ -122,6 +122,7 @@ import {
   setDisplayedRegionsKeepingCenter,
 } from './util.ts'
 import { visibleRegionsOf } from './visibleRegions.ts'
+import { isZoomLinkable, visibleEdges, zoomMarker } from './zoomOf.ts'
 
 import type { FlightViewport } from './flyTo.ts'
 import type {
@@ -523,6 +524,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * overview
          */
         hideHeader: types.stripDefault(types.boolean, false),
+
+        /**
+         * #property
+         * id of another LinearGenomeView in the session that this view is a
+         * close-up of: the source marks this view's extent, and this view
+         * draws a connector strip from that mark down to its own width
+         */
+        zoomOf: types.maybe(types.string),
 
         /**
          * #property
@@ -1133,6 +1142,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get trackChromeHeight() {
         return this.trackLeadingChrome + this.trackTrailingChrome
+      },
+
+      /**
+       * #getter
+       * the session's LinearGenomeView this view is a close-up of, while it is
+       * shown at the same width
+       */
+      get zoomSource() {
+        const { zoomOf, volatileWidth } = self
+        const source = zoomOf
+          ? getSession(self)
+              .views.filter(isZoomLinkable)
+              .find(v => v.id === zoomOf)
+          : undefined
+        return source &&
+          !source.minimized &&
+          volatileWidth !== undefined &&
+          source.volatileWidth === volatileWidth
+          ? source
+          : undefined
       },
 
       /**
@@ -3323,6 +3352,70 @@ export function stateModelFactory(pluginManager: PluginManager) {
         displayedRegionIndex?: number
       }) {
         return bpToPx({ refName, coord, displayedRegionIndex, self })
+      },
+
+      /**
+       * #getter
+       * where each close-up of this view (a view whose `zoomOf` is this id)
+       * sits in this view's pixels, at least a few pixels wide
+       */
+      get zoomMarkers() {
+        const sourceLeft = -self.offsetPx
+        const sourceRight = self.displayedRegionsTotalPx - self.offsetPx
+        const { assemblyManager } = getSession(self)
+        const toPx = (edge: {
+          assemblyName: string
+          refName: string
+          coord: number
+        }) =>
+          this.bpToPx({
+            refName: canonicalRefName(
+              assemblyManager,
+              edge.assemblyName,
+              edge.refName,
+            ),
+            coord: edge.coord,
+          })
+        return getSession(self)
+          .views.filter(isZoomLinkable)
+          .filter(
+            v =>
+              v.zoomOf === self.id &&
+              !v.minimized &&
+              v.volatileWidth !== undefined,
+          )
+          .flatMap(v => {
+            const edges = visibleEdges(v.visibleRegions)
+            const left = edges ? toPx(edges.left) : undefined
+            const right = edges ? toPx(edges.right) : undefined
+            return edges && (left || right)
+              ? [
+                  zoomMarker(
+                    v.id,
+                    left ? left.offsetPx - self.offsetPx : sourceLeft,
+                    right ? right.offsetPx - self.offsetPx : sourceRight,
+                  ),
+                ]
+              : []
+          })
+      },
+
+      /**
+       * #getter
+       * the trapezoid from this view's marker in its zoom source (top) to this
+       * view's full width (bottom), in view-content pixels; the session's view
+       * stack draws it between the two views when they are adjacent. Only while
+       * the two views are the same width (see `zoomSource`): the source still
+       * marks a close-up of another width, but no connector joins them
+       */
+      get zoomConnector() {
+        const marker = self.zoomSource?.zoomMarkers.find(m => m.id === self.id)
+        return marker
+          ? {
+              top: { leftPx: marker.left, rightPx: marker.left + marker.width },
+              bottom: { leftPx: 0, rightPx: self.width },
+            }
+          : undefined
       },
 
       /**

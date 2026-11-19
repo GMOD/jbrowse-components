@@ -132,6 +132,14 @@ export function darken(color: string, coefficient: number) {
   return shiftChannels(color, v => v * (1 - coefficient))
 }
 
+/**
+ * The fill shared by a close-up's marker band in its source view and the
+ * connector joining the two
+ */
+export function zoomLinkColor(tertiaryLight: string) {
+  return alpha(tertiaryLight, 0.2)
+}
+
 /** Restate a color at a given opacity, as `rgba(r, g, b, a)`. */
 export function alpha(color: string, value: number) {
   const { r, g, b } = channels(color)

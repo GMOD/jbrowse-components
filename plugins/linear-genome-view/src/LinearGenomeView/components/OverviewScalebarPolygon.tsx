@@ -3,6 +3,7 @@ import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import {
   regionBlocksPxExtent,
   transformPxSpan,
+  trapezoidPoints,
 } from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -10,23 +11,7 @@ import { observer } from 'mobx-react'
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { PxSpan, ViewLayout } from '@jbrowse/core/util/Base1DUtils'
-
-/**
- * SVG points for a trapezoid with horizontal top and bottom edges, wound as a
- * single non-self-intersecting loop (bottom-left → bottom-right → top-right →
- * top-left).
- */
-function trapezoidPoints(top: PxSpan, bottom: PxSpan, height: number) {
-  return [
-    [bottom.leftPx, height],
-    [bottom.rightPx, height],
-    [top.rightPx, 0],
-    [top.leftPx, 0],
-  ]
-    .map(([x, y]) => `${x},${y}`)
-    .join(' ')
-}
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 // Fill/stroke are theme-derived and zoom-invariant, so they live in a static
 // class computed once per theme (makeStyles memoizes) — an on-screen zoom frame

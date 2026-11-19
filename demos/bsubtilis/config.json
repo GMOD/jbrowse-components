@@ -1,0 +1,36 @@
+{
+  "assemblies": [
+    {
+      "name": "GCF_000009045.1",
+      "displayName": "Bacillus subtilis 168",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "GCF_000009045.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://jbrowse.org/demos/bsubtilis/GCF_000009045.1.2bit"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "GCF_000009045.1-ncbiGff",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["GCF_000009045.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/hubs/genark/GCF/000/009/045/GCF_000009045.1/GCF_000009045.1_ASM904v1_genomic.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/hubs/genark/GCF/000/009/045/GCF_000009045.1/GCF_000009045.1_ASM904v1_genomic.gff.gz.csi"
+          },
+          "indexType": "CSI"
+        }
+      }
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
+import { zoomLinkColor } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
 
 import SVGHighlightBand from '../components/SVGHighlightBand.tsx'
@@ -29,20 +30,35 @@ export default function SVGHighlights({
 }) {
   const theme = useStyleTheme()
   const session = getSession(model)
-  return session.highlightsVisible
-    ? model.highlights.map((h, idx) => {
-        const coords = model.getHighlightCoords(h)
-        return coords ? (
-          <SVGHighlightBand
-            key={highlightKey(h, idx)}
-            coords={coords}
-            height={height}
-            gaps={gaps}
-            color={getHighlightColor(h, theme).toRgbString()}
-            label={session.highlightLabelsVisible ? h.label : undefined}
-            labelColor={theme.palette.text.primary}
-          />
-        ) : null
-      })
-    : null
+  const markerColor = zoomLinkColor(theme.palette.tertiary.light)
+  return (
+    <>
+      {model.zoomMarkers.map(marker => (
+        <SVGHighlightBand
+          key={`zoom-${marker.id}`}
+          coords={marker}
+          height={height}
+          gaps={gaps}
+          color={markerColor}
+          labelColor={theme.palette.text.primary}
+        />
+      ))}
+      {session.highlightsVisible
+        ? model.highlights.map((h, idx) => {
+            const coords = model.getHighlightCoords(h)
+            return coords ? (
+              <SVGHighlightBand
+                key={highlightKey(h, idx)}
+                coords={coords}
+                height={height}
+                gaps={gaps}
+                color={getHighlightColor(h, theme).toRgbString()}
+                label={session.highlightLabelsVisible ? h.label : undefined}
+                labelColor={theme.palette.text.primary}
+              />
+            ) : null
+          })
+        : null}
+    </>
+  )
 }

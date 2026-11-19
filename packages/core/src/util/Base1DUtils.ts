@@ -518,6 +518,22 @@ export interface PxSpan {
   rightPx: number
 }
 
+/**
+ * SVG points for a trapezoid with horizontal top and bottom edges, wound as a
+ * single non-self-intersecting loop (bottom-left → bottom-right → top-right →
+ * top-left).
+ */
+export function trapezoidPoints(top: PxSpan, bottom: PxSpan, height: number) {
+  return [
+    [bottom.leftPx, height],
+    [bottom.rightPx, height],
+    [top.rightPx, 0],
+    [top.leftPx, 0],
+  ]
+    .map(([x, y]) => `${x},${y}`)
+    .join(' ')
+}
+
 /** Project a span into another pixel space: each end becomes px * scale + translatePx. */
 export function transformPxSpan(
   span: PxSpan,

@@ -26,6 +26,14 @@ export const HPYLORI_26695_SEQ_ADAPTER = {
   },
 }
 
+const BSUB_CONFIG = 'https://jbrowse.org/demos/bsubtilis/config.json'
+
+// forward blue, reverse red, as the skew wiggle colors positive and negative
+const STRAND_LIKE_SKEW = {
+  field: 'strand',
+  scale: { domain: ['1', '-1'], range: ['#1565c0', '#d62828'] },
+}
+
 const WIGGLE_URLS_FIELD = 'textarea[placeholder$="/sample1.bw"]'
 
 const MICROARRAY_BW_ADAPTER = {
@@ -250,6 +258,75 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         maxWidth: 220,
       },
     ],
+  },
+
+  // B. subtilis keeps ~75% of its genes on the leading strand, so the gene
+  // track flips strand where GC skew does; H. pylori's bias is too weak to see.
+  {
+    mode: 'url',
+    name: 'gc_skew_gene_strand',
+    url: sessionSpec(BSUB_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'GCContentTrack',
+          trackId: 'gc_skew_bsub',
+          name: 'GC skew',
+          assemblyNames: ['GCF_000009045.1'],
+          adapter: {
+            type: 'GCContentAdapter',
+            sequenceAdapter: {
+              type: 'TwoBitAdapter',
+              twoBitLocation: {
+                uri: 'https://jbrowse.org/demos/bsubtilis/GCF_000009045.1.2bit',
+                locationType: 'UriLocation',
+              },
+            },
+            op: 'skew',
+            window: 20000,
+            step: 5000,
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          id: 'overview',
+          assembly: 'GCF_000009045.1',
+          loc: 'NC_000964.3',
+          tracks: [
+            { trackId: 'gc_skew_bsub', height: 120 },
+            {
+              trackId: 'GCF_000009045.1-ncbiGff',
+              filter: ['geneLike'],
+              facet: 'strand',
+              encoding: { color: STRAND_LIKE_SKEW },
+              forceLoad: true,
+              height: 360,
+            },
+          ],
+        },
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GCF_000009045.1',
+          zoomOf: 'overview',
+          loc: 'NC_000964.3:1,860,001-2,040,000',
+          hideHeader: true,
+          tracks: [
+            { trackId: 'gc_skew_bsub', height: 80 },
+            {
+              trackId: 'GCF_000009045.1-ncbiGff',
+              filter: ['geneLike'],
+              encoding: { color: STRAND_LIKE_SKEW },
+              height: 160,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'GC skew',
+    readyTimeout: 60000,
+    crop: { x: 0, y: 0, width: 1500, height: 935 },
+    viewportHeight: 1200,
   },
 
   {

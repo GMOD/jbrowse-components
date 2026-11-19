@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 
 import {
   SCROLL_PORT_HEIGHT_VAR,
@@ -8,6 +8,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import ViewContainer from './ViewContainer.tsx'
+import ZoomConnector from './ZoomConnector.tsx'
 
 import type { WorkspaceSessionType } from './types.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
@@ -62,14 +63,19 @@ const ViewStack = observer(function ViewStack({
   return (
     <>
       <div ref={viewsRef}>
-        {views.map(view => (
-          <ViewContainer
-            key={view.id}
-            view={view}
-            session={session}
-            scrollOnMount={!initialViewIds.has(view.id)}
-          />
-        ))}
+        {views.map((view, idx) => {
+          const upper = views[idx - 1]
+          return (
+            <Fragment key={view.id}>
+              {upper ? <ZoomConnector upper={upper} lower={view} /> : null}
+              <ViewContainer
+                view={view}
+                session={session}
+                scrollOnMount={!initialViewIds.has(view.id)}
+              />
+            </Fragment>
+          )
+        })}
       </div>
       {scrollable ? (
         <div className={classes.spacer} data-testid="view-stack-overscroll" />

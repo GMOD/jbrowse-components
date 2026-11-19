@@ -2,12 +2,14 @@ import { Suspense, lazy, useRef } from 'react'
 
 import { PluggableElements } from '@jbrowse/core/ui'
 import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
+import { zoomLinkColor } from '@jbrowse/core/ui/palette'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import Gridlines from './Gridlines.tsx'
+import HighlightBand from './HighlightBand.tsx'
 import OverviewHighlightBand from './OverviewHighlightBand.tsx'
 import PaddingBlocks from './PaddingBlocks.tsx'
 import RangeSelectOverlay from './RangeSelectOverlay.tsx'
@@ -92,6 +94,7 @@ const TracksContainer = observer(function TracksContainer({
       <Rubberband model={model} />
       <ScalebarHighlightGroup model={model} />
       <HighlightGroup model={model} />
+      <ZoomMarkerGroup model={model} />
       <PluggableElements
         pluginManager={pluginManager}
         name="LinearGenomeView-TracksContainerComponent"
@@ -118,6 +121,24 @@ const HighlightGroup = observer(function HighlightGroup({
       ))}
     </Suspense>
   ) : null
+})
+
+const ZoomMarkerGroup = observer(function ZoomMarkerGroup({
+  model,
+}: {
+  model: LGV
+}) {
+  const theme = useStyleTheme()
+  const background = zoomLinkColor(theme.palette.tertiary.light)
+  const gaps = model.nonGenomicTrackBands()
+  return model.zoomMarkers.map(marker => (
+    <HighlightBand
+      key={marker.id}
+      coords={marker}
+      background={background}
+      gaps={gaps}
+    />
+  ))
 })
 
 const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
