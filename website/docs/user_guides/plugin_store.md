@@ -92,7 +92,7 @@ Desktop has two routes:
 - **Global plugins...**, in the start screen's Tools menu, installs a plugin for
   every session on this machine, from the next session you open.
 
-<Figure caption="Global plugins from the start screen's Tools menu (1) opens the dialog, whose Add custom plugin (2) takes a UMD build's name and URL (3) or, under Advanced options, an ESM build's URL (4)." src="/img/desktop-global-plugins-steps.png" />
+<Figure caption="Global plugins from the start screen's Tools menu (1) opens the dialog, whose Add custom plugin (2) takes a UMD build's name and URL (3) or, under More options, an ESM build's URL (4)." src="/img/desktop-global-plugins-steps.png" />
 
 The dialog lists the store's plugins under **Available plugins**, each with an
 **Install** button. If a plugin crashes on load, switch it off there to keep it
@@ -118,8 +118,8 @@ give the URL. Where you enter it depends on where you run JBrowse:
 The **Add custom plugin** form asks for different fields for each build:
 
 - **a UMD build** (a `.umd.js` file): **Plugin name** and **Plugin URL**
-- **an ESM build**: open **Advanced options**, paste the URL into **ESM build
-  URL**, and leave the rest empty
+- **an ESM build**: open **More options**, paste the URL into **ESM build URL**,
+  and leave the rest empty
 
 ## In config.json
 
