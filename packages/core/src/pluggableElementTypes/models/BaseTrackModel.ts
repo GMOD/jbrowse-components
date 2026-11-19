@@ -553,11 +553,13 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
             name: 'GFF3',
             extension: 'gff3',
             callback: stringifyGFF3,
+            wholeAcrossOrigin: true,
           },
           genbank: {
             name: 'GenBank',
             extension: 'gbk',
             callback: stringifyGBK,
+            wholeAcrossOrigin: true,
             helpText:
               'Note: GenBank format export is experimental. The generated output may not fully conform to the GenBank specification and should be validated before use in production workflows.',
           },

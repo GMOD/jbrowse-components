@@ -1,4 +1,6 @@
-import type { Feature } from '@jbrowse/core/util'
+import { originCrossingLength } from '../../../BaseFeatureWidget/SequenceFeatureDetails/util.ts'
+
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 /**
  * Sorted by position within each sequence, the sequences in the order their
@@ -19,6 +21,32 @@ export function byPosition(features: Feature[]) {
       sequences.get(a.get('refName'))! - sequences.get(b.get('refName'))! ||
       a.get('start') - b.get('start'),
   )
+}
+
+/**
+ * The length of each circular sequence a feature runs past the origin of,
+ * by refName. Only an export fetched with `wholeAcrossOrigin` holds such a
+ * feature, written with its end past the sequence's length.
+ */
+export function originCrossingLengths({
+  features,
+  session,
+  assemblyName,
+}: {
+  features: Feature[]
+  session: AbstractSessionModel
+  assemblyName: string
+}) {
+  const assembly = session.assemblyManager.get(assemblyName)
+  const lengths = new Map<string, number>()
+  for (const f of features) {
+    const refName = f.get('refName')
+    const length = originCrossingLength(assembly, refName, f.get('end'))
+    if (length !== undefined) {
+      lengths.set(refName, length)
+    }
+  }
+  return lengths
 }
 
 /**

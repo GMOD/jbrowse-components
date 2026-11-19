@@ -209,6 +209,28 @@ test('a track with no export capability is never asked to export', async () => {
   expect(callsTo('CoreGetExportData')).toHaveLength(0)
 })
 
+test('a format that writes a feature across a circular origin fetches it whole', async () => {
+  setup()
+  respond({ CoreGetFeatures: [feature('gene1')] })
+  const withGff3 = {
+    ...options,
+    gff3: {
+      name: 'GFF3',
+      extension: 'gff3',
+      callback: writer,
+      wholeAcrossOrigin: true,
+    },
+  }
+
+  await fetchTrackData({ model, regions, type: 'gff3', options: withGff3 })
+  await fetchTrackData({ model, regions, type: 'bed', options: withGff3 })
+
+  expect(callsTo('CoreGetFeatures').map(c => c[2].opts)).toEqual([
+    { wholeAcrossOrigin: true },
+    { wholeAcrossOrigin: undefined },
+  ])
+})
+
 test('the signal and status callback reach every RPC', async () => {
   setup({ exportsData: true })
   respond({ CoreGetExportData: undefined, CoreGetFeatures: [] })

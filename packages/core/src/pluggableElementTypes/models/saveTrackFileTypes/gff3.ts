@@ -2,9 +2,10 @@ import {
   coreFeatureFields,
   formatAttributeValue,
   formatStrand,
+  originCrossingLengths,
 } from './util.ts'
 
-import type { Feature } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 const retitle: Record<string, string> = {
   name: 'Name',
@@ -161,9 +162,64 @@ export function formatMultiLevelFeat({
   ].join('\n')
 }
 
-export function stringifyGFF3({ features }: { features: Feature[] }) {
+function declaresCircular(feature: Feature) {
+  return [feature.get('is_circular')].flat().includes('true')
+}
+
+/**
+ * A feature crossing a circular sequence's origin is written once, its end
+ * past the sequence's length, which a reader cuts at the origin only when a
+ * whole-sequence line says the sequence is circular. NCBI's own such line is
+ * the `gbkey=Src` region a display leaves out of its export, so one is
+ * written here, unless the export already holds one.
+ */
+function circularDeclarations({
+  features,
+  session,
+  assemblyName,
+}: {
+  features: Feature[]
+  session: AbstractSessionModel
+  assemblyName: string
+}) {
+  const declared = new Set(
+    features.filter(declaresCircular).map(f => f.get('refName')),
+  )
+  const undeclared = [
+    ...originCrossingLengths({ features, session, assemblyName }),
+  ].filter(([refName]) => !declared.has(refName))
+  return [
+    ...undeclared.map(
+      ([refName, length]) => `##sequence-region ${refName} 1 ${length}`,
+    ),
+    ...undeclared.map(([refName, length]) =>
+      [
+        refName,
+        '.',
+        'region',
+        1,
+        length,
+        '.',
+        '.',
+        '.',
+        `ID=${encodeGFF3Value(refName)};Is_circular=true`,
+      ].join('\t'),
+    ),
+  ]
+}
+
+export function stringifyGFF3({
+  features,
+  session,
+  assemblyName,
+}: {
+  features: Feature[]
+  session: AbstractSessionModel
+  assemblyName: string
+}) {
   return [
     '##gff-version 3',
+    ...circularDeclarations({ features, session, assemblyName }),
     ...features.map(f => formatMultiLevelFeat({ feature: f })),
   ].join('\n')
 }

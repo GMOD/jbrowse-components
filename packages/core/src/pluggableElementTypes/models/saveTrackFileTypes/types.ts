@@ -37,6 +37,13 @@ export interface FileTypeExporter {
   /** `drawn` when unset */
   featureSet?: ExportedFeatureSet
   /**
+   * Fetch a feature crossing a circular sequence's origin whole, its end past
+   * the sequence's length, rather than as the two pieces the display draws.
+   * For a format that can write one feature across the origin; BED cannot, as
+   * bedToBigBed refuses an end past the sequence.
+   */
+  wholeAcrossOrigin?: boolean
+  /**
    * The signal and status callback are the pair every RPC on the export
    * path already carries. Most writers are string assembly and ignore both;
    * GenBank fetches the ORIGIN sequence, and without them closing the dialog

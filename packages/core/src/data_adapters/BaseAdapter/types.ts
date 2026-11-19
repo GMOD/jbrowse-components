@@ -59,7 +59,8 @@ export interface BaseOptions {
   // "I read one feature whole", so an adapter that cuts a feature crossing a
   // circular sequence's origin into two drawable pieces (`originCut`) answers
   // it uncut instead, in the file's coordinates, when either piece overlaps
-  // the query. Set by the feature details fetch.
+  // the query. Set by the feature details fetch, and by "Save track data" for
+  // a format that writes such a feature whole (GFF3, GenBank).
   wholeAcrossOrigin?: boolean
 }
 // #endregion

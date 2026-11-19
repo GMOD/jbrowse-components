@@ -23,7 +23,21 @@ function createFeature(data: Record<string, any>): SimpleFeature {
   return new SimpleFeature({ id: `${data.id}-unique`, data })
 }
 
-const mockSession = {} as AbstractSessionModel
+function sessionWithLengths(lengths: Record<string, number>) {
+  return {
+    assemblyManager: {
+      get: () => ({
+        getCanonicalRefName2: (refName: string) => refName,
+        getRegionForRefName: (refName: string) =>
+          lengths[refName] === undefined
+            ? undefined
+            : { refName, start: 0, end: lengths[refName] },
+      }),
+    },
+  } as unknown as AbstractSessionModel
+}
+
+const mockSession = sessionWithLengths({})
 
 describe('GenBank export', () => {
   beforeEach(() => {
@@ -720,5 +734,150 @@ describe('GenBank LOCUS line', () => {
     expect(locus.slice(47, 54).trimEnd()).toBe('DNA')
     expect(locus.slice(55, 63).trimEnd()).toBe('linear')
     expect(locus.slice(68, 79)).toMatch(/^\d{2}-[A-Z]{3}-\d{4}$/)
+  })
+})
+
+describe('GenBank export across a circular origin', () => {
+  const session = sessionWithLengths({ chrM: 16569, pTest: 1000 })
+
+  beforeEach(() => {
+    jest.mocked(fetchSeq).mockClear()
+  })
+
+  // a gene written 16001..17169 on a 16,569 bp sequence, its second CDS
+  // crossing the origin
+  const chrMGene = () =>
+    createFeature({
+      id: 'gene1',
+      refName: 'chrM',
+      start: 16000,
+      end: 17169,
+      strand: 1,
+      type: 'gene',
+      subfeatures: [
+        {
+          id: 'cds1',
+          type: 'CDS',
+          start: 16050,
+          end: 16400,
+          strand: 1,
+          phase: 0,
+        },
+        {
+          id: 'cds2',
+          type: 'CDS',
+          start: 16450,
+          end: 17100,
+          strand: 1,
+          phase: 2,
+        },
+      ],
+    })
+
+  it('writes the whole circular sequence, joining each span across the origin', async () => {
+    const result = await stringifyGBK({
+      features: [chrMGene()],
+      assemblyName: 'hg38',
+      session,
+    })
+    const locus = result.split('\n')[0]!
+    expect(locus.slice(29, 40).trim()).toBe('16569')
+    expect(locus.slice(55, 63).trimEnd()).toBe('circular')
+    expect(result).toContain('source          1..16569')
+    expect(result).toContain('gene            join(16001..16569,1..600)')
+    expect(result).toContain(
+      'CDS             join(16051..16400,16451..16569,1..531)',
+    )
+    expect(result).toContain('/codon_start=1')
+    expect(result.match(/^ {5}gene /gm)).toHaveLength(1)
+    expect(fetchSeq).toHaveBeenCalledWith(
+      expect.objectContaining({ refName: 'chrM', start: 0, end: 16569 }),
+    )
+  })
+
+  it('writes a minus-strand transcript across the origin as the complement of the join', () => {
+    const f = createFeature({
+      id: 'mrnaB',
+      refName: 'pTest',
+      start: 949,
+      end: 1150,
+      strand: -1,
+      type: 'mRNA',
+      subfeatures: [
+        { id: 'exB1', type: 'exon', start: 949, end: 980, strand: -1 },
+        { id: 'exB2', type: 'exon', start: 990, end: 1150, strand: -1 },
+      ],
+    })
+    expect(
+      formatFeatWithSubfeatures({
+        feature: f,
+        minPos: 0,
+        circularLength: 1000,
+      }),
+    ).toContain('mRNA            complement(join(950..980,991..1000,1..150))')
+  })
+
+  it('writes a span wholly past the origin from position 1', () => {
+    const f = createFeature({
+      id: 'mrnaC',
+      refName: 'pTest',
+      start: 949,
+      end: 1150,
+      strand: 1,
+      type: 'mRNA',
+      subfeatures: [
+        { id: 'e1', type: 'exon', start: 949, end: 980 },
+        { id: 'e2', type: 'exon', start: 1019, end: 1150 },
+      ],
+    })
+    expect(
+      formatFeatWithSubfeatures({
+        feature: f,
+        minPos: 0,
+        circularLength: 1000,
+      }),
+    ).toContain('mRNA            join(950..980,20..150)')
+  })
+
+  it('keeps a record no feature crosses the origin of numbered from its first feature', async () => {
+    const result = await stringifyGBK({
+      features: [
+        chrMGene(),
+        createFeature({
+          id: 'gene2',
+          refName: 'chr1',
+          start: 100,
+          end: 200,
+          type: 'gene',
+        }),
+      ],
+      assemblyName: 'hg38',
+      session,
+    })
+    const chr1Record = result
+      .split(/^\/\/$/m)
+      .find(record => record.includes('LOCUS       chr1'))
+    expect(chr1Record).toContain('linear')
+    expect(chr1Record).toContain('gene            1..100')
+  })
+})
+
+describe('GenBank CDS reading frame', () => {
+  it('starts the codon count at the phase of the 5′-most CDS segment', () => {
+    const f = createFeature({
+      id: 'mrna1',
+      refName: 'chr1',
+      start: 0,
+      end: 1000,
+      strand: -1,
+      type: 'mRNA',
+      subfeatures: [
+        { id: 'cds1', type: 'CDS', start: 100, end: 200, phase: 0 },
+        { id: 'cds2', type: 'CDS', start: 700, end: 900, phase: 2 },
+      ],
+    })
+    expect(formatFeatWithSubfeatures({ feature: f, minPos: 0 })).toContain(
+      '/codon_start=3',
+    )
   })
 })

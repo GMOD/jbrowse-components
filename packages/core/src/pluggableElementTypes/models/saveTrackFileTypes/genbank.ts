@@ -1,6 +1,10 @@
 import { fetchSeq } from '../../../util/fetchSeq.ts'
 import { createStatusFanOut, groupBy, max, min } from '../../../util/index.ts'
-import { coreFeatureFields, formatAttributeValue } from './util.ts'
+import {
+  coreFeatureFields,
+  formatAttributeValue,
+  originCrossingLengths,
+} from './util.ts'
 
 import type {
   AbstractSessionModel,
@@ -23,18 +27,34 @@ function qualifier(key: string, value: string) {
   return `${QUALIFIER_INDENT}/${key}="${value.replaceAll('"', '""')}"`
 }
 
-function loc(f: Feature, minPos: number) {
-  const start = f.get('start') - minPos + 1
+/**
+ * Where a record's coordinates start, and the length of its sequence when it
+ * is circular and a feature on it runs past the origin. Such a record covers
+ * the whole sequence, so `minPos` is 0.
+ */
+interface RecordFrame {
+  minPos: number
+  circularLength?: number
+}
+
+// A span past a circular sequence's origin is written as the part before it
+// and the part after, as NCBI writes NC_012920's join(16024..16569,1..576)
+function spans(f: Feature, { minPos, circularLength }: RecordFrame) {
+  const start = f.get('start') - minPos
   const end = f.get('end') - minPos
-  return `${start}..${end}`
+  return circularLength === undefined || end <= circularLength
+    ? [`${start + 1}..${end}`]
+    : start >= circularLength
+      ? [`${start - circularLength + 1}..${end - circularLength}`]
+      : [`${start + 1}..${circularLength}`, `1..${end - circularLength}`]
 }
 
 // Build a (possibly spliced) location expression for a set of segments,
 // e.g. join(1..100,201..300) or complement(join(...)) for the minus strand.
-function joinLoc(feats: Feature[], strand: number, minPos: number) {
+function joinLoc(feats: Feature[], strand: number, frame: RecordFrame) {
   const locs = feats
     .toSorted((a, b) => a.get('start') - b.get('start'))
-    .map(f => loc(f, minPos))
+    .flatMap(f => spans(f, frame))
   const expr = locs.length === 1 ? locs.join(',') : `join(${locs.join(',')})`
   return strand === -1 ? `complement(${expr})` : expr
 }
@@ -187,36 +207,47 @@ function formatTags({
   return tags
 }
 
+// /codon_start is 1-based where GFF3's phase is 0-based, and belongs to the
+// CDS segment translation starts in, the 5'-most one
+function codonStart(feats: Feature[], strand: number) {
+  const first = feats.toSorted((a, b) =>
+    strand === -1
+      ? b.get('end') - a.get('end')
+      : a.get('start') - b.get('start'),
+  )[0]
+  return (first?.get('phase') ?? 0) + 1
+}
+
 function formatCDS({
   feats,
   gene,
   strand,
-  minPos,
+  frame,
 }: {
   feats: Feature[]
   gene?: string
   strand: number
-  minPos: number
+  frame: RecordFrame
 }) {
-  if (feats.length === 0) {
-    return []
-  }
   return [
-    featureLine('CDS', joinLoc(feats, strand, minPos)),
+    featureLine('CDS', joinLoc(feats, strand, frame)),
     ...(gene ? [qualifier('gene', gene), qualifier('label', gene)] : []),
-    `${QUALIFIER_INDENT}/codon_start=1`,
+    `${QUALIFIER_INDENT}/codon_start=${codonStart(feats, strand)}`,
   ]
 }
 
 export function formatFeatWithSubfeatures({
   feature,
   minPos,
+  circularLength,
   geneName,
 }: {
   feature: Feature
   minPos: number
+  circularLength?: number
   geneName?: string
 }): string {
+  const frame = { minPos, circularLength }
   const subfeatures = feature.get('subfeatures') ?? []
   const strand = feature.get('strand') ?? 0
   const key = insdcFeatureKey(`${feature.get('type')}`)
@@ -234,7 +265,7 @@ export function formatFeatWithSubfeatures({
   // A spliced transcript is rendered as join() of its exons rather than a
   // single span, so external tools see the correct intron/exon structure.
   const segments = exons.length > 0 ? exons : [feature]
-  const location = joinLoc(segments, strand, minPos)
+  const location = joinLoc(segments, strand, frame)
 
   const primary = [
     featureLine(key, location),
@@ -246,12 +277,17 @@ export function formatFeatWithSubfeatures({
     f => f.get('type') !== 'CDS' && f.get('type') !== 'exon',
   )
   const cdsLines =
-    cds.length > 0 ? formatCDS({ feats: cds, gene, strand, minPos }) : []
+    cds.length > 0 ? formatCDS({ feats: cds, gene, strand, frame }) : []
   return [
     ...primary,
     ...cdsLines,
     ...sansCDS.flatMap(sub =>
-      formatFeatWithSubfeatures({ feature: sub, minPos, geneName: gene }),
+      formatFeatWithSubfeatures({
+        feature: sub,
+        minPos,
+        circularLength,
+        geneName: gene,
+      }),
     ),
   ].join('\n')
 }
@@ -288,7 +324,7 @@ function formatOrigin(sequence: string): string[] {
 // where the line is free text.
 const LOCUS_NAME_WIDTH = 16
 
-function formatLocus(refName: string, length: number) {
+function formatLocus(refName: string, length: number, circular: boolean) {
   const name = refName.replaceAll(/[^\w.]/g, '_').slice(0, LOCUS_NAME_WIDTH)
   return [
     'LOCUS'.padEnd(12),
@@ -299,7 +335,7 @@ function formatLocus(refName: string, length: number) {
     '   ',
     'DNA'.padEnd(7),
     ' ',
-    'linear'.padEnd(8),
+    (circular ? 'circular' : 'linear').padEnd(8),
     ' ',
     'UNK'.padEnd(3),
     ' ',
@@ -314,14 +350,16 @@ function formatHeader({
   region,
   assemblyName,
   length,
+  circular,
 }: {
   refName: string
   region: string
   assemblyName: string
   length: number
+  circular: boolean
 }) {
   return [
-    formatLocus(refName, length),
+    formatLocus(refName, length, circular),
     `DEFINITION  ${region} from ${assemblyName}.`,
     `ACCESSION   ${refName}`,
     `VERSION     ${refName}`,
@@ -339,10 +377,13 @@ function formatHeader({
 
 // One LOCUS..ORIGIN..// record, spanning the features on a single reference
 // sequence. GenBank has no way to express a span that crosses one, which is why
-// this takes a refName rather than deriving it.
+// this takes a refName rather than deriving it. A record with a feature
+// running past a circular sequence's origin covers the whole sequence, since
+// the span after the origin is written from its position 1.
 async function formatRecord({
   refName,
   features,
+  circularLength,
   assemblyName,
   session,
   signal,
@@ -350,13 +391,15 @@ async function formatRecord({
 }: {
   refName: string
   features: Feature[]
+  circularLength?: number
   assemblyName: string
   session: AbstractSessionModel
   signal?: AbortSignal
   statusCallback?: StatusCallback
 }) {
-  const minPos = min(features.map(f => f.get('start')))
-  const maxPos = max(features.map(f => f.get('end')))
+  const minPos =
+    circularLength === undefined ? min(features.map(f => f.get('start'))) : 0
+  const maxPos = circularLength ?? max(features.map(f => f.get('end')))
   const length = maxPos - minPos
   const region = `${refName}:${minPos + 1}..${maxPos}`
 
@@ -370,9 +413,15 @@ async function formatRecord({
     statusCallback,
   })
 
-  const header = formatHeader({ refName, region, assemblyName, length })
+  const header = formatHeader({
+    refName,
+    region,
+    assemblyName,
+    length,
+    circular: circularLength !== undefined,
+  })
   const body = features.map(feat =>
-    formatFeatWithSubfeatures({ feature: feat, minPos }),
+    formatFeatWithSubfeatures({ feature: feat, minPos, circularLength }),
   )
   return [...header, ...body, ...formatOrigin(contig)].join('\n')
 }
@@ -396,6 +445,11 @@ export async function stringifyGBK({
   // record spanning a stretch of sequence that does not exist, with an ORIGIN
   // fetched over it.
   const byRefName = groupBy(features, f => f.get('refName'))
+  const circularLengths = originCrossingLengths({
+    features,
+    session,
+    assemblyName,
+  })
   // the records fetch their ORIGIN concurrently and all report the same phase,
   // so each gets its own fan-out slot rather than the caller's raw callback —
   // otherwise the first contig to finish blanks the label for the rest
@@ -405,6 +459,7 @@ export async function stringifyGBK({
       formatRecord({
         refName,
         features: feats,
+        circularLength: circularLengths.get(refName),
         assemblyName,
         session,
         signal,

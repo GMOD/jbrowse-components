@@ -1,16 +1,23 @@
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+
 import {
   originTailCandidates,
   wholeSubfeatureId,
 } from '@jbrowse/core/util/originCut'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { stringifyGFF3 } from '../../../packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/gff3.ts'
 import Gff3Adapter from './Gff3Adapter/Gff3Adapter.ts'
 import gff3ConfigSchema from './Gff3Adapter/configSchema.ts'
 import Gff3TabixAdapter from './Gff3TabixAdapter/Gff3TabixAdapter.ts'
 import tabixConfigSchema from './Gff3TabixAdapter/configSchema.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 
 // pTest is a 1000 bp circular plasmid: a D-loop written 900..1100, and geneB
@@ -38,6 +45,25 @@ const adapters = {
         },
       }),
     ),
+}
+
+const sessionWithPTest = {
+  assemblyManager: {
+    get: () => ({
+      getCanonicalRefName2: (refName: string) => refName,
+      getRegionForRefName: (refName: string) =>
+        refName === 'pTest' ? { refName, start: 0, end: 1000 } : undefined,
+    }),
+  },
+} as unknown as AbstractSessionModel
+
+function reloaded(gff3: string) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'origin-spanning-'))
+  const file = path.join(dir, 'exported.gff3')
+  fs.writeFileSync(file, gff3)
+  return new Gff3Adapter(
+    gff3ConfigSchema.create({ gffLocation: { localPath: file } }),
+  )
 }
 
 function spans(features: Feature[]) {
@@ -168,5 +194,23 @@ describe.each(Object.entries(adapters))('%s', (_name, make) => {
     )
     expect(originTailCandidates(wholeExons[1]!.id())).toContain(tailExon.id())
     expect(originTailCandidates(wholeGene.id())).toContain(tailGene.id())
+  })
+
+  // NCBI's region line carries gbkey=Src, which the display leaves out of what
+  // it exports, so the export alone has to say the sequence is circular
+  test('a whole sequence exported as GFF3 without its region line loads back with the same pieces', async () => {
+    const exported = stringifyGFF3({
+      features: (await fetch(0, 1000, 'pTest', { wholeAcrossOrigin: true }))
+        .filter(f => f.get('type') !== 'region')
+        .map(f => new SimpleFeature(f.toJSON())),
+      session: sessionWithPTest,
+      assemblyName: 'p',
+    })
+    const features = await firstValueFrom(
+      reloaded(exported)
+        .getFeatures({ refName: 'pTest', start: 0, end: 1000 })
+        .pipe(toArray()),
+    )
+    expect(spans(features)).toEqual(spans(await fetch(0, 1000)))
   })
 })

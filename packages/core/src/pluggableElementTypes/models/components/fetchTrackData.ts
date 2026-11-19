@@ -137,12 +137,14 @@ async function fetchedThenFiltered({
   model,
   regions,
   adapterConfig,
+  wholeAcrossOrigin,
   signal,
   statusCallback,
 }: {
   model: ExportableTrack
   regions: Region[]
   adapterConfig: Record<string, unknown>
+  wholeAcrossOrigin?: boolean
   signal?: AbortSignal
   statusCallback?: StatusCallback
 }): Promise<ExportedFeatures> {
@@ -152,7 +154,13 @@ async function fetchedThenFiltered({
     await getSession(model).rpcManager.call(
       getRpcSessionId(model),
       'CoreGetFeatures',
-      { adapterConfig, regions, signal, statusCallback },
+      {
+        adapterConfig,
+        regions,
+        opts: { wholeAcrossOrigin },
+        signal,
+        statusCallback,
+      },
     ),
     f => f.id(),
   )
@@ -243,6 +251,7 @@ export async function fetchTrackData({
         model,
         regions,
         adapterConfig,
+        wholeAcrossOrigin: exporter.wholeAcrossOrigin,
         ...opts,
       })
   // Empty rather than a header with no records under it, so the dialog can
