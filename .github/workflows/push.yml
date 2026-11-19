@@ -156,7 +156,7 @@ jobs:
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm build:esm
       # Rides this job rather than earning its own: it builds a program from the
-      # same root tsconfig `typecheck:web` does, so it wants exactly this
+      # same root tsconfig `pnpm typecheck web` does, so it wants exactly this
       # checkout and toolchain, and takes ~10s on top.
       #
       # A ratchet over a committed baseline, like check-gated-adapter-budgets —
