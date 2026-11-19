@@ -281,6 +281,6 @@ export function genbankFeatures(
     start: f.start,
     end: f.end,
     feature: f,
-    uniqueId: `${refName}-${i}`,
+    uniqueId: `${refName}:${i}`,
   }))
 }

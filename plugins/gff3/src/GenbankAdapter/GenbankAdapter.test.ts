@@ -117,14 +117,6 @@ describe('a hand-written chromosome and plasmid', () => {
     expect(quoted!.get('note')).toBe('He said "hi"')
   })
 
-  test('feature ids are unique and stable across fetches', async () => {
-    const ids = (fs: Feature[]): string[] =>
-      fs.flatMap(f => [f.id(), ...ids(f.get('subfeatures') ?? [])])
-    const first = ids(await fetch(features, 'contig_1', 0, 120))
-    expect(new Set(first).size).toBe(first.length)
-    expect(ids(await fetch(features, 'contig_1', 0, 120))).toEqual(first)
-  })
-
   test('a CDS wrapping the plasmid origin is cut there', async () => {
     const [tail] = (await fetch(features, 'pTEST.1', 0, 5)).filter(
       f => f.get('type') === 'CDS',
@@ -326,6 +318,31 @@ describe('edge cases on a circle and two same-named exports', () => {
       ],
     ])
   })
+})
+
+describe('feature ids', () => {
+  const ids = (fs: Feature[]): string[] =>
+    fs.flatMap(f => [f.id(), ...ids(f.get('subfeatures') ?? [])])
+
+  async function allIds(file: string) {
+    const { features } = adapters(file)
+    const refNames = await features.getRefNames()
+    const perRecord = await Promise.all(
+      refNames.map(async refName =>
+        ids(await fetch(features, refName, 0, 1e6)),
+      ),
+    )
+    return perRecord.flat()
+  }
+
+  test.each(['id_collision.gbk', 'two_records.gbk', 'edge_cases.gbk'])(
+    'are unique across the records of %s and the same from a fresh adapter',
+    async file => {
+      const first = await allIds(file)
+      expect(new Set(first).size).toBe(first.length)
+      expect(await allIds(file)).toEqual(first)
+    },
+  )
 })
 
 describe('a record with no ORIGIN sequence', () => {

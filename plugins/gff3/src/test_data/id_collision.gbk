@@ -1,0 +1,19 @@
+LOCUS       a                         20 bp    DNA     linear       01-JAN-2024
+DEFINITION  A record whose second feature's first child once shared an id
+            with the next record's first feature.
+FEATURES             Location/Qualifiers
+     misc_feature    1..5
+     gene            6..20
+                     /locus_tag="A_1"
+     CDS             6..20
+                     /locus_tag="A_1"
+ORIGIN
+        1 atgaaacccg ggtttaaata
+//
+LOCUS       a-1                       20 bp    DNA     linear       01-JAN-2024
+DEFINITION  A record named like an id of the one before it.
+FEATURES             Location/Qualifiers
+     misc_feature    1..5
+ORIGIN
+        1 atgaaacccg ggtttaaata
+//
