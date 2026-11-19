@@ -15,7 +15,7 @@
   "author": "JBrowse Team",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=23"
+    "node": "^22.15.0 || >=23.5.0"
   },
   "bin": {
     "jb2export": "./esm/bin.js"

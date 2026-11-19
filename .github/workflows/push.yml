@@ -778,8 +778,7 @@ jobs:
   # each leg installs npm packages without a lockfile, so a rogue dependency
   # that runs here has no GitHub token and cannot push code, open issues or
   # PRs, read secrets or call GitHub APIs. cli-node18 holds the CLI to the
-  # oldest Node it supports; jbrowse-img needs Node 24 for
-  # module.registerHooks.
+  # oldest Node it supports.
   component_tests:
     name: Test packed ${{ matrix.dir }}
     needs: build_and_pack_artifacts
