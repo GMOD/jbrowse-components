@@ -638,10 +638,10 @@ column.
   types none, and null where empty. `annotationFields` lists each key's fields, and
   the key leaves `info` (`consequenceTables`).
 
-The table does not apply the display's density fade, which depends on zoom, and does
-not order the rows by the `rows` arrangement. A categorical `encoding.color` deals
-its values into slots the browser keeps per session; the table deals afresh on every
-call, so one value can take two colors across two calls.
+The table does not apply the display's density fade, which depends on zoom. A
+categorical `encoding.color` deals its values into slots the browser keeps per
+session; the table deals afresh on every call, so one value can take two colors
+across two calls.
 
 **The clustering matrices come from the display's own builders.** `scoreMatrix`
 takes `wiggle`'s args and `genotypeMatrix` takes `variants`', so a host passes the
