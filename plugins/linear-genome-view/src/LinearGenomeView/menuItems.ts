@@ -47,7 +47,6 @@ import {
   everyRegionMenuItems,
   showWholeGenomeLabel,
 } from './showWholeGenome.ts'
-import { exportChrome, pageLayout } from './svgcomponents/pageLayout.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { BpOffset, ExportSvgOptions } from './types.ts'
@@ -150,7 +149,9 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
     {
       label: 'Export image...',
       icon: PhotoCameraIcon,
-      onClick: () => {
+      onClick: async () => {
+        const { exportChrome, pageLayout } =
+          await import('./svgcomponents/pageLayout.ts')
         session.queueDialog(handleClose => [
           ExportSvgDialog,
           {

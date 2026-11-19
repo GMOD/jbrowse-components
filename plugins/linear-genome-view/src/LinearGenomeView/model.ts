@@ -104,7 +104,6 @@ import {
 } from './menuItems.ts'
 import { sharedScaleContainerOf } from './sharedScaleContainer.ts'
 import { showFiles } from './showFiles.ts'
-import { settledPageLayout } from './svgcomponents/pageLayout.ts'
 import {
   calculateVisibleLocStrings,
   cytobandLabelGutterWidth,
@@ -2764,6 +2763,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
       let exportQueue: Promise<unknown> = Promise.resolve()
       async function exportAt(opts: ExportSvgOptions) {
+        const { settledPageLayout } =
+          await import('./svgcomponents/pageLayout.ts')
         const page = await settledPageLayout(self, opts)
         const { width } = self
         const viewWidth = page?.plotPx ?? opts.viewWidth ?? width
