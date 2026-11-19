@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 
-import { act, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 
 import { clearFileFromCache, setFileInCache } from '../../util/tracks.ts'
 import LocalFileChooser from './LocalFileChooser.tsx'
@@ -31,4 +31,25 @@ test('reactively clears "need to reload" once the file handle cache populates', 
   expect(queryByText('(need to reload)')).not.toBeInTheDocument()
 
   clearFileFromCache(handleId)
+})
+
+test('a failed reopen shows its error', async () => {
+  const handleId = 'test-failed-reopen'
+  clearFileFromCache(handleId)
+  const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+  window.showOpenFilePicker = () => Promise.reject(new Error('picker broke'))
+  const location: FileHandleLocation = {
+    locationType: 'FileHandleLocation',
+    name: 'reads.bam',
+    handleId,
+  }
+  try {
+    const { getByText, findByText } = render(
+      <LocalFileChooser location={location} setLocation={() => {}} />,
+    )
+    fireEvent.click(getByText('Reopen'))
+    expect(await findByText(/picker broke/)).toBeInTheDocument()
+  } finally {
+    consoleError.mockRestore()
+  }
 })

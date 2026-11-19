@@ -1,4 +1,6 @@
-import { Box, Button, FormControl, Typography } from '@mui/material'
+import { useState } from 'react'
+
+import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { invokeElectronMain } from '../../util/electron.ts'
@@ -15,12 +17,13 @@ import {
   storeBlobLocation,
   storeFileHandleLocation,
 } from '../../util/tracks.ts'
-import { makeStyles } from '../../util/tss-react/index.ts'
 import {
   isBlobLocation,
   isFileHandleLocation,
   isLocalPathLocation,
 } from '../../util/types/index.ts'
+import ControlRow from '../ControlRow.tsx'
+import ErrorMessage from '../ErrorMessage.tsx'
 import { dirFromPath } from './util.ts'
 
 import type { FileLocation } from '../../util/types/index.ts'
@@ -30,12 +33,6 @@ declare global {
     showOpenFilePicker(): Promise<FileSystemFileHandle[]>
   }
 }
-
-const useStyles = makeStyles()(theme => ({
-  filename: {
-    marginLeft: theme.spacing(1),
-  },
-}))
 
 const supportsFileSystemAccess = isFileSystemAccessSupported() && !isElectron
 
@@ -89,51 +86,45 @@ async function pickFileHandleLocation() {
   }
 }
 
+type Pick = () => Promise<FileLocation | undefined>
+
+async function pickElectronLocation() {
+  const filePath = await invokeElectronMain(
+    'promptOpenLocalFile',
+    getLastLocalFileDir(),
+  )
+  if (filePath) {
+    setLastLocalFileDir(filePath)
+  }
+  return filePath
+    ? ({
+        localPath: filePath,
+        locationType: 'LocalPathLocation',
+      } satisfies FileLocation)
+    : undefined
+}
+
 const FilePickerButton = observer(function FilePickerButton({
+  choose,
   setLocation,
 }: {
+  choose: (pick: Pick) => void
   setLocation: (loc: FileLocation) => void
 }) {
-  if (supportsFileSystemAccess) {
-    return (
-      <Button
-        variant="outlined"
-        onClick={async () => {
-          const loc = await pickFileHandleLocation()
-          if (loc) {
-            setLocation(loc)
-          }
-        }}
-      >
-        Choose File
-      </Button>
-    )
-  }
-
-  if (isElectron) {
-    return (
-      <Button
-        variant="outlined"
-        onClick={async () => {
-          const filePath = await invokeElectronMain(
-            'promptOpenLocalFile',
-            getLastLocalFileDir(),
-          )
-          if (filePath) {
-            setLastLocalFileDir(filePath)
-            setLocation({
-              localPath: filePath,
-              locationType: 'LocalPathLocation',
-            })
-          }
-        }}
-      >
-        Choose File
-      </Button>
-    )
-  }
-
-  return (
+  return supportsFileSystemAccess || isElectron ? (
+    <Button
+      variant="outlined"
+      onClick={() => {
+        choose(
+          supportsFileSystemAccess
+            ? pickFileHandleLocation
+            : pickElectronLocation,
+        )
+      }}
+    >
+      Choose File
+    </Button>
+  ) : (
     <Button variant="outlined" component="label">
       Choose File
       <input
@@ -155,39 +146,34 @@ const FilePickerButton = observer(function FilePickerButton({
 
 const ReloadPrompt = observer(function ReloadPrompt({
   location,
-  setLocation,
+  choose,
 }: {
   location: FileLocation
-  setLocation: (loc: FileLocation) => void
+  choose: (pick: Pick) => void
 }) {
-  const handleReopen = async () => {
-    if (isFileHandleLocation(location)) {
-      try {
-        await ensureFileHandleReady(location.handleId, true)
-        setLocation({ ...location })
-      } catch {
-        const loc = await pickFileHandleLocation()
-        if (loc) {
-          setLocation(loc)
-        }
-      }
-    }
-  }
-
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <>
       <Typography color="error">(need to reload)</Typography>
       {isFileHandleLocation(location) && (
         <Button
           size="small"
           variant="text"
           color="primary"
-          onClick={handleReopen}
+          onClick={() => {
+            choose(async () => {
+              try {
+                await ensureFileHandleReady(location.handleId, true)
+                return { ...location }
+              } catch {
+                return pickFileHandleLocation()
+              }
+            })
+          }}
         >
           Reopen
         </Button>
       )}
-    </Box>
+    </>
   )
 })
 
@@ -198,29 +184,38 @@ const LocalFileChooser = observer(function LocalFileChooser({
   location?: FileLocation
   setLocation: (arg: FileLocation) => void
 }) {
-  const { classes } = useStyles()
+  const [error, setError] = useState<unknown>()
   const filename = getFilename(location)
+  const choose = (pick: Pick) => {
+    setError(undefined)
+    pick()
+      .then(loc => {
+        if (loc) {
+          setLocation(loc)
+        }
+      })
+      .catch((e: unknown) => {
+        console.error(e)
+        setError(e)
+      })
+  }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-      <Box>
-        <FormControl fullWidth>
-          <FilePickerButton setLocation={setLocation} />
-        </FormControl>
-      </Box>
-      <Box>
+    <>
+      <ControlRow>
+        <FilePickerButton choose={choose} setLocation={setLocation} />
         <Typography
           component="span"
-          className={classes.filename}
-          color={filename ? 'initial' : 'textSecondary'}
+          color={filename ? undefined : 'textSecondary'}
         >
           {filename || 'No file chosen'}
         </Typography>
         {location && needsReload(location) && (
-          <ReloadPrompt location={location} setLocation={setLocation} />
+          <ReloadPrompt location={location} choose={choose} />
         )}
-      </Box>
-    </Box>
+      </ControlRow>
+      {error ? <ErrorMessage error={error} /> : null}
+    </>
   )
 })
 
