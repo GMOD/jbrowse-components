@@ -38,4 +38,5 @@ structures
 transcriptId
 uniprotId
 variant
+zoomOf
 zoomToBaseLevel
