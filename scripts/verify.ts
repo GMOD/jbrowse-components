@@ -161,14 +161,12 @@ const GATES: Gate[] = [
   },
   { name: 'typecheck', argv: nodeScript('typecheck.ts') },
   // The website reads plugin and core types (spec-recipe reads the alignments
-  // color-menu type) but `typecheck` does not include it, so a type change
-  // that breaks it went red only on CI.
+  // color-menu type) and imports from products/ and scripts/, but `typecheck`
+  // does not include it, so a type change that breaks it went red only on CI.
   {
     name: 'website typecheck',
     argv: files =>
-      files.some(f =>
-        /^(website|packages\/[^/]+\/src|plugins\/[^/]+\/src)\//.test(f),
-      )
+      files.some(f => /^(website|packages|plugins|products|scripts)\//.test(f))
         ? ['pnpm', '--dir', join(root, 'website'), 'typecheck']
         : undefined,
   },
@@ -307,7 +305,9 @@ if (cached.length > 0) {
 
 if (!full) {
   console.log(
-    `\nSkipped the slow gates (docs, esm build). ` +
+    `\nSkipped the slow gates (${GATES.filter(g => g.slow)
+      .map(g => g.name)
+      .join(', ')}). ` +
       `Run \`pnpm verify --full\` before landing something that touched a doc ` +
       `or an exported type.`,
   )

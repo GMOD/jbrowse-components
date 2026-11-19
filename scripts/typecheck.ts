@@ -91,12 +91,10 @@ if (flags.some(f => f === '--watch' || f === '-w')) {
     )
     process.exit(status ?? 1)
   }
-  for (const project of projects) {
-    const { status } = spawnSync(process.execPath, tscArgs(project), {
-      stdio: 'inherit',
-    })
-    if (status !== 0) {
-      process.exit(status ?? 1)
-    }
-  }
+  const statuses = projects.map(
+    project =>
+      spawnSync(process.execPath, tscArgs(project), { stdio: 'inherit' })
+        .status ?? 1,
+  )
+  process.exit(statuses.find(status => status !== 0) ?? 0)
 }
