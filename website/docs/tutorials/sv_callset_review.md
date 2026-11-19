@@ -131,29 +131,32 @@ mismapped there draws a curve like any other.
 
 Next we'll build a review page from the two directories with
 variant-review-portal. Each call becomes a card with its tumor and normal
-images, the record's VCF columns, the manifest's counts and a link that opens
-the same windows in JBrowse:
+images, the record's VCF columns, nanomonsv's read counts beside the manifest's,
+and a link that opens the same windows in JBrowse:
 
 ```bash
 # --images: a name for the reads in a directory's images, then the directory;
 #   the first is the sample under review and the rest are its controls
+# --support: the FORMAT keys nanomonsv counts supporting reads under, the
+#   tumor's (AD) first and the normal's (NAD) after
 # --jbrowse, --config: the JBrowse and config each card's link opens
 node variant-review-portal/bin/make-portal.mjs \
   --vcf COLO829.somatic-sv.vcf.gz \
   --images tumor=tumor --images normal=normal \
+  --support AD,NAD \
   --jbrowse https://jbrowse.org/code/jb2/main/ \
   --config https://jbrowse.org/demos/cancer_sv/config.json \
   --out portal
 npx serve portal
 ```
 
-The support filter splits the queue into calls with no supporting read, calls
-whose normal has supporting reads too, and calls with supporting reads in the
-tumor alone. <kbd>j</kbd> and <kbd>k</kbd> move between cards, <kbd>1</kbd>,
-<kbd>2</kbd> and <kbd>3</kbd> mark one real, needing a look or an artifact, and
-**Export** writes the verdicts to a TSV with each record's position and ID. A
-caller that counts its supporting reads per sample, as nanomonsv does in `AD`
-and `NAD`, can group the queue on those counts instead with `--support AD,NAD`.
+The support filter splits the queue on nanomonsv's counts into calls with no
+supporting read, calls whose normal has supporting reads too, and calls with
+supporting reads in the tumor alone. <kbd>j</kbd> and <kbd>k</kbd> move between
+cards, <kbd>1</kbd>, <kbd>2</kbd> and <kbd>3</kbd> mark one real, needing a look
+or an artifact, and **Export** writes the verdicts to a TSV with each record's
+position and ID. A callset that records no read counts takes
+`--support jb2export`, which groups the queue on the manifest's counts.
 
 The [COLO829 review page](https://jbrowse.org/demos/colo829_review/) is this
 callset built the same way, from one `batch` run that draws the genes, the
