@@ -1390,7 +1390,7 @@ export const GRAPH_LABELS: Record<string, string[]> = {
     'Haplotypes',
     'Show',
     'Show bubble halos',
-    'Show deletion edges',
+    'Show links that skip reference',
     'Show genes on the backbone',
     'Graph settings...',
   ],
@@ -1521,7 +1521,7 @@ const graphFields: Record<string, FieldRecipe> = {
   },
   showBubbles: graphCheckbox('Show bubble halos'),
   showGenes: graphCheckbox('Show genes on the backbone'),
-  showDeletionEdges: graphCheckbox('Show deletion edges'),
+  showDeletionEdges: graphCheckbox('Show links that skip reference'),
 }
 
 // A graph track entry states the pane's settings under `pane`, which
