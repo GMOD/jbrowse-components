@@ -35,7 +35,8 @@ export const hostAxis = ({ assembly, regions, width }: ComparativeAxis) => ({
  * A display's per-instance colors as each alignment's marks, `[color,
  * alpha]` in draw order at the view's opacity `level`, leaving out the ones
  * too faint to paint, as a renderer does, and the ones `shown` says fall
- * outside the window, each at the `fade` a thin one draws at.
+ * outside the window, each in the color and alpha `paint` says the
+ * renderer composites it at.
  */
 export function drawnColors(
   geometry:
@@ -48,18 +49,21 @@ export function drawnColors(
   level: number,
   nameOf: (feature: number) => string,
   shown: (instance: number) => boolean = () => true,
-  fade: (instance: number) => number = () => 1,
+  paint: (instance: number, packed: number) => [string, number] = (
+    _,
+    packed,
+  ) => {
+    const { color, alpha } = unpack(packed)
+    return [color, alpha * level]
+  },
 ) {
   const out: Record<string, [string, number][]> = {}
   for (let i = 0; i < (geometry?.instanceCount ?? 0); i++) {
     const packed = geometry?.colors[i] ?? 0
     if (!isInstanceInvisible(packed, level) && shown(i)) {
-      const { color, alpha } = unpack(packed)
+      const [color, alpha] = paint(i, packed)
       const name = nameOf(geometry?.instanceFeatureIdx[i] ?? 0)
-      out[name] = [
-        ...(out[name] ?? []),
-        [color, rounded(alpha * level * fade(i))],
-      ]
+      out[name] = [...(out[name] ?? []), [color, rounded(alpha)]]
     }
   }
   return out

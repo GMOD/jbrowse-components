@@ -118,7 +118,7 @@ interface ResolvedFill {
 // was just cleared to, which the CIGAR branch bakes in rather than composites
 // against. Passed in resolved rather than parsed here: the draw loop runs this
 // once per on-screen instance.
-function resolveInstanceFill(
+export function resolveInstanceFill(
   packed: number,
   isCigar: boolean,
   isHovered: boolean,

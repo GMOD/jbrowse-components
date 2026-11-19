@@ -1,6 +1,11 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { clamp } from '@jbrowse/core/util'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import {
+  abgrToHex,
+  cssColorToABGR,
+  cssColorToRgb,
+  packAbgr,
+} from '@jbrowse/core/util/colorBits'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -33,6 +38,8 @@ import {
   offscreenMateColors,
   ribbonDrawn,
 } from './LinearSyntenyDisplay/drawOffscreenMates.ts'
+import { resolveInstanceFill } from './LinearSyntenyDisplay/drawSyntenyTrack.ts'
+import { isCigarKind } from './LinearSyntenyDisplay/shaders/syntenyTypes.js.generated.ts'
 import {
   computeSyntenyColors,
   createSyntenyColorFunction,
@@ -453,8 +460,10 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  * the rows in paint order, each a trapezoid from a span on the query row to
  * a span on the target row (`match` for the block, `insertion`, `deletion`
  * and `skip` for the CIGAR ops wide enough to draw, `marker` for a location
- * tick), with its color and the alpha it composites at, and whether it draws
- * as a centerline, less those the band culls past its overdraw;
+ * tick), with its color and the alpha it composites at, an indel already
+ * blended over the band's ground and opaque as the band paints it, and
+ * whether it draws as a centerline, less those the band culls past its
+ * overdraw;
  * `offscreen`, the blocks whose mate lies on a contig the other row is not
  * showing or past its window and overdraw, in the color the strip along
  * that row's edge paints them, `offscreenContigs`, the count and aligned bp
@@ -596,6 +605,7 @@ export async function syntenyTables(
       x2: clamp(b, lo, hi) / axis.bpPerPx - offsetPx,
     }
   }
+  const ground = cssColorToRgb(bandGroundColor())
   const drawn = new Set<number>()
   for (let i = 0; i < instanceData.instanceCount; i++) {
     const kind = kinds[i]!
@@ -619,7 +629,16 @@ export async function syntenyTables(
     const { thin, fade } = marker
       ? { thin: true, fade: 1 }
       : ribbonThinFade(corners, height, curves, kind, fadeThin)
-    const { color, alpha } = unpack(packed)
+    const { r, g, b, a } = resolveInstanceFill(
+      packed,
+      isCigarKind(kind),
+      false,
+      level,
+      ground,
+    )
+    const { color, alpha } = marker
+      ? unpack(packed)
+      : { color: abgrToHex(packAbgr(r, g, b, 255)), alpha: a * fade }
     const qs = place(q, queryFrame.offsetPx, c1, c2)
     const ts = place(t, targetFrame.offsetPx, c4, c3)
     ribbons.alignment.push(instanceFeatureIdx[i]!)
@@ -637,7 +656,7 @@ export async function syntenyTables(
     ribbons.targetX1.push(ts.x1)
     ribbons.targetX2.push(ts.x2)
     ribbons.color.push(color)
-    ribbons.alpha.push(alpha * (marker ? 1 : level) * fade)
+    ribbons.alpha.push(alpha)
     ribbons.thin.push(thin)
   }
 

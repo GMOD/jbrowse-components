@@ -1,7 +1,15 @@
 import { getContrastText } from '@jbrowse/core/ui/palette'
-import { cssColorToABGR, cssColorToHex } from '@jbrowse/core/util/colorBits'
+import {
+  abgrToHex,
+  cssColorToABGR,
+  cssColorToHex,
+  cssColorToRgb,
+  packAbgr,
+} from '@jbrowse/core/util/colorBits'
 import { bandGroundColor, unpack } from '@jbrowse/synteny-core'
 
+import { resolveInstanceFill } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/drawSyntenyTrack.ts'
+import { isCigarKind } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/shaders/syntenyTypes.js.generated.ts'
 import {
   isRibbonCulled,
   ribbonThinFade,
@@ -121,17 +129,29 @@ function syntenyParity(
             view.overdrawPx,
             geometry?.kinds[i] === KIND_MARKER,
           ),
-        i => {
+        (i, packed) => {
           const kind = geometry?.kinds[i] ?? KIND_MARKER
+          const { color, alpha } = unpack(packed)
+          const { r, g, b, a } = resolveInstanceFill(
+            packed,
+            isCigarKind(kind),
+            false,
+            view.opacityLevel,
+            cssColorToRgb(bandGroundColor()),
+          )
           return params && kind !== KIND_MARKER
-            ? ribbonThinFade(
-                corners(i),
-                params.height,
-                params.drawCurves,
-                kind,
-                params.fadeThinAlignments,
-              ).fade
-            : 1
+            ? [
+                abgrToHex(packAbgr(r, g, b, 255)),
+                a *
+                  ribbonThinFade(
+                    corners(i),
+                    params.height,
+                    params.drawCurves,
+                    kind,
+                    params.fadeThinAlignments,
+                  ).fade,
+              ]
+            : [color, alpha]
         },
       )
       const ink = cssColorToHex(getContrastText(bandGroundColor()))
@@ -349,6 +369,20 @@ describe('3 kb of each row, the CIGAR indels wide enough to draw', () => {
       config: {
         encoding: { color: { field: 'strand' } },
         indels: { show: false },
+      },
+    },
+    {
+      name: 'strand, indels painted',
+      config: {
+        encoding: { color: { field: 'strand' } },
+        indels: { encoding: { opacity: 1 } },
+      },
+    },
+    {
+      name: 'identity at 0.4 opacity, indels painted',
+      config: {
+        encoding: { color: { field: 'identity' }, opacity: { value: 0.4 } },
+        indels: { show: true, encoding: { opacity: 1 } },
       },
     },
     {
