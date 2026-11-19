@@ -2120,7 +2120,8 @@
         "resolveThemeSelection",
         "tagColorPalette",
         "unmethylated5mC",
-        "utrDefaultColor"
+        "utrDefaultColor",
+        "zoomLinkColor"
       ],
       "worker": "real"
     },
@@ -2916,7 +2917,8 @@
         "offsetBpToPx",
         "pxToBp",
         "regionBlocksPxExtent",
-        "transformPxSpan"
+        "transformPxSpan",
+        "trapezoidPoints"
       ],
       "worker": "real"
     },

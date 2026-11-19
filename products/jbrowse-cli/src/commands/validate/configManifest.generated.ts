@@ -12630,6 +12630,7 @@ export const configManifest: ConfigManifest = {
         "displayedRegions",
         "tracks",
         "hideHeader",
+        "zoomOf",
         "hideHeaderOverview",
         "hideNoTracksActive",
         "trackSelectorType",

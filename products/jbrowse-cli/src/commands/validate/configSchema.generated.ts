@@ -28252,6 +28252,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "hideHeader": {
           "type": "boolean"
         },
+        "zoomOf": {
+          "type": "string"
+        },
         "hideHeaderOverview": {
           "type": "boolean"
         },

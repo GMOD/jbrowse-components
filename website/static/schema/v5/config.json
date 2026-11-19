@@ -27174,6 +27174,9 @@
         "hideHeader": {
           "type": "boolean"
         },
+        "zoomOf": {
+          "type": "string"
+        },
         "hideHeaderOverview": {
           "type": "boolean"
         },
