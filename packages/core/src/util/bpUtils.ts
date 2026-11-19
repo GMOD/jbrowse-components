@@ -54,7 +54,7 @@ export function getBpDisplayStr(total: number) {
       : `${Math.floor(total)}bp`
 }
 
-// Decimal places of Mbp that resolve `step` bp, uncapped when nothing short does
+// the decimal places of Mbp that resolve `step` bp
 function mbpDecimals(step: number) {
   return Math.max(0, 6 - Math.floor(Math.log10(step)))
 }
