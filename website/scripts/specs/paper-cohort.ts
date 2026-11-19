@@ -131,6 +131,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
               layoutMode: 'force',
               paneHeight: 270,
               color: { field: 'position' },
+              layers: { lengths: true },
             }),
           ],
         },

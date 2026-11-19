@@ -45,12 +45,12 @@ const network = process.argv.includes('--network')
 // `*_local.json` is the GRAPH_PLUGIN_LOCAL switch's output, gitignored and
 // pointed at a local build on purpose.
 //
-// The JBrowse 2 v5 paper's two configs are the exception: since 2026-11-14 they
-// pin 9.0.0, the release that drew its published Figures 2c and 5.
+// The JBrowse 2 v5 paper's two configs are the exception: they pin 10.0.0, the
+// release that drew its published Figures 2c and 5.
 const PLUGIN_URL =
   'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js'
 const PAPER_PLUGIN_URL =
-  'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/9.0.0/dist/jbrowse-plugin-graphgenomeviewer.esm.js'
+  'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/10.0.0/dist/jbrowse-plugin-graphgenomeviewer.esm.js'
 const PAPER_CONFIGS = new Set([
   'test_data/graphgenomeview/hprc_cnv.json',
   'test_data/graphgenomeview/paper_hprc.json',

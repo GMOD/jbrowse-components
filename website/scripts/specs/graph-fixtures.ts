@@ -24,7 +24,7 @@ export const PAA_RAMP_DOMAIN = { start: 1445000, end: 1474500 }
 
 // Every fixture names the plugin's unversioned npm url, so a plugin publish
 // moves these figures at the next regen. The paper's two, hprc_cnv.json and
-// paper_hprc.json, pin the plugin at 9.0.0 instead. Regenerate unfiltered after one:
+// paper_hprc.json, pin the plugin at 10.0.0 instead. Regenerate unfiltered after one:
 // `--filter` implies `--force`, which skips the 0.5% gate and churns them all.
 
 // Across a re-cut the old graph keeps its node count until `data-loading`
