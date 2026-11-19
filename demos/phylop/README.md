@@ -26,5 +26,13 @@ printf 'chr7\t159345973\n' > chrom.sizes
 bedGraphToBigWig shh.bedGraph chrom.sizes hg38.phyloP100way.shh.bw
 ```
 
-`EveryChromosome.tsx` still points at the live UCSC file — it genuinely needs
-whole-genome coverage, which this subset can't stand in for.
+`hg38.phyloP100way.chr10_29.7M-30M.bw` is chr10:29,700,000-30,000,000, around
+the locus `embedded_demos/base` and the `embedded` figure spec open on:
+
+```
+bigWigToBedGraph -chrom=chr10 -start=29700000 -end=30000000 \
+  https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw \
+  chr10.bedGraph
+printf 'chr10\t133797422\n' > chrom.sizes
+bedGraphToBigWig chr10.bedGraph chrom.sizes hg38.phyloP100way.chr10_29.7M-30M.bw
+```

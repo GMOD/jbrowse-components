@@ -49,7 +49,7 @@ const config = {
       name: 'hg38.100way.phyloP100way',
       category: ['Conservation'],
       assemblyNames: ['hg38'],
-      uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+      uri: 'https://jbrowse.org/demos/phylop/hg38.phyloP100way.chr10_29.7M-30M.bw',
     },
     {
       trackId: 'skbr3_pacbio',

@@ -71,7 +71,7 @@ export const embeddedSpecs: ScreenshotSpec[] = [
           assemblyNames: ['hg38'],
           adapter: {
             type: 'BigWigAdapter',
-            uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+            uri: 'https://jbrowse.org/demos/phylop/hg38.phyloP100way.chr10_29.7M-30M.bw',
           },
         },
       ],
