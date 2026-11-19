@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@jbrowse/launch-args": "workspace:^",
-    "puppeteer": "^25.17.0"
+    "puppeteer": "^25.18.1"
   },
   "publishConfig": {
     "access": "public",

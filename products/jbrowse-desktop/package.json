@@ -104,10 +104,10 @@
     "@electron/packager": "^20.3.0",
     "@jbrowse/browser-test-utils": "workspace:*",
     "@types/selenium-webdriver": "^4.35.7",
-    "electron": "^45.3.3",
-    "electron-chromedriver": "^45.3.3",
+    "electron": "^45.4.1",
+    "electron-chromedriver": "^45.4.1",
     "esbuild": "^0.28.2",
-    "selenium-webdriver": "^4.52.0"
+    "selenium-webdriver": "^4.53.0"
   },
   "browserslist": [
     "last 1 chrome version"

@@ -18,7 +18,7 @@
     "@jbrowse/display-ui": "workspace:*",
     "@jbrowse/mobx-state-tree": "catalog:",
     "@jbrowse/react-app2": "workspace:*",
-    "astro": "^7.4.12",
+    "astro": "^7.4.13",
     "mobx": "catalog:",
     "mobx-react": "catalog:",
     "react": "^19.3.1",

@@ -16,7 +16,7 @@
     "esbuild": "^0.28.2",
     "mobx": "catalog:",
     "mobx-react": "catalog:",
-    "puppeteer": "^25.17.0",
+    "puppeteer": "^25.18.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "serve-handler": "^6.1.8"

@@ -27,7 +27,7 @@
     "@jbrowse/react-app2": "workspace:*",
     "@jbrowse/react-linear-genome-view2": "workspace:*",
     "@mui/material": "catalog:",
-    "astro": "^7.4.12",
+    "astro": "^7.4.13",
     "mobx": "catalog:",
     "mobx-react": "catalog:",
     "react": "^19.3.1",
