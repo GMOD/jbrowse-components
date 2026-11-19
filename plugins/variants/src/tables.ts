@@ -57,6 +57,7 @@ import {
   recordsSettingsViews,
   recordsTrackHeightViews,
 } from './LinearVariantDisplay/recordsBandViews.ts'
+import { variantRpcPropsViews } from './LinearVariantDisplay/rpcPropsViews.ts'
 import {
   variantColorSettingViews,
   variantDrawnRowViews,
@@ -159,6 +160,17 @@ const variantHostRows = treeSidebarRowStages<ProcessedSource>()(base)
   .views(self => variantHeightViews(self))
   .views(self => variantRowsHeightViews(self))
   .views(self => recordsKeyViews(self))
+  .views(() => ({
+    get gateActive() {
+      return false
+    },
+    get aboveForceLoadFloor() {
+      return false
+    },
+    get openingRecordsHeight() {
+      return undefined
+    },
+  }))
 
 /**
  * The variant display reduced to what its tables read: the display's config,
@@ -213,6 +225,8 @@ const VariantTablesHost = variantHostRows
   .views(self => recordsColorScaleViews(self))
   .views(self => regionCellColorViews(self))
   .views(self => variantDataKeyViews(self))
+  .views(self => recordsSettingsViews(self))
+  .views(variantRpcPropsViews)
 
 const NO_RECORDS_VIEW: RecordsView = {
   coarseBpPerPx: 1,
@@ -250,15 +264,6 @@ const VariantRecordsTablesHost = variantHostRows
     get hostInitialized() {
       return true
     },
-    get gateActive() {
-      return false
-    },
-    get aboveForceLoadFloor() {
-      return false
-    },
-    get openingRecordsHeight() {
-      return undefined
-    },
     get connectorsBand() {
       return { active: false, height: 0 }
     },
@@ -274,6 +279,7 @@ const VariantRecordsTablesHost = variantHostRows
   .views(self => grownHeightViews(self))
   .views(self => recordsTrackHeightViews(self))
   .views(self => variantDataKeyViews(self))
+  .views(variantRpcPropsViews)
 
 /** Registers the adapters `variantTables` reads through: VCF, tabixed or not. */
 export function registerVariantAdapters(pluginManager: PluginManager) {
@@ -369,13 +375,7 @@ async function fetchedVariantHost(
       sessionId: 'tables',
       adapterConfig,
       regions: fetchRegions,
-      layout: host.variantLayout,
-      rowsField: host.rowsField,
-      color: host.cellHueRead,
-      sampleFilter: host.sampleFilter,
-      showReference: host.showReference,
-      siteFilter: host.siteFilter,
-      filters: host.filters,
+      ...host.rpcProps(),
       statusCallback: () => {},
     }),
   )
@@ -920,14 +920,7 @@ export async function variantFeatureTables(
       sessionId: 'tables',
       adapterConfig,
       regions: fetchRegions,
-      layout: host.variantLayout,
-      rowsField: host.rowsField,
-      color: host.cellHueRead,
-      sampleFilter: host.sampleFilter,
-      showReference: host.showReference,
-      siteFilter: host.siteFilter,
-      filters: host.filters,
-      recordFields: host.recordFieldReads,
+      ...host.rpcProps(),
       statusCallback: () => {},
     })),
   })

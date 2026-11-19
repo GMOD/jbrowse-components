@@ -119,6 +119,7 @@ import {
 } from './recordsBandViews.ts'
 import { recordCountMeasurements } from './recordsDensityGate.ts'
 import { recordsHighlightViews } from './recordsHighlightViews.ts'
+import { variantRpcPropsViews } from './rpcPropsViews.ts'
 import {
   variantContextMenuItems,
   variantTrackMenuItems,
@@ -1114,24 +1115,7 @@ export function stateModelFactory(
       .views(self => cellHueInputViews(self))
       .views(self => cellHueValuesReadViews(self))
       .views(self => cellHueViews(self))
-      .views(self => ({
-        // Payload for MultiSampleVariantGetCellData; a change refetches. Only
-        // what the worker reads, and nothing fetch-derived.
-        // `showReference` is one at genomic positions only: columns draw
-        // every reference cell.
-        rpcProps() {
-          return {
-            layout: self.variantLayout,
-            sampleFilter: self.sampleFilter,
-            siteFilter: self.siteFilter,
-            filters: self.filters,
-            rowsField: self.rowsField,
-            color: self.cellHueRead,
-            recordFields: self.recordFieldReads,
-            showReference: !self.atGenomicPositions || self.showReference,
-          }
-        },
-      }))
+      .views(variantRpcPropsViews)
       .views(self => {
         const keyWindows = stableIdentityComputed(() =>
           self.view.initialized
