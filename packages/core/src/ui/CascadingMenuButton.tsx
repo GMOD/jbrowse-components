@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
 import IconButton from '@mui/material/IconButton'
-import Tooltip from '@mui/material/Tooltip'
 import { observer } from 'mobx-react'
 
 import CascadingMenu from './CascadingMenu.tsx'
+import MaybeTooltip from './MaybeTooltip.tsx'
 
 import type { MenuItemsGetter } from './CascadingMenu.tsx'
 import type { MenuItemClickHandler } from './MenuTypes.ts'
@@ -14,27 +14,6 @@ import type { PopoverOrigin } from '@mui/material'
 // default top/left anchor)
 const dropdownAnchorOrigin = { vertical: 'bottom', horizontal: 'left' } as const
 const dropdownTransformOrigin = { vertical: 'top', horizontal: 'left' } as const
-
-// A disabled button has pointer-events:none, so a Tooltip placed directly on it
-// never fires; wrap it in a span (per MUI guidance) to restore the hover. The
-// wrapper is only added when disabled, so enabled buttons keep their layout.
-const MaybeTooltip = observer(function MaybeTooltip({
-  title,
-  disabled,
-  children,
-}: {
-  title?: string
-  disabled?: boolean
-  children: React.ReactElement
-}) {
-  return title ? (
-    <Tooltip title={title}>
-      {disabled ? <span>{children}</span> : children}
-    </Tooltip>
-  ) : (
-    children
-  )
-})
 
 const CascadingMenuButton = observer(function CascadingMenuButton({
   children,

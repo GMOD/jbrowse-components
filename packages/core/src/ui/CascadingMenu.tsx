@@ -7,12 +7,12 @@ import {
   ListSubheader,
   Menu,
   MenuItem,
-  Tooltip,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 import HoverMenu from './HoverMenu.tsx'
+import MaybeTooltip from './MaybeTooltip.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 import { resolveSubMenu, staysOpenOnClick } from './MenuTypes.ts'
 import { hasMenuItemAdornment } from './menuItemAdornment.tsx'
@@ -453,11 +453,8 @@ const CustomMenuRow = observer(function CustomMenuRow({
   )
 })
 
-// A disabled MenuItem has pointer-events:none, so a Tooltip placed directly on
-// it never fires; the span wrapper (per MUI guidance) restores hover. Disabled
-// rows aren't keyboard-focusable, so the extra wrapper doesn't affect menu
-// navigation. Renders children untouched unless the item is disabled and has
-// disabledHelpText.
+// Disabled rows aren't keyboard-focusable, so the span MaybeTooltip wraps a
+// disabled row in doesn't affect menu navigation
 const DisabledTooltip = observer(function DisabledTooltip({
   item,
   children,
@@ -465,12 +462,14 @@ const DisabledTooltip = observer(function DisabledTooltip({
   item: Pick<BaseMenuItem, 'disabled' | 'disabledHelpText'>
   children: React.ReactElement
 }) {
-  return item.disabled && item.disabledHelpText ? (
-    <Tooltip title={item.disabledHelpText} placement="left">
-      <span>{children}</span>
-    </Tooltip>
-  ) : (
-    children
+  return (
+    <MaybeTooltip
+      title={item.disabled ? item.disabledHelpText : undefined}
+      disabled={item.disabled}
+      placement="left"
+    >
+      {children}
+    </MaybeTooltip>
   )
 })
 
