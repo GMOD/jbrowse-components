@@ -1,63 +1,11 @@
 import { readFileSync } from 'node:fs'
 
 import { originTailId } from '@jbrowse/core/util/originCut'
-import { translateTranscript } from '@jbrowse/core/util/translateTranscript'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
-import GenbankSequenceAdapter from '../GenbankSequenceAdapter/GenbankSequenceAdapter.ts'
-import sequenceConfigSchema from '../GenbankSequenceAdapter/configSchema.ts'
 import { parseFeatureTable, parseRecords } from '../genbank/parseGenbank.ts'
-import GenbankAdapter from './GenbankAdapter.ts'
-import configSchema from './configSchema.ts'
+import { adapters, fetch, protein, shape } from './genbank.fixture.ts'
 
 import type { Feature } from '@jbrowse/core/util'
-
-function fixture(name: string) {
-  return {
-    localPath: require.resolve(`../test_data/${name}`),
-    locationType: 'LocalPathLocation' as const,
-  }
-}
-
-function adapters(name: string) {
-  return {
-    features: new GenbankAdapter(
-      configSchema.create({ genbankLocation: fixture(name) }),
-    ),
-    sequence: new GenbankSequenceAdapter(
-      sequenceConfigSchema.create({ genbankLocation: fixture(name) }),
-    ),
-  }
-}
-
-async function fetch(
-  adapter: GenbankAdapter,
-  refName: string,
-  start: number,
-  end: number,
-  wholeAcrossOrigin?: boolean,
-) {
-  const found = await firstValueFrom(
-    adapter
-      .getFeatures({ refName, start, end }, { wholeAcrossOrigin })
-      .pipe(toArray()),
-  )
-  return found.toSorted(
-    (a, b) => a.get('start') - b.get('start') || b.get('end') - a.get('end'),
-  )
-}
-
-function shape(f: Feature): unknown[] {
-  return [
-    f.get('type'),
-    f.get('start'),
-    f.get('end'),
-    f.get('strand'),
-    ...(f.get('phase') === undefined ? [] : [f.get('phase')]),
-    ...(f.get('subfeatures')?.length ? [f.get('subfeatures')!.map(shape)] : []),
-  ]
-}
 
 /** The `/translation` the file gives the CDS whose `qualifier` is `value`. */
 function fileTranslation(file: string, qualifier: string, value: string) {
@@ -66,22 +14,6 @@ function fileTranslation(file: string, qualifier: string, value: string) {
   return parseFeatureTable(record.featureLines)
     .find(e => e.key === 'CDS' && e.qualifiers.get(qualifier)?.[0] === value)!
     .qualifiers.get('translation')![0]!
-}
-
-async function protein(
-  sequence: GenbankSequenceAdapter,
-  refName: string,
-  gene: Feature,
-  length: number,
-) {
-  const start = gene.get('start')
-  const end = gene.get('end')
-  const seq = await sequence.getSequence({ refName, start: 0, end: length })
-  const doubled = `${seq}${seq}`
-  return translateTranscript({
-    transcript: gene,
-    seq: doubled.slice(start, end),
-  })!.protein.replace(/\*$/, '')
 }
 
 describe('a hand-written chromosome and plasmid', () => {
