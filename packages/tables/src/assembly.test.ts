@@ -262,8 +262,9 @@ test('a one-sample calls VCF with no GT lists the records the display draws, wit
   const byStart = features.start
     .map((_, i) => i)
     .sort((a, b) => features.start[a]! - features.start[b]!)
-  const inStartOrder = <T>(column: readonly T[] | undefined) =>
-    byStart.map(i => column?.[i])
+  function inStartOrder<T>(column: readonly T[] | undefined) {
+    return byStart.map(i => column?.[i])
+  }
   expect(inStartOrder(features.name)).toEqual(['r_0_0', 'd_1'])
   expect(inStartOrder(vcf?.records.ref)).toEqual(['A', 'C'])
   expect(inStartOrder(vcf?.records.alt)).toEqual(['A[ctgB:200[', '<DEL>'])
