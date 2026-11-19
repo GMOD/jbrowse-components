@@ -1,5 +1,3 @@
-import { stripStackTraceMessage } from './stripStackTraceMessage.ts'
-
 // An error's own .stack never includes its cause's stack, so the chain has to be
 // walked by hand — and the cause is usually where the real failure is, since the
 // wrappers (`new Error(msg, { cause: e })` in configurationSchema, mstUtils,
@@ -9,6 +7,13 @@ import { stripStackTraceMessage } from './stripStackTraceMessage.ts'
 
 // guards against a pathologically long chain; cycles are caught by `seen`
 const MAX_CAUSE_DEPTH = 10
+
+// the stringified error, so "TypeError: foo" for any Error subclass
+function stripStackTraceMessage(trace: string, message: string) {
+  return message && trace.startsWith(message)
+    ? trace.slice(message.length)
+    : trace
+}
 
 function getStack(error: unknown) {
   return typeof error === 'object' && error !== null && 'stack' in error

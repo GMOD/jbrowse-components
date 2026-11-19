@@ -14,6 +14,12 @@ test('strips the message and returns the frames', () => {
   expect(formatErrorStack(e)).toBe('    at foo (file.js:1:1)')
 })
 
+test('strips the message of an Error subclass', () => {
+  const e = new TypeError('x is not a function')
+  e.stack = 'TypeError: x is not a function\n    at foo (file.js:1:1)'
+  expect(formatErrorStack(e)).toBe('    at foo (file.js:1:1)')
+})
+
 test('returns empty for an error with no stack', () => {
   expect(formatErrorStack({ message: 'no stack here' })).toBe('')
 })
