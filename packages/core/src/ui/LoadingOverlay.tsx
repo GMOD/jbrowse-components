@@ -22,13 +22,8 @@ const flashDelayMs = 250
  * `delayMs`. Each activation gets a fresh delay, and the flag drops the moment
  * `active` does.
  *
- * Keyed on a count of RISING edges rather than on `active` itself, so the
- * falling edge does no work at all. A display refetching through a wheel zoom
- * flips `active` several times a second — it finishes a fetch, waits out the
- * debounce, starts the next — and an effect depending on `active` tore its timer
- * down and built a new one on each of those, twice over, for a scrim that by
- * construction never appears. Deriving the flag from a comparison instead means
- * one `setTimeout` per loading pulse, which is the floor for these semantics.
+ * Keyed on a count of rising edges, not on `active`, so a display flipping
+ * `active` several times a second through a zoom installs one timer per pulse.
  */
 export function useDelayedFlag(active: boolean, delayMs: number) {
   const [previous, setPrevious] = useState(active)
@@ -70,14 +65,7 @@ const useStyles = makeStyles()(theme => {
       alignItems: 'flex-start',
       paddingTop: '20px',
     },
-    // the status chip is the only interactive element; the striped backdrop stays
-    // click-through so it never swallows track interactions.
-    //
-    // Mostly-opaque paper (was 0.4, which let dense features and the striping
-    // read straight through the label): the chip sits over a canvas whose colors
-    // aren't known here, so the text needs its own backing to stay legible.
-    // `background.paper` rather than a literal white so dark mode gets the dark
-    // equivalent, and short of fully opaque so it still reads as an overlay.
+    // the only interactive part; the striped backdrop stays click-through
     content: {
       pointerEvents: 'auto',
       display: 'flex',

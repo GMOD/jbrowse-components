@@ -16,30 +16,11 @@ import { useStyleTheme } from './PaletteContext.tsx'
 import { alpha, grey } from './palette.ts'
 import { TOOLTIP_Z_INDEX } from './zIndexes.ts'
 
-// The hover tooltip every display shares, in both of its anchorings: following
-// the pointer over a display's data (`clientPoint`, what the ten display
-// tooltips use through `HoverTooltip`), or hanging off a control that was
-// hovered (`anchor`, what `@jbrowse/display-ui`'s `Tooltip` drives). One
-// component rather than two, because the second one only ever differed in which
-// reference it positioned against — everything below this line was the part
-// worth having once.
-//
-// Its look comes from the palette and plain inline styles rather than from a
-// `makeStyles` reading the Material UI theme, and that is deliberate: an
-// embedder who installs `plainChromeOverlays` + `plainTrackControl` gets stock
-// displays that render no Material UI, and a tooltip carrying the MUI *default*
-// theme's grey and Roboto (which is what it did, since such a host mounts no
-// ThemeProvider) put a Material widget back on their screen. It was invisible
-// to `jbrowse-build-your-own`'s smoke census too, which counts `Mui*`
-// classnames and never sees an emotion class.
-//
-// The chip is dark in both palette modes, the way a tooltip conventionally is.
-// It is the one thing on screen that deliberately does not match the page.
-//
-// `fontFamily: inherit` puts it in whatever font it is portaled into: Roboto in
-// JBrowse's own products, whose `CssBaseline` sets the body font, and the
-// host's font in an embed. The size is stated rather than inherited, because
-// body text is a good deal larger than a tooltip should be.
+// The hover tooltip every display shares, following the pointer
+// (`clientPoint`) or hanging off a hovered control (`anchor`). Styled from the
+// palette with inline styles, not a MUI-themed `makeStyles`, so a host using
+// `plainChromeOverlays` renders no Material UI. Dark in both modes; the font
+// is inherited from where it is portaled, the size stated.
 const tooltipBaseStyle = {
   pointerEvents: 'none',
   borderRadius: 4,
@@ -51,34 +32,14 @@ const tooltipBaseStyle = {
   wordWrap: 'break-word',
 } as const
 
-// The gap between the reference and the tooltip, and the ONLY place it is
-// decided. `offset()` applies it along the resolved placement axis, so it stays
-// a gap when `flip()` puts the tooltip to the LEFT of the cursor near the right
-// edge of the viewport.
-//
-// Callers pass the pointer's true client point. Eight of them used to add 5, 10
-// or 15 to `x` themselves on top of this, so the same affordance sat 20, 25 or
-// 30px from the cursor depending on which track you hovered — nobody chose
-// that, and a nudge baked into the coordinate moves the reference point rather
-// than the tooltip, so on a flipped placement it pushed the tooltip *toward*
-// the cursor instead of away. Don't reintroduce one; change this number.
+// `offset()` applies the gap along the resolved placement, so it stays a gap
+// after `flip()`. Callers pass the true client point; never nudge it, since a
+// nudged point moves toward the cursor on a flipped placement.
 const CURSOR_GAP_PX = 15
 
-// Where the pointer last was, app-wide.
-//
-// A hover tooltip mounts BECAUSE the pointer landed on something, so the event
-// that could position it has already been delivered — and floating-ui's own
-// follow mode (`useClientPoint` with no x/y) registers its window listener on
-// mount, so it learns nothing until the NEXT move. An unpositioned tooltip is
-// `visibility: hidden` (see below), which means landing on a narrow feature and
-// stopping showed no tooltip at all, indefinitely. It is why the callers that
-// have a pointer in hand pass `clientPoint`; the ones that do not are hovering
-// an ELEMENT (an SVG arc, a breakpoint connector), whose `onMouseOver` says
-// only that it was entered.
-//
-// One passive listener storing two numbers, installed at import rather than per
-// tooltip: the value a tooltip needs is the one from before it existed, so
-// there is nothing for a listener installed with it to have recorded.
+// Where the pointer last was, app-wide. A hover tooltip mounts because the
+// pointer already arrived, and floating-ui's own follow mode only learns of the
+// next move, so a tooltip without `clientPoint` would stay hidden until then.
 let lastPointerPoint: { x: number; y: number } | undefined
 
 if (typeof window !== 'undefined') {
@@ -91,9 +52,6 @@ if (typeof window !== 'undefined') {
   )
 }
 
-// An element is its own size, so the gap is measured from its edge rather than
-// from a point the pointer happens to be at. 15px off a button reads as a
-// tooltip belonging to nothing in particular.
 const ANCHOR_GAP_PX = 6
 
 export type TooltipPlacement =
