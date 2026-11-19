@@ -100,9 +100,7 @@ export async function showConnectAgentDialog(notServing: string | undefined) {
   } else if (response === 1) {
     await clipboard.writeText(claudeCode)
   } else if (response === 2) {
-    shell
-      .openExternal('https://jbrowse.org/jb2/docs/agents_mcp/')
-      .catch(logError)
+    shell.openExternal('https://jbrowse.org/jb2/docs/agents/').catch(logError)
   }
 }
 

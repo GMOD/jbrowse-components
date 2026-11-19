@@ -96,6 +96,8 @@ The agent gets four tools:
   [hosted genome](/docs/agents_hosted_data), and open the Claude side panel.
 - There is nothing to install. The page publishes `window.jb`, and the
   extension's JavaScript tool runs in the page.
+- **Help → Connect an AI agent...** copies a starter prompt that sends the agent
+  to `jb.help` first.
 - A browser cannot read local files or run tools, so a file the agent adds has
   to be a URL its host lets a web page fetch.
 

@@ -29,6 +29,7 @@ import {
 } from '@jbrowse/product-core'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import SmartToyIcon from '@mui/icons-material/SmartToy'
 
 import packageJSON from '../../package.json' with { type: 'json' }
 import { gitCommit } from '../buildInfo.ts'
@@ -66,6 +67,9 @@ import type { AssertExtends, AssertNotAny } from '@jbrowse/product-core'
 // lazies
 const SetDefaultSession = lazy(
   () => import('../components/SetDefaultSession.tsx'),
+)
+const ConnectAgentDialog = lazy(
+  () => import('../components/ConnectAgentDialog.tsx'),
 )
 
 interface SessionDbHost {
@@ -598,7 +602,21 @@ export default function RootModel({
             },
             {
               label: 'Help',
-              menuItems: () => [aboutMenuItem(), helpMenuItem()],
+              menuItems: () => [
+                aboutMenuItem(),
+                helpMenuItem(),
+                {
+                  label: 'Connect an AI agent...',
+                  icon: SmartToyIcon,
+                  onClick: () => {
+                    const { session } = self
+                    session?.queueDialog((onClose: () => void) => [
+                      ConnectAgentDialog,
+                      { session, onClose },
+                    ])
+                  },
+                },
+              ],
             },
           ]
 
