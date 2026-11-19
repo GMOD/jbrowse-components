@@ -11,13 +11,13 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, createStatusFanOut } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
+import { mapWithConcurrency } from '@jbrowse/core/util/mapWithConcurrency'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 import { firstValueFrom, merge } from 'rxjs'
 import { map, toArray } from 'rxjs/operators'
 
 import { fetchRegionRaws, servesArrays } from '../fetchRegionRaws.ts'
-import { mapWithConcurrency } from './mapWithConcurrency.ts'
 import {
   getFilenameFromAdapterConfig,
   getPrimaryLocationPath,
