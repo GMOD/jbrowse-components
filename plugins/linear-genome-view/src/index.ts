@@ -154,6 +154,7 @@ export type {
 // (`@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/util.ts`), which
 // tarballs don't ship and consumers can't resolve. check-declaration-leaks
 // guards this; see issue #4678.
+export type { ZoomLinkable, ZoomMarker } from './LinearGenomeView/zoomOf.ts'
 export type { ScalebarRefNameLabel } from './LinearGenomeView/util.ts'
 export type {
   HighlightRegion,
