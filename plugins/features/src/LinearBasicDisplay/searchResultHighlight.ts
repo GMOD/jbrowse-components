@@ -7,6 +7,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface FeatureHighlightCapableDisplay {
   setSearchHighlight: (highlight: FeatureHighlight) => void
+  clearSearchHighlight: () => void
 }
 
 function isFeatureHighlightCapable(
@@ -16,7 +17,9 @@ function isFeatureHighlightCapable(
     typeof d === 'object' &&
     d !== null &&
     'setSearchHighlight' in d &&
-    typeof d.setSearchHighlight === 'function'
+    typeof d.setSearchHighlight === 'function' &&
+    'clearSearchHighlight' in d &&
+    typeof d.clearSearchHighlight === 'function'
   )
 }
 
@@ -47,12 +50,18 @@ export function highlightSearchResultFeature({
         end: parsed.end,
         name: result.getLabel(),
       }
-      const track = model.tracks.find(
-        t => readConfObject(t.configuration, 'trackId') === trackId,
-      )
-      for (const display of track?.displays ?? []) {
-        if (isFeatureHighlightCapable(display)) {
-          display.setSearchHighlight(highlight)
+      // Every track, so the last search's box leaves the track it was on when
+      // this hit is on another.
+      for (const track of model.tracks) {
+        const hit = readConfObject(track.configuration, 'trackId') === trackId
+        for (const display of track.displays) {
+          if (isFeatureHighlightCapable(display)) {
+            if (hit) {
+              display.setSearchHighlight(highlight)
+            } else {
+              display.clearSearchHighlight()
+            }
+          }
         }
       }
     }

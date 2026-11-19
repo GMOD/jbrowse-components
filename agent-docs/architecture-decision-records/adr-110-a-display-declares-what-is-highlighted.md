@@ -146,8 +146,8 @@ grown to the ring's radius). The example plugin's `score` shape declares
 - **Nothing of canvas's `HighlightLayer`** — it was deleted on 2026-09-15, and
   the four boxes it drew are the host's four lists. `hoverInk` and
   `selectionInk` light one feature each; `pinnedInk` lights the set the reader
-  pinned, from a search hit, a right-click highlight or the `highlight=` URL
-  param, and `soloInk` the set collected for a solo, dashed, and empty once the
+  pinned, from a search hit, a right-click highlight or a session spec's
+  `featureHighlights`, and `soloInk` the set collected for a solo, dashed, and empty once the
   solo applies because the view then shows those features and nothing else. The
   reason once recorded here for keeping the layer, that the payload carried no
   feature-to-primitive index, was already wrong when it was written:

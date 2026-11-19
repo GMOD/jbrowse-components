@@ -791,7 +791,7 @@ export default function baseStateModelFactory(
       /**
        * #getter
        * Every feature the user pinned — a search hit, a right-click
-       * highlight, the `highlight=` URL param — boxed the same way. The one
+       * highlight, a session spec's `featureHighlights` — boxed the same way. The one
        * highlight list the SVG export draws.
        */
       get pinnedInk(): HighlightRect[] {

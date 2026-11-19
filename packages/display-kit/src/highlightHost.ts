@@ -25,8 +25,8 @@ export interface HighlightHost extends IStateTreeNode {
   hoverInk: HighlightRect[]
   selectionInk?: HighlightRect[]
   /**
-   * What the user pinned — a search hit, a right-click highlight, the
-   * `highlight=` URL param — and which stays lit until they clear it. The one
+   * What the user pinned — a search hit, a right-click highlight, a session
+   * spec's `featureHighlights` — and which stays lit until they clear it. The one
    * list the export draws: a hover and a selection are live-session UI, a pin
    * is what the figure is about.
    */

@@ -46,9 +46,11 @@ export interface HighlightTarget {
   featureId: string
 }
 
-// Exact within ±1bp for the 1-based/interbase convention, with no overlap
-// fallback: a near-miss fails rather than boxing a same-named overlapping
-// neighbour.
+// The span exactly, or with the start one higher: a 1-based start copied from
+// the location box. No tolerance on the end, which both conventions agree on,
+// so a SNV's highlight leaves the SNVs either side of it alone. No overlap
+// fallback either: a near-miss fails rather than boxing a same-named
+// overlapping neighbour.
 export function featureMatchesHighlight(
   item: HighlightItem,
   itemRefName: string,
@@ -56,10 +58,9 @@ export function featureMatchesHighlight(
 ) {
   return (
     h.start !== undefined &&
-    h.end !== undefined &&
     itemRefName === h.refName &&
-    Math.abs(item.startBp - h.start) <= 1 &&
-    Math.abs(item.endBp - h.end) <= 1
+    item.endBp === h.end &&
+    (h.start === item.startBp || h.start === item.startBp + 1)
   )
 }
 

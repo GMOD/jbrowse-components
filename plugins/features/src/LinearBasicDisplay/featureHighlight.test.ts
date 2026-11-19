@@ -27,6 +27,28 @@ test('off-by-one span (base convention drift) still matches', () => {
   ).toBe(true)
 })
 
+test('a start one below, which no convention produces, does not match', () => {
+  expect(
+    featureMatchesHighlight({ startBp: 1001, endBp: 2000 }, 'chr1', gene),
+  ).toBe(false)
+})
+
+test('a SNV highlight leaves the SNVs either side of it alone', () => {
+  const region = {
+    refName: 'chr1',
+    flatbushItems: [
+      { startBp: 99, endBp: 100, featureId: 'left' },
+      { startBp: 100, endBp: 101, featureId: 'hit' },
+      { startBp: 101, endBp: 102, featureId: 'right' },
+    ],
+    subfeatureInfos: [],
+  }
+  for (const start of [100, 101]) {
+    const h = [{ refName: 'chr1', start, end: 101 }]
+    expect([...resolveFeatureHighlights([region], h).box]).toEqual(['hit'])
+  }
+})
+
 test('an overlapping but non-exact span does not match (no overlap fallback)', () => {
   expect(
     featureMatchesHighlight({ startBp: 1200, endBp: 1800 }, 'chr1', gene),

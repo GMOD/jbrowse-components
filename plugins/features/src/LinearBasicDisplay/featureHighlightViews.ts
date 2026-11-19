@@ -118,6 +118,11 @@ export function featureHighlightListActions(self: FeatureHighlightListHost) {
     self.featureHighlights.clear()
     self.featureHighlights.push(...highlights)
   }
+  function rightClickHighlights() {
+    return self.featureHighlights
+      .filter(h => h.featureId !== undefined)
+      .map(h => getSnapshot(h))
+  }
   return {
     /**
      * #action
@@ -130,12 +135,18 @@ export function featureHighlightListActions(self: FeatureHighlightListHost) {
      * right-click ones, which have a `featureId`, alone.
      */
     setSearchHighlight(highlight: FeatureHighlight) {
-      setFeatureHighlights([
-        ...self.featureHighlights
-          .filter(h => h.featureId !== undefined)
-          .map(h => getSnapshot(h)),
-        highlight,
-      ])
+      setFeatureHighlights([...rightClickHighlights(), highlight])
+    },
+
+    /**
+     * #action
+     * Drops the last search's highlight when the next search lands on another
+     * track.
+     */
+    clearSearchHighlight() {
+      if (self.featureHighlights.some(h => h.featureId === undefined)) {
+        setFeatureHighlights(rightClickHighlights())
+      }
     },
 
     /**

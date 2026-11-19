@@ -120,6 +120,36 @@ describe('highlightSearchResultFeature', () => {
     expect(highlightsOf(display)).toEqual([])
   })
 
+  it('takes the last search highlight off a track the next hit is not on', () => {
+    const { display, view } = setup()
+    const rightClicked = {
+      startBp: 100,
+      endBp: 200,
+      name: 'Apple',
+      featureId: 'apple',
+    }
+    display.addFeatureHighlightForItem(rightClicked, 'ctgA')
+    highlightSearchResultFeature({
+      result: highlight({ locString: 'ctgA:1051..3902' }),
+      model: view,
+      assemblyName: 'volvox',
+    })
+    highlightSearchResultFeature({
+      result: highlight({ locString: 'ctgA:5001..6000', trackId: 'other' }),
+      model: view,
+      assemblyName: 'volvox',
+    })
+    expect(highlightsOf(display)).toEqual([
+      {
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        name: 'Apple',
+        featureId: 'apple',
+      },
+    ])
+  })
+
   it('reaches every capable display on the track', () => {
     const { display, view, track, session } = setup()
     unprotect(session)
