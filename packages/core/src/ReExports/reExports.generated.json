@@ -2513,6 +2513,7 @@
         "getBlob",
         "getBlobMap",
         "getBpDisplayStr",
+        "getBpPositionDisplayStr",
         "getBpRangeDisplayStr",
         "getConfAssemblyNames",
         "getContainingDisplay",

@@ -28228,7 +28228,7 @@
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "0 leaves each indel a gap; unset, or any other value, paints it in its operation's color.",
+              "description": "0 leaves each indel a gap and any other value paints it in its operation's color; unset, the synteny view leaves gaps and the dotplot draws each indel's line.",
               "if": {
                 "type": "null"
               },
