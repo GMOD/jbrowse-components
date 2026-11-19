@@ -3,6 +3,7 @@ import { originTailId } from '@jbrowse/core/util/originCut'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 
 import type { LazyGffFeature } from '@gmod/gff-nostream'
+import type { IntervalTree } from '@jbrowse/core/util/IntervalTree'
 
 /**
  * The length of a circular sequence, off the line that declares it circular:
@@ -127,4 +128,29 @@ export function* cutAtOrigin(
       }
     }
   }
+}
+
+/**
+ * The features of `tree` overlapping `query`, cut at the origin of a circular
+ * sequence `length` long (`cutAtOrigin`). A feature crossing the origin is
+ * stored from its start near the end, so a query short of the end looks there
+ * too.
+ */
+export function searchAcrossOrigin(
+  tree: IntervalTree<Candidate>,
+  query: { start: number; end: number },
+  length: number | undefined,
+  whole?: boolean,
+) {
+  return cutAtOrigin(
+    [
+      ...tree.search([query.start, query.end]),
+      ...(length !== undefined && query.end < length
+        ? tree.search([length - 1, length])
+        : []),
+    ],
+    query,
+    length,
+    whole,
+  )
 }

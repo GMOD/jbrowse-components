@@ -1,0 +1,54 @@
+LOCUS       contig_1                 120 bp    DNA     linear       01-JAN-2024
+DEFINITION  Test chromosome, written the way Prokka writes a contig.
+FEATURES             Location/Qualifiers
+     source          1..120
+                     /organism="Testus testus"
+                     /mol_type="genomic DNA"
+     gene            10..90
+                     /locus_tag="CHR_0001"
+                     /gene="abcA"
+     mRNA            join(10..30,50..90)
+                     /locus_tag="CHR_0001"
+                     /gene="abcA"
+     CDS             join(15..30,50..80)
+                     /locus_tag="CHR_0001"
+                     /gene="abcA"
+                     /codon_start=1
+                     /product="ABC transporter, putative; 2=3 & 50%"
+                     /note="a note long enough that the writer wrapped it onto
+                     a second line"
+                     /translation="MKVLAAGIL
+                     VPRSW"
+     gene            complement(100..118)
+                     /locus_tag="CHR_0002"
+     CDS             complement(<100..>118)
+                     /locus_tag="CHR_0002"
+                     /codon_start=2
+                     /pseudo
+     misc_feature    order(1..5,7..9)
+                     /note="ordered pieces"
+     repeat_region   J00194.1:1..10
+     misc_binding    40^41
+     misc_feature    95
+                     /note="He said ""hi"""
+ORIGIN
+        1 gctaaagaca attacataac atacacgtca gcacgaaact tgttggccca gtgtgaatcg
+       61 cttaagggtt aagtaagtgt gatgcatacg cctttacttg ctgtgtccac cccatcggac
+//
+LOCUS       pTEST                     60 bp    DNA     circular SYN 01-JAN-2024
+DEFINITION  Test plasmid.
+ACCESSION   pTEST
+VERSION     pTEST.1
+FEATURES             Location/Qualifiers
+     source          1..60
+                     /organism="synthetic construct"
+     CDS             join(50..60,1..10)
+                     /label=wrapAround
+                     /codon_start=1
+     misc_feature    join(complement(30..35),complement(20..25))
+                     /label="rev"
+     rep_origin      complement(join(55..60,1..3))
+                     /label="ori"
+ORIGIN
+        1 tggcattttt attacactca gaaacagaac tcgggtaatt ttgacaggtc acgcagaggc
+//
