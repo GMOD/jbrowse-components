@@ -552,8 +552,6 @@ export function categoricalColor(
     : cachedColorScale(domain, palette)(label)
 }
 
-// only category10 and set1 are imported by name; the rest are reached through
-// paletteColors above
 /**
  * Deterministic non-negative 32-bit hash of a string.
  */
