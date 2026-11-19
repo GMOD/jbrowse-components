@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 
+import { codonTable, revcom } from '@jbrowse/core/util'
 import { originTailId } from '@jbrowse/core/util/originCut'
 
 import { parseFeatureTable, parseRecords } from '../genbank/parseGenbank.ts'
@@ -112,7 +113,7 @@ describe('a hand-written chromosome and plasmid', () => {
       'a note long enough that the writer wrapped it onto a second line',
     )
     expect(cds.get('translation')).toBe('MKVLAAGILVPRSW')
-    expect(cds.get('transl_table')).toBeUndefined()
+    expect(cds.get('codon_start')).toBe('1')
     expect(pseudo!.get('subfeatures')![0]!.get('pseudo')).toBe('true')
     expect(quoted!.get('note')).toBe('He said "hi"')
   })
@@ -303,6 +304,36 @@ describe('edge cases on a circle and two same-named exports', () => {
         ],
       ],
     ])
+  })
+
+  test('a two-span minus-strand CDS with codon_start 3 is phased per span', async () => {
+    const gene = (await fetch(features, 'x.1', 720, 800)).find(
+      f => f.get('locus_tag') === 'X_minus',
+    )!
+    expect(shape(gene)).toEqual([
+      'gene',
+      719,
+      800,
+      -1,
+      [
+        ['CDS', 759, 800, -1, 2],
+        ['CDS', 719, 740, -1, 0],
+      ],
+    ])
+    const seq = (await sequence.getSequence({
+      refName: 'x.1',
+      start: 0,
+      end: 1000,
+    }))!
+    const coding =
+      `${revcom(seq.slice(759, 800))}${revcom(seq.slice(719, 740))}`
+        .slice(2)
+        .match(/.../g)!
+        .map(codon => codonTable[codon])
+        .join('')
+    expect(await protein(sequence, 'x.1', gene, 1000)).toBe(
+      `&${coding.replace(/\*$/, '')}`,
+    )
   })
 
   test('spans naming the record’s own accession are kept', async () => {
