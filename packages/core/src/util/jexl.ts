@@ -3,6 +3,7 @@ import { Jexl } from '@jbrowse/jexl'
 import { categoricalColor } from '../ui/colors.ts'
 import { randomColor } from './color/index.ts'
 import { colord } from './colord.ts'
+import { featureWalks } from './featureWalks.ts'
 import { jexlFeatureProxy, unwrapFeature } from './simpleFeature.ts'
 
 import type { Feature } from './simpleFeature.ts'
@@ -55,17 +56,17 @@ export default function JexlF() {
    */
   j.addFunction(
     'getInherited',
-    (feature: Feature, name: string) => {
-      let cur: Feature | undefined = unwrapFeature(feature)
-      while (cur !== undefined) {
-        const value: unknown = cur.get(name)
-        if (value !== undefined) {
-          return value
-        }
-        cur = cur.parent?.()
-      }
-      return undefined
-    },
+    (feature: Feature, name: string) =>
+      featureWalks.getInherited(unwrapFeature(feature), name),
+    FEATURE_FIELD,
+  )
+  /**
+   * #jexlFunction Feature operations - getUnbranched | getUnbranched(feature, 'product') | the attribute from the feature, else from its only child, and on down while each level has one child, so a bacterial gene reads its one CDS's value
+   */
+  j.addFunction(
+    'getUnbranched',
+    (feature: Feature, name: string) =>
+      featureWalks.getUnbranched(unwrapFeature(feature), name),
     FEATURE_FIELD,
   )
 

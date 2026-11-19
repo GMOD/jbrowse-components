@@ -1,5 +1,9 @@
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import createJexlInstance from '@jbrowse/core/util/jexl'
+import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
+import SimpleFeature, {
+  buildJexlContext,
+} from '@jbrowse/core/util/simpleFeature'
 
 import {
   FEATURE_DESCRIPTION_FIELD,
@@ -315,6 +319,112 @@ describe('subfeatureLabelText', () => {
   it("names any other part by the track's name field", () => {
     const mRNA = featureWith({ type: 'mRNA', name: 'NM_1', product: 'actin' })
     expect(subfeatureLabelText(mRNA, config, jexl)).toBe('NM_1')
+  })
+})
+
+// E. coli K-12 MG1655, NCBI RefSeq GFF3: a gene whose product sits on its one
+// CDS, a gene with two children, and a human RefSeq gene with a description
+const thrL = new SimpleFeature({
+  uniqueId: 'gene-b0001',
+  refName: 'chr',
+  start: 189,
+  end: 255,
+  type: 'gene',
+  name: 'thrL',
+  gene: 'thrL',
+  locus_tag: 'b0001',
+  subfeatures: [
+    {
+      uniqueId: 'cds-NP_414542.1',
+      refName: 'chr',
+      start: 189,
+      end: 255,
+      type: 'CDS',
+      name: 'NP_414542.1',
+      gene: 'thrL',
+      locus_tag: 'b0001',
+      product: 'thr operon leader peptide',
+    },
+  ],
+})
+
+const twoChildren = new SimpleFeature({
+  uniqueId: 'gene-2',
+  refName: 'chr',
+  start: 0,
+  end: 900,
+  type: 'gene',
+  name: 'abcD',
+  subfeatures: [
+    { refName: 'chr', start: 0, end: 900, type: 'CDS', product: 'first' },
+    { refName: 'chr', start: 0, end: 600, type: 'CDS', product: 'second' },
+  ],
+})
+
+const brca1 = new SimpleFeature({
+  uniqueId: 'gene15876',
+  refName: 'chr17',
+  start: 43044294,
+  end: 43125483,
+  type: 'gene',
+  name: 'BRCA1',
+  description: 'BRCA1 DNA repair associated',
+  subfeatures: [
+    {
+      refName: 'chr17',
+      start: 43044294,
+      end: 43125483,
+      type: 'mRNA',
+      name: 'NM_007294.3',
+      product: 'BRCA1 DNA repair associated, transcript variant 1',
+    },
+  ],
+})
+
+const mRNAChain = new SimpleFeature({
+  uniqueId: 'gene-3',
+  refName: 'chr',
+  start: 0,
+  end: 900,
+  type: 'gene',
+  name: 'xyzA',
+  subfeatures: [
+    {
+      refName: 'chr',
+      start: 0,
+      end: 900,
+      type: 'mRNA',
+      subfeatures: [
+        { refName: 'chr', start: 0, end: 900, type: 'CDS', product: 'deep' },
+      ],
+    },
+  ],
+})
+
+describe('the default description reads down a line of only children', () => {
+  const jexl = createJexlInstance()
+
+  it.each([
+    ['a gene its one CDS', thrL, 'thr operon leader peptide'],
+    ['a gene through one mRNA its one CDS', mRNAChain, 'deep'],
+    ['a gene with two children nothing', twoChildren, undefined],
+    ['a gene with a description its own', brca1, 'BRCA1 DNA repair associated'],
+  ])('%s', (_, feature, expected) => {
+    const config = mockDisplayConfig({
+      labels: {
+        name: FEATURE_NAME_FIELD,
+        description: FEATURE_DESCRIPTION_FIELD,
+      },
+    })
+    expect(readFeatureLabels(config, feature, jexl).description).toBe(expected)
+    expect(fieldReader(FEATURE_DESCRIPTION_FIELD, undefined)(feature)).toBe(
+      expected,
+    )
+    expect(
+      stringToJexlExpression(FEATURE_DESCRIPTION_FIELD, jexl).eval(
+        buildJexlContext({ feature }),
+      ),
+    ).toBe(expected)
   })
 })
 

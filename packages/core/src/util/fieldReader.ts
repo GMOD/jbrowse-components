@@ -1,5 +1,6 @@
 import { analyze } from '@jbrowse/jexl'
 
+import { featureWalks, isFeatureWalk } from './featureWalks.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { FEATURE_ROW, parseJexl } from './jexlSyntax.ts'
 import { PROXY_NAMES, buildJexlContext } from './simpleFeature.ts'
@@ -20,21 +21,23 @@ export function fieldReader(
   jexl: JexlInstance | undefined,
 ): (feature: Feature) => unknown {
   const name = plainFieldName(ref)
-  const chain = name === undefined ? plainFieldChain(ref) : undefined
+  const chain = name === undefined ? nativeChain(ref) : undefined
   return name !== undefined
     ? (feature: Feature) => feature.get(name)
     : chain
-      ? firstTruthyFieldReader(chain)
+      ? firstTruthyReader(chain)
       : isJexl(ref)
         ? jexlFieldReader(ref, jexl)
         : pathFieldReader(ref)
 }
 
-function firstTruthyFieldReader(fields: readonly string[]) {
+type TermReader = (feature: Feature) => unknown
+
+function firstTruthyReader(terms: readonly TermReader[]) {
   return (feature: Feature) => {
     let value: unknown
-    for (const field of fields) {
-      value = feature.get(field)
+    for (const term of terms) {
+      value = term(feature)
       if (value) {
         break
       }
@@ -101,14 +104,44 @@ export function plainFieldName(ref: string) {
   return ast ? plainFieldOfAst(ast) : undefined
 }
 
-// A chain of `||` over plain field reads, as `get(feature,'name') ||
-// get(feature,'id')` is, read natively: the first truthy field, else the last
-// term's value, as jexl's `||` answers.
-function plainFieldChain(ref: string) {
+// A chain of `||` over plain field reads and feature walks, as
+// `get(feature,'name') || get(feature,'id')` and
+// `get(feature,'note') || getUnbranched(feature,'product')` are, read
+// natively: the first truthy term, else the last term's value, as jexl's `||`
+// answers.
+function nativeChain(ref: string) {
   const ast = isJexl(ref) ? parseJexl(ref) : undefined
-  const names = ast ? orTerms(ast).map(term => plainFieldOfAst(term)) : []
-  return names.length > 1 && names.every(name => name !== undefined)
-    ? names
+  const terms = ast ? orTerms(ast).map(term => nativeTermReader(term)) : []
+  return terms.length > 0 && terms.every(term => term !== undefined)
+    ? terms
+    : undefined
+}
+
+function nativeTermReader(ast: AstNode) {
+  const name = plainFieldOfAst(ast)
+  return name !== undefined
+    ? (feature: Feature) => feature.get(name)
+    : featureWalkReader(ast)
+}
+
+// `getInherited(feature, 'x')` or `getUnbranched(feature, 'x')`, called on the
+// feature itself with a literal attribute name
+function featureWalkReader(ast: AstNode) {
+  const [target, field] = ast.type === 'FunctionCall' ? ast.args : []
+  const walk =
+    ast.type === 'FunctionCall' && isFeatureWalk(ast.name)
+      ? featureWalks[ast.name]
+      : undefined
+  const name =
+    field?.type === 'Literal' && typeof field.value === 'string'
+      ? field.value
+      : undefined
+  return walk &&
+    name !== undefined &&
+    target?.type === 'Identifier' &&
+    target.value === 'feature' &&
+    target.from === undefined
+    ? (feature: Feature) => walk(feature, name)
     : undefined
 }
 

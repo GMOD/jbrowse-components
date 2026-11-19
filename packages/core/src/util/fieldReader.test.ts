@@ -3,6 +3,8 @@ import createJexlInstance from './jexl.ts'
 import { stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 
+import type { Feature } from './simpleFeature.ts'
+
 const jexl = createJexlInstance()
 
 const variant = new SimpleFeature({
@@ -82,7 +84,7 @@ const nameOrId = "jexl:get(feature,'name') || get(feature,'id')"
 const descriptionChain =
   "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')"
 
-const throughJexl = (ref: string, feature: SimpleFeature) =>
+const throughJexl = (ref: string, feature: Feature) =>
   stringToJexlExpression(ref, jexl).eval(buildJexlContext({ feature }))
 
 describe('a chain of || over plain field reads', () => {
@@ -130,6 +132,62 @@ describe('a chain of || over plain field reads', () => {
         undefined,
       )(featureWith({ name: '', id: 'i' })),
     ).toBe('i')
+  })
+})
+
+describe('a chain with a feature walk reads natively', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'g',
+    refName: 'chr1',
+    start: 0,
+    end: 9,
+    gene_biotype: 'protein_coding',
+    subfeatures: [
+      {
+        uniqueId: 't',
+        refName: 'chr1',
+        start: 0,
+        end: 9,
+        subfeatures: [
+          { uniqueId: 'c', refName: 'chr1', start: 0, end: 9, product: 'p' },
+        ],
+      },
+    ],
+  })
+  const [transcript] = gene.get('subfeatures')!
+  const [cds] = transcript!.get('subfeatures')!
+
+  test.each([
+    ["jexl:get(feature,'note') || getUnbranched(feature,'product')", gene, 'p'],
+    ["jexl:getUnbranched(feature,'product')", transcript!, 'p'],
+    ["jexl:getUnbranched(feature,'missing')", gene, undefined],
+    [
+      "jexl:get(feature,'note') || getInherited(feature,'gene_biotype')",
+      cds!,
+      'protein_coding',
+    ],
+  ])('%s', (ref, feature, expected) => {
+    expect(fieldReader(ref, undefined)(feature)).toBe(expected)
+    expect(throughJexl(ref, feature)).toBe(expected)
+  })
+
+  test('a two-child level stops the walk', () => {
+    const branched = featureWith({
+      subfeatures: [
+        { refName: 'chr1', start: 0, end: 1, product: 'a' },
+        { refName: 'chr1', start: 0, end: 1, product: 'b' },
+      ],
+    })
+    const ref = "jexl:getUnbranched(feature,'product')"
+    expect(fieldReader(ref, undefined)(branched)).toBeUndefined()
+    expect(throughJexl(ref, branched)).toBeUndefined()
+  })
+
+  test.each([
+    "jexl:get(feature,'a') || getUnbranched(feature, get(feature,'b'))",
+    "jexl:get(feature,'a') || getUnbranched(parent(feature),'b')",
+  ])('but not one that names its field or feature by expression: %s', ref => {
+    expect(() => fieldReader(ref, undefined)).toThrow('needs a jexl instance')
   })
 })
 

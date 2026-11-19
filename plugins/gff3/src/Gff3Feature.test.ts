@@ -1,5 +1,6 @@
 import { parseLines, parseLinesLazy } from '@gmod/gff-nostream'
 import { featureBedColor } from '@jbrowse/core/util/colorBits'
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { Gff3Feature } from './Gff3Feature.ts'
@@ -177,4 +178,17 @@ describe('Gff3Feature', () => {
     })
     expect(lazy(GENE).get('id')).toBe('gene1')
   })
+})
+
+// E. coli K-12 MG1655 as NCBI writes it: the gene carries no product, its one
+// CDS does
+const THRL = [
+  'chr\tRefSeq\tgene\t190\t255\t.\t+\t.\tID=gene-b0001;Dbxref=ASAP:ABE-0000006,ECOCYC:EG11277,GeneID:944742;Name=thrL;gbkey=Gene;gene=thrL;gene_biotype=protein_coding;gene_synonym=ECK0001;locus_tag=b0001',
+  'chr\tRefSeq\tCDS\t190\t255\t.\t+\t0\tID=cds-NP_414542.1;Parent=gene-b0001;Dbxref=UniProtKB/Swiss-Prot:P0AD86,GenBank:NP_414542.1,ASAP:ABE-0000006,ECOCYC:EG11277,GeneID:944742;Name=NP_414542.1;gbkey=CDS;gene=thrL;locus_tag=b0001;product=thr operon leader peptide;protein_id=NP_414542.1;transl_table=11',
+]
+
+test("a bacterial gene reads its one CDS's product through getUnbranched", () => {
+  const read = fieldReader("jexl:getUnbranched(feature,'product')", undefined)
+  expect(read(lazy(THRL))).toBe('thr operon leader peptide')
+  expect(read(eager(THRL))).toBe('thr operon leader peptide')
 })
