@@ -408,12 +408,14 @@ test('MultiWaySyntenyDisplay reorders a lane by dragging its label onto another'
     <LaneHeaders model={display} />,
   )
   const [anchor, peach] = display.laneStack.lanes
-  fireEvent.mouseDown(await findByTestId('multiway-lane-label-cacao'), {
-    clientY: 1,
+  const label = await findByTestId('multiway-lane-label-cacao')
+  fireEvent.pointerDown(label, { button: 0, pointerId: 1, clientY: 1 })
+  fireEvent.pointerMove(label, {
+    pointerId: 1,
+    clientY: peach!.bandStart + 1,
   })
-  fireEvent.mouseMove(window, { clientY: peach!.bandStart + 1 })
   expect(queryByTestId('multiway-lane-drop')).toBeTruthy()
-  fireEvent.mouseUp(window, { clientY: peach!.bandStart + 1 })
+  fireEvent.pointerUp(label, { pointerId: 1, clientY: peach!.bandStart + 1 })
   expect(queryByTestId('multiway-lane-drop')).toBeNull()
   expect([...display.domain]).toEqual(['cacao', 'peach'])
   expect(display.rowAssemblies).toEqual(['cacao', 'peach'])
@@ -421,11 +423,20 @@ test('MultiWaySyntenyDisplay reorders a lane by dragging its label onto another'
   // a drop on the anchor's band is the top of the mate lanes — once the
   // press has travelled past the drag slop, since a release inside it is a
   // click
-  fireEvent.mouseDown(await findByTestId('multiway-lane-label-peach'), {
+  const peachLabel = await findByTestId('multiway-lane-label-peach')
+  fireEvent.pointerDown(peachLabel, {
+    button: 0,
+    pointerId: 2,
     clientY: peach!.bandStart + 1,
   })
-  fireEvent.mouseMove(window, { clientY: anchor!.bandStart + 1 })
-  fireEvent.mouseUp(window, { clientY: anchor!.bandStart + 1 })
+  fireEvent.pointerMove(peachLabel, {
+    pointerId: 2,
+    clientY: anchor!.bandStart + 1,
+  })
+  fireEvent.pointerUp(peachLabel, {
+    pointerId: 2,
+    clientY: anchor!.bandStart + 1,
+  })
   expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
 
   // the anchor lane is the view's own axis and has nowhere to go

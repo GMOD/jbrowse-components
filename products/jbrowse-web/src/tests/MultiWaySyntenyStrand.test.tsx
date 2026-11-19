@@ -138,11 +138,12 @@ test('a reverse-strand link between two mate lanes draws a crossed ribbon', asyn
 }, 60000)
 
 // A bp the lane's frame does not reach maps through `rowFrameX`, which
-// extrapolates. The fourth row here runs Pp1:0-1100, straddling the edge of a
-// frame that starts around Pp1:625 — a record an intersection test passes and
-// the lane still cannot draw whole. Unclipped it put an endpoint 716 px off the
-// left of the canvas, where the svg clips the rect it belongs to and the ribbon
-// sweeps the page.
+// extrapolates. The fourth row here runs Pp1:0-1100, straddling the left edge
+// of peach's frame — a record an intersection test passes and the lane still
+// cannot draw whole — onto Tc1:2900-4000, a screen and a half left of cacao's.
+// Unclipped it puts an endpoint 1280 px off the left of the canvas, past the
+// screen either side a lane draws, where the svg clips the rect it belongs to
+// and the ribbon sweeps the page.
 function farPafConfig() {
   const config = reversePafConfig()
   config.tracks.push({
@@ -216,8 +217,8 @@ test('a link record outside a lane frame draws no ribbon off the canvas', async 
   expect(drawn.length).toBeGreaterThan(0)
   for (const { xs } of drawn) {
     for (const x of xs) {
-      expect(x).toBeGreaterThanOrEqual(-width / 2)
-      expect(x).toBeLessThanOrEqual(1.5 * width)
+      expect(x).toBeGreaterThanOrEqual(-width)
+      expect(x).toBeLessThanOrEqual(2 * width)
     }
   }
 }, 60000)
@@ -269,6 +270,11 @@ test('flipping the view horizontally does not twist the ribbons', async () => {
   view.horizontallyFlip()
   // the lane below follows the anchor's new reading direction, which is what
   // makes this the case that used to invert
-  expect(display.rowFrames.get('peach')!.flipped).toBe(true)
+  await waitFor(
+    () => {
+      expect(display.rowFrames.get('peach')?.flipped).toBe(true)
+    },
+    { timeout: 30000 },
+  )
   expect(await twists()).toEqual(before)
 }, 60000)
