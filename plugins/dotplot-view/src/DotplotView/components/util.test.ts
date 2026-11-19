@@ -207,7 +207,7 @@ describe('locstr', () => {
   // 1-based, the same convention the ruler above it labels its ticks in: the
   // tick at this pixel says 101, not 100.
   test('a forward region reads left to right', () => {
-    expect(locstr(100, axis(false))).toBe('{volvox}ctgA:101')
+    expect(locstr(100, axis(false))).toBe('volvox ctgA:101')
   })
 
   // auto-diagonalize flips query regions, so the vertical axis routinely has
@@ -215,7 +215,7 @@ describe('locstr', () => {
   // when reversed — reading it as `start + offset` named bp 100 here, a
   // position mirrored about the middle of the right contig.
   test('a reversed region reads right to left', () => {
-    expect(locstr(100, axis(true))).toBe('{volvox}ctgA:901')
+    expect(locstr(100, axis(true))).toBe('volvox ctgA:901')
   })
 
   test('past the last region it says so rather than extrapolating', () => {

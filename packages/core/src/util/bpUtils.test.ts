@@ -1,5 +1,6 @@
 import {
   getBpDisplayStr,
+  getBpPositionDisplayStr,
   getBpRangeDisplayStr,
   getTickDisplayStr,
   parseBpString,
@@ -31,8 +32,21 @@ describe('getBpRangeDisplayStr', () => {
     [28_942_281, 29_061_086, '28.94Mbp-29.06Mbp'],
     [28_942_281, 28_949_086, '28,942,282-28,949,086'],
     [93_399, 107_732, '93,400-107,732'],
+    [28_942_281, 28_942_282, '28,942,282'],
   ])('%i-%i reads %s', (start, end, expected) => {
     expect(getBpRangeDisplayStr(start, end)).toBe(expected)
+  })
+})
+
+describe('getBpPositionDisplayStr', () => {
+  test.each([
+    [121_478_001, 50_000, '121.48Mbp'],
+    [121_478_001, 500_000, '121.5Mbp'],
+    [121_478_001, 5_000_000, '121Mbp'],
+    [121_478_001, 5_000, '121,478,001'],
+    [101, 50_000, '101'],
+  ])('%i at %i bp/px reads %s', (coord, bpPerPx, expected) => {
+    expect(getBpPositionDisplayStr(coord, bpPerPx)).toBe(expected)
   })
 })
 

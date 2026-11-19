@@ -254,6 +254,7 @@ export {
   bytesForRegions,
   featureSpanPx,
   getBpDisplayStr,
+  getBpPositionDisplayStr,
   getBpRangeDisplayStr,
   getTickDisplayStr,
   parseBpString,

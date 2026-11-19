@@ -2,7 +2,7 @@ import {
   getTickDisplayStr,
   max,
   measureText,
-  toLocale,
+  getBpPositionDisplayStr,
 } from '@jbrowse/core/util'
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
@@ -83,7 +83,7 @@ export function locstr(px: number, view: Dotplot1DViewModel) {
   const { assemblyName, refName, coord, oob } = view.pxToBp(px)
   return oob
     ? 'out of bounds'
-    : `{${assemblyName}}${refName}:${toLocale(coord)}`
+    : `${assemblyName} ${refName}:${getBpPositionDisplayStr(coord, view.bpPerPx)}`
 }
 
 // One source of truth for the axis label/tick font, imported by both the

@@ -8,7 +8,7 @@ import {
   CIGAR_X,
   visitCigarRenderedSegments,
 } from '@jbrowse/cigar-utils'
-import { assembleLocString, assembleLocStringRaw } from '@jbrowse/core/util'
+import { assembleLocStringRaw, getBpRangeDisplayStr } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import { RECT_FLAG_INSET, getFeatureName } from '@jbrowse/plugin-features'
 import {
@@ -84,11 +84,7 @@ export function outlineKey(key: string) {
 }
 
 function locOn(lane: Lane, refName: string, start: number, end: number) {
-  return `${lane.assemblyName} ${assembleLocString({
-    refName: lane.canon(refName),
-    start: Math.round(start),
-    end: Math.round(end),
-  })}`
+  return `${lane.assemblyName} ${lane.canon(refName)}:${getBpRangeDisplayStr(Math.round(start), Math.round(end))}`
 }
 
 function lines(...parts: (string | undefined)[]) {

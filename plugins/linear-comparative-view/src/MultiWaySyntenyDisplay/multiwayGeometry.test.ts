@@ -206,7 +206,7 @@ describe('the ribbons', () => {
       ribbonColor: 'grey',
       drawCurves: false,
     })
-    expect(targets.map(t => t.label)).toEqual(['grape chr1:501..600'])
+    expect(targets.map(t => t.label)).toEqual(['grape chr1:501-600'])
   })
 
   test('join the anchor span to the mate span end to end, and a reverse pair crossed', () => {
@@ -237,7 +237,7 @@ describe('the ribbons', () => {
     expect(data.base0).toBe(0)
     expect(abgrAlpha(data.colors[0]!)).toBe(Math.round(0.3 * 255))
     expect(targets.map(t => t.groupKey)).toEqual(['g1', 'g2'])
-    expect(targets[0]!.label).toBe('g1\ngrape chr1:101..200')
+    expect(targets[0]!.label).toBe('g1\ngrape chr1:101-200')
     expect([...data.instanceFeatureIdx]).toEqual([
       groupTarget.get('g1'),
       groupTarget.get('g2'),
@@ -862,10 +862,10 @@ describe('the ribbons', () => {
       ...attributeTooltipLines({ identity: 0.98712, mappingQual: 60 }),
     ])
     expect(
-      ribbonTooltip('g1\ngrape chr1:101..200', [], record, ranges).split('\n'),
+      ribbonTooltip('g1\ngrape chr1:101-200', [], record, ranges).split('\n'),
     ).toEqual([
       'g1',
-      'grape chr1:101..200',
+      'grape chr1:101-200',
       ...attributeTooltipLines({ identity: 0.98712, mappingQual: 60 }),
     ])
   })
@@ -1444,7 +1444,7 @@ describe('a lane cell', () => {
     // at the gene's end; the pass draws it inward from there
     expect(cell.arrowXs[0]).toBe(PX_ORIGIN + 80)
     // no placement box: the gene covers the group's span
-    expect(cell.hits.map(h => h.label)).toEqual(['GENE1\ngrape chr1:101..200'])
+    expect(cell.hits.map(h => h.label)).toEqual(['GENE1\ngrape chr1:101-200'])
     expect(glyphHitAt(cell.hits, 100, lane.glyphTop + 1)?.feature).toBe(gene)
     expect(glyphHitAt(cell.hits, 100, lane.glyphTop - 5)).toBeUndefined()
   })
@@ -1471,9 +1471,9 @@ describe('a lane cell', () => {
     expect(
       [targets[0]!, glyphs.hits[0]!, boxes.hits[0]!].map(h => h.label),
     ).toEqual([
-      'g1\ngrape chr1:101..200',
-      'GENE1\ngrape chr1:101..200',
-      'g2\ngrape chr1:501..600',
+      'g1\ngrape chr1:101-200',
+      'GENE1\ngrape chr1:101-200',
+      'g2\ngrape chr1:501-600',
     ])
   })
 
@@ -1496,8 +1496,8 @@ describe('a lane cell', () => {
         width: WIDTH,
         colors,
       }).glyphs.hits[0]!.label
-    expect(labelOf(unnamed('gene-g1'))).toBe('gene-g1\ngrape chr1:101..200')
-    expect(labelOf(unnamed())).toBe('grape chr1:101..200')
+    expect(labelOf(unnamed('gene-g1'))).toBe('gene-g1\ngrape chr1:101-200')
+    expect(labelOf(unnamed())).toBe('grape chr1:101-200')
   })
 
   test('an alignment record no gene reaches draws no box', () => {

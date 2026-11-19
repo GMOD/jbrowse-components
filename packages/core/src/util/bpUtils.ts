@@ -54,6 +54,15 @@ export function getBpDisplayStr(total: number) {
       : `${Math.floor(total)}bp`
 }
 
+// Decimal places of Mbp that resolve `step` bp, uncapped when nothing short does
+function mbpDecimals(step: number) {
+  return Math.max(0, 6 - Math.floor(Math.log10(step)))
+}
+
+function mbp(bp: number, decimals: number) {
+  return `${(bp / 1_000_000).toFixed(decimals)}Mbp`
+}
+
 /**
  * An interbase range as a hover reads it: in Mbp, to two significant digits
  * of its own length ("66Mbp-98Mbp", "28.94Mbp-29.06Mbp"), wherever that is
@@ -61,11 +70,24 @@ export function getBpDisplayStr(total: number) {
  * parses back as a locString's range.
  */
 export function getBpRangeDisplayStr(start: number, end: number) {
-  const decimals = Math.max(0, 7 - Math.floor(Math.log10(end - start)))
-  const mbp = (bp: number) => `${(bp / 1_000_000).toFixed(decimals)}Mbp`
+  const decimals = mbpDecimals((end - start) / 10)
   return end >= 1_000_000 && decimals <= 2
-    ? `${mbp(start)}-${mbp(end)}`
-    : `${toLocale(start + 1)}-${toLocale(end)}`
+    ? `${mbp(start, decimals)}-${mbp(end, decimals)}`
+    : end - start === 1
+      ? toLocale(end)
+      : `${toLocale(start + 1)}-${toLocale(end)}`
+}
+
+/**
+ * A 1-based position read off a pointer `bpPerPx` wide: in Mbp to the
+ * pointer's own precision ("121.48Mbp") wherever that is shorter than the
+ * exact coordinate it otherwise prints.
+ */
+export function getBpPositionDisplayStr(coord: number, bpPerPx: number) {
+  const decimals = mbpDecimals(bpPerPx)
+  return coord >= 1_000_000 && decimals <= 2
+    ? mbp(coord, decimals)
+    : toLocale(coord)
 }
 
 const BP_UNITS: Record<string, number> = {
