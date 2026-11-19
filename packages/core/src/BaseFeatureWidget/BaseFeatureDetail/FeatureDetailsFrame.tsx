@@ -27,14 +27,12 @@ export interface FeatureDetailsFrameModel {
 const FeatureDetailsFrame = observer(function FeatureDetailsFrame({
   model,
   renderBody,
-  children,
 }: {
   model: FeatureDetailsFrameModel
-  renderBody?: (
+  renderBody: (
     feature: SimpleFeatureSerialized,
     unformatted: SimpleFeatureSerialized,
   ) => React.ReactNode
-  children?: React.ReactNode
 }) {
   const { error, featureData, unformattedFeatureData, trackId } = model
   return !featureData || isEmpty(featureData) ? (
@@ -53,8 +51,7 @@ const FeatureDetailsFrame = observer(function FeatureDetailsFrame({
       <FeatureWash uniqueId={featureKey(trackId, featureData.uniqueId)}>
         {error ? <ErrorBanner error={error} /> : null}
         <Fragment key={featureKey(trackId, featureData.uniqueId)}>
-          {renderBody?.(featureData, unformattedFeatureData ?? featureData)}
-          {children}
+          {renderBody(featureData, unformattedFeatureData ?? featureData)}
         </Fragment>
       </FeatureWash>
     </FeatureTrackContext>

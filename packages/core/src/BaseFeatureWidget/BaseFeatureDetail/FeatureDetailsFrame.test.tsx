@@ -7,13 +7,13 @@ import FeatureDetailsFrame from './FeatureDetailsFrame.tsx'
 import { useFeatureKey } from './featureKey.ts'
 
 import type { FeatureDetailsFrameModel } from './FeatureDetailsFrame.tsx'
-import type React from 'react'
 
 test('a formatDetails error with no feature replaces the panel', () => {
   const { getByText, queryByText } = render(
-    <FeatureDetailsFrame model={{ error: new Error('bad callback') }}>
-      body
-    </FeatureDetailsFrame>,
+    <FeatureDetailsFrame
+      model={{ error: new Error('bad callback') }}
+      renderBody={() => 'body'}
+    />,
   )
   expect(getByText(/bad callback/)).toBeTruthy()
   expect(queryByText('body')).toBeNull()
@@ -26,9 +26,8 @@ test('a formatDetails error shows above the feature it fell back to', () => {
         error: new Error('bad callback'),
         featureData: { uniqueId: 'f', refName: 'ctgA', start: 0, end: 1 },
       }}
-    >
-      body
-    </FeatureDetailsFrame>,
+      renderBody={() => 'body'}
+    />,
   )
   expect(getByText(/bad callback/)).toBeTruthy()
   expect(getByText('body')).toBeTruthy()
@@ -36,7 +35,7 @@ test('a formatDetails error shows above the feature it fell back to', () => {
 
 test('no feature says so rather than drawing an empty panel', () => {
   const { getByText, queryByText } = render(
-    <FeatureDetailsFrame model={{}}>body</FeatureDetailsFrame>,
+    <FeatureDetailsFrame model={{}} renderBody={() => 'body'} />,
   )
   expect(getByText(/No feature loaded/)).toBeTruthy()
   expect(queryByText('body')).toBeNull()
@@ -48,9 +47,8 @@ test('a feature draws the body', () => {
       model={{
         featureData: { uniqueId: 'f', refName: 'ctgA', start: 0, end: 1 },
       }}
-    >
-      body
-    </FeatureDetailsFrame>,
+      renderBody={() => 'body'}
+    />,
   )
   expect(getByText('body')).toBeTruthy()
 })
@@ -70,9 +68,7 @@ function swapIn(trackId: string) {
   const featureData = { uniqueId: 'chr1-12', refName: 'chr1', start: 0, end: 1 }
   const model = observable({ trackId: 'gencode', featureData })
   const { getByText, queryByTestId } = render(
-    <FeatureDetailsFrame model={model}>
-      <PerFeature />
-    </FeatureDetailsFrame>,
+    <FeatureDetailsFrame model={model} renderBody={() => <PerFeature />} />,
   )
   const before = getByText(/mount/).textContent
   act(() => {
@@ -95,37 +91,21 @@ test('a re-format of the feature on screen keeps its UI state', () => {
   expect(swapIn('gencode')).toEqual({ remounted: false, washed: false })
 })
 
-function swapBody(frame: (model: FeatureDetailsFrameModel) => React.ReactNode) {
+test('a swap to another feature remounts the body', () => {
   const model = observable<FeatureDetailsFrameModel>({
     trackId: 'gencode',
     featureData: { uniqueId: 'a', refName: 'chr1', start: 0, end: 1 },
   })
-  const { getByText } = render(frame(model))
+  const { getByText } = render(
+    <FeatureDetailsFrame model={model} renderBody={() => <Mounted />} />,
+  )
   const before = getByText(/mount/).textContent
   act(() => {
     runInAction(() => {
       model.featureData = { uniqueId: 'b', refName: 'chr1', start: 0, end: 1 }
     })
   })
-  return getByText(/mount/).textContent !== before
-}
-
-test('a swap to another feature remounts a plain body', () => {
-  expect(
-    swapBody(model => (
-      <FeatureDetailsFrame model={model}>
-        <Mounted />
-      </FeatureDetailsFrame>
-    )),
-  ).toBe(true)
-})
-
-test('a swap to another feature remounts a rendered body', () => {
-  expect(
-    swapBody(model => (
-      <FeatureDetailsFrame model={model} renderBody={() => <Mounted />} />
-    )),
-  ).toBe(true)
+  expect(getByText(/mount/).textContent).not.toBe(before)
 })
 
 test('a rendered body is handed the shown and the unformatted feature', () => {
