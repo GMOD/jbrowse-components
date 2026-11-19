@@ -45,9 +45,7 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   setOpen,
   ButtonComponent = IconButton,
   onClick: onClickExtra,
-  onMenuItemClick = callback => {
-    callback()
-  },
+  onMenuItemClick,
   anchorOrigin = dropdownAnchorOrigin,
   transformOrigin = dropdownTransformOrigin,
   tooltip,
@@ -60,8 +58,6 @@ const CascadingMenuButton = observer(function CascadingMenuButton({
   stopPropagation?: boolean
   disabled?: boolean
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
-  // see CascadingMenuListProps; defaults to invoking the row's onClick with no
-  // argument, which is what a menu built against a model it closes over wants
   onMenuItemClick?: (callback: MenuItemClickHandler) => void
   setOpen?: (arg: boolean) => void
   ButtonComponent?: React.FC<{

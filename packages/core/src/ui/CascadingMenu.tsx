@@ -346,6 +346,10 @@ function makeTestId(kind: string, label: React.ReactNode) {
     : undefined
 }
 
+function isDisabled(item: JBMenuItem) {
+  return 'disabled' in item && !!item.disabled
+}
+
 // Leading icon slot shared by submenu rows and clickable rows; renders nothing
 // when the item has no icon (the row insets instead to stay column-aligned).
 const MenuItemLeadingIcon = observer(function MenuItemLeadingIcon({
@@ -500,9 +504,6 @@ const CascadingSubmenu = observer(function CascadingSubmenu({
   const parentSide = use(SubmenuSideContext)
   const [side, setSide] = useState(parentSide)
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
-  // a rebuild can disable the row while its panel is up, and a disabled row has
-  // no way left to close it
-  const isOpen = open && !item.disabled
 
   return (
     <>
@@ -512,12 +513,12 @@ const CascadingSubmenu = observer(function CascadingSubmenu({
           data-testid={makeTestId('submenu', item.label)}
           disabled={item.disabled}
           aria-haspopup="menu"
-          aria-expanded={isOpen}
+          aria-expanded={open}
           // keeps the panel visually attached to the row it hangs off: that
           // row's own hover highlight is gone the moment the pointer moves
           // into the panel. Presentational on a `menuitem` — MUI derives
           // aria-checked from `selected` only for the checkbox/radio roles.
-          selected={isOpen}
+          selected={open}
           onMouseEnter={e => {
             hover.hoverSubmenu(itemKey, { x: e.clientX, y: e.clientY })
           }}
@@ -538,7 +539,7 @@ const CascadingSubmenu = observer(function CascadingSubmenu({
           <MenuItemTrailing item={item} columns={columns} />
         </MenuItem>
       </DisabledTooltip>
-      {isOpen ? (
+      {open ? (
         <HoverMenu
           anchorEl={anchorEl}
           {...submenuOrigins(side)}
@@ -693,6 +694,13 @@ const CascadingMenuList = observer(function CascadingMenuList({
   // keyed after the sort, so an occurrence suffix counts up the level in the
   // order it is drawn
   const keys = useMemo(() => rowKeys(sortedItems), [sortedItems])
+  const openRow =
+    openSubmenu === undefined
+      ? undefined
+      : sortedItems[keys.indexOf(openSubmenu)]
+  if (openSubmenu !== undefined && (!openRow || isDisabled(openRow))) {
+    hover.setSubmenu(undefined)
+  }
 
   return (
     <>
@@ -749,7 +757,7 @@ const CascadingMenuList = observer(function CascadingMenuList({
 })
 
 interface CascadingMenuProps {
-  onMenuItemClick: (callback: MenuItemClickHandler) => void
+  onMenuItemClick?: (callback: MenuItemClickHandler) => void
   closeAfterItemClick?: boolean
   menuItems: MenuItemsGetter
   open: boolean
@@ -763,7 +771,9 @@ interface CascadingMenuProps {
 }
 
 const CascadingMenu = observer(function CascadingMenu({
-  onMenuItemClick,
+  onMenuItemClick = callback => {
+    callback()
+  },
   closeAfterItemClick = true,
   menuItems,
   open,

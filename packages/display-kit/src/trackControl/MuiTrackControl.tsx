@@ -202,9 +202,6 @@ const MuiTrackControl = observer(function MuiTrackControl({
             setAnchorEl(null)
             onMenuClose?.()
           }}
-          onMenuItemClick={callback => {
-            callback()
-          }}
           menuItems={menuItemsFor(options)}
         />
       ) : null}

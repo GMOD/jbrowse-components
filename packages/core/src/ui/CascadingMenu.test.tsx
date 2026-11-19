@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react'
 import { observable, runInAction } from 'mobx'
 
 import CascadingMenu from './CascadingMenu.tsx'
+import { filterMenuItems } from './filterMenuItems.ts'
 import { createJBrowseTheme } from './theme.ts'
 import { radioItem } from './toggleMenuItems.ts'
 
@@ -28,6 +29,14 @@ function renderMenu(menuItems: MenuItem[]) {
     </ThemeProvider>,
   )
   return { ...utils, onMenuItemClick, onClose }
+}
+
+function renderMenuGetter(menuItems: () => MenuItem[]) {
+  return render(
+    <ThemeProvider theme={theme}>
+      <CascadingMenu open menuItems={menuItems} onClose={() => {}} />
+    </ThemeProvider>,
+  )
 }
 
 // The reservation that lines a clickable row's "?" up with a submenu row's is
@@ -219,9 +228,6 @@ describe('CascadingMenu endAdornment', () => {
         <CascadingMenu
           open
           menuItems={() => [radioItem(`Mode: ${mode.get()}`, false, () => {})]}
-          onMenuItemClick={cb => {
-            cb()
-          }}
           onClose={() => {}}
         />
       </ThemeProvider>,
@@ -296,9 +302,6 @@ describe('CascadingMenu submenus', () => {
               subMenu: [{ label: 'Inner', onClick: () => {} }],
             },
           ]}
-          onMenuItemClick={cb => {
-            cb()
-          }}
           onClose={() => {}}
         />
       </ThemeProvider>,
@@ -341,9 +344,6 @@ describe('CascadingMenu submenus', () => {
               subMenu: [{ label: 'Square', onClick: () => {} }],
             },
           ]}
-          onMenuItemClick={cb => {
-            cb()
-          }}
           onClose={() => {}}
         />
       </ThemeProvider>,
@@ -363,6 +363,50 @@ describe('CascadingMenu submenus', () => {
       })
     })
     expect([expanded('colors'), expanded('shapes')]).toEqual(['true', 'false'])
+  })
+
+  it('keeps the Filter by submenu open when its count changes', () => {
+    const count = observable.box(0)
+    const { getByText, getByTestId } = renderMenuGetter(() =>
+      filterMenuItems({
+        narrowings: { filter: { count: count.get(), clear: () => {} } },
+        subItems: [{ label: 'Slider', onClick: () => {} }],
+      }),
+    )
+    fireEvent.mouseOver(getByText('Filter by'))
+    act(() => {
+      runInAction(() => {
+        count.set(1)
+      })
+    })
+    expect(
+      getByTestId('cascading-submenu-filter_by_(1)').getAttribute(
+        'aria-expanded',
+      ),
+    ).toBe('true')
+  })
+
+  it('forgets an open submenu whose row was disabled under it', () => {
+    const disabled = observable.box(false)
+    const { getByText, getByTestId } = renderMenuGetter(() => [
+      {
+        label: 'Colors',
+        disabled: disabled.get(),
+        subMenu: [{ label: 'Red', onClick: () => {} }],
+      },
+    ])
+    const expanded = () =>
+      getByTestId('cascading-submenu-colors').getAttribute('aria-expanded')
+    fireEvent.mouseOver(getByText('Colors'))
+    expect(expanded()).toBe('true')
+    for (const value of [true, false]) {
+      act(() => {
+        runInAction(() => {
+          disabled.set(value)
+        })
+      })
+    }
+    expect(expanded()).toBe('false')
   })
 })
 

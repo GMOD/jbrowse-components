@@ -80,9 +80,6 @@ const ContextMenu = observer(function ContextMenu({
   return items.length > 0 ? (
     <Menu
       open
-      onMenuItemClick={callback => {
-        callback()
-      }}
       onClose={() => {
         clearTrackedPointer()
         onClose()

@@ -70,14 +70,7 @@ function subMenuOf(model: ReturnType<typeof makeModel>) {
 function renderRows(items: MenuItem[]) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <CascadingMenu
-        open
-        menuItems={items}
-        onMenuItemClick={(cb: () => void) => {
-          cb()
-        }}
-        onClose={() => {}}
-      />
+      <CascadingMenu open menuItems={items} onClose={() => {}} />
     </ThemeProvider>,
   )
 }

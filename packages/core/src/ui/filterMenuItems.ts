@@ -157,5 +157,14 @@ export function filterMenuItems({
   // submenu, and takes the "..." of a row that opens a dialog
   return rows.length === 1 && onEdit
     ? [{ label: `${label}...`, icon: FilterAltIcon, priority, onClick: onEdit }]
-    : [{ label, icon: FilterAltIcon, priority, type: 'subMenu', subMenu: rows }]
+    : [
+        {
+          id: 'filter-by',
+          label,
+          icon: FilterAltIcon,
+          priority,
+          type: 'subMenu',
+          subMenu: rows,
+        },
+      ]
 }
