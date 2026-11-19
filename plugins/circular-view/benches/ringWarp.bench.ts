@@ -99,9 +99,20 @@ const INNER_PX = OUTER_PX - BAND_PX
 const STRIP_W = Math.round(2 * Math.PI * OUTER_PX)
 const TWO_PI = 2 * Math.PI
 
-const warpRingModule = stripTypeScriptTypes(
-  readFileSync(new URL('../src/rings/warpRing.ts', import.meta.url), 'utf8'),
-).replaceAll(/^export /gm, '')
+function pageSource(path: string) {
+  return stripTypeScriptTypes(
+    readFileSync(new URL(path, import.meta.url), 'utf8'),
+  )
+    .replaceAll(/^import .*$/gm, '')
+    .replaceAll(/^export /gm, '')
+}
+
+const warpRingModule = [
+  '../../../packages/render-core/src/shaders/antialias.js.generated.ts',
+  '../src/rings/warpRing.ts',
+]
+  .map(pageSource)
+  .join('\n')
 
 const pageScript = String.raw`
 const DPR = ${DPR}
