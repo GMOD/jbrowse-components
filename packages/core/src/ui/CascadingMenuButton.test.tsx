@@ -299,54 +299,35 @@ describe('CascadingMenuButton', () => {
     })
   })
 
-  it('should open a help dialog from a row with helpText', async () => {
+  it("should open the level's help dialog from its Help row", async () => {
     const user = await setup([
       { label: 'Item 1', helpText: 'the explanation', onClick: () => {} },
     ])
     await user.click(screen.getByTestId('menu-button'))
-    const row = (await screen.findByText('Item 1')).closest('li')!
-    await user.click(within(row).getByRole('button'))
+    await user.click(await screen.findByRole('menuitem', { name: 'Help' }))
     expect(await screen.findByText('the explanation')).toBeTruthy()
-  })
-
-  // an icon-only button is announced as a bare "button" without this. The label
-  // names the row it belongs to, since a menu can carry several help buttons
-  it('should give the help button an accessible name', async () => {
-    const user = await setup([
-      { label: 'Item 1', helpText: 'the explanation', onClick: () => {} },
-    ])
-    await user.click(screen.getByTestId('menu-button'))
-    const row = await screen.findByRole('menuitem', { name: 'Item 1' })
+    // still mounted beneath the dialog, which hides it from the a11y tree
     expect(
-      within(row).getByRole('button', { name: 'Help for Item 1' }),
+      screen.getByRole('menuitem', { name: 'Item 1', hidden: true }),
     ).toBeTruthy()
   })
 
-  it('shares one trailing column when help and adornment never share a row', async () => {
+  it('should reach the Help row and its dialog from the keyboard', async () => {
     const user = await setup([
-      {
-        label: 'Help row',
-        type: 'checkbox',
-        checked: false,
-        helpText: 'the explanation',
-        onClick: () => {},
-      },
-      {
-        label: 'Pin row',
-        type: 'checkbox',
-        checked: false,
-        endAdornment: <span>adorn-badge</span>,
-        onClick: () => {},
-      },
+      { label: 'Item 1', helpText: 'the explanation', onClick: () => {} },
     ])
     await user.click(screen.getByTestId('menu-button'))
-    const helpRow = (await screen.findByText('Help row')).closest('li')!
-    await user.click(within(helpRow).getByRole('button'))
+    await screen.findByText('Item 1')
+    await user.keyboard('{ArrowDown}{Enter}')
     expect(await screen.findByText('the explanation')).toBeTruthy()
-    expect(screen.getByText('adorn-badge')).toBeTruthy()
+    await user.keyboard('{Escape}')
+    await waitFor(() => {
+      expect(screen.queryByText('the explanation')).toBeNull()
+    })
+    expect(screen.getByRole('menuitem', { name: 'Help' })).toHaveFocus()
   })
 
-  it('keeps help and adornment when a single row carries both', async () => {
+  it('keeps a row adornment beside a row that has help', async () => {
     const user = await setup([
       {
         label: 'Both row',
@@ -360,8 +341,7 @@ describe('CascadingMenuButton', () => {
     await user.click(screen.getByTestId('menu-button'))
     const row = (await screen.findByText('Both row')).closest('li')!
     expect(within(row).getByText('adorn-badge')).toBeTruthy()
-    await user.click(within(row).getByRole('button'))
-    expect(await screen.findByText('the explanation')).toBeTruthy()
+    expect(within(row).queryByRole('button')).toBeNull()
   })
 
   it('should show a checked decoration for a checked checkbox item', async () => {

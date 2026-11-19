@@ -1,39 +1,22 @@
+import ChevronRight from '@mui/icons-material/ChevronRight'
 import { observer } from 'mobx-react'
 
-import CascadingMenuHelpIconButton, {
-  CascadingMenuHelpIconSpacer,
-} from './CascadingMenuHelpIconButton.tsx'
-import { MenuItemChevron } from './MenuItemChevron.tsx'
 import { MenuItemEndDecoration } from './MenuItemEndDecoration.tsx'
 import { menuItemAdornment } from './menuItemAdornment.ts'
 
 import type { ClickableMenuItem, SubMenuItem } from './MenuTypes.ts'
 
-// gap that sets the value glyph (row state) apart from the trailing help/pin
-// action column, so a busy row reads as "value | actions" not one dense cluster
-const valueActionGap = 8
+// gap that sets the value glyph (row state) apart from the adornment column, so
+// a busy row reads as "value | pin" not one dense cluster
+const valueAdornmentGap = 8
 
 // fixed footprint reserved for the endAdornment column so pins right-align
 const endAdornmentColumnWidth = 28
 
-// The two row kinds that draw a trailing column stack. They differ only in what
-// the stack ENDS in — a submenu row's chevron, or the invisible copy of it a
-// clickable row reserves — which is why one component draws both: a column added
-// to one and forgotten on the other is a silently misaligned menu.
+// The two row kinds that draw a trailing stack, in one component so a column
+// added to one cannot be forgotten on the other.
 export type DecoratedMenuItem = ClickableMenuItem | SubMenuItem
 
-// Which trailing columns the menu reserves, computed menu-wide (true if ANY row
-// needs it) so every row reserves matching slots and the decorations stack into
-// aligned columns down the menu. See `getMenuColumnFlags`.
-export interface MenuColumnFlags {
-  hasCheckboxOrRadioWithHelp: boolean
-  hasEndAdornment: boolean
-  hasSubmenuWithHelp: boolean
-  sharedActionColumn: boolean
-}
-
-// The checkbox/radio glyph reflecting a row's value. Held slightly apart from
-// the action column when the menu has one, so state and actions don't blur.
 const MenuItemValueGlyph = observer(function MenuItemValueGlyph({
   type,
   checked,
@@ -44,15 +27,14 @@ const MenuItemValueGlyph = observer(function MenuItemValueGlyph({
   separated: boolean
 }) {
   return (
-    <div style={{ marginRight: separated ? valueActionGap : 0 }}>
+    <div style={{ marginRight: separated ? valueAdornmentGap : 0 }}>
       <MenuItemEndDecoration type={type} checked={checked} />
     </div>
   )
 })
 
-// Fixed-width column holding an item's endAdornment (e.g. the "default for all"
-// pin). Reserved on every row of a menu that has any adornment so they
-// right-align into their own column.
+// Reserved on every row of a menu that has any adornment (e.g. the "default for
+// all" pin), so the adornments right-align into their own column.
 const MenuItemEndAdornmentSlot = observer(function MenuItemEndAdornmentSlot({
   children,
 }: {
@@ -72,77 +54,31 @@ const MenuItemEndAdornmentSlot = observer(function MenuItemEndAdornmentSlot({
   )
 })
 
-// Everything trailing a menu row's label, for a clickable row and a submenu row
-// alike: a flex spacer that right-aligns the decorations, then the value glyph,
-// help affordance, endAdornment column, and the chevron column. When
-// `sharedActionColumn` is set, no row in the menu combines help with an
-// adornment, so the two share one trailing column (whichever this row has)
-// rather than each claiming its own.
+// Everything trailing a row's label: a flex spacer that right-aligns the rest,
+// the value glyph, the menu-wide adornment column, and a submenu row's chevron.
 export const MenuItemTrailing = observer(function MenuItemTrailing({
   item,
-  columns: {
-    hasCheckboxOrRadioWithHelp,
-    hasEndAdornment,
-    hasSubmenuWithHelp,
-    sharedActionColumn,
-  },
+  adornmentColumn,
 }: {
   item: DecoratedMenuItem
-  columns: MenuColumnFlags
+  adornmentColumn: boolean
 }) {
-  const isSubmenu = 'subMenu' in item
-  const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
-  const hasActionColumn = hasCheckboxOrRadioWithHelp || hasEndAdornment
-  // a disabled row can't open the help popover (pointer-events:none), so its
-  // helpText is surfaced as a hover tooltip by the row instead
-  const helpButton =
-    item.helpText && !item.disabled ? (
-      <CascadingMenuHelpIconButton
-        helpText={item.helpText}
-        label={item.label}
-      />
-    ) : undefined
   return (
     <>
       <div style={{ flexGrow: 1, minWidth: 10 }} />
-      {isCheckOrRadio ? (
+      {item.type === 'checkbox' || item.type === 'radio' ? (
         <MenuItemValueGlyph
           type={item.type}
           checked={item.checked}
-          separated={hasActionColumn}
+          separated={adornmentColumn}
         />
       ) : null}
-      {sharedActionColumn ? (
+      {adornmentColumn ? (
         <MenuItemEndAdornmentSlot>
-          {helpButton ?? menuItemAdornment(item)}
+          {menuItemAdornment(item)}
         </MenuItemEndAdornmentSlot>
-      ) : (
-        <>
-          {/* on a checkbox/radio row lacking help that shares a menu with rows
-              that have it, an invisible spacer of the same footprint keeps the
-              value glyphs column-aligned */}
-          {helpButton ??
-            (isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
-              <CascadingMenuHelpIconSpacer />
-            ) : null)}
-          {hasEndAdornment ? (
-            <MenuItemEndAdornmentSlot>
-              {menuItemAdornment(item)}
-            </MenuItemEndAdornmentSlot>
-          ) : null}
-        </>
-      )}
-      {/* A submenu row ends in a chevron, so everything before it sits a
-          chevron's width in from the edge. The invisible copy is reserved on the
-          clickable rows of a menu whose submenus draw help, so the two kinds'
-          "?" land in one column instead of a chevron apart — visible the moment
-          a settings menu carries help on both kinds, which the comparative
-          views' settings menus do on nearly every row. */}
-      {isSubmenu ? (
-        <MenuItemChevron />
-      ) : hasSubmenuWithHelp ? (
-        <MenuItemChevron hidden />
       ) : null}
+      {'subMenu' in item ? <ChevronRight /> : null}
     </>
   )
 })

@@ -39,91 +39,86 @@ function renderMenuGetter(menuItems: () => MenuItem[]) {
   )
 }
 
-// The reservation that lines a clickable row's "?" up with a submenu row's is
-// the chevron ITSELF, drawn invisible — a spelled width cannot be right, because
-// `pxToRem` scales every icon by the theme's base font size and this theme's is
-// 12, not MUI's 14. The column was a literal 24 and the icon draws at ~20.6, so
-// every checkbox row's help sat ~3.4px inboard of the submenu rows'.
-describe('CascadingMenu help column', () => {
-  const helpRows: MenuItem[] = [
-    {
-      type: 'checkbox',
-      label: 'Alpha',
-      checked: false,
-      helpText: 'what alpha does',
-      onClick: () => {},
-    },
-    {
-      label: 'Beta',
-      helpText: 'what beta is',
-      subMenu: [
-        { type: 'radio', label: 'One', checked: true, onClick: () => {} },
-      ],
-    },
-  ]
-
-  it('reserves the chevron a chevron wide, not a number wide', () => {
-    const { getByTestId } = renderMenu(helpRows)
-    const trailingIcon = (testid: string) => {
-      const icons = getByTestId(testid).querySelectorAll('svg')
-      return icons[icons.length - 1]!
-    }
-    const chevron = trailingIcon('cascading-submenu-beta')
-    const spacer = trailingIcon('cascading-menuitem-alpha')
-    expect(getComputedStyle(spacer).visibility).toBe('hidden')
-    expect(getComputedStyle(spacer).fontSize).toBe(
-      getComputedStyle(chevron).fontSize,
-    )
-    expect(getComputedStyle(spacer).width).toBe(getComputedStyle(chevron).width)
-  })
-
-  // Everything drawn to the right of a row's "?", as tag + reserved width: two
-  // rows whose help sits in one column have identical footprints after it.
-  const afterHelpButton = (row: HTMLElement) => {
-    const help = row.querySelector('[aria-label^="Help for"]')!
-    const out: string[] = []
-    for (let el = help.nextElementSibling; el; el = el.nextElementSibling) {
-      out.push(`${el.tagName}:${getComputedStyle(el).width}`)
-    }
-    return out
+describe('CascadingMenu help row', () => {
+  const alpha: MenuItem = {
+    type: 'checkbox',
+    label: 'Alpha',
+    checked: false,
+    helpText: 'what alpha does',
+    onClick: () => {},
   }
+  const beta: MenuItem = {
+    label: 'Beta',
+    helpText: 'what beta asks',
+    subMenu: [
+      { type: 'radio', label: 'One', checked: true, onClick: () => {} },
+    ],
+  }
+  const rowLabels = () =>
+    [...document.querySelectorAll('[role^="menuitem"]')].map(
+      el => el.textContent,
+    )
+  const dialog = () => document.querySelector<HTMLElement>('.MuiDialog-root')!
 
-  // The chevron reservation alone is not enough once the menu ALSO has an
-  // adornment column: a clickable row put its pin in a fixed-width slot the
-  // submenu row's adornment never got, so its "?" sat a whole column further in
-  // — the live shape of alignments' Color by > Modifications, whose radios carry
-  // help AND a pin while its submenu rows carry help.
-  it('lines both row kinds up when the menu also has an adornment column', () => {
+  it('ends a level whose rows carry help in one Help row', () => {
+    renderMenu([alpha, { label: 'Gamma', onClick: () => {} }])
+    expect(rowLabels()).toEqual(['Alpha', 'Gamma', 'Help'])
+  })
+
+  it('adds no Help row to a level without help', () => {
+    renderMenu([{ label: 'Gamma', onClick: () => {} }])
+    expect(rowLabels()).toEqual(['Gamma'])
+  })
+
+  it("lists each row's label and help text in the dialog", () => {
     const { getByTestId } = renderMenu([
-      {
-        type: 'checkbox',
-        label: 'Alpha',
-        checked: false,
-        helpText: 'what alpha does',
-        endAdornment: <span data-testid="adorn">pin</span>,
-        onClick: () => {},
-      },
-      helpRows[1]!,
+      alpha,
+      { label: 'Gamma', helpText: 'what gamma does', onClick: () => {} },
     ])
-    expect(afterHelpButton(getByTestId('cascading-menuitem-alpha'))).toEqual(
-      afterHelpButton(getByTestId('cascading-submenu-beta')),
+    fireEvent.click(getByTestId('cascading-menu-help'))
+    const labels = [
+      ...dialog().querySelectorAll('.MuiDialogContent-root > div'),
+    ]
+    expect(labels.map(el => [...el.children].map(c => c.textContent))).toEqual([
+      ['Alpha', 'what alpha does'],
+      ['Gamma', 'what gamma does'],
+    ])
+  })
+
+  it('keeps the menu open beneath the dialog', () => {
+    const { getByTestId, onClose } = renderMenu([alpha])
+    fireEvent.click(getByTestId('cascading-menu-help'))
+    expect(onClose).not.toHaveBeenCalled()
+    expect(dialog()).toBeTruthy()
+    expect(getByTestId('cascading-menuitem-alpha')).toBeTruthy()
+  })
+
+  it("makes a submenu row's help its panel's intro, not a parent entry", () => {
+    const { getByTestId, getAllByTestId } = renderMenu([beta])
+    expect(rowLabels()).toEqual(['Beta'])
+    fireEvent.click(getByTestId('cascading-submenu-beta'))
+    expect(rowLabels()).toEqual(['Beta', 'One', 'Help'])
+    fireEvent.click(getAllByTestId('cascading-menu-help')[0]!)
+    expect(dialog().textContent).toContain('Help: Beta')
+    expect(dialog().querySelector('.MuiDialogContent-root')!.textContent).toBe(
+      'what beta asks',
     )
   })
 
-  // Reserved only when a submenu row actually draws help: with nothing to line
-  // up with, the spacer would only unalign the checkbox glyph from the chevron
-  // it already sits level with.
-  it('reserves nothing when no submenu row carries help', () => {
-    const { getByTestId } = renderMenu([
-      helpRows[0]!,
-      { label: 'Beta', subMenu: [{ label: 'One', onClick: () => {} }] },
+  it("leaves a disabled row's help out", () => {
+    renderMenu([
+      { ...alpha, disabled: true, disabledHelpText: 'why not' },
+      { label: 'Gamma', onClick: () => {} },
     ])
-    const row = getByTestId('cascading-menuitem-alpha')
-    expect(
-      [...row.querySelectorAll('svg')].some(
-        el => getComputedStyle(el).visibility === 'hidden',
-      ),
-    ).toBe(false)
+    expect(rowLabels()).toEqual(['Alpha', 'Gamma'])
+  })
+
+  // the dialog is a React child of the menu's list, whose arrow handling would
+  // otherwise preventDefault the key and move focus to a menu row
+  it('keeps the menu from reading keys typed in the dialog', () => {
+    const { getByTestId } = renderMenu([alpha])
+    fireEvent.click(getByTestId('cascading-menu-help'))
+    expect(fireEvent.keyDown(dialog(), { key: 'ArrowDown' })).toBe(true)
   })
 })
 

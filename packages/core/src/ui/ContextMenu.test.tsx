@@ -101,8 +101,8 @@ test('a submenu stacks at the level its root menu was raised to', () => {
 })
 
 // jsdom computes no stacking, so the levels are compared as numbers
-test("a row's help dialog stacks above the menu it was opened from", () => {
-  const { getByLabelText } = renderMenu({
+test("a level's help dialog stacks above the menu it was opened from", () => {
+  const { getByTestId } = renderMenu({
     anchor: { clientX: 10, clientY: 20 },
     menuItems: [
       {
@@ -115,7 +115,7 @@ test("a row's help dialog stacks above the menu it was opened from", () => {
     ],
     onClose: () => {},
   })
-  fireEvent.click(getByLabelText('Help for Pin'))
+  fireEvent.click(getByTestId('cascading-menu-help'))
   const menu = document.querySelector<HTMLElement>('.MuiPopover-root')
   const dialog = document.querySelector<HTMLElement>('.MuiDialog-root')
   expect(Number(dialog?.style.zIndex)).toBeGreaterThan(

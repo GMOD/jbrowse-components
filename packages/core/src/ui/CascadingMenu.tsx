@@ -16,6 +16,7 @@ import {
   useAboveMenuZIndex,
   useCascadingMenu,
 } from './CascadingMenuContext.ts'
+import CascadingMenuHelpDialog from './CascadingMenuHelpDialog.tsx'
 import HoverMenu from './HoverMenu.tsx'
 import MaybeTooltip from './MaybeTooltip.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
@@ -25,7 +26,7 @@ import { isAimedAtPanel } from './submenuAim.ts'
 import { submenuOrigins, submenuSide } from './submenuSide.ts'
 import { usePlacedMenuFocus } from './usePlacedMenuFocus.ts'
 
-import type { MenuColumnFlags } from './MenuItemTrailing.tsx'
+import type { MenuHelpEntry } from './CascadingMenuHelpDialog.tsx'
 import type {
   BaseMenuItem,
   ClickableMenuItem,
@@ -330,57 +331,18 @@ const MenuItemLeadingIcon = observer(function MenuItemLeadingIcon({
   ) : null
 })
 
-// Which decoration columns the menu needs, computed menu-wide (true if ANY row
-// needs it) so every row reserves matching slots and the decorations stack into
-// aligned columns down the menu. Per list, so a submenu's own rows answer it for
-// themselves. `hasIcon` is the leading column; `columns` is the trailing stack
-// `MenuItemTrailing` draws for both row kinds, and every predicate below counts
-// submenu rows and clickable rows alike because both draw that stack.
-function getMenuColumnFlags(menuItems: JBMenuItem[]) {
-  // a disabled row surfaces its help as a hover tooltip instead of the "?"
-  // button (see DisabledTooltip), so it must not claim the column either — or a
-  // menu whose only help row is disabled reserves a spacer on every row for a
-  // button that never renders
-  const hasCheckboxOrRadioWithHelp = menuItems.some(
-    m =>
-      (m.type === 'checkbox' || m.type === 'radio') &&
-      m.helpText &&
-      !m.disabled,
+// The level's Help dialog lists its enabled rows' helpText. A submenu row's
+// own helpText is the intro of its panel's dialog instead, and a disabled row's
+// help is its `disabledHelpText` tooltip.
+function menuHelpEntries(items: JBMenuItem[], keys: string[]) {
+  return items.flatMap((item, idx): MenuHelpEntry[] =>
+    'helpText' in item &&
+    item.helpText &&
+    !item.disabled &&
+    !('subMenu' in item)
+      ? [{ key: keys[idx]!, label: item.label, helpText: item.helpText }]
+      : [],
   )
-  const hasEndAdornment = menuItems.some(m => hasMenuItemAdornment(m))
-  // a single row carrying both a help "?" and a trailing adornment (e.g. pin) is
-  // the only case that genuinely needs help and adornment in separate columns
-  const hasRowWithHelpAndAdornment = menuItems.some(
-    m =>
-      hasMenuItemAdornment(m) &&
-      'helpText' in m &&
-      m.helpText &&
-      !('disabled' in m && m.disabled),
-  )
-  return {
-    hasIcon: menuItems.some(m => 'icon' in m && m.icon),
-    columns: {
-      hasCheckboxOrRadioWithHelp,
-      hasEndAdornment,
-      // Gated on a submenu row that actually draws help, not on there being a
-      // submenu at all: the reservation exists to pull the clickable rows' "?"
-      // into the column a chevron pushes a submenu row's "?" out of. In a menu
-      // where no submenu row has help there is nothing to line up with, and
-      // reserving it there would only unalign a checkbox glyph from the chevron
-      // it currently sits level with.
-      hasSubmenuWithHelp: menuItems.some(
-        m => 'subMenu' in m && m.helpText && !m.disabled,
-      ),
-      // when help and adornment never collide on one row, they collapse into
-      // one shared trailing column instead of each claiming its own, so a menu
-      // mixing help-only and pin-only rows doesn't reserve a wasted third
-      // column
-      sharedActionColumn:
-        hasCheckboxOrRadioWithHelp &&
-        hasEndAdornment &&
-        !hasRowWithHelpAndAdornment,
-    },
-  }
 }
 
 // Renders arbitrary React content (e.g. a slider) as a plain list row, not a
@@ -442,19 +404,14 @@ const DisabledTooltip = observer(function DisabledTooltip({
 })
 
 // One submenu row: label (with optional leading icon), the same trailing
-// decorations a clickable row draws, and the panel it opens.
-//
-// A submenu row carries its own `helpText` — for the question the rows inside it
-// are answers to, which an option table of individually-helped entries still
-// leaves nowhere to state — and its own trailing adornment (a color swatch, a
-// toggle), whose content stops its own click so using it doesn't also open the
-// submenu. Both go through `MenuItemTrailing`, so they land in the columns the
-// clickable rows reserve rather than in a hand-assembled copy of them.
+// decorations a clickable row draws, and the panel it opens. Its own trailing
+// adornment (a color swatch, a toggle) stops its own click so using it doesn't
+// also open the submenu; its `helpText` opens the panel's Help dialog.
 const CascadingSubmenu = observer(function CascadingSubmenu({
   item,
   itemKey,
   inset,
-  columns,
+  adornmentColumn,
   open,
   hover,
   onNavigateBack,
@@ -462,7 +419,7 @@ const CascadingSubmenu = observer(function CascadingSubmenu({
   item: SubMenuItem
   itemKey: string
   inset: boolean
-  columns: MenuColumnFlags
+  adornmentColumn: boolean
   open: boolean
   hover: SubmenuHover
   onNavigateBack?: () => void
@@ -503,7 +460,7 @@ const CascadingSubmenu = observer(function CascadingSubmenu({
         >
           <MenuItemLeadingIcon Icon={item.icon} />
           <ListItemText primary={item.label} inset={inset} />
-          <MenuItemTrailing item={item} columns={columns} />
+          <MenuItemTrailing item={item} adornmentColumn={adornmentColumn} />
         </MenuItem>
       </DisabledTooltip>
       {open ? (
@@ -560,32 +517,30 @@ const SubMenuList = observer(function SubMenuList({
   return (
     <CascadingMenuList
       menuItems={resolveSubMenu(item)}
+      opener={item}
       onNavigateBack={onNavigateBack}
     />
   )
 })
 
 // One clickable menu row: label (with optional leading icon) plus its trailing
-// value/help/adornment decorations. The menu-wide `columns` flags let every row
-// reserve matching decoration slots so the columns line up down the menu.
+// value and adornment decorations.
 const CascadingMenuItem = observer(function CascadingMenuItem({
   item,
   inset,
-  columns,
+  adornmentColumn,
   onNavigateBack,
   onHover,
 }: {
   item: ClickableMenuItem
   inset: boolean
-  columns: MenuColumnFlags
+  adornmentColumn: boolean
   onNavigateBack?: () => void
   onHover: (event: React.MouseEvent) => void
 }) {
   const { closeAfterItemClick, onMenuItemClick, onCloseRoot } =
     useCascadingMenu()
   return (
-    // a disabled row can't open the help popover (pointer-events:none), so
-    // disabledHelpText is surfaced as a hover tooltip instead of the icon button
     <DisabledTooltip item={item}>
       <MenuItem
         data-testid={makeTestId('menuitem', item.label)}
@@ -631,17 +586,70 @@ const CascadingMenuItem = observer(function CascadingMenuItem({
           secondary={item.subLabel}
           inset={inset}
         />
-        <MenuItemTrailing item={item} columns={columns} />
+        <MenuItemTrailing item={item} adornmentColumn={adornmentColumn} />
       </MenuItem>
     </DisabledTooltip>
   )
 })
 
+// The last row of a level whose rows carry help. The dialog is this row's child,
+// so the menu stays open beneath it and focus returns here when it closes.
+const CascadingMenuHelpRow = observer(function CascadingMenuHelpRow({
+  title,
+  intro,
+  entries,
+  inset,
+  onNavigateBack,
+  onHover,
+}: {
+  title?: React.ReactNode
+  intro?: string
+  entries: MenuHelpEntry[]
+  inset: boolean
+  onNavigateBack?: () => void
+  onHover: (event: React.MouseEvent) => void
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <MenuItem
+        data-testid="cascading-menu-help"
+        aria-haspopup="dialog"
+        onClick={() => {
+          setOpen(true)
+        }}
+        onMouseEnter={onHover}
+        onKeyDown={e => {
+          if (e.key === 'ArrowLeft') {
+            e.stopPropagation()
+            onNavigateBack?.()
+          }
+        }}
+      >
+        <ListItemText primary="Help" inset={inset} />
+      </MenuItem>
+      {open ? (
+        <CascadingMenuHelpDialog
+          title={title}
+          intro={intro}
+          entries={entries}
+          onClose={() => {
+            setOpen(false)
+          }}
+        />
+      ) : null}
+    </>
+  )
+})
+
 const CascadingMenuList = observer(function CascadingMenuList({
   menuItems,
+  opener,
   onNavigateBack,
 }: {
   menuItems: JBMenuItem[]
+  // the submenu row this level is the panel of; undefined at the root
+  opener?: SubMenuItem
   // close this menu level and refocus its opener (ArrowLeft); undefined at the
   // root level where there is nothing to go back to
   onNavigateBack?: () => void
@@ -650,10 +658,9 @@ const CascadingMenuList = observer(function CascadingMenuList({
   const { openSubmenu, hover } = useSubmenuHover()
   const { closeOnHover } = hover
 
-  const { hasIcon, columns } = useMemo(
-    () => getMenuColumnFlags(menuItems),
-    [menuItems],
-  )
+  const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
+  // per level, so a submenu's adornments line up among its own rows
+  const adornmentColumn = menuItems.some(m => hasMenuItemAdornment(m))
   const sortedItems = useMemo(
     () => menuItems.toSorted((a, b) => (b.priority ?? 0) - (a.priority ?? 0)),
     [menuItems],
@@ -661,6 +668,8 @@ const CascadingMenuList = observer(function CascadingMenuList({
   // keyed after the sort, so an occurrence suffix counts up the level in the
   // order it is drawn
   const keys = useMemo(() => rowKeys(sortedItems), [sortedItems])
+  const helpEntries = menuHelpEntries(sortedItems, keys)
+  const intro = opener?.helpText
   const openRow =
     openSubmenu === undefined
       ? undefined
@@ -680,7 +689,7 @@ const CascadingMenuList = observer(function CascadingMenuList({
               itemKey={key}
               item={item}
               inset={hasIcon && !item.icon}
-              columns={columns}
+              adornmentColumn={adornmentColumn}
               open={openSubmenu === key}
               hover={hover}
               onNavigateBack={onNavigateBack}
@@ -713,12 +722,22 @@ const CascadingMenuList = observer(function CascadingMenuList({
             key={key}
             item={item}
             inset={hasIcon && !item.icon}
-            columns={columns}
+            adornmentColumn={adornmentColumn}
             onNavigateBack={onNavigateBack}
             onHover={closeOnHover}
           />
         )
       })}
+      {intro || helpEntries.length ? (
+        <CascadingMenuHelpRow
+          title={opener?.label}
+          intro={intro}
+          entries={helpEntries}
+          inset={hasIcon}
+          onNavigateBack={onNavigateBack}
+          onHover={closeOnHover}
+        />
+      ) : null}
     </>
   )
 })
