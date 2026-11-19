@@ -376,7 +376,7 @@
       "assemblyNames": ["HG01109.1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "hprc_cfhr_HG01109.1.genes.gff3.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_cfhr_HG01109.1.genes.gff3.gz"
       }
     },
     {
@@ -386,7 +386,7 @@
       "assemblyNames": ["HG01123.1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "hprc_cfhr_HG01123.1.genes.gff3.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_cfhr_HG01123.1.genes.gff3.gz"
       }
     },
     {
@@ -396,7 +396,7 @@
       "assemblyNames": ["HG01960.1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "hprc_cfhr_HG01960.1.genes.gff3.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_cfhr_HG01960.1.genes.gff3.gz"
       }
     },
     {
@@ -406,7 +406,7 @@
       "assemblyNames": ["HG02055.1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "hprc_cfhr_HG02055.1.genes.gff3.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_cfhr_HG02055.1.genes.gff3.gz"
       }
     },
     {
@@ -416,7 +416,7 @@
       "assemblyNames": ["HG00097.1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "hprc_cfhr_HG00097.1.genes.gff3.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_cfhr_HG00097.1.genes.gff3.gz"
       }
     },
     {
@@ -426,7 +426,7 @@
       "assemblyNames": ["HG00099.1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "hprc_cfhr_HG00099.1.genes.gff3.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_cfhr_HG00099.1.genes.gff3.gz"
       }
     },
     {
@@ -436,7 +436,7 @@
       "assemblyNames": ["HG00128.1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "hprc_cfhr_HG00128.1.genes.gff3.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_cfhr_HG00128.1.genes.gff3.gz"
       }
     },
     {
@@ -446,7 +446,7 @@
       "assemblyNames": ["HG00133.1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "hprc_cfhr_HG00133.1.genes.gff3.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_cfhr_HG00133.1.genes.gff3.gz"
       }
     },
     {
