@@ -107,13 +107,12 @@ below are CIELAB L\*, C\*, h and ΔE76, and WCAG contrast; moving one slot means
 re-checking every neighbour its entry names. The constants live in
 `packages/core/src/ui/palette.ts`.
 
-- **`colorInterchrom` `#af4d19`** (L\* 44.9, C\* 60.1, h 52) was chosen with
-  `colorUnmappedMate`: while that slot was a warm brown 4.5° away, every move of
-  this one ran into it. With the unmapped mate neutral, this takes the warm
-  band: ΔE 42.2 to its nearest neighbour, `colorSupplementary`, and contrast
-  5.39 on white and 3.48 on `#121212`. Its hue stays clear of
-  `colorLongInsert` (h 40), since a second red would read as a second statement
-  about insert size. Another hue has no room: the widest gap in the schemes is
+- **`colorInterchrom` `#af4d19`** (L\* 44.9, C\* 60.1, h 52) holds the warm band
+  only while `colorUnmappedMate` stays neutral: a warm unmapped-mate color
+  leaves this slot no direction to move. Its nearest neighbour is
+  `colorSupplementary` (ΔE 42.2), and its contrast is 5.39 on white and 3.48 on
+  `#121212`. Its hue stays clear of `colorLongInsert` (h 40), since a second
+  red would read as a second statement about insert size. Another hue has no room: the widest gap in the schemes is
   the 91° between `colorPairLL` and `colorPairRL`, whose midpoint reads as a
   second green-blue. The slot must be neither the darkest nor the dullest in
   the scheme; at L\* 35 and C\* 20 (`#6e4b3a`) its 2 px arcs vanished on

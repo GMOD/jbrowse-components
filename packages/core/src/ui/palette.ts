@@ -656,9 +656,9 @@ const darkStringColors: Partial<StringColors> = {
   readMateOverlap: '#c8c8c8',
   // as far past readOverlap as the scale goes
   readThroughHidden: '#ffffff',
-  // the pale yellow glares across whole MAF rows; this keeps its hue and its
-  // place between the ground and the match cells, as the light value does
-  missingData: '#2c2a10',
+  // the pale yellow glares across whole MAF rows; this keeps its hue and, as
+  // the light value does, sits nearer the ground than the match cells
+  missingData: '#221f0b',
   // the deep green sinks into the dark ground
   variantCall: green[400],
 }

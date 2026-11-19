@@ -16,6 +16,13 @@ import path from 'node:path'
 
 import { createTheme } from '@mui/material'
 
+import { blend } from '../util/color-bits/functions.ts'
+import {
+  formatHEX,
+  getAlpha,
+  newColor,
+  parseCssColorOr,
+} from '../util/colorBits.ts'
 import {
   augmentColor,
   getContrastRatio,
@@ -273,12 +280,22 @@ test('an extraThemes entry with brand colors of its own', () => {
   })
 })
 
-test('the MAF missing-data fill sits near the ground in both modes', () => {
+// the MAF match cell is `action.disabledBackground` painted over the ground
+function over(color: string, ground: string) {
+  const black = newColor(0, 0, 0, 255)
+  const c = parseCssColorOr(color, black)
+  return formatHEX(blend(parseCssColorOr(ground, black), c, getAlpha(c) / 255))
+}
+
+test('the MAF missing-data fill sits nearer the ground than a match cell in both modes', () => {
   for (const mode of ['light', 'dark'] as const) {
     const palette = resolvePalette({ mode })
-    expect(
-      getContrastRatio(palette.missingData, palette.background.default),
-    ).toBeLessThan(1.5)
+    const ground = palette.background.default
+    const match = over(palette.action.disabledBackground, ground)
+    expect(getContrastRatio(palette.missingData, ground)).toBeLessThan(
+      getContrastRatio(palette.missingData, match),
+    )
+    expect(getContrastRatio(palette.missingData, ground)).toBeLessThan(1.5)
   }
 })
 
