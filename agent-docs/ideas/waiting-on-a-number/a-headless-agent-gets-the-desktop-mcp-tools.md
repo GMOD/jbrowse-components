@@ -21,7 +21,12 @@ description: An agent with no display (a cloud session, CI) can hold a JBrowse W
   script the agent writes.
 
 So a headless agent already has a page that persists between calls, through
-the second route. Nobody has measured whether that route is enough.
+the second route. It works: on 2026-11-19 a fresh `claude -p` holding only
+Playwright MCP (`--headless`), and another holding only Chrome DevTools MCP
+(`--headless --isolated`), each built a volvox view from the dialog's in-page
+prompt on a dev server, counted its variants and checked a screenshot, in 7-8
+calls for about $0.22. Each had to poll for `window.jb` in its first evaluate.
+Nobody has measured whether the route is enough across the eval tasks.
 
 ## The proposal
 
