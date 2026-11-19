@@ -229,6 +229,11 @@ describe('edge cases on a circle and two same-named exports', () => {
     const [second] = await fetch(features, 'Exported_2', 0, 40)
     expect(second?.get('name')).toBe('second')
   })
+
+  test('a blank line inside FEATURES drops no later feature', async () => {
+    const found = await fetch(features, 'x.1', 0, 1000)
+    expect(found.find(f => f.get('locus_tag') === 'X_minus')).toBeDefined()
+  })
 })
 
 describe('a record with no ORIGIN sequence', () => {

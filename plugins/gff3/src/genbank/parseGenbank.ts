@@ -39,7 +39,7 @@ export function parseRecords(text: string) {
   const records: GenbankRecord[] = []
   let record: GenbankRecord | undefined
   let section: 'header' | 'features' | 'origin' = 'header'
-  for (const line of text.split(/\r?\n/)) {
+  for (const line of text.split(/\r?\n/).filter(l => l.trim() !== '')) {
     if (line.startsWith('LOCUS')) {
       record = readLocus(line)
       records.push(record)
