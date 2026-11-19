@@ -1,7 +1,6 @@
-import type {
-  SimpleFeatureSerialized,
-  SimpleFeatureSerializedNoId,
-} from '../../util/index.ts'
+import { hasSubfeatures } from '../SequenceFeatureDetails/featureTypeUtil.ts'
+
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
 
 export interface SubfeatureCard {
   feature: SimpleFeatureSerialized
@@ -46,10 +45,6 @@ const shownByRow = new Set([
   'id',
   'parent',
 ])
-
-function hasChildren(sub: SimpleFeatureSerializedNoId) {
-  return !!sub.subfeatures?.length
-}
 
 function sameValue(a: unknown, b: unknown) {
   return JSON.stringify(a) === JSON.stringify(b)
@@ -112,6 +107,10 @@ function byTranscriptionOrder(strand: number | undefined) {
  * children of its own, a transcript in a gene, is a card to read on its own.
  * One without, an exon or a CDS, is a part: parts of one type are one group,
  * and a part states only what neither its group nor its parent already says.
+ *
+ * Which is which is read off `unformatted`, as the transcript menu reads it, so
+ * a callback hiding a transcript's exons hides those rows and leaves the card
+ * the menu names.
  */
 export function subfeatureGroups(
   feature: SimpleFeatureSerialized,
@@ -121,9 +120,14 @@ export function subfeatureGroups(
     ...sub,
     uniqueId: `${feature.uniqueId}_${idx}`,
   }))
+  const raws = (unformatted ?? feature).subfeatures ?? []
+  const isCard = (idx: number) => {
+    const raw = raws[idx]
+    return raw !== undefined && hasSubfeatures(raw)
+  }
   const cards = subs.flatMap((sub, idx) => {
     const raw = unformatted?.subfeatures?.[idx]
-    return hasChildren(sub)
+    return isCard(idx)
       ? [
           {
             feature: sub,
@@ -133,7 +137,7 @@ export function subfeatureGroups(
       : []
   })
   const leaves = Map.groupBy(
-    subs.filter(sub => !hasChildren(sub)),
+    subs.filter((_, idx) => !isCard(idx)),
     sub => sub.type ?? 'subfeature',
   )
   return {

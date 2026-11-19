@@ -39,6 +39,11 @@ export function featureHasExonOrCDS(feature: SimpleFeatureSerializedNoId) {
   return featureHasExon(feature) || featureHasCDS(feature)
 }
 
+/** Whether a subfeature is a transcript-like card rather than a part. */
+export function hasSubfeatures(feature: SimpleFeatureSerializedNoId) {
+  return !!feature.subfeatures?.length
+}
+
 // A container feature's (e.g. a gene's) subfeatures that have children of
 // their own: the transcripts the details panel draws as cards. A pick without
 // exon or CDS of its own leaves the sequence panel on the container. Each takes
@@ -47,7 +52,7 @@ export function getTranscripts(
   feature: SimpleFeatureSerialized,
 ): SimpleFeatureSerialized[] {
   return (feature.subfeatures ?? []).flatMap((sub, idx) =>
-    sub.subfeatures?.length
+    hasSubfeatures(sub)
       ? [{ ...sub, uniqueId: `${feature.uniqueId}_${idx}` }]
       : [],
   )

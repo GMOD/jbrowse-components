@@ -3,7 +3,10 @@ import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, within } from '@testing-library/react'
 
 import PluginManager from '../../PluginManager.ts'
-import { ConfigurationSchema } from '../../configuration/index.ts'
+import {
+  ConfigurationSchema,
+  FormatDetailsConfigSchemaFactory,
+} from '../../configuration/index.ts'
 import { createJBrowseTheme } from '../../ui/index.ts'
 import { stateModelFactory } from '../index.ts'
 import BaseFeatureDetails from './index.tsx'
@@ -35,15 +38,26 @@ function transcript(name: string, extra = {}) {
   }
 }
 
-function renderGene(transcripts: ReturnType<typeof transcript>[]) {
-  const pluginManager = new PluginManager([])
+function renderGene(
+  transcripts: ReturnType<typeof transcript>[],
+  subfeaturesCallback?: string,
+) {
+  const pluginManager = new PluginManager([]).createPluggableElements()
+  pluginManager.configure()
   const Session = types.model({
     rpcManager: types.optional(types.frozen(), {}),
-    configuration: ConfigurationSchema('test', {}),
+    configuration: ConfigurationSchema('test', {
+      formatDetails: FormatDetailsConfigSchemaFactory(),
+    }),
     widget: stateModelFactory(pluginManager),
   })
   const model = Session.create(
     {
+      configuration: {
+        formatDetails: subfeaturesCallback
+          ? { subfeatures: subfeaturesCallback }
+          : {},
+      },
       widget: {
         type: 'BaseFeatureWidget',
         unformattedFeatureData: {
@@ -116,6 +130,30 @@ test('the sequence panel reads the same pick as the Subfeatures menu', async () 
   await act(async () => {})
   expect(selects().map(s => s.textContent)).toEqual(['EDEN.3', 'EDEN.3'])
 })
+
+const hideExonsOf = (name: string) =>
+  `jexl:feature.name == '${name}' ? {subfeatures: undefined} : {}`
+
+test.each(['EDEN.1', 'EDEN.2'])(
+  'a transcript whose exons a callback hides (%s) stays a card, and the card shown is the one picked',
+  hidden => {
+    const { getByTestId, queryByTestId } = renderGene(
+      threeTranscripts(),
+      hideExonsOf(hidden),
+    )
+    const select = within(getByTestId('transcript-select')).getByRole(
+      'combobox',
+    )
+    expect(select.textContent).toBe('EDEN.2')
+    expect(getByTestId('BaseCard-EDEN.2 · mRNA')).toBeTruthy()
+    expect(queryByTestId('BaseCard-EDEN.3 · mRNA')).toBeNull()
+
+    fireEvent.mouseDown(select)
+    fireEvent.click(within(document.body).getByRole('option', { name: hidden }))
+    const card = getByTestId(`BaseCard-${hidden} · mRNA`)
+    expect(within(card).queryByTestId(/BaseCard-.*exon/)).toBeNull()
+  },
+)
 
 test('a transcript groups its exons into one table, with what each exon has of its own on aligned lines under its row', () => {
   const exonWithNote = {
