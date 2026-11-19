@@ -40,13 +40,16 @@ export type LaidOutByGroup = Map<string, Map<number, LaidOutPileupData>>
 // The same shape with both color bakes applied — the fully-tiered value.
 export type ColoredByGroup = Map<string, Map<number, PileupDataResult>>
 
+// The most pileup rows any layout may produce: below the Uint16 ceiling, so row
+// indices (stored in `readYs`) and the overflow sentinel never wrap.
+export const MAX_LAYOUT_ROWS = 65534
+
 // Max pileup rows a layout may produce before overflow reads collapse to the
-// bottom. Hard-capped below the Uint16 ceiling so row indices (stored in
-// `readYs`) and the overflow sentinel never wrap.
+// bottom.
 export function maxRowsFor(maxHeight: number, rowHeight: number) {
   return Math.max(
     1,
-    Math.min(65534, Math.floor(maxHeight / Math.max(1, rowHeight))),
+    Math.min(MAX_LAYOUT_ROWS, Math.floor(maxHeight / Math.max(1, rowHeight))),
   )
 }
 

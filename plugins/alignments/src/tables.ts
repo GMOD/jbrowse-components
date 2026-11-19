@@ -105,7 +105,12 @@ import {
   coverageStatsViews,
   coverageTicksViews,
 } from './LinearAlignmentsDisplay/coverageScaleViews.ts'
-import { groupMaxY } from './LinearAlignmentsDisplay/groupLayout.ts'
+import {
+  MAX_LAYOUT_ROWS,
+  ceilingCap,
+  groupClipSource,
+  groupMaxY,
+} from './LinearAlignmentsDisplay/groupLayout.ts'
 import { hasNamedGroups } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import {
   arcSlotsInWindows,
@@ -138,7 +143,6 @@ import {
 } from './LinearAlignmentsDisplay/sectionLayout.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import { appliedPileupSort } from './RenderAlignmentDataRPC/sortLayout.ts'
-import { UNCAPPED } from './RenderAlignmentDataRPC/types.ts'
 import {
   ARC_COLOR_INTERCHROM,
   arcColorSlot,
@@ -615,10 +619,10 @@ const AlignmentsTablesHost = types
       return NO_ROW_CAPS
     },
     get fitDefaultCap() {
-      return UNCAPPED
+      return ceilingCap(MAX_LAYOUT_ROWS)
     },
     get fitCeilingRows() {
-      return UNCAPPED.rows
+      return MAX_LAYOUT_ROWS
     },
     get canonicalRefName() {
       return adapterRefNameText
@@ -1769,6 +1773,13 @@ function laidOutTables(
   const dataFor = (key: string, idx: number) =>
     host.chainedByGroup.get(key)!.get(idx)!
   const laidByGroup = host.laidOutByGroupFramed
+  if (
+    [...laidByGroup.values()].some(map => groupClipSource(map) === 'ceiling')
+  ) {
+    throw new Error(
+      `${lociOf(regions)} stacks reads more than ${MAX_LAYOUT_ROWS} rows deep, the pileup’s row limit; read a smaller region`,
+    )
+  }
   const drawsOverlaps = shouldDrawOverlaps({
     unit,
     collapseSections: host.collapseSections,

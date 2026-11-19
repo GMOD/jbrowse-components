@@ -81,6 +81,10 @@ Limits and shared behavior:
   refused before anything is fetched: the coverage band holds every base of the
   span, so a sparse file read across a whole contig needs memory its compressed
   size doesn't show.
+- A region whose reads stack deeper than the pileup's 65,534-row limit
+  (`MAX_LAYOUT_ROWS`, the display's own bound on `maxRowsFor`, which keeps a row
+  inside its `Uint16Array`) is refused with an error naming the limit, rather
+  than returned with the reads past it laid over the rows above.
 - A read's `id` is the record's own `feature.id()`, built from the worker's read
   keys, the same in every call; `read` indexes `reads` within one call, and a
   read's `name` is shared by its mates and supplementary segments.
