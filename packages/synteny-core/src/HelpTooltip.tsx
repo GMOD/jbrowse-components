@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 // Help icon + tooltip for a labelled field in a dialog or form row — the
 // synteny launch dialog's options are what it draws. Renders nothing when there
 // is no help text. A MENU row's help is not this: it is `helpText` on the item,
-// which `CascadingMenu` draws as a "?" opening a dialog.
+// which `CascadingMenu` lists in the dialog its level's Help row opens.
 //
 // `pre-line` so help composed one line per option keeps those lines: collapsed
 // into a paragraph, option descriptions read as one run-on sentence. A single-

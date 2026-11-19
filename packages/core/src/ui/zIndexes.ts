@@ -43,7 +43,7 @@ export const TOOLTIP_Z_INDEX = 100000
  *
  * A portal opened from inside the menu would stay on MUI's scale, under the
  * menu's invisible backdrop: visible and inert. Submenus carry the root's
- * level, and a row's help dialog and disabled-row tooltip sit one above it
+ * level, and a level's Help dialog and a disabled row's tooltip sit one above it
  * (`useAboveMenuZIndex`, ContextMenu.test.tsx).
  */
 export const CONTEXT_MENU_Z_INDEX = TOOLTIP_Z_INDEX + 1

@@ -177,7 +177,7 @@ Every variant except `divider` and `subHeader` also takes these:
 | `subLabel` | `string` | secondary text under the label; prefer `withHint` in the label |
 | `icon` | `React.ElementType` | any [MUI icon](https://mui.com/material-ui/material-icons/) component |
 | `disabled` | `boolean` | renders the row unclickable |
-| `helpText` | `string` | tooltip shown from a help icon at the trailing edge |
+| `helpText` | `string` | prose listed in the Help dialog the menu level ends in |
 | `disabledHelpText` | `string` | tooltip shown when the item is disabled, in place of helpText |
 | `keepMenuOpen` | `boolean` | override the dismiss-on-click rule; see `staysOpenOnClick` |
 | `endAdornment` | `React.ReactNode` | arbitrary trailing content |

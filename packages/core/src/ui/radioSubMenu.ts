@@ -30,9 +30,9 @@ export function makeRadioSubMenu<T extends string>(opts: {
   options: readonly (readonly [T, string] | RadioOption<T>)[]
   extraItems?: MenuItem[]
   /**
-   * Prose for the group, on the row that opens it. One "?" here rather than one
-   * per radio, which is where a group whose options differ by a word each would
-   * otherwise repeat itself three times.
+   * Prose for the group: the intro of the submenu's Help dialog. Once here
+   * rather than once per radio, where a group whose options differ by a word
+   * each would otherwise repeat itself three times.
    */
   helpText?: string
 }): MenuItem {

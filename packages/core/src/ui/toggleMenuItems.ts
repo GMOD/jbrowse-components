@@ -6,9 +6,9 @@ import type { CheckboxMenuItem, MenuItem, RadioMenuItem } from './MenuTypes.ts'
 // regressing by omission, the way MAF's "Show" menu did. The flag is left for
 // the rows that genuinely dismiss (a dialog opener passes `keepMenuOpen: false`).
 
-// The row decorations no builder here decides for itself. `helpText` claims a
-// "?" column that `getMenuColumnFlags` then reserves on EVERY row of the menu,
-// so it is for real prose worth that cost. `subLabel` renders inline under the
+// The row decorations no builder here decides for itself. `helpText` is listed
+// in the Help dialog the menu level ends in, so it is for real prose a reader
+// opens a dialog to read. `subLabel` renders inline under the
 // label and is NOT the answer to a short clarifier: a menu whose rows are each
 // two lines tall is harder to scan than the labels it buried. Put a short
 // clarifier in the label -- `withHint` for a conditional one.

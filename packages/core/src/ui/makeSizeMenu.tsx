@@ -25,10 +25,8 @@ const sizeRowFallbackHeight = 46
 interface SizeMenuOptions {
   label: string
   title: string
-  // prose for the "?" on the SUBMENU row `makeSizeSubMenu` wraps the size row
-  // in, the same affordance a checkbox/radio row's `helpText` gets. The size row
-  // itself draws none: it is a custom row, so it never reaches the menu's shared
-  // trailing column, and inline (`makeSizeMenu`) there is nowhere to put it.
+  // `helpText` on the SUBMENU row `makeSizeSubMenu` wraps the size row in, so
+  // it opens that panel's Help dialog; inline (`makeSizeMenu`) it goes unused
   help?: string
   getValue: () => number
   min?: number
@@ -111,16 +109,12 @@ export function makeSizeMenu(opts: SizeMenuOptions): MenuItem {
 // size row above.
 //
 // For a menu where a slider drawn inline is the odd one out. Every other row
-// there is `label + [?] + (checkbox | chevron)` and a size row is a two-line
+// there is `label + (checkbox | chevron)` and a size row is a two-line
 // block with a widget of its own, so a menu holding several reads as a form to
 // fill in rather than a list to pick from — and the comparative views' settings
 // menus hold three each. Behind a chevron the row shape is uniform top to
 // bottom, and the value moves inside next to the slider that sets it, which is
 // where the radio submenus already keep their state.
-//
-// `help` lands on the submenu row, which is the row a reader sees: the size row
-// behind the chevron never reaches the menu's shared trailing column, and a "?"
-// of its own would only be a second one for the same setting, a hover away.
 export function makeSizeSubMenu(opts: SizeMenuOptions): SubMenuItem {
   return {
     label: opts.title,

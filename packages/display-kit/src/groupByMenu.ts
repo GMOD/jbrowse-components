@@ -13,8 +13,7 @@ import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 /**
  * A directly selectable dimension: picking it calls `onSelect(type)`. No help
  * text, and typed without the field so that stays a compile error rather than
- * a convention: the menu reserves a help column across every row as soon as
- * one row carries one, and a dimension needing a sentence is better renamed.
+ * a convention: a dimension needing a sentence is better renamed.
  */
 export interface GroupByRadioOption<T extends string> {
   type: T

@@ -47,7 +47,7 @@ export interface BaseMenuItem {
   icon?: React.ElementType
   /** #menuField renders the row unclickable */
   disabled?: boolean
-  /** #menuField tooltip shown from a help icon at the trailing edge */
+  /** #menuField prose listed in the Help dialog the menu level ends in */
   helpText?: string
   /** #menuField tooltip shown when the item is disabled, in place of helpText */
   disabledHelpText?: string
@@ -69,7 +69,7 @@ export interface BaseMenuItem {
    * #menuField arbitrary trailing content
    *
    * Extra content rendered at the trailing (right) edge of the row, after the
-   * checkbox/radio decoration and help icon — e.g. a secondary toggle. The
+   * checkbox/radio decoration — e.g. a secondary toggle. The
    * content must `stopPropagation` on its own click so it doesn't fire the row's
    * onClick or dismiss the menu.
    *

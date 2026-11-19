@@ -25,9 +25,9 @@
  *
  * IN THE LABEL rather than a `subLabel`, which is what these were: a second
  * line under the row is heavy for a clarifier this short, and rather than a
- * `helpText`, which would reserve a "?" column across the whole menu for one
- * conditional row and hide the reason behind a hover -- on a control the reader
- * has no reason to hover, since from the tick it looks like it already works.
+ * `helpText`, which would hide the reason in the level's Help dialog -- on a
+ * control the reader has no reason to look up, since from the tick it looks
+ * like it already works.
  *
  * AN EM DASH, NOT PARENTHESES. Two of these labels already end in a
  * parenthetical of their own ("Conservation (% identity)", "Codon changes
@@ -36,8 +36,7 @@
  * a label ("Square view - same bp per pixel").
  *
  * KEEP THE HINT SHORT -- a few words, not a sentence. A menu sizes to its widest
- * row, so a long one widens every row for as long as it fires, which is the same
- * cost that rules out `helpText` above.
+ * row, so a long one widens every row for as long as it fires.
  */
 export function withHint(label: string, hint: string | undefined) {
   return hint ? `${label} — ${hint}` : label

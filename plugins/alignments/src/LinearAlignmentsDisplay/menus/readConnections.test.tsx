@@ -98,7 +98,7 @@ describe('read connections menu', () => {
     expect(labelsOf(rows(model))).not.toContain('Pileup connectors')
   })
 
-  test('is checkboxes, then the Connection band radios, with no "?"', () => {
+  test('is checkboxes, then the Connection band radios, with no help text', () => {
     const model = makeModel()
     model.drawnReadConnections = 'link'
     const items = rows(model)
