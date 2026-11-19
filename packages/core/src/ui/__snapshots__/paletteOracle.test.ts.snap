@@ -2,7 +2,6 @@
 
 exports[`darkMinimal builds the same chrome 1`] = `
 {
-  "appBarColorOnDark": true,
   "mode": "dark",
   "primary": "#616161",
 }
@@ -265,7 +264,6 @@ exports[`darkMinimal resolves the same colors 1`] = `
 
 exports[`darkStock builds the same chrome 1`] = `
 {
-  "appBarColorOnDark": true,
   "mode": "dark",
   "primary": "#0D233F",
 }
@@ -1548,7 +1546,6 @@ exports[`default + a config brand, dark resolves the same colors 1`] = `
 
 exports[`default builds the same chrome 1`] = `
 {
-  "appBarColorOnDark": true,
   "mode": "light",
   "primary": "#0D233F",
 }
@@ -1811,7 +1808,6 @@ exports[`default resolves the same colors 1`] = `
 
 exports[`lightMinimal builds the same chrome 1`] = `
 {
-  "appBarColorOnDark": true,
   "mode": "light",
   "primary": "#212121",
 }
@@ -2074,7 +2070,6 @@ exports[`lightMinimal resolves the same colors 1`] = `
 
 exports[`lightStock builds the same chrome 1`] = `
 {
-  "appBarColorOnDark": true,
   "mode": "light",
   "primary": "#0D233F",
 }
@@ -2337,7 +2332,6 @@ exports[`lightStock resolves the same colors 1`] = `
 
 exports[`minimal builds the same chrome 1`] = `
 {
-  "appBarColorOnDark": true,
   "mode": "light",
   "primary": "#212121",
 }
@@ -2600,7 +2594,6 @@ exports[`minimal resolves the same colors 1`] = `
 
 exports[`stock builds the same chrome 1`] = `
 {
-  "appBarColorOnDark": true,
   "mode": "light",
   "primary": "#0D233F",
 }

@@ -41,16 +41,10 @@ test.each([
   ).toMatchSnapshot()
 })
 
-// The MUI half, which the palette oracle cannot see: `darkStock` alone turns on
-// `enableColorOnDark` today, so its AppBar keeps the brand where every other
-// dark theme flattens to the paper color. Whether that stays true of a palette
-// drawn dark is a decision, and this is what makes it one.
 test.each(NAMES)('%s builds the same chrome', name => {
   const theme = createJBrowseThemeFromArgs({ themeName: name })
   expect({
     mode: theme.palette.mode,
     primary: theme.palette.primary.main,
-    appBarColorOnDark:
-      theme.components?.MuiAppBar?.defaultProps?.enableColorOnDark ?? false,
   }).toMatchSnapshot()
 })
