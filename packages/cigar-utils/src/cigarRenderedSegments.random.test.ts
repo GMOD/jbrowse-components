@@ -39,7 +39,7 @@ function renderedIndelOps(packed: ArrayLike<number>, bpPerPx: number) {
       ops.push(op)
     }
   })
-  return ops.join()
+  return ops.join(',')
 }
 
 const cigars = [

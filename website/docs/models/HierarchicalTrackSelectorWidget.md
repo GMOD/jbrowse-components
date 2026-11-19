@@ -99,7 +99,7 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="action-clearcategorymodes">**clearCategoryModes**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-clearfiltertext">**clearFilterText**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setfiltertext">**setFilterText**</span><br><code>(newText: string) =&gt; void</code> |  |
-| <span id="action-opentable">**openTable**</span><br><code>(drawer?: { width: number; availableWidth: number; }) =&gt; void</code> | shows this view's tracks as a table in the drawer, which widens to the table's natural width, up to 45% of the room it shares with the views, and never narrows |
+| <span id="action-opentable">**openTable**</span><br><code>(drawerWidth?: number) =&gt; void</code> | shows this view's tracks as a table in the drawer, at the drawer's current width |
 | <span id="action-closetable">**closeTable**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setpreferreddrawerwidth">**setPreferredDrawerWidth**</span><br><code>(width: number) =&gt; void</code> | a drag of the drawer edge while the table is open resizes the table's width, so closing it returns to the user's own |
 | <span id="action-setcategorycollapsed">**setCategoryCollapsed**</span><br><code>(id: string, collapsed: boolean) =&gt; void</code> | the single gate on accordion state: a folder is a mode the user picked, not an accordion that happens to be shut, so every collapse/expand — one row, a bulk menu item, or "expand all" — passes it by |

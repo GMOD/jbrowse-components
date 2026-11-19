@@ -15,7 +15,7 @@ being unticked and reticked. Displays with an auto-fit mode override the
 
 The mixin also owns the **internal vertical scroll** of every display that paints a
 fixed canvas at `-scrollTop`: a display overrides the two height hooks, and
-passes itself to `ScrollChrome` and the wheel hooks.
+passes itself to `VerticalScrollbar` and the wheel hooks.
 
 ## Volatiles
 

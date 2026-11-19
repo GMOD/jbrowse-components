@@ -71,10 +71,9 @@ From [ThemeManagerSessionMixin](../thememanagersessionmixin): <span id="volatile
 | --- | --- |
 | <span id="getter-root">**root**</span><br><code>AbstractWebRootModel</code> |  |
 | <span id="getter-shareurl">**shareURL**</span><br><code>string</code> |  |
-| <span id="getter-textsearchmanager">**textSearchManager**</span><br><code>TextSearchManager</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>38 inherited getters from 9 models</summary>
+<summary>39 inherited getters from 9 models</summary>
 
 From [WebSessionConnectionsMixin](../websessionconnectionsmixin): <span id="getter-connections">[`connections`](../websessionconnectionsmixin#getter-connections)</span>
 
@@ -86,7 +85,7 @@ From [AssembliesMixin](../assembliesmixin): <span id="getter-takenassemblynames"
 
 From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="getter-trackbasesbyid">[`trackBasesById`](../sessiontracksmanagersessionmixin#getter-trackbasesbyid)</span>, <span id="getter-tracks">[`tracks`](../sessiontracksmanagersessionmixin#getter-tracks)</span>, <span id="getter-promotabletrackids">[`promotableTrackIds`](../sessiontracksmanagersessionmixin#getter-promotabletrackids)</span>
 
-From [BaseSessionModel](../basesessionmodel): <span id="getter-jbrowse">[`jbrowse`](../basesessionmodel#getter-jbrowse)</span>, <span id="getter-rpcmanager">[`rpcManager`](../basesessionmodel#getter-rpcmanager)</span>, <span id="getter-configuration">[`configuration`](../basesessionmodel#getter-configuration)</span>, <span id="getter-adminmode">[`adminMode`](../basesessionmodel#getter-adminmode)</span>, <span id="getter-dialogcomponent">[`DialogComponent`](../basesessionmodel#getter-dialogcomponent)</span>, <span id="getter-dialogprops">[`DialogProps`](../basesessionmodel#getter-dialogprops)</span>, <span id="getter-animationmode">[`animationMode`](../basesessionmodel#getter-animationmode)</span>, <span id="getter-scrollzoom">[`scrollZoom`](../basesessionmodel#getter-scrollzoom)</span>, <span id="getter-numbergrouping">[`numberGrouping`](../basesessionmodel#getter-numbergrouping)</span>
+From [BaseSessionModel](../basesessionmodel): <span id="getter-jbrowse">[`jbrowse`](../basesessionmodel#getter-jbrowse)</span>, <span id="getter-rpcmanager">[`rpcManager`](../basesessionmodel#getter-rpcmanager)</span>, <span id="getter-configuration">[`configuration`](../basesessionmodel#getter-configuration)</span>, <span id="getter-adminmode">[`adminMode`](../basesessionmodel#getter-adminmode)</span>, <span id="getter-textsearchmanager">[`textSearchManager`](../basesessionmodel#getter-textsearchmanager)</span>, <span id="getter-dialogcomponent">[`DialogComponent`](../basesessionmodel#getter-dialogcomponent)</span>, <span id="getter-dialogprops">[`DialogProps`](../basesessionmodel#getter-dialogprops)</span>, <span id="getter-animationmode">[`animationMode`](../basesessionmodel#getter-animationmode)</span>, <span id="getter-scrollzoom">[`scrollZoom`](../basesessionmodel#getter-scrollzoom)</span>, <span id="getter-numbergrouping">[`numberGrouping`](../basesessionmodel#getter-numbergrouping)</span>
 
 From [SnackbarModel](../snackbarmodel): <span id="getter-snackbarmessageset">[`snackbarMessageSet`](../snackbarmodel#getter-snackbarmessageset)</span>
 

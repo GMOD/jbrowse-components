@@ -1,14 +1,14 @@
 ---
 id: pluginstorewidget
 title: PluginStoreWidget
-description: "Widget backing the plugin store: holds the text and tag filters applied to the installable plugin list and the view it was opened from."
+description: "Widget backing the plugin store: holds the text and tag filters applied to the installable plugin list."
 sidebar_label: Widget -> PluginStoreWidget
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source. See the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/AppWidgets/PluginStoreWidget/model.ts).
 
 Widget backing the plugin store: holds the text and tag filters applied to the
-installable plugin list and the view it was opened from.
+installable plugin list.
 
 ## Properties
 
@@ -19,7 +19,6 @@ installable plugin list and the view it was opened from.
 | <span id="property-type">**type**</span><br><code>"PluginStoreWidget"</code> | Always `"PluginStoreWidget"`, the name a snapshot selects this model by. |
 | <span id="property-filtertext">**filterText**</span><br><code>string</code> · default <code>''</code> |  |
 | <span id="property-tagfilters">**tagFilters**</span><br><code>string[]</code> · default <code>[]</code> | Tags a plugin must have to stay in the list. Plain strings, because the tag vocabulary is published in the store manifest rather than defined here — a tag this build has never seen still filters correctly. |
-| <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>BaseViewModel &amp; Pick&lt;…&gt; &#124; undefined</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code><a href="../baseviewmodel">BaseViewModel</a> &amp; Pick&lt;AbstractViewModel, "assemblyNames" &#124; "regionHost" &#124; "trackContainerFor" &#124; "trackContainers" &#124; "type"&gt; &#124; undefined</code></pre></dialog></span> |  |
 
 ## Getters
 
