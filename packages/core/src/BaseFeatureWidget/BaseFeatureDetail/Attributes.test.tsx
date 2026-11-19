@@ -158,6 +158,19 @@ describe('Attributes', () => {
     expect(queryByText('file.localPath')).toBeNull()
   })
 
+  test('a one-element array of objects reads as its object, descriptions and filters included', () => {
+    const fieldActions = jest.fn(() => [])
+    const { getByText } = renderWithTheme(
+      <Attributes
+        attributes={{ info: [{ DP: 3 }] }}
+        descriptions={{ info: { DP: 'Read depth' } }}
+        fieldActions={fieldActions}
+      />,
+    )
+    expect(getByText('info.DP').getAttribute('tabindex')).toBe('0')
+    expect(fieldActions).toHaveBeenCalledWith(['info', 'DP'], 3)
+  })
+
   // regression: an array of objects rendered through ArrayValue, which dropped
   // hideUris, so a MultiWiggle track's `subadapters` printed every BigWig URL
   test('hides locations inside an array of objects', () => {

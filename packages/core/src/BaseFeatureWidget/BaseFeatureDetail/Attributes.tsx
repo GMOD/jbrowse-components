@@ -49,12 +49,19 @@ function isHomogeneousObjectArray(
   return unionKeyCount < firstKeyCount + TABLE_SCHEMA_TOLERANCE
 }
 
+function unwrapLoneObject(value: unknown) {
+  return Array.isArray(value) && value.length === 1 && isObject(value[0])
+    ? value[0]
+    : value
+}
+
 // The one place a value is sorted into the shape that decides how it is drawn,
 // measured and counted: the render, `measureLabels` and `hasAttributeRows` all
 // switch on this, so none of them can disagree about what a value is.
-function classify(key: string, value: unknown) {
+function classify(key: string, raw: unknown) {
   const exceptions =
-    key === 'transl_except' ? parseTranslExcept(value) : undefined
+    key === 'transl_except' ? parseTranslExcept(raw) : undefined
+  const value = unwrapLoneObject(raw)
   return exceptions
     ? ({ kind: 'translExcept', value: exceptions } as const)
     : Array.isArray(value)
@@ -148,13 +155,13 @@ function measureLabels(
       case 'table':
         break
       case 'objectArray':
-        classified.value.forEach((element, i, all) => {
+        classified.value.forEach((element, i) => {
           widest = Math.max(
             widest,
             measureLabels(element, {
               omits: deepOmits,
               deepOmits,
-              prefix: objectArrayPrefix(prefix, key, all.length, i),
+              prefix: objectArrayPrefix(prefix, key, i),
             }),
           )
         })

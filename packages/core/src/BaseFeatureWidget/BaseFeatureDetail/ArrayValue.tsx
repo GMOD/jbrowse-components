@@ -53,13 +53,8 @@ export function isObjectArray(
 }
 
 /** The prefix element `i` of an array of objects labels its fields under. */
-export function objectArrayPrefix(
-  prefix: string[],
-  name: string,
-  length: number,
-  i: number,
-) {
-  return length === 1 ? [...prefix, name] : [...prefix, `${name}-${i}`]
+export function objectArrayPrefix(prefix: string[], name: string, i: number) {
+  return [...prefix, `${name}-${i}`]
 }
 
 /** Each item of a list in a box of its own, in the order the feature lists them. */
@@ -134,7 +129,7 @@ const ArrayValue = observer(function ArrayValue({
           attributes={val}
           omit={omit}
           formatter={formatter}
-          prefix={objectArrayPrefix(prefix, name, value.length, i)}
+          prefix={objectArrayPrefix(prefix, name, i)}
           labelWidth={width}
         />
       ))}
