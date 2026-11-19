@@ -241,6 +241,7 @@ const FILE_KINDS: Record<string, string> = {
   TwoBitAdapter: 'a .2bit genome',
   IndexedFastaAdapter: 'an indexed FASTA (.fa + .fai)',
   BgzipFastaAdapter: 'a bgzip-compressed FASTA (.fa.gz + .fai + .gzi)',
+  GenbankAdapter: 'a GenBank flat file (.gb, .gbk)',
   FromConfigAdapter: 'features defined inline in the config',
 }
 
