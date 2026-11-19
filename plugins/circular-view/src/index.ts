@@ -40,6 +40,7 @@ export {
   type ExportSvgOptions,
 } from './CircularView/model.ts'
 export { Slice, type SliceRegion } from './CircularView/slices.ts'
+export type { ChordVariantDisplayModel } from './ChordVariantDisplay/models/stateModelFactory.ts'
 export {
   type Ring,
   type RingDisplay,

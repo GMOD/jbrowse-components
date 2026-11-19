@@ -20,9 +20,10 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-// getViewType's registry entries for these, which the esm build needs
+import type { ChordVariantDisplayModel } from '@jbrowse/plugin-circular-view'
+// getViewType's registry entry for the spreadsheet view, which the esm build
+// needs; the circular view's comes with the import above
 /* eslint-disable unicorn/require-module-specifiers */
-import type {} from '@jbrowse/plugin-circular-view'
 import type {} from '@jbrowse/plugin-spreadsheet-view'
 /* eslint-enable unicorn/require-module-specifiers */
 
@@ -46,13 +47,14 @@ function rowFeatures(rows?: { feature?: SimpleFeatureSerialized }[]) {
 }
 
 // the ChordVariantDisplay the inspector's circular view draws its rows with
-interface InspectorChordDisplay {
-  setHighlightedFeatureIds: (ids: string[] | undefined) => void
-  setVisibleFeatureIds: (ids: string[] | undefined) => void
-  paintedColorField?: { field: string }
-  paintedColorValues: ReadonlyMap<string, unknown>
-  displayPhase: string
-}
+interface InspectorChordDisplay extends Pick<
+  ChordVariantDisplayModel,
+  | 'setHighlightedFeatureIds'
+  | 'setVisibleFeatureIds'
+  | 'paintedColorField'
+  | 'paintedColorValues'
+  | 'displayPhase'
+> {}
 
 function isInspectorChordDisplay<D extends object>(
   display: D,
