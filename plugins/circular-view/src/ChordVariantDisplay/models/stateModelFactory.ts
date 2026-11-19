@@ -224,10 +224,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         const { features } = this.chordPicks
         const field = this.paintedColorField
         if (field) {
-          const read = fieldReader(field.field, getEnv(self).pluginManager.jexl)
-          return new Map(
-            features.map(f => [f, field.color(field.key(read(f)))]),
-          )
+          const keys = this.chordColorKeys
+          return new Map(features.map((f, k) => [f, field.color(keys[k]!)]))
         }
         const { color } = self.configuration.encoding
         return new Map(
@@ -236,6 +234,19 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
             readConfObject(color, 'value', { feature }),
           ]),
         )
+      },
+      /**
+       * #getter
+       * each drawn record's value of the painted field, by lane; empty while
+       * the chords paint no field
+       */
+      get chordColorKeys(): string[] {
+        const field = this.paintedColorField
+        if (field) {
+          const read = fieldReader(field.field, getEnv(self).pluginManager.jexl)
+          return this.chordPicks.features.map(f => field.key(read(f)))
+        }
+        return []
       },
       /**
        * #getter
@@ -458,13 +469,12 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         const field = self.paintedColorField
         const painted = new Map<string, number>()
         if (field) {
-          const read = fieldReader(field.field, getEnv(self).pluginManager.jexl)
+          const keys = self.chordColorKeys
           const feet = self.chordFeet
           const stage = self.figureStage
-          const { picked, features } = self.chordPicks
-          for (const [k, i] of picked.entries()) {
+          for (const [k, i] of self.chordPicks.picked.entries()) {
             if (chordEndsAt(feet, i, stage)) {
-              const value = field.key(read(features[k]!))
+              const value = keys[k]!
               if (!painted.has(value)) {
                 painted.set(value, cssColorToABGR(field.color(value)))
               }

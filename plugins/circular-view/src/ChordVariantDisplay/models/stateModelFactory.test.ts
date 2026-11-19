@@ -2,7 +2,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
 import { navToLoc } from '@jbrowse/sv-core'
 import { createTestSession } from '@jbrowse/web/testUtils'
-import { when } from 'mobx'
+import { autorun, when } from 'mobx'
 
 import type { CircularViewModel } from '../../CircularView/model.ts'
 import type { ChordVariantDisplayModel } from './stateModelFactory.ts'
@@ -178,9 +178,18 @@ test('the key leaves out a value whose chords are all specks, until a zoom opens
   expect(display.shapes.map(s => s.feature.id())).toEqual(['sv1', 'sv2'])
   expect(labels()).toEqual(['Deletion', 'Inversion'])
 
+  const keys: string[][] = []
+  const disposers = [
+    autorun(() => keys.push(display.chordColorKeys)),
+    autorun(() => void display.colorScales),
+  ]
   view.setBpPerPx(view.minBpPerPx)
   expect(display.shapes).toHaveLength(3)
   expect(labels()).toEqual(['Deletion', 'Insertion', 'Inversion'])
+  expect(keys).toEqual([['DEL', 'INS', 'INV']])
+  for (const dispose of disposers) {
+    dispose()
+  }
 }, 20000)
 
 test('clicking a chord selects the record and opens its details', async () => {
