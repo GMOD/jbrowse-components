@@ -561,7 +561,12 @@ export function markColorScales(
     switch (scale.kind) {
       case 'categorical': {
         const shape = shapeOverSameField(sections, section)
-        const keys = derivedColorScale([scale.entries], everyRowPaints, {
+        const values = key.values ?? []
+        const listed =
+          values.length === 0
+            ? scale.entries
+            : scale.entries.filter(e => values.includes(e.value))
+        const keys = derivedColorScale([listed], everyRowPaints, {
           id,
           field: keyField(scale, key, facet),
           title: section.title,
@@ -573,18 +578,16 @@ export function markColorScales(
         if (shape && keys.length > 0) {
           folded.add(shape)
         }
-        const values = key.values ?? []
-        const listed =
-          values.length === 0
-            ? scale.entries
-            : scale.entries.filter(e => values.includes(e.value))
         const hinted =
           scale.numericKeys && listed.length > NUMERIC_KEY_HINT_ROWS
         if (!hinted) {
           return keys.map(k => withHiddenRows(listedKey(k, key), key))
         }
         return keys.length > 0
-          ? keys.map(k => ({ ...listedKey(k, key), note: NUMERIC_KEY_HINT }))
+          ? keys.map(k => ({
+              ...withHiddenRows(listedKey(k, key), key),
+              note: NUMERIC_KEY_HINT,
+            }))
           : [
               {
                 kind: 'categorical',

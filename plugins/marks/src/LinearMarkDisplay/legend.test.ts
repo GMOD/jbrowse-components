@@ -665,6 +665,33 @@ test('an ordinal color key lists its legend.values in their order', () => {
   ).toEqual([['3', '1']])
 })
 
+test('legend.values picks its rows out of a field too long to list', () => {
+  const many = Array.from({ length: 34 }, (_, i) => `type${i}`)
+  expect(
+    legendEntries(
+      legendSpecOf(
+        markColorScales(
+          buildMarkLegend([region(table(many))], undefined, () => ({
+            values: ['type3', 'type7'],
+          })),
+        ),
+      ),
+    ).map(e => e.label),
+  ).toEqual(['score', 'type3', 'type7'])
+})
+
+test('a hidden value is struck from a numeric key long enough to carry the hint', () => {
+  const [key] = markColorScales(
+    buildMarkLegend([region(table(TEN, true))], undefined, () => ({
+      hidden: ['5'],
+    })),
+  )
+  expect(
+    key?.kind === 'categorical' &&
+      key.entries.filter(e => e.hidden).map(e => e.value),
+  ).toEqual(['5'])
+})
+
 test('a categorical color key names the values its unknown paints Other', () => {
   const grey = cssColorToABGR('#cccccc')
   const painted: ColorScaleTable = {
