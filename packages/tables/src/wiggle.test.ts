@@ -246,6 +246,39 @@ test('a line takes the color of the band between the cuts its score is in', asyn
   }
 })
 
+test('a min-max band splits at a cut no float32 holds, each piece in its own band', async () => {
+  const line = await engine.wiggle({
+    ...SIGNED_BIGWIG,
+    bpPerPx: 1000,
+    display: {
+      mark: 'line',
+      encoding: {
+        color: {
+          scale: {
+            type: 'threshold',
+            domain: [-0.1, 0.1],
+            range: ['blue', 'grey', 'red'],
+          },
+        },
+      },
+    },
+  })
+  const bandOf = (score: number) =>
+    score < Math.fround(-0.1)
+      ? '#0000ff'
+      : score < Math.fround(0.1)
+        ? '#808080'
+        : '#ff0000'
+  const pieces = line.marks.band
+    .map((b, i) => i)
+    .filter(i => line.marks.band[i])
+  const { low, score, color } = line.marks
+  for (const i of pieces) {
+    expect(color[i]).toBe(bandOf((low[i]! + score[i]!) / 2))
+  }
+  expect(pieces.some(i => low[i] === Math.fround(0.1))).toBe(true)
+})
+
 test('a samples file leaving out a subtrack warns, as the display does', async () => {
   const tsv = path.join(mkdtempSync(path.join(tmpdir(), 'samples-')), 's.tsv')
   writeFileSync(tsv, 'name\tgroup\nposneg_rw1\ta\nposneg_rw2\tb\n')

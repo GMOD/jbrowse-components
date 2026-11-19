@@ -306,7 +306,9 @@ export async function wiggleTables(
             const min = layer.band.minScores[i]!
             const edges = [
               min,
-              ...cuts.filter(c => c > min && c < score),
+              ...cuts
+                .map(cut => Math.fround(cut))
+                .filter(c => c > min && c < score),
               score,
             ]
             for (let k = 1; k < edges.length; k++) {
