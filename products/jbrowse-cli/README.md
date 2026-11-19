@@ -57,7 +57,7 @@ COMMANDS
   create               Downloads and installs the latest JBrowse 2 release
   add-assembly         Add an assembly to a JBrowse 2 configuration
   add-track            Add a track to a JBrowse 2 configuration
-  validate             Check a configuration for errors, including ones JBrowse accepts silently
+  validate             Check a configuration for errors, including ones JBrowse accepts without an error
   text-index           Make a text-indexing file for any given track(s)
   admin-server         Start up a small admin server for JBrowse configuration
   upgrade              Upgrades JBrowse 2 to latest version
@@ -81,7 +81,7 @@ Use "jbrowse <command> --help" for more information about a command.
 ## jbrowse create
 
 ```text
-Downloads and installs the latest JBrowse 2 release
+Downloads and installs the newest JBrowse 2 release of this CLI's major version
 
 Usage: jbrowse create [localPath] [options]
 
@@ -102,7 +102,8 @@ Options:
   -u, --url                  A direct URL to a JBrowse 2 release
 
   -t, --tag                  Version of JBrowse 2 to install. Format is v1.0.0.
-                             Defaults to latest
+                             Defaults to the newest release, or the newest
+                             prerelease when this CLI is one
 
 Examples:
 
@@ -133,8 +134,10 @@ Options:
   -t, --type                 type of sequence, by default inferred from sequence
                              file
 
-                             indexedFasta - An index FASTA (e.g. .fa or .fasta)
-                             file; can optionally specify --faiLocation
+                             indexedFasta - A FASTA (e.g. .fa or .fasta) file;
+                             can optionally specify --faiLocation, and copying,
+                             symlinking or moving a FASTA with no .fai generates
+                             one
 
                              bgzipFasta - A block-gzipped and indexed FASTA
                              (e.g. .fa.gz or .fasta.gz) file; can optionally
@@ -212,7 +215,7 @@ assembly's About dialog.
 
 Examples:
 
-# add assembly to installation in current directory. assumes .fai file also exists, and copies GRCh38.fa and GRCh38.fa.fai to current directory
+# add assembly to installation in current directory, copying GRCh38.fa and GRCh38.fa.fai there; with no GRCh38.fa.fai, one is generated
 $ jbrowse add-assembly GRCh38.fa --load copy
 
 # add assembly to a specific jb2 installation path using --out, and copies the .fa and .fa.fai file to /path/to/jb2
@@ -271,16 +274,20 @@ Options:
       --category             Optional comma separated string of categories to
                              group tracks
 
-      --config               Any extra config settings to add to a track
+      --config               Inline JSON of extra track settings. Nested objects
+                             merge into the generated track key by key, so
+                             {"adapter":{"disableGeneHeuristic":true}} keeps the
+                             adapter type and file locations; arrays and scalars
+                             replace
 
       --color                Track color: a plain CSS color or a jexl callback.
-                             Merged into displayDefaults
+                             Merged into displayDefaults as encoding.color.value
 
       --height               Track display height in pixels. Merged into
                              displayDefaults
 
       --displayDefaults      Inline JSON merged into the track displayDefaults
-                             (labels, color, filter, etc.)
+                             (labels, encoding, filter, etc.)
 
       --multiwig             Build a MultiQuantitativeTrack from several BigWigs
                              (in place of the positional track arg): a
@@ -324,7 +331,9 @@ beside reads.bam. A URL cannot be checked, so it gets <file>.bai/.tbi; pass
 --config takes inline JSON (not a file path) that is merged into the generated
 track config, so you can set fields the dedicated flags do not cover, e.g.
 --config '{"metadata":{"skipTextIndex":true}}' to exclude the track from jbrowse
-text-index.
+text-index. Nested objects merge key by key, so --config
+'{"adapter":{"disableGeneHeuristic":true}}' adds one key to the generated
+adapter; arrays and scalars replace.
 
 --color and --height set the two most common appearance settings without writing
 JSON. Wrap the value in single quotes and use double quotes inside a jexl
@@ -377,12 +386,16 @@ $ jbrowse add-track --multiwig sources.json --name "CATlas ATAC"
 
 ```text
 Check a JBrowse configuration for errors, including the ones JBrowse itself
-accepts silently
+accepts without an error
 
 Usage: jbrowse validate [config.json] [options]
 
 Options:
       --json                 Output the findings as JSON instead of text
+
+      --plugin-manifest      A plugin manifest listing the types a plugin
+                             registers, whose slots are then checked
+                             (repeatable)
 
   -q, --quiet                Only print errors, suppressing warnings and notes
 
@@ -391,17 +404,18 @@ Options:
 Notes:
 
 A config key JBrowse does not recognize does nothing: a track, an adapter or a
-display names it on the browser console and loads without it, and a session
-snapshot drops it in silence. This command reports each one offline, before
+display logs it to the browser console and loads without it, and a session
+snapshot drops it with no message. This command reports each one offline, before
 anyone opens the config.
 
 Two levels are reported:
 
-  error    JBrowse silently does the wrong thing, or refuses to load it — an
-       unknown slot, a key a defaultSession view or display does not
-declare, a track naming an assembly the config never defines, a
+  error    JBrowse does the wrong thing with no error, or refuses to load it —
+an            unknown slot, a key a defaultSession view or display does not
+      declare, a track naming an assembly the config never defines, a
 defaultSession naming a trackId that does not exist, a duplicate
-trackId. Exits 1.
+trackId, a track alias that is a trackId or that two tracks list.
+Exits 1.
 
   warning  JBrowse will complain by itself on load, or handles it — a type name
           the core plugins do not register (expected if one of your plugins
@@ -417,7 +431,15 @@ may not have meant. With --json each finding has the stable "rule" id of the
 rule that made it.
 
 Types registered by plugins are not known to this command, so they come through
-as warnings rather than errors.
+as warnings rather than errors. A plugin manifest (--plugin-manifest) lists the
+types one plugin registers and their slots, and the top-level keys its
+rootConfigurationSchema adds, and a config's use of those is then checked as
+core's is. jbrowse-components' scripts/generateConfigManifest.ts writes one from
+the plugin's built ESM bundle (--umd-plugin for a UMD one), a path or the url a
+config's plugins entry names:
+
+  node scripts/generateConfigManifest.ts \     --plugin dist/my-plugin.esm.js
+--out my-plugin.manifest.json
 
 The same checks are published as a JSON Schema at
 https://jbrowse.org/jb2/schema/v5/config.json: a "$schema" line naming it at the
@@ -437,6 +459,9 @@ $ jbrowse validate mysession.jbrowse
 
 # machine-readable output
 $ jbrowse validate config.json --json
+
+# check a plugin's tracks and displays too
+$ jbrowse validate config.json --plugin-manifest my-plugin.manifest.json
 ```
 
 ## jbrowse text-index
@@ -598,7 +623,7 @@ $ jbrowse admin-server --host 0.0.0.0
 ## jbrowse upgrade
 
 ```text
-Upgrades JBrowse 2 to latest version
+Upgrades JBrowse 2 to the newest release of this CLI's major version
 
 Usage: jbrowse upgrade [localPath] [options]
 
@@ -608,7 +633,8 @@ Options:
   -l, --listVersions         Lists out all versions of JBrowse 2
 
   -t, --tag                  Version of JBrowse 2 to install. Format is v1.0.0.
-                             Defaults to latest
+                             Defaults to the newest release, or the newest
+                             prerelease when this CLI is one
 
       --branch               Download a development build from a named git
                              branch
@@ -766,8 +792,8 @@ $ jbrowse make-density genes.gff3.gz --assembly hg38.fa --bin 10000 --out genes.
 ```text
 Sort a GFF or GTF for tabix — the two share a refname/start column layout. It is
 `sort -k1,1 -k4,4n` with LC_ALL=C and a tab separator, plus every line starting
-with # kept at the top rather than sorted into the data. Takes a file, or the
-same data on stdin
+with # kept at the top rather than sorted into the data, and blank lines
+dropped, which tabix rejects. Takes a file, or the same data on stdin
 
 Usage: jbrowse sort-gff [file] [options]
 
@@ -793,7 +819,8 @@ $ tabix -p gff sorted.gtf.gz
 ```text
 Sort a BED file for tabix. It is `sort -k1,1 -k2,2n` with LC_ALL=C and a tab
 separator, plus every line starting with # kept at the top rather than sorted
-into the data. Takes a file, or the same data on stdin
+into the data, and blank lines dropped, which tabix rejects. Takes a file, or
+the same data on stdin
 
 Usage: jbrowse sort-bed [file] [options]
 
@@ -820,7 +847,8 @@ Options:
   -h, --help                 Show help
 
   -t, --type                 Type of connection (e.g. JBrowse1Connection,
-                             UCSCTrackHubConnection, or one a plugin registers)
+                             UCSCTrackHubConnection, JB2TrackHubConnection, or
+                             one a plugin registers)
 
   -a, --assemblyNames        For UCSC: optional comma separated list of assembly
                              names to filter. For JBrowse1: a single assembly
@@ -856,6 +884,9 @@ $ jbrowse add-connection https://mysite.com/path/to/hub.txt
 
 # force the UCSCTrackHubConnection type for a hub file not named hub.txt
 $ jbrowse add-connection https://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection
+
+# subscribe to the tracks of another JBrowse 2 instance (type inferred from the config.json filename)
+$ jbrowse add-connection https://mysite.com/jbrowse2/config.json -a hg38
 
 # add a connection type a plugin registers, its location in the plugin's own slot
 $ jbrowse add-connection https://mysite.com/path/to/source --type MyPluginConnection --config '{"sourceLocation":{"uri":"https://mysite.com/path/to/source","locationType":"UriLocation"}}' -a hg19

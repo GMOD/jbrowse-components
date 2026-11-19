@@ -27,9 +27,9 @@
     "node": ">=18.3.0"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "prepack": "pnpm build && pnpm generate-readme",
-    "generate-readme": "./generate_readme.sh > README.md"
+    "build": "pnpm build:dist",
+    "build:dist": "tsc -p tsconfig.build.json && ./generate_readme.sh > README.md",
+    "prepack": "pnpm build"
   },
   "dependencies": {
     "@gmod/faidx": "^3.1.0",

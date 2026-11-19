@@ -51,10 +51,8 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: node scripts/check-tag-version.ts "$RELEASE_TAG"
-      # The same build-once path Push's pack step takes, so what is published
-      # is built the way the tarballs the component tests installed were.
-      # --ignore-scripts below then keeps each package's `prepack` from
-      # building it all again, one package at a time.
+      # Built the way Push built the tarballs the component tests installed;
+      # --ignore-scripts below keeps each `prepack` from rebuilding it.
       - name: Build every published package
         run: node scripts/build-published.ts
       # npm never infers a dist-tag from prerelease semver, it publishes as
