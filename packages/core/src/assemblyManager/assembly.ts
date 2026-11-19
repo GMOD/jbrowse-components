@@ -131,6 +131,13 @@ export default function assemblyFactory(
          * alias source that states them (an NCBI sequence report)
          */
         sequenceRoles: undefined as Map<string, SequenceRole> | undefined,
+        /**
+         * #volatile
+         * canonical refNames the sequence file itself declares circular (a
+         * GenBank record's `LOCUS` topology), beside the `circularRefNames`
+         * config slot
+         */
+        circularSequences: undefined as Set<string> | undefined,
 
         /**
          * #volatile
@@ -309,14 +316,17 @@ export default function assemblyFactory(
         lowerCaseRefNameAliases,
         canonicalToSeqAdapterRefNames,
         sequenceRoles,
+        circularSequences,
         cytobands,
         geneticCodes,
       }: RefNameMaps & {
         regions: Region[]
+        circularSequences: Set<string>
         cytobands: Feature[]
         geneticCodes: Record<string, number>
       }) {
         self.regions = regions
+        self.circularSequences = circularSequences
         self.refNameAliases = refNameAliases
         self.lowerCaseRefNameAliases = lowerCaseRefNameAliases
         self.canonicalToSeqAdapterRefNames = canonicalToSeqAdapterRefNames
@@ -426,11 +436,16 @@ export default function assemblyFactory(
           if (isAlive(self)) {
             this.setLoaded({
               ...maps,
-              regions: regions.map(r => ({
+              regions: regions.map(({ circular, ...r }) => ({
                 ...r,
                 refName: maps.refNameAliases[r.refName] ?? r.refName,
                 assemblyName,
               })),
+              circularSequences: new Set(
+                regions
+                  .filter(r => r.circular)
+                  .map(r => maps.refNameAliases[r.refName] ?? r.refName),
+              ),
               cytobands,
               geneticCodes,
             })
@@ -689,12 +704,15 @@ export default function assemblyFactory(
       /**
        * #method
        * Whether the assembly's `circularRefNames` lists this refName, matched
-       * through its aliases.
+       * through its aliases, or its sequence file declares it circular.
        */
       isCircularRefName(refName: string) {
         const canonical = self.getCanonicalRefName2(refName)
         const names = self.getConf('circularRefNames') ?? []
-        return names.some(name => self.getCanonicalRefName2(name) === canonical)
+        return (
+          !!self.circularSequences?.has(canonical) ||
+          names.some(name => self.getCanonicalRefName2(name) === canonical)
+        )
       },
       /**
        * #method

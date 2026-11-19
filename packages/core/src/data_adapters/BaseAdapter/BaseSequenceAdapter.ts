@@ -3,6 +3,7 @@ import { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { NoAssemblyRegion } from '../../util/index.ts'
 import type { RegionsAdapter } from '../BaseAdapter/index.ts'
+import type { SequenceRegion } from './RegionsAdapter.ts'
 import type { BaseOptions } from './types.ts'
 
 /** #adapterBase BaseSequenceAdapter | a region list plus the sequence for a queried region; extends the feature adapter */
@@ -18,7 +19,7 @@ export abstract class BaseSequenceAdapter<
   /**
    * Fetches a list of 'regions' with refName, start, and extends
    */
-  abstract getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>
+  abstract getRegions(opts: BaseOptions): Promise<SequenceRegion[]>
 
   /**
    * Fetches the sequence string for a given region
