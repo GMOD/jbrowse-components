@@ -250,6 +250,19 @@ describe('edge cases on a circle and two same-named exports', () => {
     const [abutting] = await fetch(features, 'Exported', 0, 50)
     expect(shape(abutting!)).toEqual(['misc_feature', 0, 20, 1])
   })
+  test('spans naming the record’s own accession are kept', async () => {
+    const found = await fetch(features, 'x.1', 800, 850)
+    expect(shape(found.find(f => f.get('note') === 'own accession')!)).toEqual([
+      'misc_feature',
+      809,
+      840,
+      1,
+      [
+        ['misc_feature', 809, 820, 1],
+        ['misc_feature', 829, 840, 1],
+      ],
+    ])
+  })
 })
 
 describe('a record with no ORIGIN sequence', () => {

@@ -43,6 +43,13 @@ test.each([
   expect(parseLocation(location)).toEqual(expected)
 })
 
+test('a span naming the record’s own accession is local', () => {
+  expect(parseLocation('join(x.1:1..10,x:30..40,y.1:50..60)', 'x.1')).toEqual([
+    plus(0, 10),
+    plus(29, 40),
+  ])
+})
+
 describe('placeSpans', () => {
   test('a join wrapping the origin is one span past the end', () => {
     expect(

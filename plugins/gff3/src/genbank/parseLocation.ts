@@ -8,6 +8,10 @@ const OPERATOR = /(complement|join|order|bond)\(/y
 const GAP = /gap\([^)]*\)/y
 const SPAN = /([\w.]+:)?[<>]?(\d+)(?:(\.\.|\^|\.)[<>]?(\d+))?/y
 
+function isOwn(accession: string, refName: string) {
+  return accession === refName || accession === refName.replace(/\.\d+$/, '')
+}
+
 function matchAt(regex: RegExp, text: string, pos: number) {
   regex.lastIndex = pos
   return regex.exec(text)
@@ -18,11 +22,11 @@ function matchAt(regex: RegExp, text: string, pos: number) {
  * the feature is transcribed: `complement(join(a,b))` and
  * `join(complement(b),complement(a))` both answer b then a on strand -1.
  *
- * `<`/`>` partial markers are dropped, a span on another entry (`ACC:1..9`)
- * and a `gap()` are skipped, and the site between two bases (`n^n+1`) covers
+ * `<`/`>` partial markers are dropped, a span on another entry (`ACC:1..9`,
+ * unless ACC is `refName`'s own) and a `gap()` are skipped, and the site between two bases (`n^n+1`) covers
  * both of them. `order` and `bond` read as `join`.
  */
-export function parseLocation(location: string) {
+export function parseLocation(location: string, refName = '') {
   const text = location.replaceAll(/\s/g, '')
   let pos = 0
 
@@ -50,7 +54,7 @@ export function parseLocation(location: string) {
       pos = SPAN.lastIndex
       const [, remote, from, , to] = span
       const start = Number(from) - 1
-      return remote
+      return remote && !isOwn(remote.slice(0, -1), refName)
         ? []
         : [{ start, end: to === undefined ? start + 1 : Number(to), strand: 1 }]
     } else {

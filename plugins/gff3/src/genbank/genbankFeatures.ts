@@ -159,7 +159,7 @@ export function genbankFeatures(
   const transcripts = new Map<LazyGffFeature, LazyGffFeature[]>()
   for (const entry of parseFeatureTable(lines)) {
     const spans = placeSpans(
-      parseLocation(entry.location),
+      parseLocation(entry.location, refName),
       length,
       circular &&
         !entry.location.includes('order(') &&
