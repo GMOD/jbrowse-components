@@ -834,7 +834,9 @@ three pools that share no space, each under one setting, `limit`
 - **Adapters:** `keepAdapters` keeps the adapters the last call used, whatever they
   weigh, then walks the others from the most recently requested, keeping each whose
   weight still fits under `limit` beside those kept. `setLimit` keeps the last call's
-  too.
+  too. A host running calls in parallel keeps everything requested since the oldest
+  running call began, so a long call holds the other calls' adapters past `limit`
+  until a call runs alone.
 - **An adapter's weight** is at least `MIN_ADAPTER_BYTES`, or each file its config
   names that `readRange` read whole, at its uncompressed size (summed BGZF block
   sizes, or a gzip's last member size), times `INDEX_HOLDS_PER_BYTE` (4) for a

@@ -119,7 +119,7 @@ const held = (): CacheUse => ({
  */
 async function trim() {
   const named = new Set<string>()
-  const inUse = Math.min(lastCall, ...running)
+  const inUse = Math.min(lastCall, running[0] ?? lastCall)
   let kept = 0
   await keepAdapters((adapter, lastRequest) => {
     const weight = weigh(adapter)
@@ -151,7 +151,7 @@ function applyLimit(bytes: number) {
 
 const cache = {
   held,
-  /** Runs `call`, then trims, keeping the adapters it and every call still running used. */
+  /** Runs `call`, then trims, keeping the adapters it and every running call used. */
   async within<R>(call: () => Promise<R>) {
     const since = adapterRequests()
     running.push(since)

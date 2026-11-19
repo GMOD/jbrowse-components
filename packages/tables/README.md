@@ -28,9 +28,9 @@ pools that share no space, each under `limit` (256 MiB unless set):
 - **Chunks:** the file bytes read in ranges, as the byte ranges fetched. A call
   whose reads exceed `limit` can fetch bytes again inside itself, and `Infinity`
   leaves the chunks unbounded.
-- **Adapters:** the ones the last call read stay whatever they weigh. Then each
-  other adapter, most recently read first, stays if its weight still fits under
-  `limit` beside those kept.
+- **Adapters:** the ones the last call read stay whatever they weigh, as do
+  those any call still running read. Then each other adapter, most recently read
+  first, stays if its weight still fits under `limit` beside those kept.
 - An adapter weighs at least 1 MiB, or an estimate of what it parsed from the
   files it read whole, which is four times an index's uncompressed size and ten
   times any other file's, such as a plain or gzipped VCF.

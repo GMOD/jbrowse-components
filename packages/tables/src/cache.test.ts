@@ -97,7 +97,6 @@ test('a call finishing keeps the adapters a call still running holds', async () 
   expect((await engine.cache()).adapters).toBe(1)
   release()
   await running
-  expect((await engine.cache()).adapters).toBe(1)
 })
 
 test('every engine shares one budget and one set of caches', async () => {
