@@ -37,7 +37,10 @@ const ErrorMessageStackTraceDialog = lazy(
   () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
 )
 
-const NO_LANES = { count: 0, features: [] as readonly Feature[] }
+const NO_LANES: { count: number; features: readonly Feature[] } = {
+  count: 0,
+  features: [],
+}
 
 /** One end of a feature on the circle, as `placeEnd` resolves it. */
 export interface PlacedEnd {

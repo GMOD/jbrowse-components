@@ -4,7 +4,10 @@ import { applySnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { autorun, when } from 'mobx'
 
-import type { CircularViewModel } from '../../CircularView/model.ts'
+import type {
+  ChordSyntenyDisplaySelf,
+  CircularViewModel,
+} from '../../CircularView/model.ts'
 import type { Slice } from '../../CircularView/slices.ts'
 import type { RibbonShape } from '../../chords/shapes.ts'
 import type { ChordSyntenyDisplayModel } from './stateModelFactory.ts'
@@ -110,6 +113,12 @@ async function setup(assemblyNames: string[]) {
   await when(() => display.ready)
   return { session, view, display }
 }
+
+test('the view reads a ribbon display through the interface it declares', async () => {
+  const { view, display } = await setup(['volvox', 'volvox'])
+  const asTheViewReadsIt: ChordSyntenyDisplaySelf = display
+  expect(view.chordSyntenyDisplays).toEqual([asTheViewReadsIt])
+}, 20000)
 
 test('a self-alignment places both ends on the one assembly', async () => {
   const { display } = await setup(['volvox', 'volvox'])

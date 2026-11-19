@@ -22,9 +22,6 @@ export interface CircularViewInitSelf extends IStateTreeNode {
   finishAutoDiagonalize: () => void
   autoDiagonalize: () => Promise<void>
   canDiagonalize: boolean
-  colorField: string | undefined
-  colorValue: string | undefined
-  setColorField: (field: string | undefined) => void
 }
 
 /**

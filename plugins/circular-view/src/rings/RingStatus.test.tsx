@@ -7,14 +7,13 @@ import type { RingDisplay } from './ringHost.ts'
 function renderStatus(status: Record<string, unknown>) {
   const display = {
     id: 'genes',
-    type: 'LinearBasicDisplay',
     height: 50,
+    configuredHeight: 50,
     canvasDrawn: false,
     paintCount: 0,
     painted: false,
     renderNow() {},
     setHostHeight() {},
-    configuration: { displayId: 'genes' },
     RenderingComponent: () => null,
     ...status,
   } as RingDisplay

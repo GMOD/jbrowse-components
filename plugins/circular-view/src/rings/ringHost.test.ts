@@ -139,14 +139,13 @@ test('a pass the rings no longer need dies on a later task, not in place', async
 
 const display = (id: string, height: number): RingDisplay => ({
   id,
-  type: 'LinearWiggleDisplay',
   height,
+  configuredHeight: height,
   canvasDrawn: false,
   paintCount: 0,
   painted: false,
   renderNow() {},
   setHostHeight() {},
-  configuration: { displayId: id },
   RenderingComponent: () => null,
 })
 
@@ -276,7 +275,7 @@ test("a ring moved by another ring's height keeps its strip image until its own 
     }
   })
   runInAction(() => {
-    outer.height = 30
+    outer.configuredHeight = 30
   })
   const [before, moved] = cells.slice(-2)
   expect(moved).not.toBe(before)
@@ -415,29 +414,6 @@ test('the Canvas2D painter draws a translucent strip at its own alpha, each colu
   expect(seen.outside).toBeGreaterThan(100_000)
 })
 
-test('the painter draws nothing without a strip', () => {
-  const shape = ringShape('ring0')
-  const target = canvas2d(10, 10)
-  const params = { centerX: 5, centerY: 5, offsetRadians: 0, strip: undefined }
-  expect(
-    shape.paintsBlock!(
-      canvasWideBlocks([0], 10)[0]!,
-      { canvasWidth: 10, canvasHeight: 10 },
-      params,
-    ),
-  ).toBe(false)
-  shape.paintBlock(
-    target.ctx,
-    { innerPx: Float32Array.of(1), outerPx: Float32Array.of(4), count: 1 },
-    canvasWideBlocks([0], 10)[0]!,
-    { canvasWidth: 10, canvasHeight: 10 },
-    params,
-  )
-  expect(target.ctx.getImageData(0, 0, 10, 10).data.every(v => v === 0)).toBe(
-    true,
-  )
-})
-
 const frame: RingFrame = {
   canvasWidth: 1000,
   canvasHeight: 1000,
@@ -449,8 +425,7 @@ const frame: RingFrame = {
 function cell(index: number, image: HTMLCanvasElement): RingCell {
   return {
     index,
-    display: { paintCount: 0, renderNow() {} },
-    paintCount: 0,
+    display: { renderNow() {} },
     channels: {
       innerPx: Float32Array.of(300),
       outerPx: Float32Array.of(400),

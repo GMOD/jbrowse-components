@@ -14,14 +14,13 @@ const decodeSvg = async (markup: string) =>
 
 const display: RingDisplay = {
   id: 'ring',
-  type: 'LinearWiggleDisplay',
   height: 50,
+  configuredHeight: 50,
   canvasDrawn: true,
   paintCount: 1,
   painted: true,
   renderNow() {},
   setHostHeight() {},
-  configuration: { displayId: 'ring' },
   RenderingComponent: () => null,
 }
 

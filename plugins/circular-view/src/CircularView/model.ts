@@ -100,6 +100,7 @@ import type {
   PointerTarget,
 } from '../chords/shapes.ts'
 import type { RingDisplay } from '../rings/ringHost.ts'
+import type { RingFrame } from '../rings/ringMarks.ts'
 import type { FitInput, FitLayout } from './fitLayout.ts'
 import type { ChordAxis, PolarScale } from './slices.ts'
 import type { CircularViewCommands } from './types.ts'
@@ -114,6 +115,7 @@ import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { Region } from '@jbrowse/core/util/types'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
+import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   AttributeRange,
@@ -588,13 +590,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * what the ring and chord canvases both draw against: the view's box,
        * the circle's centre in it and the figure's rotation
        */
-      get polarFrame(): {
-        canvasWidth: number
-        canvasHeight: number
-        centerX: number
-        centerY: number
-        offsetRadians: number
-      } {
+      get polarFrame(): RingFrame {
         const [centerX, centerY] = this.circleCenterXY
         return {
           canvasWidth: this.width,
@@ -878,7 +874,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * the strip a linear display lays out along and draws its ring from
        * (ADR-119)
        */
-      get regionHost() {
+      get regionHost(): RegionHost {
         return self.ringHost
       },
       /**
@@ -1458,26 +1454,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       async launchToggleTrack(trackId: string) {
         return launchToggleTrackGeneric(self, trackId)
-      },
-      /**
-       * #action
-       * `addTrackConf` with `launchTrack`'s loading behavior, for a track
-       * handed over inline rather than from a session list
-       */
-      async launchTrackConf(
-        configuration: Record<string, unknown>,
-        initialSnapshot = {},
-      ) {
-        const { trackId } = configuration
-        return typeof trackId === 'string'
-          ? launchTrackGeneric(
-              self,
-              trackId,
-              initialSnapshot,
-              {},
-              configuration,
-            )
-          : undefined
       },
     }))
     .actions(self => ({

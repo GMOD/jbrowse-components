@@ -21,6 +21,11 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type {
+  AbstractTrackModel,
+  AbstractViewModel,
+  ViewProblem,
+} from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { MarkImage } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
@@ -36,22 +41,19 @@ export const MAX_RINGS_RADIUS_FRACTION = 0.5
 /**
  * A ring's display: the heights and paint count every linear display carries
  * through `TrackHeightMixin` and `RenderLifecycleMixin`, and its component.
- * It asks the circle for its `configuredHeight`, its height slot, or its
- * height where the slot is unset, and gets its band back through
+ * It asks the circle for its `configuredHeight` and gets its band back through
  * `setHostHeight`; a display whose height is not the allotted one is scaled
  * into the band instead.
  */
 export interface RingDisplay {
   id: string
-  type: string
   height: number
-  configuredHeight?: number
+  configuredHeight: number
   setHostHeight: (height: number | undefined) => void
   canvasDrawn: boolean
   paintCount: number
   painted: boolean
   renderNow: () => void
-  configuration: { displayId: string }
   RenderingComponent: ComponentType<{ model: never }>
 }
 
@@ -62,6 +64,9 @@ export interface RingHostView {
   minimized: boolean
   bodyMounted: boolean
   effectiveBodyMounted: boolean
+  rendersDisplays: boolean
+  problems: readonly ViewProblem[]
+  addProblem: (problem: ViewProblem) => void
   initialized: boolean
   bpPerPx: number
   radiusPx: number
@@ -147,15 +152,14 @@ export function layoutRings(
   displays: readonly RingDisplay[],
   radiusPx: number,
 ): Ring[] {
-  const ask = (d: RingDisplay) => d.configuredHeight ?? d.height
-  const heights = displays.reduce((sum, d) => sum + ask(d), 0)
+  const heights = displays.reduce((sum, d) => sum + d.configuredHeight, 0)
   const gaps = displays.length * RING_GAP_PX
   const room = Math.max(0, radiusPx * MAX_RINGS_RADIUS_FRACTION - gaps)
   const scale = heights > 0 ? Math.min(1, room / heights) : 0
   const rings: Ring[] = []
   let outerPx = radiusPx - RING_GAP_PX
   for (const display of displays) {
-    const innerPx = Math.max(0, outerPx - ask(display) * scale)
+    const innerPx = Math.max(0, outerPx - display.configuredHeight * scale)
     if (outerPx > innerPx) {
       rings.push({ display, innerPx, outerPx })
     }
@@ -287,7 +291,6 @@ function stripCell(
   return {
     index,
     display,
-    paintCount: display.paintCount,
     channels: {
       innerPx: new Float32Array([innerPx]),
       outerPx: new Float32Array([outerPx]),
@@ -305,7 +308,6 @@ function sameCell(a: RingCell | undefined, b: RingCell | undefined) {
       !!b &&
       a.index === b.index &&
       a.display === b.display &&
-      a.paintCount === b.paintCount &&
       a.strip === b.strip &&
       a.channels.innerPx[0] === b.channels.innerPx[0] &&
       a.channels.outerPx[0] === b.channels.outerPx[0])
@@ -422,6 +424,18 @@ export const RingHost = types
     },
     get effectiveBodyMounted() {
       return self.view.effectiveBodyMounted
+    },
+    get rendersDisplays() {
+      return self.view.rendersDisplays
+    },
+    get problems() {
+      return self.view.problems
+    },
+    get ownTracks(): AbstractTrackModel[] {
+      return []
+    },
+    get ownViews(): AbstractViewModel[] {
+      return []
     },
     get assemblyNames() {
       return self.view.assemblyNames
@@ -669,6 +683,9 @@ export const RingHost = types
     setBodyMounted() {},
     setMinimized() {},
     setDisplayName() {},
+    addProblem(problem: ViewProblem) {
+      self.view.addProblem(problem)
+    },
     setStripElement(displayId: string, el: HTMLElement | null) {
       if (el) {
         self.stripElements.set(displayId, el)

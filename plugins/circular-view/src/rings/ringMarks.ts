@@ -11,8 +11,7 @@ export const RING_PASSES = 8
 /** One ring's payload: its annulus, and the strip it samples. */
 export interface RingCell {
   index: number
-  display: { paintCount: number; renderNow: () => void }
-  paintCount: number
+  display: { renderNow: () => void }
   channels: RingChannels
   strip: MarkImage
 }
@@ -38,7 +37,7 @@ export const ringMarks = Array.from({ length: RING_PASSES }, (_, i) => {
     shape: ringShape(`ring${i}`),
     channels: cell => (own(cell) ? cell.channels : undefined),
     params,
-    textures: (_state, cell) => ({ strip: own(cell) ? cell.strip : undefined }),
+    textures: (_state, cell) => ({ strip: cell.strip }),
   })
 })
 

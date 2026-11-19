@@ -23,8 +23,8 @@ export interface RingParams {
   centerY: number
   /** Where strip x = 0 sits, in radians clockwise from the +x axis. */
   offsetRadians: number
-  /** The strip the ring samples; nothing is drawn without one. */
-  strip: MarkImage | undefined
+  /** The strip the ring samples. */
+  strip: MarkImage
 }
 
 const BAND_ROWS = 64
@@ -123,13 +123,9 @@ export function ringShape(id: string): MarkShape<RingChannels, RingParams> {
       })
     },
 
-    paintsBlock(_block, _frame, params) {
-      return params.strip !== undefined
-    },
-
     paintBlock(ctx, channels, _block, frame, params) {
       const { strip, offsetRadians } = params
-      if (!strip || !ctx.drawImage) {
+      if (!ctx.drawImage) {
         return
       }
       const pixels = pixelsOf(strip)

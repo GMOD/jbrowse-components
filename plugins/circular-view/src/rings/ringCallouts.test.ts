@@ -8,14 +8,13 @@ const stripRadiusPx = 300
 function ringOf(namedFeatures: NamedFeature[]): Ring {
   const display: RingDisplay & { namedFeatures: NamedFeature[] } = {
     id: 'genes',
-    type: 'LinearBasicDisplay',
     height: 50,
+    configuredHeight: 50,
     canvasDrawn: true,
     paintCount: 1,
     painted: true,
     renderNow() {},
     setHostHeight() {},
-    configuration: { displayId: 'genes' },
     RenderingComponent: () => null,
     namedFeatures,
   }
