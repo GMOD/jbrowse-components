@@ -125,6 +125,19 @@ function transcript(refName: string, placed: Placed) {
   )
 }
 
+function shifted(placed: Placed, shift: number): Placed {
+  return {
+    ...placed,
+    start: placed.start + shift,
+    end: placed.end + shift,
+    spans: placed.spans.map(s => ({
+      ...s,
+      start: s.start + shift,
+      end: s.end + shift,
+    })),
+  }
+}
+
 function geneKeys(qualifiers: Map<string, string[]>) {
   return ['locus_tag', 'gene'].flatMap(name =>
     (qualifiers.get(name) ?? []).slice(0, 1).map(value => `${name}:${value}`),
@@ -203,23 +216,31 @@ export function genbankFeatures(
       } else if (isSource) {
         top.push(feature(refName, 'region', placed, placed.attributes))
       } else {
-        const gene = keys
+        const shifts = circular ? [0, length, -length] : [0]
+        const match = keys
           .flatMap(key => genes.get(key) ?? [])
-          .find(g => overlaps(g, placed))
+          .flatMap(gene =>
+            shifts.map(shift => ({ gene, child: shifted(placed, shift) })),
+          )
+          .find(({ gene, child }) => overlaps(gene, child))
         if (TRANSCRIPT_KEYS.has(entry.key)) {
-          const rna = transcript(refName, placed)
-          if (gene) {
-            gene.subfeatures.push(rna)
-            transcripts.set(gene, [...(transcripts.get(gene) ?? []), rna])
+          if (match) {
+            const rna = transcript(refName, match.child)
+            match.gene.subfeatures.push(rna)
+            transcripts.set(match.gene, [
+              ...(transcripts.get(match.gene) ?? []),
+              rna,
+            ])
           } else {
-            top.push(rna)
+            top.push(transcript(refName, placed))
           }
-        } else if (entry.key === 'CDS' && gene) {
+        } else if (entry.key === 'CDS' && match) {
+          const { gene, child } = match
           const parent =
             transcripts
               .get(gene)
-              ?.find(t => t.type === 'mRNA' && contains(t, placed)) ?? gene
-          parent.subfeatures.push(...codingPieces(refName, placed))
+              ?.find(t => t.type === 'mRNA' && contains(t, child)) ?? gene
+          parent.subfeatures.push(...codingPieces(refName, child))
         } else {
           top.push(folded(refName, placed))
         }

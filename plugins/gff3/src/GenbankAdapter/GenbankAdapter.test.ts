@@ -264,6 +264,21 @@ describe('edge cases on a circle and two same-named exports', () => {
     )
   })
 
+  test('a child past the origin hangs under its origin-wrapping gene', async () => {
+    const wrapGene = (fs: Feature[]) =>
+      fs.find(f => f.get('locus_tag') === 'X_wrap' && f.get('type') === 'gene')
+    const whole = wrapGene(await fetch(features, 'x.1', 0, 100, true))
+    expect(shape(whole!)).toEqual([
+      'gene',
+      900,
+      1200,
+      1,
+      [['CDS', 1009, 1200, 1, 0]],
+    ])
+    const tail = wrapGene(await fetch(features, 'x.1', 0, 100))
+    expect(shape(tail!)).toEqual(['gene', 0, 200, 1, [['CDS', 9, 200, 1, 0]]])
+  })
+
   test('spans naming the record’s own accession are kept', async () => {
     const found = await fetch(features, 'x.1', 800, 850)
     expect(shape(found.find(f => f.get('note') === 'own accession')!)).toEqual([
