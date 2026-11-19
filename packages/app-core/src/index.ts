@@ -75,6 +75,14 @@ export { createAutosaveReporter } from './autosaveReporter.ts'
 export { formatSessionSummary, summarizeSession } from './sessionSummary.ts'
 export type { SessionSummary } from './sessionSummary.ts'
 export type { Menu, MenuAction } from './menus.ts'
+export {
+  AGENT_DOCS_URL,
+  AGENT_SKILLS_URL,
+  ConnectAgentDialog,
+  commandLineAgentRoute,
+  inPageAgentRoute,
+} from './ConnectAgent/index.ts'
+export type { AgentRoute, AgentSnippet } from './ConnectAgent/index.ts'
 // The helper library an agent drives the app through: desktop serves it to
 // run_javascript over MCP, web hands it to the page as window.jb
 export {

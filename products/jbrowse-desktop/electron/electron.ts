@@ -36,7 +36,7 @@ import {
   buildAppUrl,
   createMainWindow,
   installAppMenu,
-  showConnectAgentDialog,
+  connectAgentSetup,
 } from './window.ts'
 
 import type { CloseGuard } from './closeGuard.ts'
@@ -362,10 +362,18 @@ function runApp() {
       // why this app serves no MCP bridge, when it does not
       let mcpNotServing: string | undefined
       const connectAgent = () => {
-        showConnectAgentDialog(mcpNotServing).catch(logError)
+        const win = wm.current
+        if (win) {
+          ipcSend(
+            win.webContents,
+            'connectAgentSetup',
+            connectAgentSetup(mcpNotServing),
+          )
+        } else {
+          wm.ensureWindow().catch(logError)
+        }
       }
-      // window.ts sets a native menu on macOS alone, so on the other two
-      // platforms the renderer's own Help menu is the only route to this.
+      // macOS's native menu and the renderer's Help menus both land here
       ipcHandle('showConnectAgent', connectAgent)
       setupAutoUpdater({
         autoUpdater,

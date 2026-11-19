@@ -3,13 +3,16 @@ import { lazy } from 'react'
 import {
   HistoryManagementMixin,
   PluginsUpdatedMixin,
+  ConnectAgentDialog,
   RootAppMenuMixin,
   aboutMenuItem,
+  commandLineAgentRoute,
   assemblyManagerMenuItem,
   byLastUsedDesc,
   exportSessionMenuItem,
   helpMenuItem,
   importSessionMenuItem,
+  inPageAgentRoute,
   newSessionMenuItem,
   pluginStoreMenuItem,
   processMutableMenuActions,
@@ -67,9 +70,6 @@ import type { AssertExtends, AssertNotAny } from '@jbrowse/product-core'
 // lazies
 const SetDefaultSession = lazy(
   () => import('../components/SetDefaultSession.tsx'),
-)
-const ConnectAgentDialog = lazy(
-  () => import('../components/ConnectAgentDialog.tsx'),
 )
 
 interface SessionDbHost {
@@ -609,10 +609,15 @@ export default function RootModel({
                   label: 'Connect an AI agent...',
                   icon: AssistantIcon,
                   onClick: () => {
-                    const { session } = self
-                    session?.queueDialog((onClose: () => void) => [
+                    self.session?.queueDialog((onClose: () => void) => [
                       ConnectAgentDialog,
-                      { session, onClose },
+                      {
+                        routes: [
+                          inPageAgentRoute(),
+                          commandLineAgentRoute(packageJSON.version),
+                        ],
+                        onClose,
+                      },
                     ])
                   },
                 },

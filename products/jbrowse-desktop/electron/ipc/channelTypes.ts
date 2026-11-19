@@ -145,6 +145,19 @@ export interface IpcPushChannels {
   // An MCP tool call whose subject is the session model. Answered by an
   // mcpResponse invoke carrying the request's id.
   mcpRequest: { args: [request: McpBridgeRequest] }
+  // Help, Connect an AI agent..., from either menu. The main process holds
+  // what the dialog shows: this install's MCP command and whether it serves.
+  connectAgentSetup: { args: [setup: ConnectAgentSetup] }
+}
+
+export interface ConnectAgentSetup {
+  version: string
+  // the JBROWSE_DISABLE_MCP value that turned the server off
+  disabledBy?: string
+  // why the bridge did not start
+  notServing?: string
+  clientConfigJson: string
+  claudeCodeCommand: string
 }
 
 /**

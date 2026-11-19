@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { BrowserWindow, Menu, app, clipboard, dialog, shell } from 'electron'
+import { BrowserWindow, Menu, app, shell } from 'electron'
 
 import { checkForUpdatesManually } from './autoUpdater.ts'
 import {
@@ -15,6 +15,7 @@ import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
 import type { Updater } from './autoUpdater.ts'
+import type { ConnectAgentSetup } from './ipc/channelTypes.ts'
 import type { LaunchTarget } from './launchTarget.ts'
 import type { AuthWindowParams } from '@jbrowse/core/util/electronChannels'
 
@@ -58,49 +59,22 @@ function openExternal(url: string) {
   }
 }
 
-// The setup text for this install, with the exact path the docs can only
-// guess at per platform. Native, so it works from the start screen and with
-// no session open. A bridge that did not start leads, with its reason: the
-// config below it is right, but reaches nothing until that is fixed.
-export async function showConnectAgentDialog(notServing: string | undefined) {
-  if (mcpDisabled()) {
-    await dialog.showMessageBox({
-      type: 'info',
-      title: 'Connect an AI agent',
-      message: 'The MCP server is turned off',
-      detail: `JBROWSE_DISABLE_MCP=${process.env.JBROWSE_DISABLE_MCP} is set in this environment. Unset it (or set it to 0) and relaunch JBrowse Desktop to let an MCP client such as Claude Desktop or Claude Code drive it.`,
-    })
-    return
-  }
+// The setup for this install, with the exact path the docs can only guess at
+// per platform; the renderer's Connect an AI agent dialog shows it.
+export function connectAgentSetup(
+  notServing: string | undefined,
+): ConnectAgentSetup {
   const command = mcpCommand({
     execPath: process.execPath,
     packaged: app.isPackaged,
     mcpServerScript: path.join(app.getAppPath(), 'build/mcpServer.js'),
   })
-  const json = mcpClientConfigJson(command)
-  const claudeCode = claudeCodeAddCommand(command)
-  const { response } = await dialog.showMessageBox({
-    type: notServing ? 'warning' : 'info',
-    title: 'Connect an AI agent',
-    message: notServing
-      ? 'This JBrowse Desktop is not serving MCP clients'
-      : 'Leave JBrowse Desktop running and point an MCP client at it. The client then reads and changes the open session: builds views, adds tracks, reads feature data and takes screenshots.',
-    detail: `${notServing ? `${notServing}\n\nFix that and relaunch JBrowse Desktop; until then the setup below reaches nothing here.\n\n` : ''}Claude Desktop (Settings, Developer, Edit Config):\n${json}\n\nClaude Code:\n${claudeCode}\n\nAny code the agent runs has the same access to this computer as the app. Set JBROWSE_DISABLE_MCP=1 to turn the server off.`,
-    buttons: [
-      'Copy Claude Desktop config',
-      'Copy Claude Code command',
-      'Open the documentation',
-      'Close',
-    ],
-    cancelId: 3,
-    defaultId: 0,
-  })
-  if (response === 0) {
-    await clipboard.writeText(json)
-  } else if (response === 1) {
-    await clipboard.writeText(claudeCode)
-  } else if (response === 2) {
-    shell.openExternal('https://jbrowse.org/jb2/docs/agents/').catch(logError)
+  return {
+    version: app.getVersion(),
+    disabledBy: mcpDisabled() ? process.env.JBROWSE_DISABLE_MCP : undefined,
+    notServing,
+    clientConfigJson: mcpClientConfigJson(command),
+    claudeCodeCommand: claudeCodeAddCommand(command),
   }
 }
 

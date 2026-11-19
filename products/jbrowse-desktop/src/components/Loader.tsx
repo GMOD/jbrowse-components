@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 import { invokeIpc } from '../ipc.ts'
 import { useMcpRequests } from '../mcp/useMcpRequests.ts'
 import { useIpc } from '../useIpc.ts'
+import ConnectAgentHost from './ConnectAgentHost.tsx'
 import { LazyJBrowse } from './LazyJBrowse.ts'
 import { NotificationProvider } from './Notifications.tsx'
 import { useNotifyError } from './NotifyContext.ts'
@@ -276,6 +277,7 @@ const Loader = observer(function Loader() {
         <CssBaseline />
         <NotificationProvider>
           <LoaderContents />
+          <ConnectAgentHost />
         </NotificationProvider>
       </StyleThemeProvider>
     </ThemeProvider>
