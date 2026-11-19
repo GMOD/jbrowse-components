@@ -466,6 +466,11 @@ test('Group by ticks the row attribute banding the rows, and None once it is cle
   expect(ticked(groupBy())).toEqual(['None'])
 })
 
+test('Color by leads the track menu, as on a feature track', () => {
+  const model = loaded(display({ rows: 'sample' }))
+  expect(labels(model.trackMenuItems())[0]).toBe('Color by')
+})
+
 test('rows with no attributes offer no Group by', () => {
   const model = loaded(display({ rows: 'sample' }))
   expect(labels(model.trackMenuItems())).not.toContain('Group by')

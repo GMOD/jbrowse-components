@@ -315,7 +315,7 @@ export function stateModelFactory(
          * #method
          */
         trackMenuItems(): MenuItem[] {
-          return [...superTrackMenuItems(), ...multiRowMenuItems(self)]
+          return [...multiRowMenuItems(self), ...superTrackMenuItems()]
         },
       }
     })

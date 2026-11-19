@@ -102,7 +102,7 @@ function colorByMenuItems(self: MultiRowMenuModel): MenuItem[] {
   ]
 }
 
-/** The painting's own track menu rows, beside the mark display's. */
+/** The painting's own track menu rows, ahead of the mark display's, so Color by leads as on a feature track. */
 export function multiRowMenuItems(self: MultiRowMenuModel): MenuItem[] {
-  return [...rowsFieldMenuItems(self), ...colorByMenuItems(self)]
+  return [...colorByMenuItems(self), ...rowsFieldMenuItems(self)]
 }
