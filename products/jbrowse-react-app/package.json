@@ -100,5 +100,7 @@
       "./esm/rpcWorker.js": "./esm/rpcWorker.js"
     }
   },
-  "sideEffects": false
+  "sideEffects": [
+    "**/*.css"
+  ]
 }
