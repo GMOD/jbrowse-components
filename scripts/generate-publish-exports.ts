@@ -45,6 +45,8 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { workspaceFolders } from './releaseWorkspaces.ts'
+
 interface PackageJson {
   private?: boolean
   exports?: Record<string, string>
@@ -58,7 +60,7 @@ const root = join(import.meta.dirname, '..')
 // here drifted twice: display-ui and tree-sidebar grew subpaths their tarballs
 // did not publish, and only the packed-artifact jobs noticed. Core's two maps
 // are written together by packages/core/scripts/generateExports.mjs.
-const PACKAGES = ['packages', 'plugins', 'products'].flatMap(group =>
+const PACKAGES = workspaceFolders(root).flatMap(group =>
   readdirSync(join(root, group)).flatMap(dir => {
     const pkg = `${group}/${dir}`
     const manifestPath = join(root, pkg, 'package.json')

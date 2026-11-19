@@ -2,14 +2,14 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 
+import { workspaceFolders } from './releaseWorkspaces.ts'
+
 // A peer a dependency asks for must be provided by the package that depends on
 // it, or forwarded as a peer of its own. pnpm resolves it from the workspace
 // root either way, so nothing in tree notices; Yarn PnP resolves a peer only
 // through the parent, so `@jbrowse/core`'s `react-dom` import fails for a
 // consumer of any plugin that did not forward it. A forwarded workspace peer
 // keeps the dependency's range, so none advertises a React it cannot run on.
-
-const ROOTS = ['packages', 'plugins', 'products', 'example-plugins']
 
 interface Manifest {
   name?: string
@@ -51,7 +51,7 @@ const repoRoot = join(__dirname, '..')
 
 function workspace() {
   const out = new Map<string, { dir: string; manifest: Manifest }>()
-  for (const r of ROOTS) {
+  for (const r of workspaceFolders(repoRoot)) {
     const tierDir = join(repoRoot, r)
     if (!existsSync(tierDir)) {
       continue

@@ -8,8 +8,8 @@ import {
   pinnedFiles,
   subDirs,
   tarballName,
-  workspaceDirs,
 } from './componentTestPins.ts'
+import { workspaceFolders } from './releaseWorkspaces.ts'
 
 const root = path.resolve(import.meta.dirname, '..')
 const packedTarballsByPackageName: Record<string, string> = {}
@@ -27,7 +27,7 @@ for (const dir of subDirs) {
   })
 }
 
-for (const dir of workspaceDirs) {
+for (const dir of workspaceFolders(root)) {
   const fullDir = path.join(root, dir)
   if (fs.existsSync(fullDir)) {
     for (const subdir of fs.readdirSync(fullDir)) {

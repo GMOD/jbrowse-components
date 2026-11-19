@@ -15,6 +15,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { workspaceFolders } from './releaseWorkspaces.ts'
+
 export const subDirs = [
   'cgv-vite',
   'lgv-vite',
@@ -22,13 +24,6 @@ export const subDirs = [
   'plugin-vite',
   'cli-node18',
   'jbrowse-img',
-]
-
-export const workspaceDirs = [
-  'packages',
-  'products',
-  'plugins',
-  'example-plugins',
 ]
 
 // Private packages are never published, so no consumer installs one — except
@@ -53,7 +48,7 @@ export function tarballName(pkgName: string) {
 export function readWorkspace(root: string): WorkspaceIndex {
   const tarballs: Record<string, string> = {}
   const dependencies: Record<string, Record<string, string>> = {}
-  for (const dir of workspaceDirs) {
+  for (const dir of workspaceFolders(root)) {
     const fullDir = path.join(root, dir)
     if (fs.existsSync(fullDir)) {
       for (const subdir of fs.readdirSync(fullDir)) {
