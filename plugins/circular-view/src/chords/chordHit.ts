@@ -402,10 +402,7 @@ function sameStage(a: ChordStage, b: ChordStage) {
 /**
  * `hitRibbon` holding the geometry it last measured, so a pointer moving over
  * one figure measures it once rather than on every move. A zoom changes
- * `radiusPx` and so re-measures; a rotation does not. Holding the re-derived
- * angles too saves nothing measurable, and routing these hit tests through the
- * mark's `hitNearest` would have the models fabricate a block, frame and params
- * to call it; both declined.
+ * `radiusPx` and so re-measures; a rotation does not. ADR-177.
  */
 export function ribbonHitTest() {
   let held:

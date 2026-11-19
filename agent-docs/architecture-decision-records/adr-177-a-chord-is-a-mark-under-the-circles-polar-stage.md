@@ -143,6 +143,10 @@ rows with the CIGAR folded, which took it from 133 MB to 7.3 MB.
   an encoding written for one reads for the other.
 - **4x MSAA.** On WebGL2 it made the oat circle's rotation frame 146 ms.
 - **A ribbon mark in render-core.** One consumer; ADR-040's bar is two.
+- **The ribbon hit cache holding the re-derived angles too.** It saves nothing
+  measurable over holding the measured geometry.
+- **Ribbon and chord hit tests through the mark's `hitNearest`.** The models
+  would fabricate a block, frame and params to call it.
 
 ## Consequences
 
