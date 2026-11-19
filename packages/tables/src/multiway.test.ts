@@ -157,6 +157,35 @@ test('each segment, block and ribbon foot names the anchor region it is drawn on
   expect(new Set(crossing.ribbons.upperRegion)).toEqual(new Set([0, 1]))
 })
 
+test("a reversed anchor region's segment puts each base where its blocks and ribbon feet do", async () => {
+  const {
+    segments: s,
+    blocks: b,
+    ribbons: r,
+  } = await engine.multiway({
+    ...ALL_VS_ALL,
+    anchor: {
+      ...ALL_VS_ALL.anchor,
+      regions: [{ refName: 'ctgA', start: 0, end: 50_001, reversed: true }],
+    },
+  })
+  const k = s.lane.indexOf(0)
+  const xOf = (bp: number) =>
+    s.x1[k]! +
+    ((bp - s.start[k]!) / (s.end[k]! - s.start[k]!)) * (s.x2[k]! - s.x1[k]!)
+  expect([s.x1[k], s.x2[k]]).toEqual([800, 0])
+  for (const i of indexes(b.lane, lane => lane === 0)) {
+    expect(xOf(b.start[i]!)).toBeCloseTo(b.x1[i]!, 3)
+    expect(xOf(b.end[i]!)).toBeCloseTo(b.x2[i]!, 3)
+  }
+  const feet = indexes(r.upperLane, lane => lane === 0)
+  expect(feet.length).toBeGreaterThan(0)
+  for (const i of feet) {
+    expect(xOf(r.upperStart[i]!)).toBeCloseTo(r.upperX1[i]!, 3)
+    expect(xOf(r.upperEnd[i]!)).toBeCloseTo(r.upperX2[i]!, 3)
+  }
+})
+
 test("a lane's genome stops its line at the end of its contig", async () => {
   const given = await engine.multiway({
     ...ALL_VS_ALL,

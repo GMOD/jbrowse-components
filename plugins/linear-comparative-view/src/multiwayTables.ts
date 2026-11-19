@@ -343,13 +343,7 @@ function laneTables(
         0,
       ).forEach((span, k) => {
         const r = axis.regions[k]!
-        segment(
-          i,
-          r.refName,
-          r.start,
-          r.end,
-          r.reversed ? [span[1], span[0]] : span,
-        )
+        segment(i, r.refName, r.start, r.end, span)
       })
     } else if (frame) {
       const openings = frameOpenings(frame)
