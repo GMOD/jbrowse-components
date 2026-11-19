@@ -176,7 +176,7 @@ test('a bigwig-shaped track opens on the circle as a wiggle ring over the strip'
   expect(ring!.outerPx).toBe(view.radiusPx - RING_GAP_PX)
   expect(ring!.innerPx).toBeCloseTo(
     ring!.outerPx -
-      Math.min(display.configuredHeight!, view.radiusPx / 2 - RING_GAP_PX),
+      Math.min(display.configuredHeight, view.radiusPx / 2 - RING_GAP_PX),
   )
   expect(display.height).toBe(Math.floor(ring!.outerPx - ring!.innerPx))
   expect(host.chordRadiusPx).toBe(ring!.innerPx - RING_GAP_PX)

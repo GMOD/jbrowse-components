@@ -52,7 +52,7 @@ function paintWholeSquare(
   params: RingParams,
   dpr: number,
 ) {
-  const strip = params.strip!
+  const strip = params.strip
   const pixels = canvas2d(strip.width, strip.height)
   pixels.drawImage(strip.image, 0, 0)
   const src = pixels.getImageData(0, 0, strip.width, strip.height)
