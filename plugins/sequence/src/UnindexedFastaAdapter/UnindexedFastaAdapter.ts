@@ -13,6 +13,19 @@ import type { UnindexedFastaAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
+/**
+ * The FASTA in `text`: all of it, or, for a GFF3 that carries its sequence
+ * after a `##FASTA` line as Prokka and Bakta write it, what follows that line.
+ */
+function fastaPart(text: string) {
+  const fastaLine = /^##FASTA[^\n]*\n/m.exec(text)
+  return text.startsWith('##gff-version')
+    ? fastaLine
+      ? text.slice(fastaLine.index + fastaLine[0].length)
+      : ''
+    : text
+}
+
 export default class UnindexedFastaAdapter extends BaseSequenceAdapter<UnindexedFastaAdapterConfig> {
   public async getRefNames(opts?: BaseOptions) {
     const { fasta } = await this.setup(opts)
@@ -40,7 +53,7 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
     const res = await updateStatus(
       'Processing sequence',
       opts?.statusCallback,
-      () => parseSmallFasta(text),
+      () => parseSmallFasta(fastaPart(text)),
     )
 
     const fasta = new Map<string, { description: string; sequence: string }>()

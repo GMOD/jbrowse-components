@@ -66,3 +66,18 @@ test('emits nothing for a refName the file does not have', async () => {
   )
   expect(features).toEqual([])
 })
+
+// what Prokka and Bakta write: annotation, then the contigs after ##FASTA
+test('reads the sequence a GFF3 carries after its ##FASTA line', async () => {
+  const adapter = makeAdapter('embedded_fasta.gff3')
+  expect(await adapter.getRegions()).toEqual([
+    { refName: 'contig_1', start: 0, end: 24 },
+    { refName: 'contig_2', start: 0, end: 8 },
+  ])
+  const features = await firstValueFrom(
+    adapter
+      .getFeatures({ refName: 'contig_2', start: 0, end: 8 })
+      .pipe(toArray()),
+  )
+  expect(features[0]!.get('seq')).toBe('GGGGCCCC')
+})

@@ -1,0 +1,9 @@
+##gff-version 3
+##sequence-region contig_1 1 24
+##sequence-region contig_2 1 8
+contig_1	Prodigal:002006	CDS	1	24	.	+	0	ID=LOCUS_00001;product=hypothetical protein
+##FASTA
+>contig_1
+ATGAAACCCGGGTTTAAACCCTAA
+>contig_2
+GGGGCCCC
