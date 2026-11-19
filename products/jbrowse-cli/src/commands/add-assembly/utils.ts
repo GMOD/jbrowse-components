@@ -26,6 +26,7 @@ export type SequenceType =
   | 'bgzipFasta'
   | 'twoBit'
   | 'chromSizes'
+  | 'genbank'
   | 'custom'
 
 const sequenceTypes = new Set<SequenceType>([
@@ -33,6 +34,7 @@ const sequenceTypes = new Set<SequenceType>([
   'bgzipFasta',
   'twoBit',
   'chromSizes',
+  'genbank',
   'custom',
 ])
 
@@ -86,6 +88,8 @@ const fastaRegex = new RegExp(`\\.(${fastaExts})$`, 'i')
 const bgzipFastaRegex = new RegExp(`\\.(${fastaExts})\\.gz$`, 'i')
 const fastaExtRegex = new RegExp(`\\.(${fastaExts})(\\.gz)?$`, 'i')
 
+const genbankRegex = /\.(gb|gbk|gbff)(\.gz)?$/i
+
 function basenameWithoutFastaExt(p: string) {
   return path.basename(p).replace(fastaExtRegex, '')
 }
@@ -97,6 +101,7 @@ const seqTypeByExtension: [RegExp, SequenceType][] = [
   [bgzipFastaRegex, 'bgzipFasta'],
   [/\.2bit$/i, 'twoBit'],
   [/\.chrom\.sizes$/i, 'chromSizes'],
+  [genbankRegex, 'genbank'],
   [/\.json$/i, 'custom'],
 ]
 
@@ -161,6 +166,12 @@ const seqSpecs: Record<Exclude<SequenceType, 'custom'>, SeqSpec> = {
     locField: 'chromSizesLocation',
     sidecars: [],
     defaultName: p => path.basename(p, '.chrom.sizes'),
+  },
+  genbank: {
+    adapterType: 'GenbankSequenceAdapter',
+    locField: 'genbankLocation',
+    sidecars: [],
+    defaultName: p => path.basename(p).replace(genbankRegex, ''),
   },
 }
 

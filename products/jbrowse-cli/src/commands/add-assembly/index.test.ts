@@ -540,6 +540,28 @@ test('adds an assembly from a URL', async () => {
     expect(readConf(ctx)).toMatchSnapshot()
   })
 })
+test('guesses a GenBank file from its extension and names the assembly after it', async () => {
+  await runInTmpDir(async ctx => {
+    mockFetch({})
+    await runCommand(['add-assembly', 'https://mysite.com/data/pUC19.gbk.gz'])
+    expect(readConf(ctx).assemblies).toEqual([
+      {
+        name: 'pUC19',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'pUC19-ReferenceSequenceTrack',
+          adapter: {
+            type: 'GenbankSequenceAdapter',
+            genbankLocation: {
+              uri: 'https://mysite.com/data/pUC19.gbk.gz',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      },
+    ])
+  })
+})
 test('can use --out to make a new directory', async () => {
   await runInTmpDir(async ctx => {
     fs.copyFileSync(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))

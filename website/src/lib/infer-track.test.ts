@@ -10,6 +10,7 @@ const SAMPLES = [
   'reads.sam.gz',
   'genes.gff3.gz',
   'genes.gff3',
+  'phage.gbk',
   'genes.gtf.gz',
   'genes.gtf',
   'calls.vcf.gz',

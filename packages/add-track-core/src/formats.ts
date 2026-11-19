@@ -54,6 +54,12 @@ export interface FormatEntry {
    * index chosen: a Blob or FileHandle has no folder to find `<file>.tbi` in.
    */
   unindexed?: { adapterType: string; locField: string }
+  /**
+   * The adapter that reads the same file as an assembly's sequence, for a
+   * format that is a genome and a track at once: an assembly given a `.gbk`
+   * `uri` reads it with this rather than the track's adapter.
+   */
+  sequence?: { adapterType: string; locField: string }
 }
 
 /**
@@ -115,6 +121,18 @@ export const formats: FormatEntry[] = [
       kind: 'single',
       adapterType: 'Gff3Adapter',
       locField: 'gffLocation',
+    },
+  },
+  {
+    regex: /\.(gb|gbk|gbff)(\.gz)?$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'GenbankAdapter',
+      locField: 'genbankLocation',
+    },
+    sequence: {
+      adapterType: 'GenbankSequenceAdapter',
+      locField: 'genbankLocation',
     },
   },
   {

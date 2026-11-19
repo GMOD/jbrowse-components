@@ -20,8 +20,15 @@ export async function run(args?: string[]) {
     type: {
       type: 'string',
       short: 't',
-      description: `type of sequence, by default inferred from sequence file\n\nindexedFasta - A FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation, and copying, symlinking or moving a FASTA with no .fai generates one\n\nbgzipFasta - A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation\n\ntwoBit - A twoBit (e.g. .2bit) file\n\nchromSizes - A chromosome sizes (e.g. .chrom.sizes) file\n\ncustom - Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
-      choices: ['indexedFasta', 'bgzipFasta', 'twoBit', 'chromSizes', 'custom'],
+      description: `type of sequence, by default inferred from sequence file\n\nindexedFasta - A FASTA (e.g. .fa or .fasta) file; can optionally specify --faiLocation, and copying, symlinking or moving a FASTA with no .fai generates one\n\nbgzipFasta - A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file; can optionally specify --faiLocation and/or --gziLocation\n\ntwoBit - A twoBit (e.g. .2bit) file\n\nchromSizes - A chromosome sizes (e.g. .chrom.sizes) file\n\ngenbank - A GenBank flat file (e.g. .gbk, .gb, .gbff, optionally gzipped); its features load with add-track on the same file\n\ncustom - Either a JSON file location or inline JSON that defines a custom sequence adapter; must provide --name if using inline JSON`,
+      choices: [
+        'indexedFasta',
+        'bgzipFasta',
+        'twoBit',
+        'chromSizes',
+        'genbank',
+        'custom',
+      ],
     },
     name: {
       type: 'string',
@@ -130,6 +137,9 @@ export async function run(args?: string[]) {
     '',
     '# use chrom.sizes file for assembly instead of a fasta file',
     '$ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace',
+    '',
+    '# a GenBank file is a whole assembly; add-track on the same file adds its features',
+    '$ jbrowse add-assembly pUC19.gbk --load copy',
     '',
     '# add assembly from preconfigured json file, expert option',
     '$ jbrowse add-assembly GRCh38.config.json --load copy',

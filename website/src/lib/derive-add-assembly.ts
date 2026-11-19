@@ -28,6 +28,7 @@ const ADAPTER_SEQUENCE_TYPE: Record<string, string> = {
   BgzipFastaAdapter: 'bgzipFasta',
   TwoBitAdapter: 'twoBit',
   ChromSizesAdapter: 'chromSizes',
+  GenbankSequenceAdapter: 'genbank',
 }
 
 // extension -> --type, mirroring guessSequenceType in the same CLI source, so
@@ -37,6 +38,7 @@ const EXT_SEQUENCE_TYPE: [RegExp, string][] = [
   [/\.(fa|fna|fasta|mfa)$/i, 'indexedFasta'],
   [/\.2bit$/i, 'twoBit'],
   [/\.chrom\.sizes$/i, 'chromSizes'],
+  [/\.(gb|gbk|gbff)(\.gz)?$/i, 'genbank'],
 ]
 
 function inferredSequenceType(uri: string) {

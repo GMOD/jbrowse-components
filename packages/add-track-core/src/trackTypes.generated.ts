@@ -29,6 +29,8 @@ export const adapterTypesToTrackTypeMap: Record<string, string> = {
   FromConfigRegionsAdapter: 'ReferenceSequenceTrack',
   FromConfigSequenceAdapter: 'ReferenceSequenceTrack',
   GCContentAdapter: 'GCContentTrack',
+  GenbankAdapter: 'FeatureTrack',
+  GenbankSequenceAdapter: 'ReferenceSequenceTrack',
   Gff3Adapter: 'FeatureTrack',
   Gff3TabixAdapter: 'FeatureTrack',
   GtfAdapter: 'FeatureTrack',

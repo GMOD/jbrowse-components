@@ -28,6 +28,7 @@ const samples: Record<string, string[]> = {
   SamAdapter: ['volvox.sam', 'volvox.sam.gz'],
   Gff3TabixAdapter: ['volvox.gff3.gz', 'volvox.gff.bgz'],
   Gff3Adapter: ['volvox.gff3', 'volvox.gff'],
+  GenbankAdapter: ['phiX174.gbk', 'NC_012920.1.gb', 'genomic.gbff.gz'],
   GtfTabixAdapter: ['volvox.gtf.gz', 'volvox.gtf.bgz'],
   GtfAdapter: ['volvox.gtf'],
   VcfTabixAdapter: ['volvox.vcf.gz', 'volvox.vcf.bgz'],

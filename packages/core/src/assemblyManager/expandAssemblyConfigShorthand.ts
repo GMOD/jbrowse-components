@@ -1,3 +1,5 @@
+import { fileNameOf, matchFormat } from '@jbrowse/add-track-core'
+
 import { isPlainObject } from '../util/objectUtils.ts'
 import { UNKNOWN } from '../util/tracks.ts'
 
@@ -141,7 +143,11 @@ export function expandAssemblySequenceAdapter(
       locationType: 'UriLocation' as const,
       ...(typeof baseUri === 'string' ? { baseUri } : {}),
     }
-    const guess = guesser(file, undefined)
+    const sequenceType = matchFormat(fileNameOf(uri))?.sequence?.adapterType
+    const guess =
+      sequenceType && pluginManager.hasAdapterType(sequenceType)
+        ? { type: sequenceType }
+        : guesser(file, undefined)
     if (!guess || guess.type === UNKNOWN) {
       return sequence
     }
