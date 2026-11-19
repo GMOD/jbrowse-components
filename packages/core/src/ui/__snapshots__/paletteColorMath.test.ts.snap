@@ -1,0 +1,144 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[` blue  resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(0, 0, 255, 0.4)",
+  "contrastingOnDark": "rgb(76, 76, 255)",
+  "contrastingOnNamedGrey": " blue ",
+  "contrastingOnWhite": " blue ",
+  "darken": "rgb(0, 0, 178)",
+  "emphasize": "rgb(38, 38, 255)",
+  "lighten": "rgb(51, 51, 255)",
+  "luminance": 0.072,
+}
+`;
+
+exports[`#0D233F resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(13, 35, 63, 0.4)",
+  "contrastingOnDark": "rgb(85, 101, 120)",
+  "contrastingOnNamedGrey": "#0D233F",
+  "contrastingOnWhite": "#0D233F",
+  "darken": "rgb(9, 24, 44)",
+  "emphasize": "rgb(49, 68, 91)",
+  "lighten": "rgb(61, 79, 101)",
+  "luminance": 0.016,
+}
+`;
+
+exports[`#aaa resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(170, 170, 170, 0.4)",
+  "contrastingOnDark": "#aaa",
+  "contrastingOnNamedGrey": "rgb(255, 255, 255)",
+  "contrastingOnWhite": "rgb(144, 144, 144)",
+  "darken": "rgb(118, 118, 118)",
+  "emphasize": "rgb(182, 182, 182)",
+  "lighten": "rgb(187, 187, 187)",
+  "luminance": 0.402,
+}
+`;
+
+exports[`255,0,0 resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(255, 0, 0, 0.4)",
+  "contrastingOnDark": "255,0,0",
+  "contrastingOnNamedGrey": "rgb(255, 255, 255)",
+  "contrastingOnWhite": "255,0,0",
+  "darken": "rgb(178, 0, 0)",
+  "emphasize": "rgb(255, 38, 38)",
+  "lighten": "rgb(255, 51, 51)",
+  "luminance": 0.213,
+}
+`;
+
+exports[`Red resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(255, 0, 0, 0.4)",
+  "contrastingOnDark": "Red",
+  "contrastingOnNamedGrey": "rgb(255, 255, 255)",
+  "contrastingOnWhite": "Red",
+  "darken": "rgb(178, 0, 0)",
+  "emphasize": "rgb(255, 38, 38)",
+  "lighten": "rgb(255, 51, 51)",
+  "luminance": 0.213,
+}
+`;
+
+exports[`goldenrod resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(218, 165, 32, 0.4)",
+  "contrastingOnDark": "#DAA520",
+  "contrastingOnNamedGrey": "rgb(255, 255, 255)",
+  "contrastingOnWhite": "rgb(185, 140, 27)",
+  "darken": "rgb(152, 115, 22)",
+  "emphasize": "rgb(223, 178, 65)",
+  "lighten": "rgb(225, 183, 76)",
+  "luminance": 0.419,
+}
+`;
+
+exports[`hsl(200, 50%, 40%) resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(51, 119, 153, 0.4)",
+  "contrastingOnDark": "hsl(200, 50%, 40%)",
+  "contrastingOnNamedGrey": "rgb(255, 255, 255)",
+  "contrastingOnWhite": "hsl(200, 50%, 40%)",
+  "darken": "rgb(35, 83, 107)",
+  "emphasize": "rgb(81, 139, 168)",
+  "lighten": "rgb(91, 146, 173)",
+  "luminance": 0.162,
+}
+`;
+
+exports[`not a color resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(0, 0, 0, 0.4)",
+  "contrastingOnDark": "rgb(102, 102, 102)",
+  "contrastingOnNamedGrey": "not a color",
+  "contrastingOnWhite": "not a color",
+  "darken": "rgb(0, 0, 0)",
+  "emphasize": "rgb(38, 38, 38)",
+  "lighten": "rgb(51, 51, 51)",
+  "luminance": 0,
+}
+`;
+
+exports[`rgb(12, 34, 56) resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(12, 34, 56, 0.4)",
+  "contrastingOnDark": "rgb(84, 100, 115)",
+  "contrastingOnNamedGrey": "rgb(12, 34, 56)",
+  "contrastingOnWhite": "rgb(12, 34, 56)",
+  "darken": "rgb(8, 23, 39)",
+  "emphasize": "rgb(48, 67, 85)",
+  "lighten": "rgb(60, 78, 95)",
+  "luminance": 0.015,
+}
+`;
+
+exports[`rgba(12, 34, 56, 0.5) resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(12, 34, 56, 0.4)",
+  "contrastingOnDark": "rgba(84, 100, 115, 0.5019607843137255)",
+  "contrastingOnNamedGrey": "rgba(12, 34, 56, 0.5)",
+  "contrastingOnWhite": "rgba(12, 34, 56, 0.5)",
+  "darken": "rgba(8, 23, 39, 0.5019607843137255)",
+  "emphasize": "rgba(48, 67, 85, 0.5019607843137255)",
+  "lighten": "rgba(60, 78, 95, 0.5019607843137255)",
+  "luminance": 0.015,
+}
+`;
+
+exports[`transparent resolves to the same channels 1`] = `
+{
+  "alpha": "rgba(0, 0, 0, 0.4)",
+  "contrastingOnDark": "rgba(102, 102, 102, 0)",
+  "contrastingOnNamedGrey": "transparent",
+  "contrastingOnWhite": "transparent",
+  "darken": "rgba(0, 0, 0, 0)",
+  "emphasize": "rgba(38, 38, 38, 0)",
+  "lighten": "rgba(51, 51, 51, 0)",
+  "luminance": 0,
+}
+`;
