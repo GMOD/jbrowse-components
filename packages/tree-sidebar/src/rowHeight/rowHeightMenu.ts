@@ -41,15 +41,16 @@ export interface RowHeightPreset {
 }
 
 /**
- * The "Row height" submenu: "Fit to track height", the display's presets, and
- * "Custom...". One builder for the multi-row feature painting and the
- * variant display's two layouts, so each offers the presets and its dialog
- * seeds from the stored step, never `effectiveRowHeight`: seeded from that,
- * opening "Custom..." in fit mode and pressing submit fixes the rows at the
- * computed fractional height.
+ * The "Row height" submenu: the display's presets, "Custom..." and "Fit to
+ * track height", in the order of the alignments and feature height menus. One
+ * builder for the multi-row feature painting and the variant display's two
+ * layouts, so each offers the presets and its dialog seeds from the stored
+ * step, never `effectiveRowHeight`: seeded from that, opening "Custom..." in
+ * fit mode and pressing submit fixes the rows at the computed fractional
+ * height.
  *
- * A display with no presets gets fit + Custom, which is what variants shows
- * today; passing a table adds the middle radios.
+ * A display with no presets gets Custom + fit, which is what variants shows
+ * today; passing a table adds the leading radios.
  */
 export function rowHeightMenuItem(
   model: RowHeightModel,
@@ -64,14 +65,6 @@ export function rowHeightMenuItem(
     icon: HeightIcon,
     type: 'subMenu',
     subMenu: [
-      {
-        label: 'Fit to track height',
-        type: 'radio',
-        checked: isFit,
-        onClick: () => {
-          model.setFitToHeight()
-        },
-      },
       ...presets.map(preset => ({
         label: preset.label,
         type: 'radio' as const,
@@ -97,6 +90,14 @@ export function rowHeightMenuItem(
             SetRowHeightDialog,
             { model, handleClose },
           ])
+        },
+      },
+      {
+        label: 'Fit to track height',
+        type: 'radio',
+        checked: isFit,
+        onClick: () => {
+          model.setFitToHeight()
         },
       },
     ],

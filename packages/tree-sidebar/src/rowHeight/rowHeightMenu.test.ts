@@ -35,6 +35,14 @@ function labels(items: MenuItem[]) {
   return items.map(i => ('label' in i ? i.label : undefined))
 }
 
+function row(items: MenuItem[], label: string) {
+  const item = items.find(i => 'label' in i && i.label === label)
+  if (!item || !('onClick' in item)) {
+    throw new Error(`no clickable "${label}" row`)
+  }
+  return item
+}
+
 function checkedLabel(items: MenuItem[]) {
   return items
     .filter(i => 'checked' in i && i.checked)
@@ -54,31 +62,23 @@ test.each<[RowStep, string]>([
 
 test('a display with no presets still gets fit and custom', () => {
   expect(labels(subMenu(makeModel('fit'), []))).toEqual([
-    'Fit to track height',
     'Custom...',
+    'Fit to track height',
   ])
   expect(checkedLabel(subMenu(makeModel(20), []))).toEqual(['Custom...'])
 })
 
 test('a preset writes its proportion only where the display has one', () => {
   const withProportion = makeModel('fit', { setRowProportion: jest.fn() })
-  const normal = subMenu(withProportion)[1]!
-  if (!('onClick' in normal)) {
-    throw new Error('expected a clickable preset')
-  }
-  normal.onClick()
+  row(subMenu(withProportion), 'Normal').onClick()
   expect(withProportion.setRowHeight).toHaveBeenCalledWith(15)
   expect(withProportion.setRowProportion).toHaveBeenCalledWith(0.8)
 
   // multi-row features and the variant displays have no proportion; the same
   // preset table must not throw on them
   const plain = makeModel('fit')
-  const plainNormal = subMenu(plain)[1]!
-  if (!('onClick' in plainNormal)) {
-    throw new Error('expected a clickable preset')
-  }
   expect(() => {
-    plainNormal.onClick()
+    row(subMenu(plain), 'Normal').onClick()
   }).not.toThrow()
   expect(plain.setRowHeight).toHaveBeenCalledWith(15)
 })
@@ -88,19 +88,15 @@ test('a preset writes its proportion only where the display has one', () => {
 // and a radio would otherwise stay open behind its own dialog.
 test('only the dialog opener dismisses the menu', () => {
   const items = subMenu(makeModel('fit'))
-  const custom = items.at(-1)!
-  const rest = items.slice(0, -1)
+  const custom = row(items, 'Custom...')
+  const rest = items.filter(i => i !== custom)
   expect(rest.every(i => 'onClick' in i && staysOpenOnClick(i))).toBe(true)
-  expect('onClick' in custom && staysOpenOnClick(custom)).toBe(false)
+  expect(staysOpenOnClick(custom)).toBe(false)
 })
 
 test('the fit radio writes fit, not a height', () => {
   const model = makeModel(20)
-  const fit = subMenu(model)[0]!
-  if (!('onClick' in fit)) {
-    throw new Error('expected a clickable radio')
-  }
-  fit.onClick()
+  row(subMenu(model), 'Fit to track height').onClick()
   expect(model.setFitToHeight).toHaveBeenCalled()
   expect(model.setRowHeight).not.toHaveBeenCalled()
 })
