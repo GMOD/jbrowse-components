@@ -131,8 +131,6 @@ function makeShowModel(showCoverage: boolean) {
     setShowMismatches: jest.fn(),
     showInterbase: true,
     setShowInterbase: jest.fn(),
-    showCoverageAlleles: true,
-    setShowCoverageAlleles: jest.fn(),
     canCollapseSections: false,
     collapseSections: false,
     setCollapseSections: jest.fn(),
@@ -152,10 +150,8 @@ function showLabels(showCoverage: boolean) {
 }
 
 test('the interbase toggle is offered only while coverage is drawn', () => {
-  expect(showLabels(true)).toContain('Show interbase indicators')
-  expect(showLabels(false)).not.toContain('Show interbase indicators')
-  expect(showLabels(true)).toContain('Show coverage alleles')
-  expect(showLabels(false)).not.toContain('Show coverage alleles')
+  expect(showLabels(true)).toContain('Show insertion and clip markers')
+  expect(showLabels(false)).not.toContain('Show insertion and clip markers')
 })
 
 test('the rest of the Show menu does not depend on coverage', () => {

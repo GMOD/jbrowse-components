@@ -1,3 +1,4 @@
+import { interbaseIndicatorsMenuItem } from '@jbrowse/alignments-core/coverageMenuItems'
 import { resolveSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
@@ -86,8 +87,6 @@ interface ShowModel extends CollapseSectionsModel, HiddenGroupsModel {
   setShowMismatches: (show: boolean) => void
   showInterbase: boolean
   setShowInterbase: (show: boolean) => void
-  showCoverageAlleles: boolean
-  setShowCoverageAlleles: (show: boolean) => void
 }
 
 // Visibility of the rendering layers, mirroring the alignments "Show" menu
@@ -111,28 +110,9 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
       model.showMismatches,
       model.setShowMismatches,
     ),
-    // Only while the coverage band is drawn. Every interbase mark lives in
-    // that band — the coverage marks draw under `showCoverage`, and the
-    // hit test gates on `showCoverage && showInterbase` — and this
-    // display defaults coverage OFF, unlike the alignments display it borrows
-    // the menu shape from. So on a synteny track the toggle spent most of its
-    // life unable to change anything a user could see. It previously said so
-    // in its own helpText, which is the tell: a checkbox that has to explain
-    // why it does nothing should not be offered.
-    ...(model.showCoverage
-      ? [
-          toggleItem(
-            'Show coverage alleles',
-            model.showCoverageAlleles,
-            model.setShowCoverageAlleles,
-          ),
-          toggleItem(
-            'Show interbase indicators',
-            model.showInterbase,
-            model.setShowInterbase,
-          ),
-        ]
-      : []),
+    // Absent rather than greyed while coverage is off, since this display
+    // defaults coverage off and the greyed row would sit there for good.
+    ...(model.showCoverage ? [interbaseIndicatorsMenuItem(model)] : []),
     ...legendMenuItems(model),
   ] satisfies MenuItem[])
 }

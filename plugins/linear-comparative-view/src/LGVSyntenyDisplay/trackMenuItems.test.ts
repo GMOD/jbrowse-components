@@ -34,6 +34,13 @@ function featureHeightDisabled(display: ReturnType<typeof createDisplay>) {
   return item && 'disabled' in item ? item.disabled : undefined
 }
 
+test('Advanced carries the coverage band rows the alignments display offers', () => {
+  const labels = subMenu(createDisplay().trackMenuItems(), 'Advanced').map(i =>
+    'label' in i ? i.label : undefined,
+  )
+  expect(labels).toContain('Coverage mismatch threshold')
+})
+
 test('the feature height menu greys out while the alignments are hidden', () => {
   const display = createDisplay()
   expect(featureHeightDisabled(display)).toBe(false)

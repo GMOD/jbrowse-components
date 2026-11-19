@@ -1,3 +1,4 @@
+import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems'
 import {
   ConfigurationReference,
   getConf,
@@ -279,7 +280,10 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
               label: 'Query sequence',
             }),
           }),
-          ...editPlotMenuItems(self, getTrackSizingItems(self, pileupGate)),
+          ...editPlotMenuItems(self, [
+            ...getCoverageMenuItems(self),
+            ...getTrackSizingItems(self, pileupGate),
+          ]),
           // No base pair / tag: a PAF block has no per-base sequence to sort a
           // column by, and no SAM tags.
           getSortMenuItem(self, {
