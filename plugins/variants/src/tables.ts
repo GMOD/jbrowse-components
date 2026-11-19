@@ -7,7 +7,6 @@ import {
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { isObject } from '@jbrowse/core/util'
 import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
-import { reservedPx } from '@jbrowse/core/util/bandLayout'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -52,10 +51,10 @@ import {
   variantRowsHeightViews,
 } from './LinearVariantDisplay/variantRowViews.ts'
 import {
-  BAND_CHIPS_HEIGHT,
   DEFAULT_RECORDS_HEIGHT,
   RECORDS_BAND_BOUNDS,
   boundRecordsBand,
+  variantTopBandsGeometry,
 } from './LinearVariantDisplay/variantTopBands.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import { sourcesAndWarnings } from './VariantRPC/MultiSampleVariantGetSources.ts'
@@ -154,7 +153,8 @@ const VariantTablesHost = treeSidebarRowStages<ProcessedSource>()(base)
   .views(self => ({
     /**
      * `TreeSidebarMixin`'s hook, as the display answers it while rows draw:
-     * the chips' strip under the records band, both out of `height`. The
+     * its top bands' bottom (`variantTopBandsGeometry`), the chips' strip
+     * under the records band, no connectors at genomic positions. The
      * band is `records.height`, else its default, bound against the track
      * as the display binds it, which is the display's band wherever the
      * records in view stack to the default.
@@ -162,20 +162,21 @@ const VariantTablesHost = treeSidebarRowStages<ProcessedSource>()(base)
     get rowsHeaderHeight() {
       const written = getConf(self, ['records', 'height'])
       return self.drawsGenotypeRows
-        ? BAND_CHIPS_HEIGHT +
-            reservedPx(
-              boundRecordsBand({
-                band: {
-                  active: self.showRecords,
-                  height: boundBandHeight(
-                    written ?? DEFAULT_RECORDS_HEIGHT,
-                    RECORDS_BAND_BOUNDS,
-                  ),
-                },
-                written: written !== undefined,
-                trackHeight: self.height,
-              }),
-            )
+        ? variantTopBandsGeometry({
+            records: boundRecordsBand({
+              band: {
+                active: self.showRecords,
+                height: boundBandHeight(
+                  written ?? DEFAULT_RECORDS_HEIGHT,
+                  RECORDS_BAND_BOUNDS,
+                ),
+              },
+              written: written !== undefined,
+              trackHeight: self.height,
+            }),
+            showChips: true,
+            connectors: { active: false, height: 0 },
+          }).bottom
         : 0
     },
   }))
