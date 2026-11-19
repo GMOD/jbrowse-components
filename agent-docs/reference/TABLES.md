@@ -74,7 +74,8 @@ Limits and shared behavior:
 
 - A mismatch's `frequency` is its base's count over the depth there, not the
   worker's `mismatchFrequencies`, which is a display fade zeroed below a
-  depth-dependent threshold.
+  depth-dependent threshold. Under `coverage.show: false` it is 0: the fetch
+  sends the display's own settings, and the display fetches no depth then.
 - A region over `byteLimit` (200 MB of compressed alignments by default) is
   refused off the index with an error naming the size, since a host holds the
   whole table in memory. A region spanning over `spanLimit` (10 Mb by default) is

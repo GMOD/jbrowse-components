@@ -71,14 +71,11 @@ import { buildConnectorFeeds } from '../features/linkedReads/connectorFeed.ts'
 import { connectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { withBasesFields } from '../shared/basesFilter.ts'
-import { paintsEveryBase, workerColorField } from '../shared/colorFieldDefs.ts'
-import { fieldTag } from '../shared/facetLabels.ts'
+import { paintsEveryBase } from '../shared/colorFieldDefs.ts'
 import {
   facetValueNotices,
   overflowSplitNotices,
   sectionOrder,
-  workerFacet,
-  workerInsertSizeBand,
 } from '../shared/groupFeatures.ts'
 import {
   LEGEND_MAX_WIDTH,
@@ -188,6 +185,7 @@ import {
   junctionLabels,
 } from './renderers/junctionMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
+import { rpcPropsViews, sortTagViews } from './rpcPropsViews.ts'
 import {
   buildSectionRenders,
   computeStackedSections,
@@ -1846,15 +1844,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The worker receives the tag name alone, so `rpcProps` re-notifies when
-         * the tag changes, not when the sort position or a non-tag field flips.
-         */
-        get sortTag() {
-          return fieldTag(self.sortColumn?.field)
-        },
-
-        /**
-         * #getter
          */
         get renderState() {
           const palette = self.themed.colors
@@ -2132,53 +2121,9 @@ export default function stateModelFactory(
           return scales
         },
       }))
+      .views(self => sortTagViews(self))
+      .views(self => rpcPropsViews(self))
       .views(self => ({
-        /**
-         * #method
-         * Fields that invalidate the fetched data, every one worker-bound.
-         * Arc-only fields (`readConnections` and the connection filter) are
-         * not here: `arcsResult` reads them and they need no refetch. Non-tag
-         * sort changes and tag coloring (`readFillColors`, baked in
-         * `laidOutByGroup`) stay main-thread. It is defined in a separate views
-         * block, after every field it reads, so it reads them off `self`: a subclass override
-         * captures the base as a bare function, which would lose a `this`.
-         */
-        rpcProps() {
-          return {
-            filter: self.readPredicates,
-            // Only a field the worker reads, so switching between
-            // shader-decided fields leaves these props identical and repaints
-            // without a refetch.
-            colorField: workerColorField(self.colorField),
-            tooltipField: self.tooltipField,
-            baseLayer: self.baseLayer,
-            // Chain layout reads neither the sort tag nor soft-clipped bases,
-            // so chain mode sends neither and "Show soft clipping" stays live
-            // there.
-            sortTag: self.unit === 'chain' ? undefined : self.sortTag,
-            facet: workerFacet(self.effectiveFacet, self.unit),
-            pinnedInsertSizeBand: workerInsertSizeBand(
-              self.effectiveFacet,
-              self.readPredicates,
-              self.pinnedInsertSizeBand,
-            ),
-            showSoftClips: self.unit === 'chain' ? false : self.showSoftClips,
-            // The worker skips the whole coverage-band pipeline, including the
-            // per-bp GPU depth buffer that overflows the device limit at
-            // chromosome scale, when the band is off.
-            showCoverage: self.showCoverage,
-            interbaseIndicators: self.interbaseIndicatorRule,
-            // The junctions ride with coverage, so a junctions toggle with the
-            // band shown refetches nothing; without it they ride with the arcs.
-            // A display without the junctions band fetches none.
-            junctions:
-              self.hasJunctions && (self.showCoverage || self.showJunctions),
-            // `readConnections` is not here: the SA tag walk it could gate also
-            // feeds linked reads and the curved connectors (see
-            // `extractFeatureArrays`).
-          }
-        },
-
         /**
          * #getter
          * Overridable hook (default undefined: whatever the adapter picks): the

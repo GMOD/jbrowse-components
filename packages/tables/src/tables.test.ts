@@ -714,6 +714,8 @@ test('a coverage band the display does not draw autoscales to nothing and labels
   expect(hidden.coverage.depth).toEqual([])
   expect(hidden.coverageScale.domain).toEqual([0, 0])
   expect(hidden.coverageScale.ticks).toEqual([])
+  expect(hidden.mismatches.frequency.length).toBeGreaterThan(0)
+  expect(hidden.mismatches.frequency.every(f => f === 0)).toBe(true)
 })
 
 test('the coverage ticks fit the band the track height leaves, as the display draws it', async () => {

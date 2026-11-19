@@ -137,6 +137,10 @@ import {
   shouldDrawOverlaps,
 } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
+  rpcPropsViews,
+  sortTagViews,
+} from './LinearAlignmentsDisplay/rpcPropsViews.ts'
+import {
   arcsOverlayCoverage,
   computeStackedSections,
   laneBands,
@@ -207,12 +211,7 @@ import {
   paintsModifications,
 } from './shared/colorFieldDefs.ts'
 import { countedEventsOf } from './shared/drawnReads.ts'
-import { fieldTag } from './shared/facetLabels.ts'
-import {
-  facetUnitNotices,
-  workerFacet,
-  workerInsertSizeBand,
-} from './shared/groupFeatures.ts'
+import { facetUnitNotices } from './shared/groupFeatures.ts'
 import {
   arcLegendTitle,
   getArcLegendItems,
@@ -533,7 +532,6 @@ interface AlignmentsTablesInputs {
   fetchedRegions: RegionBounds[]
   regionInfos: RegionInfo[]
   frames: RegionInfo[]
-  sortColumn: SortColumn | undefined
   paintedRefNamePosition: RefNamePosition | undefined
 }
 
@@ -559,22 +557,29 @@ const AlignmentsTablesHost = types
       configuration: linearAlignmentsDisplayConfigSchema,
     }),
   )
-  .volatile((): AlignmentsTablesInputs & { theme: JBrowsePalette } => ({
-    rpcDataMap: new Map(),
-    fetchedRegions: [],
-    regionInfos: [],
-    frames: [],
-    sortColumn: undefined,
-    paintedRefNamePosition: undefined,
-    theme: resolvePalette(),
-  }))
+  .volatile(
+    (): AlignmentsTablesInputs & {
+      sortColumn: SortColumn | undefined
+      theme: JBrowsePalette
+    } => ({
+      rpcDataMap: new Map(),
+      fetchedRegions: [],
+      regionInfos: [],
+      frames: [],
+      sortColumn: undefined,
+      paintedRefNamePosition: undefined,
+      theme: resolvePalette(),
+    }),
+  )
   .actions(self => ({
+    setSortColumn(sortColumn: SortColumn | undefined) {
+      self.sortColumn = sortColumn
+    },
     setInputs(inputs: AlignmentsTablesInputs) {
       self.rpcDataMap = inputs.rpcDataMap
       self.fetchedRegions = inputs.fetchedRegions
       self.regionInfos = inputs.regionInfos
       self.frames = inputs.frames
-      self.sortColumn = inputs.sortColumn
       self.paintedRefNamePosition = inputs.paintedRefNamePosition
     },
   }))
@@ -654,6 +659,8 @@ const AlignmentsTablesHost = types
   .views(self => coverageTicksViews(self))
   .views(self => alignmentsColorViews(self))
   .views(self => readPaletteViews(self))
+  .views(self => sortTagViews(self))
+  .views(self => rpcPropsViews(self))
   .views(self => ({
     get colors() {
       return self.colorsIn(self.theme)
@@ -1651,36 +1658,23 @@ export async function alignmentTables(
       displayId: 'tables',
     },
   })
-  const { args, sortColumn } = runInAction(() => {
-    const sorted = sortOf(
-      host.configuration.sort,
-      refName =>
-        regions.find(r => r.originalRefName === refName)?.refName ?? refName,
-      regions[0]!.refName,
+  const args = runInAction(() => {
+    host.setSortColumn(
+      sortOf(
+        host.configuration.sort,
+        refName =>
+          regions.find(r => r.originalRefName === refName)?.refName ?? refName,
+        regions[0]!.refName,
+      ).sortColumn,
     )
-    const chain = host.unit === 'chain'
     return {
-      sortColumn: sorted.sortColumn,
-      args: {
-        sessionId: 'tables',
-        adapterConfig,
-        sequenceAdapter,
-        regions: fetchRegions,
-        filter: host.readPredicates,
-        colorField: host.colorField,
-        baseLayer: host.baseLayer,
-        sortTag: chain ? undefined : fieldTag(sorted.sortColumn?.field),
-        facet: workerFacet(host.effectiveFacet, host.unit),
-        pinnedInsertSizeBand: workerInsertSizeBand(
-          host.effectiveFacet,
-          host.readPredicates,
-          host.pinnedInsertSizeBand,
-        ),
-        showSoftClips: !chain && host.showSoftClips,
-        interbaseIndicators: host.interbaseIndicatorRule,
-        statusCallback: () => {},
-      } satisfies RpcExecuteArgs<'RenderAlignmentData'>,
-    }
+      sessionId: 'tables',
+      adapterConfig,
+      sequenceAdapter,
+      regions: fetchRegions,
+      ...host.rpcProps(),
+      statusCallback: () => {},
+    } satisfies RpcExecuteArgs<'RenderAlignmentData'>
   })
   // the worker reads one region a call
   const run = (facet: typeof args.facet) =>
@@ -1715,7 +1709,6 @@ export async function alignmentTables(
       frames: windowFrames(regions, displayedRegions),
       fetchedRegions: fetchRegions,
       fetched,
-      sortColumn,
       paintedRefNamePosition,
     }),
   )
@@ -1733,14 +1726,12 @@ function laidOutTables(
     frames,
     fetchedRegions,
     fetched,
-    sortColumn,
     paintedRefNamePosition,
   }: {
     regions: TablesRegion[]
     frames: TablesRegion[]
     fetchedRegions: TablesRegion[]
     fetched: ReadonlyMap<number, GroupedAlignmentsResult>
-    sortColumn: SortColumn | undefined
     paintedRefNamePosition: RefNamePosition | undefined
   },
 ) {
@@ -1750,7 +1741,6 @@ function laidOutTables(
     fetchedRegions,
     regionInfos: regionBlocks(regions),
     frames: regionBlocks(frames),
-    sortColumn,
     paintedRefNamePosition,
   })
   const { unit, featureHeight, regionInfos } = host
@@ -1899,7 +1889,7 @@ function laidOutTables(
       ...facetUnitNotices(host.facet, unit),
       ...layoutWarnings({
         sortField: readConfObject(conf.sort, 'field'),
-        sortColumn,
+        sortColumn: host.sortColumn,
         layoutOrder: host.layoutOrder,
         chain,
         softClippingAsked: host.showSoftClips,
