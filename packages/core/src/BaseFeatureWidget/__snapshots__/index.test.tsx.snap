@@ -156,6 +156,7 @@ exports[`open up a widget 1`] = `
                     </button>
                   </div>
                   <button
+                    aria-label="Feature sequence help"
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
                     tabindex="0"
                     type="button"

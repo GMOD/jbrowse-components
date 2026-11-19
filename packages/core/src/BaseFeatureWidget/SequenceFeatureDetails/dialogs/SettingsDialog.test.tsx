@@ -46,3 +46,14 @@ test.each([
     true,
   )
 })
+
+test('a row of zero bases is refused', () => {
+  const { getByLabelText, getByRole } = renderDialog()
+  fireEvent.change(getByLabelText('Number of bases per row'), {
+    target: { value: '0' },
+  })
+  expect(getByRole('button', { name: 'Submit' })).toHaveProperty(
+    'disabled',
+    true,
+  )
+})

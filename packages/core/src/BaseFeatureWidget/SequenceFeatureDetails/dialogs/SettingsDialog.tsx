@@ -94,6 +94,8 @@ const SequenceFeatureSettingsDialog = observer(
               className={classes.formElt}
               defaultValue={model.charactersPerRow}
               onValueChange={setCharactersPerRow}
+              min={1}
+              errorText="Must be one or more"
             />
           </div>
           <div>

@@ -44,6 +44,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
 }) {
   const { classes } = useStyles()
   const { shown } = model.sequenceFeatureDetails
+  const session = getSession(model)
 
   return (
     <div className={classes.container}>
@@ -59,6 +60,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
       </FormControl>
 
       <IconButton
+        aria-label="Feature sequence help"
         onClick={() => {
           getDialogHost(model).queueDialog(handleClose => [
             HelpDialog,
@@ -75,11 +77,11 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
         <Suspense fallback={<LoadingEllipses />}>
           <SequenceFeatureDetails
             model={model.sequenceFeatureDetails}
-            session={getSession(model)}
+            session={session}
             assemblyName={panelAssemblyName({
               feature,
               viewAssemblyNames: model.view?.assemblyNames,
-              assemblyManager: getSession(model).assemblyManager,
+              assemblyManager: session.assemblyManager,
             })}
             feature={feature}
             hoverTarget={model}
