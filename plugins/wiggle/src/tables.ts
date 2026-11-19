@@ -5,6 +5,7 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
+import { touchesAny } from '@jbrowse/display-kit/keyWindows'
 import {
   regionBlocks,
   regionsWidthPx,
@@ -89,9 +90,9 @@ export interface WiggleTablesArgs {
 }
 
 /** Whether the bin of `positions`, start and end pairs, at `i` overlaps `region`. */
-function binInWindow({ start, end }: { start: number; end: number }) {
+function binInWindow(region: { start: number; end: number }) {
   return (positions: ArrayLike<number>, i: number) =>
-    positions[i * 2 + 1]! > start && positions[i * 2]! < end
+    touchesAny([region], positions[i * 2]!, positions[i * 2 + 1]!)
 }
 
 /**

@@ -10,6 +10,7 @@ import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import ParkedColorMixin from '@jbrowse/display-kit/ParkedColorMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { touchesAny } from '@jbrowse/display-kit/keyWindows'
 import { byteGatedFetchRegions } from '@jbrowse/display-kit/regionHost'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RowHeightMixin } from '@jbrowse/tree-sidebar/RowHeightMixin'
@@ -302,7 +303,7 @@ async function fetchedVariantHost(
   }
   const value = result.value
   const fetchOrder = new Map(result.records.map((r, i) => [r.id(), i]))
-  const perRegion = regions.flatMap(({ start, end }, i) => {
+  const perRegion = regions.flatMap((region, i) => {
     const data = value.perRegionCellData[i]
     return data
       ? [
@@ -311,8 +312,11 @@ async function fetchedVariantHost(
             data,
             shown: data.featureInfo
               .flatMap((_, f) =>
-                data.featurePositions[f * 2 + 1]! > start &&
-                data.featurePositions[f * 2]! < end
+                touchesAny(
+                  [region],
+                  data.featurePositions[f * 2]!,
+                  data.featurePositions[f * 2 + 1]!,
+                )
                   ? [f]
                   : [],
               )
