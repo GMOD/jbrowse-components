@@ -189,14 +189,16 @@ function rowShapes() {
         ? 'x'
         : li.dataset.testid?.startsWith('cascading-submenu')
           ? '>'
-          : '?',
+          : li.dataset.testid === 'cascading-menu-help'
+            ? 'h'
+            : '?',
     )
     .join('')
 }
 
-test('the checkboxes, then the submenus', async () => {
+test('the checkboxes, then the submenus, then Help', async () => {
   await openMenu(PIF)
-  expect(rowShapes()).toBe('xxxx>>>>>>')
+  expect(rowShapes()).toBe('xxxx>>>>>>h')
 })
 
 test('an adapter with no tiers is offered no level of detail', async () => {
@@ -227,7 +229,7 @@ test('a file with no CIGAR ops is offered no CIGAR row', async () => {
 
   expect(view.hasCigarData).toBe(false)
   expect(screen.queryByText('CIGAR indels')).toBeNull()
-  expect(rowShapes()).toBe('xxxx>>>>>')
+  expect(rowShapes()).toBe('xxxx>>>>>h')
 })
 
 test('off-screen mates is one checkbox, on by default', async () => {
