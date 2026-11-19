@@ -64,12 +64,6 @@ call closes it.
   key, its title, its color bars and each read's color agree across strand,
   tag, MAPQ, insert size, modifications and base quality, a written title
   and `descending`.
-- Alignments' worker args (`tables.ts`, the RPC `args`) restate the display's
-  `rpcProps` and already differ in what they send (`colorField` raw rather
-  than `workerColorField`; no `showCoverage`, `junctions` or
-  `tooltipField`), with no column wrong today; and `stackedSections` restates
-  `buildLanes` plus the model's `sections` getter. Each closes by moving the
-  model's getter into a views function the static host installs.
 - Features' fetch args (`featureStaticHost.ts`: `geneGlyphMode`, the
   `peptides` gate, `displayConfig`) restate `zoomFetchArgs()`/`rpcProps()`
   in `baseModel`'s inline views; the parity suite does not compare
@@ -79,6 +73,9 @@ call closes it.
   decided; an exported predicate both call closes it.
 
 ## Closed
+
+- Alignments' worker args spread the display's `rpcProps` and its sections
+  stack through its lane views (`rpcPropsViews.ts`, `laneViews.ts`).
 
 - Variants' cell colors and the export's `variants.color` run the display's
   `cellColorViews` and `recordColorViews`. The record color was a drift:
