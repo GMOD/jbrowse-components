@@ -250,6 +250,20 @@ describe('edge cases on a circle and two same-named exports', () => {
     const [abutting] = await fetch(features, 'Exported', 0, 50)
     expect(shape(abutting!)).toEqual(['misc_feature', 0, 20, 1])
   })
+  test('a gene with /locus_tag and /gene holds children naming only /gene', async () => {
+    const gene = (await fetch(features, 'x.1', 300, 700)).find(
+      f => f.get('locus_tag') === 'X_iso',
+    )
+    expect(
+      gene?.get('subfeatures')?.map(f => [f.get('type'), f.get('product')]),
+    ).toEqual(
+      expect.arrayContaining([
+        ['mRNA', 'short isoform'],
+        ['mRNA', 'long isoform'],
+      ]),
+    )
+  })
+
   test('spans naming the record’s own accession are kept', async () => {
     const found = await fetch(features, 'x.1', 800, 850)
     expect(shape(found.find(f => f.get('note') === 'own accession')!)).toEqual([

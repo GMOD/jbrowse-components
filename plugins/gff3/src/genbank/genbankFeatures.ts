@@ -125,6 +125,12 @@ function transcript(refName: string, placed: Placed) {
   )
 }
 
+function geneKeys(qualifiers: Map<string, string[]>) {
+  return ['locus_tag', 'gene'].flatMap(name =>
+    (qualifiers.get(name) ?? []).slice(0, 1).map(value => `${name}:${value}`),
+  )
+}
+
 function overlaps(a: { start: number; end: number }, b: Placed) {
   return a.start < b.end && b.start < a.end
 }
@@ -138,7 +144,7 @@ function contains(a: { start: number; end: number }, b: Placed) {
  * GFF3 of the same record, in file order.
  *
  * - A `gene` is the parent of the transcripts and CDS sharing its
- *   `/locus_tag` (else `/gene`) and overlapping it; a CDS inside one of that
+ *   `/locus_tag` or its `/gene` and overlapping it; a CDS inside one of that
  *   gene's mRNAs hangs under the mRNA instead. A transcript's spans become
  *   `exon` children, a CDS's spans sibling `CDS` rows phased from
  *   `/codon_start`.
@@ -187,21 +193,19 @@ export function genbankFeatures(
             : [],
         ),
       }
-      const key =
-        entry.qualifiers.get('locus_tag')?.[0] ??
-        entry.qualifiers.get('gene')?.[0]
+      const keys = geneKeys(entry.qualifiers)
       if (entry.key === 'gene') {
         const gene = feature(refName, 'gene', placed, placed.attributes)
         top.push(gene)
-        if (key) {
+        for (const key of keys) {
           genes.set(key, [...(genes.get(key) ?? []), gene])
         }
       } else if (isSource) {
         top.push(feature(refName, 'region', placed, placed.attributes))
       } else {
-        const gene = key
-          ? genes.get(key)?.find(g => overlaps(g, placed))
-          : undefined
+        const gene = keys
+          .flatMap(key => genes.get(key) ?? [])
+          .find(g => overlaps(g, placed))
         if (TRANSCRIPT_KEYS.has(entry.key)) {
           const rna = transcript(refName, placed)
           if (gene) {
