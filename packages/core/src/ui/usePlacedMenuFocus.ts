@@ -3,6 +3,7 @@ import { useRef } from 'react'
 import type { PopoverActions } from '@mui/material'
 
 const FIRST_ROW = '[role^="menuitem"]:not(.Mui-disabled)'
+const FIRST_FIELD = 'input:not(:disabled)'
 
 /**
  * Props that move a MUI Menu's opening focus to after the menu is placed.
@@ -14,7 +15,8 @@ const FIRST_ROW = '[role^="menuitem"]:not(.Mui-disabled)'
  * opened with that top scrolled out of view.
  *
  * The `onEntering` returned here places the paper through Popover's
- * `updatePosition`, then focuses the first row without scrolling anything.
+ * `updatePosition`, then focuses the first row without scrolling anything —
+ * or, in a panel of `type: 'custom'` rows only, its first field.
  */
 export function usePlacedMenuFocus() {
   const action = useRef<PopoverActions>(null)
@@ -24,9 +26,10 @@ export function usePlacedMenuFocus() {
     disableAutoFocus: true,
     onEntering: (paper: HTMLElement) => {
       action.current?.updatePosition()
-      paper
-        .querySelector<HTMLElement>(FIRST_ROW)
-        ?.focus({ preventScroll: true })
+      const target =
+        paper.querySelector<HTMLElement>(FIRST_ROW) ??
+        paper.querySelector<HTMLElement>(FIRST_FIELD)
+      target?.focus({ preventScroll: true })
     },
   }
 }

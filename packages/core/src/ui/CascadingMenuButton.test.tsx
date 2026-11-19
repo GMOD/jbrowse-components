@@ -87,6 +87,24 @@ describe('CascadingMenuButton', () => {
     )
   })
 
+  it('should focus the field of a submenu holding only a custom row', async () => {
+    const user = await setup([
+      {
+        label: 'Size',
+        subMenu: [
+          {
+            label: 'Width',
+            type: 'custom',
+            render: () => <input aria-label="Width" />,
+          },
+        ],
+      },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    await user.keyboard('{ArrowRight}')
+    expect(await screen.findByRole('textbox', { name: 'Width' })).toHaveFocus()
+  })
+
   // MUI focused a row while the menu mounted, before Popover placed the paper,
   // and Firefox scrolled a page embedding JBrowse in an iframe to that row
   it('should focus a row only once its menu is placed, without scrolling', async () => {
