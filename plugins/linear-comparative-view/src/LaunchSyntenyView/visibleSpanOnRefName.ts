@@ -26,7 +26,7 @@ export function visibleSpanOnFeature(
 /**
  * The part of `view`'s visible window that lies on `refName`, or undefined
  * when the panel is not showing that contig — the case where there is no
- * window on this alignment's axis to map across.
+ * window on this alignment's axis to map across — or has no width yet.
  *
  * `dynamicBlocks` rather than `coarseDynamicBlocks`: this is read at the
  * moment of the click, so the throttled copy would answer with wherever the
@@ -36,9 +36,9 @@ export function visibleSpanOnRefName(
   view: LinearGenomeViewModel,
   refName: string,
 ) {
-  const blocks = view.dynamicBlocks.contentBlocks.filter(
-    b => b.refName === refName,
-  )
+  const blocks = view.initialized
+    ? view.dynamicBlocks.contentBlocks.filter(b => b.refName === refName)
+    : []
   return blocks.length
     ? {
         start: Math.min(...blocks.map(b => b.start)),

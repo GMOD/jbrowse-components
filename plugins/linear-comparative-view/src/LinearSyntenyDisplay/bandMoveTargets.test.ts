@@ -11,6 +11,7 @@ function panel(
   ...blocks: { refName: string; start: number; end: number }[]
 ): LinearGenomeViewModel {
   return {
+    initialized: true,
     dynamicBlocks: { contentBlocks: blocks },
   } as unknown as LinearGenomeViewModel
 }

@@ -91,3 +91,31 @@ test('a circle ribbon names no anchor: the circular view has no linear row', () 
     anchorRow({ view } as unknown as SyntenyFeatureDetailModel),
   ).toBeUndefined()
 })
+
+test('a row with no width yet anchors with no region rather than throwing', () => {
+  const row = {
+    id: 'row0',
+    assemblyNames: ['volvox'],
+    tracks: [],
+    initialized: false,
+    get dynamicBlocks() {
+      throw new Error(
+        'width undefined, make sure to check for model.initialized',
+      )
+    },
+  }
+  const model = {
+    view: { type: 'LinearSyntenyView', views: [row] },
+    level: 0,
+  } as unknown as SyntenyFeatureDetailModel
+  const host = {
+    assemblyManager: { get: () => undefined },
+  } as unknown as AssemblyHost
+  const feature = new SimpleFeature({
+    uniqueId: 'aln1',
+    refName: 'ctgA',
+    start: 100,
+    end: 200,
+  })
+  expect(launchAnchor(model, host, feature)?.region).toBeUndefined()
+})
