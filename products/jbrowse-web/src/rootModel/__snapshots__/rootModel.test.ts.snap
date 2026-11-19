@@ -189,6 +189,18 @@ exports[`adds menus 1`] = `
         "label": "Help",
         "onClick": [Function],
       },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Connect an AI agent...",
+        "onClick": [Function],
+      },
     ],
   },
 ]
@@ -381,6 +393,18 @@ exports[`adds menus 2`] = `
           },
         },
         "label": "Help",
+        "onClick": [Function],
+      },
+      {
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Connect an AI agent...",
         "onClick": [Function],
       },
     ],
