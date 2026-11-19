@@ -30,8 +30,7 @@ const transformer = require('babel-jest').default.createTransformer({
 //   babel config in the tree — `rootMode: 'upward'` finds this one and stops).
 // - `pnpm-lock.yaml`, which moves whenever a preset, a plugin or babel itself
 //   does. Coarse on purpose: a dependency bump invalidating the whole cache is
-//   what the CI cache key already does (`push.yml` keys on this file), and it
-//   is the version that cannot silently serve output from an older compiler.
+//   the version that cannot silently serve output from an older compiler.
 // - `NO_RC`, the one env var `babel.config.cjs` branches on — it drops
 //   babel-plugin-react-compiler, so the same source compiles two ways.
 //

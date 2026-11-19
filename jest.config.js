@@ -114,8 +114,7 @@ function resolveMaxWorkers() {
 //
 // Off /tmp deliberately, which is where jest defaults (`/tmp/jest_<uid>`): /tmp
 // is tmpfs on Linux dev boxes, so the ~1.4GB cache would sit in RAM competing
-// with the workers and be lost on every reboot. On disk it survives reboots and
-// CI restores it between runs (push.yml, which names this path).
+// with the workers and be lost on every reboot. On disk it survives reboots.
 //
 // Only the transform cache is shared. jest's other artifacts in here — the
 // haste map, the per-run timing cache — carry a hash of the resolved config,
@@ -143,7 +142,9 @@ const baseConfig = {
   // stats ~42,000 files that hold no module, `1000g_cnv_build` and the 429MB
   // website corpus among them, which is most of the 3.5s every `jest`
   // invocation spends before it runs anything — the cost `pnpm test-related`
-  // and any single-file run pay in full.
+  // and any single-file run pay in full. It also keeps out the agent worktrees
+  // under `.claude/worktrees/`, whose second copy of every package.json is a
+  // haste-name collision that fails every suite.
   //
   // Test DATA is deliberately outside this. Suites reach `test_data/` by
   // relative `require.resolve`, which stats the file rather than asking the
@@ -154,54 +155,14 @@ const baseConfig = {
     '<rootDir>/plugins',
     '<rootDir>/example-plugins',
   ],
-  // Agent worktrees live at `.claude/worktrees/<branch>/`, i.e. whole extra
-  // checkouts *inside* rootDir. `testMatch` already misses them (it anchors on
-  // `<rootDir>/plugins/**`), but jest-haste-map crawls rootDir independently of
-  // it and doesn't read .gitignore, so every worktree contributes a second
-  // `packages/__mocks__/@testing-library/react.tsx` and a second
-  // `plugins/*/package.json`. Duplicate manual mocks are a warning; duplicate
-  // haste packages are a hard `_assertNoDuplicates` throw that fails every suite
-  // importing across packages. Nothing under `.claude/` is ever test material,
-  // so the whole directory is invisible to the module loader.
-  //
-  // Anchored at `<rootDir>`, and that is the whole point. These patterns are
-  // matched unanchored against ABSOLUTE paths, so a bare `/\.claude/` also
-  // matches when rootDir *is* the worktree — every path under
-  // `.../.claude/worktrees/<branch>/` contains it, so jest ignored the entire
-  // tree and `pnpm test <anything>` reported "0 files checked across 5
-  // projects". Which made tests unrunnable from inside the worktrees this rule
-  // exists to accommodate.
-  modulePathIgnorePatterns: ['<rootDir>/\\.claude/'],
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
-    '^@jbrowse/text-indexing-core$':
-      '<rootDir>/packages/text-indexing-core/src/index.ts',
   },
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.cjs',
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.cjs',
   },
-  transformIgnorePatterns: [
-    // react-msaview (and its ESM-only deps) ship untranspiled ESM, so they must
-    // be run through babel rather than ignored like the rest of node_modules.
-    // The negative lookahead matches these package names anywhere in the pnpm
-    // path (`.pnpm/<pkg>@.../node_modules/<pkg>/...`).
-    '/node_modules/(?!.*(?:react-msaview|msa-parsers|@jbrowse[+/]svgcanvas|flatbush|flatqueue|colord)).+\\.(js|jsx)$',
-    '\\.module\\.(css|sass|scss)$',
-  ],
-  collectCoverageFrom: [
-    'packages/*/src/**/*.{js,jsx,ts,tsx}',
-    'products/*/src/**/*.{js,jsx,ts,tsx}',
-    'plugins/*/src/**/*.{js,jsx,ts,tsx}',
-    'example-plugins/*/src/**/*.{js,jsx,ts,tsx}',
-  ],
-  coveragePathIgnorePatterns: [
-    '\\.d\\.ts$',
-    'makeWorkerInstance.ts',
-    'react-colorful.js',
-    'QuickLRU.js',
-  ],
   setupFiles: [
     '<rootDir>/config/jest/textEncoder.js',
     '<rootDir>/config/jest/structuredClone.js',
@@ -328,7 +289,7 @@ export default {
       // jbrowse-img uses the node environment and the real fetch, unmocked
       displayName: 'jbrowse-img',
       testMatch: ['<rootDir>/products/jbrowse-img/**/*.test.ts'],
-      testPathIgnorePatterns: ['/dist/', '/demos/'],
+      testPathIgnorePatterns: ['/dist/'],
       testEnvironment: 'node',
       ...baseConfig,
       id: 'jbrowse-img',
@@ -344,7 +305,6 @@ export default {
       ],
       testPathIgnorePatterns: [
         '/dist/',
-        '/demos/',
         '<rootDir>/products/jbrowse-img/',
         // every jbrowse-web suite but the schema-level ones, which boot nothing
         `<rootDir>/${WEB_SUITES}(?!${LOCAL_DIR})`,
@@ -367,7 +327,6 @@ export default {
       ],
       testPathIgnorePatterns: [
         '/dist/',
-        '/demos/',
         `<rootDir>/${WEB_SUITES}`,
         '<rootDir>/products/aws/',
       ],

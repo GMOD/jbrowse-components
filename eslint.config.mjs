@@ -234,9 +234,7 @@ export default defineConfig(
     // depth. Running from INSIDE a worktree, that directory is the worktree, so
     // this matches its (empty) `.claude/` and not the `.claude/` in the
     // absolute path above it. The unanchored spelling would match every file in
-    // the worktree and silently lint nothing — the trap `jest.config.js`'s
-    // `modulePathIgnorePatterns` comment describes, which is the same rule for
-    // the same reason.
+    // the worktree and silently lint nothing.
     ignores: [...oxlintConfig.ignorePatterns, '.claude/**'],
   },
   {
