@@ -15,8 +15,12 @@ import UriField from './UriField.tsx'
 import { parseTranslExcept } from './translExcept.ts'
 import { accessNested } from './util.ts'
 
-import type { Descriptors, FeatureFormatter, FieldActions } from '../types.tsx'
-import type { LocateSpan } from './TranslExceptList.tsx'
+import type {
+  Descriptors,
+  FeatureFormatter,
+  FieldActions,
+  LocateSpan,
+} from '../types.tsx'
 
 // Lazy: this module sits on the eager startup path via product-core's ui
 // barrel (AboutDialog -> AboutDialogContents), and only a homogeneous object

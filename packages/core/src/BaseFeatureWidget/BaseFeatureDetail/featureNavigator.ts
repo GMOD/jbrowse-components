@@ -3,7 +3,11 @@ import { isSameAssemblyName } from '../../util/tracks.ts'
 import { panelAssemblyName } from '../SequenceFeatureDetails/panelAssemblyName.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { FeatureDetailsModel } from '../types.tsx'
+import type {
+  FeatureDetailsModel,
+  FeatureLocator,
+  LocateSpan,
+} from '../types.tsx'
 
 interface NavigableView {
   assemblyNames: string[]
@@ -114,11 +118,9 @@ export function featureNavigator(model: FeatureDetailsModel) {
  * `transl_except` codon say, from the feature's locator.
  */
 export function spanLocator(
-  locate:
-    | ((feature: SimpleFeatureSerialized) => (() => void) | undefined)
-    | undefined,
+  locate: FeatureLocator | undefined,
   feature: SimpleFeatureSerialized,
-) {
+): LocateSpan | undefined {
   return locate
     ? ({ start, end }: { start: number; end: number }) =>
         locate({

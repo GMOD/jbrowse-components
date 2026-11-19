@@ -1,20 +1,24 @@
 import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ActionLink from '../../ui/ActionLink.tsx'
 import { toLocale } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import { ArrayItems } from './ArrayValue.tsx'
 import Attributes from './Attributes.tsx'
 import BaseCard from './BaseCard.tsx'
 import { ValueText, valueText } from './BasicValue.tsx'
+import ShowInViewLink from './ShowInViewLink.tsx'
 import TranslExceptList from './TranslExceptList.tsx'
 import { spanLocator } from './featureNavigator.ts'
 import { parseTranslExcept } from './translExcept.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { Descriptors, FeatureFormatter } from '../types.tsx'
-import type { LocateSpan } from './TranslExceptList.tsx'
+import type {
+  Descriptors,
+  FeatureFormatter,
+  FeatureLocator,
+  LocateSpan,
+} from '../types.tsx'
 import type { PartsGroup } from './subfeatureGroups.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -123,7 +127,7 @@ const SubfeatureParts = observer(function SubfeatureParts({
   /** the readable name of the feature these are parts of */
   owner?: string
   parent: SimpleFeatureSerialized
-  locate?: (feature: SimpleFeatureSerialized) => (() => void) | undefined
+  locate?: FeatureLocator
   descriptions?: Descriptors
   formatter?: FeatureFormatter
 }) {
@@ -165,18 +169,7 @@ const SubfeatureParts = observer(function SubfeatureParts({
               >
                 <TableCell>{idx + 1}</TableCell>
                 <TableCell className={classes.position}>
-                  {go ? (
-                    <ActionLink
-                      title="Show in view"
-                      onClick={() => {
-                        go()
-                      }}
-                    >
-                      {position}
-                    </ActionLink>
-                  ) : (
-                    position
-                  )}
+                  <ShowInViewLink go={go}>{position}</ShowInViewLink>
                 </TableCell>
                 <TableCell align="right">
                   {toLocale(part.end - part.start)}

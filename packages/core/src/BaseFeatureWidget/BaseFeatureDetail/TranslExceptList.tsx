@@ -1,17 +1,12 @@
 import { observer } from 'mobx-react'
 
-import ActionLink from '../../ui/ActionLink.tsx'
 import { toLocale } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import { getStrandStr } from '../util.ts'
+import ShowInViewLink from './ShowInViewLink.tsx'
 
+import type { LocateSpan } from '../types.tsx'
 import type { TranslExcept } from './translExcept.ts'
-
-/** What moves the view onto a 1-based span of the feature's sequence. */
-export type LocateSpan = (span: {
-  start: number
-  end: number
-}) => (() => void) | undefined
 
 const useStyles = makeStyles()(theme => ({
   list: {
@@ -53,18 +48,7 @@ const TranslExceptList = observer(function TranslExceptList({
         return (
           // eslint-disable-next-line @eslint-react/no-array-index-key -- a fixed list parsed from one attribute value
           <span key={idx}>
-            {go ? (
-              <ActionLink
-                title="Show in view"
-                onClick={() => {
-                  go()
-                }}
-              >
-                {position}
-              </ActionLink>
-            ) : (
-              position
-            )}
+            <ShowInViewLink go={go}>{position}</ShowInViewLink>
             <span className={classes.aa}> · {exception.aa}</span>
           </span>
         )

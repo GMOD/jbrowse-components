@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react'
 
-import ActionLink from '../../ui/ActionLink.tsx'
 import { assembleLocString, toLocale } from '../../util/index.ts'
 import { getStrandStr } from '../util.ts'
+import ShowInViewLink from './ShowInViewLink.tsx'
 import SimpleField from './SimpleField.tsx'
 
 import type { BaseProps } from '../types.tsx'
@@ -46,20 +46,7 @@ const CoreDetails = observer(function CoreDetails({
     <>
       <SimpleField
         name="Position"
-        value={
-          go ? (
-            <ActionLink
-              title="Show in view"
-              onClick={() => {
-                go()
-              }}
-            >
-              {position}
-            </ActionLink>
-          ) : (
-            position
-          )
-        }
+        value={<ShowInViewLink go={go}>{position}</ShowInViewLink>}
       />
       {ROWS.map(({ label, field, filterable }) => {
         const value = values[field]

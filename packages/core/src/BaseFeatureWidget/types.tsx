@@ -32,6 +32,17 @@ export type FeatureFormatter = (
   index?: number,
 ) => unknown
 
+/** What moves the view onto a feature, or undefined when it cannot. */
+export type FeatureLocator = (
+  feature: SimpleFeatureSerialized,
+) => (() => void) | undefined
+
+/** What moves the view onto a 1-based span of the feature's sequence. */
+export type LocateSpan = (span: {
+  start: number
+  end: number
+}) => (() => void) | undefined
+
 /** Menu items for one attribute's value, offered from a button on its row. */
 export type FieldActions = (path: string[], value: unknown) => MenuItem[]
 
@@ -40,8 +51,7 @@ export interface BaseProps extends BaseCardProps {
   formatter?: FeatureFormatter
   descriptions?: Descriptors
   fieldActions?: FieldActions
-  /** what moves the view onto a feature, or undefined when it cannot */
-  locate?: (feature: SimpleFeatureSerialized) => (() => void) | undefined
+  locate?: FeatureLocator
 }
 
 export interface BaseCardProps {
