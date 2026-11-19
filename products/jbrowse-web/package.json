@@ -3,9 +3,7 @@
   "version": "5.0.0-beta.22",
   "type": "module",
   "license": "Apache-2.0",
-  "homepage": ".",
   "main": "build",
-  "dir": "src",
   "exports": {
     "./testUtils": "./src/rootModel/test_util.ts",
     "./makeWorkerInstance": "./src/makeWorkerInstance.ts"
@@ -27,7 +25,6 @@
   },
   "dependencies": {
     "@fontsource/roboto": "^5.3.0",
-    "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
@@ -83,7 +80,6 @@
   "devDependencies": {
     "@jbrowse/add-track-core": "workspace:*",
     "@jbrowse/browser-test-utils": "workspace:*",
-    "@jbrowse/cli": "workspace:*",
     "@jbrowse/display-test-utils": "workspace:^",
     "@jbrowse/launch-args": "workspace:*",
     "@jbrowse/synteny-core": "workspace:^",
