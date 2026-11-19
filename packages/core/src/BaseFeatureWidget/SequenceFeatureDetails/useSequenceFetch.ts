@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
+import { originCrossingLength } from './util.ts'
 
 import type {
   AbstractSessionModel,
@@ -24,10 +25,6 @@ export function useSequenceFetch({
   const assembly = assemblyName
     ? session.assemblyManager.get(assemblyName)
     : undefined
-  const sequenceLength = assembly?.getRegionForRefName(
-    assembly.getCanonicalRefName2(feature.refName),
-  )?.end
-  // only an adapter that knows the sequence is circular writes an end past it
   const { sequence, error, status } = useFeatureSequence({
     assemblyName,
     session,
@@ -36,10 +33,11 @@ export function useSequenceFetch({
     refName: feature.refName,
     upDownBp,
     forceLoad,
-    circularLength:
-      sequenceLength !== undefined && feature.end > sequenceLength
-        ? sequenceLength
-        : undefined,
+    circularLength: originCrossingLength(
+      assembly,
+      feature.refName,
+      feature.end,
+    ),
   })
   // assembly-configured translation table for the feature's contig (e.g. a
   // mitochondrial contig = 2); the protein panel uses it as the fallback when

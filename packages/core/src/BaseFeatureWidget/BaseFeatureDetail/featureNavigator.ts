@@ -1,6 +1,7 @@
 import { assembleLocString, getSession } from '../../util/index.ts'
 import { isSameAssemblyName } from '../../util/tracks.ts'
 import { panelAssemblyName } from '../SequenceFeatureDetails/panelAssemblyName.ts'
+import { originCrossingLength } from '../SequenceFeatureDetails/util.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type {
@@ -43,13 +44,13 @@ function isNavigableView(view: unknown): view is NavigableView {
 const GROW = 0.1
 
 /**
- * A span back on its sequence, `length` long: a feature crossing a circular
- * origin is written with its end past the length, and the view navigates to
- * the part before the origin, or to the part past it shifted back when the
- * span lies wholly there.
+ * A span back on its sequence: a feature crossing a circular origin of
+ * `length` is written with its end past it, and the view navigates to the
+ * part before the origin, or to the part past it shifted back when the span
+ * lies wholly there.
  */
 function onSequence(start: number, end: number, length: number | undefined) {
-  return length === undefined || end <= length
+  return length === undefined
     ? { start, end }
     : start >= length
       ? { start: start - length, end: end - length }
@@ -90,9 +91,7 @@ export function featureNavigator(model: FeatureDetailsModel) {
               const { start, end } = onSequence(
                 feature.start,
                 feature.end,
-                assembly?.getRegionForRefName(
-                  assembly.getCanonicalRefName2(refName),
-                )?.end,
+                originCrossingLength(assembly, refName, feature.end),
               )
               try {
                 view.navTo({ refName, start, end, assemblyName }, GROW)

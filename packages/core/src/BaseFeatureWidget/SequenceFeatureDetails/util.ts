@@ -1,5 +1,22 @@
+import type { Assembly } from '../../assemblyManager/assembly.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Feat } from './types.ts'
+
+/**
+ * The length of a circular sequence a feature runs past the origin of, or
+ * undefined when it ends on the sequence: only an adapter that knows the
+ * sequence is circular writes an end past it.
+ */
+export function originCrossingLength(
+  assembly: Assembly | undefined,
+  refName: string,
+  end: number,
+) {
+  const length = assembly?.getRegionForRefName(
+    assembly.getCanonicalRefName2(refName),
+  )?.end
+  return length !== undefined && end > length ? length : undefined
+}
 
 /**
  * Splits a string into chunks for display with optional coordinate spacing.
