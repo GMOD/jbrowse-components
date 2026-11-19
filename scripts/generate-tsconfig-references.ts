@@ -14,25 +14,38 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
+import ts from 'typescript'
+
 import { formatMarkdown } from '../website/scripts/check-utils.ts'
+import { workspaceFolders } from './releaseWorkspaces.ts'
 
 const check = process.argv.includes('--check')
 const root = join(import.meta.dirname, '..')
-const workspaceDirs = ['packages', 'plugins', 'products', 'example-plugins']
+const workspaceDirs = workspaceFolders(root)
+const baseConfig = join(root, 'tsconfig.base.esm.json')
 
-// Packages that run in node and import `node:*`, so they need @types/node in
-// their build program. Everything else builds for the browser.
-const nodePackages = new Set([
-  '@jbrowse/capture',
-  '@jbrowse/launch-args',
-  '@jbrowse/shader-tools',
-  '@jbrowse/text-indexing-core',
-])
+function publishedSources(dir: string) {
+  return ts
+    .parseJsonConfigFileContent(
+      { extends: baseConfig },
+      ts.sys,
+      join(root, dir),
+      undefined,
+      join(root, dir, 'tsconfig.build.esm.json'),
+    )
+    .fileNames.map(file => readFileSync(file, 'utf8'))
+}
+
+function imports(sources: string[], specifier: string) {
+  const re = new RegExp(`(?:from|import)\\s*\\(?\\s*['"]${specifier}`)
+  return sources.some(text => re.test(text))
+}
 
 interface PackageJson {
   name?: string
   dependencies?: Record<string, string>
   peerDependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
 }
 
 function readJson<T>(path: string): T {
@@ -57,11 +70,18 @@ for (const workspaceDir of workspaceDirs) {
 }
 
 const problems: string[] = []
-for (const [packageName, dir] of [...dirByPackageName].sort(([, a], [, b]) =>
+for (const [, dir] of [...dirByPackageName].sort(([, a], [, b]) =>
   a.localeCompare(b, 'en'),
 )) {
   const pkg = readJson<PackageJson>(join(root, dir, 'package.json'))
+  const sources = publishedSources(dir)
+  // A devDependency counts when a published file imports it, which only a
+  // type-only import may do (scripts/declaredDependencies.test.ts).
+  const publishedDevDependencies = Object.entries(
+    pkg.devDependencies ?? {},
+  ).filter(([name]) => imports(sources, `${name}['"/]`))
   const references = Object.entries({
+    ...Object.fromEntries(publishedDevDependencies),
     ...pkg.dependencies,
     ...pkg.peerDependencies,
   })
@@ -73,8 +93,9 @@ for (const [packageName, dir] of [...dirByPackageName].sort(([, a], [, b]) =>
     .map(path => ({ path: `${path}/tsconfig.build.esm.json` }))
 
   // Written whole, not patched: the only per-package content is `references`,
-  // so anything hand-added here is drift and gets dropped.
-  const base = nodePackages.has(packageName)
+  // so anything hand-added here is drift and gets dropped. A package whose
+  // published source imports `node:*` runs in node and builds with its types.
+  const base = imports(sources, 'node:')
     ? 'tsconfig.base.esm.node.json'
     : 'tsconfig.base.esm.json'
   const config: { extends: string; references?: { path: string }[] } = {
