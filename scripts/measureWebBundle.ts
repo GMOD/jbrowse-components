@@ -30,6 +30,8 @@ import { gzipSync } from 'node:zlib'
 
 import puppeteer from 'puppeteer'
 
+import { BASE_CHROME_ARGS } from '../products/jbrowse-capture/src/browser.ts'
+
 const root = path.resolve(import.meta.dirname, '..')
 const argAfter = (flag: string) =>
   process.argv.includes(flag)
@@ -195,7 +197,10 @@ async function load(sc: { url: string; drawn: number }, throttle: boolean) {
 const median = (xs: number[]) =>
   [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]!
 
-const browser = await puppeteer.launch({ headless: true })
+const browser = await puppeteer.launch({
+  headless: true,
+  args: BASE_CHROME_ARGS,
+})
 try {
   for (const [name, sc] of Object.entries(scenarios)) {
     if (timing) {

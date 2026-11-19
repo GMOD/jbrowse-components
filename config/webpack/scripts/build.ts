@@ -79,7 +79,15 @@ export default function buildWebpack(
         if (writeStatsJson) {
           fs.writeFileSync(
             `${appBuild}/bundle-stats.json`,
-            JSON.stringify(stats.toJson()),
+            JSON.stringify(
+              stats.toJson({
+                all: false,
+                ids: true,
+                chunks: true,
+                modules: true,
+                nestedModules: true,
+              }),
+            ),
           )
         }
 
