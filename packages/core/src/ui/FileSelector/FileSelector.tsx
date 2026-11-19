@@ -1,4 +1,4 @@
-import { useCallback, useId, useState } from 'react'
+import { useId, useState } from 'react'
 
 import { Box, FormHelperText, InputLabel } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -87,35 +87,26 @@ const FileSelector = observer(function FileSelector({
 
   const selectedAccount = accountMap[shownSourceType]
 
-  const handleLocationChange = useCallback(
-    (loc: FileLocation) => {
-      setLocation(addAccountToLocation(loc, selectedAccount))
-    },
-    [setLocation, selectedAccount],
-  )
+  const handleLocationChange = (loc: FileLocation) => {
+    setLocation(addAccountToLocation(loc, selectedAccount))
+  }
 
-  const handleSourceTypeChange = useCallback(
-    (newValue: string | null) => {
-      if (!newValue) {
-        return
-      }
+  const handleSourceTypeChange = (newValue: string | null) => {
+    if (newValue) {
       setRecentlyUsed([
         ...new Set([newValue, ...recentlyUsed].filter(notEmpty)),
       ])
       setSourceType(newValue)
-      // re-stamp an existing URL for the source type just chosen — the account
-      // it names, or none at all if it names none. Read from accountMap rather
-      // than the closed-over selectedAccount, which still reflects the source
-      // type being left.
+      // re-stamp an existing URL for the source type just chosen, reading
+      // accountMap because selectedAccount is still the one being left
       if (location && isUriLocation(location)) {
         const next = addAccountToLocation(location, accountMap[newValue])
         if (next !== location) {
           setLocation(next)
         }
       }
-    },
-    [location, recentlyUsed, setRecentlyUsed, accountMap, setLocation],
-  )
+    }
+  }
 
   return (
     <>
