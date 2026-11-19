@@ -130,7 +130,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
             graphTrack('hprc_minigraph_segments', {
               layoutMode: 'force',
               paneHeight: 270,
-              color: { field: 'position' },
+              encoding: { color: { field: 'position' } },
               layers: { lengths: true },
             }),
           ],

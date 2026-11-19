@@ -86,7 +86,7 @@ const view = (
     graphTrack(SEGMENTS_TRACK, {
       layoutMode,
       paneHeight,
-      color: { field: 'position' },
+      encoding: { color: { field: 'position' } },
       layers: { lengths: true },
     }),
   ],
