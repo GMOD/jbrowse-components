@@ -244,6 +244,11 @@ jobs:
       - name: Check the three app products' core plugin sets agree
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: pnpm check-core-plugin-sets
+      # Needs no build, since it bundles the painters itself, so it rides here
+      # rather than in the cross-backend gate, which is near the critical path.
+      - name: Check batched Canvas2D paths stay under Chrome's path size limit
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: pnpm check-canvas-path-limits
 
   # Every artifact that is generated and committed, behind one driver. Adding a
   # generator to scripts/autogen.ts is all it takes to gate it here.
@@ -717,9 +722,6 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      # Needs no build: it bundles the painters itself.
-      - name: Check batched Canvas2D paths stay under Chrome's path size limit
-        run: pnpm check-canvas-path-limits
       - name: Build jbrowse-web
         uses: ./.github/actions/build-jbrowse-web
       - name: Run cross-backend render gate
