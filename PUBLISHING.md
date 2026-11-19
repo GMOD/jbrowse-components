@@ -215,7 +215,7 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    release rather than a stale one:
 
    ```bash
-   node --experimental-strip-types scripts/gen-abi-previous-release.ts <version>
+   node scripts/gen-abi-previous-release.ts <version>
    ```
 
    Do this after the npm publish in step 4 has landed, since it downloads the

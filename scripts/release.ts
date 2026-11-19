@@ -603,17 +603,13 @@ function main() {
   if (!dryRun) {
     runQuiet(
       'node',
-      ['--experimental-strip-types', 'scripts/generateConfigManifest.ts'],
+      ['scripts/generateConfigManifest.ts'],
       'Regenerating the config schema manifest',
     )
     if (!prerelease) {
       runQuiet(
         'node',
-        [
-          '--experimental-strip-types',
-          'scripts/check-config-slot-paths.ts',
-          '--freeze',
-        ],
+        ['scripts/check-config-slot-paths.ts', '--freeze'],
         'Freezing the config slot paths this release ships',
       )
     }

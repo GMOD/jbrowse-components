@@ -59,8 +59,8 @@ if [ "${SKIP_CONFIG_CHECK:-}" != 1 ]; then
 
   if printf '%s\n' "$cached" | grep -qxF "$manifest"; then
     echo "pre-commit: the config manifest changed, so re-checking what reads it" >&2
-    cout=$(node --experimental-strip-types "$croot/scripts/validate-built-config.ts" \
-      --schema-only "$croot"/demos/*/config.json 2>&1) || cstatus=$?
+    cout=$(node "$croot/scripts/validate-built-config.ts" --schema-only \
+      "$croot"/demos/*/config.json 2>&1) || cstatus=$?
     bout=$(python3 "$croot/scripts/check-build-scripts.py" 2>&1) || cstatus=$?
     cout="$cout
 $bout"
@@ -68,8 +68,7 @@ $bout"
     demos=$(printf '%s\n' "$cached" | grep '^demos/.*/config\.json$' || true)
     if [ -n "$demos" ]; then
       cout=$(printf '%s\n' "$demos" | sed "s|^|$croot/|" | tr '\n' '\0' |
-        xargs -0 node --experimental-strip-types \
-          "$croot/scripts/validate-built-config.ts" --schema-only 2>&1) || cstatus=$?
+        xargs -0 node "$croot/scripts/validate-built-config.ts" --schema-only 2>&1) || cstatus=$?
     fi
   fi
 
