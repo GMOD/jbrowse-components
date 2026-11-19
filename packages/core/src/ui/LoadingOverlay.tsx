@@ -5,8 +5,10 @@ import RefreshIcon from '@mui/icons-material/Refresh'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { progressLabel } from '../util/progress.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
-import LoadingProgress from './LoadingProgress.tsx'
+import LoadingDots from './LoadingDots.tsx'
+import StatusProgressBar from './StatusProgressBar.tsx'
 import { alpha } from './palette.ts'
 
 const cancelDelayMs = 5000
@@ -81,12 +83,6 @@ const useStyles = makeStyles()(theme => {
       alignItems: 'center',
       gap: 4,
     },
-    progress: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 2,
-    },
     text: {
       fontSize: '0.8rem',
       fontWeight: 300,
@@ -114,7 +110,8 @@ const LoadingOverlay = observer(function LoadingOverlay({
   onCancel?: () => void
   onRetry?: () => void
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
+  const label = statusMessage || 'Loading'
 
   // `immediate` bypasses the anti-flash delay but must not restart it: the
   // chrome drops it at first paint, mid-load
@@ -133,9 +130,7 @@ const LoadingOverlay = observer(function LoadingOverlay({
       <span className={classes.content}>
         {canceled ? (
           <span className={classes.row}>
-            <span className={classes.text} role="status">
-              Loading canceled
-            </span>
+            <span className={classes.text}>Loading canceled</span>
             {onRetry ? (
               <Tooltip title="Retry">
                 <IconButton
@@ -151,29 +146,34 @@ const LoadingOverlay = observer(function LoadingOverlay({
             ) : null}
           </span>
         ) : (
-          <span className={classes.row}>
-            <span className={cx(classes.progress, classes.text)}>
-              <LoadingProgress
-                message={statusMessage}
-                fraction={progress}
-                variant="inherit"
-                barClassName={classes.bar}
-              />
+          <>
+            <span className={classes.row}>
+              <span className={classes.text}>
+                {progressLabel(label, progress)}
+                {progress === undefined ? <LoadingDots /> : null}
+              </span>
+              {onCancel && cancelable ? (
+                <Tooltip title="Cancel">
+                  <IconButton
+                    size="small"
+                    data-testid="loading-overlay-cancel"
+                    onClick={() => {
+                      onCancel()
+                    }}
+                  >
+                    <CloseIcon fontSize="inherit" />
+                  </IconButton>
+                </Tooltip>
+              ) : null}
             </span>
-            {onCancel && cancelable ? (
-              <Tooltip title="Cancel">
-                <IconButton
-                  size="small"
-                  data-testid="loading-overlay-cancel"
-                  onClick={() => {
-                    onCancel()
-                  }}
-                >
-                  <CloseIcon fontSize="inherit" />
-                </IconButton>
-              </Tooltip>
-            ) : null}
-          </span>
+            {progress === undefined ? null : (
+              <StatusProgressBar
+                className={classes.bar}
+                fraction={progress}
+                label={label}
+              />
+            )}
+          </>
         )}
       </span>
     </span>

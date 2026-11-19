@@ -107,13 +107,21 @@ describe('LoadingOverlay status + progress', () => {
     expect(bar!.getAttribute('aria-valuenow')).toBe('100')
   })
 
-  it('announces its message, and names the bar with it', () => {
-    const { getByRole } = render(
+  it('names the bar with its message, and drops the dots', () => {
+    const { getByRole, getByText } = render(
       <LoadingOverlay isVisible statusMessage="Downloading" progress={0.42} />,
     )
     flash()
-    expect(getByRole('status').textContent).toBe('Downloading 42%')
+    expect(getByText('Downloading 42%').textContent).toBe('Downloading 42%')
     expect(getByRole('progressbar', { name: 'Downloading' })).toBeTruthy()
+  })
+
+  it('renders no Material UI while loading', () => {
+    const { container } = render(
+      <LoadingOverlay isVisible statusMessage="Downloading" progress={0.42} />,
+    )
+    flash()
+    expect(container.querySelector('[class*="Mui"]')).toBeNull()
   })
 
   it('renders no progress bar in the indeterminate case', () => {

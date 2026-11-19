@@ -38,12 +38,7 @@ const LoadingEllipses = observer(function LoadingEllipses({
   ...rest
 }: Props) {
   return (
-    <Typography
-      role="status"
-      {...rest}
-      variant={variant}
-      data-busy={busy || undefined}
-    >
+    <Typography {...rest} variant={variant} data-busy={busy || undefined}>
       {message || 'Loading'}
       {dots ? <LoadingDots /> : null}
     </Typography>
