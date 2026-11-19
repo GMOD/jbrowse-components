@@ -103,8 +103,16 @@ export interface FeatureInkHost {
   renderedLabels: LabelPlacementContext
 }
 
-function regionIndices(blocks: readonly RenderBlock[]) {
-  return [...new Set(blocks.map(b => b.displayedRegionIndex))]
+// Each region on screen that has data, with the blocks drawing it.
+function drawnRegions(
+  self: Pick<FeatureInkHost, 'renderBlocks' | 'renderDataMap'>,
+) {
+  const indices = new Set(self.renderBlocks.map(b => b.displayedRegionIndex))
+  return [...indices].flatMap(idx => {
+    const data = self.renderDataMap.get(idx)
+    const blocks = self.renderBlocks.filter(b => b.displayedRegionIndex === idx)
+    return data ? [{ idx, data, blocks }] : []
+  })
 }
 
 // The canvas is what the box annotates, and the chrome clips nothing: a label
@@ -177,12 +185,7 @@ export function drawnLabelTexts(
   featureIds: readonly string[],
 ): Set<string> {
   const texts = new Set<string>()
-  for (const idx of regionIndices(self.renderBlocks)) {
-    const data = self.renderDataMap.get(idx)
-    if (!data) {
-      continue
-    }
-    const blocks = self.renderBlocks.filter(b => b.displayedRegionIndex === idx)
+  for (const { data, blocks } of drawnRegions(self)) {
     for (const featureId of featureIds) {
       for (const placed of placedLabels(self, data, featureId, blocks)) {
         if (placed.kind !== 'more') {
@@ -206,13 +209,11 @@ function bodyInk(
 ): NamedFeature[] {
   const out: NamedFeature[] = []
   const named = new Set<string>()
-  for (const idx of regionIndices(self.renderBlocks)) {
+  for (const { idx, data, blocks } of drawnRegions(self)) {
     const index = self.regionInstanceIndexes.get(idx)
-    const data = self.renderDataMap.get(idx)
-    if (!data || !index) {
+    if (!index) {
       continue
     }
-    const blocks = self.renderBlocks.filter(b => b.displayedRegionIndex === idx)
     for (const item of data.flatbushItems) {
       const { featureId } = item
       const text = textOf(item)
@@ -306,13 +307,11 @@ export function featureHighlightInk(
   }
   const out: HighlightRect[] = []
   const labelled = new Set<string>()
-  for (const idx of regionIndices(self.renderBlocks)) {
+  for (const { idx, data, blocks } of drawnRegions(self)) {
     const index = self.regionInstanceIndexes.get(idx)
-    const data = self.renderDataMap.get(idx)
-    if (!data || !index) {
+    if (!index) {
       continue
     }
-    const blocks = self.renderBlocks.filter(b => b.displayedRegionIndex === idx)
     for (const featureId of ids) {
       const instances =
         index.byFeatureId.get(featureId) ?? index.bySubfeatureId.get(featureId)

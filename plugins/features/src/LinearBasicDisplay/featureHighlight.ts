@@ -155,17 +155,6 @@ export function warnUnresolvedHighlights(
   }
 }
 
-function highlightHits(
-  h: FeatureHighlight,
-  item: HighlightItem,
-  featureId: string,
-  refName: string,
-) {
-  return h.featureId
-    ? featureId === h.featureId
-    : featureMatchesHighlight(item, refName, h)
-}
-
 // A subfeature pins its parent, since the packer keys on top-level ids.
 function sweep(
   regionList: HighlightableRegion[],
@@ -216,7 +205,9 @@ export function resolveFeatureHighlights(
   const pin = new Set<string>()
   const boxedBy = highlights.map(h => {
     const exact = sweep(regionList, (item, featureId, refName) =>
-      highlightHits(h, item, featureId, refName),
+      h.featureId
+        ? featureId === h.featureId
+        : featureMatchesHighlight(item, refName, h),
     )
     // The name fallback runs only when the exact pass boxed nothing anywhere,
     // and never for a featureId highlight, whose name would box every
