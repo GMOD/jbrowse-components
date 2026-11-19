@@ -870,6 +870,7 @@ jobs:
         working-directory: products/jbrowse-desktop
         env:
           NO_MINIMIZE: true
+          GENERATE_SOURCEMAP: 'false'
 
   linux_electron_e2e:
     name: Linux Electron E2E Tests
@@ -904,9 +905,11 @@ jobs:
         run: pnpm test:e2e:ci
         working-directory: products/jbrowse-desktop
         env:
-          # skip webpack minification: nothing here reads the bundle's size or
-          # its stack traces, and it is the longest part of the build
+          # skip webpack minification and source maps: nothing here reads the
+          # bundle's size or its stack traces, and minifying is the longest part
+          # of the build
           NO_MINIMIZE: true
+          GENERATE_SOURCEMAP: 'false'
       # The MCP conformance suite is what keeps the recipes page's "every
       # snippet was run against the app" true, and it ran nowhere until now.
       # Same build as the step above (`pnpm build` writes build/electron.js and
