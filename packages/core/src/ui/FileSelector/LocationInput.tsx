@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ErrorMessage from '../ErrorMessage.tsx'
+import ErrorBanner from '../ErrorBanner.tsx'
 import LocalFileChooser from './LocalFileChooser.tsx'
 import UrlChooser from './UrlChooser.tsx'
 
@@ -41,7 +41,7 @@ const BrowseButton = observer(function BrowseButton({
       >
         {label}
       </Button>
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
     </>
   )
 })

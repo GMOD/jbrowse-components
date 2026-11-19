@@ -257,7 +257,7 @@ const SUBPATH_NOTES: Record<string, string> = {
   './rpc/coreRpcMethods':
     'alive — `CorePlugin` imports `packages/core/src/rpc/coreRpcMethods.ts` relatively, so nothing publishes the subpath any more',
   './ui/ErrorMessage':
-    'alive, and `@jbrowse/core/ui` still exports it as `ErrorMessage` — import it from the barrel',
+    'folded into `ErrorBanner`, which `@jbrowse/core/ui` also exports as `ErrorMessage` — import either from the barrel',
   './util/QuickLRU':
     'alive, a vendored copy of the npm package of the same name that core reaches relatively — depend on `quick-lru` yourself',
 }

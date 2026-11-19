@@ -1,3 +1,5 @@
+import RefreshIcon from '@mui/icons-material/Refresh'
+import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
@@ -27,6 +29,19 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+function isChunkLoadError(error: unknown) {
+  const name = error instanceof Error ? error.name : ''
+  const message = `${error}`.toLowerCase()
+  return (
+    name === 'ChunkLoadError' ||
+    (message.includes('loading') &&
+      message.includes('chunk') &&
+      message.includes('failed')) ||
+    message.includes('failed to fetch dynamically imported module') ||
+    message.includes('error loading dynamically imported module')
+  )
+}
+
 const ErrorBanner = observer(function ErrorBanner({
   error,
   onReset,
@@ -44,7 +59,25 @@ const ErrorBanner = observer(function ErrorBanner({
   const displayText =
     instanceIdx === -1 ? errorText : errorText.slice(0, instanceIdx)
   const { snapshotValue, message } = parseError(errorText)
-  return (
+  return isChunkLoadError(error) ? (
+    <RedErrorMessageBox>
+      <div>
+        Failed to load part of the application, likely due to a server update or
+        network error. Refreshing the page usually fixes it.
+      </div>
+      <Button
+        variant="contained"
+        startIcon={<RefreshIcon />}
+        onClick={() => {
+          window.location.reload()
+        }}
+        style={{ margin: 4 }}
+      >
+        Refresh page
+      </Button>
+      <div>{errorText}</div>
+    </RedErrorMessageBox>
+  ) : (
     <RedErrorMessageBox>
       {displayText.slice(0, 10000)}
       <div className={classes.iconFloat}>

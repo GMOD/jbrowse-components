@@ -23,7 +23,7 @@ import {
   isLocalPathLocation,
 } from '../../util/types/index.ts'
 import ControlRow from '../ControlRow.tsx'
-import ErrorMessage from '../ErrorMessage.tsx'
+import ErrorBanner from '../ErrorBanner.tsx'
 import { dirFromPath } from './util.ts'
 
 import type { FileLocation } from '../../util/types/index.ts'
@@ -214,7 +214,7 @@ const LocalFileChooser = observer(function LocalFileChooser({
           <ReloadPrompt location={location} choose={choose} />
         )}
       </ControlRow>
-      {error ? <ErrorMessage error={error} /> : null}
+      {error ? <ErrorBanner error={error} /> : null}
     </>
   )
 })

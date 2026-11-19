@@ -234,7 +234,7 @@ published.
 | `@jbrowse/core/pluggableElementTypes/renderers/util` | helpers for the classes above, deleted with them |
 | `@jbrowse/core/rpc/coreRpcMethods` | alive — `CorePlugin` imports `packages/core/src/rpc/coreRpcMethods.ts` relatively, so nothing publishes the subpath any more |
 | `@jbrowse/core/rpc/methods/util` | renderer-era RPC helpers, removed with `CoreRender` |
-| `@jbrowse/core/ui/ErrorMessage` | alive, and `@jbrowse/core/ui` still exports it as `ErrorMessage` — import it from the barrel |
+| `@jbrowse/core/ui/ErrorMessage` | folded into `ErrorBanner`, which `@jbrowse/core/ui` also exports as `ErrorMessage` — import either from the barrel |
 | `@jbrowse/core/util/QuickLRU` | alive, a vendored copy of the npm package of the same name that core reaches relatively — depend on `quick-lru` yourself |
 | `@jbrowse/core/util/compositeMap` | dead, with no caller in or out of the tree |
 | `@jbrowse/core/util/layouts/BaseLayout` | the interface `GranularRectLayout` implemented for `MultiLayout` and `PrecomputedLayout` to share; deleted with them, along with the serialization types (`SerializedLayout`, `RectTuple`) that only the worker-to-main layout handoff used |
