@@ -759,6 +759,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/assemblyManager/geneticCodes": {
+      "package": "@jbrowse/core",
+      "names": [
+        "getGeneticCodesFromFile",
+        "lookupGeneticCodeId"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/assemblyManager/refNameMaps": {
       "package": "@jbrowse/core",
       "names": [
@@ -3107,6 +3115,13 @@
       "names": [
         "copyText",
         "copyTextWithSession"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/copyToClipboard": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
       ],
       "worker": "real"
     },

@@ -148,11 +148,15 @@ Options:
                              chromSizes - A chromosome sizes (e.g. .chrom.sizes)
                              file
 
+                             genbank - A GenBank flat file (e.g. .gbk, .gb,
+                             .gbff, optionally gzipped); its features load with
+                             add-track on the same file
+
                              custom - Either a JSON file location or inline JSON
                              that defines a custom sequence adapter; must
                              provide --name if using inline JSON [choices:
                              indexedFasta, bgzipFasta, twoBit, chromSizes,
-                             custom]
+                             genbank, custom]
 
   -n, --name                 Name of the assembly; if not specified, will be
                              guessed using the sequence file name
@@ -229,6 +233,9 @@ $ jbrowse add-assembly myFile.fa.gz --name hg38 --displayName "Homo sapiens (hg3
 
 # use chrom.sizes file for assembly instead of a fasta file
 $ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace
+
+# a GenBank file is a whole assembly; add-track on the same file adds its features
+$ jbrowse add-assembly pUC19.gbk --load copy
 
 # add assembly from preconfigured json file, expert option
 $ jbrowse add-assembly GRCh38.config.json --load copy

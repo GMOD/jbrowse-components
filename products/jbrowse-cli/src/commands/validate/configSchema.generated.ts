@@ -1739,6 +1739,100 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "GenbankAdapterSlots": {
+      "type": "object",
+      "properties": {
+        "genbankLocation": {
+          "default": {
+            "uri": "/path/to/my.gbk",
+            "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
+        },
+        "uri": {
+          "type": "string",
+          "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
+        },
+        "baseUri": {
+          "type": "string",
+          "description": "Shorthand: a base URL \`uri\` resolves against."
+        }
+      }
+    },
+    "GenbankAdapter": {
+      "title": "GenbankAdapter",
+      "type": "object",
+      "x-closed": true,
+      "allOf": [
+        {
+          "$ref": "#/$defs/GenbankAdapterSlots"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "GenbankAdapter"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "unevaluatedProperties": false
+    },
+    "GenbankSequenceAdapterSlots": {
+      "type": "object",
+      "properties": {
+        "genbankLocation": {
+          "default": {
+            "uri": "/path/to/my.gbk",
+            "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
+        },
+        "uri": {
+          "type": "string",
+          "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
+        },
+        "baseUri": {
+          "type": "string",
+          "description": "Shorthand: a base URL \`uri\` resolves against."
+        }
+      }
+    },
+    "GenbankSequenceAdapter": {
+      "title": "GenbankSequenceAdapter",
+      "type": "object",
+      "x-closed": true,
+      "allOf": [
+        {
+          "$ref": "#/$defs/GenbankSequenceAdapterSlots"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "GenbankSequenceAdapter"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "unevaluatedProperties": false
+    },
     "NCListAdapterSlots": {
       "type": "object",
       "properties": {
@@ -5330,7 +5424,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')",
+          "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function') || getUnbranched(feature,'product')",
           "$ref": "#/$defs/FeatureField",
           "type": "string"
         },
@@ -5351,7 +5445,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "field": {
               "description": "the field the description reads, such as \`note\`, or a \`jexl:\` expression over \`feature\`; the default reads \`note\`, else \`description\`, else \`function\`, and an empty value draws no description.",
-              "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')",
+              "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function') || getUnbranched(feature,'product')",
               "if": {
                 "type": "null"
               },
@@ -5678,7 +5772,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "description": "maximum features per pixel before showing a \\"too many features\\" message.",
-          "default": 1,
+          "default": 10,
           "if": {
             "type": "null"
           },
@@ -17537,7 +17631,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": [
             "Name",
             "ID",
-            "symbol"
+            "symbol",
+            "gene",
+            "locus_tag"
           ],
           "if": {
             "type": "null"
@@ -22983,6 +23079,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "GtfTabixAdapter",
                 "Gff3TabixAdapter",
                 "Gff3Adapter",
+                "GenbankAdapter",
+                "GenbankSequenceAdapter",
                 "NCListAdapter",
                 "SPARQLAdapter",
                 "TwoBitAdapter",
@@ -23348,6 +23446,38 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/Gff3Adapter"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "GenbankAdapter"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/GenbankAdapter"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "GenbankSequenceAdapter"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/GenbankSequenceAdapter"
           }
         },
         {

@@ -166,6 +166,8 @@ export const displayTable: DisplayTable = {
     "GtfTabixAdapter": [],
     "Gff3TabixAdapter": [],
     "Gff3Adapter": [],
+    "GenbankAdapter": [],
+    "GenbankSequenceAdapter": [],
     "NCListAdapter": [],
     "SPARQLAdapter": [],
     "TwoBitAdapter": [],
