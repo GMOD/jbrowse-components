@@ -46,15 +46,15 @@ lane the window aligns nothing to run the display's `laneLabelOf` and
   key, its title, its color bars and each read's color agree across strand,
   tag, MAPQ, insert size, modifications and base quality, a written title
   and `descending`.
-- Features' fetch args (`featureStaticHost.ts`: `geneGlyphMode`, the
-  `peptides` gate, `displayConfig`) restate `zoomFetchArgs()`/`rpcProps()`
-  in `baseModel`'s inline views; the parity suite does not compare
-  `aminoAcids`, so a change to the peptide gate would pass it.
 
 ## Closed
 
 - Alignments' worker args spread the display's `rpcProps` and its sections
   stack through its lane views (`rpcPropsViews.ts`, `laneViews.ts`).
+- Features' and variants' worker args spread the display's `rpcProps()` and,
+  for features, `zoomFetchArgs()` (`featureFetchArgsViews.ts`, the variants'
+  `rpcPropsViews.ts`); `featureFetchArgs.parity.test.ts` holds the feature
+  table's args to the display's with the peptide gate on and off.
 - A VCF read through `features` runs the variant display's records band
   (`variantFeatureTables` on `VariantRecordsTablesHost`), not a
   `LinearBasicDisplay`: SV class colors, their key and `records.*` apply, and

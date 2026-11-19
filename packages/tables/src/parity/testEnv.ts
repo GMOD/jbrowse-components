@@ -78,6 +78,8 @@ export interface ParityViewSpec<T extends ExportableDisplay> {
   /** Each contig's length by name: the contigs the assembly lists. */
   contigLengths: Record<string, number>
   bpPerPx: number
+  /** The view's coloring toggles, where a case sets them. */
+  viewToggles?: { colorByFrame?: boolean; showAminoAcids?: boolean }
   /** Whether the track's display is the model the adapter reads. */
   isDisplay: (display: unknown) => display is T
 }
@@ -173,6 +175,7 @@ export async function standUpDisplay<T extends ExportableDisplay>(
   const view = session.setView(
     ViewModel.create({
       type: 'LinearGenomeView',
+      ...spec.viewToggles,
       tracks: [
         {
           type: spec.track.type,

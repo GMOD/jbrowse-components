@@ -18,6 +18,10 @@ import configSchemaFactory from '../LinearBasicDisplay/configSchema.ts'
 import { featureColorScaleViews } from '../LinearBasicDisplay/derivedColorKey.ts'
 import { featureBandViews } from '../LinearBasicDisplay/featureBandViews.ts'
 import {
+  featureRpcPropsViews,
+  featureZoomFetchArgsViews,
+} from '../LinearBasicDisplay/featureFetchArgsViews.ts'
+import {
   featureRequestViews,
   geneGlyphRequestViews,
 } from '../LinearBasicDisplay/featureRequestViews.ts'
@@ -25,7 +29,6 @@ import { layoutRegionKey } from '../LinearBasicDisplay/layoutInputs.ts'
 import { featureIdsTouchingBlocks } from '../LinearBasicDisplay/layoutQueries.ts'
 import { executeRenderFeatureData } from '../RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { createPeptideCache } from '../RenderFeatureDataRPC/peptides/peptideCache.ts'
-import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { featureColorViews } from './featureColorViews.ts'
 
 import type { LayoutRegionData } from '../LinearBasicDisplay/layoutInputs.ts'
@@ -36,11 +39,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * What a static feature host reads off the view it stands in for: the zoom
- * it lays out at and the blocks on screen.
+ * it lays out at, the blocks on screen and the view's coloring toggles.
  */
 interface FeatureStaticFrame {
   bpPerPx: number
   coarseBpPerPx: number
+  colorByFrame: boolean
+  showAminoAcids: boolean
   settledDynamicBlocks: readonly {
     assemblyName: string
     refName: string
@@ -53,10 +58,14 @@ interface FeatureStaticFrame {
 const NO_FRAME: FeatureStaticFrame = {
   bpPerPx: 1,
   coarseBpPerPx: 1,
+  colorByFrame: false,
+  showAminoAcids: true,
   settledDynamicBlocks: [],
 }
 
 const NO_FEATURE_IDS: ReadonlySet<string> = new Set()
+
+const NO_IDS: string[] = []
 
 /**
  * A `LinearBasicDisplay` reduced to its config node, and as volatiles the
@@ -76,6 +85,10 @@ const FeatureStaticHostModel = types
     rpcDataMap: new Map<number, LayoutRegionData>(),
     layoutPinnedFeatureIdSet: NO_FEATURE_IDS,
     expandedGeneIdSet: NO_FEATURE_IDS,
+    expandedGeneIds: NO_IDS,
+    soloApplied: false,
+    soloFeatureIds: NO_IDS,
+    hiddenFeatureIds: NO_IDS,
     visibleFeatureDensityPerPx: 0,
   }))
   .actions(self => ({
@@ -102,6 +115,12 @@ const FeatureStaticHostModel = types
     get hidesOverflow() {
       return false
     },
+    get colorByFrame() {
+      return self.host.colorByFrame
+    },
+    get showAminoAcids() {
+      return self.host.showAminoAcids
+    },
   }))
   .views(self => heightModeViews(self))
   .views(self => fitTargetHeightViews(self))
@@ -121,6 +140,8 @@ const FeatureStaticHostModel = types
   .views(self => basicDisplayGlyphViews(self))
   .views(geneGlyphRequestViews)
   .views(featureRequestViews)
+  .views(featureRpcPropsViews)
+  .views(featureZoomFetchArgsViews)
   .views(self => basicDisplayLayoutViews(self))
   .views(featureBandViews)
   .views(self => featureColorScaleViews(self))
@@ -155,10 +176,6 @@ export interface FeatureFetchArgs {
   adapterConfig: Record<string, unknown>
   /** The assembly's sequence adapter, for a CDS painted by reading frame. */
   sequenceAdapter?: Record<string, unknown>
-  /** Paint each CDS by its reading frame, as the view's "Color by CDS" does. */
-  colorByFrame?: boolean
-  /** Translate each CDS once the zoom reaches a base a px, as the view does. */
-  aminoAcids?: boolean
   /**
    * The genetic code for a CDS whose feature names no `transl_table`, over
    * the assembly's code for its contig.
@@ -181,20 +198,16 @@ export async function fetchFeatureRegions(
   {
     adapterConfig,
     sequenceAdapter,
-    colorByFrame = false,
-    aminoAcids = true,
     geneticCodeId,
     assemblyGeneticCodeId,
   }: FeatureFetchArgs,
 ) {
-  const { config, displayConfig, geneGlyphMode, bpPerPx } = runInAction(() => {
-    return {
-      config: fullConfSnapshot(host.configuration),
-      displayConfig: host.renderSettings,
-      geneGlyphMode: host.effectiveGeneGlyphMode,
-      bpPerPx: host.host.bpPerPx,
-    }
-  })
+  const { config, settings, zoomArgs, bpPerPx } = runInAction(() => ({
+    config: fullConfSnapshot(host.configuration),
+    settings: host.rpcProps(),
+    zoomArgs: host.zoomFetchArgs(),
+    bpPerPx: host.host.bpPerPx,
+  }))
   const peptideCache = createPeptideCache()
   const fetched = await Promise.all(
     regions.map(
@@ -206,12 +219,10 @@ export async function fetchFeatureRegions(
             sessionId: host.id,
             adapterConfig,
             sequenceAdapter,
+            ...settings,
+            ...zoomArgs,
             region,
-            displayConfig,
-            geneGlyphMode,
             bpPerPx,
-            colorByFrame,
-            peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
             geneticCodeId:
               geneticCodeId ?? assemblyGeneticCodeId?.(region.refName),
             statusCallback: () => {},

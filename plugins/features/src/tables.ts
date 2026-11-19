@@ -377,8 +377,8 @@ export async function featureTables(
     displayedRegions,
     display = {},
     bpPerPx,
-    colorByFrame,
-    aminoAcids,
+    colorByFrame = false,
+    aminoAcids = true,
     geneticCodeId,
     assemblyGeneticCodeId,
     byteLimit = DEFAULT_BYTE_LIMIT,
@@ -388,6 +388,8 @@ export async function featureTables(
   host.setFrame({
     bpPerPx,
     coarseBpPerPx: bpPerPx,
+    colorByFrame,
+    showAminoAcids: aminoAcids,
     settledDynamicBlocks: tablesBlocks(regions, bpPerPx),
   })
   const { fetchRegions } = await byteGatedFetchRegions({
@@ -408,8 +410,6 @@ export async function featureTables(
     {
       adapterConfig,
       sequenceAdapter,
-      colorByFrame,
-      aminoAcids,
       geneticCodeId,
       assemblyGeneticCodeId,
     },

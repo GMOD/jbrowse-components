@@ -51,13 +51,11 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { toJS } from 'mobx'
 
 import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
 import { buildFeatureAdmission } from '../RenderFeatureDataRPC/featureAdmission.ts'
 import { GENE_GLYPH_DEFAULTS } from '../RenderFeatureDataRPC/renderConfig.ts'
-import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import FeatureGateMixin from '../shared/FeatureGateMixin.ts'
 import { featureColorViews } from '../shared/featureColorViews.ts'
 import { featureSpanRegion } from '../shared/featureSpanBp.ts'
@@ -79,6 +77,10 @@ import { resolveRegionColors } from './components/resolveRegionColors.ts'
 import { featureColorScaleViews } from './derivedColorKey.ts'
 import { featureBandViews } from './featureBandViews.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
+import {
+  featureRpcPropsViews,
+  featureZoomFetchArgsViews,
+} from './featureFetchArgsViews.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
   drawnLabelTexts,
@@ -492,38 +494,8 @@ export default function baseStateModelFactory(
       },
     }))
     .views(featureRequestViews)
+    .views(featureRpcPropsViews)
     .views(self => ({
-      /**
-       * #method
-       */
-      // Every field read here is an RPC cache key: the settings autorun
-      // clears data when any of them changes.
-      rpcProps() {
-        const workerConfig = self.renderSettings
-        return {
-          displayConfig: {
-            ...workerConfig,
-            // the parked field's values ship too, so its way back refetches
-            // nothing
-            color: {
-              ...workerConfig.color,
-              field: workerConfig.color.field || self.parkedColor?.field || '',
-            },
-          },
-          colorByFrame: self.colorByFrame,
-          // Undefined while collecting, so building the set neither
-          // refetches nor hides anything.
-          soloFeatureIds:
-            self.soloApplied && self.soloFeatureIds.length > 0
-              ? toJS(self.soloFeatureIds)
-              : undefined,
-          hiddenFeatureIds:
-            self.hiddenFeatureIds.length > 0
-              ? toJS(self.hiddenFeatureIds)
-              : undefined,
-        }
-      },
-
       /**
        * #method
        * What the main-thread encode needs beyond a region's own data: the
@@ -1089,30 +1061,7 @@ export default function baseStateModelFactory(
         }
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       * The worker's zoom-dependent decisions, resolved: the RPC spreads this
-       * object and the foundation stamps it beside each region, so a track
-       * with the overlay off and a fixed mode never refetches on zoom.
-       * `expandedGeneIds` only under `representative`, the one mode the worker
-       * collapses in.
-       */
-      zoomFetchArgs() {
-        const geneGlyphMode = self.effectiveGeneGlyphMode
-        return {
-          geneGlyphMode,
-          peptides:
-            self.showAminoAcids &&
-            shouldRenderPeptideBackground(containingLgv(self).bpPerPx),
-          expandedGeneIds:
-            geneGlyphMode === 'representative' &&
-            self.expandedGeneIds.length > 0
-              ? toJS(self.expandedGeneIds)
-              : undefined,
-        }
-      },
-    }))
+    .views(featureZoomFetchArgsViews)
     .actions(self => ({
       /**
        * #action
