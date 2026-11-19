@@ -244,7 +244,7 @@ test('Group by is a radio submenu: strand picks directly, attribute names its fi
     false,
     true,
   ])
-  expect(labelsOf(rows())[2]).toBe('Attribute (biotype)...')
+  expect(labelsOf(rows())[2]).toBe('Attribute...')
   ;(rows()[0] as { onClick: () => void }).onClick()
   expect(display.facet).toBeUndefined()
 })

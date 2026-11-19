@@ -41,5 +41,5 @@ test('a preset field ticks its own row alone, and another field ticks Field...',
   display.colorByField('svType')
   expect(ticked()).toEqual([expect.stringMatching(/^SV type/)])
   display.colorByField('INFO.AF')
-  expect(ticked()).toEqual(['Field (INFO.AF)...'])
+  expect(ticked()).toEqual(['Field...'])
 })

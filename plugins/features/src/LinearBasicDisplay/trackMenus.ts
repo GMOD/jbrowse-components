@@ -119,7 +119,7 @@ export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
       extra: [
         {
           type: ATTRIBUTE,
-          label: attribute ? `Attribute (${attribute})...` : 'Attribute...',
+          label: 'Attribute...',
           onClick: () => {
             self.openGroupByDialog()
           },

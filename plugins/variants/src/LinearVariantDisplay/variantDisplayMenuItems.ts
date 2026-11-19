@@ -128,7 +128,6 @@ function genotypeRowShowItems(self: LinearVariantDisplayModel): MenuItem[] {
 // With no rows the records are the display, and show what a feature track's
 // "Show" menu does: the way back from hidden sections, and the label parts.
 function recordsShowItems(self: LinearVariantDisplayModel): MenuItem[] {
-  const facet = self.recordsFacet
   const { lettered } = self.recordsLabelPlan
   return [
     ...hiddenGroupsItems({
@@ -137,14 +136,6 @@ function recordsShowItems(self: LinearVariantDisplayModel): MenuItem[] {
         self.showAllRecordsGroups()
       },
     }),
-    ...resetSectionOrderItems(
-      facet && {
-        domain: facet.sort,
-        setDomain: domain => {
-          self.setRecordsFacetSort(domain)
-        },
-      },
-    ),
     ...labelCheckboxItems({
       showNames: self.recordsLabels.name !== '',
       showDescriptions: self.recordsLabels.description !== '',
@@ -184,7 +175,8 @@ const RECORD_FIELD = 'field' as const
 // With no rows the records group into sections by a record field, as on a
 // feature track; over rows the sample attributes band the rows.
 function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
-  const recordsField = self.recordsFacet?.field
+  const facet = self.recordsFacet
+  const recordsField = facet?.field
   return !self.drawsGenotypeRows
     ? [
         groupByRadioMenuItem<never, typeof RECORD_FIELD>({
@@ -197,7 +189,7 @@ function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
           extra: [
             {
               type: RECORD_FIELD,
-              label: recordsField ? `Field (${recordsField})...` : 'Field...',
+              label: 'Field...',
               onClick: () => {
                 getDialogHost(self).queueDialog(handleClose => [
                   RecordsFacetFieldDialog,
@@ -207,6 +199,14 @@ function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
             },
           ],
         }),
+        ...resetSectionOrderItems(
+          facet && {
+            domain: facet.sort,
+            setDomain: domain => {
+              self.setRecordsFacetSort(domain)
+            },
+          },
+        ),
       ]
     : groupByRowAttributeMenuItems(self, self.rowColorFields)
 }
@@ -350,7 +350,7 @@ export function variantTrackMenuItems(
               },
             },
             {
-              label: recordField ? `Field (${recordField})...` : 'Field...',
+              label: 'Field...',
               type: 'radio',
               checked: !!recordField,
               keepMenuOpen: false,

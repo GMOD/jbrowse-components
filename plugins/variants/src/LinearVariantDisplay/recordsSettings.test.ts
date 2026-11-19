@@ -186,6 +186,15 @@ describe('records.facet', () => {
     expect(display.recordsFacet).toBeUndefined()
     expect(display.recordsGroupSections).toEqual([])
   })
+
+  test('a pinned section order resets from beside Group by, as on a feature track', () => {
+    const { display } = recordsDisplayAt(SECTIONED, 10, {}, false)
+    display.recordsFacetByField('INFO.CLNSIG')
+    display.setRecordsFacetSort(['Pathogenic', 'Benign'])
+    const menu = display.trackMenuItems()
+    expect(labelsOf(menu)).toContain('Reset section order')
+    expect(subMenuLabels(menu, 'Show')).not.toContain('Reset section order')
+  })
 })
 
 describe('records.tooltip.field', () => {
@@ -314,7 +323,7 @@ describe('the record menus', () => {
   test('records.facet hides from the sample Group by over rows', () => {
     const { display } = recordsDisplayAt(KIT, 51, { facet: 'INFO.CLNSIG' })
     expect(subMenuLabels(display.trackMenuItems(), 'Group by')).not.toContain(
-      'Field (INFO.CLNSIG)...',
+      'Field...',
     )
   })
 })
