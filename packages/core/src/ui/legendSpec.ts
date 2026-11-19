@@ -59,7 +59,9 @@ export interface LegendItem {
 
 // The boxes a row draws: its explicit list, else its single color, else nothing
 // at all (a heading).
-export function legendSwatches(item: LegendItem): LegendSwatch[] {
+export function legendSwatches(
+  item: Pick<LegendItem, 'color' | 'swatches'>,
+): LegendSwatch[] {
   return (
     item.swatches ?? (item.color === undefined ? [] : [{ color: item.color }])
   )

@@ -4,10 +4,11 @@ import { useId } from 'react'
 import { svgSafeId } from '../svg/svgId.ts'
 import { LegendSwatchGlyph } from './LegendSwatchGlyph.tsx'
 import { usePalette } from './PaletteContext.tsx'
+import { legendSwatches } from './legendSpec.ts'
 import { measureLegendText } from './measureLegendText.ts'
 import { alpha } from './palette.ts'
 
-import type { ColorLegendEntry, LegendSwatch } from './legendSpec.ts'
+import type { ColorLegendEntry } from './legendSpec.ts'
 
 export type { ColorLegendEntry } from './legendSpec.ts'
 
@@ -35,18 +36,9 @@ function useLegendInks() {
   }
 }
 
-// A row's swatches, with the flat `color` shorthand read as the single
-// square it has always drawn.
-function entrySwatches(entry: ColorLegendEntry): LegendSwatch[] {
-  return (
-    entry.swatches ??
-    (entry.color === undefined ? [] : [{ color: entry.color }])
-  )
-}
-
 // A row keying a color, as opposed to a title or note over such rows.
 function keysAColor(entry: ColorLegendEntry) {
-  return entry.gradient !== undefined || entrySwatches(entry).length > 0
+  return entry.gradient !== undefined || legendSwatches(entry).length > 0
 }
 
 // A ramp row is the bar and its labels, captioned when the entry has a label.
@@ -155,7 +147,7 @@ function legendBox(entries: ColorLegendEntry[], maxHeight?: number) {
   // Labels line up across rows, so the swatch column is sized by the row with
   // the most swatches — otherwise a two-box row shoves its own label out of the
   // column the others share. One box reproduces the original 16px inset.
-  const swatchColumns = Math.max(1, ...shown.map(e => entrySwatches(e).length))
+  const swatchColumns = Math.max(1, ...shown.map(e => legendSwatches(e).length))
   const textLeft =
     SWATCH_LEFT + swatchColumns * (LEGEND_SWATCH + SWATCH_GAP) + 2
 
@@ -266,7 +258,7 @@ export default function SvgColorLegend({
                   canvas bleed through and making the struck-out label harder to
                   read */}
               <g opacity={entry.hidden ? 0.35 : 1}>
-                {entrySwatches(entry).map((swatch, i) => (
+                {legendSwatches(entry).map((swatch, i) => (
                   <LegendSwatchGlyph
                     key={`${swatch.shape}-${swatch.color}`}
                     swatch={swatch}
