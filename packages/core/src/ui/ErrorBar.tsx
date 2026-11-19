@@ -1,4 +1,4 @@
-import { Alert, Tooltip } from '@mui/material'
+import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
@@ -62,9 +62,7 @@ const ErrorBar = observer(function ErrorBar({
           />
         }
       >
-        <Tooltip title={message}>
-          <div className={classes.content}>{hint ?? message}</div>
-        </Tooltip>
+        <div className={classes.content}>{hint ?? message}</div>
       </Alert>
     </div>
   )

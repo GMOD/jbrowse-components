@@ -55,19 +55,19 @@ export const useVirtualTableStyles = makeStyles()(theme => {
       verticalAlign: 'middle',
       boxSizing: 'border-box',
     },
-    bodyRow: {
-      '&:hover': {
-        background: theme.palette.action.hover,
-      },
-    },
-    clickableRow: {
-      cursor: 'pointer',
-    },
     selectedRow: {
       background: alpha(
         theme.palette.accent,
         theme.palette.action.selectedOpacity,
       ),
+    },
+    clickableRow: {
+      cursor: 'pointer',
+      '&:hover': {
+        background: theme.palette.action.hover,
+      },
+    },
+    selectedClickableRow: {
       '&:hover': {
         background: alpha(
           theme.palette.accent,

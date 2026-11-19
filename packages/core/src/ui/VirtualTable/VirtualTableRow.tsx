@@ -21,21 +21,35 @@ const VirtualTableRow = observer(function VirtualTableRow<R>({
   onRowClick?: (row: R) => void
 }) {
   const { classes } = useVirtualTableStyles()
+  const selected = isRowSelected?.(row)
   return (
     <tr
       className={cx(
-        classes.bodyRow,
+        selected && classes.selectedRow,
         onRowClick && classes.clickableRow,
-        isRowSelected?.(row) && classes.selectedRow,
+        onRowClick && selected && classes.selectedClickableRow,
       )}
       style={{
         height,
         lineHeight: `${Math.min(height, ROW_HEIGHT) - 1}px`,
       }}
+      tabIndex={onRowClick ? 0 : undefined}
       onClick={
         onRowClick
           ? () => {
               onRowClick(row)
+            }
+          : undefined
+      }
+      onKeyDown={
+        onRowClick
+          ? event => {
+              if (
+                event.key === 'Enter' &&
+                event.target === event.currentTarget
+              ) {
+                onRowClick(row)
+              }
             }
           : undefined
       }

@@ -158,6 +158,28 @@ test('a row click hands back its row', () => {
   expect(onRowClick).toHaveBeenCalledWith(rows[3])
 })
 
+test('a clickable row takes focus and answers Enter', () => {
+  const onRowClick = jest.fn()
+  const { getByText } = render(table({ onRowClick }))
+  const row = rowOf(getByText('r3'))
+  expect(row.tabIndex).toBe(0)
+  fireEvent.keyDown(row, { key: 'Enter' })
+  expect(onRowClick).toHaveBeenCalledWith(rows[3])
+})
+
+test('a row with no click handler is not focusable', () => {
+  const { getByText } = render(table({}))
+  expect(rowOf(getByText('r3')).hasAttribute('tabindex')).toBe(false)
+})
+
+function rowOf(cell: HTMLElement) {
+  const row = cell.closest('tr')
+  if (!row) {
+    throw new Error('cell is not in a row')
+  }
+  return row
+}
+
 describe('search highlight', () => {
   class FakeHighlight extends Set<AbstractRange> {}
   const highlights = new Map<string, FakeHighlight>()

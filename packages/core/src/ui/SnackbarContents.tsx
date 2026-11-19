@@ -53,6 +53,9 @@ const SnackbarContents = observer(function SnackbarContents({
                   // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed, never-reordered list of snackbar action buttons
                   key={idx}
                   color="inherit"
+                  aria-label={
+                    action.name === 'report' ? 'Report error' : undefined
+                  }
                   onClick={e => {
                     action.onClick()
                     onClose(e)
@@ -61,7 +64,7 @@ const SnackbarContents = observer(function SnackbarContents({
                   {action.name === 'report' ? <Report /> : action.name}
                 </Button>
               ))}
-              <IconButton color="inherit" onClick={onClose}>
+              <IconButton color="inherit" aria-label="Close" onClick={onClose}>
                 <CloseIcon />
               </IconButton>
             </>
