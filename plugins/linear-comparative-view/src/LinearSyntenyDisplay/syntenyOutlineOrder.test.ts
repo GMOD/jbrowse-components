@@ -37,6 +37,7 @@ function twoOverlappingFeatures() {
 function drawnOps(
   g: ReturnType<typeof buildSyntenyGeometry>,
   clickedFeatureId: number,
+  color = 0xff0000ff,
 ) {
   const ctx = createCanvas(VIEW_W, HEIGHT).getContext('2d')
   const ops: string[] = []
@@ -56,7 +57,7 @@ function drawnOps(
   })
   drawSyntenyTrack(
     recording,
-    { ...g, colors: new Uint32Array(g.kinds.length).fill(0xff0000ff) },
+    { ...g, colors: new Uint32Array(g.kinds.length).fill(color) },
     {
       yTop: 0,
       height: HEIGHT,
@@ -120,6 +121,8 @@ test('a clicked feature drawn as match tiles is outlined once, not per tile', ()
   const outline = (op: string) => op.startsWith('stroke rgba(0, 0, 0')
   expect(clicked.filter(outline)).toHaveLength(1)
   expect(drawnOps(threeTiles(), 0).filter(outline)).toHaveLength(0)
+  // a feature a filter has painted to nothing has no outline either
+  expect(drawnOps(threeTiles(), 1, 0x000000ff).filter(outline)).toHaveLength(0)
 })
 
 test('the clicked outline strokes after every fill, so no later ribbon covers it', () => {

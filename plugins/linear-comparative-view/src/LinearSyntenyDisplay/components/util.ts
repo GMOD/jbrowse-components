@@ -101,9 +101,10 @@ function tileStretch(data: SyntenyGeometry, i: number) {
 }
 
 // A corner lane is a float32 offset from the fetch window's start, so an end
-// read back off it is within this of the bp it was written from.
+// read back off it is within this of the bp it was written from: under a bp,
+// which is to say exact, until the offset passes 2^22.
 function laneTolerance(...offsets: number[]) {
-  return Math.max(1, ...offsets.map(offset => Math.abs(offset) * 2 ** -22))
+  return Math.max(...offsets.map(offset => Math.abs(offset) * 2 ** -22))
 }
 
 function snapToWhole(
@@ -136,15 +137,20 @@ export function getStretchSides(
   rows: { v0: SpanAxis; v1: SpanAxis },
 ): SyntenyBlockSide[] | undefined {
   const stretch = tileStretch(data, i)
-  if (!stretch) {
-    return undefined
-  }
-  const { first, last } = stretch
+  return stretch ? stretchSides(data, stretch, feat, rows) : undefined
+}
+
+function stretchSides(
+  data: SyntenyGeometry,
+  { first, last }: { first: number; last: number },
+  feat: FeatPos,
+  rows: { v0: SpanAxis; v1: SpanAxis },
+) {
   const { kinds, instanceFeatureIdx, bp1, bp2, bp3, bp4, base0, base1 } = data
   const goesOn = (k: number) =>
     kinds[k] !== undefined &&
     kinds[k] !== KIND_MARKER &&
-    instanceFeatureIdx[k] === instanceFeatureIdx[i]
+    instanceFeatureIdx[k] === instanceFeatureIdx[first]
   const openEnds = Number(!goesOn(first - 1)) + Number(!goesOn(last + 1))
   const query = snapToWhole(
     axisSpan(bp1[first]! + base0, bp2[last]! + base0, rows.v0),

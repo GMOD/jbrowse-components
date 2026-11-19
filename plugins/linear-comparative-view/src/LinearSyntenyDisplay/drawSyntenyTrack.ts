@@ -296,6 +296,7 @@ export function drawSyntenyTrack(
       scratch,
     )
     if (
+      !isInstanceInvisible(data.colors[hull.first]!, alpha) &&
       !isRibbonCulled(c, logicalW, overdrawPx, false) &&
       ribbonMaxPerpWidth(c, height, drawCurves) >= 1
     ) {

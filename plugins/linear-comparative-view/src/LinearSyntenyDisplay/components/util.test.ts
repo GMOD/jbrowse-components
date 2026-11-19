@@ -354,6 +354,17 @@ test('a stretch running past the geometry is not named', () => {
   ])
 })
 
+// One base is a real difference: an alignment running a single bp past the
+// last tile is still one the geometry does not show the end of.
+test('a stretch one base short of the alignment end is not snapped to it', () => {
+  const oneMore = {
+    ...tiledFeat,
+    end: tiledFeat.end + 1,
+    mate: { ...tiledFeat.mate, end: tiledFeat.mate.end + 1 },
+  }
+  expect(stretchSpans(oneMore).at(-1)).toBeUndefined()
+})
+
 test('a gap between two tiles reads as the indel left unpainted there', () => {
   const g = buildTiledGeometry(tiledCigar)
   expect(getCigarOpsAt(g, 1, 'gap')).toEqual([{ op: 'D', length: 50 }])
