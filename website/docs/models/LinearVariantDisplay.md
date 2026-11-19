@@ -430,6 +430,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-expandtocontentheight">**expandToContentHeight**</span><br><code>() =&gt; number</code> | With the rows hidden the handle's double click grows the band to its whole stack, so no record hides; it never shrinks it. Over rows under the records band it grows the track to where the rows show their whole content, past the px they lack by what the band takes of the taller track. |
 | <span id="action-setfeaturehighlights">**setFeatureHighlights**</span><br><code>(highlights: FeatureHighlight[]) =&gt; void</code> |  |
 | <span id="action-setsearchhighlight">**setSearchHighlight**</span><br><code>(highlight: FeatureHighlight) =&gt; void</code> | A text search's highlight replaces the previous search's and leaves the right-click ones, which have a `featureId`, alone. |
+| <span id="action-clearsearchhighlight">**clearSearchHighlight**</span><br><code>() =&gt; void</code> | Drops the last search's highlight when the next search lands on another track. |
 | <span id="action-addfeaturehighlightforitem">**addFeatureHighlightForItem**</span><br><code>(target: HighlightTarget, refName: string) =&gt; void</code> |  |
 | <span id="action-removefeaturehighlightsforid">**removeFeatureHighlightsForId**</span><br><code>(featureId: string) =&gt; void</code> |  |
 | <span id="action-clearfeaturehighlights">**clearFeatureHighlights**</span><br><code>() =&gt; void</code> |  |

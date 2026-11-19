@@ -513,7 +513,6 @@ function opacityMenuItem(model: {
   opacityLevel: number
   defaultOpacity: number
   setOpacity: (value: number) => void
-  colorSurface: () => SyntenyColorSurface
 }): MenuItem
 ```
 

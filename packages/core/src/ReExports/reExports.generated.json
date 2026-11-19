@@ -1736,7 +1736,8 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material"
+        "@mui/material",
+        "@mui/material/Tooltip"
       ]
     },
     "@jbrowse/core/ui/ControlRow": {
@@ -2029,7 +2030,8 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material"
+        "@mui/material",
+        "@mui/material/Tooltip"
       ]
     },
     "@jbrowse/core/ui/menuItems": {
@@ -4794,7 +4796,8 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material"
+        "@mui/material",
+        "@mui/material/Tooltip"
       ]
     },
     "@jbrowse/display-kit/DisplayErrorBar": {
