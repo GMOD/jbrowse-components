@@ -279,6 +279,40 @@ describe('edge cases on a circle and two same-named exports', () => {
     expect(shape(tail!)).toEqual(['gene', 0, 200, 1, [['CDS', 9, 200, 1, 0]]])
   })
 
+  test('each isoform’s CDS hangs under the mRNA whose exons it fits', async () => {
+    const gene = (await fetch(features, 'x.1', 300, 700)).find(
+      f => f.get('locus_tag') === 'X_iso',
+    )
+    expect(gene?.get('subfeatures')?.map(shape)).toEqual([
+      [
+        'mRNA',
+        299,
+        700,
+        1,
+        [
+          ['exon', 299, 400, 1],
+          ['exon', 599, 700, 1],
+          ['CDS', 349, 400, 1, 0],
+          ['CDS', 599, 650, 1, 0],
+        ],
+      ],
+      [
+        'mRNA',
+        299,
+        700,
+        1,
+        [
+          ['exon', 299, 400, 1],
+          ['exon', 449, 500, 1],
+          ['exon', 599, 700, 1],
+          ['CDS', 349, 400, 1, 0],
+          ['CDS', 449, 500, 1, 0],
+          ['CDS', 599, 650, 1, 0],
+        ],
+      ],
+    ])
+  })
+
   test('spans naming the record’s own accession are kept', async () => {
     const found = await fetch(features, 'x.1', 800, 850)
     expect(shape(found.find(f => f.get('note') === 'own accession')!)).toEqual([

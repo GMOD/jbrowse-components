@@ -148,8 +148,30 @@ function overlaps(a: { start: number; end: number }, b: Placed) {
   return a.start < b.end && b.start < a.end
 }
 
-function contains(a: { start: number; end: number }, b: Placed) {
-  return a.start <= b.start && b.end <= a.end
+function byStart(a: Span, b: Span) {
+  return a.start - b.start
+}
+
+function fitsExons(exons: Span[], cds: Span[]) {
+  const pieces = cds.toSorted(byStart)
+  const from = pieces[0]?.start ?? 0
+  const to = pieces.at(-1)?.end ?? 0
+  const spanned = exons
+    .toSorted(byStart)
+    .filter(e => e.start < to && from < e.end)
+  return (
+    spanned.length === pieces.length &&
+    pieces.every((c, i) => {
+      const exon = spanned[i]
+      return (
+        exon !== undefined &&
+        exon.start <= c.start &&
+        c.end <= exon.end &&
+        (i === 0 || c.start === exon.start) &&
+        (i === pieces.length - 1 || c.end === exon.end)
+      )
+    })
+  )
 }
 
 /**
@@ -158,7 +180,7 @@ function contains(a: { start: number; end: number }, b: Placed) {
  *
  * - A `gene` is the parent of the transcripts and CDS sharing its
  *   `/locus_tag` or its `/gene` and overlapping it; a CDS inside one of that
- *   gene's mRNAs hangs under the mRNA instead. A transcript's spans become
+ *   gene's mRNAs hangs under the mRNA whose exons it fits instead. A transcript's spans become
  *   `exon` children, a CDS's spans sibling `CDS` rows phased from
  *   `/codon_start`.
  * - A `source` becomes a `region` with `gbkey=Src`, as NCBI's GFF3 writes it,
@@ -175,7 +197,10 @@ export function genbankFeatures(
 ) {
   const top: LazyGffFeature[] = []
   const genes = new Map<string, LazyGffFeature[]>()
-  const transcripts = new Map<LazyGffFeature, LazyGffFeature[]>()
+  const transcripts = new Map<
+    LazyGffFeature,
+    { feature: LazyGffFeature; spans: Span[] }[]
+  >()
   for (const entry of parseFeatureTable(lines)) {
     const spans = placeSpans(
       parseLocation(entry.location, refName),
@@ -229,17 +254,22 @@ export function genbankFeatures(
             match.gene.subfeatures.push(rna)
             transcripts.set(match.gene, [
               ...(transcripts.get(match.gene) ?? []),
-              rna,
+              { feature: rna, spans: match.child.spans },
             ])
           } else {
             top.push(transcript(refName, placed))
           }
         } else if (entry.key === 'CDS' && match) {
           const { gene, child } = match
+          const fitting = (transcripts.get(gene) ?? []).filter(
+            t => t.feature.type === 'mRNA' && fitsExons(t.spans, child.spans),
+          )
           const parent =
-            transcripts
-              .get(gene)
-              ?.find(t => t.type === 'mRNA' && contains(t, child)) ?? gene
+            fitting.find(
+              t => !t.feature.subfeatures.some(f => f.type === 'CDS'),
+            )?.feature ??
+            fitting[0]?.feature ??
+            gene
           parent.subfeatures.push(...codingPieces(refName, child))
         } else {
           top.push(folded(refName, placed))
