@@ -34,26 +34,23 @@ const engine = createTablesEngine()
 
 const region = { refName: 'ctgA', start: 1000, end: 2000 }
 
-function settingsOf({
-  displayConfig,
-  geneGlyphMode,
-  peptides,
-  colorByFrame,
-  expandedGeneIds,
-  soloFeatureIds,
-  hiddenFeatureIds,
-  bpPerPx,
-}: RpcExecuteArgs<'RenderFeatureData'>) {
-  return {
-    displayConfig,
-    geneGlyphMode,
-    peptides,
-    colorByFrame,
-    expandedGeneIds,
-    soloFeatureIds,
-    hiddenFeatureIds,
-    bpPerPx,
-  }
+const NOT_SETTINGS = new Set([
+  'sessionId',
+  'statusCallback',
+  'stopToken',
+  'signal',
+  'adapterConfig',
+  'sequenceAdapter',
+  'region',
+  'regions',
+  'byteLimit',
+  'maxFeatureDensity',
+])
+
+function settingsOf(args: RpcExecuteArgs<'RenderFeatureData'>) {
+  return Object.fromEntries(
+    Object.entries(args).filter(([key]) => !NOT_SETTINGS.has(key)),
+  )
 }
 
 async function fetchedSettings({
