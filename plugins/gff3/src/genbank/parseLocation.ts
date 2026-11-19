@@ -18,13 +18,8 @@ function matchAt(regex: RegExp, text: string, pos: number) {
 }
 
 /**
- * The spans an INSDC location string names, 0-based half-open, in the order
- * the feature is transcribed: `complement(join(a,b))` and
- * `join(complement(b),complement(a))` both answer b then a on strand -1.
- *
- * `<`/`>` partial markers are dropped, a span on another entry (`ACC:1..9`,
- * unless ACC is `refName`'s own) and a `gap()` are skipped, and the site between two bases (`n^n+1`) covers
- * both of them. `order` and `bond` read as `join`.
+ * An INSDC location's spans, 0-based half-open, in transcription order. Partial
+ * markers drop; a span on another entry and `gap()` are skipped.
  */
 export function parseLocation(location: string, refName = '') {
   const text = location.replaceAll(/\s/g, '')

@@ -41,8 +41,8 @@ export default class GenbankAdapter extends BaseFeatureDataAdapter<GenbankAdapte
           genbankFeatures(
             lines,
             refName,
-            records[refName]!.length,
-            records[refName]!.circular,
+            records[refName]?.length ?? 0,
+            records[refName]?.circular ?? false,
           ),
         'Parsing GenBank data',
       )

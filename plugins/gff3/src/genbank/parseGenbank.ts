@@ -117,10 +117,8 @@ function collect(key: string, location: string, qualifiers: Qualifier[]) {
 }
 
 /**
- * The features of one record's FEATURES table, each with its location string
- * and its qualifiers. A value wrapped over several lines is joined with a
- * space, except `/translation`, whose residues are joined with none. A
- * qualifier with no value (`/pseudo`) reads `true`.
+ * A FEATURES table's entries. Wrapped values join with a space, `/translation`
+ * with none.
  */
 export function parseFeatureTable(lines: string[]) {
   const entries: FeatureEntry[] = []
@@ -136,7 +134,8 @@ export function parseFeatureTable(lines: string[]) {
     const start = line[5] === ' ' ? undefined : FEATURE_START.exec(line)
     if (start) {
       flush()
-      current = { key: start[1]!, location: start[2]!.trim(), qualifiers: [] }
+      const [, key = '', location = ''] = start
+      current = { key, location: location.trim(), qualifiers: [] }
     } else if (current) {
       const body = line.trim()
       const last = current.qualifiers.at(-1)

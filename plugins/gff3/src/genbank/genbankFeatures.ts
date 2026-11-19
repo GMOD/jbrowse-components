@@ -25,24 +25,21 @@ function escapeValue(value: string) {
   )
 }
 
-/**
- * A GFF3 column 9 holding the qualifiers as written, so the feature reads
- * through the same lazy attribute path a GFF3 feature does. `Name` is the
- * first of `/label` (SnapGene, Benchling), `/gene`, `/locus_tag` and
- * `/product`, the label a track draws.
- */
+/** The qualifiers as a GFF3 column 9, led by a `Name` for the track label */
 function attributeString(
   qualifiers: Map<string, string[]>,
-  extra: [string, string][] = [],
+  extra: Record<string, string> = {},
 ) {
   const name = NAME_QUALIFIERS.map(q => qualifiers.get(q)?.[0]).find(Boolean)
-  const entries: [string, string[]][] = [
-    ...(name ? [['Name', [name]] as [string, string[]]] : []),
-    ...extra.map(([k, v]): [string, string[]] => [k, [v]]),
-    ...qualifiers,
-  ]
-  return entries
-    .map(([k, values]) => `${k}=${values.map(escapeValue).join(',')}`)
+  const entries = new Map<string, string[]>(name ? [['Name', [name]]] : [])
+  for (const [key, value] of Object.entries(extra)) {
+    entries.set(key, [value])
+  }
+  for (const [key, values] of qualifiers) {
+    entries.set(key, values)
+  }
+  return [...entries]
+    .map(([key, values]) => `${key}=${values.map(escapeValue).join(',')}`)
     .join(';')
 }
 
@@ -76,10 +73,7 @@ function feature(
   }
 }
 
-/**
- * Each span's GFF3 phase, the bases before its first whole codon, from the
- * `/codon_start` of the 5'-most span and the coding bases ahead of each.
- */
+/** Each span's GFF3 phase, from `/codon_start` and the coding bases ahead */
 function spanPhases(spans: Span[], codonStart: number) {
   let before = 0
   return spans.map(s => {
@@ -99,19 +93,16 @@ function codingPieces(refName: string, placed: Placed) {
   )
 }
 
-/**
- * A feature drawn on its own: one span is one feature, several are one
- * feature covering them with a child per span, the shape the GFF3 parser
- * folds a discontinuous feature into.
- */
+/** One span is one feature; several are one feature with a child per span */
 function folded(refName: string, placed: Placed) {
   const { entry, spans, attributes } = placed
   const pieces =
     entry.key === 'CDS'
       ? codingPieces(refName, placed)
       : spans.map(s => feature(refName, entry.key, s, attributes))
-  return spans.length === 1
-    ? pieces[0]!
+  const [only] = pieces
+  return only && pieces.length === 1
+    ? only
     : feature(refName, entry.key, placed, attributes, pieces)
 }
 
@@ -175,19 +166,8 @@ function fitsExons(exons: Span[], cds: Span[]) {
 }
 
 /**
- * One record's features in the shape the GFF3 adapter builds from NCBI's
- * GFF3 of the same record, in file order.
- *
- * - A `gene` is the parent of the transcripts and CDS sharing its
- *   `/locus_tag` or its `/gene` and overlapping it; a CDS inside one of that
- *   gene's mRNAs hangs under the mRNA whose exons it fits instead. A transcript's spans become
- *   `exon` children, a CDS's spans sibling `CDS` rows phased from
- *   `/codon_start`.
- * - A `source` becomes a `region` with `gbkey=Src`, as NCBI's GFF3 writes it,
- *   which the feature track admits but does not draw. The one covering a
- *   circular record also carries `Is_circular=true`.
- * - A feature crossing a circular record's origin is one feature past its
- *   length, which `cutAtOrigin` cuts.
+ * One record's features in the shapes the GFF3 adapter builds from NCBI's
+ * GFF3 of the same record: genes over transcripts over exons and CDS rows.
  */
 export function genbankFeatures(
   lines: string[],
@@ -218,17 +198,17 @@ export function genbankFeatures(
         spans,
         start,
         end,
-        strand: spans[0]!.strand,
+        strand: spans.every(s => s.strand === -1) ? -1 : 1,
         attributes: attributeString(
           entry.qualifiers,
           isSource
-            ? [
-                ['gbkey', 'Src'],
+            ? {
+                gbkey: 'Src',
                 ...(circular && start === 0 && end === length
-                  ? [['Is_circular', 'true'] as [string, string]]
-                  : []),
-              ]
-            : [],
+                  ? { Is_circular: 'true' }
+                  : {}),
+              }
+            : {},
         ),
       }
       const keys = geneKeys(entry.qualifiers)
