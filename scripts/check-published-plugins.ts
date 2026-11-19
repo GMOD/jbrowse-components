@@ -3,10 +3,10 @@
 // refresher of `website/plugins.json`, the snapshot the public store page is
 // prerendered from, since this is the run that already has the manifest.
 //
-//   node --experimental-strip-types scripts/check-published-plugins.ts
-//   node --experimental-strip-types scripts/check-published-plugins.ts --json
-//   node --experimental-strip-types scripts/check-published-plugins.ts --check
-//   node --experimental-strip-types scripts/check-published-plugins.ts --write
+//   node scripts/check-published-plugins.ts
+//   node scripts/check-published-plugins.ts --json
+//   node scripts/check-published-plugins.ts --check
+//   node scripts/check-published-plugins.ts --write
 //
 // Needs the network, so it is not a test and cannot ride `pnpm autogen`.
 // Run it before tagging, and again after any affected plugin is rebuilt.
@@ -66,7 +66,7 @@
 // identifier that traces back to a JBrowseExports lookup can break.
 // The served ABI is read from list.ts (the module paths) and
 // reExports.generated.json (the names in each), not from modules.ts: that
-// module's graph reaches .tsx, which --experimental-strip-types will not load.
+// module's graph reaches .tsx, which node's type stripping will not load.
 // Both are written by scripts/generateReExports.ts from the same run.
 import fs from 'node:fs'
 import os from 'node:os'
@@ -494,7 +494,7 @@ if (process.argv.includes('--write')) {
       }
     }
     console.error(
-      '\nRefresh with `node --experimental-strip-types scripts/check-published-plugins.ts --write`',
+      '\nRefresh with `node scripts/check-published-plugins.ts --write`',
     )
     process.exit(1)
   }

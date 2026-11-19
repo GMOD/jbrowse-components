@@ -9,7 +9,7 @@
 // The bundle step is not optional: this bench reaches the real renderer, which
 // imports `@jbrowse/render-core`, and node's strip-only TypeScript loader
 // rejects a parameter property in that package. Every other bench here stays
-// inside `src/` and runs under `node --experimental-strip-types` directly.
+// inside `src/` and runs under `node` directly.
 //
 // THE QUESTION. `GpuAlignmentsRenderer.syncRegion` memoizes per region, and the
 // memo used to have one narrow path: a recolor. An arc-only change — a

@@ -151,7 +151,7 @@ typecheck`, then repair so the rule has nothing left to fix
 change that creates a `website/docs/config` page blocks the push with
 "pathspec … did not match any file(s) known to git". Regenerate first
 (`scripts/generateConfigManifest.ts`, then `website/scripts/api-docs/generate.ts`,
-then `scripts/check-docs.ts`, each under `node --experimental-strip-types`) and
+then `scripts/check-docs.ts`, each under `node`) and
 commit `website/docs/config`, `website/docs/models`, `typeDocs.generated.json`
 and `coverage-gaps.txt` before pushing.
 

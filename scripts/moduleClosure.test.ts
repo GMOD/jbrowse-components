@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { closure } from './moduleClosure.ts'
 
 // Ceilings, not measurements: the numbers beside each entry are what it costs
-// today (`node --experimental-strip-types scripts/moduleClosure.ts` prints
+// today (`node scripts/moduleClosure.ts` prints
 // them), and the ceiling is roughly half again as much. A file here failing
 // means a new import edge pulled a graph in — usually one written through a
 // barrel.

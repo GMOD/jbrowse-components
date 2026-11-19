@@ -2,7 +2,7 @@
 // add-track` share, from the `#trackType` tag every adapter's config schema
 // already carries. Rides `pnpm autogen`; run directly after adding an adapter:
 //
-//   node --experimental-strip-types scripts/generateTrackTypeMap.ts
+//   node scripts/generateTrackTypeMap.ts
 //
 // The tag is the definition site — `website/scripts/api-docs/
 // generateFileTypeDocs.ts` builds the "Supported file types" table off it.

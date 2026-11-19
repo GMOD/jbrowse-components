@@ -2,7 +2,7 @@
 // autogen`; run directly after editing an exports map, a package.json
 // dependency or a product's plugin set:
 //
-//   node --experimental-strip-types scripts/generateReExports.ts
+//   node scripts/generateReExports.ts
 //
 // A runtime plugin's build externalizes every specifier `ReExports/list.ts`
 // names, and at runtime reads each off `JBrowseExports`. What this writes:

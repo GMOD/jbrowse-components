@@ -1,7 +1,7 @@
 // What a module drags onto the startup path: its eager first-party
 // static-import closure, in modules and source bytes.
 //
-//   node --experimental-strip-types scripts/eager-import-closure.ts <entry> \
+//   node scripts/eager-import-closure.ts <entry> \
 //     [--minus <entry>] [--rev <commit>]
 //
 // `--minus` subtracts another entry's closure, which is the form that answers a

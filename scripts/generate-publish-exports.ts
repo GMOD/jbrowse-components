@@ -121,7 +121,7 @@ for (const pkg of PACKAGES) {
   if (check) {
     if (readFileSync(manifestPath, 'utf8') !== next) {
       console.error(
-        `${pkg} publishConfig.exports is out of date — run: node --experimental-strip-types scripts/generate-publish-exports.ts`,
+        `${pkg} publishConfig.exports is out of date — run: node scripts/generate-publish-exports.ts`,
       )
       failed = true
     }

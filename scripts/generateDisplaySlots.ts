@@ -68,5 +68,5 @@ ${body}
 `,
     },
   ],
-  'run `node --experimental-strip-types scripts/generateDisplaySlots.ts`',
+  'run `node scripts/generateDisplaySlots.ts`',
 )

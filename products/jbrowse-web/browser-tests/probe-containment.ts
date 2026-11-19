@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-// Manual probe (`node --experimental-strip-types`, needs a jbrowse-web build):
+// Manual probe (`node`, needs a jbrowse-web build):
 // does `contain: strict` on TrackRenderingContainer earn its keep? It is the
 // reason every piece of display chrome reaches the track's overlay layer through
 // `TrackOverlayPortal` rather than a plain z-index — containment creates a

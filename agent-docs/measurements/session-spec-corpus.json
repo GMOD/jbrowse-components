@@ -4,7 +4,7 @@
   "published": false,
   "source": {
     "kind": "bench",
-    "repro": "node --experimental-strip-types website/scripts/spec-key-census.ts --write",
+    "repro": "node website/scripts/spec-key-census.ts --write",
     "notes": "Every url-mode spec in website/scripts/screenshot-specs.ts whose session= carries a spec-… JSON. A track entry is a bare trackId, a one-element tuple (the synteny levels form) or an object; key counts are over the objects, excluding trackId, type and the two escape-hatch snapshots."
   },
   "columns": [

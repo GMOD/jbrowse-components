@@ -15,7 +15,6 @@ const run = (...args: string[]) =>
   spawnSync(
     'node',
     [
-      '--experimental-strip-types',
       path.join(__dirname, 'check-config-slot-paths.ts'),
       '--baseline',
       baseline,

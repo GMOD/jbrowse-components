@@ -40,7 +40,7 @@
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "prepack": "pnpm build",
     "preversion": "pnpm build",
-    "start": "node --experimental-strip-types src/bin.ts"
+    "start": "node src/bin.ts"
   },
   "dependencies": {
     "@jbrowse/launch-args": "workspace:^",

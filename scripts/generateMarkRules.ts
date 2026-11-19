@@ -5,7 +5,7 @@
 // way it carries the config manifest: as committed output `pnpm autogen --check`
 // compares. Run directly after editing the rule list:
 //
-//   node --experimental-strip-types scripts/generateMarkRules.ts
+//   node scripts/generateMarkRules.ts
 //
 // Every file is copied whole and unedited under a one-line header, which is
 // what keeps a copy from meaning something its source does not. That works

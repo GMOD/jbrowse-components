@@ -4,7 +4,7 @@
   "published": false,
   "source": {
     "kind": "bench",
-    "repro": "node --experimental-strip-types website/scripts/spec-key-census.ts --write",
+    "repro": "node website/scripts/spec-key-census.ts --write",
     "notes": "The keys at least two explicit display types carry, over the same corpus as session-spec-corpus. A key an entry sets without naming a display type is counted in uses but not toward the display-type count."
   },
   "columns": [

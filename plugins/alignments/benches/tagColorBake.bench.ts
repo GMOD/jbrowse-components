@@ -1,6 +1,6 @@
 // Does dealing a region's new tag values after the walk cost the bake?
 //
-//   node --expose-gc --experimental-strip-types plugins/alignments/benches/tagColorBake.bench.ts
+//   node --expose-gc plugins/alignments/benches/tagColorBake.bench.ts
 //
 // Flags: --rounds=<n> (default 40), --reads=<n> (default 200000)
 //

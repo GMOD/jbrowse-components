@@ -4,7 +4,7 @@
   "source": {
     "kind": "jb2bench",
     "from": "results/bgzfpool.json",
-    "repro": "In ~/src/jb2bench, per agent-docs/reference/bgzfpool-linux-runbook.md: build jbrowse-web twice from one tree, once unmodified and once with sharedBgzfWorkerPool() returning Promise.resolve(undefined), serve them on :8010 and :8011, then `node --experimental-strip-types scripts/bgzfpool/endtoend.ts 7`. Headless Chrome on an i9-12900K, jbrowse-components 36cccd4ca2.",
+    "repro": "In ~/src/jb2bench, per agent-docs/reference/bgzfpool-linux-runbook.md: build jbrowse-web twice from one tree, once unmodified and once with sharedBgzfWorkerPool() returning Promise.resolve(undefined), serve them on :8010 and :8011, then `node scripts/bgzfpool/endtoend.ts 7`. Headless Chrome on an i9-12900K, jbrowse-components 36cccd4ca2.",
     "notes": "Five non-overlapping 19 kb pans on chr22_mask per page load, seven reps alternated ABBA. The two time columns are medians over every pan; the speedup is the median of per-pair ratios, so it is typed rather than derived from them. Blob workers were 4/0 on every track. Every row ran with 0.77-1.11 cores of another user's work on the 24-thread box, over jb2bench's 0.5-core gate, kept by the owner's call."
   },
   "columns": [

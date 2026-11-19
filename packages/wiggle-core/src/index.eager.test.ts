@@ -10,11 +10,7 @@ const root = path.resolve(__dirname, '../../..')
 test('the barrel reaches no display chrome and no SVG export', () => {
   const closure = execFileSync(
     process.execPath,
-    [
-      '--experimental-strip-types',
-      'scripts/eager-import-closure.ts',
-      'packages/wiggle-core/src/index.ts',
-    ],
+    ['scripts/eager-import-closure.ts', 'packages/wiggle-core/src/index.ts'],
     { cwd: root, encoding: 'utf8' },
   )
   const reached = new Set(

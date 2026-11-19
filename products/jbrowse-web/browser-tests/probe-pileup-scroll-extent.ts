@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-// Manual probe (`node --experimental-strip-types`, needs a jbrowse-web build):
+// Manual probe (`node`, needs a jbrowse-web build):
 // how much of the pileup's scroll extent is reachable, and how much is the
 // fetch buffer's rows?
 //

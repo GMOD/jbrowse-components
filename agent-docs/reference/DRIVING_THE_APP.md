@@ -33,8 +33,7 @@ same rung makes the better live link for a tour.
 ## The dev server serves current source
 
 `products/jbrowse-web/scripts/start.ts`, run with `NODE_ENV=development node`
-from that package (with `PORT=<n> BROWSER=none`, and
-`--experimental-strip-types` from a worktree), serves the app from source,
+from that package (with `PORT=<n> BROWSER=none`), serves the app from source,
 `test_data` included, and rebuilds on edit, so a puppeteer check of a source
 change skips the build. `openJBrowse` from
 `products/jbrowse-capture/src/index.ts` takes it as `instance`
@@ -113,7 +112,7 @@ mode first. If none does, write a ~40-line `browser-tests/tmp-<name>.ts` with
   server's own origin (the plugin's `esmUrl` may stay cross-origin), rewrite
   its relative `uri`s as absolute, and delete it before committing.
 - **A hosted multi-way star** captures without a build:
-  `node --experimental-strip-types products/jbrowse-capture/src/bin.ts --instance https://jbrowse.org/code/jb2/main --config https://jbrowse.org/ucsc/mm39/config-staging.json --spec spec.json -o out.png --timeout 300000`,
+  `node products/jbrowse-capture/src/bin.ts --instance https://jbrowse.org/code/jb2/main --config https://jbrowse.org/ucsc/mm39/config-staging.json --spec spec.json -o out.png --timeout 300000`,
   with the session the genomes portal's gene page writes for its star link (a
   `MultiWaySyntenyDisplay` with `laneFilter`, `domain` and a height of
   34 px per lane plus one).

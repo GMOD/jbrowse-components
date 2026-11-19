@@ -5,7 +5,7 @@
 // The two records this emits back agent-docs/reference/SESSION_SPEC_FORMAT.md,
 // which is where the numbers are read. Run with `--write` to refresh them:
 //
-//   node --experimental-strip-types website/scripts/spec-key-census.ts --write
+//   node website/scripts/spec-key-census.ts --write
 //
 // A key is "shared" when at least two EXPLICIT display types carry it; an entry
 // that names no `type` opens the track's default display, which the census
@@ -146,8 +146,7 @@ export function census(sessions: SpecSession[]) {
 }
 
 function records(c: ReturnType<typeof census>, measured: string) {
-  const repro =
-    'node --experimental-strip-types website/scripts/spec-key-census.ts --write'
+  const repro = 'node website/scripts/spec-key-census.ts --write'
   const corpus = {
     id: 'session-spec-corpus',
     measured,

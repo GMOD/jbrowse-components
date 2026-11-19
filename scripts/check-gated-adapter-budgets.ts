@@ -74,7 +74,7 @@ if (added.length || removed.length || changed.length) {
   console.error(
     `Gated-adapter byte budgets changed.\n\n${lines.join(
       '\n',
-    )}\n\nAn adapter implementing getRegionByteSize is byte-gated, so its budget has to be a\nchoice rather than whatever display it lands under. Decide, then run:\n  node --experimental-strip-types scripts/check-gated-adapter-budgets.ts --write\nSee agent-docs/reference/REGION_TOO_LARGE.md.\n`,
+    )}\n\nAn adapter implementing getRegionByteSize is byte-gated, so its budget has to be a\nchoice rather than whatever display it lands under. Decide, then run:\n  node scripts/check-gated-adapter-budgets.ts --write\nSee agent-docs/reference/REGION_TOO_LARGE.md.\n`,
   )
   process.exit(1)
 }

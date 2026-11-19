@@ -31,8 +31,8 @@
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "prepack": "pnpm build",
     "preversion": "pnpm build",
-    "start": "node --experimental-strip-types src/bin.ts",
-    "test:integration": "node --experimental-strip-types --import ./src/integrationRegister.mjs --test src/**/*.test.mjs"
+    "start": "node src/bin.ts",
+    "test:integration": "node --import ./src/integrationRegister.mjs --test src/**/*.test.mjs"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",

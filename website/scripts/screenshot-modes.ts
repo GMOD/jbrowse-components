@@ -101,13 +101,7 @@ const cli: Renderer<CliSpec> = {
     const renderPath = tempPath('jb-img', spec.name, suffix)
     await execFileAsync(
       'node',
-      [
-        '--experimental-strip-types',
-        jb2exportBin,
-        ...spec.args,
-        '--out',
-        renderPath,
-      ],
+      [jb2exportBin, ...spec.args, '--out', renderPath],
       { cwd: jbrowseImgDir, maxBuffer: 1024 * 1024 * 64 },
     )
     optimizePng(renderPath)

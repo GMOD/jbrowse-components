@@ -3,7 +3,7 @@
  * its graph reaches, so the question is which import drags a subtree in.
  *
  *   JEST_IMPORT_TRACE=/tmp/trace.jsonl npx jest <paths>
- *   node --experimental-strip-types scripts/importTrace.ts /tmp/trace.jsonl
+ *   node scripts/importTrace.ts /tmp/trace.jsonl
  *       the repo imports that bring the most modules, across the traced suites
  *   ... importTrace.ts /tmp/trace.jsonl --why x-data-grid/index.js
  *       per suite, the chain of first imports that reached a matching module

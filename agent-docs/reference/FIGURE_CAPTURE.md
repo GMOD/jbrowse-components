@@ -146,7 +146,7 @@ Each of these produces a plausible figure rather than an error:
 
 ### Verifying
 
-`node --experimental-strip-types website/scripts/generate-screenshots.ts --check
+`node website/scripts/generate-screenshots.ts --check
 --filter <spec> --exact --localport <free port>` renders twice and touches no
 committed file; `drawAnnotations` throws on an anchor resolving to nothing. Always
 pass `--localport`: another run holding the default port shows up as a blank page

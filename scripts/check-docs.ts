@@ -349,7 +349,6 @@ const VALIDATORS: Validator[] = [
     name: 'demo configs validate against the schemas',
     argv: [
       'node',
-      '--experimental-strip-types',
       'scripts/validate-built-config.ts',
       '--schema-only',
       ...demoConfigs,

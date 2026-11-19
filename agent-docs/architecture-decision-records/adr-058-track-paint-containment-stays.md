@@ -138,5 +138,5 @@ precisely how those two sets drifted before. Hoisted to the level they share.
 - The containment is nearly free *today* (real-DOM arms all tie) and becomes
   load-bearing exactly as displays grow DOM. It should be re-measured, not
   re-argued, if that changes: `HEAVY=300 REPS=5 node
-  --experimental-strip-types products/jbrowse-web/browser-tests/probe-containment.ts`,
+  products/jbrowse-web/browser-tests/probe-containment.ts`,
   with `HEADLESS=0` for the hardware path.

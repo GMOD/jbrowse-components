@@ -4,7 +4,7 @@
 //
 // Run at release time, after the version bump lands:
 //
-//   node --experimental-strip-types scripts/gen-abi-previous-release.ts 4.3.0
+//   node scripts/gen-abi-previous-release.ts 4.3.0
 //
 // It downloads the published tarball rather than reading the git tag: the tag
 // carries source, and what a plugin links against is the emitted package. The

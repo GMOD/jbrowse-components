@@ -4,7 +4,7 @@
 // out of source. Rides `pnpm autogen`; run directly after editing a
 // configSchema.ts:
 //
-//   node --experimental-strip-types scripts/generateConfigManifest.ts
+//   node scripts/generateConfigManifest.ts
 //
 // Emitted as a .ts module rather than a .json file so it compiles and bundles
 // with the CLI like any other source — no JSON import attributes, no file to

@@ -10,7 +10,6 @@ function run(stubFetch, ...args) {
   return spawnSync(
     process.execPath,
     [
-      '--experimental-strip-types',
       '--import',
       path.join(src, 'integrationRegister.mjs'),
       ...(stubFetch

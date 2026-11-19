@@ -1,8 +1,8 @@
 // The two numbers ideas/collections/arc-band-open-calls.md says nobody has read, off the
 // HG002 300x BAM over HTTP range requests:
 //
-//   node --experimental-strip-types plugins/alignments/benches/interchromClusters.probe.ts [ref] [start] [end]
-//   node --experimental-strip-types plugins/alignments/benches/interchromClusters.probe.ts 1 2000000 2200000
+//   node plugins/alignments/benches/interchromClusters.probe.ts [ref] [start] [end]
+//   node plugins/alignments/benches/interchromClusters.probe.ts 1 2000000 2200000
 //
 // 1. What `clusteredInterchromSupport`'s single-linkage rule makes of a deep
 //    window: the cluster size and DIAMETER distribution, against the same

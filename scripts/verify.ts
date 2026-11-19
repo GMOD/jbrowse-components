@@ -65,7 +65,6 @@ const pnpm = (script: string) => ['pnpm', script]
 // plain node scripts run as node.
 const nodeScript = (file: string) => [
   process.execPath,
-  '--experimental-strip-types',
   join(root, 'scripts', file),
 ]
 const bin = (name: string) => join(root, 'node_modules/.bin', name)

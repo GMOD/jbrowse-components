@@ -49,7 +49,7 @@ core's is. jbrowse-components' scripts/generateConfigManifest.ts writes one
 from the plugin's built ESM bundle (--umd-plugin for a UMD one), a path or the
 url a config's plugins entry names:
 
-  node --experimental-strip-types scripts/generateConfigManifest.ts \\
+  node scripts/generateConfigManifest.ts \\
     --plugin dist/my-plugin.esm.js --out my-plugin.manifest.json
 
 The same checks are published as a JSON Schema at

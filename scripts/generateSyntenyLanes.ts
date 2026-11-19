@@ -4,7 +4,7 @@
 // and the renamers cannot drift apart lane by lane. Rides `pnpm autogen`; run
 // directly after editing the table:
 //
-//   node --experimental-strip-types scripts/generateSyntenyLanes.ts
+//   node scripts/generateSyntenyLanes.ts
 import path from 'node:path'
 
 import { SYNTENY_LANES } from '../packages/synteny-core/src/syntenyLaneSchema.ts'

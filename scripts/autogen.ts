@@ -78,11 +78,7 @@ interface Generator {
 
 const web = (script: string) => ['node', `website/scripts/${script}`]
 const api = (script: string) => web(`api-docs/${script}`)
-const rootScript = (script: string) => [
-  'node',
-  '--experimental-strip-types',
-  `scripts/${script}`,
-]
+const rootScript = (script: string) => ['node', `scripts/${script}`]
 
 const GENERATORS: Generator[] = [
   {

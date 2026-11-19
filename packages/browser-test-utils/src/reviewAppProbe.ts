@@ -16,7 +16,7 @@
 // keeps its caret — which is exactly why they are worth pinning: a regression
 // here would mean something reintroduced a wholesale repaint.
 //
-// Run it: node --experimental-strip-types src/reviewAppProbe.ts
+// Run it: node src/reviewAppProbe.ts
 // It exits non-zero on a failure and prints what each case settled on.
 import path from 'node:path'
 
