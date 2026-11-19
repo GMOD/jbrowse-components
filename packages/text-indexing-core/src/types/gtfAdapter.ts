@@ -3,10 +3,10 @@ import { createReadlineInterface, getLocalOrRemoteStream } from './common.ts'
 
 import type { IndexerOptions } from '../util.ts'
 
-// GFF3-style attribute names have no GTF equivalent, so the shared defaults
-// (`Name`, `ID`, `symbol`) would index nothing. Each requested name also pulls
-// in its GTF spellings, so `jbrowse text-index` works on a GTF out of the box
-// while an explicit `--attributes gene_biotype` still works verbatim.
+// GTF spells `Name`, `ID` and `symbol` as `gene_name`, `gene_id` and the like,
+// so each requested name also pulls in its GTF spellings: `jbrowse text-index`
+// works on a GTF out of the box while an explicit `--attributes gene_biotype`
+// still works verbatim.
 const gtfAttributeAliases: Record<string, string[]> = {
   Name: ['gene_name', 'transcript_name'],
   ID: ['gene_id', 'transcript_id'],

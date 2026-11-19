@@ -5,7 +5,7 @@ function inheritedValue(feature: Feature, name: string) {
   let value: unknown
   while (cur !== undefined && value === undefined) {
     value = cur.get(name)
-    cur = cur.parent?.()
+    cur = value === undefined ? cur.parent?.() : undefined
   }
   return value
 }
@@ -20,7 +20,7 @@ function unbranchedValue(feature: Feature, name: string) {
   let value: unknown
   while (cur !== undefined && value === undefined) {
     value = cur.get(name)
-    cur = onlyChild(cur)
+    cur = value === undefined ? onlyChild(cur) : undefined
   }
   return value
 }
