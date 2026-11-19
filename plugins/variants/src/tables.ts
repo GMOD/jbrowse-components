@@ -305,6 +305,7 @@ async function fetchedVariantHost(
   const fetchOrder = new Map(result.records.map((r, i) => [r.id(), i]))
   const perRegion = regions.flatMap((region, i) => {
     const data = value.perRegionCellData[i]
+    const windows = [region]
     return data
       ? [
           {
@@ -313,7 +314,7 @@ async function fetchedVariantHost(
             shown: data.featureInfo
               .flatMap((_, f) =>
                 touchesAny(
-                  [region],
+                  windows,
                   data.featurePositions[f * 2]!,
                   data.featurePositions[f * 2 + 1]!,
                 )

@@ -91,8 +91,9 @@ export interface WiggleTablesArgs {
 
 /** Whether the bin of `positions`, start and end pairs, at `i` overlaps `region`. */
 function binInWindow(region: { start: number; end: number }) {
+  const windows = [region]
   return (positions: ArrayLike<number>, i: number) =>
-    touchesAny([region], positions[i * 2]!, positions[i * 2 + 1]!)
+    touchesAny(windows, positions[i * 2]!, positions[i * 2 + 1]!)
 }
 
 /**
@@ -197,8 +198,7 @@ export async function wiggleTables(
       sources: model.drawnRows,
       markSources: model.markSources,
       wiggleColor: model.wiggleColor,
-      scoreRamp:
-        model.scoreGradientPaints && rampLut ? { rampLut, rampMid } : undefined,
+      scoreRamp: rampLut ? { rampLut, rampMid } : undefined,
       gpuProps: {
         ...model.gpuProps(),
         sources: model.markSources.map((source, row) => ({ ...source, row })),
@@ -272,6 +272,7 @@ export async function wiggleTables(
             })
           : undefined
       const bandCuts = rampBands ? rampBands.cuts : cuts
+      const edgeCuts = bandCuts.map(cut => Math.fround(cut))
       const bandColors = rampBands
         ? rampBands.bandColors.map(c => abgrToHex(c))
         : layer.negColor
@@ -321,9 +322,7 @@ export async function wiggleTables(
             const min = layer.band.minScores[i]!
             const edges = [
               min,
-              ...bandCuts
-                .map(cut => Math.fround(cut))
-                .filter(c => c > min && c < score),
+              ...edgeCuts.filter(c => c > min && c < score),
               score,
             ]
             for (let k = 1; k < edges.length; k++) {
