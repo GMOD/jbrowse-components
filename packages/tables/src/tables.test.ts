@@ -706,7 +706,7 @@ test('the coverage band\u2019s depth axis is the display\u2019s: nice-rounded ov
   )
 })
 
-test('a coverage band the display does not draw autoscales to nothing and labels no ticks', async () => {
+test('a coverage band the display does not draw autoscales to nothing and labels no ticks, and a mismatch keeps its frequency', async () => {
   const hidden = await engine.alignments({
     ...BAM,
     display: { coverage: { show: false } },
@@ -714,8 +714,9 @@ test('a coverage band the display does not draw autoscales to nothing and labels
   expect(hidden.coverage.depth).toEqual([])
   expect(hidden.coverageScale.domain).toEqual([0, 0])
   expect(hidden.coverageScale.ticks).toEqual([])
-  expect(hidden.mismatches.frequency.length).toBeGreaterThan(0)
-  expect(hidden.mismatches.frequency.every(f => f === 0)).toBe(true)
+  const shown = await engine.alignments(BAM)
+  expect(hidden.mismatches.frequency).toEqual(shown.mismatches.frequency)
+  expect(hidden.mismatches.frequency.some(f => f > 0)).toBe(true)
 })
 
 test('the coverage ticks fit the band the track height leaves, as the display draws it', async () => {

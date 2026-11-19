@@ -518,7 +518,7 @@ export function featureBandTables(
     : [{ key: '', label: '', top: 0, height: joined.height }]
   if (items.length > 0 && items.every(isHidden)) {
     throw new Error(
-      `every section at ${lociOf(regions)} is hidden; facet.hidden lists them all`,
+      `every section at ${lociOf(regions)} is hidden: its facet's hidden list names them all`,
     )
   }
   return {

@@ -74,8 +74,9 @@ Limits and shared behavior:
 
 - A mismatch's `frequency` is its base's count over the depth there, not the
   worker's `mismatchFrequencies`, which is a display fade zeroed below a
-  depth-dependent threshold. Under `coverage.show: false` it is 0: the fetch
-  sends the display's own settings, and the display fetches no depth then.
+  depth-dependent threshold. The fetch sends the display's own settings, but
+  always asks for depth, which the display skips under `coverage.show: false`,
+  so `frequency` holds there too while the coverage tables come back empty.
 - A region over `byteLimit` (200 MB of compressed alignments by default) is
   refused off the index with an error naming the size, since a host holds the
   whole table in memory. A region spanning over `spanLimit` (10 Mb by default) is
@@ -622,8 +623,8 @@ multi-sample VCF. It takes the `LinearVariantDisplay`'s config, runs the display
 worker (`executeVariantCellData`) at genomic positions, and paints the cells as the
 display does (`paintCellColors`, `paintFeatureColors`):
 
-- `variants`: each record the display's filters keep (MAF, missingness, the jexl
-  `filter`, and at least one called allele, so a VCF with no GT keeps none), with its
+- `variants`: each record the display's filters keep (MAF, missingness and the
+  jexl `filter`; a site no sample calls stays, as the records band draws it), with its
   lane color and its `filter`, the FILTER column as the file writes it (`PASS`, or
   the failed filters joined by `;`), null for `.`.
 - `info`: each INFO key's values, a column per key aligned to `variants`, and

@@ -1657,6 +1657,7 @@ export async function alignmentTables(
       sequenceAdapter,
       regions: fetchRegions,
       ...host.rpcProps(),
+      showCoverage: true,
       statusCallback: () => {},
     } satisfies RpcExecuteArgs<'RenderAlignmentData'>
   })
