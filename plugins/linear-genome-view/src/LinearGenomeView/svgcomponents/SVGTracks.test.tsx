@@ -3,8 +3,8 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
-import SVGTracks from './SVGTracks.tsx'
-import { TRACK_LABEL_GAP } from './util.ts'
+import { SVGTrackRows } from './SVGTracks.tsx'
+import { TRACK_LABEL_GAP, sessionTrackRows } from './util.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -42,21 +42,24 @@ function drawTracks({
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <svg>
-        <SVGTracks
-          model={model}
+        <SVGTrackRows
+          view={model}
           textHeight={textHeight}
           fontSize={10}
           trackLabels={trackLabels}
           trackLabelOffset={trackLabelOffset}
           leftBuffer={0}
-          displayResults={displays.map((display, i) => ({
-            track: {
-              configuration: { trackId: `t${i}`, name: `t${i}` },
-              displays: [{ height: 40, ...display }],
-            } as any,
-            result: <g data-testid="body" />,
-            legendHeight: legendHeights[i],
-          }))}
+          rows={sessionTrackRows(
+            displays.map((display, i) => ({
+              track: {
+                configuration: { trackId: `t${i}`, name: `t${i}` },
+                displays: [{ height: 40, ...display }],
+              } as any,
+              result: <g data-testid="body" />,
+              legendHeight: legendHeights[i],
+            })),
+            session,
+          )}
         />
       </svg>
     </ThemeProvider>,

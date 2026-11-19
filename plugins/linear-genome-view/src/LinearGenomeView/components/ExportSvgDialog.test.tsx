@@ -61,21 +61,43 @@ test('a placement picked in the dialog before still wins', async () => {
   expect(await exportedTrackLabels('hidden')).toBe('left')
 })
 
-async function exportedViewWidth(chooseWidth: boolean, typed?: string) {
-  const model = stubView('offset')
-  const { getByRole, queryByLabelText, getByLabelText, unmount } = render(
+function figureLayout(plotPx: number) {
+  return {
+    chromePx: () => 100,
+    pageLayout: (opts: { textSize?: number }) => {
+      const textPt = opts.textSize ?? 7
+      return {
+        pageWidth: { value: 183, unit: 'mm' as const },
+        textPt,
+        pageHeight: 145,
+        scale: textPt / 9.75,
+        documentPx: plotPx + 100,
+        plotPx,
+        rasterScale: 3.125,
+      }
+    },
+  }
+}
+
+function renderWithLayout(plotPx: number, width = 1600) {
+  const model = stubView('offset', width)
+  const rendered = render(
     <ExportSvgDialog
       model={model}
       handleClose={() => {}}
-      chooseWidth={chooseWidth}
+      figureLayout={figureLayout(plotPx)}
     />,
   )
-  if (!chooseWidth) {
-    expect(queryByLabelText('Width (px)')).toBeNull()
-  } else if (typed !== undefined) {
-    fireEvent.change(getByLabelText('Width (px)'), {
-      target: { value: typed },
-    })
+  return { model, ...rendered }
+}
+
+async function exportedViewWidth(typed?: string) {
+  const { model, getByRole, getByLabelText, unmount } = renderWithLayout(
+    800,
+    1234,
+  )
+  if (typed !== undefined) {
+    fireEvent.change(getByLabelText('Width'), { target: { value: typed } })
   }
   fireEvent.click(getByRole('button', { name: 'Submit' }))
   await waitFor(() => {
@@ -86,46 +108,33 @@ async function exportedViewWidth(chooseWidth: boolean, typed?: string) {
 }
 
 test('the width field starts at the view width and sends what is typed', async () => {
-  expect(await exportedViewWidth(true)).toBe(1234)
-  expect(await exportedViewWidth(true, '800')).toBe(800)
+  expect(await exportedViewWidth()).toBe(1234)
+  expect(await exportedViewWidth('800')).toBe(800)
 })
 
 test('a width out of range does not export', () => {
-  const model = stubView('offset')
-  const { getByRole, getByLabelText } = render(
-    <ExportSvgDialog model={model} handleClose={() => {}} chooseWidth />,
-  )
-  fireEvent.change(getByLabelText('Width (px)'), { target: { value: '50' } })
+  const { model, getByRole, getByLabelText } = renderWithLayout(800)
+  fireEvent.change(getByLabelText('Width'), { target: { value: '50' } })
   fireEvent.click(getByRole('button', { name: 'Submit' }))
-  expect(getByLabelText('Width (px)')).toBeInvalid()
+  expect(getByLabelText('Width')).toBeInvalid()
   expect(model.exportSvg).not.toHaveBeenCalled()
 })
 
-test('a view that does not opt in shows no width field and sends none', async () => {
-  expect(await exportedViewWidth(false)).toBeUndefined()
-})
-
-function renderWithLayout(plotPx: number) {
-  const model = stubView('offset', 1600)
-  const pageLayout = jest.fn((opts: { textSize?: number }) => ({
-    pageWidth: { value: 183, unit: 'mm' as const },
-    textPt: opts.textSize ?? 7,
-    pageHeight: 145,
-    scale: 1,
-    documentPx: plotPx + 100,
-    plotPx,
-    rasterScale: 3.125,
-  }))
-  const rendered = render(
-    <ExportSvgDialog
-      model={model}
-      handleClose={() => {}}
-      chooseWidth
-      figureLayout={{ chromePx: () => 100, pageLayout }}
-    />,
+test('a view with no figure layout shows no width field and sends none', async () => {
+  const model = stubView('offset')
+  const { getByRole, queryByLabelText } = render(
+    <ExportSvgDialog model={model} handleClose={() => {}} />,
   )
-  return { model, ...rendered }
-}
+  expect(queryByLabelText('Width')).toBeNull()
+  fireEvent.click(getByRole('button', { name: 'Submit' }))
+  await waitFor(() => {
+    expect(model.exportSvg).toHaveBeenCalled()
+  })
+  expect(model.exportSvg.mock.calls[0][0]).toMatchObject({
+    viewWidth: undefined,
+    pageWidth: undefined,
+  })
+})
 
 test('a px width says what its labels print at in a journal column', () => {
   const { getByText } = renderWithLayout(800)

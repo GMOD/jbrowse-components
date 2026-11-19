@@ -1,9 +1,16 @@
 ---
 name: extra-large-text-svg-mode-for-pub-ready-figures
-description: `BaseExportSvgDialog` exposes font family only, so a publication-ready text scale has to thread the path `fontFamily` takes and every explicit `fontSize` has to become relative first
+description: The export's `fontSize` option reaches the assembly name, scalebar and track names but not the refName, ruler, axis ticks or legend, so a larger px size mixes two size systems; page width already scales all of them
 ---
 
 # Extra large text SVG mode for pub-ready figures
+
+The linear genome view's page-width export covers the publication case: a
+Width such as `183mm` with a text size in pt scales the whole document, so
+every label keeps its ratio to the track labels (`pageLayout.ts`,
+`figureSize.ts`). What is still open is the px `fontSize` option below, which
+jb2export and `exportSvg` callers can set and which reaches only part of the
+chrome.
 
 Moved out of [TODO.md](../../TODO.md) on 2026-08-26, when the backlog was cut to
 what v5.0.0 turns on. A feature request with no reader waiting on it.

@@ -4,6 +4,7 @@ import {
   CSS_PX_PER_INCH,
   DEFAULT_FIGURE_TEXT_PT,
   parsePhysicalWidth,
+  physicalWidthInches,
   pxToPt,
 } from '@jbrowse/core/svg/figureSize'
 import {
@@ -16,6 +17,7 @@ import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { MIN_PAGE_PLOT_PX } from '../svgcomponents/pageLayout.ts'
+import { lgvSvgLayoutOptions } from '../svgcomponents/util.ts'
 import { TICK_LABEL_FONT_SIZE } from '../util.ts'
 
 import type { pageLayout } from '../svgcomponents/pageLayout.ts'
@@ -30,9 +32,9 @@ const MIN_WIDTH = 100
 const MAX_WIDTH = 10000
 const MIN_TEXT_PT = 4
 const MAX_TEXT_PT = 72
-const LABEL_FONT_PX = 13
 const COLUMN_MM = 183
-const COLUMN_PX = (COLUMN_MM / 25.4) * CSS_PX_PER_INCH
+const COLUMN_PX =
+  physicalWidthInches({ value: COLUMN_MM, unit: 'mm' }) * CSS_PX_PER_INCH
 
 const TRACK_LABEL_MODES = [
   { mode: 'offset', label: 'Offset' },
@@ -43,7 +45,7 @@ const TRACK_LABEL_MODES = [
 
 /**
  * What the view answers about an export's layout before it runs, for the
- * dialog's size line. A view that passes none gets a plain width field.
+ * dialog's size line. A view that passes one gets the width field.
  */
 export interface ExportFigureLayout {
   chromePx: (opts: ExportSvgOptions) => number
@@ -54,32 +56,27 @@ function pt(px: number) {
   return +pxToPt(px).toFixed(1)
 }
 
-function pxWidthHelp(documentPx: number | undefined) {
-  const column = documentPx
-    ? ` In a ${COLUMN_MM} mm column its labels print at ${pt((LABEL_FONT_PX * COLUMN_PX) / documentPx)} pt; type ${COLUMN_MM}mm to size the figure for a page.`
-    : ''
-  return `Lays the tracks out as a window this wide would; text keeps its size.${column}`
+function pxWidthHelp(documentPx: number) {
+  const labelPx = lgvSvgLayoutOptions({}).fontSize
+  return `Lays the tracks out as a window this wide would; text keeps its size. In a ${COLUMN_MM} mm column its labels print at ${pt((labelPx * COLUMN_PX) / documentPx)} pt; type ${COLUMN_MM}mm to size the figure for a page.`
 }
 
 function pageWidthHelp({
   page,
-  textPt,
   screenWidth,
 }: {
   page: NonNullable<ReturnType<typeof pageLayout>>
-  textPt: number
   screenWidth: number
 }) {
-  const scaled = (px: number) => +((textPt * px) / LABEL_FONT_PX).toFixed(1)
+  const { textPt, scale } = page
   return page.plotPx < MIN_PAGE_PLOT_PX
     ? `Too narrow at ${textPt} pt: the tracks would be ${Math.max(page.plotPx, 0)} px wide. Widen the figure or lower the text size.`
-    : `${page.pageWidth.value} x ${page.pageHeight} ${page.pageWidth.unit}. Labels ${textPt} pt, ruler ${scaled(TICK_LABEL_FONT_SIZE)} pt, axes ${scaled(AXIS_FONT_PX)} pt. Tracks drawn ${page.plotPx} px wide, ${+(screenWidth / page.plotPx).toFixed(1)}x the screen's bp per px.`
+    : `${page.pageWidth.value} x ${page.pageHeight} ${page.pageWidth.unit}. Labels ${textPt} pt, ruler ${pt(TICK_LABEL_FONT_SIZE * scale)} pt, axes ${pt(AXIS_FONT_PX * scale)} pt. Tracks drawn ${page.plotPx} px wide, ${+(screenWidth / page.plotPx).toFixed(1)}x the screen's bp per px.`
 }
 
 const ExportSvgDialog = observer(function ExportSvgDialog({
   model,
   handleClose,
-  chooseWidth,
   figureLayout,
   exportR,
 }: {
@@ -97,7 +94,6 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
     ): Promise<unknown>
   }
   handleClose: () => void
-  chooseWidth?: boolean
   figureLayout?: ExportFigureLayout
   exportR?: (filename: string) => Promise<unknown>
 }) {
@@ -128,8 +124,8 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
   const textSizeValid = textSize >= MIN_TEXT_PT && textSize <= MAX_TEXT_PT
   const layoutOpts = { trackLabels, pageWidth: pageWidthText, textSize }
   const page =
-    pageWidth && textSizeValid
-      ? figureLayout?.pageLayout(layoutOpts)
+    figureLayout && pageWidth && textSizeValid
+      ? figureLayout.pageLayout(layoutOpts)
       : undefined
   const pxWidthValid =
     Number.isInteger(typedWidth) &&
@@ -138,19 +134,6 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
   const widthValid = pageWidth
     ? !page || page.plotPx >= MIN_PAGE_PLOT_PX
     : pxWidthValid
-  const widthHelp = pageWidth
-    ? page
-      ? pageWidthHelp({ page, textPt: textSize, screenWidth })
-      : ''
-    : pxWidthValid
-      ? pxWidthHelp(
-          figureLayout
-            ? typedWidth + figureLayout.chromePx(layoutOpts)
-            : undefined,
-        )
-      : figureLayout
-        ? `A whole number of px from ${MIN_WIDTH} to ${MAX_WIDTH}, or a page width such as ${COLUMN_MM}mm or 7in`
-        : `A whole number from ${MIN_WIDTH} to ${MAX_WIDTH}`
   return (
     <BaseExportSvgDialog
       model={model}
@@ -161,14 +144,14 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
           trackLabels,
           showGridlines,
           viewWidth:
-            chooseWidth && !pageWidth && pxWidthValid ? typedWidth : undefined,
-          pageWidth: chooseWidth ? pageWidthText : undefined,
-          textSize: chooseWidth && pageWidth ? textSize : undefined,
+            figureLayout && !pageWidth && pxWidthValid ? typedWidth : undefined,
+          pageWidth: pageWidthText,
+          textSize: pageWidth ? textSize : undefined,
         })
       }
       exportR={exportR}
       submitDisabled={
-        chooseWidth && !(widthValid && (!pageWidth || textSizeValid))
+        !!figureLayout && !(widthValid && (!pageWidth || textSizeValid))
       }
       checkboxes={
         <LabeledCheckbox
@@ -201,19 +184,27 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
           </MenuItem>
         ))}
       </TextField>
-      {chooseWidth ? (
+      {figureLayout ? (
         <TextField
-          label={figureLayout ? 'Width' : 'Width (px)'}
+          label="Width"
           variant="outlined"
           value={widthText}
           error={!widthValid}
-          helperText={widthHelp}
+          helperText={
+            pageWidth
+              ? page
+                ? pageWidthHelp({ page, screenWidth })
+                : ''
+              : pxWidthValid
+                ? pxWidthHelp(typedWidth + figureLayout.chromePx(layoutOpts))
+                : `A whole number of px from ${MIN_WIDTH} to ${MAX_WIDTH}, or a page width such as ${COLUMN_MM}mm or 7in`
+          }
           onChange={event => {
             setWidthText(event.target.value)
           }}
         />
       ) : null}
-      {chooseWidth && pageWidth ? (
+      {pageWidth ? (
         <TextField
           label="Text size (pt)"
           variant="outlined"

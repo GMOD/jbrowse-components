@@ -104,10 +104,7 @@ import {
 } from './menuItems.ts'
 import { sharedScaleContainerOf } from './sharedScaleContainer.ts'
 import { showFiles } from './showFiles.ts'
-import {
-  MIN_PAGE_PLOT_PX,
-  settledPageLayout,
-} from './svgcomponents/pageLayout.ts'
+import { settledPageLayout } from './svgcomponents/pageLayout.ts'
 import {
   calculateVisibleLocStrings,
   cytobandLabelGutterWidth,
@@ -2769,11 +2766,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       async function exportAt(opts: ExportSvgOptions) {
         const page = await settledPageLayout(self, opts)
         const { width } = self
-        if (page && page.plotPx < MIN_PAGE_PLOT_PX) {
-          throw new Error(
-            `A ${opts.pageWidth} figure at ${page.textPt} pt leaves the tracks ${Math.max(page.plotPx, 0)} px wide: widen the figure or lower the text size`,
-          )
-        }
         const viewWidth = page?.plotPx ?? opts.viewWidth ?? width
         // The on-screen tracks redraw at `viewWidth` until the export ends. A
         // hidden copy of the view would keep them still, but it needs a

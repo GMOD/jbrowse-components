@@ -1,6 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import { getSession } from '@jbrowse/core/util'
 import {
   SvgLegend,
   exportedHeight,
@@ -8,16 +7,10 @@ import {
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
-import {
-  labelOffset,
-  sessionTrackRows,
-  trackBoxOffsets,
-  trackLabelMode,
-} from './util.ts'
+import { labelOffset, trackBoxOffsets, trackLabelMode } from './util.ts'
 
-import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
-import type { LgvSvgChromeView, SvgDisplayResult, SvgTrackRow } from './util.ts'
+import type { LgvSvgChromeView, SvgTrackRow } from './util.ts'
 
 interface TrackRowsLayout {
   textHeight: number
@@ -25,23 +18,6 @@ interface TrackRowsLayout {
   trackLabels: TrackLabelMode
   trackLabelOffset: number
   leftBuffer: number
-}
-
-export default function SVGTracks({
-  displayResults,
-  model,
-  ...layout
-}: TrackRowsLayout & {
-  displayResults: SvgDisplayResult[]
-  model: LinearGenomeViewModel
-}) {
-  return (
-    <SVGTrackRows
-      view={model}
-      rows={sessionTrackRows(displayResults, getSession(model))}
-      {...layout}
-    />
-  )
 }
 
 /** Each track's box, body, separators, key and label, over named rows. */

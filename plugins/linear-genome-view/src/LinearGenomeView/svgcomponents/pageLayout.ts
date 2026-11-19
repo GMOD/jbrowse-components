@@ -158,7 +158,8 @@ export function pageLayout(
 
 /**
  * {@link pageLayout} once the tracks have loaded: a y axis and a key exist
- * only then, and the page is solved against the room they take.
+ * only then, and the page is solved against the room they take. Throws for a
+ * page too narrow for its text.
  */
 export async function settledPageLayout(
   view: PageLayoutView & IAnyStateTreeNode,
@@ -172,5 +173,11 @@ export async function settledPageLayout(
         .map(display => awaitSvgReady(display)),
     )
   }
-  return pageLayout(view, opts)
+  const page = pageLayout(view, opts)
+  if (page && page.plotPx < MIN_PAGE_PLOT_PX) {
+    throw new Error(
+      `A ${opts.pageWidth} figure at ${page.textPt} pt leaves the tracks ${Math.max(page.plotPx, 0)} px wide: widen the figure or lower the text size`,
+    )
+  }
+  return page
 }
