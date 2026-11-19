@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import { InfoDialog } from '../../../ui/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 
+import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 import type { ReactNode } from 'react'
 
 const useStyles = makeStyles()({
@@ -12,11 +13,11 @@ const useStyles = makeStyles()({
 })
 
 const SequenceDialog = observer(function SequenceDialog({
-  title,
+  feature,
   handleClose,
   children,
 }: {
-  title: string
+  feature: SimpleFeatureSerialized | undefined
   handleClose: () => void
   children: ReactNode
 }) {
@@ -25,7 +26,11 @@ const SequenceDialog = observer(function SequenceDialog({
     <InfoDialog
       maxWidth="xl"
       open
-      title={title}
+      title={
+        feature
+          ? `Feature sequence - ${feature.name || feature.id || feature.type}`
+          : 'Feature sequence'
+      }
       onClose={() => {
         handleClose()
       }}

@@ -112,7 +112,7 @@ const SequenceFeatureDetailsPanel = observer(
         {openInDialog ? (
           <Suspense fallback={<LoadingEllipses />}>
             <SequenceDialog
-              title="Sequence view"
+              feature={feature}
               handleClose={() => {
                 setOpenInDialog(false)
               }}

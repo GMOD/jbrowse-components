@@ -66,14 +66,7 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
   const [model] = useState(() => SequenceFeatureDetailsF().create())
 
   return (
-    <SequenceDialog
-      title={
-        feature
-          ? `Feature sequence - ${feature.name || feature.id || feature.type}`
-          : 'Feature sequence'
-      }
-      handleClose={handleClose}
-    >
+    <SequenceDialog feature={feature} handleClose={handleClose}>
       {error ? (
         <ErrorBanner error={error} />
       ) : feature ? (

@@ -80,6 +80,7 @@ test('the inline panel and its dialog copy the same FASTA', async () => {
   clickMenuItem(container, 'Open in dialog')
   await act(async () => {})
   const dialog = within(document.body).getByRole('dialog')
+  expect(within(dialog).getByText('Feature sequence - tx')).toBeTruthy()
   expect(within(dialog).getByText('ATGAAATAA')).toBeTruthy()
 
   clickMenuItem(dialog, 'Copy FASTA')
