@@ -86,7 +86,7 @@ async function pickFileHandleLocation() {
   }
 }
 
-type Pick = () => Promise<FileLocation | undefined>
+type LocationPicker = () => Promise<FileLocation | undefined>
 
 async function pickElectronLocation() {
   const filePath = await invokeElectronMain(
@@ -108,7 +108,7 @@ const FilePickerButton = observer(function FilePickerButton({
   choose,
   setLocation,
 }: {
-  choose: (pick: Pick) => void
+  choose: (pick: LocationPicker) => void
   setLocation: (loc: FileLocation) => void
 }) {
   return supportsFileSystemAccess || isElectron ? (
@@ -149,7 +149,7 @@ const ReloadPrompt = observer(function ReloadPrompt({
   choose,
 }: {
   location: FileLocation
-  choose: (pick: Pick) => void
+  choose: (pick: LocationPicker) => void
 }) {
   return (
     <>
@@ -186,7 +186,7 @@ const LocalFileChooser = observer(function LocalFileChooser({
 }) {
   const [error, setError] = useState<unknown>()
   const filename = getFilename(location)
-  const choose = (pick: Pick) => {
+  const choose = (pick: LocationPicker) => {
     setError(undefined)
     pick()
       .then(loc => {

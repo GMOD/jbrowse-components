@@ -37,6 +37,7 @@ test('a failed reopen shows its error', async () => {
   const handleId = 'test-failed-reopen'
   clearFileFromCache(handleId)
   const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const originalPicker = window.showOpenFilePicker
   window.showOpenFilePicker = () => Promise.reject(new Error('picker broke'))
   const location: FileHandleLocation = {
     locationType: 'FileHandleLocation',
@@ -51,5 +52,6 @@ test('a failed reopen shows its error', async () => {
     expect(await findByText(/picker broke/)).toBeInTheDocument()
   } finally {
     consoleError.mockRestore()
+    window.showOpenFilePicker = originalPicker
   }
 })
