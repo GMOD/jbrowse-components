@@ -30,7 +30,7 @@ const useStyles = makeStyles()({
 const LoadingDots = observer(function LoadingDots() {
   const { classes } = useStyles()
   return (
-    <span className={classes.dots}>
+    <span className={classes.dots} aria-hidden>
       <span>.</span>
       <span>.</span>
       <span>.</span>

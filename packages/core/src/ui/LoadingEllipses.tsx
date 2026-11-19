@@ -10,6 +10,7 @@ interface Props extends TypographyProps {
   /** false for a label that stands in for work not yet started, such as an
    * off-screen view's placeholder, which a capture must not wait on */
   busy?: boolean
+  dots?: boolean
   children?: never
 }
 
@@ -33,12 +34,18 @@ const LoadingEllipses = observer(function LoadingEllipses({
   message,
   variant = 'body2',
   busy = true,
+  dots = true,
   ...rest
 }: Props) {
   return (
-    <Typography {...rest} variant={variant} data-busy={busy || undefined}>
+    <Typography
+      role="status"
+      {...rest}
+      variant={variant}
+      data-busy={busy || undefined}
+    >
       {message || 'Loading'}
-      <LoadingDots />
+      {dots ? <LoadingDots /> : null}
     </Typography>
   )
 })

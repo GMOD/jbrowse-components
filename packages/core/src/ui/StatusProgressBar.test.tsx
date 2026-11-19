@@ -14,6 +14,13 @@ test('renders no Material UI', () => {
   expect(container.querySelector('[class*="Mui"]')).toBeNull()
 })
 
+test('names the bar with its label', () => {
+  const { getByRole } = render(
+    <StatusProgressBar fraction={0.42} label="Clustering" />,
+  )
+  expect(getByRole('progressbar', { name: 'Clustering' })).toBeTruthy()
+})
+
 test('a fraction fills that much of the track, and says so', () => {
   const { getByRole } = render(<StatusProgressBar fraction={0.42} />)
   const track = getByRole('progressbar')

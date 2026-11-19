@@ -5,10 +5,8 @@ import RefreshIcon from '@mui/icons-material/Refresh'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { progressLabel } from '../util/progress.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
-import LoadingDots from './LoadingDots.tsx'
-import StatusProgressBar from './StatusProgressBar.tsx'
+import LoadingProgress from './LoadingProgress.tsx'
 import { alpha } from './palette.ts'
 
 const cancelDelayMs = 5000
@@ -95,6 +93,12 @@ const useStyles = makeStyles()(theme => {
       alignItems: 'center',
       gap: 4,
     },
+    progress: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 2,
+    },
     text: {
       fontSize: '0.8rem',
       fontWeight: 300,
@@ -122,41 +126,17 @@ const LoadingOverlay = observer(function LoadingOverlay({
   onCancel?: () => void
   onRetry?: () => void
 }) {
-  const { classes } = useStyles()
-  const hasProgress = progress !== undefined
+  const { classes, cx } = useStyles()
 
-  // anti-flash: only render after the load has run long enough to be worth
-  // signaling, so fast loads show nothing at all. `immediate` bypasses this for
-  // initial loads, where nothing is on screen to flash over yet.
-  //
-  // The delay runs off `isVisible` ALONE. Feeding `!immediate` in as well made
-  // `immediate` *restart* the timer rather than merely bypass it, and the chrome
-  // flips `immediate` mid-load: it passes `immediate={!painted}`, so first paint
-  // drops it while the phase is still `loading` — region 1 drawn, regions 2..n
-  // in flight. The scrim then blinked out for a fresh 250 ms in the middle of
-  // one continuous load.
+  // `immediate` bypasses the anti-flash delay but must not restart it: the
+  // chrome drops it at first paint, mid-load
   const shownAfterDelay = useDelayedFlag(!!isVisible, flashDelayMs)
   const shown = !!isVisible && (!!immediate || shownAfterDelay)
-
-  // only offer cancel after the overlay has been continuously visible for a few
-  // seconds, so a quick load can't be canceled by an accidental click.
-  //
-  // Keyed on `shown` rather than `isVisible`, which is what "continuously
-  // visible" means and is also what keeps this timer out of a zoom: a display
-  // refetching per animation frame flips `isVisible` a couple of times a frame,
-  // and each flip was a clearTimeout/setTimeout pair for a five-second delay
-  // that could never elapse — 368 timer installs over a ten-second gesture,
-  // half of them these.
   const cancelableAfterDelay = useDelayedFlag(shown, cancelDelayMs)
   const cancelable = shown && cancelableAfterDelay
 
-  // Rendered only while shown. The content chip is `pointerEvents:auto`, so
-  // leaving it mounted (merely transparent) in the idle state would silently
-  // swallow clicks/hovers over the top-center of every track it overlays. There
-  // is no fade transition, so mount/unmount is visually identical to toggling
-  // opacity anyway.
-  // `loading-overlay` is a readiness selector meaning work in flight, so the
-  // canceled state, which is finished, publishes its own
+  // unmounted rather than hidden: the chip takes pointer events. The canceled
+  // state is finished work, so it does not publish `loading-overlay`
   return shown ? (
     <span
       className={classes.overlay}
@@ -165,7 +145,9 @@ const LoadingOverlay = observer(function LoadingOverlay({
       <span className={classes.content}>
         {canceled ? (
           <span className={classes.row}>
-            <span className={classes.text}>Loading canceled</span>
+            <span className={classes.text} role="status">
+              Loading canceled
+            </span>
             {onRetry ? (
               <Tooltip title="Retry">
                 <IconButton
@@ -181,30 +163,29 @@ const LoadingOverlay = observer(function LoadingOverlay({
             ) : null}
           </span>
         ) : (
-          <>
-            <span className={classes.row}>
-              <span className={classes.text}>
-                {progressLabel(statusMessage || 'Loading', progress)}
-                {hasProgress ? null : <LoadingDots />}
-              </span>
-              {onCancel && cancelable ? (
-                <Tooltip title="Cancel">
-                  <IconButton
-                    size="small"
-                    data-testid="loading-overlay-cancel"
-                    onClick={() => {
-                      onCancel()
-                    }}
-                  >
-                    <CloseIcon fontSize="inherit" />
-                  </IconButton>
-                </Tooltip>
-              ) : null}
+          <span className={classes.row}>
+            <span className={cx(classes.progress, classes.text)}>
+              <LoadingProgress
+                message={statusMessage}
+                fraction={progress}
+                variant="inherit"
+                barClassName={classes.bar}
+              />
             </span>
-            {hasProgress ? (
-              <StatusProgressBar className={classes.bar} fraction={progress} />
+            {onCancel && cancelable ? (
+              <Tooltip title="Cancel">
+                <IconButton
+                  size="small"
+                  data-testid="loading-overlay-cancel"
+                  onClick={() => {
+                    onCancel()
+                  }}
+                >
+                  <CloseIcon fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
             ) : null}
-          </>
+          </span>
         )}
       </span>
     </span>

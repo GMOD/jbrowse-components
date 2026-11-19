@@ -7,13 +7,10 @@ import StatusProgressBar from './StatusProgressBar.tsx'
 import type { TypographyProps } from '@mui/material'
 
 /**
- * The shared "labelled ellipses + optional determinate bar" body used by the
- * loading/refetch indicators. Renders a {@link LoadingEllipses} label — with the
- * rounded percent appended via {@link progressLabel} when `fraction` is
- * determinate — and a determinate {@link StatusProgressBar} only when a
- * `fraction` is present (an indeterminate phase shows just the animated label,
- * no bar). Callers own the surrounding layout and supply `barClassName` for the
- * bar width.
+ * The body of every loading indicator: an indeterminate phase shows the label
+ * with animated dots, a determinate one the label with its percentage over a
+ * {@link StatusProgressBar}. Callers own the layout and size the bar with
+ * `barClassName`.
  */
 const LoadingProgress = observer(function LoadingProgress({
   message,
@@ -26,14 +23,20 @@ const LoadingProgress = observer(function LoadingProgress({
   variant?: TypographyProps['variant']
   barClassName?: string
 }) {
+  const label = message || 'Loading'
   return (
     <>
       <LoadingEllipses
         variant={variant}
-        message={progressLabel(message || 'Loading', fraction)}
+        message={progressLabel(label, fraction)}
+        dots={fraction === undefined}
       />
       {fraction === undefined ? null : (
-        <StatusProgressBar className={barClassName} fraction={fraction} />
+        <StatusProgressBar
+          className={barClassName}
+          fraction={fraction}
+          label={label}
+        />
       )}
     </>
   )
