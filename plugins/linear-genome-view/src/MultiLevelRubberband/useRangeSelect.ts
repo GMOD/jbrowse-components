@@ -118,11 +118,6 @@ export function useRangeSelect(
     }
   }
 
-  function handleMenuItemClick(callback: () => void) {
-    callback()
-    handleClose()
-  }
-
   const isClick = anchorPosition?.isClick
   const rubberbandOn = startX !== undefined && !isClick
   const right = anchorPosition?.offsetX ?? currentX
@@ -144,6 +139,5 @@ export function useRangeSelect(
     mouseMove,
     mouseOut,
     handleClose,
-    handleMenuItemClick,
   }
 }

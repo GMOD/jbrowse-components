@@ -1,4 +1,4 @@
-import { Menu } from '@jbrowse/core/ui'
+import { ContextMenu } from '@jbrowse/core/ui'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -22,14 +22,7 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
 }) {
   const { stickyViewHeaders, headerHeight, isScalebarRefNameMenuOpen } = model
   const { scalebar } = stickyChromeTops({ stickyViewHeaders, headerHeight })
-  const {
-    guideX,
-    rubberband,
-    anchorPosition,
-    isClick,
-    handleMenuItemClick,
-    handleClose,
-  } = range
+  const { guideX, rubberband, anchorPosition, isClick, handleClose } = range
 
   return (
     <>
@@ -46,25 +39,18 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
           size={getBpDisplayStr(rubberband.numOfBpSelected)}
         />
       ) : null}
-      {anchorPosition ? (
-        <Menu
-          anchorReference="anchorPosition"
-          anchorPosition={{
-            left: anchorPosition.clientX + menuOffsetX,
-            top: anchorPosition.clientY,
-          }}
-          onMenuItemClick={handleMenuItemClick}
-          open
-          onClose={handleClose}
-          menuItems={
-            isClick
-              ? model.rubberbandClickMenuItems(
-                  model.pxToBp(anchorPosition.offsetX),
-                )
-              : model.rubberBandMenuItems()
-          }
-        />
-      ) : null}
+      <ContextMenu
+        anchor={anchorPosition}
+        offset={{ x: menuOffsetX, y: 0 }}
+        onClose={handleClose}
+        menuItems={() =>
+          anchorPosition?.isClick
+            ? model.rubberbandClickMenuItems(
+                model.pxToBp(anchorPosition.offsetX),
+              )
+            : model.rubberBandMenuItems()
+        }
+      />
     </>
   )
 })

@@ -111,11 +111,6 @@ export function useRangeSelect(
     }
   }
 
-  function handleMenuItemClick(callback: () => void) {
-    callback()
-    handleClose()
-  }
-
   const isClick = anchorPosition?.isClick
 
   // rubberband geometry only exists while a drag is in progress (startX set);
@@ -149,7 +144,6 @@ export function useRangeSelect(
     mouseMove,
     mouseOut,
     handleClose,
-    handleMenuItemClick,
     anchorPosition,
     rubberband,
   }

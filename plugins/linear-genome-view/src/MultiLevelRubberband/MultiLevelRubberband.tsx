@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
+import { ContextMenu } from '@jbrowse/core/ui'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -32,7 +32,6 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
   const { classes } = useStyles()
 
   const {
-    isClick,
     guideX,
     rubberbandOn,
     leftBpOffset,
@@ -41,7 +40,6 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
     width,
     left,
     anchorPosition,
-    handleMenuItemClick,
     handleClose,
     mouseMove,
     mouseDown,
@@ -76,23 +74,16 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
           stickyTop={undefined}
         />
       ) : null}
-      {anchorPosition ? (
-        <Menu
-          anchorReference="anchorPosition"
-          anchorPosition={{
-            left: anchorPosition.clientX,
-            top: anchorPosition.clientY,
-          }}
-          onMenuItemClick={handleMenuItemClick}
-          open
-          onClose={handleClose}
-          menuItems={
-            isClick
-              ? model.rubberbandClickMenuItemsAtPx(anchorPosition.offsetX)
-              : model.rubberBandMenuItems()
-          }
-        />
-      ) : null}
+      <ContextMenu
+        anchor={anchorPosition}
+        offset={{ x: 0, y: 0 }}
+        onClose={handleClose}
+        menuItems={() =>
+          anchorPosition?.isClick
+            ? model.rubberbandClickMenuItemsAtPx(anchorPosition.offsetX)
+            : model.rubberBandMenuItems()
+        }
+      />
       <div
         data-testid="rubberband_controls"
         className={classes.rubberbandControl}

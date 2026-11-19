@@ -181,10 +181,6 @@ const RefNameMenu = observer(function RefNameMenu({
       anchorEl={menuState.anchorEl}
       open
       onClose={onClose}
-      onMenuItemClick={callback => {
-        callback()
-        onClose()
-      }}
       menuItems={[
         {
           label: `Focus on ${refName}`,

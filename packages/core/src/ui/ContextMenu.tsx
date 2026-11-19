@@ -28,7 +28,7 @@ const DEFAULT_OFFSET = { x: 12, y: 0 }
 
 /**
  * The popup menu every display raises from a click point: right-click menus,
- * and the dotplot's drag-release menu.
+ * and the drag-release menus of the dotplot and the rubberbands.
  *
  * Its own observer, and the one place `menuItems` is resolved: a display passes
  * the getter rather than a built array, so rebuilding the items re-renders this
