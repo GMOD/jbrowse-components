@@ -1,4 +1,8 @@
-import { decodeURIComponentNoThrow, trixLine } from '../util.ts'
+import {
+  decodeURIComponentNoThrow,
+  defaultFeatureTypesToExclude,
+  trixLine,
+} from '../util.ts'
 import { createReadlineInterface, getLocalOrRemoteStream } from './common.ts'
 
 import type { Gff3IndexerOptions } from '../util.ts'
@@ -38,13 +42,7 @@ function ownName(attrs: Record<string, string[]>) {
         : undefined
 }
 
-const PART_TYPES = new Set(['CDS', 'exon'])
-
 const PARENT_ATTRIBUTE = /(?:^|;)\s*Parent=/
-
-function isTopLevelPart(type: string, col9: string) {
-  return PART_TYPES.has(type) && !PARENT_ATTRIBUTE.test(col9)
-}
 
 interface IndexedFeature {
   id?: string
@@ -129,9 +127,11 @@ function* ownedRecords(features: IndexedFeature[], trackId: string) {
  * The allow list for that file is ~33 names — gene, pseudogene, and the
  * transcript-level types — and does not grow.
  *
- * Both apply when both are given: include admits, exclude then narrows. A
- * `CDS` or `exon` with no parent is never excluded: it is the gene itself, as
- * in a Prokka GFF3 written without `--addgenes`, not a second copy of one.
+ * Both apply when both are given: include admits, exclude then narrows.
+ * Without an exclude list, the default `exon,CDS` skips only rows with a
+ * parent: a parentless one is the gene itself, as in a Prokka GFF3 written
+ * without `--addgenes`, not a second copy of one. A list given skips every row
+ * of its types.
  */
 export async function* indexGff3({
   config,
@@ -154,7 +154,10 @@ export async function* indexGff3({
   })
 
   const rl = createReadlineInterface(stream, inLocation)
-  const excludeSet = new Set(featureTypesToExclude)
+  const excludeSet = new Set(
+    featureTypesToExclude ?? defaultFeatureTypesToExclude,
+  )
+  const excludesChildrenOnly = featureTypesToExclude === undefined
   // Absent rather than empty, so an empty list means "no allow list" and not
   // "index nothing" — a caller that reads the list out of a config gets the
   // former when the slot is unset, and silently indexing zero features would
@@ -196,7 +199,8 @@ export async function* indexGff3({
     }
 
     if (
-      (!excludeSet.has(type) || isTopLevelPart(type, col9)) &&
+      (!excludeSet.has(type) ||
+        (excludesChildrenOnly && !PARENT_ATTRIBUTE.test(col9))) &&
       (includeSet === undefined || includeSet.has(type))
     ) {
       if (seq_id !== runSeq) {

@@ -14,7 +14,7 @@ export interface TextIndexFlags {
   excludeTracks?: string
   attributes: string
   quiet?: boolean
-  exclude: string
+  exclude?: string
   include?: string
   prefixSize?: string
   force?: boolean

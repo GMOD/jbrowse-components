@@ -3,7 +3,7 @@ import { InputLabel, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import EditableStringList from './EditableStringList.tsx'
-import { defaultIndexingConf } from './util.ts'
+import { defaultExcludedTypes, defaultIndexingConf } from './util.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -37,7 +37,7 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
       <EditableStringList
         label="Feature types to exclude"
         testId="stringArrayAdd-exclude"
-        values={conf.exclude}
+        values={conf.exclude ?? defaultExcludedTypes}
         onChange={exclude => {
           model.setTextIndexingConf({ ...conf, exclude })
         }}

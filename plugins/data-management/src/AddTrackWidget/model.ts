@@ -38,7 +38,7 @@ function getUri(location: FileLocation | undefined) {
 
 export interface IndexingAttr {
   attributes: string[]
-  exclude: string[]
+  exclude?: string[]
 }
 
 /**

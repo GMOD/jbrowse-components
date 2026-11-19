@@ -6,7 +6,7 @@ import { ixIxxStream } from 'ixixx'
 
 import { indexFiles } from './indexFiles.ts'
 import { TRIX_DIR, trixFilePaths } from './trixPaths.ts'
-import { trackIndexingPolicy } from './util.ts'
+import { defaultFeatureTypesToExclude, trackIndexingPolicy } from './util.ts'
 import { withWordTails } from './wordTails.ts'
 
 import type { TrackIndexProgress } from './indexFiles.ts'
@@ -65,6 +65,8 @@ export async function writeTrixIndex({
             trackId: track.trackId,
             attributesIndexed: attributes,
             excludedTypes: exclude,
+            excludedChildTypes:
+              exclude === undefined ? defaultFeatureTypesToExclude : undefined,
             includedTypes: include,
             adapterConf: track.adapter,
           }

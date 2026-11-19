@@ -4,7 +4,7 @@
     {
       "trackId": "volvox-rev-del-annotations",
       "attributesIndexed": ["Name", "ID", "Note"],
-      "excludedTypes": ["CDS", "exon"],
+      "excludedChildTypes": ["exon", "CDS"],
       "adapterConf": {
         "type": "Gff3Adapter",
         "gffLocation": {

@@ -11,10 +11,7 @@ import {
   copyTrackSnapshot,
   trackActionItems,
 } from '@jbrowse/product-core'
-import {
-  defaultAttributesToIndex,
-  defaultFeatureTypesToExclude,
-} from '@jbrowse/text-indexing-core'
+import { defaultAttributesToIndex } from '@jbrowse/text-indexing-core'
 
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -75,9 +72,7 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
                         attributes:
                           textSearching?.indexingAttributes ??
                           defaultAttributesToIndex,
-                        exclude:
-                          textSearching?.indexingFeatureTypesToExclude ??
-                          defaultFeatureTypesToExclude,
+                        exclude: textSearching?.indexingFeatureTypesToExclude,
                         assemblies: assemblyNames,
                         tracks: [trackId],
                       },

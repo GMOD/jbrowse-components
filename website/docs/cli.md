@@ -505,7 +505,9 @@ Options:
       --perTrack             If set, creates an index per track [default: false]
 
       --exclude              Comma separated list of feature types to exclude
-                             from indexing [default: CDS,exon]
+                             from indexing. Unset, CDS and exon rows are skipped
+                             where they have a Parent, and a parentless one,
+                             which is the gene itself, is indexed
 
       --include              Comma separated list of feature types to index,
                              dropping every other type. Unset by default, which

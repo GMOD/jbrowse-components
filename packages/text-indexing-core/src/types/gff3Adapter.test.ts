@@ -197,7 +197,7 @@ describe('indexGff3', () => {
     async function records(
       lines: string[],
       attributesToIndex: string[],
-      featureTypesToExclude = ['exon'],
+      policy: { exclude?: string[] } = { exclude: ['exon'] },
     ) {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gff3-own-'))
       const file = path.join(tmpDir, 'genes.gff3')
@@ -208,7 +208,7 @@ describe('indexGff3', () => {
         attributesToIndex,
         inLocation: file,
         outDir: tmpDir,
-        featureTypesToExclude,
+        featureTypesToExclude: policy.exclude,
         onStart: () => {},
         onUpdate: () => {},
       })) {
@@ -264,7 +264,13 @@ describe('indexGff3', () => {
     })
 
     describe('the default attributes', () => {
-      const { attributes, exclude } = defaultIndexingPolicy
+      const { attributes } = defaultIndexingPolicy
+
+      // Prokka without --addgenes: each CDS is top-level and is the gene
+      const PROKKA_CDS = [
+        'contig_1\tProdigal:002006\tCDS\t337\t2799\t.\t+\t0\tID=PROKKA_00002;eC_number=2.7.2.4;Name=thrA;gene=thrA;locus_tag=PROKKA_00002;product=Bifunctional aspartokinase/homoserine dehydrogenase 1',
+        'contig_1\tProdigal:002006\tCDS\t2801\t3733\t.\t+\t0\tID=PROKKA_00003;inference=ab initio prediction:Prodigal:002006;locus_tag=PROKKA_00003;product=hypothetical protein',
+      ]
 
       test('find a bacterial gene by its locus tag, once', async () => {
         expect(
@@ -276,7 +282,7 @@ describe('indexGff3', () => {
               'chr\tRefSeq\ttRNA\t225381\t225457\t.\t+\t.\tID=rna-b0202;Parent=gene-b0202;gene=ileV;locus_tag=b0202',
             ],
             attributes,
-            exclude,
+            defaultIndexingPolicy,
           ),
         ).toEqual([
           {
@@ -291,17 +297,9 @@ describe('indexGff3', () => {
         ])
       })
 
-      // Prokka without --addgenes: each CDS is top-level and is the gene
       test('index a CDS with no parent, by name and locus tag', async () => {
         expect(
-          await records(
-            [
-              'contig_1\tProdigal:002006\tCDS\t337\t2799\t.\t+\t0\tID=PROKKA_00002;eC_number=2.7.2.4;Name=thrA;gene=thrA;locus_tag=PROKKA_00002;product=Bifunctional aspartokinase/homoserine dehydrogenase 1',
-              'contig_1\tProdigal:002006\tCDS\t2801\t3733\t.\t+\t0\tID=PROKKA_00003;inference=ab initio prediction:Prodigal:002006;locus_tag=PROKKA_00003;product=hypothetical protein',
-            ],
-            attributes,
-            exclude,
-          ),
+          await records(PROKKA_CDS, attributes, defaultIndexingPolicy),
         ).toEqual([
           {
             fields: ['thrA', 'PROKKA_00002', 'thrA', 'PROKKA_00002'],
@@ -322,14 +320,20 @@ describe('indexGff3', () => {
             'chr17\tRefSeq\tmRNA\t43044295\t43125483\t.\t-\t.\tID=mRNA46763;Parent=gene15876;Name=NM_007294.3;gene=BRCA1',
           ],
           attributes,
-          exclude,
+          defaultIndexingPolicy,
         )
         expect(out.filter(r => r.words.includes('BRCA1'))).toHaveLength(1)
-        expect(out.map(r => r.words)).toEqual([
-          ['BRCA1', 'gene15876'],
+        expect(out.map(r => r.fields)).toEqual([
+          ['BRCA1', 'gene15876', 'BRCA1'],
           ['NM_007298.3', 'mRNA46760'],
           ['NM_007294.3', 'mRNA46763'],
         ])
+      })
+
+      test('an explicit exclude list skips every row of its types', async () => {
+        expect(
+          await records(PROKKA_CDS, attributes, { exclude: ['CDS'] }),
+        ).toEqual([])
       })
     })
 

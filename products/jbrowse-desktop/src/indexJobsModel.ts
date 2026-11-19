@@ -52,7 +52,7 @@ export type _JobsManagerParentCheck = AssertExtends<
 
 interface TrackTextIndexing {
   attributes: string[]
-  exclude: string[]
+  exclude?: string[]
   assemblies: string[]
   tracks: string[] // trackIds
 }
@@ -77,7 +77,7 @@ function indexedTrackConf(
   }: {
     assemblies: string[]
     attributes: string[]
-    exclude: string[]
+    exclude?: string[]
     outLocation: string
   },
 ) {
@@ -91,7 +91,7 @@ function indexedTrackConf(
         outLocation,
       ),
       indexingAttributes: attributes,
-      indexingFeatureTypesToExclude: exclude,
+      ...(exclude ? { indexingFeatureTypesToExclude: exclude } : {}),
     },
   }
 }

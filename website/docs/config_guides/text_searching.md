@@ -102,9 +102,10 @@ as the one gene.
   `symbol`, `gene` and `locus_tag`; add others with
   `--attributes=Name,ID,symbol,gene,locus_tag,gene_synonym`, and check that the
   feature type with the name is not in
-  [`--exclude`](/docs/cli#jbrowse-text-index). A `CDS` or `exon` row with no
-  `Parent` is indexed whatever `--exclude` says, since it is the gene itself, as
-  in a Prokka GFF3 made without `--addgenes`.
+  [`--exclude`](/docs/cli#jbrowse-text-index). Without `--exclude`, `CDS` and
+  `exon` rows are skipped only where they have a `Parent`: a parentless one is
+  the gene itself, as in a Prokka GFF3 made without `--addgenes`, and is
+  indexed. An `--exclude` list skips every row of the types it names.
 
 ## The trix index format
 

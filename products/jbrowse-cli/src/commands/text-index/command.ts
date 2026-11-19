@@ -61,8 +61,7 @@ export async function run(args?: string[]) {
     exclude: {
       type: 'string',
       description:
-        'Comma separated list of feature types to exclude from indexing',
-      default: 'CDS,exon',
+        'Comma separated list of feature types to exclude from indexing. Unset, CDS and exon rows are skipped where they have a Parent, and a parentless one, which is the gene itself, is indexed',
     },
     include: {
       type: 'string',

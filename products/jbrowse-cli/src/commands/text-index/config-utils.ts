@@ -24,7 +24,7 @@ function validatePrefixSize(value?: string): number | undefined {
 
 export function prepareIndexDriverFlags(flags: {
   attributes: string
-  exclude: string
+  exclude?: string
   include?: string
   quiet?: boolean
   prefixSize?: string
@@ -32,7 +32,9 @@ export function prepareIndexDriverFlags(flags: {
   return {
     policy: {
       attributes: parseCommaSeparatedString(flags.attributes),
-      exclude: parseCommaSeparatedString(flags.exclude),
+      exclude: flags.exclude
+        ? parseCommaSeparatedString(flags.exclude)
+        : undefined,
       include: flags.include
         ? parseCommaSeparatedString(flags.include)
         : undefined,

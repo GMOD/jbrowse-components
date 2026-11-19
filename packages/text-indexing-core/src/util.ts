@@ -69,8 +69,12 @@ export const defaultFeatureTypesToExclude = ['exon', 'CDS']
 /** What an index reads out of a track's features. */
 export interface IndexingPolicy {
   attributes: string[]
-  /** feature types to skip (GFF3 only) */
-  exclude: string[]
+  /**
+   * feature types to skip (GFF3 only). Absent skips the
+   * `defaultFeatureTypesToExclude` rows that have a parent, and keeps one with
+   * none, which is the gene itself. See indexGff3
+   */
+  exclude?: string[]
   /**
    * the only feature types to index, narrowed by `exclude` (GFF3 only). Absent
    * or empty means no allow list, never "index nothing". See indexGff3
@@ -80,7 +84,6 @@ export interface IndexingPolicy {
 
 export const defaultIndexingPolicy: IndexingPolicy = {
   attributes: defaultAttributesToIndex,
-  exclude: defaultFeatureTypesToExclude,
 }
 
 /** The policy `track` is indexed under: its own settings, else the run's. */
@@ -113,7 +116,7 @@ export interface IndexerOptions {
 }
 
 export interface Gff3IndexerOptions extends IndexerOptions {
-  featureTypesToExclude: string[]
+  featureTypesToExclude?: string[]
   // When non-empty, ONLY these feature types are indexed, and
   // featureTypesToExclude narrows that set further. See indexGff3 for why an
   // allow list is not the same question as the deny list.

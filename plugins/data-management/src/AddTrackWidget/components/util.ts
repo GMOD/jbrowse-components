@@ -5,8 +5,11 @@ import type { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
 export const defaultIndexingConf: IndexingAttr = {
   attributes: ['Name', 'ID', 'symbol', 'gene', 'locus_tag'],
-  exclude: ['CDS', 'exon'],
 }
+
+// What the indexer skips when no list is given: these types' rows that have
+// a parent
+export const defaultExcludedTypes = ['CDS', 'exon']
 
 export function categorizeAdapters(adaptersList: AdapterType[]) {
   return groupBy(
