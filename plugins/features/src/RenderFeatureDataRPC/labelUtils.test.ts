@@ -103,6 +103,27 @@ describe('readFeatureLabels', () => {
     ).toEqual({ name: 'H3K4me1 hESC enhancer', description: undefined })
   })
 
+  it.each([
+    [
+      { product: 'DNA polymerase III subunit alpha' },
+      'DNA polymerase III subunit alpha',
+    ],
+    [{ product: 'chaperone', note: 'heat shock' }, 'heat shock'],
+    [{ product: 'chaperone', description: 'HSP70 family' }, 'HSP70 family'],
+  ])('the default description falls back to product: %o', (data, expected) => {
+    const cds = featureWith({ type: 'CDS', name: 'dnaE', ...data })
+    expect(
+      readFeatureLabels(
+        labelled({
+          name: FEATURE_NAME_FIELD,
+          description: FEATURE_DESCRIPTION_FIELD,
+        }),
+        cds,
+        jexl,
+      ).description,
+    ).toBe(expected)
+  })
+
   it('reads a dotted path into a structured field', () => {
     const variant = featureWith({ INFO: { SVTYPE: ['DEL'] } })
     expect(
