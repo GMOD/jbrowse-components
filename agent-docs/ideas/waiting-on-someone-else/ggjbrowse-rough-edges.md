@@ -25,3 +25,11 @@ against ggjbrowse's main before fixing it.
   the vignette. gmod.r-universe.dev lists only JBrowseR; adding ggjbrowse
   needs a `GMOD/gmod.r-universe.dev` registry repo with a `packages.json`
   and the r-universe GitHub app on the GMOD org, which takes an org admin.
+- On the next engine bump, `R/features.R`'s roxygen for `jbrowse_features()`
+  should say that for a VCF `display` is the `LinearVariantDisplay` config:
+  record settings go under `records` (`displayMode`, `mark`, `labels`,
+  `facet`, `tooltip`), with `encoding`, `filter`, `heightMode`, `height` and
+  `growMaxHeight` top-level. A top-level `displayMode`, `labels` or `mark`
+  loads with a console line and does nothing. Each record is colored by its
+  SV class unless `encoding.color` picks otherwise, `keys$features` lists the
+  classes, and feature rows follow the band's layout, not start order.
