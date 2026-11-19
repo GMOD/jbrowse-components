@@ -84,8 +84,9 @@ otherwise. Vertebrate mitochondria use table 2, plastids and bacteria often
 table 11 (the full list is on the
 [NCBI genetic codes page](https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi)).
 
-- **CDS features** read the code off the GFF's `transl_table` attribute, with no
-  assembly config ([gene track](/docs/user_guides/gene_track)).
+- **CDS features** read the code off the GFF's `transl_table` attribute, and use
+  the assembly's `geneticCodes` entry when they carry none
+  ([gene track](/docs/user_guides/gene_track)).
 - **The reference track's six-frame translation** has no CDS to read, so it uses
   the assembly's [`geneticCodes`](/docs/config/baseassembly/#slot-geneticcodes)
   map, keyed by refName:

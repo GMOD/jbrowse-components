@@ -164,9 +164,8 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
        * table) id for sequences that don't use the standard code, e.g.
        * `{ "chrM": 2 }` for the vertebrate mitochondrial code or
        * `{ "chrPltd": 11 }` for a plastid. Drives the reference sequence track's
-       * translation rows; unlisted refNames use the standard code (1). CDS-level
-       * translation reads the GFF `transl_table` attribute directly and ignores
-       * this.
+       * translation rows, and a feature's CDS translation when the feature
+       * carries no `transl_table`; unlisted refNames use the standard code (1).
        *
        * #example
        * Mitochondrial contig translated with the vertebrate mitochondrial code
