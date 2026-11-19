@@ -1,15 +1,10 @@
 import { useState } from 'react'
 
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import {
-  Collapse,
-  DialogContentText,
-  IconButton,
-  TextField,
-} from '@mui/material'
+import { DialogContentText, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { cx, makeStyles } from '../util/tss-react/index.ts'
+import { makeStyles } from '../util/tss-react/index.ts'
+import MoreOptionsButton from './MoreOptionsButton.tsx'
 import SubmitDialog from './SubmitDialog.tsx'
 
 import type { PluginDefinition } from '../pluginDefinitions.ts'
@@ -18,15 +13,7 @@ const useStyles = makeStyles()({
   dialogContent: {
     display: 'flex',
     flexDirection: 'column',
-  },
-  expand: {
-    transform: 'rotate(0deg)',
-    marginLeft: 'auto',
-    // Material's `shortest` duration and default easing, spelled out
-    transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)',
+    alignItems: 'flex-start',
   },
 })
 
@@ -97,24 +84,12 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
             setUMDPluginUrl(event.target.value)
           }}
         />
-        <DialogContentText
-          onClick={() => {
-            setAdvancedOptionsOpen(!advancedOptionsOpen)
-          }}
-        >
-          <IconButton
-            className={cx(classes.expand, {
-              [classes.expandOpen]: advancedOptionsOpen,
-            })}
-            aria-expanded={advancedOptionsOpen}
-            aria-label="show more"
-          >
-            <ExpandMoreIcon />
-          </IconButton>
-          Advanced options
-        </DialogContentText>
-        <Collapse in={advancedOptionsOpen}>
-          <div className={classes.dialogContent}>
+        <MoreOptionsButton
+          open={advancedOptionsOpen}
+          setOpen={setAdvancedOptionsOpen}
+        />
+        {advancedOptionsOpen ? (
+          <>
             <DialogContentText>
               The above fields assume that the plugin is built in UMD format.
               For an ESM build, enter its URL here instead; it carries its own
@@ -131,8 +106,8 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
                 setESMPluginUrl(event.target.value)
               }}
             />
-          </div>
-        </Collapse>
+          </>
+        ) : null}
       </div>
     </SubmitDialog>
   )

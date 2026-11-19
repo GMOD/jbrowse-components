@@ -1,8 +1,6 @@
 import { useState } from 'react'
 
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Alert, Button, Link, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -28,6 +26,7 @@ import AdvancedOptions from './AdvancedOptions.tsx'
 import FileDropZone from './FileDropZone.tsx'
 import FileSelector from './FileSelector/FileSelector.tsx'
 import { EmptySourceTypeProvider } from './FileSelector/emptySourceType.ts'
+import MoreOptionsButton from './MoreOptionsButton.tsx'
 import SequenceAdapterInputs from './SequenceAdapterInputs.tsx'
 
 import type { AdapterType, FormState } from '../util/assemblyConfigUtils.ts'
@@ -100,16 +99,7 @@ const MoreOptions = observer(function MoreOptions({
   const { classes } = useStyles()
   return (
     <div className={classes.advanced}>
-      <Button
-        variant="text"
-        size="small"
-        startIcon={showMore ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        onClick={() => {
-          setShowMore(!showMore)
-        }}
-      >
-        {showMore ? 'Fewer options' : 'More options'}
-      </Button>
+      <MoreOptionsButton open={showMore} setOpen={setShowMore} />
       {showMore ? (
         <AdvancedOptions form={form} setForm={setForm} rootModel={rootModel} />
       ) : null}

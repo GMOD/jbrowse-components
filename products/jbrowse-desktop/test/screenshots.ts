@@ -472,7 +472,7 @@ async function captureGlobalPluginsSteps(driver: WebDriver): Promise<void> {
   await delay(500)
   await procedureFrame(driver, figure, 1)
   await clickButton(driver, 'Add custom plugin')
-  await clickMenuItem(driver, 'Advanced options')
+  await clickButton(driver, 'More options')
   await findByText(driver, 'ESM build URL')
   await delay(500)
   await blurActiveElement(driver)
