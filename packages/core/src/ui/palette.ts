@@ -369,151 +369,19 @@ export const colorPairRR = '#5555bb'
  * #color alignments-pair-orientation | Inter-chromosomal | Mate on another chromosome
  * #color alignments-insert-size | Inter-chromosomal | Mate on another chromosome
  */
-// THIS SLOT AND `colorUnmappedMate` WERE CHOSEN TOGETHER, and reading either one
-// alone is how the previous pair got stuck. Both are warm, both belong to all
-// three mate-aware schemes, and at #6e4b3a / #b05a20 they sat 4.5 degrees apart
-// in hue — which left this one nowhere to go in any direction, because every
-// direction was that one:
-//
-//   more chroma at the same L*   -> dE 38.0 to unmappedMate becomes 20.7
-//   lighter                      -> dE 11.8 to it, then the greys past that
-//   darker                       -> the complaint, worse
-//   another hue                  -> the two schemes hold nine, and the widest
-//                                   gap is 91 degrees between pairLL and pairRL,
-//                                   whose midpoint reads as a second green-blue
-//
-// So it was the darkest slot in either scheme (L* 35.3 against 41.2 next) AND
-// the dullest (C* 20.4 against 34.6), which together is what "reads as a smudge"
-// means. Reported on `cancer_sv/k562_bcr_abl_split`: "the arcs for the
-// interchromosomal reads are very dark". The tell is a 2 px stroke — at that
-// weight it was the only color in either scheme that disappeared, while as a
-// large flat read fill it was merely dull. This slot has to survive both.
-//
-// The fix is that unmappedMate left the warm family (see its own note), which
-// opens the band this now takes: L* 44.9, C* 60.1, and dE 42.2 to its nearest
-// neighbour — the pale supplementary tan — where it used to be 30.1 to a grey.
-// Contrast 5.39 on paper and 3.48 on #121212 puts it mid-pack on both grounds
-// rather than worst on either; it was 2.44 on dark, the worst in the palette.
-//
-// Hue 51.7 keeps it clear of `colorLongInsert` at 40, which is the one warm
-// neighbour that must not be confusable: red means "insert too long", and a
-// second red would read as a second statement about insert size.
+// Clear of colorLongInsert's red and colorSupplementary's tan (ALIGNMENTS_COLOR_PARITY.md)
 export const colorInterchrom = '#af4d19'
 /** #color alignments-insert-size | Insert larger than expected | Deletion between the mates */
 export const colorLongInsert = '#ff0000'
 /** #color alignments-insert-size | Insert smaller than expected | Insertion between the mates */
-// This slot has TWO neighbours it must stay clear of, and every past value has
-// solved one by walking into the other. They sit at opposite ends of the
-// lightness axis, which is what makes it a balance rather than a direction:
-//
-//   colorLongInsert  #ff0000   L* 53.2   C* 104.6   h  40   <- must not read as
-//   colorPairLR      #d3d3d3   L* 84.6   C*   0.0          <- must not vanish on
-//
-// 31 L* apart, so no pink can be more than about 16 from each. The history is
-// four attempts at spending that budget:
-//
-//   #ffc0cb   L* 83.6  C* 24.4  h   8   pale: red's own hue washed out, read as
-//                                       "washed-out red" beside it
-//   #ff3a8c   L* 58.2  C* 76.9  h   1   saturated: 5 L* from red, same warm end
-//                                       of the wheel, so chroma could not part
-//                                       them (review, twice)
-//   #ffbcd8   L* 83.0  C* 28.6  h 351   light: 30 L* from red -- and 1.5 L* from
-//                                       the grey baseline, separated from it by
-//                                       chroma alone
-//   #f582c0   L* 68.9  C* 52.7  h 346   this
-//
-// The third is the one to understand, because it looks like the fix and is the
-// reason this comment is long. It maximised the distance from red by spending
-// the entire budget, so it arrived at the grey. Measured against that grey it
-// is dE 28.6, the closest any categorized slot comes -- and the margin is pure
-// chroma, which is the weakest channel there is on a 1px arc stroke. It is also
-// contrast 1.56 against paper, against grey's own 1.50: a short-insert arc was
-// very nearly as faint as the concordant ones it had to be picked out from.
-// Reported as "i cant see pink short insert on grey very well", which is
-// exactly what those two numbers say.
-//
-//                        dE vs red   dE vs grey   contrast on paper
-//   #ffbcd8 (was)             93.4         28.6   1.56
-//   #f582c0 (this)            86.2         54.9   2.38
-//
-// So: 15.7 L* from red -- three times the gap the rejected saturated value had,
-// on the axis that review was about -- while nearly doubling the separation
-// from grey and half again the contrast against the page. Hue 346 keeps it on
-// the magenta side of red rather than #ffc0cb's hue 8, so what lightness cannot
-// finish, hue does.
-//
-// Both neighbours have to be re-checked together if this is touched again. It
-// is also a READ FILL, not only an arc stroke, so a value has to survive being
-// a large flat area as well as a hairline; C* 52.7 puts it in the same band as
-// colorPairLL (52.0) and colorSupplementary (42.1) rather than shouting past
-// them.
+// Between colorLongInsert's red and colorPairLR's grey (ALIGNMENTS_COLOR_PARITY.md)
 export const colorShortInsert = '#f582c0'
 /**
  * #color alignments-pair-orientation | Mate unmapped | Mate aligned nowhere
  * #color alignments-insert-size | Mate unmapped | Mate aligned nowhere
  */
-// A NON-COLOR, at the dark end of the neutral scale on BOTH themes. It takes
-// the first half of the `readOverlap` pattern and not the second, and that split
-// is the thing to understand here.
-//
-// The half it takes is the reason that note gives for being a neutral at all:
-// "no read color is the honest answer there, which is the whole reason the span
-// is marked". An unmapped mate is the same kind of fact — nothing about the
-// pair's geometry is answerable, so a hue would claim a category where there is
-// an absence. This slot briefly took a teal in the last free hue region, which
-// worked on every number and was the wrong answer: rendered against a pileup a
-// hue reads as one more findable category beside the green LL and blue RR bars,
-// where a neutral reads as a mark that is deliberately not one of them.
-//
-// The half it does NOT take is the inversion, and the difference is EXTENT.
-// Overlap marks a SPAN INSIDE a read, so a charcoal span on a dark track is a
-// gap in a mark that should be continuous — the read looks cut, which is a claim
-// about the data. This fills a WHOLE read, which has its own boundary and the
-// rows above and below it, so a dark grey reads as a dim read and not as a hole.
-//
-// So the statement is the same on both themes and only the room differs:
-//
-//   on #ffffff  #000000  contrast 21.0. The extreme is free, because dE 36.1
-//                        from `readOverlap` #555555 is the only other dark
-//                        neutral a read fill sits beside. Near-black is not
-//                        free: #2e2e2e is dE 17.2 from that charcoal and
-//                        #3d3d3d is 10.4, so on this ground it is the extreme
-//                        or nothing.
-//   on #121212  #4a4a4a  contrast 2.11. Here the extreme collides with the
-//                        GROUND — black is 1.12 against it and so is #1e1e1e,
-//                        i.e. everything from black up to #1e1e1e sits inside
-//                        the ground's own noise and paints a hole. So the value
-//                        walks up the same axis exactly as far as it takes to be
-//                        a block and stops, at L* 31.5, still the darkest fill
-//                        in either scheme by 9.7 L* (`colorPairRR` is next).
-//
-// Judged as a swatch #3a3a3a also clears the ground, at 1.65. Rendered as a
-// pileup it does not: at a 4 px row height it carries the same weight as the
-// gaps between rows and cannot be found. A few px of row is what a value here
-// has to survive, not a 40 px square.
-//
-// White was the previous dark value, and it reads as the loudest thing in a dark
-// pileup — louder than the colored categories it is meant to be quieter than —
-// which is the "glaring near-white blocks" failure `colorPairLRDark` already
-// exists to avoid. Going dark also drops the one real cost white carried, dE 9.4
-// to `readOverlap`'s dark #e4e4e4 — which the note that shipped it called dE 7,
-// wrongly: #e4e4e4 is L* 90.5 and white is L* 100, on a pair separated by
-// lightness alone.
-//
-// The dark end is affordable at all because this slot has the loosest
-// requirements in the palette: it is a READ FILL ONLY, not in
-// `ARC_SLOT_CATEGORY`, the read connections' table, so it never has to survive
-// a hairline stroke.
-//
-// IGV goes further than any of this: `setPairOrientation` requires
-// `mate.isMapped()`, so an unmapped mate falls through every branch and takes
-// the default read color. Going that far loses the one thing the category is
-// for — under insert size, tlen is 0 and would otherwise paint
-// `colorShortInsert`, a false claim — so it keeps a mark, and makes the mark a
-// non-color.
+// A neutral clear of readOverlap on white and of the ground on dark (ALIGNMENTS_COLOR_PARITY.md)
 export const colorUnmappedMate = '#000000'
-// See colorUnmappedMate: the same dark neutral, lifted off the #121212 ground by
-// the least that still reads as a read rather than as a hole.
 export const colorUnmappedMateDark = '#4a4a4a'
 export const colorLongreadInv = '#7755bb'
 /** #color alignments-pair-orientation | Split read (inverted) | Supplementary segment on the opposite strand to its primary */
@@ -670,45 +538,19 @@ const skip = '#009a8a'
 /**
  * #color alignments-indicators | Split segments overlap | Two segments of one molecule, at least one of them a split or supplementary alignment, both align here — so the breakpoint between them is this span rather than a point
  *
- * Deliberately NOT a hue, and deliberately outside the categorical greys.
- * Without a mark the two segments paint over each other and the display shows a
- * clean junction at whichever coordinate the later one starts, which is a
- * precise claim about a breakpoint that the data does not make. Painting the
- * span as a darker version of either segment's color says "more of that one",
- * which is the same lie louder — on a foldback the arms are opposite-strand
- * red and blue, and darkening whichever drew last reads as extra-inverted.
- *
- * So the value has one job: read as NEITHER segment. The alignments vocabulary's
- * one neutral grey is light (`colorPairLR` #d3d3d3, and `colorPairLRDark`
- * #b0b0b0 on the dark theme), so this sits past
- * the dark end of them in light mode and past the light end in dark mode,
- * which is also why it inverts rather than dimming: on a dark track background
- * a charcoal span is the background showing through, i.e. a gap where the mark
- * should be.
+ * A neutral past the read greys: dark on white, light on dark (ALIGNMENTS_COLOR_PARITY.md)
  */
 const readOverlap = '#555555'
 /**
  * #color alignments-indicators | Mates overlap | The two reads of a pair both align here: the fragment is shorter than two reads, and these bases are read twice from one molecule
  *
- * The same statement as `readOverlap`, one step from the read fill instead of
- * at the far end of the scale. A short-fragment library (exome, cfDNA) overlaps
- * nearly every pair, so the strong neutral turned the whole pileup into dark
- * blocks; the overlap is real but ordinary there, and a breakpoint span is not.
- *
- * Picked on NA12878 exome and 30x WGS captures at BRCA1, against `colorPairLR`
- * #d3d3d3 (L* 84.6): #a0a0a0 (65.9) still weighed down every exome row,
- * #c4c4c4 (79.2) could not be found at a 7 px row, and this (73.3) reads as a
- * quiet step that leaves the mismatches on top of it legible.
+ * One step from colorPairLR toward readOverlap (ALIGNMENTS_COLOR_PARITY.md)
  */
 const readMateOverlap = '#b4b4b4'
 /**
  * #color alignments-pair-orientation | Split read (skips parts aligned outside this view) | A connector joining two parts of a split read whose other parts, between them, align outside the view, so it is no junction of the read; its hover names the skipped parts and states how its two ends relate
  *
- * A neutral for the reason `readOverlap` is one: the connector is not a
- * junction of the read, so no junction class color is the honest answer,
- * while the relation of its two ends is still measured and its hover states
- * it. It sits past `readOverlap` on the same side, so the connector stays
- * apart from the overlap box it often starts at.
+ * A neutral past readOverlap on the same side (ALIGNMENTS_COLOR_PARITY.md)
  */
 const readThroughHidden = '#2e2e2e'
 /** #color theme-colors | Base modification (fwd) | Base modifications on the forward strand */
@@ -794,17 +636,11 @@ const darkStringColors: Partial<StringColors> = {
   // MAF gap cells sit beside match cells painted `action.disabledBackground`,
   // which is dark here, so the gap is the lighter of the two
   mafGap: '#c8c8c8',
-  // inverted rather than dimmed, for the reason on the light value: the mark
-  // has to be the one neutral no read category paints, and on a dark track that
-  // is the light end, clear of `colorPairLRDark` #b0b0b0
+  // clear of colorPairLRDark at the light end
   readOverlap: '#e4e4e4',
-  // toward the strong neutral, as the light value is: L* 80.6 over
-  // `colorPairLRDark`'s 71.8. #d4d4d4 glared like the #e4e4e4 it replaced, and
-  // #bcbcbc (76.2) vanished into the reads on the same captures
+  // between colorPairLRDark and readOverlap
   readMateOverlap: '#c8c8c8',
-  // inverted for the reason `readOverlap` is, and as far past its #e4e4e4 as
-  // the scale goes: #f0f0f0 was L* 4 from it, too near to tell the two rows
-  // of the key apart
+  // as far past readOverlap as the scale goes
   readThroughHidden: '#ffffff',
   // the pale yellow glares across whole MAF rows; this keeps its hue and its
   // place between the ground and the match cells, as the light value does
@@ -823,7 +659,7 @@ const lightAlignmentFill: AlignmentFill = {
 
 // read because the light #d3d3d3 reads as glaring near-white blocks;
 // mateUnmapped because its black is inside the #121212 ground's own noise and
-// paints a hole (see its own note)
+// paints a hole (ALIGNMENTS_COLOR_PARITY.md)
 const darkAlignmentFill: AlignmentFill = {
   ...lightAlignmentFill,
   read: colorPairLRDark,
