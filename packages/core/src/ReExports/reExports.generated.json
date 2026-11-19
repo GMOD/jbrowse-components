@@ -1517,8 +1517,6 @@
         "ResetToDefaultButton",
         "ResizeHandle",
         "SanitizedHTML",
-        "ScrollChrome",
-        "ScrollEdgeShadow",
         "SettingsChangesTable",
         "ShareLinkField",
         "SingleSlider",
@@ -2371,10 +2369,14 @@
     "@jbrowse/core/ui/VirtualTable": {
       "package": "@jbrowse/core",
       "names": [
+        "CELL_PADDING",
         "CHECKBOX_WIDTH",
+        "CellOverhang",
         "CellTextInput",
         "DEFAULT_COL_WIDTH",
         "EditableTextCell",
+        "HEADER_HEIGHT",
+        "ROW_HEIGHT",
         "TableCheckbox",
         "checkboxLeading",
         "default",
