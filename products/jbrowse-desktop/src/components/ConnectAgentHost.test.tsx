@@ -57,10 +57,10 @@ test('a push opens the dialog on the MCP tab with this install, and the command-
 test('a server that did not start leads with why, and a disabled one offers no config', async () => {
   const { push, findByText, queryByDisplayValue, getByRole } = renderHost()
   push({ ...setup, notServing: 'Another JBrowse Desktop is serving /x.' })
-  await findByText(/Another JBrowse Desktop is serving \/x\. Fix that/)
+  await findByText(/Another JBrowse Desktop is serving \/x\. Relaunch/)
 
   fireEvent.click(getByRole('button', { name: 'Close' }))
   push({ ...setup, disabledBy: '1' })
-  await findByText(/The MCP server is turned off/)
+  await findByText(/The MCP server is off/)
   expect(queryByDisplayValue(setup.clientConfigJson)).toBeNull()
 })

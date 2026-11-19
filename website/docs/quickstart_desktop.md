@@ -273,8 +273,8 @@ already running. `--mcp` runs the server an AI agent uses to drive Desktop:
 - Desktop runs an MCP server, so Claude Desktop, Claude Code or another MCP
   client can open genomes, add tracks, read feature data and take screenshots in
   the app you have open.
-- **Help → Connect an AI agent...** shows the client config and the Claude Code
-  command for this install, each with a copy button. [](/docs/agents) has the
+- **Help → Connect an AI agent...** has this install's MCP config to copy, and a
+  prompt for an agent that works from the command line. [](/docs/agents) has the
   rest.
 - An agent with a shell can also write the config and session files Desktop
   opens: [](/docs/agents_authoring).

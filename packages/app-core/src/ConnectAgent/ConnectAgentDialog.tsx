@@ -89,10 +89,9 @@ const ConnectAgentDialog = observer(function ConnectAgentDialog({
           <CopyableSnippet key={`${route.label}-${s.label}`} snippet={s} />
         ))}
         <DialogContentText>
-          The agent runs code: read what it asks to run, and do not point it at
-          data you do not trust.{' '}
+          Agents run code, so only give them data you trust.{' '}
           <Link href={AGENT_DOCS_URL} target="_blank" rel="noopener noreferrer">
-            Using JBrowse with AI agents
+            Learn more
           </Link>
         </DialogContentText>
       </Stack>

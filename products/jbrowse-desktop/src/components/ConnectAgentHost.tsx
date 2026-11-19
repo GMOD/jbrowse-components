@@ -4,7 +4,7 @@ import { ConnectAgentDialog } from '@jbrowse/app-core'
 import { observer } from 'mobx-react'
 
 import { useIpc } from '../useIpc.ts'
-import { desktopAgentRoutes } from './desktopAgentRoutes.tsx'
+import { desktopAgentRoutes } from './desktopAgentRoutes.ts'
 
 import type { ConnectAgentSetup } from '../../electron/ipc/channelTypes.ts'
 
