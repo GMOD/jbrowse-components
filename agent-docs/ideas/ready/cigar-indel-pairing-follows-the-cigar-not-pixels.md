@@ -1,6 +1,6 @@
 ---
 name: cigar-indel-pairing-follows-the-cigar-not-pixels
-description: visitCigarPairedIndelSegments pairs rendered segments greedily, so a sub-pixel partner lets a D pair with the next gap's I and leaves a 62 Mbp deletion lone in Colored mode and the dotplot. Pair adjacent D/I ops in the CIGAR instead, and keep the coarse fold from splitting a pair.
+description: visitCigarPairedIndelSegments pairs rendered segments greedily, so a sub-pixel partner lets a D pair with the next gap's I and leaves a 62 Mbp deletion lone in Colored mode and the dotplot. Pair adjacent D/I ops in the CIGAR instead.
 ---
 
 # CIGAR indel pairing follows the CIGAR, not pixels

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The linear synteny view leaves CIGAR indels as see-through gaps unless `indels.encoding.opacity` is set nonzero: the wedge's shape already says which genome has the sequence, and op colors competed with the ribbon's color channel and painted over the alignments a large gap is made of. The dotplot keeps its indel lines"
+summary: "The linear synteny view leaves CIGAR indels as see-through gaps unless `indels.encoding.opacity` is set nonzero: the wedge's shape already says which genome has the sequence, and op colors competed with the ribbon's color channel. The dotplot keeps its indel lines"
 ---
 
 # ADR-277: A synteny indel is a gap by default
