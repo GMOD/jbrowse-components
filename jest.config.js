@@ -163,6 +163,7 @@ const baseConfig = {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.cjs',
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.cjs',
   },
+  transformIgnorePatterns: ['/node_modules/.+\\.(js|jsx)$'],
   setupFiles: [
     '<rootDir>/config/jest/textEncoder.js',
     '<rootDir>/config/jest/structuredClone.js',
