@@ -377,7 +377,8 @@ marks' columns, and the engine runs the shaders' generated twins:
 
 - **In:** `pxPerBp`, a finite number of at least 0, and any of `insertions`
   (`length`, `fade`), `deletions` (`length` in bp, `end - start` of a gap whose
-  `type` is `deletion`, and `fade`), `mismatches` (`fade`, `quality`, the Phred
+  `type` is `deletion`, `fade`, and optionally `visibleLength`, the bp of it
+  inside its region, `length` when left out), `mismatches` (`fade`, `quality`, the Phred
   score, 255 where the read has none) and `clips` (`fade`).
 - **Settings:** `featureHeight` (`readPitch.featureHeight`), `fadeLowFrequency`
   (`config.pileup`'s) and `mismatchOpacity`
@@ -388,16 +389,20 @@ marks' columns, and the engine runs the shaders' generated twins:
   one-row table. The call refuses a missing column, naming it, and a table whose
   columns differ in length. `mismatches.quality` may be left out while
   `mismatchOpacity` is a constant (`1` draws every mismatch opaque).
-- **Out:** `insertions.widthPx` and `insertions.alpha`, and `alpha` for `deletions`,
-  `mismatches` and `clips`, one per mark in the order given. `widthPx` is in px;
-  `alpha` runs from 0 (not drawn) to 1.
+- **Out:** `insertions.widthPx` and `insertions.alpha`, `alpha` for `deletions`,
+  `mismatches` and `clips`, `deletions.labelAlpha` (its length label's) and
+  `mismatches.letterAlpha` (its base letter's), one per mark in the order given.
+  `widthPx` is in px; each alpha runs from 0 (not drawn) to 1.
 - An insertion is `insertionBarWidthPx` wide, and its alpha is `insertionSizeAlpha`
   times, for one shorter than `LONG_INSERTION_MIN_LENGTH` (10 bp),
   `frequencyFadeGate` over `pxPerBp` squared.
 - A deletion's alpha is `sizeAlpha` of its width in px times `frequencyFadeGate`
-  over that width squared.
+  over that width squared. Its `labelAlpha` is `labelFadeOpacity` of
+  `visibleLength` in px against the width its digits need, and 0 on a read under
+  `MIN_HEIGHT_FOR_TEXT`.
 - A mismatch's alpha is `qualityFade` times `frequencyFadeGate` over `pxPerBp`, and a
-  clip's is that gate alone.
+  clip's is that gate alone. A mismatch's `letterAlpha` is `qualityFade` alone, 0
+  under `MIN_QUALITY_LETTER_OPACITY`, where the display writes no letter.
 
 The bundle serves it as `jbrowse.alignmentMarkAlpha`, beside `variantDensityAlpha`.
 
