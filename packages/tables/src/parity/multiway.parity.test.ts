@@ -1,6 +1,11 @@
 import { colorKeyTables } from '@jbrowse/core/ui/rampKey'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
-import { bandGroundColor, blendOverGround, unpack } from '@jbrowse/synteny-core'
+import {
+  bandGroundColor,
+  blendOverGround,
+  isInstanceInvisible,
+  unpack,
+} from '@jbrowse/synteny-core'
 
 import { ribbonThinFade } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/syntenyRibbonPath.ts'
 import { KIND_BASE_TILE } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyRPC/syntenyKinds.ts'
@@ -196,7 +201,7 @@ function multiwayParity(
             )
             const { color, alpha } = unpack(packed)
             const target = geometry.targets[d.instanceFeatureIdx[i] ?? 0]
-            return packed >>> 24 === 0
+            return isInstanceInvisible(packed, 1)
               ? []
               : [
                   {
@@ -392,6 +397,16 @@ describe('volvox, an insertion and a deletion, all against all', () => {
       config: {
         display: {
           ribbons: { encoding: { color: { value: '#008000' }, opacity: 0.6 } },
+        },
+      },
+    },
+    {
+      name: 'a constant too faint to paint',
+      config: {
+        display: {
+          ribbons: {
+            encoding: { color: { value: '#008000' }, opacity: 0.008 },
+          },
         },
       },
     },

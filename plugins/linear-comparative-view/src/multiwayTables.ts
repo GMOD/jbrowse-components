@@ -23,6 +23,7 @@ import {
   featureAttributeRanges,
   hidesUnlabelled,
   isAttributeLabels,
+  isInstanceInvisible,
   locateCum,
   opacitySnapshotOf,
   orderAttributeLabels,
@@ -796,7 +797,7 @@ export async function multiwayTables(
     const { bp1, bp2, bp3, bp4, kinds, colors, instanceFeatureIdx } = cell.data
     for (let i = 0; i < cell.data.instanceCount; i++) {
       const packed = colors[i] ?? 0
-      if (packed >>> 24 === 0) {
+      if (isInstanceInvisible(packed, 1)) {
         continue
       }
       corners.sx1 = bp1[i] ?? 0
