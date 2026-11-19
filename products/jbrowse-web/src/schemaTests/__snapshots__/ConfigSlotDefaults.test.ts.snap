@@ -157,6 +157,12 @@ exports[`every registered schema slot default 1`] = `
     "scoreColumn": "string = "neg_log_pvalue"",
     "scoreTransform": "string = "none"",
   },
+  "adapter: GenbankAdapter": {
+    "genbankLocation": "fileLocation = {"uri":"/path/to/my.gbk","locationType":"UriLocation"}",
+  },
+  "adapter: GenbankSequenceAdapter": {
+    "genbankLocation": "fileLocation = {"uri":"/path/to/my.gbk","locationType":"UriLocation"}",
+  },
   "adapter: Gff3Adapter": {
     "gffLocation": "fileLocation = {"uri":"/path/to/my.gff","locationType":"UriLocation"}",
   },
