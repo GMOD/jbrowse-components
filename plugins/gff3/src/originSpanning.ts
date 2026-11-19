@@ -3,7 +3,6 @@ import { originTailId } from '@jbrowse/core/util/originCut'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 
 import type { LazyGffFeature } from '@gmod/gff-nostream'
-import type { IntervalTree } from '@jbrowse/core/util/IntervalTree'
 
 /**
  * The length of a circular sequence, off the line that declares it circular:
@@ -137,7 +136,7 @@ export function* cutAtOrigin(
  * too.
  */
 export function searchAcrossOrigin(
-  tree: IntervalTree<Candidate>,
+  tree: { search: (interval: [number, number]) => Candidate[] },
   query: { start: number; end: number },
   length: number | undefined,
   whole?: boolean,

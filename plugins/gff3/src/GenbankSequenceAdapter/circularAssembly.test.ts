@@ -3,7 +3,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 test('a GenBank record whose LOCUS says circular is a circular refName', async () => {
-  const session = createTestSession() as any
+  const session = createTestSession()
   session.addAssemblyConf({
     name: 'twoRecords',
     sequence: {
@@ -18,7 +18,8 @@ test('a GenBank record whose LOCUS says circular is a circular refName', async (
       },
     },
   })
-  const assembly = await session.assemblyManager.waitForAssembly('twoRecords')
+  const assembly =
+    (await session.assemblyManager.waitForAssembly('twoRecords'))!
   expect(assembly.isCircularRefName('pTEST.1')).toBe(true)
   expect(assembly.isCircularRefName('contig_1')).toBe(false)
   expect(assembly.regions).toEqual([
