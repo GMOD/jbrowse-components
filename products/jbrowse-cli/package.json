@@ -28,7 +28,7 @@
   },
   "scripts": {
     "build": "pnpm build:dist",
-    "build:dist": "tsc -p tsconfig.build.json && ./generate_readme.sh > README.md",
+    "build:dist": "tsc -p tsconfig.build.json && ./generate_readme.sh > README.md && oxfmt README.md",
     "prepack": "pnpm build"
   },
   "dependencies": {
