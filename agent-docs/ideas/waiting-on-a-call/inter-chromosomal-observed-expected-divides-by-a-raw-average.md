@@ -1,6 +1,6 @@
 ---
 name: inter-chromosomal-observed-expected-divides-by-a-raw-average
-description: Hi-C observed/expected between two chromosomes divides a normalized count by the pair's raw average, as straw and Juicebox do; for a file whose vectors average far above 1 (a cooler's weights copied by hictk) every inter-chromosomal cell would read near 0. The call is whether to depart from straw.
+description: Hi-C observed/expected between chromosomes divides a normalized count by the pair's raw average, as straw does, so a file whose vectors average far above 1 (a cooler's weights via hictk) would read near 0 everywhere between chromosomes. The call is whether to depart from straw.
 ---
 
 # Inter-chromosomal observed/expected divides by a raw average
