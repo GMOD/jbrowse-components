@@ -413,6 +413,12 @@ test('records crowding a pixel fade by their count, as a zoomed-out row draws th
   expect(long[1]).toBeCloseTo(1 - 0.1 ** 0.5, 5)
 })
 
+test('a one-record region reads its unboxed columns as one record', () => {
+  expect(
+    engine.variantDensityAlpha({ start: 10, end: 11, bpPerPx: 64 }),
+  ).toEqual([1])
+})
+
 /**
  * `bcftools query -H -f '%POS\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/POSITIVE_TRAIN_SITE\t%INFO/culprit\t%INFO/BaseQRankSum\n'`
  * over the whole file, which the region spans.

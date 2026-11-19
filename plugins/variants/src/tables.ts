@@ -875,24 +875,27 @@ function cellDosage(
  * `bpPerPx`, as the variant display fades a zoomed-out row
  * (`recordDensityAlpha`) at the power of two `bpPerPx` rounds to: 1 where a
  * record covers its pixels alone. For a host that draws the cells at its own
- * scale.
+ * scale. A column may be a number, read as one record, as R's jsonlite
+ * unboxes a one-row table.
  */
 export function variantDensityAlpha({
   start,
   end,
   bpPerPx,
 }: {
-  start: readonly number[]
-  end: readonly number[]
+  start: number | readonly number[]
+  end: number | readonly number[]
   bpPerPx: number
 }) {
-  const positions = new Uint32Array(start.length * 2)
-  for (let f = 0; f < start.length; f++) {
-    positions[2 * f] = start[f]!
-    positions[2 * f + 1] = end[f]!
+  const starts = typeof start === 'number' ? [start] : start
+  const ends = typeof end === 'number' ? [end] : end
+  const positions = new Uint32Array(starts.length * 2)
+  for (let f = 0; f < starts.length; f++) {
+    positions[2 * f] = starts[f]!
+    positions[2 * f + 1] = ends[f]!
   }
   const alpha = recordDensityAlpha(positions, densityRung(bpPerPx))
-  return alpha ? Array.from(alpha) : start.map(() => 1)
+  return alpha ? Array.from(alpha) : starts.map(() => 1)
 }
 
 export type VariantTables = Awaited<ReturnType<typeof variantTables>>
