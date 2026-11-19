@@ -497,6 +497,8 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+      # Builds the tree once (scripts/build-published.ts), then packs with
+      # lifecycle scripts off; publish.yml builds what it publishes the same way.
       - name: Pack artifacts for component tests
         run: node scripts/pack.ts
       - name: Check emitted .d.ts don't name workspace source paths
