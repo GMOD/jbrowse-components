@@ -13,17 +13,10 @@ import type { UnindexedFastaAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
-/**
- * The FASTA in `text`: all of it, or, for a GFF3 that carries its sequence
- * after a `##FASTA` line as Prokka and Bakta write it, what follows that line.
- */
+// a GFF3 carries its sequence after a ##FASTA line, as Prokka and Bakta write it
 function fastaPart(text: string) {
   const fastaLine = /^##FASTA[^\n]*\n/m.exec(text)
-  return text.startsWith('##gff-version')
-    ? fastaLine
-      ? text.slice(fastaLine.index + fastaLine[0].length)
-      : ''
-    : text
+  return fastaLine ? text.slice(fastaLine.index + fastaLine[0].length) : text
 }
 
 export default class UnindexedFastaAdapter extends BaseSequenceAdapter<UnindexedFastaAdapterConfig> {
