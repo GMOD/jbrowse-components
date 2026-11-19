@@ -57,9 +57,20 @@ export interface SyntenyRenderState extends FrameDimensions {
   perTrack: Map<number, SyntenyTrackRenderParams>
 }
 
+/**
+ * What of the picked instance the pointer is over. `instance` is the quad
+ * itself, and a pick result says so by leaving `within` out. The other two are
+ * a tiled feature's, which transparent-indels mode draws as a run of match
+ * tiles: `gap` is the see-through indel after the instance, and `run` is the
+ * feature as a whole, where the canvas finds the point in none of its tiles or
+ * gaps.
+ */
+export type SyntenyPickWithin = 'instance' | 'gap' | 'run'
+
 export interface SyntenyPickResult {
   key: number
   instanceIndex: number
+  within?: Exclude<SyntenyPickWithin, 'instance'>
 }
 
 /**

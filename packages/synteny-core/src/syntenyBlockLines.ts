@@ -39,6 +39,13 @@ function sideLine({
     .join(' ')
 }
 
+function partOfLine(sides: readonly SyntenyBlockSide[]) {
+  const lengths = [
+    ...new Set(sides.map(side => getBpDisplayStr(side.end - side.start))),
+  ]
+  return `Part of an alignment spanning ${lengths.join(' and ')}`
+}
+
 const MAX_NAMED_SHARERS = 5
 
 function sharedLine(syntenicDepth: number, sharedBy: readonly string[]) {
@@ -59,23 +66,32 @@ function sharedLine(syntenicDepth: number, sharedBy: readonly string[]) {
  * arrow between the names, since an ortholog pair has no direction and the
  * sides' order differs by view.
  *
+ * `segment` is the stretch of the block under the pointer, between the indels
+ * the view draws either side of it, in the same order as `sides`. Its spans
+ * take the sides' place and one line gives the whole block's length, since a
+ * block broken by large indels spans far more than the piece pointed at.
+ *
  * `sharedBy` names the genes sharing the ortholog, as far as the view holds
  * them: up to five are listed and the rest of the depth is counted, so a
  * partner outside the loaded region still counts.
  */
 export function syntenyBlockLines({
   sides,
+  segment,
   inverted,
   attributes: { syntenicDepth, ...attributes },
   sharedBy = [],
 }: {
   sides: readonly SyntenyBlockSide[]
+  segment?: readonly SyntenyBlockSide[]
   inverted: boolean
   attributes: Record<string, number>
   sharedBy?: readonly string[]
 }) {
   return [
-    ...sides.map(sideLine),
+    ...(segment
+      ? [...segment.map(sideLine), partOfLine(sides)]
+      : sides.map(sideLine)),
     ...(inverted ? ['Inverted'] : []),
     ...attributeTooltipLines(attributes),
     ...(syntenicDepth !== undefined && syntenicDepth > 1

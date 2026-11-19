@@ -253,6 +253,8 @@ export {
   featureAttributes,
 } from './attributeTooltipLines.ts'
 export { blockAttributes, syntenyBlockLines } from './syntenyBlockLines.ts'
+export { axisSpan } from './axisSpan.ts'
+export type { SpanAxis } from './axisSpan.ts'
 export type { SyntenyBlockSide } from './syntenyBlockLines.ts'
 export { createBlockSideLanes } from './blockSideLanes.ts'
 export type { BlockSideLanes } from './blockSideLanes.ts'

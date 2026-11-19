@@ -1,6 +1,7 @@
 import {
   MIN_CIGAR_PX_WIDTH,
   cigarWorthParsing,
+  matchStretchEnds,
   segmentCigarOp,
 } from './dotplotCigarDetail.ts'
 import { buildLineSegments, segmentCapacity } from './dotplotGeometry.ts'
@@ -204,5 +205,64 @@ describe('segmentCapacity', () => {
 
   it('reserves one slot per feature when CIGAR detail is off', () => {
     expect(segmentCapacity(wide(), false, 1 / bpPerPx, 1 / bpPerPx)).toBe(1)
+  })
+})
+
+describe('matchStretchEnds', () => {
+  // two features; the first is M50 M50 D20 M30, the D drawn as its own segment
+  const data = {
+    segmentOps: new Uint8Array([0, 0, 2, 0, 0]),
+    instanceFeatureIdx: new Uint32Array([0, 0, 0, 0, 1]),
+    x1: new Float64Array([0, 50, 100, 120, 150]),
+    x2: new Float64Array([50, 100, 120, 150, 250]),
+    y1: new Float64Array([0, 50, 100, 100, 130]),
+    y2: new Float64Array([50, 100, 100, 130, 230]),
+  }
+
+  it('joins match segments that meet end to start', () => {
+    const joined = { x1: 0, y1: 0, x2: 100, y2: 100 }
+    expect(matchStretchEnds(data, 0)).toEqual(joined)
+    expect(matchStretchEnds(data, 1)).toEqual(joined)
+  })
+
+  it('stops at a drawn indel and at the next feature', () => {
+    expect(matchStretchEnds(data, 3)).toEqual({
+      x1: 120,
+      y1: 100,
+      x2: 150,
+      y2: 130,
+    })
+  })
+
+  it('stops where an undrawn indel leaves the next segment elsewhere', () => {
+    const gapped = buildLineSegments(
+      fakeDotplotRpcData({
+        p11: new Float64Array([0]),
+        p12: new Float64Array([160]),
+        p21: new Float64Array([0]),
+        p22: new Float64Array([150]),
+        strands: new Int8Array([1]),
+        alignmentLengths: new Uint32Array([160]),
+        cigarData: new Uint32Array([M(50), D(60), I(50), M(50)]),
+        cigarOffsets: new Uint32Array([0, 4]),
+        totalFeatureCount: 1,
+      }),
+      true,
+      0,
+      1,
+      1,
+      0,
+      0,
+    )
+    expect(matchStretchEnds(gapped, 1)).toEqual({
+      x1: 110,
+      y1: 100,
+      x2: 160,
+      y2: 150,
+    })
+  })
+
+  it('answers nothing on an indel', () => {
+    expect(matchStretchEnds(data, 2)).toBeUndefined()
   })
 })

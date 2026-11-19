@@ -61,6 +61,48 @@ export function segmentCigarOp(
   return { op: CIGAR_OP_LETTER[op]!, length }
 }
 
+// The stretch of matches a hovered SEGMENT belongs to, as its two endpoints, or
+// undefined on an indel, whose hover names the operator instead.
+//
+// A segment is not that stretch on its own: the walk closes one every pixel, so
+// an alignment with no drawn indel at all is still a line of them. The stretch
+// is the run of match segments meeting end to start, which stops wherever the
+// walk drew an indel, or left one out and the next segment starts elsewhere.
+export function matchStretchEnds(
+  data: {
+    segmentOps: Uint8Array
+    instanceFeatureIdx: Uint32Array
+    x1: Float64Array
+    x2: Float64Array
+    y1: Float64Array
+    y2: Float64Array
+  },
+  segmentIdx: number,
+) {
+  const { segmentOps, instanceFeatureIdx, x1, x2, y1, y2 } = data
+  const isMatch = (i: number) => {
+    const op = segmentOps[i]
+    return op !== undefined && !((1 << op) & CIGAR_INDEL_MASK)
+  }
+  const meets = (a: number, b: number) =>
+    isMatch(a) &&
+    isMatch(b) &&
+    instanceFeatureIdx[a] === instanceFeatureIdx[b] &&
+    x2[a] === x1[b] &&
+    y2[a] === y1[b]
+  let first = segmentIdx
+  let last = segmentIdx
+  while (meets(first - 1, first)) {
+    first--
+  }
+  while (meets(last, last + 1)) {
+    last++
+  }
+  return isMatch(segmentIdx)
+    ? { x1: x1[first]!, y1: y1[first]!, x2: x2[last]!, y2: y2[last]! }
+    : undefined
+}
+
 // The worker decides using the bpPerPx of the fetch, but geometry is rebuilt on
 // the main thread from held rpcData whenever zoom changes — and a zoom-in only
 // refetches after the debounce. Without headroom, a feature just under the

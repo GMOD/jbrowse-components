@@ -15,7 +15,7 @@ import {
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 
-import { segmentCigarOp } from './dotplotCigarDetail.ts'
+import { matchStretchEnds, segmentCigarOp } from './dotplotCigarDetail.ts'
 import { computeDotplotColors } from './dotplotColors.ts'
 import { featureSegmentRange } from './dotplotPickEngine.ts'
 import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
@@ -325,6 +325,9 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               // hold a dozen of them.
               cigarOp: instanceData
                 ? segmentCigarOp(instanceData, hoveredSegmentIdx)
+                : undefined,
+              segment: instanceData
+                ? matchStretchEnds(instanceData, hoveredSegmentIdx)
                 : undefined,
             })
       },

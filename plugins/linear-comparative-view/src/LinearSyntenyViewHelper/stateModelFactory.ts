@@ -32,6 +32,7 @@ import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts
 import type {
   SyntenyCell,
   SyntenyPickResult,
+  SyntenyPickWithin,
   SyntenyRenderState,
   SyntenyRenderingBackend,
   SyntenyTrackRenderParams,
@@ -305,15 +306,19 @@ export function linearSyntenyViewHelperModelFactory(
       // clears the level. One walk, so the N writes land in one MobX batch.
       function point(
         hit: SyntenyPickResult | undefined,
-        write: (display: LinearSyntenyDisplayModel, idx: number) => void,
+        write: (
+          display: LinearSyntenyDisplayModel,
+          idx: number,
+          within: SyntenyPickWithin,
+        ) => void,
       ) {
         let hitDisplay: LinearSyntenyDisplayModel | undefined
         for (const display of self.linearSyntenyDisplays) {
           if (hit && display.displayKey === hit.key) {
             hitDisplay = display
-            write(display, hit.instanceIndex)
+            write(display, hit.instanceIndex, hit.within ?? 'instance')
           } else {
-            write(display, -1)
+            write(display, -1, 'instance')
           }
         }
         return hitDisplay
@@ -323,8 +328,8 @@ export function linearSyntenyViewHelperModelFactory(
          * #action
          */
         setHoveredFeature(hit: SyntenyPickResult | undefined) {
-          return point(hit, (display, idx) => {
-            display.setHoveredInstanceIdx(idx)
+          return point(hit, (display, idx, within) => {
+            display.setHoveredInstanceIdx(idx, within)
           })
         },
         /**

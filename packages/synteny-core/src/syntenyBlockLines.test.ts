@@ -77,3 +77,66 @@ test('a sharing gene outside the loaded region is counted, not named', () => {
     }),
   ).toContain('Shared by 3 genes: Fgfr2, Fgfr2b and 1 more')
 })
+
+test('a hovered segment takes the place of the spans, and the block is given by length', () => {
+  expect(
+    syntenyBlockLines({
+      sides: [
+        {
+          assemblyName: 'hg19',
+          refName: 'chr1',
+          start: 1_000_000,
+          end: 46_000_000,
+        },
+        {
+          assemblyName: 'hg38',
+          refName: 'chr1',
+          start: 1_050_000,
+          end: 46_300_000,
+        },
+      ],
+      segment: [
+        {
+          assemblyName: 'hg19',
+          refName: 'chr1',
+          start: 10_000_000,
+          end: 10_020_000,
+        },
+        {
+          assemblyName: 'hg38',
+          refName: 'chr1',
+          start: 10_050_000,
+          end: 10_070_000,
+        },
+      ],
+      inverted: true,
+      attributes: {},
+    }),
+  ).toEqual([
+    'hg19 chr1:10,000,001-10,020,000 (20Kbp)',
+    'hg38 chr1:10,050,001-10,070,000 (20Kbp)',
+    'Part of an alignment spanning 45Mbp and 45.3Mbp',
+    'Inverted',
+  ])
+})
+
+test('a block as long on both sides gives its length once', () => {
+  expect(
+    syntenyBlockLines({
+      sides: [
+        { refName: 'chr1', start: 0, end: 5000 },
+        { refName: 'chr2', start: 100, end: 5100 },
+      ],
+      segment: [
+        { refName: 'chr1', start: 0, end: 100 },
+        { refName: 'chr2', start: 100, end: 200 },
+      ],
+      inverted: false,
+      attributes: {},
+    }),
+  ).toEqual([
+    'chr1:1-100 (100bp)',
+    'chr2:101-200 (100bp)',
+    'Part of an alignment spanning 5Kbp',
+  ])
+})

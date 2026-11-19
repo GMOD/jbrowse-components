@@ -7,6 +7,8 @@ import {
   computeTransform,
   isRibbonCulled,
   makeCornerScratch,
+  projectCorners,
+  projectGapCorners,
   projectSpanCorners,
   ribbonMaxPerpWidth,
 } from './syntenyRibbonPath.ts'
@@ -16,7 +18,11 @@ import type {
   SyntenyPickResult,
   SyntenyRenderState,
 } from './syntenyRenderingBackendTypes.ts'
-import type { CanvasLike, ComputedTransform } from './syntenyRibbonPath.ts'
+import type {
+  CanvasLike,
+  ComputedTransform,
+  ProjectedCorners,
+} from './syntenyRibbonPath.ts'
 
 export interface PickCanvasLike extends CanvasLike {
   isPointInPath(x: number, y: number): boolean
@@ -300,6 +306,87 @@ export interface PickContext {
   y: number
 }
 
+function cornersHold(
+  ctx: PickCanvasLike,
+  c: ProjectedCorners,
+  height: number,
+  drawCurves: boolean,
+  x: number,
+  localY: number,
+) {
+  const inHull =
+    x >= Math.min(c.sx1, c.sx2, c.sx3, c.sx4) &&
+    x <= Math.max(c.sx1, c.sx2, c.sx3, c.sx4)
+  if (inHull) {
+    buildFeaturePath(ctx, c, 0, height, drawCurves)
+  }
+  return inHull && ctx.isPointInPath(x, localY)
+}
+
+// What of a hit entry the pointer is over. One instance is itself. A synthetic
+// feature body is asked for the tile under the pointer, topmost first, then for
+// the gap between two tiles, and answers as the whole run where neither holds
+// the point. The hull test keeps the path builds to the few tiles near `x`.
+function hitWithinRun({
+  ctx,
+  data,
+  first,
+  last,
+  transform,
+  scratch,
+  height,
+  drawCurves,
+  x,
+  localY,
+}: {
+  ctx: PickCanvasLike
+  data: SyntenyInstanceData
+  first: number
+  last: number
+  transform: ComputedTransform
+  scratch: ProjectedCorners
+  height: number
+  drawCurves: boolean
+  x: number
+  localY: number
+}): Omit<SyntenyPickResult, 'key'> {
+  let tile = first === last ? first : -1
+  for (let i = last; tile < 0 && i >= first; i--) {
+    if (
+      cornersHold(
+        ctx,
+        projectCorners(data, i, transform, scratch),
+        height,
+        drawCurves,
+        x,
+        localY,
+      )
+    ) {
+      tile = i
+    }
+  }
+  let gap = -1
+  for (let i = last - 1; tile < 0 && i >= first && gap < 0; i--) {
+    if (
+      cornersHold(
+        ctx,
+        projectGapCorners(data, i, i + 1, transform, scratch),
+        height,
+        drawCurves,
+        x,
+        localY,
+      )
+    ) {
+      gap = i
+    }
+  }
+  return tile >= 0
+    ? { instanceIndex: tile }
+    : gap >= 0
+      ? { instanceIndex: gap, within: 'gap' }
+      : { instanceIndex: first, within: 'run' }
+}
+
 export function pickFeatureAtPoint(
   pc: PickContext,
 ): SyntenyPickResult | undefined {
@@ -398,7 +485,21 @@ export function pickFeatureAtPoint(
       // Path built in track-local space (yTop=0) to match localY below.
       buildFeaturePath(ctx, c, 0, height, params.drawCurves)
       if (ctx.isPointInPath(x, localY)) {
-        return { key, instanceIndex: i }
+        return {
+          key,
+          ...hitWithinRun({
+            ctx,
+            data,
+            first: i,
+            last: entryEnd[pos]!,
+            transform,
+            scratch,
+            height,
+            drawCurves: params.drawCurves,
+            x,
+            localY,
+          }),
+        }
       }
     }
   }

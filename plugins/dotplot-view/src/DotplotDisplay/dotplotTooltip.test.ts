@@ -260,3 +260,31 @@ describe('the genes sharing an ortholog', () => {
     expect(sharedLine('peach')).toBe('Shared by 3 genes: B and 2 more')
   })
 })
+
+test('a stretch shorter than the block takes the place of its spans', () => {
+  expect(
+    getDotplotTooltipLines({
+      rpcData: fakeRpcData(),
+      featureIdx: 0,
+      hview: axis({ assemblyName: 'hg38', refName: 'chr1' }),
+      vview: axis({ assemblyName: 'mm10', refName: 'chr5' }),
+      segment: { x1: 100, x2: 140, y1: 300, y2: 340 },
+    }).slice(0, 3),
+  ).toEqual([
+    'hg38 chr1:101-140 (40bp)',
+    'mm10 chr5:301-340 (40bp)',
+    'Part of an alignment spanning 100bp and 150bp',
+  ])
+})
+
+test('a stretch that is the whole block reads as the block', () => {
+  expect(
+    getDotplotTooltipLines({
+      rpcData: fakeRpcData(),
+      featureIdx: 0,
+      hview: axis({ assemblyName: 'hg38', refName: 'chr1' }),
+      vview: axis({ assemblyName: 'mm10', refName: 'chr5' }),
+      segment: { x1: 100, x2: 200, y1: 300, y2: 450 },
+    }).slice(0, 2),
+  ).toEqual(['hg38 chr1:101-200 (100bp)', 'mm10 chr5:301-450 (150bp)'])
+})

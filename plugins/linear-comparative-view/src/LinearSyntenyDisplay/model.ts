@@ -33,7 +33,8 @@ import { admittedOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMate
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import {
-  getCigarOpAtInstance,
+  getCigarOpsAt,
+  getStretchSides,
   getTooltipLines,
   sharedByOf,
 } from './components/util.ts'
@@ -45,7 +46,10 @@ import type { FetchedOffscreenMates } from '../LinearSyntenyRPC/collectOffscreen
 import type { ParentViewDuck } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { LinearSyntenyDisplayConfigSchema } from './configSchemaF.ts'
-import type { SyntenyCell } from './syntenyRenderingBackendTypes.ts'
+import type {
+  SyntenyCell,
+  SyntenyPickWithin,
+} from './syntenyRenderingBackendTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type {
@@ -255,6 +259,12 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       hoveredInstanceIdx: -1,
       /**
        * #volatile
+       * What of the hovered instance the pointer is over. See
+       * `SyntenyPickWithin`.
+       */
+      hoveredWithin: 'instance' as SyntenyPickWithin,
+      /**
+       * #volatile
        * Clicked twin of `hoveredInstanceIdx`, held as the adapter's own
        * feature id rather than an offset: the click opens the details drawer,
        * which resizes the view and refetches, and an offset cannot survive
@@ -282,6 +292,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         self.instanceData = instanceData
         self.geometryRegionSignature = regionSignature
         self.hoveredInstanceIdx = -1
+        self.hoveredWithin = 'instance'
         self.contextMenuAnchor = undefined
       },
       /**
@@ -306,8 +317,12 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * Point the hover at one GPU instance, or -1 for none. The level's
        * `setHoveredFeature` calls this, from a pick hit.
        */
-      setHoveredInstanceIdx(idx: number) {
+      setHoveredInstanceIdx(
+        idx: number,
+        within: SyntenyPickWithin = 'instance',
+      ) {
         self.hoveredInstanceIdx = idx
+        self.hoveredWithin = within
       },
       /**
        * #action
@@ -779,7 +794,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * `DotplotDisplay.tooltipLines` for the twin.
        */
       get tooltipLines(): string[] | undefined {
-        const { hoveredInstanceIdx, instanceData, featureData } = self
+        const { hoveredInstanceIdx, hoveredWithin, instanceData, featureData } =
+          self
         if (hoveredInstanceIdx < 0) {
           return undefined
         }
@@ -787,15 +803,24 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         if (!feat) {
           return undefined
         }
-        const cigarOp = instanceData
-          ? getCigarOpAtInstance(instanceData, hoveredInstanceIdx)
+        const rows = this.geometryCurrent
+          ? this.parentHelper.connectedRows
           : undefined
         const depth = feat.attributes.syntenicDepth
-        const sharedBy =
-          featureData && depth !== undefined && depth > 1
-            ? sharedByOf(featureData, feat)
-            : undefined
-        return getTooltipLines(feat, cigarOp, sharedBy)
+        return getTooltipLines({
+          feat,
+          cigarOps: instanceData
+            ? getCigarOpsAt(instanceData, hoveredInstanceIdx, hoveredWithin)
+            : undefined,
+          sharedBy:
+            featureData && depth !== undefined && depth > 1
+              ? sharedByOf(featureData, feat)
+              : undefined,
+          segment:
+            instanceData && rows && hoveredWithin === 'instance'
+              ? getStretchSides(instanceData, hoveredInstanceIdx, feat, rows)
+              : undefined,
+        })
       },
       /**
        * #getter

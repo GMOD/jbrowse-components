@@ -231,6 +231,30 @@ test('a hover over a see-through indel answers the feature it belongs to', () =>
   expect(pickedFeatureAt(geometry([GAPPED], false), 55)).toBe(0)
 })
 
+test('a hover says whether it is over a tile or the indel after one', () => {
+  const tiled = geometry([GAPPED], true)
+  const state: SyntenyRenderState = {
+    canvasWidth: VIEW_WIDTH,
+    canvasHeight: HEIGHT,
+    overdrawPx: 1000,
+    groundColor: '#fff',
+    perTrack: new Map([[0, params]]),
+  }
+  const hitAt = (x: number) =>
+    pickFeatureAtPoint({
+      ctx: createGeometricPickCtx(),
+      state,
+      regions: new Map([[0, tiled]]),
+      pickIndices: new WeakMap<Float32Array, PickIndex>(),
+      canvasLogicalWidth: VIEW_WIDTH,
+      x,
+      y: HEIGHT / 2,
+    })
+  expect(hitAt(20)).toEqual({ key: 0, instanceIndex: 0 })
+  expect(hitAt(55)).toEqual({ key: 0, instanceIndex: 0, within: 'gap' })
+  expect(hitAt(90)).toEqual({ key: 0, instanceIndex: 1 })
+})
+
 test('a feature whose tiles are each sub-pixel is still hoverable', () => {
   const tiled = geometry([SHEARED_DENSE], true)
   // Not vacuous: every tile is on the non-pickable side of the perpW gate, so

@@ -105,7 +105,7 @@ async function syntenyHover(id: string, mouseAxis: Region) {
     },
   })
   const feat = getFeatureAtIndex(value, value.featureIds.indexOf(id))
-  return getTooltipLines(feat, undefined, sharedByOf(value, feat))
+  return getTooltipLines({ feat, sharedBy: sharedByOf(value, feat) })
 }
 
 test('a dotplot hover over an ortholog row reads as the synteny hover does', async () => {

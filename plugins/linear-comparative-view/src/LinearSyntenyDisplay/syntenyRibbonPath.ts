@@ -234,6 +234,24 @@ export function projectSpanCorners(
   return out
 }
 
+// The see-through quad between two tiles of one feature: `before`'s END edge
+// joined to `after`'s START edge, which is where transparent-indels mode leaves
+// an indel unpainted. Nothing draws it; the pick engine asks it which indel the
+// pointer is in.
+export function projectGapCorners(
+  data: SyntenyInstanceData,
+  before: number,
+  after: number,
+  t: ComputedTransform,
+  out: ProjectedCorners,
+) {
+  out.sx1 = data.bp2[before]! * t.bpPerPxInv0 + t.panPx0
+  out.sx2 = data.bp1[after]! * t.bpPerPxInv0 + t.panPx0
+  out.sx3 = data.bp4[after]! * t.bpPerPxInv1 + t.panPx1
+  out.sx4 = data.bp3[before]! * t.bpPerPxInv1 + t.panPx1
+  return out
+}
+
 // The ribbon's horizontal width at whichever END is wider. Its two edges'
 // separation is affine in the blend, so the extremes are always at the ends —
 // which is what makes the two measures below one expression apart.

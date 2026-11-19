@@ -1,11 +1,20 @@
 import { CIGAR_D, CIGAR_I, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from '../../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import { KIND_BASE } from '../../LinearSyntenyRPC/syntenyKinds.ts'
+import {
+  KIND_BASE,
+  KIND_BASE_TILE,
+} from '../../LinearSyntenyRPC/syntenyKinds.ts'
 import { viewportWindow } from '../../LinearSyntenyRPC/testUtils.ts'
 import { getFeatureAtIndex } from '../model.ts'
 import { packSyntenyFeatureData } from '../testUtils.ts'
-import { getCigarOpAtInstance, getTooltipLines, sharedByOf } from './util.ts'
+import {
+  getCigarOpAtInstance,
+  getCigarOpsAt,
+  getStretchSides,
+  getTooltipLines,
+  sharedByOf,
+} from './util.ts'
 
 import type { FeatPos } from '../model.ts'
 
@@ -80,10 +89,10 @@ test('getTooltipLines appends the CIGAR operator line only when given one', () =
     },
     attributes: {},
   }
-  expect(getTooltipLines(feat)).not.toContain('CIGAR operator: 50D')
-  expect(getTooltipLines(feat, { op: 'D', length: 50 })).toContain(
-    'CIGAR operator: 50D',
-  )
+  expect(getTooltipLines({ feat })).not.toContain('CIGAR operator: 50D')
+  expect(
+    getTooltipLines({ feat, cigarOps: [{ op: 'D', length: 50 }] }),
+  ).toContain('CIGAR operator: 50D')
 })
 
 // Lines, not one `<br/>`-joined string: a refName and a feature name both come
@@ -108,7 +117,7 @@ test('getTooltipLines emits no markup, and drops the lines it has no value for',
     },
     attributes: {},
   }
-  const lines = getTooltipLines(feat)
+  const lines = getTooltipLines({ feat })
   expect(lines.some(l => l.includes('<br'))).toBe(false)
   // the hostile refName rides through verbatim, as text
   expect(lines[0]).toContain('<img src=x onerror=alert(1)>')
@@ -139,7 +148,7 @@ test('getTooltipLines lists every numeric channel the feature carries', () => {
     },
     attributes: { identity: 0.987, mappingQual: 60, ka_ks: 1.5 },
   }
-  const lines = getTooltipLines(feat)
+  const lines = getTooltipLines({ feat })
   expect(lines).toContain('Identity: 98.7%')
   expect(lines).toContain('Mapping quality: 60')
   expect(lines).toContain('ka_ks: 1.5')
@@ -167,7 +176,7 @@ test('getTooltipLines names each side of an ortholog pair on its own line', () =
     },
     attributes: { syntenicDepth: 2 },
   }
-  expect(getTooltipLines(feat)).toEqual([
+  expect(getTooltipLines({ feat })).toEqual([
     'hg38 FGFR2 chr10:121.48Mbp-121.60Mbp (120Kbp)',
     'mm39 Fgfr2 chr7:129.76Mbp-129.87Mbp (104Kbp)',
     'Inverted',
@@ -226,5 +235,143 @@ test('a shared gene names every partner the loaded links hold, from either side'
   expect(sharedByOf(data, getFeatureAtIndex(data, 3))).toEqual([
     'FGFR2',
     'FGFR2B',
+  ])
+})
+
+// Transparent-indel mode over M100 M100 D50 M100 I30 M100: four match tiles,
+// the first two meeting edge to edge, on a query row showing chr1 from 5,000.
+function buildTiledGeometry(cigar: number[], querySpan = 450, mateSpan = 430) {
+  return buildSyntenyGeometry({
+    p11_cumBp: new Float64Array([0]),
+    p12_cumBp: new Float64Array([querySpan]),
+    p21_cumBp: new Float64Array([0]),
+    p22_cumBp: new Float64Array([mateSpan]),
+    queryGridAnchors: new Float64Array([0]),
+    strands: new Int8Array([1]),
+    parsedCigars: [cigar],
+    cigarMode: 'matches',
+    bpPerPx0: 1,
+    bpPerPx1: 1,
+    viewOff0: 0,
+    viewOff1: 0,
+    viewWidth: 1000,
+    window0: viewportWindow({ viewOff: 0, viewWidth: 1000, bpPerPx: 1 }),
+    window1: viewportWindow({ viewOff: 0, viewWidth: 1000, bpPerPx: 1 }),
+  })
+}
+
+const tiledCigar = [
+  packed(100, CIGAR_M),
+  packed(100, CIGAR_M),
+  packed(50, CIGAR_D),
+  packed(100, CIGAR_M),
+  packed(30, CIGAR_I),
+  packed(100, CIGAR_M),
+]
+
+function row(assemblyName: string, refName: string, start: number) {
+  return {
+    bpPerPx: 1,
+    offsetPx: 0,
+    pxToBp: (px: number) => ({
+      assemblyName,
+      refName,
+      start,
+      end: start + 1000,
+      offset: px,
+    }),
+  }
+}
+
+const rows = { v0: row('hg38', 'chr1', 5000), v1: row('mm10', 'chr2', 0) }
+
+const tiledFeat: FeatPos = {
+  id: 'f1',
+  lodTier: 'fine',
+  strand: 1,
+  name: '',
+  refName: 'chr1',
+  start: 5000,
+  end: 5450,
+  assemblyName: 'hg38',
+  mate: { start: 0, end: 430, refName: 'chr2', assemblyName: 'mm10', name: '' },
+  attributes: {},
+}
+
+function stretchSpans(feat = tiledFeat, cigar = tiledCigar) {
+  const g = buildTiledGeometry(cigar)
+  return [...g.kinds.keys()]
+    .filter(i => g.kinds[i] === KIND_BASE_TILE)
+    .map(i =>
+      getStretchSides(g, i, feat, rows)?.map(side => [side.start, side.end]),
+    )
+}
+
+test('a tile reads as the stretch of matches between the indels around it', () => {
+  expect(stretchSpans()).toEqual([
+    [
+      [5000, 5200],
+      [0, 200],
+    ],
+    [
+      [5000, 5200],
+      [0, 200],
+    ],
+    [
+      [5250, 5350],
+      [200, 300],
+    ],
+    [
+      [5350, 5450],
+      [330, 430],
+    ],
+  ])
+})
+
+test('an alignment drawn as one stretch has no part to name', () => {
+  const cigar = [packed(200, CIGAR_M), packed(250, CIGAR_M)]
+  expect(
+    stretchSpans(
+      { ...tiledFeat, mate: { ...tiledFeat.mate, end: 450 } },
+      cigar,
+    ),
+  ).toEqual([undefined, undefined])
+})
+
+// The fetch clips a long alignment to its window, so the outermost tile ends
+// where the clip fell and not where the stretch does.
+test('a stretch running past the geometry is not named', () => {
+  const clipped = {
+    ...tiledFeat,
+    end: 90_000,
+    mate: { ...tiledFeat.mate, end: 89_980 },
+  }
+  expect(stretchSpans(clipped).map(spans => spans !== undefined)).toEqual([
+    true,
+    true,
+    true,
+    false,
+  ])
+})
+
+test('a gap between two tiles reads as the indel left unpainted there', () => {
+  const g = buildTiledGeometry(tiledCigar)
+  expect(getCigarOpsAt(g, 1, 'gap')).toEqual([{ op: 'D', length: 50 }])
+  expect(getCigarOpsAt(g, 2, 'gap')).toEqual([{ op: 'I', length: 30 }])
+  expect(getCigarOpsAt(g, 1, 'instance')).toEqual([])
+  expect(getCigarOpsAt(g, 0, 'run')).toEqual([])
+})
+
+test('a named stretch takes the place of the two whole spans', () => {
+  const g = buildTiledGeometry(tiledCigar)
+  expect(
+    getTooltipLines({
+      feat: tiledFeat,
+      segment: getStretchSides(g, 2, tiledFeat, rows),
+    }),
+  ).toEqual([
+    'hg38 chr1:5,251-5,350 (100bp)',
+    'mm10 chr2:201-300 (100bp)',
+    'Part of an alignment spanning 450bp and 430bp',
   ])
 })
