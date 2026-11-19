@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react'
 
+import packageJSON from '../../package.json' with { type: 'json' }
 import { routes } from '../components/ConnectAgentDialog.tsx'
 import {
   createView,
@@ -36,5 +37,8 @@ test('Help copies the in-page prompt, and the command-line one from its tab', as
   await findAllByText('Copied prompt to clipboard', {}, delay)
   expect(writeText).toHaveBeenLastCalledWith(commandLine!.prompt)
   expect(commandLine!.prompt).toContain('.claude/skills')
+  expect(commandLine!.prompt).toContain(
+    `npx @jbrowse/cli@${packageJSON.version} validate`,
+  )
   await findAllByText('ctgA', {}, delay)
 }, 30000)

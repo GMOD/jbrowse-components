@@ -195,6 +195,10 @@ in place of their features, which is no failure but is not the picture either.
 - `--dpr 2` is the default and is what a figure wants; `--dpr 1` for a
   screenshot you only intend to read.
 - Raise `--timeout` for a slow remote file.
+- A track that shows "Region too large to render" or "Requested too much data"
+  is over its byte gate, common for ClinVar or reads over a whole gene. Add
+  `force:true` after its `--track`, or set `"forceLoad": true` on its display in
+  the config.
 - In your own Puppeteer script, pass `captureBeyondViewport: false` to every
   `page.screenshot`. Puppeteer's default resizes the page for a clipped shot,
   JBrowse re-lays out, and the frame comes back empty with every readiness gate

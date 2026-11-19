@@ -2,8 +2,8 @@
 title: Using JBrowse with AI agents
 sidebar_label: Connecting an agent
 description:
-  The two ways an AI agent works with JBrowse, and how to connect Claude
-  Desktop, Claude Code or the Claude in Chrome extension to the running app
+  The two ways an AI agent works with JBrowse, and how to connect an MCP client
+  to JBrowse Desktop or a browser agent to JBrowse Web
 ---
 
 An AI agent works with JBrowse in two ways:
@@ -90,12 +90,17 @@ The agent gets four tools:
 - `open` loads a config, a saved session or a hosted genome
 - `docs` reads the reference bundled into the app
 
-## Claude in Chrome, with JBrowse Web
+## A browser agent, with JBrowse Web
 
-- Open any JBrowse Web instance in Chrome, for example a
-  [hosted genome](/docs/agents_hosted_data), and open the Claude side panel.
-- There is nothing to install. The page publishes `window.jb`, and the
-  extension's JavaScript tool runs in the page.
+- Open any JBrowse Web instance, for example a
+  [hosted genome](/docs/agents_hosted_data), where an agent can run JavaScript
+  in the page: the Claude in Chrome side panel, or a coding agent connected to
+  the browser through
+  [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp)
+  or [Playwright MCP](https://github.com/microsoft/playwright-mcp). Both MCP
+  servers also run headless, for an agent with no display.
+- JBrowse needs nothing installed. The page publishes `window.jb`, and the
+  agent's JavaScript tool runs in the page.
 - **Help → Connect an AI agent...** copies a starter prompt for this route, and
   one for the command-line route that points the agent at the skills.
 - A browser cannot read local files or run tools, so a file the agent adds has
