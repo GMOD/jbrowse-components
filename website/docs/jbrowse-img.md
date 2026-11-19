@@ -1477,6 +1477,8 @@ Options:
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path, -o for short (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout
   --width           Width of the view in pixels. An SVG adds its margins and label gutter to it; a PNG or PDF is the SVG scaled down to this width [default: 1500]
+  --pageWidth       Width of the whole figure with its unit, such as 183mm or 7in, in place of --width: the view is laid out to fill it, the SVG states that size, and a PNG or PDF is written at it (PNG at 300 dpi)
+  --textSize        Point size the track labels print at in a --pageWidth figure; the ruler, axes and features scale with it [default: 7]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
@@ -1680,6 +1682,8 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --width           Width of the view in pixels. An SVG adds its margins and label gutter to it; a PNG or PDF is the SVG scaled down to this width [default: 1500]
+  --pageWidth       Width of the whole figure with its unit, such as 183mm or 7in, in place of --width: the view is laid out to fill it, the SVG states that size, and a PNG or PDF is written at it (PNG at 300 dpi)
+  --textSize        Point size the track labels print at in a --pageWidth figure; the ruler, axes and features scale with it [default: 7]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
   --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
