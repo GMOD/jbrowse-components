@@ -10,7 +10,7 @@ import {
   drawnRows,
   indelsDrawingOf,
   isInstanceInvisible,
-  locateCum,
+  locateSpan,
   unpack,
   viewColorSettings,
 } from '@jbrowse/synteny-core'
@@ -199,21 +199,19 @@ export async function dotplotTables(
       continue
     }
     drawn.add(instanceData.instanceFeatureIdx[i]!)
-    const xa = locateCum(h, x1, x2)
-    const xb = locateCum(h, x2, x1)
-    const ya = locateCum(v, y1, y2)
-    const yb = locateCum(v, y2, y1)
+    const xs = locateSpan(h, x1, x2)
+    const ys = locateSpan(v, y1, y2)
     const { color, alpha } = unpack(packed)
     segments.alignment.push(instanceData.instanceFeatureIdx[i]!)
     segments.op.push(OP_NAMES[instanceData.segmentOps[i]!] ?? 'match')
-    segments.xRegion.push(xa.region)
-    segments.xChrom.push(h.regions[xa.region]!.refName)
-    segments.xStart.push(xa.coord)
-    segments.xEnd.push(xb.coord)
-    segments.yRegion.push(ya.region)
-    segments.yChrom.push(v.regions[ya.region]!.refName)
-    segments.yStart.push(ya.coord)
-    segments.yEnd.push(yb.coord)
+    segments.xRegion.push(xs.region)
+    segments.xChrom.push(h.regions[xs.region]!.refName)
+    segments.xStart.push(xs.from)
+    segments.xEnd.push(xs.to)
+    segments.yRegion.push(ys.region)
+    segments.yChrom.push(v.regions[ys.region]!.refName)
+    segments.yStart.push(ys.from)
+    segments.yEnd.push(ys.to)
     segments.color.push(color)
     segments.alpha.push(alpha * level)
   }
@@ -234,9 +232,8 @@ export async function dotplotTables(
     alpha: [] as number[],
   }
   const span = (axis: ComparativeAxis, a: number, b: number) => {
-    const lo = locateCum(axis, Math.min(a, b), Math.max(a, b)).coord
-    const hi = locateCum(axis, Math.max(a, b), Math.min(a, b)).coord
-    return [Math.min(lo, hi), Math.max(lo, hi)]
+    const { from, to } = locateSpan(axis, Math.min(a, b), Math.max(a, b))
+    return [Math.min(from, to), Math.max(from, to)]
   }
   for (const i of rows) {
     const [xs, xe] = span(h, rpcData.p11[i]!, rpcData.p12[i]!)

@@ -449,6 +449,7 @@ export {
   comparativeViewSettings,
   drawnRows,
   locateCum,
+  locateSpan,
   positionIn,
   unpack,
   viewColorSettings,

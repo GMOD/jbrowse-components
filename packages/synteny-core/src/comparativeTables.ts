@@ -184,6 +184,19 @@ export function locateCum(axis: ComparativeAxis, cum: number, hint = cum) {
   return { region: i, coord: r.reversed ? r.end - off : r.start + off }
 }
 
+/**
+ * Both ends of a span from `a` to `b` in cumulative bp back on the axis: the
+ * region `a` falls in, and the genomic coordinate of each end.
+ */
+export function locateSpan(axis: ComparativeAxis, a: number, b: number) {
+  const from = locateCum(axis, a, b)
+  return {
+    region: from.region,
+    from: from.coord,
+    to: locateCum(axis, b, a).coord,
+  }
+}
+
 /** The order `query` and `target` painting hand the palette out in: the axis's assembly's, else its contigs'. */
 export function axisNamePosition(axis: ComparativeAxis) {
   return axis.refNamePosition ?? positionIn(axis.refNames)

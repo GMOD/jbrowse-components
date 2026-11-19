@@ -22,7 +22,7 @@ import {
   fadesThinAt,
   indelsDrawingOf,
   isInstanceInvisible,
-  locateCum,
+  locateSpan,
   syntenyMarkConfigSchema,
   syntenyRenderConfigSchema,
   unpack,
@@ -387,18 +387,17 @@ function markRows(
   contigBp: ReadonlyMap<string, number>,
   contigFloor: number,
 ) {
-  const from = rows.map(i => locateCum(on, data.starts[i]!, data.ends[i]))
-  const to = rows.map(i => locateCum(on, data.ends[i]!, data.starts[i]))
+  const spans = rows.map(i => locateSpan(on, data.starts[i]!, data.ends[i]!))
   const mateChrom = rows.map(
     i => data.mateRefNameDict[data.mateRefNameIds[i]!]!,
   )
   const paint = mateChrom.map(colorOf)
   return {
     axis: rows.map(() => axis),
-    region: from.map(p => p.region),
-    chrom: from.map(p => on.regions[p.region]!.refName),
-    start: from.map((p, k) => Math.min(p.coord, to[k]!.coord)),
-    end: from.map((p, k) => Math.max(p.coord, to[k]!.coord)),
+    region: spans.map(p => p.region),
+    chrom: spans.map(p => on.regions[p.region]!.refName),
+    start: spans.map(p => Math.min(p.from, p.to)),
+    end: spans.map(p => Math.max(p.from, p.to)),
     mateChrom,
     mateStart: rows.map(i => data.mateStarts[i]!),
     mateEnd: rows.map(i => data.mateEnds[i]!),
@@ -592,15 +591,12 @@ export async function syntenyTables(
     a: number,
     b: number,
   ) => {
-    const from = locateCum(axis, a, b)
-    const to = locateCum(axis, b, a)
-    const r = axis.regions[from.region]!
-    const lo = axis.before[from.region]!
+    const span = locateSpan(axis, a, b)
+    const r = axis.regions[span.region]!
+    const lo = axis.before[span.region]!
     const hi = lo + r.end - r.start
     return {
-      region: from.region,
-      from: from.coord,
-      to: to.coord,
+      ...span,
       x1: clamp(a, lo, hi) / axis.bpPerPx - offsetPx,
       x2: clamp(b, lo, hi) / axis.bpPerPx - offsetPx,
     }

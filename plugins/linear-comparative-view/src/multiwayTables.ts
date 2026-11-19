@@ -517,8 +517,8 @@ export async function multiwayTables(
     adapterConfig,
   )
   const header: unknown =
-    declaresLanes && 'getHeader' in dataAdapter
-      ? await (dataAdapter as { getHeader: () => Promise<unknown> }).getHeader()
+    declaresLanes && dataAdapter instanceof BaseFeatureDataAdapter
+      ? await dataAdapter.getHeader()
       : undefined
   const starAnchor = starAnchorOf(header)
   const declared = header === undefined ? [] : declaredLanesOf(header)
