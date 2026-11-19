@@ -46,7 +46,6 @@ import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { groupByPlotOf } from '@jbrowse/display-kit/groupByMenu'
-import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import {
   editPlotMenuItems,
@@ -128,7 +127,6 @@ import {
 import { filterFieldInEffect, layersInEffect } from './dialogs/layerFilters.ts'
 import { fetchExportedReads } from './exportedReads.ts'
 import {
-  attachLinkedReadLinesByGroup,
   fitLaneRows,
   fittedReadPitch,
   groupRowCaps,
@@ -138,7 +136,6 @@ import {
 import {
   buildReadIdIndex,
   eachGroup,
-  hasNamedGroups,
   orderedGroups,
   splitOverflowKeys,
 } from './groupedDataMaps.ts'
@@ -149,7 +146,13 @@ import {
   connectorKeyInWindows,
   junctionInWindows,
 } from './keyWindows.ts'
-import { buildLanes, drawnLanesOf, drawsPileupRows } from './lanes.ts'
+import {
+  drawnLaneViews,
+  laneViews,
+  linkedReadLinesViews,
+  sectionViews,
+} from './laneViews.ts'
+import { drawsPileupRows } from './lanes.ts'
 import {
   featureSpacingForHeight,
   featureSpacingForPitch,
@@ -188,7 +191,6 @@ import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import { rpcPropsViews, sortTagViews } from './rpcPropsViews.ts'
 import {
   buildSectionRenders,
-  computeStackedSections,
   coverageBandTop,
   dragLaneBand,
   laneBandOverheads,
@@ -986,18 +988,6 @@ export default function stateModelFactory(
           },
 
           /**
-           * #getter
-           * Whether the stacked section labels and dividers are drawn. Not
-           * `isGrouped`: grouping that yields one section still reserves the
-           * label offset (`prefersOffset`) and wants its section named and
-           * collapsible. Reads the fetched sections, not `facet` — see
-           * `hasNamedGroups`.
-           */
-          get showsGroupLabels() {
-            return hasNamedGroups(self.groupOrder)
-          },
-
-          /**
            * #method
            * The text a group's chip shows for its section label
            */
@@ -1060,20 +1050,7 @@ export default function stateModelFactory(
         },
       }))
       .views(self => alignmentsColorViews(self))
-      .views(self => ({
-        /**
-         * #getter
-         * `laidOutByGroupColored` with the straight-line pass's records
-         * spread on, so a curved-connector toggle re-spreads the lines and
-         * keeps both the layout and the colors.
-         */
-        get laidOutByGroup() {
-          return attachLinkedReadLinesByGroup(
-            self.laidOutByGroupColored,
-            self.connectorsByGroup,
-          )
-        },
-      }))
+      .views(self => linkedReadLinesViews(self))
       .views(self => ({
         /**
          * #getter
@@ -1111,85 +1088,17 @@ export default function stateModelFactory(
           return findRead(self.readIdIndexMap, self.laidOutByGroup, featureId)
         },
       }))
+      .views(self => laneViews(self))
+      .views(self => drawnLaneViews(self))
+      .views(self => sectionViews(self))
       .views(self => ({
-        /**
-         * #getter
-         * The stacked lanes in stacking order, one `AlignmentLane` per drawn
-         * group; ungrouped is the one-lane case. The one place a lane's key
-         * resolves to its data.
-         */
-        get lanes(): AlignmentLane[] {
-          return buildLanes({
-            order: self.groupOrder,
-            rawByGroup: self.rawDataByGroup,
-            laidOutByGroup: self.laidOutByGroup,
-            arcInkKeys: self.arcsResult.inkGroupKeys,
-            junctionsStripKeysByGroup: self.junctionsStripKeysByGroup,
-            collapsedKeys: self.collapsedGroups,
-            sizes: self.groupSizesInEffect,
-            showPileup: self.showPileup,
-            fitHeightToDisplay: self.fitHeightToDisplay,
-          })
-        },
-
-        /**
-         * #getter
-         * The lanes laid out, or the one SYNTHETIC no-data lane: `sections`
-         * must produce a section before any fetch lands, and a grouped fetch
-         * over an empty region partitions to zero lanes. Every collection on it
-         * is empty.
-         */
-        get drawnLanes(): AlignmentLane[] {
-          return drawnLanesOf(this.lanes)
-        },
-
-        /**
-         * #method
-         * One lane by group key, for the per-key questions a component asks
-         * with a `groupKey` in hand. `undefined` for a key that isn't drawn.
-         */
-        laneFor(key: string) {
-          return this.lanes.find(l => l.groupKey === key)
-        },
-
-        /**
-         * #getter
-         * The least height a section takes, so its label chip has room.
-         */
-        get minSectionHeight() {
-          return self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0
-        },
-
-        /**
-         * #getter
-         * All vertical band geometry, one entry per lane; ungrouped is the
-         * one-lane call. Runs over `drawnLanes` so a display with no data still
-         * has a section. The sticky-coverage-vs-scroll distinction lives
-         * downstream in `buildSectionRenders`. With the pileup hidden every
-         * lane advances exactly its `laneSlot`, its bands filling it, so the
-         * stack fits the track and never scrolls.
-         */
-        get sections() {
-          return computeStackedSections(
-            this.drawnLanes,
-            self.drawnLaneBandsInput,
-            {
-              rowHeight: self.rowHeight,
-              minSectionHeight: self.showPileup
-                ? this.minSectionHeight
-                : self.laneSlot,
-              bandHeights: self.bandHeights,
-            },
-          )
-        },
-
         /**
          * #getter
          * Every lane with its band geometry in stacking order: the list the
          * overlays, the hit-test pipeline and both renderers walk.
          */
         get renderSections() {
-          return this.sections.sections
+          return self.sections.sections
         },
 
         /**
@@ -1208,7 +1117,7 @@ export default function stateModelFactory(
                     groupKey: sec.groupKey,
                     pileupTop: sec.pileupTop,
                     pileupHeight: sec.rowsHeight,
-                    dipFloor: sectionDipFloor(this.sections, sec, self.height),
+                    dipFloor: sectionDipFloor(self.sections, sec, self.height),
                     pairs,
                   },
                 ]
@@ -1311,7 +1220,7 @@ export default function stateModelFactory(
          * stack as one.
          */
         get isGrouped() {
-          return this.lanes.length > 1
+          return self.lanes.length > 1
         },
 
         /**
@@ -1335,7 +1244,7 @@ export default function stateModelFactory(
          * screen-y a view overlaying this display's reads stops at.
          */
         get stickyBandHeight() {
-          return this.isGrouped ? 0 : this.sections.sections[0]!.pileupTop
+          return this.isGrouped ? 0 : self.sections.sections[0]!.pileupTop
         },
 
         /**
@@ -1345,7 +1254,7 @@ export default function stateModelFactory(
          * axis and its rules all read this.
          */
         get coverageBandHeight() {
-          return this.sections.sections[0]!.bands.reserved.coverage
+          return self.sections.sections[0]!.bands.reserved.coverage
         },
 
         /**
@@ -1375,7 +1284,7 @@ export default function stateModelFactory(
         get scrollContentHeight() {
           return Math.max(
             0,
-            this.sections.contentHeight - this.stickyBandHeight,
+            self.sections.contentHeight - this.stickyBandHeight,
           )
         },
 
@@ -1393,7 +1302,7 @@ export default function stateModelFactory(
         get growTargetHeight() {
           return self.showPileup
             ? self.layoutReady
-              ? this.sections.contentHeight
+              ? self.sections.contentHeight
               : self.fitTargetHeight
             : pileupHiddenHeight(self)
         },

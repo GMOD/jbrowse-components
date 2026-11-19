@@ -51,7 +51,6 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { heightModeViews } from '@jbrowse/display-kit/HeightModeMixin'
 import { hiddenGroupsViews } from '@jbrowse/display-kit/HiddenGroupsMixin'
-import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import {
   byteGatedFetchRegions,
@@ -109,14 +108,18 @@ import {
   MAX_LAYOUT_ROWS,
   ceilingCap,
   groupClipSource,
-  groupMaxY,
 } from './LinearAlignmentsDisplay/groupLayout.ts'
-import { hasNamedGroups } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import {
   arcSlotsInWindows,
   connectorKeyInWindows,
   junctionInWindows,
 } from './LinearAlignmentsDisplay/keyWindows.ts'
+import {
+  drawnLaneViews,
+  laneViews,
+  linkedReadLinesViews,
+  sectionViews,
+} from './LinearAlignmentsDisplay/laneViews.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
 import {
@@ -142,7 +145,6 @@ import {
 } from './LinearAlignmentsDisplay/rpcPropsViews.ts'
 import {
   arcsOverlayCoverage,
-  computeStackedSections,
   laneBands,
   sectionDipFloor,
 } from './LinearAlignmentsDisplay/sectionLayout.ts'
@@ -236,6 +238,7 @@ import { getOrCreate } from './shared/util.ts'
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
+import type { GroupSize } from './LinearAlignmentsDisplay/groupLayout.ts'
 import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
@@ -537,6 +540,7 @@ interface AlignmentsTablesInputs {
 
 const NO_KEYS: ReadonlySet<string> = new Set()
 const NO_ROW_CAPS: ReadonlyMap<string, RowCap> = new Map()
+const NO_GROUP_SIZES: ReadonlyMap<string, GroupSize> = new Map()
 
 /**
  * The alignments display reduced to what its tables decide from: its config,
@@ -615,11 +619,17 @@ const AlignmentsTablesHost = types
     get featureSpacing() {
       return featureSpacingForHeight(self.markHeight)
     },
+    get rowHeight() {
+      return this.featureHeight + this.featureSpacing
+    },
     get collapsedGroups() {
       return NO_KEYS
     },
     get rowlessLaneKeys() {
       return NO_KEYS
+    },
+    get groupSizesInEffect() {
+      return NO_GROUP_SIZES
     },
     get groupRowCaps() {
       return NO_ROW_CAPS
@@ -659,6 +669,10 @@ const AlignmentsTablesHost = types
   .views(self => coverageTicksViews(self))
   .views(self => alignmentsColorViews(self))
   .views(self => readPaletteViews(self))
+  .views(self => linkedReadLinesViews(self))
+  .views(self => laneViews(self))
+  .views(self => drawnLaneViews(self))
+  .views(self => sectionViews(self))
   .views(self => sortTagViews(self))
   .views(self => rpcPropsViews(self))
   .views(self => ({
@@ -1263,36 +1277,6 @@ function overlapsInWindow(
   }
 }
 
-/**
- * The sections stacked as the display stacks them (`computeStackedSections`),
- * each its band stack over every row the tables lay out, no lane sized by a
- * drag; with the pileup hidden, each its `laneSlot` filled by its bands.
- */
-function stackedSections(host: AlignmentsTablesHostModel, readPitch: number) {
-  const order = host.groupOrder
-  return computeStackedSections(
-    order.map(({ key }) => ({
-      key,
-      maxY: host.showPileup
-        ? groupMaxY(host.laidOutByGroupFramed.get(key) ?? new Map())
-        : 0,
-      hasArcs: host.arcsResult.inkGroupKeys.has(key),
-      hasJunctionsStripArcs: host.junctionsStripLanes.has(key),
-      heightOverridePx: undefined,
-    })),
-    host.drawnLaneBandsInput,
-    {
-      rowHeight: readPitch,
-      minSectionHeight: host.showPileup
-        ? hasNamedGroups(order)
-          ? GROUP_LABEL_HEIGHT
-          : 0
-        : host.laneSlot,
-      bandHeights: host.bandHeights,
-    },
-  )
-}
-
 // The pooled band stack as the display draws it, one lane holding every
 // strip any lane reserves.
 function pooledLaneBands(host: AlignmentsTablesHostModel) {
@@ -1326,10 +1310,10 @@ function sectionConnectors(host: AlignmentsTablesHostModel, readPitch: number) {
   const windows = host.regionInfos
   const { featureHeight } = host
   const arrows = connectorArrowPx(featureHeight) > 0
-  const layout = stackedSections(host, readPitch)
+  const layout = host.sections
   return new Map(
     layout.sections.map(sec => {
-      const { key, rowsHeight: pileupHeight } = sec
+      const { groupKey: key, rowsHeight: pileupHeight } = sec
       const dipFloor = sectionDipFloor(layout, sec, 0)
       const connectors = host.connectorsByGroup.get(key)
       const byRegion = new Map<number, PlacedConnector[]>()
@@ -1773,7 +1757,7 @@ function laidOutTables(
     minAlleleFraction: host.coverageMinAlleleFraction,
     junctions: host.junctionFilter,
   }
-  const readPitch = featureHeight + host.featureSpacing
+  const readPitch = host.rowHeight
   const connectorsBySection = sectionConnectors(host, readPitch)
   const slotRgb = buildArcColorPalette(colors.palette)
   const connections = readConnectionTables(
