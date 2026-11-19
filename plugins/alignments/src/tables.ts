@@ -1636,7 +1636,7 @@ export async function alignmentTables(
     adapterConfig,
     sequenceAdapter,
   )
-  const { fetchRegions, tooLarge } = await byteGatedFetchRegions({
+  const { fetchRegions } = await byteGatedFetchRegions({
     adapter: dataAdapter,
     regions,
     displayedRegions,
@@ -1691,7 +1691,9 @@ export async function alignmentTables(
           args: { ...args, regions: [r], facet },
         })
         if ('regionTooLarge' in result) {
-          throw tooLarge(result.bytes)
+          throw new Error(
+            'RenderAlignmentData refused a region it was given no budget for',
+          )
         }
         return result.value
       }),
