@@ -1,4 +1,4 @@
-import { alpha, blend, darken, lighten, parse, toRGBA } from './index.ts'
+import { alpha, blend, newColor, parse, toRGBA } from './index.ts'
 
 // The vendored composition is `(r << 24) + (g << 16) + (b << 8) + a`, which
 // wraps each channel and then carries the overflow into its neighbour, and
@@ -45,26 +45,10 @@ describe('an out-of-range channel clamps, and never bleeds into its neighbour', 
     expect(toRGBA(alpha(parse(RED), Number.NaN)).r).toBe(255)
   })
 
-  it('a coefficient past 1 saturates instead of turning red into teal', () => {
-    expect(toRGBA(lighten(parse(RED), 1.5))).toEqual({
-      r: 255,
-      g: 255,
-      b: 255,
-      a: 255,
-    })
-    expect(toRGBA(darken(parse(RED), 1.5))).toEqual({
-      r: 0,
-      g: 0,
-      b: 0,
-      a: 255,
-    })
-  })
-
   it('leaves every in-range value exactly where it was', () => {
     expect(toRGBA(alpha(parse(RED), 0.5)).a).toBe(128)
-    // truncating, not rounding: `<<` did that before the clamp and still does,
-    // which is what keeps this matching MUI's own darken
-    expect(toRGBA(darken(parse('#ffffff'), 0.5))).toEqual({
+    // truncating, not rounding: `<<` did that before the clamp and still does
+    expect(toRGBA(newColor(127.5, 127.5, 127.5, 255))).toEqual({
       r: 127,
       g: 127,
       b: 127,

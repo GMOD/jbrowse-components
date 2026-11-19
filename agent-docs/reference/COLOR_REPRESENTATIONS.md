@@ -12,9 +12,10 @@ byte layouts, and the type system cannot tell them apart. The GPU renderer
 rollout added the second layout without a way to distinguish them.
 
 - **Canonical packed `Color`**: `0xRRGGBBAA`, R in the high byte, the vendored
-  `packages/core/src/util/color-bits/` domain. Every `blend` / `darken` /
-  `lighten` / `alpha` / `getLuminance` lives here only; `colord.ts` is a
-  `colord`-API shim over it.
+  `packages/core/src/util/color-bits/` domain, which holds `blend` and
+  `alpha`; `colord.ts` is a `colord`-API shim over it. The CSS-string
+  `lighten` / `darken` / `alpha` / `getLuminance` are `ui/palette.ts`'s,
+  matching MUI's, and read channels through `parseCssColorOr`.
 - **ABGR u32**: red in the *low* byte, the layout GPU instance buffers and
   canvas `fillStyle` round-trips write (`packages/core/src/util/colorBits.ts`,
   with BED-triple handling and the invalid-color sentinel). The shader end is

@@ -7,28 +7,12 @@
 import {
   darken,
   getContrastRatio,
+  getLuminance,
   lighten,
-  getLuminance as luminanceOf,
 } from '../../ui/palette.ts'
 import * as convert from '../color-bits/convert.ts'
 import { cssColorToNormalizedRgb } from '../colorBits.ts'
 import { namedColorToHex } from './cssColorsLevel4.ts'
-
-/**
- * The relative brightness of any point in a color space,
- * normalized to 0 for darkest black and 1 for lightest white,
- * with support for named colors on top.
- *
- * Formula: https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-tests
- *
- * @param color - CSS color, i.e. one of: #nnn, #nnnnnn, rgb(), rgba(),
- *  hsl(), hsla(), or named color
- * @returns The relative brightness of the color in the range 0 - 1
- */
-function getLuminance(color: string): number {
-  const convertedColor = namedColorToHex(color)
-  return luminanceOf(convertedColor || color)
-}
 
 /**
  * Darken or lighten a color, depending on its luminance.
@@ -40,10 +24,9 @@ function getLuminance(color: string): number {
  * @returns A CSS color string. Hex input values are returned as rgb
  */
 export function emphasize(color: string, coefficient = 0.15): string {
-  const convertedColor = namedColorToHex(color) || color
-  return getLuminance(convertedColor) > 0.5
-    ? darken(convertedColor, coefficient)
-    : lighten(convertedColor, coefficient)
+  return getLuminance(color) > 0.5
+    ? darken(color, coefficient)
+    : lighten(color, coefficient)
 }
 
 const CONTRAST_STEPS = 20
@@ -64,11 +47,10 @@ export function makeContrasting(
   background = 'white',
   minContrastRatio = 3,
 ) {
-  const originalColor = namedColorToHex(foreground) || foreground
-  const convertedBackground = namedColorToHex(background) || background
-  const backgroundLuminance = getLuminance(convertedBackground)
+  const originalColor = namedColorToHex(foreground) ?? foreground
+  const backgroundLuminance = getLuminance(background)
   let best = originalColor
-  let bestRatio = getContrastRatio(originalColor, convertedBackground)
+  let bestRatio = getContrastRatio(originalColor, background)
   // an integer step keeps the last coefficient exactly 1, where the clamp bites
   for (
     let step = 1;
@@ -80,7 +62,7 @@ export function makeContrasting(
       backgroundLuminance > 0.5
         ? darken(originalColor, coefficient)
         : lighten(originalColor, coefficient)
-    const ratio = getContrastRatio(candidate, convertedBackground)
+    const ratio = getContrastRatio(candidate, background)
     // lightening a dark color against a mid-grey background dips before it
     // climbs, so track the max rather than taking the last candidate
     if (ratio > bestRatio) {

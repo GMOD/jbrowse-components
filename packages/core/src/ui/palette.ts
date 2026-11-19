@@ -21,7 +21,14 @@
  * asking for "the color text is drawn in" should not have to reach into a
  * component library to find out.
  */
-import { colord } from '../util/colord.ts'
+import {
+  getAlpha,
+  getBlue,
+  getGreen,
+  getRed,
+  newColor,
+} from '../util/color-bits/core.ts'
+import { parseCssColorOr } from '../util/cssColorParse.ts'
 
 /** A resolved color and the three shades MUI-shaped consumers expect. */
 export interface ColorQuad {
@@ -105,8 +112,15 @@ function recompose(r: number, g: number, b: number, a: number) {
   return a < 1 ? `rgba(${rr}, ${gg}, ${bb}, ${a})` : `rgb(${rr}, ${gg}, ${bb})`
 }
 
+const BLACK = newColor(0, 0, 0, 255)
+
+function channels(color: string) {
+  const c = parseCssColorOr(color, BLACK)
+  return { r: getRed(c), g: getGreen(c), b: getBlue(c), a: getAlpha(c) / 255 }
+}
+
 function shiftChannels(color: string, fn: (channel: number) => number) {
-  const { r, g, b, a } = colord(color).toRgb()
+  const { r, g, b, a } = channels(color)
   return recompose(fn(r), fn(g), fn(b), a)
 }
 
@@ -120,14 +134,14 @@ export function darken(color: string, coefficient: number) {
 
 /** Restate a color at a given opacity, as `rgba(r, g, b, a)`. */
 export function alpha(color: string, value: number) {
-  const { r, g, b } = colord(color).toRgb()
+  const { r, g, b } = channels(color)
   const a = Math.min(Math.max(value, 0), 1)
-  return `rgba(${Math.trunc(r)}, ${Math.trunc(g)}, ${Math.trunc(b)}, ${a})`
+  return `rgba(${r}, ${g}, ${b}, ${a})`
 }
 
 /** WCAG relative luminance, truncated to three digits the way MUI does. */
 export function getLuminance(color: string) {
-  const { r, g, b } = colord(color).toRgb()
+  const { r, g, b } = channels(color)
   const [rr, gg, bb] = [r, g, b].map(channel => {
     const v = channel / 255
     return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4

@@ -27,4 +27,4 @@ export {
   toHSLA,
   toRGBA,
 } from './format.ts'
-export { alpha, blend, darken, getLuminance, lighten } from './functions.ts'
+export { alpha, blend } from './functions.ts'
