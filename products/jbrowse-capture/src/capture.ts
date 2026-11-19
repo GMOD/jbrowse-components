@@ -15,6 +15,7 @@ import {
   trackIdsFromSession,
 } from './session.ts'
 import { sessionOverflowInPage } from './sessionOverflow.ts'
+import { sessionSummaryInPage } from './sessionSummary.ts'
 import {
   PUBLIC_INSTANCE,
   assertCoherentOptions,
@@ -187,6 +188,13 @@ export interface CaptureOptions extends OpenOptions {
 export interface CaptureResult extends ReadyReport {
   url: string
   image: Uint8Array
+  /**
+   * What `jb.sessionSummary()` answered just before the screenshot: each view
+   * with its visible region and height, and each track with its display,
+   * height and any phase, error or notice. Undefined on a page that publishes
+   * no `window.jb`.
+   */
+  session: unknown
 }
 
 function assertCapturable({ out, annotations }: CaptureOptions) {
@@ -217,8 +225,9 @@ async function shoot(
   if (annotations?.length) {
     await drawAnnotations(page, annotations)
   }
+  const session = await page.evaluate(sessionSummaryInPage)
   const image = await page.screenshot({ path: out })
-  return { image, ...report }
+  return { image, session, ...report }
 }
 
 /**
@@ -282,14 +291,17 @@ export async function captureBatch(
       let page: Page | undefined
       try {
         const prepared = await prepareOpen(capture)
-        const opened = await openPage(await liveBrowser(), prepared)
-        page = opened.page
-        const { url } = opened
+        const {
+          page: opened,
+          url,
+          ...report
+        } = await openPage(await liveBrowser(), prepared)
+        page = opened
         result = {
           ok: true,
           out: capture.out,
           url,
-          ...(await shoot(page, opened, capture)),
+          ...(await shoot(page, report, capture)),
           ms: performance.now() - start,
         }
       } catch (error) {

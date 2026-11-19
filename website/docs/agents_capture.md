@@ -45,6 +45,14 @@ npx @jbrowse/capture --genome hg38 --spec spec.json -o out.png
 - `--instance http://localhost:3000` points it at a build of your own, served by
   anything that honors `Range` requests (`npx serve` does,
   `python3 -m http.server` does not).
+- `--json` prints the result as one object: the URL, what did not settle, and
+  the session as `jb.sessionSummary()` describes it, including the region a gene
+  name landed on and any track's error or notice.
+- To change the view and look again without a new browser each time, use the
+  library: the page `openJBrowse` returns publishes `window.jb`, so
+  [](/docs/agents_live_model) and [](/docs/agents_recipes) apply through
+  `page.evaluate`. The [package README](/docs/jbrowse-capture#for-an-ai-agent)
+  has the loop.
 
 ## Knowing when the render is done {#knowing-when-it-is-done}
 

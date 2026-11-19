@@ -16,7 +16,7 @@ import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
 import { version } from './version.ts'
 
 import type { ParsedArgs } from './args.ts'
-import type { CaptureOptions } from './capture.ts'
+import type { BatchResult, CaptureOptions } from './capture.ts'
 import type { ReadyReport } from './ready.ts'
 
 const LISTING = { command: 'jb2capture', out: 'out.png' }
@@ -82,6 +82,10 @@ BATCH
 
 OTHER
   --headed              run with a visible browser window
+  --json                print the result on stdout as JSON instead: the image,
+                        its URL, what did not settle, and the session as
+                        jb.sessionSummary() describes it (each view's visible
+                        region, each track's display, height and any error)
   --verbose             print browser console output and uncaught errors
                         (GPU noise filtered)
   --version, -v         the package version
@@ -159,6 +163,20 @@ function warn(
   }
 }
 
+const printJson = (value: unknown) => {
+  console.log(JSON.stringify(value, null, 2))
+}
+
+function batchRecord(result: BatchResult) {
+  if (result.ok) {
+    const { image: _, ...rest } = result
+    return rest
+  } else {
+    const { error, ...rest } = result
+    return { ...rest, error: error.message }
+  }
+}
+
 async function runBatch(args: ParsedArgs) {
   const [manifest, ...extra] = args.positionals
   if (!manifest || extra.length) {
@@ -176,18 +194,24 @@ async function runBatch(args: ParsedArgs) {
     concurrency: args.concurrency,
     onResult: (result, index) => {
       const label = `[${index + 1}/${captures.length}] ${result.out} ${(result.ms / 1000).toFixed(1)}s`
-      if (result.ok) {
+      if (!result.ok) {
+        console.error(`FAILED ${label}: ${result.error.message}`)
+      } else if (args.json) {
+        console.error(`wrote ${label}`)
+      } else {
         console.log(`wrote ${label}`)
         warn(result, '  ')
-      } else {
-        console.error(`FAILED ${label}: ${result.error.message}`)
       }
     },
   })
   const failed = results.filter(r => !r.ok).length
-  console.log(
-    `wrote ${results.length - failed}/${results.length} images in ${((performance.now() - start) / 1000).toFixed(1)}s`,
-  )
+  const summary = `wrote ${results.length - failed}/${results.length} images in ${((performance.now() - start) / 1000).toFixed(1)}s`
+  if (args.json) {
+    console.error(summary)
+    printJson(results.map(batchRecord))
+  } else {
+    console.log(summary)
+  }
   if (failed) {
     process.exitCode = 1
   }
@@ -236,14 +260,18 @@ async function main() {
   if (!args.out) {
     throw new Error('--out <file.png> is required (or use `jb2capture url`)')
   }
-  const { url, tooLarge, unsettled } = await captureJBrowse({
+  const { image: _, ...result } = await captureJBrowse({
     ...captureOptions(args),
     out: args.out,
     headless: !args.headed,
   })
-  console.log(`wrote ${args.out}`)
-  console.log(`from  ${url}`)
-  warn({ tooLarge, unsettled })
+  if (args.json) {
+    printJson({ out: args.out, ...result })
+  } else {
+    console.log(`wrote ${args.out}`)
+    console.log(`from  ${result.url}`)
+    warn(result)
+  }
 }
 
 try {

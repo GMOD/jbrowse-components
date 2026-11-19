@@ -43,6 +43,7 @@ export interface ParsedArgs {
   help: boolean
   version: boolean
   allowUnsettled: boolean
+  json: boolean
   /** `list`'s genome and filter, or `batch`'s manifest. Empty for the other commands. */
   positionals: string[]
 }
@@ -73,6 +74,7 @@ const BOOLEANS = [
   'help',
   'version',
   'allowUnsettled',
+  'json',
 ] as const
 
 type Flag = (typeof STRINGS)[number] | (typeof BOOLEANS)[number]
@@ -315,6 +317,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
     help: bool('help'),
     version: bool('version'),
     allowUnsettled: bool('allowUnsettled'),
+    json: bool('json'),
     positionals,
   }
 }

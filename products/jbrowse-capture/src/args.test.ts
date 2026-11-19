@@ -267,3 +267,11 @@ test("batch's manifest comes right after the word", () => {
     parseArgs(['batch', '--genome', 'hg38', 'captures.json']),
   ).toThrow('--genome takes one value, so "captures.json" applies to nothing')
 })
+
+test('--json shapes a capture or a batch, and has nothing to shape in url', () => {
+  expect(parseArgs(['--json', '-o', 'a.png']).json).toBe(true)
+  expect(parseArgs(['batch', '[]', '--json']).json).toBe(true)
+  expect(() => parseArgs(['url', '--json'])).toThrow(
+    '--json does not apply to `jb2capture url`',
+  )
+})

@@ -17,7 +17,10 @@ jest.mock('./ready.ts', () => ({
     Promise.resolve({ pending: [], tooLarge: [], unsettled: [] }),
 }))
 
-function fakeBrowser({ dieOn }: { dieOn?: string } = {}) {
+function fakeBrowser({
+  dieOn,
+  summary,
+}: { dieOn?: string; summary?: object } = {}) {
   const browser = {
     connected: true,
     pagesOpen: 0,
@@ -38,6 +41,7 @@ function fakeBrowser({ dieOn }: { dieOn?: string } = {}) {
             status: () => (cached ? 304 : 200),
           })
         },
+        evaluate: () => Promise.resolve(summary),
         screenshot: () => Promise.resolve(new Uint8Array()),
         close: () => {
           browser.pagesOpen--
@@ -78,4 +82,12 @@ test('a browser that died fails one capture and is relaunched for the rest', asy
   expect(results[0]).toMatchObject({ error: { message: 'Target closed' } })
   expect(launch).toHaveBeenCalledTimes(2)
   expect(second.close).toHaveBeenCalledTimes(1)
+})
+
+test('each result carries the session as jb.sessionSummary() described it', async () => {
+  const summary = { views: [{ type: 'LinearGenomeView', tracks: [] }] }
+  launch.mockReset().mockResolvedValue(fakeBrowser({ summary }))
+  const [result] = await captureBatch(captures.slice(0, 1))
+  expect(result).toMatchObject({ ok: true, session: summary })
+  expect(result).not.toHaveProperty('page')
 })

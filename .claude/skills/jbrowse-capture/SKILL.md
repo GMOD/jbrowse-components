@@ -143,6 +143,7 @@ bounded settle is all you have.
 import {
   captureJBrowse,
   openJBrowse,
+  waitForAppSettled,
   waitForJBrowseReady,
 } from '@jbrowse/capture'
 
@@ -154,12 +155,19 @@ const { unsettled, tooLarge } = await captureJBrowse({
   out: 'brca1.png',
 })
 
-// or keep the page to interact with it
+// or keep the page and drive it: it publishes window.jb, the helper library
+// Desktop's MCP run_javascript uses, so the agents_live_model recipes apply
 const { browser, page } = await openJBrowse({ genome: 'mm39', loc: 'Sox2' })
-await page.click('[data-testid="track_menu_icon"]')
-await page.screenshot({ path: 'menu.png' })
+const report = await page.evaluate(() =>
+  jb.trackModel('mm39-ncbiRefSeqGff').applyDisplaySettings({ height: 250 }),
+)
+await waitForAppSettled(page)
+await page.screenshot({ path: 'taller.png' })
 await browser.close()
 ```
+
+Iterating this way costs a page evaluate per change; rerunning the CLI costs a
+browser launch and a full app load each time.
 
 `waitForJBrowseReady(page)` is the wait alone, for a page you navigated
 yourself. For a page of your own that embeds a JBrowse component, open it in
@@ -169,11 +177,13 @@ yourself. For a page of your own that embeds a JBrowse component, open it in
 naming which gate it was. Pass `allowUnsettled` / `--allowUnsettled` if you
 actually want the frame as it stands.
 
-**Read the return fields before trusting the image.** `unsettled` says what did
-not settle, and is empty unless you passed `allowUnsettled`; `pending` lists the
-displays not showing their data at capture time, each with its phase; `tooLarge`
-lists the displays showing "too much data" in place of their features, which is
-no failure but is not the picture either.
+**Read the return fields before trusting the image.** On the command line
+`--json` prints them. `session` is `jb.sessionSummary()`: the visible region a
+gene name landed on, and each track's display, height and any phase, error or
+notice. `unsettled` says what did not settle, and is empty unless you passed
+`allowUnsettled`; `pending` lists the displays not showing their data at capture
+time, each with its phase; `tooLarge` lists the displays showing "too much data"
+in place of their features, which is no failure but is not the picture either.
 
 ## Practical
 
