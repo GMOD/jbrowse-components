@@ -186,8 +186,10 @@ the message can appear at any zoom and offers only **Force load**.
 [`maxFeatureScreenDensity`](/docs/config/linearbasicdisplay/#slot-maxfeaturescreendensity)
 is features per pixel of track width, so the budget grows with the window. Only
 top-level features count (a gene, not its transcripts and exons), and the
-default of 10 draws a whole bacterial genome. A variant track's budget is
-`records.maxFeatureScreenDensity`, 1 by default.
+default of 10 draws a whole bacterial genome. It also draws most whole human
+chromosomes without asking: a whole chr10 or chr17 from a RefSeq GFF3 downloads
+about 2.8 MB, and `"maxFeatureScreenDensity": 1` shows the banner there instead.
+A variant track's budget is `records.maxFeatureScreenDensity`, 1 by default.
 
 ```json addtrack
 {
