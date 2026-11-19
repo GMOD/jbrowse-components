@@ -337,10 +337,6 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
         type: 'LinearSyntenyView',
         // Linear: a bezier bows away from the block edges the figure is about.
         mark: { interpolate: 'linear' },
-        // 'matches' leaves each intron an unpainted gap. 'full' names the indel
-        // op, and the perspective flip swaps D<->I, so one 532 bp gap drew in
-        // two colors depending on stacking order.
-        indels: { encoding: { opacity: 0 } },
         encoding: { opacity: 0.45 },
         // Level 0 is retro-CFA18 against the parent, level 1 the parent against
         // retro-CFA12.

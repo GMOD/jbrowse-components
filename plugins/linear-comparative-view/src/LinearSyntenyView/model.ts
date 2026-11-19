@@ -153,7 +153,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       ImportFormSyntenyMixin(),
       // no `defaultColorField: 'strand'` as the multi-way ribbons have:
       // declined 2026-10-26, since most synteny view figures draw on the red
-      // default, and strand would also turn every indel from blue to purple
+      // default
       SyntenyViewMixin({ defaultOpacity: DEFAULT_ALPHA }),
       SyntenyFadeMixin(),
       types.model({
@@ -169,8 +169,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * The insertions and deletions inside each alignment, a
          * [](/docs/config/syntenyindels) part: `{ show: false }` draws each
-         * alignment as one block, and `{ encoding: { opacity: 0 } }` leaves
-         * each indel a gap.
+         * alignment as one block. Each indel is a gap unless
+         * `{ encoding: { opacity: 1 } }` paints it in its operation's color.
          */
         indels: types.stripDefault(syntenyIndelsConfigSchema, {}),
         /**
@@ -422,7 +422,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * How the `indels` part draws: `off`, `matches` (gaps) or `full`.
        */
       get cigarMode(): CigarMode {
-        return indelsDrawingOf(self.indels)
+        return indelsDrawingOf(self.indels, 'matches')
       },
       /**
        * #getter

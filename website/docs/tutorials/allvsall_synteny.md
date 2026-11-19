@@ -377,8 +377,8 @@ Right-clicking a single alignment offers three routes under **Launch**:
 <Video src="/media/synteny/allvsall_launch_from_selection.mp4" caption="From the lanes to the stack for one locus: a scale-bar selection raises Launch, and the dialog's arrows reorder the panels before launch." />
 
 A launched view is a few kilobases wide, so it draws each indel from the CIGAR
-`minimap2 -c` wrote. **CIGAR indels** in the settings menu sets them to colored,
-transparent or none.
+`minimap2 -c` wrote, as see-through gaps. **CIGAR indels** in the settings menu
+paints them instead, or draws each alignment as one block.
 
 ## Reproduce it end to end
 

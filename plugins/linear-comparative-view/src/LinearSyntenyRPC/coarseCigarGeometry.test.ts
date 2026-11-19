@@ -67,6 +67,7 @@ async function run(features: Feature[], lodTier?: 'fine' | 'coarse') {
     queryView,
     targetView,
     lodTier,
+    cigarMode: 'full',
   })
   return value
 }

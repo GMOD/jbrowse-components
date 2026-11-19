@@ -450,7 +450,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   genomes_synteny: {
-    // curved ribbons with transparent indels: the blue reverse-strand sweep
+    // curved ribbons: the blue reverse-strand sweep
     // crossing the pink forward-strand, indels dropped to white
     src: 'genomes_synteny/ribbons_curved.png',
     // the two gene panels and the ribbons between them; the [0, 0.95] band drops

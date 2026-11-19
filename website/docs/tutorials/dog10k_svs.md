@@ -521,10 +521,11 @@ To put the parent gene between the two retrocopies, we:
    to `FGF4retro-CFA18`, `UU_Cfam_GSD_1.0` and `FGF4retro-CFA12`, top to bottom.
 2. Give the upper pair the CFA18 alignment and the lower pair the CFA12 one,
    then click **Launch**.
-3. Open the view's sliders menu and set **CIGAR indels → Transparent indels**.
-   Colored indels would show one gap as a deletion above the parent row and an
-   insertion below it, because the CIGAR reads as a deletion from one side and
-   an insertion from the other.
+
+Each indel is a see-through gap. **Colored indels** in the view's sliders menu
+would show one gap as a deletion above the parent row and an insertion below it,
+because the CIGAR reads as a deletion from one side and an insertion from the
+other.
 
 The window ends where the CFA18 alignment does, and the CFA12 ribbon runs past
 it.

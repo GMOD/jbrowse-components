@@ -90,7 +90,7 @@ export async function dotplotTables(
   { adapterConfig, trackName, x, y, view: written }: DotplotTablesArgs,
 ) {
   const view = DotplotViewSettings.create(written)
-  const indels = indelsDrawingOf(view.indels)
+  const indels = indelsDrawingOf(view.indels, 'full')
   const config = {
     filter: predicatesOf(view.filter),
     indels: fullConfSnapshot(view.indels),

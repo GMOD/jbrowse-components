@@ -16,12 +16,25 @@ import {
 
 const engine = createTablesEngine()
 
+const COLORED_INDELS = { indels: { encoding: { opacity: 1 } } }
+const COLORED = { ...INV_INDELS, view: COLORED_INDELS }
+
 function columnsAgree(table: Record<string, unknown[]>) {
   expect(new Set(Object.values(table).map(c => c.length)).size).toBe(1)
 }
 
+test('an indel is a gap unless the view paints indels', async () => {
+  const gaps = await engine.synteny(INV_INDELS)
+  const colored = await engine.synteny(COLORED)
+  expect(new Set(gaps.ribbons.kind)).toEqual(new Set(['match']))
+  expect(gaps.ribbons.kind.length).toBeGreaterThan(
+    gaps.alignments.length.length,
+  )
+  expect(new Set(colored.ribbons.kind)).toContain('insertion')
+})
+
 test('a PAF comes back as the synteny band lays out and colors it', async () => {
-  const t = await engine.synteny(INV_INDELS)
+  const t = await engine.synteny(COLORED)
   columnsAgree(t.alignments)
   columnsAgree(t.ribbons)
   expect(t.alignments.strand).toHaveLength(7)
@@ -46,7 +59,7 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   expect(kinds).toContain('match')
   expect(kinds).toContain('insertion')
   const zoomed = await engine.synteny({
-    ...INV_INDELS,
+    ...COLORED,
     query: { ...INV_INDELS.query, width: 4000 },
     target: { ...INV_INDELS.target, width: 4000 },
   })
@@ -57,7 +70,7 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
     ...INV_INDELS,
     query: { ...INV_INDELS.query, width: 4000 },
     target: { ...INV_INDELS.target, width: 4000 },
-    view: { encoding: { color: { field: 'strand' } } },
+    view: { ...COLORED_INDELS, encoding: { color: { field: 'strand' } } },
   })
   expect(zoomedStrand.legend.label).toEqual(
     expect.arrayContaining(['insertion', 'deletion']),
@@ -135,7 +148,7 @@ test('a row through its assembly is a window into its contig: ribbons reach past
   const query = { refName: 'ctgA', start: 27_000, end: 30_000 }
   const target = { refName: 'ctgA', start: 27_450, end: 30_450 }
   const framed = await engine.synteny({
-    ...INV_INDELS,
+    ...COLORED,
     query: {
       regions: [query],
       width,
@@ -173,7 +186,7 @@ test('a row through its assembly is a window into its contig: ribbons reach past
   // with no assembly the file's own contig lengths (PAF qlen and tlen) frame
   // each row the same way
   const bare = await engine.synteny({
-    ...INV_INDELS,
+    ...COLORED,
     query: { regions: [query], width },
     target: { regions: [target], width },
   })
@@ -285,6 +298,7 @@ test('the view settings color by strand, set the opacity and hide short blocks',
   const t = await engine.synteny({
     ...INV_INDELS,
     view: {
+      ...COLORED_INDELS,
       encoding: { color: { field: 'strand' }, opacity: 0.6 },
       filter: [{ field: 'length', gte: 400 }],
       axis: { grid: true },

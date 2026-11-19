@@ -107,7 +107,7 @@ export async function executeSyntenyFeaturesAndPositions({
   queryView,
   targetView,
   signal,
-  cigarMode = 'full',
+  cigarMode = 'matches',
   lodTier,
   statusCallback,
 }: {

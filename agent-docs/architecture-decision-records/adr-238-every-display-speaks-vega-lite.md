@@ -373,7 +373,7 @@ The indels are a part of the alignment mark:
 | Setting | Draws |
 |---|---|
 | `indels: { show: false }` | one block per record, today's `cigarMode: 'off'` and `drawCigar: false` |
-| `indels: {}` | indels drawn in their op colors, `full` |
+| `indels: {}` | indels drawn in their op colors, `full` (the dotplot; the synteny view leaves gaps since ADR-277) |
 | `indels: { encoding: { opacity: { value: 0 } } }` | indels left as gaps, `matches` |
 
 ### Layers inside a part

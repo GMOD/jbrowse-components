@@ -11,15 +11,16 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #category view
  * The linear synteny and dotplot views' `indels` part: the insertions and
  * deletions inside each alignment, read from its CIGAR. `show: false` draws
- * each alignment as one block or one straight segment; an opacity of 0 leaves
- * each indel a gap.
+ * each alignment as one block or one straight segment. An opacity of 0 leaves
+ * each indel a gap and any other opacity paints it in its operation's color;
+ * unset, the synteny view leaves gaps and the dotplot draws each indel's line.
  *
  * #example
  * ```js
  * { type: 'LinearSyntenyView', indels: { show: false } }
  * ```
  * ```js
- * { type: 'LinearSyntenyView', indels: { encoding: { opacity: 0 } } }
+ * { type: 'LinearSyntenyView', indels: { encoding: { opacity: 1 } } }
  * ```
  */
 export const syntenyIndelsConfigSchema = ConfigurationSchema(
@@ -43,8 +44,9 @@ export const syntenyIndelsConfigSchema = ConfigurationSchema(
       {
         /**
          * #slot encoding.opacity
-         * `0` leaves each indel a gap; unset, or any other value, paints it
-         * in its operation's color.
+         * `0` leaves each indel a gap and any other value paints it in its
+         * operation's color. Unset, the synteny view leaves gaps and the
+         * dotplot draws each indel's line.
          */
         opacity: ConfigurationSchema(
           'SyntenyIndelsOpacity',
@@ -55,7 +57,7 @@ export const syntenyIndelsConfigSchema = ConfigurationSchema(
             value: {
               type: 'maybeNumber',
               description:
-                "0 leaves each indel a gap; unset, or any other value, paints it in its operation's color",
+                "0 leaves each indel a gap and any other value paints it in its operation's color; unset, the synteny view leaves gaps and the dotplot draws each indel's line",
             },
           },
           { shorthand: 'value', writes: 'whole', closed: true },
@@ -70,15 +72,26 @@ export const syntenyIndelsConfigSchema = ConfigurationSchema(
 /** How an `indels` part draws: not at all, as gaps, or in their op colors. */
 export type IndelsDrawing = 'off' | 'matches' | 'full'
 
-/** The drawing an `indels` part's settings resolve to. */
+/**
+ * The drawing an `indels` part's settings resolve to, where an unset opacity
+ * draws as the view's `unsetDrawing`.
+ */
 export function indelsDrawingOf(
   indels: Instance<typeof syntenyIndelsConfigSchema>,
+  unsetDrawing: 'matches' | 'full',
 ): IndelsDrawing {
+  const opacity: number | undefined = readConfObject(indels, [
+    'encoding',
+    'opacity',
+    'value',
+  ])
   return !readConfObject(indels, 'show')
     ? 'off'
-    : readConfObject(indels, ['encoding', 'opacity', 'value']) === 0
-      ? 'matches'
-      : 'full'
+    : opacity === undefined
+      ? unsetDrawing
+      : opacity === 0
+        ? 'matches'
+        : 'full'
 }
 
 /** An `indels` part as a view snapshot writes it. */
@@ -93,5 +106,5 @@ export function indelsOfDrawing(drawing: IndelsDrawing) {
     ? { show: false }
     : drawing === 'matches'
       ? { encoding: { opacity: { value: 0 } } }
-      : {}
+      : { encoding: { opacity: { value: 1 } } }
 }

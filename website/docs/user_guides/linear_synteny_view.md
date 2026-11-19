@@ -209,10 +209,12 @@ beside it zooms and arranges the rows.
   ([below](#off-screen-mates))
 - **CIGAR indels** sets how insertions and deletions inside an alignment are
   shown:
+  - **Transparent indels**, the default, leaves them as see-through gaps in the
+    ribbon, so a wide gap shows the alignments behind it and the ribbon color
+    keeps one meaning
   - **Colored indels** paints them. A deletion that meets an insertion is a
-    stretch of each genome that aligns to nothing in the other, so it is left as
-    a gap
-  - **Transparent indels** leaves them as see-through gaps in the ribbon
+    stretch of each genome that aligns to nothing in the other, so it is still
+    left as a gap
   - **Off - don't draw CIGAR indels** draws each alignment as one solid block.
     Its warning icon flags that overlapping blocks run together, and a gap
     inside a block is painted as though it matched across
@@ -225,7 +227,7 @@ CIGAR indels appears only where the data has indels to draw, and Level of detail
 only where it has more than one stored tier. Ribbons thinner than a pixel fade
 in a dense view.
 
-<Figure caption="Human against chimp across an RB1 intron, from a liftOver chain with RepeatMasker on both. Colored indels paints a missing L1HS as a wedge." src="/img/synteny_human_chimp_cigar_modes.png" />
+<Figure caption="Human against chimp across an RB1 intron, from a liftOver chain with RepeatMasker on both. A missing L1HS is a gap in the ribbon." src="/img/synteny_human_chimp_cigar_modes.png" />
 
 The same human/chimp chain resolves an insertion an order of magnitude smaller
 than that L1HS, still a gap in the alignment with the element named at the

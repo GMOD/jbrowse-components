@@ -258,7 +258,8 @@ export default function stateModelFactory(pm: PluginManager) {
            * The insertions and deletions inside each alignment, a
            * [](/docs/config/syntenyindels) part: `{ show: false }` plots each
            * alignment as one straight segment, and `{ encoding: { opacity: 0 } }`
-           * leaves each indel a gap in its line.
+           * leaves each indel a gap in its line; unset draws each indel's
+           * line.
            */
           indels: types.stripDefault(syntenyIndelsConfigSchema, {}),
           /**
@@ -591,7 +592,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * Whether each indel is left a gap rather than drawn.
          */
         get indelGaps(): boolean {
-          return indelsDrawingOf(self.indels) === 'matches'
+          return indelsDrawingOf(self.indels, 'full') === 'matches'
         },
         /**
          * #getter

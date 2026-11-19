@@ -996,15 +996,15 @@ Per-assembly options attach to the assembly flag as `key:value` modifiers, e.g.
 `--fasta a.fa loc:chr1 aliases:a.aliases.txt`. The settings for busy comparisons
 go on `--view`:
 
-| `--view` setting                             | Effect                                                          |
-| -------------------------------------------- | --------------------------------------------------------------- |
-| `autoDiagonalize=true`                       | Reorders each lower assembly's chromosomes for least overlap    |
-| `filter.0.field=length filter.0.gte=500000`  | Hides alignments shorter than 500 kb, the main declutter option |
-| `encoding.color.field=query`                 | Tints each ribbon by its query chromosome                       |
-| `encoding.opacity=0.4`                       | Ribbon opacity (0–1); lower values reveal overlap density       |
-| `mark.interpolate=bump`                      | Curved ribbons instead of straight trapezoids                   |
-| `levelHeights=300` or `levelHeights=300,200` | Pixel height of every level, or of each level in turn           |
-| `indels.encoding.opacity=0`                  | CIGAR indels left as gaps; `indels.show=false` draws one block  |
+| `--view` setting                             | Effect                                                               |
+| -------------------------------------------- | -------------------------------------------------------------------- |
+| `autoDiagonalize=true`                       | Reorders each lower assembly's chromosomes for least overlap         |
+| `filter.0.field=length filter.0.gte=500000`  | Hides alignments shorter than 500 kb, the main declutter option      |
+| `encoding.color.field=query`                 | Tints each ribbon by its query chromosome                            |
+| `encoding.opacity=0.4`                       | Ribbon opacity (0–1); lower values reveal overlap density            |
+| `mark.interpolate=bump`                      | Curved ribbons instead of straight trapezoids                        |
+| `levelHeights=300` or `levelHeights=300,200` | Pixel height of every level, or of each level in turn                |
+| `indels.encoding.opacity=1`                  | CIGAR indels in their op colors; `indels.show=false` draws one block |
 
 > **Query vs. target orientation.** PAF/BLAST list the query first, so the
 > assembly written _above_ the alignment is the query. A chain/delta liftover
@@ -1064,7 +1064,7 @@ the web, so the example reproduces with only the public chain:
 jb2export synteny --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
   --chromSizes data/comparative/mm39.chrom.sizes \
-  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=350 mark.interpolate=bump indels.encoding.opacity=0 \
+  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=350 mark.interpolate=bump \
   --width 1400 --out hs1_mm39_synteny.png
 ```
 
@@ -1084,7 +1084,7 @@ jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
   --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
   --chromSizes data/comparative/mm39.chrom.sizes \
-  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=300 mark.interpolate=bump indels.encoding.opacity=0 \
+  --view filter.0.field=length filter.0.gte=500000 autoDiagonalize=true encoding.color.field=query encoding.opacity=0.4 levelHeights=300 mark.interpolate=bump \
   --width 1400 --out hg38_hs1_mm39_synteny.png
 ```
 

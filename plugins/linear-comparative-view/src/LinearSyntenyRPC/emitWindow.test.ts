@@ -85,6 +85,7 @@ async function fetchAt(startBp: number) {
       pluginManager: {} as PluginManager,
       sessionId: 'emit',
       adapterConfig: { type: 'PAFAdapter' },
+      cigarMode: 'full',
       queryView: {
         bpPerPx: BP_PER_PX,
         offsetPx,

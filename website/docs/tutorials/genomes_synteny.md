@@ -17,8 +17,7 @@ inversion. We:
 
 - turn on a liftOver track and launch a linear synteny view from one of its
   chain blocks
-- set the synteny view's ribbons to curves with transparent indels, and color
-  them by strand
+- set the synteny view's ribbons to curves, and color them by strand
 - launch hg38 against chimp and add the chimp panel's tracks
 - turn on a multi-way liftOver track and choose which genomes become its lanes
 - reorder the lanes to put one person's two haplotypes side by side
@@ -62,14 +61,12 @@ session's synteny datasets align to it. See
 
 ## Ribbon display settings
 
-The synteny view's settings menu, the sliders button in its header, holds two
-ribbon settings:
+The synteny view's settings menu, the sliders button in its header, holds the
+ribbon settings. **Curved lines** draws each ribbon as a curve, easier to follow
+across a gap. Insertions and deletions inside each block are see-through gaps;
+**CIGAR indels** → **Colored indels** paints them instead.
 
-- **Curved lines** draws each ribbon as a curve, easier to follow across a gap
-- **CIGAR indels** → **Transparent indels** leaves insertions and deletions
-  inside each block as see-through gaps
-
-<Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The TNNT3 comparison before and after the two ribbon settings, with their menu open on top." />
+<Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved=genomes_synteny/ribbons_curved" caption="The TNNT3 comparison before and after Curved lines, with the menu open on top." />
 
 ## The TNNT3 rearrangement by strand
 
@@ -92,14 +89,14 @@ tracks to the chimp panel:
 - right-click a chain block and launch a synteny view
 - in the chimp panel's track selector, turn on **NCBI RefSeq - RefSeq All** and
   **RepeatMasker**, which come with the panTro6 hub
-- set curves and **Transparent indels** as [above](#ribbon-display-settings)
+- set curves as [above](#ribbon-display-settings)
 
 <Figure caption="Launching from the hg38-to-panTro6 liftOver track: right-click a chain block, confirm the framing, launch, then add the chimp panel's tracks." src="/img/genomes_synteny/launch_sequence.png" />
 
-With transparent indels, the one gap in the ribbon is a hole that lines up with
-the L1HS element in hg38's RepeatMasker track, and the chimp panel's has no
-L1HS. The rest of the panTro6 hub loads from **File → Open connection...** as a
-JBrowse 2 hub at `https://jbrowse.org/ucsc/panTro6/config.json`.
+The one gap in the ribbon is a hole that lines up with the L1HS element in
+hg38's RepeatMasker track, and the chimp panel's has no L1HS. The rest of the
+panTro6 hub loads from **File → Open connection...** as a JBrowse 2 hub at
+`https://jbrowse.org/ucsc/panTro6/config.json`.
 
 A chain or PAF of your own launches the same way once it is added as a synteny
 track: [HG002 haplotypes](/docs/tutorials/hg002_haplotypes) loads a chain, and

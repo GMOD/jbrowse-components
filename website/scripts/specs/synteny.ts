@@ -2507,12 +2507,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 616,
   },
 
-  // 'matches' keeps strand the only thing the ribbon color means
   {
     ...TNNT3_FRAME,
     name: 'synteny_hg38_hs1_tnnt3',
     url: tnnt3Session(
-      { mark: { interpolate: 'bump' }, indels: { encoding: { opacity: 0 } } },
+      { mark: { interpolate: 'bump' } },
       { markLinc01150: true },
     ),
   },
@@ -2531,26 +2530,22 @@ export const syntenySpecs: ScreenshotSpec[] = [
         x: 24,
         y: 56,
         fontSize: 22,
-        text: 'Straight ribbons, colored indels',
+        text: 'Straight ribbons',
       },
-      { type: 'box', anchor: { text: 'CIGAR indels' } },
       { type: 'box', anchor: { text: 'Curved lines' } },
     ],
   },
   {
     ...TNNT3_FRAME,
     name: 'genomes_synteny/ribbons_curved',
-    url: tnnt3Session({
-      mark: { interpolate: 'bump' },
-      indels: { encoding: { opacity: 0 } },
-    }),
+    url: tnnt3Session({ mark: { interpolate: 'bump' } }),
     annotations: [
       {
         type: 'text',
         x: 24,
         y: 56,
         fontSize: 22,
-        text: 'Curved lines + transparent indels',
+        text: 'Curved lines',
       },
     ],
   },
@@ -2698,7 +2693,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               type: 'LinearSyntenyView',
               tracks: [['hg38_to_panTro6_liftOver']],
               mark: { interpolate: 'bump' },
-              indels: { encoding: { opacity: 0 } },
               views: [
                 {
                   assembly: 'hg38',
@@ -3235,7 +3229,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: ['hs1_chrY_self'],
           encoding: { color: 'strand', opacity: 0.4 },
           mark: { interpolate: 'bump' },
-          indels: { encoding: { opacity: 0 } },
           filter: [{ field: 'length', gte: 100000 }],
           levelHeights: [220],
           collapseEmptyRows: true,

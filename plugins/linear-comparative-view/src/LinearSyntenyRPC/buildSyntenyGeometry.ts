@@ -90,8 +90,8 @@ export const MIN_CIGAR_PX_WIDTH = 2
 // used to be spaced by PIXELS along each drawn shape, one every 20px, with a
 // "skip anything under 30px" gate — applied per rendered CIGAR segment. Since
 // visitCigarRenderedSegments emits a segment as soon as either axis has
-// advanced ~1px, essentially every segment failed that gate, so with the
-// default cigarMode ('full') a feature carrying a CIGAR drew NO markers at all
+// advanced ~1px, essentially every segment failed that gate, so in
+// cigarMode 'full' a feature carrying a CIGAR drew NO markers at all
 // unless it happened to contain a lone multi-megabase op. Pixel spacing was
 // also per-shape, so ticks restarted at every block boundary and slid under
 // zoom: regularly spaced within one ribbon and unrelated between two.

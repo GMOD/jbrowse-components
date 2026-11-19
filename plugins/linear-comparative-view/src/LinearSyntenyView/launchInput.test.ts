@@ -98,7 +98,7 @@ test('a colorBy mode string lands as encoding.color', async () => {
 
 test('an omitted property keeps its default', async () => {
   const view = await open({ views: ROWS })
-  expect(view.cigarMode).toBe('full')
+  expect(view.cigarMode).toBe('matches')
   expect(view.interpolate).toBe('linear')
 })
 

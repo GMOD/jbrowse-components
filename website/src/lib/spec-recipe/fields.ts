@@ -2157,7 +2157,8 @@ export const viewFields: Record<string, FieldRecipe> = {
   indels: (value, { viewType }) => {
     const indels = asRecord(value)
     const opacity = asRecord(indels?.encoding)?.opacity
-    const gaps = (asRecord(opacity)?.value ?? opacity) === 0
+    const opacityValue = asRecord(opacity)?.value ?? opacity
+    const gaps = opacityValue === undefined || opacityValue === 0
     const label =
       CIGAR_MODES[indels?.show === false ? 'off' : gaps ? 'matches' : 'full']
     const path = settingsPath(viewType, 'CIGAR indels')

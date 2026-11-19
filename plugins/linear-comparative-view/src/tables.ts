@@ -103,7 +103,8 @@ export interface SyntenyTablesArgs {
    * `encoding` (`color`, a field such as `'strand'` or the color channel's
    * slots, and `opacity`, a number or the opacity channel),
    * `filter` (a list of field predicates), `indels` (`show`, and
-   * `encoding.opacity` 0 to leave each indel a gap),
+   * `encoding.opacity`, unset or 0 leaving each indel a gap and 1 painting
+   * it),
    * `mark` (`interpolate`: `linear` or `bump`), `axis` (`grid` draws the
    * location markers), `render` (`antialias`: `true`, `false`, or unset to
    * follow the data) and the level's `height` in px, which the thin-ribbon
@@ -504,7 +505,7 @@ export async function syntenyTables(
       windowRegions: targetFrame.fetchRegions,
       fetchRegions: targetFrame.fetchRegions,
     },
-    cigarMode: indelsDrawingOf(view.indels),
+    cigarMode: indelsDrawingOf(view.indels, 'matches'),
     statusCallback: () => {},
   })
   const { instanceData, ...featureData } = value
