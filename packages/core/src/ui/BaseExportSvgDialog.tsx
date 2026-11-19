@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import {
-  CircularProgress,
   MenuItem,
   TextField,
   ToggleButton,
@@ -11,9 +10,11 @@ import {
 import { observer } from 'mobx-react'
 
 import { getSession } from '../util/index.ts'
+import ControlRow from './ControlRow.tsx'
 import ErrorBanner from './ErrorBanner.tsx'
 import ExternalLink from './ExternalLink.tsx'
 import LabeledCheckbox from './LabeledCheckbox.tsx'
+import LoadingEllipses from './LoadingEllipses.tsx'
 import SubmitDialog from './SubmitDialog.tsx'
 import { useExportSvgPreference } from './useExportSvgPreference.ts'
 
@@ -145,15 +146,12 @@ export default observer(function BaseExportSvgDialog({
       {error ? (
         <ErrorBanner error={error} />
       ) : loading ? (
-        <div>
-          <CircularProgress size={20} style={{ marginRight: 20 }} />
-          <Typography sx={{ display: 'inline' }}>
-            Creating {format === 'r' ? 'R script' : format.toUpperCase()}
-          </Typography>
-        </div>
+        <LoadingEllipses
+          message={`Creating ${format === 'r' ? 'R script' : format.toUpperCase()}`}
+        />
       ) : null}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <ControlRow>
           <TextField
             label="Filename"
             value={filename}
@@ -176,7 +174,7 @@ export default observer(function BaseExportSvgDialog({
             <ToggleButton value="png">PNG</ToggleButton>
             {exportR ? <ToggleButton value="r">R</ToggleButton> : null}
           </ToggleButtonGroup>
-        </div>
+        </ControlRow>
         {format === 'r' ? (
           <div>
             <Typography variant="body2">
