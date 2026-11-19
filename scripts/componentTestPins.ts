@@ -6,8 +6,8 @@
 // That means a new cross-package dependency edge silently falls through to the
 // npm registry (for an unpublished version) until a component test fails, which
 // is how `@jbrowse/alignments-core` and then `@jbrowse/cigar-utils` broke
-// cgv-vite. `gen-component-test-pins.ts --check` runs this in lint to catch the
-// drift at its source.
+// cgv-vite. `gen-component-test-pins.ts --check` runs this from `pnpm autogen
+// --check`, in CI's `generated` job, to catch the drift at its source.
 //
 // pack.ts packs every workspace package `isPacked` admits, so a pin list
 // computed from the workspace listing alone matches one computed from a full

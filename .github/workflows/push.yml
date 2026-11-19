@@ -709,9 +709,9 @@ jobs:
   # (CI_GATE_SUITES): no alignments pileups, no remote data. Widening it is a
   # measurement, not an edit.
   #
-  # ~2.5 min of rendering after the build (53 tests x 2 backends), because the
-  # whole suite is not on the table: swiftshader leaks ~29 MB per WebGL context
-  # (ADR-024), which is what moved this suite onto real GPUs locally.
+  # Scoped (53 tests x 2 backends) because the whole suite is not on the table:
+  # swiftshader leaks ~29 MB per WebGL context (ADR-024), which is what moved
+  # this suite onto real GPUs locally.
   cross_backend_gate:
     name: Cross-backend render gate
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}

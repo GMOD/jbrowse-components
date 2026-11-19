@@ -1,5 +1,5 @@
-// Points this clone's git hooks at .githooks/, which holds the oxfmt
-// pre-commit hook. Runs from `postinstall`, so it has to stay quiet where
+// Points this clone's git hooks at .githooks/, where each hook's header says
+// what it does. Runs from `postinstall`, so it has to stay quiet where
 // there is no git to configure -- a source tarball, a vendored copy, CI
 // checkouts that install before fetching .git.
 //
@@ -27,6 +27,6 @@ try {
   })
 } catch (e) {
   console.warn(
-    `could not set core.hooksPath, pre-commit format hook is off: ${e}`,
+    `could not set core.hooksPath, so the .githooks/ hooks are off: ${e}`,
   )
 }

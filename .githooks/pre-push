@@ -6,8 +6,8 @@
 # It also refuses a push onto a main that is red on CI; PUSH_ONTO_RED=1 is the
 # fix's way through, and SKIP_DOCS_CHECK does not skip that check.
 #
-# IT FIXES RATHER THAN REPORTS. Three of the five gates have an autofixer, so
-# this runs the fixer: `pnpm autogen --fix-stale` when its check says anything
+# IT FIXES RATHER THAN REPORTS. Where a gate has an autofixer, this runs the
+# fixer: `pnpm autogen --fix-stale` when its check says anything
 # is stale, both linters with `--fix`, and the formatter. Reporting "regenerate
 # and commit" only to have the person run the exact command the hook already
 # knew was minutes of waiting to be told to wait minutes more.
@@ -54,8 +54,8 @@
 # pass. They read the whole working tree, so from a shared checkout they can
 # report on someone else's uncommitted edit; the fixers cannot.
 #
-# CI's `Format` job (`pnpm check-format`, whole tree) is not reproduced here
-# any more: the scoped format covers the pushed paths, and a mis-formatted
+# CI's format check (`pnpm check-format`, whole tree, a step in the Lint job)
+# is not reproduced here any more: the scoped format covers the pushed paths, and a mis-formatted
 # file nobody pushed is CI's to name.
 #
 # WHY PRE-PUSH AND NOT PRE-COMMIT. The read-only gates read the whole tree —
