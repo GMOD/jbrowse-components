@@ -9,7 +9,7 @@ export function sessionSummaryInPage() {
     jb !== null &&
     'sessionSummary' in jb &&
     typeof jb.sessionSummary === 'function'
-      ? jb.sessionSummary()
+      ? Reflect.apply(jb.sessionSummary, jb, [])
       : undefined
   return summary
 }
