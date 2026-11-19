@@ -69,7 +69,7 @@ function helpOf(display: LinearHicDisplayModel, menu: string, row: string) {
   const found = (item && 'subMenu' in item ? resolveSubMenu(item) : []).find(
     i => labelOf(i) === row,
   )
-  return found && 'helpText' in found ? found.helpText : undefined
+  return (found && 'helpText' in found ? found.helpText : undefined) ?? ''
 }
 
 test('a field the file lacks is named once its fetch lands, not while the last one shows', async () => {

@@ -45,7 +45,7 @@ interface Props {
 }
 
 const EditableTypography = observer(function EditableTypography(props: Props) {
-  const { value, setValue, variant, ref, classes: overrides } = props
+  const { value, setValue, variant, ref, classes: overrides, ...other } = props
   const [ref2, { width }] = useMeasure('width')
   const [editedValue, setEditedValue] = useState<string>()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -59,7 +59,7 @@ const EditableTypography = observer(function EditableTypography(props: Props) {
   const val = editedValue ?? value
 
   return (
-    <div ref={ref}>
+    <div {...other} ref={ref}>
       <div style={{ position: 'relative' }}>
         <Typography
           ref={ref2}
