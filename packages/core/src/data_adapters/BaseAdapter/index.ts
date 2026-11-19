@@ -31,7 +31,7 @@ export type {
   Alias,
   BaseRefNameAliasAdapter,
 } from './BaseRefNameAliasAdapter.ts'
-export type { RegionsAdapter } from './RegionsAdapter.ts'
+export type { RegionsAdapter, SequenceRegion } from './RegionsAdapter.ts'
 export type { CytobandAdapter } from './CytobandAdapter.ts'
 
 /**

@@ -9,7 +9,10 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { parseRecords, recordSequence } from '../genbank/parseGenbank.ts'
 
 import type { GenbankSequenceAdapterConfig } from './configSchema.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  SequenceRegion,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
@@ -37,12 +40,15 @@ export default class GenbankSequenceAdapter extends BaseSequenceAdapter<GenbankS
 
   public async getRegions(opts: BaseOptions = {}) {
     const records = await this.setup(opts)
-    return [...records.entries()].map(([refName, { sequence, circular }]) => ({
-      refName,
-      start: 0,
-      end: sequence.length,
-      ...(circular ? { circular } : {}),
-    }))
+    const regions: SequenceRegion[] = [...records.entries()].map(
+      ([refName, { sequence, circular }]) => ({
+        refName,
+        start: 0,
+        end: sequence.length,
+        ...(circular ? { circular } : {}),
+      }),
+    )
+    return regions
   }
 
   public getFeatures(
