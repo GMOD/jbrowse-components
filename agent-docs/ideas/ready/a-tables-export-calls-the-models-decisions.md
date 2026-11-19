@@ -45,12 +45,6 @@ records band's own color and key views on a variant host for
 `genotypes.show: false`; "A VCF read as features" in TABLES.md and
 ggjbrowse's `R/features.R` describe the removed display until then.
 
-The synteny tables' thin-ribbon width (`fadeThin`, `linear-comparative-view/
-src/tables.ts`) restates `LinearSyntenyView.autoFadeWidthPx` less its
-`filter(px => px > 0)`: with ten or more zero-span blocks the export fades
-where the view does not. One `autoFadeWidthOf(numFeats, cappedMeanPx)` both
-call closes it.
-
 ## Equivalent today, by hand
 
 - Wiggle's range, domain, color and mark sources run the model's own
@@ -68,9 +62,6 @@ call closes it.
   `peptides` gate, `displayConfig`) restate `zoomFetchArgs()`/`rpcProps()`
   in `baseModel`'s inline views; the parity suite does not compare
   `aminoAcids`, so a change to the peptide gate would pass it.
-- The synteny tables' `offscreenRows` restates `forEachMark`'s test in
-  `drawOffscreenMates.ts`, which calls itself the one place a mark's x is
-  decided; an exported predicate both call closes it.
 
 ## Closed
 
@@ -82,6 +73,9 @@ call closes it.
   under the default and `phaseSet` the export painted the full-dose alt hue
   where the records band paints the SV class or `featureDefaultColor`
   (`recordColors` in the parity suite).
+- The synteny tables' thin-ribbon width and off-screen rows run the views'
+  `autoFadeWidthOf` and the strip's `forEachPlacedMark`; the width was a
+  drift, fading ten or more zero-span blocks the view leaves alone.
 
 - The features carry-overs (collapsed mode's forced `subfeatureLabels`, the
   `resolvedGeneGlyphMode` call, the `labelVisibility` inputs and
