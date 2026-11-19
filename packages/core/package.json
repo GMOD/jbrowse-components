@@ -332,8 +332,6 @@
     "esm"
   ],
   "scripts": {
-    "test": "cd ../..; jest --passWithNoTests packages/core",
-    "coverage": "pnpm test --coverage",
     "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build",

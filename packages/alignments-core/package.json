@@ -34,7 +34,6 @@
   "scripts": {
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "build": "pnpm build:esm",
-    "test": "cd ../..; jest --passWithNoTests packages/alignments-core",
     "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build"

@@ -243,10 +243,9 @@ export default {
   // by jest's own ~3.5s of startup, which no worker count divides.
   //
   // This has to live in the config rather than in a `--maxWorkers` flag on the
-  // package.json scripts: ~15 package-level `test` scripts invoke `jest`
-  // directly (`cd ../..; jest --passWithNoTests <pkg>`) and would ignore a flag
-  // set on the root script. An explicit `--maxWorkers` on the command line still
-  // outranks everything here, since jest applies argv over config.
+  // root `test` script: `npx jest <file>` invokes jest directly and would
+  // ignore a flag set there. An explicit `--maxWorkers` on the command line
+  // still outranks everything here, since jest applies argv over config.
   //
   // CI is unchanged in shape: it sets no override, and at 4 CPUs and 16GB the
   // ceiling yields 2 — what the '50%' before this yielded there.

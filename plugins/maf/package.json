@@ -23,7 +23,6 @@
   "scripts": {
     "build": "pnpm run /^build:/",
     "bench:maf-coverage": "cd ../..; node --expose-gc plugins/maf/benches/mafCoverage.bench.ts",
-    "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/maf",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",

@@ -31,7 +31,6 @@
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "build:bundle": "node scripts/build-bundle.mjs",
     "build": "pnpm build:esm && pnpm build:bundle",
-    "test": "cd ../..; jest --passWithNoTests packages/tables",
     "clean": "rimraf esm dist *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build"
