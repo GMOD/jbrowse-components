@@ -19,6 +19,19 @@ function subMenuLabeled(label: string) {
   return (i: MenuItem): i is SubMenuItem => 'subMenu' in i && i.label === label
 }
 
+// A copy, never an edit: the submenu row may belong to an earlier caller, and a
+// function-form submenu stays lazy
+function withAppended(row: SubMenuItem, item: MenuItem): SubMenuItem {
+  const { subMenu } = row
+  return {
+    ...row,
+    subMenu:
+      typeof subMenu === 'function'
+        ? () => [...subMenu(), item]
+        : [...subMenu, item],
+  }
+}
+
 // Add `item` under the `label` submenu of `items`, creating that submenu the
 // first time. What makes several plugins' contributions collect in one place
 // instead of each becoming its own top-level row, whatever order they ran in.
@@ -29,12 +42,7 @@ export function pushIntoSubMenu(
 ) {
   const existing = items.find(subMenuLabeled(label))
   if (existing) {
-    const { subMenu } = existing
-    if (typeof subMenu === 'function') {
-      existing.subMenu = () => [...subMenu(), item]
-    } else {
-      subMenu.push(item)
-    }
+    items[items.indexOf(existing)] = withAppended(existing, item)
   } else {
     items.push({
       label,
@@ -58,21 +66,10 @@ export function nestLaunchInAdvanced(items: MenuItem[]): MenuItem[] {
   if (!launch || !advanced) {
     return items
   }
-  const { subMenu } = advanced
   const { icon: _icon, ...launchWithoutIcon } = launch
   return items
     .filter(i => i !== launch)
-    .map(i =>
-      i === advanced
-        ? {
-            ...advanced,
-            subMenu: [
-              ...(typeof subMenu === 'function' ? subMenu() : subMenu),
-              launchWithoutIcon,
-            ],
-          }
-        : i,
-    )
+    .map(i => (i === advanced ? withAppended(advanced, launchWithoutIcon) : i))
 }
 
 // Several independent plugins (dotplot-view, linear-comparative-view, …) each

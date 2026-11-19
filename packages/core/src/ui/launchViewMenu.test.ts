@@ -41,6 +41,22 @@ test('appends to a function-form submenu without calling it', () => {
   expect(build).toHaveBeenCalledTimes(1)
 })
 
+test("appends to a copy of an earlier caller's submenu row", () => {
+  const earlier: MenuItem[] = [
+    {
+      label: 'Launch',
+      type: 'subMenu',
+      subMenu: [{ label: 'a', onClick: () => {} }],
+    },
+  ]
+  const items = [...earlier]
+  pushIntoSubMenu(items, 'Launch', { label: 'b', onClick: () => {} })
+  const [launch] = earlier
+  expect(
+    launch && 'subMenu' in launch ? labels(resolveSubMenu(launch)) : [],
+  ).toEqual(['a'])
+})
+
 describe('nestLaunchInAdvanced', () => {
   const row = (label: string): MenuItem => ({ label, onClick: () => {} })
   const sub = (label: string, rows: MenuItem[]): MenuItem => ({
@@ -69,6 +85,18 @@ describe('nestLaunchInAdvanced', () => {
     const nested =
       advanced && 'subMenu' in advanced ? resolveSubMenu(advanced) : []
     expect(nested.some(i => 'icon' in i && i.icon)).toBe(false)
+  })
+
+  test('leaves a function-form Advanced unbuilt', () => {
+    const build = jest.fn(() => [row('Edit plot...')])
+    const [advanced] = nestLaunchInAdvanced([
+      { label: 'Advanced', subMenu: build },
+      sub('Launch', [row('Consensus')]),
+    ])
+    expect(build).not.toHaveBeenCalled()
+    expect(
+      advanced && 'subMenu' in advanced ? labels(resolveSubMenu(advanced)) : [],
+    ).toEqual(['Edit plot...', 'Launch'])
   })
 
   test('keeps Launch where it is on a menu without Advanced', () => {
