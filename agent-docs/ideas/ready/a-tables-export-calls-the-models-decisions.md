@@ -33,7 +33,6 @@ display's own `laneStackOn` callbacks. Its labels (`rows.labels`) and a kept
 lane the window aligns nothing to run the display's `laneLabelOf` and
 `unalignedChosenLanesOf`.
 
-
 ## Equivalent today, by hand
 
 - Wiggle's range, domain, color and mark sources run the model's own

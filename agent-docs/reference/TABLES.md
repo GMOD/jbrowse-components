@@ -531,8 +531,7 @@ its config reads as a file does.
 
 **A VCF read as features is the variant display's records band.** A
 `VariantTrack` draws its records with `LinearVariantDisplay` (ADR-255), whose
-records band, with no sample rows, is the whole track, packed and lettered by
-plugin-features's pipeline and colored by SV class. For a VCF adapter
+records band, with no sample rows, is the whole track, colored by SV class. For a VCF adapter
 (`VCF_ADAPTER_TYPES`) the engine's `features` runs `variantFeatureTables`, which
 takes `display` as that display's config, the record settings under `records`
 (`displayMode`, `mark`, `labels`, `facet`, `tooltip.field`) and `encoding`,
@@ -544,9 +543,7 @@ draws nothing here.
 
 The tables are a feature track's (`featureBandTables`, which `featureTables`
 runs too), laid out by the display's own views on a static host
-(`VariantRecordsTablesHost`: `recordsSettingsViews`, `recordColorViews`,
-`recordsRenderViews`, `recordsLayoutViews`, `recordsColorScaleViews`,
-`variantDataKeyViews`), its samples listed as none so the band is the
+(`VariantRecordsTablesHost`), its samples listed as none so the band is the
 display, over the display's own fetch (`variantCellData`), which then reads no
 genotype. Each record's box takes the band's color, its SV class's or
 `featureDefaultColor` under no picked `encoding.color`, and `legend` keys the
