@@ -142,7 +142,7 @@ re-checking every neighbour its entry names. The constants live in
   L\* (`colorPairRR` next). `#3a3a3a` clears the ground as a swatch (1.65) but
   not as a pileup row, and white on dark is the loudest mark in the pileup, the
   glare `colorPairLRDark` avoids. It is a read fill only, never an arc. IGV
-  leaves an unmapped mate the default read color (`setPairOrientation`
+  leaves an unmapped mate the default read color (its pair-orientation code
   requires `mate.isMapped()`); a mark stays here because under insert size its
   TLEN of 0 would otherwise paint `colorShortInsert`.
 - **`readOverlap`** (`#555555`, dark `#e4e4e4`) marks a span where two
