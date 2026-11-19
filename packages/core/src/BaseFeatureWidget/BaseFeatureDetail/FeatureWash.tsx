@@ -52,7 +52,7 @@ const FeatureWash = observer(function FeatureWash({
   uniqueId,
   children,
 }: {
-  uniqueId: string | undefined
+  uniqueId: string
   children: React.ReactNode
 }) {
   const { classes } = useStyles()
@@ -66,12 +66,7 @@ const FeatureWash = observer(function FeatureWash({
   // StrictMode host's doubled mount can't wash a panel nobody clicked.
   const [wash, setWash] = useState({ shownFor: uniqueId, count: 0 })
   if (wash.shownFor !== uniqueId) {
-    setWash({
-      shownFor: uniqueId,
-      // a panel filling for the first time is not an update -- there was
-      // nothing on screen to mistake for the feature that just arrived
-      count: wash.shownFor === undefined ? 0 : wash.count + 1,
-    })
+    setWash({ shownFor: uniqueId, count: wash.count + 1 })
   }
   return (
     <div className={classes.root}>
