@@ -32,24 +32,28 @@ if (browserslist.loadConfig({ path: process.cwd() }) == null) {
 
 const writeStatsJson = process.argv.includes('--stats')
 
+function resolves(file: string) {
+  try {
+    fs.statSync(file)
+    return true
+  } catch {
+    return false
+  }
+}
+
 export default function buildWebpack(
   config: webpack.Configuration,
+  { omitFromPublic = [] }: { omitFromPublic?: string[] } = {},
 ): Promise<void> {
+  const omitted = new Set([
+    appHtml,
+    ...omitFromPublic.map(name => path.join(appPublic, name)),
+  ])
   fs.rmSync(appBuild, { recursive: true, force: true })
   fs.cpSync(appPublic, appBuild, {
     recursive: true,
     dereference: true,
-    filter: file => {
-      if (file === appHtml) {
-        return false
-      }
-      try {
-        fs.statSync(file)
-        return true
-      } catch {
-        return false
-      }
-    },
+    filter: file => !omitted.has(file) && resolves(file),
   })
 
   console.log('Creating an optimized production build...')
