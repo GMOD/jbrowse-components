@@ -103,8 +103,11 @@ function isLocation(value: unknown) {
   return isUriLocation(value) || isLocalPathLocation(value)
 }
 
-// hideUris prunes the data rather than each render branch checking: an array
-// of objects reaches the table and ArrayValue, which print locations too
+/**
+ * `attributes` without any UriLocation or LocalPathLocation, at every depth.
+ * What `hideUris` draws: pruned up front because an array of objects reaches
+ * the table and ArrayValue, which print locations too.
+ */
 export function withoutLocations(
   attributes: Record<string, unknown>,
 ): Record<string, unknown> {
