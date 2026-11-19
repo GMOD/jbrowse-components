@@ -1,6 +1,3 @@
-declare module '*.css'
-declare module '@fontsource/roboto'
-
 /**
  * Test-only, `@jbrowse/display-kit/conformance/contractGate`'s, made a global
  * by `config/jest/contractGate.js`. Drains the

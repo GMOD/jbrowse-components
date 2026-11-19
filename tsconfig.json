@@ -43,12 +43,9 @@
   // worktree under `.claude/`, i.e. every other agent's live tree.
   "include": [
     "global.d.ts",
-    "agent-docs",
     "config",
-    "demos",
     "embedded_demos",
     "example-plugins",
-    "extra_test_data",
     "packages",
     "plugins",
     "products",
