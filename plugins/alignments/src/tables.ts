@@ -667,8 +667,8 @@ interface AlignmentsTablesHostModel extends Instance<
 /**
  * The display's color pipeline over its laid-out sections, run as the display
  * runs it (`alignmentsColorViews`): each read painted the color the display
- * paints it, in the bucket and level it classifies into, and the key the
- * display shows beside them.
+ * paints it, with the level it classifies into, and the key the display
+ * shows beside them.
  */
 function colorReads(host: AlignmentsTablesHostModel) {
   const palette = host.colors
@@ -678,22 +678,13 @@ function colorReads(host: AlignmentsTablesHostModel) {
       key,
       new Map(
         [...map].map(([idx, data]) => {
-          const category = Array.from(
-            data.readColorCategories,
-            i => READ_COLOR_CATEGORY_BY_INDEX[i]!,
+          const color = Array.from(data.readColorCategories, (c, i) =>
+            cssColorToHex(readColorFromCategoryIndex(c, i, data, palette)),
           )
-          const color = category.map((_, i) =>
-            cssColorToHex(
-              readColorFromCategoryIndex(
-                data.readColorCategories[i]!,
-                i,
-                data,
-                palette,
-              ),
-            ),
+          const level = Array.from(data.readColorCategories, (c, i) =>
+            levelOf(data, i, READ_COLOR_CATEGORY_BY_INDEX[c]!),
           )
-          const level = category.map((c, i) => levelOf(data, i, c))
-          return [idx, { color, category, level }]
+          return [idx, { color, level }]
         }),
       ),
     ]),
@@ -710,9 +701,7 @@ function colorReads(host: AlignmentsTablesHostModel) {
   return {
     sections,
     palette,
-    declared: host.declaredReadLabels,
     keyLabels: host.keyReadLabels,
-    readField: host.colorField,
     legend: {
       label: legend.map(item => item.label),
       color: legend.map(item => cssColorToHex(item.color!)),
