@@ -306,8 +306,7 @@ put it 118 ms behind and 143 ms ahead on four tracks).
 and uncompressed, and its CDP throttle may not reach the worker.
 
 What did measure is filed under `ideas/`:
-[lazy-rpc-method-bodies](../ideas/ready/lazy-rpc-method-bodies.md),
-[write-uniforms-as-loops-above-sixteen-elements](../ideas/ready/write-uniforms-as-loops-above-sixteen-elements.md)
+[lazy-rpc-method-bodies](../ideas/ready/lazy-rpc-method-bodies.md)
 and
 [brotli-11-from-the-deploy](../ideas/waiting-on-a-call/brotli-11-from-the-deploy.md).
 

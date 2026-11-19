@@ -739,6 +739,48 @@ describe('emitInterface textures', () => {
   })
 })
 
+test('writeUniforms writes an array above sixteen elements in a loop over its std140 slots', () => {
+  const longArray = {
+    parameters: [
+      {
+        name: 'u',
+        binding: { kind: 'descriptorTableSlot' as const, index: 0 },
+        type: {
+          kind: 'constantBuffer' as const,
+          elementType: {
+            kind: 'struct' as const,
+            name: 'Uniforms',
+            fields: [
+              { name: 'count', type: scalar('uint32'), binding: uniform(0, 4) },
+              {
+                name: 'regionTable',
+                type: array(17, vector(4, 'float32')),
+                binding: uniform(16, 272),
+              },
+            ],
+          },
+          elementVarLayout: { binding: uniform(0, 288) },
+        },
+      },
+    ],
+    entryPoints: [],
+  } as Reflection
+  const out = emitInterface({ baseName: 'test', reflection: longArray })
+  expect(out).toContain(
+    [
+      '  for (let i = 0; i < 17; i++) {',
+      '    const e = uniforms.regionTable[i]!',
+      '    const o = 4 + i * 4',
+      '    f32[o] = e[0]',
+      '    f32[o + 1] = e[1]',
+      '    f32[o + 2] = e[2]',
+      '    f32[o + 3] = e[3]',
+      '  }',
+    ].join('\n'),
+  )
+  expect(out).not.toContain('uniforms.regionTable[16][0]')
+})
+
 // slangc segfaults — no diagnostic at all — on a scalar array in a uniform
 // block, and only for WGSL, so it compiles cleanly right up until WebGPU.
 // Refusing it here is the difference between a message and a bisection session.

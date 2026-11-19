@@ -86,6 +86,8 @@ function tuple(n: number, of: string) {
   return `[${Array.from({ length: n }, () => of).join(', ')}]`
 }
 
+const MAX_UNROLLED_UNIFORM_ARRAY_ELEMENTS = 16
+
 function tsFieldType(t: UniformFieldType): string {
   if (t.kind === 'scalar') {
     return 'number'
@@ -1100,15 +1102,29 @@ export function emitInterface(inputs: CodegenInputs) {
           f.type.elementType.kind === 'scalar'
             ? 1
             : f.type.elementType.elementCount
-        for (let i = 0; i < f.type.elementCount; i++) {
-          const at = off4 + i * strideWords
-          if (comps === 1) {
-            lines.push(`  ${view}[${at}] = uniforms.${f.name}[${i}]`)
-          } else {
-            for (let c = 0; c < comps; c++) {
-              lines.push(
-                `  ${view}[${at + c}] = uniforms.${f.name}[${i}][${c}]`,
-              )
+        if (f.type.elementCount > MAX_UNROLLED_UNIFORM_ARRAY_ELEMENTS) {
+          lines.push(
+            `  for (let i = 0; i < ${f.type.elementCount}; i++) {`,
+            `    const e = uniforms.${f.name}[i]!`,
+            `    const o = ${off4} + i * ${strideWords}`,
+            ...Array.from({ length: comps }, (_, c) =>
+              comps === 1
+                ? `    ${view}[o] = e`
+                : `    ${view}[o${c === 0 ? '' : ` + ${c}`}] = e[${c}]`,
+            ),
+            '  }',
+          )
+        } else {
+          for (let i = 0; i < f.type.elementCount; i++) {
+            const at = off4 + i * strideWords
+            if (comps === 1) {
+              lines.push(`  ${view}[${at}] = uniforms.${f.name}[${i}]`)
+            } else {
+              for (let c = 0; c < comps; c++) {
+                lines.push(
+                  `  ${view}[${at + c}] = uniforms.${f.name}[${i}][${c}]`,
+                )
+              }
             }
           }
         }
