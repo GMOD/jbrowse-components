@@ -101,6 +101,7 @@ function weigh(adapter: AnyDataAdapter) {
 let limit = DEFAULT_CACHE_LIMIT
 let parsed = 0
 let lastCall = 0
+const running: number[] = []
 
 const held = (): CacheUse => ({
   limit,
@@ -112,16 +113,17 @@ const held = (): CacheUse => ({
 })
 
 /**
- * Keeps the adapters the last call used, then each other adapter, most
- * recently requested first, whose weight still fits under `limit` beside
- * those kept.
+ * Keeps the adapters the last call and every call still running used, then
+ * each other adapter, most recently requested first, whose weight still fits
+ * under `limit` beside those kept.
  */
 async function trim() {
   const named = new Set<string>()
+  const inUse = Math.min(lastCall, ...running)
   let kept = 0
   await keepAdapters((adapter, lastRequest) => {
     const weight = weigh(adapter)
-    const keep = lastRequest > lastCall || kept + weight <= limit
+    const keep = lastRequest > inUse || kept + weight <= limit
     if (keep) {
       kept += weight
       for (const url of urlsIn(adapter)) {
@@ -149,12 +151,14 @@ function applyLimit(bytes: number) {
 
 const cache = {
   held,
-  /** Runs `call`, then trims, keeping the adapters it used. */
+  /** Runs `call`, then trims, keeping the adapters it and every call still running used. */
   async within<R>(call: () => Promise<R>) {
     const since = adapterRequests()
+    running.push(since)
     try {
       return await call()
     } finally {
+      running.splice(running.indexOf(since), 1)
       lastCall = since
       await trim()
     }

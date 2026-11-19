@@ -1,5 +1,12 @@
+import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+
 import { RESOLVED_ASSEMBLIES } from './assembly.ts'
-import { DEFAULT_CACHE_LIMIT, createTablesEngine } from './index.ts'
+import { engineCache } from './cache.ts'
+import {
+  DEFAULT_CACHE_LIMIT,
+  createTablesEngine,
+  tablesPluginManager,
+} from './index.ts'
 import { BAM, COVERAGE_BIGWIG, DOG_VCF } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
@@ -67,6 +74,30 @@ test('the adapters the last call read stay, past any limit', async () => {
   await engine.clearCache()
   await engine.alignments(copy(0))
   expect((await engine.cache({ limit: 0 })).adapters).toBe(perCall)
+})
+
+test('a call finishing keeps the adapters a call still running holds', async () => {
+  const cache = engineCache()
+  await engine.cache({ limit: 0 })
+  let release = () => {}
+  const held = new Promise<void>(resolve => {
+    release = resolve
+  })
+  let reading = () => {}
+  const read = new Promise<void>(resolve => {
+    reading = resolve
+  })
+  const running = cache.within(async () => {
+    await tablesAdapter(tablesPluginManager(), DOG_VCF.adapterConfig, undefined)
+    reading()
+    await held
+  })
+  await read
+  await cache.within(async () => {})
+  expect((await engine.cache()).adapters).toBe(1)
+  release()
+  await running
+  expect((await engine.cache()).adapters).toBe(1)
 })
 
 test('every engine shares one budget and one set of caches', async () => {
