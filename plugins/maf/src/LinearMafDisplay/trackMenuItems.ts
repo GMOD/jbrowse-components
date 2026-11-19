@@ -325,7 +325,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     ),
     ...frameMenuItems(self),
     // Only where a key exists: a constant fill and the bases key nothing.
-    ...(self.hasLegendKey ? legendMenuItems(self) : []),
+    ...legendMenuItems(self),
   ]
 }
 

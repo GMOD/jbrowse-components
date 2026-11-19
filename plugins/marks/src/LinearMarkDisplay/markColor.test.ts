@@ -3,6 +3,7 @@ import { categoricalValueColor } from '@jbrowse/core/ui/colors'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 import { isThreshold } from '@jbrowse/render-core/marks'
 
 import { findMarkHit } from './findMarkHit.ts'
@@ -290,6 +291,9 @@ test("an identity color paints each feature its file's color, and its key's name
   ])
   const section = colorSection(display.legendSections, 0)
   expect(categoryLabel(section, red)).toBe('Active TSS')
+  expect(legendMenuItems(display).map(i => 'label' in i && i.label)).toEqual([
+    'Show legend',
+  ])
   const before = JSON.stringify(display.rpcProps())
 
   setConf(display.conf.marks[0]!.encoding.color, ['scale', 'names'], [])
@@ -410,6 +414,7 @@ test('an identity color under a constant value paints the constant and keys noth
   ])
   expect(layerOf(display).color).toBe(cssColorToABGR('orange'))
   expect(display.colorScales).toEqual([])
+  expect(legendMenuItems(display)).toEqual([])
 })
 
 test('a threshold over the plotted field ships no color lane and is not a fetch input', () => {

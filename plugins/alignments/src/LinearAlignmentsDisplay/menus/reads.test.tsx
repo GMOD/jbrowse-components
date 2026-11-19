@@ -25,6 +25,7 @@ function makeModel(
 ) {
   return {
     showLegend: false,
+    hasLegendKey: true,
     setShowLegend: jest.fn(),
     showCoverage: true,
     setShowCoverage: jest.fn(),

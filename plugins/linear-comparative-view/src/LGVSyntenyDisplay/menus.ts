@@ -78,6 +78,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
 
 interface ShowModel extends CollapseSectionsModel, HiddenGroupsModel {
   showLegend: boolean
+  hasLegendKey: boolean
   setShowLegend: (show: boolean) => void
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void

@@ -146,6 +146,7 @@ test('the phased arrangement dialog waits for the haplotype rows', () => {
   d.setCellData({
     samplePloidy: { HG001: 2, HG002: 2 },
     rowNames: [],
+    perRegionCellData: {},
   } as unknown as Parameters<typeof d.setCellData>[0])
   expect(arrangement()).toMatchObject({ disabled: false })
 })

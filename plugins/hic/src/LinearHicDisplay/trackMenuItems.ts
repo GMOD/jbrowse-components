@@ -26,6 +26,7 @@ interface HicMenuSelf extends IStateTreeNode {
   colorDomainQuantile: number
   clipColorDomainQuantile: number
   showLegend: boolean
+  hasLegendKey: boolean
   heightMode: TriangleHeightMode
   colorScheme: ColorSchemeName
   hasBinSizes: boolean

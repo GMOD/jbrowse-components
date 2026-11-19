@@ -18,6 +18,7 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     dprimeAvailable: true,
     indexSnpColumn: -1,
     showLegend: false,
+    hasLegendKey: true,
     showNames: false,
     heightMode: 'fixed' as const,
     useGenomicPositions: false,

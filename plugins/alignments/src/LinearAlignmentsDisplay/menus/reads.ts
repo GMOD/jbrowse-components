@@ -15,6 +15,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 interface ReadsModel
   extends CollapseSectionsModel, HiddenGroupsModel, JunctionsModel {
   showLegend: boolean
+  hasLegendKey: boolean
   setShowLegend: (show: boolean) => void
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void

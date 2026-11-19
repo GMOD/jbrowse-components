@@ -122,6 +122,7 @@ test('the self-lane toggle reflects and flips selfLaneHidden', () => {
 function makeShowModel(showCoverage: boolean) {
   return {
     showLegend: false,
+    hasLegendKey: true,
     setShowLegend: jest.fn(),
     showCoverage,
     setShowCoverage: jest.fn(),

@@ -21,11 +21,12 @@ test('a host naming the features itself leaves no name or description in the row
 test("a host showing only the canvas offers no display key's Legend row", () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
+  unprotect(getRoot(display))
+  Object.defineProperty(display, 'hasLegendKey', { value: true })
   expect(legendMenuItems(display).map(i => 'label' in i && i.label)).toEqual([
     'Show legend',
   ])
 
-  unprotect(getRoot(display))
   Object.defineProperty(display.host, 'showsCanvasOnly', { value: true })
   expect(legendMenuItems(display)).toEqual([])
 })

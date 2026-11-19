@@ -593,7 +593,7 @@ export default function stateModelFactory(
                 showRowLabelsMenuItem(self),
                 showRowSeparatorsMenuItem(self),
               ]),
-          ...(self.hasLegendKey ? legendMenuItems(self) : []),
+          ...legendMenuItems(self),
         ]
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_PLOTS),

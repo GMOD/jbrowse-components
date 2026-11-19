@@ -1,4 +1,5 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
+import { legendMenuItems } from '@jbrowse/display-kit/LegendMixin'
 
 import {
   createTestAlignmentsDisplay,
@@ -66,4 +67,20 @@ test('a lane collapsed to its coverage keys none of its read colors', () => {
   const display = twoLaneDisplay()
   display.toggleGroupCollapsed('low')
   expect([...(display.presentTagValues ?? [])]).toEqual(['60'])
+})
+
+// The tag scan runs only while the legend is shown, so every key section is
+// empty while it is hidden.
+test('a hidden legend still offers the row that shows it', () => {
+  const { display } = createTestAlignmentsDisplay()
+  display.applyPlot({ encoding: { color: { field: 'tags.HP' } } })
+  display.setShowLegend(false)
+  expect(
+    display.colorScales.every(
+      s => s.kind === 'categorical' && !s.entries.length,
+    ),
+  ).toBe(true)
+  expect(legendMenuItems(display).map(i => 'label' in i && i.label)).toEqual([
+    'Show legend',
+  ])
 })

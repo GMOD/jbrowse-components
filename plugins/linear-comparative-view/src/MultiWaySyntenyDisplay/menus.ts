@@ -361,7 +361,7 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
     ...showHiddenItems(model.hiddenLanes.length, 'lane', () => {
       model.showHiddenLanes()
     }),
-    ...(model.hasLegendKey ? legendMenuItems(model) : []),
+    ...legendMenuItems(model),
   ]
 }
 

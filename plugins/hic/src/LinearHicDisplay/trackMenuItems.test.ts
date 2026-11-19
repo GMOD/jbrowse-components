@@ -23,6 +23,7 @@ function baseSelf() {
     colorDomainQuantile: 0.95,
     clipColorDomainQuantile: 0.95,
     showLegend: false,
+    hasLegendKey: true,
     heightMode: 'fixed' as const,
     colorScheme: DEFAULT_HIC_COLOR_SCHEME,
     hasBinSizes: true,

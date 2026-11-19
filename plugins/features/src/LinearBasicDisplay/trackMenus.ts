@@ -176,7 +176,7 @@ export function labelCheckboxItems(self: LabelToggleSelf): MenuItem[] {
 }
 
 export function showSubmenuLegendItems(self: ShowSubmenuSelf): MenuItem[] {
-  return self.hasLegendKey ? legendMenuItems(self) : []
+  return legendMenuItems(self)
 }
 
 // Collapsed wins over the fit note, since collapsed mode strips labels before

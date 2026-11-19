@@ -1707,6 +1707,16 @@ export default function stateModelFactory(
           },
 
           /**
+           * #getter
+           * Always true: the key's category scans run only while the legend
+           * is shown, so `colorScales` is empty while it is hidden and could
+           * never offer the row that shows it.
+           */
+          get hasLegendKey() {
+            return true
+          },
+
+          /**
            * #method
            * `colorScales` in another theme: the SVG export's, whose theme need
            * not be the session's.

@@ -18,6 +18,7 @@ export interface LDMenuSelf extends IStateTreeNode {
   dprimeAvailable: boolean
   indexSnpColumn: number
   showLegend: boolean
+  hasLegendKey: boolean
   showNames: boolean
   heightMode: TriangleHeightMode
   inRing: boolean
