@@ -229,6 +229,19 @@ function latestPushRun(sha: string) {
   return { id, status, conclusion, url }
 }
 
+// A failed `git push` can still have landed: when the pre-push hook's fixers
+// change anything, it commits that on top and pushes it itself, and the outer
+// push then fails as a non-fast-forward. HEAD on origin/main is the test.
+function landedOnOrigin() {
+  try {
+    run('git', ['fetch', 'origin', 'main'])
+    run('git', ['merge-base', '--is-ancestor', 'HEAD', 'origin/main'])
+    return true
+  } catch {
+    return false
+  }
+}
+
 // Tags only after Push is green on the release commit itself: Publish and
 // Release start on the tag and cannot un-ring it. assertCiGreen checks the
 // commit before the version bump; this checks the one that gets tagged.
@@ -672,15 +685,21 @@ function main() {
   try {
     run('git', ['push'])
   } catch (e) {
-    throw new Error(
-      `Push failed (${e instanceof Error ? e.message : e}).\n` +
-        `${releaseTag} is committed LOCALLY and untagged. Do not re-run pnpm release.\n` +
-        'Rebase onto whatever landed and push:\n' +
-        '  git pull --rebase && git push\n' +
-        `then, once Push is green, tag it: git tag -a ${releaseTag} -m ${releaseTag} && git push origin ${releaseTag}\n` +
-        'To abandon instead: git reset --hard origin/main',
-      { cause: e },
-    )
+    if (landedOnOrigin()) {
+      console.log(
+        'The pre-push hook committed and pushed an autofix on top of the release commit, so the push landed; tagging that commit.',
+      )
+    } else {
+      throw new Error(
+        `Push failed (${e instanceof Error ? e.message : e}).\n` +
+          `${releaseTag} is committed LOCALLY and untagged. Do not re-run pnpm release.\n` +
+          'Rebase onto whatever landed and push:\n' +
+          '  git pull --rebase && git push\n' +
+          `then, once Push is green, tag it: git tag -a ${releaseTag} -m ${releaseTag} && git push origin ${releaseTag}\n` +
+          'To abandon instead: git reset --hard origin/main',
+        { cause: e },
+      )
+    }
   }
   const releaseSha = capture('git', ['rev-parse', 'HEAD'])
   if (!skipCiCheck) {
