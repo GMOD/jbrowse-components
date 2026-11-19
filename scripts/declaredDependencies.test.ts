@@ -4,7 +4,7 @@ import { join } from 'node:path'
 
 import ts from 'typescript'
 
-import { workspaceFolders } from './releaseWorkspaces.ts'
+import { workspaceFolders, workspaceManifests } from './releaseWorkspaces.ts'
 
 // The sibling of workspaceLayering.test.ts, one axis over: that file pins
 // which WORKSPACE packages may depend on which, this one pins that an external
@@ -28,6 +28,7 @@ const builtins = new Set(builtinModules)
 
 interface Manifest {
   name?: string
+  private?: boolean
   dependencies?: Record<string, string>
   peerDependencies?: Record<string, string>
   devDependencies?: Record<string, string>
@@ -87,10 +88,21 @@ interface Violation {
   file: string
   spec: string
   typeOnly: boolean
+  privatePackage: boolean
+}
+
+function readManifest(path: string) {
+  return JSON.parse(readFileSync(path, 'utf8')) as Manifest
 }
 
 function scan(root: string) {
   const violations: Violation[] = []
+  const privatePackages = new Set(
+    workspaceManifests(root)
+      .map(path => readManifest(join(root, path)))
+      .filter(m => m.private)
+      .map(m => m.name),
+  )
   for (const r of workspaceFolders(root)) {
     const tierDir = join(root, r)
     if (!existsSync(tierDir)) {
@@ -102,7 +114,7 @@ function scan(root: string) {
       if (!existsSync(pkgPath) || !existsSync(srcPath)) {
         continue
       }
-      const manifest = JSON.parse(readFileSync(pkgPath, 'utf8')) as Manifest
+      const manifest = readManifest(pkgPath)
       if (!manifest.name) {
         continue
       }
@@ -125,16 +137,18 @@ function scan(root: string) {
           }
           const name = pkgNameOf(spec)
           const typeOnly = !!m[1]
+          const privatePackage = !manifest.private && privatePackages.has(name)
           const declared =
             runtimeTier.has(name) ||
             builtins.has(name) ||
             (typeOnly && devTier.has(name))
-          if (!declared) {
+          if (privatePackage || !declared) {
             violations.push({
               pkg: manifest.name,
               file: file.replace(`${root}/`, ''),
               spec,
               typeOnly,
+              privatePackage,
             })
           }
         }
@@ -150,9 +164,10 @@ const repoRoot = join(__dirname, '..')
 
 test('every external import in a package src/ is declared by that package', () => {
   const violations = scan(repoRoot)
-  const report = violations.map(
-    v =>
-      `${v.pkg} imports '${v.spec}'${v.typeOnly ? ' (type-only)' : ''} in ${v.file} without declaring it — add it to that package.json's ${v.typeOnly ? 'dependencies, peerDependencies or devDependencies' : 'dependencies or peerDependencies'}`,
+  const report = violations.map(v =>
+    v.privatePackage
+      ? `${v.pkg} is published but imports the private '${v.spec}' in ${v.file}, which no consumer can install`
+      : `${v.pkg} imports '${v.spec}'${v.typeOnly ? ' (type-only)' : ''} in ${v.file} without declaring it — add it to that package.json's ${v.typeOnly ? 'dependencies, peerDependencies or devDependencies' : 'dependencies or peerDependencies'}`,
   )
   expect(report).toEqual([])
 })
