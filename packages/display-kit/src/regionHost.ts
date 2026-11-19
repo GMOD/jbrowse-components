@@ -163,8 +163,7 @@ export function regionsWidthPx(
 /**
  * What a tables read fetches for `regions` (`windowFetchRegions`), each with
  * an empty `assemblyName`, refused when their index-only bytes summed are over
- * `byteLimit`. `tooLarge` is the refusal naming every region asked for, for a
- * fetch that measures more than the index promised.
+ * `byteLimit`.
  */
 export async function byteGatedFetchRegions({
   adapter,
@@ -183,13 +182,11 @@ export async function byteGatedFetchRegions({
     assemblyName: '',
     ...r,
   }))
-  const tooLarge = (bytes: number | undefined) =>
-    overByteLimitError(regions, bytes, byteLimit, what)
   const bytes = await totalRegionBytes(adapter, fetchRegions)
   if (overByteBudget(bytes, byteLimit)) {
-    throw tooLarge(bytes)
+    throw overByteLimitError(regions, bytes, byteLimit, what)
   }
-  return { fetchRegions, tooLarge }
+  return { fetchRegions }
 }
 
 /**

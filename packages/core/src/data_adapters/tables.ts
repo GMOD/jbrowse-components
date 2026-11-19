@@ -33,7 +33,7 @@ export function lociOf(regions: readonly TablesRegion[]) {
  */
 export function overByteLimitError(
   regions: readonly TablesRegion[],
-  bytes: number | undefined,
+  bytes: number,
   byteLimit: number,
   what: string,
 ) {

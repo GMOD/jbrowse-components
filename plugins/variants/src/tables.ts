@@ -353,7 +353,7 @@ async function fetchedVariantHost(
     adapterConfig,
     sequenceAdapter,
   )
-  const { fetchRegions, tooLarge } = await byteGatedFetchRegions({
+  const { fetchRegions } = await byteGatedFetchRegions({
     adapter,
     regions,
     displayedRegions,
@@ -381,7 +381,9 @@ async function fetchedVariantHost(
   )
   const result = await variantCellData({ pluginManager, args })
   if ('regionTooLarge' in result) {
-    throw tooLarge(result.bytes)
+    throw new Error(
+      'MultiSampleVariantGetCellData refused a region it was given no budget for',
+    )
   }
   const value = result.value
   const fetchOrder = new Map(result.records.map((r, i) => [r.id(), i]))
@@ -893,7 +895,7 @@ export async function variantFeatureTables(
     adapterConfig,
     sequenceAdapter,
   )
-  const { fetchRegions, tooLarge } = await byteGatedFetchRegions({
+  const { fetchRegions } = await byteGatedFetchRegions({
     adapter,
     regions,
     displayedRegions,
@@ -925,7 +927,9 @@ export async function variantFeatureTables(
     })),
   })
   if ('regionTooLarge' in result) {
-    throw tooLarge(result.bytes)
+    throw new Error(
+      'MultiSampleVariantGetCellData refused a region it was given no budget for',
+    )
   }
   host.setCellData(result.value)
   const band = runInAction(() => ({
