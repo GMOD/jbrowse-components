@@ -1,5 +1,6 @@
 import { lanePairKey } from './alignmentOps.ts'
 import { laneGeneFilter, laneIsoformSettings } from './geneGlyph.ts'
+import { laneGenome } from './laneCopies.ts'
 
 import type { LaneLinks } from './alignmentOps.ts'
 import type { LaneGene } from './geneGlyph.ts'
@@ -225,7 +226,7 @@ export function laneGenesFetchSpecsOf({
       specs.push({
         lane: assemblyName,
         key: `${source}@${regions.map(regionKey).join(',')}`,
-        assemblyName,
+        assemblyName: laneGenome(assemblyName),
         adapterConfig: adapter,
         regions,
         isoforms,
@@ -248,7 +249,7 @@ export function laneGroupsFetchSpecsOf(
           {
             lane,
             key: `${regions.map(regionKey).join(',')}|${lodTier}`,
-            assemblyName: lane,
+            assemblyName: laneGenome(lane),
             regions,
             lodTier,
           },

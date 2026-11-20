@@ -4,6 +4,7 @@ import { cutAlignment } from '../mateBpAt.ts'
 import { voteEvidence } from '../syntenyHysteresis.ts'
 import { getMate, getMates, isNamedRecord } from '../syntenyMate.ts'
 import { NO_OPS } from './alignmentOps.ts'
+import { copyLane } from './laneCopies.ts'
 import { forEachLaneGap } from './laneGaps.ts'
 
 import type { SyntenyGroupedMate } from '../syntenyMate.ts'
@@ -494,7 +495,7 @@ function groupKeyOf(feature: Feature) {
   return syntenyId === undefined ? feature.id() : String(syntenyId)
 }
 
-export function groupFeatures(features: Feature[]) {
+export function groupFeatures(features: Feature[], copies = false) {
   const byKey = new Map<string, MultiWayGroup>()
   const seen = new Map<string, number[]>()
   for (const feature of features) {
@@ -527,10 +528,13 @@ export function groupFeatures(features: Feature[]) {
       } else {
         const rows = mate.row === undefined ? [] : [mate.row]
         seen.set(seenKey, rows)
-        let placements = group.mates.get(mate.assemblyName)
+        const lane = copies
+          ? copyLane(mate.assemblyName, mate.refName)
+          : mate.assemblyName
+        let placements = group.mates.get(lane)
         if (!placements) {
           placements = []
-          group.mates.set(mate.assemblyName, placements)
+          group.mates.set(lane, placements)
         }
         placements.push({
           refName: mate.refName,

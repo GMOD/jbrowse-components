@@ -81,6 +81,18 @@ export const laneRowsConfigSchema = ConfigurationSchema(
       description:
         "the lanes drawn, by assembly name, selecting rather than narrowing: it replaces the track's lanes and can add one; empty draws the track's lanes, or every lane",
     },
+    /**
+     * #slot copies
+     * One lane per contig of a genome rather than one per genome, so each
+     * copy of the anchor window, a homoeolog or an older duplicate, draws as
+     * its own lane, named `<assembly>@<refName>` in `sort` and `labels`
+     */
+    copies: {
+      type: 'boolean',
+      defaultValue: false,
+      description:
+        'one lane per contig of a genome rather than one per genome, named <assembly>@<refName> in sort and labels',
+    },
   },
   {
     closed: true,

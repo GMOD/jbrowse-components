@@ -108,6 +108,7 @@ import {
 import { featureWidgetOf } from './featureWidget.ts'
 import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
+import { copyLane, laneCopy, laneGenome } from './laneCopies.ts'
 import { nudgeDecision, sameDecisions } from './laneDecision.ts'
 import {
   failedLanesOf,
@@ -704,7 +705,9 @@ export function stateModelFactory(
       },
       /** #getter */
       get groups() {
-        return self.features ? groupFeatures(self.features) : []
+        return self.features
+          ? groupFeatures(self.features, getConf(self, ['rows', 'copies']))
+          : []
       },
       /**
        * #getter
@@ -926,18 +929,20 @@ export function stateModelFactory(
        * #method
        * the canonical name, so two spellings of one assembly share a key
        */
-      laneKey(assemblyName: string) {
-        return (
-          getSession(self).assemblyManager.getCanonicalAssemblyName(
-            assemblyName,
-          ) ?? assemblyName
-        )
+      laneKey(lane: string) {
+        const genome = laneGenome(lane)
+        const canonical =
+          getSession(self).assemblyManager.getCanonicalAssemblyName(genome) ??
+          genome
+        const copy = laneCopy(lane)
+        return copy === undefined ? canonical : copyLane(canonical, copy)
       },
       /**
        * #method
        * `assemblyName` and every alias the session holds it under
        */
-      laneSpellings(assemblyName: string) {
+      laneSpellings(lane: string) {
+        const assemblyName = laneGenome(lane)
         const { assemblyManager } = getSession(self)
         return [
           assemblyName,
@@ -1088,8 +1093,8 @@ export function stateModelFactory(
         return view.coarseVisibleLocStrings || view.visibleLocStrings
       },
       /** #method */
-      holdsAssembly(assemblyName: string) {
-        return getSession(self).assemblyManager.has(assemblyName)
+      holdsAssembly(lane: string) {
+        return getSession(self).assemblyManager.has(laneGenome(lane))
       },
       /** #method */
       holdsTemporarily(assemblyName: string) {
@@ -1130,7 +1135,14 @@ export function stateModelFactory(
           written: this.rowLabels,
           heldName: name =>
             this.holdsAssembly(name)
-              ? getSession(self).assemblyManager.getDisplayName(name)
+              ? [
+                  getSession(self).assemblyManager.getDisplayName(
+                    laneGenome(name),
+                  ),
+                  laneCopy(name),
+                ]
+                  .filter(Boolean)
+                  .join(' ')
               : undefined,
           declared: this.declaredLaneLabels,
           keyOf: self.laneKey,
@@ -1537,7 +1549,7 @@ export function stateModelFactory(
         const entries = getConf(self, 'laneGeneTracks')
         return laneGeneTracksOf({
           lanes: [self.anchorAssemblyName, ...self.rowAssemblies],
-          keyOf: self.laneKey,
+          keyOf: lane => self.laneKey(laneGenome(lane)),
           tracks: self.sessionTracksById.values(),
           namedTracks: key => self.namedLaneTracks(entries, key),
         })
@@ -1988,9 +2000,12 @@ export function stateModelFactory(
         for (const [assemblyName, frame] of self.rowFrames) {
           if (frame && self.holdsAssembly(assemblyName)) {
             const template = laneTemplateRegion(frame, LANE_TEMPLATE_MAX_BP)
+            const genome = laneGenome(assemblyName)
             out.set(assemblyName, {
-              regions: [{ assemblyName, ...laneFetchRegion(frame) }],
-              templateRegions: template && [{ assemblyName, ...template }],
+              regions: [{ assemblyName: genome, ...laneFetchRegion(frame) }],
+              templateRegions: template && [
+                { assemblyName: genome, ...template },
+              ],
               bpPerPx: frameBpPerPx(frame, self.canvasWidthPx),
             })
           }
@@ -2111,7 +2126,7 @@ export function stateModelFactory(
         const { assemblyManager } = getSession(self)
         const heldAssembly = (assemblyName: string) =>
           self.holdsAssembly(assemblyName)
-            ? assemblyManager.get(assemblyName)
+            ? assemblyManager.get(laneGenome(assemblyName))
             : undefined
         return laneStackOn(self.anchorStage, {
           assemblyNames: [self.anchorAssemblyName, ...self.rowAssemblies],
