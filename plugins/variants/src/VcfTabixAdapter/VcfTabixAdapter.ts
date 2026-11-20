@@ -137,6 +137,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
     return vcfSourcesAndWarnings({
       parsers: [parser],
       samplesTsvLocation: this.getConf('samplesTsvLocation'),
+      pedigreeLocation: this.getConf('pedigreeLocation'),
       pluginManager: this.pluginManager,
       opts,
     })

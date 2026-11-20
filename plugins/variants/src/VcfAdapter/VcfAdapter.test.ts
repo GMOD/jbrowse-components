@@ -178,6 +178,99 @@ test("a samplesTsv column the display's rows already use is dropped and named", 
   ])
 })
 
+function dataUri(text: string) {
+  return {
+    locationType: 'UriLocation' as const,
+    uri: `data:text/plain;base64,${Buffer.from(text).toString('base64')}`,
+  }
+}
+
+function trioAdapter({
+  samples,
+  samplesTsv,
+}: {
+  samples: string[]
+  samplesTsv?: string
+}) {
+  const vcf = [
+    '##fileformat=VCFv4.3',
+    '##contig=<ID=ctgA>',
+    [
+      '#CHROM',
+      'POS',
+      'ID',
+      'REF',
+      'ALT',
+      'QUAL',
+      'FILTER',
+      'INFO',
+      'FORMAT',
+      ...samples,
+    ].join('\t'),
+  ].join('\n')
+  return new Adapter(
+    configSchema.create({
+      vcfLocation: dataUri(vcf),
+      pedigreeLocation: {
+        localPath: require.resolve('./test_data/g1k_pedigree_excerpt.txt'),
+        locationType: 'LocalPathLocation',
+      },
+      ...(samplesTsv ? { samplesTsvLocation: dataUri(samplesTsv) } : {}),
+    }),
+  )
+}
+
+test('a pedigree adds family, parents and sex to the VCF samples', async () => {
+  const { sources, warnings } = await trioAdapter({
+    samples: ['HG02024', 'HG02025', 'HG02026'],
+  }).getSourcesAndWarnings()
+
+  expect(sources).toEqual([
+    {
+      name: 'HG02024',
+      family: 'VN049',
+      father: 'HG02026',
+      mother: 'HG02025',
+      sex: 'female',
+    },
+    { name: 'HG02025', family: 'VN049', sex: 'female' },
+    { name: 'HG02026', family: 'VN049', sex: 'male' },
+  ])
+  expect(warnings).toEqual([])
+})
+
+test("the samples table's sex wins over the pedigree's, and its narrowing stays", async () => {
+  const sources = await trioAdapter({
+    samples: ['HG02024', 'HG02025', 'HG02026'],
+    samplesTsv: 'name\tsex\tpopulation\nHG02024\tF\tKHV\nHG02026\tM\tKHV\n',
+  }).getSources([])
+
+  expect(sources).toEqual([
+    {
+      name: 'HG02024',
+      family: 'VN049',
+      father: 'HG02026',
+      mother: 'HG02025',
+      sex: 'F',
+      population: 'KHV',
+    },
+    { name: 'HG02026', family: 'VN049', sex: 'M', population: 'KHV' },
+  ])
+})
+
+test('a pedigree naming no VCF sample warns rather than failing the sources fetch', async () => {
+  const { sources, warnings } = await trioAdapter({
+    samples: ['sampleA', 'sampleB'],
+  }).getSourcesAndWarnings()
+
+  expect(sources).toEqual([{ name: 'sampleA' }, { name: 'sampleB' }])
+  expect(warnings).toEqual([
+    expect.stringContaining(
+      'g1k_pedigree_excerpt.txt matches the VCF, so it adds nothing',
+    ),
+  ])
+})
+
 test('a record spanning two exported regions is exported once', async () => {
   const adapter = new Adapter(
     configSchema.create({

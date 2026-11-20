@@ -140,6 +140,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
     return vcfSourcesAndWarnings({
       parsers: [parser],
       samplesTsvLocation: this.getConf('samplesTsvLocation'),
+      pedigreeLocation: this.getConf('pedigreeLocation'),
       pluginManager: this.pluginManager,
       opts,
     })

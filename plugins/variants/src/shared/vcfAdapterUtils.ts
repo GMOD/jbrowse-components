@@ -1,9 +1,16 @@
 import { vcfRecordSpan } from '@jbrowse/add-track-core'
-import { downloadStatus, updateStatus } from '@jbrowse/core/util'
+import {
+  downloadStatus,
+  fetchAndMaybeUnzipText,
+  updateStatus,
+} from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
+import { getFileName } from '@jbrowse/core/util/tracks'
 
 import VcfFeature from '../VcfFeature/index.ts'
 import { HAPLOTYPE_ROW_FIELDS } from './constants.ts'
+import { parsePedigree, withPedigree } from './pedigree.ts'
 
 import type { TabixIndexedFile } from '@gmod/tabix'
 import type VcfParser from '@gmod/vcf'
@@ -120,33 +127,70 @@ export async function appendVcfLines(
   }
 }
 
+async function pedigreeAttributes({
+  location,
+  names,
+  pluginManager,
+  opts,
+}: {
+  location: FileLocation | undefined
+  names: readonly string[]
+  pluginManager: PluginManager | undefined
+  opts?: BaseOptions
+}) {
+  return location
+    ? parsePedigree(
+        await fetchAndMaybeUnzipText(
+          openLocation(location, pluginManager),
+          opts,
+          'Downloading pedigree',
+        ),
+        names,
+        'uri' in location ? location.uri : getFileName(location),
+      )
+    : { attributes: new Map<string, Record<string, string>>(), warnings: [] }
+}
+
 /**
  * The sources of one VCF, or of several whose headers list different samples
  * (a chrY file holds only the males): the first header's samples in its order,
  * then each name a later header adds, merged with the samples table when the
- * adapter has one, less any column naming a field the display writes on its
- * haplotype rows. `getSources` is the base-class contract and drops the
- * warnings, `MultiSampleVariantGetSources` takes this one so the display can
- * report them.
+ * adapter has one and then with the pedigree, less any column naming a field
+ * the display writes on its haplotype rows. `getSources` is the base-class
+ * contract and drops the warnings, `MultiSampleVariantGetSources` takes this
+ * one so the display can report them.
  */
 export async function vcfSourcesAndWarnings({
   parsers,
   samplesTsvLocation,
+  pedigreeLocation,
   pluginManager,
   opts,
 }: {
   parsers: readonly VcfParser[]
   samplesTsvLocation: FileLocation | undefined
+  pedigreeLocation: FileLocation | undefined
   pluginManager: PluginManager | undefined
   opts?: BaseOptions
 }) {
-  const { sources, warnings } = await getSamplesTsvSources({
-    location: samplesTsvLocation,
-    names: [...new Set(parsers.flatMap(parser => parser.samples))],
-    namesLabel: 'the VCF',
-    pluginManager,
-    opts,
-  })
+  const names = [...new Set(parsers.flatMap(parser => parser.samples))]
+  const [samples, pedigree] = await Promise.all([
+    getSamplesTsvSources({
+      location: samplesTsvLocation,
+      names,
+      namesLabel: 'the VCF',
+      pluginManager,
+      opts,
+    }),
+    pedigreeAttributes({
+      location: pedigreeLocation,
+      names,
+      pluginManager,
+      opts,
+    }),
+  ])
+  const sources = withPedigree(samples.sources, pedigree.attributes)
+  const warnings = [...samples.warnings, ...pedigree.warnings]
   const reserved: string[] = HAPLOTYPE_ROW_FIELDS.filter(field =>
     sources.some(source => Object.hasOwn(source, field)),
   )

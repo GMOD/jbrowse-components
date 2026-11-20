@@ -250,6 +250,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     const result = await vcfSourcesAndWarnings({
       parsers: opened.map(contig => contig.parser),
       samplesTsvLocation: this.getConf('samplesTsvLocation'),
+      pedigreeLocation: this.getConf('pedigreeLocation'),
       pluginManager: this.pluginManager,
       opts,
     })
