@@ -156,11 +156,14 @@ async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
 // else, so `--loc chr1:1-100` arrived as `--loc <app path> … chr1:1-100`; the
 // launch's own argv, sent as the lock's data, keeps its order.
 function forwardedLaunch(data: unknown) {
-  const { argv, cwd } = (data ?? {}) as { argv?: unknown; cwd?: unknown }
-  return Array.isArray(argv) &&
-    argv.every(a => typeof a === 'string') &&
-    typeof cwd === 'string'
-    ? { argv, cwd }
+  return typeof data === 'object' &&
+    data !== null &&
+    'argv' in data &&
+    'cwd' in data &&
+    Array.isArray(data.argv) &&
+    data.argv.every((a: unknown): a is string => typeof a === 'string') &&
+    typeof data.cwd === 'string'
+    ? { argv: data.argv, cwd: data.cwd }
     : undefined
 }
 
@@ -190,18 +193,38 @@ async function reportInvalidLaunch(
 // Tracks the single main window. Concurrent ensureWindow calls during creation
 // share the in-flight promise; the 'closed' handler nulls both bindings
 // together so the next call rebuilds the window.
+//
+// A window the user closes before its first page loads resolves to undefined:
+// loadURL rejects with ERR_FAILED when its window goes, and at launch that
+// rejection reached the fatal-error dialog. A load that fails with its window
+// still up keeps that window rather than destroying it, since the last window
+// going quits the app on Windows and Linux before the dialog can show.
 function createWindowManager(closeGuard: CloseGuard) {
   let mainWindow: BrowserWindow | null = null
-  let creating: Promise<BrowserWindow> | null = null
+  let creating: Promise<BrowserWindow | undefined> | null = null
   let checkedForUpdates = false
 
   async function startCreate(target: LaunchTarget | undefined) {
+    const { win, loaded } = createMainWindow(
+      DEV_SERVER_URL,
+      target,
+      RENDERER_OVERRIDE,
+    )
+    // the rejection lands between the page's teardown and the window's, so it
+    // is the page that says whether the window is going
+    const { webContents } = win
     try {
-      const win = await createMainWindow(
-        DEV_SERVER_URL,
-        target,
-        RENDERER_OVERRIDE,
-      )
+      await loaded
+    } catch (error) {
+      // Clear the in-flight promise so a later ensureWindow can retry instead
+      // of awaiting a permanently-rejected creating promise
+      creating = null
+      if (!webContents.isDestroyed()) {
+        throw error
+      }
+    }
+    const open = !webContents.isDestroyed()
+    if (open) {
       mainWindow = win
       // Once per launch, after the first page has loaded so it does not compete
       // with it. A macOS Dock reopen builds another window, and a check per
@@ -217,13 +240,8 @@ function createWindowManager(closeGuard: CloseGuard) {
         mainWindow = null
         creating = null
       })
-      return win
-    } catch (error) {
-      // Clear the in-flight promise so a later ensureWindow can retry instead
-      // of awaiting a permanently-rejected creating promise
-      creating = null
-      throw error
     }
+    return open ? win : undefined
   }
 
   // Hand a target to a window that already exists.
@@ -253,7 +271,7 @@ function createWindowManager(closeGuard: CloseGuard) {
     }
   }
 
-  async function ensureWindow(target?: LaunchTarget): Promise<BrowserWindow> {
+  async function ensureWindow(target?: LaunchTarget) {
     if (mainWindow) {
       if (mainWindow.isMinimized()) {
         mainWindow.restore()
@@ -266,7 +284,7 @@ function createWindowManager(closeGuard: CloseGuard) {
     }
     if (creating) {
       const win = await creating
-      if (target) {
+      if (win && target) {
         sendTarget(win, target)
       }
       return win
@@ -302,7 +320,10 @@ function runApp() {
   // linked session.
   async function openTarget(target: ArgvTarget | undefined) {
     if (target?.type === 'invalid') {
-      await reportInvalidLaunch(target.message, await wm.ensureWindow())
+      await reportInvalidLaunch(
+        target.message,
+        (await wm.ensureWindow()) ?? null,
+      )
     } else if (
       target?.type === 'link' &&
       !(await confirmOpenLink(target.url, wm.current))

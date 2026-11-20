@@ -155,11 +155,13 @@ function createMenu(autoUpdater: Updater, connectAgent: () => void) {
   ])
 }
 
-export async function createMainWindow(
+// Returns the window with its first page still loading, so the caller can watch
+// it close during that load.
+export function createMainWindow(
   devServerUrl: string | undefined,
   initialTarget: LaunchTarget | undefined,
   renderer: string | undefined,
-): Promise<BrowserWindow> {
+) {
   const mainWindowState = windowStateKeeper({
     defaultWidth: DEFAULT_WINDOW_WIDTH,
     defaultHeight: DEFAULT_WINDOW_HEIGHT,
@@ -208,9 +210,7 @@ export async function createMainWindow(
     }
   })
 
-  await mainWindow.loadURL(appUrl.href)
-
-  return mainWindow
+  return { win: mainWindow, loaded: mainWindow.loadURL(appUrl.href) }
 }
 
 export function createAuthWindow(
