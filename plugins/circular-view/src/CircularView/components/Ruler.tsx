@@ -6,6 +6,7 @@ import {
   stripAlpha,
   toLocale,
 } from '@jbrowse/core/util'
+import { textBaselineShift } from '@jbrowse/core/util/SvgCanvas'
 import { observer } from 'mobx-react'
 
 import { arcPath, sectorPath } from '../../chords/pathSink.ts'
@@ -71,12 +72,11 @@ const RulerLabel = observer(function RulerLabel({
   return (
     <text
       x={0}
-      y={0}
+      y={textBaselineShift('middle', labelFontSizePx)}
       fontSize={labelFontSizePx}
       fontWeight={500}
       letterSpacing="0.0075em"
       textAnchor={textAnchor}
-      dominantBaseline="middle"
       transform={`translate(${textXY}) rotate(${rotation})`}
       fill={stripAlpha(color)}
     >
@@ -191,9 +191,9 @@ const RulerTicks = observer(function RulerTicks({
             <line x1={x1} y1={y1} x2={x2} y2={y2} />
             {label === undefined ? null : (
               <text
+                y={textBaselineShift('middle', tickFontSizePx)}
                 fontSize={tickFontSizePx}
                 textAnchor={textAnchor}
-                dominantBaseline="middle"
                 transform={`translate(${labelXY}) rotate(${rotation})`}
                 fill={color}
                 stroke="none"
@@ -301,11 +301,10 @@ const AssemblyArcLabel = observer(function AssemblyArcLabel({
       />
       <text
         x={0}
-        y={0}
+        y={textBaselineShift('middle', assemblyLabelFontSizePx)}
         fontSize={assemblyLabelFontSizePx}
         fontWeight={600}
         textAnchor={textAnchor}
-        dominantBaseline="middle"
         transform={`translate(${polarToCartesian(labelRadiusPx, radians)}) rotate(${rotation})`}
         fill={palette.text.primary}
       >

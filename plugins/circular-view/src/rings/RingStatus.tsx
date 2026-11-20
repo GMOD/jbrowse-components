@@ -4,7 +4,7 @@ import { measureText, progressLabel } from '@jbrowse/core/util'
 import { tooLargeBannerText } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
-import { ringLabelArcPath } from './ringPolar.ts'
+import { middleLineArcPath } from './RingOverlay.tsx'
 
 import type { Ring } from './ringHost.ts'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
@@ -130,16 +130,16 @@ const RingStatusLine = observer(function RingStatusLine({
       />
       <path
         id={id}
-        d={ringLabelArcPath(
+        d={middleLineArcPath(
           { radians: -Math.PI / 2 - offsetRadians, turn, radiusPx },
           false,
+          FONT_SIZE_PX,
         )}
         fill="none"
       />
       <text
         fontSize={FONT_SIZE_PX}
         fill={isError ? palette.error.main : palette.text.secondary}
-        dominantBaseline="middle"
         style={action ? { cursor: 'pointer' } : undefined}
         pointerEvents={action ? 'auto' : 'none'}
         onPointerDown={event => {

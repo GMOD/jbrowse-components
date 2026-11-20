@@ -99,3 +99,16 @@ describe.each(Object.entries(orientations))('%s labels', (_name, alongArc) => {
     }
   })
 })
+
+test('a slice label is centred on its radius by y alone', () => {
+  const { container } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <svg>
+        <Ruler model={makeModel(0)} slice={makeSlice(1, 0.45)} alongArc />
+      </svg>
+    </ThemeProvider>,
+  )
+  const text = container.querySelector('text')
+  expect(text?.hasAttribute('dominant-baseline')).toBe(false)
+  expect(Number(text?.getAttribute('y'))).toBeCloseTo(13 * 0.28, 6)
+})

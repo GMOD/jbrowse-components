@@ -1,6 +1,7 @@
 import { useId } from 'react'
 
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { textBaselineShift } from '@jbrowse/core/util/SvgCanvas'
 import { observer } from 'mobx-react'
 
 import type { ReactNode } from 'react'
@@ -56,9 +57,8 @@ const HatchCircle = observer(function HatchCircle({
       ) : null}
       <text
         x="0"
-        y={`${textLine * 3}em`}
+        y={`${textLine * 3 + textBaselineShift('middle', 1)}em`}
         transform={`rotate(${textRotationDeg} 0 0)`}
-        dominantBaseline="middle"
         textAnchor="middle"
         fill={palette.text.primary}
       >

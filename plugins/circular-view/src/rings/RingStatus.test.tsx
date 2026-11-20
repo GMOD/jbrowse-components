@@ -118,3 +118,19 @@ test('a loading ring with no status yet says Loading', () => {
     jest.useRealTimers()
   }
 })
+
+// a textPath puts its baseline on the path, and dominant-baseline does not
+// move it in Skia or Qt, so the path itself runs inside the band's middle by
+// the middle shift and the line straddles the middle
+test('the status line straddles the middle of its band', () => {
+  const { getByTestId } = renderStatus({
+    displayPhase: 'tooLarge',
+    regionTooLargeReason: 'Too many features',
+  })
+  const status = getByTestId('ring-status')
+  expect(status.querySelector('text')?.hasAttribute('dominant-baseline')).toBe(
+    false,
+  )
+  const d = status.querySelector('path')?.getAttribute('d') ?? ''
+  expect(Number(/A ([\d.]+) /.exec(d)?.[1])).toBeCloseTo(225 - 11 * 0.28, 6)
+})

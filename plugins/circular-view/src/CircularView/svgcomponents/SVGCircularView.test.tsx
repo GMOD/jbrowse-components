@@ -249,3 +249,20 @@ test('the export canvas grows to fit labels that overrun paddingPx', async () =>
   // and the on-screen figure reserves the same room, so it clips none either
   expect(view.figureSize).toBeCloseTo(halfCanvas * 2, 1)
 }, 20000)
+
+// Skia and Qt ignore dominant-baseline, which stood the ruler's labels on
+// their radius instead of across it, so the middle shift is written into y
+test('ruler labels and ticks are centred on their radius by y alone', async () => {
+  const view = await setupRefNames(['ctgA', 'ctgB'])
+  const svg = await renderToSvg(view, {})
+  expect(svg).not.toContain('baseline')
+  const ys = (fontSize: number) =>
+    new Set(
+      [...svg.matchAll(/<text[^>]*>/g)]
+        .map(([tag]) => tag)
+        .filter(tag => tag.includes(`font-size="${fontSize}"`))
+        .map(tag => /\sy="([^"]*)"/.exec(tag)?.[1]),
+    )
+  expect(ys(13)).toEqual(new Set(['3.64']))
+  expect(ys(10)).toEqual(new Set(['2.8']))
+}, 20000)

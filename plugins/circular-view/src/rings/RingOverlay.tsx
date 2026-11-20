@@ -1,6 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { highlightBoxColors } from '@jbrowse/core/ui/hoverBoxStyle'
 import { radToDeg } from '@jbrowse/core/util'
+import { textBaselineShift } from '@jbrowse/core/util/SvgCanvas'
 import { isFloatingLabelHost } from '@jbrowse/display-kit/floatingLabelHost'
 import { isHighlightHost } from '@jbrowse/display-kit/highlightHost'
 import { observer } from 'mobx-react'
@@ -91,6 +92,23 @@ const RingHighlights = observer(function RingHighlights({
   )
 })
 
+/**
+ * The arc a line of text runs along so that it straddles `radiusPx` rather
+ * than standing on it: a textPath puts its baseline on the path, and the text
+ * rises outward on the upper half and inward on the flipped lower half.
+ */
+export function middleLineArcPath(
+  arc: Parameters<typeof ringLabelArcPath>[0],
+  upsideDown: boolean,
+  fontSize: number,
+) {
+  const shift = textBaselineShift('middle', fontSize)
+  return ringLabelArcPath(
+    { ...arc, radiusPx: arc.radiusPx + (upsideDown ? shift : -shift) },
+    upsideDown,
+  )
+}
+
 // a ring display's labels, each curved along its arc; ids carry the view's
 // and the display's so two circles on one page never share a path
 const RingLabels = observer(function RingLabels({
@@ -116,17 +134,14 @@ const RingLabels = observer(function RingLabels({
         <g key={label.key} data-testid="ring-label">
           <path
             id={id}
-            d={ringLabelArcPath(
+            d={middleLineArcPath(
               label,
               onBottomHalf(label.radians, offsetRadians),
+              label.fontSize,
             )}
             fill="none"
           />
-          <text
-            fontSize={label.fontSize}
-            fill={label.color}
-            dominantBaseline="middle"
-          >
+          <text fontSize={label.fontSize} fill={label.color}>
             <textPath
               xlinkHref={`#${id}`}
               startOffset="50%"
@@ -171,9 +186,8 @@ const RingCallouts = observer(function RingCallouts({
             />
             <text
               x={c.textXY[0]}
-              y={c.textXY[1]}
+              y={c.textXY[1] + textBaselineShift('middle', CALLOUT_FONT_PX)}
               textAnchor={c.side === 'right' ? 'start' : 'end'}
-              dominantBaseline="middle"
               fill={palette.text.primary}
             >
               {c.text}

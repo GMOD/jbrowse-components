@@ -39,7 +39,6 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 transform="translate(199.99999999992372,199.99999999992372)"
               >
                 <text
-                  dominant-baseline="middle"
                   fill="#000000"
                   font-size="13"
                   font-weight="500"
@@ -47,7 +46,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   text-anchor="middle"
                   transform="translate(-71.15902574114772,158.7841083217843) rotate(24.13951521066859)"
                   x="0"
-                  y="0"
+                  y="3.6400000000000006"
                 >
                   ctgA
                 </text>
@@ -102,12 +101,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                       y2="92.60161590871658"
                     />
                     <text
-                      dominant-baseline="middle"
                       fill="rgba(0, 0, 0, 0.6)"
                       font-size="10"
                       stroke="none"
                       text-anchor="middle"
                       transform="translate(132.435793183391,96.73035037598622) rotate(126.14417981671173)"
+                      y="2.8000000000000003"
                     >
                       20
                     </text>
@@ -152,12 +151,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                       y2="151.0612730438304"
                     />
                     <text
-                      dominant-baseline="middle"
                       fill="rgba(0, 0, 0, 0.6)"
                       font-size="10"
                       stroke="none"
                       text-anchor="middle"
                       transform="translate(44.67961556244262,157.79648903941847) rotate(164.19068488693458)"
+                      y="2.8000000000000003"
                     >
                       40
                     </text>
@@ -202,12 +201,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                       y2="145.323146692187"
                     />
                     <text
-                      dominant-baseline="middle"
                       fill="rgba(0, 0, 0, 0.6)"
                       font-size="10"
                       stroke="none"
                       text-anchor="middle"
                       transform="translate(-62.064435180142965,151.80252265935772) rotate(22.23718995715744)"
+                      y="2.8000000000000003"
                     >
                       60
                     </text>
@@ -252,12 +251,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                       y2="77.82581681355916"
                     />
                     <text
-                      dominant-baseline="middle"
                       fill="rgba(0, 0, 0, 0.6)"
                       font-size="10"
                       stroke="none"
                       text-anchor="middle"
                       transform="translate(-142.4324393580566,81.2957576905985) rotate(60.28369502738033)"
+                      y="2.8000000000000003"
                     >
                       80
                     </text>
@@ -302,12 +301,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                       y2="-22.745806938040566"
                     />
                     <text
-                      dominant-baseline="middle"
                       fill="rgba(0, 0, 0, 0.6)"
                       font-size="10"
                       stroke="none"
                       text-anchor="middle"
                       transform="translate(-162.26972828940856,-23.759951196425035) rotate(98.33020009760318)"
+                      y="2.8000000000000003"
                     >
                       100
                     </text>
@@ -352,19 +351,18 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                       y2="-113.65095324233172"
                     />
                     <text
-                      dominant-baseline="middle"
                       fill="rgba(0, 0, 0, 0.6)"
                       font-size="10"
                       stroke="none"
                       text-anchor="middle"
                       transform="translate(-113.14588195907253,-118.71819319581395) rotate(136.37670516782603)"
+                      y="2.8000000000000003"
                     >
                       120
                     </text>
                   </g>
                 </g>
                 <text
-                  dominant-baseline="middle"
                   fill="#000000"
                   font-size="13"
                   font-weight="500"
@@ -372,7 +370,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   text-anchor="middle"
                   transform="translate(71.15902574114773,-158.7841083217843) rotate(384.1395152106686)"
                   x="0"
-                  y="0"
+                  y="3.6400000000000006"
                 >
                   ctgB
                 </text>
@@ -427,12 +425,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                       y2="-156.9431543917784"
                     />
                     <text
-                      dominant-baseline="middle"
                       fill="rgba(0, 0, 0, 0.6)"
                       font-size="10"
                       stroke="none"
                       text-anchor="middle"
                       transform="translate(-4.412839814927494,-163.94061987421776) rotate(178.45812428826815)"
+                      y="2.8000000000000003"
                     >
                       20
                     </text>
@@ -477,12 +475,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                       y2="-126.19798124994868"
                     />
                     <text
-                      dominant-baseline="middle"
                       fill="rgba(0, 0, 0, 0.6)"
                       font-size="10"
                       stroke="none"
                       text-anchor="middle"
                       transform="translate(97.56158845351283,-131.82464283434402) rotate(396.50462935849106)"
+                      y="2.8000000000000003"
                     >
                       40
                     </text>
@@ -527,12 +525,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                       y2="-41.82138746995604"
                     />
                     <text
-                      dominant-baseline="middle"
                       fill="rgba(0, 0, 0, 0.6)"
                       font-size="10"
                       stroke="none"
                       text-anchor="middle"
                       transform="translate(158.07444549353215,-43.68603531893588) rotate(434.5511344287139)"
+                      y="2.8000000000000003"
                     >
                       60
                     </text>
