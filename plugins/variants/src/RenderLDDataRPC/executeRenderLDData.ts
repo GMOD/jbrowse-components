@@ -21,7 +21,7 @@ export async function executeRenderLDData({
 
   // `args` whole, never a re-listed subset, so no field the model sends can be
   // dropped on the way to the matrix builder.
-  const { snps, ldValues, band, appliedField, hasR2, hasDprime } =
+  const { snps, ldValues, otherValues, band, appliedField, hasR2, hasDprime } =
     await updateStatus('Downloading LD data', statusCallback, () =>
       getLDMatrixFromPlink({ pluginManager, args }),
     )
@@ -39,6 +39,7 @@ export async function executeRenderLDData({
   // The buffers move rather than clone: `ldValues` alone can be tens of MB.
   return rpcResultWithArrayBuffers<LDDataResult>({
     ldValues,
+    otherValues,
     boundaries,
     bytes,
     band,

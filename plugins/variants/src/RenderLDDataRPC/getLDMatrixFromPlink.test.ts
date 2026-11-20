@@ -69,6 +69,22 @@ test('a pair spanning two displayed blocks loads', async () => {
   expect(ldValues[bandPairIndex(0, 1, band)]).toBeCloseTo(0.05)
 })
 
+test('a file with both metrics carries the other one at the same cells', async () => {
+  const { snps, ldValues, otherValues, band } = await ldMatrixOf(
+    'dprime.ld.gz',
+    [{ start: 0, end: 5000 }],
+  )
+  expect(snps.map(s => s.id)).toEqual(['rsLEAD', 'rsB', 'rsC'])
+  expect(ldValues[bandPairIndex(0, 1, band)]).toBeCloseTo(0.25)
+  expect(otherValues?.[bandPairIndex(0, 1, band)]).toBeCloseTo(0.91)
+  expect(otherValues?.[bandPairIndex(1, 2, band)]).toBeCloseTo(0.99)
+})
+
+test('a file with one metric carries no other', async () => {
+  const { otherValues } = await ldMatrix(0, 5000)
+  expect(otherValues).toBeUndefined()
+})
+
 test('two variants at one position keep a column each', async () => {
   const { snps, ldValues, band } = await ldMatrixOf('colocated.ld', [
     { start: 0, end: 5000 },

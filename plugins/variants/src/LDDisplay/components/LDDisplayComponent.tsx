@@ -60,6 +60,12 @@ const LDTooltip = observer(function LDTooltip({
       <div>
         {ldMetricLabel(ldMetric)}: {ldValueText(item.ldValue)}
       </div>
+      {item.otherValue === undefined ? null : (
+        <div>
+          {ldMetricLabel(ldMetric === 'r2' ? 'dprime' : 'r2')}:{' '}
+          {ldValueText(item.otherValue)}
+        </div>
+      )}
       {refName1 === refName2 ? (
         <div>
           Distance:{' '}

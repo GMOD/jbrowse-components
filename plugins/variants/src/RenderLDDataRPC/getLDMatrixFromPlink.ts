@@ -12,7 +12,8 @@ import type { PlinkLDRecord } from '@jbrowse/ld-core'
 
 /**
  * Cells past which a fetch refuses rather than allocates: 40 MB of `ldValues`,
- * and up to 200 MB of GPU instances at genomic positions. The tutorials' full
+ * as much again of `otherValues` where the file has both metrics, and up to
+ * 200 MB of GPU instances at genomic positions. The tutorials' full
  * triangle of 1,258 variants is 790k cells.
  */
 export const MAX_LD_CELLS = 10_000_000
@@ -200,19 +201,29 @@ export async function getLDMatrixFromPlink({
   // A pair the file does not list was never measured: plink's default
   // `--ld-window-r2 0.2` leaves most pairs out, and a D' for one of them is no
   // more 0 than it is 1.
+  const otherField = appliedField === 'r2' ? 'dprime' : 'r2'
   const ldValues = new Float32Array(numCells).fill(LD_NOT_COMPUTED)
+  const otherValues =
+    hasR2 && hasDprime
+      ? new Float32Array(numCells).fill(LD_NOT_COMPUTED)
+      : undefined
   for (const [k, r] of records.entries()) {
     const i = rows[k]!
     const j = cols[k]!
     const value = metricValue(r, appliedField)
     if (i !== j && value !== LD_NOT_COMPUTED) {
-      ldValues[bandPairIndex(i, j, band)] = value
+      const cell = bandPairIndex(i, j, band)
+      ldValues[cell] = value
+      if (otherValues) {
+        otherValues[cell] = metricValue(r, otherField)
+      }
     }
   }
 
   return {
     snps,
     ldValues,
+    otherValues,
     appliedField,
     hasR2,
     hasDprime,

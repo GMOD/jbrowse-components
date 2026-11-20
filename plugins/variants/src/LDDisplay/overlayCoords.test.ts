@@ -147,6 +147,21 @@ test('one search serves the genomic layout too', () => {
   expect(hitAt(55, 125)).toEqual([3, 1])
 })
 
+test('a hit reads the other metric at its pair, and none where the file left it out', () => {
+  const otherValues = Float32Array.from([0.9, LD_NOT_COMPUTED, 0.7])
+  const { display } = loadedDisplay({ n: 3, data: { otherValues } })
+  const { boundaries } = display.rpcData!
+  const hitAt = (i: number, j: number) => {
+    const mid = (k: number) => (boundaries[k]! + boundaries[k + 1]!) / 2
+    const screen = display.cellToScreen(mid(j), mid(i))
+    return display.hitTest(screen.x, screen.y)
+  }
+  expect(hitAt(1, 0)?.otherValue).toBeCloseTo(0.9)
+  expect(hitAt(2, 0)).toBeDefined()
+  expect(hitAt(2, 0)?.otherValue).toBeUndefined()
+  expect(hitAt(2, 1)?.otherValue).toBeCloseTo(0.7)
+})
+
 // hitTest inverts what cellToScreen does, and both overlays place themselves
 // with the forward half, so a cell center round-trips back to its own cell.
 //

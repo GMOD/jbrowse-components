@@ -4,12 +4,16 @@ export interface LDCellHit {
   i: number
   j: number
   ldValue: number
+  // the other metric at the same pair, where the file has it
+  otherValue?: number
   snp1: LDSnp
   snp2: LDSnp
 }
 
 export interface LDDataResult {
   ldValues: Float32Array
+  // the metric `appliedField` is not, where the file has both
+  otherValues?: Float32Array
   // n+1 column edges (`computeBoundaries`), empty when there are no SNPs
   boundaries: Float32Array
   // index-estimated bytes the gate measured, absent when no budget applied

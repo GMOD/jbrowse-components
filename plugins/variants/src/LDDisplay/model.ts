@@ -389,17 +389,22 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
           return undefined
         }
         const { x, y } = self.screenToCell(mouseX, mouseY)
-        const { boundaries, ldValues, band } = data
+        const { boundaries, ldValues, otherValues, band } = data
         const n = boundaries.length - 1
         const j = upperBoundFloat32(boundaries, x) - 1
         const i = upperBoundFloat32(boundaries, y) - 1
         const idx = i > j && j >= 0 && i < n ? bandPairIndex(i, j, band) : -1
+        const otherValue = idx < 0 ? undefined : otherValues?.[idx]
         return idx < 0 || !ldValueComputed(ldValues[idx]!)
           ? undefined
           : {
               i,
               j,
               ldValue: ldValues[idx]!,
+              otherValue:
+                otherValue !== undefined && ldValueComputed(otherValue)
+                  ? otherValue
+                  : undefined,
               snp1: self.snps[i]!,
               snp2: self.snps[j]!,
             }

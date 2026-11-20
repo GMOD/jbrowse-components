@@ -17,6 +17,9 @@ export interface LDSnp {
 export interface LDMatrixResult {
   snps: LDSnp[]
   ldValues: Float32Array
+  // The metric `appliedField` is not, at the same cells, when the file has
+  // both columns, for the tooltip.
+  otherValues?: Float32Array
   // The metric `ldValues` holds: a file lacking the requested column serves
   // the other one.
   appliedField: LDMetric
