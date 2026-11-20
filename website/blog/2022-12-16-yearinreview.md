@@ -1,5 +1,8 @@
 ---
 title: 2022 year in review
+description:
+  'Preprints, the URL query API, base-pair exact synteny, multi-wiggle tracks
+  and read-cloud views of paired and split reads.'
 date: 2022-12-16
 ---
 

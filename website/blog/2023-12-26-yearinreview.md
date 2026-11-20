@@ -1,5 +1,8 @@
 ---
 title: 2023 year in review
+description:
+  'The faceted track selector, dark mode, the JBrowse 2 paper, Apple silicon
+  builds of Desktop and the start of office hours.'
 date: 2023-12-26
 ---
 

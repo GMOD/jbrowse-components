@@ -1,5 +1,8 @@
 ---
 title: 2024 year in review
+description:
+  'Multi-sample VCF displays, multi-way synteny, inversions in the breakpoint
+  split view and the Apollo 3 beta.'
 date: 2025-02-13
 ---
 
