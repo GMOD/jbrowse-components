@@ -33,8 +33,9 @@ interface SearchFieldProps {
 }
 
 /**
- * A search box with a clear button that shows exactly `value`, for a search
- * cheap enough to run on every keystroke
+ * A search box that shows exactly `value`, for a search cheap enough to run on
+ * every keystroke. Its clear button shows while there is text to clear, and
+ * keeps its room while there is none so the box does not change height
  */
 export const SearchField = observer(function SearchField({
   value,
@@ -92,6 +93,7 @@ export const SearchField = observer(function SearchField({
                 ) : null}
                 <IconButton
                   size={size}
+                  style={{ visibility: value ? 'visible' : 'hidden' }}
                   aria-label={`Clear ${label.toLowerCase()}`}
                   onClick={() => {
                     onChange('')

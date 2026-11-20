@@ -31,6 +31,7 @@ exports[`renders with the available plugins 1`] = `
           <button
             aria-label="Clear filter plugins"
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
+            style="visibility: hidden;"
             tabindex="0"
             type="button"
           >
