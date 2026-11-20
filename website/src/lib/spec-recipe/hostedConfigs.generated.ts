@@ -1230,15 +1230,102 @@ export const hostedConfigs: Record<string, HostedConfig> = {
     ],
     "tracks": [
       {
-        "trackId": "hg38-phyloP100way",
-        "name": "Basewise Conservation (phyloP) - 100-way vertebrate alignment",
-        "type": "QuantitativeTrack",
+        "trackId": "hg38-ncbiRefSeq",
+        "name": "NCBI RefSeq - RefSeq All",
+        "type": "FeatureTrack",
         "adapter": {
-          "type": "BigWigAdapter"
+          "type": "Gff3TabixAdapter"
+        }
+      },
+      {
+        "trackId": "hg38-ncbiRefSeqCurated",
+        "name": "NCBI RefSeq - RefSeq Curated",
+        "type": "FeatureTrack",
+        "adapter": {
+          "type": "Gff3TabixAdapter"
+        }
+      },
+      {
+        "trackId": "hg38-unipDomain",
+        "name": "UniProt - Domains",
+        "type": "FeatureTrack",
+        "adapter": {
+          "type": "BigBedAdapter"
         },
         "displays": [
           {
-            "type": "LinearWiggleDisplay"
+            "type": "LinearBasicDisplay"
+          }
+        ]
+      },
+      {
+        "trackId": "hg38-alllowmapandsegdupregions",
+        "name": "GIAB Problematic Regions - LowMap+SegDup",
+        "type": "FeatureTrack",
+        "adapter": {
+          "type": "BigBedAdapter"
+        }
+      },
+      {
+        "trackId": "hg38-clinvarMain",
+        "name": "ClinVar Variants - ClinVar SNVs",
+        "type": "FeatureTrack",
+        "adapter": {
+          "type": "BigBedAdapter"
+        },
+        "displays": [
+          {
+            "type": "LinearBasicDisplay"
+          }
+        ]
+      },
+      {
+        "trackId": "hg38-gnomad3MeanCoverage",
+        "name": "gnomAD v3 Genome Coverage - Mean Coverage",
+        "type": "QuantitativeTrack",
+        "adapter": {
+          "type": "BigWigAdapter"
+        }
+      },
+      {
+        "trackId": "hg38-gnomadExomesVariantsV4_1",
+        "name": "gnomAD v4.1.1 - Exomes",
+        "type": "FeatureTrack",
+        "adapter": {
+          "type": "BigBedAdapter"
+        },
+        "displays": [
+          {
+            "type": "LinearBasicDisplay"
+          }
+        ]
+      },
+      {
+        "trackId": "hg38-epdNewPromoter",
+        "name": "EPDnew Promoters - EPDnew v6",
+        "type": "FeatureTrack",
+        "adapter": {
+          "type": "BigBedAdapter"
+        }
+      },
+      {
+        "trackId": "hg38-cpgIslandExt",
+        "name": "CpG Islands",
+        "type": "FeatureTrack",
+        "adapter": {
+          "type": "BedTabixAdapter"
+        }
+      },
+      {
+        "trackId": "hg38-cCREregistry",
+        "name": "ENCODE cCREs - ENCODE4 cCREs",
+        "type": "FeatureTrack",
+        "adapter": {
+          "type": "BigBedAdapter"
+        },
+        "displays": [
+          {
+            "type": "LinearBasicDisplay"
           }
         ]
       },
@@ -1269,67 +1356,17 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         ]
       },
       {
-        "trackId": "hg38-gnomad3MeanCoverage",
-        "name": "gnomAD v3 Genome Coverage - Mean Coverage",
+        "trackId": "hg38-phyloP100way",
+        "name": "Basewise Conservation (phyloP) - 100-way vertebrate alignment",
         "type": "QuantitativeTrack",
         "adapter": {
           "type": "BigWigAdapter"
-        }
-      },
-      {
-        "trackId": "hg38-clinvarMain",
-        "name": "ClinVar Variants - ClinVar SNVs",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "BigBedAdapter"
         },
         "displays": [
           {
-            "type": "LinearBasicDisplay"
+            "type": "LinearWiggleDisplay"
           }
         ]
-      },
-      {
-        "trackId": "hg38-cCREregistry",
-        "name": "ENCODE cCREs - ENCODE4 cCREs",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "BigBedAdapter"
-        },
-        "displays": [
-          {
-            "type": "LinearBasicDisplay"
-          }
-        ]
-      },
-      {
-        "trackId": "hg38-epdNewPromoter",
-        "name": "EPDnew Promoters - EPDnew v6",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "BigBedAdapter"
-        }
-      },
-      {
-        "trackId": "hg38-gnomadExomesVariantsV4_1",
-        "name": "gnomAD v4.1.1 - Exomes",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "BigBedAdapter"
-        },
-        "displays": [
-          {
-            "type": "LinearBasicDisplay"
-          }
-        ]
-      },
-      {
-        "trackId": "hg38-alllowmapandsegdupregions",
-        "name": "GIAB Problematic Regions - LowMap+SegDup",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "BigBedAdapter"
-        }
       },
       {
         "trackId": "hg38-phyloP470wayBW",
@@ -1353,27 +1390,6 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         }
       },
       {
-        "trackId": "hg38-unipDomain",
-        "name": "UniProt - Domains",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "BigBedAdapter"
-        },
-        "displays": [
-          {
-            "type": "LinearBasicDisplay"
-          }
-        ]
-      },
-      {
-        "trackId": "hg38-cpgIslandExt",
-        "name": "CpG Islands",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "BedTabixAdapter"
-        }
-      },
-      {
         "trackId": "hg38-rmsk",
         "name": "RepeatMasker",
         "type": "FeatureTrack",
@@ -1387,32 +1403,16 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         ]
       },
       {
-        "trackId": "hg38-ncbiRefSeq",
-        "name": "NCBI RefSeq - RefSeq All",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "Gff3TabixAdapter"
-        }
-      },
-      {
-        "trackId": "hg38-ncbiRefSeqCurated",
-        "name": "NCBI RefSeq - RefSeq Curated",
-        "type": "FeatureTrack",
-        "adapter": {
-          "type": "Gff3TabixAdapter"
-        }
-      },
-      {
-        "trackId": "hg38_to_hs1_liftOver",
-        "name": "hg38 to Human (hs1) liftOver",
+        "trackId": "hg38_to_panTro6_liftOver",
+        "name": "hg38 to Chimp (panTro6) liftOver",
         "type": "SyntenyTrack",
         "adapter": {
           "type": "PairwiseIndexedPAFAdapter"
         }
       },
       {
-        "trackId": "hg38_to_panTro6_liftOver",
-        "name": "hg38 to Chimp (panTro6) liftOver",
+        "trackId": "hg38_to_hs1_liftOver",
+        "name": "hg38 to Human (hs1) liftOver",
         "type": "SyntenyTrack",
         "adapter": {
           "type": "PairwiseIndexedPAFAdapter"
