@@ -7,5 +7,6 @@ export {
 export type { PlinkLDHeader, PlinkLDRecord } from './plinkLDTypes.ts'
 export { ldValueComputed } from './ldStats.generated.ts'
 export { LD_NOT_COMPUTED } from './ldNotComputed.ts'
+export { parseChrBp } from './parseChrBp.ts'
 export { isLDRecordSource } from './ldRecordSource.ts'
 export type { LDRecordSource } from './ldRecordSource.ts'

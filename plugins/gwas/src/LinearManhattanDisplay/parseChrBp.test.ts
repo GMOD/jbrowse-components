@@ -1,34 +1,4 @@
-import { chrBpLabel, indexSnpLabel, parseChrBp } from './parseChrBp.ts'
-
-test('parses a plain chr:bp locus', () => {
-  expect(parseChrBp('chr2:100')).toEqual({ refName: 'chr2', bp: 100 })
-})
-
-test('takes the thousands commas the right-click label shows', () => {
-  expect(parseChrBp('chr2:191,958,656')).toEqual({
-    refName: 'chr2',
-    bp: 191_958_656,
-  })
-})
-
-test('splits on the last colon so a colon-bearing refName survives', () => {
-  expect(parseChrBp('HLA:x:200')).toEqual({ refName: 'HLA:x', bp: 200 })
-})
-
-test('a bare rsID (no colon) is not a placeable locus', () => {
-  expect(parseChrBp('rs12345')).toBeUndefined()
-})
-
-test('a non-integer position is rejected', () => {
-  expect(parseChrBp('chr2:1e3')).toBeUndefined()
-  expect(parseChrBp('chr2:')).toBeUndefined()
-  expect(parseChrBp('chr2: 100')).toBeUndefined()
-  expect(parseChrBp('chr2:0')).toBeUndefined()
-})
-
-test('an empty refName (leading colon) is rejected', () => {
-  expect(parseChrBp(':100')).toBeUndefined()
-})
+import { chrBpLabel, indexSnpLabel } from './parseChrBp.ts'
 
 test('a locus label carries thousands commas, as the right-click row shows', () => {
   expect(chrBpLabel({ refName: 'chr2', bp: 191_958_656 })).toBe(

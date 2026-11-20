@@ -1,23 +1,7 @@
 import { getSession, toLocale } from '@jbrowse/core/util'
+import { parseChrBp } from '@jbrowse/ld-core'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-/**
- * A `chr:bp` index SNP's contig and 1-based position, split on the last colon
- * so a refName may hold one. The position may carry the thousands commas the
- * right-click label shows. A bare id, a tail that is no integer, or position
- * 0 places nothing.
- */
-export function parseChrBp(
-  indexSnp: string,
-): { refName: string; bp: number } | undefined {
-  const colon = indexSnp.lastIndexOf(':')
-  const posStr = colon > 0 ? indexSnp.slice(colon + 1).replaceAll(',', '') : ''
-  const bp = Number(posStr)
-  return /^\d+$/.test(posStr) && bp >= 1
-    ? { refName: indexSnp.slice(0, colon), bp }
-    : undefined
-}
 
 /** A `chr:bp` locus as a menu row prints it, its position with thousands commas. */
 export function chrBpLabel({ refName, bp }: { refName: string; bp: number }) {

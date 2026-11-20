@@ -1,6 +1,6 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { applyPatch, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { bandCellCount, bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -263,6 +263,18 @@ test('the index SNP is saved as chr:bp with its id, and finds its column after a
   const snps = display.snps.slice(1)
   display.setRpcData({ ...display.rpcData!, snps })
   expect(display.indexSnpColumn).toBe(1)
+})
+
+test('a hand-written index SNP may spell its contig by an alias and its position with commas', () => {
+  const { display } = loadedDisplay()
+  applyPatch(display, { op: 'replace', path: '/indexSnp', value: 'chrA:2,001' })
+  expect(display.indexSnpColumn).toBe(2)
+})
+
+test('an index SNP that names no chr:bp finds no column', () => {
+  const { display } = loadedDisplay()
+  applyPatch(display, { op: 'replace', path: '/indexSnp', value: 'rs2' })
+  expect(display.indexSnpColumn).toBe(-1)
 })
 
 test('a right-click offers either SNP of the pair as the index', () => {

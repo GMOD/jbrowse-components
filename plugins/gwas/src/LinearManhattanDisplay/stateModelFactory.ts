@@ -3,6 +3,7 @@ import {
   getConf,
   setConf,
 } from '@jbrowse/core/configuration'
+import { parseChrBp } from '@jbrowse/ld-core'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { stateModelFactory as markStateModelFactory } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
@@ -19,12 +20,7 @@ import {
   withLd,
   withoutLd,
 } from './ldPlot.ts'
-import {
-  chrBpLabel,
-  indexSnpLabel,
-  parseChrBp,
-  placeIndexSnp,
-} from './parseChrBp.ts'
+import { chrBpLabel, indexSnpLabel, placeIndexSnp } from './parseChrBp.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
 import type { LinearManhattanDisplayConfigModel } from './configSchemaFactory.ts'

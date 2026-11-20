@@ -18,7 +18,7 @@ import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFet
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { triangleAxis } from '@jbrowse/display-kit/triangleTransform'
-import { ldValueComputed } from '@jbrowse/ld-core'
+import { ldValueComputed, parseChrBp } from '@jbrowse/ld-core'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -240,14 +240,18 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       get indexSnpColumn(): number {
         const { indexSnp, indexSnpId } = self
-        return indexSnp === undefined
-          ? -1
-          : this.snps.findIndex(
+        const locus = indexSnp === undefined ? undefined : parseChrBp(indexSnp)
+        const refName = locus
+          ? canonicalizeViewRefName(self, locus.refName)
+          : undefined
+        return locus
+          ? this.snps.findIndex(
               s =>
-                `${canonicalizeViewRefName(self, s.refName)}:${s.end}` ===
-                  indexSnp &&
+                s.end === locus.bp &&
+                canonicalizeViewRefName(self, s.refName) === refName &&
                 (indexSnpId === undefined || s.id === indexSnpId),
             )
+          : -1
       },
     }))
     .views(self => ({
