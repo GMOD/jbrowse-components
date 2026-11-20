@@ -414,8 +414,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             hg38GeneLane(70),
             graphTrack(SEGMENTS_TRACK, {
               layoutMode: 'force',
-              // 600 left 200 px blank between the legend and the drawing
               paneHeight: 440,
+              // at a fixed height the pane cuts off the 32.7 kb loop under C4B
+              heightMode: 'grow',
               encoding: { color: { field: 'position' } },
               maxRegionBp: cutNear(70_000),
               // a route chip sat over the C4A junction
@@ -425,48 +426,47 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // No deletion callout: the renderer writes "32.7 kb del" across the arc.
+    // No callout on the dashed link: the key names it.
     // Each leader meets its node near a right angle, so none reads as an edge.
     annotations: [
-      // s329762+ is the 6.3 kb reference node beside C4A, clear of the legend
-      // floating over CYP21A2.
+      // s329770+ is the 20.6 kb reference node CYP21A2 sits on.
       {
         type: 'text',
         text: 'backbone',
         leader: true,
         fontSize: 20,
-        anchor: { graphNode: 's329762+' },
-        dx: 10,
-        dy: -90,
+        anchor: { graphNode: 's329770+' },
+        dx: 60,
+        dy: 90,
       },
-      // s352179+ is NA18948's 21 kb allele, the cut's largest off-reference
-      // node.
+      // s348269+ is the 32.7 kb off-reference node under C4B. The other 32.7 kb
+      // one, s352179+, lies past the pane's left edge.
       {
         type: 'text',
         text: 'allele',
         leader: true,
         fontSize: 20,
-        anchor: { graphNode: 's352179+' },
+        anchor: { graphNode: 's348269+' },
         dx: 95,
         dy: 40,
       },
-      // s329764+ is one wall of the clearest lens: the reference path beside
-      // the 32.7 kb deletion arc.
+      // s329768+ is the reference wall of the lens under C4B, where a 6.3 kb
+      // path and a short one part and rejoin.
       {
         type: 'text',
         text: 'bubble',
         leader: true,
         fontSize: 20,
-        anchor: { graphNode: 's329764+' },
-        dx: -70,
-        dy: 110,
+        anchor: { graphNode: 's329768+' },
+        dx: 130,
+        dy: 0,
       },
     ],
     readySelector: GRAPH_DRAWN,
     readyTimeout: 120000,
     allowUnsettled: true,
     viewportWidth: 1000,
-    viewportHeight: 780,
+    viewportHeight: 1000,
     tooltip: 'hide',
   },
   // No graph pane: nothing draws a node's orientation yet, so the force layout
