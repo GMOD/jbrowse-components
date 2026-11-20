@@ -22,6 +22,7 @@ import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 import { DEFAULT_ROWS_TRACK_HEIGHT } from './variantTopBands.ts'
 
 import type { VariantRowsField } from '../shared/constants.ts'
+import type { Trio } from '../shared/trios.ts'
 import type { ProcessedSource, Source } from '../shared/types.ts'
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -330,6 +331,7 @@ export function variantRowHookViews(self: VariantRowHookHost) {
 export interface VariantFetchHost extends VariantDrawnRowHost, IStateTreeNode {
   rowFocus: readonly string[] | undefined
   rowFilter: readonly FieldPredicate[]
+  trios: readonly Trio[]
 }
 
 /**
@@ -387,12 +389,15 @@ export function variantFetchViews(self: VariantFetchHost) {
     /**
      * #getter
      * The `filter` list's entries on the Mendelian check, which the worker
-     * tests once it has classified a site: no record carries it.
+     * tests once it has classified a site: no record carries it. None while
+     * no trio is named, since no site could pass them.
      */
     get mendelianFilter(): FieldPredicate[] {
-      return predicatesOf(self.configuration.filter).filter(
-        p => p.field === MENDELIAN_FIELD,
-      )
+      return self.trios.length > 0
+        ? predicatesOf(self.configuration.filter).filter(
+            p => p.field === MENDELIAN_FIELD,
+          )
+        : []
     },
     /**
      * #getter

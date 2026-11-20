@@ -342,6 +342,18 @@ describe('the Filter by menu’s Mendelian check', () => {
     expect(checked(display)).toEqual(['De novo candidate'])
   })
 
+  test('a track with no trio sends no filter on the check, so no site is dropped', () => {
+    const display = displayWith([
+      { field: MENDELIAN_FIELD, oneOf: ['deNovoCandidate'] },
+    ])
+    display.setSources([{ name: 'kid' }, ...PARENTS])
+
+    expect(display.rpcProps().mendelianFilter).toEqual([])
+    expect(JSON.stringify(genotypeMatrixKey(display))).not.toContain(
+      MENDELIAN_FIELD,
+    )
+  })
+
   test('a track with no trio greys it with the reason', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources([{ name: 'kid' }, ...PARENTS])
