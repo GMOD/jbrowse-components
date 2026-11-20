@@ -85,10 +85,11 @@ interface SpreadWork {
   spans: ResolvedSpan[]
 }
 
-interface FollowPlan extends Omit<FollowReport, 'partial'> {
+interface FollowPlan extends Omit<FollowReport, 'partial' | 'split'> {
   // absent when nothing loaded covers the anchor's window
   placement?: FollowWork | SpreadWork
   partial?: FollowReport['partial']
+  split?: FollowReport['split']
 }
 
 // from where and to where: the same target from another place is the follow
@@ -152,7 +153,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     state.pick = {
       feat: step.feat,
       display: step.display,
-      target: span.refName,
+      placed: span,
       transform: step.windowInsideFeat
         ? followTransform(step.window, span, step.feat.strand === -1)
         : undefined,
@@ -404,7 +405,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           ? 'RUNG1 walk'
           : 'RUNG2 envelope'
         : 'HOLD',
-      target: state.pick?.target,
+      target: state.pick?.placed.refName,
     })
     // a level still fetching has no answer yet rather than no answer
     const unaligned =
@@ -440,6 +441,12 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
               elsewhere: state.spread.elsewhere ?? [],
             }
           : undefined,
+      split: step?.envelope?.elsewhere.length
+        ? {
+            following: step.envelope.span,
+            elsewhere: step.envelope.elsewhere,
+          }
+        : undefined,
     }
   }
 
@@ -463,6 +470,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           approximate: plans.some(p => p.approximate),
           noSyntenyTrack: plans.some(p => p.noSyntenyTrack),
           partial: plans.find(p => p.partial)?.partial,
+          split: plans.find(p => p.split)?.split,
         })
         // untracked: `execute` runs synchronously up to its first `await`, and
         // the resolve reads the display's rows down that path; `executeSpread`
@@ -584,7 +592,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             })
               ? state.map?.value
               : undefined,
-            incumbentTarget: pick.target,
+            incumbent: pick.placed,
           })
           if (span && positionViewOnSpan(movingView, span)) {
             written.add(movingView)

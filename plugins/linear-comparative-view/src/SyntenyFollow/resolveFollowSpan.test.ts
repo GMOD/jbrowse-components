@@ -84,10 +84,11 @@ test('a block with no CIGAR inside a fetch that has some also says so', async ()
 })
 
 test('an envelope is proportional by construction', async () => {
-  const envelope = { refName: 'Pp01', start: 1_100_000, end: 1_110_000 }
+  const span = { refName: 'Pp01', start: 1_100_000, end: 1_110_000 }
+  const envelope = { span, elsewhere: [] }
   await expect(
     resolveFollowSpan(step({ windowInsideFeat: false, envelope })),
-  ).resolves.toEqual({ span: envelope, approximate: true })
+  ).resolves.toEqual({ span, approximate: true })
   // past one alignment there is no single block to walk
   expect(walk).not.toHaveBeenCalled()
 })

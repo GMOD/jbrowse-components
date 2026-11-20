@@ -57,17 +57,18 @@ test('every level of one epoch shares the signal', () => {
 
 // A pick and a spread were made on one axis. Handed across a flip of the
 // follow's direction they became the next plan's incumbents on the other: the
-// block id, the target contig the vote leans toward, and the hysteresis.
+// block id, where the row was placed, which the vote leans toward, and the hysteresis.
 test('a flip of direction drops the decisions made facing the other way', () => {
   const states = createFollowLevelStates<object>()
   const a = level()
   const forward = states.facing(a, true)
-  forward.pick = { feat: {}, target: 'chr9' } as NonNullable<
-    typeof forward.pick
-  >
+  forward.pick = {
+    feat: {},
+    placed: { refName: 'chr9', start: 0, end: 1 },
+  } as NonNullable<typeof forward.pick>
   forward.spread = { spreading: true }
   forward.seq = 3
-  expect(states.peek(a, true)?.pick?.target).toBe('chr9')
+  expect(states.peek(a, true)?.pick?.placed.refName).toBe('chr9')
   expect(states.peek(a, false)).toBeUndefined()
 
   const back = states.facing(a, false)

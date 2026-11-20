@@ -31,7 +31,7 @@ const win = (start: number, end: number, refName = 'chr1'): FollowWindow => ({
 })
 
 const map = (d: SyntenyFeatureData, w: FollowWindow, mateAssembly?: string) =>
-  followWindowMapping({ data: d, window: w, toMate: true, mateAssembly })
+  followWindowMapping({ data: d, window: w, toMate: true, mateAssembly })?.span
 
 // Three collinear blocks with gaps between them — the shape of gene-anchor
 // synteny, and the shape that made the union answer a staircase.
@@ -282,8 +282,10 @@ describe('the target vote across a fusion join', () => {
       data: fusion,
       window: w,
       toMate: true,
-      incumbentTarget,
-    })?.refName
+      incumbent: incumbentTarget
+        ? { refName: incumbentTarget, start: 0, end: 1 }
+        : undefined,
+    })?.span.refName
 
   test('tips with the summed overlap when nothing is incumbent', () => {
     expect(vote(win(290_000, 700_000))).toBe('Pp01')
@@ -311,5 +313,150 @@ describe('the target vote across a fusion join', () => {
 
   test('an incumbent no block names is simply not there', () => {
     expect(vote(win(310_000, 700_000), 'Pp22')).toBe('Pp09')
+  })
+})
+
+// Two assemblies rearranged within a chromosome: the window's alignments land
+// in stretches of one mate contig tens of Mb apart. The shapes are hg38 chains
+// against mm39, where mapping each edge through the whole contig answered a
+// span 75 times the window's width.
+describe('a window split along one mate contig', () => {
+  const envelope = (
+    d: SyntenyFeatureData,
+    w: FollowWindow,
+    incumbent?: { refName: string; start: number; end: number },
+  ) => followWindowMapping({ data: d, window: w, toMate: true, incumbent })
+
+  // chr6:49-51M: one 2.9 Mb chain from 49.83M, and a 68 bp inverted fragment
+  // 160 Mb along the mate, nearer the window's unaligned left edge
+  const fragment = data([
+    {
+      start: 49_357_846,
+      end: 49_357_914,
+      strand: -1,
+      mateStart: 179_511_491,
+      mateEnd: 179_511_559,
+    },
+    {
+      start: 49_828_415,
+      end: 52_703_905,
+      mateStart: 18_176_190,
+      mateEnd: 21_368_448,
+    },
+  ])
+
+  test('an edge in unaligned flank does not reach a fragment far along the mate', () => {
+    // through the fragment the left edge landed at 179.5M, and the row showed
+    // 19.5-179.5M, which the chain under the window sits wholly outside of
+    const span = envelope(fragment, win(49_000_000, 51_000_000))?.span
+    expect(span?.start).toBe(18_176_190)
+    expect(span?.end).toBeGreaterThan(19_470_000)
+    expect(span?.end).toBeLessThan(19_480_000)
+  })
+
+  test('a fragment is not worth naming beside the chain', () => {
+    expect(envelope(fragment, win(49_000_000, 51_000_000))?.elsewhere).toEqual(
+      [],
+    )
+  })
+
+  // chr20: a 1.3 Mb inverted chain landing at 151.3M, and a 24 Mb chain whose
+  // start lands at 129.3M and whose far end reaches 150.9M
+  const twoChains = data([
+    {
+      start: 142_055,
+      end: 1_467_297,
+      strand: -1,
+      mateStart: 151_335_774,
+      mateEnd: 152_332_633,
+    },
+    {
+      start: 1_766_224,
+      end: 25_625_984,
+      mateStart: 129_299_634,
+      mateEnd: 150_883_322,
+    },
+  ])
+
+  test('the heavier piece places the row', () => {
+    // the long chain's far end lands 0.5 Mb from the heavier piece, but the
+    // part of it under the window lands 22 Mb away
+    expect(envelope(twoChains, win(0, 2_000_000))?.span).toEqual({
+      refName: 'Pp01',
+      start: 151_335_774,
+      end: 152_332_633,
+    })
+  })
+
+  test('the other piece comes back as elsewhere, with where it aligns from', () => {
+    const answer = envelope(twoChains, win(1_000_000, 2_400_000))
+    expect(answer?.span.start).toBe(129_299_634)
+    const [other, ...rest] = answer?.elsewhere ?? []
+    expect(rest).toEqual([])
+    expect(other?.anchor).toEqual({
+      refName: 'chr1',
+      start: 1_000_000,
+      end: 1_467_297,
+    })
+    expect(other?.mate.start).toBe(151_335_774)
+    expect(other?.mate.end).toBeCloseTo(151_687_279, 0)
+  })
+
+  test('the row already on the lighter piece stays on it', () => {
+    // 634 kb against 467 kb is inside the switch margin, so a pan that tips
+    // the weights by a little does not jump the row 22 Mb
+    expect(
+      envelope(twoChains, win(1_000_000, 2_400_000), {
+        refName: 'Pp01',
+        start: 151_300_000,
+        end: 152_300_000,
+      })?.span.start,
+    ).toBeGreaterThan(150_000_000)
+  })
+
+  test('another piece starting in the next bin stays out of the edges', () => {
+    // a 1 Mb window, so bins 1 Mb wide: the heavy piece lands in bin 10, the
+    // light one 1.1 Mb past it in bin 11, nearer the window's right edge
+    const adjacent = data([
+      { start: 0, end: 600_000, mateStart: 10_000_000, mateEnd: 10_600_000 },
+      {
+        start: 800_000,
+        end: 900_000,
+        mateStart: 11_700_000,
+        mateEnd: 11_800_000,
+      },
+    ])
+    expect(envelope(adjacent, win(0, 1_000_000))?.span).toEqual({
+      refName: 'Pp01',
+      start: 10_000_000,
+      end: 10_600_000,
+    })
+  })
+
+  test('pieces closer along the mate than the window is wide stay one', () => {
+    expect(envelope(anchors, win(150_000, 850_000))?.elsewhere).toEqual([])
+  })
+
+  // a local inversion: both window edges map to one mate coordinate
+  test('a piece whose edges collapse to one point shows the whole piece', () => {
+    const inverted = data([
+      {
+        start: 100_000,
+        end: 150_000,
+        mateStart: 1_050_000,
+        mateEnd: 1_100_000,
+      },
+      {
+        start: 160_000,
+        end: 210_000,
+        mateStart: 1_000_000,
+        mateEnd: 1_050_000,
+      },
+    ])
+    expect(envelope(inverted, win(0, 300_000))?.span).toEqual({
+      refName: 'Pp01',
+      start: 1_000_000,
+      end: 1_100_000,
+    })
   })
 })

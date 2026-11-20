@@ -23,7 +23,7 @@ export async function resolveFollowSpan(
   })
   if (!windowInsideFeat) {
     return step.envelope
-      ? { span: step.envelope, approximate: true }
+      ? { span: step.envelope.span, approximate: true }
       : interpolated()
   }
   const walked = hasCigar

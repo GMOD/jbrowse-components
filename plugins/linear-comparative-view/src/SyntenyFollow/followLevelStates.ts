@@ -5,6 +5,7 @@ import type {
   LinearSyntenyDisplayModel,
 } from '../LinearSyntenyDisplay/model.ts'
 import type { SyntenyCigarMapResult } from '../LinearSyntenyRPC/SyntenyGetCigarMap.ts'
+import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowAnswerCache } from './followAnswerCache.ts'
 import type { FollowTransform } from './followTransform.ts'
 import type { SpreadDecision } from './spreadDecision.ts'
@@ -15,8 +16,9 @@ import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 export interface LevelPick {
   feat: FeatPos
   display: LinearSyntenyDisplayModel
-  // the contig the row was last placed on, which rung 2's vote leans toward
-  target: string
+  // where the row was last placed, which rung 2's contig vote and piece lean
+  // toward
+  placed: ResolvedSpan
   // absent for an envelope answer, which carries no one strand
   transform?: FollowTransform
 }

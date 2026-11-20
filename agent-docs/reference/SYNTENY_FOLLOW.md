@@ -83,9 +83,45 @@ margin.** A window wider than one alignment reaches several of the mate's contig
 and `followWindowsMapping` picks the one most of the window aligns to. At a
 fusion the two are equal at the join, so a bare comparison flips chromosome every
 frame; `preferIncumbent` holds it at the block's 1.5x. The incumbent is
-`LevelPick.target`, where the last settle placed the row, so it dies with the
+`LevelPick.placed`, where the last settle placed the row, so it dies with the
 pick (a rung-3 pass or a held row clears it), and an incumbent no block under the
 window reaches totals zero and cannot hold the answer on the bias alone.
+
+**Rung 2 maps through one piece of that contig, not the whole contig.** Two
+assemblies rearranged within a chromosome put a window's alignments in stretches
+of the mate contig tens of Mb apart, and an edge in unaligned flank takes the
+nearest block on the contig wherever it lands. Mapped through the whole contig,
+hg38 chr6:49-51M answered mm39 chr1:19.5-169M through a 68 bp fragment, and the
+1.2 Mb chain under the window sat outside that span. On the hg38→mm39 liftOver's
+coarse tier, 499 of 5,737 2 Mb windows answered more than 10x their own width;
+pieces bring that to none, and none over 10x at 200 kb or 10 Mb or on the fine
+tier either (6 of 57,030 coarse 200 kb windows stay over 4x).
+
+- **A piece is a run of the target's blocks under the window, cut to it and
+  ordered along the mate, broken where two land more than a window apart.** A row
+  cannot show two stretches further apart than that at the anchor's zoom.
+- **The heaviest piece places the row**, with `preferIncumbent` on the piece
+  overlapping `LevelPick.placed`, since the weights cross smoothly during a pan.
+- **The edges map through the blocks whose part facing the window lands within a
+  window of the piece**, not blocks whose whole extent does: a 24 Mb chain whose
+  far end reaches the piece would pull an edge back across the gap.
+- **A piece whose edges collapse to one point shows the whole piece**: a local
+  inversion maps both edges to one coordinate.
+- **Rung 3 maps through the whole contig**: an overview places every piece.
+
+**One scan of the blocks, binned.** Each block lands in a bin a window wide by
+where its facing part starts on the mate, and each bin keeps the edge
+accumulators, which merge in any order. Two cuts sharing a bin are never further
+apart than the window, so pieces break only between bins and come out exactly as
+a sort would give them. A second and third pass over the blocks measured 3x the
+single scan. On ada at 500k blocks under one window, rung 2 is 13.4 ms a frame
+against 7.3 ms for the old whole-contig answer; rung 3, which skips the bins'
+projection, is 9 ms against 8 ms.
+
+The other pieces carrying a quarter of the placed piece's evidence come back as
+`FollowReport.split`, which names where each aligns from and to. Nearly every
+window has a repeat fragment somewhere on its target, so a lower share would put
+a sentence in the header all the time.
 
 ## The third rung is offered, not taken automatically
 
@@ -218,7 +254,7 @@ derives from both rows' raw `bpPerPx` too.
 
 `FollowLevelState` is a plain object, not MST or a MobX box, since the exact pass
 writes it every pass. The `FollowReport` (`unaligned`, `approximate`,
-`noSyntenyTrack`, `partial`) is written here and read only by the header, through
+`noSyntenyTrack`, `partial`, `split`) is written here and read only by the header, through
 one merging setter; a new flag goes on the report, not beside it.
 
 **Which rung a level is on is `followRung`, read by both clocks**, so the two

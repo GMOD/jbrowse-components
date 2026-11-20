@@ -148,3 +148,26 @@ test('several contigs elsewhere read as a list, and the reader scrolls onto one'
     'Following grape on chr1 — chr2, chr3 and chr9 align too far away to show at once, so scroll onto one to follow it instead',
   )
 })
+
+// One contig, two stretches of it tens of Mb apart: the row shows the heavier,
+// and the sentence says where the other is and how to get there.
+test('a window split along one contig names the piece the row is not showing', () => {
+  expect(
+    followToggleTitle({
+      followSynteny: true,
+      approximate: true,
+      split: {
+        following: { refName: 'chr1', start: 18_198_790, end: 19_476_839 },
+        elsewhere: [
+          {
+            anchor: { refName: 'chr6', start: 49_000_000.4, end: 49_400_000 },
+            mate: { refName: 'chr1', start: 179_100_000, end: 179_511_559.6 },
+          },
+        ],
+      },
+      anchorLabel: 'hg38',
+    }),
+  ).toBe(
+    'Following hg38 on chr1:18,198,791..19,476,839 — chr6:49,000,001..49,400,000 aligns to chr1:179,100,001..179,511,560, too far away to show at once, so zoom in on it to follow it there',
+  )
+})

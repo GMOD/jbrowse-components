@@ -29,7 +29,7 @@ const plan = (
     incumbent: incumbent && {
       display: incumbent.display,
       feat: { id: incumbent.id },
-      target: 'chr1',
+      placed: { refName: 'chr1', start: 0, end: 1 },
     },
   })
 
@@ -69,7 +69,11 @@ test('a window wider than the alignment falls to the envelope', () => {
   expect(step?.windowInsideFeat).toBe(false)
   // each window edge mapped through the block it sits in, rather than either
   // block's own width, which is what the single-block resolvers clamp to
-  expect(step?.envelope).toEqual({ refName: 'chr1', start: 11000, end: 12000 })
+  expect(step?.envelope?.span).toEqual({
+    refName: 'chr1',
+    start: 11000,
+    end: 12000,
+  })
 })
 
 describe('hysteresis across the tracks on one level', () => {

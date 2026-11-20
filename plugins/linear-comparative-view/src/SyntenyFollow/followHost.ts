@@ -1,3 +1,5 @@
+import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
+import type { FollowPiece } from './followWindowMapping.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface FollowHost {
@@ -17,6 +19,13 @@ export interface FollowPartialReport {
   elsewhere: string[]
 }
 
+// a level whose window aligns to pieces of one contig too far apart to show at
+// once: the piece the row shows, and the others
+export interface FollowSplitReport {
+  following: ResolvedSpan
+  elsewhere: Pick<FollowPiece, 'anchor' | 'mate'>[]
+}
+
 // written by the settle and read only by the header
 export interface FollowReport {
   // nothing loaded covers the anchor's window, so the other rows are holding
@@ -26,6 +35,7 @@ export interface FollowReport {
   // a level between two rows has no synteny track to follow by at all
   noSyntenyTrack: boolean
   partial: FollowPartialReport | undefined
+  split: FollowSplitReport | undefined
 }
 
 export const EMPTY_FOLLOW_REPORT: FollowReport = {
@@ -33,4 +43,5 @@ export const EMPTY_FOLLOW_REPORT: FollowReport = {
   approximate: false,
   noSyntenyTrack: false,
   partial: undefined,
+  split: undefined,
 }

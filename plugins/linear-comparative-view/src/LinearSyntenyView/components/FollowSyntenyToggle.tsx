@@ -1,3 +1,4 @@
+import { assembleLocString } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { rowLabels } from '@jbrowse/plugin-linear-genome-view'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
@@ -10,6 +11,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import type { ResolvedSpan } from '../../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowReport } from '../../SyntenyFollow/followHost.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 
@@ -40,6 +42,16 @@ const useStyles = makeStyles()({
 // The header and the menu name one thing
 const FOLLOW_LABEL = 'Follow'
 
+// a piece's coordinates are fractional, and the reader may paste this into the
+// search box
+function locus({ refName, start, end }: ResolvedSpan) {
+  return assembleLocString({
+    refName,
+    start: Math.floor(start),
+    end: Math.ceil(end),
+  })
+}
+
 /**
  * The tooltip, given the state. Pure so the wording is testable without a
  * render, and separate because it is the only place the mode explains itself
@@ -69,6 +81,7 @@ export function followToggleTitle({
   approximate,
   noSyntenyTrack,
   partial,
+  split,
   anchorLabel,
   rows = 2,
 }: Partial<FollowReport> & {
@@ -100,6 +113,16 @@ export function followToggleTitle({
     return elsewhere.length === 1
       ? `Following ${anchor} on ${following} — ${elsewhere[0]} aligns too far away to show at once, so scroll onto it to follow that instead`
       : `Following ${anchor} on ${following} — ${elsewhere.slice(0, -1).join(', ')} and ${elsewhere.at(-1)} align too far away to show at once, so scroll onto one to follow it instead`
+  }
+  // Also ahead of `approximate`: the row shows one stretch of the contig the
+  // window aligns to, and the others are too far along it to show beside it.
+  // Zooming the anchor onto the part that aligns there makes it the heaviest.
+  if (split?.elsewhere.length) {
+    const [first, ...rest] = split.elsewhere
+    const more = rest.length
+      ? `, and ${rest.length} more ${rest.length === 1 ? 'piece' : 'pieces'}`
+      : ''
+    return `Following ${anchor} on ${locus(split.following)} — ${locus(first!.anchor)} aligns to ${locus(first!.mate)}${more}, too far away to show at once, so zoom in on it to follow it there`
   }
   if (approximate) {
     return `Following ${anchor} — positions are approximate here, since the window spans more than one alignment or only a coarse alignment is loaded at this zoom`
