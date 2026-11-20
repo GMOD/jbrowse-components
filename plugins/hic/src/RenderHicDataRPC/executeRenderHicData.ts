@@ -124,10 +124,11 @@ export async function executeRenderHicData({
         // Both counts in contacts, scaled to the two libraries' geometric-mean
         // depth, then a pseudocount of 1 so a cell one condition lacks still
         // divides.
-        // Juicebox adds the 1 to each map's average contact instead, which
-        // at any binsize under one contact per bin pair swamps the depth and
-        // paints the deeper library's partner depleted everywhere. Scaling
-        // both halves of the way keeps A over B the inverse of B over A.
+        // Adding the 1 to each map's average contact instead, as Juicebox's
+        // advanced (Observed+1)/(Control+1) mode does, swamps the depth at any
+        // binsize under one contact per bin pair: tried here first, it painted
+        // the deeper library's partner depleted everywhere. Scaling both
+        // halves of the way keeps A over B the inverse of B over A.
         const ctrlCounts = control?.counts
         const toMean = control
           ? Math.sqrt(control.controlDepth / control.depth)

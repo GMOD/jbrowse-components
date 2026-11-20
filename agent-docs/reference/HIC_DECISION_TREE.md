@@ -130,6 +130,24 @@ count beside the ratio. `@gmod/hic`'s `getExpectedValues` is checked against str
 and `realFileObservedExpected.test.ts` runs the same cells through the adapter,
 worker and hover.
 
+**Observed/expected computes what straw and Juicebox compute.** JBrowse draws
+the view; a better statistic is computed outside it and loaded as a track. Two
+departures were declined on that ground:
+
+- **Scaling the between-chromosome average by the two vectors' means.** straw
+  and Juicebox divide a normalized count by the raw `sumCounts / nBins1 /
+  nBins2`, so where a normalization's vectors average far from 1 the blocks
+  between chromosomes read off 1. On ENCODE's ENCFF053VBX at 1 Mb, a pair's
+  mean normalized count over that average is 0.345 for chr8–chr9 and 0.59 for
+  chr1–chr2 under VC, and 0.95–0.96 under SCALE. A cooler's ICE weights,
+  which hictk copies into a `.hic`, would read near 0.
+- **A coarser automatic binsize where the expected count per cell falls below
+  1.** Far from the diagonal at fine binsizes most cells list nothing and draw
+  as the page, and the listed ones read high: on hg19 GM12878 chr8 at 5 kb,
+  from 1 Mb out, 4–27% of cells are listed and every listed one reads above 1.
+  Juicebox's automatic zoom ignores expected counts too; Resolution steps
+  coarser.
+
 **Observed/control keeps a cell either map lists, and drops a cell a map
 masks.** Juicebox
 pairs only the cells both maps list, which drops exactly the contacts a
@@ -150,10 +168,12 @@ and scaled to the two libraries' geometric-mean depth before a pseudocount of
   weights, which hictk copies as `ICE`, balance rows to 1 and average far
   above it, leaving counts the pseudocount would swamp.
 
-Juicebox adds the 1 to each map's average contact
-instead, `(obs + 1) / (avg + 1)`: at any binsize under one contact per bin
-pair the 1 swamps the average, the depth drops out, and K562 over the deeper
-GM12878 drew depleted everywhere but its amplicons. The two files must carry one normalization for
+Adding the 1 to each map's average contact instead, `(obs + 1) / (avg + 1)`,
+as Juicebox's advanced `(Observed+1)/(Control+1) * (AvgC+1)/(AvgO+1)`
+mode does, was tried here
+first: at any binsize under one contact per bin pair the 1 swamps the average,
+the depth drops out, and K562 over the deeper GM12878 drew depleted everywhere
+but its amplicons. Juicebox's default ratio adds nothing. The two files must carry one normalization for
 a pair, so a pair where they fall back apart reads both raw, and the menus
 offer observed/control only the normalizations and binsizes both files have;
 the other fields keep the map's own. A control that cannot be opened — another
