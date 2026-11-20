@@ -1506,7 +1506,7 @@ const graphFields: Record<string, FieldRecipe> = {
       : undefined,
   // the menu lists the cut's own walks, so the figure's layers name the rows a
   // reader ticks
-  walkLayers: (value, context) => {
+  walks: (value, context) => {
     if (!Array.isArray(value) || value.length === 0) {
       return undefined
     }

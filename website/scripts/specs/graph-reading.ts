@@ -118,7 +118,7 @@ const kiv2WalksSpec: ScreenshotSpec = {
           hprcBubblesLane(50),
           { ...hprcSegmentsLane(KIV2_BUBBLE_REGION), height: 70 },
           kiv2WalksGraphTrack({
-            walkLayers: threads(KIV2_THREADS),
+            walks: threads(KIV2_THREADS),
             heightMode: 'fit',
             paneHeight: 520,
           }),
@@ -230,7 +230,7 @@ function c4ThreadsSpec(
             c4MatrixRows(),
             graphTrack(LANES_TRACK, {
               layoutMode: 'force',
-              walkLayers: threads(C4_THREADS),
+              walks: threads(C4_THREADS),
               ...pane,
             }),
           ],
