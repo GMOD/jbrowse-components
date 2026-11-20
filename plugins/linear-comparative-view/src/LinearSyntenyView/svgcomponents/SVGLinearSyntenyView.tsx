@@ -114,7 +114,9 @@ export async function renderToSvg(
   const firstLevel = levels[0]
   const legendWidth = Math.max(
     ...rowTracks.map(r => r.legendWidth),
-    firstLevel ? svgLegendGutterWidth(model, theme, firstLevel.height) : 0,
+    firstLevel
+      ? svgLegendGutterWidth(model, theme, firstLevel.height, opts.fontFamily)
+      : 0,
   )
 
   // one gutter for the whole export, wide enough for the widest label in any

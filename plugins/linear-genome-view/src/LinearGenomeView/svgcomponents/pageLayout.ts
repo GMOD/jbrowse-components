@@ -38,7 +38,10 @@ interface PageLayoutView {
 export interface PageLayoutSubject {
   node: IAnyStateTreeNode
   views: PageLayoutView[]
-  legendWidth?: (theme: ThemeOptions | undefined) => number
+  legendWidth?: (
+    theme: ThemeOptions | undefined,
+    fontFamily: string | undefined,
+  ) => number
 }
 
 function renderedTracks(view: PageLayoutView) {
@@ -99,9 +102,9 @@ function exportChromeWidth(subject: PageLayoutSubject, opts: ExportSvgOptions) {
       ...displays.map(display =>
         display.regionTooLarge
           ? 0
-          : svgLegendGutterWidth(display, theme, Infinity),
+          : svgLegendGutterWidth(display, theme, Infinity, opts.fontFamily),
       ),
-      subject.legendWidth?.(theme) ?? 0,
+      subject.legendWidth?.(theme, opts.fontFamily) ?? 0,
     ],
     0,
   )

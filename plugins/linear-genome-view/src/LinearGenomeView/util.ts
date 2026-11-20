@@ -427,10 +427,16 @@ export function getScalebarRefNameLabels({
  * under the sticky label the way `runRefNameLabelPx` keeps them out from under
  * the others.
  */
-export function refNameLabelSpanPx(label: ScalebarRefNameLabel) {
+export function refNameLabelSpanPx(
+  label: ScalebarRefNameLabel,
+  fontFamily?: string,
+) {
   return {
     left: label.transform,
-    right: label.transform + label.paddingLeft + refNameLabelWidth(label.text),
+    right:
+      label.transform +
+      label.paddingLeft +
+      refNameLabelWidth(label.text, fontFamily),
   }
 }
 
@@ -447,8 +453,9 @@ export function refNameLabelSpanPx(label: ScalebarRefNameLabel) {
 export function refNameLabelFitsInView(
   label: ScalebarRefNameLabel,
   widthPx: number,
+  fontFamily?: string,
 ) {
-  return refNameLabelSpanPx(label).right <= widthPx
+  return refNameLabelSpanPx(label, fontFamily).right <= widthPx
 }
 
 /**
@@ -596,8 +603,8 @@ export const TICK_LABEL_FONT_SIZE = 11
  * padding on each side. Single-sourced so the HTML scalebar and the SVG export
  * agree on when a label is too wide to fit inside its block.
  */
-export function tickLabelWidth(label: string) {
-  return measureText(label, TICK_LABEL_FONT_SIZE) + 4
+export function tickLabelWidth(label: string, fontFamily?: string) {
+  return measureText(label, TICK_LABEL_FONT_SIZE, fontFamily) + 4
 }
 
 /** Font size of the bold refName label drawn at the left edge of its block, on
@@ -611,9 +618,12 @@ export const REF_NAME_LABEL_FONT_SIZE = 11
  */
 const BOLD_WIDTH_FACTOR = 1.05
 
-/** On-screen width of a bold refName label. */
-function refNameLabelWidth(refName: string) {
-  return measureText(refName, REF_NAME_LABEL_FONT_SIZE) * BOLD_WIDTH_FACTOR
+/** Width of a bold refName label, in the app's font unless `fontFamily`. */
+export function refNameLabelWidth(refName: string, fontFamily?: string) {
+  return (
+    measureText(refName, REF_NAME_LABEL_FONT_SIZE, fontFamily) *
+    BOLD_WIDTH_FACTOR
+  )
 }
 
 /** Left inset of the overview refName label within its block. */

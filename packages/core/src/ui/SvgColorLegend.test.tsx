@@ -1,6 +1,8 @@
 import { cleanup, render } from '@testing-library/react'
 
-import SvgColorLegend from './SvgColorLegend.tsx'
+import { ExportFontFamilyContext } from '../svg/constants.ts'
+import { serializeSvg } from '../svg/serializeSvg.ts'
+import SvgColorLegend, { svgColorLegendWidth } from './SvgColorLegend.tsx'
 
 afterEach(cleanup)
 
@@ -181,4 +183,66 @@ test('a shape swatch is the point shape drawn as a path, in the row color', () =
   expect(container.querySelectorAll('path[fill="currentColor"]')).toHaveLength(
     3,
   )
+})
+
+// DejaVu Sans Mono and Courier advance every glyph 0.6em, where the Helvetica
+// table has `i` at 0.22em
+const MONOSPACE_ADVANCE_EM = 0.6
+
+test('an export in monospace sizes the paper to its labels in that face', () => {
+  const label = 'iiiiiiiiiiii'
+  const entries = [{ key: 'a', label, color: 'red' }]
+  const { getByText, container } = renderSvg(
+    <ExportFontFamilyContext value="monospace">
+      <SvgColorLegend canvasWidth={500} x={0} entries={entries} />
+    </ExportFontFamilyContext>,
+  )
+  const paper = Number(container.querySelector('rect')!.getAttribute('width'))
+  const textLeft = Number(getByText(label).getAttribute('x'))
+  expect(paper).toBeGreaterThan(
+    textLeft + label.length * MONOSPACE_ADVANCE_EM * 10,
+  )
+  expect(svgColorLegendWidth(entries, undefined, 'monospace')).toBe(paper)
+})
+
+test('a key with no room for its first row draws nothing and reserves nothing', () => {
+  const entries = [
+    { key: 'a', label: 'TssA', color: 'red' },
+    { key: 'b', label: 'Quies', color: 'green' },
+  ]
+  const { container } = renderSvg(
+    <SvgColorLegend canvasWidth={500} maxHeight={20} entries={entries} />,
+  )
+  expect(container.querySelector('rect')).toBeNull()
+  expect(svgColorLegendWidth(entries, 20)).toBe(0)
+})
+
+test('a ramp stop carries its color and opacity as attributes, so an alpha splits out', () => {
+  const svg = serializeSvg(
+    <svg>
+      <SvgColorLegend
+        canvasWidth={500}
+        idPrefix="k"
+        entries={[
+          {
+            key: 'ramp',
+            label: 'Ramp',
+            gradient: {
+              stops: [
+                { offset: 0, color: 'rgba(255,0,0,0.5)' },
+                { offset: 1, color: 'rgb(0,0,255)', opacity: 0.25 },
+              ],
+              minLabel: '0',
+              maxLabel: '1',
+            },
+          },
+        ]}
+      />
+    </svg>,
+  )
+  const stops = [...svg.matchAll(/<stop[^>]*>/g)].map(([tag]) => tag)
+  expect(stops).toHaveLength(2)
+  expect(stops[0]).not.toMatch(/rgba|style=/)
+  expect(stops[0]).toMatch(/stop-opacity="0.5"/)
+  expect(stops[1]).toMatch(/stop-opacity="0.25"/)
 })

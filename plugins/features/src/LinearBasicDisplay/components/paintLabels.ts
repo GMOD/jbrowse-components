@@ -1,8 +1,9 @@
+import { measureText } from '@jbrowse/core/util'
+
 import {
   LABEL_BASELINE_RATIO,
   LABEL_OVERLAY_BACKGROUND,
   MORE_ISOFORMS_FONT_SCALE,
-  renderedTextWidth,
 } from '../../RenderFeatureDataRPC/constants.ts'
 
 import type { ResolvedLabel } from './labelPositioning.ts'
@@ -11,14 +12,16 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 /**
  * Owns `ctx.font` because the isoform badge draws smaller and italic, and only
  * assigns it when the kind changes: a real canvas re-resolves the face on every
- * assignment.
+ * assignment. `fontFamily` is an export's, which its overlay boxes are measured
+ * in too.
  */
 export function paintLabels(
   ctx: Ctx2D,
   labels: ResolvedLabel[],
   fontSize: number,
+  fontFamily = 'sans-serif',
 ) {
-  const badgeFont = `italic ${fontSize * MORE_ISOFORMS_FONT_SCALE}px sans-serif`
+  const badgeFont = `italic ${fontSize * MORE_ISOFORMS_FONT_SCALE}px ${fontFamily}`
   let curFont = ''
   const setFont = (font: string) => {
     if (font !== curFont) {
@@ -36,13 +39,13 @@ export function paintLabels(
       }
       setFont(badgeFont)
     } else {
-      setFont(`${resolved.fontSize}px sans-serif`)
+      setFont(`${resolved.fontSize}px ${fontFamily}`)
       if (resolved.label.isOverlay) {
         ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
         ctx.fillRect(
           labelX - 1,
           labelY,
-          renderedTextWidth(label.textWidth, resolved.fontSize) + 2,
+          measureText(label.text, resolved.fontSize, fontFamily) + 2,
           resolved.fontSize + 1,
         )
       }

@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 
+import { exportFontFamily } from '@jbrowse/core/svg/constants'
 import {
   awaitSvgRenders,
   awaitViewInitialized,
@@ -116,7 +117,10 @@ export async function renderToSvg(
   const { radiusPx, offsetRadians, effectivePaddingPx: paddingPx } = model
 
   // the export grows to its labels where the screen clips them
-  const gutterPx = Math.max(paddingPx, figureGutterPx(model))
+  const gutterPx = Math.max(
+    paddingPx,
+    figureGutterPx(model, exportFontFamily(fontFamily)),
+  )
   const figureSize = 2 * (radiusPx + gutterPx)
   const center = radiusPx + gutterPx
   const rings = await paintRingsSvg(ringHost, ringBodies, opts, theme, {

@@ -1,4 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { useExportFontFamily } from '@jbrowse/core/svg/constants'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { stripAlpha } from '@jbrowse/core/util'
@@ -9,6 +10,7 @@ import {
   getScalebarRefNameLabels,
   labelFitsInBlock,
   refNameLabelFitsInView,
+  refNameLabelWidth,
   tickLabelWidth,
 } from '../util.ts'
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
@@ -18,7 +20,6 @@ import {
   getRulerLayout,
   gridlineTickXs,
   refNameLabelBaselineY,
-  refNameLabelBoxHeight,
   vlinePath,
 } from './util.ts'
 
@@ -43,6 +44,7 @@ function Ruler({
   numbersBaselineY: number
 }) {
   const palette = usePalette()
+  const fontFamily = useExportFontFamily()
   const color = stripAlpha(palette.text.secondary)
   const { scalebarLabels, width } = model
   const { dx, major, minor } = gridlineTickXs(model)
@@ -59,10 +61,10 @@ function Ruler({
       overrun their *region*, so one at the view's edge survives it and would
       export half-cut by the clip below — on screen that reads as a label
       scrolled partly out of frame, but a static image has no frame to scroll,
-      so drop it instead. */}
+      so drop it instead, measured in the export's font. */}
       {scalebarLabels
         .filter(({ x, label }) => {
-          const w = tickLabelWidth(label)
+          const w = tickLabelWidth(label, fontFamily)
           return labelFitsInBlock(dx + x - w / 2, w, width)
         })
         .map(({ x, label, key }) => (
@@ -81,6 +83,27 @@ function Ruler({
   )
 }
 
+/**
+ * The label as the export can draw it whole in `fontFamily`: its own text, else
+ * the bare refName where that text carried a reversed marker, else none.
+ * `getScalebarRefNameLabels` fitted it in the app's font, against its run of
+ * regions only, and the run routinely continues past the view's right edge.
+ */
+function exportedRefNameLabel(
+  label: ScalebarRefNameLabel,
+  viewWidth: number,
+  fontFamily?: string,
+) {
+  return [label.text, label.refName]
+    .map(text => ({ ...label, text }))
+    .find(
+      fitted =>
+        fitted.paddingLeft + refNameLabelWidth(fitted.text, fontFamily) <=
+          fitted.maxWidth &&
+        refNameLabelFitsInView(fitted, viewWidth, fontFamily),
+    )
+}
+
 // Chromosome/refName labels along the ruler. Reuses the on-screen scalebar's
 // sticky-label logic (getScalebarRefNameLabels) so the exported name stays
 // pinned to the viewport's left edge when a region has scrolled off — otherwise
@@ -93,8 +116,12 @@ function Ruler({
 // labels — and no locstring, so a flipped row used to leave the numbers
 // counting down as the only evidence it was flipped. On screen the search box
 // says so; a figure has no search box.
+//
+// A name is drawn whole or not at all, as the tick numbers are: clipped
+// mid-glyph, "chr16" reads as "chr1".
 function SVGRefNameLabels({ model }: { model: LgvSvgChromeView }) {
   const palette = usePalette()
+  const fontFamily = useExportFontFamily()
   const fill = stripAlpha(palette.text.primary)
   const { labels, caption } = getScalebarRefNameLabels({
     blocks: model.staticBlocks.blocks,
@@ -118,52 +145,22 @@ function SVGRefNameLabels({ model }: { model: LgvSvgChromeView }) {
           {caption}
         </text>
       )}
-      {/* a label is fitted to its run of regions, which usually runs past the
-      right edge of the view, so drop the ones SVGRuler's clip would cut — as
-      the tick numbers at that same edge are dropped rather than half-drawn */}
       {labels
-        .filter(label => refNameLabelFitsInView(label, model.width))
+        .map(label => exportedRefNameLabel(label, model.width, fontFamily))
+        .filter(label => label !== undefined)
         .map(label => (
-          <SVGRefNameLabel
+          <text
             key={label.key}
-            label={label}
+            x={label.transform + label.paddingLeft}
+            y={refNameLabelBaselineY}
+            fontSize={REF_NAME_LABEL_FONT_SIZE}
+            fontWeight="bold"
             fill={fill}
-            clipId={`reflabel-${svgNodeId(model)}-${label.key}`}
-          />
+          >
+            {label.text}
+          </text>
         ))}
     </>
-  )
-}
-
-// One refName label, clipped to the pixels left before its run of regions ends
-// so a long name can't run past what it names — the vector counterpart of the
-// on-screen label's maxWidth + overflow:clip. The clip rect spans the whole
-// label box from its left edge, paddingLeft included, which is the box-sizing
-// the on-screen span states for the same reason.
-function SVGRefNameLabel({
-  label,
-  fill,
-  clipId,
-}: {
-  label: ScalebarRefNameLabel
-  fill: string
-  clipId: string
-}) {
-  const { transform, maxWidth, paddingLeft, text } = label
-  return (
-    <g transform={`translate(${transform} 0)`}>
-      <SvgClipRect id={clipId} width={maxWidth} height={refNameLabelBoxHeight}>
-        <text
-          x={paddingLeft}
-          y={refNameLabelBaselineY}
-          fontSize={REF_NAME_LABEL_FONT_SIZE}
-          fontWeight="bold"
-          fill={fill}
-        >
-          {text}
-        </text>
-      </SvgClipRect>
-    </g>
   )
 }
 

@@ -266,3 +266,32 @@ test('ruler labels and ticks are centred on their radius by y alone', async () =
   expect(ys(13)).toEqual(new Set(['3.64']))
   expect(ys(10)).toEqual(new Set(['2.8']))
 }, 20000)
+
+// A monospace face advances every glyph 0.6em, where the Helvetica table puts
+// an accession's digits at 0.56em and its `.` at 0.28em: sized from that table,
+// a monospace export ran each radial label a few px past the canvas edge
+test('a monospace export grows to fit its labels as that face draws them', async () => {
+  const view = await setupRefNames(
+    Array.from(
+      { length: 24 },
+      (_, i) => `NC_0000${String(i + 1).padStart(2, '0')}.11`,
+    ),
+    { height: 500 },
+  )
+  const svg = await renderToSvg(view, { fontFamily: 'monospace' })
+  const halfCanvas = Number(/viewBox="0 0 ([\d.]+)/.exec(svg)![1]) / 2
+  const labels = [
+    ...svg.matchAll(
+      /translate\((-?[\d.]+),(-?[\d.]+)\) rotate\(-?[\d.]+\)" fill="[^"]*">([^<]+)</g,
+    ),
+  ]
+  expect(labels).toHaveLength(24)
+  const fontSizePx = 13
+  const letterSpacingPx = 0.0075 * fontSizePx
+  for (const [, x, y, text] of labels) {
+    const drawnWidth = text!.length * (0.6 * fontSizePx + letterSpacingPx)
+    expect(Math.hypot(Number(x), Number(y)) + drawnWidth).toBeLessThanOrEqual(
+      halfCanvas,
+    )
+  }
+}, 20000)

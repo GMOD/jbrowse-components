@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 
+import { useExportFontFamily } from '@jbrowse/core/svg/constants'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { measureText } from '@jbrowse/core/util'
 
@@ -32,11 +33,13 @@ export default function GroupLabelBox({
   text: string
 }) {
   const palette = usePalette()
+  const fontFamily = useExportFontFamily()
   const fontSize = GROUP_LABEL_FONT_SIZE
   const paddingX = GROUP_LABEL_PADDING_X
   const height = GROUP_LABEL_HEIGHT
   const width =
-    measureText(text, fontSize) * MEDIUM_WEIGHT_WIDTH_FACTOR + paddingX * 2
+    measureText(text, fontSize, fontFamily) * MEDIUM_WEIGHT_WIDTH_FACTOR +
+    paddingX * 2
   return (
     <g>
       <rect

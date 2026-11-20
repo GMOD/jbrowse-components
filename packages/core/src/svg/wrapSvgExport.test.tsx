@@ -1,4 +1,5 @@
 import { PaintLayer } from '../util/paintLayer.tsx'
+import { useExportFontFamily } from './constants.ts'
 import { wrapSvgExport } from './wrapSvgExport.tsx'
 
 // A layer that clips, so it mints a clip id. Two of them, because the collision
@@ -114,5 +115,27 @@ test.each([
       }),
     )?.[0]
     expect(root).toContain(`font-family="${expected}"`)
+  },
+)
+
+function MeasuredIn() {
+  return <text>{useExportFontFamily()}</text>
+}
+
+// what the labels are drawn in is what they measure in
+test.each([
+  [undefined, 'sans-serif'],
+  ['monospace', 'monospace'],
+])(
+  'an export asked for font %p hands its children %p to measure in',
+  (fontFamily, expected) => {
+    const svg = wrapSvgExport({
+      theme: undefined,
+      width: 100,
+      height: 40,
+      fontFamily,
+      children: <MeasuredIn />,
+    })
+    expect(svg).toContain(`<text>${expected}</text>`)
   },
 )

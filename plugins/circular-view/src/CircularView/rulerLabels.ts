@@ -1,4 +1,4 @@
-import { max, radToDeg, toLocale } from '@jbrowse/core/util'
+import { max, measureText, radToDeg, toLocale } from '@jbrowse/core/util'
 
 import { regionAssemblyName } from './slices.ts'
 
@@ -39,18 +39,29 @@ export const tickReachPx =
 // how far outside the circle's radius a label is anchored: past the ticks
 export const labelOffsetPx = tickReachPx + 5
 
-// rough advance width of one character at `labelFontSizePx`. Only ever used to
-// compare a label against the arc it would sit on, so an estimate is enough —
-// but it has to be *one* estimate, since the fit test and the room reserved for
-// the labels that fail it must agree.
-const charWidthPx = 6.5
+// what the weight-500, letter-spaced label `Ruler.tsx` draws adds to
+// `measureText`'s regular-weight table
+const mediumWeightWidthFactor = 1.05
+const labelLetterSpacingEm = 0.0075
 
-export function labelWidthPx(text: string) {
-  return text.length * charWidthPx
+/**
+ * A label's width in `fontFamily`, the export's or, on screen, the app's. One
+ * estimate, since the fit test and the room reserved for the labels that fail
+ * it must agree.
+ */
+export function labelWidthPx(text: string, fontFamily?: string) {
+  return (
+    measureText(text, labelFontSizePx, fontFamily) * mediumWeightWidthFactor +
+    text.length * labelLetterSpacingEm * labelFontSizePx
+  )
 }
 
-function labelFitsAlongArc(text: string, maxWidthPx: number) {
-  return labelWidthPx(text) < maxWidthPx
+function labelFitsAlongArc(
+  text: string,
+  maxWidthPx: number,
+  fontFamily?: string,
+) {
+  return labelWidthPx(text, fontFamily) < maxWidthPx
 }
 
 // an empty label, or an arc too short to hang one off, draws nothing at all.
@@ -93,18 +104,22 @@ export function sliceArcWidthPx(slice: Slice, radiusPx: number) {
  * answer for every label, so a circle never mixes the two: along the arcs only
  * when each drawn label fits its own.
  */
-export function labelsRunAlongArcs({
-  radiusPx,
-  staticSlices,
-}: {
-  radiusPx: number
-  staticSlices: Slice[]
-}) {
+export function labelsRunAlongArcs(
+  {
+    radiusPx,
+    staticSlices,
+  }: {
+    radiusPx: number
+    staticSlices: Slice[]
+  },
+  fontFamily?: string,
+) {
   return staticSlices.every(slice => {
     const text = sliceLabelText(slice, staticSlices)
     const maxWidthPx = sliceArcWidthPx(slice, radiusPx)
     return (
-      !labelIsDrawn(text, maxWidthPx) || labelFitsAlongArc(text, maxWidthPx)
+      !labelIsDrawn(text, maxWidthPx) ||
+      labelFitsAlongArc(text, maxWidthPx, fontFamily)
     )
   })
 }
@@ -116,7 +131,11 @@ export function labelsRunAlongArcs({
  */
 export function maxLabelGutterPx(labels: string[]) {
   return labels.length
-    ? labelOffsetPx + max(labels.map(labelWidthPx), 0)
+    ? labelOffsetPx +
+        max(
+          labels.map(label => labelWidthPx(label)),
+          0,
+        )
     : tickReachPx
 }
 
@@ -125,12 +144,15 @@ export function maxLabelGutterPx(labels: string[]) {
  * a line when the labels run along their arcs, the longest label when they
  * radiate. The SVG export sizes its canvas by it.
  */
-export function labelGutterPx(model: {
-  radiusPx: number
-  staticSlices: Slice[]
-}) {
+export function labelGutterPx(
+  model: {
+    radiusPx: number
+    staticSlices: Slice[]
+  },
+  fontFamily?: string,
+) {
   const { radiusPx, staticSlices } = model
-  const alongArcs = labelsRunAlongArcs(model)
+  const alongArcs = labelsRunAlongArcs(model, fontFamily)
   return max(
     staticSlices.map(slice => {
       const text = sliceLabelText(slice, staticSlices)
@@ -141,7 +163,7 @@ export function labelGutterPx(model: {
         labelOffsetPx +
         // a tangential label is centered on the anchor, so it reaches outward
         // by half its height rather than by its length
-        (alongArcs ? labelFontSizePx / 2 : labelWidthPx(text))
+        (alongArcs ? labelFontSizePx / 2 : labelWidthPx(text, fontFamily))
       )
     }),
     tickReachPx,
@@ -183,12 +205,15 @@ export function assemblyArcs(staticSlices: Slice[]) {
 }
 
 /** The export's margin: the ruler labels, then the assembly names if any. */
-export function figureGutterPx(model: {
-  radiusPx: number
-  staticSlices: Slice[]
-}) {
+export function figureGutterPx(
+  model: {
+    radiusPx: number
+    staticSlices: Slice[]
+  },
+  fontFamily?: string,
+) {
   return (
-    labelGutterPx(model) +
+    labelGutterPx(model, fontFamily) +
     (assemblyArcs(model.staticSlices).length > 0 ? assemblyBandPx : 0)
   )
 }

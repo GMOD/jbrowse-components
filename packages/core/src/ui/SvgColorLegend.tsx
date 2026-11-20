@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- geometry constants belong with this leaf SVG primitive; no component state to fast-refresh */
 import { useId } from 'react'
 
+import { useExportFontFamily } from '../svg/constants.ts'
 import { svgSafeId } from '../svg/svgId.ts'
 import { LegendSwatchGlyph } from './LegendSwatchGlyph.tsx'
 import { usePalette } from './PaletteContext.tsx'
@@ -49,7 +50,9 @@ function rowHeight(entry: ColorLegendEntry) {
 }
 
 // The rows that fit `maxHeight`, leaving room for a "+N more" summary when
-// they do not all fit. A heading the cut separated from every row under it is
+// they do not all fit, and none when not even the first row and that summary
+// fit: a key taller than its display runs into whatever is below it, or off the
+// foot of the figure. A heading the cut separated from every row under it is
 // dropped with them.
 function fitEntries(entries: ColorLegendEntry[], maxHeight: number) {
   let used = 0
@@ -57,7 +60,7 @@ function fitEntries(entries: ColorLegendEntry[], maxHeight: number) {
   for (const [idx, entry] of entries.entries()) {
     const rest = entries.length - idx - 1
     const reserve = rest > 0 ? LEGEND_ROW_HEIGHT : 0
-    if (used + rowHeight(entry) + reserve > maxHeight && shown.length > 0) {
+    if (used + rowHeight(entry) + reserve > maxHeight) {
       break
     }
     used += rowHeight(entry)
@@ -107,7 +110,8 @@ function GradientRow({
             <stop
               key={stop.offset}
               offset={stop.offset}
-              style={{ stopColor: stop.color, stopOpacity: stop.opacity ?? 1 }}
+              stopColor={stop.color}
+              stopOpacity={stop.opacity ?? 1}
             />
           ))}
         </linearGradient>
@@ -138,11 +142,16 @@ function GradientRow({
 
 // What the key draws for `entries` under `maxHeight`, and how wide its paper
 // is, so a caller sizing a gutter measures the box this renders.
-function legendBox(entries: ColorLegendEntry[], maxHeight?: number) {
+function legendBox(
+  entries: ColorLegendEntry[],
+  maxHeight?: number,
+  fontFamily?: string,
+) {
   const shown =
     maxHeight === undefined ? entries : fitEntries(entries, maxHeight)
   const cutRows = entries.slice(shown.length).filter(keysAColor).length
-  const overflowLabel = cutRows > 0 ? `+${cutRows} more` : undefined
+  const overflowLabel =
+    cutRows > 0 && shown.length > 0 ? `+${cutRows} more` : undefined
 
   // Labels line up across rows, so the swatch column is sized by the row with
   // the most swatches — otherwise a two-box row shoves its own label out of the
@@ -159,15 +168,15 @@ function legendBox(entries: ColorLegendEntry[], maxHeight?: number) {
         ? SWATCH_LEFT +
             Math.max(
               GRADIENT_BAR_WIDTH,
-              measureLegendText(entry.label, FONT_SIZE),
+              measureLegendText(entry.label, FONT_SIZE, fontFamily),
             )
-        : textLeft + measureLegendText(entry.label, FONT_SIZE),
+        : textLeft + measureLegendText(entry.label, FONT_SIZE, fontFamily),
     )
   }
   if (overflowLabel !== undefined) {
     contentRight = Math.max(
       contentRight,
-      textLeft + measureLegendText(overflowLabel, FONT_SIZE),
+      textLeft + measureLegendText(overflowLabel, FONT_SIZE, fontFamily),
     )
   }
   const totalWidth = contentRight + 6
@@ -181,15 +190,16 @@ function legendBox(entries: ColorLegendEntry[], maxHeight?: number) {
 }
 
 /**
- * Width of the paper `SvgColorLegend` draws for `entries` under `maxHeight`, 0
- * when it draws nothing.
+ * Width of the paper `SvgColorLegend` draws for `entries` under `maxHeight`, in
+ * an export whose root carries `fontFamily`; 0 when it draws nothing.
  */
 export function svgColorLegendWidth(
   entries: ColorLegendEntry[],
   maxHeight?: number,
+  fontFamily?: string,
 ) {
-  const { shown, overflowLabel, totalWidth } = legendBox(entries, maxHeight)
-  return shown.length || overflowLabel ? totalWidth : 0
+  const { shown, totalWidth } = legendBox(entries, maxHeight, fontFamily)
+  return shown.length ? totalWidth : 0
 }
 
 // Shared SVG color key: one translucent row per entry — a swatch and a label,
@@ -224,6 +234,7 @@ export default function SvgColorLegend({
 }) {
   const reactId = useId()
   const inks = useLegendInks()
+  const fontFamily = useExportFontFamily()
   const legendId = idPrefix ?? reactId
   const {
     shown,
@@ -232,9 +243,9 @@ export default function SvgColorLegend({
     totalWidth,
     rowTops,
     bottom: y,
-  } = legendBox(entries, maxHeight)
+  } = legendBox(entries, maxHeight, fontFamily)
   const left = x ?? Math.max(0, canvasWidth - totalWidth - 4)
-  return shown.length || overflowLabel ? (
+  return shown.length ? (
     <g transform={`translate(${left} 0)`} data-testid={testid}>
       {shown.map((entry, idx) => (
         <g key={entry.key} transform={`translate(0 ${rowTops[idx]})`}>

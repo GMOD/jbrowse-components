@@ -13,10 +13,10 @@ export function syntenyPageSubject(
   return {
     node: model,
     views: model.views,
-    legendWidth: theme => {
+    legendWidth: (theme, fontFamily) => {
       const firstLevel = model.levels[0]
       return firstLevel
-        ? svgLegendGutterWidth(model, theme, firstLevel.height)
+        ? svgLegendGutterWidth(model, theme, firstLevel.height, fontFamily)
         : 0
     },
   }

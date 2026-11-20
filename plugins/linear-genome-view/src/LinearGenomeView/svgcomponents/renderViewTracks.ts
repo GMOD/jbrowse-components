@@ -120,6 +120,7 @@ export async function renderViewTracks<T extends SvgExportTrack>({
   const { tracksHeight, legendHeights, legendWidth } = layoutSvgTracks({
     tracks,
     theme,
+    fontFamily: opts.fontFamily,
     textHeight,
     trackLabels,
   })
@@ -143,11 +144,13 @@ export async function renderViewTracks<T extends SvgExportTrack>({
 function layoutSvgTracks({
   tracks,
   theme,
+  fontFamily,
   textHeight,
   trackLabels,
 }: {
   tracks: SvgRowTrack[]
   theme: ThemeOptions | undefined
+  fontFamily: string | undefined
   textHeight: number
   trackLabels: TrackLabelMode
 }) {
@@ -155,7 +158,7 @@ function layoutSvgTracks({
   const keyed = tracks.map(
     track =>
       !track.displays[0]!.regionTooLarge &&
-      svgLegendGutterWidth(track.displays[0]!, theme, Infinity) > 0,
+      svgLegendGutterWidth(track.displays[0]!, theme, Infinity, fontFamily) > 0,
   )
   const bodyTops = trackBoxOffsets(tracks, trackLabels, textHeight).map(
     (top, i) => top + labelOffset(tracks[i]!, trackLabels, textHeight),
@@ -177,7 +180,7 @@ function layoutSvgTracks({
         const height = legendHeights[i]
         return height === undefined
           ? 0
-          : svgLegendGutterWidth(track.displays[0]!, theme, height)
+          : svgLegendGutterWidth(track.displays[0]!, theme, height, fontFamily)
       }),
       0,
     ),

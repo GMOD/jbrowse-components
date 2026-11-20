@@ -1,3 +1,4 @@
+import { useExportFontFamily } from '@jbrowse/core/svg/constants'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { measureLegendText } from '@jbrowse/core/ui/measureLegendText'
 import { formatScore } from '@jbrowse/core/util/numericUtils'
@@ -29,10 +30,11 @@ export default function ScoreDomainCaption({
   caption?: string
 }) {
   const palette = usePalette()
+  const fontFamily = useExportFontFamily()
   const suffix =
     scaleType === 'log' ? ' (log)' : scaleType === 'symlog' ? ' (symlog)' : ''
   const text = `${caption ? `${caption} ` : ''}[${formatScore(domain[0])}, ${formatScore(domain[1])}]${suffix}`
-  const len = measureLegendText(text, 12)
+  const len = measureLegendText(text, 12, fontFamily)
   const xpos = Math.max(0, canvasWidth - len - 10)
   return (
     <g>

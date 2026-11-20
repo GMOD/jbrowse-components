@@ -49,7 +49,12 @@ export async function renderToSvg(
   // the axes on the pre-wait geometry while the dots were drawn against the new
   // one. (Same ordering rule as the LGV export's track heights.)
   const { width, borderX, viewWidth, viewHeight, height } = model
-  const legendWidth = svgLegendGutterWidth(model, theme, viewHeight)
+  const legendWidth = svgLegendGutterWidth(
+    model,
+    theme,
+    viewHeight,
+    opts.fontFamily,
+  )
 
   const { pluginManager } = getEnv(model)
 

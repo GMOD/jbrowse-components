@@ -1,3 +1,5 @@
+import { createContext, use } from 'react'
+
 // Fixed horizontal gutter (CSS px) added to the left and right of every image
 // export, giving ruler ticks and track-label backgrounds room to bleed past
 // the genome content area. Lives apart from `SvgExport.tsx` so that file stays
@@ -11,4 +13,17 @@ export const exportMargin = 50
  */
 export function exportFontFamily(fontFamily?: string) {
   return fontFamily || 'sans-serif'
+}
+
+/**
+ * The family `SVGExportRoot` writes on the root, for a component inside an
+ * export to measure its text in. Undefined outside an export, where text draws
+ * in the app's font.
+ */
+export const ExportFontFamilyContext = createContext<string | undefined>(
+  undefined,
+)
+
+export function useExportFontFamily() {
+  return use(ExportFontFamilyContext)
 }

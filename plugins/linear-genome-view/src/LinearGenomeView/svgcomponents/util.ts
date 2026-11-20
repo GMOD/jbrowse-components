@@ -392,13 +392,9 @@ export const TRACK_LABEL_GAP = 40
 // as ink outside its box rather than as a label dropped at an edge. Monospace
 // is the family that breaks it; see measureText.
 //
-// The export's other fit tests (tickLabelWidth for the ruler coordinates,
-// refNameLabelWidth for the chromosome names) still measure at the app font,
-// deliberately: they feed *drop* rules whose worst case is a label at the
-// viewport edge kept instead of dropped, and every one of them is drawn inside
-// a clip that bounds it either way. Their region-fit half also lives in
-// `getScalebarRefNameLabels`, an on-screen model getter, so making them
-// family-aware means threading an export option through screen state.
+// The ruler's own fit tests (tickLabelWidth for the coordinates,
+// refNameLabelWidth for the chromosome names) read the same family off
+// `useExportFontFamily` in SVGRuler.
 export function trackLabelLeftOffset({
   tracks,
   trackLabels,

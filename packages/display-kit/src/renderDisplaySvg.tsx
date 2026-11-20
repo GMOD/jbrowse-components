@@ -142,19 +142,22 @@ function exportedLegendEntries(model: object, palette: JBrowsePalette) {
 
 /**
  * Px an export widens its canvas by for `model`'s key beside a `width`-wide
- * plot, as {@link SvgLegend} draws it under `maxHeight`: 0 for a model with no
- * key to draw, so a figure with no legend gets no empty strip. Measured after
- * the model's data has landed, since most keys list what was loaded.
+ * plot, as {@link SvgLegend} draws it under `maxHeight` in the export's
+ * `fontFamily`: 0 for a model with no key to draw, so a figure with no legend
+ * gets no empty strip. Measured after the model's data has landed, since most
+ * keys list what was loaded.
  */
 export function svgLegendGutterWidth(
   model: object,
   theme: ThemeOptions | undefined,
   maxHeight: number,
+  fontFamily: string | undefined,
 ) {
   const { palette } = resolveStyleTheme({ configTheme: theme })
   const width = svgColorLegendWidth(
     exportedLegendEntries(model, palette),
     maxHeight,
+    fontFamily,
   )
   return width > 0 ? width + GUTTER_INSET : 0
 }

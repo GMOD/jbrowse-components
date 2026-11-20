@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { useExportFontFamily } from '@jbrowse/core/svg/constants'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
@@ -58,6 +59,7 @@ function FeaturesSvgBody({
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
   const palette = usePalette()
+  const fontFamily = useExportFontFamily()
   const visibleRegions = view.visibleRegions
   // Anchors the chips to the content edge; non-zero only when scrolled
   // before the genome start.
@@ -109,7 +111,7 @@ function FeaturesSvgBody({
               model.laidOutDataMap,
               labelContext,
               (_, labels) => {
-                paintLabels(ctx, labels, fontSize)
+                paintLabels(ctx, labels, fontSize, fontFamily)
               },
               labelBand,
             )

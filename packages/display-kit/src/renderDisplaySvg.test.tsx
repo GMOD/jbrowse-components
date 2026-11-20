@@ -398,19 +398,38 @@ describe('SvgLegend', () => {
       </svg>,
     )
     expect(container.querySelector('[data-testid="color-legend"]')).toBeNull()
-    expect(svgLegendGutterWidth(model, undefined, 200)).toBe(0)
+    expect(svgLegendGutterWidth(model, undefined, 200, undefined)).toBe(0)
   })
 
   test('a model with no key reserves no gutter', () => {
-    expect(svgLegendGutterWidth(host(true, []), undefined, 200)).toBe(0)
-    expect(svgLegendGutterWidth({ id: 'plain' }, undefined, 200)).toBe(0)
+    expect(
+      svgLegendGutterWidth(host(true, []), undefined, 200, undefined),
+    ).toBe(0)
+    expect(
+      svgLegendGutterWidth({ id: 'plain' }, undefined, 200, undefined),
+    ).toBe(0)
   })
 
   test('the gutter is as wide as the key it holds, and a cut key is narrower', () => {
     const labels = ['a', 'b', 'a much longer label than the rest']
-    const whole = svgLegendGutterWidth(host(true, labels), undefined, 200)
-    const short = svgLegendGutterWidth(host(true, ['a']), undefined, 200)
-    const cut = svgLegendGutterWidth(host(true, labels), undefined, 14)
+    const whole = svgLegendGutterWidth(
+      host(true, labels),
+      undefined,
+      200,
+      undefined,
+    )
+    const short = svgLegendGutterWidth(
+      host(true, ['a']),
+      undefined,
+      200,
+      undefined,
+    )
+    const cut = svgLegendGutterWidth(
+      host(true, labels),
+      undefined,
+      28,
+      undefined,
+    )
     expect(whole).toBeGreaterThan(short)
     expect(cut).toBeLessThan(whole)
     expect(short).toBeGreaterThan(10)

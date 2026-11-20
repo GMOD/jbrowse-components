@@ -1,3 +1,4 @@
+import { LEGEND_ROW_HEIGHT } from '@jbrowse/core/ui/SvgColorLegend'
 import { svgLegendGutterWidth } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { renderViewTracks } from './renderViewTracks.ts'
@@ -60,6 +61,7 @@ function gutterFor(labels: string[], maxHeight = Infinity) {
     { id: 'x', showLegend: true, legendSpec: legendSpecOf(labels) },
     undefined,
     maxHeight,
+    undefined,
   )
 }
 
@@ -90,13 +92,26 @@ test('the stack is measured after the displays settle, not before', async () => 
 // jbrowse-img measures before any data has landed, so a gutter sized then
 // reserved nothing and the key floated over the plot it was meant to sit beside
 test('the legend gutter is measured after the displays settle', async () => {
-  const a = makeTrack('a', { height: 10, keyLabels: ['short'] })
-  const b = makeTrack('b', { height: 10, keyLabels: ['a much longer label'] })
+  const a = makeTrack('a', { height: 20, keyLabels: ['short'] })
+  const b = makeTrack('b', { height: 20, keyLabels: ['a much longer label'] })
 
   const { legendWidth } = await run({ pinned: [], unpinned: [a, b] })
 
   expect(legendWidth).toBeGreaterThan(0)
   expect(legendWidth).toBe(gutterFor(['a much longer label']))
+})
+
+// its key's first row would hang off the foot of the figure
+test('a last track too short for one row of its key draws none', async () => {
+  const short = makeTrack('short', { height: 10, keyLabels: ['a'] })
+
+  const { legendWidth, displayResults } = await run({
+    pinned: [],
+    unpinned: [short],
+  })
+
+  expect(displayResults[0]!.legendHeight).toBeLessThan(LEGEND_ROW_HEIGHT)
+  expect(legendWidth).toBe(0)
 })
 
 test('a stack with no key reserves no gutter', async () => {
@@ -184,9 +199,9 @@ test('a display with no renderSvg is skipped, not thrown on', async () => {
 })
 
 test('a skipped track does not enter the legend measurement', async () => {
-  const supported = makeTrack('supported', { height: 10, keyLabels: ['a'] })
+  const supported = makeTrack('supported', { height: 20, keyLabels: ['a'] })
   const unsupported = makeTrack('unsupported', {
-    height: 10,
+    height: 20,
     keyLabels: ['a label far wider than the drawn key'],
   }) as { displays: { renderSvg?: unknown }[] }
   delete unsupported.displays[0]!.renderSvg
