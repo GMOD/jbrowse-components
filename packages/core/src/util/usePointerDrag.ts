@@ -25,6 +25,13 @@ import type React from 'react'
  * makes the move handler safe, since an uncaptured second pointer over the same
  * element reports moves to it. `usePanZoom` guards its own pan the same way.
  *
+ * **Put it only on an element with nothing clickable inside.** A browser sends
+ * a captured press's click and double-click to the capturing element, so a
+ * button or a double-click target inside it never hears its own. A draggable
+ * element with clickable children captures once the press becomes a drag, as
+ * `useSectionDrag`, `usePanZoom` and `usePointerGesture`'s `slopPx` do; jsdom
+ * has no capture, so only a browser test sees the difference.
+ *
  * The caller still owns `touch-action: none` on the element — without it the
  * browser claims a touch drag as a page scroll and no pointer stream arrives at
  * all. It stays a style rather than riding in the returned props because a
