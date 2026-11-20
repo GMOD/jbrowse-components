@@ -1,4 +1,7 @@
-import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import {
+  NO_VALUE_LABEL,
+  categoricalField,
+} from '@jbrowse/core/util/categoricalField'
 import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import { fieldHeading } from '@jbrowse/display-kit/sectionsHeading'
 
@@ -13,9 +16,11 @@ import type { GroupId } from '@jbrowse/core/util/groupKeys'
 /**
  * Every section the Sections dialog lists, in stacking order: each one the
  * fetched regions hold, hidden or not, and each the facet's `sort` or the
- * hidden set names besides. A read dimension keeps its own level names; a
- * tag or field value is labelled bare, its field being the column header.
- * Empty while ungrouped, chain mode's degraded facet included.
+ * hidden set names besides. A read dimension keeps the level names its fetch
+ * gave; a tag or field value is labelled bare, its field being the column
+ * header. The overflow lane is no value of its own, so as its chip offers
+ * no hide, it does not list. Empty while ungrouped, chain mode's degraded
+ * facet included.
  */
 export function knownSections(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
@@ -27,23 +32,20 @@ export function knownSections(
   }
   const compare = sectionOrder(facet.field, facet.sort)
   const valueLabel = isReadDimension(facet.field)
-    ? undefined
+    ? (key: string) => (key === '' ? NO_VALUE_LABEL : key)
     : categoricalField(fieldTag(facet.field) ?? facet.field).label
-  const labelOf = (key: string, fetched?: string) =>
-    key === OVERFLOW_GROUP_KEY
-      ? (fetched ?? key)
-      : (valueLabel?.(key) ?? fetched ?? key)
   const sections = new Map(
     orderedGroups(rpcDataMap, undefined, compare).map(({ key, label }) => [
       key,
-      labelOf(key, label),
+      isReadDimension(facet.field) ? label : valueLabel(key),
     ]),
   )
   for (const key of [...(facet.sort ?? []), ...hidden]) {
     if (!sections.has(key)) {
-      sections.set(key, labelOf(key))
+      sections.set(key, valueLabel(key))
     }
   }
+  sections.delete(OVERFLOW_GROUP_KEY)
   return [...sections]
     .sort(([a], [b]) => compare(a, b))
     .map(([key, label]) => ({ key, label }))

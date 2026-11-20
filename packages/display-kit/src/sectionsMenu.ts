@@ -12,15 +12,16 @@ const SectionsDialog = lazy(() => import('./SectionsDialog.tsx'))
 export type SectionsHost = SectionsDialogModel & IStateTreeNode
 
 /**
- * "Sections...", the checklist of `model`'s sections, while it knows any;
- * `node` places the dialog. A band whose sections are not its display's
+ * "Sections...", the checklist of `model`'s sections, while it has a choice
+ * to offer: two sections, or one hidden. `node` places the dialog. A band whose sections are not its display's
  * own passes the display as `node` and the band as `model`.
  */
 export function sectionsMenuItemsFor(
   node: IStateTreeNode,
   model: SectionsDialogModel,
 ): MenuItem[] {
-  return model.knownSections.length > 0
+  const known = model.knownSections.length
+  return known > 1 || (known === 1 && model.hiddenGroups.size > 0)
     ? [
         {
           label: 'Sections...',

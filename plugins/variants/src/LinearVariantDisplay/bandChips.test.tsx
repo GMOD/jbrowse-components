@@ -99,6 +99,26 @@ test('sectioned records carry their chip ahead of the topmost section chip', () 
   ).toBeTruthy()
 })
 
+test('with every record section hidden over rows, one records chip heads the band beside the restore pill', () => {
+  const { display } = recordsDisplayAt(
+    [
+      ['a', 1000, 5000, 'DEL', 'DEL', { groupKey: 'Benign' }],
+      ['b', 2000, 6000, 'DEL', 'DEL', { groupKey: 'Pathogenic' }],
+    ],
+    10,
+    { facet: 'INFO.CLNSIG', height: 60 },
+  )
+  display.setRecordsHiddenGroups(['Benign', 'Pathogenic'])
+  render(
+    <>
+      <RecordsBandOverlay model={display} />
+      <BandChips model={display} />
+    </>,
+  )
+  expect(screen.getAllByTitle('Hide records')).toHaveLength(1)
+  expect(screen.getByText('Show 2 hidden')).toBeTruthy()
+})
+
 test('a band shorter than a chip keeps the records chip in the strip', () => {
   const { display } = recordsDisplayAt(FEW, 10, { height: 12 })
   render(<BandChips model={display} />)

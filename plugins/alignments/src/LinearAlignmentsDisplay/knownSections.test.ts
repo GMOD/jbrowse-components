@@ -1,4 +1,5 @@
-import { OVERFLOW_GROUP_KEY, overflowLabel } from '@jbrowse/core/util/groupKeys'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
+import { OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/pileupData.fixture.ts'
 import { knownSections, sectionsHeadingOf } from './knownSections.ts'
@@ -39,23 +40,21 @@ test('a tag facet lists every value bare, hidden ones and sorted ones included, 
   ])
 })
 
-test('a read dimension keeps its level names, and the overflow lane its count', () => {
+test('a read dimension keeps its fetched level names, an absent no-value level reads as such, and the overflow lane does not list', () => {
   const rpcDataMap = new Map([
     [
       0,
       region([
         { key: '1', label: 'Forward strand' },
-        {
-          key: OVERFLOW_GROUP_KEY,
-          label: '',
-          mergedKeys: ['a', 'b', 'c'],
-        },
+        { key: OVERFLOW_GROUP_KEY, label: '', mergedKeys: ['a', 'b', 'c'] },
       ]),
     ],
   ])
   expect(
-    knownSections(rpcDataMap, { field: 'strand' }, new Set()).map(s => s.label),
-  ).toEqual(['Forward strand', overflowLabel(3)])
+    knownSections(rpcDataMap, { field: 'strand' }, new Set([''])).map(
+      s => s.label,
+    ),
+  ).toEqual(['Forward strand', NO_VALUE_LABEL])
 })
 
 test('nothing lists while ungrouped', () => {

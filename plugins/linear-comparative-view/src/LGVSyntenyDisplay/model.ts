@@ -7,7 +7,6 @@ import {
 import { getSession } from '@jbrowse/core/util'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
-import { sectionsMenuItems } from '@jbrowse/display-kit/sectionsMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   colorFieldOptions,
@@ -294,7 +293,6 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           }),
           ...getFiltersMenuItems(self),
           getSyntenyGroupByMenuItem(self),
-          ...sectionsMenuItems(self),
           ...sectionOrderResetItems(self),
           ...getSyntenyShowMenuItems(self),
           // Same submenu the synteny view and dotplot show, from one source, so

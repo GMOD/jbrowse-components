@@ -157,7 +157,7 @@ const RecordsSectionChips = observer(function RecordsSectionChips({
     <GroupLabelChips
       canvasHeight={model.topBands.reserved.records}
       leading={
-        model.recordsChipsHeadBand ? (
+        model.recordsChipsHeadBand && model.recordsSectionChipsDrawn ? (
           <RecordsChips model={model} hideable />
         ) : null
       }

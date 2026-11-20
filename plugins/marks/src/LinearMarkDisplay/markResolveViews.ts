@@ -371,12 +371,12 @@ export function markRegionViews(self: MarkKeySpaceHost) {
     },
     /**
      * #getter
-     * Every section the Sections dialog lists, hidden or not; none under
-     * `rows` or while ungrouped.
+     * Every section the Sections dialog lists, hidden or not; none while
+     * ungrouped.
      */
     get knownSections() {
       const { facet } = self
-      return facet && !self.drawsRows
+      return facet
         ? knownFacetSections(
             self.featurePayloads.values(),
             categoricalField(facet.field, { domain: facet.sort }),
