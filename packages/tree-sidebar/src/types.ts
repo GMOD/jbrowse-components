@@ -83,6 +83,7 @@ export interface TreeSidebarModel
         | 'rowTreeProvenance'
         | 'rowAnnotationColors'
         | 'rowColumnLabels'
+        | 'rowSubtitles'
         | 'treeOnFinerRows'
         | 'finerTreeHint'
         | 'rowFocus'

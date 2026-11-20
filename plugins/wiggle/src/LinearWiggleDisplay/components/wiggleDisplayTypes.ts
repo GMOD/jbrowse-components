@@ -27,6 +27,7 @@ export interface WiggleDisplayModel
       | 'showRowLabels'
       | 'sidebarBounds'
       | 'rowAnnotationColors'
+      | 'rowSubtitles'
       | 'rowColumnLabels'
       | 'rowBands'
       | 'treelessBandCount'

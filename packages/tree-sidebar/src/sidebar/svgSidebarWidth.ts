@@ -23,6 +23,8 @@ export interface SvgSidebarProps {
   annotations?: readonly RowAnnotationColumn[]
   /** The label over each color column, the mixin's `rowColumnLabels`. */
   columnLabels?: readonly string[]
+  /** Each row's `rows.subtitle` value by name, the mixin's `rowSubtitles`. */
+  subtitles?: ReadonlyMap<string, string>
   /** Px of the export's left margin the display's own axes hold beside the plot. */
   leftInset?: number
 }
@@ -41,12 +43,13 @@ export function sidebarPanelWidth(
     showLabels = true,
     bands = [],
     annotations,
+    subtitles,
   }: SvgSidebarProps,
   text?: ExportTextStyle,
 ) {
   const labels =
     showLabels && rows.length
-      ? rowLabelsBoxWidth(rows, rowHeight, text, annotations)
+      ? rowLabelsBoxWidth(rows, rowHeight, text, annotations, subtitles)
       : 0
   return (
     treeSidebarOffset({ showTree, hierarchy, treeAreaWidth }) +

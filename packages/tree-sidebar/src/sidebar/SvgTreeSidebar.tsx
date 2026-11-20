@@ -44,6 +44,7 @@ export function SvgTreeSidebar({
     bands = [],
     annotations,
     columnLabels = [],
+    subtitles,
   } = sidebar
   const drawnTree = treeIsShowing({ showTree, hierarchy })
     ? hierarchy
@@ -70,6 +71,7 @@ export function SvgTreeSidebar({
           availableHeight={availableHeight}
           text={text}
           annotations={annotations}
+          subtitles={subtitles}
         />
       ) : null}
       {drawnTree ? (

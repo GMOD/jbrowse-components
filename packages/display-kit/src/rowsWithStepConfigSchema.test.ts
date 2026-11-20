@@ -27,6 +27,11 @@ test('the rows fit the track by default', () => {
   expect(readConfObject(conf, ['rows', 'step'])).toBe(FIT_ROWS)
 })
 
+test('the shared rows draw no subtitle by default', () => {
+  const conf = Display.create({ displayId: 'subtitle' })
+  expect(readConfObject(conf, ['rows', 'subtitle'])).toBe('')
+})
+
 test('a px step reads back as written', () => {
   const conf = Display.create({
     displayId: 'px',

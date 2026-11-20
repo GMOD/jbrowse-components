@@ -152,6 +152,16 @@ export function treeSidebarRowsConfigViews(self: TreeSidebarRowsConfigHost) {
     },
     /**
      * #getter
+     * The row attribute `rows.subtitle` names, drawn after each row's
+     * label; '' for none, and where the display's `rows` declares no
+     * `subtitle` (MAF's).
+     */
+    get rowSubtitleField(): string {
+      const field: unknown = Reflect.get(self.configuration.rows, 'subtitle')
+      return typeof field === 'string' ? field : ''
+    },
+    /**
+     * #getter
      * The `rows.annotations` channels drawn, in the order listed, each read
      * as `rowColorChannel` reads `rows.color`: none where the display's
      * `rows` declares no `annotations` (MAF's), none while the row labels
@@ -808,6 +818,23 @@ export function drawnRowViews<S extends Row>(self: BandedRowsHost<S>) {
     },
     /**
      * #getter
+     * Each drawn row's value of the `rows.subtitle` attribute, by name,
+     * which the sidebar draws after the row's label: none for a row
+     * lacking it, and none at all while `rows.subtitle` is empty.
+     */
+    get rowSubtitles(): ReadonlyMap<string, string> {
+      const field = self.rowSubtitleField
+      return new Map(
+        field
+          ? self.drawnRows.flatMap(row => {
+              const value = rowFieldValue(row, field)
+              return value ? [[row.name, value] as const] : []
+            })
+          : [],
+      )
+    },
+    /**
+     * #getter
      * The color columns the sidebar draws beside the row labels, one per
      * `rowAnnotationColumns` entry, each a row's color by name.
      */
@@ -986,6 +1013,7 @@ export interface RowSidebarHost {
   rowBands: readonly RowBand[]
   rowAnnotationColors: readonly RowAnnotationColumn[]
   rowColumnLabels: readonly string[]
+  rowSubtitles: ReadonlyMap<string, string>
 }
 
 /** The sidebar drawn beside the rows. */
@@ -1010,6 +1038,7 @@ export function rowSidebarViews(self: RowSidebarHost) {
         bands: self.rowBands,
         annotations: self.rowAnnotationColors,
         columnLabels: self.rowColumnLabels,
+        subtitles: self.rowSubtitles,
       }
     },
   }

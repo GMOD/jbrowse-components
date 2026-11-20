@@ -136,20 +136,82 @@ export function rowLabelText(
   )
 }
 
+/** A row subtitle's size against its label's: a step smaller. */
+const SUBTITLE_SCALE = 0.85
+
+/** The space between a label and its subtitle, in the label's ems. */
+const SUBTITLE_GAP_EMS = 0.3
+
+export function rowSubtitleFontSize(rowHeight: number, text?: ExportTextStyle) {
+  return rowLabelFontSize(rowHeight, text) * SUBTITLE_SCALE
+}
+
+/**
+ * A row's `rows.subtitle` value as drawn, in parentheses and cut with an
+ * ellipsis past the width a label may take.
+ */
+export function rowSubtitleText(
+  subtitle: string,
+  rowHeight: number,
+  text?: ExportTextStyle,
+) {
+  const fontSize = rowSubtitleFontSize(rowHeight, text)
+  return fittedLabel(
+    `(${subtitle})`,
+    ROW_LABEL_MAX_EMS * fontSize,
+    fontSize,
+    text?.fontFamily,
+  )
+}
+
+function labelWidth(label: string, rowHeight: number, text?: ExportTextStyle) {
+  const fontSize = rowLabelFontSize(rowHeight, text)
+  return Math.min(
+    measureText(label, fontSize, text?.fontFamily),
+    ROW_LABEL_MAX_EMS * fontSize,
+  )
+}
+
+/** Px from where a label's text starts to where its subtitle starts. */
+export function rowSubtitleOffset(
+  shownLabel: string,
+  rowHeight: number,
+  text?: ExportTextStyle,
+) {
+  return (
+    labelWidth(shownLabel, rowHeight, text) +
+    SUBTITLE_GAP_EMS * rowLabelFontSize(rowHeight, text)
+  )
+}
+
+function rowTextWidth(
+  row: LabelledRow,
+  rowHeight: number,
+  text: ExportTextStyle | undefined,
+  subtitle: string | undefined,
+) {
+  const label = rowLabelFullText(row)
+  return subtitle
+    ? rowSubtitleOffset(label, rowHeight, text) +
+        measureText(
+          rowSubtitleText(subtitle, rowHeight, text),
+          rowSubtitleFontSize(rowHeight, text),
+          text?.fontFamily,
+        )
+    : labelWidth(label, rowHeight, text)
+}
+
 export function rowLabelsBoxWidth(
   rows: LabelledRow[],
   rowHeight: number,
   text?: ExportTextStyle,
   annotations?: readonly RowAnnotationColumn[],
+  subtitles?: ReadonlyMap<string, string>,
 ) {
-  const fontSize = rowLabelFontSize(rowHeight, text)
   return rowLabelsCarryText(rowHeight)
     ? max(
-        rows.map(s =>
-          Math.min(
-            measureText(rowLabelFullText(s), fontSize, text?.fontFamily),
-            ROW_LABEL_MAX_EMS * fontSize,
-          ),
+        rows.map(row =>
+          rowTextWidth(row, rowHeight, text, subtitles?.get(row.name)),
         ),
         0,
       ) +

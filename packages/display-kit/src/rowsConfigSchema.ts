@@ -35,8 +35,9 @@ function annotationList(snap: Record<string, unknown>) {
  * The `rows` setting of the displays that draw one row per value of a field,
  * with the dendrogram sidebar beside them: a [RowArrangement](../rowarrangement)
  * plus the `field`, `filter`, which narrows the rows by attribute,
- * `annotations`, the attributes drawn as color columns beside the labels, and
- * an axis with `grid`. A string is the field; the arrangement members name rows by
+ * `annotations`, the attributes drawn as color columns beside the labels,
+ * `subtitle`, an attribute drawn as quieter text after each label, and an
+ * axis with `grid`. A string is the field; the arrangement members name rows by
  * value of the field, so a write changing it clears them.
  *
  * #example
@@ -101,6 +102,23 @@ export const rowsConfigSchema = ConfigurationSchema(
      * and a write changing `field` keep it.
      */
     annotations: rowAnnotationList(),
+    /**
+     * #slot subtitle
+     * The row attribute drawn after each row's label as quieter text, in
+     * parentheses, smaller and in a muted color, as `HG02024 (daughter)`
+     * under `relationship`. It annotates the label in force, a `rows.labels`
+     * entry included, and a haplotype row carries its sample's. A row
+     * lacking the attribute draws none, and it draws only where the labels
+     * do. Empty draws none; the variant display declares `relationship` as
+     * its default ([VariantRows](../variantrows)), so `''` written there
+     * turns it off.
+     */
+    subtitle: {
+      type: 'string',
+      defaultValue: '',
+      description:
+        "the row attribute drawn after each row's label as quieter text in parentheses, as HG02024 (daughter) under relationship; a row lacking it draws none, and empty draws none",
+    },
     /**
      * #slot axis
      * The guide down the left of the rows, a

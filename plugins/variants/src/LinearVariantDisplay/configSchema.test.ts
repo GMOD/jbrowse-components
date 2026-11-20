@@ -5,6 +5,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import FeaturesPlugin from '@jbrowse/plugin-features'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
@@ -369,6 +370,72 @@ describe('rows', () => {
         rows: 'HP',
       }),
     ).toThrow(/VariantRowsField/)
+  })
+})
+
+describe('rows.subtitle', () => {
+  const configSchema = configSchemaFactory()
+  const TRIO = [
+    { name: 'kid', relationship: 'daughter' },
+    { name: 'mom', relationship: 'mother' },
+    { name: 'stranger' },
+  ]
+
+  it('is relationship by default, which a snapshot leaves unwritten', () => {
+    const config = configSchema.create({
+      type: 'LinearVariantDisplay',
+      displayId: 'subtitle-default',
+    })
+    expect(readConfObject(config, ['rows', 'subtitle'])).toBe('relationship')
+    expect(getSnapshot(config).rows).toBeUndefined()
+  })
+
+  it('labels each row with its relationship, and a row lacking one with none', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setSources(TRIO)
+    expect(display.rowSubtitles).toEqual(
+      new Map([
+        ['kid', 'daughter'],
+        ['mom', 'mother'],
+      ]),
+    )
+  })
+
+  it("gives each haplotype row its sample's subtitle", () => {
+    const { display } = createTestEnvironment({
+      displayConfig: {
+        rows: { field: 'haplotype', sort: ['kid HP1', 'kid HP2'] },
+      },
+    }).createDisplay()
+    display.setSources(TRIO)
+    expect(display.rowSubtitles.get('kid HP1')).toBe('daughter')
+    expect(display.rowSubtitles.get('kid HP2')).toBe('daughter')
+  })
+
+  it("'' turns it off, and stays off across a reload", () => {
+    const config = configSchema.create({
+      type: 'LinearVariantDisplay',
+      displayId: 'subtitle-off',
+    })
+    applyConfSettings(config, { rows: { subtitle: '' } })
+    const reloaded = configSchema.create(
+      JSON.parse(JSON.stringify(getSnapshot(config))),
+    )
+    expect(readConfObject(reloaded, ['rows', 'subtitle'])).toBe('')
+
+    const { display } = createTestEnvironment({
+      displayConfig: { rows: { subtitle: '' } },
+    }).createDisplay()
+    display.setSources(TRIO)
+    expect(display.rowSubtitles.size).toBe(0)
+  })
+
+  it('names another attribute', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: { rows: { subtitle: 'population' } },
+    }).createDisplay()
+    display.setSources([{ name: 'kid', population: 'KHV' }, { name: 'mom' }])
+    expect(display.rowSubtitles).toEqual(new Map([['kid', 'KHV']]))
   })
 })
 

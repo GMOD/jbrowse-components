@@ -83,6 +83,7 @@ export const RowsPanel = observer(function RowsPanel({
         bands={model.rowBands}
         annotations={model.rowAnnotationColors}
         columnLabels={model.rowColumnLabels}
+        subtitles={model.rowSubtitles}
       />
       <VerticalScrollbar model={model} controlsId={id} top={top} />
     </>

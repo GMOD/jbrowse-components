@@ -9,6 +9,7 @@ interface LabelModel {
   drawsRowLabels: boolean
   rowAnnotationColors: readonly RowAnnotationColumn[]
   rowColumnLabels: readonly string[]
+  rowSubtitles: ReadonlyMap<string, string>
 }
 
 // Row labels (non-overlay mode) for the live WiggleComponent, starting past the
@@ -34,6 +35,7 @@ export default observer(function WiggleRowLabels({
         labelOffset={labelOffset}
         backdrop="wash"
         annotations={rowAnnotationColors}
+        subtitles={model.rowSubtitles}
       />
       <SvgRowColumnLabels
         labels={model.rowColumnLabels}

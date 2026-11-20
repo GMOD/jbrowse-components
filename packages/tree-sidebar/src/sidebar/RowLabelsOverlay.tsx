@@ -75,6 +75,7 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
   bands = [],
   annotations,
   columnLabels = [],
+  subtitles,
 }: {
   // Resolved, never absent: every display's `drawnRows` getter answers `[]`
   // before a fetch has landed, and "no rows yet" is its loading state to
@@ -102,6 +103,8 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
   annotations?: readonly RowAnnotationColumn[]
   // The label over each color column, the mixin's `rowColumnLabels`.
   columnLabels?: readonly string[]
+  // Each row's `rows.subtitle` value, the mixin's `rowSubtitles`.
+  subtitles?: ReadonlyMap<string, string>
 }) {
   const rowLabelOffset = labelOffset + (bands.length ? bandLabelWidth() : 0)
   const columnLabelsHeight = rowColumnLabelsHeight(columnLabels)
@@ -159,6 +162,7 @@ export const RowLabelsOverlay = observer(function RowLabelsOverlay({
             availableHeight={height}
             backdrop={labelOffset > 0 ? 'paper' : 'wash'}
             annotations={annotations}
+            subtitles={subtitles}
           />
         ) : null}
       </svg>

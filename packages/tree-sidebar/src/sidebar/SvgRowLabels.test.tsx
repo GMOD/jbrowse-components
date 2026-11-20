@@ -503,3 +503,126 @@ test('the export sidebar clips to the rows viewport, as the screen does', () => 
   const clipped = container.querySelector('g[clip-path]')
   expect(clipped?.textContent).toContain('a')
 })
+
+// `rows.subtitle`: an attribute drawn after the label as quieter text, on
+// screen through `RowLabelsOverlay` and in the export through
+// `SvgTreeSidebar`.
+describe('row subtitles', () => {
+  const trio = [
+    { name: 'HG02024' },
+    { name: 'HG02025' },
+    { name: 'HG02026' },
+    { name: 'NA12878' },
+  ]
+  const subtitles = new Map([
+    ['HG02024', 'daughter'],
+    ['HG02025', 'mother'],
+    ['HG02026', 'father'],
+  ])
+  const sidebar = {
+    showTree: false,
+    hierarchy: undefined,
+    rows: trio,
+    treeAreaWidth: 0,
+  }
+  const exportText = { fontSize: 12, fontFamily: 'Arial' }
+
+  function onScreen(rowHeight: number) {
+    return render(
+      <RowLabelsOverlay
+        rows={trio}
+        rowHeight={rowHeight}
+        labelOffset={0}
+        width={400}
+        height={200}
+        testId="labels"
+        subtitles={subtitles}
+      />,
+    ).getByTestId('labels')
+  }
+
+  function inExport(rowHeight: number) {
+    return render(
+      <svg>
+        <SvgTreeSidebar
+          sidebar={{ ...sidebar, rowHeight, subtitles }}
+          text={exportText}
+        />
+      </svg>,
+    ).container
+  }
+
+  function subtitleTexts(el: Element) {
+    return [...el.querySelectorAll('[data-testid="row-subtitle"]')]
+  }
+
+  function nameTexts(el: Element) {
+    return [...el.querySelectorAll('text:not([data-testid])')]
+  }
+
+  it.each([
+    ['on screen', onScreen],
+    ['in the export', inExport],
+  ])(
+    'draws each row its subtitle in parentheses after its name, smaller and muted, %s',
+    (_, at) => {
+      const el = at(20)
+      const names = nameTexts(el)
+      const subs = subtitleTexts(el)
+      expect(names.map(t => t.textContent)).toEqual(trio.map(r => r.name))
+      expect(subs.map(t => t.textContent)).toEqual([
+        '(daughter)',
+        '(mother)',
+        '(father)',
+      ])
+      const name = names[0]!
+      const sub = subs[0]!
+      expect(Number(sub.getAttribute('x'))).toBeGreaterThan(
+        Number(name.getAttribute('x')),
+      )
+      expect(sub.getAttribute('y')).toBe(name.getAttribute('y'))
+      expect(Number(sub.getAttribute('font-size'))).toBeLessThan(
+        Number(name.getAttribute('font-size')),
+      )
+      const opacity = (t: Element) =>
+        Number(t.getAttribute('fill-opacity') ?? 1)
+      expect(opacity(sub)).toBeLessThan(opacity(name))
+    },
+  )
+
+  it.each([
+    ['on screen', onScreen],
+    ['in the export', inExport],
+  ])('draws no subtitle below the text threshold %s', (_, at) => {
+    expect(subtitleTexts(at(2))).toHaveLength(0)
+  })
+
+  it('draws a subtitle after a custom label, further right the longer the label', () => {
+    const subtitleX = (label: string) => {
+      const c = draw({
+        rows: [{ name: 'HG02024 HP1', label }],
+        rowHeight: 20,
+        labelOffset: 0,
+        subtitles: new Map([['HG02024 HP1', 'daughter']]),
+      })
+      const [name, sub] = [...c.querySelectorAll('text')]
+      expect(name!.textContent).toBe(label)
+      expect(sub!.textContent).toBe('(daughter)')
+      return Number(sub!.getAttribute('x'))
+    }
+    expect(subtitleX('Child hap1')).toBeGreaterThan(subtitleX('C'))
+  })
+
+  it('widens the label box and the export gutter to hold the subtitles', () => {
+    const plain = svgSidebarWidth({ ...sidebar, rowHeight: 20 }, exportText)
+    const widened = svgSidebarWidth(
+      { ...sidebar, rowHeight: 20, subtitles },
+      exportText,
+    )
+    expect(widened).toBeGreaterThan(plain)
+    expect(rowLabelsBoxWidth(trio, 20, exportText, [], subtitles)).toBe(widened)
+    expect(rowLabelsBoxWidth(trio, 2, exportText, [], subtitles)).toBe(
+      rowLabelsBoxWidth(trio, 2, exportText),
+    )
+  })
+})

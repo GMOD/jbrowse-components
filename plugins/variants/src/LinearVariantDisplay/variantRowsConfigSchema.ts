@@ -44,6 +44,21 @@ export const variantRowsConfigSchema = ConfigurationSchema(
       description:
         "what one row is: 'sample', a row per sample colored by allele dosage, or 'haplotype', a row per phased haplotype, named '<sample> HP1', '<sample> HP2', each answering to its sample's name",
     },
+    /**
+     * #slot subtitle
+     * The row attribute drawn after each row's label as quieter text:
+     * `relationship` by default, which a `pedigreeLocation` gives each
+     * sample related to another in the VCF, so a trio's rows read
+     * `HG02024 (daughter)`, `HG02025 (mother)` and `HG02026 (father)`, and
+     * each haplotype row its sample's. A row with no `relationship` draws
+     * none, so a VCF with no pedigree draws none. `''` turns it off.
+     */
+    subtitle: {
+      type: 'string',
+      defaultValue: 'relationship',
+      description:
+        "the row attribute drawn after each row's label as quieter text in parentheses: relationship by default, which a pedigreeLocation gives each related sample, as HG02024 (daughter); a row lacking it draws none, and '' turns it off",
+    },
   },
   {
     /**
