@@ -1,5 +1,6 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { bandCellCount, bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -244,13 +245,43 @@ test('columnX agrees with the x half of cellToScreen', () => {
 
 test('the index SNP is the one clicked where two share a position', () => {
   const { display } = loadedDisplay()
-  const snps = display.snps.map((snp, i) => ({
-    ...snp,
-    start: i < 2 ? 0 : snp.start,
-  }))
+  const snps = display.snps.map((snp, i) =>
+    i < 2 ? { ...snp, start: 0, end: 1 } : snp,
+  )
   display.setRpcData({ ...display.rpcData!, snps })
   display.setIndexSnp(snps[1])
   expect(display.indexSnpColumn).toBe(1)
+})
+
+test('the index SNP is saved as chr:bp with its id, and finds its column after a refetch', () => {
+  const { display } = loadedDisplay()
+  display.setIndexSnp(display.snps[2])
+  expect(getSnapshot(display)).toMatchObject({
+    indexSnp: 'ctgA:2001',
+    indexSnpId: 'rs2',
+  })
+  const snps = display.snps.slice(1)
+  display.setRpcData({ ...display.rpcData!, snps })
+  expect(display.indexSnpColumn).toBe(1)
+})
+
+test('a right-click offers either SNP of the pair as the index', () => {
+  const { display } = loadedDisplay()
+  const [snp0, snp1] = display.snps
+  display.openContextMenu({
+    clientX: 0,
+    clientY: 0,
+    hit: { i: 1, j: 0, ldValue: 0.5, snp1: snp1!, snp2: snp0! },
+  })
+  const items = display.contextMenuItems()
+  expect(items.map(item => ('label' in item ? item.label : undefined))).toEqual(
+    ['Set index SNP to rs0', 'Set index SNP to rs1'],
+  )
+  const [left] = items
+  if (left && 'onClick' in left) {
+    left.onClick()
+  }
+  expect(display.indexSnpColumn).toBe(0)
 })
 
 // The labels draw in the `connectors` band, so they follow what it reserves:

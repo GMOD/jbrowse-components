@@ -4,6 +4,7 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -186,6 +187,17 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
           const { x, y } = eventPoint(event)
           model.setIndexSnp(model.hitTest(x, y)?.snp1)
         }
+      }}
+      onContextMenu={event => {
+        const { x, y } = eventPoint(event)
+        const hit = model.isLoadingOrCanceled ? undefined : model.hitTest(x, y)
+        openContextMenuFromEvent(
+          model,
+          event,
+          hit
+            ? { clientX: event.clientX, clientY: event.clientY, hit }
+            : undefined,
+        )
       }}
     >
       {({ canvasRef, mouseTracker }) => (

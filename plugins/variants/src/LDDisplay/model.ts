@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { canonicalizeViewRefName } from '@jbrowse/core/util'
+import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MatrixRampMixin, {
@@ -46,6 +47,7 @@ import type {
   LDDisplayConfigSchema,
 } from './configSchemaLDTrack.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -76,8 +78,12 @@ function upperBoundFloat32(arr: Float32Array, val: number) {
   return lo
 }
 
-function snpKey({ refName, start, id = '' }: LDSnp) {
-  return `${refName}:${start}:${id}`
+/**
+ * What a right-click resolved to: the pair under the pointer, whose two SNPs
+ * the menu offers as the index.
+ */
+export interface LDContextMenuInfo extends ContextMenuAnchor {
+  hit: LDCellHit
 }
 
 /**
@@ -97,6 +103,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       LegendMixin(),
       MatrixRampMixin(LD_FIELD_PRESETS),
       TriangleMatrixMixin<LDDataResult>(),
+      ContextMenuMixin<LDContextMenuInfo>(),
       types.model({
         /**
          * #property
@@ -106,22 +113,31 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * The SNP whose row and column are emphasized, as `chr:bp` with the
+         * view's refName and PLINK's 1-based BP, the spelling
+         * `LinearManhattanDisplay`'s `indexSnp` takes. A position rather than
+         * a column, so it survives a refetch and a saved session.
+         */
+        indexSnp: types.maybe(types.string),
+        /**
+         * #property
+         * The index SNP's id, which tells apart two variants the file lists
+         * at one position, a SNP beside an indel.
+         */
+        indexSnpId: types.maybe(types.string),
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       * Key (`refName:start:id`) of the SNP whose row and column are
-       * emphasized. A key rather than an index, so it survives a refetch.
-       */
-      indexSnpLocus: undefined as string | undefined,
-    }))
     .actions(self => ({
       /**
        * #action
        */
       setIndexSnp(snp: LDSnp | undefined) {
-        self.indexSnpLocus = snp ? snpKey(snp) : undefined
+        self.indexSnp = snp
+          ? `${canonicalizeViewRefName(self, snp.refName)}:${snp.end}`
+          : undefined
+        self.indexSnpId = snp?.id
       },
       /**
        * #action
@@ -223,10 +239,15 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * Index of the index SNP in `snps`, or -1.
        */
       get indexSnpColumn(): number {
-        const locus = self.indexSnpLocus
-        return locus === undefined
+        const { indexSnp, indexSnpId } = self
+        return indexSnp === undefined
           ? -1
-          : this.snps.findIndex(s => snpKey(s) === locus)
+          : this.snps.findIndex(
+              s =>
+                `${canonicalizeViewRefName(self, s.refName)}:${s.end}` ===
+                  indexSnp &&
+                (indexSnpId === undefined || s.id === indexSnpId),
+            )
       },
     }))
     .views(self => ({
@@ -496,6 +517,21 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
             ...buildLDTrackMenuItems(self),
             ...editPlotMenuItems(self),
           ]
+        },
+        /**
+         * #method
+         * Either SNP of the right-clicked pair as the index.
+         */
+        contextMenuItems(): MenuItem[] {
+          const hit = self.contextMenuInfo?.hit
+          return hit
+            ? [hit.snp2, hit.snp1].map(snp => ({
+                label: `Set index SNP to ${snp.id ?? `${self.viewRefName(snp.refName)}:${snp.end}`}`,
+                onClick: () => {
+                  self.setIndexSnp(snp)
+                },
+              }))
+            : []
         },
         /**
          * #method
