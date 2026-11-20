@@ -139,9 +139,6 @@ export function rowLabelText(
 /** A row subtitle's size against its label's: a step smaller. */
 const SUBTITLE_SCALE = 0.85
 
-/** The space between a label and its subtitle, in the label's ems. */
-const SUBTITLE_GAP_EMS = 0.3
-
 export function rowSubtitleFontSize(rowHeight: number, text?: ExportTextStyle) {
   return rowLabelFontSize(rowHeight, text) * SUBTITLE_SCALE
 }
@@ -172,9 +169,9 @@ function labelWidth(label: string, rowHeight: number, text?: ExportTextStyle) {
   )
 }
 
-/** Px between a label's end and its subtitle's start. */
-export function rowSubtitleGap(rowHeight: number, text?: ExportTextStyle) {
-  return SUBTITLE_GAP_EMS * rowLabelFontSize(rowHeight, text)
+/** The space the label's own font puts between a label and its subtitle. */
+function subtitleGap(rowHeight: number, text?: ExportTextStyle) {
+  return measureText(' ', rowLabelFontSize(rowHeight, text), text?.fontFamily)
 }
 
 function rowTextWidth(
@@ -186,7 +183,7 @@ function rowTextWidth(
   const label = rowLabelFullText(row)
   return subtitle
     ? labelWidth(label, rowHeight, text) +
-        rowSubtitleGap(rowHeight, text) +
+        subtitleGap(rowHeight, text) +
         measureText(
           rowSubtitleText(subtitle, rowHeight, text),
           rowSubtitleFontSize(rowHeight, text),

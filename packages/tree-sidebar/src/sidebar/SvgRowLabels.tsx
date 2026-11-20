@@ -1,6 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 
 import { rowRuns } from '../rows/rowRuns.ts'
@@ -14,7 +15,6 @@ import {
   rowLabelsBoxWidth,
   rowLabelsCarryText,
   rowSubtitleFontSize,
-  rowSubtitleGap,
   rowSubtitleText,
 } from './rowLabelsBoxWidth.ts'
 
@@ -38,6 +38,13 @@ function annotationRuns(
       testId: 'row-annotation-bar',
     })),
   )
+}
+
+// `color` as the solid it reads as over `background`: a viewer that drops
+// opacity on a tspan (Qt) still draws the subtitle muted.
+function solidOver(background: string, color: string) {
+  const c = colord(color)
+  return colord(background).mix(c.alpha(1), c.alpha()).toHex()
 }
 
 // The row color's runs as the swatch standing in for the label, then the
@@ -89,6 +96,11 @@ export function SvgRowLabels({
   const palette = usePalette()
   const fontSize = rowLabelFontSize(rowHeight, text)
   const separator = alpha(palette.text.primary, 0.12)
+  const background = backdrop
+    ? palette.background.paper
+    : palette.background.default
+  const labelFill = solidOver(background, palette.text.primary)
+  const subtitleFill = solidOver(background, palette.text.secondary)
   const textFits = rowLabelsCarryText(rowHeight)
   const columns = annotationRuns(
     rows,
@@ -186,16 +198,16 @@ export function SvgRowLabels({
             y={y + baselineY}
             fontSize={fontSize}
             style={shown === full ? undefined : { pointerEvents: 'auto' }}
-            {...getFillProps(palette.text.primary)}
+            fill={labelFill}
           >
             {shown === full ? null : <title>{full}</title>}
             {shown}
+            {subtitle ? ' ' : null}
             {subtitle ? (
               <tspan
                 data-testid="row-subtitle"
-                dx={rowSubtitleGap(rowHeight, text)}
                 fontSize={rowSubtitleFontSize(rowHeight, text)}
-                {...getFillProps(palette.text.secondary)}
+                fill={subtitleFill}
               >
                 {rowSubtitleText(subtitle, rowHeight, text)}
               </tspan>

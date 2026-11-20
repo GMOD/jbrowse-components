@@ -571,12 +571,17 @@ describe('row subtitles', () => {
     ['on screen', onScreen],
     ['in the export', inExport],
   ])(
-    "draws each row's subtitle in parentheses as a tspan of its name's text, smaller and muted, %s",
+    "draws each row's subtitle in parentheses as a tspan a space after its name, smaller and a solid muted fill, %s",
     (_, at) => {
       const el = at(20)
       const labels = labelTexts(el)
       const subs = subtitleSpans(el)
-      expect(labels.map(ownText)).toEqual(trio.map(r => r.name))
+      expect(labels.map(ownText)).toEqual([
+        'HG02024 ',
+        'HG02025 ',
+        'HG02026 ',
+        'NA12878',
+      ])
       expect(subs.map(t => t.textContent)).toEqual([
         '(daughter)',
         '(mother)',
@@ -588,13 +593,18 @@ describe('row subtitles', () => {
       expect(sub.tagName).toBe('tspan')
       expect(sub.getAttribute('x')).toBeNull()
       expect(sub.getAttribute('y')).toBeNull()
-      expect(Number(sub.getAttribute('dx'))).toBeGreaterThan(0)
+      expect(sub.getAttribute('dx')).toBeNull()
       expect(Number(sub.getAttribute('font-size'))).toBeLessThan(
         Number(label.getAttribute('font-size')),
       )
-      const opacity = (t: Element) =>
-        Number(t.getAttribute('fill-opacity') ?? 1)
-      expect(opacity(sub)).toBeLessThan(opacity(label))
+      expect(label.getAttribute('fill-opacity')).toBeNull()
+      expect(sub.getAttribute('fill-opacity')).toBeNull()
+      const grey = (t: Element) => {
+        const fill = t.getAttribute('fill')!
+        expect(fill).toMatch(/^#[\da-f]{6}$/)
+        return Number.parseInt(fill.slice(1, 3), 16)
+      }
+      expect(grey(sub)).toBeGreaterThan(grey(label))
     },
   )
 
@@ -605,22 +615,18 @@ describe('row subtitles', () => {
     expect(subtitleSpans(at(2))).toHaveLength(0)
   })
 
-  it('puts the subtitle a fixed gap after a custom label of any length', () => {
-    const gap = (label: string) => {
-      const c = draw({
-        rows: [{ name: 'HG02024 HP1', label }],
-        rowHeight: 20,
-        labelOffset: 0,
-        subtitles: new Map([['HG02024 HP1', 'daughter']]),
-      })
-      const [text] = labelTexts(c)
-      expect(ownText(text!)).toBe(label)
-      const sub = subtitleSpans(c)[0]!
-      expect(sub.textContent).toBe('(daughter)')
-      return sub.getAttribute('dx')
-    }
-    expect(Number(gap('C'))).toBeGreaterThan(0)
-    expect(gap('Child hap1')).toBe(gap('C'))
+  it('draws a subtitle a space after a custom label', () => {
+    const c = draw({
+      rows: [{ name: 'HG02024 HP1', label: 'Child hap1' }],
+      rowHeight: 20,
+      labelOffset: 0,
+      subtitles: new Map([['HG02024 HP1', 'daughter']]),
+    })
+    const [text] = labelTexts(c)
+    const sub = subtitleSpans(c)[0]!
+    expect(ownText(text!)).toBe('Child hap1 ')
+    expect(sub.previousSibling?.textContent).toBe(' ')
+    expect(sub.textContent).toBe('(daughter)')
   })
 
   it('cuts a long label before its subtitle, the whole label in its title', () => {
@@ -637,7 +643,7 @@ describe('row subtitles', () => {
     const sub = subtitleSpans(c)[0]!
     expect(text!.firstChild?.nodeName).toBe('title')
     expect(text!.querySelector('title')?.textContent).toBe(long)
-    expect(ownText(text!)).toMatch(/^protein_coding.*…$/)
+    expect(ownText(text!)).toMatch(/^protein_coding.*… $/)
     expect(text!.lastChild).toBe(sub)
     expect(sub.textContent).toMatch(/^\(a subtitle.*…$/)
   })
