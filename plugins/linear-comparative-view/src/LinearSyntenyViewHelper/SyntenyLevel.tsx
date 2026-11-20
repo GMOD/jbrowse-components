@@ -17,6 +17,10 @@ import type React from 'react'
  * canvas is absolutely positioned, and a level with no synteny track is legal.
  * The overlays come from `linearSyntenyDisplays`, the list the canvas uploads
  * geometry for, so a painted ribbon always has an overlay to hover.
+ *
+ * The ribbons stop at the band: continuing them into each row as faint columns,
+ * down to the genes, painted over the ruler, track headers and block bars
+ * (ADR-278).
  */
 export const SyntenyLevel = observer(function SyntenyLevel({
   level,

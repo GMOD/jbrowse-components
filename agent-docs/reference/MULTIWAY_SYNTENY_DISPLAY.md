@@ -6,9 +6,13 @@ kind: spec
 
 # MultiWaySyntenyDisplay: invariants, contract, ceiling
 
-MultiWaySyntenyDisplay is a per-window, anchor-star, one-frame-per-genome lane
-stack inside an ordinary LinearGenomeView. A frame is affine between the holes it
-opens at the lane's deletions. Unbuilt and undecided work lives in
+MultiWaySyntenyDisplay is a per-window, anchor-star, one-frame-per-lane stack
+inside an ordinary LinearGenomeView. A lane is a genome, drawing the contig that
+best explains the window, or with `rows.field: 'refName'` one contig of a genome
+holding a copy of the window
+([ADR-278](../architecture-decision-records/adr-278-a-copy-of-the-window-draws-as-its-own-lane.md)).
+A frame is affine between the holes it opens at the lane's deletions. Unbuilt
+and undecided work lives in
 [../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md),
 the design record this file cites by section name.
 
@@ -18,8 +22,8 @@ reader in `@gmod/gbz-base`.
 
 The frame fits a gene table over dozens of genomes and a star of pairwise
 alignments over one locus. It is the wrong frame, unmodified, for more than one
-row of content per genome and for cohorts of hundreds of haplotypes, where every
-cost is linear in lanes.
+block of content per contig and for cohorts of hundreds of haplotypes, where
+every cost is linear in lanes.
 
 ## Settled invariants — do not re-fix
 
@@ -34,6 +38,27 @@ cost is linear in lanes.
   (`anchorRuleY`), and each lane label opens with a `vs <anchor>` badge. A source
   answering lane pairs draws neighbour against neighbour, and a pair it has not
   answered draws nothing.
+- **Copy lanes read against the anchor alone** (`rows.field: 'refName'`,
+  `copyLane.ts`), whatever the source: a pairwise `.anchors` file states
+  anchor–copy pairs only, and grouping by anchor gene joined two copies
+  through the gene they share. A gutter beside the anchor joins it to one
+  copy; one away from it draws its far copy against the anchor's rule; lanes
+  vote and align against the anchor (`vsAnchor`). A copy lane is
+  `{assembly}refName`, keyed with both canonical (`laneKeyIn`), and answers to
+  its genome's name in `rows.sort`, `labels`, `colors`, `kept` and the hidden
+  lanes. A contig under `COPY_SHARE` of its genome's heaviest evidence draws
+  no lane unless `rows.kept` names it; a copy on the anchor's own genome draws
+  none, as a mate on the anchor's assembly never has. Every path that treats a
+  lane as an assembly reads `laneGenome`. Continuing a LinearSyntenyView's
+  ribbons into each row as faint columns was the declined alternative: it
+  painted over the ruler, track headers and block bars (ADR-278).
+- **The anchor stacks where `rows.sort` names its assembly** (`anchorRowOf`),
+  after the leading lanes the sort names before it, or first. A drag of the
+  anchor's label or its lane menu's Move up/down writes it; a lane dropped on
+  the anchor's band lands beside it on its own side (`dropTargetRow`). Lanes
+  above the anchor decide outward from it (`decideLanesOn`), a star gutter
+  above it mirrors the one below (`anchorRuleAboveY`), and a lane pair is
+  never one that straddles the anchor (`lanePairsOf`).
 - **A lane opens a hole at each deletion it carries against the anchor**
   (`laneOpeningsOf`, `LaneOpening`): where two pieces abut in the lane, or
   nearly, while their anchor ends sit `SPLIT_AT_GAP_BP` or more further apart,
@@ -160,7 +185,9 @@ cost is linear in lanes.
 
 - **Lane names**: `rows.labels` names a lane by any spelling of its assembly
   (`rowLabels`); a lane it leaves out shows its assembly's display name, or the
-  label a source's header declares (`laneLabel`).
+  label a source's header declares (`laneLabel`). A copy lane without its own
+  entry shows its genome's label and its contig, and its header's locus drops
+  the contig the label already names.
 - **Lane colors**: a lane's 4 px bar beside its label takes `rows.colors`
   by any spelling of its assembly, else the color its source's header
   declares (`lanes[].color`, `anchorColor` for the anchor), else draws none

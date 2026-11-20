@@ -270,13 +270,22 @@ turns orange where several genes share one ortholog. The count covers the whole
 <Figure caption="Grape chr3 against peach chrG8, the .anchors track colored by syntenic depth." src="/img/mcscan_synteny/syntenic_depth.png" />
 
 Grape and peach share a genome triplication older than either species, so a
-stretch of peach often has one grape ortholog and two older copies. **Add row**
-in the synteny view's import form gives a third row: with grape above and below
-peach, the ortholog and an older copy draw at once. The simple-anchors track in
-the peach row shows which block each copy belongs to, and gene tracks in every
-row show the genes a copy kept and lost.
+stretch of peach often has one grape ortholog and two older copies. To draw them
+at once, open peach in a linear genome view at `chrG7:18,290,000-18,660,000` and
+turn on the .anchors track:
 
-<Figure caption="A 370 kb stretch of peach chrG7 with its grape ortholog on chr11 (teal, below) and an older copy on chr9 (red, above). The bars under the peach genes are its .anchors.simple blocks in the same colors. The older copy shares far fewer genes with the peach stretch." src="/img/mcscan_synteny/gamma_copies.png" />
+- Pick **Display types → Multi-way synteny display** in the track menu, then
+  **Lanes → One lane per copy**. Each grape chromosome holding a copy of the
+  window gets its own lane, with its gene track, and every ribbon joins a peach
+  gene to the grape gene MCScan paired it with.
+- **Lanes → Choose lanes...** keeps grape chr9 and chr11.
+- Drag the peach lane's name between the two grape lanes, or pick **Move down**
+  in its lane menu, so each copy faces peach across its own gutter.
+
+<Figure caption="A 370 kb stretch of peach chrG7 between an older grape copy on chr9 (above) and its grape ortholog on chr11 (below), one lane per copy, each gutter joining peach genes to one copy's." src="/img/mcscan_synteny/gamma_copies.png" />
+
+The older copy shares far fewer genes with the peach stretch, and the gene
+tracks in each lane show the genes a copy kept and lost.
 
 ## Viewing the gene pairs as a dotplot
 

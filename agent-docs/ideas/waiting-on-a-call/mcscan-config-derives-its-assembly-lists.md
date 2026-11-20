@@ -31,6 +31,6 @@ Two shapes, either of which leaves the order stated once:
 
 Either way the tutorials' generated config fences shrink and the ordering
 warnings can go. Constraint to check first: the multi-copy convention
-(`multiway-synteny-lgv-track.md` §"Multi-copy lanes") names one assembly in
+(`multiway-synteny-lgv-track.md` §"A self-comparison's copy lanes") names one assembly in
 two columns (`peach`, `peach01b`→`peach`), so a derivation must not forbid a
 column list longer than the track's assembly list.

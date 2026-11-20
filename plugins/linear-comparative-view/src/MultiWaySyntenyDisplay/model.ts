@@ -2842,7 +2842,7 @@ export function stateModelFactory(
        */
       get legendTop(): number {
         const { rows, glyphHeight } = self.stackGeometry
-        const anchor = rows[0]
+        const anchor = rows[self.anchorRow]
         return anchor
           ? Math.max(
               0,

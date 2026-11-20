@@ -1,6 +1,6 @@
 ---
 name: multiway-synteny-lgv-track
-description: Unbuilt follow-ups to `MultiWaySyntenyDisplay`, such as per-base lanes, the selection-scan demo, multi-copy lanes, HPRC-scale lane selection, the graph data path and the remaining LOD work; read before extending it or proposing a demo on it.
+description: Unbuilt follow-ups to `MultiWaySyntenyDisplay`, such as per-base lanes, the selection-scan demo, self-comparison copy lanes, HPRC-scale lane selection, the graph data path and the remaining LOD work; read before extending it or proposing a demo on it.
 ---
 
 # Multi-way synteny LGV track follow-ups
@@ -28,29 +28,17 @@ callset as a placement source instead), DEST Drosophila (statistics hosted,
 no per-population assemblies). None is an afternoon; all need `deploy-demo.sh`
 hosting, so they belong with the tutorial-data pipeline work.
 
-**Multi-copy lanes.** `computeRowFrame` keeps one refName (the dominant one)
-per lane, so a genome holding two homoeologous copies of the anchor window
-shows only the better-populated one. The worked example is maize's WGD in the
-grasses demo (`orthofinder_synteny/grasses_maize_wgd` draws it as two stacked
-rows in the synteny view: maize `1:286.7M` AND `5:6.3M` for one rice window).
-Since 2026-09-01 the other copy is at least NAMED and reachable: `pickContig`
-returns the contigs explaining a comparable share of the window (`alsoOn`, a
-fifth of the drawn one's evidence), the lane header says "also on 5", and the header
-menu offers "Show 5 in this lane", a per-lane pin (`lanePins`) that
-outranks the vote until the reader lets the lane choose again — the synteny
-follow's refused-spread report, applied to a lane. That is one copy at a time.
-The lane model that shows both is lane-per-REGION rather than lane-per-assembly —
-cluster a lane's placements (`blocksOf` already computes the blocks, and
-names the runners-up on one contig as `alsoAt`; the change is keeping them as
-additional lanes with the same assembly label). That also unlocks the homoeolog self-comparison case, which is
-today doubly excluded: `oat_homoeologs` names one assembly twice, and the
-display drops mates whose assembly equals the anchor's (a rule that exists
-because paralogy records in an all-vs-all PAF name the anchor as their own
-mate). A self-comparison mode has to distinguish "this track compares wheat to
-itself on purpose" from "this record is a repeat hit", and the blocks adapter's
-copy-column machinery (`columnsFor` in MCScanBlocksAdapter) already carries the
-purposeful case — the display would read WHICH column a placement came from,
-which the `mate` object does not currently say.
+**A self-comparison's copy lanes.** A lane per copy of the window landed as
+`rows.field: 'refName'`
+([ADR-278](../../architecture-decision-records/adr-278-a-copy-of-the-window-draws-as-its-own-lane.md)).
+The homoeolog self-comparison stays out: `oat_homoeologs` names one assembly
+twice, and a copy on the anchor's own genome draws no lane, since paralogy
+records in an all-vs-all PAF name the anchor as their own mate. A
+self-comparison mode has to tell "this track compares wheat to itself on
+purpose" from "this record is a repeat hit". The blocks adapter's copy columns
+(`columnsFor` in MCScanBlocksAdapter) carry the purposeful case, and would key
+a copy lane more sharply than its contig, once a grouped mate says which
+column it came from.
 
 **HPRC at scale: lane selection.** Two haplotypes are a figure; 464 are not a
 lane stack. The selection half landed 2026-09-06 as display state and a dialog
