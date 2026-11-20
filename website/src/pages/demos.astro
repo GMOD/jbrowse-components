@@ -27,8 +27,7 @@ const sections = demoSections(docs, baseUrl)
   <div class="demos">
     <h1>Demos</h1>
     <p class="lede">
-      Open any demo below in your browser, with nothing to install, and add your
-      own files to it.
+      Open any demo below in your browser, with nothing to install.
     </p>
 
     <section class="featured">
@@ -41,12 +40,7 @@ const sections = demoSections(docs, baseUrl)
         />
       </a>
       <div class="featured-text">
-        <h2>A human genome in your browser</h2>
-        <p>
-          TP53 with genes, ENCODE regulatory elements, H3K4me3 and H3K27ac in
-          seven cell lines, and conservation, a few of the tracks in the full
-          hg38 track set.
-        </p>
+        <h2>Human reference genomes</h2>
         <ul class="genomes">
           {referenceGenomes.map(genome => (
             <li>
@@ -68,10 +62,8 @@ const sections = demoSections(docs, baseUrl)
           </li>
         </ul>
         <p class="from">
-          Choose Open for the genome with only its genes, or full track set for
-          the tracks on genomes.jbrowse.org. In either, choose{' '}
-          <strong>File → Open track</strong> to add your own BAM, VCF, BED, GFF
-          or bigWig, from your computer or a URL.
+          Choose <strong>File → Open track</strong> to add your own BAM, VCF,
+          BED, GFF or bigWig, from your computer or a URL.
         </p>
       </div>
     </section>
