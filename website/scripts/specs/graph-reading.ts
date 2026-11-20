@@ -104,7 +104,8 @@ const kiv2WalksSpec: ScreenshotSpec = {
           hg38GeneLane(40),
           hprcBubblesLane(50),
           { ...hprcSegmentsLane(KIV2_BUBBLE_REGION), height: 70 },
-          kiv2WalksGraphTrack(),
+          // the figure holds the reference straight
+          kiv2WalksGraphTrack({ layoutEngine: 'stress' }),
         ],
       },
     ],

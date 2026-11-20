@@ -8,7 +8,6 @@ import {
   PORTAL_LOCI,
   portalGraphLaunch,
   portalLanesView,
-  portalLaunch,
   portalLaunchSession,
 } from './genomes_pangenome.ts'
 import {
@@ -189,11 +188,25 @@ const launchedZoomOut = (clicks: number): ScreenshotAction[] =>
     { type: 'click' as const, selector: LAUNCHED_ZOOM_OUT },
     { type: 'waitForAppSettled' as const, timeout: 120000 },
   ]).flat()
-// The HLA / MHC launch at the class II window, in the force layout.
+// The HLA / MHC launch at the class II window, in the force layout, drawn by
+// the stress engine as its figure is.
 const MHC_FORCE_LAUNCH = portalGraphLaunch({
   loc: 'chr6:32,500,000-32,560,000',
   layoutMode: 'force',
+  layoutEngine: 'stress',
 })
+
+// The CFH / CFHR graph launch as the HPRC page builds it. Its figure holds the
+// reference straight, so the graph track names the stress engine.
+const CFH_GRAPH_LAUNCH = portalLaunchSession('cfh', 'graph')
+function isGraphTrack(track: unknown): track is { type: string } {
+  return (
+    typeof track === 'object' &&
+    track !== null &&
+    'type' in track &&
+    track.type === 'LinearGraphDisplay'
+  )
+}
 
 const HOSTED_HPRC_CONFIG = 'https://jbrowse.org/demos/hprc/config.json'
 const ABCA7_REPEAT_KEY = 'chr19:1049406-1050096'
@@ -500,7 +513,15 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/hprc_cfh_graph_launch',
-    url: portalLaunch('cfh', 'graph'),
+    url: sessionSpec(PORTAL_CONFIG, {
+      ...CFH_GRAPH_LAUNCH,
+      views: CFH_GRAPH_LAUNCH.views.map(view => ({
+        ...view,
+        tracks: view.tracks.map(track =>
+          isGraphTrack(track) ? { ...track, layoutEngine: 'stress' } : track,
+        ),
+      })),
+    }),
     readySelector: `body:has(${displaySettled('variant-display')}) ${GRAPH_DRAWN}`,
     readyTimeout: 240000,
     viewportHeight: 1400,
@@ -960,8 +981,11 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           tracks: [
             'hprc_minigraph_bubbles',
             'hprc_bubble_score',
-            // the tutorial's config names no layout, so this is the default
+            // The tutorial's config names no layout or engine. The figure was
+            // drawn when the track's engine was stress, and names it to stay
+            // that picture.
             graphTrack(SEGMENTS_TRACK, {
+              layoutEngine: 'stress',
               encoding: { color: { field: 'position' } },
             }),
           ],

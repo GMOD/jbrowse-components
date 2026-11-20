@@ -30,7 +30,12 @@ const OPEN_IN_JBROWSE = '.ui-actions a.ui-btn'
 export function portalGraphLaunch({
   loc = `${MHC_WINDOW.refName}:${MHC_WINDOW.start + 1}-${MHC_WINDOW.end}`,
   layoutMode = 'auto',
-}: { loc?: string; layoutMode?: 'auto' | 'force' } = {}) {
+  layoutEngine,
+}: {
+  loc?: string
+  layoutMode?: 'auto' | 'force'
+  layoutEngine?: 'fmmm' | 'stress'
+} = {}) {
   return sessionSpec(PORTAL_CONFIG, {
     views: [
       {
@@ -47,6 +52,7 @@ export function portalGraphLaunch({
           },
           graphTrack('hprc_minigraph_segments', {
             layoutMode,
+            ...(layoutEngine ? { layoutEngine } : {}),
             encoding: { color: { field: 'position' } },
             paneHeight: 320,
           }),
