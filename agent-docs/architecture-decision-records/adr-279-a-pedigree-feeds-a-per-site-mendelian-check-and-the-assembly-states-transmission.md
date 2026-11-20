@@ -85,7 +85,10 @@ tetraploid, a haplodiploid male, a ZW female or a yeast mitochondrion.
   `undefined`. A sex entry judges only haploid or homozygous calls, so a het
   falls through to the autosomal rule; with sex missing both readings run and a
   disagreement is `undefined`. The cost is under-flagging, documented in the
-  user guide (a PAR homozygote, polyploid dosage miscalls).
+  user guide (a PAR homozygote, polyploid dosage miscalls). Position ranges on
+  a transmission entry to give the PARs the autosomal rule were declined
+  (2026-11-20): JBrowse is a visualizer, and sharper trio analysis belongs in
+  an outside tool whose output loads as a track.
 - **Classification runs in the worker on interned codes.** The display sends
   the trios (`triosOf`, child, parents and sex by sample name) and each
   region's resolved rule as RPC arguments, both in the fetch key.
