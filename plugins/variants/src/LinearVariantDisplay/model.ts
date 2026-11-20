@@ -1,4 +1,3 @@
-import { transmissionEntriesFor } from '@jbrowse/core/assemblyManager'
 import {
   ConfigurationReference,
   getConf,
@@ -19,7 +18,6 @@ import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   lowerBoundOf,
   predicatesOf,
-  replaceField,
   upperBoundOf,
   withLowerBound,
   withUpperBound,
@@ -81,17 +79,6 @@ import {
 } from '../shared/getSources.ts'
 import { CellSolidColorDialog } from '../shared/lazyDialogs.ts'
 import {
-  plainTransmission,
-  transmissionArg,
-} from '../shared/regionTransmission.ts'
-import {
-  MENDELIAN_FIELD,
-  genotypeMap,
-  mendelianEntries,
-  mendelianValuesOf,
-  trioCalls,
-} from '../shared/trios.ts'
-import {
   sitesBySpan,
   sortSourcesAroundVariant,
 } from './anchoredHaplotypeSort.ts'
@@ -133,7 +120,6 @@ import {
 import { recordCountMeasurements } from './recordsDensityGate.ts'
 import { recordsHighlightViews } from './recordsHighlightViews.ts'
 import { variantRpcPropsViews } from './rpcPropsViews.ts'
-import { variantTrioViews } from './trioViews.ts'
 import {
   variantContextMenuItems,
   variantTrackMenuItems,
@@ -153,7 +139,6 @@ import {
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
-import type { TrioClass } from '../shared/classifyTrio.ts'
 import type { VariantRowsField } from '../shared/constants.ts'
 import type {
   ProcessedSource,
@@ -173,10 +158,9 @@ import type {
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
 import type { Placed } from './placeVariantRows.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
-import type { TransmissionEntry } from '@jbrowse/core/assemblyManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
 import type {
@@ -186,7 +170,7 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   FeatureMenuHit,
   HitFeatureResult,
@@ -223,15 +207,6 @@ function warnHaplotypeNameCollisions(samples: readonly string[]) {
       `Sample ${collisions.map(name => `"${name}"`).join(', ')} is also the name of another sample's haplotype row, so in phased mode the name is ambiguous: an order, label, color or focus naming it may mean that sample or the other sample's haplotype`,
     )
   }
-}
-
-// The view's assembly, which names the transmission entries and resolves a
-// refName to them
-function viewAssembly(self: IAnyStateTreeNode & { view: RegionHost }) {
-  const name = self.view.assemblyNames?.[0]
-  return name === undefined
-    ? undefined
-    : getSession(self).assemblyManager.get(name)
 }
 
 // Columns fetch the visible regions only: they are laid out by feature index
@@ -818,56 +793,6 @@ export function stateModelFactory(
       }))
       .views(recordsKeyViews)
       .views(recordsSettingsViews)
-      .views(self => variantTrioViews(self))
-      .views(self => ({
-        /**
-         * #getter
-         * The view's assembly's `transmission` entries, which the fetch
-         * resolves per region for the Mendelian check.
-         */
-        get transmissionEntries(): TransmissionEntry[] {
-          return plainTransmission(
-            viewAssembly(self)?.configuration?.transmission ?? [],
-          )
-        },
-        /**
-         * #method
-         * Each of `regions`' transmission rule under the view's assembly
-         * entries, which a genotype matrix sends; nothing while no trio is
-         * named.
-         */
-        transmissionFor(regions: Region[]) {
-          const { assemblyManager } = getSession(self)
-          return transmissionArg({
-            trios: self.trios,
-            entries: this.transmissionEntries,
-            regions,
-            assemblyOf: name => assemblyManager.get(name),
-          })
-        },
-        /**
-         * #method
-         * Each trio's Mendelian check at `feature`, a full record holding
-         * every sample's genotype, under the rule its refName resolves to
-         * through the view's assembly's aliases, which the feature widget
-         * lists.
-         */
-        trioCallsAt(feature: Feature) {
-          const assembly = viewAssembly(self)
-          const genotypes = genotypeMap(feature.get('genotypes'))
-          return trioCalls(
-            self.trios,
-            sample => genotypes.get(sample),
-            assembly
-              ? transmissionEntriesFor(
-                  this.transmissionEntries,
-                  feature.get('refName'),
-                  assembly,
-                )
-              : [],
-          )
-        },
-      }))
       .actions(self => {
         const fetchMetadata = createAdapterMetadataFetch(self)
         const openDetails = createFeatureDetailsOpener(self)
@@ -918,14 +843,7 @@ export function stateModelFactory(
            * #action
            */
           selectFeature(feature: Feature) {
-            void openDetails(
-              () => detailsRecordOf(feature),
-              undefined,
-              full =>
-                self.trios.length > 0
-                  ? { trioCalls: self.trioCallsAt(full) }
-                  : {},
-            )
+            void openDetails(() => detailsRecordOf(feature))
           },
           /**
            * #action
@@ -1017,22 +935,6 @@ export function stateModelFactory(
                 predicatesOf(self.configuration.filter),
                 'missingness',
                 arg < 1 ? arg : undefined,
-              ),
-            )
-          },
-          /**
-           * #action
-           * Keeps the sites whose Mendelian check is one of `values`, or
-           * every site for none.
-           */
-          setMendelianFilter(values: readonly TrioClass[]) {
-            setConf(
-              self.configuration,
-              'filter',
-              replaceField(
-                predicatesOf(self.configuration.filter),
-                MENDELIAN_FIELD,
-                mendelianEntries(values),
               ),
             )
           },
@@ -1139,15 +1041,6 @@ export function stateModelFactory(
          */
         get maxMissingness(): number {
           return upperBoundOf(self.siteFilter, 'missingness') ?? 1
-        },
-
-        /**
-         * #getter
-         * The Mendelian check's values the filter keeps, none for every site:
-         * the menu's checked rows
-         */
-        get mendelianFilterValues() {
-          return mendelianValuesOf(self.mendelianFilter)
         },
 
         /**
@@ -1561,8 +1454,7 @@ export function stateModelFactory(
             return
           }
           // resolved before the await, so the RPC sends what is marked loaded
-          const { transmissionEntries = [], ...args } = rpcArgs(self)
-          const { assemblyManager } = getSession(self)
+          const args = rpcArgs(self)
           const { bpPerPx } = view
           const fetchedAt = variantLayout === 'columns' ? bpPerPx : undefined
           const { maxFeatureDensity } = self
@@ -1571,12 +1463,6 @@ export function stateModelFactory(
               ctx.callRpc('MultiSampleVariantGetCellData', {
                 ...args,
                 regions: batch.map(r => r.region),
-                transmission: transmissionArg({
-                  trios: args.trios,
-                  entries: transmissionEntries,
-                  regions: batch.map(r => r.region),
-                  assemblyOf: name => assemblyManager.get(name),
-                }),
                 displayedRegionIndices: batch.map(r => r.displayedRegionIndex),
                 bpPerPx,
                 maxFeatureDensity,

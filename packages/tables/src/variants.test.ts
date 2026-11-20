@@ -5,7 +5,6 @@ import { pathToFileURL } from 'node:url'
 
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'
-import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from '../../../plugins/variants/src/LinearVariantDisplay/configSchema.ts'
 import {
@@ -16,8 +15,6 @@ import {
 import { REFERENCE_COLOR } from '../../../plugins/variants/src/shared/constants.ts'
 import { createTablesEngine } from './index.ts'
 import { DOG_SV, DOG_VCF } from './volvox.fixture.ts'
-
-import type { VariantTablesArgs } from './index.ts'
 
 const engine = createTablesEngine()
 
@@ -844,39 +841,4 @@ test('the rows divide what the track leaves them, or draw at rows.step', async (
   const stepped = await variants({ rows: { step: 3 } })
   expect(stepped.height).toBe(DEFAULT_ROWS_TRACK_HEIGHT)
   expect(stepped.rowHeight).toBe(3)
-})
-
-test('a pedigree’s Mendelian check takes the transmission entries the call names', async () => {
-  const dir = mkdtempSync(path.join(tmpdir(), 'trio-'))
-  const vcf = path.join(dir, 'trio.vcf')
-  const fam = path.join(dir, 'trio.fam')
-  writeFileSync(
-    vcf,
-    [
-      '##fileformat=VCFv4.2',
-      '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
-      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tkid\tdad\tmom',
-      'chrX\t100\tx1\tA\tG\t50\tPASS\t.\tGT\t1/1\t0/0\t0/1',
-    ].join('\n'),
-  )
-  writeFileSync(fam, 'f kid dad mom 1 0\nf dad 0 0 1 0\nf mom 0 0 2 0\n')
-  const read = (transmission: VariantTablesArgs['transmission']) =>
-    engine.variants({
-      adapterConfig: {
-        type: 'VcfAdapter',
-        vcfLocation: { uri: pathToFileURL(vcf).href },
-        pedigreeLocation: { uri: pathToFileURL(fam).href },
-      },
-      region: { refName: 'chrX', start: 0, end: 1000 },
-      display: { encoding: { color: 'mendelian' } },
-      transmission,
-    })
-  const [, mendelianViolation, consistent] =
-    UNIVERSAL_FIELD_PRESETS.mendelian.scale.range.map(cssColorToHex)
-
-  expect((await read(undefined)).variants.color).toEqual([mendelianViolation])
-  expect(
-    (await read([{ refName: 'chrX', sex: 'male', from: 'mother' }])).variants
-      .color,
-  ).toEqual([consistent])
 })

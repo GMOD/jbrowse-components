@@ -8,7 +8,6 @@ import { NO_RECORD_FIELD_READERS } from '../../shared/recordFields.ts'
 import { makeSiteStyler } from '../../shared/variantCellStyles.ts'
 
 import type { CellHueValues } from '../../shared/cellHue.ts'
-import type { TrioClass } from '../../shared/classifyTrio.ts'
 import type { VariantRowsField } from '../../shared/constants.ts'
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { RecordFieldReaders } from '../../shared/recordFields.ts'
@@ -68,7 +67,6 @@ export function computeVariantCells({
   featureGenotypeCodes,
   genotypeDict,
   sampleNames,
-  mendelian,
   report,
 }: {
   filteredVariants: FilteredVariant[]
@@ -88,8 +86,6 @@ export function computeVariantCells({
   // `genotypeDict[code - 1]`; code 0 means no genotype at this site
   genotypeDict: readonly string[]
   sampleNames: string[]
-  // each variant's Mendelian check, from `analyzeVariants`
-  mendelian?: ReadonlyMap<string, TrioClass>
   report?: ProgressReporter
 }): VariantCellData {
   const styler = makeSiteStyler({
@@ -176,7 +172,7 @@ export function computeVariantCells({
     const svType = feature.get(SV_TYPE_FIELD)
     const alt = (feature.get('ALT') as string[] | undefined) ?? []
     const ref = feature.get('REF') as string
-    const info: VariantFeatureInfo = {
+    featureInfo.push({
       featureId,
       // a monomorphic record's ALT '.' parses to undefined, and consumers read
       // `alt` unguarded
@@ -194,12 +190,7 @@ export function computeVariantCells({
       labelName: recordFields.labelName(feature),
       labelDescription: recordFields.labelDescription(feature),
       genotypeCodes: codes,
-    }
-    const mendelianValue = mendelian?.get(featureId)
-    if (mendelianValue !== undefined) {
-      info.mendelian = mendelianValue
-    }
-    featureInfo.push(info)
+    })
     featurePositions[featureIdx * 2] = start
     featurePositions[featureIdx * 2 + 1] = end
     featureIdx++

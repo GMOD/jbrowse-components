@@ -129,9 +129,7 @@ const ORDINAL_PRESET: FieldPreset<'ordinal'> = { scale: { type: 'ordinal' } }
  * each display keeps its own no-value color for it. The impact tiers are a
  * variant's most severe SnpEff (ANN) or VEP (CSQ) consequence, and a record
  * with neither files under Unannotated, its own color: "nobody looked" is
- * not MODIFIER's "we looked and it is harmless". The Mendelian check is a
- * variant's most severe trio call, its two failures warm and apart and a
- * consistent site quiet; a site no trio settles has no value.
+ * not MODIFIER's "we looked and it is harmless".
  */
 export const UNIVERSAL_FIELD_PRESETS = {
   strand: {
@@ -181,16 +179,6 @@ export const UNIVERSAL_FIELD_PRESETS = {
     },
     legend: { title: 'Consequence impact' },
     missing: 'Unannotated',
-    closed: true,
-  },
-  mendelian: {
-    scale: {
-      type: 'ordinal',
-      domain: ['deNovoCandidate', 'mendelianViolation', 'consistent'],
-      range: ['#c2185b', '#f57c00', '#90a4ae'],
-      names: ['De novo candidate', 'Mendelian violation', 'Consistent'],
-    },
-    legend: { title: 'Mendelian check' },
     closed: true,
   },
 } as const satisfies FieldPresets<'ordinal'>

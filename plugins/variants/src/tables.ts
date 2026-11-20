@@ -58,7 +58,6 @@ import {
   recordsTrackHeightViews,
 } from './LinearVariantDisplay/recordsBandViews.ts'
 import { variantRpcPropsViews } from './LinearVariantDisplay/rpcPropsViews.ts'
-import { variantTrioViews } from './LinearVariantDisplay/trioViews.ts'
 import {
   variantColorSettingViews,
   variantDrawnRowViews,
@@ -90,13 +89,11 @@ import { matrixWalkOf } from './VariantRPC/matrixWalk.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
-import { transmissionArg } from './shared/regionTransmission.ts'
 
 import type { RecordsView } from './LinearVariantDisplay/recordsBandViews.ts'
 import type { CellDataResult } from './VariantRPC/executeVariantCellData.ts'
 import type { ProcessedSource, Source } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { TransmissionEntry } from '@jbrowse/core/assemblyManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -117,12 +114,10 @@ const base = types
       adapterSamples: Source[] | undefined
       keyWindows: readonly KeyWindow[]
       cellData: CellDataResult | undefined
-      transmissionEntries: TransmissionEntry[]
     } => ({
       adapterSamples: undefined,
       keyWindows: [],
       cellData: undefined,
-      transmissionEntries: [],
     }),
   )
   .actions(self => ({
@@ -134,9 +129,6 @@ const base = types
     },
     setCellData(cellData: CellDataResult) {
       self.cellData = cellData
-    },
-    setTransmissionEntries(entries: TransmissionEntry[]) {
-      self.transmissionEntries = entries
     },
   }))
   .views(self => ({
@@ -151,7 +143,6 @@ const base = types
       return new Map()
     },
   }))
-  .views(self => variantTrioViews(self))
   .views(self => variantRowConfigViews(self))
   .views(self => variantGenotypesShowViews(self))
   .views(self => variantColorSettingViews(self))
@@ -327,13 +318,6 @@ export interface VariantTablesArgs {
    * index before any record is fetched.
    */
   byteLimit?: number
-  /**
-   * The assembly's `transmission` entries, which the Mendelian check over
-   * the trios a `pedigreeLocation` names takes per region, matched against
-   * each region's refName as the file writes it, through no alias. Unset,
-   * every sequence takes the autosomal rule.
-   */
-  transmission?: TransmissionEntry[]
 }
 
 /**
@@ -351,7 +335,6 @@ async function fetchedVariantHost(
     displayedRegions,
     display = {},
     byteLimit = DEFAULT_BYTE_LIMIT,
-    transmission = [],
   }: VariantTablesArgs,
 ) {
   const host = VariantTablesHost.create(
@@ -379,7 +362,6 @@ async function fetchedVariantHost(
   })
   const listing = await sourcesAndWarnings(adapter, fetchRegions, {})
   host.setAdapterSamples(listing.sources)
-  host.setTransmissionEntries(transmission)
   host.setKeyWindows(
     regions.map(({ refName, start, end }, i) => ({
       regionIndex: i,
@@ -389,22 +371,13 @@ async function fetchedVariantHost(
     })),
   )
   const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = runInAction(
-    () => {
-      const { transmissionEntries = [], ...props } = host.rpcProps()
-      return {
-        sessionId: 'tables',
-        adapterConfig,
-        regions: fetchRegions,
-        ...props,
-        transmission: transmissionArg({
-          trios: props.trios,
-          entries: transmissionEntries,
-          regions: fetchRegions,
-          assemblyOf: () => ({ getCanonicalRefName2: refName => refName }),
-        }),
-        statusCallback: () => {},
-      }
-    },
+    () => ({
+      sessionId: 'tables',
+      adapterConfig,
+      regions: fetchRegions,
+      ...host.rpcProps(),
+      statusCallback: () => {},
+    }),
   )
   const result = await variantCellData({ pluginManager, args })
   if ('regionTooLarge' in result) {

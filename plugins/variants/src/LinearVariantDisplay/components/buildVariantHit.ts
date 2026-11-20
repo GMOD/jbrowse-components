@@ -2,7 +2,6 @@ import { getBpDisplayStr } from '@jbrowse/core/util'
 
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
-import { mendelianName } from '../../shared/trios.ts'
 import { carrierSummary } from '../recordCarriers.ts'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -22,7 +21,6 @@ export interface VariantTooltipFields {
   description: string
   length: string
   insertion: string
-  mendelian: string
   sampleName: string
   name: string
   featureId: string
@@ -51,10 +49,6 @@ export function variantTooltipKey(f: {
 // says nothing an insertion's own row does not
 function spanText(length: number) {
   return length > 1 ? getBpDisplayStr(length) : ''
-}
-
-function mendelianText({ mendelian }: VariantFeatureInfo) {
-  return mendelian === undefined ? '' : mendelianName(mendelian)
 }
 
 export function buildVariantHit({
@@ -86,7 +80,6 @@ export function buildVariantHit({
     // insertion) cannot say. Empty for everything else, which getTooltipRows
     // drops.
     insertion: insertedBp > 0 ? `${insertedBp}bp` : '',
-    mendelian: mendelianText(info),
     sampleName,
     name,
     featureId: info.featureId,
@@ -174,7 +167,6 @@ export function buildRecordHit({
     description: info.description,
     length: spanText(info.length),
     insertion: info.insertedBp > 0 ? `${info.insertedBp}bp` : '',
-    mendelian: mendelianText(info),
     carriers: carriers ? carrierSummary(carriers) : '',
     pile: pileSize === undefined ? '' : `one of ${pileSize}`,
     featureId,

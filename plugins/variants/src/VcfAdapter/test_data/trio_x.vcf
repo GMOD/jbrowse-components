@@ -1,7 +1,0 @@
-##fileformat=VCFv4.2
-##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-##contig=<ID=NC_000023.11>
-#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	kid	dad	mom
-NC_000023.11	100	x1	A	G	.	PASS	.	GT	1/1	0/0	0/1
-NC_000023.11	200	x2	C	T	.	PASS	.	GT	0/1	0/0	0/0
-NC_000023.11	300	x3	G	A	.	PASS	.	GT	0/1	0/1	0/0

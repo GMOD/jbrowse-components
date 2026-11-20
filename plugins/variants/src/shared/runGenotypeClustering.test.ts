@@ -39,10 +39,6 @@ const THREE = [
 function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
   return {
     siteFilter: [],
-    mendelianFilter: [],
-    trios: [],
-    transmissionEntries: [],
-    transmissionFor: () => undefined,
     sourcesBase: THREE,
     shownRows: THREE,
     arrangedRows: THREE,

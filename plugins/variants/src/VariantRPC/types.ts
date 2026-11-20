@@ -1,8 +1,6 @@
 import type { CellHueRead } from '../shared/cellHue.ts'
-import type { TransmissionEntry } from '../shared/classifyTrio.ts'
 import type { VariantRowsField } from '../shared/constants.ts'
 import type { RecordFieldReads } from '../shared/recordFields.ts'
-import type { Trio } from '../shared/trios.ts'
 import type { Source } from '../shared/types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
@@ -23,22 +21,7 @@ interface BaseVariantRpcArgs {
   filters?: SerializableFilterChain
 }
 
-// What the worker's Mendelian check of each site reads.
-interface MendelianCheckArgs {
-  // The trios whose Mendelian check each site takes. Sent, the genotypes are
-  // read with no row drawn.
-  trios?: Trio[]
-  // Each region's transmission rule, in `regions` order, resolved on the
-  // main thread against the assembly's aliases: the worker has none, and
-  // keys each by its region's renamed refName, which its features carry.
-  transmission?: (readonly TransmissionEntry[])[]
-  // The display filter's entries on the Mendelian check, which the worker
-  // tests once it has classified a site.
-  mendelianFilter?: FieldPredicate[]
-}
-
-export interface GetGenotypeMatrixArgs
-  extends BaseVariantRpcArgs, MendelianCheckArgs {
+export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sources: Source[]
   // Which matrix to build: 'haplotype' means one row per haplotype, which
   // needs `samplePloidy`. Unset means one row per sample.
@@ -52,8 +35,7 @@ export interface ClusterGenotypeMatrixArgs extends GetGenotypeMatrixArgs {
   partition?: string[][]
 }
 
-export interface GetCellDataArgs
-  extends BaseVariantRpcArgs, MendelianCheckArgs, GatedFetchArgs {
+export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // Which samples get rows, as a SET — never an order. The worker builds its own
   // canonical row list (see `buildCanonicalRows`), names it in `rowNames`, and
   // the client places those names against the rows it draws. Sent sorted so a

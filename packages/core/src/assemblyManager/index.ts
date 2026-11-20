@@ -5,5 +5,3 @@ export type {
   BaseAssemblyConfigModel,
   BaseAssemblyConfigSchema,
 } from './assemblyConfigSchema.ts'
-export { transmissionEntriesFor } from './transmission.ts'
-export type { TransmissionEntry } from './transmission.ts'

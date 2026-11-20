@@ -1,12 +1,9 @@
-import { types } from '@jbrowse/mobx-state-tree'
-
 import { ConfigurationSchema } from '../configuration/index.ts'
 import {
   expandAssemblyShorthand,
   expandSidecarShorthand,
   refNameAliasAdapterType,
 } from './expandAssemblyConfigShorthand.ts'
-import { TRANSMISSION_PARENTS, TRANSMISSION_SEXES } from './transmission.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -18,44 +15,6 @@ export {
   expandSidecarShorthand,
   refNameAliasAdapterType,
 } from './expandAssemblyConfigShorthand.ts'
-
-const transmissionEntrySchema = ConfigurationSchema(
-  'TransmissionEntry',
-  {
-    /**
-     * #slot transmission.refName
-     * The reference sequence the entry holds for, matched through refName
-     * aliasing. Unset, it holds for every sequence, as haplodiploidy does.
-     */
-    refName: {
-      type: 'maybeString',
-      description: 'the reference sequence the entry holds for; unset, all',
-    },
-    /**
-     * #slot transmission.sex
-     * The child's sex the entry holds for, as the pedigree names it. Unset,
-     * it holds for every child, as an organelle's does.
-     */
-    sex: {
-      type: 'maybeStringEnum',
-      model: types.enumeration('TransmissionSex', [...TRANSMISSION_SEXES]),
-      description: "the child's sex the entry holds for; unset, any",
-    },
-    /**
-     * #slot transmission.from
-     * The parent the child's copy comes from. `either` holds a child's
-     * allele to be in one parent or the other, the lenient choice for a
-     * mitochondrion whose inheritance varies.
-     */
-    from: {
-      type: 'stringEnum',
-      model: types.enumeration('TransmissionParent', [...TRANSMISSION_PARENTS]),
-      defaultValue: 'either',
-      description: "the parent the child's copy comes from",
-    },
-  },
-  { closed: true },
-)
 
 function fileAdapterShorthand(typeFor: (uri: string) => string) {
   return {
@@ -243,69 +202,6 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         description:
           'Reference sequences that are circular (a plasmid, an organelle, a bacterial chromosome), which the circular view closes into a ring',
       },
-
-      /**
-       * #slot
-       * Which parent a child's copy of a reference sequence comes from, for
-       * the sequences that do not follow the autosomal rule of one copy from
-       * each parent: sex chromosomes, organelles and a haplodiploid's males.
-       * The variant display's Mendelian check reads it. An entry holds for
-       * its `refName`, or for every sequence when it names none, and for a
-       * child of its `sex`, or for any child when it names none; refNames
-       * are matched through refName aliasing. Several sex chromosomes, as
-       * the platypus's X1 to X5, take one entry each. The default is no
-       * entries, and a sequence no entry names takes the autosomal rule:
-       * names alone say nothing, since sacCer3's `chrX` is an autosome and
-       * *Bombyx mori*'s Z is `1`.
-       *
-       * #example xy
-       * XY (mammals, *Drosophila*, *Silene*), with the mitochondrion from
-       * either parent, the lenient choice:
-       * ```js
-       * [
-       *   { refName: 'chrX', sex: 'male', from: 'mother' },
-       *   { refName: 'chrY', sex: 'male', from: 'father' },
-       *   { refName: 'chrM', from: 'either' },
-       * ]
-       * ```
-       *
-       * #example xo
-       * XO (*C. elegans*): a male's X is his mother's, and a hermaphrodite,
-       * sex `other`, takes the autosomal rule:
-       * ```js
-       * [{ refName: 'X', sex: 'male', from: 'mother' }]
-       * ```
-       *
-       * #example zw
-       * ZW (birds, Lepidoptera): a female's Z is her father's and her W her
-       * mother's:
-       * ```js
-       * [
-       *   { refName: 'Z', sex: 'female', from: 'father' },
-       *   { refName: 'W', sex: 'female', from: 'mother' },
-       * ]
-       * ```
-       *
-       * #example haplodiploid
-       * Haplodiploidy (bees, ants, wasps): a male's every sequence is his
-       * mother's:
-       * ```js
-       * [{ sex: 'male', from: 'mother' }]
-       * ```
-       *
-       * #example organelles
-       * The mitochondrion is `mother` in most animals, `either` in
-       * *S. cerevisiae*, `father` in cucumber and banana, and in
-       * *Chlamydomonas* whichever parent is mt−. A plastid is `mother` in
-       * most flowering plants and `father` in conifers, so a pine's are:
-       * ```js
-       * [
-       *   { refName: 'chrM', from: 'mother' },
-       *   { refName: 'chrPltd', from: 'father' },
-       * ]
-       * ```
-       */
-      transmission: types.array(transmissionEntrySchema),
 
       /**
        * #slot

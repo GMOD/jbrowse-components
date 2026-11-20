@@ -30,10 +30,9 @@ function oklch(css: string): [number, number, number] {
   return [L, Math.hypot(A, B), ((Math.atan2(B, A) * 180) / Math.PI + 360) % 360]
 }
 
-const CLASS_COLORS = [
+const SV_AND_IMPACT_COLORS = [
   ...UNIVERSAL_FIELD_PRESETS.svType.scale.range,
   ...UNIVERSAL_FIELD_PRESETS.impact.scale.range,
-  ...UNIVERSAL_FIELD_PRESETS.mendelian.scale.range,
   ALT_HUE,
 ]
 
@@ -51,7 +50,7 @@ describe('shadeByDosage', () => {
   })
 
   it('lifts every class color by one lightness step, holding its hue', () => {
-    for (const hue of CLASS_COLORS) {
+    for (const hue of SV_AND_IMPACT_COLORS) {
       const [l, c, h] = oklch(hue)
       const [hetL, , hetH] = oklch(shadeByDosage(hue, HET_DOSAGE))
       expect(hetL).toBeCloseTo(Math.min(l + 0.209, 0.94), 2)
@@ -64,7 +63,7 @@ describe('shadeByDosage', () => {
 
   // the HSL ramp painted the insertion purple's het #ff0cff, louder than its hom
   it('never raises chroma, so a dark class color cannot turn neon', () => {
-    for (const hue of CLASS_COLORS) {
+    for (const hue of SV_AND_IMPACT_COLORS) {
       expect(oklch(shadeByDosage(hue, HET_DOSAGE))[1]).toBeLessThanOrEqual(
         oklch(hue)[1] + 0.002,
       )

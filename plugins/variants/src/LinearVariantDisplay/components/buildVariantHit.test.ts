@@ -1,4 +1,3 @@
-import { featureInfoOf } from '../../shared/cellData.fixture.ts'
 import { buildRecordHit, buildVariantHit, cellHit } from './buildVariantHit.ts'
 import { getTooltipRows } from './getTooltipRows.ts'
 
@@ -179,35 +178,5 @@ describe('a records-band hit', () => {
       'length',
       'description',
     ])
-  })
-  test('names the record’s Mendelian check as the key does', () => {
-    expect(
-      getTooltipRows(
-        buildRecordHit({
-          info: { ...info, mendelian: 'deNovoCandidate' },
-          featureId: 'v0',
-        }),
-      ),
-    ).toContainEqual({
-      key: 'mendelian',
-      label: 'Mendelian check',
-      value: 'De novo candidate',
-    })
-  })
-})
-
-test('a cell hover names its record’s Mendelian check', () => {
-  const hit = buildVariantHit({
-    info: featureInfoOf('x1', { mendelian: 'mendelianViolation' }),
-    genotype: '1/1',
-    sampleName: 'kid',
-    name: 'kid',
-    insertedBp: 0,
-  })
-
-  expect(getTooltipRows(hit)).toContainEqual({
-    key: 'mendelian',
-    label: 'Mendelian check',
-    value: 'Mendelian violation',
   })
 })

@@ -37,7 +37,7 @@ function isMissingCode(code: string) {
  * `male` is male, `2`, `f` or `female` female, in any case; `0`, `-9`, `NA`,
  * `unknown` or nothing is no value, and any other code `other`.
  */
-export function pedigreeSexOf(code: string) {
+function pedigreeSexOf(code: string) {
   const lower = code.toLowerCase()
   return isMissingCode(code)
     ? undefined
@@ -190,37 +190,28 @@ export function withPedigree<T extends { name: string }>(
   })
 }
 
-/**
- * The parents among `names` that a source's `father` and `mother` attributes
- * name, never the source itself.
- */
-export function parentsOf(
-  source: { name: string },
-  names: ReadonlySet<string>,
-) {
-  const parent = (column: 'father' | 'mother') => {
-    const value = stringAttribute(source, column)
-    return value !== undefined && value !== source.name && names.has(value)
-      ? value
-      : undefined
-  }
-  return { father: parent('father'), mother: parent('mother') }
-}
-
 const CHILD_TERMS = { male: 'son', female: 'daughter', other: 'child' } as const
 
 /**
  * Each source with a `relationship` attribute saying how it relates to the
  * other sources, read off their `father`, `mother` and `sex`: as a child of a
- * parent among them, `son`, `daughter` or `child` by its sex; as a parent of a
- * child among them, `father` or `mother` by the column naming it, or `parent`
- * where both do, as in a selfed line; both joined, as `daughter, mother`. A
- * source related to none, or carrying a `relationship` of its own, as a
- * samples table column, is left as it is.
+ * parent among them other than itself, `son`, `daughter` or `child` by its
+ * sex; as a parent of a child among them, `father` or `mother` by the column
+ * naming it, or `parent` where both do, as in a selfed line; both joined, as
+ * `daughter, mother`. A source related to none, or carrying a `relationship`
+ * of its own, as a samples table column, is left as it is.
  */
 export function withRelationships<T extends { name: string }>(sources: T[]) {
   const names = new Set(sources.map(source => source.name))
-  const parents = sources.map(source => parentsOf(source, names))
+  const parents = sources.map(source => {
+    const parent = (column: 'father' | 'mother') => {
+      const value = stringAttribute(source, column)
+      return value !== undefined && value !== source.name && names.has(value)
+        ? value
+        : undefined
+    }
+    return { father: parent('father'), mother: parent('mother') }
+  })
   const fathers = new Set(parents.map(p => p.father))
   const mothers = new Set(parents.map(p => p.mother))
   return sources.map((source, i) => {

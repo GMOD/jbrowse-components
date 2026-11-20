@@ -4,7 +4,6 @@ import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import {
   TRACK_MENU_PRIORITY,
   makeRadioSubMenu,
-  toggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost, pluralize } from '@jbrowse/core/util'
@@ -58,11 +57,6 @@ import {
   RecordsFacetFieldDialog,
 } from '../shared/lazyDialogs.ts'
 import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
-import {
-  MENDELIAN_CLASSES,
-  MENDELIAN_FIELD,
-  mendelianName,
-} from '../shared/trios.ts'
 import { IMPACT_FIELD } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
@@ -80,29 +74,6 @@ function needs(label: string, what: string, present: boolean, loaded: boolean) {
         label: `${label} (${loaded ? `no ${what} in view` : `checking for ${what}...`})`,
         disabled: true,
       }
-}
-
-const NO_TRIOS = 'no sample has a parent among the samples'
-
-// The sites kept by their Mendelian check, a checkbox per value, none
-// checked keeping every site.
-function mendelianFilterItem(self: LinearVariantDisplayModel): MenuItem {
-  const kept = self.mendelianFilterValues
-  return {
-    label:
-      self.trios.length > 0
-        ? 'Mendelian check'
-        : `Mendelian check (${NO_TRIOS})`,
-    disabled: self.trios.length === 0,
-    type: 'subMenu',
-    subMenu: MENDELIAN_CLASSES.map(value =>
-      toggleItem(mendelianName(value), kept.includes(value), keep => {
-        self.setMendelianFilter(
-          keep ? [...kept, value] : kept.filter(v => v !== value),
-        )
-      }),
-    ),
-  }
 }
 
 // The rows' color, as the arrangement dialog offers it: None and the
@@ -317,9 +288,7 @@ export function variantTrackMenuItems(
     rampEncodingOf(self.colorEncoding)?.field ??
     recordHueField(self.colorEncoding)?.field
   const recordField =
-    hueField === SV_TYPE_FIELD ||
-    hueField === IMPACT_FIELD ||
-    hueField === MENDELIAN_FIELD
+    hueField === SV_TYPE_FIELD || hueField === IMPACT_FIELD
       ? undefined
       : hueField
   const phaseSet = needs(
@@ -395,20 +364,6 @@ export function variantTrackMenuItems(
               },
             },
             {
-              label:
-                self.trios.length > 0
-                  ? 'Mendelian check'
-                  : `Mendelian check (${NO_TRIOS})`,
-              disabled: self.trios.length === 0,
-              helpText:
-                "Each site's most severe call over the trios: a de novo candidate, a Mendelian violation, or consistent",
-              type: 'radio',
-              checked: self.colorField === MENDELIAN_FIELD,
-              onClick: () => {
-                self.colorByField(MENDELIAN_FIELD)
-              },
-            },
-            {
               label: 'Field...',
               type: 'radio',
               checked: !!recordField,
@@ -468,52 +423,45 @@ export function variantTrackMenuItems(
       // rather than a dialog round-trip. They're fetch inputs (rpcProps), so
       // commitOnRelease keeps a drag from firing a worker refetch per step.
       // Both read called alleles, so with no rows, which reads none, they go.
-      // The Mendelian check reads genotypes while a trio is named, rows or
-      // none.
-      subItems: [
-        ...(!self.drawsGenotypeRows
-          ? []
-          : [
-              makeSizeMenu({
-                label: 'Minor allele frequency',
-                title: 'MAF',
-                min: 0,
-                max: 0.5,
-                step: 0.01,
-                format: n => (n === 0 ? 'off' : n.toFixed(2)),
-                commitOnRelease: true,
-                getValue: () => self.minMinorAlleleFrequency,
-                isDefault: self.minMinorAlleleFrequency === 0,
-                onChange: n => {
-                  self.setMinMinorAlleleFrequency(n)
-                },
-                onReset: () => {
-                  self.setMinMinorAlleleFrequency(0)
-                },
-              }),
-              makeSizeMenu({
-                label: 'Missingness',
-                title: 'Max missingness',
-                min: 0,
-                max: 1,
-                step: 0.01,
-                // 1 keeps every variant, i.e. the filter is off
-                format: n => (n === 1 ? 'off' : n.toFixed(2)),
-                commitOnRelease: true,
-                getValue: () => self.maxMissingness,
-                isDefault: self.maxMissingness === 1,
-                onChange: n => {
-                  self.setMaxMissingness(n)
-                },
-                onReset: () => {
-                  self.setMaxMissingness(1)
-                },
-              }),
-            ]),
-        ...(self.drawsGenotypeRows || self.trios.length > 0
-          ? [mendelianFilterItem(self)]
-          : []),
-      ],
+      subItems: !self.drawsGenotypeRows
+        ? []
+        : [
+            makeSizeMenu({
+              label: 'Minor allele frequency',
+              title: 'MAF',
+              min: 0,
+              max: 0.5,
+              step: 0.01,
+              format: n => (n === 0 ? 'off' : n.toFixed(2)),
+              commitOnRelease: true,
+              getValue: () => self.minMinorAlleleFrequency,
+              isDefault: self.minMinorAlleleFrequency === 0,
+              onChange: n => {
+                self.setMinMinorAlleleFrequency(n)
+              },
+              onReset: () => {
+                self.setMinMinorAlleleFrequency(0)
+              },
+            }),
+            makeSizeMenu({
+              label: 'Missingness',
+              title: 'Max missingness',
+              min: 0,
+              max: 1,
+              step: 0.01,
+              // 1 keeps every variant, i.e. the filter is off
+              format: n => (n === 1 ? 'off' : n.toFixed(2)),
+              commitOnRelease: true,
+              getValue: () => self.maxMissingness,
+              isDefault: self.maxMissingness === 1,
+              onChange: n => {
+                self.setMaxMissingness(n)
+              },
+              onReset: () => {
+                self.setMaxMissingness(1)
+              },
+            }),
+          ],
     }),
     ...makeShowSubMenu(variantShowSubmenuItems(self)),
     // the rows' own items, absent while no row draws

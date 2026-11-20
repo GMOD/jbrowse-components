@@ -32,13 +32,7 @@ export async function runGenotypeClustering({
   signal: AbortSignal
   statusCallback: (status: RpcStatus) => void
 }) {
-  const {
-    shownRows: rows,
-    siteFilter,
-    mendelianFilter,
-    filters,
-    rowsField,
-  } = model
+  const { shownRows: rows, siteFilter, filters, rowsField } = model
   if (!model.sourcesBase) {
     return
   }
@@ -60,7 +54,7 @@ export async function runGenotypeClustering({
     // long and the caption is one line.
     provenance: clusterProvenanceFromRegions(regions, [
       { name: 'rows.field', value: rowsField },
-      ...[...siteFilter, ...mendelianFilter].map(({ field, ...tests }) => ({
+      ...siteFilter.map(({ field, ...tests }) => ({
         name: field,
         value: JSON.stringify(tests),
       })),

@@ -22,22 +22,14 @@ export function genotypeMatrixKey(model: ReducedModel) {
         model.rowsField,
         // a SerializableFilterChain, whose toJSON is its expression list
         model.filters,
-        ...mendelianKey(model),
       ] as const)
     : null
 }
 
-function mendelianKey(model: ReducedModel) {
-  return model.mendelianFilter.length > 0
-    ? [model.mendelianFilter, model.trios, model.transmissionEntries]
-    : []
-}
-
 /**
  * The genotype matrix's arguments over `regions`, which the export and both
- * clustering paths send alike: the rows on screen, and the sites the display
- * keeps, the Mendelian check's filter among them, whose trios and rules are
- * sent only while it is set.
+ * clustering paths send alike: the rows on screen and the sites the display
+ * keeps.
  */
 export function genotypeMatrixArgs(model: ReducedModel, regions: Region[]) {
   return {
@@ -48,12 +40,5 @@ export function genotypeMatrixArgs(model: ReducedModel, regions: Region[]) {
     adapterConfig: model.adapterConfig,
     rowsField: model.rowsField,
     samplePloidy: model.samplePloidy,
-    ...(model.mendelianFilter.length > 0
-      ? {
-          mendelianFilter: model.mendelianFilter,
-          trios: model.trios,
-          transmission: model.transmissionFor(regions),
-        }
-      : {}),
   }
 }

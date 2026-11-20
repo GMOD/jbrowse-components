@@ -7,12 +7,7 @@ import {
   compileSiteFilter,
   filterVariant,
 } from '../shared/minorAlleleFrequencyUtils.ts'
-import { transmissionOfRegions } from '../shared/trios.ts'
-import {
-  analyzeVariants,
-  collectSampleNames,
-  makeHeaderRemapper,
-} from './analyzeVariants.ts'
+import { collectSampleNames, makeHeaderRemapper } from './analyzeVariants.ts'
 import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
@@ -28,8 +23,8 @@ export interface MatrixWalkArgs extends GetGenotypeMatrixArgs {
 
 /**
  * What both genotype matrices start from: the fetch's features through the
- * filters, the Mendelian check's among them, and the canonical sample
- * columns their genotypes are read into (`matrixWalkOf`).
+ * filters, and the canonical sample columns their genotypes are read into
+ * (`matrixWalkOf`).
  */
 export async function prepareMatrixWalk({
   pluginManager,
@@ -38,16 +33,7 @@ export async function prepareMatrixWalk({
   pluginManager: PluginManager
   args: MatrixWalkArgs
 }) {
-  const {
-    regions,
-    signal,
-    statusCallback,
-    filters,
-    siteFilter,
-    trios,
-    transmission,
-    mendelianFilter = [],
-  } = args
+  const { regions, signal, statusCallback, filters, siteFilter } = args
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
   const rawFeatures = await fetchVariantFeatures(dataAdapter, regions, args)
 
@@ -71,18 +57,8 @@ export async function prepareMatrixWalk({
     }
   }
 
-  const kept = filteredVariants.map(v => v.feature)
   return matrixWalkOf(
-    mendelianFilter.length > 0
-      ? analyzeVariants({
-          features: kept,
-          keepUncalledSites: true,
-          readGenotypes: false,
-          trios,
-          transmissionOf: transmissionOfRegions(regions, transmission),
-          mendelianFilter,
-        }).filteredVariants.map(v => v.feature)
-      : kept,
+    filteredVariants.map(v => v.feature),
     args,
   )
 }
