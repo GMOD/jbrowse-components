@@ -267,3 +267,61 @@ test('with tick labels off the export keeps the tick marks and names but prints 
   expect(off).toContain('>ctgA</text>')
   expect(off.match(/<line/g)?.length).toBe(on.match(/<line/g)?.length)
 }, 20000)
+
+function axisTexts(svg: string) {
+  return [
+    ...new DOMParser()
+      .parseFromString(svg, 'image/svg+xml')
+      .querySelectorAll('text'),
+  ]
+}
+
+test('axis text is placed by y alone, with no baseline attribute', async () => {
+  const { view } = await setup()
+  const svg = await renderToSvg(view, {})
+  expect(svg).not.toContain('baseline')
+  const texts = axisTexts(svg)
+  const ys = (pick: (t: Element) => boolean) =>
+    new Set(texts.filter(pick).map(t => t.getAttribute('y')))
+  const rotated = (t: Element) =>
+    /^rotate\(-90,[\d.]+,0\)$/.test(t.getAttribute('transform') ?? '')
+  const named = (t: Element) => t.querySelector('title') !== null
+
+  // horizontal tick labels, rotated -90° and centred across their tick
+  expect(ys(t => rotated(t) && !named(t))).toEqual(new Set(['2.8']))
+  // the horizontal refName hangs 1px in from the plot edge
+  expect(ys(t => rotated(t) && named(t))).toEqual(new Set(['8.3']))
+  // each vertical tick label hangs 3px above its tick
+  const tick = view.vview.visibleTickPositions.findLast(t => t.labeled)!
+  const label = texts.find(
+    t =>
+      t.textContent === tickLabel(tick.tick, view.vview.bpPerPx) &&
+      !t.hasAttribute('transform'),
+  )
+  expect(Number(label?.getAttribute('y'))).toBeCloseTo(
+    view.vview.toScreenPx(tick.alongPx) - 3 + 7.3,
+    2,
+  )
+  // the horizontal axis title hangs 12px above the bottom of the axis band
+  const title = texts.find(
+    t => t.textContent.startsWith('volvox') && !t.hasAttribute('transform'),
+  )
+  expect(Number(title?.getAttribute('y'))).toBeCloseTo(
+    view.borderY - 12 + 11 * 0.73,
+    2,
+  )
+}, 20000)
+
+test('a vertical tick label within 10px of the top edge is not drawn', async () => {
+  const { view } = await setup()
+  const { vview } = view
+  vview.scrollTo(vview.offsetPx - 20)
+  const top = vview.visibleTickPositions.findLast(t => t.labeled)!
+  expect(top.alongPx).toBeGreaterThan(vview.width - 10)
+  expect(top.alongPx).toBeLessThan(vview.width)
+  const text = tickLabel(top.tick, vview.bpPerPx)
+  const vertical = axisTexts(await renderToSvg(view, {})).filter(
+    t => t.textContent === text && !t.hasAttribute('transform'),
+  )
+  expect(vertical).toHaveLength(0)
+}, 20000)

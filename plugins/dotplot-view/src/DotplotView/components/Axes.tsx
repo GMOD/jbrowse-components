@@ -2,6 +2,7 @@ import { Fragment } from 'react'
 
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getBpDisplayStr, stripAlpha } from '@jbrowse/core/util'
+import { textBaselineShift } from '@jbrowse/core/util/SvgCanvas'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -47,7 +48,6 @@ function AxisTitle({
   x,
   y,
   transform,
-  dominantBaseline,
   fill,
 }: {
   title: string
@@ -55,7 +55,6 @@ function AxisTitle({
   x: number
   y: number
   transform?: string
-  dominantBaseline?: 'hanging'
   fill: string
 }) {
   const text = fitAxisTitle(title, availablePx)
@@ -66,7 +65,6 @@ function AxisTitle({
       transform={transform}
       textAnchor="middle"
       fontSize={AXIS_TITLE_FONT}
-      dominantBaseline={dominantBaseline}
       fill={fill}
     >
       {text === title ? null : <title>{title}</title>}
@@ -125,9 +123,8 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
               transform={`rotate(${rotate},${xoff},0)`}
               key={b.key}
               x={xoff}
-              y={1}
+              y={1 + textBaselineShift('hanging', AXIS_LABEL_FONT)}
               fontSize={AXIS_LABEL_FONT}
-              dominantBaseline="hanging"
               textAnchor="end"
               fill={color}
             >
@@ -152,10 +149,9 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
           {showTickLabels && labeled && x > 10 ? (
             <text
               x={x - 7}
-              y={0}
+              y={textBaselineShift('middle', AXIS_LABEL_FONT)}
               transform={`rotate(${rotate},${x},0)`}
               fontSize={AXIS_LABEL_FONT}
-              dominantBaseline="middle"
               textAnchor="end"
               fill={color}
             >
@@ -167,9 +163,8 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
       <AxisTitle
         title={`${hview.assemblyNames.join(',')} (${getBpDisplayStr(hview.currBp)})`}
         availablePx={viewWidth}
-        y={borderY - 12}
+        y={borderY - 12 + textBaselineShift('hanging', AXIS_TITLE_FONT)}
         x={viewWidth / 2}
-        dominantBaseline="hanging"
         fill={color}
       />
     </>
@@ -239,12 +234,14 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
               strokeWidth={1}
               stroke={color}
             />
-            {showTickLabels && labeled && alongPx > 10 ? (
+            {showTickLabels &&
+            labeled &&
+            alongPx > 10 &&
+            alongPx < vview.width - 10 ? (
               <text
-                y={y - 3}
+                y={y - 3 + textBaselineShift('hanging', AXIS_LABEL_FONT)}
                 x={borderX - 7}
                 textAnchor="end"
-                dominantBaseline="hanging"
                 fontSize={AXIS_LABEL_FONT}
                 fill={color}
               >
