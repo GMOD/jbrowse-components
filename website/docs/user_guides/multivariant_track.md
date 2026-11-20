@@ -209,6 +209,123 @@ facets a cohort's rows by clinical annotation.
 **Group by** and the **Samples** entries under **Color by** in the track menu
 change the grouping and colors after the track is open.
 
+## Families and the Mendelian check
+
+A VCF adapter's
+[`pedigreeLocation`](/docs/config/vcftabixadapter/#slot-pedigreelocation) reads
+a pedigree of the VCF's samples, and its father and mother columns let JBrowse
+check each site's genotypes against inheritance. JBrowse reads the format from
+the columns:
+
+- **A header row** naming `SampleID` or `IID`, `FatherID` or `PAT`, `MotherID`
+  or `MAT`, `FamilyID` or `FID`, `Sex` and `Phenotype`, in any case and order,
+  as the 1000 Genomes `20130606_g1k_3202_samples_ped_population.txt` has.
+- **No header:** a PLINK `.fam` or `.ped`, whose first six columns are family,
+  sample, father, mother, sex and phenotype.
+
+Each sample gains `family`, `father`, `mother`, `sex` and `phenotype`
+attributes, which group, sort, color and label rows as a samples TSV's columns
+do.
+
+- **Codes:** a parent of `0` is unknown; sex `1` is `male`, `2` is `female` and
+  any other code but `0` or `-9` is `other`; phenotype `2` is `affected` and `1`
+  is `unaffected`.
+- **Sample names:** a sample ID that matches no VCF sample is tried as
+  `FID_IID`, the name `plink --recode vcf` writes.
+- **Precedence:** a `samplesTsvLocation` column of the same name wins over the
+  pedigree's, and the pedigree never removes a row: its lines naming no VCF
+  sample are skipped.
+
+The config below loads the 1000 Genomes KHV trio with its pedigree, bands the
+rows by `facet: "family"`, and colors the cells by the Mendelian check across
+CFHR3 and CFHR1 (chr1:196,745,000-196,850,000):
+
+```json addtrack loc=chr1:196,745,000-196,850,000
+{
+  "type": "VariantTrack",
+  "trackId": "khv_trio_vcf",
+  "name": "KHV trio phased calls (chr1)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.vcf.gz",
+    "pedigreeLocation": {
+      "uri": "https://jbrowse.org/demos/kgp-trio/20130606_g1k_3202_samples_ped_population.txt"
+    }
+  },
+  "displayDefaults": {
+    "facet": "family",
+    "encoding": { "color": "mendelian" }
+  }
+}
+```
+
+**Color by → Mendelian check** (under **Cells**) colors each site's alt cells by
+its check over the pedigree's trios: each sample whose father or mother is also
+a sample in the VCF. Phase is ignored, and ploidy is read from each call.
+
+- **Not in parents** (`notInParents`): the child has an allele neither parent
+  has, and every parent the child can inherit from is called.
+- **Inconsistent** (`inconsistent`): no assignment of the child's alleles to its
+  parents fits, whatever a no-call might hide.
+- **Consistent** (`consistent`): an assignment fits, with every allele called.
+- **No value:** a no-call leaves the answer open, or in a duo the absent parent
+  could have given the allele; the cell keeps the default alt color.
+
+<Figure caption="The KHV trio colored by the Mendelian check across CFHR3 and CFHR1, rows HG02024 (child), HG02025 (mother) and HG02026 (father)." src="/img/trio-mendelian.png" />
+
+With several trios, a site takes its most severe value, in the order above.
+`mendelian` is computed as the track loads rather than read off the record, so a
+`jexl:` expression cannot read it.
+
+- **Filter:** the display's `filter` entry
+  `{ "field": "mendelian", "oneOf": ["notInParents", "inconsistent"] }` keeps
+  the sites a trio fails.
+- **Hover and click:** hovering a cell names the site's check, and the feature
+  details list each trio's call.
+- **Callset QC:** the check reads GT alone, with no genotype quality, so on
+  low-coverage calls most failures are genotyping errors. The
+  [phased trio tutorial](/docs/tutorials/analyze_trio#checking-the-trios-calls-against-the-pedigree)
+  reads them against the child's high-coverage reads.
+
+### Sex chromosomes and organelles
+
+A sequence a child does not inherit as one copy from each parent needs an entry
+in the assembly's [`transmission`](/docs/config/baseassembly/#slot-transmission)
+list. Each entry names a `refName` (unset, every sequence), a child's `sex` as
+the pedigree gives it (unset, any child), and `from`: `mother`, `father` or
+`either`. The default is no entries, and JBrowse does not guess from names:
+sacCer3's `chrX` is an autosome, and _Bombyx mori_'s Z is `1`.
+
+| Genome                               | Entries                                                                                                                                |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| XY (mammals, _Drosophila_, _Silene_) | X `{ "sex": "male", "from": "mother" }`, Y `{ "sex": "male", "from": "father" }`                                                       |
+| XO (_C. elegans_)                    | X `{ "sex": "male", "from": "mother" }`; a hermaphrodite, sex `other`, takes the autosomal rule                                        |
+| ZW (birds, Lepidoptera)              | Z `{ "sex": "female", "from": "father" }`, W `{ "sex": "female", "from": "mother" }`                                                   |
+| Haplodiploidy (bees, ants, wasps)    | `{ "sex": "male", "from": "mother" }` with no `refName`                                                                                |
+| Mitochondria                         | `mother` in most animals, `either` in _S. cerevisiae_, `father` in cucumber and banana, and in _Chlamydomonas_ whichever parent is mt− |
+| Plastids                             | `mother` in most flowering plants, `father` in conifers                                                                                |
+
+The
+[phased trio tutorial](/docs/tutorials/analyze_trio#loading-the-hg38-assembly)
+writes hg38's entries. Several sex chromosomes, as the platypus's X1 to X5, take
+one entry each. The check stays lenient where biology varies, so it can miss an
+error but does not report a false one:
+
+- **Pseudoautosomal regions:** an entry with a `sex` judges only a haploid or
+  homozygous call, so a son's het takes the autosomal rule. A homozygote in a
+  pseudoautosomal region is still judged by the entry: a son's `1/1` with father
+  `0/0` and mother `0/1` reads consistent though his father has no `1`.
+- **No entry:** a son's X written diploid (`1/1`) takes the autosomal rule and
+  can read inconsistent where his father lacks the allele.
+- **Ploidy:** each parent gives half its alleles, rounded either way, so an
+  autotetraploid cross is 2 + 2 and a 2x × 4x triploid 1 + 2. A cross no such
+  split fits (aneuploidy, unreduced gametes) and double reduction are judged
+  leniently, and a haploid child's alleles may come from either parent.
+- **Outside the model:** Pool-seq, somatic mosaicism, gene conversion and
+  paternal leakage. Each sample is read as one individual with the genotype its
+  GT states.
+
 ## Clustering samples by genotype
 
 **Clustering → Cluster rows by genotype...** in the track menu reorders samples
