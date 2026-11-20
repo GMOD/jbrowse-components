@@ -14,6 +14,7 @@ import {
   resetSectionOrderItems,
 } from '@jbrowse/display-kit/groupByMenu'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
+import { sectionsMenuItems } from '@jbrowse/display-kit/sectionsMenu'
 import {
   resetRowOrderMenuItems,
   rowOrderMenuItems,
@@ -165,6 +166,7 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
     }),
     ...categoriesMenuItems(self),
     ...(self.drawsRows ? rowsMenuItems(self) : []),
+    ...sectionsMenuItems(self),
     ...resetSectionOrderItems({
       domain: self.facet?.sort ?? [],
       setDomain: domain => {

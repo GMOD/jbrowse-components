@@ -17,7 +17,7 @@ const MarkFacetChips = observer(function MarkFacetChips({
   model: MarkDisplayModel
 }) {
   const { sections, rows } = model.facetLayout
-  if (rows || sections.length === 0) {
+  if (rows || (sections.length === 0 && model.hiddenGroups.size === 0)) {
     return null
   }
   const { yTop, plotHeight } = model.plotBox

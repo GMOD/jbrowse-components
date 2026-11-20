@@ -2,6 +2,7 @@ import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { rampDomain } from '@jbrowse/core/util/colorRamp'
 import { FIT_ROWS, resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
+import { fieldHeading } from '@jbrowse/display-kit/sectionsMenu'
 import {
   sameAsLast,
   stableIdentityComputed,
@@ -32,6 +33,7 @@ import { computed } from 'mobx'
 
 import {
   facetLayout,
+  knownFacetSections,
   rowsLayout,
   sectionsInWindow,
   sectionsOn,
@@ -366,6 +368,28 @@ export function markRegionViews(self: MarkKeySpaceHost) {
      */
     get facetLayout(): FacetLayout {
       return layout.get()
+    },
+    /**
+     * #getter
+     * Every section the Sections dialog lists, hidden or not; none under
+     * `rows` or while ungrouped.
+     */
+    get knownSections() {
+      const { facet } = self
+      return facet && !self.drawsRows
+        ? knownFacetSections(
+            self.featurePayloads.values(),
+            categoricalField(facet.field, { domain: facet.sort }),
+            [...facet.sort, ...self.hiddenGroups],
+          )
+        : []
+    },
+    /**
+     * #getter
+     * The Sections dialog's column header: the facet's field.
+     */
+    get sectionsHeading() {
+      return fieldHeading(self.facet?.field)
     },
     /**
      * #getter

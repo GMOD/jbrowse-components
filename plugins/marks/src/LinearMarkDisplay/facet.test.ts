@@ -1,7 +1,7 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { HIDDEN_ROW, RowKeys, rowSlot } from '@jbrowse/render-core/marks'
 
-import { facetLayout, unsplitRegion } from './facet.ts'
+import { facetLayout, knownFacetSections, unsplitRegion } from './facet.ts'
 import {
   drawnKeysOf,
   drawnRegion,
@@ -242,4 +242,19 @@ test('a region first laid out under another field gets its rows under its own', 
     facetLayout([region], categoricalField(field), new Set(), [true]).rowCount
   expect(lay('other')).toBe(0)
   expect(lay('grp')).toBe(3)
+})
+
+test('the Sections list holds every loaded section, hidden or not, and the known keys, bare and in domain order', () => {
+  const region = twoSections(linkLayer())
+  expect(
+    knownFacetSections(
+      [region],
+      categoricalField('grp', { domain: ['c', 'b'] }),
+      ['c', 'a'],
+    ),
+  ).toEqual([
+    { key: 'c', label: 'c' },
+    { key: 'b', label: 'b' },
+    { key: 'a', label: 'a' },
+  ])
 })

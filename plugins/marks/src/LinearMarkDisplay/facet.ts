@@ -163,6 +163,27 @@ export function facetLayout(
 }
 
 /**
+ * Every section the Sections dialog lists, labelled by its value: each one
+ * the loaded regions hold, hidden or not, and each `known` key besides (the
+ * facet's `sort` and its hidden ones), in the domain's order.
+ */
+export function knownFacetSections(
+  regions: Iterable<MarkRegionData>,
+  field: CategoricalField,
+  known: Iterable<string>,
+) {
+  const keys = new Set(known)
+  for (const region of regions) {
+    for (const { key } of sectionsOn(region, field.field) ?? []) {
+      keys.add(key)
+    }
+  }
+  return [...keys]
+    .sort(field.compare)
+    .map(key => ({ key, label: field.label(key) }))
+}
+
+/**
  * One row per value, in the order `rows` lists them: a value `rows` leaves
  * out is hidden the way a hidden section is.
  */
