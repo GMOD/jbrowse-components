@@ -184,11 +184,11 @@ CFHR3 and CFHR1 the check flags both kinds of site:
 <Figure caption="Color by → Mendelian check across CFHR3 and CFHR1, rows HG02024 (daughter), HG02025 (mother) and HG02026 (father). The child's row has de novo candidate cells left of CFHR3, and the parents' rows have a run of Mendelian violation cells across CFHR1." src="/img/trio-mendelian.png"/>
 
 This VCF is the 1000 Genomes low-coverage callset, statistically phased, and
-under one percent of its chr1 sites fail the check. Most failures are genotyping
-errors, not de novo mutations: most de novo candidates on this trio are a
-parent's het that the low-coverage calls missed, as at the site checked below.
-The 1000 Genomes SV callset gives the father and the child a deletion across
-CFHR1 (`HGSV_9982`), and a sample with one copy of a sequence is called
+under one percent of its chr1 sites fail the check. A de novo candidate here is
+far more often a genotyping error than a mutation, such as a parent's het that
+the low-coverage calls missed, which is what the reads show at the site checked
+below. The 1000 Genomes SV callset gives the father and the daughter a deletion
+across CFHR1 (`HGSV_9982`), and a sample with one copy of a sequence is called
 homozygous for that copy's allele, which accounts for the run of Mendelian
 violations there. Those calls are right for a one-copy sample: the violations
 mark the deletion, not a genotyping error.
