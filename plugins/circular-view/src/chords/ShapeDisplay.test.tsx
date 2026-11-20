@@ -85,6 +85,13 @@ function bnd(uniqueId: string, start: number, mate: number) {
   })
 }
 
+// the em row a status message's text sits on, under its middle shift
+function lineEm(status: Element) {
+  return Number.parseFloat(
+    status.querySelector('text')?.getAttribute('y') ?? '',
+  )
+}
+
 function chordsOf(...features: SimpleFeature[]): ChordShape[] {
   return features.map(feature => ({
     kind: 'chord',
@@ -237,8 +244,7 @@ test('a second failing track adds a line under the first, not another disc', () 
     '0.35',
   )
   expect(second!.querySelector('circle')).toBeNull()
-  expect(first!.querySelector('text')?.getAttribute('y')).toBe('0em')
-  expect(second!.querySelector('text')?.getAttribute('y')).toBe('3em')
+  expect(lineEm(second!) - lineEm(first!)).toBeCloseTo(3, 6)
 })
 
 function renderPastLoadingDelay(ui: React.ReactElement) {
@@ -307,8 +313,7 @@ test('a second loading track adds a line under the first, not another spinner', 
   const [first, second] = container.querySelectorAll('[data-display-phase]')
   expect(first!.querySelectorAll('circle').length).toBeGreaterThan(0)
   expect(second!.querySelector('circle')).toBeNull()
-  expect(first!.querySelector('text')?.getAttribute('y')).toBe('0em')
-  expect(second!.querySelector('text')?.getAttribute('y')).toBe('3em')
+  expect(lineEm(second!) - lineEm(first!)).toBeCloseTo(3, 6)
   expect(second!.querySelector('text')?.textContent).toBe(
     'Downloading features…',
   )
