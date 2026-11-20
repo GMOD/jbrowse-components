@@ -1,7 +1,7 @@
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 
 import { classifyTrio, mostSevereTrioClass } from './classifyTrio.ts'
-import { pedigreeSexOf } from './pedigree.ts'
+import { parentsOf, pedigreeSexOf } from './pedigree.ts'
 
 import type {
   PedigreeSex,
@@ -90,17 +90,14 @@ export function transmissionOfRegions(
 
 /**
  * The trios among `sources`, by child name: each sample whose `father` or
- * `mother` attribute names another sample, with its `sex` read as a
+ * `mother` attribute names another sample (`parentsOf`), with its `sex` read as a
  * pedigree or a samples table writes it (`pedigreeSexOf`).
  */
 export function triosOf(sources: readonly Source[]): Trio[] {
   const names = new Set(sources.map(source => source.name))
-  const present = (value: unknown) =>
-    typeof value === 'string' && names.has(value) ? value : undefined
   return sources
     .flatMap(source => {
-      const father = present(source.father)
-      const mother = present(source.mother)
+      const { father, mother } = parentsOf(source, names)
       const sex: PedigreeSex | undefined =
         typeof source.sex === 'string' ? pedigreeSexOf(source.sex) : undefined
       return father !== undefined || mother !== undefined

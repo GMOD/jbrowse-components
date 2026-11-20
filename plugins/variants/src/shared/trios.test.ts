@@ -35,3 +35,13 @@ test('a missing sex is no sex, so the check weighs both readings', () => {
     undefined,
   ])
 })
+
+test('a sample naming itself as a parent is not its own parent', () => {
+  expect(
+    triosOf([
+      { name: 'kid', father: 'kid', mother: 'mom' },
+      { name: 'mom' },
+      { name: 'solo', father: 'solo' },
+    ]),
+  ).toEqual([{ child: 'kid', mother: 'mom' }])
+})

@@ -64,6 +64,31 @@ test('a parent of 0 is no value', () => {
   })
 })
 
+test('a parent of NA or -9 is no value, unless a VCF sample has that name', () => {
+  expect(attributesOf('f1 kid NA -9 1 1', ['kid', 'NA'])).toEqual({
+    kid: { family: 'f1', father: 'NA', sex: 'male', phenotype: 'unaffected' },
+  })
+})
+
+test('a tab-separated table keeps an empty cell in its column', () => {
+  const tsv = [
+    'FamilyID\tSampleID\tFatherID\tMotherID\tSex',
+    '\tkid\t\tmom\t1',
+    'f1\tmom\t0\t0\t2',
+  ].join('\n')
+
+  expect(attributesOf(tsv, ['kid', 'mom'])).toEqual({
+    kid: { mother: 'mom', sex: 'male' },
+    mom: { family: 'f1', sex: 'female' },
+  })
+})
+
+test('a headerless tab-separated .fam keeps an empty family in its column', () => {
+  expect(attributesOf('\tkid\tdad\tmom\t2\t-9', ['kid', 'dad'])).toEqual({
+    kid: { father: 'dad', mother: 'mom', sex: 'female' },
+  })
+})
+
 test('a parent absent from the VCF is still named', () => {
   expect(attributesOf(g1k, ['HG02024'])).toEqual({
     HG02024: {
@@ -145,9 +170,7 @@ test('a sample naming itself as its parent loses that parent, with a warning', (
 
   expect(attributes.get('F1')).toEqual({ family: 'line1' })
   expect(warnings).toEqual([
-    expect.stringMatching(
-      /1 samples name themselves as a parent.*ped\.txt.*F1/,
-    ),
+    expect.stringMatching(/1 sample names itself as a parent.*ped\.txt.*F1/),
   ])
 })
 
@@ -197,6 +220,25 @@ test("the samples table's column wins over the pedigree's", () => {
       population: 'KHV',
     },
     { name: 'HG02026', family: 'VN049', sex: 'male' },
+  ])
+})
+
+test("a samples table's missing code leaves the pedigree's value", () => {
+  const { attributes } = parsePedigree(g1k, KHV_TRIO, 'ped.txt')
+
+  expect(
+    withPedigree(
+      [{ name: 'HG02024', father: '0', mother: 'NA', sex: 'unknown' }],
+      attributes,
+    ),
+  ).toEqual([
+    {
+      name: 'HG02024',
+      family: 'VN049',
+      father: 'HG02026',
+      mother: 'HG02025',
+      sex: 'female',
+    },
   ])
 })
 

@@ -1,4 +1,4 @@
-import { shorten2 } from '@jbrowse/core/util'
+import { pluralize, shorten2 } from '@jbrowse/core/util'
 
 type PedigreeColumn =
   | 'sample'
@@ -26,9 +26,11 @@ const PLINK_COLUMNS: Record<PedigreeColumn, number> = {
   phenotype: 5,
 }
 
-const MISSING_CODES = new Set(['0', '-9', 'na'])
+const MISSING_CODES = new Set(['', '0', '-9', 'na', 'unknown'])
 
-const MISSING_SEX_CODES = new Set([...MISSING_CODES, '', 'unknown'])
+function isMissingCode(code: string) {
+  return MISSING_CODES.has(code.toLowerCase())
+}
 
 /**
  * A sample's sex as a pedigree or a samples table writes it: `1`, `m` or
@@ -37,7 +39,7 @@ const MISSING_SEX_CODES = new Set([...MISSING_CODES, '', 'unknown'])
  */
 export function pedigreeSexOf(code: string) {
   const lower = code.toLowerCase()
-  return MISSING_SEX_CODES.has(lower)
+  return isMissingCode(lower)
     ? undefined
     : lower === '1' || lower === 'm' || lower === 'male'
       ? 'male'
@@ -47,7 +49,7 @@ export function pedigreeSexOf(code: string) {
 }
 
 function phenotypeOf(code: string) {
-  return MISSING_CODES.has(code.toLowerCase())
+  return isMissingCode(code)
     ? undefined
     : code === '1'
       ? 'unaffected'
@@ -81,9 +83,12 @@ export function parsePedigree(
 ) {
   const rows = txt
     .split(/\r\n|\r|\n/)
-    .map(line => line.trim())
-    .filter(Boolean)
-    .map(line => line.split(/\s+/))
+    .filter(line => line.trim() !== '')
+    .map(line =>
+      line.includes('\t')
+        ? line.split('\t').map(cell => cell.trim())
+        : line.trim().split(/\s+/),
+    )
   const header = rows[0] ? headerColumns(rows[0]) : undefined
   const columns: Partial<Record<PedigreeColumn, number>> =
     header ?? PLINK_COLUMNS
@@ -94,7 +99,8 @@ export function parsePedigree(
   for (const cells of bodyRows) {
     const cell = (column: PedigreeColumn) => {
       const index = columns[column]
-      return index === undefined ? undefined : cells[index]
+      const value = index === undefined ? undefined : cells[index]
+      return value === '' ? undefined : value
     }
     const family = cell('family')
     const vcfName = (id: string) =>
@@ -108,7 +114,9 @@ export function parsePedigree(
     if (name !== undefined && !attributes.has(name)) {
       const parentOf = (column: 'father' | 'mother') => {
         const id = cell(column)
-        return id === undefined || id === '0' ? undefined : (vcfName(id) ?? id)
+        return id === undefined
+          ? undefined
+          : (vcfName(id) ?? (isMissingCode(id) ? undefined : id))
       }
       const named = { father: parentOf('father'), mother: parentOf('mother') }
       if (named.father === name || named.mother === name) {
@@ -134,7 +142,7 @@ export function parsePedigree(
   const warnings: string[] = []
   if (selfParents.length) {
     warnings.push(
-      `${selfParents.length} samples name themselves as a parent in the pedigree file ${fileLabel}, and that parent is left out: ${shorten2(selfParents.join(','))}`,
+      `${selfParents.length} ${pluralize(selfParents.length, 'sample names itself', 'samples name themselves')} as a parent in the pedigree file ${fileLabel}, and that parent is left out: ${shorten2(selfParents.join(','))}`,
     )
   }
   if (attributes.size === 0 && names.length > 0) {
@@ -150,23 +158,53 @@ export function parsePedigree(
   return { attributes, warnings }
 }
 
+function stringAttribute(source: object, key: string) {
+  const value: unknown = Reflect.get(source, key)
+  return typeof value === 'string' ? value : undefined
+}
+
 /**
  * The pedigree's attributes merged into each source, under the source's own
- * columns, so a samples table naming the same column wins.
+ * columns, so a samples table naming the same column wins, unless it writes
+ * a missing code there, as `0` for a parent or `NA` for sex.
  */
 export function withPedigree<T extends { name: string }>(
   sources: T[],
   attributes: ReadonlyMap<string, Record<string, string>>,
 ) {
-  return sources.map(source => ({ ...attributes.get(source.name), ...source }))
+  return sources.map(source => {
+    const pedigree = attributes.get(source.name) ?? {}
+    return {
+      ...pedigree,
+      ...source,
+      ...Object.fromEntries(
+        Object.entries(pedigree).filter(([column]) => {
+          const value = stringAttribute(source, column)
+          return value !== undefined && isMissingCode(value)
+        }),
+      ),
+    }
+  })
+}
+
+/**
+ * The parents among `names` that a source's `father` and `mother` attributes
+ * name, never the source itself.
+ */
+export function parentsOf(
+  source: { name: string },
+  names: ReadonlySet<string>,
+) {
+  const parent = (column: 'father' | 'mother') => {
+    const value = stringAttribute(source, column)
+    return value !== undefined && value !== source.name && names.has(value)
+      ? value
+      : undefined
+  }
+  return { father: parent('father'), mother: parent('mother') }
 }
 
 const CHILD_TERMS = { male: 'son', female: 'daughter', other: 'child' } as const
-
-function stringAttribute(source: object, key: string) {
-  const value: unknown = Reflect.get(source, key)
-  return typeof value === 'string' ? value : undefined
-}
 
 /**
  * Each source with a `relationship` attribute saying how it relates to the
@@ -179,24 +217,14 @@ function stringAttribute(source: object, key: string) {
  */
 export function withRelationships<T extends { name: string }>(sources: T[]) {
   const names = new Set(sources.map(source => source.name))
-  const namedParent = (source: T, column: 'father' | 'mother') => {
-    const parent = stringAttribute(source, column)
-    return parent !== undefined && parent !== source.name && names.has(parent)
-      ? [parent]
-      : []
-  }
-  const fathers = new Set(
-    sources.flatMap(source => namedParent(source, 'father')),
-  )
-  const mothers = new Set(
-    sources.flatMap(source => namedParent(source, 'mother')),
-  )
-  return sources.map(source => {
+  const parents = sources.map(source => parentsOf(source, names))
+  const fathers = new Set(parents.map(p => p.father))
+  const mothers = new Set(parents.map(p => p.mother))
+  return sources.map((source, i) => {
+    const { father, mother } = parents[i]!
     const sex = stringAttribute(source, 'sex')
     const asChild =
-      namedParent(source, 'father').length +
-        namedParent(source, 'mother').length >
-      0
+      father !== undefined || mother !== undefined
         ? CHILD_TERMS[
             (sex === undefined ? undefined : pedigreeSexOf(sex)) ?? 'other'
           ]
