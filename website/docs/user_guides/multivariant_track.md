@@ -278,11 +278,13 @@ With several trios, a site takes its most severe value, in the order above.
 JBrowse computes `mendelian` as the track loads, and the record holds no such
 field, so a `jexl:` expression cannot read it.
 
-- **Filter:** the display's `filter` entry
-  `{ "field": "mendelian", "oneOf": ["notInParents", "inconsistent"] }` keeps
-  the sites a trio fails.
+- **Filter:** **Filter by → Mendelian check** keeps the sites whose check is one
+  of the values checked. Checking **Not in parents** and **Inconsistent** keeps
+  the sites a trio fails, and writes the display's `filter` entry
+  `{ "field": "mendelian", "oneOf": ["notInParents", "inconsistent"] }`, which a
+  config can hold too.
 - **Hover and click:** hovering a cell names the site's check, and the feature
-  details list each trio's call.
+  details list each trio's genotypes and call.
 - **Callset QC:** the check reads GT alone, with no genotype quality, so on
   low-coverage calls most failures are genotyping errors. The
   [phased trio tutorial](/docs/tutorials/analyze_trio#checking-the-trios-calls-against-the-pedigree)

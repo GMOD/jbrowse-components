@@ -188,11 +188,14 @@ the child a deletion across CFHR1 (`HGSV_9982`), and a sample with one copy of a
 sequence is called homozygous for that copy's allele, which accounts for the run
 of inconsistent sites there.
 
-- **Filter:** the display's `filter` entry
-  `{ "field": "mendelian", "oneOf": ["notInParents", "inconsistent"] }`, written
-  in **Advanced → Edit plot...**, keeps the failing sites alone.
+- **Filter:** checking **Not in parents** and **Inconsistent** under **Filter by
+  → Mendelian check** keeps the failing sites alone. The menu writes the
+  display's `filter` entry
+  `{ "field": "mendelian", "oneOf": ["notInParents", "inconsistent"] }`, which a
+  config can hold too.
 - **Hover and click:** hovering a cell names its site's check, and clicking it
-  opens the feature details, whose Mendelian check table lists each trio's call.
+  opens the feature details, whose Mendelian check table lists each trio's
+  genotypes and call.
 
 The reads show which call at a flagged site is wrong. The child has a
 high-coverage CRAM from the 1000 Genomes 30x resequencing, streamed from the
