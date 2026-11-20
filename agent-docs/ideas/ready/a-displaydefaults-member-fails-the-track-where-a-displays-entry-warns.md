@@ -1,9 +1,15 @@
 ---
 name: a-displaydefaults-member-fails-the-track-where-a-displays-entry-warns
-description: An undeclared member inside a `displayDefaults` value fails the track's load, while the same object in a `displays` entry warns and draws (ADR-221); making the two agree means amending ADR-134's routing.
+description: An undeclared member inside a `displayDefaults` value fails the track's load, while the same object in a `displays` entry warns and draws (ADR-221). The router warns and drops a member every display refuses only as undeclared, amending ADR-134.
 ---
 
 # A displayDefaults member fails the track where a displays entry warns
+
+## Ruling
+
+Warn and drop the member when every candidate display's refusal is for an
+undeclared member and nothing else, which matches ADR-221's other load doors.
+`slotValueRefusal` says which kind a refusal is, and ADR-134 is amended.
 
 Left over from the 2026-10-07 review of
 [ADR-221](../../architecture-decision-records/adr-221-a-closed-schema-warns-on-load-and-refuses-on-a-write.md),
@@ -45,9 +51,6 @@ costs the setting and a console line (ADR-134's ADR-257 amendment). The case
 left is a misspelt member inside a channel, which the router reads as a
 refusal.
 
-## The call
-
-Whether a `displayDefaults` typo should cost the track or the setting. ADR-221
-chose the setting for every other load door; the handoff that found this took
-no position, since the router's load failure is also the only thing that
-tells an author their shorthand reached nothing.
+A `displayDefaults` typo costs the setting, not the track. The router's load
+failure stays for a value of the wrong shape, where it is what tells an author
+their shorthand reached nothing.

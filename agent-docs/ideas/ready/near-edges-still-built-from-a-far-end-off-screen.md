@@ -5,6 +5,12 @@ description: Where a visible edge still carries the float32 rounding of an end 1
 
 # Near edges still built from a far end off screen
 
+## Ruling
+
+Clamp in the Canvas2D painters, which the hit test cannot see since it works
+in bp. Build the llvmpipe far-corner fixture for variant cells first. The
+whiskers band changes only if it clears ADR-067's bar on pixel churn.
+
 `guardBandClipX` (`hpmath.slang`) pulls an axis-aligned span's end in to 1024
 px past the view, so its visible edge is built from small numbers
 ([BP_PRECISION.md](../../reference/BP_PRECISION.md)). Three places it does not

@@ -1,9 +1,17 @@
 ---
 name: the-device-pixel-ratio-uniform-has-three-spellings
-description: A shader's `devicePixelRatio` uniform is `getDpr()` in some displays and `clip.scaleY` in others, and a third spelling was declined; they differ only on a capped canvas, where no single scalar is one output pixel on both axes.
+description: A shader's `devicePixelRatio` uniform is `getDpr()` in some displays and `clip.scaleY` in others; they differ only on a capped canvas, where no single scalar is one output pixel on both axes. Marks take a scale per axis.
 ---
 
 # The `devicePixelRatio` uniform has three spellings
+
+## Ruling
+
+A mark that ramps in both axes takes a scale per axis (`clip.scaleX`,
+`clip.scaleY`), and `barMark`, which ramps only in y, takes `scaleY`. On a
+capped canvas no single scalar is right either way. This amends
+[ADR-098](../../architecture-decision-records/adr-098-one-ramp-one-unit-and-the-build-checks-it.md)'s
+Decision, which names `getDpr()`; uncapped, both scales equal it.
 
 What a display writes into a shader's `devicePixelRatio` uniform, which sizes
 antialias ramps, pads and stroke floors (`aaPx`, `flooredStrokeWidthPx`):
@@ -36,5 +44,3 @@ track dragged to 20000 CSS px tall has `scaleX` 2 and `scaleY` 8192 / 20000 =
 
 `barMark` ramps only in y, so for it alone `scaleY` is the exact answer.
 
-**The open call** is which spelling the tree converges on, and whether a mark
-that ramps in both axes should take two scales instead of one.

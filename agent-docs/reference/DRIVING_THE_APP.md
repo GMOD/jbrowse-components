@@ -142,7 +142,7 @@ electron binary with `['.', '--no-sandbox', '--ozone-platform=x11', ...args]`,
   socket never came up".
 - One app holds the per-user bridge socket: `killGroup(app)` between launches.
 - A view can stay `initializing` under xvfb
-  (`ideas/waiting-on-a-number/a-desktop-view-under-xvfb-never-measures.md`);
+  (`ideas/ready/a-desktop-view-under-xvfb-never-measures.md`);
   use a visible window when one does.
 - A fresh worktree's first `require('electron')` downloads the binary and that
   launch fails; rerun. If the download fails, point

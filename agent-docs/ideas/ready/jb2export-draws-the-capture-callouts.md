@@ -1,9 +1,15 @@
 ---
 name: jb2export-draws-the-capture-callouts
-description: jb2export has no callouts; `jb2capture --annotations` does. The LGV export can resolve loc, feature, row and dotplot anchors without a browser if the overlay is split into anchor → rect and rect → SVG. Waits on whether jb2export takes the whole vocabulary or a subset.
+description: jb2export has no callouts; `jb2capture --annotations` does. The LGV export resolves loc, feature, row and dotplot anchors without a browser once the overlay is split into anchor → rect and rect → SVG, shared by both tools.
 ---
 
 # jb2export draws the capture callouts
+
+## Ruling
+
+The whole vocabulary through the shared split: anchor to rect per host, then
+rect to SVG elements as data, so one spec draws the same callouts in both tools.
+It is the version that cannot drift.
 
 `jb2capture --annotations` draws arrows, boxes, pills, badges, legends and
 lineage wedges over a live page (`products/jbrowse-capture/src/annotationOverlay.ts`).
@@ -47,9 +53,9 @@ place holding `tracksTop`, the label gutter and the rows. The
 tracks area and would cut off a pill in the margin; `wrapSvgExport`'s `Wrapper`
 wraps outside the `<svg>`.
 
-## The call
+## The options
 
-- The whole vocabulary through the split above, so one spec draws the same
+- The whole vocabulary (ruled) through the split above, so one spec draws the same
   callouts in both tools; or
 - a subset (`box`, `text` with `leader`, `arrow` on `loc` anchors) written
   straight into the export, with no shared code.

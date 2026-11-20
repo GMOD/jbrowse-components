@@ -5,6 +5,11 @@ description: The empty-session ViewLauncher lists the view registry while the Ad
 
 # The Add menu could derive from the view registry
 
+## Ruling
+
+Land the cross-surface test now. Deriving Add comes later, and skips a view
+type some plugin already appended, so an outside plugin is listed once.
+
 Two surfaces open a view from nothing, and they are built differently:
 
 - `ViewLauncher` (`packages/app-core/src/ui/App/ViewLauncher.tsx`, the

@@ -1,9 +1,17 @@
 ---
 name: one-spelling-for-the-drawn-row-count
-description: The drawn-row count is spelled `nrow`, `numRows` and `rowCount` across the row displays, and alignments' `rowHeight` is a pitch where every other `rowHeight` is a row's height. The call is which spelling wins.
+description: The drawn-row count is spelled `nrow`, `numRows` and `rowCount` across the row displays, and alignments' `rowHeight` is a pitch where every other `rowHeight` is a row's height. `rowCount` wins and alignments' pitch becomes `rowPitch`.
 ---
 
 # One spelling for the drawn-row count
+
+## Ruling
+
+`rowCount` wins: it is the most used and reads as English. The mark
+display's `nrow` alias goes, `numRows` and the core helpers' `nrow` become
+`rowCount`, and alignments' pitch becomes `rowPitch`. None of these names is
+user-facing or read by a published plugin
+(`packages/core/src/ReExports/publishedPluginReads.json`).
 
 The number of rows a display draws has three names:
 

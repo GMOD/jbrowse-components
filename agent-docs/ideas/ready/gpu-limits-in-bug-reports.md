@@ -5,6 +5,13 @@ description: A bug report from unseen GPU hardware names the adapter but omits t
 
 # Put the GPU's limits in the report, not just its name
 
+## Ruling
+
+Add the three WebGPU limits, plus WebGL2's `MAX_TEXTURE_SIZE`, to
+`GraphicsCapabilities`. They show in the stack-trace dialog only and stay out
+of analytics, as `glRenderer` does. A machine with no device shows "no device"
+as the value, not a blank row.
+
 Every GPU number in this repo was measured on one machine (see
 [../../reference/GPU_PORTABILITY.md](../../reference/GPU_PORTABILITY.md)). The gap
 that closes cheaply is not a hardware lab — it is that a bug report from
@@ -33,14 +40,13 @@ The over-limit errors already carry theirs: `GpuHalBase` writes the buffer or
 texture limit into the "too much data to render on this GPU" text on both
 backends. The carrier is for every other failure, where nothing names a number.
 
-**What to settle first, because it is the reason this is parked rather than
-done:**
+**What the ruling settles:**
 
 - **Which surface.** The stack-trace dialog is the one the user copies
   deliberately, and `glRenderer` is already scoped to it *and kept out of
   analytics* on fingerprinting grounds. Three integers are weaker
   fingerprinting signal than the unmasked renderer string, but they are not
-  zero, and that call belongs with whoever owns the analytics boundary.
+  zero, so they stay on the dialog's side of that boundary.
 - **WebGL2 has no equivalent.** The limits above are WebGPU's. The WebGL2 path
   would need its own set (`MAX_TEXTURE_SIZE` is the one the guard actually
   trips on, and it is already queried in `webgl2Hal`), or the field is absent

@@ -5,7 +5,13 @@ description: An MCScan track config states its assembly list twice (`assemblyNam
 
 # The MCScan config derives its assembly lists
 
-Not committed work. A multi-genome `SyntenyTrack` over `MCScanBlocksAdapter`
+## Ruling
+
+`blockAssemblies` defaults to the track's `assemblyNames` when absent. It is
+additive, needs no new adapter shape, and an explicit list stays allowed, which
+leaves room for the multi-copy convention's longer column list.
+
+A multi-genome `SyntenyTrack` over `MCScanBlocksAdapter`
 states its genome list twice — the track's `assemblyNames` and
 `blockAssemblies` naming the table's columns — plus `bedLocations`, a third
 list that must run in the same order. The adapter's `assemblyNames` already
@@ -16,7 +22,8 @@ the first four columns "for the page", and every table tutorial carries an
 ordering warning ("in the order the helper printed";
 `orthofinder_synteny.md` documents the mismatch error a wrong order raises).
 
-Two shapes, either of which leaves the order stated once:
+Two shapes were weighed, either of which leaves the order stated once; the
+first is ruled:
 
 - **Default `blockAssemblies` from the track's list.** `blockAssemblies`
   defaults to the track's `assemblyNames` when absent,
@@ -29,7 +36,7 @@ Two shapes, either of which leaves the order stated once:
   the v5 no-migrations stance means the old keys stay accepted, so it is an
   addition, not a swap.
 
-Either way the tutorials' generated config fences shrink and the ordering
+The tutorials' generated config fences shrink and the ordering
 warnings can go. Constraint to check first: the multi-copy convention
 (`multiway-synteny-lgv-track.md` §"A self-comparison's copy lanes") names one assembly in
 two columns (`peach`, `peach01b`→`peach`), so a derivation must not forbid a

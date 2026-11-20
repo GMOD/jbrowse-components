@@ -21,5 +21,5 @@ against the baseline. The variant-server matrix that used to run it
 (`~/agent-evals/servers/`, `run-matrix.sh`) is gone and has to be rebuilt; a
 full matrix is about 400 `claude -p` sessions, so size it against the weekly
 limit. Run it with a visible window until
-[a-desktop-view-under-xvfb-never-measures](a-desktop-view-under-xvfb-never-measures.md)
+[a-desktop-view-under-xvfb-never-measures](../ready/a-desktop-view-under-xvfb-never-measures.md)
 is fixed.

@@ -1,13 +1,20 @@
 ---
 name: the-hprc-summary-tier-swaps-on-span-or-on-cost
-description: The hosted HPRC summary tier is built but stays off for `hprc_maf.json` until a call on whether it swaps on span or on cost; an overlap-collapse report to `maf2bed` is also owed.
+description: The hosted HPRC summary tier is built but stays off for `hprc_maf.json` because it swaps on span; swapping on cost, the byte gate's verdict, lets it on. An overlap-collapse report to `maf2bed` is also owed.
 ---
 
 # The HPRC summary tier swaps on span or on cost
 
+## Ruling
+
+The summary tier swaps on cost, the byte gate's verdict, for ADR-102's own
+reason: span is a proxy for cost, and a bad one. With that, the tier can be
+switched on for `hprc_maf.json`, since an 83 kb detail read of 3.50 MB is under
+its 5 MB budget and keeps the per-haplotype rows.
+
 Moved out of [TODO.md](../../TODO.md) on 2026-08-26, when the backlog was cut to
 what v5.0.0 turns on. The build and the hosting shipped; the remainder is an
-upstream report and a design question.
+upstream report and the cost swap.
 
 **Done, whole genome, hosted** —
 `jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.summary.bed.gz` (1.72 MB, 396,363
@@ -15,7 +22,7 @@ rows, 464 haplotypes, all 195 contigs), rebuilt from the v2.1 MAF on 2026-09-16,
 wired by `test_data/hprc_maf_summary.json` and rebuilt by
 `scripts/build_hprc_maf_summary.sh`. Worth 3.19 GB refused against 150 kB drawn
 on whole chr6, and a whole-chromosome read costs 73 kB to 212 kB against a 5 MB
-budget. What is left is one decision and one upstream report.
+budget.
 
 **Report the overlap collapse to `maf2bed`.** `--summary` emits a haplotype's
 overlapping runs separately, and `--merge-gap` structurally cannot reach them —
@@ -23,8 +30,8 @@ measured, 500 to 50,000 removes 0.04% of the rows. Collapsing them into their
 union is a 28x reduction genome-wide and 69x on chr14, losslessly for what the
 slot feeds. The build script carries the workaround; the producer should do it.
 
-**Decide whether the summary tier swaps on span or on cost**, which is what stops
-the tier being switched on for `hprc_maf.json` itself. It swaps at 20 kb, and the
+**Swap the summary tier on cost**, which is what stops the tier being switched
+on for `hprc_maf.json` itself today. It swaps at 20 kb, and the
 tutorial's own figure is drawn at 83 kb, so wiring the summary there silently
 replaces the per-haplotype base rows the figure exists to show — for a detail
 read of 3.50 MB against a 5 MB budget. The gap is the one

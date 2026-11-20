@@ -1,9 +1,14 @@
 ---
 name: a-dense-arc-band-blanks-canvas2d-under-swiftshader
-description: A headless Canvas2D capture under SwiftShader loses an alignments display's coverage and pileup once its arc band strokes thousands of arcs. The call is whether to work around it in the painter or the capture harness.
+description: A headless Canvas2D capture under SwiftShader loses an alignments display's coverage and pileup once its arc band strokes thousands of arcs. The painter strokes same-style arcs as one path, then the replay is re-run.
 ---
 
 # A dense arc band blanks Canvas2D under SwiftShader
+
+## Ruling
+
+Stroke same-style arcs as one path, which cuts the draw count on every
+backend, then re-run the replay to see whether it also clears this defect.
 
 Found on 2026-10-08 driving HG008-T Illumina at SUZ12 with
 `readConnections: 'arc'` and `&renderer=canvas2d`. Past about 30 kb the arc
@@ -42,9 +47,9 @@ part. A synthetic stream of 140,000 rects and 60,000 uniform ellipses under the
 same clip did not reproduce it, so there is no minimal case to report upstream
 yet.
 
-## The call
+## The options
 
-- **In the painter:** stroke same-style arcs as one path, which also cuts the
+- **In the painter (ruled):** stroke same-style arcs as one path, which also cuts the
   draw count on every backend. Untested against this defect.
 - **In the harness:** stop pairing the Canvas2D pin with
   `--use-angle=swiftshader`, since Chrome's software canvas draws the frame.

@@ -5,9 +5,9 @@ description: Ordering `MultiWaySyntenyDisplay`'s lanes so similar genomes sit ad
 
 # Ordering synteny lanes by similarity
 
-Not committed work. The feature is "stack the genomes so the ones that agree sit
-next to each other", and the reason it is worth writing down rather than doing
-is that two of its constraints are not visible from the feature description.
+The feature is "stack the genomes so the ones that agree sit next to each
+other", and two of its constraints are not visible from the feature
+description.
 
 The lane-selection half — which of 464 haplotypes to draw at all — is in
 [multiway-synteny-lgv-track](../collections/multiway-synteny-lgv-track.md) under "HPRC at
@@ -128,7 +128,7 @@ same locus, so that scalar is degenerate across them. What a lane does still hav
 from star data is its PROFILE against the shared reference, which is what
 `buildIdentityMatrix` already builds and what PC1 of that profile set would order
 by — the local-PCA ordering
-[keep-the-sample-distance-matrix-resident](keep-the-sample-distance-matrix-resident.md)
+[keep-the-sample-distance-matrix-resident](../waiting-on-a-call/keep-the-sample-distance-matrix-resident.md)
 gets from the sample matrix. So on a star the honest ceiling is a profile ordering: cheaper
 than seriation, weaker than it, and not nothing.
 

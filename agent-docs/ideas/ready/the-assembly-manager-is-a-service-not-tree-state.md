@@ -1,9 +1,14 @@
 ---
 name: the-assembly-manager-is-a-service-not-tree-state
-description: AssemblyManager is an MST model whose one property an autorun rebuilds from config, so it pays the tree lifecycle without using snapshots, undo or patches. A plain MobX class with its members would not break plugins reading it; is the saving worth it now?
+description: AssemblyManager is an MST model whose one property an autorun rebuilds from config, so it pays the tree lifecycle without using snapshots, undo or patches. It becomes a plain MobX class with the same members, and core exports a named `Assembly` type.
 ---
 
 # The assembly manager is a service, not tree state
+
+## Ruling
+
+Do it, and export a named `Assembly` type from core so Apollo's next build
+compiles.
 
 ## What it is today
 

@@ -1,9 +1,14 @@
 ---
 name: a-track-nothing-has-read-is-invisible-to-get-referring
-description: The MST fork's `walk` skips children not yet instantiated, so `getReferring` misses a track entry nothing has read, and deleting the track leaves it failing on `Could not resolve trackId`. Either fix instantiates what lazy creation skips; the call is which.
+description: The MST fork's `walk` skips children not yet instantiated, so `getReferring` misses a track entry nothing has read, and deleting the track leaves it failing on `Could not resolve trackId`. ReferenceManagement reads track ids off snapshots instead.
 ---
 
 # A track nothing has read is invisible to getReferring
+
+## Ruling
+
+Fix it in ReferenceManagement, reading track ids off snapshots, so nothing is
+instantiated to find a referrer. The fork's `walk` stays as it is.
 
 ## Mechanism
 
@@ -60,5 +65,6 @@ render (an agent, an embedded host, a test) can hit it too.
   removal) would then instantiate the whole session, including every view that
   has not rendered.
 
-Both cost whatever lazy instantiation saves on a large session, and neither has
-been measured. It waits on that measurement and on which site owns the fix.
+Both of those cost whatever lazy instantiation saves on a large session, which
+is why the ruling reads snapshots instead: a node's snapshot is there whether
+or not it has been instantiated.

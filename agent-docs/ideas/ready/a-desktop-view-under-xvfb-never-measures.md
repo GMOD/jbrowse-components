@@ -1,6 +1,6 @@
 ---
 name: a-desktop-view-under-xvfb-never-measures
-description: "Under xvfb a LinearGenomeView that `jb.loadSessionSpec` creates in JBrowse Desktop intermittently never gets a width and stays `initializing`, so `test:mcp:headless` and the headless agent evals fail. Waits on a bisect, and on whether a real window hits it."
+description: "Under xvfb a LinearGenomeView that `jb.loadSessionSpec` creates in JBrowse Desktop intermittently never gets a width and stays `initializing`, so `test:mcp:headless` and the headless agent evals fail. The next move is a bisect on the laptop."
 ---
 
 # A Desktop view under xvfb never measures
@@ -18,9 +18,10 @@ fixed.
 a width: a view that is not on screen gets no assumed width (the `initialized`
 getter in `plugins/linear-genome-view/src/LinearGenomeView/model.ts`).
 
-**Waits on two numbers:**
+**The next moves:**
 
-- whether a real (non-xvfb) window hits it;
-- which commit made it common. The range 231c700ddf..dbbe63850d is about 2,500
-  commits, 376 of them in Desktop, the LGV model and `jbApi`. ada cannot bisect
-  it yet: it has no Xvfb (needs sudo), no Electron binary and no Desktop build.
+- bisect which commit made it common, on the laptop, which has xvfb. The range
+  231c700ddf..dbbe63850d is about 2,500 commits, 376 of them in Desktop, the
+  LGV model and `jbApi`. ada cannot run it: it has no Xvfb (needs sudo), no
+  Electron binary and no Desktop build;
+- check whether a real (non-xvfb) window hits it.

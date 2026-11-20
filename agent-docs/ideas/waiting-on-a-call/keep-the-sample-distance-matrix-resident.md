@@ -24,4 +24,4 @@ display's menus beside clustering, since both reorder or recolor rows the user
 may have arranged.
 
 Lane ordering on a synteny star wants the same PC1 over each lane's identity
-profile ([ordering-synteny-lanes-by-similarity](ordering-synteny-lanes-by-similarity.md)).
+profile ([ordering-synteny-lanes-by-similarity](../ready/ordering-synteny-lanes-by-similarity.md)).

@@ -1,9 +1,15 @@
 ---
 name: synteny-byte-gate
-description: "`LGVSyntenyDisplay` inherits the byte gate, but no comparative adapter implements `getRegionByteSize`, so the gate is inert and a fine-tier PIF over a whole chromosome downloads unbounded. Waits on choosing the byte budget."
+description: `LGVSyntenyDisplay` inherits the byte gate, but no comparative adapter implements `getRegionByteSize`, so the gate is inert and a fine-tier PIF over a whole chromosome downloads unbounded. The budget comes from SYNTENY_LOD's cost model.
 ---
 
 # Make LGVSyntenyDisplay's inherited byte gate live
+
+## Ruling
+
+Size a `fetchSizeLimit` from SYNTENY_LOD's cost model, so the coarse tier
+never banners, and measure the tier the fetch would read through
+`byteGateAdapterConfig`, as MAF does.
 
 ## The state today
 
@@ -25,11 +31,11 @@ was going to make anyway — so what is left is only the missing bound.
 until the budget is written into `gatedAdapterBudgets.json` — which is the
 point: the budget is the real work here, not the method.
 
-## The parked half: which budget
+## The budget
 
 The base display tier is 1 Mb, and SYNTENY_LOD's measured wire sizes say a
 legitimate whole-genome coarse-tier fetch is MB-scale — so the base budget
-banners the display's ordinary use. The decision needs:
+banners the display's ordinary use. The budget needs:
 
 - a `fetchSizeLimit` slot on the indexed PAF adapters (or the display) sized
   from SYNTENY_LOD's cost model, generous enough that the coarse tier never

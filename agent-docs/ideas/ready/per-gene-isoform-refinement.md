@@ -1,9 +1,14 @@
 ---
 name: per-gene-isoform-refinement
-description: Refine the fit ladder's one global isoform count per gene, so a lone gene in a sparse column keeps the transcripts a crowded column's neighbour cannot — parked at 8.18ms of extra solve per drag frame, with the two shapes that would make it affordable.
+description: Refine the fit ladder's one global isoform count per gene, so a lone gene in a sparse column keeps the transcripts a crowded column's neighbour cannot. At 8.18ms per drag frame it runs off the drag path, once the height settles.
 ---
 
 # Per-gene isoform refinement
+
+## Ruling
+
+Refine off the drag path, once the height has held still, and measure the
+visible reflow after a drag first.
 
 The fit ladder's `isoforms` rung solves ONE count and applies it to every gene
 on screen (ADR-092). That is the count the busiest column needs, and a lone gene
@@ -23,7 +28,7 @@ neighbours it actually stacks with rather than reshuffling the screen.
 per-gene count map where `LayoutInputs.maxIsoformsPerGene` is a scalar, threaded
 through `decideLabelReservations` and the incremental memo's cache key.
 
-## Why it is parked: 8.18ms per drag frame
+## Why not on the drag path: 8.18ms per drag frame
 
 Measured 2026-08-25 in a jest process on a 30-gene region (4-11 transcripts
 each, 70 bp/px, 200px track), through `createIsoformCountProbe` — the same

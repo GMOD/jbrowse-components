@@ -1,9 +1,16 @@
 ---
 name: jb2export-modifier-tables
-description: The jb2export track-modifier tables are the last big hand-maintained list in the docs; generating them from the modifiers registry needs a description tag on each entry first. Read before adding a modifier or a checker.
+description: The jb2export track-modifier tables are the last big hand-maintained list in the docs. They stay per-track-type prose, guarded by a presence-only checker over the modifiers registry. Read before adding a modifier or a checker.
 ---
 
 # The jb2export modifier tables
+
+## Ruling
+
+Keep the per-track-type prose and add a presence-only checker: every registry
+key is named somewhere under `## Track modifiers`. A checker that maps `on` to
+headings needs per-modifier allowances, and a checker with allowances is the
+kind that gets ignored.
 
 `products/jbrowse-img/README.md` documents the track modifiers in per-track-type
 tables, and `website/scripts/generate-img-doc.ts` mirrors the whole README onto
@@ -16,10 +23,9 @@ coupling, and nothing enforces it.
 
 **They were not drifted when this was written.** Every registry key appeared in
 a table, and each table's grouping matched its `on` list. So this is a gate to
-add before a gap opens, not a repair — which is why it is parked rather than in
-TODO.md. Re-check before building it.
+add before a gap opens, not a repair. Re-check before building it.
 
-## What it would take
+## The generator, not taken
 
 The names and the track types are derivable; the **description and the example
 are not**, so a generator means a `#modifier <example> | <description>` tag on
@@ -28,7 +34,7 @@ on an untagged emit site, which is the property that makes the docs unable to
 fall behind). The registry is `const modifiers`, not exported, so a generator
 reads it syntactically or the module starts exporting it.
 
-## Why the cheap version is not obviously right
+## Why the checker is presence-only
 
 A presence-only checker — every registry key is named somewhere under
 `## Track modifiers` — is ~30 lines and would pass today. The reverse direction
@@ -39,8 +45,6 @@ and that is better than one row under **All tracks**, not worse. So a checker
 that maps `on` to headings needs per-modifier allowances, and a checker with
 allowances is the kind that gets ignored.
 
-The decision to make first is whether the tables should stay per-track-type
-prose — in which case the checker is presence-only and the `on` list is not the
-thing being checked — or become one generated table with a Track types column,
-which is what the tag pass would naturally produce and which loses the
-per-category wording.
+One generated table with a Track types column, which is what the tag pass
+would naturally produce, loses the per-category wording, which is why the
+tables stay prose.

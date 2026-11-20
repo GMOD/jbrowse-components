@@ -5,6 +5,13 @@ description: The breakpoint split view refetches variant records through its own
 
 # The split view overlay reads its panels and draws a link mark
 
+## Ruling
+
+Build both halves: the canvas variant display emits junction ends, and the
+link mark's region table takes a row index so a mark may span views. One
+derivation removes a second RPC. Measure the payload on
+`breast_cancer_sniffles_hg19` first.
+
 The breakpoint split view gets its two kinds of evidence two ways:
 
 - **Reads** come off each panel's alignments display (`readSourceOf`), so the
@@ -40,8 +47,7 @@ a VCF breakend, a symbolic SV with `END`/`CHR2`, and a paired adapter's row.
   aim at; check whether the transform can run in the variant worker before
   writing a second one.
 
-Waits on a call that the canvas variant display grows a junction lane. The
-payload change is the cost; measure it on a large SV callset
+The payload change is the cost; measure it on a large SV callset
 (`breast_cancer_sniffles_hg19`) before building.
 
 ## Draw the overlay through the link mark
@@ -57,5 +63,5 @@ control points through `bezierConnectorPath`, the connector shader's JS twin.
 - `OverlayPaths`, `PathSpec` and the hit-stroke `<path>` per curve go.
 
 A region table serves one view today, and a foot here can land in any row, so
-the table needs a row index. Waits on a call that a mark may span views,
-which the synteny view's ribbons would take too.
+the table needs a row index, which the synteny view's ribbons would take
+too.

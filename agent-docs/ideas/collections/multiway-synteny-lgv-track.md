@@ -95,7 +95,7 @@ join since 2026-09-12. The picker dialog
 and should not be made to scale further.
 
 The ORDER of whatever set that picks is its own file —
-[ordering-synteny-lanes-by-similarity](../waiting-on-a-call/ordering-synteny-lanes-by-similarity.md),
+[ordering-synteny-lanes-by-similarity](../ready/ordering-synteny-lanes-by-similarity.md),
 which reaches the same "not from the alignment at cohort scale" conclusion by
 counting fetches, and adds the two constraints this paragraph does not: a ribbon
 joins only ADJACENT lanes, so the objective is seriation rather than clustering,

@@ -25,7 +25,7 @@ turns out to be something people try to do and can't.
 ntSynt-viz does) for views of more than three genomes: `diagonalize.ts` orders
 chromosomes within a row by density but never orders rows by relatedness. The
 multiway display's lane half of this is
-[ordering-synteny-lanes-by-similarity](../waiting-on-a-call/ordering-synteny-lanes-by-similarity.md).
+[ordering-synteny-lanes-by-similarity](../ready/ordering-synteny-lanes-by-similarity.md).
 
 **Don't chase native N-way blocks as the primitive** — the pairwise N−1 model is
 the right call for a browser (independently fetchable/zoomable, degrades gracefully

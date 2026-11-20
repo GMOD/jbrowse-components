@@ -11,7 +11,7 @@ cancer multi-hop rearrangements the way
 phases shipped in August 2026 as the derivative-allele picker and were removed
 on 2026-09-18
 ([ADR-137](../../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
-What is parked here is the additive half of the remainder — the marks nobody
+What is left here is the additive half of the remainder — the marks nobody
 draws.
 
 **The correctness half is not here, and it shipped.** `68eab1e8c7` stopped the

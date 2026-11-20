@@ -5,8 +5,13 @@ description: A pairwise overview tier from a graph with no sequence compared, to
 
 # A graph coarse tier from walk visit differences
 
-Measured on HPRC v2.1 windows; nothing is built. The open call is whether the
-overview tier for graph-derived pairs is this bag of nodes, and how to draw it.
+## Ruling
+
+Use the visit difference where no walk revisits a node, and compare bases over
+the revisit spans only. Where nothing revisits, the cheap path's coarse CIGAR is
+byte-identical to the base-compared one (CFH and MICB).
+
+Measured on HPRC v2.1 windows; nothing is built.
 
 ## Shared nodes assert under half of what aligns
 

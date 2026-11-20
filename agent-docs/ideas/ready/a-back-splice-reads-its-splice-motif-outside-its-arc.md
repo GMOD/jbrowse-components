@@ -1,9 +1,16 @@
 ---
 name: a-back-splice-reads-its-splice-motif-outside-its-arc
-description: A duplication-type split junction (a circRNA back-splice) reads no splice motif, so the non-canonical filter never drops one and the tooltip never says GT-AG. Its motif sits two bases past each arc end. The call is which split classes read one.
+description: A duplication-type split junction (a circRNA back-splice) reads no splice motif, so the non-canonical filter never drops one and the tooltip never says GT-AG. Its motif sits two bases past each arc end, and a sibling of `spliceMotifDinucleotides` reads it there.
 ---
 
 # A back-splice reads its splice motif outside its arc
+
+## Ruling
+
+The recommendations below stand: a duplication-type split reads its motif
+outside the arc, a deletion-type split inside, an inversion none. The tooltip
+gets the motif line alone, and **Hide non-canonical** drops non-canonical
+duplication splits in DNA too, since the reader asked for it.
 
 Found auditing circRNA support on 2026-11-12. A split junction reads no motif:
 `computeJunctions` (`plugins/alignments/src/features/junctions/compute.ts`)
@@ -38,7 +45,7 @@ called for split junctions of the classes chosen below, and the tooltip lines
 shown for them. The reference window needs 2 bp past the view edge, which the
 N-gap path already risks and answers with unknown.
 
-## The calls
+## The options weighed
 
 - **Which classes read a motif.** Duplication-type is the back-splice. A
   deletion-type split in RNA is a linear splice the aligner wrote as chimeric,

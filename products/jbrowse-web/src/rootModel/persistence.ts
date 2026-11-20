@@ -92,8 +92,8 @@ const snapshotWrites = new WeakMap<object, SnapshotWrite>()
  * its `local-` URL still resolves in another tab meanwhile. Any later write is
  * of a change, and marks the row edited for good — including a launch that
  * lands after the first tick, which a "views settled" gate could not exclude
- * without hiding real edits (ideas/waiting-on-a-call/
- * a-slow-launch-lists-an-untouched-session.md).
+ * without hiding real edits
+ * (ideas/ready/a-slow-launch-lists-an-untouched-session.md).
  *
  * A snapshot counts as written only once its write lands, so the next attempt
  * retries a failed one (an exceeded quota) rather than skipping it as saved —

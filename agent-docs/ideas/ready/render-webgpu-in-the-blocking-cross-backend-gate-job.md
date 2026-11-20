@@ -1,15 +1,15 @@
 ---
 name: render-webgpu-in-the-blocking-cross-backend-gate-job
-description: the drift half is done and the hand gate renders webgpu; the CI job cannot launch the browser it needs
+description: the drift half is done and the hand gate renders webgpu; the CI job needs Firefox Nightly, xvfb and a software WebGPU adapter, steps this repo writes in push.yml
 ---
 
 # Render webgpu in the blocking cross-backend gate job
 
-Moved out of [TODO.md](../../TODO.md) on 2026-09-02. The pixels half is done and
-the hand gate renders webgpu; what is left is a CI runner with a Firefox
-Nightly, a display and a software WebGPU adapter, none of which a worktree can
-prove and none of which the release turns on. It comes back when someone can
-run the job.
+The pixels half is done and the hand gate renders webgpu; what is left is a CI
+runner with a Firefox Nightly, a display and a software WebGPU adapter. All
+three are setup steps this repo writes in `push.yml` on a GitHub-hosted runner,
+so nothing outside waits; none of them can be proved from a worktree, only on
+a pushed branch.
 
 **The half this entry used to be about is done.** The capture no longer scrolls:
 `captureElementPng` measures the element's rect, clips to it, and asserts the

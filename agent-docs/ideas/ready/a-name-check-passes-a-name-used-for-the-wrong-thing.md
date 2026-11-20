@@ -5,6 +5,12 @@ description: check-decision-tree-names proves each name a decision tree uses exi
 
 # A name check passes a name used for the wrong thing
 
+## Ruling
+
+Generate the read-color precedence in `ALIGNMENTS_DECISION_TREE.md` next,
+the way `FIT_LADDER` is generated. Other trees stay prose with the name check
+as their guard until one of them drifts.
+
 `website/scripts/check-decision-tree-names.ts` (run by `scripts/check-docs.ts`)
 resolves each backticked name in an `agent-docs/reference/*_DECISION_TREE.md`,
 and each code-like word in a diagram one embeds, against the config schema's
@@ -30,9 +36,5 @@ Generate the part of a tree that can drift from a constant in code, as
 chain. A generated block can't name a rung in the wrong order, which the name
 check can't see.
 
-## The call
-
-Which trees have an ordered list or ladder in code worth exporting as a
-constant, and which stay prose with the name check as their only guard. The
-read-color precedence in `ALIGNMENTS_DECISION_TREE.md` and the representative
-transcript ranking are the likely next candidates.
+The representative transcript ranking is the candidate after the read-color
+precedence.

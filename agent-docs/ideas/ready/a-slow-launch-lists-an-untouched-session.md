@@ -5,6 +5,12 @@ description: Web autosave counts any snapshot change after the first 400ms tick 
 
 # A slow launch lists an untouched session
 
+## Ruling
+
+Take the second candidate: a write is not an edit when the only views whose
+snapshot changed are ones whose `launch` was cleared in it. It can only err
+toward edited, which loses no work.
+
 ## The mechanism
 
 `saveSessionSnapshot` (`products/jbrowse-web/src/rootModel/persistence.ts`)

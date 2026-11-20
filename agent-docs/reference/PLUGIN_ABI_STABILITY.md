@@ -211,7 +211,7 @@ gave a clean control.
   missing, MUI reports palette members missing, because a module augmentation
   cannot reach a second copy of the module it augments. No checker sees this
   class
-  ([ideas/waiting-on-a-call/a-dependency-bump-is-an-abi-event.md](../ideas/waiting-on-a-call/a-dependency-bump-is-an-abi-event.md)).
+  ([ideas/waiting-on-a-number/a-dependency-bump-is-an-abi-event.md](../ideas/waiting-on-a-number/a-dependency-bump-is-an-abi-event.md)).
   It recurred at beta.18: core moved to `@jbrowse/mobx-state-tree@^6.10.0`,
   Apollo's `v2` lockfile kept 6.9.0 beside it, and its typecheck went from 0
   errors to about 400 until Apollo raised its own range.

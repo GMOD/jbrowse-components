@@ -1,9 +1,15 @@
 ---
 name: url-params-consumed-but-not-applied
-description: A `hubURL` beside `extendSession` is stripped from the address bar by a loader branch that never used it, and which of the two should win is a product call.
+description: A `hubURL` beside `extendSession` is stripped from the address bar by a loader branch that never used it. The hub connects and the shorthand layers onto it through `hubLinkSpec`.
 ---
 
 # Params consumed and then discarded
+
+## Ruling
+
+Connect the hub and layer the shorthand onto it through `hubLinkSpec`. That
+never drops the param silently and needs no guess about which base the user
+meant.
 
 `stripConsumedSessionParams` deletes every name in `consumedParams`
 (`createSessionLoader.ts`) once the loader is committed, unconditionally. A
@@ -21,7 +27,7 @@ that defaultSession outright". So `?hubURL=…&extendSession=true&loc=…` sets
 The ordering is deliberate and the conflict is real: `extendSession` names the
 *config's* defaultSession as the thing to layer onto, and a hub brings its own
 assemblies and tracks. Both cannot be the base. What is not defensible is doing
-it silently. Three ways out, and picking one is the work:
+it silently. The three ways out, the first ruled:
 
 - **Connect the hub and layer the shorthand onto it.** `hubLinkSpec` already
   turns the shorthand into the hub spec's view, so `extendSession` becomes

@@ -1,9 +1,15 @@
 ---
 name: a-zoomed-out-gc-track-reads-the-whole-chromosome
-description: A GC content track over a whole chromosome downloads and scans every base, because the wiggle display never gates on bytes; the call is whether to gate it with `GCContentAdapter` answering `getRegionByteSize`, or accept the cost.
+description: A GC content track over a whole chromosome downloads and scans every base, because the wiggle display never gates on bytes. `GCContentAdapter` answers `getRegionByteSize` and the display opts into the gate.
 ---
 
 # A zoomed-out GC track reads the whole chromosome
+
+## Ruling
+
+Gate it: `GCContentAdapter` answers `getRegionByteSize` and the wiggle
+display opts into the gate, with its banner and force-load, following the
+`ReferenceScanAdapter` precedent.
 
 `GCContentAdapter` computes from the sequence, so its fetch is the sequence of
 every visible region. The wiggle display composes `RegionTooLargeMixin` through
@@ -28,7 +34,7 @@ of chr1 is also 2.49M bins, 30 MB of typed arrays across the worker boundary.
 
 ## Options
 
-- **Gate it.** `GCContentAdapter.getRegionByteSize` answers the sequence
+- **Gate it (ruled).** `GCContentAdapter.getRegionByteSize` answers the sequence
   adapter's estimate, or one byte per base where it has none, as the sequence
   plugin's scan adapters already do (`ReferenceScanAdapter`), and the wiggle
   display opts into the gate with a `fetchSizeLimit` row in
