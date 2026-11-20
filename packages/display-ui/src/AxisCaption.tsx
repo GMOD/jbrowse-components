@@ -3,6 +3,7 @@ import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar
 import { measureText } from '@jbrowse/core/util/measureText'
 import { observer } from 'mobx-react'
 
+import { SvgHaloText } from './FloatingText.tsx'
 import {
   axisCaptionY,
   axisGutterLeft,
@@ -65,19 +66,19 @@ export default function AxisCaption({
     height - half,
   )
   return (
-    <text
-      x={x}
-      y={y}
-      fontSize={AXIS_FONT_PX}
-      textAnchor="middle"
-      fill={palette.text.primary}
-      stroke={palette.background.default}
-      strokeWidth={2.5}
-      paintOrder="stroke"
-      transform={`rotate(-90, ${x}, ${y})`}
-    >
-      {caption.text}
-    </text>
+    <g transform={`rotate(-90, ${x}, ${y})`}>
+      <SvgHaloText
+        x={x}
+        y={y}
+        fontSize={AXIS_FONT_PX}
+        anchor="middle"
+        fill={palette.text.primary}
+        halo={palette.background.default}
+        haloWidth={2.5}
+      >
+        {caption.text}
+      </SvgHaloText>
+    </g>
   )
 }
 

@@ -1,5 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
+import { SvgHaloText, TEXT_BASELINE_RATIO } from './FloatingText.tsx'
 import { AXIS_FONT_PX, TICK_LABEL_X_PX } from './yAxisConstants.ts'
 import { clampStrokeInsideAxis } from './yScaleTicks.ts'
 
@@ -9,6 +10,8 @@ import type { YScaleTicks } from './yScaleTicks.ts'
 // 3.6px above the centered baseline and the 2.5px-wide background stroke another
 // 1.25px past that.
 const LABEL_HALF_HEIGHT_PX = 5
+
+const LABEL_BASELINE_DROP_PX = AXIS_FONT_PX * (TEXT_BASELINE_RATIO - 0.5)
 
 // eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export default function YScaleBar({
@@ -47,43 +50,38 @@ export default function YScaleBar({
   // under `bandHeight` within half a label of an end. A tick is where the data
   // is, so it never moves — the label is then drawn against the tick rather than
   // across it, which is what any axis does at the edge of its own frame.
-  // `undefined` rather than 0 for the labels that don't move, so the markup this
-  // emits is unchanged wherever the inset doesn't apply.
   const labelDy = (sy: number) => {
-    if (bandHeight === undefined) {
-      return undefined
-    }
-    const inset = Math.min(
-      Math.max(sy, LABEL_HALF_HEIGHT_PX),
-      bandHeight - LABEL_HALF_HEIGHT_PX,
-    )
-    return inset === sy ? undefined : inset - sy
+    const inset =
+      bandHeight === undefined
+        ? sy
+        : Math.min(
+            Math.max(sy, LABEL_HALF_HEIGHT_PX),
+            bandHeight - LABEL_HALF_HEIGHT_PX,
+          )
+    return inset - sy
   }
   return (
-    <g
-      fontSize={AXIS_FONT_PX}
-      textAnchor={isLeft ? 'end' : 'start'}
-      stroke={fg}
-      strokeWidth={1}
-    >
+    <g>
       <path
         fill="none"
+        stroke={fg}
+        strokeWidth={1}
         d={`M${k * tickLength} ${strokeY(yTop)}H0.5V${strokeY(yBottom)}H${k * tickLength}`}
       />
       {items.map(({ value, y, label }) => (
         <g key={`${value}-${y}`} transform={`translate(0,${strokeY(y)})`}>
-          <line x2={k * tickLength} />
-          <text
-            stroke={bg}
-            strokeWidth={2.5}
-            paintOrder="stroke"
-            fill={fg}
-            y={labelDy(strokeY(y))}
-            dy="0.32em"
+          <line x2={k * tickLength} stroke={fg} strokeWidth={1} />
+          <SvgHaloText
             x={k * TICK_LABEL_X_PX}
+            y={labelDy(strokeY(y)) + LABEL_BASELINE_DROP_PX}
+            fill={fg}
+            halo={bg}
+            haloWidth={2.5}
+            fontSize={AXIS_FONT_PX}
+            anchor={isLeft ? 'end' : 'start'}
           >
             {label ?? value}
-          </text>
+          </SvgHaloText>
         </g>
       ))}
     </g>

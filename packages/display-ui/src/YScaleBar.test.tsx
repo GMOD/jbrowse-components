@@ -1,7 +1,27 @@
 import { render } from '@testing-library/react'
 
+import { TEXT_BASELINE_RATIO } from './FloatingText.tsx'
 import YScaleBar from './YScaleBar.tsx'
+import { AXIS_FONT_PX } from './yAxisConstants.ts'
 import { AXIS_GUTTER_WIDTH_PX } from './yScaleTicks.ts'
+
+// A label is vertically centred on its tick by a baseline written into `y`,
+// the label's centre less half its font plus the line box's baseline ratio
+const BASELINE_DROP = AXIS_FONT_PX * (TEXT_BASELINE_RATIO - 0.5)
+
+const labelOffsets = (container: Element) =>
+  [...container.querySelectorAll('g[transform]')].map(
+    g => Number(g.querySelector('text')?.getAttribute('y')) - BASELINE_DROP,
+  )
+
+const tallTicks = {
+  items: [
+    { value: 0, y: 100, label: '0' },
+    { value: 100, y: 0, label: '100' },
+  ],
+  yTop: 0,
+  yBottom: 100,
+}
 
 describe('YScaleBar', () => {
   it('returns null when ticks is undefined', () => {
@@ -142,12 +162,11 @@ describe('YScaleBar', () => {
       'translate(0,50.5)',
       'translate(0,0.5)',
     ])
-    // bottom label up to y=95, top label down to y=5, middle one untouched —
-    // and untouched means no `y` at all, so the markup is byte-identical
-    // wherever the inset doesn't bite
-    expect(groups.map(g => g.querySelector('text')?.getAttribute('y'))).toEqual(
-      ['-4.5', null, '4.5'],
-    )
+    // bottom label up to y=95, top label down to y=5, middle one untouched
+    const offsets = labelOffsets(container)
+    expect(offsets[0]).toBeCloseTo(-4.5)
+    expect(offsets[1]).toBeCloseTo(0)
+    expect(offsets[2]).toBeCloseTo(4.5)
   })
 
   // What `AXIS_GUTTER_WIDTH_PX` is for, checked against the component it
@@ -199,21 +218,35 @@ describe('YScaleBar', () => {
   it('leaves labels centered on their ticks without a bandHeight', () => {
     const { container } = render(
       <svg>
-        <YScaleBar
-          ticks={{
-            items: [
-              { value: 0, y: 100, label: '0' },
-              { value: 100, y: 0, label: '100' },
-            ],
-            yTop: 0,
-            yBottom: 100,
-          }}
-          orientation="left"
-        />
+        <YScaleBar ticks={tallTicks} orientation="left" />
       </svg>,
     )
-    expect(
-      [...container.querySelectorAll('text')].map(t => t.getAttribute('y')),
-    ).toEqual([null, null])
+    for (const offset of labelOffsets(container)) {
+      expect(offset).toBeCloseTo(0)
+    }
+  })
+
+  // Neither `dy` nor `dominant-baseline` survives every renderer an export
+  // reaches, and neither does `paint-order`: Skia and Qt ignore it and paint
+  // the background stroke over the digits. The halo is a stroke copy drawn
+  // first, under a fill copy with no stroke of its own.
+  it('halos each label with a stroke copy under the fill, at its own baseline', () => {
+    const { container } = render(
+      <svg>
+        <YScaleBar ticks={tallTicks} orientation="left" />
+      </svg>,
+    )
+    for (const g of container.querySelectorAll('g[transform]')) {
+      const [halo, label] = [...g.querySelectorAll('text')]
+      expect(halo?.getAttribute('stroke-width')).toBe('2.5')
+      expect(halo?.getAttribute('fill')).toBe('none')
+      expect(label?.getAttribute('stroke')).toBeNull()
+      expect(label?.closest('[stroke]')).toBeNull()
+      for (const text of [halo, label]) {
+        expect(text?.getAttribute('paint-order')).toBeNull()
+        expect(text?.getAttribute('dy')).toBeNull()
+        expect(text?.getAttribute('font-size')).toBe(String(AXIS_FONT_PX))
+      }
+    }
   })
 })

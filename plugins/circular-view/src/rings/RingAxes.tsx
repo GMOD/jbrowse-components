@@ -1,12 +1,15 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { polarToCartesian, radToDeg } from '@jbrowse/core/util'
+import { SvgHaloText, TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import { ringAxisTicks } from './ringHost.ts'
 
-import type { CircularViewModel } from '../CircularView/model.ts'
+import type { Ring } from './ringHost.ts'
 
 const TICK_PX = 4
+const LABEL_FONT_PX = 9
+const LABEL_BASELINE_DROP_PX = LABEL_FONT_PX * (TEXT_BASELINE_RATIO - 0.5)
 
 /**
  * Each quantitative ring's y axis, drawn radially in the gap before the first
@@ -17,7 +20,11 @@ const TICK_PX = 4
 export const RingAxes = observer(function RingAxes({
   model,
 }: {
-  model: CircularViewModel
+  model: {
+    ringHost: { rings: readonly Ring[] }
+    offsetRadians: number
+    staticSlices: readonly { endRadians: number }[]
+  }
 }) {
   const palette = usePalette()
   const { ringHost, offsetRadians, staticSlices } = model
@@ -32,13 +39,13 @@ export const RingAxes = observer(function RingAxes({
     .map(ring => ({ ring, ticks: ringAxisTicks(ring) }))
     .filter(({ ticks }) => ticks.length > 0)
   return axes.length ? (
-    <g data-testid="ring-axes" stroke={fg} fontSize={9}>
+    <g data-testid="ring-axes">
       {axes.map(({ ring, ticks }) => {
         const [outerX, outerY] = polarToCartesian(ring.outerPx, angle)
         const [innerX, innerY] = polarToCartesian(ring.innerPx, angle)
         return (
           <g key={ring.display.id}>
-            <line x1={outerX} y1={outerY} x2={innerX} y2={innerY} />
+            <line x1={outerX} y1={outerY} x2={innerX} y2={innerY} stroke={fg} />
             {ticks.map(({ radius, label }) => {
               const [x, y] = polarToCartesian(radius, angle)
               const lx = x + tx * (TICK_PX + 2)
@@ -50,21 +57,22 @@ export const RingAxes = observer(function RingAxes({
                     y1={y}
                     x2={x + tx * TICK_PX}
                     y2={y + ty * TICK_PX}
+                    stroke={fg}
                   />
                   {label === undefined ? null : (
-                    <text
-                      x={lx}
-                      y={ly}
-                      transform={`rotate(${rotation} ${lx} ${ly})`}
-                      textAnchor={labelAnchor}
-                      dy="0.32em"
-                      fill={fg}
-                      stroke={bg}
-                      strokeWidth={2.5}
-                      paintOrder="stroke"
-                    >
-                      {label}
-                    </text>
+                    <g transform={`rotate(${rotation} ${lx} ${ly})`}>
+                      <SvgHaloText
+                        x={lx}
+                        y={ly + LABEL_BASELINE_DROP_PX}
+                        anchor={labelAnchor}
+                        fontSize={LABEL_FONT_PX}
+                        fill={fg}
+                        halo={bg}
+                        haloWidth={2.5}
+                      >
+                        {label}
+                      </SvgHaloText>
+                    </g>
                   )}
                 </g>
               )

@@ -1,5 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { stripAlpha } from '@jbrowse/core/util'
+import { SvgHaloText } from '@jbrowse/display-ui'
 
 import {
   TRACK_LABEL_GAP,
@@ -77,24 +78,27 @@ export default function SVGTrackLabel({
     fontSize,
     x,
   })
+  const fill = stripAlpha(palette.text.primary)
   // 'overlapping' prints over the track's own data, which the on-screen label
   // clears with a paper box, so it carries the halo text over a plot needs
-  const halo =
-    trackLabels === 'overlapping'
-      ? {
-          stroke: stripAlpha(palette.background.paper),
-          strokeWidth: 3,
-          paintOrder: 'stroke',
-        }
-      : {}
-  return (
+  return trackLabels === 'overlapping' ? (
+    <SvgHaloText
+      x={pos.x}
+      y={pos.y}
+      fontSize={fontSize}
+      fill={fill}
+      halo={stripAlpha(palette.background.paper)}
+      haloWidth={3}
+    >
+      {trackName}
+    </SvgHaloText>
+  ) : (
     <text
       x={pos.x}
       y={pos.y}
       textAnchor={pos.textAnchor}
       fontSize={fontSize}
-      fill={stripAlpha(palette.text.primary)}
-      {...halo}
+      fill={fill}
     >
       {trackName}
     </text>

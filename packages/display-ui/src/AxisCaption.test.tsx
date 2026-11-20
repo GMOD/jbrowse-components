@@ -38,8 +38,12 @@ function drawn(axis: YAxis, height: number) {
       container.querySelector('g')!.getAttribute('transform')!,
     )![1],
   )
-  const caption = container.querySelector(':scope > svg > text')
+  const [halo, caption] = container.querySelectorAll(
+    ':scope > svg > g[transform^="rotate"] > text',
+  )
   return {
+    halo,
+    label: caption,
     spine,
     captionX: Number(caption?.getAttribute('x')),
     caption: caption?.textContent,
@@ -76,4 +80,16 @@ test('a caption longer than its display is cut to fit it', () => {
   )
   expect(caption).toMatch(/^neg_.*…$/)
   expect(measureText(caption, AXIS_FONT_PX)).toBeLessThanOrEqual(40)
+})
+
+// `paint-order` is ignored by Skia and Qt, which then paint the background
+// stroke over the caption; a stroke copy under a fill copy reads everywhere
+test('the caption is haloed by a stroke copy drawn beneath it', () => {
+  const { halo, label } = drawn(axisLabelled(['0', '9'], 'depth'), 150)
+  expect(halo?.textContent).toBe('depth')
+  expect(halo?.getAttribute('stroke-width')).toBe('2.5')
+  expect(label?.getAttribute('stroke')).toBeNull()
+  for (const text of [halo, label]) {
+    expect(text?.getAttribute('paint-order')).toBeNull()
+  }
 })

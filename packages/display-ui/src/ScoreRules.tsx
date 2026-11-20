@@ -1,6 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
+import { SvgHaloText } from './FloatingText.tsx'
 import { DEFAULT_RULE_COLOR } from './yAxisConstants.ts'
 
 /**
@@ -64,21 +65,20 @@ export function ScoreRuleLines({
             {label ? (
               // right-hand end: the left is where the y-axis and its tick
               // labels already are
-              <text
+              <SvgHaloText
                 x={width - 4}
                 y={labelY(y, offsetY)}
-                textAnchor="end"
+                anchor="end"
                 fontSize={LABEL_FONT_SIZE}
                 // full alpha, unlike the line: 0.9 is there to let the rule
                 // recede into the plot, and a caption that has to be read wants
                 // the opposite
                 fill={stroke}
-                stroke={haloColor}
-                strokeWidth={2.5}
-                paintOrder="stroke"
+                halo={haloColor}
+                haloWidth={2.5}
               >
                 {label}
-              </text>
+              </SvgHaloText>
             ) : null}
           </g>
         )

@@ -21,7 +21,7 @@ const TRACK_LABEL_OFFSET = 200
 // leftmost visible content, which the non-gutter modes hang off
 const CONTENT_X = 7
 
-function renderLabel(trackLabels: TrackLabelMode, fontSize = FONT_SIZE) {
+function renderedTexts(trackLabels: TrackLabelMode, fontSize = FONT_SIZE) {
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <svg>
@@ -36,7 +36,11 @@ function renderLabel(trackLabels: TrackLabelMode, fontSize = FONT_SIZE) {
       </svg>
     </ThemeProvider>,
   )
-  return container.querySelector('text')
+  return [...container.querySelectorAll('text')]
+}
+
+function renderLabel(trackLabels: TrackLabelMode, fontSize = FONT_SIZE) {
+  return renderedTexts(trackLabels, fontSize).at(-1)
 }
 
 // Chrome reports a 13px string's ink as 15px tall with ~3px below the baseline;
@@ -47,7 +51,7 @@ const inkTop = (baseline: number, fontSize: number) =>
   baseline - (labelInkHeight(fontSize) - descent(fontSize))
 
 test('hidden draws nothing at all', () => {
-  expect(renderLabel('hidden')).toBeNull()
+  expect(renderLabel('hidden')).toBeUndefined()
 })
 
 test('left right-aligns into the gutter trackLabelLeftOffset reserved', () => {
@@ -118,9 +122,14 @@ test.each(['left', 'offset', 'overlapping'] as const)(
 )
 
 // An overlaid label prints over the track's own data, which the on-screen
-// label clears with a paper box; the export's needs the halo instead.
-test('overlapping carries a halo and the other modes do not', () => {
-  expect(renderLabel('overlapping')?.getAttribute('paint-order')).toBe('stroke')
-  expect(renderLabel('offset')?.getAttribute('paint-order')).toBeNull()
-  expect(renderLabel('left')?.getAttribute('paint-order')).toBeNull()
+// label clears with a paper box; the export's needs the halo instead. It is a
+// stroke copy under the label rather than `paint-order`, which Skia and Qt
+// ignore and so paint the halo over the name.
+test('overlapping carries a halo drawn beneath it and the other modes do not', () => {
+  const [halo, label] = renderedTexts('overlapping')
+  expect(halo?.getAttribute('stroke-width')).toBe('3')
+  expect(label?.getAttribute('stroke')).toBeNull()
+  expect(label?.getAttribute('paint-order')).toBeNull()
+  expect(renderedTexts('offset')).toHaveLength(1)
+  expect(renderedTexts('left')).toHaveLength(1)
 })

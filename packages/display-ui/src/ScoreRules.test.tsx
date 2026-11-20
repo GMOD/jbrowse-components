@@ -28,13 +28,16 @@ it('keeps the alpha on its own attribute, not in an rgba color', () => {
 // A caption crosses the plot rather than sitting beside it, so it draws the
 // same halo the tick labels do. Without one, grey-on-fill is unreadable exactly
 // where a rule is most useful — down among the bars it is being compared to.
-it('halos the caption against the fill it crosses', () => {
+// The halo is a stroke copy under a fill copy, not `paint-order`, which Skia
+// and Qt ignore and so paint the halo over the caption.
+it('halos the caption with a stroke copy drawn beneath it', () => {
   const svg = render([{ value: 30, label: '2 copies', y: 10 }])
-  const text = /<text[^>]*>/.exec(svg)![0]
-  expect(text).toContain('paint-order="stroke"')
-  expect(text).toContain('stroke-width="2.5"')
+  const [halo, caption] = [...svg.matchAll(/<text[^>]*>/g)].map(m => m[0])
+  expect(halo).toContain('stroke-width="2.5"')
+  expect(caption).not.toContain('stroke')
+  expect(svg).not.toContain('paint-order')
   // full alpha, unlike the line it captions
-  expect(text).not.toContain('fill-opacity')
+  expect(caption).not.toContain('fill-opacity')
 })
 
 it('colors the line and its caption together', () => {
