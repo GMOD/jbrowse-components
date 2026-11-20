@@ -1,4 +1,4 @@
-import { isCopyLane, laneGenome, laneOf } from './copyLane.ts'
+import { isCopyLane, laneGenome, laneOf, lanesPlacedIn } from './copyLane.ts'
 import { rowAssembliesOf, sortedLanes } from './layoutMultiWay.ts'
 
 import type { LaneRowsField } from './copyLane.ts'
@@ -112,12 +112,10 @@ export function unalignedChosenLanesOf(
   field: LaneRowsField,
 ) {
   const placed = new Set(
-    groups.flatMap(group =>
-      [...group.mates.keys()].flatMap(name => [
-        keyOf(name),
-        keyOf(laneGenome(name)),
-      ]),
-    ),
+    [...lanesPlacedIn(groups)].flatMap(name => [
+      keyOf(name),
+      keyOf(laneGenome(name)),
+    ]),
   )
   const lanes = new Map<string, string>()
   for (const name of field === 'refName' ? choice : choice.map(laneGenome)) {

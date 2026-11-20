@@ -171,6 +171,28 @@ export function fileUnderCopies(
   }))
 }
 
+/** each lane the groups place, once */
+export function lanesPlacedIn(groups: readonly MultiWayGroup[]) {
+  return new Set(groups.flatMap(group => [...group.mates.keys()]))
+}
+
+/**
+ * The copy lanes `grouped` places that `filed` drops under the floor, which
+ * the lane dialog offers unticked
+ */
+export function copyLanesUnderFloor(
+  grouped: readonly MultiWayGroup[],
+  filed: readonly MultiWayGroup[],
+  filing: CopyLaneFiling,
+) {
+  const drawn = lanesPlacedIn(filed)
+  return [
+    ...lanesPlacedIn(
+      fileUnderCopies(grouped, { ...filing, chosen: () => true }),
+    ),
+  ].filter(lane => !drawn.has(lane))
+}
+
 /**
  * The groups `rows.field` draws, the display's and the export's alike: each
  * mate under its genome's lane, or under its copy lane as `filing` files it

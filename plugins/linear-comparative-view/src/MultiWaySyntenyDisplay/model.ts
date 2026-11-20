@@ -108,7 +108,7 @@ import {
 import {
   copyLaneFiling,
   copyLaneName,
-  fileUnderCopies,
+  copyLanesUnderFloor,
   groupsOfField,
   laneGenome,
   laneKeyIn,
@@ -764,16 +764,12 @@ export function stateModelFactory(
        * lane dialog offers unticked
        */
       get copyLanesUnderFloor(): string[] {
-        const drawn = new Set(this.groups.flatMap(g => [...g.mates.keys()]))
         return this.laneField === 'refName'
-          ? [
-              ...new Set(
-                fileUnderCopies(this.groupedFeatures, {
-                  ...this.copyFiling(),
-                  chosen: () => true,
-                }).flatMap(g => [...g.mates.keys()]),
-              ),
-            ].filter(lane => !drawn.has(lane))
+          ? copyLanesUnderFloor(
+              this.groupedFeatures,
+              this.groups,
+              this.copyFiling(),
+            )
           : []
       },
       /**
