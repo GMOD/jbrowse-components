@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 
-import { parsePedigree, withPedigree } from './pedigree.ts'
+import { parsePedigree, withPedigree, withRelationships } from './pedigree.ts'
 
 const g1k = fs.readFileSync(
   require.resolve('../VcfAdapter/test_data/g1k_pedigree_excerpt.txt'),
@@ -214,4 +214,87 @@ test('the pedigree never adds or removes a sample', () => {
       source => source.name,
     ),
   ).toEqual(['HG02024', 'absent'])
+})
+
+function relationshipsOf(sources: { name: string; [key: string]: string }[]) {
+  return Object.fromEntries(
+    withRelationships(sources).map(source => [
+      source.name,
+      Reflect.get(source, 'relationship'),
+    ]),
+  )
+}
+
+test('a child is a son, daughter or child by its sex, and a parent a father or mother by the column naming it', () => {
+  expect(
+    relationshipsOf([
+      { name: 'boy', father: 'dad', mother: 'mum', sex: 'male' },
+      { name: 'girl', father: 'dad', mother: 'mum', sex: '2' },
+      { name: 'kid', father: 'dad', sex: 'other' },
+      { name: 'unsexed', mother: 'mum' },
+      { name: 'dad', sex: 'male' },
+      { name: 'mum', sex: 'female' },
+      { name: 'unrelated', sex: 'male' },
+    ]),
+  ).toEqual({
+    boy: 'son',
+    girl: 'daughter',
+    kid: 'child',
+    unsexed: 'child',
+    dad: 'father',
+    mum: 'mother',
+    unrelated: undefined,
+  })
+})
+
+test('a sample that is both a child and a parent joins the two', () => {
+  expect(
+    relationshipsOf([
+      { name: 'grandson', mother: 'mum', sex: 'male' },
+      { name: 'mum', father: 'grandpa', sex: 'female' },
+      { name: 'grandpa', sex: 'male' },
+    ]),
+  ).toEqual({ grandson: 'son', mum: 'daughter, mother', grandpa: 'father' })
+})
+
+test('a parent absent from the samples relates no one', () => {
+  expect(
+    relationshipsOf([
+      { name: 'orphan', father: 'absentDad', mother: 'absentMum', sex: '1' },
+      { name: 'halfOrphan', father: 'absentDad', mother: 'mum', sex: '1' },
+      { name: 'mum', sex: '2' },
+    ]),
+  ).toEqual({ orphan: undefined, halfOrphan: 'son', mum: 'mother' })
+})
+
+test('a selfed line names its one parent a parent, and a sample is never its own', () => {
+  expect(
+    relationshipsOf([
+      { name: 'S1', father: 'P', mother: 'P', sex: 'other' },
+      { name: 'P', sex: 'other' },
+      { name: 'self', father: 'self' },
+    ]),
+  ).toEqual({ S1: 'child', P: 'parent', self: undefined })
+})
+
+test("a samples table's relationship column wins over the derived one", () => {
+  expect(
+    relationshipsOf([
+      { name: 'HG02024', father: 'HG02026', relationship: 'proband' },
+      { name: 'HG02026', relationship: '' },
+    ]),
+  ).toEqual({ HG02024: 'proband', HG02026: '' })
+})
+
+test('the 1000 Genomes KHV trio reads as a daughter, her mother and her father', () => {
+  const { attributes } = parsePedigree(g1k, KHV_TRIO, 'ped.txt')
+
+  expect(
+    relationshipsOf(
+      withPedigree(
+        KHV_TRIO.map(name => ({ name })),
+        attributes,
+      ),
+    ),
+  ).toEqual({ HG02024: 'daughter', HG02025: 'mother', HG02026: 'father' })
 })

@@ -10,7 +10,7 @@ import { getFileName } from '@jbrowse/core/util/tracks'
 
 import VcfFeature from '../VcfFeature/index.ts'
 import { HAPLOTYPE_ROW_FIELDS } from './constants.ts'
-import { parsePedigree, withPedigree } from './pedigree.ts'
+import { parsePedigree, withPedigree, withRelationships } from './pedigree.ts'
 
 import type { TabixIndexedFile } from '@gmod/tabix'
 import type VcfParser from '@gmod/vcf'
@@ -189,7 +189,9 @@ export async function vcfSourcesAndWarnings({
       opts,
     }),
   ])
-  const sources = withPedigree(samples.sources, pedigree.attributes)
+  const sources = withRelationships(
+    withPedigree(samples.sources, pedigree.attributes),
+  )
   const warnings = [...samples.warnings, ...pedigree.warnings]
   const reserved: string[] = HAPLOTYPE_ROW_FIELDS.filter(field =>
     sources.some(source => Object.hasOwn(source, field)),

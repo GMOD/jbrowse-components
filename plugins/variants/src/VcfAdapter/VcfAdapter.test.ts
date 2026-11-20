@@ -220,7 +220,7 @@ function trioAdapter({
   )
 }
 
-test('a pedigree adds family, parents and sex to the VCF samples', async () => {
+test('a pedigree adds family, parents, sex and relationship to the VCF samples', async () => {
   const { sources, warnings } = await trioAdapter({
     samples: ['HG02024', 'HG02025', 'HG02026'],
   }).getSourcesAndWarnings()
@@ -232,9 +232,20 @@ test('a pedigree adds family, parents and sex to the VCF samples', async () => {
       father: 'HG02026',
       mother: 'HG02025',
       sex: 'female',
+      relationship: 'daughter',
     },
-    { name: 'HG02025', family: 'VN049', sex: 'female' },
-    { name: 'HG02026', family: 'VN049', sex: 'male' },
+    {
+      name: 'HG02025',
+      family: 'VN049',
+      sex: 'female',
+      relationship: 'mother',
+    },
+    {
+      name: 'HG02026',
+      family: 'VN049',
+      sex: 'male',
+      relationship: 'father',
+    },
   ])
   expect(warnings).toEqual([])
 })
@@ -253,8 +264,15 @@ test("the samples table's sex wins over the pedigree's, and its narrowing stays"
       mother: 'HG02025',
       sex: 'F',
       population: 'KHV',
+      relationship: 'daughter',
     },
-    { name: 'HG02026', family: 'VN049', sex: 'M', population: 'KHV' },
+    {
+      name: 'HG02026',
+      family: 'VN049',
+      sex: 'M',
+      population: 'KHV',
+      relationship: 'father',
+    },
   ])
 })
 

@@ -171,3 +171,51 @@ export function withPedigree<T extends { name: string }>(
 ) {
   return sources.map(source => ({ ...attributes.get(source.name), ...source }))
 }
+
+const CHILD_TERMS = { male: 'son', female: 'daughter', other: 'child' } as const
+
+function stringAttribute(source: object, key: string) {
+  const value: unknown = Reflect.get(source, key)
+  return typeof value === 'string' ? value : undefined
+}
+
+/**
+ * Each source with a `relationship` attribute saying how it relates to the
+ * other sources, read off their `father`, `mother` and `sex`: as a child of a
+ * parent among them, `son`, `daughter` or `child` by its sex; as a parent of a
+ * child among them, `father` or `mother` by the column naming it, or `parent`
+ * where both do, as in a selfed line; both joined, as `daughter, mother`. A
+ * source related to none, or carrying a `relationship` of its own, as a
+ * samples table column, is left as it is.
+ */
+export function withRelationships<T extends { name: string }>(sources: T[]) {
+  const names = new Set(sources.map(source => source.name))
+  const parentOf = (source: T, column: 'father' | 'mother') => {
+    const parent = stringAttribute(source, column)
+    return parent !== undefined && parent !== source.name && names.has(parent)
+      ? [parent]
+      : []
+  }
+  const fathers = new Set(sources.flatMap(source => parentOf(source, 'father')))
+  const mothers = new Set(sources.flatMap(source => parentOf(source, 'mother')))
+  return sources.map(source => {
+    const sex = stringAttribute(source, 'sex')
+    const asChild =
+      parentOf(source, 'father').length + parentOf(source, 'mother').length > 0
+        ? CHILD_TERMS[
+            (sex === undefined ? undefined : pedigreeSexOf(sex)) ?? 'other'
+          ]
+        : undefined
+    const asParent = fathers.has(source.name)
+      ? mothers.has(source.name)
+        ? 'parent'
+        : 'father'
+      : mothers.has(source.name)
+        ? 'mother'
+        : undefined
+    const relationship = [asChild, asParent].filter(Boolean).join(', ')
+    return relationship && !Object.hasOwn(source, 'relationship')
+      ? { ...source, relationship }
+      : source
+  })
+}
