@@ -195,21 +195,26 @@ count", not a measurement.
 Haplotype walks
 ---------------
 
-  hprc-v2.1-mc-grch38.GRCh38.walks.gz              1,562,313,167 bytes
-  hprc-v2.1-mc-grch38.GRCh38.walks.gz.idx                  8,109
-  hprc-v2.1-mc-chm13.CHM13.walks.gz                1,760,248,336
-  hprc-v2.1-mc-chm13.CHM13.walks.gz.idx                      886
+  hprc-v2.1-mc-grch38-f8.GRCh38.walks.gz           1,580,961,534 bytes
+  hprc-v2.1-mc-grch38-f8.GRCh38.walks.gz.idx               8,149
+  hprc-v2.1-mc-chm13-f8.CHM13.walks.gz             1,784,716,865
+  hprc-v2.1-mc-chm13-f8.CHM13.walks.gz.idx                   926
 
   What the configs read. Every haplotype's path through a base-level v2.1
-  graph in walk format 7 (gfa-to-tabix 4.0.0, docs/walks-format.md there),
-  one file per reference with its directory in the .idx beside it, built on
-  2026-11-07 and hosted on 2026-11-08 after graph-walks 6.0.0's release check
-  passed 28 of 28 windows on each hosted file. The GRCh38 file comes from the
-  GRCh38-referenced graph and the CHM13 file from HPRC's CHM13-referenced one
-  (hprc-v2.1-mc-chm13, in the directory beside the release directory above),
-  so each reference passes none of its graph's nodes twice and the header's
-  revisited:i:0 holds: every position and departure in the file is the
-  graph's own, not a placement choice.
+  graph in walk format 8 (gfa-to-tabix 5.0.0, docs/walks-format.md there),
+  one file per reference with its directory in the .idx beside it, built and
+  hosted on 2026-11-15. graph-walks' release check passed 28 of 28 windows
+  on each hosted file, at 7.0.0 and again at 8.0.1. The GRCh38 file comes
+  from the GRCh38-referenced graph and the CHM13 file from HPRC's
+  CHM13-referenced one (hprc-v2.1-mc-chm13, in the directory beside the
+  release directory above), so each reference passes none of its graph's
+  nodes twice and the header's revisited:i:0 holds: every position and
+  departure in the file is the graph's own, not a placement choice.
+
+  The names without -f8, hprc-v2.1-mc-grch38.GRCh38.walks.gz and
+  hprc-v2.1-mc-chm13.CHM13.walks.gz with their .idx, have held the same
+  bytes since 2026-11-19, so a config that names either reads format 8.
+  The graph plugin reads format 8 from 10.0.0, and no other walk format.
 
   A file is a series of gzip units: a header, then per reference sequence a
   unit per 64 kb tile, its departure records in blocks of 64 kb to 32 Mb,
@@ -223,35 +228,66 @@ Haplotype walks
   reads the directory, then the tiles and departure blocks over a window by
   range request, and decodes only the haplotypes it is asked for. Tiles too
   costly to read whole, mostly repeat arrays, keep a summary row per
-  costliest haplotype and its steps in a detail unit, which the graph track
-  loads on request.
+  costliest haplotype, its outline in a blocks unit and its steps in a
+  detail unit, which the graph track loads on request.
 
   The hprc_v2_1_walk_lanes track draws haplotype lanes from the GRCh38 file:
   it aligns each haplotype's walk to the reference's, and each lane to the
   next, on the nodes both visit, with no base compared. It reads no gbz.db
   and no haplotype index. Its walksUri names the file by its prefix,
-  hprc-v2.1-mc-grch38.GRCh38, and the plugin resolves <prefix>.walks.gz and
-  its .idx; defaultHaplotypes names the lanes it draws unless the haplotype
-  menu says otherwise. test_data/graphgenomeview/hprc.json's hs1 track reads
-  hprc-v2.1-mc-chm13.CHM13.
+  hprc-v2.1-mc-grch38-f8.GRCh38, and the plugin resolves <prefix>.walks.gz
+  and its .idx; defaultHaplotypes names the lanes it draws unless the
+  haplotype menu says otherwise. test_data/graphgenomeview/hprc.json's hs1
+  track reads hprc-v2.1-mc-chm13-f8.CHM13.
 
   GRCh38: 19,933,602 pieces, 1,797,769 departure records in 3,813,809 rows,
-  97,164,719 lines in 159,038 units; 1,698 paths visit no GRCh38 node and
+  97,238,772 lines in 159,499 units; 1,698 paths visit no GRCh38 node and
   have no row.
   CHM13: 20,237,742 pieces, 1,750,312 departure records in 3,743,089 rows,
-  111,337,174 lines in 154,936 units; 3,312 paths have no row.
+  111,402,570 lines in 155,499 units; 3,312 paths have no row.
 
-  Built on ada with gfa-to-tabix 4.0.0 (commit 1e698f4), from the GFAs
-  vg convert -f wrote from HPRC's hprc-v2.1-mc-grch38.gbz and
-  hprc-v2.1-mc-chm13.gbz, so node ids match each GBZ, and the GRCh38 file's
-  match the gbz.db:
+  Built on ada with gfa-to-tabix at commit 9e46a46, whose walk files the
+  released 5.0.0 writes byte for byte, from the GFAs vg convert -f wrote
+  from HPRC's hprc-v2.1-mc-grch38.gbz and hprc-v2.1-mc-chm13.gbz, so node
+  ids match each GBZ, and the GRCh38 file's match the gbz.db:
 
     gfa-to-tabix grch38.gfa --walks --refs GRCh38 -o hprc-v2.1-mc-grch38
-                                                     # 1:30:04, 7.3 GiB peak
+                                                     # 1:08:10, 7.3 GiB peak
     gfa-to-tabix chm13.gfa --walks --refs CHM13 -o hprc-v2.1-mc-chm13
-                                                     # 50:10, 8.6 GiB peak
+                                                     # 1:05:10, 8.6 GiB peak
 
   The defaults --tile 65536 and --stay 311 apply.
+
+  hprc-v2.1-mc-grch38-chr6-sequences-f8.GRCh38.walks.gz    145,319,431 bytes
+  hprc-v2.1-mc-grch38-chr6-sequences-f8.GRCh38.walks.gz.idx        198
+
+  The GRCh38 file's chr6 alone, with --sequences, so each node carries its
+  bases: ggtubemap's README figures read it to print them. Walk format 8,
+  hosted on 2026-11-15; the name without -f8 has held the same bytes since
+  2026-11-20. 1,207 paths, 1,196,638 pieces, 105,024 departure records in
+  212,158 rows, 6,783,531 lines in 7,362 units; verify7 passed, and the
+  released gfa-to-tabix 5.0.0 binary writes the same bytes.
+
+  Built on ada from the chr6 component of HPRC's hprc-v2.1-mc-grch38.gbz,
+  so node ids match the GBZ and the genome-wide file:
+
+    vg chunk -x hprc-v2.1-mc-grch38.gbz --gbz --contig chr6 -b chunk  # vg 1.76.1
+    vg convert -f chunk_0_chr6.gbz > chr6.gfa
+    gfa-to-tabix chr6.gfa --walks --sequences --refs GRCh38 \
+      -o hprc-v2.1-mc-grch38-chr6-sequences-f8          # 3:26, 1.8 GiB peak
+
+  hprc-v2.1-mc-grch38-f7.GRCh38.walks.gz           1,562,313,167 bytes
+  hprc-v2.1-mc-grch38-f7.GRCh38.walks.gz.idx               8,109
+  hprc-v2.1-mc-chm13-f7.CHM13.walks.gz             1,760,248,336
+  hprc-v2.1-mc-chm13-f7.CHM13.walks.gz.idx                   886
+  hprc-v2.1-mc-grch38-chr6-sequences-f7.GRCh38.walks.gz    143,825,614
+  hprc-v2.1-mc-grch38-chr6-sequences-f7.GRCh38.walks.gz.idx        161
+
+  Still hosted and read by no config: the walk format 7 set (gfa-to-tabix
+  4.0.0) that the names without a suffix held from 2026-11-08 until the
+  format 8 bytes replaced them. A graph plugin from 9.0.0 to before 10.0.0
+  reads format 7 only, so a session that pins one of those reads these
+  files by their -f7 names.
 
   hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz      1,550,816,162 bytes
   hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz.tbi    1,332,701
@@ -260,13 +296,12 @@ Haplotype walks
 
   Still hosted, read by no config since 2026-11-08, and slated for deletion:
   the walk format 5 set the configs read before the format 7 files, kept for
-  sessions saved before the swap. The plugin from 9.0.0 reads format 7 only,
-  so these open only in a plugin before 9.0.0. Both files come from the
-  GRCh38-referenced graph, bgzip + Tabix BED filed under 64 kb chunks, with
-  skip rows, one per haplotype and chunk that its deletion jumps over (ADR
-  0006 in gfa-to-tabix): 24,795 on GRCh38 and 86,958 on CHM13. Built
-  2026-10-28 with gfa-to-tabix 2.0.0 from hprc-v2.1-mc-grch38.gbz (2:25:03,
-  13.1 GB RSS):
+  sessions saved before the swap. These open only in a plugin before 9.0.0.
+  Both files come from the GRCh38-referenced graph, bgzip + Tabix BED filed
+  under 64 kb chunks, with skip rows, one per haplotype and chunk that its
+  deletion jumps over (ADR 0006 in gfa-to-tabix): 24,795 on GRCh38 and 86,958
+  on CHM13. Built 2026-10-28 with gfa-to-tabix 2.0.0 from
+  hprc-v2.1-mc-grch38.gbz (2:25:03, 13.1 GB RSS):
 
     vg convert -f hprc-v2.1-mc-grch38.gbz | pigz > hprc-v2.1-mc-grch38.W.gfa.gz
                                                        # vg 1.76.1, 17 min, 90 GB
