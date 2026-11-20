@@ -27,6 +27,9 @@ export default function webpackConfig(config: Configuration) {
   genBuildInfo()
   return {
     ...config,
+    // Declined: hashless chunk names, 12 KB gzipped off every page (the
+    // id-to-hash map ships in main.js and the worker entry), since main
+    // redeploys on every push and a returning user would refetch every chunk.
     optimization:
       config.mode === 'production'
         ? { ...config.optimization, splitChunks: { chunks: 'all' } }

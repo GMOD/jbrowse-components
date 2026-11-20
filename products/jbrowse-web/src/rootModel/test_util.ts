@@ -84,6 +84,10 @@ function finishTestSession({
   return session
 }
 
+// Importing this costs a suite seconds (6.7s against an empty suite's 2.0s,
+// warm, one worker), nearly all of it the web plugin set. Declined: a faster
+// fixture built from only the plugins a suite names, which would be a second
+// way to build a session, the drift this function exists to prevent.
 export function createTestSession(args?: CreateTestSessionArgs) {
   return finishTestSession(buildTestRoot(args))
 }

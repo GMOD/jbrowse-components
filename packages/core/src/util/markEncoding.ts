@@ -190,6 +190,10 @@ type RowReader<T = unknown> = (i: number) => T
 
 type NumberColumn = Extract<Column, { kind: 'number' }>
 
+// Declined: evaluating a computed channel a column at a time. A jexl prototype
+// ran it 2-6x faster than the per-row read here, but only over column tables,
+// and a computed channel over a column-table source is too rare to carry a
+// second evaluator; a plain field already reads its column.
 function channelReader(
   table: FeatureTable,
   ref: FieldRef | ChannelReader,
