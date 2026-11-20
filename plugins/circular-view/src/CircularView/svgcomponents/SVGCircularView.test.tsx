@@ -1,7 +1,14 @@
+import { exportFontFamily } from '@jbrowse/core/svg/constants'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
-import { labelWidthPx } from '../rulerLabels.ts'
+import {
+  assemblyArcGapPx,
+  assemblyLabelFontSizePx,
+  labelGutterPx,
+  labelsRunAlongArcs,
+  labelWidthPx,
+} from '../rulerLabels.ts'
 import { renderToSvg } from './SVGCircularView.tsx'
 
 import type { ChordVariantDisplayModel } from '../../ChordVariantDisplay/models/stateModelFactory.ts'
@@ -300,3 +307,95 @@ test('a monospace export grows to fit its labels as that face draws them', async
     )
   }
 }, 20000)
+
+// The gutter was sized for the export's face while the labels chose their
+// orientation in the app's, so names that fit along their arcs on screen but
+// not in an export's face ran along the arcs of a canvas grown for radial
+// labels
+test.each([undefined, 'monospace'])(
+  'an export in %p orients its labels as it measured them',
+  async fontFamily => {
+    const view = await setupRefNames(
+      Array.from(
+        { length: 12 },
+        (_, i) => `scaffold_00${String(i + 1).padStart(2, '0')}`,
+      ),
+    )
+    expect(labelsRunAlongArcs(view)).toBe(true)
+    expect(labelsRunAlongArcs(view, exportFontFamily(fontFamily))).toBe(false)
+    const svg = await renderToSvg(view, { fontFamily })
+    const anchors = new Set(
+      [...svg.matchAll(/<text[^>]*>/g)]
+        .map(([tag]) => tag)
+        .filter(tag => tag.includes('font-size="13"'))
+        .map(tag => /text-anchor="([^"]*)"/.exec(tag)?.[1]),
+    )
+    expect(anchors).toEqual(new Set(['start', 'end']))
+  },
+  20000,
+)
+
+// The assembly arc runs a gap outside the gutter the ruler labels take, and its
+// name a gap outside that; in an export the gutter is measured in its face
+test.each([undefined, 'monospace'])(
+  'an export in %p rings its assembly names outside the labels as measured',
+  async fontFamily => {
+    const session = createTestSession()
+    const refNames = Array.from(
+      { length: 6 },
+      (_, i) => `scaffold_00${String(i + 1).padStart(2, '0')}`,
+    )
+    for (const name of ['first', 'second']) {
+      session.addAssemblyConf({
+        name,
+        sequence: {
+          trackId: `${name}_refseq`,
+          type: 'ReferenceSequenceTrack',
+          adapter: {
+            type: 'FromConfigSequenceAdapter',
+            features: refNames.map(refName => ({
+              refName,
+              uniqueId: refName,
+              start: 0,
+              end: 16000,
+              seq: 'a'.repeat(16000),
+            })),
+          },
+        },
+      })
+    }
+    const view = (await session.launchView('CircularView', {
+      displayedRegions: ['first', 'second'].flatMap(assemblyName =>
+        refNames.map(refName => ({
+          assemblyName,
+          refName,
+          start: 0,
+          end: 16000,
+        })),
+      ),
+    })) as CircularViewModel
+    view.setWidth(800)
+    await session.assemblyManager.waitForAssembly('first')
+    await session.assemblyManager.waitForAssembly('second')
+    await when(() => view.initialized)
+    const family = exportFontFamily(fontFamily)
+    expect(labelGutterPx(view, family)).toBeGreaterThan(labelGutterPx(view))
+    const svg = await renderToSvg(view, { fontFamily })
+    const radii = [
+      ...svg.matchAll(
+        /<text[^>]*font-weight="600"[^>]*translate\((-?[\d.]+),(-?[\d.]+)\)/g,
+      ),
+    ].map(([, x, y]) => Math.hypot(Number(x), Number(y)))
+    expect(radii).toHaveLength(2)
+    for (const r of radii) {
+      expect(r).toBeCloseTo(
+        view.radiusPx +
+          labelGutterPx(view, family) +
+          2 * assemblyArcGapPx +
+          assemblyLabelFontSizePx / 2,
+        1,
+      )
+    }
+  },
+  20000,
+)

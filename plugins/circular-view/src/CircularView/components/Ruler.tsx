@@ -1,3 +1,4 @@
+import { useExportFontFamily } from '@jbrowse/core/svg/constants'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   getSession,
@@ -355,8 +356,10 @@ export const Rulers = observer(function Rulers({
   model: CircularViewModel
 }) {
   const { staticSlices, radiusPx } = model
-  const alongArc = labelsRunAlongArcs(model)
-  const assemblyRadiusPx = radiusPx + labelGutterPx(model) + assemblyArcGapPx
+  const fontFamily = useExportFontFamily()
+  const alongArc = labelsRunAlongArcs(model, fontFamily)
+  const assemblyRadiusPx =
+    radiusPx + labelGutterPx(model, fontFamily) + assemblyArcGapPx
   return (
     <>
       <MiddleTitle model={model} />
