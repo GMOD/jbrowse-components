@@ -324,6 +324,7 @@ exports[`every registered schema slot default 1`] = `
     "fetchSizeLimit": "number = 5000000",
     "indexLocationMap": "frozen = {}",
     "indexType": "stringEnum = "TBI" of ["TBI","CSI"]",
+    "pedigreeLocation": "maybeFileLocation = undefined",
     "samplesTsvLocation": "maybeFileLocation = undefined",
     "vcfGzLocationMap": "frozen = {}",
   },
@@ -340,6 +341,7 @@ exports[`every registered schema slot default 1`] = `
     "rewriteRefNames": "string = """,
   },
   "adapter: VcfAdapter": {
+    "pedigreeLocation": "maybeFileLocation = undefined",
     "samplesTsvLocation": "maybeFileLocation = undefined",
     "vcfLocation": "fileLocation = {"uri":"/path/to/my.vcf","locationType":"UriLocation"}",
   },
@@ -347,6 +349,7 @@ exports[`every registered schema slot default 1`] = `
     "fetchSizeLimit": "number = 5000000",
     "index.indexType": "stringEnum = "TBI" of ["TBI","CSI"]",
     "index.location": "fileLocation = {"uri":"/path/to/my.gz.tbi","locationType":"UriLocation"}",
+    "pedigreeLocation": "maybeFileLocation = undefined",
     "samplesTsvLocation": "maybeFileLocation = undefined",
     "vcfGzLocation": "fileLocation = {"uri":"/path/to/my.vcf.gz","locationType":"UriLocation"}",
   },
