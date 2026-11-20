@@ -1,8 +1,11 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { textBaselineShift } from '@jbrowse/core/util/SvgCanvas'
 import { observer } from 'mobx-react'
 
 import type { ConnectorCoord } from '../../shared/ConnectorLines.tsx'
 import type { LDDisplayModel } from '../model.ts'
+
+const LABEL_FONT_SIZE = 10
 
 /**
  * Each SNP's id, rotated up from the top of its connector, so a label and its
@@ -19,11 +22,10 @@ export function ConnectorLabels({ coords }: { coords: ConnectorCoord[] }) {
         // eslint-disable-next-line @eslint-react/no-array-index-key -- labels may be duplicated (multi-allelic sites share an id); idx only breaks ties
         key={`${label}-${i}`}
         x={gx}
-        y={0}
+        y={textBaselineShift('middle', LABEL_FONT_SIZE)}
         transform={`rotate(-90, ${gx}, 0)`}
-        fontSize={10}
+        fontSize={LABEL_FONT_SIZE}
         textAnchor="end"
-        dominantBaseline="middle"
         fill={palette.text.primary}
         style={{ pointerEvents: 'none' }}
       >
