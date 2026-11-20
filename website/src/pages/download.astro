@@ -111,12 +111,19 @@ jbrowse create jbrowse2</code></pre>
       the CLI, <a href={webZip}>download the JBrowse Web zip</a> directly.
     </p>
 
-    <h2>Static image generator</h2>
-    <p>
-      <a href={`${baseUrl}/docs/jbrowse-img/`}>@jbrowse/img</a> renders JBrowse
-      views to images from the command line, with no browser:
-    </p>
-    <pre><code>npm install -g @jbrowse/img</code></pre>
+    <h2>Images from the command line</h2>
+    <ul>
+      <li>
+        <a href={`${baseUrl}/docs/jbrowse-img/`}>@jbrowse/img</a> draws a view
+        to an image with no browser:{' '}
+        <code class="cmd">npm install -g @jbrowse/img</code>
+      </li>
+      <li>
+        <a href={`${baseUrl}/docs/jbrowse-capture/`}>@jbrowse/capture</a> opens
+        a view in headless Chrome and screenshots it once it has finished
+        drawing: <code class="cmd">npx @jbrowse/capture</code>
+      </li>
+    </ul>
 
     <h2>Embedded components</h2>
     <p>React components on NPM that put a JBrowse view in your own web app:</p>
@@ -144,6 +151,13 @@ jbrowse create jbrowse2</code></pre>
         R and Shiny, with the{' '}
         <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a> package on CRAN:{' '}
         <a href={`${baseUrl}/docs/jbrowser/`}>documentation</a>
+      </li>
+      <li>
+        R and ggplot2, with{' '}
+        <a href="https://github.com/GMOD/ggjbrowse">ggjbrowse</a>, which draws
+        tracks as ggplot2 layers with JBrowse's own data engine. It is an early
+        release on GitHub:{' '}
+        <code>remotes::install_github("GMOD/ggjbrowse")</code>
       </li>
     </ul>
   </div>
@@ -178,6 +192,9 @@ jbrowse create jbrowse2</code></pre>
   .caption {
     font-size: 0.85rem;
     color: var(--color-text-muted);
+  }
+  .cmd {
+    white-space: nowrap;
   }
   pre {
     background: var(--color-surface);
