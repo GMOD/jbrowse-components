@@ -277,6 +277,37 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
+  // The view the homepage's Demo button opens.
+  {
+    mode: 'url',
+    name: 'home/tp53_promoter',
+    url: sessionSpec(
+      UCSC_HG38_CONFIG,
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: TP53_LOCUS_WINDOW,
+            tracks: [
+              { ...GENE_TRACK_COLLAPSED, height: 70 },
+              { trackId: 'hg38-cCREregistry', height: 50 },
+              { ...H3K4ME3_ROWS, height: 170 },
+              { ...H3K27AC_ROWS, height: 170 },
+              { ...PHYLOP_TRACK, height: 70 },
+            ],
+          },
+        ],
+      },
+      'TP53 promoter',
+    ),
+    readyText: 'WRAP53',
+    readyTimeout: 180000,
+    viewportWidth: 1400,
+    viewportHeight: 900,
+    diffThreshold: 0.02,
+  },
+
   // The page steps through one locus, so the tracks below stay at TP53.
 
   // Frame 2 loads a session: a click changes one track, and one mark split

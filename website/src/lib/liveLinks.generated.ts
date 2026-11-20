@@ -156,6 +156,7 @@ export const figureLiveRefs: Record<string, string> = {
   "genomes_basics/search_tp53": "?config=https://jbrowse.org/ucsc/hg38/config.json&sessionName=Screenshot",
   "genomes_basics/isoform_control": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C674%2C180-7%2C674%2C290%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeq%22%2C%22geneGlyphMode%22%3A%22representative%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "genomes_basics/multiz_alignment": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C674%2C180-7%2C674%2C290%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeq%22%2C%22geneGlyphMode%22%3A%22representative%22%7D%2C%7B%22trackId%22%3A%22hg38-phyloP470wayBW%22%7D%2C%7B%22trackId%22%3A%22hg38-multiz470way%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "home/tp53_promoter": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C666%2C000-7%2C694%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeq%22%2C%22geneGlyphMode%22%3A%22representative%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22hg38-cCREregistry%22%2C%22height%22%3A50%7D%2C%7B%22trackId%22%3A%22hg38-wgEncodeRegMarkH3k4me3%22%2C%22rows%22%3A%22source%22%2C%22height%22%3A170%7D%2C%7B%22trackId%22%3A%22hg38-wgEncodeRegMarkH3k27ac%22%2C%22rows%22%3A%22source%22%2C%22height%22%3A170%7D%2C%7B%22trackId%22%3A%22hg38-phyloP100way%22%2C%22height%22%3A70%7D%5D%7D%5D%7D&sessionName=TP53%20promoter",
   "genomes_basics/promoter_regulation": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C666%2C000-7%2C694%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeq%22%2C%22geneGlyphMode%22%3A%22representative%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hg38-cpgIslandExt%22%2C%22height%22%3A50%7D%2C%7B%22trackId%22%3A%22hg38-cCREregistry%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hg38-wgEncodeRegMarkH3k4me3%22%2C%22rows%22%3A%22%22%2C%22height%22%3A150%7D%2C%7B%22trackId%22%3A%22hg38-wgEncodeRegMarkH3k27ac%22%2C%22rows%22%3A%22%22%2C%22height%22%3A150%7D%2C%7B%22trackId%22%3A%22hg38-epdNewPromoter%22%2C%22height%22%3A60%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "genomes_basics/gnomad_filter_menu": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C400-7%2C677%2C600%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-gnomadExomesVariantsV4_1%22%2C%22height%22%3A200%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "genomes_basics/about_track": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C400-7%2C677%2C600%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-phyloP100way%22%2C%22height%22%3A400%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -622,6 +623,7 @@ export const figureSlowSpecs: string[] = [
   "hic/bcr_abl1_translocation",
   "hic/compartment_switch",
   "hic/observed_control",
+  "home/tp53_promoter",
   "homoeolog_synteny/oat_ds",
   "ld/anopheles_2la",
   "ld/lct_fst_scan",
@@ -1496,6 +1498,11 @@ export const figureFrames: Record<
     "width": 1500,
     "height": 825,
     "timeout": 120000
+  },
+  "home/tp53_promoter": {
+    "width": 1400,
+    "height": 900,
+    "timeout": 180000
   },
   "genomes_basics/promoter_regulation": {
     "width": 1000,

@@ -135,8 +135,12 @@ export const displayReady = displaySettled
 // `createHal.ts` exists to route away from it. The pin belongs at capture time
 // instead: `pinRenderer` in screenshot-ready.ts, applied by both navigation
 // paths, plus the embedded harness which sets it through the product's API.
-export function sessionSpec(config: string, session: object) {
-  return `?config=${encodeURIComponent(config)}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
+export function sessionSpec(
+  config: string,
+  session: object,
+  sessionName = 'Screenshot',
+) {
+  return `?config=${encodeURIComponent(config)}&session=${encodeSessionSpec(session)}&sessionName=${encodeURIComponent(sessionName)}`
 }
 
 // The overwhelmingly common spec shape: a session with a single

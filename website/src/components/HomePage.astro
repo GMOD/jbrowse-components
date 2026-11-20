@@ -3,8 +3,17 @@ import { Icon } from 'astro-icon/components'
 
 import NewsletterSignup from './NewsletterSignup.astro'
 import { baseUrl } from '../lib/base-url.ts'
+import { liveHref } from '../lib/code-base.ts'
+import { figureLiveRefs } from '../lib/liveLinks.generated.ts'
 import { newsletterApiUrl } from '../lib/newsletter.ts'
 import btn from '../styles/button.module.css'
+
+const demoFigure = 'home/tp53_promoter'
+const demoRef = figureLiveRefs[demoFigure]
+if (demoRef === undefined) {
+  throw new Error(`The homepage demo figure ${demoFigure} has no live link`)
+}
+const demoHref = liveHref(demoRef)
 ---
 
 <div class="outer-box">
@@ -22,12 +31,9 @@ import btn from '../styles/button.module.css'
           <Icon name="mdi:tray-arrow-down" width="20" height="20" />
           Download
         </a>
-        <a
-          class:list={[btn.btn, btn.btnAccent]}
-          href={`${baseUrl}/docs/tutorials/`}
-        >
+        <a class:list={[btn.btn, btn.btnAccent]} href={demoHref}>
           <Icon name="mdi:play-circle-outline" width="20" height="20" />
-          Tutorials
+          Demo
         </a>
       </div>
       {newsletterApiUrl && (
