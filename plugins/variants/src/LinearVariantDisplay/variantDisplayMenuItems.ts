@@ -401,7 +401,7 @@ export function variantTrackMenuItems(
                   : `Mendelian check (${NO_TRIOS})`,
               disabled: self.trios.length === 0,
               helpText:
-                "Each site's most severe call over the trios: a child's allele in neither parent, an inconsistent genotype, or consistent",
+                "Each site's most severe call over the trios: a de novo candidate, a Mendelian error, or consistent",
               type: 'radio',
               checked: self.colorField === MENDELIAN_FIELD,
               onClick: () => {

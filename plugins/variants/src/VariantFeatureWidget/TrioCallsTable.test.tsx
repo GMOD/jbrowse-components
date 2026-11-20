@@ -40,7 +40,7 @@ test('a trio’s row shows the genotypes its check read', () => {
     'mom',
     '0/1',
     'male',
-    'Inconsistent',
+    'Mendelian error',
   ])
   expect(cellsOf('orphan')).toEqual([
     'orphan',

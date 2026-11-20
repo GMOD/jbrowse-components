@@ -1,4 +1,4 @@
-export type TrioClass = 'notInParents' | 'inconsistent' | 'consistent'
+export type TrioClass = 'deNovoCandidate' | 'mendelianError' | 'consistent'
 
 export type PedigreeSex = 'male' | 'female' | 'other'
 
@@ -22,8 +22,8 @@ export const MAX_CLASSIFIED_PLOIDY = 16
 
 const severity = {
   consistent: 1,
-  inconsistent: 2,
-  notInParents: 3,
+  mendelianError: 2,
+  deNovoCandidate: 3,
 } as const
 
 function parseCall(genotype: string): Call {
@@ -195,12 +195,12 @@ function classifyWithSex(
   return !isDuo &&
     novelCount(child, [f, m]) > 0 &&
     contributors.every(p => p?.wildcards === 0)
-    ? 'notInParents'
+    ? 'deNovoCandidate'
     : unsettledDuo
       ? undefined
       : (singleParent || (mode.kind === 'split' && mode.regular)) &&
           !assignable(child, f, m, mode)
-        ? 'inconsistent'
+        ? 'mendelianError'
         : child.wildcards === 0 &&
             contributors.every(p => !p || p.wildcards === 0) &&
             assignable(child, f, m, mode)

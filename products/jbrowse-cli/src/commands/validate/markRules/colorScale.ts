@@ -186,9 +186,9 @@ export const UNIVERSAL_FIELD_PRESETS = {
   mendelian: {
     scale: {
       type: 'ordinal',
-      domain: ['notInParents', 'inconsistent', 'consistent'],
+      domain: ['deNovoCandidate', 'mendelianError', 'consistent'],
       range: ['#c2185b', '#f57c00', '#90a4ae'],
-      names: ['Not in parents', 'Inconsistent', 'Consistent'],
+      names: ['De novo candidate', 'Mendelian error', 'Consistent'],
     },
     legend: { title: 'Mendelian check' },
     closed: true,

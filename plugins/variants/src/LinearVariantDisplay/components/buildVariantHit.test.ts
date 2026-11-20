@@ -184,21 +184,21 @@ describe('a records-band hit', () => {
     expect(
       getTooltipRows(
         buildRecordHit({
-          info: { ...info, mendelian: 'notInParents' },
+          info: { ...info, mendelian: 'deNovoCandidate' },
           featureId: 'v0',
         }),
       ),
     ).toContainEqual({
       key: 'mendelian',
       label: 'Mendelian check',
-      value: 'Not in parents',
+      value: 'De novo candidate',
     })
   })
 })
 
 test('a cell hover names its record’s Mendelian check', () => {
   const hit = buildVariantHit({
-    info: featureInfoOf('x1', { mendelian: 'inconsistent' }),
+    info: featureInfoOf('x1', { mendelian: 'mendelianError' }),
     genotype: '1/1',
     sampleName: 'kid',
     name: 'kid',
@@ -208,6 +208,6 @@ test('a cell hover names its record’s Mendelian check', () => {
   expect(getTooltipRows(hit)).toContainEqual({
     key: 'mendelian',
     label: 'Mendelian check',
-    value: 'Inconsistent',
+    value: 'Mendelian error',
   })
 })

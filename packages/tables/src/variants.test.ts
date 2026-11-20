@@ -871,10 +871,10 @@ test('a pedigree’s Mendelian check takes the transmission entries the call nam
       display: { encoding: { color: 'mendelian' } },
       transmission,
     })
-  const [, inconsistent, consistent] =
+  const [, mendelianError, consistent] =
     UNIVERSAL_FIELD_PRESETS.mendelian.scale.range.map(cssColorToHex)
 
-  expect((await read(undefined)).variants.color).toEqual([inconsistent])
+  expect((await read(undefined)).variants.color).toEqual([mendelianError])
   expect(
     (await read([{ refName: 'chrX', sex: 'male', from: 'mother' }])).variants
       .color,

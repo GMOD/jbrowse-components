@@ -25,7 +25,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 const PARENTS = [{ name: 'dad' }, { name: 'mom' }]
 const KID = { name: 'kid', father: 'dad', mother: 'mom', sex: 'male' }
-const [NOT_IN_PARENTS_COLOR] = UNIVERSAL_FIELD_PRESETS.mendelian.scale.range
+const [DE_NOVO_COLOR] = UNIVERSAL_FIELD_PRESETS.mendelian.scale.range
 
 describe('the fetch key', () => {
   test('carries the trios the pedigree names, whichever row draws', () => {
@@ -71,8 +71,8 @@ describe('the fetch key', () => {
   })
 })
 
-// trio_x.vcf: x1 1/1 from 0/0 x 0/1, inconsistent with no rule; x2 0/1
-// from 0/0 x 0/0, not in parents; x3 0/1 from 0/1 x 0/0, consistent
+// trio_x.vcf: x1 1/1 from 0/0 x 0/1, a Mendelian error with no rule; x2 0/1
+// from 0/0 x 0/0, a de novo candidate; x3 0/1 from 0/1 x 0/0, consistent
 const TRIO_X_ADAPTER = {
   type: 'VcfAdapter',
   vcfLocation: {
@@ -133,24 +133,24 @@ test('a site in neither parent paints the check’s color', async () => {
   )
 
   expect(data.cellColors[cell]).toBe(
-    getCachedABGR(cellFill(NOT_IN_PARENTS_COLOR, 128)),
+    getCachedABGR(cellFill(DE_NOVO_COLOR, 128)),
   )
   expect(display.paintedDomain).toEqual(
-    expect.arrayContaining(['notInParents', 'inconsistent', 'consistent']),
+    expect.arrayContaining(['deNovoCandidate', 'mendelianError', 'consistent']),
   )
   dispose()
 })
 
 test('a filter entry on the check reaches the worker, which keeps the sites it names', async () => {
   const display = displayWith([
-    { field: MENDELIAN_FIELD, equal: 'notInParents' },
+    { field: MENDELIAN_FIELD, equal: 'deNovoCandidate' },
   ])
   const props = display.rpcProps()
   const fetched = await fetchedAs(props)
 
   expect(props.filters).toBeUndefined()
   expect(props.mendelianFilter).toEqual([
-    { field: MENDELIAN_FIELD, equal: 'notInParents' },
+    { field: MENDELIAN_FIELD, equal: 'deNovoCandidate' },
   ])
   expect(fetched.simplifiedFeatures.map(f => f.data.name)).toEqual(['x2'])
 })
@@ -214,7 +214,7 @@ test('the cell fetch sends each region’s rule, resolved through the assembly�
 
 describe('the genotype matrix under a filter on the check', () => {
   const FAILED = [
-    { field: MENDELIAN_FIELD, oneOf: ['notInParents', 'inconsistent'] },
+    { field: MENDELIAN_FIELD, oneOf: ['deNovoCandidate', 'mendelianError'] },
   ]
 
   async function sitesOf(args: GetGenotypeMatrixArgs) {
@@ -305,19 +305,19 @@ describe('the Filter by menu’s Mendelian check', () => {
     const maf = { field: 'minorAlleleFrequency', gte: 0.05 }
     const display = displayWith([maf])
 
-    toggle(display, 'Not in parents')
-    toggle(display, 'Inconsistent')
+    toggle(display, 'De novo candidate')
+    toggle(display, 'Mendelian error')
 
     const entry = {
       field: MENDELIAN_FIELD,
-      oneOf: ['notInParents', 'inconsistent'],
+      oneOf: ['deNovoCandidate', 'mendelianError'],
     }
     expect(predicatesOf(display.configuration.filter)).toEqual([maf, entry])
     expect(display.rpcProps().mendelianFilter).toEqual([entry])
-    expect(checked(display)).toEqual(['Not in parents', 'Inconsistent'])
+    expect(checked(display)).toEqual(['De novo candidate', 'Mendelian error'])
 
-    toggle(display, 'Not in parents')
-    toggle(display, 'Inconsistent')
+    toggle(display, 'De novo candidate')
+    toggle(display, 'Mendelian error')
 
     expect(predicatesOf(display.configuration.filter)).toEqual([maf])
     expect(display.rpcProps().mendelianFilter).toEqual([])
@@ -326,10 +326,10 @@ describe('the Filter by menu’s Mendelian check', () => {
 
   test('a config’s `equal` entry reads as its value checked', () => {
     const display = displayWith([
-      { field: MENDELIAN_FIELD, equal: 'notInParents' },
+      { field: MENDELIAN_FIELD, equal: 'deNovoCandidate' },
     ])
 
-    expect(checked(display)).toEqual(['Not in parents'])
+    expect(checked(display)).toEqual(['De novo candidate'])
   })
 
   test('a track with no trio greys it with the reason', () => {

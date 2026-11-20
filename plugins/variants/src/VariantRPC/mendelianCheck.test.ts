@@ -39,7 +39,7 @@ function featuresUnder(samples: string[], lines: string[], prefix: string) {
 describe('split headers', () => {
   // Kid, dad and mom sit in a different order in each file, so reading the
   // second file's genotypes at the first file's positions would call its
-  // record inconsistent: a kid's 1/1 from 0/1 x 0/0.
+  // record a Mendelian error: a kid's 1/1 from 0/1 x 0/0.
   const features = [
     ...featuresUnder(
       ['kid', 'dad', 'mom'],
@@ -57,7 +57,7 @@ describe('split headers', () => {
     const { mendelian } = analyzeVariants({ features, trios: [TRIO] })
 
     expect(Object.fromEntries(mendelian)).toEqual({
-      a0: 'notInParents',
+      a0: 'deNovoCandidate',
       b0: 'consistent',
     })
   })
@@ -161,15 +161,15 @@ describe('the worker’s Mendelian check', () => {
   test('a renamed RefSeq X takes the rule the view’s chrX resolved to', async () => {
     expect(await mendelianByName({})).toEqual({
       x1: 'consistent',
-      x2: 'notInParents',
+      x2: 'deNovoCandidate',
       x3: 'consistent',
     })
   })
 
   test('with no rule the hemizygous call reads as an autosome’s', async () => {
     expect(await mendelianByName({ transmission: [] })).toEqual({
-      x1: 'inconsistent',
-      x2: 'notInParents',
+      x1: 'mendelianError',
+      x2: 'deNovoCandidate',
       x3: 'consistent',
     })
   })
@@ -182,7 +182,7 @@ describe('the worker’s Mendelian check', () => {
       }),
     ).toEqual({
       x1: 'consistent',
-      x2: 'notInParents',
+      x2: 'deNovoCandidate',
       x3: 'consistent',
     })
   })
@@ -225,9 +225,9 @@ describe('the worker’s Mendelian check', () => {
   test('a filter entry on the check keeps the sites it names', async () => {
     expect(
       await mendelianByName({
-        mendelianFilter: [{ field: MENDELIAN_FIELD, equal: 'notInParents' }],
+        mendelianFilter: [{ field: MENDELIAN_FIELD, equal: 'deNovoCandidate' }],
       }),
-    ).toEqual({ x2: 'notInParents' })
+    ).toEqual({ x2: 'deNovoCandidate' })
   })
 
   test('the cells’ hue and the records band read the check', async () => {
@@ -253,7 +253,7 @@ describe('the worker’s Mendelian check', () => {
       ]),
     ).toEqual([
       ['x1', 'consistent', 'consistent', 'consistent'],
-      ['x2', 'notInParents', 'notInParents', 'notInParents'],
+      ['x2', 'deNovoCandidate', 'deNovoCandidate', 'deNovoCandidate'],
       ['x3', 'consistent', 'consistent', 'consistent'],
     ])
   })

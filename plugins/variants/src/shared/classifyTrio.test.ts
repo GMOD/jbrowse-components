@@ -40,56 +40,56 @@ describe('autosomal truth table', () => {
       child: '0/1',
       father: '0/0',
       mother: '0/0',
-      expected: 'notInParents',
+      expected: 'deNovoCandidate',
     },
     {
       name: '1/1 from 0/0 x 0/0',
       child: '1/1',
       father: '0/0',
       mother: '0/0',
-      expected: 'notInParents',
+      expected: 'deNovoCandidate',
     },
     {
       name: './1 from 0/0 x 0/0',
       child: './1',
       father: '0/0',
       mother: '0/0',
-      expected: 'notInParents',
+      expected: 'deNovoCandidate',
     },
     {
       name: '0/2 from 1/1 x 0/0',
       child: '0/2',
       father: '1/1',
       mother: '0/0',
-      expected: 'notInParents',
+      expected: 'deNovoCandidate',
     },
     {
       name: '1/1 from 0/1 x 0/0',
       child: '1/1',
       father: '0/1',
       mother: '0/0',
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: '1/2 from 1/2 x 0/0 needs one-to-one assignment',
       child: '1/2',
       father: '1/2',
       mother: '0/0',
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: '0/0 from 1/1 x ./.',
       child: '0/0',
       father: '1/1',
       mother: './.',
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: '1/1 from ./0 x 0/0',
       child: '1/1',
       father: './0',
       mother: '0/0',
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: '1/1 from 0/1 x 0/1',
@@ -142,7 +142,7 @@ describe("under hg38's entries", () => {
       mother: '0/0',
       sex: 'male',
       rule: hg38X,
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'male X diploid-coded 1/1, father 0/0, mother 0/1',
@@ -169,7 +169,7 @@ describe("under hg38's entries", () => {
       mother: '0/0',
       sex: 'male',
       rule: hg38X,
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'X with sex missing, 1/1, father 0/0, mother 0/1',
@@ -194,7 +194,7 @@ describe("under hg38's entries", () => {
       mother: '.',
       sex: 'male',
       rule: hg38Y,
-      expected: 'notInParents',
+      expected: 'deNovoCandidate',
     },
     {
       name: "son's Y 1, father 1, mother .",
@@ -265,14 +265,14 @@ describe('across taxa', () => {
       child: '1/1/1/0',
       father: '0/0/0/1',
       mother: '0/0/0/0',
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'autotetraploid allele in neither parent',
       child: '0/0/0/2',
       father: '0/0/0/1',
       mother: '0/0/1/1',
-      expected: 'notInParents',
+      expected: 'deNovoCandidate',
     },
     {
       name: '2x by 4x triploid, 1 + 2',
@@ -286,7 +286,7 @@ describe('across taxa', () => {
       child: '1/1/1',
       father: '0/0',
       mother: '1/1/1/1',
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'trisomic child takes the irregular split',
@@ -296,7 +296,7 @@ describe('across taxa', () => {
       expected: 'consistent',
     },
     {
-      name: 'trisomic child with no split is never inconsistent',
+      name: 'trisomic child with no split is never a Mendelian error',
       child: '1/1/1',
       father: '0/0',
       mother: '0/1',
@@ -318,7 +318,7 @@ describe('across taxa', () => {
       mother: '0/0',
       sex: 'male',
       rule: haplodiploid,
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'haplodiploid daughter, haploid father gives 1',
@@ -336,7 +336,7 @@ describe('across taxa', () => {
       mother: '0/0',
       sex: 'female',
       rule: haplodiploid,
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'selfed line 1/1 from 0/1',
@@ -350,21 +350,21 @@ describe('across taxa', () => {
       child: '0/2',
       father: '0/1',
       mother: '0/1',
-      expected: 'notInParents',
+      expected: 'deNovoCandidate',
     },
     {
       name: 'duo with opposite homozygotes, mother known',
       child: '1/1',
       father: undefined,
       mother: '0/0',
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'duo with opposite homozygotes, father known',
       child: '0/0',
       father: '1/1',
       mother: undefined,
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'duo sharing an allele',
@@ -389,7 +389,7 @@ describe('across taxa', () => {
       mother: '1',
       sex: 'female',
       rule: zwZ,
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'ZW female W from her mother',
@@ -407,7 +407,7 @@ describe('across taxa', () => {
       mother: '0',
       sex: 'female',
       rule: zwW,
-      expected: 'notInParents',
+      expected: 'deNovoCandidate',
     },
     {
       name: 'XO male X from his mother',
@@ -425,7 +425,7 @@ describe('across taxa', () => {
       mother: '0/0',
       sex: 'male',
       rule: xoX,
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'C. elegans hermaphrodite X takes the autosomal rule',
@@ -443,7 +443,7 @@ describe('across taxa', () => {
       mother: '0/1',
       sex: 'other',
       rule: xoX,
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'Bombyx Z as 1, diploid-coded female 1/1 from her father',
@@ -461,7 +461,7 @@ describe('across taxa', () => {
       mother: '1/1',
       sex: 'female',
       rule: zwZ,
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
       name: 'yeast chrM either, from the father',
@@ -477,10 +477,10 @@ describe('across taxa', () => {
       father: '0',
       mother: '0',
       rule: yeastM,
-      expected: 'notInParents',
+      expected: 'deNovoCandidate',
     },
     {
-      name: 'yeast chrM either is never inconsistent',
+      name: 'yeast chrM either is never a Mendelian error',
       child: '1',
       father: '0',
       mother: './.',
@@ -493,16 +493,16 @@ describe('across taxa', () => {
       father: '0/1',
       mother: '0/0',
       rule: [],
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
     {
-      name: 'default [] reads a diploid-coded male X falsely inconsistent',
+      name: 'default [] reads a diploid-coded male X falsely a Mendelian error',
       child: '1/1',
       father: '0',
       mother: '0/1',
       sex: 'male',
       rule: [],
-      expected: 'inconsistent',
+      expected: 'mendelianError',
     },
   ])('$name is $expected', row => {
     expect(run(row)).toBe(row.expected)
@@ -521,7 +521,7 @@ describe('the ploidy cap', () => {
         calls(MAX_CLASSIFIED_PLOIDY, '0'),
         { sex: undefined, rule: [] },
       ),
-    ).toBe('notInParents')
+    ).toBe('deNovoCandidate')
   })
 
   it('leaves a child past the cap unclassified', () => {
@@ -554,14 +554,14 @@ describe('mostSevereTrioClass', () => {
       expected: 'consistent',
     },
     {
-      name: 'inconsistent over consistent',
-      classes: ['consistent', 'inconsistent'],
-      expected: 'inconsistent',
+      name: 'mendelianError over consistent',
+      classes: ['consistent', 'mendelianError'],
+      expected: 'mendelianError',
     },
     {
-      name: 'notInParents over inconsistent',
-      classes: ['inconsistent', 'notInParents', 'consistent'],
-      expected: 'notInParents',
+      name: 'deNovoCandidate over mendelianError',
+      classes: ['mendelianError', 'deNovoCandidate', 'consistent'],
+      expected: 'deNovoCandidate',
     },
   ])('$name is $expected', ({ classes, expected }) => {
     expect(mostSevereTrioClass(classes)).toBe(expected)
