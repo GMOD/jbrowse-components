@@ -19,6 +19,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="property-type">**type**</span><br><code>"VariantFeatureWidget"</code> | Always `"VariantFeatureWidget"`, the name a snapshot selects this model by. |
 | <span id="property-descriptions">**descriptions**</span><br><code>Descriptions &#124; undefined</code> |  |
+| <span id="property-triocalls">**trioCalls**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ call: TrioClass &#124; undefined; child: string; … }[] &#124; undefined</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ call: TrioClass &#124; undefined; child: string; father?: string; mother?: string; sex?: PedigreeSex; }[] &#124; undefined</code></pre></dialog></span> | Each trio's Mendelian check at the record, which the variant display classifies from the full record when it opens the widget. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>8 inherited properties from one model</summary>

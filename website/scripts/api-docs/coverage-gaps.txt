@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1225)
+# model members with no description (1223)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -168,7 +168,6 @@ BaseChordDisplay.reload
 BaseChordDisplay.setFeatures
 BaseChordDisplay.view
 BaseConnectionModel.addTrackConf
-BaseConnectionModel.addTrackConfs
 BaseConnectionModel.name
 BaseConnectionModel.setLoading
 BaseConnectionModel.setTrackConfs
@@ -997,7 +996,7 @@ MultiWaySyntenyDisplay.geneColorSettings
 MultiWaySyntenyDisplay.geneLabelPx
 MultiWaySyntenyDisplay.geneTextOf
 MultiWaySyntenyDisplay.groundPalette
-MultiWaySyntenyDisplay.groups
+MultiWaySyntenyDisplay.groupedFeatures
 MultiWaySyntenyDisplay.hasLodCapableAdapter
 MultiWaySyntenyDisplay.hiddenLanes
 MultiWaySyntenyDisplay.hideLane
@@ -1036,7 +1035,6 @@ MultiWaySyntenyDisplay.laneMotionHalfway
 MultiWaySyntenyDisplay.lanePairs
 MultiWaySyntenyDisplay.laneTransitions
 MultiWaySyntenyDisplay.lanesBeingDescribed
-MultiWaySyntenyDisplay.lanesToDescribe
 MultiWaySyntenyDisplay.layerPx
 MultiWaySyntenyDisplay.legendRight
 MultiWaySyntenyDisplay.lgv
@@ -1390,10 +1388,8 @@ plugins/wiggle/src/shared/wiggleRowHookViews.ts sharesPanel
 # config slots whose type prints as their source (0)
 # fix: write the slot as { type, ... }, or teach describeValue in slotSource.ts the MST type it holds
 
-# model members and #api exports whose type prints as MST internals or collapses to nothing (19)
+# model members and #api exports whose type prints as MST internals or collapses to nothing (17)
 # fix: tag the model it names #stateModel (#internal keeps it off the site), or write the type it should read as
-BaseConnectionModel.addTrackConf
-BaseConnectionModel.tracks
 BaseDisplay.DisplayBlurb
 BaseDisplay.RenderingComponent
 BaseDisplay.renderingProps

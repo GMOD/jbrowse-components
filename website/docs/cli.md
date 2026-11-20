@@ -861,9 +861,9 @@ Options:
                              UCSCTrackHubConnection, JB2TrackHubConnection, or
                              one a plugin registers)
 
-  -a, --assemblyNames        For UCSC: optional comma separated list of assembly
-                             names to filter. For JBrowse1: a single assembly
-                             name
+  -a, --assemblyNames        For a UCSC or JBrowse 2 hub: optional comma
+                             separated list of the genomes to load. For
+                             JBrowse1: a single assembly name
 
   -c, --config               Extra config settings to add to connection in JSON
                              object format

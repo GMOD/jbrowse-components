@@ -2689,7 +2689,7 @@ import { trackCatalog } from '@jbrowse/core/util/tracks'
 
 function trackCatalog(session: {
   tracks: TrackConfigEntry[]
-  connectionInstances?: { tracks: TrackConfigNode[] }[]
+  connectionInstances?: { tracks: TrackConfigEntry[] }[]
   assemblies: BaseAssemblyConfigModel[]
 }): { trackId: string; name: string; category: string[]; description: string }[]
 ```

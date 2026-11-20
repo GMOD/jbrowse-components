@@ -120,6 +120,7 @@ A `field` named here paints through its own scale while `scale.type` is unset, a
 | `strand` | ordinal | `1`, `-1`, `0` | Forward strand, Reverse strand, No strand | `range`: `tomato`, `cornflowerblue`, `goldenrod` |
 | `svType` | ordinal | `DEL`, `DUP`, `INS`, `INV`, `CNV`, `TR`, `BND`, `CPX`, `OTHER` | Deletion, Duplication, Insertion, Inversion, Copy-number variable, Tandem repeat, Breakend / translocation, Complex, Other / mixed | `range`: `#e41a1c`, `#377eb8`, `#800080`, `#ff7f00`, `#7e6148`, `#e7298a`, `#17becf`, `#66a61e`, `#000000`; key "SV type" |
 | `impact` | ordinal | `HIGH`, `MODERATE`, `LOW`, `MODIFIER`, `Unannotated` |  | `range`: `#d32f2f`, `#f57c00`, `#fbc02d`, `#9e9e9e`, `#607d8b`; key "Consequence impact" |
+| `mendelian` | ordinal | `notInParents`, `inconsistent`, `consistent` | Not in parents, Inconsistent, Consistent | `range`: `#c2185b`, `#f57c00`, `#90a4ae`; key "Mendelian check" |
 | `score` | linear |  |  |  |
 
 ## Config slots

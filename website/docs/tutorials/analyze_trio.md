@@ -21,8 +21,8 @@ child's genotype cannot be made of one allele from each parent. On chr1 of a
   under a flagged site
 - switch the VCF to a genotype matrix with one row per haplotype
 - load hap-ibd's segments, converted to BED, as a multi-row feature track with
-  one colored row per parental haplotype, and read the crossovers along chr1
-  off the painted rows
+  one colored row per parental haplotype, and read the crossovers along chr1 off
+  the painted rows
 - line the painted rows up with the genotypes at a paternal and a maternal
   crossover
 

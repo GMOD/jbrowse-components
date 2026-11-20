@@ -55,8 +55,8 @@ favorites and recently used tracks, and a group for each connection.
 | <span id="getter-alltrackconfigurations">**allTrackConfigurations**</span><br><code>AnyTrackConfig[]</code> | every track the view can display, once each, in tree order: what the table selector, favorites and recently-used resolve against |
 | <span id="getter-selection">**selection**</span><br><code>AnyTrackConfig[]</code> | the selected track configs, resolved from `selectedTrackIds` on read, so a deleted track drops out and an edited one stays selected |
 | <span id="getter-selectionset">**selectionSet**</span><br><code>Set&lt;string&gt;</code> | the selected trackIds that still resolve to a track |
-| <span id="getter-favoritetracks">**favoriteTracks**</span><br><code>(TrackConfigNode &#124; TrackConfigEntry)[]</code> | filters out tracks that are not in the favorites group |
-| <span id="getter-recentlyusedtracks">**recentlyUsedTracks**</span><br><code>(TrackConfigNode &#124; TrackConfigEntry)[]</code> | filters out tracks that are not in the recently used group |
+| <span id="getter-favoritetracks">**favoriteTracks**</span><br><code>(TrackConfigEntry &#124; TrackConfigNode)[]</code> | filters out tracks that are not in the favorites group |
+| <span id="getter-recentlyusedtracks">**recentlyUsedTracks**</span><br><code>(TrackConfigEntry &#124; TrackConfigNode)[]</code> | filters out tracks that are not in the recently used group |
 | <span id="getter-listedtrackorder">**listedTrackOrder**</span><br><code>string[] &#124; undefined</code> | the favorites in the order they were added, or the recently used newest first; undefined when listing all |
 | <span id="getter-listedtrackconfigurations">**listedTrackConfigurations**</span><br><code>AnyTrackConfig[]</code> | the track configs the tree and the table list, in the list's own order |
 | <span id="getter-textkeptids">**textKeptIds**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | the trackIds whose searchText holds every term in the filter box; undefined when the box holds no terms |
@@ -74,6 +74,7 @@ favorites and recently used tracks, and a group for each connection.
 | --- | --- |
 | <span id="method-isfavorite">**isFavorite**</span><br><code>(trackId: string) =&gt; boolean</code> |  |
 | <span id="method-isrecentlyused">**isRecentlyUsed**</span><br><code>(trackId: string) =&gt; boolean</code> |  |
+| <span id="method-removableconnection">**removableConnection**</span><br><code>(groupId: string) =&gt; <a href="../../config/baseconnection">BaseConnectionConfig</a> &#124; undefined</code> | the connection a top-level group's row may delete: any for an admin, otherwise one the session itself holds, which is every connection where the session and the config are one document |
 | <span id="method-isselected">**isSelected**</span><br><code>(trackId: string) =&gt; boolean</code> |  |
 | <span id="method-visiblerange">**visibleRange**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(height: number, scrollTop: number) =&gt; { startIndex: number; … }</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(height: number, scrollTop: number) =&gt; { startIndex: number; endIndex: number; }</code></pre></dialog></span> |  |
 
