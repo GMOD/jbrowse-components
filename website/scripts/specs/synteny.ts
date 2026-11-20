@@ -61,7 +61,10 @@ function gammaCopyGenes(assembly: string) {
   }
 }
 
-function gammaCopiesLanes(rows: Record<string, unknown>) {
+function gammaCopiesLanes(
+  rows: { copies?: boolean; sort?: string[] },
+  height: number,
+) {
   return sessionSpec(GRAPE_PEACH_CONFIG, {
     views: [
       {
@@ -72,11 +75,8 @@ function gammaCopiesLanes(rows: Record<string, unknown>) {
           {
             trackId: 'grape_peach_anchors',
             type: 'MultiWaySyntenyDisplay',
-            rows: {
-              ...rows,
-              labels: { [PEACH]: 'peach chrG7', ...rows.labels },
-            },
-            height: 480,
+            rows: { ...rows, labels: { [PEACH]: 'peach', [GRAPE]: 'grape' } },
+            height,
           },
         ],
       },
@@ -2480,7 +2480,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'mcscan_synteny/gamma_copies_lanes_baseline',
-    url: gammaCopiesLanes({}),
+    url: gammaCopiesLanes({}, 300),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     viewportHeight: 620,
@@ -2488,19 +2488,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'mcscan_synteny/gamma_copies_lanes',
-    url: gammaCopiesLanes({
-      copies: true,
-      sort: [
-        `${GRAPE}@NC_081815.1`,
-        `${GRAPE}@NC_081813.1`,
-        `${GRAPE}@NC_081808.1`,
-      ],
-      labels: {
-        [`${GRAPE}@NC_081815.1`]: 'grape chr11',
-        [`${GRAPE}@NC_081813.1`]: 'grape chr9',
-        [`${GRAPE}@NC_081808.1`]: 'grape chr4',
+    url: gammaCopiesLanes(
+      {
+        copies: true,
+        sort: [
+          `${GRAPE}@NC_081815.1`,
+          `${GRAPE}@NC_081813.1`,
+          `${GRAPE}@NC_081808.1`,
+        ],
       },
-    }),
+      480,
+    ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     viewportHeight: 760,

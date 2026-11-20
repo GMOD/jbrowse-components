@@ -508,7 +508,11 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     fetchOne: async (spec, ctx) => {
       const features = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: spec.adapterConfig,
-        regions: await laneRegions(getSession(self), spec.lane, spec.regions),
+        regions: await laneRegions(
+          getSession(self),
+          spec.assemblyName,
+          spec.regions,
+        ),
       })
       const admitted = new SerializableFilterChain({
         filters: spec.filter,
@@ -562,7 +566,11 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     state: () => self.laneGroups,
     fetchOne: async (spec, ctx) => {
       const { features } = await callSyntenyAdapter(self, ctx, {
-        regions: await laneRegions(getSession(self), spec.lane, spec.regions),
+        regions: await laneRegions(
+          getSession(self),
+          spec.assemblyName,
+          spec.regions,
+        ),
         opts: { mateShape: 'grouped', lodTier: spec.lodTier },
       })
       return { key: spec.key, features }

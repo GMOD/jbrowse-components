@@ -1130,23 +1130,19 @@ export function stateModelFactory(
         )
       },
       /** #method */
-      laneLabel(assemblyName: string) {
-        return laneLabelOf(assemblyName, {
-          written: this.rowLabels,
-          heldName: name =>
-            this.holdsAssembly(name)
-              ? [
-                  getSession(self).assemblyManager.getDisplayName(
-                    laneGenome(name),
-                  ),
-                  laneCopy(name),
-                ]
-                  .filter(Boolean)
-                  .join(' ')
-              : undefined,
-          declared: this.declaredLaneLabels,
-          keyOf: self.laneKey,
-        })
+      laneLabel(lane: string): string {
+        return (
+          this.rowLabels.get(self.laneKey(lane)) ??
+          laneLabelOf(laneGenome(lane), {
+            written: this.rowLabels,
+            heldName: name =>
+              this.holdsAssembly(name)
+                ? getSession(self).assemblyManager.getDisplayName(name)
+                : undefined,
+            declared: this.declaredLaneLabels,
+            keyOf: self.laneKey,
+          })
+        )
       },
       /**
        * #getter
