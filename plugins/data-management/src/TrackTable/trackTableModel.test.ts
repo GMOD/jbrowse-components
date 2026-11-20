@@ -81,6 +81,33 @@ describe('sorting', () => {
     ])
   })
 
+  test('with no sort field, tracks of one category list together, as in the tree', () => {
+    const { session, table } = setup()
+    for (const [trackId, category] of [
+      ['gene1', 'Genes'],
+      ['reads1', 'Reads'],
+      ['gene2', 'Genes'],
+    ] as const) {
+      session.addSessionTrackConf({
+        trackId,
+        name: trackId,
+        category: [category],
+        assemblyNames: ['volMyt1'],
+        type: 'FeatureTrack',
+        adapter: { type: 'FromConfigAdapter', features: [] },
+      })
+    }
+    expect(table.sortedRows.map(r => r.name)).toEqual([
+      REFSEQ,
+      'charlie',
+      'alpha',
+      'bravo',
+      'gene1',
+      'gene2',
+      'reads1',
+    ])
+  })
+
   test('ascending name sort', () => {
     const { table } = setup()
     table.setSort('name', true)
@@ -275,7 +302,7 @@ describe('columns and facets', () => {
     }
   }
 
-  test('the default columns are the fields that group tracks, most widely set first', () => {
+  test('the default columns are the fields that group tracks, category first', () => {
     const { session, table } = setup()
     addAssayTracks(session, ['DNase', 'DNase', 'ChIP', 'ChIP', 'ChIP', 'ChIP'])
     expect(table.fields).toEqual([
@@ -307,7 +334,32 @@ describe('columns and facets', () => {
     ])
   })
 
-  test('kind and category fill in as columns when two tracks differ from the rest, the reference sequence counting as one', () => {
+  test('category leads the columns, however many tracks the others cover', () => {
+    const { session, table } = setup()
+    const tracks = [
+      ['Clinical', 'X', 'Variant'],
+      ['Research', 'X', 'Variant'],
+      ['Clinical', 'X', 'Alignments'],
+      ['Research', 'Y', 'Alignments'],
+      ['Clinical', 'Y', 'Variant'],
+      ['Research', 'Y', 'Alignments'],
+    ] as const
+    for (const [i, [category, lab, kind]] of tracks.entries()) {
+      session.addSessionTrackConf({
+        trackId: `t${i}`,
+        name: `t${i}`,
+        category: [category],
+        metadata: { lab, kind },
+        assemblyNames: ['volMyt1'],
+        type: 'FeatureTrack',
+        adapter: { type: 'FromConfigAdapter', features: [] },
+      })
+    }
+    expect(table.defaultColumns).toEqual(['category', 'kind', 'metadata.lab'])
+    expect(table.shownColumns(1)).toEqual(['name', 'category'])
+  })
+
+  test('category and kind fill in as columns when two tracks differ from the rest, the reference sequence counting as one', () => {
     const { session, table } = setup()
     expect(table.defaultColumns).toEqual([])
 
@@ -328,7 +380,7 @@ describe('columns and facets', () => {
 
     addTrack('reads', 'Alignments', ['Clinical'])
     expect(table.groupingFields).toEqual([])
-    expect(table.defaultColumns).toEqual(['kind', 'category'])
+    expect(table.defaultColumns).toEqual(['category', 'kind'])
   })
 
   test('a field of links groups nothing, even when tracks share one', () => {
@@ -413,7 +465,7 @@ describe('columns and facets', () => {
     setColumns(session, [])
     expect(table.activeSortField).toBe('')
     expect(table.shownColumns(10)).not.toContain('description')
-    expect(assayIds()).toEqual(['a0', 'a1', 'a2', 'a3'])
+    expect(assayIds()).toEqual(['a0', 'a2', 'a1', 'a3'])
   })
 
   test('the filter chips keep a facet that is still filtering', () => {

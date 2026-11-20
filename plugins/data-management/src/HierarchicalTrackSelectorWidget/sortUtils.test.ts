@@ -1,4 +1,4 @@
-import { sortSources } from './sortUtils.ts'
+import { sortSources, treeOrder } from './sortUtils.ts'
 
 import type { TrackNodeSource } from './types.ts'
 
@@ -74,4 +74,19 @@ test('categories sort at every depth, not just the first three', () => {
       ),
     ),
   ).toEqual(['y', 'x'])
+})
+
+test('tracks list in the order the tree draws them', () => {
+  expect(
+    names(
+      treeOrder([
+        src('gene1', ['Genes']),
+        src('reads1', ['Reads']),
+        src('refseq', ['Genes', 'RefSeq']),
+        src('gene2', ['Genes']),
+        src('loose'),
+        src('reads2', ['Reads']),
+      ]),
+    ),
+  ).toEqual(['loose', 'gene1', 'gene2', 'refseq', 'reads1', 'reads2'])
 })

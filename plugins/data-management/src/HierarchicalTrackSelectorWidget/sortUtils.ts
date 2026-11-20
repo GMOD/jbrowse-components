@@ -31,3 +31,21 @@ export function sortSources(
   }
   return sorted
 }
+
+/**
+ * The order the tree draws tracks in: a category's own tracks, then each of
+ * its subcategories in the order first seen. The table lists tracks this way
+ * too, so its category column reads in runs.
+ */
+export function treeOrder(
+  sources: TrackNodeSource[],
+  depth = 0,
+): TrackNodeSource[] {
+  const byCategory = Map.groupBy(sources, s => s.categories[depth])
+  return [
+    ...(byCategory.get(undefined) ?? []),
+    ...[...byCategory].flatMap(([category, members]) =>
+      category === undefined ? [] : treeOrder(members, depth + 1),
+    ),
+  ]
+}

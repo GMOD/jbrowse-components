@@ -18,7 +18,7 @@ import { autorun, compareShallow, computed, observable, reaction } from 'mobx'
 import { trackTableModelFactory } from '../TrackTable/trackTableModel.ts'
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
-import { sortSources } from './sortUtils.ts'
+import { sortSources, treeOrder } from './sortUtils.ts'
 import {
   categoryId,
   findSubCategories,
@@ -544,15 +544,17 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         sessionTrackIds = new Set<string>(),
       ) {
         const session = getSession(self)
-        return sortSources(
-          tracks.map(t =>
-            trackNodeSourceFor(t, {
-              session,
-              isSessionTrack: sessionTrackIds.has(t.trackId),
-            }),
+        return treeOrder(
+          sortSources(
+            tracks.map(t =>
+              trackNodeSourceFor(t, {
+                session,
+                isSessionTrack: sessionTrackIds.has(t.trackId),
+              }),
+            ),
+            getConf(session, ['hierarchical', 'sort', 'trackNames']),
+            getConf(session, ['hierarchical', 'sort', 'categories']),
           ),
-          getConf(session, ['hierarchical', 'sort', 'trackNames']),
-          getConf(session, ['hierarchical', 'sort', 'categories']),
         )
       }
       return {

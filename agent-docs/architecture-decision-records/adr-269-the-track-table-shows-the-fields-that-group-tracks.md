@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The drawer's track table shows, beside the name, as many columns as fit: `hierarchical.table.columns` first, then the fields that group tracks, then kind and category if they vary. Names shrink from the middle and keep up to two thirds of the width"
+summary: "The drawer's track table shows, beside the name, as many columns as fit: `hierarchical.table.columns` first, then category, then the other fields that group tracks. Rows list in the tree's order, and a name keeps up to two thirds of the width and is cut once, at its end"
 ---
 
 # ADR-269: The track table shows the fields that group tracks
@@ -13,7 +13,10 @@ track selector's ☰ menu in the drawer and a columns button in the folder
 dialog; amended 2026-11-18, when the name's share went from half the table
 to two thirds (The width decides how many show); amended 2026-11-18, when
 opening the table stopped widening the drawer and a dragged name column
-started keeping its width. Built over five commits
+started keeping its width; amended 2026-11-19, after Colin found the table
+"confusing": category leads the columns, the rows list
+in the tree's order, and a name is cut at its end, not its middle (Category
+leads, A name is cut once). Built over five commits
 after a code review, a product review and a scale review at 5,000 and 20,000
 tracks, judged on the jb2hubs human configs (hg38 799 tracks, hs1 627, hg19
 528). Colin asked that the narrow drawer show "a subset of the total metadata
@@ -41,14 +44,26 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
 - **Columns are the fields that group tracks.** A field groups tracks when
   at least two of its values are each shared by two or more tracks, and it
   has no more values than half the tracks that have one. Candidates are
-  category, kind and each top-level metadata key; the most widely set come
-  first. A field of links (where tracks came from, shared or not), a per-track description, a constant flag, or a flag with one
+  category, kind and each top-level metadata key. A field of links (where tracks came from, shared or not), a per-track description, a constant flag, or a flag with one
   exception (2,100 "Homo sapiens", one "Human") is never a default column,
   nor is a field whose values map one-to-one onto a column already chosen (a
   file format that always says what the kind says).
   The rule runs over every track the drawer can list, so Favorites and Recent
   keep the same columns.
-- **Kind and category fill in after them** when they group nothing but at
+- **Category leads; the other grouping fields follow, the most widely set
+  first.** Every track has a kind, so kind used to rank first and take the
+  one column a 384 px drawer fits. The table then gave no sign of where the
+  tree files a track, beside a column whose value changed from row to row:
+  "it is completely unclear what category everything is in", and kind "is
+  very distracting too because it is not by default sorted" (Colin,
+  2026-11-19). Kind is now the second column, shown once the drawer has room
+  for two, and its filter chip stays beside category's. Until a header is
+  clicked the rows list in the order the tree draws them (a category's own
+  tracks, then its subcategories as first seen), so the category column reads
+  in runs; config order alone does not give that (volvox's 131 tracks change
+  category 58 times down the list, config_demo's 262 tracks 94 times).
+  Favorites and Recent keep their own order.
+- **Category and kind still fill in** when they group nothing but at
   least two tracks differ from the field's most common value (no category
   counting as a value), and they don't repeat a column already chosen. Most
   small lists group nothing, so this keeps the table from being a bare list of
@@ -59,7 +74,7 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
 - **The width decides how many show.** The name keeps up to two thirds of the
   table, every other column at least 100 px, and the table shows as many
   default columns as fit beside the name, with no sideways scroll. On hg38 in
-  the usual drawer that is name and kind, and a wider drawer adds category.
+  the usual drawer that is name and category, and a wider drawer adds kind.
   Column labels start with a capital, as a hub's metadata keys mostly do. The name takes whatever room the others leave until
   its edge is dragged, which gives it a width of its own, and the table opens
   at the drawer's current width: Colin found widening the drawer on open
@@ -83,11 +98,9 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
   (2026-11-17).
 - **Description is hover text, not a column.** The name cell's title is the
   name and the description, as the tree's tooltip is.
-- **A name shrinks from the middle.** It keeps its end, the longest run of
-  whole words within half the name, and cuts the start first, down to three
-  letters, then the end. Tracks from one hub share long prefixes and differ
-  at the end. The table's name cell is a flex row, so a long name never hides
-  its ⋮ menu. A name with markup is cut at the end.
+- **A name is cut once, at its end,** in the tree and the table. The table's
+  name cell is a flex row, so a long name never hides its ⋮ menu, and its
+  hover text is the whole name.
 - **Facets are thin, and few start open.** Rows are 20 px with a 16 px
   checkbox and grey counts; the heading collapses its facet; "clear" shows
   only on a facet with a selection. The panel lists the grouping fields, the
@@ -120,6 +133,11 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
 | --- | --- |
 | uFuzzy or another typo-tolerant search | Hub names differ by one character on purpose (H3K27ac/H3K27me3, mm10/mm39, sample ids); a fuzzy match brings in the neighbours and the filter stops being predictable. Every-word matching covers what fuzzy search is mostly wanted for |
 | A hint or popover for the query syntax | The common path needs no syntax; a placeholder vanishes when typing starts, and a hint line is sub-label clutter |
+| A name shrinking from the middle, keeping its last words (2026-11-16 to 11-19) | Built because tracks from one hub share a prefix and differ at the end, but an ellipsis in the middle of every long row, in the tree as well, was "incredibly distracting to see" (Colin, 2026-11-19). The name's two thirds of the table and the hover text do that job |
+| Kind ranked by how many tracks have one (2026-11-16 to 11-19) | Every track has a kind, so it took the one column a usual drawer fits and pushed category out |
+| Kind after every metadata key | On hg38 the second column became a UCSC subgroup most tracks leave blank, and kind's filter chip dropped behind "More filters" |
+| Category headings between the table's rows, as the tree draws them | A second way to draw the tree, and a column sort breaks the groups; the column costs one sortable, filterable field |
+| Sorting the table by category on open | Marks a column as sorted that the user never clicked, and reorders the categories away from the tree's order |
 | The name keeping half the table (2026-11-16 to 11-18) | On hg38 it cut 13 of the first 23 names twice, in the middle and at the end ("Basewise Co… - 30-way vertebrate alignme…"), to make room for a category column whose values were also cut |
 | Description as a default column | It is per-track prose that duplicates the name on UCSC hubs (`longLabel`), and it took the width the name needs |
 | A pinned (sticky) name column | The default no longer scrolls sideways; only a user's own shown columns can |
@@ -139,9 +157,6 @@ found none of the six "Fiber-seq Compendium - THP-1 …" tracks.
 
 ## Consequences
 
-- A test or plugin that finds a long track name with an exact `getByText`
-  no longer matches it, since the name is two spans; `getByLabelText` on the
-  track's checkbox does.
 - Re-timed on ada with a production build at 20,000 tracks: facet panel
   open 68 ms (was 2,463), slowest keystroke with it open 53 ms (was 1,389),
   table keystroke 52 ms (was 150).

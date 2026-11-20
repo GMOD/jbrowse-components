@@ -137,6 +137,12 @@ function varies(values: string[]) {
   return values.length - Math.max(0, ...counts.values()) >= 2
 }
 
+// Category leads the columns the table picks for itself: the rows list in the
+// tree's category order, so it is the one column that reads in runs.
+function columnRank(field: string) {
+  return field === 'category' ? 0 : 1
+}
+
 /**
  * #stateModel TrackTableModel
  * #internal table-selector UI state owned by the hierarchical track selector
@@ -435,9 +441,10 @@ export function trackTableModelFactory() {
       },
       /**
        * #getter
-       * The fields that sort tracks into groups (see groupsTracks), the ones
-       * most tracks have first: what the table shows beside the name when the
-       * config names no columns, and what the filter chips offer.
+       * The fields that sort tracks into groups (see groupsTracks): category
+       * first, then the ones most tracks have. What the table shows beside the
+       * name when the config names no columns, and what the filter chips
+       * offer.
        */
       get groupingFields() {
         const ranked = [...self.groupableFieldValues]
@@ -447,7 +454,11 @@ export function trackTableModelFactory() {
             ...entry,
             coverage: entry.values.filter(v => v !== '').length,
           }))
-          .sort((a, b) => b.coverage - a.coverage)
+          .sort(
+            (a, b) =>
+              columnRank(a.field) - columnRank(b.field) ||
+              b.coverage - a.coverage,
+          )
         const kept: typeof ranked = []
         for (const entry of ranked) {
           if (!kept.some(k => mirrors(entry.values, k.values))) {
@@ -469,7 +480,7 @@ export function trackTableModelFactory() {
           self.groupableFieldValues.get(field) ?? []
         const chosen = self.groupingFields.map(valuesOf)
         const fallback: string[] = []
-        for (const field of ['kind', 'category']) {
+        for (const field of ['category', 'kind']) {
           const values = valuesOf(field)
           if (
             !self.groupingFields.includes(field) &&
@@ -488,15 +499,16 @@ export function trackTableModelFactory() {
        * #getter
        * the columns shown beside the name, most important first, as far as the
        * width allows: the config's `hierarchical.table.columns`, then the
-       * grouping fields it leaves out, then the fallback columns
+       * grouping fields and fallback columns it leaves out, category first
        */
       get defaultColumns() {
         const known = new Set(self.fields)
         return [
           ...new Set([
             ...self.configuredColumns.filter(f => f !== 'name' && known.has(f)),
-            ...self.groupingFields,
-            ...self.fallbackColumns,
+            ...[...self.groupingFields, ...self.fallbackColumns].toSorted(
+              (a, b) => columnRank(a) - columnRank(b),
+            ),
           ]),
         ]
       },
