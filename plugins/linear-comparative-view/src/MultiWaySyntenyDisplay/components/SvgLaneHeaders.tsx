@@ -11,13 +11,25 @@ import {
   LABEL_FONT_SIZE,
   LANE_COLOR_SWATCH_PX,
   LANE_COLOR_TINT,
-  changesChipWidth,
   headerText,
   labelBoxTop,
 } from '../laneHeader.ts'
 import { GENE_LABEL_HALO_PX } from '../laneLabels.ts'
 
 import type { LaneHeaderRow } from '../laneHeader.ts'
+
+// Noto Sans sets text up to a tenth wider than measureText's Helvetica table,
+// and semibold wider again: boxes and gaps are sized for that, text centred.
+const EXPORT_WIDTH_SLACK = 1.1
+const SEMIBOLD_WIDTH = 1.05
+
+function exportTextWidth(text: string) {
+  return measureText(text, LABEL_FONT_SIZE) * EXPORT_WIDTH_SLACK
+}
+
+function chipWidth(text: string) {
+  return exportTextWidth(text) + 2 * INLINE_CHIP_PAD_PX
+}
 
 function SvgInlineChip({
   text,
@@ -30,7 +42,7 @@ function SvgInlineChip({
   x: number
   anchor: 'start' | 'end'
 }) {
-  const width = measureText(text, LABEL_FONT_SIZE) + 2 * INLINE_CHIP_PAD_PX
+  const width = chipWidth(text)
   return (
     <rect
       data-testid="multiway-lane-inline-chip"
@@ -63,7 +75,7 @@ function SvgColorChip({
   const box = {
     x: x - INLINE_CHIP_PAD_PX,
     y: labelBoxTop(y),
-    width: measureText(text, LABEL_FONT_SIZE) + 2 * INLINE_CHIP_PAD_PX,
+    width: chipWidth(text),
     height: LABEL_FONT_SIZE,
     rx: 2,
   }
@@ -103,9 +115,10 @@ function SvgHeaderChip({
         stroke={bandPalette.text.secondary}
       />
       <text
-        x={right - width + INLINE_CHIP_PAD_PX}
+        x={right - width / 2}
         y={y}
         fontSize={LABEL_FONT_SIZE}
+        textAnchor="middle"
         fill={bandInk().text}
       >
         {text}
@@ -132,7 +145,7 @@ export function SvgLaneHeaders({
         const badge = row.against ? `vs ${row.against}` : undefined
         const badgeX = HEADER_INSET_PX + 0.5
         const badgeWidth = badge
-          ? measureText(badge, LABEL_FONT_SIZE) + 2 * BADGE_PAD_PX
+          ? exportTextWidth(badge) * SEMIBOLD_WIDTH + 2 * BADGE_PAD_PX
           : 0
         const barX = badge
           ? badgeX + badgeWidth + HEADER_GAP_PX
@@ -142,25 +155,22 @@ export function SvgLaneHeaders({
           : barX
         const scaleRight = width - HEADER_INSET_PX
         const repeatsRight = row.scale
-          ? scaleRight - measureText(row.scale, LABEL_FONT_SIZE) - HEADER_GAP_PX
+          ? scaleRight - exportTextWidth(row.scale) - HEADER_GAP_PX
           : scaleRight
-        const repeatsWidth = row.repeats
-          ? changesChipWidth(row.repeats.text)
-          : 0
+        const repeatsWidth = row.repeats ? chipWidth(row.repeats.text) : 0
         const changesRight = row.repeats
           ? repeatsRight - repeatsWidth - HEADER_GAP_PX
           : repeatsRight
-        const changesWidth = row.changes
-          ? changesChipWidth(row.changes.text)
-          : 0
+        const changesWidth = row.changes ? chipWidth(row.changes.text) : 0
         const labelRight = row.changes
           ? changesRight - changesWidth - HEADER_GAP_PX
           : changesRight
         const label = truncateToWidth(
           headerText(row),
-          labelRight -
+          (labelRight -
             labelX -
-            (row.color || row.inline ? INLINE_CHIP_PAD_PX : 0),
+            (row.color || row.inline ? INLINE_CHIP_PAD_PX : 0)) /
+            EXPORT_WIDTH_SLACK,
           LABEL_FONT_SIZE,
         )
         return (
@@ -177,10 +187,11 @@ export function SvgLaneHeaders({
                   stroke={bandInk().text}
                 />
                 <text
-                  x={badgeX + BADGE_PAD_PX}
+                  x={badgeX + badgeWidth / 2}
                   y={row.y}
                   fontSize={LABEL_FONT_SIZE}
                   fontWeight={600}
+                  textAnchor="middle"
                   fill={bandInk().text}
                 >
                   {badge}

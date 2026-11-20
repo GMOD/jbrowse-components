@@ -1,5 +1,4 @@
 import { assembleLocString, getBpDisplayStr } from '@jbrowse/core/util'
-import { measureText } from '@jbrowse/core/util/measureText'
 
 import { laneOf } from './copyLane.ts'
 import { frameOpenings, laneBpOfOpened } from './layoutMultiWay.ts'
@@ -170,10 +169,6 @@ function laneChanges(
   return listed.length
     ? [...listed, ...(more ? [`${more} more`] : [])].join(', ')
     : undefined
-}
-
-export function changesChipWidth(text: string) {
-  return measureText(text, LABEL_FONT_SIZE) + 2 * INLINE_CHIP_PAD_PX
 }
 
 /** Clamps, since a live pan can put the frame's `min` below zero. */
