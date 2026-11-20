@@ -151,16 +151,37 @@ fresh-install banner's only affordance is
 (`products/jbrowse-web/src/components/LoaderErrorBanner.tsx`), and that is a
 same-tab navigation, which gap 1 explains.
 
-**Desktop cannot be filmed with this harness**; an `x11grab` recorder over the
-Xvfb display the Selenium run already uses can, and
-[tutorial-corpus-audit](tutorial-corpus-audit.md) §2 has that route. Desktop figures come from a Selenium + Electron run over the
-packaged binary (`products/jbrowse-desktop/test/screenshots.ts`), whose only
-capture call is `driver.takeScreenshot()`; `website/scripts/generate-video.ts` drives a
-page in puppeteer Chrome and films with `page.screencast`. Electron's
-chromedriver does not expose the CDP-backed window commands.
-So `quickstart_desktop.md`, which carries
-the heaviest click-narration in the docs and is the page a tour would gut, is
-out of reach.
+**Desktop cannot be filmed with this harness.** Desktop figures come from a
+Selenium + Electron run over the packaged binary
+(`products/jbrowse-desktop/test/screenshots.ts`), whose only capture call is
+`driver.takeScreenshot()`; `website/scripts/generate-video.ts` drives a page in
+puppeteer Chrome and films with `page.screencast`. Electron's chromedriver does
+not expose the CDP-backed window commands. So `quickstart_desktop.md`, which
+carries the heaviest click-narration in the docs and is the page a tour would
+gut, is out of reach of this harness. Desktop's in-app affordances do not all
+go through the native file picker: `screenshots.ts` drives `AddGenomePane` by
+pasting URLs, and `reference/FIGURE_CAPTURE.md` §"Opening the volvox genome"
+does exactly that.
+
+What is missing is a recorder, and the Selenium run already sits on an X
+server (`screenshots:headless` in `products/jbrowse-desktop/package.json` runs
+it under `xvfb-run`). `ffmpeg -f x11grab` against that display, started before
+the Selenium script and stopped after, films the session, the native file
+picker included, which is a real X window and the affordance no web tour can
+show. It needs the display pinned (`xvfb-run -n`, or `$DISPLAY` read in-script)
+and the screen even-sided at or under `VIDEO_OUTPUT_WIDTH`. It is not free: the
+drawn cursor, `say` chips and caption track are injected by `video-overlay.ts`,
+a puppeteer facility, so a first Desktop clip ships without them.
+
+- **`desktop/open_a_local_file`**: start screen, genome opened, a build
+  script's own output file opened from disk, track drawing. One clip, linkable
+  from every page whose build script ends on `npx --yes serve <build>/jbrowse2`.
+- **Cheaper, first:** ranks 2 and 3 above are drivable in the web harness.
+  `ui/add_genome` opens on `emptyConfig` (rank 2) as a user-guide tour; no
+  tutorial tour opens on either. A tour opening on `hg38_only.json` and adding
+  the page's own track by URL is the from-scratch shape without the Desktop
+  work. The assembly step belongs to the Desktop clip; the track step belongs
+  to each page's own tour.
 
 **The honest conclusion**: from-scratch belongs on the entry-point pages and the
 zero-figure user guides, not on the dataset tutorials. A tutorial's data is

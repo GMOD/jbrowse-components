@@ -115,6 +115,10 @@ untouched.
   ref-vs-query position covariance when the strand vote is not decisive. Query
   coordinates were previously carried into the algorithm and never used. Ordering
   on the real fixtures is unchanged.
+- **Measured (2026-10-03):** barycenter, layer-sweep and covariance orderings
+  of the chromosomes within a row, on the six-genome linkage-group stack, each
+  landed within about 10% of greedy best-hit's 1.01M ribbon crossings, and a
+  blind ranking preferred greedy best-hit, so the synteny path keeps it.
 - **Deferred:** de-novo-assembly-vs-de-novo-assembly (neither axis pre-ordered)
   is the only case where both-axis seriation adds value — a self-consistent
   spanning order for *both* contig sets. If ever built, do it as a separate

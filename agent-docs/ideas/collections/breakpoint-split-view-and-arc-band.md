@@ -1,6 +1,6 @@
 ---
 name: breakpoint-split-view-and-arc-band
-description: The alignments read-connections band and the breakpoint split view each show half of the SV evidence, and neither hands the reader to the other. Five proposals to join them, triaged separately.
+description: The alignments read-connections band and the breakpoint split view each show half of the SV evidence, and neither hands the reader to the other. Proposals to join them, triaged separately.
 ---
 
 # Breakpoint split view and arc band
@@ -10,7 +10,7 @@ feet and is the first SV evidence a reader sees; the split view is where the
 reads behind a junction are examined; and no route joins them. Every path into
 the split view starts from a VCF record or one read's detail widget, the panels
 open holding whatever the launcher happened to carry, and an inversion draws
-crossed. The four entries below are one thread and are triaged one at a time.
+crossed. The entries below are one thread and are triaged one at a time.
 
 ## An arc click opens the split view
 
@@ -116,8 +116,12 @@ copy-number or BAF track, and the session already holds them.
   so "Copy tracks" keeps its meaning.
 - Every launch path passes the callset it came from. The variant widget's link
   (`LaunchBreakendPanel.tsx`) passes neither the callset nor a
-  `findJunctionsNear`, so it follows no chain; the alignments widget's link
-  passes only the read.
+  `findJunctionsNear`, so the dialog opened from the feature detail never
+  offers the chain the same record's right-click offers; the alignments
+  widget's link passes only the read. `makeFindJunctionsNear` wants a node
+  holding the track's `adapterConfig`, which the widget model does not carry:
+  the widget resolves its track from the feature's `trackId`, or shares the
+  right-click's launcher.
 
 Waits on a call on the dialog growing a list. It is already the one place every
 launch passes through, and a per-panel menu would be a second place.
@@ -166,13 +170,6 @@ and relayout on every landing, for mates on one row, which the view never
 draws as evidence. A fresh track from `openDefaultTracks` is the one place a
 default could honestly live, through `setUnit` so the color swap comes with
 it.
-
-**The variant widget's link follows no chain.** `LaunchBreakendPanel.tsx`
-calls `launchBreakpointSplitView` with no `findJunctionsNear`, so the dialog
-opened from the feature detail never offers the chain the same record's
-right-click offers. `makeFindJunctionsNear` wants a node holding the track's
-`adapterConfig`, which the widget model does not carry; the widget resolves its
-track from the feature's `trackId`, or shares the right-click's launcher.
 
 **Variant curves may land on the track's bottom edge.** The survey reported
 that variant curves anchor on the track's bottom edge because the display

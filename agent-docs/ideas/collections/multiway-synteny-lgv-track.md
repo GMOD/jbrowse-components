@@ -91,7 +91,8 @@ lane the source places" should not be the default when the header declares more 
 which is a refusal with the picker open; cull scrolled-out layers in
 `renderLayers`. `laneGeneAdapters`, once listed as a third, has been a one-pass
 join since 2026-09-12. The picker dialog
-itself is fine to ~500 and should not be made to scale further.
+(`LaneSelectionDialog`, a flat list) is fine to ~500 and slow at thousands,
+and should not be made to scale further.
 
 The ORDER of whatever set that picks is its own file —
 [ordering-synteny-lanes-by-similarity](../waiting-on-a-call/ordering-synteny-lanes-by-similarity.md),
@@ -124,26 +125,23 @@ walk offsets are exactly what the 19x-smaller reference-keyed index dropped
 
 **The graph data path, and what Sample rows should draw.** A GBZ lane's records
 come from `GbzBaseSyntenyAdapter` in `jbrowse-plugin-graphgenomeviewer` over the
-`gbz-base-js` reader, and today the adapter extracts, identifies and aligns
-every walk in the window and then filters — so lane selection saves the
-display's per-lane work and nothing on the query. In order: release and adopt
-the reader's `keepHaplotypes` and W-line direction fix (the plugin pins 2.3.0
-and both sit after the tag, at `add1f2f`); pass a haplotype set into
-`alignments()`, which is per path and could take a handle filter today for
-about a quarter of a window's time (`HAPLOTYPE_WALKS_REVIEW.md:45-55`); cut
-static GFAs with `--keep` for every tutorial locus now, which meets the same
-need at zero runtime cost for a fixed locus and set
-(`HAPLOTYPE_WALKS_VISION.md:94-100`) and does not generalise to a window the
-reader chooses; then the companion's reference-anchored samples plus a per-path
-walk (`HAPLOTYPE_WALKS_VISION.md:54-73`), which is the only route to "eight
-lanes out of four thousand read eight haplotypes' worth of data". Add
-`identity` to the reader's records so the identity color mode stops being dead
-on a GBZ lane (`GBZ_HANDOFF.md:288-293`). And measure the reader's `align()`
-against [`gfa_to_pairwise_paf.py`](https://github.com/cmdcolin/gfa-to-pairwise-paf) on the E. coli oracle: the two emit different
-CIGARs for the same walks by design (`50I50D` against `50X`,
-`HAPLOTYPE_WALKS_REVIEW.md:280-295`), nothing has compared them, and the gap
-split that landed on 2026-09-06 made the display's clip the first consumer of
-the CIGAR's interior.
+`@gmod/gbz-base` reader. The lane selection reaches the reader: `keepPredicate`
+hands the wanted haplotypes to `cutWindowTables`, so a window walks only those,
+and the graph view's `GetSubgraph` takes the same `haplotypes`. Still open:
+
+- Static GFAs cut with `--keep` for every tutorial locus, which meet the same
+  need at zero runtime cost for a fixed locus and set and do not generalise to
+  a window the reader chooses.
+- `identity` on the reader's records, so the identity color mode stops being
+  dead on a GBZ lane.
+- The reader's `align()` measured against
+  [`gfa_to_pairwise_paf.py`](https://github.com/cmdcolin/gfa-to-pairwise-paf)
+  on the E. coli oracle. The two emit different CIGARs for the same walks by
+  design (`50I50D` against `50X`), nothing has compared them, and the
+  display's gap split reads the CIGAR's interior.
+- Nothing opens a MultiWay display from a graph node; its `samples` could go
+  to `setSelectedLanes`.
+- The `SyntenyFollow` and `RowFrame` shapes do not unify.
 
 Sample rows in the graph view are the same set question one surface over. Do
 not rebuild that renderer for carriage — drawing a segment once per carrier

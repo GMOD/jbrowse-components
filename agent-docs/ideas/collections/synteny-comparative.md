@@ -11,11 +11,6 @@ description: `syntenyGroupId`, PIF limits, the `featureId` instance ceiling, pol
 linear synteny view has Reverse row order, but an open dotplot cannot trade its
 axes.
 
-Barycenter, layer-sweep and covariance orderings of chromosomes within a row
-were measured on the six-genome linkage-group stack (2026-10-03): every variant
-landed within ~10% of main's 1.01M ribbon crossings and a blind ranking
-preferred main's greedy best-hit, so `diagonalizeRegions` keeps it (ADR-034).
-
 **A location-marker tick can't be read, only seen.** A tick states "this query
 coordinate maps to that target coordinate" and there is no way to get the two numbers:
 markers are excluded from the pick index by construction — both their edges are single
@@ -144,7 +139,7 @@ likeliest to surface first, via dense all-vs-all whole-genome PAF. Fix: flip the
 `.iface` (the interleave buffer already has a `u32` view). Do it when a real
 all-vs-all file reaches the cap rather than speculatively.
 
-### Vendor-format leaf adapters + coloring conventions (2026-07 vendor survey)
+### Vendor-format leaf adapters (2026-07 vendor survey)
 
 Surveyed `~/src/vendor/{ntSynt-viz,plotsr,SVbyEye,SafFire,jupiterplot}` against the
 current stack. The overriding conclusion is that **the render/model/color surface is
@@ -156,30 +151,10 @@ file onto the EXISTING SyntenyTrack render path**, never new render/color surfac
 below reuses the renderer unchanged (the `MCScanBlocksAdapter` / `MultiGenomePAFAdapter`
 template: "one file backs N-1 pairwise tracks, no renderer change").
 
-- **ntSynt long-format blocks adapter (best leaf; local demo data ready).** ntSynt emits
-  a long-format multi-genome table (`block_id · genome · chrom · start · end · strand ·
-  n_minimizers · indel_flag`); one `block_id` groups one row per genome. For a pair
-  `[a,b]` the adapter keeps rows whose genome is `a` or `b`, groups by `block_id`, and
-  emits a feature+mate for blocks containing both — the *long-format twin* of
-  `MCScanBlocksAdapter`, and simpler (no BED-join; coords are inline). `adapterHint`-only
-  (`.tsv` is generic). Demo data already sits in `~/src/vendor/ntSynt-viz/tests/`
-  (great-apes 6-way `great-apes.ntSynt.synteny_blocks.tsv` + per-genome `.fai`s + a
-  Newick for row ordering). Popular T2T/pangenome-era tool (Birol lab). This is NOT
-  "native N-way blocks as the primitive" (rejected above) — it emits pairwise features
-  like every other adapter.
-
 - **nucmer `.coords` (show-coords tabular) leaf adapter.** SVbyEye/SafFire ingest nucmer via
   `show-coords`-style tabular output (`[S1][E1]|[S2][E2]|[LEN1][LEN2]|[%IDY]|tags`). JBrowse
   has `DeltaAdapter` (`.delta`) but not the tabular `.coords` form. Small leaf if a real user
   arrives with `.coords`; low priority (they can run `.delta` today).
-
-- **Coloring conventions to consider (constants-only, near-zero surface).** Every vendor tool
-  uses **forward=blue / inversion=orange**; our `strand` scheme is pos=red/neg=blue
-  (`colorUtils.ts`). Aligning the palette is a constants-only change but a *default* change —
-  verify against existing screenshots before touching. Also: SVbyEye/SafFire discretize
-  identity into breaks (`c(90,95,99,99.5,…)`); `encoding.opacity` over `identity` fades
-  continuously by default, and a `threshold` scale on it
-  (`syntenyOpacityConfigSchema.ts`) already gives the discrete bins.
 
 ### Polyploidy-aware many-to-many synteny
 
@@ -190,8 +165,8 @@ single-axis `diagonalizeRegions` cannot flatten it. Reviewers repeatedly read th
 as a diagonalization *failure*; they're real biology. Idea (still open): detect the fan (a query region
 with M target hits above a length/identity floor) and make the multi-mapping read as signal,
 not noise — e.g. a shared hue per source-block family, an explicit "paralog fan" affordance,
-or a summary "×3" annotation on the region. Complements the barycenter/layer-sweep note above
-(which cuts *transitive* crossings but can't remove genuine many-to-many ones), and would let
+or a summary "×3" annotation on the region. Complements the within-row orderings ADR-034 measured
+(which cut *transitive* crossings but can't remove genuine many-to-many ones), and would let
 a caption/legend say "crossings here are the grape triplication" instead of looking broken.
 
 ### Canvas2D fades a curved sub-pixel ribbon by one number

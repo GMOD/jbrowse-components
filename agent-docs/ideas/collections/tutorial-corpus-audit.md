@@ -6,54 +6,15 @@ description: Measurements and a structural read of website/docs/tutorials/, nami
 # The tutorial corpus, audited
 
 Two passes over `website/docs/tutorials/`, kept together because they read the
-same pages and their findings land on the same edits. §2-4 are three measurements
-taken on 2026-08-31 across the 48 pages there then; §5 is the structural half,
-from a ten-agent read of the 43 pages there on 2026-08-21. The corpus is 57 pages
-today, so a census below is a floor rather than a current count — re-run one
-before quoting it.
+same pages and their findings land on the same edits. §3-4 are measurements
+taken on 2026-08-31 across the pages there then; §5 is the structural half,
+from a ten-agent read on 2026-08-21. The corpus has grown since, so a census
+below is a floor rather than a current count — re-run one before quoting it.
+The Desktop and from-scratch analysis is in
+[tutorial-tours](tutorial-tours.md) §"Tours that start near scratch".
 
-**Population genomics ranks last on every measurement in §2-4.** The same eight
+**Population genomics ranks last on every measurement in §3-4.** The same eight
 pages head three different rankings.
-
-## 2. Nothing starts from scratch, and nothing is Desktop
-
-### The Desktop conclusion in that doc is too wide
-
-Recorded there: Desktop figures come from Selenium + Electron whose only capture
-is `driver.takeScreenshot()`, Electron's chromedriver has no CDP window commands,
-and "every in-app affordance there goes through the native file picker".
-
-First two hold. The third does not — `products/jbrowse-desktop/test/screenshots.ts`
-drives `AddGenomePane` by pasting URLs, and `reference/FIGURE_CAPTURE.md`
-§"Opening the volvox genome" is a section about doing exactly that.
-
-What is missing is a recorder, and the harness already runs on an X server:
-
-    "screenshots:headless": "xvfb-run --auto-servernum -s \"-screen 0 1920x1200x24\" node test/screenshots.ts --headless"
-
-`ffmpeg -f x11grab` against that display, started before the Selenium script and
-stopped after, films the session — the native file picker included, which is a
-real X window and the affordance no web tour can show. Needs the display pinned
-(`xvfb-run -n`, or `$DISPLAY` read in-script) and the screen even-sided at or
-under `VIDEO_OUTPUT_WIDTH`.
-
-Not free: the drawn cursor, `say` chips and caption track are injected by
-`video-overlay.ts`, a puppeteer facility. A first Desktop clip ships without
-them.
-
-**Proposal.** `desktop/open_a_local_file` — start screen, genome opened, a build
-script's own output file opened from disk, track drawing. One clip, linkable from
-every page whose build script ends on `npx --yes serve <build>/jbrowse2`.
-
-**Cheaper, first.** Ranks 2 and 3 of that doc's table are already drivable in the
-web harness (`test_data/empty.json`, no assemblies; `test_data/hg38_only.json`,
-no tracks) and no tutorial tour uses either. A tour opening on `hg38_only.json`
-and adding the page's own track by URL is the from-scratch shape without the
-Desktop work.
-
-The objection recorded there — a tutorial's data is remote and heavy, so adding
-the assembly too is minutes under a cut — stands. The assembly step belongs to
-the Desktop clip; the track step belongs to each page's own tour.
 
 ## 3. Prose per figure, and numbers from a run
 
@@ -201,6 +162,6 @@ existing. What should merge is the *guide* material out of both.
 ## Order
 
 §4's two figures are unshot. §3 is a scope change to an existing checker plus a rule
-in `reference/WEBSITE_WRITING.md` §"Tutorials". §2 is the only real work. §5 is
+in `reference/WEBSITE_WRITING.md` §"Tutorials". §5 is
 editorial calls on pages that already work, so it waits on someone deciding to
 take a page apart.

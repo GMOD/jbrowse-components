@@ -14,8 +14,9 @@ has been re-checked since the cut.
 
 - **`renameRegions.ts`** returns a dead MST node typed as a live `Region`
   (CORE_UTIL_AUDIT).
-- **`addTrackConf`** has no dedupe, so a repeat or race can leave two catalog
-  entries with one `trackId`. A non-admin `deleteTrackConf` dereferences every
+- **`JBrowseModel.addTrackConf`** (the config catalog's action;
+  `addTrackConf` on the session dedupes) has no dedupe, so a repeat or race can
+  leave two catalog entries with one `trackId`. A non-admin `deleteTrackConf` dereferences every
   open view and removes nothing (TRACK_REGISTRATION).
 - **Worker sort/layout loops** emit no progress (PROGRESS_REPORTING).
 
@@ -38,8 +39,7 @@ has been re-checked since the cut.
   `session.theme`; a proportional ratchet for the examples-site budget.
 - **R export** (R_EXPORT): bisulfite C→T needs a reference walk;
   `shownModifications` filtering; phased-HP PS hue flattens to the secondary
-  color; the multi-wiggle pos/neg split and group/cluster tree order; CI does
-  not install R and Bioconductor, so `rScriptRun.ci.test.ts` skips on every run.
+  color; the multi-wiggle pos/neg split and group/cluster tree order.
 - **Figure capture** (FIGURE_CAPTURE): about 10 full-canvas GPU passes per
   figure on large multi-region views; whether hardware GL should default on or
   be a per-spec `hardwareGl` opt-in; the ~32 s full-page synteny capture.
@@ -97,9 +97,7 @@ Open items the second, harder trim removed from the docs.
   memory but not the peak.
 - **Datasets and demos** (DEMO_DATASETS, HPRC_RELEASE2): great ape HSA16
   all-vs-all PAF (`-c` with `-P` runs out of memory); bovine pggb/cactus and
-  mouse `minigraph -cxasm --call` routes to real carriage; switch the
-  Ensembl-sourced build scripts to NCBI IDs (`build_grape_peach_anchors.sh`
-  first); whether the K562 BCR-ABL1 acceptor is alternative splicing or an
+  mouse `minigraph -cxasm --call` routes to real carriage; whether the K562 BCR-ABL1 acceptor is alternative splicing or an
   alignment artefact is unestablished.
 - **Lint:** migrate oxlint-owned suppressions to `oxlint-disable` (TOOLCHAIN).
 - **MAF** (MAF_LARGE_BLOCKS): a per-line safety valve in the adapter that names
@@ -112,8 +110,6 @@ Open items the second, harder trim removed from the docs.
   row field.
 - **Tree sidebar** (CLUSTERING_WORKFLOW): clade collapse, highlight, node labels,
   extra panels.
-- **Multiway** (MULTIWAY_SYNTENY_DISPLAY): `LaneSelectionDialog` is a flat list
-  that stays slow at thousands of haplotypes.
 - **R export** (R_EXPORT): `GRanges` `[[` and label-decimation parity traps.
 
 ## Third pass (2026-09-30)
@@ -135,11 +131,6 @@ Items the whole-unit cuts removed. Same caveat: unverified since the cut.
   by the RPC worker count; the linear region walk has no cumulative index; no
   keyboard path to features; the `LGVSyntenyDisplay` gate is inert; no BigWig
   size estimate; the density-axis extrapolation is non-monotone.
-- **Pangenome reader** (HPRC_RELEASE2, MULTIWAY_SYNTENY_DISPLAY): the reader's
-  `align()` and [`gfa_to_pairwise_paf.py`](https://github.com/cmdcolin/gfa-to-pairwise-paf) emit different CIGARs and nothing
-  measures it; nothing opens a MultiWay display from a graph node (its
-  `samples` could go to `setSelectedLanes`); the `SyntenyFollow` and
-  `RowFrame` shapes do not unify.
 - **Bundle** (EAGER_BUNDLE): a ~1% ratchet over the probe's own-graph figure;
   verify ESM workers in Firefox; a synteny renderer behind its own `import()`.
 - **ABI** (PLUGIN_ABI_STABILITY): the removal list for the session,
@@ -150,5 +141,5 @@ Items the whole-unit cuts removed. Same caveat: unverified since the cut.
 - **Gate** (CROSS_BACKEND_GATE): the AA-ramp prediction note, closed
   unfalsified.
 - **Misc:** the K562 BCR-ABL1 acceptor cause; the Firefox WebGL2 context
-  ceiling; the per-base wall at wide zoom; the per-base cancel-overrun figure is
+  ceiling; the per-base cancel-overrun figure is
   stale (pre-ADR-122).

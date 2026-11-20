@@ -28,7 +28,10 @@ only, so they read as one statement.
 
 ## What deciding it involves
 
-- which hues: the read pair's (hue 0° / 240°) or the preset's (9° / 219°);
+- which hues: the read pair's (hue 0° / 240°), the preset's (9° / 219°), or
+  the synteny tools' convention of forward blue and inversion orange
+  (ntSynt-viz, plotsr, SVbyEye, SafFire and jupiterplot all use it). Any of
+  them is a constants-only change but a default change;
 - before/after captures of a feature track over a pileup, a synteny ribbon
   colored by strand, and the multi-row display;
 - the legend swatches follow, since both read the same constants.

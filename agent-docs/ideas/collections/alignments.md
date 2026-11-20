@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Pileup and coverage-band ideas, among them a read-count floor for the low-frequency threshold, strand-split allele bars, variant navigation, allele-count export, read downsampling, lifting `MAX_GROUPS`, interning `readTagValues`, and RNA-seq splice and pair follow-ups.
+description: Pileup and coverage-band ideas, among them a read-count floor for the low-frequency threshold, strand-split allele bars, allele-count export, read downsampling, lifting `MAX_GROUPS`, and RNA-seq splice and pair follow-ups.
 ---
 
 # Alignments
@@ -50,15 +50,6 @@ instance count and gets sub-pixel fast, whereas a bias FLAG (a mark on the
 position, the allele still drawn whole) costs one bit and says the same thing at
 every zoom. Decide that before writing either. Note the segments are already
 stacked bottom-to-top by lane, so a split has to pick a second axis.
-
-**Jump to the next significant variant.** `findSignificantInBin` (alignments-core)
-already answers "is there a real SNP in this bp range" against the local depth —
-it exists for the hover tooltip at wide bpPerPx — so wiring it to a menu item and
-a keyboard shortcut gives variant-to-variant navigation off data already on the
-main thread. Its threshold is the caller's, so this should read the same
-`coverage.alleles.filter` the band's colors now do rather than inventing a
-second notion of significant. Bounded by the fetched region, which is the honest
-limit and worth saying in the UI: "next in view", not "next in the genome".
 
 **Export the coverage band's allele counts.** Save track data writes the depth
 as a bedGraph; the packed SNP buffer beside it decodes through
@@ -136,36 +127,6 @@ function. Sending the worker the cross-region key set puts a fetch result in
 collapses a region holding only late-sorting keys into one overflow lane. A
 binned depth sweep that lifts the cap (above) removes the case outright.
 
-**Intern `readTagValues` the way `readNextRefs` was interned.** Both CPU-baked
-color schemes (`tag`, `mateRefName`) ship `readTagValues: string[]` — one string
-per read across the RPC boundary — and it is the shape this plugin has already
-measured and deleted once, one field over. `shared/readNextRefs.ts` records the
-number for the identical array: **153,677 strings holding one distinct value,
-16.5 ms to build and 8.0 ms to structured-clone, against 8.8 ms for a
-slots-plus-table**, i.e. 2.8x, with a bench at `benches/readNextRefs.bench.ts`.
-The tag case has the same distribution — HP carries two or three values over a
-whole pileup, RG a handful, a mate reference usually one.
-
-The shape is `readNextRefs`': a transferable `Int32Array` of slots plus a table
-of distinct values, read through an accessor. `presentTagValues` (the legend's
-whole swatch list for these schemes) then comes off the table rather than off an
-O(reads) scan.
-
-**What does NOT work, checked**: reusing `readNextRefIds` / `nextRefNames` for
-`mateRefName` rather than adding a second dictionary. `buildReadNextRefs` reads
-only `next_ref`, while `getMateRefName` also reads a synteny block's
-`mate.refName` — so LGVSyntenyDisplay's "Query name" would resolve `''` for
-every block. Teaching the nextRefs table to read `mate.refName` fixes that and
-breaks something quieter: `buildReadInterchrom` compares those names against the
-region's refName, and a PAF block's mate is a query contig on the *other*
-assembly, so every synteny block would come back interchromosomal and lose its
-chevron (`dirMoot`).
-
-That also kills the tempting corollary — that `mateRefName` could drop
-`workerExtracts` and become a tier-2 recolor instead of a refetch. It cannot: the
-worker still has to extract the value. The win here is payload and clone time
-only.
-
 ## RNA-seq splice follow-ups
 
 The splice thread shipped the spliced-reads filter, spliced-first layout,
@@ -242,17 +203,3 @@ two exons is evidence those exons share a molecule even when neither read
 crosses a junction. Assemblers (StringTie) and fusion callers (STAR-Fusion,
 Arriba) use it; junction arcs, ours and IGV's, count split reads only. The shape
 would be junction arcs that also count such pairs. Waits on a user.
-
-**The key covers the first section's coverage axis when reads are grouped.**
-Grouping moves the coverage scale to the right (`side: self.showsGroupLabels ?
-'right' : 'left'`, `LinearAlignmentsDisplay/model.ts`), and `FloatingLegend`
-(display-ui) is pinned to the top right. With `legend.show` on, the key hides
-the first section's tick labels: a capture of NA12878 faceted by `mapq` on
-2026-11-17 shows it. `legend.show` is off by default. The key would sit left of
-the axis gutter while the scale is on the right.
-
-**The key lists the read colors while the pileup is hidden.** With `pileup.show`
-off and `legend.show` on, the key lists the levels of `encoding.color` though
-the display draws no read (the same NA12878 track, colored by `mapq`). The read
-connections paint `insertSizeAndOrientation` in the reads' colors, so the rows
-would go when no drawn mark paints the field.

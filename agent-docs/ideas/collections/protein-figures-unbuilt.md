@@ -25,11 +25,9 @@ changing each residue"):
 - **The painted fold as a supporting layer**: a variant pair whose wild type
   is painted by the scan says both what the residue does and that the whole
   map agrees, if the key says what the color means.
-- **The blinded ideator's concepts**: two exons holding one zinc atom (TP53
-  C176 and H179 from exon 5, C238 and C242 from exon 7, two regions with a gap
-  marker and dashed distances to the zinc), and an AlphaGenome splice
-  prediction against Funk's validated exonic splice SNVs (codons 199 and 137)
-  with the skipped exon colored on the fold.
+- **The blinded ideator's AlphaGenome concept**: a splice prediction against
+  Funk's validated exonic splice SNVs (codons 199 and 137) with the skipped
+  exon colored on the fold.
 - **Figures the data supports**: VHL hydroxyproline pocket (1LM8 with VH032
   4W9H, the SGE S111/H115 allelic series), SOD1 H81R, DCLRE1C H35D, PTPN11,
   PTEN.

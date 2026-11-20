@@ -1,6 +1,6 @@
 ---
 name: multi-sample-variant-display
-description: Genotype-quality masking, de novo and compound-het review, and haplotype-block coloring for the multi-sample variant displays.
+description: De novo and compound-het review, haplotype-block coloring, frequency-weighted clustering and connector-line hover for the multi-sample variant displays.
 ---
 
 # Multi-sample variant display
@@ -10,45 +10,18 @@ layouts (`plugins/variants/src/LinearVariantDisplay/model.ts`). Read
 `plugins/variants/src/CLAUDE.md` first — hot-loop rules and the fetch/layout/render
 invalidation tiers constrain all of these.
 
-**Opt-in genotype-quality masking/dimming (biggest untapped signal).** The
-GT-only fast path (`feature.processGenotypes`, `shared/alleleCounts.ts`) never
-surfaces DP/GQ/AD/PL — getting them requires the heavier `feature.get('samples')`
-escalation the PS-phasing coloring already takes
-(`makePhaseSetReader`, `shared/phaseSetReader.ts`). MVP: a `genotypeQualityThreshold` config
-slot (default `0` = off = today's path unchanged); when set, a genotype with
-`GQ < threshold` renders as no-call grey instead of its allele color — masking
-chosen over continuous dimming because it reuses the existing no-call rendering
-end-to-end (no shader/legend work). The `color` hue resolves on the main
-thread ([ADR-203](../../architecture-decision-records/adr-203-the-variant-cells-hue-resolves-on-the-main-thread.md)), so a masked cell has to reach it as a no-call rather
-than as a color the repaint would overwrite. It's a
-**fetch input** (belongs in `rpcProps()`), threaded through
-`VariantRPC/executeVariantCellData.ts` into `computeVariantCells.ts`, with a
-slider beside the "Minor allele frequency" and "Missingness" ones that
-`filterMenuItems` carries in `variantDisplayMenuItems.ts` (presets GQ ≥ 20/≥ 30).
-Open question: whether masking should also feed the MAF filter (a masked het
-shouldn't count toward AF) — couples to `minorAlleleFrequencyUtils.ts`, defer
-past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
-(color het cells by allelic fraction — a somatic/mosaic cohort view).
-
 **De novo and compound-het review on the pedigree.** `pedigreeLocation` is
 built; the per-site Mendelian check moved to bcftools `+mendelian2`, whose
 `INFO/MERR` the display colors and filters like any INFO field
 ([ADR-279](../../architecture-decision-records/adr-279-a-pedigree-feeds-a-per-site-mendelian-check-and-the-assembly-states-transmission.md)).
-Reviewing a flagged site as a de novo mutation needs the genotype-quality
-masking above first, since on low-coverage calls most such sites are genotyping
+Reviewing a flagged site as a de novo mutation needs the
+[genotype-quality masking](../ready/genotype-quality-masks-a-call-as-no-call.md)
+first, since on low-coverage calls most such sites are genotyping
 errors. Compound hets (two hets in one gene, one from each parent) are analysis
 for an outside tool whose output loads as a track. The parked follow-ups are
 [parent-of-origin coloring](../waiting-on-a-call/parent-of-origin-haplotype-coloring.md)
 and
 [stacking the trio's reads](../waiting-on-a-call/stack-the-trios-reads-under-the-vcf.md).
-
-**Filter & sort samples by metadata attribute.** Since 2026-08-25 a `colorBy`
-group's legend swatch focuses that group (`focusLegendEntry`, over `rows.kept`),
-and the genotype sort has a column-anchored form a session can name
-(`sortRowsByGenotypeAt` / `sortRowsBy`), and `rows.filter` narrows the rows by
-a predicate over their attributes. What is still missing is a dialog that
-writes that predicate from the `samplesTsv` columns (*cases only, in EUR*);
-`row-display-followups.md` has it.
 
 **Local haplotype-block coloring (the mosaic a dendrogram cannot show).** Clustering
 asks for one distance over the whole window, but a haplotype is a mosaic of segments
@@ -96,11 +69,3 @@ pruning is the same idea one level up and a bigger job.
 `shared/ConnectorLines.tsx` the hover shows only the feature name and rescans
 every line with `pointToSegmentDist` on each mousemove. Enrich the tooltip
 (position / ref / alt) and add click-through to feature detail.
-
-**jb2export population coloring (`samplesTsv:` modifier).** The multi-sample variant
-matrix renders real 1000 Genomes data in jb2export (a full 2,504-sample matrix
-off `ALL.chr11.phase3…genotypes.vcf.gz`). The remaining gap for the
-flagship figure is `rows.color: 'population'`: it needs the VCF adapter's `samplesTsv`
-(sample→population map), which the CLI can't yet pass. Add a `samplesTsv:<uri>` track
-modifier → `samplesTsvLocation` on the adapter so a genome-wide callset can be colored by
-super-population instead of reading as reference-dominant grey.
