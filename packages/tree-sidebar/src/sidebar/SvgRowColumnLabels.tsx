@@ -1,5 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { getFillProps } from '@jbrowse/core/util'
+import { getFillProps, max, measureText } from '@jbrowse/core/util'
+import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 
 import {
   ROW_COLUMN_LABEL_LINE_HEIGHT,
@@ -12,6 +13,46 @@ import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 const TICK_LENGTH = 4
 const TEXT_GAP = 2
+const TEXT_END_PAD = 4
+
+function columnLabelFontSize(text?: ExportTextStyle) {
+  return rowLabelFontSize(ROW_COLUMN_LABEL_LINE_HEIGHT, text)
+}
+
+function columnLabelTextX(centers: readonly number[]) {
+  return (centers.at(-1) ?? 0) + TICK_LENGTH + TEXT_GAP
+}
+
+/**
+ * Px from the labels' left that the color columns' labels reach, 0 where
+ * none draws, so the sidebar can be made as wide as the longest of them.
+ */
+export function rowColumnLabelsWidth({
+  labels,
+  rows,
+  rowHeight,
+  annotations,
+  text,
+}: {
+  labels: readonly string[]
+  rows: readonly LabelledRow[]
+  rowHeight: number
+  annotations?: readonly RowAnnotationColumn[]
+  text?: ExportTextStyle
+}) {
+  const centers = rowColorColumnCenters(rows, rowHeight, annotations)
+  const drawn = labels.slice(0, centers.length)
+  return drawn.length
+    ? columnLabelTextX(centers) +
+        max(
+          drawn.map(label =>
+            measureText(label, columnLabelFontSize(text), text?.fontFamily),
+          ),
+          0,
+        ) +
+        TEXT_END_PAD
+    : 0
+}
 
 /**
  * The label over each color column beside the row labels, a line each above
@@ -39,7 +80,9 @@ export function SvgRowColumnLabels({
 }) {
   const palette = usePalette()
   const centers = rowColorColumnCenters(rows, rowHeight, annotations)
-  const textX = (centers.at(-1) ?? 0) + TICK_LENGTH + TEXT_GAP
+  const textX = columnLabelTextX(centers)
+  const fontSize = columnLabelFontSize(text)
+  const baselineDrop = fontSize * (TEXT_BASELINE_RATIO - 0.5)
   const columns = labels.flatMap((label, column) => {
     const x = centers[column]
     return x === undefined
@@ -70,9 +113,8 @@ export function SvgRowColumnLabels({
           key={x}
           data-testid="row-column-label"
           x={textX}
-          y={y}
-          fontSize={rowLabelFontSize(ROW_COLUMN_LABEL_LINE_HEIGHT, text)}
-          dominantBaseline="central"
+          y={y + baselineDrop}
+          fontSize={fontSize}
           {...getFillProps(palette.text.primary)}
         >
           {label}

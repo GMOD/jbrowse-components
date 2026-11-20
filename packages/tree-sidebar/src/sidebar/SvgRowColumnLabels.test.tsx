@@ -1,7 +1,12 @@
+import { measureText } from '@jbrowse/core/util'
+import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 import { render } from '@testing-library/react'
 
 import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
-import { SvgRowColumnLabels } from './SvgRowColumnLabels.tsx'
+import {
+  SvgRowColumnLabels,
+  rowColumnLabelsWidth,
+} from './SvgRowColumnLabels.tsx'
 import { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 import {
   ROW_COLUMN_LABEL_LINE_HEIGHT,
@@ -10,6 +15,9 @@ import {
 import { svgSidebarWidth } from './svgSidebarWidth.ts'
 
 const LINE = ROW_COLUMN_LABEL_LINE_HEIGHT
+// a label's baseline sits this far below its line's centre, so its glyphs
+// centre on the line without a `dominant-baseline` a renderer may ignore
+const BASELINE_DROP = LINE * (TEXT_BASELINE_RATIO - 0.5)
 const names = ['a', 'b', 'c']
 const plain = names.map(name => ({ name }))
 const colored = names.map(name => ({ name, rowColor: '#f4a582' }))
@@ -78,7 +86,7 @@ describe('SvgRowColumnLabels', () => {
       'Population',
       'Sex',
     ])
-    expect(labels.map(label => label.y)).toEqual([
+    expect(labels.map(label => label.y - BASELINE_DROP)).toEqual([
       -2.5 * LINE,
       -1.5 * LINE,
       -0.5 * LINE,
@@ -97,7 +105,9 @@ describe('SvgRowColumnLabels', () => {
     )
     expect(leaders.map(leader => leader.x)).toEqual([4, 12, 20])
     expect(leaders.map(leader => leader.width)).toEqual([1, 1, 1])
-    expect(leaders.map(leader => leader.y)).toEqual(labels.map(l => l.y))
+    expect(leaders.map(leader => leader.y)).toEqual(
+      labels.map(l => l.y - BASELINE_DROP),
+    )
     const textX = new Set(labels.map(label => label.x))
     expect(textX.size).toBe(1)
     const [x] = [...textX]
@@ -146,6 +156,44 @@ describe('SvgRowColumnLabels', () => {
     const group = draw(props).querySelector('g')!
     expect(group.getAttribute('transform')).toBe('translate(30 0)')
     expect(group.style.pointerEvents).toBe('none')
+  })
+})
+
+describe('the sidebar width', () => {
+  const sidebar = {
+    showTree: false,
+    hierarchy: undefined,
+    rows: colored,
+    rowHeight: 20,
+    treeAreaWidth: 0,
+    annotations: [population, sex],
+  }
+
+  // "Superpopulation" over three short names ran past the sidebar's right
+  // edge and onto the plot
+  it('holds the longest column label beside short row names', () => {
+    const exported = render(
+      <svg>
+        <SvgTreeSidebar
+          sidebar={{ ...sidebar, columnLabels: ['Superpopulation', 'Sex'] }}
+        />
+      </svg>,
+    ).container
+    const width = svgSidebarWidth({
+      ...sidebar,
+      columnLabels: ['Superpopulation', 'Sex'],
+    })
+    const [longest] = partsOf(exported).labels
+    expect(
+      longest!.x + measureText('Superpopulation', longest!.fontSize),
+    ).toBeLessThan(width)
+  })
+
+  it("stays the row labels' width where the column labels are shorter", () => {
+    const named = { ...sidebar, rows: [{ name: 'HG00096 of the CEU trio' }] }
+    expect(svgSidebarWidth({ ...named, columnLabels: ['Sex'] })).toBe(
+      svgSidebarWidth({ ...named, columnLabels: [] }),
+    )
   })
 })
 
@@ -205,10 +253,15 @@ describe('the column labels on screen and in the export', () => {
         exported.querySelector('g[clip-path] [data-testid="row-column-label"]'),
       ).toBeNull()
       expect(svgSidebarWidth(sidebar)).toBe(
-        rowLabelsBoxWidth(colored, rowHeight, undefined, annotations),
-      )
-      expect(svgSidebarWidth(sidebar)).toBe(
-        svgSidebarWidth({ ...sidebar, columnLabels: [] }),
+        Math.max(
+          rowLabelsBoxWidth(colored, rowHeight, undefined, annotations),
+          rowColumnLabelsWidth({
+            labels,
+            rows: colored,
+            rowHeight,
+            annotations,
+          }),
+        ),
       )
     },
   )

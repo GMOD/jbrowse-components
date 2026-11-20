@@ -1,6 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
+import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 
 import { fittedLabel } from './fittedLabel.ts'
 import { sidebarFontSize } from './rowLabelsBoxWidth.ts'
@@ -50,6 +51,7 @@ export function SvgBandLabels({
   const fontSize = bandFontSize(text)
   const width = bandLabelWidth(text)
   const mid = width / 2
+  const baselineDrop = fontSize * (TEXT_BASELINE_RATIO - 0.5)
   const top = first.start * rowHeight - scrollTop
   return (
     <g data-testid="row_band_labels" transform={`translate(${x} 0)`}>
@@ -90,11 +92,10 @@ export function SvgBandLabels({
             {label ? (
               <text
                 x={mid}
-                y={cy}
+                y={cy + baselineDrop}
                 transform={`rotate(-90 ${mid} ${cy})`}
                 fontSize={fontSize}
                 textAnchor="middle"
-                dominantBaseline="central"
                 {...getFillProps(palette.text.primary)}
               >
                 {label}

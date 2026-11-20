@@ -1,3 +1,4 @@
+import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 import { render } from '@testing-library/react'
 
 import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
@@ -86,6 +87,27 @@ describe.each([
     expect(bandTexts(root)).toEqual(['AFR', 'E…'])
     expect(root.textContent).not.toMatch(/[a-d]/)
   })
+})
+
+// `dominant-baseline` is ignored by Skia and ImageMagick, which then sit the
+// name a third of an em off its strip. The baseline is written into `y`, and
+// the rotation turns that offset across the strip with the text.
+test("each band's name centres on its strip by its own baseline", () => {
+  const texts = exported().querySelectorAll(
+    '[data-testid="row_band_labels"] text',
+  )
+  for (const text of texts) {
+    const [, mid, cy] = /rotate\(-90 (\S+) (\S+)\)/
+      .exec(text.getAttribute('transform')!)!
+      .map(Number)
+    const fontSize = Number(text.getAttribute('font-size'))
+    expect(text.getAttribute('dominant-baseline')).toBeNull()
+    expect(Number(text.getAttribute('x'))).toBe(mid)
+    expect(Number(text.getAttribute('y')) - cy!).toBeCloseTo(
+      fontSize * (TEXT_BASELINE_RATIO - 0.5),
+    )
+  }
+  expect(texts).toHaveLength(2)
 })
 
 test('a label cuts to the longest prefix that fits, or to nothing', () => {

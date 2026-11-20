@@ -1,4 +1,5 @@
 import { bandLabelWidth } from './SvgBandLabels.tsx'
+import { rowColumnLabelsWidth } from './SvgRowColumnLabels.tsx'
 import { rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
 import { treeSidebarOffset } from './treeSidebarGeometry.ts'
 
@@ -43,13 +44,23 @@ export function sidebarPanelWidth(
     showLabels = true,
     bands = [],
     annotations,
+    columnLabels = [],
     subtitles,
   }: SvgSidebarProps,
   text?: ExportTextStyle,
 ) {
   const labels =
     showLabels && rows.length
-      ? rowLabelsBoxWidth(rows, rowHeight, text, annotations, subtitles)
+      ? Math.max(
+          rowLabelsBoxWidth(rows, rowHeight, text, annotations, subtitles),
+          rowColumnLabelsWidth({
+            labels: columnLabels,
+            rows,
+            rowHeight,
+            annotations,
+            text,
+          }),
+        )
       : 0
   return (
     treeSidebarOffset({ showTree, hierarchy, treeAreaWidth }) +
