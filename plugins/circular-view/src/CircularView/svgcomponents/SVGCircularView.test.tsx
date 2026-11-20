@@ -241,13 +241,18 @@ test('the export canvas grows to fit labels that overrun paddingPx', async () =>
   ]
   expect(labels).toHaveLength(24)
   for (const [, x, y, text] of labels) {
-    const outerEdge = Math.hypot(Number(x), Number(y)) + labelWidthPx(text!)
+    const anchorPx = Math.hypot(Number(x), Number(y))
     // the anchor coordinates come back rounded to 2 decimals, so measuring off
     // them is good to a small fraction of a pixel, not exactly
-    expect(outerEdge).toBeLessThanOrEqual(halfCanvas + 0.02)
+    expect(anchorPx + labelWidthPx(text!, 'sans-serif')).toBeLessThanOrEqual(
+      halfCanvas + 0.02,
+    )
+    // and the on-screen figure reserves room for them in the app's font, so
+    // it clips none either
+    expect(anchorPx + labelWidthPx(text!)).toBeLessThanOrEqual(
+      view.figureSize / 2 + 0.02,
+    )
   }
-  // and the on-screen figure reserves the same room, so it clips none either
-  expect(view.figureSize).toBeCloseTo(halfCanvas * 2, 1)
 }, 20000)
 
 // Skia and Qt ignore dominant-baseline, which stood the ruler's labels on

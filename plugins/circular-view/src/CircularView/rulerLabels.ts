@@ -39,19 +39,25 @@ export const tickReachPx =
 // how far outside the circle's radius a label is anchored: past the ticks
 export const labelOffsetPx = tickReachPx + 5
 
-// what the weight-500, letter-spaced label `Ruler.tsx` draws adds to
-// `measureText`'s regular-weight table
+// `measureText` reads a regular-weight Helvetica table, close to the app's
+// own font but not to the face a generic export family resolves to: fontconfig
+// gives Noto or DejaVu, where 'chr13_random' measures 91.8px in Noto Serif and
+// 95.7px in DejaVu Serif against the table's 83.6px. Either way the label
+// `Ruler.tsx` draws is weight 500 and letter-spaced.
+const exportFaceFactor = 1.1
 const mediumWeightWidthFactor = 1.05
 const labelLetterSpacingEm = 0.0075
 
 /**
- * A label's width in `fontFamily`, the export's or, on screen, the app's. One
- * estimate, since the fit test and the room reserved for the labels that fail
- * it must agree.
+ * A label's width in an export's `fontFamily`, or on screen, with none, in the
+ * app's font. One estimate, since the fit test and the room reserved for the
+ * labels that fail it must agree.
  */
 export function labelWidthPx(text: string, fontFamily?: string) {
   return (
-    measureText(text, labelFontSizePx, fontFamily) * mediumWeightWidthFactor +
+    measureText(text, labelFontSizePx, fontFamily) *
+      (fontFamily === undefined ? 1 : exportFaceFactor) *
+      mediumWeightWidthFactor +
     text.length * labelLetterSpacingEm * labelFontSizePx
   )
 }

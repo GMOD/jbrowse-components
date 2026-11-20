@@ -1,4 +1,8 @@
-import { assemblyArcs, labelsRunAlongArcs } from './rulerLabels.ts'
+import {
+  assemblyArcs,
+  labelWidthPx,
+  labelsRunAlongArcs,
+} from './rulerLabels.ts'
 import { buildChordAxis, layoutSlices } from './slices.ts'
 
 import type { Slice } from './slices.ts'
@@ -56,4 +60,21 @@ test('each run of one assembly spans its first slice to its last', () => {
     { assemblyName: 'hg38', startRadians: 0, endRadians: 3 },
     { assemblyName: 'mm39', startRadians: 3, endRadians: 6 },
   ])
+})
+
+// widths of 'chr13_random' at weight 500, 13px, measured with Skia against the
+// faces fontconfig resolves `serif` and `sans-serif` to, plus the 0.0075em
+// tracking per glyph the label is drawn with. The Helvetica table alone puts it
+// at 83.6px, so a label measured there ran off the export's edge
+test.each([
+  ['Noto Serif', 'serif', 91.8],
+  ['DejaVu Serif', 'serif', 95.7],
+  ['Noto Sans', 'sans-serif', 89.8],
+  ['DejaVu Sans', 'sans-serif', 94.2],
+])('a label is reserved its width as %s draws it', (_face, family, drawnPx) => {
+  const text = 'chr13_random'
+  const trackingPx = text.length * 0.0075 * 13
+  expect(labelWidthPx(text, family)).toBeGreaterThanOrEqual(
+    drawnPx + trackingPx,
+  )
 })
