@@ -9,7 +9,7 @@ import { GRAPH_DRAWN, graphTrack } from './graph-fixtures.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The hprc demo config, its graph plugin pinned at 10.0.0, which draws the paper's figure.
+// The hprc demo config, its graph plugin pinned at 10.0.1, which draws the paper's figure.
 const CONFIG = 'test_data/graphgenomeview/paper_hprc.json'
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 const LANES_TRACK = 'hprc_multiway'
