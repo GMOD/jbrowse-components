@@ -1,0 +1,575 @@
+import type { ThumbSpec } from './guide-thumbs.ts'
+
+// Each tutorial's showcase figure: the card thumbnail on the tutorials index
+// (scripts/gen-tutorial-thumbs.ts crops it) and the tutorial's entry on the
+// Demos page. Prefer a clean render as the source, without hand-added callout
+// paint.
+export const TUTORIAL_THUMB_SPECS: Record<string, ThumbSpec> = {
+  quickstart_web: {
+    // volvox alignments, the first real track the walkthrough loads
+    src: 'volvox_alignments.png',
+    band: [0.22, 0.78],
+  },
+  quickstart_desktop: {
+    // The Desktop landing screen. Every other figure on the page is an empty
+    // volvox view or a dialog over one — the page walks through opening data, so
+    // its captures are mid-flow; the front door is the one frame that reads as
+    // "this is Desktop" on a card.
+    src: 'desktop-landing.png',
+    band: [0, 0.5],
+    position: 'center',
+  },
+  agent_synteny: {
+    // The X region: two reverse blocks crossing, forward alignment red on both
+    // sides. The 2R figure of the same event is a fan of short blocks, which at
+    // card size reads as noise.
+    src: 'agent_synteny/inversion_x.png',
+    band: [0.1, 1],
+    position: 'center',
+  },
+  alphagenome: {
+    // TAL1's gene model over the four predicted accessibility rows on one
+    // axis: K562 dense, GM12878 nearly flat.
+    src: 'alphagenome/accessibility_shared_axis.png',
+    band: [0.19, 0.91],
+    position: 'center',
+  },
+  display_settings: {
+    src: 'display_settings_url_snapshot.png',
+    band: [0.3, 1],
+  },
+  embed_linear_genome_view: {
+    src: 'embed_linear_genome_view/final.png',
+    band: [0.06, 0.56],
+  },
+  analyze_trio: {
+    // the haplotype rows and their labels, starting at the connector zone,
+    // past the gene track the figure gained for genomic scale
+    src: 'trio-matrix-phased-clean.png',
+    band: [0.51, 0.94],
+    position: 'left',
+  },
+  // All three Dog10K cards come off the DENSE figure on their page rather than
+  // the single-variant one, for a measured reason: a genotype column is a thin
+  // band in a mostly empty frame, and at card size the empty frame is what a
+  // reader sees. The lof card used to crop dog10k-cyp1a2-nonsense through its
+  // callout ("Arg37…", "metabol…") and the svs card kept the 85% of the NHEJ1
+  // window that is grey, because the deletion sits at the right edge of a
+  // whole-gene view and no 5:3 crop holds both the row labels and the blocks.
+  dog10k_lof: {
+    // the two copy-number lanes, named animals over the collection: a red
+    // expansion block against grey diploid, which is legible at card size where
+    // the nonsense variant's single column is not
+    src: 'dog10k-cyp1a2-cohort-copy-number.png',
+    band: [0.34, 1],
+    xband: [0.05, 1],
+  },
+  dog10k_selection: {
+    // the Manhattan scan rather than the IGF1 matrix, which was rejected for
+    // this exact surface ("looks cool but is not a very clear message").
+    // The scan states the same result in a shape that reads at card size.
+    // the scan half on its own, not the composed two-panel figure: cropping that
+    // one to 5:3 leaves the Manhattan a sliver above a second full app window.
+    // band drops the chrome, and center keeps the two labelled peaks.
+    src: 'dog10k-size-fst-scan-genome.png',
+    band: [0.34, 1],
+    position: 'center',
+  },
+  dog10k_svs: {
+    // the whole three-level stack: both retrocopies' ribbons onto the parent
+    // gene, the deletion genotypes between, and the callouts naming each level
+    src: 'dog10k-fgf4-retrogene-synteny.png',
+    band: [0.04, 1],
+  },
+  local_ancestry: {
+    // the haplotype rows and their breed labels, past the app header
+    src: 'dog10k-wolfdog-ancestry.png',
+    band: [0.28, 1],
+    position: 'left',
+  },
+  gene_prediction_review: {
+    // both annotation tracks, with the Tiberius model running unbroken over the
+    // two GENCODE genes the pills name
+    src: 'gene_prediction_merge.png',
+    band: [0.07, 1],
+    position: 'left',
+  },
+  rnaseq: {
+    // junction arcs over the junction reads
+    src: 'rnaseq/basic.png',
+    band: [0.3, 1],
+  },
+  dtu: {
+    // the colored transcript stack under the liver coverage lane: the ramp is
+    // what the card is about and it only exists in the gene lane. Left of the
+    // exon callouts and their boxed column.
+    src: 'dtu/dtu_colored_gene_glyph.png',
+    band: [0.42, 0.95],
+    xband: [0.18, 0.56],
+    position: 'center',
+  },
+  methylation: {
+    // hg002 5mC at SNRPN. Not alignments/modifications2.png, which carries
+    // hand-added callout boxes — the card is a showcase surface.
+    src: 'methylation/hg002_snrpn_combined.png',
+    band: [0.25, 1],
+  },
+  bisulfite: {
+    // per-context Arabidopsis WGBS: CG/CHG/CHH stacked, below the two
+    // sentence callouts over the gene and the transposon
+    src: 'methylation/arabidopsis_wgbs_contexts.png',
+    band: [0.37, 0.98],
+    position: 'left',
+  },
+  chromhmm: {
+    // the 127-epigenome state heatmap, not the gene lane above it
+    src: 'chromhmm.png',
+    band: [0.32, 1],
+    position: 'left',
+  },
+  scrna_pseudobulk: {
+    // The pseudobulk tracks over the per-cell LYZ rows, ending on the solid
+    // monocyte block.
+    src: 'scrna/percell_lyz.png',
+    band: [0.17, 0.99],
+    position: 'center',
+  },
+  ld_human: {
+    // The single-panel triangle, which is the lower of the two lanes: the page
+    // no longer embeds the solo lactase figure, and a card has to come from a
+    // figure the page shows. Framed on the block rather than on the whole lane
+    // — the left third of this window is the pale flank, so a left-anchored
+    // cover-crop of the full width lands on white.
+    src: 'ld/lct_pooled_vs_panel.png',
+    band: [0.69, 1],
+    xband: [0.25, 0.78],
+    position: 'center',
+  },
+  ld_mosquitoes: {
+    // Both lanes over the same span, one filled and one not, which is the whole
+    // figure. This one keeps its callouts rather than framing past them: they sit
+    // at x 0.62-0.9, so every crop that clears them also drops the filled
+    // triangle and leaves a white card. Centered, so the cover-crop takes the
+    // trim off both edges and neither callout ends up half a sentence.
+    src: 'ld/anopheles_2la.png',
+    band: [0.05, 1],
+    xband: [0.08, 1],
+    position: 'center',
+  },
+  bxd_qtl: {
+    // the red/blue haplotype painting under the QTL scan, framed below the
+    // figure's Tyrp1 callout
+    src: 'qtl/bxd_tyrp1_locus.png',
+    band: [0.38, 1],
+    position: 'left',
+  },
+  population_genomics: {
+    // the Fst plot only, left half of the genome: a centered crop lands on
+    // 2R/3L and drops the 2L plateau that is the whole point of the figure.
+    //
+    // This is a compose PART now (of popgen/in2lt_inversion) rather than a
+    // figure the page embeds directly, which is fine and deliberate: a part is
+    // still rendered and still carries a figures.lock line, and cropping the
+    // composite instead would mean re-deriving `band` against a frame twice as
+    // tall for the same picture.
+    src: 'popgen/fst_in2lt_2L.png',
+    band: [0.36, 0.93],
+    xband: [0, 0.5],
+    position: 'left',
+  },
+  sv_multisamples: {
+    src: 'multisv.png',
+    band: [0.3, 1],
+    position: 'left',
+  },
+  cancer_sv: {
+    // The reconstruction zoomed to the junctions: four ribbons of comparable
+    // width, no callout paint, and the one frame that says "derivative allele"
+    // rather than "another read pileup".
+    //
+    // The band is the same CONTENT it has always framed — ribbons down through
+    // the top of the realigned pileup — re-derived every time that figure's
+    // layout moved, which is four times now (0.24, 0.41, 0.52, 0.427: an hg38
+    // read lane arrived above the ribbons, came off a 1px pitch, then gave its
+    // coverage band back while the lane BELOW the ribbons took one). A
+    // fraction only survives a re-render of the SAME layout, and both
+    // directions move it.
+    src: 'cancer_sv/derivative_inserts.png',
+    band: [0.427, 0.781],
+  },
+  k562_fusions: {
+    // The two loci with the molecules crossing between them, framed off the
+    // divider: the arc fan above and the pileup converging on it below. The
+    // xband drops the read-colors legend on the right, and the band clears
+    // both callouts, which sit above the coverage and over the pileup.
+    src: 'cancer_sv/k562_fusion_inspector_reads.png',
+    band: [0.33, 0.63],
+    xband: [0.28, 0.72],
+    position: 'center',
+  },
+  sv_visualization_cgiab: {
+    // The split reads at both breakends with the arcs joining them, over the
+    // ribbons crossing into the fused scaffold. The frame clears every callout,
+    // which sit along the left edge, the top and the bottom.
+    src: 'sv_cgiab/junction_synteny.png',
+    band: [0.3, 0.92],
+    xband: [0.14, 0.86],
+    position: 'center',
+  },
+  cnv_cgiab: {
+    // depth over BAF genome-wide
+    src: 'sv_cgiab/cnv_depth_baf.png',
+    band: [0.25, 1],
+  },
+  sv_callset_review: {
+    // Cropped to the band that carries the junction itself — the fan of curves
+    // between two panels — rather than to any one pileup, since the connections
+    // are the only thing on this page a card can show at thumbnail size.
+    //
+    // The TUMOUR PANEL rather than the three-panel composition the page shows,
+    // which is a card-framing decision and not a second figure: a 5:3 crop of
+    // 3072 px lands inside one panel whatever `position` says, and of the three
+    // only this one has connectors in it -- centred it took the matched normal,
+    // which is by construction the panel with none, so the card was a
+    // featureless grey pileup for exactly the reason the figure exists.
+    src: 'jbrowse-img/sv_review_tumor.png',
+    band: [0.3, 0.75],
+  },
+  hic_structural_variants: {
+    // the K562 fusion wedge and the arrow into it, clear of the pills on the
+    // left
+    src: 'hic/bcr_abl1_translocation.png',
+    band: [0.6, 1],
+    xband: [0.31, 0.75],
+    position: 'center',
+  },
+  mappability_qc: {
+    // The SMN1 half of the two-locus figure: the mappability lane mostly empty,
+    // the coverage lane low, and a pileup that is entirely red. The compose is
+    // the better figure and the worse card — a 5:3 crop of it either takes one
+    // panel anyway or straddles the two window frames.
+    src: 'qc/smn1_evidence.png',
+    band: [0.2, 1],
+    // Keeps the lane labels: the card is three lanes whose names are what say
+    // what the red is, and a centred crop cuts them off mid-word.
+    position: 'left',
+  },
+  genomes_proteins: {
+    // The structure itself, the Mol* canvas right of the genome and alignment:
+    // the folded ribbon is the one card in the set that isn't a genome browser.
+    src: 'protein/protein_browser_tp53.png',
+    band: [0.22, 0.58],
+    xband: [0.62, 0.97],
+  },
+  tp53_structures: {
+    // The 1TUP canvas below its callout: p53 on the DNA with R248 and its
+    // contacts in magenta.
+    src: 'protein/tp53_hotspot.png',
+    band: [0.26, 0.75],
+    xband: [0.6, 0.975],
+    position: 'center',
+  },
+  protein_variants_sickle_cell: {
+    src: 'protein/hbb_codon_hover.png',
+    band: [0.33, 0.9],
+    xband: [0.6, 0.98],
+    position: 'center',
+  },
+  protein_variants_dog_myelopathy: {
+    src: 'protein/sod1_dog10k.png',
+    band: [0.2, 0.7],
+    xband: [0.62, 0.98],
+    position: 'center',
+  },
+  protein_variants_kras: {
+    src: 'protein/kras_domains_three_views.png',
+    band: [0.4, 0.85],
+    xband: [0.62, 0.98],
+    position: 'center',
+  },
+  protein_variants_met_exon14: {
+    // panel A's DNA reads and junction arcs, where the skip shows
+    src: 'protein/met_ex14.png',
+    band: [0.24, 0.62],
+    xband: [0, 0.6],
+    position: 'center',
+  },
+  synteny_visualization: {
+    // gene-level ribbons, not the near-empty dotplot the hand-made thumb used
+    src: 'sv_synteny/linear_synteny_genes.png',
+    band: [0.2, 1],
+  },
+  mcscan_synteny_grape_peach: {
+    // Both panels' block rows plus the ribbon fan between them — the two
+    // adapters together, which is what the tutorial is about. Starts below the
+    // app header so the card isn't a third menu bar.
+    src: 'mcscan_anchors.png',
+    band: [0.12, 0.95],
+  },
+  multiway_synteny_grape_peach_cacao: {
+    // The ribbons and the cacao genome labels between them, below the view's
+    // toolbar: a top crop of this 3.5:1 capture framed only the toolbar.
+    src: 'multiway_synteny/grape_peach_cacao.png',
+    band: [0.37, 0.86],
+    xband: [0.2, 0.5],
+    position: 'center',
+  },
+  selection_pressure: {
+    // The orange LYZ ribbon among its blue neighbours with the gene row above,
+    // framed to hold the whole callout beside it: any crop through this wide
+    // capture's centre cut the callout's text mid-word.
+    src: 'selection_pressure/lysozyme.png',
+    band: [0.3, 0.8],
+    xband: [0.46, 0.8],
+    position: 'center',
+  },
+  hg002_haplotypes: {
+    // The 8p23 inversion: the reverse chain bar on both haplotypes, landmark
+    // genes in opposite order, and the ribbons crossing between them, with the
+    // collinear right flank beside it. xband drops the track labels.
+    src: 'hg002_haplotypes_8p23_inversion.png',
+    band: [0.205, 0.835],
+    xband: [0.25, 0.895],
+    position: 'center',
+  },
+  homoeolog_synteny: {
+    // The dotplot itself, past the app chrome and the coordinate readout. A
+    // dotplot card wants the plot area and nothing else: the scattered segments
+    // are the whole shape, and they read at card size where the axis labels do
+    // not. Cropped short of the rotated x labels along the bottom for the same
+    // reason.
+    src: 'homoeolog_synteny/oat_ds.png',
+    band: [0.152, 0.86],
+  },
+  orthofinder_synteny: {
+    // The band between the two rows, past the app chrome and the location
+    // boxes: each tauschii color fanning into its three wheat chromosomes. The
+    // cover-crop keeps the middle groups, where 4A's crossing links sit.
+    src: 'orthofinder_synteny/wheat.png',
+    band: [0.21, 0.95],
+    position: 'center',
+  },
+  primate_orthologs_synteny: {
+    // The human lane and the first four ape lanes with their ribbons, past
+    // the app chrome and the track header.
+    src: 'multiway_synteny/primate_tp53_lanes.png',
+    band: [0.22, 0.75],
+  },
+  circular_synteny: {
+    // The two-genome circle with its density ring and ribbons, past the app
+    // chrome; the circle is centred so the full width keeps both arcs.
+    src: 'circular_synteny/rings.png',
+    band: [0.14, 0.94],
+  },
+  organelle_map: {
+    // The middle of the mitochondrial ring, both gene rows and the sequence's
+    // name; a 5:3 card cannot hold the whole circle at a readable size.
+    src: 'organelle_map/mito_ring.png',
+    band: [0.19, 0.85],
+  },
+  t2t_apes_cactus_synteny: {
+    // The human lane and the ape lanes under it at ERBB2, where the two blue
+    // gutters split the stack, past the app chrome and the gene track.
+    src: 'multiway_synteny/t2t_apes_cactus_17q.png',
+    band: [0.29, 0.86],
+    position: 'left',
+  },
+  hg38_vertebrates_synteny: {
+    // The anchor lane and the mammal lanes under it, past the app chrome and
+    // the gene track, where each lane's liftOver ribbons run from hg38.
+    src: 'multiway_synteny/hg38_vertebrates_tp53.png',
+    band: [0.29, 0.86],
+    position: 'left',
+  },
+  syri_synteny: {
+    // The ribbon band alone: the crossed inversion between grey syntenic
+    // regions is the whole shape, and the two empty track panels above and
+    // below it add nothing at card size.
+    src: 'syri/col_ler_chr4.png',
+    band: [0.1, 0.95],
+  },
+  odp_linkage_groups_synteny: {
+    // the stack's lower bands, where the groups run as bundles; the dotplots
+    // carry callouts
+    src: 'linkage_groups/alg_stack.png',
+    band: [0.47, 0.96],
+    xband: [0, 0.55],
+  },
+  allvsall_synteny: {
+    // The five-strain stack, past the app chrome. collapseEmptyRows on this
+    // figure's own spec dropped every row's "No tracks active" chip to a bare
+    // scalebar, so unlike the grape/peach/cacao card above there's no centered
+    // label to dodge — the crop can run wide and read as whole-genome zoomed
+    // out.
+    src: 'multiway_synteny/ecoli_pangenome.png',
+    band: [0.17, 1],
+    position: 'left',
+  },
+  pangenome_ecoli: {
+    // Per-strain presence/absence, the projection that replaced the genotype
+    // matrix on this card. Framed past the app chrome and
+    // coordinate ruler, row labels kept on the left. The source figure now
+    // carries the aggregate depth curve above those rows, and the band takes in
+    // the bottom of it: a dark curve over four blue rows is a card with a shape,
+    // where the rows alone were a flat blue rectangle.
+    src: 'pangenome/pav.png',
+    band: [0.29, 1],
+    position: 'left',
+  },
+  genomes_synteny: {
+    // curved ribbons: the blue reverse-strand sweep
+    // crossing the pink forward-strand, indels dropped to white
+    src: 'genomes_synteny/ribbons_curved.png',
+    // the two gene panels and the ribbons between them; the [0, 0.95] band drops
+    // the app header, which also carries the figure's baked-in callout text
+    band: [0.28, 0.95],
+  },
+  genomes_basics: {
+    // phyloP bars over the top of the 470-way alignment they were scored from
+    src: 'genomes_basics/multiz_alignment.png',
+    band: [0.27, 0.72],
+    xband: [0.05, 0.95],
+  },
+  pangenome_hprc: {
+    // The deletion band running down from the genes, through the rank-colored
+    // segments, into the 464-haplotype matrix, which is the question the page
+    // ends on. Not a force drawing, which the repeats card already is. Stops
+    // above the graph pane because the arrow and the callout into it are
+    // hand-added paint.
+    src: 'pangenome/hprc_graph_vs_callset.png',
+    band: [0.11, 0.51],
+  },
+  pangenome_hprc_repeats: {
+    // The KIV-2 window force-directed with its bubbles haloed: the knot of
+    // loops and the labels naming each bubble, below the linear lanes. Above
+    // and right of the kringle-copies callout and its arrow.
+    src: 'pangenome/hprc_lpa_kiv2.png',
+    band: [0.69, 0.84],
+    xband: [0.6, 1],
+    position: 'center',
+  },
+  pangenome_mouse: {
+    // The Dock2 superbubble, the graph pane only, right of the two callouts.
+    src: 'pangenome/mouse_dock2.png',
+    band: [0.55, 0.8],
+    xband: [0.42, 1],
+    position: 'center',
+  },
+  pangenome_fly: {
+    // The Cyp28d1 genes over the bubble's duplication forms, labels cut.
+    src: 'pangenome/genomes_fly_cyp28d1.png',
+    band: [0.5, 0.8],
+    xband: [0.42, 0.806],
+    position: 'center',
+  },
+  pangenome_rice: {
+    // The qSW5 gene over its three grain-width forms, labels cut.
+    src: 'pangenome/genomes_rice_qsw5.png',
+    band: [0.5, 0.8],
+    xband: [0.42, 0.806],
+    position: 'center',
+  },
+  pangenome_hprc_haplotypes: {
+    // The haplotype lanes across the whole window, down to where the CFHR3
+    // form gives way to the deletion's.
+    src: 'pangenome/hprc_cfhr_lanes.png',
+    band: [0.36, 0.86],
+    position: 'center',
+  },
+  // The HAL projected onto K12 as a MAF: the coverage band and one colored row
+  // per strain, under the K12 gene lane. It used to be this tutorial's variant
+  // matrix, deliberately echoing the pggb card — but the two cards then read as
+  // the same genotype grid, and the base-level MAF is the projection only the
+  // Cactus pipeline has. Frame the conservation band down through the strain
+  // rows, left half only so their labels stay in — NOT from the gene lane down,
+  // which is what [0.4, 0.98] did: three gene bars over a lot of white filled
+  // half the card, and the alignment rows the card is about were a thin strip at
+  // the bottom.
+  pangenome_cattle: {
+    // The KIT window from the variants track down: the breed-labelled genotype
+    // matrix with its solid alt-allele block, over the graph's deletion arc and
+    // its insertion loops. The xband drops both legends.
+    src: 'pangenome/bovine_kit.png',
+    band: [0.3, 0.97],
+    xband: [0, 0.8],
+    position: 'left',
+  },
+  pangenome_cactus: {
+    // The K12 genes over the graph's MAF rows, strain names kept, up to where
+    // the other four strains drop out.
+    src: 'pangenome_cactus/maf.png',
+    band: [0.33, 1],
+    position: 'left',
+  },
+  // The genome-wide TCGA-BRCA CNV cohort matrix. The lower half carries
+  // hand-added gene callouts, so frame the clean heatmap band above them.
+  tcga_cohort_cnv: {
+    src: 'tcga/cohort_cnv_genome.png',
+    band: [0.14, 0.56],
+    position: 'center',
+  },
+  tcga_cohort_mutations: {
+    // the genome-wide recurrence rows, a different gene tallest in each subtype,
+    // from the row names to chr19
+    src: 'tcga/mutation_recurrence_genome.png',
+    band: [0.07, 1],
+    position: 'left',
+  },
+  // The 2504-row cohort heatmap rather than the page's hero, left of the
+  // CCL3L1 / CCL4L1 pill.
+  population_cnv: {
+    src: 'cnv1000g/zarr_cohort.png',
+    band: [0.3, 0.75],
+    xband: [0.15, 0.68],
+    position: 'center',
+  },
+  // Overlaid multi-wiggle coverage, the most figure-like of the cookbook
+  // recipes. Skip the app header and its navigation row.
+  cookbook: {
+    src: 'cookbook_multiwig.png',
+    band: [0.24, 1],
+  },
+  // The partitioned track, which is the page's whole result, from its track
+  // header down. Anchored left because the class names down the gutter are the
+  // half that says what happened — the same window packed into one lane is the
+  // top part of the same figure.
+  //
+  // The band is into the COMPOSED figure, whose two equal-height parts are the
+  // colored form over the partitioned one, so the lower part starts at 0.5 and
+  // the 0.42 that used to skip the app header is 0.71 here.
+  repeatmasker_classes: {
+    src: 'cookbook_color_by_type_two_ways.png',
+    band: [0.71, 1],
+    position: 'left',
+  },
+  gene_density: {
+    // The four whole-chromosome bands, below the app header and the view's
+    // toolbar: the gene and Alu bands sharing their peaks is the card.
+    src: 'gene_density_chr1.png',
+    band: [0.18, 0.8],
+    // the track labels and the 1p arm, where the gene and Alu peaks sit; a
+    // centred crop lands on the centromere gap
+    position: 'left',
+  },
+  protein_domains: {
+    // the one exon, ending in SET on the top row and running into the eIF2
+    // gamma domains on the rows below
+    src: 'protein_domains/suvar39.png',
+    band: [0.45, 0.97],
+    xband: [0.415, 0.648],
+  },
+  alu_age: {
+    // The binned frame below the app header and the view's toolbar: the grey
+    // count over the young share turning from red to blue is the card.
+    src: 'alu_age/binned.png',
+    band: [0.3, 0.98],
+  },
+  read_marks: {
+    // The highlighted deletion in the depth and insert-size lanes, tight on the
+    // highlight: the depth dip, the lifted pairs at both edges, the cloud below.
+    src: 'read_marks/insert_size.png',
+    band: [0.4, 0.99],
+    xband: [0.3, 0.7],
+    position: 'center',
+  },
+}

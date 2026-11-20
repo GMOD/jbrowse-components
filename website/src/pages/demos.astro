@@ -4,14 +4,12 @@ import { getCollection } from 'astro:content'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import {
-  demoFigures,
+  demoSections,
   docHref,
   featuredDemo,
   figureLiveHref,
   findDoc,
-  findFigure,
   referenceGenomes,
-  tutorialKey,
 } from '../lib/showcase.ts'
 import btn from '../styles/button.module.css'
 
@@ -25,15 +23,7 @@ const featured = {
   tutorialHref: docHref(baseUrl, featuredTutorial),
 }
 
-const demos = demoFigures.map(name => {
-  const { entry, live } = findFigure(docs, name)
-  return {
-    live,
-    title: entry.data.title,
-    href: docHref(baseUrl, entry),
-    thumb: `${baseUrl}/img/tutorial-thumbs/${tutorialKey(entry)}.webp`,
-  }
-})
+const sections = demoSections(docs, baseUrl)
 ---
 
 <BaseLayout
@@ -100,35 +90,37 @@ const demos = demoFigures.map(name => {
 
     <section>
       <h2>Demos from the tutorials</h2>
-      <div class="doc-cards">
-        {demos.map(demo => (
-          <div class="doc-card">
-            <a href={demo.live}>
-              <img
-                class="doc-card-thumb"
-                src={demo.thumb}
-                loading="lazy"
-                decoding="async"
-                alt={`A view from ${demo.title}`}
-              />
-            </a>
-            <span class="doc-card-body">
-              <a class="doc-card-title" href={demo.live}>
-                {demo.title}
-              </a>
-              <a class="doc-card-desc" href={demo.href}>
-                Read the tutorial
-              </a>
-            </span>
-          </div>
-        ))}
-      </div>
       <p>
-        Many figures in the <a href={`${baseUrl}/docs/tutorials/`}>tutorials</a>{' '}
-        have an <strong>Open or rebuild this view</strong> button that opens the
-        view in JBrowse. The <a href={`${baseUrl}/gallery/`}>gallery</a> has a
-        selection of them at full size.
+        Click a picture to open the view in JBrowse, or its title to read the
+        tutorial.
       </p>
+      {sections.map(section => (
+        <div class="demo-section">
+          <h3>{section.category}</h3>
+          <div class="demo-grid">
+            {section.demos.map(demo => (
+              <figure>
+                <a href={demo.live ?? demo.href}>
+                  <img
+                    src={demo.img}
+                    width={demo.width}
+                    height={demo.height}
+                    loading="lazy"
+                    decoding="async"
+                    alt={demo.caption}
+                  />
+                </a>
+                <figcaption>
+                  <a class="demo-title" href={demo.href}>
+                    {demo.title}
+                  </a>
+                  <span>{demo.caption}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      ))}
     </section>
   </div>
 </BaseLayout>
@@ -209,15 +201,43 @@ const demos = demoFigures.map(name => {
     color: var(--color-text-muted);
     margin: 0 0.35rem;
   }
-  .doc-card-title {
-    color: inherit;
-    text-decoration: none;
+  .demo-section {
+    margin-top: 1.5rem;
   }
-  .doc-card-title:hover {
-    text-decoration: underline;
+  h3 {
+    font-size: 1.05rem;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--color-border);
   }
-  .doc-card-desc {
-    text-decoration: underline;
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
+    gap: 1.5rem 1.25rem;
+    align-items: start;
+  }
+  figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid var(--color-border);
+    border-radius: var(--card-radius);
+  }
+  figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+  .demo-title {
+    font-weight: 600;
   }
   @media (max-width: 720px) {
     .featured {
