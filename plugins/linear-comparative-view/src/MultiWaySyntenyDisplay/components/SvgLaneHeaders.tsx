@@ -12,6 +12,7 @@ import {
   LANE_COLOR_SWATCH_PX,
   LANE_COLOR_TINT,
   changesChipWidth,
+  headerText,
   labelBoxTop,
 } from '../laneHeader.ts'
 import { GENE_LABEL_HALO_PX } from '../laneLabels.ts'
@@ -148,7 +149,7 @@ export function SvgLaneHeaders({
           ? changesRight - changesWidth - HEADER_GAP_PX
           : changesRight
         const label = truncateToWidth(
-          row.label,
+          headerText(row),
           labelRight -
             labelX -
             (row.color || row.inline ? INLINE_CHIP_PAD_PX : 0),

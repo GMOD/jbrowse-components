@@ -274,10 +274,10 @@ stretch of peach often has one grape ortholog and two older copies. To draw them
 at once, open peach in a linear genome view at `chrG7:18,290,000-18,660,000` and
 turn on the .anchors track:
 
-- Pick **Display types → Multi-way synteny display** in the track menu, then
-  **Lanes → One lane per copy**. Each grape chromosome holding a copy of the
-  window gets its own lane, with its gene track, and every ribbon joins a peach
-  gene to the grape gene MCScan paired it with.
+- Pick **Display types → Multi-way synteny display** in the track menu. The
+  track pairs peach with one other genome, so each grape chromosome holding a
+  copy of the window gets its own lane, with its gene track, and every ribbon
+  joins a peach gene to the grape gene MCScan paired it with.
 - In **Lanes → Choose lanes...**, untick every grape chromosome but chr9 and
   chr11.
 - Pick **Move up** twice in the grape chr9 lane's menu (right-click its name),

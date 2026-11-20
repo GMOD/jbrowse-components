@@ -2406,7 +2406,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
               trackId: 'grape_peach_anchors',
               type: 'MultiWaySyntenyDisplay',
               rows: {
-                field: 'refName',
                 sort: [`{${GRAPE}}chr9`, PEACH, `{${GRAPE}}chr11`],
                 kept: [`{${GRAPE}}chr9`, `{${GRAPE}}chr11`],
               },

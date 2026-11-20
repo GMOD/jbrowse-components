@@ -2,6 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { resolvePanel } from '../LaunchSyntenyView/resolvePanel.ts'
 import { getAlignmentOps } from '../syntenyMate.ts'
+import { fileUnderCopies, laneOf } from './copyLane.ts'
 import {
   computeRowFrame,
   decideLaneFrames,
@@ -432,6 +433,34 @@ test('a lane scattered over many contigs sorts by the one it draws', () => {
   const groups = groupFeatures([...scattered, ...dense])
   expect(rowAssembliesOf(groups, [])).toEqual(['baboon', 'platypus'])
   expect(rowAssembliesOf(groups, ['platypus'])).toEqual(['platypus', 'baboon'])
+})
+
+test("a genome's copy lanes stack together, under its densest copy", () => {
+  const copies = {
+    '{durum}3B': 4,
+    '{wheat}3D': 3,
+    '{wheat}3B': 2,
+    '{durum}3A': 1,
+    '{wheat}3A': 1,
+  }
+  const records = Object.entries(copies).flatMap(([lane, n]) =>
+    Array.from({ length: n }, (_, i) => {
+      const { assemblyName, refName } = laneOf(lane)
+      return pairFeature({
+        uniqueId: `${lane}-${i}`,
+        start: 1000 * i,
+        end: 1000 * i + 100,
+        mate: { assemblyName, refName: refName!, start: 0, end: 100 },
+      })
+    }),
+  )
+  expect(rowAssembliesOf(fileUnderCopies(groupFeatures(records)), [])).toEqual([
+    '{durum}3B',
+    '{durum}3A',
+    '{wheat}3D',
+    '{wheat}3B',
+    '{wheat}3A',
+  ])
 })
 
 test('the runs of one clipped record are sibling groups, weighed by the anchor bp they cover', () => {

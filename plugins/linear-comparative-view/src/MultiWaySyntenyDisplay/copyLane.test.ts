@@ -104,6 +104,15 @@ describe('fileUnderCopies', () => {
     ).toEqual(['{grape}chr11', '{grape}chr9', '{grape}chr2'])
   })
 
+  test('a contig whose genes sit only past the viewport draws no lane', () => {
+    const shown = new Set(genes.slice(5))
+    expect(
+      lanesOf(
+        fileUnderCopies(sparse, { inWindow: group => shown.has(group.key) }),
+      ),
+    ).toEqual(['{grape}chr11'])
+  })
+
   // wheat anchored at 1A: an all-against-all source pairs every 1A gene with
   // itself, and with its homoeologs on 1B and 1D
   const wheatRows = ['g1', 'g2', 'g3'].flatMap((name, i) =>
@@ -170,6 +179,7 @@ describe('groupsOfField', () => {
       groupsOfField('refName', grouped, () => ({
         chosen: () => false,
         onAnchorContig: () => false,
+        inWindow: () => true,
       }))[0]!.mates.size,
     ).toBe(3)
   })

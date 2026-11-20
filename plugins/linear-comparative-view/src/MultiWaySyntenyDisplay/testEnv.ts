@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, setConf } from '@jbrowse/core/configuration'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -20,6 +20,7 @@ import { NO_OPS } from './alignmentOps.ts'
 import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './model.ts'
 
+import type { LaneRowsSetting } from './copyLane.ts'
 import type { HeldLane, LaneFetchSpec } from './laneFetch.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
@@ -73,8 +74,11 @@ export function createDisplayWithSession({
   animationMode = 'enabled',
   describeAssemblies,
   copies = 1,
+  laneField = 'assembly',
 }: {
   copies?: number
+  /** `rows.field`; genome lanes unless a test asks, as most read one genome's lane */
+  laneField?: LaneRowsSetting
   syntenyAdapter?: Record<string, unknown>
   trackAssemblyNames?: string[]
   geneTracks?: GeneTrackSpec[]
@@ -350,5 +354,10 @@ export function createDisplayWithSession({
   const displays = view.tracks.map(
     track => track.displays[0]! as MultiWaySyntenyDisplayModel,
   )
+  if (laneField !== 'auto') {
+    for (const display of displays) {
+      setConf(display, ['rows', 'field'], laneField)
+    }
+  }
   return { display: displays[0]!, displays, session }
 }

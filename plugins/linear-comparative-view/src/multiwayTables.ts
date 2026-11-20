@@ -43,6 +43,7 @@ import { configSchemaFactory } from './MultiWaySyntenyDisplay/configSchema.ts'
 import { geneNamesDraw } from './MultiWaySyntenyDisplay/configSlotViews.ts'
 import {
   copyLaneFiling,
+  laneFieldOf,
   copyLaneName,
   groupsOfField,
   laneGenome,
@@ -105,7 +106,7 @@ import {
 import { getMate, getRecordName } from './syntenyMate.ts'
 
 import type { LaneLinks } from './MultiWaySyntenyDisplay/alignmentOps.ts'
-import type { LaneRowsField } from './MultiWaySyntenyDisplay/copyLane.ts'
+import type { LaneRowsSetting } from './MultiWaySyntenyDisplay/copyLane.ts'
 import type { LanePin } from './MultiWaySyntenyDisplay/lanePins.ts'
 import type { Lane, LaneStack } from './MultiWaySyntenyDisplay/laneStack.ts'
 import type { AnchorStage } from './MultiWaySyntenyDisplay/laneStage.ts'
@@ -152,7 +153,8 @@ export interface MultiWayTablesArgs {
    * them: `ribbons.encoding.color` (a field such as `'strand'`, or the color
    * channel's slots such as `{ value: 'grey' }`), `ribbons.encoding.opacity`,
    * `ribbons.mark.interpolate`, `ribbons.filter`, `rows` (`field`, a lane
-   * per genome or with `'refName'` per copy of the window, `sort`, the lanes
+   * per genome, with `'refName'` per copy of the window, or `'auto'`, per
+   * copy where the adapter names at most one genome besides the anchor, `sort`, the lanes
    * that stack first, `kept`, the lanes drawn, and `labels`, a label for a
    * lane by name), `labels.name.show`,
    * `labels.lanes.placement` and `height`, the stack's px.
@@ -164,7 +166,7 @@ export interface MultiWayTablesArgs {
       filter?: FieldPredicate[]
     }
     rows?: {
-      field?: LaneRowsField
+      field?: LaneRowsSetting
       sort?: string[]
       kept?: string[]
       labels?: Record<string, string>
@@ -595,7 +597,11 @@ export async function multiwayTables(
     declaresLanes && selection ? [...selection] : undefined,
   )
   const features = dedupe(fetched.features, f => f.id())
-  const field = settings.laneField
+  const field = laneFieldOf(
+    settings.laneField,
+    adapterAssemblyNames(adapterConfig),
+    name => name === anchor,
+  )
   const groups = groupsOfField(field, groupFeatures(features), () =>
     copyLaneFiling(
       settings.kept,

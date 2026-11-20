@@ -1,4 +1,9 @@
-import { LABEL_FONT_SIZE, labelBoxTop, laneHeaderRows } from './laneHeader.ts'
+import {
+  LABEL_FONT_SIZE,
+  headerText,
+  labelBoxTop,
+  laneHeaderRows,
+} from './laneHeader.ts'
 
 import type { Lane } from './laneStack.ts'
 import type { LaneChange, RowFrame } from './layoutMultiWay.ts'
@@ -87,16 +92,17 @@ describe('the label', () => {
   })
 
   test('names the contigs the lane is not showing', () => {
-    expect(rowOf(mateLane({ frame: { alsoOn: ['Pp2', 'Pp5'] } })).label).toBe(
-      'peach  Pp1:1..1,960  · also on Pp2, Pp5',
-    )
+    const row = rowOf(mateLane({ frame: { alsoOn: ['Pp2', 'Pp5'] } }))
+    expect(row.label).toBe('peach  Pp1:1..1,960')
+    expect(row.alsoOn).toBe('· also on Pp2, Pp5')
+    expect(headerText(row)).toBe('peach  Pp1:1..1,960  · also on Pp2, Pp5')
   })
 
   test('counts the contigs the cap left out rather than dropping them', () => {
     expect(
       rowOf(mateLane({ frame: { alsoOn: ['Pp2', 'Pp5'], alsoOnMore: 6 } }))
-        .label,
-    ).toBe('peach  Pp1:1..1,960  · also on Pp2, Pp5 and 6 more')
+        .alsoOn,
+    ).toBe('· also on Pp2, Pp5 and 6 more')
   })
 
   test('names the blocks of its contig the lane is not showing', () => {

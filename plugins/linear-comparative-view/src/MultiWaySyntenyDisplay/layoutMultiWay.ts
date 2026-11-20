@@ -744,7 +744,8 @@ export function sortedLanes(
 }
 
 /**
- * Lanes densest first, `preferred` ones leading in its order (`sortedLanes`);
+ * Lanes densest first, a genome's copy lanes together under its densest,
+ * `preferred` ones leading in its order (`sortedLanes`);
  * `placeless` lanes, which the window shows none of, sit at the foot whatever
  * `preferred` says, since a frameless lane between two others leaves both
  * gutters empty
@@ -768,13 +769,31 @@ export function rowAssembliesOf(
       }
     }
   }
-  const present = [...evidence]
-    .map(([assemblyName, byContig], appearance) => ({
-      assemblyName,
-      appearance,
-      density: Math.max(0, ...byContig.values()),
-    }))
-    .sort((a, b) => b.density - a.density || a.appearance - b.appearance)
+  const lanes = [...evidence].map(([assemblyName, byContig], appearance) => ({
+    assemblyName,
+    genome: keyOf(laneGenome(assemblyName)),
+    appearance,
+    density: Math.max(0, ...byContig.values()),
+  }))
+  const genomes = new Map<string, { appearance: number; density: number }>()
+  for (const { genome, appearance, density } of lanes) {
+    const seen = genomes.get(genome)
+    genomes.set(genome, {
+      appearance: seen?.appearance ?? appearance,
+      density: Math.max(seen?.density ?? 0, density),
+    })
+  }
+  const present = lanes
+    .sort((a, b) => {
+      const ga = genomes.get(a.genome)!
+      const gb = genomes.get(b.genome)!
+      return (
+        gb.density - ga.density ||
+        ga.appearance - gb.appearance ||
+        b.density - a.density ||
+        a.appearance - b.appearance
+      )
+    })
     .map(lane => lane.assemblyName)
   const pinned = new Set(sortedLanes(present, preferred, keyOf))
   const presentKeys = new Set(

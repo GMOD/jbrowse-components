@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "MultiWaySyntenyDisplay `rows.field: 'refName'` draws a lane per contig holding a copy of the anchor window, named `{assembly}refName`, read against the anchor alone; `rows.sort` naming the anchor stacks it between copies, and genome lanes are unchanged. Synteny-view ribbon columns were declined"
+summary: "MultiWaySyntenyDisplay `rows.field: 'refName'` draws a lane per contig holding a copy of the anchor window, named `{assembly}refName`, read against the anchor alone, and `auto`, the default, picks it where the track names at most one genome besides the anchor; `rows.sort` naming the anchor stacks it between copies. Synteny-view ribbon columns were declined"
 ---
 
 # ADR-278: A copy of the window draws as its own lane
@@ -54,8 +54,8 @@ breaks "a gutter draws only what its source states"
   the order written; a genome entry places only its copies no other entry
   names, so a sort naming the genome still lets a copy be dragged. A genome
   in `kept` keeps each of its copies unless `kept` names one of them.
-- **A contig under a tenth of its genome's heaviest contig's evidence draws no
-  lane** (`COPY_SHARE`) unless `rows.kept` names it. The `alsoOn` share, a
+- **A contig under a tenth of its genome's heaviest contig's evidence in the
+  viewport draws no lane** (`COPY_SHARE`) unless `rows.kept` names it. The `alsoOn` share, a
   fifth, dropped the figure's own copy: an old duplication keeps few genes,
   and grape chr9 holds a fifth of chr11's pairs over that window. The lane
   dialog offers such a copy unticked, lists a genome as placed where its
@@ -86,11 +86,21 @@ breaks "a gutter draws only what its source states"
   at 1A draws 1B and 1D. Genome lanes still drop every mate on the anchor's
   assembly. A repeat hit elsewhere in the anchor's genome clears the floor
   only where its contig holds a tenth of the heaviest copy's evidence.
-- **Opt-in.** A genome lane stays the default, so no stack with one copy per
-  genome changes. It could become the default for a source with one mate
-  genome, where every gutter already pairs with the anchor and the copies are
-  what the reader opened the track to see; across many genomes it multiplies
-  lanes and gives up neighbour-to-neighbour alignment.
+- **`auto`, the default, draws copy lanes where the track names at most one
+  genome besides the anchor** (`laneFieldOf`), amended 2026-11-20 from
+  opt-in after before/after captures on peach–grape, vertebrate HOXA and
+  wheat. With one mate genome every gutter already pairs with the anchor and
+  the copies are what the reader opened the track to see; a track naming only
+  the anchor is a self-comparison, whose genome lanes draw nothing. Across
+  many genomes copy lanes multiply lanes and give up neighbour-to-neighbour
+  alignment, so genome lanes stay, and a genome lane's `· also on` names its
+  other copies as a button that turns copy lanes on.
+- **Unsorted copy lanes stack by genome**, each genome's copies together
+  under its densest: densest-first alone put wheat 3B and 3A below durum and
+  emmer, halfway down from wheat 3D.
+- **The floor weighs only what the viewport shows.** The fetch reaches past
+  the viewport, and grape chr4, holding none of the gamma window's pairs but
+  dozens just past its edge, drew an empty lane.
 
 ## Consequences
 

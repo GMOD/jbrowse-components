@@ -205,3 +205,29 @@ test('a press on a mate label is claimed from the view pan, and its drag reorder
   expect(claims).toEqual([true])
   expect(display.rowAssemblies).toEqual([second, first])
 })
+
+test('a lane naming the other contigs holding the window splits into one lane per copy on a click', () => {
+  const display = createDisplay()
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'f0',
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    }),
+  ])
+  display.setLaneFrames(
+    0,
+    new Map([['volvox_random', { ...decision, alsoOn: ['ctgC'] }]]),
+  )
+  renderHeaders(display)
+  fireEvent.click(screen.getByTestId('multiway-lane-also-on-volvox_random'))
+  expect(display.laneField).toBe('refName')
+})

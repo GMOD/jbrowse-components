@@ -47,6 +47,8 @@ function inlineBaseline(glyphTop: number, glyphHeight: number) {
 export interface LaneHeaderRow {
   assemblyName: string
   label: string
+  /** the contigs holding more of the window than the lane shows, `· also on chr9` */
+  alsoOn?: string
   scale: string
   /** what the scale means, as a hover title */
   scaleTitle?: string
@@ -179,6 +181,11 @@ function scaleOf(lane: Lane, visibleBpSpan: number) {
       : { text: '' }
 }
 
+/** a header's text as the static export draws it, `alsoOn` after the label */
+export function headerText({ label, alsoOn }: LaneHeaderRow) {
+  return alsoOn ? `${label}  ${alsoOn}` : label
+}
+
 export function laneHeaderRows(
   lanes: Lane[],
   visibleBpSpan: number,
@@ -227,7 +234,8 @@ export function laneHeaderRows(
       assemblyName: lane.assemblyName,
       label: inline
         ? `${lane.label}${lane.frame?.flipped ? ' [rev]' : ''}`
-        : [lane.label, where, alsoAt, alsoOn].filter(part => !!part).join('  '),
+        : [lane.label, where, alsoAt].filter(part => !!part).join('  '),
+      alsoOn: inline ? undefined : alsoOn,
       scale: scale.text,
       scaleTitle: scale.title,
       y: inline

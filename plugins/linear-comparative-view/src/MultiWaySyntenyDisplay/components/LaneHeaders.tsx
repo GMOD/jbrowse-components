@@ -44,6 +44,14 @@ const useStyles = makeStyles()(theme => ({
       outlineOffset: 1,
     },
   },
+  alsoOn: {
+    pointerEvents: 'all',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
 }))
 
 interface LanePress {
@@ -394,6 +402,23 @@ const LaneHeaders = observer(function LaneHeaders({
           >
             {row.label}
           </span>
+          {row.alsoOn ? (
+            <button
+              type="button"
+              data-testid={`multiway-lane-also-on-${row.assemblyName}`}
+              className={`${classes.textButton} ${classes.alsoOn}`}
+              style={{ color: bandInk().text, flex: '0 1 auto' }}
+              onMouseDown={event => {
+                event.stopPropagation()
+              }}
+              onClick={event => {
+                event.stopPropagation()
+                model.setLaneField('refName')
+              }}
+            >
+              {row.alsoOn}
+            </button>
+          ) : null}
           {frozen.has(row.assemblyName) ? (
             <AcUnitIcon
               data-testid={`multiway-lane-frozen-${row.assemblyName}`}

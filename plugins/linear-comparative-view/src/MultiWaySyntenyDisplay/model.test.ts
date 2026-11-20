@@ -2532,7 +2532,7 @@ describe('one lane per copy', () => {
   })
 
   // a gene pair per start on each named contig
-  const pairsOn = (contigs: [string, string, number][]) =>
+  const pairsOn = (contigs: [string, string, number][], step = 100) =>
     contigs.flatMap(([assemblyName, refName, count]) =>
       Array.from(
         { length: count },
@@ -2541,14 +2541,14 @@ describe('one lane per copy', () => {
             uniqueId: `${assemblyName}-${refName}-${i}`,
             name: `gene${i}`,
             refName: 'ctgA',
-            start: 100 + i * 100,
-            end: 150 + i * 100,
+            start: 100 + i * step,
+            end: 100 + i * step + step / 2,
             strand: 1,
             mate: {
               assemblyName,
               refName,
-              start: 100 + i * 100,
-              end: 150 + i * 100,
+              start: 100 + i * step,
+              end: 100 + i * step + step / 2,
             },
           }),
       ),
@@ -2567,10 +2567,35 @@ describe('one lane per copy', () => {
   }
   const kept2 = ['{volvox_random}ctgB', '{volvox_random}ctgC']
 
+  test('auto draws copy lanes where the track names one genome besides the anchor, or none', () => {
+    const autoField = (trackAssemblyNames: string[]) =>
+      createDisplayWithSession({
+        trackAssemblyNames,
+        geneTracks: [],
+        laneField: 'auto',
+      }).display.laneField
+    expect(autoField(['volvox', 'volvox_random'])).toBe('refName')
+    expect(autoField(['volvox'])).toBe('refName')
+    expect(autoField(['volvox', 'volvox_random', 'volvox_ins'])).toBe(
+      'assembly',
+    )
+  })
+
+  test('a lane field the reader wrote wins over auto', () => {
+    const { display } = createDisplayWithSession({
+      trackAssemblyNames: ['volvox', 'volvox_random'],
+      geneTracks: [],
+      laneField: 'auto',
+    })
+    display.setLaneField('assembly')
+    expect(display.laneField).toBe('assembly')
+  })
+
   test("the tutorial's steps stack the older copy above the anchor and the ortholog below", () => {
     const { display } = createDisplayWithSession({
       trackAssemblyNames: ['volvox', 'volvox_random'],
       geneTracks: [],
+      laneField: 'auto',
     })
     // ctgB the ortholog, ctgC an older copy keeping fewer genes, ctgD a third
     display.setFeatures(
@@ -2580,9 +2605,6 @@ describe('one lane per copy', () => {
         ['volvox_random', 'ctgD', 2],
       ]),
     )
-    expect(
-      clickLabel(lanesMenuItem(display).subMenu, 'One lane per copy'),
-    ).toBe(true)
     expect(display.rowAssemblies).toEqual([
       '{volvox_random}ctgB',
       '{volvox_random}ctgC',
@@ -2658,11 +2680,15 @@ describe('one lane per copy', () => {
       trackAssemblyNames: ['volvox', 'volvox_random'],
       geneTracks: [],
     })
+    // every pair inside the 1 kb window, where the floor weighs them
     display.setFeatures(
-      pairsOn([
-        ['volvox_random', 'ctgB', 20],
-        ['volvox_random', 'ctgC', 1],
-      ]),
+      pairsOn(
+        [
+          ['volvox_random', 'ctgB', 20],
+          ['volvox_random', 'ctgC', 1],
+        ],
+        40,
+      ),
     )
     display.setLaneField('refName')
     expect(display.rowAssemblies).toEqual(['{volvox_random}ctgB'])
@@ -2676,6 +2702,33 @@ describe('one lane per copy', () => {
       '{volvox_random}ctgB',
       '{volvox_random}ctgC',
     ])
+  })
+
+  test('a copy whose pairs all sit past the viewport draws no lane', () => {
+    const { display } = createDisplayWithSession({
+      trackAssemblyNames: ['volvox', 'volvox_random'],
+      geneTracks: [],
+      laneField: 'refName',
+    })
+    display.lgv.setDisplayedRegions([
+      { refName: 'ctgA', start: 0, end: 50_000, assemblyName: 'volvox' },
+    ])
+    display.lgv.zoomTo(1)
+    display.lgv.scrollTo(0)
+    const offscreen = pairsOn([['volvox_random', 'ctgD', 5]]).map(
+      f =>
+        new SimpleFeature({
+          ...f.toJSON(),
+          name: `far-${f.get('name')}`,
+          start: f.get('start') + 20_000,
+          end: f.get('end') + 20_000,
+        }),
+    )
+    display.setFeatures([
+      ...pairsOn([['volvox_random', 'ctgB', 6]]),
+      ...offscreen,
+    ])
+    expect(display.rowAssemblies).toEqual(['{volvox_random}ctgB'])
   })
 
   test("the anchor's own genome draws a lane per other contig, never the anchor's", () => {

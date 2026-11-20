@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { stringList } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { LANE_ROWS_FIELDS } from './copyLane.ts'
+import { LANE_ROWS_SETTINGS } from './copyLane.ts'
 
 /**
  * #config LaneRows
@@ -54,14 +54,16 @@ export const laneRowsConfigSchema = ConfigurationSchema(
      * in `kept` or `sort` stands for its genome, so switching keeps both. A
      * contig holding under a tenth of its genome's heaviest contig's evidence
      * draws no lane unless `kept` names it. The anchor's own contig draws no
-     * lane; its genome's other contigs draw as copies.
+     * lane; its genome's other contigs draw as copies. `auto` draws copy lanes
+     * where the track's `assemblyNames` name at most one genome besides the
+     * anchor, and genome lanes across more.
      */
     field: {
       type: 'stringEnum',
-      model: types.enumeration('LaneRowsField', [...LANE_ROWS_FIELDS]),
-      defaultValue: 'assembly',
+      model: types.enumeration('LaneRowsField', [...LANE_ROWS_SETTINGS]),
+      defaultValue: 'auto',
       description:
-        "what one lane is: 'assembly', a lane per genome, or 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name",
+        "what one lane is: 'assembly', a lane per genome, or 'refName', a lane per contig holding a copy of the window, named '{<assembly>}<refName>' and answering to its genome's name; 'auto' draws 'refName' where the track names at most one genome besides the anchor, else 'assembly'",
     },
     /**
      * #slot sort

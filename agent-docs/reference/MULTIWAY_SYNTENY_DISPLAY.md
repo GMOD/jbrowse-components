@@ -9,7 +9,8 @@ kind: spec
 MultiWaySyntenyDisplay is a per-window, anchor-star, one-frame-per-lane stack
 inside an ordinary LinearGenomeView. A lane is a genome, drawing the contig that
 best explains the window, or with `rows.field: 'refName'` one contig of a genome
-holding a copy of the window
+holding a copy of the window; `auto`, the default, draws copy lanes where the
+track names at most one genome besides the anchor
 ([ADR-278](../architecture-decision-records/adr-278-a-copy-of-the-window-draws-as-its-own-lane.md)).
 A frame is affine between the holes it opens at the lane's deletions. Unbuilt
 and undecided work lives in
@@ -49,9 +50,12 @@ every cost is linear in lanes.
   `rows.sort` a genome places only its copies no other entry names
   (`sortedLanes`), and in `kept` it keeps its copies unless a copy of it is
   kept. With genome lanes a copy in `kept` or `sort` stands for its genome,
-  so switching `rows.field` keeps both. A contig under `COPY_SHARE` of its
-  genome's heaviest evidence draws no lane unless `rows.kept` names it, and
-  the lane dialog offers it unticked; only the anchor's own contig draws no
+  so switching `rows.field` keeps both. Unsorted copy lanes stack by genome,
+  its copies together under its densest (`rowAssembliesOf`). A contig under
+  `COPY_SHARE` of its genome's heaviest evidence in the viewport draws no lane
+  unless `rows.kept` names it, and the lane dialog offers it unticked; the
+  floor weighs only groups the settled viewport shows (`inWindow`), since a
+  copy whose pairs all sit in the fetch's margin drew an empty lane; only the anchor's own contig draws no
   copy lane, so the anchor genome's other copies draw. The display and
   `multiwayTables` share the wiring (`groupsOfField`, `rowsReadAgainstAnchor`,
   `anchorRowOf`). Every path that treats a lane as an assembly reads

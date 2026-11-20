@@ -13,6 +13,29 @@ export const COPY_SHARE = 0.1
 export const LANE_ROWS_FIELDS = ['assembly', 'refName'] as const
 export type LaneRowsField = (typeof LANE_ROWS_FIELDS)[number]
 
+/** `rows.field` as written, `auto` choosing by the track's genomes */
+export const LANE_ROWS_SETTINGS = ['auto', ...LANE_ROWS_FIELDS] as const
+export type LaneRowsSetting = (typeof LANE_ROWS_SETTINGS)[number]
+
+/**
+ * What one lane is under `setting`. `auto` draws a lane per copy where the
+ * track's genomes name at most one besides the anchor: every gutter already
+ * reads against the anchor, and the copies are what the track is opened to
+ * see. Across more genomes, or a track naming none, a lane per genome.
+ */
+export function laneFieldOf(
+  setting: LaneRowsSetting,
+  trackGenomes: readonly string[],
+  isAnchor: (assemblyName: string) => boolean,
+): LaneRowsField {
+  return setting === 'auto'
+    ? trackGenomes.length > 0 &&
+      trackGenomes.filter(name => !isAnchor(name)).length <= 1
+      ? 'refName'
+      : 'assembly'
+    : setting
+}
+
 /**
  * A copy lane's name, as a locstring names a contig with its assembly:
  * `{grape}chr9`. A genome lane's name is its assembly name.
@@ -94,6 +117,11 @@ export interface CopyLaneFiling {
    * all-against-all source states for every gene
    */
   onAnchorContig: (lane: string) => boolean
+  /**
+   * a group the window shows: only these weigh against the floor, so a copy
+   * whose genes all sit in the fetch's margin past the viewport draws no lane
+   */
+  inWindow: (group: MultiWayGroup) => boolean
 }
 
 /**
@@ -104,6 +132,7 @@ export function copyLaneFiling(
   kept: readonly string[],
   anchorContigs: readonly string[],
   keyOf: KeyOf,
+  inWindow: (group: MultiWayGroup) => boolean = () => true,
 ): CopyLaneFiling {
   const keys = new Map<string, string>()
   const keyed = (lane: string) => {
@@ -119,6 +148,7 @@ export function copyLaneFiling(
   return {
     chosen: lane => keptKeys.has(keyed(lane)),
     onAnchorContig: lane => anchorKeys.has(keyed(lane)),
+    inWindow,
   }
 }
 
@@ -127,13 +157,15 @@ export function copyLaneFiling(
  * under `COPY_SHARE` of its genome's heaviest contig's evidence is a stray
  * paralog hit, not a copy, and draws no lane unless `chosen` names it. A mate
  * on the anchor's own contig files nowhere; one on another contig of the
- * anchor's genome is a copy like any other.
+ * anchor's genome is a copy like any other. Only the groups `inWindow` shows
+ * weigh against the floor.
  */
 export function fileUnderCopies(
   groups: readonly MultiWayGroup[],
   {
     chosen = () => false,
     onAnchorContig = () => false,
+    inWindow = () => true,
   }: Partial<CopyLaneFiling> = {},
 ) {
   const filed = groups.map(group => {
@@ -149,7 +181,7 @@ export function fileUnderCopies(
     return { group, mates }
   })
   const evidence = new Map<string, number>()
-  for (const { group, mates } of filed) {
+  for (const { group, mates } of filed.filter(({ group }) => inWindow(group))) {
     for (const [lane, placements] of mates) {
       evidence.set(
         lane,
@@ -162,9 +194,14 @@ export function fileUnderCopies(
     const genome = laneGenome(lane)
     heaviest.set(genome, Math.max(heaviest.get(genome) ?? 0, weight))
   }
-  const drawn = (lane: string) =>
-    evidence.get(lane)! >= heaviest.get(laneGenome(lane))! * COPY_SHARE ||
-    chosen(lane)
+  const drawn = (lane: string) => {
+    const weight = evidence.get(lane)
+    return (
+      chosen(lane) ||
+      (weight !== undefined &&
+        weight >= heaviest.get(laneGenome(lane))! * COPY_SHARE)
+    )
+  }
   return filed.map(({ group, mates }) => ({
     ...group,
     mates: new Map([...mates].filter(([lane]) => drawn(lane))),

@@ -1,7 +1,7 @@
 import { parsePlot, readConfObject } from '@jbrowse/core/configuration'
 
 import { MULTI_WAY_PLOT_EXAMPLES } from './plotExamples.ts'
-import { createDisplay } from './testEnv.ts'
+import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 const exampleOf = (description: string) =>
   MULTI_WAY_PLOT_EXAMPLES.find(e => e.description === description)!.plot
@@ -32,7 +32,8 @@ test.each(
 })
 
 test('the default colors example resets the colors and keeps the other ribbon settings', () => {
-  const display = createDisplay()
+  // the schema's own rows.field, so the plot holds only what the test writes
+  const { display } = createDisplayWithSession({ laneField: 'auto' })
   display.applyPlot({
     encoding: { color: 'cluster' },
     ribbons: {

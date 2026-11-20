@@ -16,6 +16,7 @@ import { colorScaleIsEmpty, summarizePast } from '@jbrowse/core/ui/colorScale'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import {
   animationAllowed,
+  doesIntersect2,
   getEnv,
   getPaletteHost,
   getSession,
@@ -107,6 +108,7 @@ import {
 } from './configSlotViews.ts'
 import {
   copyLaneFiling,
+  laneFieldOf,
   copyLaneName,
   copyLanesUnderFloor,
   groupsOfField,
@@ -267,6 +269,7 @@ import type { Lane, LaneStack } from './laneStack.ts'
 import type { AnchorStage } from './laneStage.ts'
 import type {
   FetchRegion,
+  MultiWayGroup,
   PlacedGroup,
   RowFrame,
   Span,
@@ -724,11 +727,17 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * `rows.field`: a lane per genome, or per copy of the window a genome
-       * holds
+       * `rows.field` resolved: a lane per genome, or per copy of the window a
+       * genome holds
        */
       get laneField(): LaneRowsField {
-        return getConf(self, ['rows', 'field'])
+        const { assemblyManager } = getSession(self)
+        const anchor = self.lgv.assemblyNames[0]
+        return laneFieldOf(
+          getConf(self, ['rows', 'field']),
+          getTrackAssemblyNames(self.parentTrack),
+          name => isSameAssemblyName(name, anchor, assemblyManager),
+        )
       },
       /** #getter */
       get groupedFeatures() {
@@ -747,6 +756,23 @@ export function stateModelFactory(
             copyLaneName(r.assemblyName, r.refName),
           ),
           lane => laneKeyIn(assemblyManager, lane),
+          group => this.inWindow(group),
+        )
+      },
+      /**
+       * #method
+       * whether the settled viewport shows a group's anchor
+       */
+      inWindow({ anchor }: MultiWayGroup) {
+        const view = self.lgv
+        const refName =
+          getSession(self)
+            .assemblyManager.get(view.assemblyNames[0]!)
+            ?.getCanonicalRefName2(anchor.refName) ?? anchor.refName
+        return view.settledDynamicBlocks.some(
+          b =>
+            b.refName === refName &&
+            doesIntersect2(b.start, b.end, anchor.start, anchor.end),
         )
       },
       /**
