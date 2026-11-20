@@ -247,7 +247,7 @@ test('a header names its column in full on hover, and a click cycles ascending, 
   const { model, table } = setup()
   const { getByRole } = renderGrid(model, table)
   const header = () => getByRole('columnheader', { name: 'Name' })
-  expect(header().getAttribute('title')).toBe('Name')
+  expect(header().hasAttribute('title')).toBe(false)
   expect(header().getAttribute('aria-sort')).toBeNull()
 
   const click = () => {

@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
 
+import DelegatedTooltip from '@jbrowse/core/ui/DelegatedTooltip'
 import { useSearchHighlight } from '@jbrowse/core/ui/useSearchHighlight'
+import { getSession } from '@jbrowse/core/util'
 import { highlightPatterns } from '@jbrowse/core/util/searchText'
 import { observer } from 'mobx-react'
 
-import SharedTooltip from './SharedTooltip.tsx'
 import TreeItem from './TreeItem.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
@@ -61,7 +62,12 @@ const HierarchicalTree = observer(function HierarchicalTree({
           <TreeItem key={row.item.id} model={model} row={row} />
         ))}
       </div>
-      <SharedTooltip containerRef={containerRef} model={model} />
+      <DelegatedTooltip
+        containerRef={containerRef}
+        placement={
+          getSession(model).drawerPosition === 'left' ? 'right' : 'left'
+        }
+      />
     </div>
   )
 })

@@ -27,7 +27,7 @@ const NameCell = observer(function NameCell({
     <label
       htmlFor={checkboxId}
       className={classes.nameCell}
-      data-tooltip={row.description}
+      data-tooltip-html={row.description}
       aria-description={coarseStripHTML(row.description)}
       onClick={selectOnModifierClick(model, row.id)}
     >

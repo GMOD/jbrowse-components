@@ -120,7 +120,7 @@ const TrackLabel = observer(function TrackLabel({
     <>
       <label
         className={classes.checkboxLabel}
-        data-tooltip={description}
+        data-tooltip-html={description}
         aria-description={coarseStripHTML(description)}
         onClick={selectOnModifierClick(model, trackId)}
       >

@@ -6,9 +6,6 @@ import { trackRowTints } from '../../HierarchicalTrackSelectorWidget/components/
 const CHECKBOX_ICON_SIZE = '1.15rem'
 
 export const useTableStyles = makeStyles()(theme => ({
-  grid: {
-    height: '100%',
-  },
   trackRow: {
     '&:hover > td': {
       background: trackRowTints(theme).hover,

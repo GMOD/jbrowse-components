@@ -1,4 +1,4 @@
-import { useId, useRef } from 'react'
+import { useId } from 'react'
 
 import VirtualTable, {
   CHECKBOX_WIDTH,
@@ -9,7 +9,6 @@ import { highlightPatterns } from '@jbrowse/core/util/searchText'
 import { observer } from 'mobx-react'
 
 import CheckboxLite from '../../HierarchicalTrackSelectorWidget/components/tree/CheckboxLite.tsx'
-import SharedTooltip from '../../HierarchicalTrackSelectorWidget/components/tree/SharedTooltip.tsx'
 import { isUnsupported } from '../../HierarchicalTrackSelectorWidget/util.ts'
 import { getShowAllState, setTracksShown } from '../tableSelection.ts'
 import { columnFloor, fitColumnWidths } from './fitColumnWidths.ts'
@@ -36,7 +35,6 @@ const TrackTableGrid = observer(function TrackTableGrid({
   emptyMessage?: string
 }) {
   const { classes, cx } = useTableStyles()
-  const containerRef = useRef<HTMLDivElement>(null)
   const gridId = useId()
   const checkboxId = (rowId: string) => `${gridId}-${encodeURIComponent(rowId)}`
   const columns = getTableColumns({ table, model, fields, checkboxId })
@@ -72,58 +70,55 @@ const TrackTableGrid = observer(function TrackTableGrid({
   }
 
   return (
-    <div ref={containerRef} className={classes.grid}>
-      <VirtualTable
-        highlightPatterns={highlightPatterns(filterText)}
-        rows={sortedRows}
-        columns={columns}
-        width={width}
-        widths={available =>
-          fitColumnWidths(
-            Object.fromEntries(
-              columns.map(col => [
-                col.id,
-                initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
-              ]),
-            ),
-            available,
-            id => columnFloor(id, available),
-          )
-        }
-        resetKey={JSON.stringify([filterText, [...filters]])}
-        sortField={sortField}
-        sortAscending={sortAscending}
-        onSort={(field, ascending) => {
-          table.setSort(field, ascending)
-        }}
-        leading={{
-          width: CHECKBOX_WIDTH,
-          header: () =>
-            narrowed ? (
-              <CheckboxLite
-                className={classes.rowCheckbox}
-                checked={allShown}
-                indeterminate={someShown}
-                label="Show all matching tracks"
-                onChange={toggleAll}
-              />
-            ) : null,
-          cell: checkboxCell,
-        }}
-        rowClassName={row =>
-          cx(
-            classes.trackRow,
-            model.selectionSet.has(row.id) && classes.selectedTrackRow,
-          )
-        }
-        emptyMessage={
-          table.allRows.length
-            ? 'No tracks match the current search and filters'
-            : emptyMessage
-        }
-      />
-      <SharedTooltip containerRef={containerRef} model={model} />
-    </div>
+    <VirtualTable
+      highlightPatterns={highlightPatterns(filterText)}
+      rows={sortedRows}
+      columns={columns}
+      width={width}
+      widths={available =>
+        fitColumnWidths(
+          Object.fromEntries(
+            columns.map(col => [
+              col.id,
+              initialWidths[col.id] ?? DEFAULT_COL_WIDTH,
+            ]),
+          ),
+          available,
+          id => columnFloor(id, available),
+        )
+      }
+      resetKey={JSON.stringify([filterText, [...filters]])}
+      sortField={sortField}
+      sortAscending={sortAscending}
+      onSort={(field, ascending) => {
+        table.setSort(field, ascending)
+      }}
+      leading={{
+        width: CHECKBOX_WIDTH,
+        header: () =>
+          narrowed ? (
+            <CheckboxLite
+              className={classes.rowCheckbox}
+              checked={allShown}
+              indeterminate={someShown}
+              label="Show all matching tracks"
+              onChange={toggleAll}
+            />
+          ) : null,
+        cell: checkboxCell,
+      }}
+      rowClassName={row =>
+        cx(
+          classes.trackRow,
+          model.selectionSet.has(row.id) && classes.selectedTrackRow,
+        )
+      }
+      emptyMessage={
+        table.allRows.length
+          ? 'No tracks match the current search and filters'
+          : emptyMessage
+      }
+    />
   )
 })
 

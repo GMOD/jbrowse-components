@@ -67,7 +67,8 @@ const VirtualTableRow = observer(function VirtualTableRow<R>({
             classes.bodyCell,
             col.align === 'right' && classes.alignRight,
           )}
-          title={col.title?.(row)}
+          data-tooltip={col.title?.(row)}
+          data-clip={col.title ? '' : undefined}
         >
           {col.cell(row)}
         </td>

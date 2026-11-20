@@ -1,46 +1,56 @@
 import { useEffect, useState } from 'react'
 
-import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import { getSession } from '@jbrowse/core/util'
 import { Tooltip, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import SanitizedHTML from './SanitizedHTML.tsx'
+
+import type { TooltipProps } from '@mui/material'
 import type { RefObject } from 'react'
 
 // MUI's window after a tooltip closes in which the next opens at once
 const HYSTERESIS_MS = 800
 
-const TOOLTIP = '[data-tooltip]'
+const TOOLTIP = '[data-tooltip], [data-tooltip-html]'
 
 interface TooltipText {
-  /** the cut-off text in full, as plain text */
+  /** the cut-off text in full */
   full: string
-  /** the element's own data-tooltip, which may be HTML */
-  description: string
+  /** the element's data-tooltip, as plain text */
+  text: string
+  /** the element's data-tooltip-html */
+  html: string
 }
 
 // an element's hover text: its cut-off text (a [data-clip], itself or inside
-// it) in full, then its own data-tooltip. An element with neither, such as an
-// undescribed track whose name fits, opens nothing and so starts no no-delay
-// window
+// it) in full, then its own data-tooltip or data-tooltip-html. A text that
+// only repeats the clip's own words adds nothing, so a value that fits opens
+// nothing and starts no no-delay window
 function tooltipText(target: HTMLElement): TooltipText {
   const clip =
     target.dataset.clip === undefined
       ? target.querySelector<HTMLElement>('[data-clip]')
       : target
+  const text = target.dataset.tooltip ?? ''
   return {
     full: clip && clip.scrollWidth > clip.clientWidth ? clip.textContent : '',
-    description: target.dataset.tooltip ?? '',
+    text: text === clip?.textContent ? '' : text,
+    html: target.dataset.tooltipHtml ?? '',
   }
 }
 
-const SharedTooltip = observer(function SharedTooltip({
+/**
+ * One tooltip for every element under a container that asks for one with
+ * `data-tooltip` (plain text) or `data-tooltip-html`, so a long list or table
+ * mounts one MUI Tooltip rather than one per row. Text a `data-clip` element
+ * cuts with an ellipsis shows in full first.
+ */
+const DelegatedTooltip = observer(function DelegatedTooltip({
   containerRef,
-  model,
+  placement = 'top',
 }: {
-  containerRef: RefObject<HTMLDivElement | null>
-  model: HierarchicalTrackSelectorModel
+  containerRef: RefObject<HTMLElement | null>
+  placement?: TooltipProps['placement']
 }) {
   const [state, setState] = useState<
     (TooltipText & { anchorEl: HTMLElement }) | null
@@ -78,7 +88,7 @@ const SharedTooltip = observer(function SharedTooltip({
       // mouseover fires again for every descendant crossed, so keep the state
       // while the row is unchanged. A row virtualized away under the pointer
       // gets no mouseout, so landing anywhere without a tooltip clears it
-      if (!target || !text || (!text.full && !text.description)) {
+      if (!target || !text || (!text.full && !text.text && !text.html)) {
         hide()
       } else if (target !== shown) {
         clearTimeout(pending)
@@ -116,22 +126,14 @@ const SharedTooltip = observer(function SharedTooltip({
     }
   }, [containerRef, enterDelay])
 
-  const placement =
-    getSession(model).drawerPosition === 'left' ? 'right' : 'left'
-
-  if (!state) {
-    return null
-  }
-
-  return (
+  return state ? (
     <Tooltip
       open
       title={
         <>
           {state.full ? <div>{state.full}</div> : null}
-          {state.description ? (
-            <SanitizedHTML html={state.description} />
-          ) : null}
+          {state.text ? <div>{state.text}</div> : null}
+          {state.html ? <SanitizedHTML html={state.html} /> : null}
         </>
       }
       placement={placement}
@@ -143,7 +145,7 @@ const SharedTooltip = observer(function SharedTooltip({
     >
       <span />
     </Tooltip>
-  )
+  ) : null
 })
 
-export default SharedTooltip
+export default DelegatedTooltip

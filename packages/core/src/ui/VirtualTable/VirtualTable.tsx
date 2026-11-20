@@ -2,6 +2,7 @@ import { useId, useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
+import DelegatedTooltip from '../DelegatedTooltip.tsx'
 import { useSearchHighlight } from '../useSearchHighlight.ts'
 import VirtualTableHead from './VirtualTableHead.tsx'
 import VirtualTableRow from './VirtualTableRow.tsx'
@@ -21,6 +22,10 @@ export interface VirtualTableColumn<R> {
   cell: (row: R) => React.ReactNode
   /** what a header click sorts by; without one the header is a plain label */
   sortValue?: (row: R) => unknown
+  /**
+   * a cell's hover text, in a styled tooltip; text that only repeats the
+   * cell's own words shows only while the column cuts them
+   */
   title?: (row: R) => string
   align?: 'right'
   /**
@@ -191,6 +196,7 @@ const VirtualTable = observer(function VirtualTable<
           </tbody>
         ) : null}
       </table>
+      <DelegatedTooltip containerRef={parentRef} />
     </div>
   )
 })

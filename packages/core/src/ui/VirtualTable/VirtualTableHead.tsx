@@ -57,7 +57,7 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
               key={col.id}
               scope="col"
               className={classes.headerCell}
-              title={col.headerTitle ?? col.header}
+              data-tooltip={col.headerTitle ?? col.header}
               aria-sort={
                 sorted
                   ? sortAscending
@@ -75,7 +75,9 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
                     onSort(next.field, next.ascending)
                   }}
                 >
-                  <span className={classes.headerLabel}>{col.header}</span>
+                  <span data-clip className={classes.headerLabel}>
+                    {col.header}
+                  </span>
                   {sorted ? (
                     sortAscending ? (
                       <ArrowUpwardIcon className={classes.sortIcon} />
@@ -86,7 +88,9 @@ const VirtualTableHead = observer(function VirtualTableHead<R>({
                 </button>
               ) : (
                 <div className={headerClass}>
-                  <span className={classes.headerLabel}>{col.header}</span>
+                  <span data-clip className={classes.headerLabel}>
+                    {col.header}
+                  </span>
                 </div>
               )}
               <ColumnResizeHandle
